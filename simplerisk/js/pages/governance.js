@@ -81,6 +81,18 @@ jQuery(document).ready(function($){
                     $('[name=mitigation_percent]', modal).val(Number(control.mitigation_percent) ? control.mitigation_percent : "");
                     $(".mapping_framework_table tbody", modal).html(data.mapped_frameworks);
 
+                    $('[name*="custom_field"]', modal).val("");
+                    if(control.custom_values){
+                      var custom_values = control.custom_values;
+                      for (var i=0; i<custom_values.length; i++) {
+                        var field_id = custom_values[i].field_id;
+                        var field_value = custom_values[i].value;
+                        $("[name='custom_field["+field_id+"]']", modal).val(field_value);
+                        $('[name*="custom_field"].multiselect', modal).multiselect('select', field_value.split(','));
+                        $('[name*="custom_field"].multiselect', modal).multiselect('refresh');
+                      }
+                    }
+
                     $(modal).modal('show');
                 }
             });
@@ -118,9 +130,21 @@ jQuery(document).ready(function($){
                     $('[name=control_status]', modal).val(Number(control.control_status) ? control.control_status : 0);
                     $('[name=family]', modal).val(Number(control.family) ? control.family : "");
                     $('[name=mitigation_percent]', modal).val(Number(control.mitigation_percent) ? control.mitigation_percent : "");
-                    $(".mapping_framework_table tbody", modal).html(data.mapped_frameworks);
+
+                    $('[name*="custom_field"]', modal).val("");
+                    if(control.custom_values){
+                      var custom_values = control.custom_values;
+                      for (var i=0; i<custom_values.length; i++) {
+                        var field_id = custom_values[i].field_id;
+                        var field_value = custom_values[i].value;
+                        $("[name='custom_field["+field_id+"]']", modal).val(field_value);
+                        $('[name*="custom_field"].multiselect', modal).multiselect('select', field_value.split(','));
+                        $('[name*="custom_field"].multiselect', modal).multiselect('refresh');
+                      }
+                    }
 
                     $(modal).modal('show');
+                    $(".mapping_framework_table tbody", modal).html(data.mapped_frameworks)
                 }
             });
           });
@@ -210,8 +234,8 @@ jQuery(document).ready(function($){
 
         $('.paginate_button.last').html('<i class="fa fa-chevron-right"></i><i class="fa fa-chevron-right"></i>');
         $('.paginate_button.next').html('<i class="fa fa-chevron-right"></i>');
-    })
-    
+    });
+
     // Add all text to View All button on bottom
     $('.view-all').html("All");
 
@@ -359,6 +383,8 @@ $(document).ready(function(){
                 $('#add-control-form [name="control_type[]"]').multiselect('select', [1]);
                 $('#add-control-form [name="control_type[]"]').multiselect('refresh');
                 $('#control--add').modal('hide');
+                $('#add-control-form [name*="custom_field"]').val("");
+                $('#add-control-form [name*="custom_field"].multiselect').multiselect('refresh');
                 controlDatatable.ajax.reload(null, false);
             }
         })

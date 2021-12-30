@@ -56,7 +56,7 @@ if (assessments_extra())
     if (isset($_GET['token']))
     {
         // If the token is valid
-        if (is_valid_questionnaire_token($_GET['token']))
+        if (is_valid_questionnaire_token($_GET['token'], true))
         {
             // To make sure the questionnaire processing has enough time
             set_time_limit(600);
@@ -129,19 +129,18 @@ else
   <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/jquery-ui.min.css?<?php echo current_version("app"); ?>">
-
-
   <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/style.css?<?php echo current_version("app"); ?>">
-
-  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../vendor/components/font-awesome/css/all.min.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/assessments_tabs.css?<?php echo current_version("app"); ?>">
   <script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
+
   <?php
       setup_favicon("..");
       setup_alert_requirements("..");

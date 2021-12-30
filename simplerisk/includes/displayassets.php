@@ -379,7 +379,7 @@ function display_main_detail_asset_fields_td_view($fields, $asset)
                 // Include the extra
                 require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
                 
-                $custom_values = getCustomFieldValuesByAssetId($asset['id']);
+                $custom_values = get_custom_value_by_row_id($asset['id'], "asset");
                 
                 display_custom_field_asset_view($field, $custom_values);
             }
@@ -529,7 +529,7 @@ function display_main_detail_asset_fields_td_edit($fields, $asset)
                 // Include the extra
                 require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
                 
-                $custom_values = getCustomFieldValuesByAssetId($asset['id']);
+                $custom_values = get_custom_value_by_row_id($asset['id'], "asset");
                 
                 display_custom_field_td_edit($field, $custom_values);
             }

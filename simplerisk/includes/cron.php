@@ -11,6 +11,7 @@ require_once('functions.php');
 $cron_jobs = array(
 	'cron_backup',
 	'cron_vulnmgmt',
+	'cron_notification',
 );
 
 /***************************
@@ -73,20 +74,23 @@ function cron_schedule($cron_schedule)
         // Set the schedule
         switch ($cron_schedule)
         {
-                case "hourly":
-                        $schedule = '0 * * * *';
-                        break;
-                case "daily":
-                        $schedule = '0 0 * * *';
-                        break;
-                case "weekly":
-                        $schedule = '0 0 * * 0';
-                        break;
-                case "monhtly":
-                        $schedule = '0 0 1 * *';
-                        break;
-                default:
-                        $schedule = '0 0 * * *';
+			case "minutely":
+				$schedule = '* * * * *';
+				break;
+			case "hourly":
+				$schedule = '0 * * * *';
+				break;
+            case "daily":
+				$schedule = '0 0 * * *';
+				break;
+            case "weekly":
+				$schedule = '0 0 * * 0';
+				break;
+            case "monhtly":
+				$schedule = '0 0 1 * *';
+				break;
+            default:
+				$schedule = '0 0 * * *';
         }
 
         // Return the schedule
@@ -113,6 +117,18 @@ function cron_vulnmgmt()
 {
 	// Get the vulnerability management schedule
 	$schedule = cron_schedule(get_setting("extra_vulnmgmt_cron_schedule"));
+
+	// Return the schedule
+	return $schedule;
+}
+
+/*******************************
+ * FUNCTION: CRON NOTIFICATION *
+ *******************************/
+function cron_notification()
+{
+	// Get the notification schedule
+	$schedule = cron_schedule("minutely");
 
 	// Return the schedule
 	return $schedule;

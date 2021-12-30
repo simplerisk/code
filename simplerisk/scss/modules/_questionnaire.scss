@@ -127,6 +127,55 @@
     height: 15px;
 }
 
+.questionnaire-compare-result-container, .questionnaire-answers {
+     ul {
+        list-style: none;
+
+        li {
+            span {
+                position: relative;
+
+                &:before {
+                    font-family: "Font Awesome 5 Free";
+                    position: absolute;
+                    left: -5px;
+                    transform: translateX(-100%);
+                }
+
+                &:not(.selected):before {
+                    content: '\f111';
+                }
+
+                &.selected:before {
+                    content: "\f192";
+                }
+            }
+        }
+    }
+
+    p.additional_info {
+        margin-left: 10px;
+    }
+}
+
+.questionnaire-result-container .affected-asset-list span {
+    cursor: pointer;
+    margin: 0 3px 3px 0;
+    padding: 1px 3px;
+    color: #333333;
+    border: 0 solid rgba(0, 0, 0, 0) !important;
+    border-radius: 2px;
+    display: inline-block;
+
+    &.asset {
+        background-color: $asset-option-color !important;
+    }
+
+    &.group {
+        background-color: $asset-group-option-color !important;
+    }
+}
+
 /*--------------------------------------------------
 # Selecttize Style for Assessment dual list contacts
 ----------------------------------------------------*/

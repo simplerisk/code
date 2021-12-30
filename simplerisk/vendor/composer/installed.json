@@ -705,17 +705,17 @@
         },
         {
             "name": "gettext/languages",
-            "version": "2.8.1",
-            "version_normalized": "2.8.1.0",
+            "version": "2.9.0",
+            "version_normalized": "2.9.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-gettext/Languages.git",
-                "reference": "4ad818b6341e177b7c508ec4c37e18932a7b788a"
+                "reference": "ed56dd2c7f4024cc953ed180d25f02f2640e3ffa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-gettext/Languages/zipball/4ad818b6341e177b7c508ec4c37e18932a7b788a",
-                "reference": "4ad818b6341e177b7c508ec4c37e18932a7b788a",
+                "url": "https://api.github.com/repos/php-gettext/Languages/zipball/ed56dd2c7f4024cc953ed180d25f02f2640e3ffa",
+                "reference": "ed56dd2c7f4024cc953ed180d25f02f2640e3ffa",
                 "shasum": ""
             },
             "require": {
@@ -724,7 +724,7 @@
             "require-dev": {
                 "phpunit/phpunit": "^4.8 || ^5.7 || ^6.5 || ^7.5 || ^8.4"
             },
-            "time": "2021-07-14T15:03:58+00:00",
+            "time": "2021-11-11T17:30:39+00:00",
             "bin": [
                 "bin/export-plural-rules"
             ],
@@ -766,7 +766,7 @@
             ],
             "support": {
                 "issues": "https://github.com/php-gettext/Languages/issues",
-                "source": "https://github.com/php-gettext/Languages/tree/2.8.1"
+                "source": "https://github.com/php-gettext/Languages/tree/2.9.0"
             },
             "funding": [
                 {
@@ -1538,17 +1538,17 @@
         },
         {
             "name": "simplesamlphp/saml2",
-            "version": "v4.2.4",
-            "version_normalized": "4.2.4.0",
+            "version": "v4.2.5",
+            "version_normalized": "4.2.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/simplesamlphp/saml2.git",
-                "reference": "8e3ad89b97d2f2f922f67894675e3460feab2209"
+                "reference": "4ae96cb02a9ac9da3825d69af0500e594509bcaf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/simplesamlphp/saml2/zipball/8e3ad89b97d2f2f922f67894675e3460feab2209",
-                "reference": "8e3ad89b97d2f2f922f67894675e3460feab2209",
+                "url": "https://api.github.com/repos/simplesamlphp/saml2/zipball/4ae96cb02a9ac9da3825d69af0500e594509bcaf",
+                "reference": "4ae96cb02a9ac9da3825d69af0500e594509bcaf",
                 "shasum": ""
             },
             "require": {
@@ -1567,7 +1567,7 @@
                 "simplesamlphp/simplesamlphp-test-framework": "~0.1.0",
                 "squizlabs/php_codesniffer": "~3.5"
             },
-            "time": "2021-08-24T12:21:57+00:00",
+            "time": "2021-12-09T21:25:23+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -1593,7 +1593,7 @@
             "description": "SAML2 PHP library from SimpleSAMLphp",
             "support": {
                 "issues": "https://github.com/simplesamlphp/saml2/issues",
-                "source": "https://github.com/simplesamlphp/saml2/tree/v4.2.4"
+                "source": "https://github.com/simplesamlphp/saml2/tree/v4.2.5"
             },
             "install-path": "../simplesamlphp/saml2"
         },
@@ -2122,17 +2122,17 @@
         },
         {
             "name": "simplesamlphp/simplesamlphp-module-authyubikey",
-            "version": "v0.9.1",
-            "version_normalized": "0.9.1.0",
+            "version": "v0.9.2",
+            "version_normalized": "0.9.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/simplesamlphp/simplesamlphp-module-authyubikey.git",
-                "reference": "8c27bfeb4981d2e6fa40a831e945f40c5a4ad3d2"
+                "reference": "b287a13195a5910beb4c68f9b9fee3aac7f8a73d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/simplesamlphp/simplesamlphp-module-authyubikey/zipball/8c27bfeb4981d2e6fa40a831e945f40c5a4ad3d2",
-                "reference": "8c27bfeb4981d2e6fa40a831e945f40c5a4ad3d2",
+                "url": "https://api.github.com/repos/simplesamlphp/simplesamlphp-module-authyubikey/zipball/b287a13195a5910beb4c68f9b9fee3aac7f8a73d",
+                "reference": "b287a13195a5910beb4c68f9b9fee3aac7f8a73d",
                 "shasum": ""
             },
             "require": {
@@ -2144,10 +2144,10 @@
                 "phpunit/phpunit": "~5.7",
                 "simplesamlphp/simplesamlphp": "^1.17"
             },
-            "time": "2019-12-03T08:52:49+00:00",
+            "time": "2021-12-10T13:18:22+00:00",
             "type": "simplesamlphp-module",
             "extra": {
-                "ssp-mixedcase-module-name": "authYubikey"
+                "ssp-mixedcase-module-name": "authYubiKey"
             },
             "installation-source": "dist",
             "autoload": {
@@ -2157,7 +2157,7 @@
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "LGPL-3.0-or-later"
+                "LGPL-2.1-or-later"
             ],
             "authors": [
                 {
@@ -2174,7 +2174,7 @@
                 "issues": "https://github.com/tvdijen/simplesamlphp-module-authyubikey/issues",
                 "source": "https://github.com/tvdijen/simplesamlphp-module-authyubikey"
             },
-            "install-path": "../simplesamlphp/simplesamlphp/modules/authYubikey"
+            "install-path": "../simplesamlphp/simplesamlphp/modules/authYubiKey"
         },
         {
             "name": "simplesamlphp/simplesamlphp-module-cas",
@@ -2556,17 +2556,17 @@
         },
         {
             "name": "simplesamlphp/simplesamlphp-module-ldap",
-            "version": "v0.9.12",
-            "version_normalized": "0.9.12.0",
+            "version": "v0.9.15",
+            "version_normalized": "0.9.15.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/simplesamlphp/simplesamlphp-module-ldap.git",
-                "reference": "88f2f40eedc27abfc5a9e5b61ae86cd6e86da4e1"
+                "reference": "ecf46d9ea56d892ba6f7fbee625b99d88a3df6fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/simplesamlphp/simplesamlphp-module-ldap/zipball/88f2f40eedc27abfc5a9e5b61ae86cd6e86da4e1",
-                "reference": "88f2f40eedc27abfc5a9e5b61ae86cd6e86da4e1",
+                "url": "https://api.github.com/repos/simplesamlphp/simplesamlphp-module-ldap/zipball/ecf46d9ea56d892ba6f7fbee625b99d88a3df6fe",
+                "reference": "ecf46d9ea56d892ba6f7fbee625b99d88a3df6fe",
                 "shasum": ""
             },
             "require": {
@@ -2580,7 +2580,7 @@
             "suggest": {
                 "ext-ldap": "Needed when using LDAP authentication in SimpleSAMLphp"
             },
-            "time": "2021-09-07T15:21:37+00:00",
+            "time": "2021-11-30T16:17:11+00:00",
             "type": "simplesamlphp-module",
             "installation-source": "dist",
             "autoload": {

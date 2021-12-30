@@ -34,9 +34,9 @@ require_once(language_file());
 // Check if a new framework was submitted
 if (isset($_POST['add_framework']))
 {
-  $name         = $_POST['new_framework'];
-  $descripiton  = $_POST['new_framework_description'];
-  $parent       = $_POST['parent'];
+  $name         = get_param("POST", "framework_name", "");
+  $descripiton  = get_param("POST", "framework_description", "");
+  $parent       = get_param("POST", "parent", "");
 
   // Check if the framework name is null
   if (isset($name) && $name == "")
@@ -67,11 +67,10 @@ if (isset($_POST['add_framework']))
 
 // Check if a framework was updated
 if (isset($_POST['update_framework'])) {
-
-    $framework_id = (int)$_POST['framework_id'];
-    $parent       = (int)$_POST['parent'];
-    $name         = $_POST['framework_name'];
-    $descripiton  = $_POST['framework_description'];
+    $framework_id = get_param("POST", "framework_id", "");
+    $name         = get_param("POST", "framework_name", "");
+    $descripiton  = get_param("POST", "framework_description", "");
+    $parent       = get_param("POST", "parent", "");
 
     // Check if user has a permission to modify framework
     if(has_permission('modify_frameworks')){
@@ -278,6 +277,11 @@ if (isset($_POST['delete_controls']))
     $counter = 1;
 
   ?>
+  <style>
+    .control-content [class*=span]{line-height: 33px;}
+    .control-content .top, .control-content .bottom{margin-left: 22px;}
+    .control-content .top .span8, .control-content .bottom .span8{margin-left: 13px;}
+  </style>
     <script>
         // Set current mouse position
         var mouseX, mouseY;
@@ -305,6 +309,7 @@ if (isset($_POST['delete_controls']))
             })
             
             $("body").on("click", ".framework-block--edit", function(){
+                $("#framework--update input").val();
                 var framework_id = $(this).data("id");
                 $.ajax({
                     url: BASE_URL + '/api/governance/framework?framework_id=' + framework_id,
@@ -321,6 +326,14 @@ if (isset($_POST['delete_controls']))
                         $("#framework--update [name=framework_id]").val(framework_id);
                         $("#framework--update [name=framework_name]").val(data.framework.name);
                         $("#framework--update [name=framework_description]").val(data.framework.description);
+                        if(data.framework.custom_values){
+                          var custom_values = data.framework.custom_values;
+                          for (var i=0; i<custom_values.length; i++) {
+                            var field_id = custom_values[i].field_id;
+                            var field_value = custom_values[i].value;
+                            $("#framework--update [name='custom_field["+field_id+"]']").val(field_value);
+                          }
+                        }
                         $("#framework--update").modal();
                     }
                 });
@@ -343,7 +356,11 @@ if (isset($_POST['delete_controls']))
                 buttonWidth: '100%',
                 includeSelectAllOption: true,
                 onDropdownHide: function(){
-                    controlDatatable.draw();
+                    if(this.$select.attr('id') == 'filter_by_control_framework'){
+                        rebuild_filters();
+                    } else {
+                        controlDatatable.draw();
+                    }
                 }
             });
         });
@@ -592,14 +609,7 @@ if (isset($_POST['delete_controls']))
 
             <div class="modal-body">
                 <div class="form-group">
-                    <label for=""><?php echo $escaper->escapeHtml($lang['NewFrameworkName']); ?></label>
-                    <input type="text" required name="new_framework" id="new_framework" value="" class="form-control" autocomplete="off" maxlength="100">
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ParentFramework']); ?></label>
-                    <div class="parent_frameworks_container">
-                    </div>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['NewFrameworkDescription']); ?></label>
-                    <textarea name="new_framework_description" id="new_framework_description" value="" class="form-control" rows="6" style="width:100%;"></textarea>
+                    <?php display_add_framework();?>
                 </div>
             </div>
 
@@ -623,14 +633,7 @@ if (isset($_POST['delete_controls']))
             <div class="modal-body">
                 <input type="hidden" class="framework_id" name="framework_id" value=""> 
                 <div class="form-group">
-                    <label for=""><?php echo $escaper->escapeHtml($lang['FrameworkName']); ?></label>
-                    <input type="text" required name="framework_name" value="" class="form-control" autocomplete="off" maxlength="100">
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ParentFramework']); ?></label>
-                    <div class="parent_frameworks_container">
-                    </div>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['FrameworkDescription']); ?></label>
-                    <textarea name="framework_description" value="" class="form-control" rows="6" style="width:100%;"></textarea>
+                    <?php display_add_framework();?>
                 </div>
             </div>
 
@@ -672,70 +675,7 @@ if (isset($_POST['delete_controls']))
 
             <div class="modal-body">
                 <div class="form-group">
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlShortName']); ?></label>
-                    <input type="text" name="short_name" value="" class="form-control" maxlength="100" required>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlLongName']); ?></label>
-                    <input type="text" name="long_name" value="" class="form-control" maxlength="65500">
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlDescription']); ?></label>
-                    <textarea name="description" value="" class="form-control" rows="6" style="width:100%;" maxlength="65500"></textarea>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['SupplementalGuidance']); ?></label>
-                    <textarea name="supplemental_guidance" value="" class="form-control" rows="6" style="width:100%;"></textarea>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlOwner']); ?></label>
-                    <?php create_dropdown("enabled_users", NULL, "control_owner", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
-
-                    <div class='well'>
-                        <h5><span><?php echo $escaper->escapeHtml($lang['MappedControlFrameworks']);?>
-                        <a href="javascript:void(0);" class="control-block--add-mapping" title="<?php echo $escaper->escapeHtml($lang["Add"]);?>"><i class="fa fa-plus"></i></a></span></h5>
-                        <table width='100%' class='table table-bordered mapping_framework_table'>
-                            <thead>
-                                <tr>
-                                    <th width='50%'><?php echo $escaper->escapeHtml($lang['Framework']);?></th>
-                                    <th width='35%'><?php echo$escaper->escapeHtml($lang['Control']);?></th>
-                                    <th><?php echo $escaper->escapeHtml($lang['Actions']);?></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlClass']); ?></label>
-                    <?php create_dropdown("control_class", NULL, "control_class", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlPhase']); ?></label>
-                    <?php create_dropdown("control_phase", NULL, "control_phase", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlNumber']); ?></label>
-                    <input type="text" name="control_number" value="" class="form-control" maxlength="100">
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['CurrentControlMaturity']); ?></label>
-                    <?php create_dropdown("control_maturity", get_setting("default_current_maturity"), "control_current_maturity", false, false, false); ?>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['DesiredControlMaturity']); ?></label>
-                    <?php create_dropdown("control_maturity", get_setting("default_desired_maturity"), "control_desired_maturity", false, false, false); ?>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlPriority']); ?></label>
-                    <?php create_dropdown("control_priority", NULL, "control_priority", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlFamily']); ?></label>
-                    <?php create_dropdown("family", NULL, "family", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlType']); ?></label>
-
-                    <?php create_multiple_dropdown("control_type", array(1)); ?>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlStatus']); ?></label>
-                    <select name="control_status" class="form-field form-control">
-                        <option value="1"><?php echo $escaper->escapeHtml($lang['Pass']);?></option>
-                        <option value="0"><?php echo $escaper->escapeHtml($lang['Fail']);?></option>
-                    </select>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['MitigationPercent']); ?></label>
-                    <input type="number" min="0" max="100" name="mitigation_percent" value="" class="form-control">
+                    <?php display_add_control();?>
                 </div>
             </div>
 
@@ -759,70 +699,7 @@ if (isset($_POST['delete_controls']))
             <div class="modal-body">
                 <input type="hidden" class="control_id" name="control_id" value=""> 
                 <div class="form-group">
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlShortName']); ?></label>
-                    <input type="text" name="short_name" value="" class="form-control" maxlength="100" required>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlLongName']); ?></label>
-                    <input type="text" name="long_name" value="" class="form-control">
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlDescription']); ?></label>
-                    <textarea name="description" value="" class="form-control" rows="6" style="width:100%;"></textarea>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['SupplementalGuidance']); ?></label>
-                    <textarea name="supplemental_guidance" value="" class="form-control" rows="6" style="width:100%;"></textarea>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlOwner']); ?></label>
-                    <?php create_dropdown("enabled_users", NULL, "control_owner", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
-
-                    <div class='well'>
-                        <h5><span><?php echo $escaper->escapeHtml($lang['MappedControlFrameworks']);?>
-                        <a href="javascript:void(0);" class="control-block--add-mapping" title="<?php echo $escaper->escapeHtml($lang["Add"]);?>"><i class="fa fa-plus"></i></a></span></h5>
-                        <table width='100%' class='table table-bordered mapping_framework_table'>
-                            <thead>
-                                <tr>
-                                    <th width='50%'><?php echo $escaper->escapeHtml($lang['Framework']);?></th>
-                                    <th width='35%'><?php echo$escaper->escapeHtml($lang['Control']);?></th>
-                                    <th><?php echo $escaper->escapeHtml($lang['Actions']);?></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlClass']); ?></label>
-                    <?php create_dropdown("control_class", NULL, "control_class", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlPhase']); ?></label>
-                    <?php create_dropdown("control_phase", NULL, "control_phase", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlNumber']); ?></label>
-                    <input type="text" name="control_number" value="" class="form-control" maxlength="100">
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['CurrentControlMaturity']); ?></label>
-                    <?php create_dropdown("control_maturity", NULL, "control_current_maturity", false, false, false); ?>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['DesiredControlMaturity']); ?></label>
-                    <?php create_dropdown("control_maturity", NULL, "control_desired_maturity", false, false, false); ?>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlPriority']); ?></label>
-                    <?php create_dropdown("control_priority", NULL, "control_priority", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlFamily']); ?></label>
-                    <?php create_dropdown("family", NULL, "family", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlType']); ?></label>
-
-                    <?php create_multiple_dropdown("control_type");?>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlStatus']); ?></label>
-                    <select name="control_status" class="form-field form-control">
-                        <option value="1"><?php echo $escaper->escapeHtml($lang['Pass']);?></option>
-                        <option value="0"><?php echo $escaper->escapeHtml($lang['Fail']);?></option>
-                    </select>
-
-                    <label for=""><?php echo $escaper->escapeHtml($lang['MitigationPercent']); ?></label>
-                    <input type="number" min="0" max="100" name="mitigation_percent" value="" class="form-control">
+                    <?php display_add_control();?>
                 </div>
             </div>
 

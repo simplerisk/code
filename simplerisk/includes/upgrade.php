@@ -156,6 +156,7 @@ $releases = array(
 	"20211010-001",
 	"20211027-001",
 	"20211115-001",
+	"20211230-001",
 );
 
 /*************************
@@ -6096,6 +6097,139 @@ function upgrade_from_20211027001($db)
     $version_upgrading_to = '20211115-001';
 
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20211115-001 *
+ ***************************************/
+function upgrade_from_20211115001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20211115-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20211230-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    if (!index_exists_on_table('risk_id', 'risk_scoring_history')) {
+        echo "Adding index 'risk_id' to table 'risk_scoring_history'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risk_scoring_history` ADD INDEX(`risk_id`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('risk_id', 'residual_risk_scoring_history')) {
+        echo "Adding index 'risk_id' to table 'residual_risk_scoring_history'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `residual_risk_scoring_history` ADD INDEX(`risk_id`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('contributing_risks_id', 'contributing_risks_impact')) {
+        echo "Adding index 'contributing_risks_id' to table 'contributing_risks_impact'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `contributing_risks_impact` ADD INDEX(`contributing_risks_id`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('risk_scoring_id', 'risk_scoring_contributing_impacts')) {
+        echo "Adding index 'risk_scoring_id' to table 'risk_scoring_contributing_impacts'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risk_scoring_contributing_impacts` ADD INDEX(`risk_scoring_id`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('contributing_risk_id', 'risk_scoring_contributing_impacts')) {
+        echo "Adding index 'contributing_risk_id' to table 'risk_scoring_contributing_impacts'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risk_scoring_contributing_impacts` ADD INDEX(`contributing_risk_id`);");
+        $stmt->execute();
+    }
+
+    if (!field_exists_in_table('order', 'risk_grouping')) {
+
+        // Add the column to mark the default group for risk catalog items that doesn't have an actual group assigned
+        echo "Adding column to mark the default 'risk_grouping' for 'risk_catalog' items that doesn't have an actual group assigned.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risk_grouping` ADD `default` TINYINT(1) DEFAULT 0 NOT NULL AFTER `name`;");
+        $stmt->execute();
+
+        // Get the risk groups for setting the order
+        $stmt = $db->prepare("
+            SELECT `value` FROM `risk_grouping` ORDER BY `name`;
+        ");
+        $stmt->execute();
+        $data = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        // Add the field for storing the risk group order
+        echo "Adding column for storing the order of 'risk_grouping' items.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risk_grouping` ADD `order` INT(11) NOT NULL AFTER `default`;");
+        $stmt->execute();
+
+        // Add the default group
+        echo "Adding the default 'risk_grouping'.<br />\n";
+        $stmt = $db->prepare("INSERT INTO `risk_grouping`(`name`, `default`, `order`) VALUE ('Unassigned Items', 1, 0);");
+        $stmt->execute();
+        $default_group_id = $db->lastInsertId();
+
+        // Set the order of the groups but let the default group be the first one
+        echo "Setting the order of the 'risk_grouping' entries.<br />\n";
+        foreach ($data as $order => $value) {
+            $stmt = $db->prepare("UPDATE `risk_grouping` SET `order` = :order + 1 WHERE `value` = :value;");
+            $stmt->bindParam(":order", $order, PDO::PARAM_INT);
+            $stmt->bindParam(":value", $value, PDO::PARAM_INT);
+            $stmt->execute();
+        }
+
+        // Find risk catalog items that have no group assigned
+        $stmt = $db->prepare("
+            SELECT
+            	`id`
+            FROM `risk_catalog` rc
+            	LEFT JOIN `risk_grouping` rg ON `rg`.`value` = `rc`.`grouping`
+            WHERE
+            	`rg`.`value` IS NULL;
+        ");
+        $stmt->execute();
+        $data = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if ($data) {
+            echo "Assigning groupless 'risk_catalog' entries to the default 'risk_grouping'.<br />\n";
+            // Assign risk catalog items that have no group assigned to this new default group
+            foreach ($data as $id) {
+                $stmt = $db->prepare("UPDATE `risk_catalog` SET `grouping` = :group WHERE `id` = :id;");
+                $stmt->bindParam(":group", $default_group_id, PDO::PARAM_INT);
+                $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+                $stmt->execute();
+            }
+        }
+    }
+
+    if (!field_exists_in_table('order', 'threat_grouping')) {
+        // Get the threat groups for setting the order
+        $stmt = $db->prepare("
+            SELECT `value` FROM `threat_grouping` ORDER BY `name`;
+        ");
+        $stmt->execute();
+        $data = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        // Add the field for storing the threat group order
+        echo "Adding column for storing the order of 'threat_grouping' items.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `threat_grouping` ADD `order` INT(11) NOT NULL AFTER `name`;");
+        $stmt->execute();
+
+        // Set the order of the groups
+        echo "Setting the order of the 'threat_grouping' entries.<br />\n";
+        foreach ($data as $order => $value) {
+            $stmt = $db->prepare("UPDATE `threat_grouping` SET `order` = :order WHERE `value` = :value;");
+            $stmt->bindParam(":order", $order, PDO::PARAM_INT);
+            $stmt->bindParam(":value", $value, PDO::PARAM_INT);
+            $stmt->execute();
+        }
+    }
 
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic

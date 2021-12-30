@@ -309,6 +309,7 @@ class CldrData
             );
             $knownMissingLanguages = array(
                 'guw' => 'Gun',
+                'hnj' => 'Mong Njua',
                 'nah' => 'Nahuatl',
                 'smi' => 'Sami',
             );

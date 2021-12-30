@@ -546,6 +546,12 @@ a listing of all configuration options and their details.
          *
          */
         'additional_filters' => [],
+
+
+        /**
+         * A flag whether to escape the additional filter values or not. Defaults to TRUE
+         */
+        'escape' => true
     ]
 
 

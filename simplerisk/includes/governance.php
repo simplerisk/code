@@ -147,6 +147,15 @@ function get_framework($framework_id){
         
         // Try to decrypt the framework description
         $framework['description'] = try_decrypt($framework['description']);
+        // If customization extra is enabled
+        if(customization_extra())
+        {
+            // Include the extra
+            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+            $custom_values = get_custom_value_by_row_id($framework['value'], "framework");
+            $framework['custom_values'] = $custom_values;
+        }
+
         return $framework;
     }
     else{
@@ -898,6 +907,20 @@ function add_framework($name, $description, $parent=0, $status=1){
     
     $framework_id = $db->lastInsertId();
 
+    // If customization extra is enabled
+    if(customization_extra())
+    {
+        // Include the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+        // If there is error in saving custom asset values, return false
+        if(save_custom_field_values($framework_id, "framework") != true)
+        {
+            delete_frameworks($framework_id);
+            return false;
+        }
+    }
+
     $message = "A new framework named \"{$name}\" was created by username \"" . $_SESSION['user'] . "\".";
     write_log((int)$framework_id + 1000, $_SESSION['uid'], $message, "framework");
     
@@ -990,6 +1013,15 @@ function update_framework($framework_id, $name, $description=false, $parent=fals
     $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
     $stmt->execute();
     
+    // If customization extra is enabled
+    if(customization_extra())
+    {
+        // Include the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+        save_custom_field_values($framework_id, "framework");
+    }
+
     $message = "A framework named \"{$name}\" was updated by username \"" . $_SESSION['user'] . "\".";
     write_log((int)$framework_id + 1000, $_SESSION['uid'], $message, "framework");
     
@@ -1074,6 +1106,13 @@ function delete_frameworks($framework_id){
 
         // Close the database connection
         db_close($db);
+
+        // If customization extra is enabled, delete custom_framework_data related with framework ID
+        if(customization_extra())
+        {
+            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+            delete_custom_data_by_row_id($framework_id, "framework");
+        }
 
         $message = "A framework named \"{$name}\" was deleted by username \"" . $_SESSION['user'] . "\".";
         write_log((int)$framework_id + 1000, $_SESSION['uid'], $message, "framework");
@@ -1172,6 +1211,20 @@ function add_framework_control($control){
     // Close the database connection
     db_close($db);
 
+    // If customization extra is enabled
+    if(customization_extra())
+    {
+        // Include the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+        // If there is error in saving custom asset values, return false
+        if(save_custom_field_values($control_id, "control") != true)
+        {
+            delete_framework_control($control_id);
+            return false;
+        }
+    }
+
     $user = isset($_SESSION['user'])?$_SESSION['user']:"";
     $uid = isset($_SESSION['uid'])?$_SESSION['uid']:"";
     $message = "A new control named \"{$short_name}\" was created by username \"" . $user . "\".";
@@ -1240,6 +1293,15 @@ function update_framework_control($control_id, $control){
     if(isset($control['map_frameworks'])&&count($control['map_frameworks'])>0) save_control_to_frameworks($control_id, $control['map_frameworks']);
     if(count($framework_ids)>0) save_control_to_framework_by_ids($control_id, $framework_ids);
     
+    // If customization extra is enabled
+    if(customization_extra())
+    {
+        // Include the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+        save_custom_field_values($control_id, "control");
+    }
+
     $user = isset($_SESSION['user'])?$_SESSION['user']:"";
     $uid = isset($_SESSION['uid'])?$_SESSION['uid']:"";
     $message = "A control named \"{$short_name}\" was updated by username \"" . $user . "\".";
@@ -1311,6 +1373,13 @@ function delete_framework_control($control_id){
     // Close the database connection
     db_close($db);
 
+    // If customization extra is enabled, delete custom_control_data related with framework ID
+    if(customization_extra())
+    {
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        delete_custom_data_by_row_id($control_id, "control");
+    }
+
     $user = isset($_SESSION['user'])?$_SESSION['user']:"";
     $uid = isset($_SESSION['uid'])?$_SESSION['uid']:"";
     $message = "A control named \"{$control['short_name']}\" was deleted by username \"" . $user . "\".";
@@ -1345,6 +1414,14 @@ function get_framework_control($id){
     
     $control = $stmt->fetch(PDO::FETCH_ASSOC);
     
+    // If customization extra is enabled
+    if(customization_extra())
+    {
+        // Include the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        $custom_values = get_custom_value_by_row_id($id, "control");
+        $control['custom_values'] = $custom_values;
+    }
     // Close the database connection
     db_close($db);
     
@@ -3268,6 +3345,937 @@ function get_control_gaps($framework_id = null, $maturity = "all_maturity", $ord
     db_close($db);
 
     return $control_gaps;
+}
+/****************************************
+ * FUNCTION: DISPLAY ADD FRAMEWORK FORM *
+ ****************************************/
+function display_add_framework()
+{
+    // If the customization extra is enabled, shows fields by asset customization
+    if (customization_extra())
+    {
+
+        // Load the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+        $active_fields = get_active_fields("framework");
+        $inactive_fields = get_inactive_fields("framework");
+
+        display_detail_framework_fields_add($active_fields);
+        display_detail_framework_fields_add($inactive_fields);
+    }
+    // If the customization extra is disabled, shows fields by default fields
+    else
+    {
+        display_framework_name_edit();
+
+        display_framework_parent_edit();
+
+        display_framework_description_edit();
+   }
+}
+/****************************************************
+* FUNCTION: DISPLAY DETAIL FRAMEWORK FIELDS FOR ADD *
+*****************************************************/
+function display_detail_framework_fields_add($fields)
+{
+    foreach($fields as $field)
+    {
+        if($field['is_basic'] == 1)
+        {
+            if($field['active'] == 0)
+            {
+                $display = false;
+            }
+            else
+            {
+                $display = true;
+            }
+            
+            switch($field['name']){
+                case 'FrameworkName':
+                    display_framework_name_edit($display);
+                break;
+                case 'ParentFramework':
+                    display_framework_parent_edit($display);
+                break;
+                case 'FrameworkDescription':
+                    display_framework_description_edit($display);
+                break;
+            }
+
+        }
+        else
+        {
+            if($field['active'] == 0)
+            {
+                continue;
+            }
+            
+            // If customization extra is enabled
+            if(customization_extra())
+            {
+                // Include the extra
+                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+                display_custom_field_edit($field, [], "label");
+            }
+        }
+    }
+}
+/***********************************
+* FUNCTION: DISPLAY FRAMEWORK NAME *
+************************************/
+function display_framework_name_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo "<div class=\"row-fluid\"{$displayString}>
+            <label for=\"\">".$escaper->escapeHtml($lang['FrameworkName'])."</label>
+            <input type=\"text\" required name=\"framework_name\" value=\"\" class=\"form-control\" autocomplete=\"off\" maxlength=\"100\">
+        </div>";
+}
+/*************************************
+* FUNCTION: DISPLAY FRAMEWORK PARENT *
+**************************************/
+function display_framework_parent_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo "<div class=\"row-fluid\"{$displayString}>
+                <label for=\"\">".$escaper->escapeHtml($lang['ParentFramework'])."</label>
+                <div class=\"parent_frameworks_container\">
+                </div>
+        </div>";
+}
+/*************************************
+* FUNCTION: DISPLAY FRAMEWORK PARENT *
+**************************************/
+function display_framework_description_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo "<div class=\"row-fluid\"{$displayString}>
+            <label for=\"\">".$escaper->escapeHtml($lang['FrameworkDescription'])."</label>
+            <textarea name=\"framework_description\" value=\"\" class=\"form-control\" rows=\"6\" style=\"width:100%;\"></textarea>
+        </div>";
+}
+/**************************************
+ * FUNCTION: DISPLAY ADD CONTROL FORM *
+ **************************************/
+function display_add_control()
+{
+    // If the customization extra is enabled, shows fields by asset customization
+    if (customization_extra())
+    {
+
+        // Load the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+        $active_fields = get_active_fields("control", "", 1);
+        $inactive_fields = get_inactive_fields("control", "", 1);
+
+        display_detail_control_fields_add($active_fields);
+        display_detail_control_fields_add($inactive_fields);
+    }
+    // If the customization extra is disabled, shows fields by default fields
+    else
+    {
+        display_control_name_edit();
+
+        display_control_longname_edit();
+
+        display_control_description_edit();
+
+        display_supplemental_guidance_edit();
+
+        display_control_owner_edit();
+
+        display_mapping_framework_edit();
+
+        display_control_class_edit();
+
+        display_control_phase_edit();
+
+        display_control_number_edit2();
+
+        display_current_maturity_edit();
+
+        display_desired_maturity_edit();
+
+        display_control_priority_edit();
+
+        display_control_family_edit();
+
+        display_control_type_edit();
+
+        display_control_status_edit();
+
+        display_control_mitigation_percent_edit();
+    }
+}
+/**************************************************
+* FUNCTION: DISPLAY DETAIL CONTROL FIELDS FOR ADD *
+***************************************************/
+function display_detail_control_fields_add($fields)
+{
+    foreach($fields as $field)
+    {
+        if($field['is_basic'] == 1)
+        {
+            if($field['active'] == 0)
+            {
+                $display = false;
+            }
+            else
+            {
+                $display = true;
+            }
+            
+            switch($field['name']){
+                case 'ControlShortName':
+                    display_control_name_edit($display);
+                break;
+                case 'ControlLongName':
+                    display_control_longname_edit($display);
+                break;
+                case 'ControlDescription':
+                    display_control_description_edit($display);
+                break;
+                case 'SupplementalGuidance':
+                    display_supplemental_guidance_edit($display);
+                break;
+                case 'ControlOwner':
+                    display_control_owner_edit($display);
+                break;
+                case 'MappedControlFrameworks':
+                    display_mapping_framework_edit($display);
+                break;
+                case 'ControlClass':
+                    display_control_class_edit($display);
+                break;
+                case 'ControlPhase':
+                    display_control_phase_edit($display);
+                break;
+                case 'ControlNumber':
+                    display_control_number_edit2($display);
+                break;
+                case 'CurrentControlMaturity':
+                    display_current_maturity_edit($display);
+                break;
+                case 'DesiredControlMaturity':
+                    display_desired_maturity_edit($display);
+                break;
+                case 'ControlPriority':
+                    display_control_priority_edit($display);
+                break;
+                case 'ControlFamily':
+                    display_control_family_edit($display);
+                break;
+                case 'ControlType':
+                    display_control_type_edit($display);
+                break;
+                case 'ControlStatus':
+                    display_control_status_edit($display);
+                break;
+                case 'MitigationPercent':
+                    display_control_mitigation_percent_edit($display);
+                break;
+            }
+
+        }
+        else
+        {
+            if($field['active'] == 0)
+            {
+                continue;
+            }
+            
+            // If customization extra is enabled
+            if(customization_extra())
+            {
+                // Include the extra
+                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+                display_custom_field_edit($field, [], "label");
+            }
+        }
+    }
+}
+/*********************************
+* FUNCTION: DISPLAY CONTROL NAME *
+**********************************/
+function display_control_name_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo '<div class="row-fluid" '.$displayString.'>
+            <label for="">'.$escaper->escapeHtml($lang['ControlShortName']).'</label>
+            <input type="text" name="short_name" value="" class="form-control" maxlength="100" required>
+        </div>';
+}
+/**************************************
+* FUNCTION: DISPLAY CONTROL LONG NAME *
+***************************************/
+function display_control_longname_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo '<div class="row-fluid" '.$displayString.'>
+            <label for="">'.$escaper->escapeHtml($lang['ControlLongName']).'</label>
+            <input type="text" name="long_name" value="" class="form-control" maxlength="65500">
+        </div>';
+}
+/****************************************
+* FUNCTION: DISPLAY CONTROL DESCRIPTION *
+*****************************************/
+function display_control_description_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo '<div class="row-fluid" '.$displayString.'>
+            <label for="">'.$escaper->escapeHtml($lang['ControlDescription']).'</label>
+            <textarea name="description" value="" class="form-control" rows="6" style="width:100%;" maxlength="65500"></textarea>
+        </div>';
+}
+/******************************************
+* FUNCTION: DISPLAY SUPPLEMENTAL GUIDANCE *
+*******************************************/
+function display_supplemental_guidance_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo '<div class="row-fluid" '.$displayString.'>
+            <label for="">'.$escaper->escapeHtml($lang['SupplementalGuidance']).'</label>
+            <textarea name="supplemental_guidance" value="" class="form-control" rows="6" style="width:100%;"></textarea>
+        </div>';
+}
+/**********************************
+* FUNCTION: DISPLAY CONTROL OWNER *
+***********************************/
+function display_control_owner_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo '<div class="row-fluid" '.$displayString.'>
+            <label for="">'.$escaper->escapeHtml($lang['ControlOwner']).'</label>
+            '.create_dropdown("enabled_users", NULL, "control_owner", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])).'
+        </div>';
+}
+/**********************************************
+* FUNCTION: DISPLAY CONTROL MAPPING FRAMEWORK *
+***********************************************/
+function display_mapping_framework_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo '<div class="row-fluid" '.$displayString.'>
+            <div class="well">
+                <h5><span>'.$escaper->escapeHtml($lang['MappedControlFrameworks']).'
+                <a href="javascript:void(0);" class="control-block--add-mapping" title="'.$escaper->escapeHtml($lang["Add"]).'"><i class="fa fa-plus"></i></a></span></h5>
+                <table width="100%" class="table table-bordered mapping_framework_table">
+                    <thead>
+                        <tr>
+                            <th width="50%">'.$escaper->escapeHtml($lang['Framework']).'</th>
+                            <th width="35%">'.$escaper->escapeHtml($lang['Control']).'</th>
+                            <th>'.$escaper->escapeHtml($lang['Actions']).'</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>';
+}
+/**********************************
+* FUNCTION: DISPLAY CONTROL CLASS *
+***********************************/
+function display_control_class_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo '<div class="row-fluid" '.$displayString.'>
+            <label for="">'.$escaper->escapeHtml($lang['ControlClass']).'</label>
+             '.create_dropdown("control_class", NULL, "control_class", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])).'
+        </div>';
+}
+/**********************************
+* FUNCTION: DISPLAY CONTROL PHASE *
+***********************************/
+function display_control_phase_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo '<div class="row-fluid" '.$displayString.'>
+            <label for="">'.$escaper->escapeHtml($lang['ControlPhase']).'</label>
+            '.create_dropdown("control_phase", NULL, "control_phase", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])).'
+        </div>';
+}
+/***********************************
+* FUNCTION: DISPLAY CONTROL NUMBER *
+************************************/
+function display_control_number_edit2($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo '<div class="row-fluid" '.$displayString.'>
+            <label for="">'.$escaper->escapeHtml($lang['ControlNumber']).'</label>
+            <input type="text" name="control_number" value="" class="form-control" maxlength="100">
+        </div>';
+}
+/*********************************************
+* FUNCTION: DISPLAY CURRENT CONTROL MATURITY *
+**********************************************/
+function display_current_maturity_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo '<div class="row-fluid" '.$displayString.'>
+            <label for="">'.$escaper->escapeHtml($lang['CurrentControlMaturity']).'</label>
+            '.create_dropdown("control_maturity", get_setting("default_current_maturity"), "control_current_maturity", true, false, true).'
+        </div>';
+}
+/*********************************************
+* FUNCTION: DISPLAY DESIRED CONTROL MATURITY *
+**********************************************/
+function display_desired_maturity_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo '<div class="row-fluid" '.$displayString.'>
+            <label for="">'.$escaper->escapeHtml($lang['DesiredControlMaturity']).'</label>
+            '.create_dropdown("control_maturity", get_setting("default_current_maturity"), "control_desired_maturity", true, false, true).'
+        </div>';
+}
+/*************************************
+* FUNCTION: DISPLAY CONTROL PRIORITY *
+**************************************/
+function display_control_priority_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo '<div class="row-fluid" '.$displayString.'>
+            <label for="">'.$escaper->escapeHtml($lang['ControlPriority']).'</label>
+            '.create_dropdown("control_priority", NULL, "control_priority", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])).'
+        </div>';
+}
+/***********************************
+* FUNCTION: DISPLAY CONTROL FAMILY *
+************************************/
+function display_control_family_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo '<div class="row-fluid" '.$displayString.'>
+            <label for="">'.$escaper->escapeHtml($lang['ControlFamily']).'</label>
+            '.create_dropdown("family", NULL, "family", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])).'
+        </div>';
+}
+/*********************************
+* FUNCTION: DISPLAY CONTROL TYPE *
+**********************************/
+function display_control_type_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo '<div class="row-fluid" '.$displayString.'>
+            <label for="">'.$escaper->escapeHtml($lang['ControlType']).'</label>';
+            create_multiple_dropdown("control_type", array(1));
+    echo '</div>';
+}
+/***********************************
+* FUNCTION: DISPLAY CONTROL STATUS *
+************************************/
+function display_control_status_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo '<div class="row-fluid" '.$displayString.'>
+            <label for="">'.$escaper->escapeHtml($lang['ControlStatus']).'</label>
+            <select name="control_status" class="form-field form-control">
+                <option value="1">'.$escaper->escapeHtml($lang['Pass']).'</option>
+                <option value="0">'.$escaper->escapeHtml($lang['Fail']).'</option>
+            </select>
+        </div>';
+}
+/***********************************************
+* FUNCTION: DISPLAY CONTROL MITIGATION PERCENT *
+************************************************/
+function display_control_mitigation_percent_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo '<div class="row-fluid" '.$displayString.'>
+            <label for="">'.$escaper->escapeHtml($lang['MitigationPercent']).'</label>
+            <input type="number" min="0" max="100" name="mitigation_percent" value="" class="form-control">
+        </div>';
+}
+/***************************************************
+* FUNCTION: DISPLAY DETAIL CONTROL FIELDS FOR VIEW *
+****************************************************/
+function display_detail_control_fields_view($panel_name, $fields, $control)
+{
+    global $lang, $escaper;
+    $html = "";
+    foreach($fields as $field)
+    {
+        // Check if this field is main field and details in left panel
+        if($field['panel_name'] == $panel_name && $field['tab_index'] == 2)
+        {
+            if($field['is_basic'] == 1)
+            {
+                if($field['active'] == 0)
+                {
+                    continue;
+                }
+                $field['name'] = str_replace("_view", "", $field['name'], $field['name']);
+                switch($field['name']){
+                    case 'ControlShortName':
+                        $html .= display_control_name_view($control['short_name'], $panel_name);
+                    break;
+                    case 'ControlLongName':
+                        $html .= display_control_longname_view($control['long_name'], $panel_name);
+                    break;
+                    case 'ControlDescription':
+                        $html .= display_control_description_view($control['description'], $panel_name);
+                    break;
+                    case 'SupplementalGuidance':
+                        $html .= display_supplemental_guidance_view($control['supplemental_guidance'], $panel_name);
+                    break;
+                    case 'ControlOwner':
+                        $html .= display_control_owner_view($control['control_owner_name'], $panel_name);
+                    break;
+                    case 'MappedControlFrameworks':
+                        $html .= display_mapping_framework_view($control['id'], $panel_name);
+                    break;
+                    case 'ControlClass':
+                        $html .= display_control_class_view($control['control_class_name'], $panel_name);
+                    break;
+                    case 'ControlPhase':
+                        $html .= display_control_phase_view($control['control_phase_name'], $panel_name);
+                    break;
+                    case 'ControlNumber':
+                        $html .= display_control_number_view2($control['control_number'], $panel_name);
+                    break;
+                    case 'CurrentControlMaturity':
+                        $html .= display_current_maturity_view($control['control_maturity_name'], $panel_name);
+                    break;
+                    case 'DesiredControlMaturity':
+                        $html .= display_desired_maturity_view($control['desired_maturity_name'], $panel_name);
+                    break;
+                    case 'ControlPriority':
+                        $html .= display_control_priority_view($control['control_priority_name'], $panel_name);
+                    break;
+                    case 'ControlFamily':
+                        $html .= display_control_family_view($control['family_short_name'], $panel_name);
+                    break;
+                    case 'ControlType':
+                        $html .= display_control_type_view($control['control_type_ids'], $panel_name);
+                    break;
+                    case 'ControlStatus':
+                        $html .= display_control_status_view($control['control_status'], $panel_name);
+                    break;
+                    case 'MitigationPercent':
+                        $html .= display_control_mitigation_percent_view($control['mitigation_percent'], $panel_name);
+                    break;
+                }
+
+            }
+            else
+            {
+                if($field['active'] == 0)
+                {
+                    continue;
+                }
+                
+                // If customization extra is enabled
+                if(customization_extra())
+                {
+                    // Include the extra
+                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+                    $custom_value = get_plan_custom_field_name_by_row_id($field, $control["id"], "control");
+                    if($panel_name=="top" || $panel_name=="bottom"){
+                        $span1 = "span2";
+                        $span2 = "span8";
+                    } else {
+                        $span1 = "span5";
+                        $span2 = "span7";
+                    }
+                    $html .= "
+                        <div class='row-fluid {$panel_name}'>
+                            <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($field['name'])."</strong>: </div>
+                            <div class='{$span2}'>".$escaper->escapeHtml($custom_value)." </div>
+                        </div>";
+                }
+            }
+        }
+    }
+    return $html;
+}
+/**************************************
+* FUNCTION: DISPLAY CONTROL NAME VIEW *
+***************************************/
+function display_control_name_view($short_name, $panel_name="")
+{
+    global $lang, $escaper;
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
+    $html = "
+        <div class='row-fluid {$panel_name}'>
+            <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['ControlShortName'])."</strong>: </div>
+            <div class='{$span2}'>".$panel_name.$escaper->escapeHtml($short_name)." </div>
+        </div>";
+    return $html;
+
+}
+/**************************************
+* FUNCTION: DISPLAY CONTROL LONG NAME *
+***************************************/
+function display_control_longname_view($long_name, $panel_name="")
+{
+    global $lang, $escaper;
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
+    $html = "
+        <div class='row-fluid {$panel_name}'>
+            <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['ControlLongName'])."</strong>: </div>
+            <div class='{$span2}'>".$escaper->escapeHtml($long_name)." </div>
+        </div>";
+    return $html;
+}
+/****************************************
+* FUNCTION: DISPLAY CONTROL DESCRIPTION *
+*****************************************/
+function display_control_description_view($description, $panel_name="")
+{
+    global $lang, $escaper;
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
+    $html = "
+        <div class='row-fluid {$panel_name}'>
+            <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['Description'])."</strong>: </div>
+            <div class='{$span2}'>".$escaper->escapeHtml($description)." </div>
+        </div>";
+    return $html;
+}
+/******************************************
+* FUNCTION: DISPLAY SUPPLEMENTAL GUIDANCE *
+*******************************************/
+function display_supplemental_guidance_view($supplemental_guidance, $panel_name="")
+{
+    global $lang, $escaper;
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
+    $html = "
+        <div class='row-fluid {$panel_name}'>
+            <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['SupplementalGuidance'])."</strong>: </div>
+            <div class='{$span2}'>".$escaper->escapeHtml($supplemental_guidance)." </div>
+        </div>";
+    return $html;
+}
+/**********************************
+* FUNCTION: DISPLAY CONTROL OWNER *
+***********************************/
+function display_control_owner_view($control_owner_name, $panel_name="")
+{
+    global $lang, $escaper;
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
+    $html = "
+        <div class='row-fluid {$panel_name}'>
+            <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['ControlOwner'])."</strong>: </div>
+            <div class='{$span2}'>".$escaper->escapeHtml($control_owner_name)." </div>
+        </div>";
+    return $html;
+}
+/**********************************************
+* FUNCTION: DISPLAY CONTROL MAPPING FRAMEWORK *
+***********************************************/
+function display_mapping_framework_view($control_id, $panel_name="")
+{
+    global $lang, $escaper;
+
+    $mapped_frameworks = get_mapping_control_frameworks($control_id);
+    $html = "<div class='row-fluid'>\n";
+        $html .= "<div class='well'>";
+            $html .= "<h5><span>".$escaper->escapeHtml($lang['MappedControlFrameworks'])."</span></h5>";
+            $html .= "<table width='100%' class='table table-bordered'>\n";
+                $html .= "<tr>\n";
+                    $html .= "<th width='50%'>".$escaper->escapeHtml($lang['Framework'])."</th>\n";
+                    $html .= "<th width='35%'>".$escaper->escapeHtml($lang['Control'])."</th>\n";
+                $html .= "</tr>\n";
+                foreach ($mapped_frameworks as $framework){
+                    $html .= "<tr>\n";
+                        $html .= "<td>".$escaper->escapeHtml($framework['framework_name'])."</td>\n";
+                        $html .= "<td>".$escaper->escapeHtml($framework['reference_name'])."</td>\n";
+                    $html .= "</tr>\n";
+                }
+            $html .= "</table>\n";
+        $html .= "</div>\n";
+    $html .= "</div>\n";
+    return $html;
+}
+/**********************************
+* FUNCTION: DISPLAY CONTROL CLASS *
+***********************************/
+function display_control_class_view($control_class_name, $panel_name="")
+{
+    global $lang, $escaper;
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
+    $html = "
+        <div class='row-fluid {$panel_name}'>
+            <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['ControlClass'])."</strong>: </div>
+            <div class='{$span2}'>".$escaper->escapeHtml($control_class_name)." </div>
+        </div>";
+    return $html;
+}
+/**********************************
+* FUNCTION: DISPLAY CONTROL PHASE *
+***********************************/
+function display_control_phase_view($control_phase_name, $panel_name="")
+{
+    global $lang, $escaper;
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
+    $html = "
+        <div class='row-fluid {$panel_name}'>
+            <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['ControlPhase'])."</strong>: </div>
+            <div class='{$span2}'>".$escaper->escapeHtml($control_phase_name)." </div>
+        </div>";
+    return $html;
+}
+/***********************************
+* FUNCTION: DISPLAY CONTROL NUMBER *
+************************************/
+function display_control_number_view2($control_number, $panel_name="")
+{
+    global $lang, $escaper;
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
+    $html = "
+        <div class='row-fluid {$panel_name}'>
+            <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['ControlNumber'])."</strong>: </div>
+            <div class='{$span2}'>".$escaper->escapeHtml($control_number)." </div>
+        </div>";
+    return $html;
+}
+/*********************************************
+* FUNCTION: DISPLAY CURRENT CONTROL MATURITY *
+**********************************************/
+function display_current_maturity_view($control_maturity_name, $panel_name="")
+{
+    global $lang, $escaper;
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
+    $html = "
+        <div class='row-fluid {$panel_name}'>
+            <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['CurrentControlMaturity'])."</strong>: </div>
+            <div class='{$span2}'>".$escaper->escapeHtml($control_maturity_name)." </div>
+        </div>";
+    return $html;
+}
+/*********************************************
+* FUNCTION: DISPLAY DESIRED CONTROL MATURITY *
+**********************************************/
+function display_desired_maturity_view($desired_maturity_name, $panel_name="")
+{
+    global $lang, $escaper;
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
+    $html = "
+        <div class='row-fluid {$panel_name}'>
+            <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['DesiredControlMaturity'])."</strong>: </div>
+            <div class='{$span2}'>".$escaper->escapeHtml($desired_maturity_name)." </div>
+        </div>";
+    return $html;
+}
+/*************************************
+* FUNCTION: DISPLAY CONTROL PRIORITY *
+**************************************/
+function display_control_priority_view($control_priority_name, $panel_name="")
+{
+    global $lang, $escaper;
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
+    $html = "
+        <div class='row-fluid {$panel_name}'>
+            <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['ControlPriority'])."</strong>: </div>
+            <div class='{$span2}'>".$escaper->escapeHtml($control_priority_name)." </div>
+        </div>";
+    return $html;
+}
+/***********************************
+* FUNCTION: DISPLAY CONTROL FAMILY *
+************************************/
+function display_control_family_view($family_short_name, $panel_name="")
+{
+    global $lang, $escaper;
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
+    $html = "
+        <div class='row-fluid {$panel_name}'>
+            <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['ControlFamily'])."</strong>: </div>
+            <div class='{$span2}'>".$escaper->escapeHtml($family_short_name)." </div>
+        </div>";
+    return $html;
+}
+/*********************************
+* FUNCTION: DISPLAY CONTROL TYPE *
+**********************************/
+function display_control_type_view($control_type_ids, $panel_name="")
+{
+    global $lang, $escaper;
+    $control_types = get_names_by_multi_values("control_type", $control_type_ids);
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
+    $html = "
+        <div class='row-fluid {$panel_name}'>
+            <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['ControlType'])."</strong>: </div>
+            <div class='{$span2}'>".$escaper->escapeHtml($control_types)." </div>
+        </div>";
+    return $html;
+}
+/***********************************
+* FUNCTION: DISPLAY CONTROL STATUS *
+************************************/
+function display_control_status_view($control_status, $panel_name="")
+{
+    global $lang, $escaper;
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
+    $html = "
+        <div class='row-fluid {$panel_name}'>
+            <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['ControlStatus'])."</strong>: </div>
+            <div class='{$span2}'>".$escaper->escapeHtml($control_status)." </div>
+        </div>";
+    return $html;
+}
+/***********************************************
+* FUNCTION: DISPLAY CONTROL MITIGATION PERCENT *
+************************************************/
+function display_control_mitigation_percent_view($mitigation_percent, $panel_name="")
+{
+    global $lang, $escaper;
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
+    $html = "
+        <div class='row-fluid {$panel_name}'>
+            <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['MitigationPercent'])."</strong>: </div>
+            <div class='{$span2}''>".$escaper->escapeHtml($mitigation_percent)." </div>
+        </div>";
+    return $html;
 }
 
 ?>

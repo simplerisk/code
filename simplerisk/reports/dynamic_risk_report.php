@@ -78,10 +78,11 @@ if(!empty($_GET['selection']))
     $selection_id = (int)$_GET['selection'];
     $selection = get_dynamic_saved_selection($selection_id);
     
-    if($selection['type'] == 'private' && $selection['user_id'] != $_SESSION['uid'])
+    // Admins can access all saved selections
+    if($selection['type'] == 'private' && $selection['user_id'] != $_SESSION['uid'] && !$_SESSION['admin'])
     {
-        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForThisSelection']));
-        refresh("/reports/dynamic_risk_report.php");
+        set_alert(true, "bad", $lang['NoPermissionForThisSelection']);
+        refresh("dynamic_risk_report.php");
     }
     else
     {
@@ -391,6 +392,10 @@ if (import_export_extra()){
   <script src="../js/dynamic.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/common.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
+
+  <script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
+  <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
+
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">

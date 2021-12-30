@@ -117,64 +117,37 @@ else $admin_editing_itself = false;
       // Get the users information
       $user_info = get_user_by_id($user_id);
       
-      $enabled = $user_info['enabled'];
-      $lockout = $user_info['lockout'];
-      $type = $user_info['type'];
-      $username = $user_info['username'];
-      $name = $user_info['name'];
-      $email = $user_info['email'];
-      $last_login = $user_info['last_login'];
-      $language = $user_info['lang'];
-      $teams = $user_info['teams'];
-      $role_id = $user_info['role_id'];
-      $admin = $user_info['admin'];
-      $manager = $user_info['manager'];
-      $multi_factor = $user_info['multi_factor'];
-      $change_password = $user_info['change_password'];
-      
-      /*$governance = $user_info['governance'];
-      $riskmanagement = $user_info['riskmanagement'];
-      $compliance = $user_info['compliance'];
-      $assessments = $user_info['assessments'];
-      $asset = $user_info['asset'];
-      $accept_mitigation = $user_info['accept_mitigation'];
-      $review_veryhigh = $user_info['review_veryhigh'];
-      $review_high = $user_info['review_high'];
-      $review_medium = $user_info['review_medium'];
-      $review_low = $user_info['review_low'];
-      $review_insignificant = $user_info['review_insignificant'];
-      $submit_risks = $user_info['submit_risks'];
-      $modify_risks = $user_info['modify_risks'];
-      $close_risks = $user_info['close_risks'];
-      $plan_mitigations = $user_info['plan_mitigations'];
-
-      $add_new_frameworks = $user_info['add_new_frameworks'];
-      $modify_frameworks = $user_info['modify_frameworks'];
-      $delete_frameworks = $user_info['delete_frameworks'];
-      $add_new_controls = $user_info['add_new_controls'];
-      $modify_controls = $user_info['modify_controls'];
-      $delete_controls = $user_info['delete_controls'];
-      $add_documentation = $user_info['add_documentation'];
-      $modify_documentation = $user_info['modify_documentation'];
-      $delete_documentation = $user_info['delete_documentation'];
-      $comment_risk_management = $user_info['comment_risk_management'];
-      $add_projects = $user_info['add_projects'];
-      $delete_projects = $user_info['delete_projects'];
-      $manage_projects = $user_info['manage_projects'];
-      $comment_compliance = $user_info['comment_compliance'];
-      $define_tests = $user_info['define_tests'];
-      $edit_tests = $user_info['edit_tests'];
-      $delete_tests = $user_info['delete_tests'];
-      $initiate_audits = $user_info['initiate_audits'];
-      $modify_audits = $user_info['modify_audits'];
-      $reopen_audits = $user_info['reopen_audits'];
-      $delete_audits = $user_info['delete_audits'];
-
-      $view_exception = $user_info['view_exception'];
-      $create_exception = $user_info['create_exception'];
-      $update_exception = $user_info['update_exception'];
-      $delete_exception = $user_info['delete_exception'];
-      $approve_exception = $user_info['approve_exception'];*/
+      if ($user_info) {
+          $enabled = $user_info['enabled'];
+          $lockout = $user_info['lockout'];
+          $type = $user_info['type'];
+          $username = $user_info['username'];
+          $name = $user_info['name'];
+          $email = $user_info['email'];
+          $last_login = $user_info['last_login'];
+          $language = $user_info['lang'];
+          $teams = $user_info['teams'];
+          $role_id = $user_info['role_id'];
+          $admin = $user_info['admin'];
+          $manager = $user_info['manager'];
+          $multi_factor = $user_info['multi_factor'];
+          $change_password = $user_info['change_password'];
+      } else {
+          $user_id = "";
+          $enabled = 0;
+          $lockout = false;
+          $type       = "N/A";
+          $username   = "N/A";
+          $name       = "N/A";
+          $email      = "N/A";
+          $last_login = "N/A";
+          $language   = "N/A";
+          $teams      = "none";
+          $role_id    = "";
+          $admin      = false;
+          $manager      = false;
+          $multi_factor       = 1;
+      }
   }
   else
   {
@@ -192,48 +165,6 @@ else $admin_editing_itself = false;
       $admin      = false;
       $manager      = false;
       $multi_factor       = 1;
-      
-/*      $governance = false;
-      $riskmanagement = false;
-      $compliance = false;
-      $assessments = false;
-      $asset = false;
-      $accept_mitigation = false;
-      $review_veryhigh = false;
-      $review_high    = false;
-      $review_medium  = false;
-      $review_low     = false;
-      $review_insignificant = false;
-      $submit_risks       = false;
-      $modify_risks       = false;
-      $close_risks        = false;
-      $plan_mitigations   = false;
-      $add_new_frameworks = false;
-      $modify_frameworks = false;
-      $delete_frameworks = false;
-      $add_new_controls = false;
-      $modify_controls = false;
-      $delete_controls = false;
-      $add_documentation = false;
-      $modify_documentation = false;
-      $delete_documentation = false;
-      $comment_risk_management = false;
-      $comment_compliance = false; 
-      $add_projects = false;
-      $delete_projects = false;
-      $manage_projects = false;
-      $define_tests = false;
-      $edit_tests = false;
-      $delete_tests = false;
-      $initiate_audits = false;
-      $modify_audits = false;
-      $reopen_audits = false;
-      $delete_audits = false;
-      $view_exception = false;
-      $create_exception = false;
-      $update_exception = false;
-      $delete_exception = false;
-      $approve_exception = false;*/
   }
 
 ?>
@@ -479,7 +410,7 @@ else $admin_editing_itself = false;
                                 <h6>
                                     <u><?php echo $escaper->escapeHtml($lang['Manager']); ?></u>
                                 </h6>
-                                <?php create_dropdown("user", $manager, "manager"); ?>
+                                <?php create_dropdown("enabled_users_all", $manager, "manager"); ?>
 
                                 <h6>
                                     <u><?php echo $escaper->escapeHtml($lang['Teams']); ?></u>

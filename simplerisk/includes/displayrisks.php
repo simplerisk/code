@@ -13,15 +13,21 @@ require_once(realpath(__DIR__ . '/functions.php'));
 /*****************************************
 * FUNCTION: DISPLAY SUBMISSION_DATE VIEW *
 ******************************************/
-function display_submission_date_view($submission_date)
+function display_submission_date_view($submission_date, $panel_name="")
 {
     global $lang, $escaper;
-    
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['SubmissionDate']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<input style=\"cursor: default;\" type=\"text\" name=\"submission_date\"  size=\"50\" value=\"" . $escaper->escapeHtml($submission_date) . "\" title=\"" . $escaper->escapeHtml($submission_date) . "\" disabled=\"disabled\" />\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -30,15 +36,21 @@ function display_submission_date_view($submission_date)
 /**********************************
 * FUNCTION: DISPLAY CATEGORY VIEW *
 ***********************************/
-function display_category_view($category)
+function display_category_view($category, $panel_name="")
 {
     global $lang, $escaper;
-    
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['Category']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<input style=\"cursor: default;\" type=\"text\" name=\"category\" id=\"category\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("category", $category)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("category", $category)) . "\" disabled=\"disabled\" />\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -47,15 +59,21 @@ function display_category_view($category)
 /***************************************
 * FUNCTION: DISPLAY SITE LOCATION VIEW *
 ****************************************/
-function display_site_location_view($location)
+function display_site_location_view($location, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['SiteLocation']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<div style=\"cursor: default;\" type=\"text\" name=\"location\" id=\"location\" size=\"50\" title=\"" . $escaper->escapeHtml(get_names_by_multi_values("location", $location, false, "; ")) . "\" disabled=\"disabled\" >" . $escaper->escapeHtml(get_names_by_multi_values("location", $location, false, "; ")) . "</div>\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -64,15 +82,21 @@ function display_site_location_view($location)
 /***********************************************
 * FUNCTION: DISPLAY EXTERNAL REFERENCE ID VIEW *
 ************************************************/
-function display_external_reference_id_view($reference_id)
+function display_external_reference_id_view($reference_id, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"wrap-text span5 text-right\">\n";
+    echo "<div class=\"wrap-text {$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['ExternalReferenceId']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo " <input style=\"cursor: default;\" type=\"text\" name=\"reference_id\" id=\"reference_id\" size=\"20\" value=\"" . $escaper->escapeHtml($reference_id) . "\" title=\"" . $escaper->escapeHtml($reference_id) . "\" disabled=\"disabled\" />\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -81,15 +105,21 @@ function display_external_reference_id_view($reference_id)
 /********************************************
 * FUNCTION: DISPLAY CONTROL REGULATION VIEW *
 *********************************************/
-function display_control_regulation_view($regulation)
+function display_control_regulation_view($regulation, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['ControlRegulation']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<input style=\"cursor: default;\" type=\"text\" name=\"regulation\" id=\"regulation\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("frameworks", $regulation)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("frameworks", $regulation)) . "\" disabled=\"disabled\" />\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -98,15 +128,21 @@ function display_control_regulation_view($regulation)
 /****************************************
 * FUNCTION: DISPLAY CONTROL NUMBER VIEW *
 *****************************************/
-function display_control_number_view($control_number)
+function display_control_number_view($control_number, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['ControlNumber']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo " <input style=\"cursor: default;\" type=\"text\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . $escaper->escapeHtml($control_number) . "\" title=\"" . $escaper->escapeHtml($control_number) . "\" disabled=\"disabled\" maxlength=\"50\" />\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -115,15 +151,21 @@ function display_control_number_view($control_number)
 /*****************************************
 * FUNCTION: DISPLAY AFFECTED ASSETS VIEW *
 ******************************************/
-function display_affected_assets_view($risk_id)
+function display_affected_assets_view($risk_id, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['AffectedAssets']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     $data = get_assets_and_asset_groups_of_type($risk_id, 'risk');
     
     if ($data) {
@@ -142,15 +184,21 @@ function display_affected_assets_view($risk_id)
 /************************************
 * FUNCTION: DISPLAY TECHNOLOGY VIEW *
 *************************************/
-function display_technology_view($technology)
+function display_technology_view($technology, $panel_name="")
 {
     global $lang, $escaper;
-    
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['Technology']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<span>" . $escaper->escapeHtml(get_technology_names($technology)) . "</span>\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -159,15 +207,21 @@ function display_technology_view($technology)
 /******************************
 * FUNCTION: DISPLAY TEAM VIEW *
 *******************************/
-function display_team_view($team)
+function display_team_view($team, $panel_name="")
 {
     global $lang, $escaper;
- 
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['Team']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<span> " . $escaper->escapeHtml(get_names_by_multi_values("team", $team)) . " </span>\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -176,15 +230,21 @@ function display_team_view($team)
 /*************************************************
 * FUNCTION: DISPLAY ADDITIONAL STAKEHOLDERS VIEW *
 **************************************************/
-function display_additional_stakeholders_view($additional_stakeholders)
+function display_additional_stakeholders_view($additional_stakeholders, $panel_name="")
 {
     global $lang, $escaper;
- 
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['AdditionalStakeholders']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<span>" . $escaper->escapeHtml(get_stakeholder_names($additional_stakeholders)) . "</span>\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -193,15 +253,21 @@ function display_additional_stakeholders_view($additional_stakeholders)
 /*******************************
 * FUNCTION: DISPLAY OWNER VIEW *
 ********************************/
-function display_owner_view($owner)
+function display_owner_view($owner, $panel_name="")
 {
     global $lang, $escaper;
- 
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['Owner']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<input style=\"cursor: default;\" type=\"text\" name=\"owner\" id=\"owner\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("user", $owner)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("user", $owner)) . "\" disabled=\"disabled\" />\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -210,15 +276,21 @@ function display_owner_view($owner)
 /***************************************
 * FUNCTION: DISPLAY OWNER MANAGER VIEW *
 ****************************************/
-function display_owner_manager_view($manager)
+function display_owner_manager_view($manager, $panel_name="")
 {
     global $lang, $escaper;
- 
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['OwnersManager']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<input style=\"cursor: default;\" type=\"text\" name=\"manager\" id=\"manager\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("user", $manager)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("user", $manager)) . "\" disabled=\"disabled\" />\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -227,15 +299,21 @@ function display_owner_manager_view($manager)
 /**************************************
 * FUNCTION: DISPLAY SUBMITTED BY VIEW *
 ***************************************/
-function display_submitted_by_view($submitted_by)
+function display_submitted_by_view($submitted_by, $panel_name="")
 {
     global $lang, $escaper;
- 
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['SubmittedBy']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<input style=\"cursor: default;\" type=\"text\" name=\"submitted_by\" id=\"submitted_by\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("user", $submitted_by)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("user", $submitted_by)) . "\" disabled=\"disabled\" />\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -244,15 +322,21 @@ function display_submitted_by_view($submitted_by)
 /*************************************
 * FUNCTION: DISPLAY RISK SOURCE VIEW *
 **************************************/
-function display_risk_source_view($source)
+function display_risk_source_view($source, $panel_name="")
 {
     global $lang, $escaper;
- 
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['RiskSource']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{span2}\">\n";
     echo "<input style=\"cursor: default;\" type=\"text\" name=\"source\" id=\"source\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("source", $source)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("source", $source)) . "\" disabled=\"disabled\" />\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -261,33 +345,39 @@ function display_risk_source_view($source)
 /*********************************************
 * FUNCTION: DISPLAY RISK SCORING METHOD VIEW *
 **********************************************/
-function display_risk_scoring_method_view($scoring_method, $CLASSIC_likelihood="", $CLASSIC_impact="")
+function display_risk_scoring_method_view($scoring_method, $CLASSIC_likelihood="", $CLASSIC_impact="", $panel_name="")
 {
     global $lang, $escaper;
-    
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['RiskScoringMethod']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<input style=\"cursor: default;\" type=\"text\" name=\"scoringMethod\" id=\"scoringMethod\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("scoring_methods", $scoring_method)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("scoring_methods", $scoring_method)) . "\" disabled=\"disabled\" />\n";
     echo "</div>\n";
     echo "</div>\n";
     
     if($scoring_method == "1"){
         echo "<div class=\"row-fluid\">\n";
-        echo "<div class=\"span5 text-right\">\n";
+        echo "<div class=\"{$span1} text-right\">\n";
         echo $escaper->escapeHtml($lang['CurrentLikelihood']) .": \n";
         echo "</div>\n";
-        echo "<div class=\"span7\">\n";
+        echo "<div class=\"{$span2}\">\n";
         echo "<input style=\"cursor: default;\" type=\"text\" name=\"currentLikelihood\" id=\"currentLikelihood\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("likelihood", $CLASSIC_likelihood)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("likelihood", $CLASSIC_likelihood)) . "\" disabled=\"disabled\" />\n";
         echo "</div>\n";
         echo "</div>\n";
             echo "<div class=\"row-fluid\">\n";
-        echo "<div class=\"span5 text-right\">\n";
+        echo "<div class=\"{$span1} text-right\">\n";
         echo $escaper->escapeHtml($lang['CurrentImpact']) .": \n";
         echo "</div>\n";
-        echo "<div class=\"span7\">\n";
+        echo "<div class=\"{$span2}\">\n";
         echo "<input style=\"cursor: default;\" type=\"text\" name=\"currentImpact\" id=\"currentImpact\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("impact", $CLASSIC_impact)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("impact", $CLASSIC_impact)) . "\" disabled=\"disabled\" />\n";
         echo "</div>\n";
         echo "</div>\n";
@@ -298,10 +388,16 @@ function display_risk_scoring_method_view($scoring_method, $CLASSIC_likelihood="
 /*****************************************
 * FUNCTION: DISPLAY RISK ASSESSMENT VIEW *
 ******************************************/
-function display_risk_assessment_view($assessment)
+function display_risk_assessment_view($assessment , $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
     echo "<div class=\"span5 text-right\">\n";
     echo $escaper->escapeHtml($lang['RiskAssessment']) .": \n";
@@ -315,15 +411,21 @@ function display_risk_assessment_view($assessment)
 /******************************************
 * FUNCTION: DISPLAY ADDITIONAL NOTES VIEW *
 *******************************************/
-function display_additional_notes_view($notes)
+function display_additional_notes_view($notes, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['AdditionalNotes']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<textarea style=\"cursor: default;\" name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\" title=\"" . $escaper->escapeHtml($notes) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($notes) . "</textarea>\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -332,7 +434,7 @@ function display_additional_notes_view($notes)
 /******************************************
 * FUNCTION: DISPLAY ADDITIONAL NOTES VIEW *
 *******************************************/
-function display_jira_issue_key_view($jira_issue_key)
+function display_jira_issue_key_view($jira_issue_key, $panel_name="")
 {
     // We're not displaying anything if the extra isn't turned on
     if (!jira_extra())
@@ -344,12 +446,18 @@ function display_jira_issue_key_view($jira_issue_key)
         preg_match('/^([A-Z][A-Z_0-9]+)-[0-9][0-9]*$/', $jira_issue_key, $matches);
         $project_key = $matches[1];
     }
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['JiraIssueKey']) .": \n";
     echo "</div>\n";
-    echo "<div class='span7' style='margin-top: 5px;'>\n";
+    echo "<div class='{$span2}' style='margin-top: 5px;'>\n";
     echo " <strong style='cursor: default;'>" . $escaper->escapeHtml($jira_issue_key) . "</strong>";
     if ($jira_issue_key) {
         echo " <a href='" . get_setting('JiraInstanceURL') . "projects/{$project_key}/issues/{$jira_issue_key}' target='_blank' class='btn btn-default btn-sm' style='margin-left: 10px;'>" . $escaper->escapeHtml($lang['Open']) . "</a>";
@@ -361,15 +469,21 @@ function display_jira_issue_key_view($jira_issue_key)
 /**************************************************
 * FUNCTION: DISPLAY SUPPORTING DOCUMENTATION VIEW *
 ***************************************************/
-function display_supporting_documentation_view($risk_id, $view_type)
+function display_supporting_documentation_view($risk_id, $view_type, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"wrap-text span5 text-right\">\n";
+    echo "<div class=\"wrap-text {$span2} text-right\">\n";
     echo $escaper->escapeHtml($lang['SupportingDocumentation']) . ": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     supporting_documentation($risk_id, "view", $view_type);
     echo "</div>\n";
     echo "</div>\n";
@@ -377,25 +491,22 @@ function display_supporting_documentation_view($risk_id, $view_type)
 /**************************************
 * FUNCTION: DISPLAY RISK MAPPING VIEW *
 ***************************************/
-function display_risk_mapping_view($risk_catalog_mapping, $panel_name="")
-{
+function display_risk_mapping_view($risk_catalog_mapping, $panel_name="") {
     global $lang, $escaper;
 
     if($panel_name=="top" || $panel_name=="bottom"){
-        echo "<div class=\"row-fluid subject-field\">\n";
-        echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
-        echo "<div class=\"span8\">\n";
-        echo "<span> " . $escaper->escapeHtml(get_names_by_multi_values("risk_catalog", $risk_catalog_mapping, false, ", ", true)) . " </span>\n";
-        echo "</div>\n";
-        echo "</div>\n";
+        $span1 = "span2";
+        $span2 = "span8";
     } else {
-        echo "<div class=\"row-fluid\">\n";
-        echo "<div class=\"span5 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
-        echo "<div class=\"span7\">\n";
-        echo "<span> " . $escaper->escapeHtml(get_names_by_multi_values("risk_catalog", $risk_catalog_mapping, false, ", ", true)) . " </span>\n";
-        echo "</div>\n";
-        echo "</div>\n";
+        $span1 = "span5";
+        $span2 = "span7";
     }
+    echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"{$span1} text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
+    echo "<div class=\"{$span2}\">\n";
+    echo "<span> " . $escaper->escapeHtml(get_names_by_multi_values("risk_catalog", $risk_catalog_mapping, false, ", ", true)) . " </span>\n";
+    echo "</div>\n";
+    echo "</div>\n";
 }
 /****************************************
 * FUNCTION: DISPLAY THREAT MAPPING VIEW *
@@ -405,20 +516,18 @@ function display_threat_mapping_view($threat_catalog_mapping, $panel_name="")
     global $lang, $escaper;
 
     if($panel_name=="top" || $panel_name=="bottom"){
-        echo "<div class=\"row-fluid subject-field\">\n";
-        echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['ThreatMapping']).":</div>\n";
-        echo "<div class=\"span8\">\n";
-        echo "<span> " . $escaper->escapeHtml(get_names_by_multi_values("threat_catalog", $threat_catalog_mapping, false, ", ", true)) . " </span>\n";
-        echo "</div>\n";
-        echo "</div>\n";
+        $span1 = "span2";
+        $span2 = "span8";
     } else {
-        echo "<div class=\"row-fluid\">\n";
-        echo "<div class=\"span5 text-right\">".$escaper->escapeHtml($lang['ThreatMapping']).":</div>\n";
-        echo "<div class=\"span7\">\n";
-        echo "<span> " . $escaper->escapeHtml(get_names_by_multi_values("threat_catalog", $threat_catalog_mapping, false, ", ", true)) . " </span>\n";
-        echo "</div>\n";
-        echo "</div>\n";
+        $span1 = "span5";
+        $span2 = "span7";
     }
+   echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"{$span1} text-right\">".$escaper->escapeHtml($lang['ThreatMapping']).":</div>\n";
+    echo "<div class=\"{$span2}\">\n";
+    echo "<span> " . $escaper->escapeHtml(get_names_by_multi_values("threat_catalog", $threat_catalog_mapping, false, ", ", true)) . " </span>\n";
+    echo "</div>\n";
+    echo "</div>\n";
 }
 
 /*********************************************************
@@ -441,83 +550,83 @@ function display_main_detail_fields_by_panel_view($panel_name, $fields, $risk_id
                 
                 switch($field['name']){
                     case 'SubmissionDate':
-                        display_submission_date_view($submission_date);
+                        display_submission_date_view($submission_date, $panel_name);
                     break;
                     
                     case 'Category':
-                        display_category_view($category);
+                        display_category_view($category, $panel_name);
                     break;
                         
                     case 'SiteLocation':
-                        display_site_location_view($location);
+                        display_site_location_view($location, $panel_name);
                     break;
                         
                     case 'ExternalReferenceId':
-                        display_external_reference_id_view($reference_id);
+                        display_external_reference_id_view($reference_id, $panel_name);
                     break;
                         
                     case 'ControlRegulation':
-                        display_control_regulation_view($regulation);
+                        display_control_regulation_view($regulation, $panel_name);
                     break;
                         
                     case 'ControlNumber':
-                        display_control_number_view($control_number);
+                        display_control_number_view($control_number, $panel_name);
                     break;
                         
                     case 'AffectedAssets':
-                        display_affected_assets_view($risk_id);
+                        display_affected_assets_view($risk_id, $panel_name);
                     break;
                         
                     case 'Technology':
-                        display_technology_view($technology);
+                        display_technology_view($technology, $panel_name);
                     break;
                         
                     case 'Team':
-                        display_team_view($team);
+                        display_team_view($team, $panel_name);
                     break;
                         
                     case 'AdditionalStakeholders':
-                        display_additional_stakeholders_view($additional_stakeholders);
+                        display_additional_stakeholders_view($additional_stakeholders, $panel_name);
                     break;
                     
                     case 'Owner':
-                        display_owner_view($owner);
+                        display_owner_view($owner, $panel_name);
                     break;
                         
                     case 'OwnersManager':
-                        display_owner_manager_view($manager);
+                        display_owner_manager_view($manager, $panel_name);
                     break;
                     
                     case 'SubmittedBy':
-                        display_submitted_by_view($submitted_by);
+                        display_submitted_by_view($submitted_by, $panel_name);
                     break;
                         
                     case 'RiskSource':
-                        display_risk_source_view($source);
+                        display_risk_source_view($source, $panel_name);
                     break;
                         
                     case 'RiskScoringMethod':
-                        display_risk_scoring_method_view($scoring_method, $CLASSIC_likelihood, $CLASSIC_impact);
+                        display_risk_scoring_method_view($scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $panel_name);
                     break;
                     
                     case 'RiskAssessment':
-                        display_risk_assessment_view($assessment);
+                        display_risk_assessment_view($assessment, $panel_name);
                     break;
 
                     case 'AdditionalNotes':
-                        display_additional_notes_view($notes);
+                        display_additional_notes_view($notes, $panel_name);
                     break;
 
                     case 'JiraIssueKey':
-                        display_jira_issue_key_view($jira_issue_key);
+                        display_jira_issue_key_view($jira_issue_key, $panel_name);
                     break;
 
                     case 'SupportingDocumentation':
-                        display_supporting_documentation_view($risk_id, 1);
+                        display_supporting_documentation_view($risk_id, 1, $panel_name);
                     break;
 
                     case 'Tags':
-                        display_risk_tags_view($tags);
+                        display_risk_tags_view($tags, $panel_name);
                     break;
 
                     case 'RiskMapping':
@@ -543,7 +652,7 @@ function display_main_detail_fields_by_panel_view($panel_name, $fields, $risk_id
                     require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
                     
                     $custom_values = getCustomFieldValuesByRiskId($risk_id);
-                    display_custom_field_risk_view($field, $custom_values);
+                    display_custom_field_risk_view($field, $custom_values, 0, $panel_name);
                 }
             }
         }
@@ -553,15 +662,21 @@ function display_main_detail_fields_by_panel_view($panel_name, $fields, $risk_id
 /*****************************************
 * FUNCTION: DISPLAY SUBMISSION DATE EDIT *
 ******************************************/
-function display_submission_date_edit($submission_date)
+function display_submission_date_edit($submission_date, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['SubmissionDate']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<input style=\"cursor: default;\" type=\"text\" name=\"submission_date\"  size=\"50\" value=\"" . $escaper->escapeHtml($submission_date) . "\" title=\"" . $escaper->escapeHtml($submission_date) . "\" class=\"datepicker\" />\n"; 
     echo "</div>\n";
     echo "</div>\n";
@@ -570,15 +685,21 @@ function display_submission_date_edit($submission_date)
 /**********************************
 * FUNCTION: DISPLAY CATEGORY EDIT *
 ***********************************/
-function display_category_edit($category)
+function display_category_edit($category, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['Category']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     create_dropdown("category", $category);
     echo "</div>\n";
     echo "</div>\n";
@@ -587,15 +708,21 @@ function display_category_edit($category)
 /**********************************
 * FUNCTION: DISPLAY LOCATION EDIT *
 ***********************************/
-function display_location_edit($location)
+function display_location_edit($location, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['SiteLocation']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
 //    create_dropdown("location", $location);
     if($location)
     {
@@ -615,15 +742,21 @@ function display_location_edit($location)
 /***********************************************
 * FUNCTION: DISPLAY EXTERNAL REFERENCE ID EDIT *
 ************************************************/
-function display_external_reference_id_edit($reference_id)
+function display_external_reference_id_edit($reference_id, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"wrap-text span5 text-right\">\n";
+    echo "<div class=\"wrap-text {$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['ExternalReferenceId']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<input type=\"text\" name=\"reference_id\" id=\"reference_id\" class=\"active-textfield\" size=\"20\" value=\"" . $escaper->escapeHtml($reference_id) . "\" maxlength=\"20\"/>\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -632,15 +765,21 @@ function display_external_reference_id_edit($reference_id)
 /********************************************
 * FUNCTION: DISPLAY CONTROL REGULATION EDIT *
 *********************************************/
-function display_control_regulation_edit($regulation)
+function display_control_regulation_edit($regulation, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['ControlRegulation']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     create_dropdown("frameworks", $regulation, "regulation");
     echo "</div>\n";
     echo "</div>\n";
@@ -649,15 +788,21 @@ function display_control_regulation_edit($regulation)
 /****************************************
 * FUNCTION: DISPLAY CONTROL NUMBER EDIT *
 *****************************************/
-function display_control_number_edit($control_number)
+function display_control_number_edit($control_number, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['ControlNumber']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<input type=\"text\" class=\"active-textfield\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . $escaper->escapeHtml($control_number) . "\" maxlength=\"50\"/>\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -666,16 +811,22 @@ function display_control_number_edit($control_number)
 /*****************************************
 * FUNCTION: DISPLAY AFFECTED ASSETS EDIT *
 ******************************************/
-function display_affected_assets_edit($risk_id)
+function display_affected_assets_edit($risk_id, $panel_name="")
 {
     global $lang, $escaper;
     $selected_ids = [];
-    
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\" id=\"AffectedAssetsTitle\">\n";
+    echo "<div class=\"{$span1} text-right\" id=\"AffectedAssetsTitle\">\n";
     echo $escaper->escapeHtml($lang['AffectedAssets']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7 affected-assets\">\n";
+    echo "<div class=\"{$span2} affected-assets\">\n";
     echo "<select class='assets-asset-groups-select' name='assets_asset_groups[]' multiple placeholder='" . $escaper->escapeHtml($lang['AffectedAssetsWidgetPlaceholder']) . "'>";
     echo "</select>\n";
     echo "<span class='affected-assets-instructions'>" . $escaper->escapeHtml($lang['AffectedAssetsWidgetInstructions']) . "</span>";
@@ -686,15 +837,21 @@ function display_affected_assets_edit($risk_id)
 /************************************
 * FUNCTION: DISPLAY TECHNOLOGY EDIT *
 *************************************/
-function display_technology_edit($technology)
+function display_technology_edit($technology, $panel_name="")
 {
     global $lang, $escaper;
-    
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['Technology']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     $technology_values = ":".implode(":", explode(",", $technology)).":";
     create_multiple_dropdown("technology", $technology_values, NULL, NULL, false, "", "", true, " class='multiselect' ");
     echo "</div>\n";
@@ -704,15 +861,21 @@ function display_technology_edit($technology)
 /******************************
 * FUNCTION: DISPLAY TEAM EDIT *
 *******************************/
-function display_team_edit($team)
+function display_team_edit($team, $panel_name="")
 {
     global $lang, $escaper;
-    
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['Team']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     $team = ":".implode(":", explode(",", $team)).":";
     create_multiple_dropdown("team", $team, NULL, NULL, false, "", "", true, " class='multiselect' ");
 //    create_dropdown("team", $team);
@@ -723,15 +886,21 @@ function display_team_edit($team)
 /*************************************************
 * FUNCTION: DISPLAY ADDITIONAL STAKEHOLDERS EDIT *
 **************************************************/
-function display_additional_stakeholders_edit($additional_stakeholders)
+function display_additional_stakeholders_edit($additional_stakeholders, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['AdditionalStakeholders']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7 multiselect-holder\">\n";
+    echo "<div class=\"{$span2} multiselect-holder\">\n";
     create_multiusers_dropdown("additional_stakeholders", $additional_stakeholders);
     echo "</div>\n";
     echo "</div>\n";
@@ -740,15 +909,21 @@ function display_additional_stakeholders_edit($additional_stakeholders)
 /*******************************
 * FUNCTION: DISPLAY OWNER EDIT *
 ********************************/
-function display_owner_edit($owner)
+function display_owner_edit($owner, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['Owner']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     create_dropdown("enabled_users", $owner, "owner");
     echo "</div>\n";
     echo "</div>\n";
@@ -757,15 +932,22 @@ function display_owner_edit($owner)
 /****************************************
 * FUNCTION: DISPLAY OWNERS MANAGER EDIT *
 *****************************************/
-function display_owners_manager_edit($manager)
+function display_owners_manager_edit($manager, $panel_name="")
 {
     global $lang, $escaper;
 
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['OwnersManager']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     create_dropdown("enabled_users", $manager, "manager");
     echo "</div>\n";
     echo "</div>\n";
@@ -774,15 +956,21 @@ function display_owners_manager_edit($manager)
 /*************************************
 * FUNCTION: DISPLAY RISK SOURCE EDIT *
 **************************************/
-function display_risk_source_edit($source)
+function display_risk_source_edit($source, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['RiskSource']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     create_dropdown("source", $source);
     echo "</div>\n";
     echo "</div>\n";
@@ -791,15 +979,21 @@ function display_risk_source_edit($source)
 /***********************************************
 * FUNCTION: DISPLAY RISK ASSESSMENT TITLE EDIT *
 ************************************************/
-function display_risk_assessment_title_edit($assessment)
+function display_risk_assessment_title_edit($assessment, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\" id=\"RiskAssessmentTitle\">\n";
+    echo "<div class=\"{$span1} text-right\" id=\"RiskAssessmentTitle\">\n";
     echo $escaper->escapeHtml($lang['RiskAssessment']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<textarea class=\"active-textfield\" name=\"assessment\" cols=\"50\" rows=\"3\" id=\"assessment\">" . $escaper->escapeHtml($assessment) . "</textarea>\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -808,15 +1002,21 @@ function display_risk_assessment_title_edit($assessment)
 /******************************************
 * FUNCTION: DISPLAY ADDITIONAL NOTES EDIT *
 *******************************************/
-function display_additional_notes_edit($notes)
+function display_additional_notes_edit($notes, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\" id=\"NotesTitle\">\n";
+    echo "<div class=\"{$span1} text-right\" id=\"NotesTitle\">\n";
     echo $escaper->escapeHtml($lang['AdditionalNotes']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<textarea name=\"notes\" class=\"active-textfield\" cols=\"50\" rows=\"3\" id=\"notes\">" . $escaper->escapeHtml($notes) . "</textarea>\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -825,19 +1025,25 @@ function display_additional_notes_edit($notes)
 /****************************************
 * FUNCTION: DISPLAY JIRA ISSUE KEY EDIT *
 *****************************************/
-function display_jira_issue_key_edit($jira_issue_key) {
+function display_jira_issue_key_edit($jira_issue_key, $panel_name="") {
 
     // We're not displaying anything if the extra isn't turned on
     if (!jira_extra())
         return;
     
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['JiraIssueKey']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<input type=\"text\" class=\"active-textfield\" name=\"jira_issue_key\" id=\"jira_issue_key\" size=\"20\" value=\"" . $escaper->escapeHtml($jira_issue_key) . "\" />\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -846,15 +1052,21 @@ function display_jira_issue_key_edit($jira_issue_key) {
 /**************************************************
 * FUNCTION: DISPLAY SUPPORTING DOCUMENTATION EDIT *
 ***************************************************/
-function display_supporting_documentation_edit($risk_id, $view_type)
+function display_supporting_documentation_edit($risk_id, $view_type, $panel_name="")
 {
     global $lang, $escaper;
-
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"wrap-text span5 text-right\">\n";
+    echo "<div class=\"wrap-text {$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['SupportingDocumentation']) . ": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
+    echo "<div class=\"{$span2}\">\n";
     supporting_documentation($risk_id, "edit", $view_type);
     echo "</div>\n";
     echo "</div>\n";
@@ -862,56 +1074,64 @@ function display_supporting_documentation_edit($risk_id, $view_type)
 /**************************************
 * FUNCTION: DISPLAY RISK MAPPING EDIT *
 ***************************************/
-function display_risk_mapping_edit($risk_catalog_mapping=[], $panel_name="")
-{
+function display_risk_mapping_edit($risk_catalog_mapping=[], $panel_name="") {
     global $lang, $escaper;
-    $risk_catalog_mapping = $risk_catalog_mapping?explode(",", $risk_catalog_mapping):[];
 
-    $mapping_required = get_setting('risk_mapping_required') == 1?"required":"";
-    if($panel_name=="top" || $panel_name=="bottom"){
-        echo "<div class=\"row-fluid subject-field\">\n";
-        echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
-        echo "<div class=\"span8\">\n";
-        create_multiple_dropdown("risk_catalog", $risk_catalog_mapping, "risk_catalog_mapping", NULL, false, "", "", true, "title='".$escaper->escapeHtml($lang['RiskMapping'])."' {$mapping_required} class='multiselect' ");
-        echo "</div>\n";
-        echo "</div>\n";
+    if ($risk_catalog_mapping) {
+        if (!is_array($risk_catalog_mapping)) {
+            $risk_catalog_mapping = explode(",", $risk_catalog_mapping);
+        }
     } else {
-        echo "<div class=\"row-fluid\">\n";
-        echo "<div class=\"span5 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
-        echo "<div class=\"span7\">\n";
-        create_multiple_dropdown("risk_catalog", $risk_catalog_mapping, "risk_catalog_mapping", NULL, false, "", "", true, "title='".$escaper->escapeHtml($lang['RiskMapping'])."' {$mapping_required} class='multiselect' ");
-
-        echo "</div>\n";
-        echo "</div>\n";
+        $risk_catalog_mapping = [];
     }
+    
+    $wide_field = $panel_name=="top" || $panel_name=="bottom";
+    $name_wrapper_class = $wide_field ? 'span2' : 'span5';
+    $dropdown_wrapper_class = $wide_field ? 'span8' : 'span7';
+
+    echo "
+        <div class='row-fluid'>
+            <div class='{$name_wrapper_class} text-right'>{$escaper->escapeHtml($lang['RiskMapping'])}:</div>
+            <div class='{$dropdown_wrapper_class}'>";
+
+    create_selectize_dropdown('risk_catalog', $risk_catalog_mapping);
+
+    echo "
+            </div>
+        </div>
+    ";
 }
+
 /**************************************
 * FUNCTION: DISPLAY THREAT MAPPING EDIT *
 ***************************************/
-function display_threat_mapping_edit($threat_catalog_mapping=[], $panel_name="")
-{
+function display_threat_mapping_edit($threat_catalog_mapping=[], $panel_name="") {
+
     global $lang, $escaper;
-    $threat_catalog_mapping = $threat_catalog_mapping?explode(",", $threat_catalog_mapping):[];
-
-    $mapping_required = get_setting('threat_mapping_required') == 1?"required":"";
-    if($panel_name=="top" || $panel_name=="bottom"){
-        echo "<div class=\"row-fluid subject-field\">\n";
-        echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['ThreatMapping']).":</div>\n";
-        echo "<div class=\"span8\">\n";
-        create_multiple_dropdown("threat_catalog", $threat_catalog_mapping, "threat_catalog_mapping", NULL, false, "", "", true, "title='".$escaper->escapeHtml($lang['ThreatMapping'])."' {$mapping_required} class='multiselect' ");
-        echo "</div>\n";
-        echo "</div>\n";
+    if ($threat_catalog_mapping) {
+        if (!is_array($threat_catalog_mapping)) {
+            $threat_catalog_mapping = explode(",", $threat_catalog_mapping);
+        }
     } else {
-        echo "<div class=\"row-fluid\">\n";
-        echo "<div class=\"span5 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
-        echo "<div class=\"span7\">\n";
-        create_multiple_dropdown("threat_catalog", $threat_catalog_mapping, "threat_catalog_mapping", NULL, false, "", "", true, "title='".$escaper->escapeHtml($lang['ThreatMapping'])."' {$mapping_required} class='multiselect' ");
-        echo "</div>\n";
-        echo "</div>\n";
+        $threat_catalog_mapping = [];
     }
+
+    $wide_field = $panel_name=="top" || $panel_name=="bottom";
+    $name_wrapper_class = $wide_field ? 'span2' : 'span5';
+    $dropdown_wrapper_class = $wide_field ? 'span8' : 'span7';
+
+    echo "
+        <div class='row-fluid'>
+            <div class='{$name_wrapper_class} text-right'>{$escaper->escapeHtml($lang['ThreatMapping'])}:</div>
+            <div class='{$dropdown_wrapper_class}'>";
+
+    create_selectize_dropdown('threat_catalog', $threat_catalog_mapping);
+
+    echo "
+            </div>
+        </div>
+    ";
 }
-
-
 
 /*********************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN DETAILS EDIT *
@@ -932,23 +1152,23 @@ function display_main_detail_fields_by_panel_edit($panel_name, $fields, $risk_id
                 
                 switch($field['name']){
                     case 'SubmissionDate':
-                        display_submission_date_edit($submission_date);
+                        display_submission_date_edit($submission_date, $panel_name);
                     break;
             
                     case 'Category':
-                        display_category_edit($category);
+                        display_category_edit($category, $panel_name);
                     break;
                     
                     case 'SiteLocation':
-                        display_location_edit($location);
+                        display_location_edit($location, $panel_name);
                     break;
 
                     case 'ExternalReferenceId':
-                        display_external_reference_id_edit($reference_id);
+                        display_external_reference_id_edit($reference_id, $panel_name);
                     break;
                     
                     case 'ControlRegulation':
-                        display_control_regulation_edit($regulation);
+                        display_control_regulation_edit($regulation, $panel_name);
                     break;
                         
                     case 'ControlNumber':
@@ -956,55 +1176,55 @@ function display_main_detail_fields_by_panel_edit($panel_name, $fields, $risk_id
                     break;
                         
                     case 'AffectedAssets':
-                        display_affected_assets_edit($risk_id);
+                        display_affected_assets_edit($risk_id, $panel_name);
                     break;
                     
                     case 'Technology':
-                        display_technology_edit($technology);
+                        display_technology_edit($technology, $panel_name);
                     break;
                         
                     case 'Team':
-                        display_team_edit($team);
+                        display_team_edit($team, $panel_name);
                     break;
                         
                     case 'AdditionalStakeholders':
-                        display_additional_stakeholders_edit($additional_stakeholders);
+                        display_additional_stakeholders_edit($additional_stakeholders, $panel_name);
                     break;
                     
                     case 'Owner':
-                        display_owner_edit($owner);
+                        display_owner_edit($owner, $panel_name);
                     break;
                         
                     case 'OwnersManager':
-                        display_owners_manager_edit($manager);
+                        display_owners_manager_edit($manager, $panel_name);
                     break;
                     
                     case 'RiskSource':
-                        display_risk_source_edit($source);
+                        display_risk_source_edit($source, $panel_name);
                     break;
                 
                     case 'RiskScoringMethod':
-                        risk_score_method_html($scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts);
+                        risk_score_method_html($panel_name, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts);
                     break;
 
                     case 'RiskAssessment':
-                        display_risk_assessment_title_edit($assessment);
+                        display_risk_assessment_title_edit($assessment, $panel_name);
                     break;
                         
                     case 'AdditionalNotes':
-                        display_additional_notes_edit($notes);
+                        display_additional_notes_edit($notes, $panel_name);
                     break;
 
                     case 'JiraIssueKey':
-                        display_jira_issue_key_edit($jira_issue_key);
+                        display_jira_issue_key_edit($jira_issue_key, $panel_name);
                     break;
 
                     case 'SupportingDocumentation':
-                        display_supporting_documentation_edit($risk_id, 1);  
+                        display_supporting_documentation_edit($risk_id, 1, $panel_name);  
                     break;
 
                     case 'Tags':
-                        display_risk_tags_edit($tags);
+                        display_risk_tags_edit($tags, $panel_name);
                     break;
 
                     case 'RiskMapping':
@@ -1029,7 +1249,7 @@ function display_main_detail_fields_by_panel_edit($panel_name, $fields, $risk_id
                     require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
                     $custom_values = getCustomFieldValuesByRiskId($risk_id);
-                    display_custom_field_edit($field, $custom_values);
+                    display_custom_field_edit($field, $custom_values, false, $panel_name);
                 }
             }
           
@@ -2234,13 +2454,20 @@ function display_main_review_fields_by_panel_edit($panel_name, $fields, $risk_id
 /*************************************************
 * FUNCTION: DISPLAY SUPPORTING DOCUMENTATION ADD *
 **************************************************/
-function display_supporting_documentation_add()
+function display_supporting_documentation_add($panel_name="")
 {
     global $lang, $escaper;
+    if($panel_name=="top" || $panel_name=="bottom"){
+        $span1 = "span2";
+        $span2 = "span8";
+    } else {
+        $span1 = "span5";
+        $span2 = "span7";
+    }
 
     echo "<div class=\"row-fluid\">";
-        echo "<div class=\"wrap-text span5 text-right\">".$escaper->escapeHtml($lang['SupportingDocumentation'])."</div>";
-        echo "<div class=\"span7\">";
+        echo "<div class=\"wrap-text {$span1} text-right\">".$escaper->escapeHtml($lang['SupportingDocumentation'])."</div>";
+        echo "<div class=\"{$span2}\">";
 
             echo "<div class=\"file-uploader\">";
                 echo "
@@ -2368,75 +2595,75 @@ function display_main_detail_fields_by_panel_add($panel_name, $fields)
                 
                 switch($field['name']){
                     case 'Category':
-                        display_category_edit('');
+                        display_category_edit('', $panel_name);
                     break;
                     
                     case 'SiteLocation':
-                        display_location_edit('');
+                        display_location_edit('', $panel_name);
                     break;
 
                     case 'ExternalReferenceId':
-                        display_external_reference_id_edit('');
+                        display_external_reference_id_edit('', $panel_name);
                     break;
                     
                     case 'ControlRegulation':
-                        display_control_regulation_edit('');
+                        display_control_regulation_edit('', $panel_name);
                     break;
                         
                     case 'ControlNumber':
-                        display_control_number_edit('');
+                        display_control_number_edit('', $panel_name);
                     break;
                         
                     case 'AffectedAssets':
-                        display_affected_assets_edit('');
+                        display_affected_assets_edit('', $panel_name);
                     break;
                     
                     case 'Technology':
-                        display_technology_edit('');
+                        display_technology_edit('', $panel_name);
                     break;
                         
                     case 'Team':
-                        display_team_edit('');
+                        display_team_edit('', $panel_name);
                     break;
                         
                     case 'AdditionalStakeholders':
-                        display_additional_stakeholders_edit('');
+                        display_additional_stakeholders_edit('', $panel_name);
                     break;
                     
                     case 'Owner':
-                        display_owner_edit('');
+                        display_owner_edit('', $panel_name);
                     break;
                         
                     case 'OwnersManager':
-                        display_owners_manager_edit('');
+                        display_owners_manager_edit('', $panel_name);
                     break;
                     
                     case 'RiskSource':
-                        display_risk_source_edit('');
+                        display_risk_source_edit('', $panel_name);
                     break;
                 
                     case 'RiskScoringMethod':
-                        risk_score_method_html();
+                        risk_score_method_html($panel_name);
                     break;
 
                     case 'RiskAssessment':
-                        display_risk_assessment_title_edit('');
+                        display_risk_assessment_title_edit('', $panel_name);
                     break;
                         
                     case 'AdditionalNotes':
-                        display_additional_notes_edit('');
+                        display_additional_notes_edit('', $panel_name);
                     break;
 
                     case 'JiraIssueKey':
-                        display_jira_issue_key_edit('');
+                        display_jira_issue_key_edit('', $panel_name);
                     break;
                         
                     case 'SupportingDocumentation':
-                        display_supporting_documentation_add();  
+                        display_supporting_documentation_add($panel_name);  
                     break;
 
                     case 'Tags':
-                        display_risk_tags_edit();
+                        display_risk_tags_edit('', $panel_name);
                     break;
 
                     case 'RiskMapping':
@@ -2460,7 +2687,7 @@ function display_main_detail_fields_by_panel_add($panel_name, $fields)
                     // Include the extra
                     require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
-                    display_custom_field_edit($field, []);
+                    display_custom_field_edit($field, [], "div", false, $panel_name);
                 }
             }
         }

@@ -2,6 +2,7 @@
 
 namespace SimpleSAML\Module\ldap\Auth\Process;
 
+use SimpleSAML\Logger;
 use SimpleSAML\Utils\Arrays;
 
 /**
@@ -21,6 +22,13 @@ class AttributeAddUsersGroups extends BaseFilter
      * @var array
      */
     protected $additional_filters;
+
+    /**
+     * A flag whether to escape the additional filter values or not. Defaults to TRUE
+     *
+     * @var bool
+     */
+    protected $escape;
 
 
     /**
@@ -44,6 +52,7 @@ class AttributeAddUsersGroups extends BaseFilter
         );
 
         $this->additional_filters = $this->config->getArray('additional_filters', []);
+        $this->escape = $this->config->getBoolean('escape', true);
 
         // Reference the attributes, just to make the names shorter
         $attributes = &$request['Attributes'];
@@ -51,6 +60,11 @@ class AttributeAddUsersGroups extends BaseFilter
 
         // Get the users groups from LDAP
         $groups = $this->getGroups($attributes);
+
+        // If there are none, do not proceed
+        if (empty($groups)) {
+            return;
+        }
 
         // Make the array if it is not set already
         if (!isset($attributes[$map['groups']])) {
@@ -349,13 +363,19 @@ class AttributeAddUsersGroups extends BaseFilter
             $entries = $this->getLdap()->searchformultiple(
                 $this->base_dn,
                 array_merge(
-                    [
-                        $map['type'] => $this->type_map['group'],
-                        $map['member'] . ':1.2.840.113556.1.4.1941:' => $dn
-                    ],
+                    $this->getLdap()::escape_filter_value(
+                        [
+                            $map['type'] => $this->type_map['group'],
+                            $map['member'] . ':1.2.840.113556.1.4.1941:' => $dn
+                        ],
+                        false
+                    ),
                     $this->additional_filters
                 ),
-                [$map['return']]
+                [$map['return']], // attributes
+                [], // binary attributes
+                true, // AND
+                $this->escape // escape filter values
             );
 
         // The search may throw an exception if no entries
@@ -391,7 +411,7 @@ class AttributeAddUsersGroups extends BaseFilter
             \SimpleSAML\Logger::notice(
                 $this->title . 'The return attribute [' .
                 implode(', ', [$map['return'], strtolower($map['return'])]) .
-                '] could not be found in the entry. ' . $this->varExport($entry)
+                '] could not be found in the entry. ' . $this->var_export($entry)
             );
         }
 

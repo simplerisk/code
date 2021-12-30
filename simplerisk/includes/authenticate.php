@@ -920,30 +920,30 @@ function add_session_check($permissions = null)
 					write_debug_log("Access permission is required.");
 					enforce_permission("access");
 					break;
-                                case "check_admin":
+                case "check_admin":
 					write_debug_log("Admin permission is required.");
 					enforce_permission("admin");
-                                        break;
-                                case "check_assessments":
+                    break;
+                case "check_assessments":
 					write_debug_log("Assessments permission is required.");
 					enforce_permission("assessments");
-                                        break;
-                                case "check_assets":
+                    break;
+                case "check_assets":
 					write_debug_log("Assets permission is required.");
 					enforce_permission("asset");
-                                        break;
-                                case "check_compliance":
+                    break;
+                case "check_compliance":
 					write_debug_log("Compliance permission is required.");
 					enforce_permission("compliance");
-                                        break;
-                                case "check_governance":
+                    break;
+                case "check_governance":
 					write_debug_log("Governance permission is required.");
 					enforce_permission("governance");
-                                        break;
-                                case "check_riskmanagement":
+                    break;
+                case "check_riskmanagement":
 					write_debug_log("Risk management permission is required.");
 					enforce_permission("riskmanagement");
-                                        break;
+                    break;
 				case "check_im":
 					write_debug_log("Incident Management Incidents permission is required.");
 					enforce_permission("im_incidents");
@@ -956,6 +956,14 @@ function add_session_check($permissions = null)
 					write_debug_log("Incident Management Configure permission is required.");
 					enforce_permission("im_configure");
 					break;
+				case "check_vm_vulnerabilities":
+				    write_debug_log("Vulnerability Management 'Vulnerabilities' permission is required.");
+				    enforce_permission("vm_vulnerabilities");
+				    break;
+				case "check_vm_configure":
+				    write_debug_log("Vulnerability Management 'Configure' permission is required.");
+				    enforce_permission("vm_configure");
+				    break;
 			}
 		}
 	}

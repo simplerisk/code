@@ -16,8 +16,8 @@ add_security_headers();
 
 // Add the session
 $permissions = array(
-        "check_access" => true,
-	"check_vulnmgmt" => true,
+    "check_access" => true,
+    "check_vm_configure" => true,
 );
 add_session_check($permissions);
 

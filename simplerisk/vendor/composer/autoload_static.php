@@ -14,9 +14,9 @@ class ComposerStaticInit59d4e07571bbe2f12ae669f9f8611ab9
         '25072dd6e2470089de65ae7bf11d3109' => __DIR__ . '/..' . '/symfony/polyfill-php72/bootstrap.php',
         'f598d06aa772fa33d905e87be6398fb1' => __DIR__ . '/..' . '/symfony/polyfill-intl-idn/bootstrap.php',
         'def43f6c87e4f8dfd0c9e1b1bab14fe8' => __DIR__ . '/..' . '/symfony/polyfill-iconv/bootstrap.php',
+        '7e9bd612cc444b3eed788ebbe46263a0' => __DIR__ . '/..' . '/laminas/laminas-zendframework-bridge/src/autoload.php',
         '538ca81a9a966a6716601ecf48f4eaef' => __DIR__ . '/..' . '/opis/closure/functions.php',
         '2c102faa651ef8ea5874edb585946bce' => __DIR__ . '/..' . '/swiftmailer/swiftmailer/lib/swift_required.php',
-        '7e9bd612cc444b3eed788ebbe46263a0' => __DIR__ . '/..' . '/laminas/laminas-zendframework-bridge/src/autoload.php',
         '2cffec82183ee1cea088009cef9a6fc3' => __DIR__ . '/..' . '/ezyang/htmlpurifier/library/HTMLPurifier.composer.php',
         '39f8f809a191c7af11cb6d6aa45edb06' => __DIR__ . '/..' . '/simplerisk/csrf-magic/csrf-magic.php',
     );
@@ -216,7 +216,7 @@ class ComposerStaticInit59d4e07571bbe2f12ae669f9f8611ab9
         ),
         'SimpleSAML\\modules\\yubikey\\' => 
         array (
-            0 => __DIR__ . '/..' . '/simplesamlphp/simplesamlphp/modules/authYubikey/lib',
+            0 => __DIR__ . '/..' . '/simplesamlphp/simplesamlphp/modules/authYubiKey/lib',
         ),
         'SimpleSAML\\modules\\discopower\\' => 
         array (

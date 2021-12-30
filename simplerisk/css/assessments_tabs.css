@@ -75,7 +75,7 @@ ul.tabs li a.active {
 .group:after {
     clear: both;
 }
-#content {
+.tab-content {
 	padding: 20px;
     padding-bottom: 50px;
 	width: 100%;

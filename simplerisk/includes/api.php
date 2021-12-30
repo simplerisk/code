@@ -888,14 +888,17 @@ function dynamicriskForm()
         $status = isset($_POST['status']) ? $_POST['status'] : 0;
         $sort   = isset($_POST['sort']) ? $_POST['sort'] : 0;
         $group  = isset($_POST['group']) ? $_POST['group'] : 0;
-        
+
         $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
         $length = $_POST['length'] ? (int)$_POST['length'] : 10;
         $group_value_from_db = $_POST['group_value'] ? $_POST['group_value'] : "";
         $orderColumnIndex = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
-        $orderColumnName = isset($_POST['columns'][$orderColumnIndex]['name']) ? $_POST['columns'][$orderColumnIndex]['name'] : null;
-        $orderDir = isset($_POST['order'][0]['dir']) ? $_POST['order'][0]['dir'] : "asc";
-        
+
+        // Sanitizing input
+        $orderColumnName = !empty($_POST['columns'][$orderColumnIndex]['name']) && preg_match('/^[a-zA-Z0-9_]+$/', $_POST['columns'][$orderColumnIndex]['name']) ? $_POST['columns'][$orderColumnIndex]['name'] : null;
+        // Sanitizing input
+        $orderDir = !empty($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
+
         // Params in risks_by_teams page
         $risks_by_team = isset($_POST['risks_by_team']) ? true : false;
         $teams = isset($_POST['teams']) ? $_POST['teams'] : [];
@@ -3612,6 +3615,15 @@ function getFrameworkControlsDatatable(){
     global $lang;
     global $escaper;
 
+    // If the customization extra is enabled, shows fields by asset customization
+    if (customization_extra())
+    {
+        // Load the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+        $active_fields = get_active_fields("control", "", 2);
+
+    }
     // If the user has governance permissions
     if (check_permission("governance"))
     {
@@ -3666,76 +3678,51 @@ function getFrameworkControlsDatatable(){
                     $html .= "<div class='control-block--row text-right'>\n";
                         $html .= $delete.$clone.$edit;
                     $html .= "</div>\n";
-                    $html .= "<div class='control-block--row'>\n";
-                        $html .= "<table width='100%'>\n";
-                            $html .= "<tr>\n";
-                                $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlShortName'])."</strong>: </td>\n";
-                                $html .= "<td width='54%' colspan='3'>".$escaper->escapeHtml($control['short_name'])."</td>\n";
-                            $html .= "<tr>\n";
-                                $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlLongName'])."</strong>: </td>\n";
-                                $html .= "<td colspan='5'>".$escaper->escapeHtml($control['long_name'])."</td>\n";
-                            $html .= "</tr>\n";
-                            $html .= "<tr>\n";
-                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['ControlNumber'])."</strong>: </td>\n";
-                                $html .= "<td>".$escaper->escapeHtml($control['control_number'])."</td>\n";
-                            $html .= "</tr>\n";
-                            $html .= "<tr>\n";
-                                $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlOwner'])."</strong>: </td>\n";
-                                $html .= "<td width='20%'>".$escaper->escapeHtml($control['control_owner_name'])."</td>\n";
-                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['ControlPriority'])."</strong>: </td>\n";
-                                $html .= "<td>".$escaper->escapeHtml($control['control_priority_name'])."</td>\n";
-                            $html .= "</tr>\n";
-                            $html .= "<tr>\n";
-                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['CurrentControlMaturity'])."</strong>: </td>\n";
-                                $html .= "<td>".$escaper->escapeHtml($control['control_maturity_name'])."</td>\n";
-                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['ControlClass'])."</strong>: </td>\n";
-                                $html .= "<td width='22%'>".$escaper->escapeHtml($control['control_class_name'])."</td>\n";
-                            $html .= "</tr>\n";
-                            $html .= "<tr>\n";
-                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['DesiredControlMaturity'])."</strong>: </td>\n";
-                                $html .= "<td>".$escaper->escapeHtml($control['desired_maturity_name'])."</td>\n";
-                                $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlPhase'])."</strong>: </td>\n";
-                                $html .= "<td>".$escaper->escapeHtml($control['control_phase_name'])."</td>\n";
-                            $html .= "</tr>\n";
-                            $html .= "<tr>\n";
-                                $html .= "<td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['MitigationPercent'])."</strong>: </td>\n";
-                                $html .= "<td>".$escaper->escapeHtml($control['mitigation_percent'])."%</td>\n";
-                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['ControlFamily'])."</strong>: </td>\n";
-                                $html .= "<td>".$escaper->escapeHtml($control['family_short_name'])."</td>\n";
-                            $html .= "</tr>\n";
-                            $html .= "<tr>\n";
-                                $html .= "<td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['ControlType'])."</strong>: </td>\n";
-                                $html .= "<td>".$escaper->escapeHtml(get_names_by_multi_values("control_type", $control['control_type_ids']))."</td>\n";
-                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['ControlStatus'])."</strong>: </td>\n";
-                                $html .= "<td>".$escaper->escapeHtml($control_status[$control['control_status']])."</td>\n";
-                            $html .= "</tr>\n";
-                            $html .= "<tr>\n";
-                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['Description'])."</strong>: </td>\n";
-                                $html .= "<td colspan='3'>".nl2br($escaper->escapeHtml($control['description']))."</td>\n";
-                            $html .= "</tr>\n";
-                            $html .= "<tr>\n";
-                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['SupplementalGuidance'])."</strong>: </td>\n";
-                                $html .= "<td colspan='5'>".nl2br($escaper->escapeHtml($control['supplemental_guidance']))."</td>\n";
-                            $html .= "</tr>\n";
-                        $html .= "</table>\n";
-                        $mapped_frameworks = get_mapping_control_frameworks($control['id']);
-                        $html .= "<div class='container-fluid'>\n";
-                            $html .= "<div class='well'>";
-                                $html .= "<h5><span>".$escaper->escapeHtml($lang['MappedControlFrameworks'])."</span></h5>";
-                                $html .= "<table width='100%' class='table table-bordered'>\n";
-                                    $html .= "<tr>\n";
-                                        $html .= "<th width='50%'>".$escaper->escapeHtml($lang['Framework'])."</th>\n";
-                                        $html .= "<th width='35%'>".$escaper->escapeHtml($lang['Control'])."</th>\n";
-                                    $html .= "</tr>\n";
-                                    foreach ($mapped_frameworks as $framework){
-                                        $html .= "<tr>\n";
-                                            $html .= "<td>".$escaper->escapeHtml($framework['framework_name'])."</td>\n";
-                                            $html .= "<td>".$escaper->escapeHtml($framework['reference_name'])."</td>\n";
-                                        $html .= "</tr>\n";
-                                    }
-                                $html .= "</table>\n";
-                            $html .= "</div>\n";
-                        $html .= "</div>\n";
+                    $html .= "<div class='control-block--row control-content'>\n";
+                    if (customization_extra())
+                    {
+                        $html .= "<div class='row-fluid'>";
+                            $html .= display_detail_control_fields_view('top', $active_fields, $control);
+                        $html .= "</div>";
+                        $html .= "<div class='row-fluid'>";
+                            $html .=  "<div class='span5 left-panel'>\n";
+                                $html .= display_detail_control_fields_view('left', $active_fields, $control);
+                            $html .= "</div>";
+                            $html .=  "<div class='span5 right-panel'>\n";
+                                $html .= display_detail_control_fields_view('right', $active_fields, $control);
+                            $html .= "</div>";
+                        $html .= "</div>";
+                        $html .= "<div class='row-fluid'>";
+                            $html .= display_detail_control_fields_view('bottom', $active_fields, $control);
+                        $html .= "</div>";
+                    } else {
+                        $html .= "<div class='row-fluid'>";
+                            $html .= display_control_name_view($control['short_name'], 'top');
+                            $html .= display_control_longname_view($control['long_name'], 'top');
+                            $html .= display_control_number_view2($control['control_number'], 'top');
+                        $html .= "</div>";
+                        $html .= "<div class='row-fluid'>";
+                            $html .=  "<div class='span5 left-panel'>\n";
+                                $html .= display_control_owner_view($control['control_owner_name'], 'left');
+                                $html .= display_control_priority_view($control['control_priority_name'], 'left');
+                                $html .= display_current_maturity_view($control['control_maturity_name'], 'left');
+                                $html .= display_desired_maturity_view($control['desired_maturity_name'], 'left');
+                                $html .= display_control_class_view($control['control_class_name'], 'left');
+                            $html .= "</div>";
+                            $html .=  "<div class='span5 right-panel'>\n";
+                                $html .= display_control_phase_view($control['control_phase_name'], 'right');
+                                $html .= display_control_family_view($control['family_short_name'], 'right');
+                                $html .= display_control_mitigation_percent_view($control['mitigation_percent'], 'right');
+                                $html .= display_control_type_view($control['control_type_ids'], 'right');
+                                $html .= display_control_status_view($control['control_status'], 'right');
+                            $html .= "</div>";
+                        $html .= "</div>";
+                        $html .= "<div class='row-fluid'>";
+                            $html .= display_control_description_view($control['description'], 'bottom');
+                            $html .= display_supplemental_guidance_view($control['supplemental_guidance'], 'bottom');
+                            $html .= display_mapping_framework_view($control['id'], 'bottom');
+                        $html .= "</div>";
+                    }
                     $html .= "</div>\n";
                 $html .= "</div>\n";
             $html .= "</div>\n";
@@ -3773,226 +3760,230 @@ function getMitigationControlsDatatable(){
     global $lang;
     global $escaper;
 
-    $draw = $escaper->escapeHtml($_GET['draw']);
-    $flag = $escaper->escapeHtml($_GET['flag']);
-    $mitigation_id = $escaper->escapeHtml($_GET['mitigation_id']);
-    $control_ids = $_GET['control_ids'];
-    $control_id_array = explode(",", $control_ids);
-
-    $controls = get_framework_controls($control_ids);
-
-    $recordsTotal = count($controls);
-
-    $data = array();
-
-    foreach ($controls as $key=>$control)
-    {
-        // If it is not requested to view all.
-        if($_GET['length'] != -1){
-            if($key < $_GET['start']){
-                continue;
+    if (check_permission("riskmanagement")) {
+        $draw = $escaper->escapeHtml($_GET['draw']);
+        $flag = $escaper->escapeHtml($_GET['flag']);
+        $mitigation_id = $escaper->escapeHtml($_GET['mitigation_id']);
+        $control_ids = $_GET['control_ids'];
+        $control_id_array = explode(",", $control_ids);
+    
+        $controls = get_framework_controls($control_ids);
+    
+        $recordsTotal = count($controls);
+    
+        $data = array();
+    
+        foreach ($controls as $key=>$control)
+        {
+            // If it is not requested to view all.
+            if($_GET['length'] != -1){
+                if($key < $_GET['start']){
+                    continue;
+                }
+                if($key >= ($_GET['start'] + $_GET['length'])){
+                    break;
+                }
             }
-            if($key >= ($_GET['start'] + $_GET['length'])){
-                break;
-            }
-        }
-        $html = "<div class='control-block item-block clearfix'>\n";
-            $html .= "<div class='control-block--header clearfix' data-project=''>\n";
-
-                $html .= "<br>\n";
-                $html .= "<div class='control-block--row'>\n";
-                    $html .= "<table width='100%'>\n";
-                        $html .= "<tr>\n";
-                            $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlLongName'])."</strong>: </td>\n";
-                            $html .= "<td colspan='5'>".$escaper->escapeHtml($control['long_name'])."</td>\n";
-                        $html .= "</tr>\n";
-                        $html .= "<tr>\n";
-                            $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlShortName'])."</strong>: </td>\n";
-                            $html .= "<td width='57%' colspan='3'>".$escaper->escapeHtml($control['short_name'])."</td>\n";
-                            $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlOwner'])."</strong>: </td>\n";
-                            $html .= "<td width='17%'>".$escaper->escapeHtml($control['control_owner_name'])."</td>\n";
-                        $html .= "</tr>\n";
-                        $html .= "<tr>\n";
-                            $html .= "<td  align='right'><strong>".$escaper->escapeHtml($lang['ControlClass'])."</strong>: </td>\n";
-                            $html .= "<td>".$escaper->escapeHtml($control['control_class_name'])."</td>\n";
-                            $html .= "<td  align='right'><strong>".$escaper->escapeHtml($lang['ControlPhase'])."</strong>: </td>\n";
-                            $html .= "<td>".$escaper->escapeHtml($control['control_phase_name'])."</td>\n";
-                            $html .= "<td  align='right'><strong>".$escaper->escapeHtml($lang['ControlNumber'])."</strong>: </td>\n";
-                            $html .= "<td>".$escaper->escapeHtml($control['control_number'])."</td>\n";
-                        $html .= "</tr>\n";
-                        $html .= "<tr>\n";
-                            $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['ControlPriority'])."</strong>: </td>\n";
-                            $html .= "<td>".$escaper->escapeHtml($control['control_priority_name'])."</td>\n";
-                            $html .= "<td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['ControlFamily'])."</strong>: </td>\n";
-                            $html .= "<td>".$escaper->escapeHtml($control['family_short_name'])."</td>\n";
-                            $html .= "<td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['MitigationPercent'])."</strong>: </td>\n";
-                            $html .= "<td>".$escaper->escapeHtml($control['mitigation_percent'])."%</td>\n";
-                        $html .= "</tr>\n";
-                        $html .= "<tr>\n";
-                            $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['Description'])."</strong>: </td>\n";
-                            $html .= "<td colspan='5'>".$escaper->escapeHtml($control['description'])."</td>\n";
-                        $html .= "</tr>\n";
-                        $html .= "<tr>\n";
-                            $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['SupplementalGuidance'])."</strong>: </td>\n";
-                            $html .= "<td colspan='5'>".$escaper->escapeHtml($control['supplemental_guidance'])."</td>\n";
-                        $html .= "</tr>\n";
-                    $html .= "</table>\n";
-                    $mapped_frameworks = get_mapping_control_frameworks($control['id']);
-                    $html .= "<div class='container-fluid'>\n";
-                        $html .= "<div class='well'>";
-                            $html .= "<h5><span>".$escaper->escapeHtml($lang['MappedControlFrameworks'])."</span></h5>";
-                            $html .= "<table width='100%' class='table table-bordered'>\n";
-                                $html .= "<tr>\n";
-                                    $html .= "<th width='50%'>".$escaper->escapeHtml($lang['Framework'])."</th>\n";
-                                    $html .= "<th width='35%'>".$escaper->escapeHtml($lang['Control'])."</th>\n";
-                                $html .= "</tr>\n";
-                                foreach ($mapped_frameworks as $framework){
+            $html = "<div class='control-block item-block clearfix'>\n";
+                $html .= "<div class='control-block--header clearfix' data-project=''>\n";
+    
+                    $html .= "<br>\n";
+                    $html .= "<div class='control-block--row'>\n";
+                        $html .= "<table width='100%'>\n";
+                            $html .= "<tr>\n";
+                                $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlLongName'])."</strong>: </td>\n";
+                                $html .= "<td colspan='5'>".$escaper->escapeHtml($control['long_name'])."</td>\n";
+                            $html .= "</tr>\n";
+                            $html .= "<tr>\n";
+                                $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlShortName'])."</strong>: </td>\n";
+                                $html .= "<td width='57%' colspan='3'>".$escaper->escapeHtml($control['short_name'])."</td>\n";
+                                $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlOwner'])."</strong>: </td>\n";
+                                $html .= "<td width='17%'>".$escaper->escapeHtml($control['control_owner_name'])."</td>\n";
+                            $html .= "</tr>\n";
+                            $html .= "<tr>\n";
+                                $html .= "<td  align='right'><strong>".$escaper->escapeHtml($lang['ControlClass'])."</strong>: </td>\n";
+                                $html .= "<td>".$escaper->escapeHtml($control['control_class_name'])."</td>\n";
+                                $html .= "<td  align='right'><strong>".$escaper->escapeHtml($lang['ControlPhase'])."</strong>: </td>\n";
+                                $html .= "<td>".$escaper->escapeHtml($control['control_phase_name'])."</td>\n";
+                                $html .= "<td  align='right'><strong>".$escaper->escapeHtml($lang['ControlNumber'])."</strong>: </td>\n";
+                                $html .= "<td>".$escaper->escapeHtml($control['control_number'])."</td>\n";
+                            $html .= "</tr>\n";
+                            $html .= "<tr>\n";
+                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['ControlPriority'])."</strong>: </td>\n";
+                                $html .= "<td>".$escaper->escapeHtml($control['control_priority_name'])."</td>\n";
+                                $html .= "<td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['ControlFamily'])."</strong>: </td>\n";
+                                $html .= "<td>".$escaper->escapeHtml($control['family_short_name'])."</td>\n";
+                                $html .= "<td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['MitigationPercent'])."</strong>: </td>\n";
+                                $html .= "<td>".$escaper->escapeHtml($control['mitigation_percent'])."%</td>\n";
+                            $html .= "</tr>\n";
+                            $html .= "<tr>\n";
+                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['Description'])."</strong>: </td>\n";
+                                $html .= "<td colspan='5'>".$escaper->escapeHtml($control['description'])."</td>\n";
+                            $html .= "</tr>\n";
+                            $html .= "<tr>\n";
+                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['SupplementalGuidance'])."</strong>: </td>\n";
+                                $html .= "<td colspan='5'>".$escaper->escapeHtml($control['supplemental_guidance'])."</td>\n";
+                            $html .= "</tr>\n";
+                        $html .= "</table>\n";
+                        $mapped_frameworks = get_mapping_control_frameworks($control['id']);
+                        $html .= "<div class='container-fluid'>\n";
+                            $html .= "<div class='well'>";
+                                $html .= "<h5><span>".$escaper->escapeHtml($lang['MappedControlFrameworks'])."</span></h5>";
+                                $html .= "<table width='100%' class='table table-bordered'>\n";
                                     $html .= "<tr>\n";
-                                        $html .= "<td>".$escaper->escapeHtml($framework['framework_name'])."</td>\n";
-                                        $html .= "<td>".$escaper->escapeHtml($framework['reference_name'])."</td>\n";
+                                        $html .= "<th width='50%'>".$escaper->escapeHtml($lang['Framework'])."</th>\n";
+                                        $html .= "<th width='35%'>".$escaper->escapeHtml($lang['Control'])."</th>\n";
                                     $html .= "</tr>\n";
-                                }
-                            $html .= "</table>\n";
+                                    foreach ($mapped_frameworks as $framework){
+                                        $html .= "<tr>\n";
+                                            $html .= "<td>".$escaper->escapeHtml($framework['framework_name'])."</td>\n";
+                                            $html .= "<td>".$escaper->escapeHtml($framework['reference_name'])."</td>\n";
+                                        $html .= "</tr>\n";
+                                    }
+                                $html .= "</table>\n";
+                            $html .= "</div>\n";
                         $html .= "</div>\n";
                     $html .= "</div>\n";
+            $validation = get_mitigation_to_controls($mitigation_id,$control['id']);
+            $control_status_names = get_names_by_multi_values("control_type", $control['control_type_ids']);
+            $files = get_validation_files($mitigation_id, $control['id']);
+            $html .= "<div class='container-fluid'>\n";
+            $validation_details = isset($validation["validation_details"]) ? $validation["validation_details"] : "";
+            $validation_owner = isset($validation["validation_owner"]) ? $validation["validation_owner"] : 0;
+            $validation_mitigation_percent = (isset($validation["validation_details"]) && $validation["validation_mitigation_percent"] >= 0 && $validation["validation_mitigation_percent"] <= 100) ? $validation["validation_mitigation_percent"] : 0;
+            if($flag == "edit"){
+                if($validation_mitigation_percent && $validation_details != "") {
+                    $arrow_class = "fa-caret-down";
+                    $panel_css ="";
+                } else {
+                    $arrow_class = "fa-caret-right";
+                    $panel_css ="display: none;";
+                }
+                $html .= "<div class='well'>";
+                    $html .= "<h5 class='collapsible--toggle'><span><i class='fa ".$arrow_class."'></i>".$escaper->escapeHtml($lang['ControlValidation'])."</span></h5>";
+                    $html .= "<div class='collapsible' style='".$panel_css."'>";
+                        $html .= "<div class='row-fluid'>";
+                            $html .= "<div class='span4'>
+                                ".$escaper->escapeHtml($lang['Details']).":<br>
+                                <textarea class='active-textfield' title='".$escaper->escapeHtml($lang['Details']) ."' name='validation_details_".$control['id']."' style='width:100%;' rows='3'>".$escaper->escapeHtml($validation_details)."</textarea>
+                            </div>";
+                        $html .= "</div>";
+                        $html .= "<div class='row-fluid'>";
+                            $html .= "<div class='span4'>
+                                ".$escaper->escapeHtml($lang['Owner']).":<br>
+                                ".create_dropdown("enabled_users", $validation_owner, "validation_owner_".$control['id'], true, false, true)."
+                            </div>";
+                        $html .= "</div>";
+                        $html .= "<div class='row-fluid'>";
+                            $html .= "<div class='span4'>
+                                ".$escaper->escapeHtml($lang['MitigationPercent']).":<br>
+                                <input type='number' min='0' max='100' name='validation_mitigation_percent_".$control['id']."' value='".$escaper->escapeHtml($validation_mitigation_percent) ."' size='50' class='percent active-textfield' />
+                            </div>";
+                        $html .= "</div>\n";
+                        $html .= "<div class='row-fluid'>";
+                            $exist_files = "";
+                            foreach ($files as $file)
+                            {
+                                $exist_files .= "<li>
+                                    <div class='file-name'><a href=\"download.php?id=" . $escaper->escapeHtml($file['id']) . "&file_type=validation_file\" target=\"_blank\" />" . $escaper->escapeHtml($file['name']) . "</a></div>
+                                    <a href='#' class='remove-file' ><i class='fa fa-times'></i></a>
+                                    <input type='hidden' name='file_ids_".$control['id']."[]' value='".$escaper->escapeHtml($file['id'])."'>
+                                </li>";
+                            }
+                            $html .= "<div class='span4'>
+                                ".$escaper->escapeHtml($lang['UploadArtifact']).":<br>
+                                    <div class='file-uploader'>
+                                        <div class='file_name' data-file='artifact-file-".$control['id']."'></div>
+                                        <script>
+                                              var max_upload_size = ".$escaper->escapeJs(get_setting('max_upload_size', 0)).";
+                                              var fileTooBigMessage = '".$escaper->escapeJs($lang['FileIsTooBigToUpload'])."';
+                                        </script>
+                                        <label for=\"artifact-file-upload-".$control['id']."\" class=\"btn active-textfield\">".$escaper->escapeHtml($lang['ChooseFile'])."</label> <span class=\"file-count-html\"><span class=\"file-count\">".count($files)."</span> ".$escaper->escapeHtml($lang['FileAdded'])."</span>
+                                        <p><font size=\"2\"><strong>Max ". $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)) ." Mb</strong></font></p>
+                                        <ul class=\"exist-files\">".$exist_files."</ul>
+                                        <ul class=\"file-list\"></ul>
+                                        <input type=\"file\" name=\"artifact-file-".$control['id']."[]\" id=\"artifact-file-upload-".$control['id']."\" class=\"hidden-file-upload active\" />
+                                    </div>
+                            </div>";
+                        $html .= "</div>\n";
+                        $html .= "<div class='row-fluid'>";
+                            $html .= "<div class='span4'>
+                                ".$escaper->escapeHtml($lang['ControlType']).": ".$escaper->escapeHtml($control_status_names)."
+                            </div>";
+                        $html .= "</div>";
+                        if(strpos($control_status_names, "Enterprise") !== false) {
+                            $control_status = array("1" => $escaper->escapeHtml($lang["Pass"]), "0" => $escaper->escapeHtml($lang["Fail"]));
+                            $html .= "<div class='row-fluid'>";
+                                $html .= "<div class='span4'>
+                                    ".$escaper->escapeHtml($lang['ControlStatus']).": ".$control_status[$control['control_status']]."
+                                </div>";
+                            $html .= "</div>";
+                        }
+                    $html .= "</div>\n";
                 $html .= "</div>\n";
-        $validation = get_mitigation_to_controls($mitigation_id,$control['id']);
-        $control_status_names = get_names_by_multi_values("control_type", $control['control_type_ids']);
-        $files = get_validation_files($mitigation_id, $control['id']);
-        $html .= "<div class='container-fluid'>\n";
-        $validation_details = isset($validation["validation_details"]) ? $validation["validation_details"] : "";
-        $validation_owner = isset($validation["validation_owner"]) ? $validation["validation_owner"] : 0;
-        $validation_mitigation_percent = (isset($validation["validation_details"]) && $validation["validation_mitigation_percent"] >= 0 && $validation["validation_mitigation_percent"] <= 100) ? $validation["validation_mitigation_percent"] : 0;
-        if($flag == "edit"){
-            if($validation_mitigation_percent && $validation_details != "") {
-                $arrow_class = "fa-caret-down";
-                $panel_css ="";
-            } else {
-                $arrow_class = "fa-caret-right";
-                $panel_css ="display: none;";
             }
-            $html .= "<div class='well'>";
-                $html .= "<h5 class='collapsible--toggle'><span><i class='fa ".$arrow_class."'></i>".$escaper->escapeHtml($lang['ControlValidation'])."</span></h5>";
-                $html .= "<div class='collapsible' style='".$panel_css."'>";
+            if($flag == "view" && ($validation_details || $validation_details || $validation_mitigation_percent)){
+                $html .= "<div class='well'>";
+                    $html .= "<h5><span>".$escaper->escapeHtml($lang['ControlValidation'])."</span></h5>";
                     $html .= "<div class='row-fluid'>";
                         $html .= "<div class='span4'>
-                            ".$escaper->escapeHtml($lang['Details']).":<br>
-                            <textarea class='active-textfield' title='".$escaper->escapeHtml($lang['Details']) ."' name='validation_details_".$control['id']."' style='width:100%;' rows='3'>".$escaper->escapeHtml($validation_details)."</textarea>
+                            <b>".$escaper->escapeHtml($lang['Details']).":</b>&nbsp;
+                            ".nl2br($escaper->escapeHtml($validation_details))."
+                        </div>";
+                        $html .= "</div>";
+                        $html .= "<div class='row-fluid'>";
+                        $html .= "<div class='span4'>
+                            <b>".$escaper->escapeHtml($lang['Owner']).":</b>&nbsp;
+                            ".$escaper->escapeHtml(get_name_by_value("user", $validation_details))."
                         </div>";
                     $html .= "</div>";
                     $html .= "<div class='row-fluid'>";
                         $html .= "<div class='span4'>
-                            ".$escaper->escapeHtml($lang['Owner']).":<br>
-                            ".create_dropdown("enabled_users", $validation_owner, "validation_owner_".$control['id'], true, false, true)."
-                        </div>";
-                    $html .= "</div>";
-                    $html .= "<div class='row-fluid'>";
-                        $html .= "<div class='span4'>
-                            ".$escaper->escapeHtml($lang['MitigationPercent']).":<br>
-                            <input type='number' min='0' max='100' name='validation_mitigation_percent_".$control['id']."' value='".$escaper->escapeHtml($validation_mitigation_percent) ."' size='50' class='percent active-textfield' />
+                            <b>".$escaper->escapeHtml($lang['MitigationPercent']).":</b>&nbsp;
+                            ".$escaper->escapeHtml($validation_mitigation_percent)." %
                         </div>";
                     $html .= "</div>\n";
                     $html .= "<div class='row-fluid'>";
-                        $exist_files = "";
+                        $html .= "<div class='span4'><b>".$escaper->escapeHtml($lang['UploadArtifact']).":</b>&nbsp;";
                         foreach ($files as $file)
                         {
-                            $exist_files .= "<li>
-                                <div class='file-name'><a href=\"download.php?id=" . $escaper->escapeHtml($file['id']) . "&file_type=validation_file\" target=\"_blank\" />" . $escaper->escapeHtml($file['name']) . "</a></div>
-                                <a href='#' class='remove-file' ><i class='fa fa-times'></i></a>
-                                <input type='hidden' name='file_ids_".$control['id']."[]' value='".$escaper->escapeHtml($file['id'])."'>
-                            </li>";
+                            $html .= "<div class =\"doc-link edit-mode\"><a href=\"download.php?id=" . $escaper->escapeHtml($file['id']) . "&file_type=validation_file\" >" . $escaper->escapeHtml($file['name']) . "</a></div>";
                         }
-                        $html .= "<div class='span4'>
-                            ".$escaper->escapeHtml($lang['UploadArtifact']).":<br>
-                                <div class='file-uploader'>
-                                    <div class='file_name' data-file='artifact-file-".$control['id']."'></div>
-                                    <script>
-                                          var max_upload_size = ".$escaper->escapeJs(get_setting('max_upload_size', 0)).";
-                                          var fileTooBigMessage = '".$escaper->escapeJs($lang['FileIsTooBigToUpload'])."';
-                                    </script>
-                                    <label for=\"artifact-file-upload-".$control['id']."\" class=\"btn active-textfield\">".$escaper->escapeHtml($lang['ChooseFile'])."</label> <span class=\"file-count-html\"><span class=\"file-count\">".count($files)."</span> ".$escaper->escapeHtml($lang['FileAdded'])."</span>
-                                    <p><font size=\"2\"><strong>Max ". $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)) ." Mb</strong></font></p>
-                                    <ul class=\"exist-files\">".$exist_files."</ul>
-                                    <ul class=\"file-list\"></ul>
-                                    <input type=\"file\" name=\"artifact-file-".$control['id']."[]\" id=\"artifact-file-upload-".$control['id']."\" class=\"hidden-file-upload active\" />
-                                </div>
-                        </div>";
+    
+                        $html .= "</div>";
                     $html .= "</div>\n";
                     $html .= "<div class='row-fluid'>";
                         $html .= "<div class='span4'>
-                            ".$escaper->escapeHtml($lang['ControlType']).": ".$escaper->escapeHtml($control_status_names)."
+                            <b>".$escaper->escapeHtml($lang['ControlType'])."</b>: ".$escaper->escapeHtml(get_names_by_multi_values("control_type", $control['control_type_ids']))."
                         </div>";
                     $html .= "</div>";
+              
                     if(strpos($control_status_names, "Enterprise") !== false) {
                         $control_status = array("1" => $escaper->escapeHtml($lang["Pass"]), "0" => $escaper->escapeHtml($lang["Fail"]));
                         $html .= "<div class='row-fluid'>";
                             $html .= "<div class='span4'>
-                                ".$escaper->escapeHtml($lang['ControlStatus']).": ".$control_status[$control['control_status']]."
+                                <b>".$escaper->escapeHtml($lang['ControlStatus'])."</b>: ".$control_status[$control['control_status']]."
                             </div>";
                         $html .= "</div>";
                     }
                 $html .= "</div>\n";
-            $html .= "</div>\n";
+            }
+            $html .= "  </div>
+                    </div>
+                </div>\n";
+            $data[] = [$html];
         }
-        if($flag == "view" && ($validation_details || $validation_details || $validation_mitigation_percent)){
-            $html .= "<div class='well'>";
-                $html .= "<h5><span>".$escaper->escapeHtml($lang['ControlValidation'])."</span></h5>";
-                $html .= "<div class='row-fluid'>";
-                    $html .= "<div class='span4'>
-                        <b>".$escaper->escapeHtml($lang['Details']).":</b>&nbsp;
-                        ".nl2br($escaper->escapeHtml($validation_details))."
-                    </div>";
-                    $html .= "</div>";
-                    $html .= "<div class='row-fluid'>";
-                    $html .= "<div class='span4'>
-                        <b>".$escaper->escapeHtml($lang['Owner']).":</b>&nbsp;
-                        ".$escaper->escapeHtml(get_name_by_value("user", $validation_details))."
-                    </div>";
-                $html .= "</div>";
-                $html .= "<div class='row-fluid'>";
-                    $html .= "<div class='span4'>
-                        <b>".$escaper->escapeHtml($lang['MitigationPercent']).":</b>&nbsp;
-                        ".$escaper->escapeHtml($validation_mitigation_percent)." %
-                    </div>";
-                $html .= "</div>\n";
-                $html .= "<div class='row-fluid'>";
-                    $html .= "<div class='span4'><b>".$escaper->escapeHtml($lang['UploadArtifact']).":</b>&nbsp;";
-                    foreach ($files as $file)
-                    {
-                        $html .= "<div class =\"doc-link edit-mode\"><a href=\"download.php?id=" . $escaper->escapeHtml($file['id']) . "&file_type=validation_file\" >" . $escaper->escapeHtml($file['name']) . "</a></div>";
-                    }
-
-                    $html .= "</div>";
-                $html .= "</div>\n";
-                $html .= "<div class='row-fluid'>";
-                    $html .= "<div class='span4'>
-                        <b>".$escaper->escapeHtml($lang['ControlType'])."</b>: ".$escaper->escapeHtml(get_names_by_multi_values("control_type", $control['control_type_ids']))."
-                    </div>";
-                $html .= "</div>";
-          
-                if(strpos($control_status_names, "Enterprise") !== false) {
-                    $control_status = array("1" => $escaper->escapeHtml($lang["Pass"]), "0" => $escaper->escapeHtml($lang["Fail"]));
-                    $html .= "<div class='row-fluid'>";
-                        $html .= "<div class='span4'>
-                            <b>".$escaper->escapeHtml($lang['ControlStatus'])."</b>: ".$control_status[$control['control_status']]."
-                        </div>";
-                    $html .= "</div>";
-                }
-            $html .= "</div>\n";
-        }
-        $html .= "  </div>
-                </div>
-            </div>\n";
-        $data[] = [$html];
+        $result = array(
+            'draw' => $draw,
+            'data' => $data,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsTotal,
+        );
+        echo json_encode($result);
+        exit;
+    } else {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
     }
-    $result = array(
-        'draw' => $draw,
-        'data' => $data,
-        'recordsTotal' => $recordsTotal,
-        'recordsFiltered' => $recordsTotal,
-    );
-    echo json_encode($result);
-    exit;
 }
 
 /**********************************************
@@ -4467,8 +4458,8 @@ function auditTimelineResponse()
         $draw = $escaper->escapeHtml($_GET['draw']);
 
         $orderColumn = isset($_GET['order'][0]['column']) ? $_GET['order'][0]['column'] : "";
-        $orderColumnName = isset($_GET['columns'][$orderColumn]['name']) ? $_GET['columns'][$orderColumn]['name'] : null;;
-        $orderDir = strtolower($_GET['order'][0]['dir']) == "asc" ? "asc" : "desc";
+        $orderColumnName = isset($_GET['columns'][$orderColumn]['name']) ? $_GET['columns'][$orderColumn]['name'] : null;
+        $orderDir = !empty($_GET['order'][0]['dir']) && strtolower($_GET['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
 
         // Get risks requiring mitigations
         $audit_tests = get_audit_tests($orderColumnName, $orderDir);
@@ -5817,7 +5808,7 @@ function getPlanMitigationsDatatableResponse()
         $length = $_POST['length'] ? (int)$_POST['length'] : 10;
         $orderColumn = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
         $orderColumnName = isset($_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;;
-        $orderDir = isset($_POST['order'][0]['dir'])?$escaper->escapeHtml($_POST['order'][0]['dir']):false;
+        $orderDir = !empty($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
 
         $column_filters = [];
         for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
@@ -6281,8 +6272,8 @@ function getManagementReviewsDatatableResponse()
         $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
         $length = $_POST['length'] ? (int)$_POST['length'] : 10;
         $orderColumn = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
-        $orderColumnName = isset($_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;;
-        $orderDir = isset($_POST['order'][0]['dir'])?$escaper->escapeHtml($_POST['order'][0]['dir']):false;
+        $orderColumnName = isset($_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;
+        $orderDir = !empty($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
 
         $column_filters = [];
         for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
@@ -6748,8 +6739,8 @@ function getReviewRisksDatatableResponse()
         $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
         $length = $_POST['length'] ? (int)$_POST['length'] : 10;
         $orderColumn = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
-        $orderColumnName = isset($_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;;
-        $orderDir = $escaper->escapeHtml($_POST['order'][0]['dir']);
+        $orderColumnName = isset($_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;
+        $orderDir = !empty($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
 
         $column_filters = [];
         for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
@@ -7405,7 +7396,9 @@ function assets_update_asset()
                     // Include the extra
                     require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
                     
-                    $updated = save_asset_custom_field_by_field_id($id, $custom_field_id, $fieldValue);
+                    //$updated = save_asset_custom_field_by_field_id($id, $custom_field_id, $fieldValue);
+                    $_POST['custom_field'] = array($custom_field_id => $fieldValue); 
+                    $updated = save_custom_field_values($id, "asset");
                 }
                 else
                 {
@@ -8665,8 +8658,7 @@ function saveDynamicSelectionsForm()
     if(check_exisiting_dynamic_selection_name($_SESSION['uid'], $name))
     {
         set_alert(true, "bad", $lang['TheNameAlreadyExists']);
-        
-        json_response(200, get_alert(true), []);
+        json_response(400, get_alert(true), []);
     }
     else
     {
@@ -8674,15 +8666,15 @@ function saveDynamicSelectionsForm()
         $custom_selection_settings = get_param("post", "selects");
         $custom_column_filters = get_param("post", "columnFilters");
         $id = save_dynamic_selections($type, $name, $custom_display_settings, $custom_selection_settings,$custom_column_filters);
-        
-        // Create the data array
-        $data = array("value" => $id, "name" => ($type=="private"? $name." -- ".$escaper->escapeHtml($lang['Private']) : $name) );
-        
-        set_alert(true, "good", $lang['SavedSuccess']);
-        
-        json_response(200, get_alert(true), $data);
-    }
 
+        $saved_selection = get_dynamic_saved_selection($id);
+        if ($saved_selection) {
+            set_alert(true, "good", $lang['SavedSuccess']);
+            json_response(200, get_alert(true), ['value' => $id, 'name' => $saved_selection['name'], 'type' => $saved_selection['type']]);
+        }
+    }
+    set_alert(true, "bad", $lang['SelectionSaveFailed']);
+    json_response(400, get_alert(true), []);
 }
 
 /**************************************
@@ -8695,23 +8687,29 @@ function deleteDynamicSelectionForm()
     $id = get_param("post", "id");
 
     // If the id is not sent
-    if (!$id)
-    {
-        set_alert(true, "bad", $escaper->escapeHtml($lang['ThereAreRequiredFields']));
+    if (!$id) {
+        set_alert(true, "bad", $lang['ThereAreRequiredFields']);
 
         // Return a JSON response
         json_response(400, get_alert(true), NULL);
     }
-    
-    delete_dynamic_selection($id);
-    
-    // Create the data array
-    $data = array("value" => $id);
-    
-    set_alert(true, "good", $lang['DeletedSuccess']);
-    
-    json_response(200, "", $data);
 
+    // Get the selection data so we can check if the user has the permission to delete the saved selection
+    $selection = get_dynamic_saved_selection($id);
+    
+    // Admins can access/manage all saved selections
+    if($_SESSION['admin'] || $selection['user_id'] == $_SESSION['uid']) {
+
+        delete_dynamic_selection($id);
+
+        // Not returning the alert on purpose because the UI logic is refreshing the page and if we user get_alert() here
+        // then it'll remove it from the session and won't be displayed after the reload
+        set_alert(true, "good", $lang['DeletedSuccess']);
+        json_response(200, null, null);
+    }
+
+    set_alert(true, "bad", $lang['NoPermissionForThisSelection']);
+    json_response(400, get_alert(true), null);
 }
 
 /****************************************
@@ -9476,6 +9474,7 @@ function high_risk_report_datatable() {
                             risk_id
                     ) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date
             ) latest_review ON `rsk`.`id` = latest_review.risk_id
+        GROUP BY `rsk`.`id`
         {$sort}
         {$limit};
     ";
@@ -9655,7 +9654,7 @@ function add_project_api(){
                 require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
                 // If there is error in saving custom project values, delete added project and return false
-                if(!save_project_custom_field_values($new_project_id))
+                if(!save_custom_field_values($new_project_id, "project"))
                 {
                     // Delete just inserted project
                     delete_value("projects", $new_project_id);
@@ -9703,7 +9702,7 @@ function edit_project_api(){
                 // Include the extra
                 require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
-                save_project_custom_field_values($value);
+                save_custom_field_values($value, "project");
             }
 
             set_alert(true, "good", $escaper->escapeHtml($lang['UpdatedSuccess']));
@@ -9770,7 +9769,7 @@ function delete_project_api(){
                     // Include the extra
                     require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
                     // delete custom project data
-                    delete_custom_data_by_project_id($value);
+                    delete_custom_data_by_row_id($value, "project");
                 }
 
                 // Display an alert
@@ -9879,23 +9878,24 @@ function update_project_order_api(){
 /****************************************
  * FUNCTION: GET RISK CATALOG DATATABLE *
  ****************************************/
-function getRiskCatalogDatatableAPI()
-{
-    global $lang, $escaper;
+function getRiskCatalogDatatableAPI() {
+    global $escaper;
 
-    if (is_admin())
-    {
+    if (is_admin()) {
         $risk_catalogs = get_risk_catalogs();
         $rows = array();
         foreach($risk_catalogs as $risk){
             $rows[] = array(
-                "DT_RowId"=>$risk['id'],
-                $escaper->escapeHtml($risk['grouping_name']),
-                $escaper->escapeHtml($risk['number']),
-                $escaper->escapeHtml($risk['name']),
-                $escaper->escapeHtml($risk['description']),
-                $escaper->escapeHtml($risk['function_name']),
-                "<a href='javascript:void();' class='edit_risk_catalog' data-id='".$risk['id']."' style='display:inline;'><i class='fa fa-edit'></i></a>&nbsp;&nbsp;&nbsp;<a href='javascript:void();' class='delete_risk_catalog' data-id='".$risk['id']."' style='display:inline;'><i class='fa fa-trash'></i></a>",
+                "DT_RowId" => $risk['id'],
+                "order" => $risk['order'],
+                "group_id" => $risk['group_id'],
+                "group_order" => $risk['group_order'],
+                "group_name" => $escaper->escapeHtml($risk['group_name']),
+                "number" => $escaper->escapeHtml($risk['number']),
+                "name" => $escaper->escapeHtml($risk['name']),
+                "description" => $escaper->escapeHtml($risk['description']),
+                "function_name" => $escaper->escapeHtml($risk['function_name']),
+                "actions" => "<a href='javascript:void();' class='edit_risk_catalog' data-id='".$risk['id']."' style='display:inline;'><i class='fa fa-edit'></i></a>&nbsp;&nbsp;&nbsp;<a href='javascript:void();' class='delete_risk_catalog' data-id='".$risk['id']."' style='display:inline;'><i class='fa fa-trash'></i></a>",
             );
         }
         $draw = $escaper->escapeHtml($_GET['draw']);
@@ -9917,22 +9917,23 @@ function getRiskCatalogDatatableAPI()
 /******************************************
  * FUNCTION: GET THREAT CATALOG DATATABLE *
  ******************************************/
-function getThreatCatalogDatatableAPI()
-{
-    global $lang, $escaper;
+function getThreatCatalogDatatableAPI() {
+    global $escaper;
 
-    if (is_admin())
-    {
+    if (is_admin()) {
         $threat_catalogs = get_threat_catalogs();
         $rows = array();
         foreach($threat_catalogs as $threat){
             $rows[] = array(
-                "DT_RowId"=>$threat['id'],
-                $escaper->escapeHtml($threat['grouping_name']),
-                $escaper->escapeHtml($threat['number']),
-                $escaper->escapeHtml($threat['name']),
-                $escaper->escapeHtml($threat['description']),
-                "<a href='javascript:void();' class='edit_threat_catalog' data-id='".$threat['id']."' style='display:inline;'><i class='fa fa-edit'></i></a>&nbsp;&nbsp;&nbsp;<a href='javascript:void();' class='delete_threat_catalog' data-id='".$threat['id']."' style='display:inline;'><i class='fa fa-trash'></i></a>",
+                "DT_RowId" => $threat['id'],
+                "order" => $threat['order'],
+                "group_id" => $threat['group_id'],
+                "group_order" => $threat['group_order'],
+                "group_name" => $escaper->escapeHtml($threat['group_name']),
+                "number" => $escaper->escapeHtml($threat['number']),
+                "name" => $escaper->escapeHtml($threat['name']),
+                "description" => $escaper->escapeHtml($threat['description']),
+                "actions" => "<a href='javascript:void();' class='edit_threat_catalog' data-id='".$threat['id']."' style='display:inline;'><i class='fa fa-edit'></i></a>&nbsp;&nbsp;&nbsp;<a href='javascript:void();' class='delete_threat_catalog' data-id='".$threat['id']."' style='display:inline;'><i class='fa fa-trash'></i></a>",
             );
         }
         $draw = $escaper->escapeHtml($_GET['draw']);
@@ -9944,9 +9945,69 @@ function getThreatCatalogDatatableAPI()
         );
         echo json_encode($result);
         exit;
+    } else {
+        unauthorized_access();
     }
-    else
-    {
+}
+/****************************************************
+ * FUNCTION: SWAP RISK/THREAT CATALOG GROUP ORDERS  *
+ ****************************************************/
+function swapGroupCatalogAPI() {
+    global $lang, $escaper;
+
+    if (is_admin()) {
+        $type = !empty($_POST['type']) && in_array($_POST['type'], ['risk', 'threat']) ? $_POST['type'] : false;
+        if (!$type) {
+            set_alert(true, "bad", $lang['YouNeedToSpecifyATypeParameter']);
+            json_response(400, get_alert(true), NULL);
+        }
+
+        $group1_id = (int)$_POST['group1_id'];
+        $group2_id = (int)$_POST['group2_id'];
+
+        if (!$group1_id || !$group2_id || $group1_id === $group2_id) {
+            set_alert(true, "bad", $lang['InvalidGroups']);
+            json_response(400, get_alert(true), NULL);
+        }
+
+        $db = db_open();
+
+        // Get the order values from group 1 and 2
+        // I'd rather not use orders coming from the UI
+        $stmt = $db->prepare("
+            SELECT `order` FROM `{$type}_grouping` WHERE `value` = :group_id;
+        ");
+        $stmt->bindParam(":group_id", $group1_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $group1_order = $stmt->fetchColumn();
+
+        $stmt = $db->prepare("
+            SELECT `order` FROM `{$type}_grouping` WHERE `value` = :group_id;
+        ");
+        $stmt->bindParam(":group_id", $group2_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $group2_order = $stmt->fetchColumn();
+
+        // Update the orders based on the orders got from the DB
+        $stmt = $db->prepare("
+            UPDATE
+                `{$type}_grouping`
+            SET `order` = CASE
+                    WHEN (`order` = :group1) THEN :group2
+                    WHEN (`order` = :group2) THEN :group1
+                END
+            WHERE
+                `order` IN (:group1, :group2);
+        ");
+        $stmt->bindParam(":group1", $group1_order, PDO::PARAM_INT);
+        $stmt->bindParam(":group2", $group2_order, PDO::PARAM_INT);
+        $stmt->execute();
+
+        db_close($db);
+
+        set_alert(true, "good", $lang['OrderUpdatedSuccessfully']);
+        json_response(200, get_alert(true), NULL);
+    } else {
         unauthorized_access();
     }
 }
@@ -10011,7 +10072,7 @@ function updateRiskCatalogOrderAPI()
             $orders = $_POST['orders'];
             update_risk_catalog_order($orders);
             // Display an alert
-            set_alert(true, "good", "The order was updated successfully.");
+            set_alert(true, "good", $lang['OrderUpdatedSuccessfully']);
             json_response(200, get_alert(true), NULL);
         }
 
@@ -10037,7 +10098,7 @@ function updateThreatCatalogOrderAPI()
             $orders = $_POST['orders'];
             update_threat_catalog_order($orders);
             // Display an alert
-            set_alert(true, "good", "The order was updated successfully.");
+            set_alert(true, "good", $lang['OrderUpdatedSuccessfully']);
             json_response(200, get_alert(true), NULL);
         }
 
@@ -11066,16 +11127,16 @@ function controlGapAnalysisResponse()
     // If the user has governance permissions
     if (check_permission("governance"))
     {
-	$framework_id = $escaper->escapeHtml($_GET['framework_id']);
-	$maturity = $escaper->escapeHtml($_GET['maturity']);
+    	$framework_id = $escaper->escapeHtml($_GET['framework_id']);
+    	$maturity = $escaper->escapeHtml($_GET['maturity']);
         $draw = $escaper->escapeHtml($_GET['draw']);
 
         $orderColumn = isset($_GET['order'][0]['column']) ? $_GET['order'][0]['column'] : "";
-        $orderColumnName = isset($_GET['columns'][$orderColumn]['name']) ? $_GET['columns'][$orderColumn]['name'] : null;;
-        $orderDir = strtolower($_GET['order'][0]['dir']) == "asc" ? "asc" : "desc";
+        $orderColumnName = isset($_GET['columns'][$orderColumn]['name']) ? $_GET['columns'][$orderColumn]['name'] : null;
+        $orderDir = !empty($_GET['order'][0]['dir']) && strtolower($_GET['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
 
-	// Get controls with gaps
-	$control_gaps = get_control_gaps($framework_id, $maturity, $orderColumnName, $orderDir);
+    	// Get controls with gaps
+    	$control_gaps = get_control_gaps($framework_id, $maturity, $orderColumnName, $orderDir);
         $recordsTotal = count($control_gaps);
         $data = array();
 
@@ -11093,11 +11154,11 @@ function controlGapAnalysisResponse()
 
             $data[] = [
                 $escaper->escapeHtml($control_gap['control_number']),
-		$escaper->escapeHtml($control_gap['short_name']),
-		$escaper->escapeHtml($control_gap['control_phase_name']),
-		$escaper->escapeHtml($control_gap['family_short_name']),
-		$escaper->escapeHtml($control_gap['control_maturity_name']),
-		$escaper->escapeHtml($control_gap['desired_maturity_name']),
+        		$escaper->escapeHtml($control_gap['short_name']),
+        		$escaper->escapeHtml($control_gap['control_phase_name']),
+        		$escaper->escapeHtml($control_gap['family_short_name']),
+        		$escaper->escapeHtml($control_gap['control_maturity_name']),
+        		$escaper->escapeHtml($control_gap['desired_maturity_name']),
             ];
         }
     }

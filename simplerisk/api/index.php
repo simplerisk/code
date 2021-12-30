@@ -65,7 +65,7 @@
         getRoute()->post('/reports/delete-dynamic-selection', 'deleteDynamicSelectionForm');
         getRoute()->post('/reports/my_open_risk', 'my_open_risk_datatable');
         getRoute()->post('/reports/recent_commented_risk', 'recent_commented_risk_datatable');
-	getRoute()->get('/reports/governance/control_gap_analysis', 'controlGapAnalysisResponse');
+        getRoute()->get('/reports/governance/control_gap_analysis', 'controlGapAnalysisResponse');
         getRoute()->get('/management/risk/viewhtml', 'viewriskHtmlForm');
 
         getRoute()->get('/management/risk/closerisk', 'closeriskHtmlForm');
@@ -249,6 +249,7 @@
         getRoute()->post('/admin/risk_catalog/add_risk_catalog', 'addRiskCatalogAPI');
         getRoute()->post('/admin/risk_catalog/update_risk_catalog', 'updateRiskCatalogAPI');
         getRoute()->post('/admin/risk_catalog/delete_risk_catalog', 'deleteRiskCatalogAPI');
+        getRoute()->post('/admin/risk_catalog/swap_groups', 'swapGroupCatalogAPI');
 
 	// Get threat catalog table data
 	getRoute()->get('/admin/threat_catalog/datatable', 'getThreatCatalogDatatableAPI');

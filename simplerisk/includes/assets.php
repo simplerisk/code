@@ -303,7 +303,7 @@ function add_asset($ip, $name, $value=5, $location=0, $teams="", $details = "", 
             require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
             // If there is error in saving custom asset values, return false
-            if(!save_asset_custom_field_values($asset_id))
+            if(!save_custom_field_values($asset_id, "asset"))
             {
                 delete_asset($asset_id);
                 return false;
@@ -434,7 +434,7 @@ function delete_asset($asset_id)
     if(customization_extra())
     {
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        delete_custom_data_by_asset_id($asset_id);
+        delete_custom_data_by_row_id($asset_id, "asset");
     }
     
     $message = "An asset named \"" . $name . "\" was deleted by username \"" . $_SESSION['user'] . "\".";
@@ -2532,7 +2532,7 @@ function get_assets_of_asset_group_for_treegrid($id){
         // If customization extra is enabled
         if($customization_enabled)
         {
-            $custom_values = getCustomFieldValuesByAssetId($asset['id']);
+            $custom_values = get_custom_value_by_row_id($asset['id'], "asset");
             
             foreach($active_fields as $field)
             {
@@ -2918,12 +2918,12 @@ function get_asset_ids_from_groups($group_ids)
 {
     $asset_ids = [];
     foreach($group_ids as $group){
-        $asserts = get_assets_from_group($group);
+        $assets = get_assets_from_group($group);
 //      $singleArray = array();
 //      foreach ($asserts as $key => $value){
 //          $singleArray[$key] = $value['asset_id'];
 //      }
-        $asset_ids = array_unique(array_merge($asset_ids,array_column($asserts,"asset_id")));
+        $asset_ids = array_unique(array_merge($asset_ids,array_column($assets,"asset_id")));
     }
     return $asset_ids;
 

@@ -60,7 +60,7 @@ require_once(language_file());
             if (!organizational_hierarchy_extra()) {
                 // If the extra is not restricted based on the install type
                 if (!restricted_extra("organizational_hierarchy")) {
-                    echo "<form name=\"activate_extra\" method=\"post\" action=\"\">\n";
+                    echo "<form id='activate_extra' name=\"activate_extra\" method=\"post\" action=\"\">\n";
                     echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />\n";
                     echo "</form>\n";
                 } else // The extra is restricted
@@ -71,7 +71,7 @@ require_once(language_file());
                 require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
 
                 echo "
-                    <form name=\"deactivate\" method=\"post\">
+                    <form id='deactivate_extra' name=\"deactivate\" method=\"post\">
                         <font color=\"green\">
                             <b>" . $escaper->escapeHtml($lang['Activated']) . "</b>
                         </font> [" . organizational_hierarchy_version() . "]
@@ -205,7 +205,7 @@ require_once(language_file());
     			                        success : function (response) {
 											$('li.dropdown-submenu.business-units ul.dropdown-menu').html(response);
     			                        },
-    			                        error: function(xhr,status,error) {
+    			                        error: function(xhr, status, error) {
     			                            if(!retryCSRF(xhr, this)) {
     			                                if(xhr.responseJSON && xhr.responseJSON.status_message) {
     			                                    showAlertsFromArray(xhr.responseJSON.status_message);
@@ -214,14 +214,20 @@ require_once(language_file());
     			                        }
     			                    });
 								}
-								
+
+								function enableSubmit() {
+		                            // Need this because the double-submit prevention script disables submit buttons on a form submit
+		                            // and since it's an ajax-driven form submit, there's no page reload to 'enable' the submit buttons
+		                            $("[type='submit']").removeAttr("disabled");
+								}
+
         						$(document).ready(function() {
 
         			                //Have to remove the 'fade' class for the shown event to work for modals
         			                $('#business-unit--create, #business-unit--update').on('shown.bs.modal', function() {
         			                    $(this).find('.modal-body').scrollTop(0);
         			                });
-        			                
+
         							$('#business_units').treegrid({
         								iconCls: 'icon-ok',
         				                animate: false,
@@ -245,7 +251,7 @@ require_once(language_file());
 
         				                    //$("#business_units").treegrid('resize');
         				                },
-        				                onLoadError: function(xhr,status,error) {
+        				                onLoadError: function(xhr, status, error) {
     			                            if(!retryCSRF(xhr, this)) {
     			                                if(xhr.responseJSON && xhr.responseJSON.status_message) {
     			                                    showAlertsFromArray(xhr.responseJSON.status_message);
@@ -258,7 +264,7 @@ require_once(language_file());
         			                $(document).on('click', '.business-unit-name', function() {
         			                    $('#business_units').treegrid('toggle', $(this).data("id"));
         			                });
-        							
+
         			                $("#create_business_unit").click(function(event) {
         			                    event.preventDefault();
         			                    // Move teams back to the available select if they were previously selected
@@ -296,18 +302,17 @@ require_once(language_file());
         			                            tree.treegrid('options').animate = false;
         			                            tree.treegrid('reload');
 
-        			                            // Need this because the double-submit prevention script disables submit buttons on a form submit
-        			                            // and since it's an ajax-driven form submit, there's no page reload to 'enable' the submit buttons
-        			                            $("input[type='submit']").prop('disabled', false);
-
         			                            refresh_business_unit_menu_items();
         			                        },
-        			                        error: function(xhr,status,error) {
+        			                        error: function(xhr, status, error) {
         			                            if(!retryCSRF(xhr, this)) {
         			                                if(xhr.responseJSON && xhr.responseJSON.status_message) {
         			                                    showAlertsFromArray(xhr.responseJSON.status_message);
         			                                }
         			                            }
+        			                        },
+        			                        complete: function(xhr, status) {
+        			                        	enableSubmit();
         			                        }
         			                    });
         			                    return false;
@@ -328,13 +333,13 @@ require_once(language_file());
         			                            $("#business-unit-update-form [name='business_unit_id']").val(business_unit_id);
         			                            $("#business-unit-update-form [name='name']").val(data.name);
         			                            $("#business-unit-update-form [name='description']").val(data.description);
-        			                            
+
         			                            addOptions($('#business-unit-update-form .select-list-selected select'), data.selected_teams);
         			                            addOptions($('#business-unit-update-form .select-list-available select'), data.available_teams);
 
         			                            $("#business-unit--update").modal();
         			                        },
-        			                        error: function(xhr,status,error) {
+        			                        error: function(xhr, status, error) {
         			                            if(!retryCSRF(xhr, this)) {
         			                                if(xhr.responseJSON && xhr.responseJSON.status_message) {
         			                                    showAlertsFromArray(xhr.responseJSON.status_message);
@@ -373,24 +378,23 @@ require_once(language_file());
         			                            tree.treegrid('options').animate = false;
         			                            tree.treegrid('reload');
 
-        			                            // Need this because the double-submit prevention script disables submit buttons on a form submit
-        			                            // and since it's an ajax-driven form submit, there's no page reload to 'enable' the submit buttons
-        			                            $("input[type='submit']").prop('disabled', false);
-
         			                            refresh_business_unit_menu_items();
         			                        },
-        			                        error: function(xhr,status,error){
+        			                        error: function(xhr, status, error){
         			                            if(!retryCSRF(xhr, this)) {
         			                                if(xhr.responseJSON && xhr.responseJSON.status_message) {
         			                                    showAlertsFromArray(xhr.responseJSON.status_message);
         			                                }
         			                            }
+        			                        },
+        			                        complete: function(xhr, status) {
+        			                        	enableSubmit();
         			                        }
         			                    });
 
         			                    return false;
         			                });
-        			                
+
         			                $(document).on('click', '.business-unit--delete', function() {
         			                    $("#business-unit-delete-form [name='business_unit_id']").val($(this).data("id"));
         			                    $("#business-unit--delete").modal();
@@ -420,18 +424,17 @@ require_once(language_file());
         			                            tree.treegrid('options').animate = false;
         			                            tree.treegrid('reload');
 
-        			                            // Need this because the double-submit prevention script disables submit buttons on a form submit
-        			                            // and since it's an ajax-driven form submit, there's no page reload to 'enable' the submit buttons
-        			                            $("input[type='submit']").prop('disabled', false);
-
         			                            refresh_business_unit_menu_items();
         			                        },
-        			                        error: function(xhr,status,error){
+        			                        error: function(xhr, status, error){
         			                            if(!retryCSRF(xhr, this)) {
         			                                if(xhr.responseJSON && xhr.responseJSON.status_message) {
         			                                    showAlertsFromArray(xhr.responseJSON.status_message);
         			                                }
         			                            }
+        			                        },
+        			                        complete: function(xhr, status) {
+        			                        	enableSubmit();
         			                        }
         			                    });
 
@@ -443,7 +446,7 @@ require_once(language_file());
         			                    $("#team-remove-form [name='team_id']").val($(this).data('team-id'));
         			                    $("#team--remove").modal();
         			                });
-        			                
+
         			                $("#team-remove-form").submit(function(event) {
         			                    event.preventDefault();
 
@@ -475,17 +478,16 @@ require_once(language_file());
         			                            var teamCount = parseInt(teamCountWrapper.data('team-count'));
         			                            teamCountWrapper.data('team-count', teamCount-1);
         			                            teamCountWrapper.html(teamCount-1);
-
-        			                            // Need this because the double-submit prevention script disables submit buttons on a form submit
-        			                            // and since it's an ajax-driven form submit, there's no page reload to 'enable' the submit buttons
-        			                            $("input[type='submit']").prop('disabled', false);
         			                        },
-        			                        error: function(xhr,status,error){
+        			                        error: function(xhr, status, error){
         			                            if(!retryCSRF(xhr, this)) {
         			                                if(xhr.responseJSON && xhr.responseJSON.status_message){
         			                                    showAlertsFromArray(xhr.responseJSON.status_message);
         			                                }
         			                            }
+        			                        },
+        			                        complete: function(xhr, status) {
+        			                        	enableSubmit();
         			                        }
         			                    });
 
@@ -648,7 +650,7 @@ require_once(language_file());
             </div>
         </div>
         <script>
-            <?php prevent_form_double_submit_script(); ?>
+            <?php prevent_form_double_submit_script(['activate_extra', 'deactivate_extra']); ?>
         </script>
     </body>
 </html>

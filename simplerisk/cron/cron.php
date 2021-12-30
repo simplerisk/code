@@ -7,10 +7,10 @@
 // Only run this script if called via the command line
 if (php_sapi_name() == "cli")
 {
-        // Include required files
+    // Include required files
 	require_once(realpath(__DIR__ . '/../includes/functions.php'));
 	require_once(realpath(__DIR__ . '/../includes/cron.php'));
-        require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
+    require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 	write_debug_log("Beginning Cron Run");
 
@@ -27,7 +27,7 @@ if (php_sapi_name() == "cli")
 		$jobby->add($job_name, $cron_job);
 	}
 
-	// Run the cron
+	// Run all scheduled crons
 	$jobby->run();
 
 	// Update the setting with the last run time

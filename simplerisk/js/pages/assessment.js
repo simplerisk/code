@@ -571,10 +571,54 @@ $(document).ready(function(){
     initSortable();
     // click create template tab
     $('#create-template-tab').click(function() {create_template_tab();});
+    // click disable tab event
+    $('#disable_tab').click(function(){
+        $("#disable_tab").hide();
+        $("#create-template-tab").fadeIn();
+        var active_ids = []; // selected question ids in active tabs
+        var data_ids = []; // selected question ids in not active tabs
+        $('ul.selected_questions').each(function(index, obj) {
+            if(index ==0) return;
+            $(obj).find('li.selected_question').each(function(i, obj) {
+                $('#tab-content-1 .question_list').append(obj);
+            });
+        });
+        // remove other tabs without first
+        $("ul.tabs-nav li:not(:eq(0))").remove();
+        $(".template_tab_contents:not(:eq(0))").remove();
+        // hide tabs
+        var active_index = $("#template-tabs li.ui-tabs-active").index();
+        if(active_index != 0) tabs.tabs('option', 'active', 0);
+        else active_tab_func();
+        $('#selected_questions_list').append($('#tab-content-1').html());
+        $('#tab-content-1').html("");
+        $('#template-tabs').fadeOut();
+        initSortable();
+        tab_cnt = 1;
+    });
+
     $('#template-tabs').on('click', '.edit-tab-name', function(){
         $(this).hide();
         $(this).parent().find('span.tab-label').hide();
         $(this).parent().find('input.tab-name').show().select();
+    });
+    // tab remove event
+    $('#template-tabs').on('click', '.remove-tab', function(){
+        var tab_index = $(this).parent().find('a.tab_link').attr('data-index');
+        var element_id = 'tab-content-' + tab_index;
+        tabs.tabs('option', 'active', 0);
+        $('#'+element_id).remove();
+        $(this).parent().remove();
+    });
+    // space key press
+    $('#template-tabs').on('keyup', '.tab-name', function(e){
+        var text_val = $(this).val();
+        if(e.keyCode == 32) {
+            var pos = $(this)[0].selectionStart;
+            var new_value = [text_val.slice(0, pos), ' ', text_val.slice(pos)].join('');
+            $(this).val(new_value);
+        }
+        return true;
     });
     $('#template-tabs').on('blur change', '.tab-name', function(){
         if(!$(this).val()) return false;
@@ -606,6 +650,9 @@ $(document).ready(function(){
         });
         var form = $(this);
         var form_data = new FormData(form[0]);
+        if($('#disable_tab').is(':checked')) form_data.append('disable_tab',1);
+        else form_data.append('disable_tab',0);
+
         for (var i = 0; i < selected_questions.length; i++) {
             form_data.append('selected_questions[]', selected_questions[i]);
         }
@@ -648,9 +695,10 @@ function create_template_tab(tab_id){
     if(typeof(tab_id) == 'undefined') {
         tab_id = '';
     }
-    $("#create-template-tab").parent().remove();
+    $("#create-template-tab").hide();
+    $("#disable_tab").fadeIn();
     $('#tab-content-1').append($('#selected_questions_list').html());
-    $('#selected_questions_list').detach();
+    $('#selected_questions_list').html("");
     $('#template-tabs').fadeIn();
     initSortable();
     $('#template-tabs ul.tabs-nav li:first').attr('data-id', tab_id);
@@ -702,7 +750,17 @@ function add_template_tab(tab_name, tab_id){
         tab_id = '';
     }
     var element_id = 'tab-content-' + tab_cnt;
-    $('#template-tabs .tabs-nav').append('<li data-id="'+tab_id+'"><a class="tab_link" href="#'+element_id+'" data-index="'+tab_cnt+'"><span class="tab-label">'+tab_name+'</span><input type="text" name="tab_name[]" class="tab-name" value="'+tab_name+'"></a><a class="edit-tab-name" href="#"><i class="fa fa-edit"></a></i></li>');
+    var newstring = `
+        <li data-id="`+tab_id+`">
+            <a class="tab_link" href="#`+element_id+`" data-index="`+tab_cnt+`">
+                <span class="tab-label">`+tab_name+`</span>
+                <input type="text" name="tab_name[]" class="tab-name" value="`+tab_name+`">
+            </a>
+            <a class="edit-tab-name" href="#"><i class="fa fa-edit"></i></a>
+            <a class="remove-tab" href="#"><i class="fa fa-trash"></i></a>
+        </li>
+    `;
+    $('#template-tabs .tabs-nav').append(newstring);
     $('#template-tabs').append('<div id="'+element_id+'" class="template_tab_contents"></div>');
     $('#'+element_id).append(table_str);
 

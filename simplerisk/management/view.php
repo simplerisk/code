@@ -402,7 +402,15 @@ if (isset($_GET['id']))
           
         </script>
         <style>
-            .top-panel .span5, .bottom-panel .span5{max-width: 210px;}
+            .risk-details .row-fluid{max-width: 1400px;}
+            .top-panel .span2, .bottom-panel .span2{max-width: 210px;}
+            .top-panel .span8, .bottom-panel .span8{margin-left:15px;}
+            @media only screen and (min-width: 768px) {
+                .top-panel .span2.text-right, .bottom-panel .span2.text-right{margin-left:10px;}
+            }
+            @media only screen and (min-width: 1400px) {
+                .top-panel .span2.text-right, .bottom-panel .span2.text-right{margin-left:22px;}
+            }
         </style>
         
       <?php
@@ -437,9 +445,9 @@ if (isset($_GET['id']))
             <div class="span3"> </div>
             <div class="span9">
               <div class="tab-append">
-                <div class="tab form-tab tab-show" id="risk_list"><div><span><a href="<?php echo $list_href;?>">Risk list</a></span></div>
+                <div class="tab form-tab" id="risk_list"><div><span><a href="<?php echo $list_href;?>">Risk list</a></span></div>
                 </div>
-                <div class="tab selected form-tab tab-show" id="risk_detail"><div><span><strong>ID: <?php echo $id.'</strong>  '.$escaper->escapeHtml(try_decrypt($subject)); ?></span></div>
+                <div class="tab selected form-tab" id="risk_detail"><div><span><strong>ID: <?php echo $id.'</strong>  '.$escaper->escapeHtml(try_decrypt($subject)); ?></span></div>
                 </div>
               </div>
             </div>
@@ -457,8 +465,8 @@ if (isset($_GET['id']))
           <div class="span9">
 
             <div class="row-fluid" id="tab-content-container">
-                <div class='tab-data hide' id="tab-container"></div>
-                <div class='tab-data' id="tab-container">
+                <div class='tab-data hide'></div>
+                <div class='tab-data'>
                     <?php
                         
                         $action = isset($_GET['action']) ? $_GET['action'] : "";

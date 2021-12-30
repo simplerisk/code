@@ -80,7 +80,7 @@ require_once(language_file());
                 // If the extra is not restricted based on the install type
                 if (!restricted_extra("notification"))
                 {
-                    echo "<form name=\"activate\" method=\"post\" action=\"\">\n";
+                    echo "<form id='activate_extra' name=\"activate\" method=\"post\" action=\"\">\n";
                     echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
                     echo "</form>\n";
                     echo "</div>\n";
@@ -230,7 +230,7 @@ require_once(language_file());
             })
         });
 
-        <?php prevent_form_double_submit_script(); ?>
+        <?php prevent_form_double_submit_script(['activate_extra', 'deactivate_extra']); ?>
     </script>
   </body>
 

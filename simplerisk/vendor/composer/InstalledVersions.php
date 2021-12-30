@@ -30,7 +30,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => '037a1ae03d4131d73c1b3a884d88da5e9f14cae0',
+    'reference' => 'cf126ad8c94dc788617023849400aeaf334862dc',
     'name' => 'simplerisk/code',
   ),
   'versions' => 
@@ -137,12 +137,12 @@ private static $installed = array (
     ),
     'gettext/languages' => 
     array (
-      'pretty_version' => '2.8.1',
-      'version' => '2.8.1.0',
+      'pretty_version' => '2.9.0',
+      'version' => '2.9.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '4ad818b6341e177b7c508ec4c37e18932a7b788a',
+      'reference' => 'ed56dd2c7f4024cc953ed180d25f02f2640e3ffa',
     ),
     'ghunti/highcharts-php' => 
     array (
@@ -271,7 +271,7 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => '037a1ae03d4131d73c1b3a884d88da5e9f14cae0',
+      'reference' => 'cf126ad8c94dc788617023849400aeaf334862dc',
     ),
     'simplerisk/csrf-magic' => 
     array (
@@ -294,12 +294,12 @@ private static $installed = array (
     ),
     'simplesamlphp/saml2' => 
     array (
-      'pretty_version' => 'v4.2.4',
-      'version' => '4.2.4.0',
+      'pretty_version' => 'v4.2.5',
+      'version' => '4.2.5.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8e3ad89b97d2f2f922f67894675e3460feab2209',
+      'reference' => '4ae96cb02a9ac9da3825d69af0500e594509bcaf',
     ),
     'simplesamlphp/simplesamlphp' => 
     array (
@@ -375,12 +375,12 @@ private static $installed = array (
     ),
     'simplesamlphp/simplesamlphp-module-authyubikey' => 
     array (
-      'pretty_version' => 'v0.9.1',
-      'version' => '0.9.1.0',
+      'pretty_version' => 'v0.9.2',
+      'version' => '0.9.2.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8c27bfeb4981d2e6fa40a831e945f40c5a4ad3d2',
+      'reference' => 'b287a13195a5910beb4c68f9b9fee3aac7f8a73d',
     ),
     'simplesamlphp/simplesamlphp-module-cas' => 
     array (
@@ -447,12 +447,12 @@ private static $installed = array (
     ),
     'simplesamlphp/simplesamlphp-module-ldap' => 
     array (
-      'pretty_version' => 'v0.9.12',
-      'version' => '0.9.12.0',
+      'pretty_version' => 'v0.9.15',
+      'version' => '0.9.15.0',
       'aliases' => 
       array (
       ),
-      'reference' => '88f2f40eedc27abfc5a9e5b61ae86cd6e86da4e1',
+      'reference' => 'ecf46d9ea56d892ba6f7fbee625b99d88a3df6fe',
     ),
     'simplesamlphp/simplesamlphp-module-memcachemonitor' => 
     array (

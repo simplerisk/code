@@ -3,7 +3,7 @@
     "description": "A module that is able to authenticate against YubiKey",
     "type": "simplesamlphp-module",
     "keywords": ["simplesamlphp", "authyubikey"],
-    "license": "LGPL-3.0-or-later",
+    "license": "LGPL-2.1-or-later",
     "authors": [
         {
             "name": "Tim van Dijen",
@@ -17,7 +17,7 @@
         }
     },
     "extra": {
-        "ssp-mixedcase-module-name": "authYubikey"
+        "ssp-mixedcase-module-name": "authYubiKey"
     },
     "autoload": {
         "psr-4": {

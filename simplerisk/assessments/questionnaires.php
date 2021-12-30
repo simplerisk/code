@@ -85,6 +85,8 @@ if($result = process_assessment_questionnaires()){
     <script src="../js/common.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/pages/assessment.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../vendor/tinymce/tinymce/tinymce.min.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/WYSIWYG/editor.js?<?php echo current_version("app"); ?>"></script>
     
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -99,6 +101,7 @@ if($result = process_assessment_questionnaires()){
     <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
 
     <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/WYSIWYG/editor.css?<?php echo current_version("app"); ?>">
 
     <?php
         setup_favicon("..");

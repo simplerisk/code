@@ -30,7 +30,10 @@ set_simplerisk_timezone();
 */
 $tables_where_name_is_encrypted = array('frameworks', 'projects', 'assets');
 
+/* The regex pattern for template variables*/
+$variable_regex_pattern = '/<span class="variable" data-id="([^"]+)">.+?<\/span>/';
 
+/* The list of available extras. */
 $available_extras = array(
     'advanced_search',
     'api',
@@ -493,13 +496,15 @@ function save_dynamic_selections($type, $name, $custom_display_settings,$custom_
     $stmt->bindParam(":custom_column_filters", $custom_column_filters, PDO::PARAM_STR);
     $stmt->execute();
 
+    $id = $db->lastInsertId();
+
     // Close the database connection
     db_close($db);
 
     $message = "The selections for Dynamic Risk Report named \"" . $escaper->escapeHtml($name) . "\" was created by the \"" . $_SESSION['user'] . "\" user.";
     write_log(1000, $_SESSION['uid'], $message);
-    
-    return $db->lastInsertId();
+
+    return $id;
 }
 
 /********************************************
@@ -645,11 +650,20 @@ function get_table_ordered_by_name($table_name)
 
 /******************************
  * FUNCTION: GET CUSTOM TABLE *
+ * 
+ * Some info on the user management for some of the options.
+ * "user": It will return all users, ignoring the organizational hierarchy extra for admin users, use the selected business unit for non-admin users 
+ * "enabled/disabled_users": Will return the enabled/disabled users of the selected business unit(EVEN FOR ADMINS). Use it outside of admin-only area
+ * "enabled/disabled_users_all": Will return the enabled/disabled users, ignoring the selected business unit. Use it ONLY inside of admin-only area
+ * 
  ******************************/
 function get_custom_table($type)
 {
     // Open the database connection
     $db = db_open();
+
+    // to notify that the result is supposed to be fetched as grouped
+    $grouped = false;
 
     // Array of CVSS values
     $allowed_cvss_values = array('AccessComplexity', 'AccessVector', 'Authentication', 'AvailabilityRequirement', 'AvailImpact', 'CollateralDamagePotential', 'ConfidentialityRequirement', 'ConfImpact', 'Exploitability', 'IntegImpact', 'IntegrityRequirement', 'RemediationLevel', 'ReportConfidence', 'TargetDistribution');
@@ -687,8 +701,8 @@ function get_custom_table($type)
         }
     }
     // If we want enabled/disabled users or want the enabled users without caring for business units
-    else if ($type == "enabled_users" || $type == "disabled_users" || $type == "enabled_users_all") {
-        if ($type != "enabled_users_all" && !is_admin() && organizational_hierarchy_extra()) {
+    else if (in_array($type, ["enabled_users", "disabled_users", "enabled_users_all", "disabled_users_all"])) { // $type == "enabled_users" || $type == "disabled_users" || $type == "enabled_users_all") {
+        if (in_array($type, ["enabled_users", "disabled_users"]) && organizational_hierarchy_extra()) {
             $stmt = $db->prepare("
                 SELECT
                     `u`.*, GROUP_CONCAT(DISTINCT `t`.`value`) as teams
@@ -700,7 +714,7 @@ function get_custom_table($type)
                     LEFT JOIN `team` t ON `u2t`.`team_id` = `t`.`value`
                 WHERE
                     `bu2t`.`business_unit_id` = :selected_business_unit
-                    AND `u`.`enabled` = " . ($type == "enabled_users" ? "1": "0") . "
+                    AND `u`.`enabled` = :enabled
                 GROUP BY
                     `u`.`value`
                 ORDER BY
@@ -725,13 +739,15 @@ function get_custom_table($type)
                     LEFT JOIN `user_to_team` u2t ON `u2t`.`user_id` = `u`.`value`
                     LEFT JOIN `team` t ON `u2t`.`team_id` = `t`.`value`
                 WHERE
-                    `u`.`enabled` = " . ($type == "disabled_users" ? "0": "1") . "
+                    `u`.`enabled` = :enabled
                 GROUP BY 
                     `u`.`value`
                 ORDER BY
                     `u`.`name`;
             ");
         }
+        $enabled = in_array($type, ["enabled_users", "enabled_users_all"]) ? 1 : 0;
+        $stmt->bindParam(":enabled", $enabled, PDO::PARAM_INT);
     }
     // If we want a languages table
     else if ($type == "languages")
@@ -841,11 +857,11 @@ function get_custom_table($type)
     }
     else if ($type == "risk_catalog")
     {
-        $stmt = $db->prepare("SELECT id as value, name FROM `risk_catalog` ORDER BY `order`");
+        $stmt = $db->prepare("SELECT id as value, CONCAT(`number`, ' - ', `name`) AS name FROM `risk_catalog` ORDER BY `grouping`,`order`;");
     }
     else if ($type == "threat_catalog")
     {
-        $stmt = $db->prepare("SELECT id as value, name FROM `threat_catalog` ORDER BY `order`");
+        $stmt = $db->prepare("SELECT id as value, CONCAT (`number`, ' - ', `name`) AS name FROM `threat_catalog` ORDER BY `grouping`, `order`;");
     }
     else if (in_array($type, ["remote_team-SAML", "remote_role-SAML", "remote_team-LDAP"]) && custom_authentication_extra()) {
         list($table, $remote_type) = explode('-', $type);
@@ -863,13 +879,28 @@ function get_custom_table($type)
     else if ($type == "data_classification")
     {
         $stmt = $db->prepare("SELECT id as value, name FROM `data_classification` ORDER BY `order`");
+    } else if (in_array($type, ['risk_catalog_grouped', 'threat_catalog_grouped'])) {
+        $catalog_type = $type === 'risk_catalog_grouped' ? 'risk' : 'threat';
+        $grouped = true;
+        $stmt = $db->prepare("
+            SELECT
+            	`g`.`name`,
+                `c`.`id` AS value,
+                CONCAT(`c`.`number`, ' - ', `c`.`name`) AS name
+            FROM
+                `{$catalog_type}_catalog` c
+                LEFT JOIN `{$catalog_type}_grouping` g ON `c`.`grouping` = `g`.`value`
+            ORDER BY
+                `g`.`order`,
+                `c`.`order`;
+        ");
     }
 
-// Execute the database query
+    // Execute the database query
     $stmt->execute();
 
     // Store the list in the array
-    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $array = $stmt->fetchAll($grouped ? PDO::FETCH_GROUP|PDO::FETCH_ASSOC : PDO::FETCH_ASSOC);
 
     // Close the database connection
     db_close($db);
@@ -905,6 +936,10 @@ function get_custom_table($type)
 
 /************************************
  * FUNCTION: GET OPTIONS FROM TABLE *
+ * Some info on the user management for some of the options.
+ * "user": It will return all users, ignoring the organizational hierarchy extra for admin users, use the selected business unit for non-admin users 
+ * "enabled/disabled_users": Will return the enabled/disabled users of the selected business unit(EVEN FOR ADMINS). Use it outside of admin-only area
+ * "enabled/disabled_users_all": Will return the enabled/disabled users, ignoring the selected business unit. Use it ONLY inside of admin-only area
  ************************************/
 function get_options_from_table($name)
 {
@@ -917,9 +952,9 @@ function get_options_from_table($name)
 
         $options = get_table_ordered_by_name($name);
     }
-    else if (in_array($name, array("user", "team", "enabled_users", "disabled_users", "languages", "family", "date_formats",
+    else if (in_array($name, array("user", "team", "enabled_users", "disabled_users", "enabled_users_all", "disabled_users_all", "languages", "family", "date_formats",
             "parent_frameworks", "frameworks", "framework_controls", "risk_tags", "asset_tags", "test_results", "test_results_filter",
-            "policies", "framework_control_tests", "risk_catalog", "threat_catalog", "remote_team-SAML", "remote_role-SAML", "remote_team-LDAP", "data_classification"))) {
+            "policies", "framework_control_tests", "risk_catalog", "threat_catalog", "risk_catalog_grouped", "threat_catalog_grouped", "remote_team-SAML", "remote_role-SAML", "remote_team-LDAP", "data_classification"))) {
         $options = get_custom_table($name);
     }
     // Otherwise
@@ -1298,6 +1333,10 @@ function create_multiusers_dropdown($name, $selected = "", $custom_html = "", $r
 
 /*****************************
  * FUNCTION: CREATE DROPDOWN *
+ * Some info on the user management for some of the options.
+ * "user": It will return all users, ignoring the organizational hierarchy extra for admin users, use the selected business unit for non-admin users 
+ * "enabled/disabled_users": Will return the enabled/disabled users of the selected business unit(EVEN FOR ADMINS). Use it outside of admin-only area
+ * "enabled/disabled_users_all": Will return the enabled/disabled users, ignoring the selected business unit. Use it ONLY inside of admin-only area
  *****************************/
 function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true, $help = false, $returnHtml=false, $customHtml="", $blankText="--", $blankValue="", $useValue=true, $alphabetical_order = 0, $options = null)
 {
@@ -1364,6 +1403,10 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 
 /**************************************
  * FUNCTION: CREATE MULTIPLE DROPDOWN *
+ * Some info on the user management for some of the options.
+ * "user": It will return all users, ignoring the organizational hierarchy extra for admin users, use the selected business unit for non-admin users 
+ * "enabled/disabled_users": Will return the enabled/disabled users of the selected business unit(EVEN FOR ADMINS). Use it outside of admin-only area
+ * "enabled/disabled_users_all": Will return the enabled/disabled users, ignoring the selected business unit. Use it ONLY inside of admin-only area
  **************************************/
 function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $options = NULL, $blank = false, $blankText="--", $blankValue="", $useValue=true, $customHtml="",$alphabetical_order=0, $returnHtml=false)
 {
@@ -3081,7 +3124,7 @@ function get_user_by_id($id, $include_permissions = false)
     // Close the database connection
     db_close($db);
 
-    if (isset($array[0])) {
+    if (isset($array[0]) && isset($array[0]['value'])) {
         if ($array[0]['teams']) {
             $array[0]['teams'] = explode(',', $array[0]['teams']);
         }
@@ -4470,7 +4513,8 @@ function save_mitigation_controls($mitigation_id, $control_ids, $post = array())
         $stmt->bindParam(":validation_mitigation_percent", $validation_mitigation_percent, PDO::PARAM_INT);
         $stmt->execute();
 
-        $file_ids = empty($post['file_ids_'.$control_id]) ? [] : $post['file_ids_'.$control_id];
+        // Sanitizing list of ids 
+        $file_ids = sanitize_int_array($post['file_ids_' . $control_id]);
         refresh_files_for_validation($mitigation_id, $control_id, $file_ids);
 
         // If a artifact file was submitted
@@ -5042,8 +5086,8 @@ function update_risk($risk_id, $is_api = false)
                 case "manager":
                     $user_original = get_user_by_id($risk[0][$key]);
                     $user_updated = get_user_by_id($value);
-                    $original_value = $user_original["name"];
-                    $updated_value = $user_updated["name"];
+                    $original_value = $user_original ? $user_original["name"] : '';
+                    $updated_value = $user_updated ? $user_updated["name"] : '';
                 break;
             }
             $updated_fields[$key]["original"] = $original_value;
@@ -5105,7 +5149,7 @@ function update_risk($risk_id, $is_api = false)
         foreach ($updated_fields as $key => $value) {
             $detail_updated[] = "Field name : `".$key. "` (`".$value["original"]."`=>`".$value["updated"]."`)";
         }
-        $updated_string = implode($detail_updated,", ");
+        $updated_string = implode(", ", $detail_updated);
     } else $updated_string = "";
     $message = "Risk details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".\n".$updated_string;
     write_log($risk_id, $_SESSION['uid'], $message);
@@ -8783,7 +8827,7 @@ function get_project_tabs($status, $template_group_id="")
                         } 
                         else {
                             $custom_field_count++;
-                            $text = get_plan_custom_field_name_by_field_id($field, $id, "project");
+                            $text = get_plan_custom_field_name_by_row_id($field, $id, "project");
                             $str .= '<div class="project-block--field pull-left">'. $text .'</div>';
                         }
                     }
@@ -9964,8 +10008,8 @@ function update_mitigation($risk_id, $post)
                 case "mitigation_owner":
                     $owner_original = get_user_by_id($mitigation[0][$key]);
                     $owner_updated = get_user_by_id($value);
-                    $original_value = $owner_original["name"];
-                    $updated_value = $owner_updated["name"];
+                    $original_value = $owner_original ? $owner_original["name"] : '';
+                    $updated_value = $owner_updated ? $owner_updated["name"] : '';
                 break;
             }
             $updated_fields[$key]["original"] = $original_value;
@@ -11388,7 +11432,7 @@ function delete_risk($risk_id)
     if(customization_extra())
     {
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        delete_custom_data_by_risk_id($risk_id);
+        delete_custom_data_by_row_id($risk_id, "risk");
     }
 
     // Close the database connection
@@ -15880,16 +15924,16 @@ function get_risk_by_subject($subject)
 function getTypeOfColumn($table, $column) {
     $db = db_open();
 
-    $stmt = $db->prepare("SELECT DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_NAME = :table AND COLUMN_NAME = :column;");
+    $stmt = $db->prepare("SELECT `DATA_TYPE` FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA` = '" . DB_DATABASE . "' AND `TABLE_NAME` = :table AND `COLUMN_NAME` = :column;");
     $stmt->bindParam(":table", $table, PDO::PARAM_STR);
     $stmt->bindParam(":column", $column, PDO::PARAM_STR);
     $stmt->execute();
 
-    $result = $stmt->fetch();
+    $result = $stmt->fetch(pdo::FETCH_COLUMN, 0);
 
     db_close($db);
 
-    return $result?$result['DATA_TYPE']:"";
+    return $result ? $result : "";
 }
 
 /********************************
@@ -16877,7 +16921,29 @@ function get_dynamic_saved_selections($user_id)
     // Open the database connection
     $db = db_open();
 
-    $stmt = $db->prepare("SELECT value, name, type, custom_display_settings, custom_selection_settings, custom_column_filters FROM `dynamic_saved_selections` WHERE `type`='public' OR (`type`='private' AND user_id=:user_id) ;");
+    // If the requesting user is an admin then return all the saved selections
+    // When returning other users' saved selections add the users' name to the saved selections' names
+    // Results are ordered to have the user's own saved selections first,
+    // then they're ordered to display private saved selections first then the publics 
+    $stmt = $db->prepare("
+        SELECT
+        	`dss`.`value`,
+            IF(`u`.`value` <> :user_id, CONCAT(`dss`.`name`, ' (', `u`.`name`, ')'), `dss`.`name`) as name,
+            `dss`.`type`,
+            `dss`.`user_id`,
+            `dss`.`custom_display_settings`,
+            `dss`.`custom_selection_settings`,
+            `dss`.`custom_column_filters`
+        FROM
+        	`dynamic_saved_selections` dss
+            INNER JOIN `user` u ON `u`.`value` = `dss`.`user_id`
+        WHERE
+        	`dss`.`type`='public'
+            OR (`dss`.`type` = 'private' AND `dss`.`user_id` = :user_id)
+            OR (SELECT `admin` FROM `user` WHERE `value` = :user_id) = 1
+        ORDER BY
+            `dss`.`user_id` <> :user_id, `dss`.`type` = 'public';
+    ");
     $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -17511,11 +17577,18 @@ function get_risk_catalogs()
     $db = db_open();
     // Query the database
     $stmt = $db->prepare("
-        SELECT t1.*,g.name grouping_name, f.name function_name FROM `risk_catalog` t1
-            LEFT JOIN `risk_grouping` g ON t1.`grouping` = g.`value`
-            LEFT JOIN `risk_function` f ON t1.`function` = f.`value`
-        WHERE 1
-        ORDER By g.name,t1.order
+        SELECT
+            `rc`.*,
+            `rg`.`value` group_id,
+            `rg`.`name` group_name,
+            `rg`.`order` group_order,
+            `rf`.`name` function_name
+        FROM `risk_catalog` rc
+            LEFT JOIN `risk_grouping` rg ON `rc`.`grouping` = `rg`.`value`
+            LEFT JOIN `risk_function` rf ON `rc`.`function` = `rf`.`value`
+        ORDER BY 
+            `rg`.`order`,
+            `rc`.`order`;
     ");
     $stmt->execute();
     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -17532,10 +17605,16 @@ function get_threat_catalogs()
     $db = db_open();
     // Query the database
     $stmt = $db->prepare("
-        SELECT t1.*,g.name grouping_name FROM `threat_catalog` t1
-            LEFT JOIN `threat_grouping` g ON t1.`grouping` = g.`value`
-        WHERE 1
-        ORDER By g.name,t1.order
+        SELECT
+            `tc`.*,
+            `tg`.`value` group_id,
+            `tg`.`name` group_name,
+            `tg`.`order` group_order
+        FROM `threat_catalog` tc
+            LEFT JOIN `threat_grouping` tg ON `tc`.`grouping` = `tg`.`value`
+        ORDER BY
+            `tg`.`order`,
+            `tc`.`order`;
     ");
     $stmt->execute();
     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -17851,7 +17930,7 @@ function get_users_with_permission($permission_key) {
     // Open the database connection
     $db = db_open();
     
-    if (!is_admin() && organizational_hierarchy_extra()) {
+    if (organizational_hierarchy_extra()) {
         $stmt = $db->prepare("
             SELECT
                 `u`.*
@@ -19649,7 +19728,7 @@ function get_project($id){
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        $custom_values = getCustomFieldValuesByProjectId($id);
+        $custom_values = get_custom_value_by_row_id($id, "project");
         $project['custom_values'] = $custom_values;
     }
     
@@ -19679,5 +19758,222 @@ function name_exists_in_table($name, $table, $where="")
     return $row;
 }
 
+// To purify plain html, no template variables
+function purify_html($html) {
+
+    // To prevent doing unnecessary work
+    if (empty($html)) {
+        return $html;
+    }
+
+    // To make sure it's only created once even when ran in a loop
+    if (!isset($GLOBALS['DEFAULT_HTML_PURIFIER'])) {
+        $GLOBALS['DEFAULT_HTML_PURIFIER'] = new HTMLPurifier();
+    }
+    return $GLOBALS['DEFAULT_HTML_PURIFIER']->purify($html);
+}
+
+// To purify html with template variables
+function purify_html_template($html) {
+    // To make sure it's only created once even when ran in a loop
+    if (!isset($GLOBALS['HTML_TEMPLATE_PURIFIER'])) {
+        $config = HTMLPurifier_Config::createDefault();
+        $def = $config->getHTMLDefinition(true);
+        // Adding the 'id' data attribute to the allowed attribute list
+        $def->addAttribute('span', 'data-id', 'Text');
+        $GLOBALS['HTML_TEMPLATE_PURIFIER'] = new HTMLPurifier($config);
+    }
+    return $GLOBALS['HTML_TEMPLATE_PURIFIER']->purify($html);
+}
+
+// Populates the template with the variable's value, replacing the variable definitions with the actual value
+// Only escaping when it's required as if the variable's value is html then it shouldn't be escaped
+function populate_core_template_variable($template, $variable, $value, $escape = true) {
+    if ($value) {
+        if ($escape) {
+            global $escaper;
+            $value = $escaper->escapeHtml($value);
+        }
+        
+        // Escaping the $ so the preg_replace is not treating $500 as the 500th capture group's value
+        $value = str_replace('$', '\$', $value);
+    } else {
+        $value = '-';
+    }
+    
+    return preg_replace('@<span class="variable" data-id="' . $variable . '">.+?</span>@', $value, $template);
+}
+
+// Strips tags and removes extra whitespaces
+function strip_tags_and_extra_whitespace($html) {
+    return trim(preg_replace("/[\r\n|\n|\s]{2,}/", "\n", strip_tags($html)));
+}
+
+// To create a selectize dropdown. Add your own configuration and change the javascript configuration of the selectize widget accordingly
+// just please make sure the the already existing usecases keep working.
+// Added the 'additional_info' variable to be able to pass on additional information without having to add myriads of extra parameters
+function create_selectize_dropdown($type, $selected_values, $additional_info = false) {
+    global $escaper, $lang;
+
+    switch($type) {
+        case 'risk_catalog' :
+            $name = 'risk_catalog_mapping';
+            $required = get_setting('risk_mapping_required') == 1;
+            $option_type = 'risk_catalog_grouped';
+            $multiple = true;
+            $grouped = true;
+            break;
+        case 'threat_catalog' :
+            $name = 'threat_catalog_mapping';
+            $required = false;
+            $option_type = 'threat_catalog_grouped';
+            $multiple = true;
+            $grouped = true;
+            break;
+    }
+
+    $options = get_options_from_table($option_type);
+
+    echo "
+                <select" . ($required ? " required" : "") . ($multiple ? " multiple='multiple'" : "") . " id='{$name}' name='{$name}[]'></select>
+                <script>
+                    $(document).ready(function(){
+                        $('#{$name}').selectize({
+                            plugins: ['remove_button'],
+                            searchField: " . ($grouped ? "['name', 'class']" : "'name'") . ",
+                            valueField: 'value',
+                            labelField: 'name',
+                            create: false,
+                            persist: false,
+                            options: [";
+    if ($grouped) {
+        $groups = [];
+        foreach($options as $group_name => $group_entries) {
+            $group_name = $escaper->escapeHtml($group_name ? $group_name : '[' . $lang['NoGroup'] . ']');
+            $groups[] = $group_name;
+            foreach($group_entries as $group_entry) {
+                echo "
+                                {class: '{$group_name}', value: '{$escaper->escapeHtml($group_entry['value'])}', name: '{$escaper->escapeHtml($group_entry['name'])}'},";
+            }
+        }
+
+        echo "
+                            ],
+                            optgroupField: 'class',
+                            optgroupLabelField: 'label',
+                            optgroupValueField: 'value',
+                            optgroups: [";
+
+        foreach($groups as $group) {
+            echo "
+                                {value: '{$group}', label: '{$group}'},";
+        }
+    } else {
+        foreach($options as $option) {
+            echo "
+                                {value: '{$escaper->escapeHtml($option['value'])}', name: '{$escaper->escapeHtml($option['name'])}'},";
+        }
+    }
+
+    echo "
+                            ],
+    ";
+
+    if (!$multiple) {
+        echo "
+                            maxItems: 1,
+        ";
+    }
+
+    // Select the selected items
+    if(!empty($selected_values)) {
+        echo "
+                            items: [" . implode(', ', $selected_values) . "],";
+    }
+
+    echo "
+                            render: {
+                                optgroup_header: function (data) {
+                                    return $('<div>', {class: 'optgroup-header'}).html(data.label);
+                                },
+                                option: function (data) {
+                                    return $('<div>', {class: 'option'}).html(data.name);
+                                },
+                                item: function (data) {
+                                    // Returning an html as apparently the 'remove_button' plugin doesn't like when this function returns a dom element
+                                    return $('<div>', {class: 'item'}).html(data.name)[0].outerHTML;
+                                }
+                            }
+                        });
+                    });
+                </script>
+    ";
+}
+
+// A function that filters out elements of the array that are not positive integers.
+function sanitize_int_array($int_array) {
+
+    if (empty($int_array) || !is_array($int_array)) {
+        return [];
+    }
+
+    return array_filter($int_array, function($id){return ctype_digit((string)$id);});
+}
+/************************************
+ * FUNCTION: GET USERS VALUES ARRAY *
+ ************************************/
+function get_user_values_array()
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT * FROM user");
+    $stmt->bindParam(":user", $user, PDO::PARAM_STR);
+    $stmt->execute();
+
+    // Store the list in the array
+    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+    $users = array('' => '', 0 => '');
+    foreach ($array as $user) {
+        $users[$user['value']] = $user['name'];
+    }
+    return $users;
+}
+
+function reassign_groupless_risk_catalogs($default_group_id = false) {
+
+    $db = db_open();
+    
+    if (!$default_group_id) {
+        // Get value of the default risk group
+        $stmt = $db->prepare("SELECT `value` FROM `risk_grouping` WHERE `default` = 1");
+        $stmt->execute();
+        
+        $default_group_id = (int)$stmt->fetchColumn();
+    }
+
+    // Find risk catalog items that have no group assigned
+    $stmt = $db->prepare("
+            SELECT
+            	`id`
+            FROM `risk_catalog` rc
+            	LEFT JOIN `risk_grouping` rg ON `rg`.`value` = `rc`.`grouping`
+            WHERE
+            	`rg`.`value` IS NULL;
+        ");
+    $stmt->execute();
+    $data = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    // Assign risk catalog items that have no group assigned to this new default group
+    foreach ($data as $id) {
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET `grouping` = :group WHERE `id` = :id;");
+        $stmt->bindParam(":group", $default_group_id, PDO::PARAM_INT);
+        $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+}
 
 ?>

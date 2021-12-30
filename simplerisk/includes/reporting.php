@@ -1712,55 +1712,31 @@ function get_review_needed_table()
     // Initialize the reviews array
     $reviews = array();
 
-    // Parse through each row in the array
-    foreach ($risks as $key => $row)
-    {
-        // Create arrays for each value
-        $risk_id[$key] = (int)$row['id'];
-        $subject[$key] = $row['subject'];
-        $status[$key] = $row['status'];
-        $calculated_risk[$key] = $row['calculated_risk'];
-        $color[$key] = get_risk_color($row['calculated_risk']);
-        $risk_level = get_risk_level_name($row['calculated_risk']);
-        $residual_risk_level = get_risk_level_name($row['residual_risk']);
-//        $dayssince[$key] = dayssince($row['submission_date']);
-        $dayssince[$key] = $row['days_open'];
+    // Start with an empty review status;
+    $review_status = "";
+
+    foreach ($risks as $key => $risk){
+        $risk_id = $risk['id'];
+        $subject = $risk['subject'];
+        $status = $risk['status'];
+        $calculated_risk = $risk['calculated_risk'];
+        $color = get_risk_color($risk['calculated_risk']);
+        $risk_level = get_risk_level_name($risk['calculated_risk']);
+        $residual_risk_level = get_risk_level_name($risk['residual_risk']);
+        $dayssince = $risk['days_open'];
 
         // If next_review_date_uses setting is Residual Risk.
         if(get_setting('next_review_date_uses') == "ResidualRisk")
         {
-            $next_review[$key] = next_review($residual_risk_level, $risk_id[$key], $row['next_review'], false);
-            $next_review_html[$key] = next_review($residual_risk_level, $row['id'], $row['next_review']);
+            $next_review = next_review($residual_risk_level, $risk_id, $risk['next_review'], false);
+            $next_review_html = next_review($residual_risk_level, $risk_id, $risk['next_review']);
         }
         // If next_review_date_uses setting is Inherent Risk.
         else
         {
-            $next_review[$key] = next_review($risk_level, $risk_id[$key], $row['next_review'], false);
-            $next_review_html[$key] = next_review($risk_level, $row['id'], $row['next_review']);
+            $next_review = next_review($risk_level, $risk_id, $risk['next_review'], false);
+            $next_review_html = next_review($risk_level, $risk_id, $risk['next_review']);
         }
-        
-        // Create a new array of reviews
-        $reviews[] = array('risk_id' => $risk_id[$key], 'subject' => $subject[$key], 'status' => $status[$key], 'calculated_risk' => $calculated_risk[$key], 'color' => $color[$key], 'dayssince' => $dayssince[$key], 'next_review' => $next_review[$key], 'next_review_html' => $next_review_html[$key]);
-
-        // Sort the reviews array by next_review
-        array_multisort($next_review, SORT_DESC, SORT_STRING, $calculated_risk, SORT_DESC, SORT_NUMERIC, $reviews);
-    }
-
-    // Start with an empty review status;
-    $review_status = "";
-
-    // For each risk
-    foreach ($reviews as $review)
-    {
-        $risk_id = $review['risk_id'];
-        $subject = $review['subject'];
-        $status = $review['status'];
-        $calculated_risk = $review['calculated_risk'];
-        $color = $review['color'];
-        $dayssince = $review['dayssince'];
-        $next_review = $review['next_review'];
-        $next_review_html = $review['next_review_html'];
-
         // If we have a new review status and its not a date
         if (($review_status != $next_review) && (!preg_match('/\d{4}/', $review_status)))
         {
@@ -3124,7 +3100,7 @@ function risks_by_month_table()
 /*************************************
  * FUNCTION: RETURN REISKS QUERY SQL *
  *************************************/
-function risks_query_select($column_filters)
+function risks_query_select($column_filters=[])
 {
     global $lang;
     
@@ -3140,6 +3116,9 @@ function risks_query_select($column_filters)
         a.mgmt_review,
         a.assessment AS risk_assessment, 
         a.notes AS additional_notes, 
+        a.owner,
+        a.manager,
+        a.submitted_by,
         b.scoring_method, 
         b.calculated_risk, 
         b.CLASSIC_likelihood AS CLASSIC_likelihood_value, 
@@ -3283,9 +3262,6 @@ function risks_query_select($column_filters)
                 rttg.risk_id=a.id AND rttg.technology_id=tech.value
         ) AS technology_values,
 
-        g.name AS owner, 
-        h.name AS manager, 
-        i.name AS submitted_by, 
         j.name AS regulation, 
         a.regulation regulation_id, 
         k.name AS project, 
@@ -3324,7 +3300,11 @@ function risks_query_select($column_filters)
         s.min_value AS mitigation_min_cost, 
         s.max_value AS mitigation_max_cost, 
         s.valuation_level_name, 
-        t.name AS mitigation_owner,
+        IF(s.valuation_level_name IS NULL OR s.valuation_level_name='', 
+            CONCAT('\$', s.min_value, ' to \$', s.max_value),
+            CONCAT('\$', s.min_value, ' to \$', s.max_value, '(', s.valuation_level_name, ')')
+          ) mitigation_cost,
+        p.mitigation_owner,
         (
             SELECT
                 GROUP_CONCAT(DISTINCT team.name SEPARATOR ', ')
@@ -3333,7 +3313,6 @@ function risks_query_select($column_filters)
             WHERE
                 mtt.mitigation_id=p.id AND mtt.team_id=team.value
         ) AS mitigation_team,
-
 
         NOT(ISNULL(mau.id)) mitigation_accepted, 
         p.submission_date AS mitigation_date, 
@@ -3421,6 +3400,9 @@ function risks_unique_column_query_select()
         a.mgmt_review,
         a.assessment AS risk_assessment, 
         a.notes AS additional_notes, 
+        a.owner,
+        a.manager,
+        a.submitted_by,
         b.scoring_method, 
         b.calculated_risk, 
         p.mitigation_percent,
@@ -3484,15 +3466,6 @@ function risks_unique_column_query_select()
         ) AS technology_values,
 
 
-        g.name AS owner, 
-        CONCAT(g.name, '{$delimiter}', g.value) AS owner_for_dropdown, 
-
-        h.name AS manager, 
-        CONCAT(h.name, '{$delimiter}', h.value) AS manager_for_dropdown, 
-
-        i.name AS submitted_by, 
-        CONCAT(i.name, '{$delimiter}', i.value) AS submitted_by_for_dropdown, 
-
         j.name AS regulation, 
         CONCAT(j.name, '{$delimiter}', j.value) AS regulation_for_dropdown, 
 
@@ -3540,8 +3513,7 @@ function risks_unique_column_query_select()
         
         s.valuation_level_name, 
         
-        t.name AS mitigation_owner,
-        CONCAT(t.name, '{$delimiter}', t.value) AS mitigation_owner_for_dropdown,
+        p.mitigation_owner,
         
         (
             SELECT
@@ -3587,9 +3559,6 @@ function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName
             risks a
             LEFT JOIN risk_scoring b ON a.id = b.id
             LEFT JOIN category d FORCE INDEX(PRIMARY) ON a.category = d.value
-            LEFT JOIN user g FORCE INDEX(PRIMARY) ON a.owner = g.value
-            LEFT JOIN user h FORCE INDEX(PRIMARY) ON a.manager = h.value
-            LEFT JOIN user i FORCE INDEX(PRIMARY) ON a.submitted_by = i.value
             LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON a.regulation = j.value
             LEFT JOIN projects k FORCE INDEX(PRIMARY) ON a.project_id = k.value
             LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id
@@ -3601,7 +3570,6 @@ function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName
             LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
             LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
             LEFT JOIN asset_values s ON p.mitigation_cost = s.id
-            LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
             LEFT JOIN mitigation_accept_users mau ON a.id=mau.risk_id
             LEFT JOIN source v FORCE INDEX(PRIMARY) ON a.source = v.value
             LEFT JOIN risk_scoring_history sh_30 ON sh_30.id = 
@@ -3649,13 +3617,13 @@ function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName
     $contributing_risks = get_contributing_risks();
     foreach($contributing_risks as $contributing_risk){
         $id = $contributing_risk['id'];
-        $query .= " LEFT JOIN risk_scoring_contributing_impacts rs_impacts_{$id} ON a.id = rs_impacts_{$id}.risk_scoring_id AND rs_impacts_{$id}.contributing_risk_id = {$id}";
-        $query .= " LEFT JOIN contributing_risks_impact cs_impacts_{$id} ON cs_impacts_{$id}.contributing_risks_id = rs_impacts_{$id}.contributing_risk_id AND cs_impacts_{$id}.value = rs_impacts_{$id}.impact ";
+        $query .= " LEFT JOIN risk_scoring_contributing_impacts rs_impacts_{$id} ON a.id = rs_impacts_{$id}.risk_scoring_id AND rs_impacts_{$id}.contributing_risk_id = {$id}\n";
+        $query .= " LEFT JOIN contributing_risks_impact cs_impacts_{$id} ON cs_impacts_{$id}.contributing_risks_id = rs_impacts_{$id}.contributing_risk_id AND cs_impacts_{$id}.value = rs_impacts_{$id}.impact \n";
     }
 
-    $query .= " LEFT JOIN contributing_risks_likelihood cr_likelihood ON cr_likelihood.value = b.Contributing_Likelihood ";
-    $query .= " LEFT JOIN likelihood ON likelihood.value = b.CLASSIC_likelihood ";
-    $query .= " LEFT JOIN impact ON impact.value = b.CLASSIC_impact ";
+    $query .= " LEFT JOIN contributing_risks_likelihood cr_likelihood ON cr_likelihood.value = b.Contributing_Likelihood \n";
+    $query .= " LEFT JOIN likelihood ON likelihood.value = b.CLASSIC_likelihood \n";
+    $query .= " LEFT JOIN impact ON impact.value = b.CLASSIC_impact \n";
     
     // If customization extra is enabled, set join tables for custom filters
     if(customization_extra())
@@ -3890,14 +3858,14 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
     
     $having_query .= " AND ".get_group_query_for_dynamic_risk($group, $group_value_from_db, "");
 
-    $query .= " FROM ".risks_query_from($column_filters, $risks_by_team, $orderColumnName)
+    $query .= " FROM ".risks_query_from($column_filters, $risks_by_team, $orderColumnName)."\n"
         ." WHERE 1 "
-        .$filter_query 
-        .$status_query
+        .$filter_query."\n" 
+        .$status_query."\n"
         ." GROUP BY a.id "
         ." HAVING 1 "
-        .$having_query
-        .$order_query
+        .$having_query."\n"
+        .$order_query."\n"
     ;
 
     return [
@@ -3950,7 +3918,7 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
             if(!$column_filter) continue;
             $empty_filter = false;
             // If encryption extra is enabled and Column is a encrypted field
-            if((encryption_extra() && in_array($name, $encrypt_column_names)) || $name == "next_review_date" || $name == "management_review" || $name == "id" || $name == "project_status" || in_array($name, $date_fields))
+            if((encryption_extra() && in_array($name, $encrypt_column_names)) || $name == "next_review_date" || $name == "management_review" || $name == "id" || $name == "project_status" || $name == "owner" || $name == "manager" || $name == "submitted_by" || $name == "mitigation_owner" || in_array($name, $date_fields))
             {
                 $requested_manual_column_filters[$name] = $column_filter;
             }
@@ -4091,9 +4059,9 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                     case "regulation":
                     case "source":
                     case "category":
-                    case "owner":
-                    case "manager":
-                    case "submitted_by":
+                    // case "owner":
+                    // case "manager":
+                    // case "submitted_by":
                         $wheres[] = " FIND_IN_SET(a.{$name}, :{$bind_param_name}) ";
                         if($empty_filter) $column_filter .= ",0";
                         $bind_params[$bind_param_name] = $column_filter;
@@ -4140,7 +4108,7 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                     break;
                     case "planning_strategy":
                     case "mitigation_effort":
-                    case "mitigation_owner":
+                    // case "mitigation_owner":
                         if($empty_filter) $wheres[] = "(FIND_IN_SET(p.{$name}, :{$bind_param_name}) OR p.{$name} IS NULL)";
                         else $wheres[] = " FIND_IN_SET(p.{$name}, :{$bind_param_name}) ";
                         $bind_params[$bind_param_name] = $column_filter;
@@ -4377,6 +4345,7 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
 
     // Store the results in the risks array
     $risks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $users = get_user_values_array();
 
     $stmt = $db->prepare("SELECT FOUND_ROWS();");
     $stmt->execute();
@@ -4384,16 +4353,120 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
 
     $filtered_risks = [];
     
-    // If encrypted columns were filtered, get filtered risks and filtered total count
-    if($requested_manual_column_filters)
+    $review_levels = get_review_levels();
+
+    // If we're ordering by the 'management_review' column
+    if ($orderColumnName === 'management_review') {
+        // Calculate the 'management_review' values
+        foreach($risks as &$risk) {
+
+            $risk_level = get_risk_level_name($risk['calculated_risk']);
+            $residual_risk_level = get_risk_level_name($risk['residual_risk']);
+
+            // If next_review_date_uses setting is Residual Risk.
+            if(get_setting('next_review_date_uses') == "ResidualRisk")
+            {
+                $next_review = next_review($residual_risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
+            }
+            // If next_review_date_uses setting is Inherent Risk.
+            else
+            {
+                $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
+            }         
+            
+            $management_review = management_review(convert_id($risk['id']), $risk['mgmt_review'], $next_review, $is_html = false);
+            
+            $risk['management_review_text'] = $management_review;
+        }
+        unset($risk);
+
+        // Sorting by the management review text as the normal 'management_review' field contains html
+        usort($risks, function($a, $b) use ($orderDir){
+            // For identical management reviews we're sorting on the id, so the results' order is not changing
+            if ($a['management_review_text'] === $b['management_review_text']) {
+                return (int)$a['id'] - (int)$b['id'];
+            }
+            if($orderDir == "asc") {
+                return strcasecmp($a['management_review_text'], $b['management_review_text']);
+            } else {
+                return strcasecmp($b['management_review_text'], $a['management_review_text']);
+            }
+        });
+    }
+    foreach($risks as $risk)
     {
-        $review_levels = get_review_levels();
+        $success = true;
+        foreach($requested_manual_column_filters as $column_name => $val){
+            if(stripos($column_name, "custom_field") !== false)
+            {
+                if(isset($custom_date_filter[$column_name]) && $custom_date_filter[$column_name] == true){
+                    $date_str = format_datetime($risk[$column_name],"","");
+                    if( stripos($date_str, $val) === false ){
+                        $success = false;
+                        break;
+                    }
+                } 
+                elseif( stripos(try_decrypt($risk[$column_name]), $val) === false ){
+                    $success = false;
+                    break;
+                }
+            }
+            elseif($column_name == "id")
+            {
+                if( stripos($risk['id'] + 1000, $val) === false ){
+                    $success = false;
+                    break;
+                }
+            }
+            elseif($column_name == "subject" || $column_name == "current_solution" || $column_name == "security_recommendations" || $column_name == "security_requirements" || $column_name == "risk_assessment" || $column_name == "additional_notes" || $column_name == "comments")
+            {
+                if($val != "" &&  stripos(try_decrypt($risk[$column_name]), $val) === false ){
+                    $success = false;
+                    break;
+                }
+                if($encryption_order == true) {
+                    $risk['encryption_order'] = try_decrypt($risk[$column_name]);
+                }
+            }
+            elseif($column_name == "next_review_date")
+            {
+                $risk_level = get_risk_level_name($risk['calculated_risk']);
+                $residual_risk_level = get_risk_level_name($risk['residual_risk']);
 
-        // If we're ordering by the 'management_review' column
-        if ($orderColumnName === 'management_review') {
-            // Calculate the 'management_review' values
-            foreach($risks as &$risk) {
-
+                // If next_review_date_uses setting is Residual Risk.
+                if(get_setting('next_review_date_uses') == "ResidualRisk")
+                {
+                    $next_review = next_review($residual_risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
+                }
+                // If next_review_date_uses setting is Inherent Risk.
+                else
+                {
+                    $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
+                }
+                
+                if($val != "" && stripos($next_review, $val) === false ){
+                    $success = false;
+                    break;
+                }
+                if($encryption_order == true) {
+                    $risk['encryption_order'] = ($next_review);
+                }
+            }
+            elseif(in_array($column_name,$date_fields))
+            {
+                if($column_name == "submission_date" || $column_name == "review_date"){
+                    $date_str = format_datetime($risk[$column_name],"","H:i");
+                } else {
+                    $date_str = format_datetime($risk[$column_name],"","");
+                }
+                if( stripos($date_str, $val) === false ){
+                    $success = false;
+                    break;
+                }
+            }
+            elseif($column_name == "management_review")
+            {
+                if($val[0] == "_empty") {$val[0] = "MA==";}
                 $risk_level = get_risk_level_name($risk['calculated_risk']);
                 $residual_risk_level = get_risk_level_name($risk['residual_risk']);
 
@@ -4410,169 +4483,68 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                 
                 $management_review = management_review(convert_id($risk['id']), $risk['mgmt_review'], $next_review, $is_html = false);
                 
-                $risk['management_review_text'] = $management_review;
-            }
-            unset($risk);
-
-            // Sorting by the management review text as the normal 'management_review' field contains html
-            usort($risks, function($a, $b) use ($orderDir){
-                // For identical management reviews we're sorting on the id, so the results' order is not changing
-                if ($a['management_review_text'] === $b['management_review_text']) {
-                    return (int)$a['id'] - (int)$b['id'];
-                }
-                if($orderDir == "asc") {
-                    return strcasecmp($a['management_review_text'], $b['management_review_text']);
-                } else {
-                    return strcasecmp($b['management_review_text'], $a['management_review_text']);
-                }
-            });
-        }
-        foreach($risks as $risk)
-        {
-            $success = true;
-            foreach($requested_manual_column_filters as $column_name => $val){
-                if(stripos($column_name, "custom_field") !== false)
-                {
-                    if(isset($custom_date_filter[$column_name]) && $custom_date_filter[$column_name] == true){
-                        $date_str = format_datetime($risk[$column_name],"","");
-                        if( stripos($date_str, $val) === false ){
-                            $success = false;
-                            break;
-                        }
-                    } 
-                    elseif( stripos(try_decrypt($risk[$column_name]), $val) === false ){
-                        $success = false;
-                        break;
-                    }
-                }
-                elseif($column_name == "id")
-                {
-                    if( stripos($risk['id'] + 1000, $val) === false ){
-                        $success = false;
-                        break;
-                    }
-                }
-                elseif($column_name == "subject" || $column_name == "current_solution" || $column_name == "security_recommendations" || $column_name == "security_requirements" || $column_name == "risk_assessment" || $column_name == "additional_notes" || $column_name == "comments")
-                {
-                    if($val != "" &&  stripos(try_decrypt($risk[$column_name]), $val) === false ){
-                        $success = false;
-                        break;
-                    }
-                    if($encryption_order == true) {
-                        $risk['encryption_order'] = try_decrypt($risk[$column_name]);
-                    }
-                }
-                elseif($column_name == "next_review_date")
-                {
-                    $risk_level = get_risk_level_name($risk['calculated_risk']);
-                    $residual_risk_level = get_risk_level_name($risk['residual_risk']);
-
-                    // If next_review_date_uses setting is Residual Risk.
-                    if(get_setting('next_review_date_uses') == "ResidualRisk")
-                    {
-                        $next_review = next_review($residual_risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
-                    }
-                    // If next_review_date_uses setting is Inherent Risk.
-                    else
-                    {
-                        $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
-                    }
-                    
-                    if($val != "" && stripos($next_review, $val) === false ){
-                        $success = false;
-                        break;
-                    }
-                    if($encryption_order == true) {
-                        $risk['encryption_order'] = ($next_review);
-                    }
-                }
-                elseif(in_array($column_name,$date_fields))
-                {
-                    if($column_name == "submission_date" || $column_name == "review_date"){
-                        $date_str = format_datetime($risk[$column_name],"","H:i");
-                    } else {
-                        $date_str = format_datetime($risk[$column_name],"","");
-                    }
-                    if( stripos($date_str, $val) === false ){
-                        $success = false;
-                        break;
-                    }
-                }
-                elseif($column_name == "management_review")
-                {
-                    if($val[0] == "_empty") {$val[0] = "MA==";}
-                    $risk_level = get_risk_level_name($risk['calculated_risk']);
-                    $residual_risk_level = get_risk_level_name($risk['residual_risk']);
-
-                    // If next_review_date_uses setting is Residual Risk.
-                    if(get_setting('next_review_date_uses') == "ResidualRisk")
-                    {
-                        $next_review = next_review($residual_risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
-                    }
-                    // If next_review_date_uses setting is Inherent Risk.
-                    else
-                    {
-                        $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
-                    }         
-                    
-                    $management_review = management_review(convert_id($risk['id']), $risk['mgmt_review'], $next_review, $is_html = false);
-                    
-                    $available_review_texts = [
-                        "0" => $lang['Unassigned'],
-                        "1" => $lang['Yes'],
-                        "2" => $lang['No'],
-                        "3" => $lang['PASTDUE'],
-                    ];
-                    
-                    $filter_texts = array_map(function($value) use ($available_review_texts){
-                        return $available_review_texts[$value];
-                    }, array_map("base64_decode", $val));
-                    if( in_array($management_review, $filter_texts) === false ){
-                        $success = false;
-                        break;
-                    }
-                }
-                elseif($column_name == "regulation" || $column_name == "project"){
-                    $risk['encryption_order'] = try_decrypt($risk[$column_name]);
-                }
-                elseif($column_name == "project_status")
-                {
-                    if($val != "" && stripos($risk['project_status'], $val) === false ){
-                        $success = false;
-                        break;
-                    }
+                $available_review_texts = [
+                    "0" => $lang['Unassigned'],
+                    "1" => $lang['Yes'],
+                    "2" => $lang['No'],
+                    "3" => $lang['PASTDUE'],
+                ];
+                
+                $filter_texts = array_map(function($value) use ($available_review_texts){
+                    return $available_review_texts[$value];
+                }, array_map("base64_decode", $val));
+                if( in_array($management_review, $filter_texts) === false ){
+                    $success = false;
+                    break;
                 }
             }
-            if($success) $filtered_risks[] = $risk;
-        }
-        if($encryption_order != false) {
-            usort($filtered_risks, function($a, $b) use ($orderDir) {
-                if($orderDir == "asc") 
-                    return strcasecmp($a['encryption_order'], $b['encryption_order']);
-                else 
-                    return strcasecmp($b['encryption_order'], $a['encryption_order']);
-            });
-        }
-
-        $risks_by_page = [];
-        
-        if($length == -1)
-        {
-            $risks_by_page = $filtered_risks;
-        }
-        else
-        {
-            for($i=$start; $i<count($filtered_risks) && $i<$start + $length; $i++){
-                $risks_by_page[] = $filtered_risks[$i];
+            elseif($column_name == "regulation" || $column_name == "project"){
+                $risk['encryption_order'] = try_decrypt($risk[$column_name]);
+            }
+            elseif($column_name == "project_status")
+            {
+                if($val != "" && stripos($risk['project_status'], $val) === false ){
+                    $success = false;
+                    break;
+                }
+            }
+            elseif($column_name == "owner" || $column_name == "manager" || $column_name == "submitted_by" || $column_name == "mitigation_owner")
+            {
+                if(array_search($risk[$column_name], array_map("base64_decode", $val)) === false){
+                    $success = false;
+                    break;
+                }
             }
         }
-        $rowCount = count($filtered_risks);
-        $filtered_risks = $risks_by_page;
+        $risk['owner'] = $users[$risk["owner"]];
+        $risk['manager'] = $users[$risk["manager"]];
+        $risk['submitted_by'] = $users[$risk["submitted_by"]];
+        $risk['mitigation_owner'] = $users[$risk["mitigation_owner"]];
+        if($success) $filtered_risks[] = $risk;
+    }
+    if($encryption_order != false) {
+        usort($filtered_risks, function($a, $b) use ($orderDir) {
+            if($orderDir == "asc") 
+                return strcasecmp($a['encryption_order'], $b['encryption_order']);
+            else 
+                return strcasecmp($b['encryption_order'], $a['encryption_order']);
+        });
+    }
+
+    $risks_by_page = [];
+    
+    if($length == -1)
+    {
+        $risks_by_page = $filtered_risks;
     }
     else
     {
-        $filtered_risks = $risks;
+        for($i=$start; $i<count($filtered_risks) && $i<$start + $length; $i++){
+            $risks_by_page[] = $filtered_risks[$i];
+        }
     }
+    $rowCount = count($filtered_risks);
+    $filtered_risks = $risks_by_page;
     return $filtered_risks;
 }
 
@@ -4685,19 +4657,6 @@ function risks_query($status, $sort, $group, $column_filters, &$rowCount, $start
         }
         $row['month_submitted'] = $month_submitted;
 
-        // If the mitigation costs are empty
-        if (empty($risk['mitigation_min_cost']) && empty($risk['mitigation_max_cost']))
-        {
-                // Return no value
-                $mitigation_cost = "";
-        }
-        else 
-        {
-            $mitigation_cost = "$" . $risk['mitigation_min_cost'] . " to $" . $risk['mitigation_max_cost'];
-            if (!empty($risk['valuation_level_name']))
-                $mitigation_cost .= " ({$risk['valuation_level_name']})";
-        }
-        $row['mitigation_cost'] = $mitigation_cost;
 
         // If the group name is not none
         if ($group_name != "none")
@@ -4729,6 +4688,7 @@ function get_dynamicrisk_unique_column_data($status, $group, $group_value_from_d
 {
     global $lang;
 
+    $users = get_user_values_array();
     list($query, $group_name) = make_full_risks_sql($query_type=3, $status, -1, $group, [], $group_value_from_db, $custom_query, $bind_params, "");
 
     // Query the database
@@ -4754,20 +4714,21 @@ function get_dynamicrisk_unique_column_data($status, $group, $group_value_from_d
     
     // Initialize the data array
     $data = array();
+    $delimiter = "---";
 
     // For each risk in the risks array
     foreach($risks as $risk){
         $key_relation_arr = [
             "category" => "category_for_dropdown",
-            "owner" => "owner_for_dropdown",
-            "manager" => "manager_for_dropdown",
-            "submitted_by" => "submitted_by_for_dropdown",
+            // "owner" => "owner_for_dropdown",
+            // "manager" => "manager_for_dropdown",
+            // "submitted_by" => "submitted_by_for_dropdown",
             "regulation" => "regulation_for_dropdown",
             "project" => "project_for_dropdown",
             "next_step" => "next_step_for_dropdown",
             "planning_strategy" => "planning_strategy_for_dropdown",
             "mitigation_effort" => "mitigation_effort_for_dropdown",
-            "mitigation_owner" => "mitigation_owner_for_dropdown",
+            // "mitigation_owner" => "mitigation_owner_for_dropdown",
             "source" => "source_for_dropdown",
         ];
         
@@ -4793,17 +4754,17 @@ function get_dynamicrisk_unique_column_data($status, $group, $group_value_from_d
             "team" => $risk['team'], 
             "additional_stakeholders" => $risk['additional_stakeholders'], 
             "technology" => $risk["technology"], 
-            "owner" => $risk["owner"], 
-            "manager" => $risk["manager"], 
-            "submitted_by" => $risk["submitted_by"], 
+            "owner" => $users[$risk["owner"]].$delimiter.$risk["owner"], 
+            "manager" => $users[$risk["manager"]].$delimiter.$risk["manager"], 
+            "submitted_by" => $users[$risk["submitted_by"]].$delimiter.$risk["submitted_by"], 
             "regulation" => $risk["regulation"], 
             "project" => $risk["project"], 
             "next_step" => $risk["next_step"], 
             "affected_assets" => "", 
             "planning_strategy" => $risk["planning_strategy"], 
-            "mitigation_effort" => $risk["mitigation_effort"], 
+            "mitigation_effort" => $risk["mitigation_effort"],
             "mitigation_cost" => $risk["mitigation_cost"], 
-            "mitigation_owner" => $risk["mitigation_owner"], 
+            "mitigation_owner" => $users[$risk["mitigation_owner"]].$delimiter.$risk["mitigation_owner"], 
             "mitigation_team" => $risk["mitigation_team"], 
             "mitigation_controls" => $risk["mitigation_control_names"], 
             "risk_tags" => $risk["risk_tags"],

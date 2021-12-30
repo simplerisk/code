@@ -191,7 +191,7 @@ if (isset($_POST['enable_user']))
     $addusers_tab = false;
     $manageusers_tab = true;
 
-    $value = (int)$_POST['disabled_users'];
+    $value = (int)$_POST['disabled_users_all'];
 
     // Verify value is an integer
     if (is_int($value) && $value > 0)
@@ -212,7 +212,7 @@ if (isset($_POST['disable_user']))
     $addusers_tab = false;
     $manageusers_tab = true;
 
-    $value = (int)$_POST['enabled_users'];
+    $value = (int)$_POST['enabled_users_all'];
 
     if ($_SESSION['admin'] && $value === (int)$_SESSION['uid']) {
         set_alert(true, "bad", $lang['AdminCantDisableItself']);
@@ -841,7 +841,7 @@ if (isset($_POST['password_policy_update']))
                             <h6>
                                 <u><?php echo $escaper->escapeHtml($lang['Manager']); ?></u>
                             </h6>
-                            <?php create_dropdown("user", "", "manager"); ?>
+                            <?php create_dropdown("enabled_users_all", "", "manager"); ?>
 
                             <h6><u><?php echo $escaper->escapeHtml($lang['Teams']); ?></u></h6>
                             <?php create_multiple_dropdown("team", null, null, get_all_teams()); ?>
@@ -928,7 +928,7 @@ if (isset($_POST['password_policy_update']))
                       <td>
                         <form name="select_user" method="post" action="view_user_details.php">
                                 <h4><?php echo $escaper->escapeHtml($lang['ViewDetailsForUser']); ?>:</h4>
-                                <?php echo $escaper->escapeHtml($lang['DetailsForUser']); ?> <?php create_dropdown('enabled_users', null, 'user'); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Select']); ?>" name="select_user" />
+                                <?php echo $escaper->escapeHtml($lang['DetailsForUser']); ?> <?php create_dropdown('enabled_users_all', null, 'user'); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Select']); ?>" name="select_user" />
                         </form>
                       </td>
                     </tr>
@@ -945,9 +945,9 @@ if (isset($_POST['password_policy_update']))
                                 <h4><?php echo $escaper->escapeHtml($lang['EnableAndDisableUsers']); ?>:</h4>
                                 <?php echo $escaper->escapeHtml($lang['EnableAndDisableUsersHelp']); ?>.
 				<br /><br />
-                                <?php echo $escaper->escapeHtml($lang['DisableUser']); ?> <?php create_dropdown("enabled_users"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Disable']); ?>" name="disable_user" />
+                                <?php echo $escaper->escapeHtml($lang['DisableUser']); ?> <?php create_dropdown("enabled_users_all"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Disable']); ?>" name="disable_user" />
 				<br />
-                                <?php echo $escaper->escapeHtml($lang['EnableUser']); ?> <?php create_dropdown("disabled_users"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Enable']); ?>" name="enable_user" />
+                                <?php echo $escaper->escapeHtml($lang['EnableUser']); ?> <?php create_dropdown("disabled_users_all"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Enable']); ?>" name="enable_user" />
                         </form>
                       </td>
                     </tr>

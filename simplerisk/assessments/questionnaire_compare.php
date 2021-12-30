@@ -90,7 +90,7 @@ if(empty($_GET["templates"])){
     <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+   	<link rel="stylesheet" href="../vendor/components/font-awesome/css/all.min.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
     <?php

@@ -27,7 +27,7 @@ return array(
     'Symfony\\Component\\DependencyInjection\\' => array($vendorDir . '/symfony/dependency-injection'),
     'Symfony\\Component\\Debug\\' => array($vendorDir . '/symfony/debug'),
     'Symfony\\Component\\Config\\' => array($vendorDir . '/symfony/config'),
-    'SimpleSAML\\modules\\yubikey\\' => array($vendorDir . '/simplesamlphp/simplesamlphp/modules/authYubikey/lib'),
+    'SimpleSAML\\modules\\yubikey\\' => array($vendorDir . '/simplesamlphp/simplesamlphp/modules/authYubiKey/lib'),
     'SimpleSAML\\modules\\discopower\\' => array($vendorDir . '/simplesamlphp/simplesamlphp/modules/discopower/lib'),
     'SimpleSAML\\TwigConfigurableI18n\\' => array($vendorDir . '/simplesamlphp/twig-configurable-i18n/src'),
     'SimpleSAML\\Module\\statistics\\' => array($vendorDir . '/simplesamlphp/simplesamlphp/modules/statistics/lib'),

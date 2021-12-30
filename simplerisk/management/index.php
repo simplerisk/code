@@ -352,7 +352,15 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
         <script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
         <style>
-            .top-panel .span5, .bottom-panel .span5{max-width: 210px;}
+            #risk-submit-form .row-fluid{max-width: 1400px;}
+            .top-panel .span2, .bottom-panel .span2{max-width: 210px;}
+            .top-panel .span8, .bottom-panel .span8{margin-left:15px;}
+            @media only screen and (min-width: 768px) {
+                .top-panel .span2.text-right, .bottom-panel .span2.text-right{margin-left:10px;}
+            }
+            @media only screen and (min-width: 1400px) {
+                .top-panel .span2.text-right, .bottom-panel .span2.text-right{margin-left:22px;}
+            }
         </style>
 
         <?php

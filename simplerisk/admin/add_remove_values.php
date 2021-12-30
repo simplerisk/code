@@ -48,18 +48,18 @@ require_once(language_file());
         return $teamId;
     };
 
-    $customDeleteFunction_team = function($name) {
+    $customDeleteFunction_team = function($value) {
         // If team separation is enabled
         if (team_separation_extra()) {
             // Check if a risk is assigned to the team
-            $delete = empty(get_risks_by_team($name));
+            $delete = empty(get_risks_by_team($value));
         } else {
             $delete = true;
         }
 
         // If it is ok to delete the team
         if ($delete) {
-            $delete_result = delete_value("team", $name);
+            $delete_result = delete_value("team", $value);
             cleanup_after_delete("team");
             return $delete_result;
         } else {
@@ -70,14 +70,14 @@ require_once(language_file());
         }
     };
 
-    $customDeleteFunction_technology = function($name) {
-        $delete_result = delete_value("technology", $name);
+    $customDeleteFunction_technology = function($value) {
+        $delete_result = delete_value("technology", $value);
         cleanup_after_delete("technology");
         return $delete_result;
     };
 
-    $customDeleteFunction_location = function($name) {
-        $delete_result = delete_value("location", $name);
+    $customDeleteFunction_location = function($value) {
+        $delete_result = delete_value("location", $value);
         cleanup_after_delete("location");
         return $delete_result;
     };
@@ -96,6 +96,52 @@ require_once(language_file());
         else {
             return delete_value("test_status", $id);
         }
+    };
+
+    $customAddFunction_risk_grouping = function($name) {
+        $db = db_open();
+
+        // Get the order for the last place...
+        $stmt = $db->prepare("SELECT MAX(`order`) + 1 FROM `risk_grouping`");
+        $stmt->execute();
+        $last_place = $stmt->fetchColumn();
+
+        // ...and add it there.
+        $stmt = $db->prepare("INSERT INTO `risk_grouping` (`name`, `order`) VALUES (:name, :order)");
+        $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+        $stmt->bindParam(":order", $last_place, PDO::PARAM_INT);
+        $stmt->execute();
+        $risk_grouping_id = $db->lastInsertId();
+
+        db_close($db);
+
+        return $risk_grouping_id;
+    };
+
+    $customDeleteFunction_risk_grouping = function($value) {
+
+        $db = db_open();
+
+        // Get value of the default risk group
+        $stmt = $db->prepare("SELECT `value` FROM `risk_grouping` WHERE `default` = 1");
+        $stmt->execute();
+
+        $default_risk_group_value = (int)$stmt->fetchColumn();
+
+        db_close($db);
+
+        if ($value === $default_risk_group_value) {
+            global $lang;
+            // Display an alert
+            set_alert(true, "bad", $lang['CantDeleteTheDefaultRiskGrouping']);
+            return false;
+        }
+
+        $delete_result = delete_value("risk_grouping", $value);
+        cleanup_after_delete("risk_grouping");
+        reassign_groupless_risk_catalogs($default_risk_group_value);
+
+        return $delete_result;
     };
 
     // The configuration the page rendering is based on
@@ -173,6 +219,8 @@ require_once(language_file());
         'risk_grouping' => array(
             'headerKey' => 'RiskGroupings',
             'lengthLimit' => 50,
+            'customAddFunction' => $customAddFunction_risk_grouping,
+            'customDeleteFunction' => $customDeleteFunction_risk_grouping,
         ),
         'risk_function' => array(
             'headerKey' => 'RiskFunctions',

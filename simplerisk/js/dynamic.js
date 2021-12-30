@@ -183,6 +183,20 @@ $(document).ready(function(){
                 table_columns[index] = column_name;
                 if(column_name.indexOf("calculated_risk") !== -1 || column_name.indexOf("residual_risk") !== -1) risk_cell_indexs.push(index);
             });
+
+            // Attaching to the event that's fired BEFORE the xhr
+            $this.on('preXhr.dt', function(e, settings, data) {
+            	// to go through the column data being sent
+            	$.each( data['columns'], function( index, column ){
+            		// and remove those that aren't used on the server side
+            		// to be able to stay below PHP's default `max_input_vars` setting(1000)
+            		delete column['data'];
+            		delete column['searchable'];
+            		delete column['orderable'];
+            		delete column['search'];
+            	});
+            });
+
             var riskDatatable = $this.DataTable({
                 scrollX: true,
                 bFilter: false,
