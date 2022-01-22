@@ -21,9 +21,10 @@ if (php_sapi_name() == "cli")
 
 	    // Load the vulnerability management extra
 	    require_once(realpath(__DIR__ . '/../extras/vulnmgmt/index.php'));
+		require_once(realpath(__DIR__ . '/../extras/vulnmgmt/includes/api.php'));
 
 	    // Call the vulnerability management update function
-	    vulnmgmt_update();
+		api_vulnmgmt_update();
 	}
 }
 

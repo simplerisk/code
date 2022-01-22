@@ -144,6 +144,52 @@ require_once(language_file());
         return $delete_result;
     };
 
+
+    $customAddFunction_threat_grouping = function($name) {
+        $db = db_open();
+
+        // Get the order for the last place...
+        $stmt = $db->prepare("SELECT MAX(`order`) + 1 FROM `threat_grouping`");
+        $stmt->execute();
+        $last_place = $stmt->fetchColumn();
+
+        // ...and add it there.
+        $stmt = $db->prepare("INSERT INTO `threat_grouping` (`name`, `order`) VALUES (:name, :order)");
+        $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+        $stmt->bindParam(":order", $last_place, PDO::PARAM_INT);
+        $stmt->execute();
+        $threat_grouping_id = $db->lastInsertId();
+
+        db_close($db);
+
+        return $threat_grouping_id;
+    };
+
+    $customDeleteFunction_threat_grouping = function($value) {
+        $db = db_open();
+
+        // Get value of the default threat group
+        $stmt = $db->prepare("SELECT `value` FROM `threat_grouping` WHERE `default` = 1");
+        $stmt->execute();
+
+        $default_threat_group_value = (int)$stmt->fetchColumn();
+
+        db_close($db);
+
+        if ($value === $default_threat_group_value) {
+            global $lang;
+            // Display an alert
+            set_alert(true, "bad", $lang['CantDeleteTheDefaultThreatGrouping']);
+            return false;
+        }
+
+        $delete_result = delete_value("threat_grouping", $value);
+        cleanup_after_delete("threat_grouping");
+        reassign_groupless_threat_catalogs($default_threat_group_value);
+
+        return $delete_result;
+    };
+
     // The configuration the page rendering is based on
     // for custom functions you can either use anonymous functions(see examples defined above)
     // or existing functions(the name should be passed as a string).
@@ -225,6 +271,12 @@ require_once(language_file());
         'risk_function' => array(
             'headerKey' => 'RiskFunctions',
             'lengthLimit' => 50,
+        ),
+        'threat_grouping' => array(
+             'headerKey' => 'ThreatGroupings',
+             'lengthLimit' => 50,
+             'customAddFunction' => $customAddFunction_threat_grouping,
+             'customDeleteFunction' => $customDeleteFunction_threat_grouping,
         ),
     	'document_status' => array(
     	    'headerKey' => 'DocumentStatus',

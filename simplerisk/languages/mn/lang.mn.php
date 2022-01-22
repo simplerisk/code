@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => 'Буруу бүлгүүд!',
     'OrderUpdatedSuccessfully' => 'Захиалгыг амжилттай шинэчилсэн.',
     'CantDeleteTheDefaultRiskGrouping' => 'Өгөгдмөл эрсдэлийн бүлэглэлийг устгах боломжгүй',
-
+    'EnableSSLCertificateCheck' => 'SSL гэрчилгээ шалгахыг идэвхжүүлнэ үү',
+    'CantDeleteTheDefaultThreatGrouping' => 'Өгөгдмөл аюулын бүлэглэлийг устгах боломжгүй',
+    'ThreatGroupings' => 'Аюул заналхийллийн бүлгүүд',
 
     '' => ''
 );

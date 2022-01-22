@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => 'Недействительные группы!',
     'OrderUpdatedSuccessfully' => 'Заказ успешно обновлен.',
     'CantDeleteTheDefaultRiskGrouping' => 'Не удается удалить группу рисков по умолчанию',
-
+    'EnableSSLCertificateCheck' => 'Включить проверку SSL-сертификата',
+    'CantDeleteTheDefaultThreatGrouping' => 'Не удается удалить группу угроз по умолчанию',
+    'ThreatGroupings' => 'Группы угроз',
 
     '' => ''
 );

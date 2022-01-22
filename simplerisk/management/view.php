@@ -138,180 +138,104 @@ if (isset($_GET['id']))
             $ContributingImpacts = [];
         }
         $display_risk = true;
+
+        $submission_date = format_date($submission_date, "N/A");
+
+        // Get the mitigation for the risk
+        $mitigation = get_mitigation_by_id($id);
+
+        // If a mitigation exists for the risk and the user is allowed to access
+        if ($mitigation == true && $access)
+        {
+            // Set the mitigation values
+            $mitigation_id = $mitigation[0]['mitigation_id'];
+            $mitigation_date = $mitigation[0]['submission_date'];
+            $mitigation_date = format_date($mitigation_date);
+            $planning_strategy = $mitigation[0]['planning_strategy'];
+            $mitigation_effort = $mitigation[0]['mitigation_effort'];
+            $mitigation_cost = $mitigation[0]['mitigation_cost'];
+            $mitigation_owner = $mitigation[0]['mitigation_owner'];
+            $mitigation_team = $mitigation[0]['mitigation_team'];
+            $current_solution = $mitigation[0]['current_solution'];
+            $security_requirements = $mitigation[0]['security_requirements'];
+            $security_recommendations = $mitigation[0]['security_recommendations'];
+            $planning_date = format_date($mitigation[0]['planning_date']);
+            $mitigation_percent = (isset($mitigation[0]['mitigation_percent']) && $mitigation[0]['mitigation_percent'] >= 0 && $mitigation[0]['mitigation_percent'] <= 100) ? $mitigation[0]['mitigation_percent'] : 0;
+            $mitigation_controls = isset($mitigation[0]['mitigation_controls']) ? $mitigation[0]['mitigation_controls'] : "";
+        }
+        // Otherwise
+        else
+        {
+            // Set the values to empty
+            $mitigation_id = "";
+            $mitigation_date = "N/A";
+            $mitigation_date = "";
+            $planning_strategy = "";
+            $mitigation_effort = "";
+            $mitigation_cost = 1;
+            $mitigation_owner = $owner;
+            $mitigation_team = $team;
+            $current_solution = "";
+            $security_requirements = "";
+            $security_recommendations = "";
+            $planning_date = "";
+            $mitigation_percent = 0;
+            $mitigation_controls = "";
+        }
+
+        // Get the management reviews for the risk
+        $mgmt_reviews = get_review_by_id($id);
+        // If a mitigation exists for this risk and the user is allowed to access
+        if ($mgmt_reviews && $access)
+        {
+            // Set the mitigation values
+            $review_date = $mgmt_reviews[0]['submission_date'];
+            $review_date = date(get_default_datetime_format("g:i A T"), strtotime($review_date));
+
+            $review = $mgmt_reviews[0]['review'];
+            $review_id = $mgmt_reviews[0]['id'];
+            $next_step = $mgmt_reviews[0]['next_step'];
+
+            // If next_review_date_uses setting is Residual Risk.
+            if(get_setting('next_review_date_uses') == "ResidualRisk")
+            {
+                $next_review = next_review($residual_risk_level, $id-1000, $next_review, false);
+            }
+            // If next_review_date_uses setting is Inherent Risk.
+            else
+            {
+                $next_review = next_review($risk_level, $id-1000, $next_review, false);
+            }
+
+            $reviewer = $mgmt_reviews[0]['reviewer'];
+            $comments = $mgmt_reviews[0]['comments'];
+        }
+        else
+        // Otherwise
+        {
+            // Set the values to empty
+            $review_date = "N/A";
+            $review = "";
+            $review_id = "";
+            $next_step = "";
+            $next_review = "";
+            $reviewer = "";
+            $comments = "";
+        }
     }
     // If the risk was not found use null values
     else
     {
-        $submitted_by = "";
-        // If Risk ID exists.
-        if(check_risk_by_id($id)){
-            $status = $lang["RiskDisplayPermission"];
-        }
-        // If Risk ID does not exist.
-        else{
-            $status = $lang["RiskIdDoesNotExist"];
-        }
-
         $subject = "N/A";
-        $reference_id = "N/A";
-        $regulation = "";
-        $control_number = "N/A";
-        $location = "";
-        $source = "";
-        $category = "";
-        $team = "";
-        $additional_stakeholders = "";
-        $technology = "";
-        $owner = "";
-        $manager = "";
-        $assessment = "";
-        $notes = "";
-        $jira_issue_key = "";
-        $submission_date = "";
-        $risk_tags = "";
-        $mitigation_id = "";
-        $mgmt_review = "";
-        $calculated_risk = "0.0";
-
-        $residual_risk = "";
-        $next_review = "";
-        $color = "";
-        $residual_color = "";
-
-        $risk_level = "";
-        $residual_risk_level = "";
-        $scoring_method = "";
-        $CLASSIC_likelihood = "";
-        $CLASSIC_impact = "";
-        $AccessVector = "";
-        $AccessComplexity = "";
-        $Authentication = "";
-
-        $ConfImpact = "";
-        $IntegImpact = "";
-        $AvailImpact = "";
-        $Exploitability = "";
-        $RemediationLevel = "";
-        $ReportConfidence = "";
-        $CollateralDamagePotential = "";
-        $TargetDistribution = "";
-        $ConfidentialityRequirement = "";
-        $IntegrityRequirement = "";
-        $AvailabilityRequirement = "";
-        $DREADDamagePotential = "";
-        $DREADReproducibility = "";
-        $DREADExploitability = "";
-        $DREADAffectedUsers = "";
-        $DREADDiscoverability = "";
-        $OWASPSkillLevel = "";
-        $OWASPMotive = "";
-        $OWASPOpportunity = "";
-        $OWASPSize = "";
-        $OWASPEaseOfDiscovery = "";
-        $OWASPEaseOfExploit = "";
-        $OWASPAwareness = "";
-        $OWASPIntrusionDetection = "";
-        $OWASPLossOfConfidentiality = "";
-        $OWASPLossOfIntegrity = "";
-        $OWASPLossOfAvailability = "";
-        $OWASPLossOfAccountability = "";
-        $OWASPFinancialDamage = "";
-        $OWASPReputationDamage = "";
-        $OWASPNonCompliance = "";
-        $OWASPPrivacyViolation = "";
-        $custom = "";
-        $risk_catalog_mapping = "";
-        $threat_catalog_mapping = "";
-        $template_group_id = "";
-
-        $ContributingLikelihood  = "";
-        $ContributingImpacts = [];
         $display_risk = false;
     }
-
-    $submission_date = format_date($submission_date, "N/A");
-
-    // Get the mitigation for the risk
-    $mitigation = get_mitigation_by_id($id);
-
-    // If a mitigation exists for the risk and the user is allowed to access
-    if ($mitigation == true && $access)
-    {
-        // Set the mitigation values
-        $mitigation_id = $mitigation[0]['mitigation_id'];
-        $mitigation_date = $mitigation[0]['submission_date'];
-        $mitigation_date = format_date($mitigation_date);
-        $planning_strategy = $mitigation[0]['planning_strategy'];
-        $mitigation_effort = $mitigation[0]['mitigation_effort'];
-        $mitigation_cost = $mitigation[0]['mitigation_cost'];
-        $mitigation_owner = $mitigation[0]['mitigation_owner'];
-        $mitigation_team = $mitigation[0]['mitigation_team'];
-        $current_solution = $mitigation[0]['current_solution'];
-        $security_requirements = $mitigation[0]['security_requirements'];
-        $security_recommendations = $mitigation[0]['security_recommendations'];
-        $planning_date = format_date($mitigation[0]['planning_date']);
-        $mitigation_percent = (isset($mitigation[0]['mitigation_percent']) && $mitigation[0]['mitigation_percent'] >= 0 && $mitigation[0]['mitigation_percent'] <= 100) ? $mitigation[0]['mitigation_percent'] : 0;
-        $mitigation_controls = isset($mitigation[0]['mitigation_controls']) ? $mitigation[0]['mitigation_controls'] : "";
-    }
-    // Otherwise
-    else
-    {
-        // Set the values to empty
-        $mitigation_id = "";
-        $mitigation_date = "N/A";
-        $mitigation_date = "";
-        $planning_strategy = "";
-        $mitigation_effort = "";
-        $mitigation_cost = 1;
-        $mitigation_owner = $owner;
-        $mitigation_team = $team;
-        $current_solution = "";
-        $security_requirements = "";
-        $security_recommendations = "";
-        $planning_date = "";
-        $mitigation_percent = 0;
-        $mitigation_controls = "";
-    }
-
-    // Get the management reviews for the risk
-    $mgmt_reviews = get_review_by_id($id);
-    // If a mitigation exists for this risk and the user is allowed to access
-    if ($mgmt_reviews && $access)
-    {
-        // Set the mitigation values
-        $review_date = $mgmt_reviews[0]['submission_date'];
-        $review_date = date(get_default_datetime_format("g:i A T"), strtotime($review_date));
-
-        $review = $mgmt_reviews[0]['review'];
-        $review_id = $mgmt_reviews[0]['id'];
-        $next_step = $mgmt_reviews[0]['next_step'];
-
-        // If next_review_date_uses setting is Residual Risk.
-        if(get_setting('next_review_date_uses') == "ResidualRisk")
-        {
-            $next_review = next_review($residual_risk_level, $id-1000, $next_review, false);
-        }
-        // If next_review_date_uses setting is Inherent Risk.
-        else
-        {
-            $next_review = next_review($risk_level, $id-1000, $next_review, false);
-        }
-
-        $reviewer = $mgmt_reviews[0]['reviewer'];
-        $comments = $mgmt_reviews[0]['comments'];
-    }
-    else
-    // Otherwise
-    {
-        // Set the values to empty
-        $review_date = "N/A";
-        $review = "";
-        $review_id = "";
-        $next_step = "";
-        $next_review = "";
-        $reviewer = "";
-        $comments = "";
-    }
+} 
+// if ID is not set
+else
+{
+    $id = "";
+    $subject = "N/A";
+    $display_risk = false;
 }
 
 	// Record the page the workflow started from as a session variable
@@ -470,7 +394,8 @@ if (isset($_GET['id']))
                     <?php
                         
                         $action = isset($_GET['action']) ? $_GET['action'] : "";
-                        include(realpath(__DIR__ . '/partials/viewhtml.php'));
+                        if($display_risk == true) include(realpath(__DIR__ . '/partials/viewhtml.php'));
+                        else echo $lang["RiskIdDoesNotExist"];
                     ?>
                 </div>
             </div>

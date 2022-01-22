@@ -157,6 +157,7 @@ $releases = array(
 	"20211027-001",
 	"20211115-001",
 	"20211230-001",
+	"20220122-001",
 );
 
 /*************************
@@ -289,7 +290,7 @@ function convert_tables_to_innodb()
     $db = db_open();
 
     // Find tables that are not InnoDB
-    $stmt = $db->prepare("SELECT table_name FROM information_schema.tables WHERE table_schema='" . DB_DATABASE . "' AND ENGINE!='InnoDB';");
+    $stmt = $db->prepare("SELECT `table_name` AS table_name FROM `information_schema`.`tables` WHERE `table_schema` = '" . DB_DATABASE . "' AND `ENGINE` != 'InnoDB';");
     $stmt->execute();
 
     // Store the list in the array
@@ -6228,6 +6229,89 @@ function upgrade_from_20211115001($db)
             $stmt->bindParam(":order", $order, PDO::PARAM_INT);
             $stmt->bindParam(":value", $value, PDO::PARAM_INT);
             $stmt->execute();
+        }
+    }
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20211230-001 *
+ ***************************************/
+function upgrade_from_20211230001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20211230-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20220122-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Update desired_frequency value to test_frequency
+    echo "Updating desired_frequency value to test_frequency.<br />\n";
+    $stmt = $db->prepare("UPDATE `framework_control_tests` SET `desired_frequency` = `test_frequency`;");
+    $stmt->execute();
+
+    // Set SSL Certfiicate check to enabled by default
+    echo "Setting SSL certificate check to enabled by default.<br />\n";
+    add_setting("ssl_certificate_check", "1");
+
+    if (!field_exists_in_table('default', 'threat_grouping')) {
+        // Get the threat groups for setting the order
+        $stmt = $db->prepare("
+            SELECT `value` FROM `threat_grouping` ORDER BY `name`;
+        ");
+        $stmt->execute();
+        $data = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        // Add the column to mark the default group for threat catalog items that doesn't have an actual group assigned
+        echo "Adding column to mark the default 'threat_grouping' for 'threat_catalog' items that doesn't have an actual group assigned.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `threat_grouping` ADD `default` TINYINT(1) DEFAULT 0 NOT NULL AFTER `name`;");
+        $stmt->execute();
+
+        // Add the default group
+        echo "Adding the default 'threat_grouping'.<br />\n";
+        $stmt = $db->prepare("INSERT INTO `threat_grouping`(`name`, `default`, `order`) VALUE ('Unassigned Items', 1, 0);");
+        $stmt->execute();
+        $default_group_id = $db->lastInsertId();
+
+        // Set the order of the groups but let the default group be the first one
+        echo "Setting the order of the 'threat_grouping' entries.<br />\n";
+        foreach ($data as $order => $value) {
+            $stmt = $db->prepare("UPDATE `threat_grouping` SET `order` = :order + 1 WHERE `value` = :value;");
+            $stmt->bindParam(":order", $order, PDO::PARAM_INT);
+            $stmt->bindParam(":value", $value, PDO::PARAM_INT);
+            $stmt->execute();
+        }
+
+        // Find threat catalog items that have no group assigned
+        $stmt = $db->prepare("
+            SELECT
+            	`id`
+            FROM `threat_catalog` tc
+            	LEFT JOIN `threat_grouping` tg ON `tg`.`value` = `tc`.`grouping`
+            WHERE
+            	`tg`.`value` IS NULL;
+        ");
+        $stmt->execute();
+        $data = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if ($data) {
+            echo "Assigning groupless 'threat_catalog' entries to the default 'threat_grouping'.<br />\n";
+            // Assign threat catalog items that have no group assigned to this new default group
+            foreach ($data as $id) {
+                $stmt = $db->prepare("UPDATE `threat_catalog` SET `grouping` = :group WHERE `id` = :id;");
+                $stmt->bindParam(":group", $default_group_id, PDO::PARAM_INT);
+                $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+                $stmt->execute();
+            }
         }
     }
 

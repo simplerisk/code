@@ -4,7 +4,7 @@
   "type": "simplesamlphp-module",
   "keywords": [ "SimpleSAMLphp", "CDC"],
   "homepage": "https://simplesamlphp.org/",
-  "license": "LGPL-3.0-or-later",
+  "license": "LGPL-2.1-or-later",
   "authors": [
     {
       "name": "Olav Morken",
@@ -19,6 +19,9 @@
     "preferred-install": {
       "simplesamlphp/simplesamlphp": "source",
       "*": "dist"
+    },
+    "allow-plugins": {
+      "composer/package-versions-deprecated": true
     }
   },
   "autoload": {
@@ -36,7 +39,8 @@
   },
   "require-dev": {
     "simplesamlphp/simplesamlphp": "^1.17",
-    "phpunit/phpunit": "~5.7"
+    "phpunit/phpunit": "~5.7",
+    "webmozart/assert": "<1.7"
   },
   "support": {
     "issues": "https://github.com/simplesamlphp/simplesamlphp-module-cdc/issues",

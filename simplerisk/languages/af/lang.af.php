@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => 'Ongeldige groepe!',
     'OrderUpdatedSuccessfully' => 'Die bestelling is suksesvol opgedateer.',
     'CantDeleteTheDefaultRiskGrouping' => 'Kan nie die verstekrisikogroepering uitvee nie',
-
+    'EnableSSLCertificateCheck' => 'Aktiveer SSL-sertifikaatkontrole',
+    'CantDeleteTheDefaultThreatGrouping' => 'Kan nie die verstek bedreigingsgroepering uitvee nie',
+    'ThreatGroupings' => 'Bedreigingsgroeperings',
 
     '' => ''
 );

@@ -28,12 +28,5 @@
         <MissingParamType errorLevel="info" />
         <UnusedClass errorLevel="info" />
         <PossiblyUnusedMethod errorLevel="info" />
-
-        <!-- Ignore InvalidScope on template-scripts - Remove for 2.0 -->
-        <InvalidScope>
-            <errorLevel type="suppress">
-                <file name="templates/*.tpl.php" />
-            </errorLevel>
-        </InvalidScope>
     </issueHandlers>
 </psalm>

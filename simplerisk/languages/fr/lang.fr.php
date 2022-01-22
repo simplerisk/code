@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => 'Groupes invalides !',
     'OrderUpdatedSuccessfully' => 'La commande a été mise à jour avec succès.',
     'CantDeleteTheDefaultRiskGrouping' => 'Impossible de supprimer le groupe de risques par défaut',
-
+    'EnableSSLCertificateCheck' => 'Activer la vérification du certificat SSL',
+    'CantDeleteTheDefaultThreatGrouping' => 'Impossible de supprimer le groupe de menaces par défaut',
+    'ThreatGroupings' => 'Groupements de menaces',
 
     '' => ''
 );

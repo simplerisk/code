@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => '无效组！',
     'OrderUpdatedSuccessfully' => '订单已成功更新。',
     'CantDeleteTheDefaultRiskGrouping' => '无法删除默认风险分组',
-
+    'EnableSSLCertificateCheck' => '启用 SSL 证书检查',
+    'CantDeleteTheDefaultThreatGrouping' => '无法删除默认威胁分组',
+    'ThreatGroupings' => '威胁分组',
 
     '' => ''
 );

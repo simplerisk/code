@@ -305,7 +305,7 @@ function is_valid_base_url($url) {
         $name = $_POST['new_file_type'];
         $extension = $_POST['file_type_ext'];
 
-        // Insert a new file type (100 chars) with extension (10 chars)
+        // Insert a new file type (250 chars) with extension (10 chars)
         $success = add_file_type($name, $extension);
 
         // If the add was successful
@@ -559,13 +559,21 @@ function is_valid_base_url($url) {
             update_setting("content_security_policy", $content_security_policy);
         }
 
-                // Update the proxy settings
-                $proxy_web_requests = isset($_POST['proxy_web_requests']) ? 1 : 0;
-                $current_proxy_web_requests = get_setting("proxy_web_requests");
-                if ($proxy_web_requests != $current_proxy_web_requests)
-                {
+        // Update the SSL certificate check
+        $ssl_certificate_check = isset($_POST['ssl_certificate_check']) ? 1 : 0;
+        $current_ssl_certificate_check = get_setting("ssl_certificate_check");
+        if ($ssl_certificate_check != $current_ssl_certificate_check)
+        {
+            update_setting("ssl_certificate_check", $ssl_certificate_check);
+        }
+
+        // Update the proxy settings
+        $proxy_web_requests = isset($_POST['proxy_web_requests']) ? 1 : 0;
+        $current_proxy_web_requests = get_setting("proxy_web_requests");
+        if ($proxy_web_requests != $current_proxy_web_requests)
+        {
             update_setting("proxy_web_requests", $proxy_web_requests);
-                }
+        }
 
         // If proxy web requests is enabled
         if ($proxy_web_requests)
@@ -1119,7 +1127,7 @@ function is_valid_base_url($url) {
                               <td><h4><?php echo $escaper->escapeHtml($lang['AllowedFileTypes']); ?>:</h4></td>
                             </tr>
                             <tr>
-                              <td><?php echo $escaper->escapeHtml($lang['AddNewFileTypeOf']); ?> <input name="new_file_type" type="text" maxlength="50" size="10" style="width: 200px;" />&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['WithExtension']); ?>&nbsp;&nbsp;<input name="file_type_ext" type="text" maxlength="10" size="10" style="width: 50px;" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_file_type" /></td>
+                              <td><?php echo $escaper->escapeHtml($lang['AddNewFileTypeOf']); ?> <input name="new_file_type" type="text" maxlength="250" size="10" style="width: 200px;" />&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['WithExtension']); ?>&nbsp;&nbsp;<input name="file_type_ext" type="text" maxlength="10" size="10" style="width: 50px;" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_file_type" /></td>
                             </tr>
                             <tr>
                               <td><?php echo $escaper->escapeHtml($lang['DeleteCurrentFileTypeOf']); ?> <?php create_dropdown("file_types"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_file_type" /></td>
@@ -1504,6 +1512,9 @@ function is_valid_base_url($url) {
                             </tr>
                             <tr>
                               <td colspan="2"><input <?php if($escaper->escapeHtml(get_setting('content_security_policy')) == 1){ echo "checked"; } ?> name="content_security_policy" class="hidden-checkbox" size="2" value="90" id="content_security_policy" type="checkbox">  <label for="content_security_policy"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['EnableCSP']); ?></label></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2"><input <?php if($escaper->escapeHtml(get_setting('ssl_certificate_check')) == 1){ echo "checked"; } ?> name="ssl_certificate_check" class="hidden-checkbox" size="2" value="90" id="ssl_certificate_check" type="checkbox">  <label for="ssl_certificate_check"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['EnableSSLCertificateCheck']); ?></label></td>
                             </tr>
                           </tbody>
                         </table>

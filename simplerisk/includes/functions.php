@@ -15270,7 +15270,7 @@ function add_file_type($name, $extension)
 
     // Insert the new file type
     $stmt = $db->prepare("INSERT INTO `file_types` (`name`) VALUES (:name) ON DUPLICATE KEY UPDATE `name` = :name;");
-    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 100);
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 250);
     $stmt->execute();
 
     // Insert the new file type extension
@@ -17084,7 +17084,7 @@ function set_proxy_stream_context($method=null, $header=null, $content=null, $ss
     // If proxy web requests is set
     if ($proxy_web_requests)
     {
-	write_debug_log("Proxy web requests is enabled");
+	    write_debug_log("Proxy web requests is enabled");
 
         // Get the proxy configuration
         $proxy_verify_ssl_certificate = get_setting("proxy_verify_ssl_certificate");
@@ -17105,10 +17105,10 @@ function set_proxy_stream_context($method=null, $header=null, $content=null, $ss
 	write_debug_log("HTTP Context - Ignore Errors: " . $http_context['ignore_errors']);
 	write_debug_log("HTTP Context - Request Full URI: " . $http_context['request_fulluri']);
 
-        // Create the ssl context array
-        $ssl_context = array(
-            'SNI_enabled' => false
-        );
+    // Create the ssl context array
+    $ssl_context = array(
+        'SNI_enabled' => true
+    );
 
 	write_debug_log("SSL Context - SNI Enabled: " . $ssl_context['SNI_enabled']);
 
@@ -17263,8 +17263,28 @@ function set_proxy_stream_context($method=null, $header=null, $content=null, $ss
             write_debug_log("HTTP Context - Timeout: " . $http_context['timeout']);
         }
 
+        // Create the ssl context array
+        $ssl_context = array(
+            'SNI_enabled' => true
+        );
+        write_debug_log("SSL Context - SNI Enabled: " . $ssl_context['SNI_enabled']);
+
+        // If we want to turn off ssl verification
+        if (get_setting("ssl_certificate_check") != 1)
+        {
+            write_debug_log("SSL verification is disabled");
+
+            $ssl_context['verify_peer'] = false;
+            $ssl_context['verify_peer_name'] = false;
+            $ssl_context['allow_self_signed'] = true;
+
+            write_debug_log("SSL Context - Verify Peer: " . $ssl_context['verify_peer']);
+            write_debug_log("SSL Context - Verify Peer Name: " . $ssl_context['verify_peer_name']);
+            write_debug_log("SSL Context - Allow Self Signed: " . $ssl_context['allow_self_signed']);
+        }
+
         // Set the stream context
-        $stream_context = array ('http' => $http_context);
+        $stream_context = array ('http' => $http_context, 'ssl' => $ssl_context);
 
         // Return the default stream context resource
         return stream_context_set_default($stream_context);
@@ -19830,12 +19850,19 @@ function create_selectize_dropdown($type, $selected_values, $additional_info = f
             $multiple = true;
             $grouped = true;
             break;
+        case 'enabled_users' :
+            $name = !empty($additional_info['name']) ? $additional_info['name'] : 'enabled_users';
+            $required = !empty($additional_info['required']) ? $additional_info['required'] : false;
+            $option_type = 'enabled_users';
+            $multiple = !empty($additional_info['multiple']) ? $additional_info['multiple'] : false;
+            $grouped = false;
+            break;
     }
 
     $options = get_options_from_table($option_type);
 
     echo "
-                <select" . ($required ? " required" : "") . ($multiple ? " multiple='multiple'" : "") . " id='{$name}' name='{$name}[]'></select>
+                <select" . ($required ? " required" : "") . " name='{$name}" . ($multiple ? "[]' multiple='multiple'" : "'") . " id='{$name}'></select>
                 <script>
                     $(document).ready(function(){
                         $('#{$name}').selectize({
@@ -19887,6 +19914,13 @@ function create_selectize_dropdown($type, $selected_values, $additional_info = f
 
     // Select the selected items
     if(!empty($selected_values)) {
+
+        if (!is_array($selected_values)) {
+            $selected_values = [$selected_values];
+        }
+
+        $selected_values = sanitize_int_array($selected_values);
+
         echo "
                             items: [" . implode(', ', $selected_values) . "],";
     }
@@ -19970,6 +20004,39 @@ function reassign_groupless_risk_catalogs($default_group_id = false) {
     // Assign risk catalog items that have no group assigned to this new default group
     foreach ($data as $id) {
         $stmt = $db->prepare("UPDATE `risk_catalog` SET `grouping` = :group WHERE `id` = :id;");
+        $stmt->bindParam(":group", $default_group_id, PDO::PARAM_INT);
+        $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+}
+
+function reassign_groupless_threat_catalogs($default_group_id = false) {
+
+    $db = db_open();
+
+    if (!$default_group_id) {
+        // Get value of the default risk group
+        $stmt = $db->prepare("SELECT `value` FROM `threat_grouping` WHERE `default` = 1");
+        $stmt->execute();
+
+        $default_group_id = (int)$stmt->fetchColumn();
+    }
+
+    // Find threat catalog items that have no group assigned
+    $stmt = $db->prepare("
+            SELECT
+            	`id`
+            FROM `threat_catalog` tc
+            	LEFT JOIN `threat_grouping` tg ON `tg`.`value` = `tc`.`grouping`
+            WHERE
+            	`tg`.`value` IS NULL;
+        ");
+    $stmt->execute();
+    $data = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    // Assign threat catalog items that have no group assigned to this new default group
+    foreach ($data as $id) {
+        $stmt = $db->prepare("UPDATE `threat_catalog` SET `grouping` = :group WHERE `id` = :id;");
         $stmt->bindParam(":group", $default_group_id, PDO::PARAM_INT);
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->execute();

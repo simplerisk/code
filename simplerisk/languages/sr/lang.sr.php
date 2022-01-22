@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => 'Неважеће групе!',
     'OrderUpdatedSuccessfully' => 'Наруџбина је успешно ажурирана.',
     'CantDeleteTheDefaultRiskGrouping' => 'Не могу да избришем подразумевано груписање ризика',
-
+    'EnableSSLCertificateCheck' => 'Омогућите проверу ССЛ сертификата',
+    'CantDeleteTheDefaultThreatGrouping' => 'Не могу да избришем подразумевано груписање претњи',
+    'ThreatGroupings' => 'Групације претњи',
 
     '' => ''
 );

@@ -3,7 +3,7 @@
     "description": "A module that allows users to manage their consent",
     "type": "simplesamlphp-module",
     "keywords": ["simplesamlphp", "consentadmin"],
-    "license": "LGPL-3.0-or-later",
+    "license": "LGPL-2.1-or-later",
     "authors": [
         {
             "name": "Jacob Christiansen",
@@ -18,6 +18,10 @@
         "preferred-install": {
             "simplesamlphp/simplesamlphp": "source",
             "*": "dist"
+        },
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true,
+            "simplesamlphp/composer-module-installer": true
         }
     },
     "autoload-dev": {

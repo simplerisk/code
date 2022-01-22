@@ -402,8 +402,8 @@ class AttributeAddUsersGroups extends BaseFilter
             }
 
             // AD queries also seem to return the objects dn by default
-            if (isset($entry['return'])) {
-                $groups[] = $entry['return'];
+            if (isset($entry['dn'])) {
+                $groups[] = $entry['dn'];
                 continue;
             }
 

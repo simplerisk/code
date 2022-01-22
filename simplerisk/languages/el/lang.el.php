@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => 'Μη έγκυρες ομάδες!',
     'OrderUpdatedSuccessfully' => 'Η παραγγελία ενημερώθηκε με επιτυχία.',
     'CantDeleteTheDefaultRiskGrouping' => 'Δεν είναι δυνατή η διαγραφή της προεπιλεγμένης ομαδοποίησης κινδύνων',
-
+    'EnableSSLCertificateCheck' => 'Ενεργοποίηση ελέγχου πιστοποιητικού SSL',
+    'CantDeleteTheDefaultThreatGrouping' => 'Δεν είναι δυνατή η διαγραφή της προεπιλεγμένης ομαδοποίησης απειλών',
+    'ThreatGroupings' => 'Ομάδες απειλών',
 
     '' => ''
 );

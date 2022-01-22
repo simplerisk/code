@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => '無効なグループ！',
     'OrderUpdatedSuccessfully' => '注文は正常に更新されました。',
     'CantDeleteTheDefaultRiskGrouping' => 'デフォルトのリスクグループを削除できない',
-
+    'EnableSSLCertificateCheck' => 'SSL証明書チェックを有効にする',
+    'CantDeleteTheDefaultThreatGrouping' => 'デフォルトの脅威グループを削除できません',
+    'ThreatGroupings' => '脅威のグループ化',
 
     '' => ''
 );

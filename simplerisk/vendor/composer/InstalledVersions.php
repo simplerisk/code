@@ -30,7 +30,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => 'cf126ad8c94dc788617023849400aeaf334862dc',
+    'reference' => '1bfa7fcf7c8759f4c8abb59206a8fa46e0b89d7a',
     'name' => 'simplerisk/code',
   ),
   'versions' => 
@@ -82,12 +82,12 @@ private static $installed = array (
     ),
     'doctrine/lexer' => 
     array (
-      'pretty_version' => '1.0.2',
-      'version' => '1.0.2.0',
+      'pretty_version' => '1.2.2',
+      'version' => '1.2.2.0',
       'aliases' => 
       array (
       ),
-      'reference' => '1febd6c3ef84253d7c815bed85fc622ad207a9f8',
+      'reference' => '9c50f840f257bbb941e6f4a0e94ccf5db5c3f76c',
     ),
     'dragonmantank/cron-expression' => 
     array (
@@ -271,7 +271,7 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => 'cf126ad8c94dc788617023849400aeaf334862dc',
+      'reference' => '1bfa7fcf7c8759f4c8abb59206a8fa46e0b89d7a',
     ),
     'simplerisk/csrf-magic' => 
     array (
@@ -294,12 +294,12 @@ private static $installed = array (
     ),
     'simplesamlphp/saml2' => 
     array (
-      'pretty_version' => 'v4.2.5',
-      'version' => '4.2.5.0',
+      'pretty_version' => 'v4.4.0',
+      'version' => '4.4.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '4ae96cb02a9ac9da3825d69af0500e594509bcaf',
+      'reference' => 'f3b13417deb45f882f676108c250143f994eb2a4',
     ),
     'simplesamlphp/simplesamlphp' => 
     array (
@@ -312,21 +312,21 @@ private static $installed = array (
     ),
     'simplesamlphp/simplesamlphp-module-adfs' => 
     array (
-      'pretty_version' => 'v0.9.8',
-      'version' => '0.9.8.0',
+      'pretty_version' => 'v0.9.9',
+      'version' => '0.9.9.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'ac2ba46a6b94ed48b527ac190b0fa99bcda8d98e',
+      'reference' => 'a2349c2131f2dfe21a56eb5ede3fddd429278850',
     ),
     'simplesamlphp/simplesamlphp-module-authcrypt' => 
     array (
-      'pretty_version' => 'v0.9.3',
-      'version' => '0.9.3.0',
+      'pretty_version' => 'v0.9.4',
+      'version' => '0.9.4.0',
       'aliases' => 
       array (
       ),
-      'reference' => '9a2c1a761e2d94394a4f2d3499fd6f0853899530',
+      'reference' => '62555123e61b11463be3cd7adb708562023cff28',
     ),
     'simplesamlphp/simplesamlphp-module-authfacebook' => 
     array (
@@ -339,21 +339,21 @@ private static $installed = array (
     ),
     'simplesamlphp/simplesamlphp-module-authorize' => 
     array (
+      'pretty_version' => 'v0.9.4',
+      'version' => '0.9.4.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '4c7ce4eaa54fc301f131c62e803fc843e4d88056',
+    ),
+    'simplesamlphp/simplesamlphp-module-authtwitter' => 
+    array (
       'pretty_version' => 'v0.9.3',
       'version' => '0.9.3.0',
       'aliases' => 
       array (
       ),
-      'reference' => '0593bfcb84fca9d9133f415246ab8ca51b412c92',
-    ),
-    'simplesamlphp/simplesamlphp-module-authtwitter' => 
-    array (
-      'pretty_version' => 'v0.9.1',
-      'version' => '0.9.1.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '29a15e58061222632fea9eb2c807aef5e2c0d54a',
+      'reference' => '6e178e7aae7827a64dc462b5bb2f28d6eddc4381',
     ),
     'simplesamlphp/simplesamlphp-module-authwindowslive' => 
     array (
@@ -366,21 +366,21 @@ private static $installed = array (
     ),
     'simplesamlphp/simplesamlphp-module-authx509' => 
     array (
-      'pretty_version' => 'v0.9.8',
-      'version' => '0.9.8.0',
+      'pretty_version' => 'v0.9.9',
+      'version' => '0.9.9.0',
       'aliases' => 
       array (
       ),
-      'reference' => '66525b1ec4145ec8d0d0e9db4534624b6be4c1fb',
+      'reference' => 'b138f41b2bc725371f42abb63b5a39ac11b5432a',
     ),
     'simplesamlphp/simplesamlphp-module-authyubikey' => 
     array (
-      'pretty_version' => 'v0.9.2',
-      'version' => '0.9.2.0',
+      'pretty_version' => 'v0.9.3',
+      'version' => '0.9.3.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'b287a13195a5910beb4c68f9b9fee3aac7f8a73d',
+      'reference' => '414e2a73da4adfee6d97ba66e852ec7c85369913',
     ),
     'simplesamlphp/simplesamlphp-module-cas' => 
     array (
@@ -393,30 +393,30 @@ private static $installed = array (
     ),
     'simplesamlphp/simplesamlphp-module-cdc' => 
     array (
-      'pretty_version' => 'v0.9.1',
-      'version' => '0.9.1.0',
+      'pretty_version' => 'v0.9.2',
+      'version' => '0.9.2.0',
       'aliases' => 
       array (
       ),
-      'reference' => '16a5bfac7299e04e5feb472af328e07598708166',
+      'reference' => '92498fc3004c02849d96da29ca472d99ed23af73',
     ),
     'simplesamlphp/simplesamlphp-module-consent' => 
     array (
-      'pretty_version' => 'v0.9.7',
-      'version' => '0.9.7.0',
+      'pretty_version' => 'v0.9.8',
+      'version' => '0.9.8.0',
       'aliases' => 
       array (
       ),
-      'reference' => '16a347ee4003e2adf415284b334a582e9b8a5717',
+      'reference' => '8466b0b7c6207b15ca5e265f436299ff2dec85da',
     ),
     'simplesamlphp/simplesamlphp-module-consentadmin' => 
     array (
-      'pretty_version' => 'v0.9.1',
-      'version' => '0.9.1.0',
+      'pretty_version' => 'v0.9.2',
+      'version' => '0.9.2.0',
       'aliases' => 
       array (
       ),
-      'reference' => '466e8d0d751f0080162d78e63ab2e125b24d17a1',
+      'reference' => '62dc5e9d5b1a12a73549c80140b7224d7f7d1c2e',
     ),
     'simplesamlphp/simplesamlphp-module-discopower' => 
     array (
@@ -438,30 +438,30 @@ private static $installed = array (
     ),
     'simplesamlphp/simplesamlphp-module-expirycheck' => 
     array (
+      'pretty_version' => 'v0.9.4',
+      'version' => '0.9.4.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '02101497281031befba93c48c96ee9133f57241d',
+    ),
+    'simplesamlphp/simplesamlphp-module-ldap' => 
+    array (
+      'pretty_version' => 'v0.9.17',
+      'version' => '0.9.17.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '40f1bfe0c4ac2f91cf8e52d22fa6ec2fe1c03066',
+    ),
+    'simplesamlphp/simplesamlphp-module-memcachemonitor' => 
+    array (
       'pretty_version' => 'v0.9.3',
       'version' => '0.9.3.0',
       'aliases' => 
       array (
       ),
-      'reference' => '59c59cdf87e2679257b46c07bb4c27666a11cc20',
-    ),
-    'simplesamlphp/simplesamlphp-module-ldap' => 
-    array (
-      'pretty_version' => 'v0.9.15',
-      'version' => '0.9.15.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => 'ecf46d9ea56d892ba6f7fbee625b99d88a3df6fe',
-    ),
-    'simplesamlphp/simplesamlphp-module-memcachemonitor' => 
-    array (
-      'pretty_version' => 'v0.9.2',
-      'version' => '0.9.2.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '900b5c6b59913d9013b8dae090841a127ae55ae5',
+      'reference' => '8d25463ac56b4e2294f59f622a6658e0c67086f4',
     ),
     'simplesamlphp/simplesamlphp-module-memcookie' => 
     array (
@@ -474,21 +474,21 @@ private static $installed = array (
     ),
     'simplesamlphp/simplesamlphp-module-metarefresh' => 
     array (
-      'pretty_version' => 'v0.9.6',
-      'version' => '0.9.6.0',
+      'pretty_version' => 'v0.9.7',
+      'version' => '0.9.7.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'e284306a7097297765b5b78a4e28f19f18d4e001',
+      'reference' => 'ca724f0edd1179bb0056dc4561d455db7a1f1adc',
     ),
     'simplesamlphp/simplesamlphp-module-negotiate' => 
     array (
-      'pretty_version' => 'v0.9.11',
-      'version' => '0.9.11.0',
+      'pretty_version' => 'v0.9.12',
+      'version' => '0.9.12.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'e7c4597110c753a750cd522220fc2a5a34b7c1b8',
+      'reference' => '48752cea80e81a60ebb522cc10789589ac16df50',
     ),
     'simplesamlphp/simplesamlphp-module-oauth' => 
     array (
@@ -501,21 +501,21 @@ private static $installed = array (
     ),
     'simplesamlphp/simplesamlphp-module-preprodwarning' => 
     array (
-      'pretty_version' => 'v0.9.2',
-      'version' => '0.9.2.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '8e032de33a75eb44857dc06d886ad94ee3af4638',
-    ),
-    'simplesamlphp/simplesamlphp-module-radius' => 
-    array (
       'pretty_version' => 'v0.9.3',
       'version' => '0.9.3.0',
       'aliases' => 
       array (
       ),
-      'reference' => '36bd0f39f9a13f7eb96ead97c97c3634aa1c3f2d',
+      'reference' => 'b3c6d9d41d009e340f4843ce5c24b4118a38e4c3',
+    ),
+    'simplesamlphp/simplesamlphp-module-radius' => 
+    array (
+      'pretty_version' => 'v0.9.4',
+      'version' => '0.9.4.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => 'dbe2976ba27f5131faeca368a5665f8baeaae8b6',
     ),
     'simplesamlphp/simplesamlphp-module-riak' => 
     array (
@@ -537,21 +537,21 @@ private static $installed = array (
     ),
     'simplesamlphp/simplesamlphp-module-smartattributes' => 
     array (
-      'pretty_version' => 'v0.9.1',
-      'version' => '0.9.1.0',
+      'pretty_version' => 'v0.9.2',
+      'version' => '0.9.2.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'b45d3ecd916e359a9cae05f9ae9df09b5c42f4e6',
+      'reference' => 'ba6a32fa287db0f8d767104471176f70fad7f0e1',
     ),
     'simplesamlphp/simplesamlphp-module-sqlauth' => 
     array (
-      'pretty_version' => 'v0.9.3',
-      'version' => '0.9.3.0',
+      'pretty_version' => 'v0.9.4',
+      'version' => '0.9.4.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'c2dc4fc8aa6d8b2408131e09b39f06d8610ff374',
+      'reference' => '8a28f9a9726bab1dbc8fd3734daa08882dd0a25b',
     ),
     'simplesamlphp/simplesamlphp-module-statistics' => 
     array (
@@ -645,35 +645,35 @@ private static $installed = array (
     ),
     'symfony/polyfill-ctype' => 
     array (
-      'pretty_version' => 'v1.23.0',
-      'version' => '1.23.0.0',
+      'pretty_version' => 'v1.24.0',
+      'version' => '1.24.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '46cd95797e9df938fdd2b03693b5fca5e64b01ce',
+      'reference' => '30885182c981ab175d4d034db0f6f469898070ab',
     ),
     'symfony/polyfill-iconv' => 
     array (
-      'pretty_version' => 'v1.23.0',
-      'version' => '1.23.0.0',
+      'pretty_version' => 'v1.24.0',
+      'version' => '1.24.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '63b5bb7db83e5673936d6e3b8b3e022ff6474933',
+      'reference' => 'f1aed619e28cb077fc83fac8c4c0383578356e40',
     ),
     'symfony/polyfill-intl-idn' => 
     array (
-      'pretty_version' => 'v1.23.0',
-      'version' => '1.23.0.0',
+      'pretty_version' => 'v1.24.0',
+      'version' => '1.24.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '65bd267525e82759e7d8c4e8ceea44f398838e65',
+      'reference' => '749045c69efb97c70d25d7463abba812e91f3a44',
     ),
     'symfony/polyfill-intl-normalizer' => 
     array (
-      'pretty_version' => 'v1.23.0',
-      'version' => '1.23.0.0',
+      'pretty_version' => 'v1.24.0',
+      'version' => '1.24.0.0',
       'aliases' => 
       array (
       ),
@@ -681,12 +681,12 @@ private static $installed = array (
     ),
     'symfony/polyfill-mbstring' => 
     array (
-      'pretty_version' => 'v1.23.1',
-      'version' => '1.23.1.0',
+      'pretty_version' => 'v1.24.0',
+      'version' => '1.24.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '9174a3d80210dca8daa7f31fec659150bbeabfc6',
+      'reference' => '0abb51d2f102e00a4eefcf46ba7fec406d245825',
     ),
     'symfony/polyfill-php56' => 
     array (
@@ -708,8 +708,8 @@ private static $installed = array (
     ),
     'symfony/polyfill-php72' => 
     array (
-      'pretty_version' => 'v1.23.0',
-      'version' => '1.23.0.0',
+      'pretty_version' => 'v1.24.0',
+      'version' => '1.24.0.0',
       'aliases' => 
       array (
       ),

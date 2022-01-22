@@ -535,7 +535,7 @@ function display_initiate_audits()
                 <input type='text' id='filter_by_text' class='form-control'>
                 </div>
                 <div class='span2' align='right'>
-                    <strong>".$escaper->escapeHtml($lang['DesiredFrequency']).":&nbsp;&nbsp;&nbsp;</strong>
+                    <strong>".$escaper->escapeHtml($lang['TestFrequency']).":&nbsp;&nbsp;&nbsp;</strong>
                 </div>
                 <div class='span2'>
                     <input type='text' id='filter_by_frequency' class='form-control'>
@@ -647,7 +647,7 @@ function display_initiate_audits()
             \">";
     echo "<thead>";
     echo "<th data-options=\"field:'name'\" style='width: 220px'>".$escaper->escapeHtml($lang['Name'])."</th>";
-    echo "<th data-options=\"field:'desired_frequency'\" >".$escaper->escapeHtml($lang['DesiredFrequency'])."</th>";
+    echo "<th data-options=\"field:'test_frequency'\" >".$escaper->escapeHtml($lang['TestFrequency'])."</th>";
     echo "<th data-options=\"field:'last_audit_date'\" >".$escaper->escapeHtml($lang['LastAuditDate'])."</th>";
     echo "<th data-options=\"field:'next_audit_date'\" >".$escaper->escapeHtml($lang['NextAuditDate'])."</th>";
     echo "<th data-options=\"field:'status'\" >".$escaper->escapeHtml($lang['Status'])."</th>";
@@ -2887,7 +2887,7 @@ function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $
             GROUP_CONCAT(DISTINCT t2.last_audit_date SEPARATOR ',') control_last_audit_dates,
             GROUP_CONCAT(DISTINCT t2.next_audit_date SEPARATOR ',') control_next_audit_dates,
             GROUP_CONCAT(DISTINCT t3.name SEPARATOR ',') test_names,
-            GROUP_CONCAT(DISTINCT t3.desired_frequency SEPARATOR ',') test_desired_frequencies,
+            GROUP_CONCAT(DISTINCT t3.test_frequency SEPARATOR ',') test_test_frequencies,
             GROUP_CONCAT(DISTINCT t3.last_date SEPARATOR ',') test_last_audit_dates,
             GROUP_CONCAT(DISTINCT t3.next_date SEPARATOR ',') test_next_audit_dates
         FROM `frameworks` t1 
@@ -2901,7 +2901,7 @@ function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $
     $where = [];
     
     if($filter_by_frequency){
-        $where[] = "t1.desired_frequency like :filter_by_frequency OR t2.desired_frequency like :filter_by_frequency OR t3.desired_frequency like :filter_by_frequency";
+        $where[] = "(t1.desired_frequency = :filter_by_frequency OR t2.desired_frequency = :filter_by_frequency OR t3.test_frequency = :filter_by_frequency)";
     }
     if($filter_by_status){
         
@@ -2924,7 +2924,6 @@ function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $
     $stmt = $db->prepare($sql);
     
     if($filter_by_frequency){
-        $filter_by_frequency = "%{$filter_by_frequency}%";
         $stmt->bindParam(":filter_by_frequency", $filter_by_frequency, PDO::PARAM_STR);
     }
     if($filter_by_status){
@@ -2961,7 +2960,7 @@ function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $
             || stripos($framework['control_next_audit_dates'], $filter_by_text) !== false 
             
             || stripos($framework['test_names'], $filter_by_text) !== false 
-            || stripos($framework['test_desired_frequencies'], $filter_by_text) !== false 
+            || stripos($framework['test_test_frequencies'], $filter_by_text) !== false 
             || stripos($framework['test_last_audit_dates'], $filter_by_text) !== false 
             || stripos($framework['test_next_audit_dates'], $filter_by_text) !== false 
         ){
@@ -3005,7 +3004,7 @@ function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $
 function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id=null)
 {
     global $escaper;
-    $curren_framework = get_framework($framework_id);
+    $current_framework = get_framework($framework_id);
 
     // Open the database connection
     $db = db_open();
@@ -3021,7 +3020,7 @@ function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $fi
             GROUP_CONCAT(DISTINCT t2.last_audit_date SEPARATOR ',') control_last_audit_dates,
             GROUP_CONCAT(DISTINCT t2.next_audit_date SEPARATOR ',') control_next_audit_dates,
             GROUP_CONCAT(DISTINCT t3.name SEPARATOR ',') test_names,
-            GROUP_CONCAT(DISTINCT t3.desired_frequency SEPARATOR ',') test_desired_frequencies,
+            GROUP_CONCAT(DISTINCT t3.test_frequency SEPARATOR ',') test_test_frequencies,
             GROUP_CONCAT(DISTINCT t3.last_date SEPARATOR ',') test_last_audit_dates,
             GROUP_CONCAT(DISTINCT t3.next_date SEPARATOR ',') test_next_audit_dates
         FROM `frameworks` t1 
@@ -3035,7 +3034,7 @@ function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $fi
     $where = [];
     
     if($filter_by_frequency){
-        $where[] = "t1.desired_frequency like :filter_by_frequency OR t2.desired_frequency like :filter_by_frequency OR t3.desired_frequency like :filter_by_frequency";
+        $where[] = "(t1.desired_frequency = :filter_by_frequency OR t2.desired_frequency = :filter_by_frequency OR t3.test_frequency = :filter_by_frequency)";
     }
     if($filter_by_status){
         
@@ -3070,17 +3069,16 @@ function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $fi
 
     $stmt = $db->prepare($sql);
 
-    $stmt->bindParam(":framework_name", $curren_framework['name'], PDO::PARAM_STR);
-    $stmt->bindParam(":framework_desired_frequency", $curren_framework['desired_frequency'], PDO::PARAM_STR);
-    $stmt->bindParam(":framework_last_audit_date", $curren_framework['last_audit_date'], PDO::PARAM_STR);
-    $stmt->bindParam(":framework_next_audit_date", $curren_framework['next_audit_date'], PDO::PARAM_STR);
+    $stmt->bindParam(":framework_name", $current_framework['name'], PDO::PARAM_STR);
+    $stmt->bindParam(":framework_desired_frequency", $current_framework['desired_frequency'], PDO::PARAM_STR);
+    $stmt->bindParam(":framework_last_audit_date", $current_framework['last_audit_date'], PDO::PARAM_STR);
+    $stmt->bindParam(":framework_next_audit_date", $current_framework['next_audit_date'], PDO::PARAM_STR);
 
     //    if($filter_by_text){
 //        $filter_by_text = "%{$filter_by_text}%";
 //        $stmt->bindParam(":filter_by_text", $filter_by_text, PDO::PARAM_STR);
 //    }
     if($filter_by_frequency){
-        $filter_by_frequency = "%{$filter_by_frequency}%";
         $stmt->bindParam(":filter_by_frequency", $filter_by_frequency, PDO::PARAM_STR);
     }
     if($filter_by_status){
@@ -3107,7 +3105,7 @@ function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $fi
     
     $filtered_controls = [];
     foreach($controls as $control){
-        if(!$filter_by_text || stripos($curren_framework['name'], $filter_by_text) !== false 
+        if(!$filter_by_text || stripos($current_framework['name'], $filter_by_text) !== false 
             || stripos($control['framework_desired_frequency'], $filter_by_text) !== false 
             || stripos($control['framework_last_audit_date'], $filter_by_text) !== false 
             || stripos($control['framework_next_audit_date'], $filter_by_text) !== false 
@@ -3118,7 +3116,7 @@ function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $fi
             || stripos($control['control_next_audit_dates'], $filter_by_text) !== false 
             
             || stripos($control['test_names'], $filter_by_text) !== false 
-            || stripos($control['test_desired_frequencies'], $filter_by_text) !== false 
+            || stripos($control['test_test_frequencies'], $filter_by_text) !== false 
             || stripos($control['test_last_audit_dates'], $filter_by_text) !== false 
             || stripos($control['test_next_audit_dates'], $filter_by_text) !== false 
         ){
@@ -3134,7 +3132,7 @@ function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $fi
  *************************************************/
 function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id, $control_id)
 {
-    $curren_framework = get_framework($framework_id);
+    $current_framework = get_framework($framework_id);
 
     // Open the database connection
     $db = db_open();
@@ -3150,7 +3148,7 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
             GROUP_CONCAT(DISTINCT t2.last_audit_date SEPARATOR ',') control_last_audit_dates,
             GROUP_CONCAT(DISTINCT t2.next_audit_date SEPARATOR ',') control_next_audit_dates,
             GROUP_CONCAT(DISTINCT t3.name SEPARATOR ',') test_names,
-            GROUP_CONCAT(DISTINCT t3.desired_frequency SEPARATOR ',') test_desired_frequencies,
+            GROUP_CONCAT(DISTINCT t3.test_frequency SEPARATOR ',') test_test_frequencies,
             GROUP_CONCAT(DISTINCT t3.last_date SEPARATOR ',') test_last_audit_dates,
             GROUP_CONCAT(DISTINCT t3.next_date SEPARATOR ',') test_next_audit_dates
         FROM `frameworks` t1 
@@ -3164,7 +3162,7 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
     $where = [];
     
     if($filter_by_frequency){
-        $where[] = "t1.desired_frequency like :filter_by_frequency OR t2.desired_frequency like :filter_by_frequency OR t3.desired_frequency like :filter_by_frequency";
+        $where[] = "(t1.desired_frequency = :filter_by_frequency OR t2.desired_frequency = :filter_by_frequency OR t3.test_frequency = :filter_by_frequency)";
     }
     if($filter_by_status){
         
@@ -3186,14 +3184,13 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
 
     $stmt = $db->prepare($sql);
 
-    $stmt->bindParam(":framework_name", $curren_framework['name'], PDO::PARAM_STR);
-    $stmt->bindParam(":framework_desired_frequency", $curren_framework['desired_frequency'], PDO::PARAM_STR);
-    $stmt->bindParam(":framework_last_audit_date", $curren_framework['last_audit_date'], PDO::PARAM_STR);
-    $stmt->bindParam(":framework_next_audit_date", $curren_framework['next_audit_date'], PDO::PARAM_STR);
+    $stmt->bindParam(":framework_name", $current_framework['name'], PDO::PARAM_STR);
+    $stmt->bindParam(":framework_desired_frequency", $current_framework['desired_frequency'], PDO::PARAM_STR);
+    $stmt->bindParam(":framework_last_audit_date", $current_framework['last_audit_date'], PDO::PARAM_STR);
+    $stmt->bindParam(":framework_next_audit_date", $current_framework['next_audit_date'], PDO::PARAM_STR);
 
     $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
     if($filter_by_frequency){
-        $filter_by_frequency = "%{$filter_by_frequency}%";
         $stmt->bindParam(":filter_by_frequency", $filter_by_frequency, PDO::PARAM_STR);
     }
     if($filter_by_status){
@@ -3217,7 +3214,7 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
     
     $filtered_tests = [];
     foreach($tests as $test){
-        if(!$filter_by_text || stripos($curren_framework['name'], $filter_by_text) !== false 
+        if(!$filter_by_text || stripos($current_framework['name'], $filter_by_text) !== false 
             || stripos($test['framework_desired_frequency'], $filter_by_text) !== false 
             || stripos($test['framework_last_audit_date'], $filter_by_text) !== false 
             || stripos($test['framework_next_audit_date'], $filter_by_text) !== false 
@@ -3228,7 +3225,7 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
             || stripos($test['control_next_audit_dates'], $filter_by_text) !== false 
             
             || stripos($test['test_names'], $filter_by_text) !== false 
-            || stripos($test['test_desired_frequencies'], $filter_by_text) !== false 
+            || stripos($test['test_test_frequencies'], $filter_by_text) !== false 
             || stripos($test['test_last_audit_dates'], $filter_by_text) !== false 
             || stripos($test['test_next_audit_dates'], $filter_by_text) !== false 
         ){

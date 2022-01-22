@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => 'Nhóm không hợp lệ!',
     'OrderUpdatedSuccessfully' => 'Đơn đặt hàng đã được cập nhật thành công.',
     'CantDeleteTheDefaultRiskGrouping' => 'Không thể xóa nhóm rủi ro mặc định',
-
+    'EnableSSLCertificateCheck' => 'Bật kiểm tra chứng chỉ SSL',
+    'CantDeleteTheDefaultThreatGrouping' => 'Không thể xóa nhóm mối đe dọa mặc định',
+    'ThreatGroupings' => 'Nhóm Đe doạ',
 
     '' => ''
 );

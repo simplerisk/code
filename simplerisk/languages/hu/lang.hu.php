@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => 'Érvénytelen csoportok!',
     'OrderUpdatedSuccessfully' => 'A rendelés frissítése sikeres volt.',
     'CantDeleteTheDefaultRiskGrouping' => 'Az alapértelmezett kockázati csoportosítás nem törölhető',
-
+    'EnableSSLCertificateCheck' => 'SSL-tanúsítvány-ellenőrzés engedélyezése',
+    'CantDeleteTheDefaultThreatGrouping' => 'Az alapértelmezett fenyegetéscsoport nem törölhető',
+    'ThreatGroupings' => 'Fenyegetési csoportok',
 
     '' => ''
 );

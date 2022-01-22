@@ -4821,7 +4821,7 @@ function getInitiateTestAuditsResponse()
                     'state' => 'closed',
                     'name' => "<a class='framework-name' data-id='{$framework['value']}' href='' title='".$escaper->escapeHtml($lang['Framework'])."'>".$escaper->escapeHtml($framework['name'])."</a>",
                     'last_audit_date' => $escaper->escapeHtml(format_date($framework['last_audit_date'])),
-                    'desired_frequency' => $escaper->escapeHtml($framework['desired_frequency']),
+                    'test_frequency' => $escaper->escapeHtml($framework['desired_frequency']),
                     'next_audit_date' => $escaper->escapeHtml(format_date($framework['next_audit_date'])),
                     'status' => $escaper->escapeHtml($framework['status'] == 1 ? $lang['Active'] : $lang['Inactive']),
                     'action' => $action
@@ -4844,7 +4844,7 @@ function getInitiateTestAuditsResponse()
                     'state' => 'closed',
                     'name' => "<a class='control-name' data-id='{$framework_control['id']}' href='' title='".$escaper->escapeHtml($lang['Control'])."'>".$escaper->escapeHtml($framework_control['short_name'])."</a>",
                     'last_audit_date' => $escaper->escapeHtml(format_date($framework_control['last_audit_date'])),
-                    'desired_frequency' => $escaper->escapeHtml($framework_control['desired_frequency']),
+                    'test_frequency' => $escaper->escapeHtml($framework_control['desired_frequency']),
                     'next_audit_date' => $escaper->escapeHtml(format_date($framework_control['next_audit_date'])),
                     'status' => $escaper->escapeHtml($framework_control['status'] == 1 ? $lang['Active'] : $lang['Inactive']),
                     'action' => $action
@@ -4869,7 +4869,7 @@ function getInitiateTestAuditsResponse()
                     'id' => "test_".$framework_and_control."_".$framework_control_test['id'],
                     'state' => 'open',
                     'name' => "<a class='test-name' data-id='{$framework_control_test['id']}' href='".$_SESSION['base_url']."/' title='".$escaper->escapeHtml($lang['Test'])."'>".$escaper->escapeHtml($framework_control_test['name'])."</a>",
-                    'desired_frequency' => $escaper->escapeHtml($framework_control_test['desired_frequency']),
+                    'test_frequency' => $escaper->escapeHtml($framework_control_test['test_frequency']),
                     'last_audit_date' => $escaper->escapeHtml(format_date($framework_control_test['last_date'])),
                     'next_audit_date' => $escaper->escapeHtml(format_date($framework_control_test['next_date'])),
                     'status' => $escaper->escapeHtml($framework_control_test['status'] == 1 ? $lang['Active'] : $lang['Inactive']),

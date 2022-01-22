@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => 'קבוצות לא חוקיות!',
     'OrderUpdatedSuccessfully' => 'ההזמנה עודכנה בהצלחה.',
     'CantDeleteTheDefaultRiskGrouping' => 'לא ניתן למחוק את קיבוץ הסיכונים המוגדר כברירת מחדל',
-
+    'EnableSSLCertificateCheck' => 'אפשר בדיקת אישור SSL',
+    'CantDeleteTheDefaultThreatGrouping' => 'לא ניתן למחוק את ברירת המחדל של קיבוץ האיום',
+    'ThreatGroupings' => 'קיבוץ איומים',
 
     '' => ''
 );

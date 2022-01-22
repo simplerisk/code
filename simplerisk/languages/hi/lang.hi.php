@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => 'अमान्य समूह!',
     'OrderUpdatedSuccessfully' => 'आदेश सफलतापूर्वक अपडेट किया गया था।',
     'CantDeleteTheDefaultRiskGrouping' => 'डिफ़ॉल्ट जोखिम समूहन को हटा नहीं सकते',
-
+    'EnableSSLCertificateCheck' => 'एसएसएल प्रमाणपत्र जांच सक्षम करें',
+    'CantDeleteTheDefaultThreatGrouping' => 'डिफ़ॉल्ट थ्रेट ग्रुपिंग को हटा नहीं सकता',
+    'ThreatGroupings' => 'थ्रेट ग्रुपिंग',
 
     '' => ''
 );

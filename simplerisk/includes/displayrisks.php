@@ -480,7 +480,7 @@ function display_supporting_documentation_view($risk_id, $view_type, $panel_name
         $span2 = "span7";
     }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"wrap-text {$span2} text-right\">\n";
+    echo "<div class=\"wrap-text {$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['SupportingDocumentation']) . ": \n";
     echo "</div>\n";
     echo "<div class=\"{$span2}\">\n";
@@ -924,7 +924,7 @@ function display_owner_edit($owner, $panel_name="")
     echo $escaper->escapeHtml($lang['Owner']) .": \n";
     echo "</div>\n";
     echo "<div class=\"{$span2}\">\n";
-    create_dropdown("enabled_users", $owner, "owner");
+    create_selectize_dropdown("enabled_users", $owner, ['name' => 'owner']);
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -948,7 +948,7 @@ function display_owners_manager_edit($manager, $panel_name="")
     echo $escaper->escapeHtml($lang['OwnersManager']) .": \n";
     echo "</div>\n";
     echo "<div class=\"{$span2}\">\n";
-    create_dropdown("enabled_users", $manager, "manager");
+    create_selectize_dropdown("enabled_users", $manager, ['name' => 'manager']);
     echo "</div>\n";
     echo "</div>\n";
 }

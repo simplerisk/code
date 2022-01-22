@@ -3,7 +3,7 @@
     "description": "A module that is able perform authentication against a RADIUS server",
     "type": "simplesamlphp-module",
     "keywords": ["simplesamlphp", "radius"],
-    "license": "LGPL-3.0-or-later",
+    "license": "LGPL-2.1-or-later",
     "authors": [
         {
             "name": "Olav Morken",
@@ -14,6 +14,9 @@
         "preferred-install": {
             "simplesamlphp/simplesamlphp": "source",
             "*": "dist"
+        },
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true
         }
     },
     "autoload": {

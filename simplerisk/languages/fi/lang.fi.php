@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => 'Virheelliset ryhmät!',
     'OrderUpdatedSuccessfully' => 'Tilauksen päivitys onnistui.',
     'CantDeleteTheDefaultRiskGrouping' => 'Oletusriskiryhmää ei voi poistaa',
-
+    'EnableSSLCertificateCheck' => 'Ota SSL-varmenteen tarkistus käyttöön',
+    'CantDeleteTheDefaultThreatGrouping' => 'Uhkien oletusryhmittelyä ei voi poistaa',
+    'ThreatGroupings' => 'Uhkaryhmät',
 
     '' => ''
 );

@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => 'Ugyldige grupper!',
     'OrderUpdatedSuccessfully' => 'Ordren blev opdateret.',
     'CantDeleteTheDefaultRiskGrouping' => 'Kan ikke slette standardrisikogrupperingen',
-
+    'EnableSSLCertificateCheck' => 'Aktiver SSL-certifikatkontrol',
+    'CantDeleteTheDefaultThreatGrouping' => 'Kan ikke slette standard trusselsgruppering',
+    'ThreatGroupings' => 'Trusselsgrupperinger',
 
     '' => ''
 );

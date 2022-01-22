@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => 'Neplatné skupiny!',
     'OrderUpdatedSuccessfully' => 'Objednávka byla úspěšně aktualizována.',
     'CantDeleteTheDefaultRiskGrouping' => 'Nelze odstranit výchozí seskupení rizik',
-
+    'EnableSSLCertificateCheck' => 'Povolit kontrolu certifikátu SSL',
+    'CantDeleteTheDefaultThreatGrouping' => 'Nelze odstranit výchozí seskupení hrozeb',
+    'ThreatGroupings' => 'Seskupení hrozeb',
 
     '' => ''
 );

@@ -48,7 +48,7 @@ class SecurityTokenServiceType extends RoleDescriptor
      * @param \DOMElement $parent  The element we should add this contact to.
      * @return \DOMElement  The new ContactPerson-element.
      */
-    public function toXML(DOMElement $parent): DOMElement
+    public function toXML(DOMElement $parent)
     {
         if (is_null($this->Location)) {
             throw new Exception('Location not set');

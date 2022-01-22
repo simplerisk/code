@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => '잘못된 그룹입니다!',
     'OrderUpdatedSuccessfully' => '주문이 성공적으로 업데이트되었습니다.',
     'CantDeleteTheDefaultRiskGrouping' => '기본 위험 그룹을 삭제할 수 없음',
-
+    'EnableSSLCertificateCheck' => 'SSL 인증서 확인 활성화',
+    'CantDeleteTheDefaultThreatGrouping' => '기본 위협 그룹을 삭제할 수 없음',
+    'ThreatGroupings' => '위협 그룹화',
 
     '' => ''
 );

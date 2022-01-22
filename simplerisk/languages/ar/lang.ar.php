@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => 'مجموعات غير صالحة!',
     'OrderUpdatedSuccessfully' => 'تم تحديث الطلب بنجاح.',
     'CantDeleteTheDefaultRiskGrouping' => 'لا يمكن حذف تجميع المخاطر الافتراضي',
-
+    'EnableSSLCertificateCheck' => 'تفعيل فحص شهادة SSL',
+    'CantDeleteTheDefaultThreatGrouping' => 'لا يمكن حذف مجموعة التهديد الافتراضية',
+    'ThreatGroupings' => 'مجموعات التهديد',
 
     '' => ''
 );

@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => 'Geçersiz gruplar!',
     'OrderUpdatedSuccessfully' => 'Sipariş başarıyla güncellendi.',
     'CantDeleteTheDefaultRiskGrouping' => 'Varsayılan Risk Gruplandırması Silinemiyor',
-
+    'EnableSSLCertificateCheck' => 'SSL Sertifika Kontrolünü Etkinleştir',
+    'CantDeleteTheDefaultThreatGrouping' => 'Varsayılan Tehdit Gruplamasını Silemiyorum',
+    'ThreatGroupings' => 'Tehdit Gruplamaları',
 
     '' => ''
 );

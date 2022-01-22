@@ -14,6 +14,10 @@
         "preferred-install": {
             "simplesamlphp/simplesamlphp": "source",
             "*": "dist"
+        },
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true,
+            "simplesamlphp/composer-module-installer": true
         }
     },
     "autoload": {
@@ -31,7 +35,6 @@
         "simplesamlphp/composer-module-installer": "~1.1"
     },
     "require-dev": {
-        "sensiolabs/security-checker": "^5.0",
         "simplesamlphp/simplesamlphp": "^1.17",
         "simplesamlphp/simplesamlphp-test-framework": "^0.0.15",
         "webmozart/assert": "<1.7",

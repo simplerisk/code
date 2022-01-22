@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => 'Grupuri nevalide!',
     'OrderUpdatedSuccessfully' => 'Comanda a fost actualizată cu succes.',
     'CantDeleteTheDefaultRiskGrouping' => 'Nu se poate șterge gruparea de risc implicită',
-
+    'EnableSSLCertificateCheck' => 'Activați verificarea certificatului SSL',
+    'CantDeleteTheDefaultThreatGrouping' => 'Nu se poate șterge gruparea implicită a amenințărilor',
+    'ThreatGroupings' => 'Grupări de amenințări',
 
     '' => ''
 );

@@ -2179,7 +2179,9 @@ $lang = array(
     'InvalidGroups' => 'වලංගු නොවන කණ්ඩායම්!',
     'OrderUpdatedSuccessfully' => 'ඇණවුම සාර්ථකව යාවත්කාලීන කරන ලදී.',
     'CantDeleteTheDefaultRiskGrouping' => 'පෙරනිමි අවදානම් සමූහකරණය මකා දැමිය නොහැක',
-
+    'EnableSSLCertificateCheck' => 'SSL සහතික පරීක්ෂාව සබල කරන්න',
+    'CantDeleteTheDefaultThreatGrouping' => 'පෙරනිමි තර්ජන සමූහකරණය මකා දැමිය නොහැක',
+    'ThreatGroupings' => 'තර්ජන කණ්ඩායම්',
 
     '' => ''
 );
