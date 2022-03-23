@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Добавете отговор',
     'QuestionPlaceholder' => 'Добавете въпрос',
     'NoFileAttached' => 'Няма прикачен файл',
-    'MarkAsUnmitigated' => 'Маркирайте като неограничен',
-    'MarkAsUnreviewed' => 'Маркирайте като Непрегледани',
     'NoDataToUpdate' => 'Няма данни за актуализиране',
     'SelectedQuestions' => 'Избрани въпроси',
     'CreateTabs' => 'Създаване на раздели',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'Активирайте проверка на SSL сертификат',
     'CantDeleteTheDefaultThreatGrouping' => 'Не мога да изтрия групирането на заплахите по подразбиране',
     'ThreatGroupings' => 'Групиране на заплахи',
+    'RiskCatalogDropdownPlaceholder' => 'Изберете карта на риска или започнете да пишете за търсене',
+    'ThreatCatalogDropdownPlaceholder' => 'Изберете картографиране на заплахи или започнете да пишете за търсене',
+    'UserDropdownPlaceholder' => 'Изберете потребител или започнете да пишете за търсене',
+    'GraphicalRiskAnalysis' => 'Графичен анализ на риска',
+    'ResetMitigations' => 'Нулиране на смекчавания',
+    'ResetReviews' => 'Нулиране на отзиви',
+	'EnableEncryptionDebugLogging' => 'Активиране на допълнително регистриране на шифрована база данни за отстраняване на грешки',
+    'Log' => 'Дневник',
+    'Date' => 'Дата',
+    'Platform' => 'Платформа',
+    'NotifyOnNewDocument' => 'Уведомете за нов документ',
+    'NotifyOnDocumentUpdate' => 'Уведомете при актуализиране на документа',
+    'AuditLog_DocumentCreate' => 'Нов документ с име "{$document_name}" е създаден от потребител "{$user_name}".',
+    'UpdatedBy'=>'Актуализиран от',
+    'AllowTeamToSeeDocuments'=>'Позволете на екипа да вижда документи',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Позволете на мениджъра на собственика на документа да вижда документите',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

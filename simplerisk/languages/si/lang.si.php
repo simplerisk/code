@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'පිළිතුරක් එක් කරන්න',
     'QuestionPlaceholder' => 'ප්රශ්නයක් එකතු කරන්න',
     'NoFileAttached' => 'ගොනුවක් අමුණා නැත',
-    'MarkAsUnmitigated' => 'අසීමිත ලෙස ලකුණු කරන්න',
-    'MarkAsUnreviewed' => 'සමාලෝචනය නොකළ ලෙස ලකුණු කරන්න',
     'NoDataToUpdate' => 'යාවත්කාලීන කිරීමට දත්ත නැත',
     'SelectedQuestions' => 'තෝරාගත් ප්රශ්න',
     'CreateTabs' => 'ටැබ් සාදන්න',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'SSL සහතික පරීක්ෂාව සබල කරන්න',
     'CantDeleteTheDefaultThreatGrouping' => 'පෙරනිමි තර්ජන සමූහකරණය මකා දැමිය නොහැක',
     'ThreatGroupings' => 'තර්ජන කණ්ඩායම්',
+    'RiskCatalogDropdownPlaceholder' => 'අවදානම් සිතියම්ගත කිරීමක් තෝරන්න හෝ සෙවීමට ටයිප් කිරීම ආරම්භ කරන්න',
+    'ThreatCatalogDropdownPlaceholder' => 'තර්ජන සිතියම්ගත කිරීමක් තෝරන්න හෝ සෙවීමට ටයිප් කිරීම ආරම්භ කරන්න',
+    'UserDropdownPlaceholder' => 'පරිශීලකයෙකු තෝරන්න හෝ සෙවීමට ටයිප් කිරීම ආරම්භ කරන්න',
+    'GraphicalRiskAnalysis' => 'චිත්රක අවදානම් විශ්ලේෂණය',
+    'ResetMitigations' => 'අවම කිරීම් නැවත සකසන්න',
+    'ResetReviews' => 'සමාලෝචන යළි පිහිටුවන්න',
+	'EnableEncryptionDebugLogging' => 'එන්ක්‍රිප්ටඩ් දත්ත සමුදාය අමතර නිදොස්කරණය ලොග් කිරීම සබල කරන්න',
+    'Log' => 'ලඝු',
+    'Date' => 'දිනය',
+    'Platform' => 'වේදිකාව',
+    'NotifyOnNewDocument' => 'නව ලේඛනය ගැන දැනුම් දෙන්න',
+    'NotifyOnDocumentUpdate' => 'ලේඛන යාවත්කාලීන කිරීමේදී දැනුම් දෙන්න',
+    'AuditLog_DocumentCreate' => '"{$user_name}" පරිශීලකයා විසින් "{$document_name}" නමින් නව ලේඛනයක් සාදන ලදී.',
+    'UpdatedBy'=>'විසින් යාවත්කාලීන කරන ලදී',
+    'AllowTeamToSeeDocuments'=>'ලේඛන බැලීමට කණ්ඩායමට ඉඩ දෙන්න',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'ලේඛන හිමිකරුගේ කළමනාකරුට ලේඛන බැලීමට ඉඩ දෙන්න',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

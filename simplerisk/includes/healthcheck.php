@@ -1042,4 +1042,61 @@ function check_php_max_input_vars()
 	}
 }
 
+/*************************************************
+ * FUNCTION: UNABLE TO COMMUNICATE WITH DATABASE *
+ *************************************************/
+function unable_to_communicate_with_database()
+{
+	echo "
+<html ng-app=\"SimpleRisk\">
+  <head>
+    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+      <link rel=\"stylesheet\" type=\"text/css\" href=\"css/bootstrap.min.css\" media=\"screen\" />
+      <link rel=\"stylesheet\" type=\"text/css\" href=\"css/style.css\" media=\"screen\" />
+      <link rel=\"stylesheet\" href=\"css/bootstrap.css\">
+      <link rel=\"stylesheet\" href=\"css/bootstrap-responsive.css\">
+      <link rel=\"stylesheet\" href=\"css/font-awesome.min.css\">
+      <link rel=\"stylesheet\" href=\"css/theme.css\">
+  </head>
+
+  <body ng-controller=\"MainCtrl\" class=\"login--page\">
+
+    <header class=\"l-header\">
+      <div class=\"navbar\">
+        <div class=\"navbar-inner\">
+          <div class=\"container-fluid\">
+            <a class=\"brand\" href=\"https://www.simplerisk.com/\"><img src=\"images/logo@2x.png\" alt=\"SimpleRisk Logo\" /></a>
+            <div class=\"navbar-content pull-right\">
+              <ul class=\"nav\">
+                <li>
+                  <a href=\"index.php\">Database Installation Script</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class=\"container-fluid\">
+      <div class=\"row-fluid\">
+        <div class=\"span12\">
+          <div class=\"login-wrapper clearfix\">
+    ";
+
+	// Display the Unable to Communicate with the Database page
+	echo "<h1 class=\"text-center welcome--msg\">Unable to Communicate with the Database</h1>\n";
+	echo "<br />\n";
+	echo "<div style='color: #FFFFFF;'><p>SimpleRisk is unable to communicate with the database.  If SimpleRisk was already installed, try the following troubleshooting steps:</p><ul><li>Double-check your database credentials in the config.php file</li><li>Try manually connecting to the database using the command '<i>mysql -h &lt;hostname&gt; -u &lt;username&gt; -p</i>' and specifying the password when prompted</li><li>Contact support and provide a copy of any relevant messages from your web server's error log</li></div>\n";
+
+	echo "
+              </div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+</html>
+    ";
+}
+
 ?>

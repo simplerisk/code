@@ -2182,7 +2182,7 @@ function saveReviewForm()
             set_alert(true, "good", $lang['SavedSuccess']);
 
             if ($next_step == 2) {
-                $project = (int)get_param("POST", 'project');
+                $project = get_param("POST", 'project', 0);
                 $prefix = 'new-projval-prfx-';
                 if (startsWith($project, $prefix)) {//It's a new project's name
                     $name = substr($project, strlen($prefix));
@@ -2197,7 +2197,7 @@ function saveReviewForm()
                 if (ctype_digit((string)$project)) {
                     update_risk_project((int)$project, $id - 1000);
                     set_alert(true, "good", $lang['SuccessSetProject']);
-                } else {
+                } else if(strlen($project)){
                     set_alert(true, "bad", $lang['ThereWasAProblemWithAddingTheProject']);
                 }
             }
@@ -3643,7 +3643,6 @@ function getFrameworkControlsDatatable(){
         $recordsTotal = count($controls);
 
         $data = array();
-        $control_status = array("1" => $escaper->escapeHtml($lang["Pass"]), "0" => $escaper->escapeHtml($lang["Fail"]));
 
         foreach ($controls as $key=>$control)
         {
@@ -4664,11 +4663,11 @@ function getDefineTestsResponse()
                                         <th>".$escaper->escapeHtml($lang['TestName'])."</th>
                                         <th>".$escaper->escapeHtml($lang['Tester'])."</th>
                                         <th>".$escaper->escapeHtml($lang['AdditionalStakeholders'])."</th>
-                                        <th>".$escaper->escapeHtml($lang['TestFrequency'])."</th>
-                                        <th>".$escaper->escapeHtml($lang['LastTestDate'])."</th>
-                                        <th>".$escaper->escapeHtml($lang['NextTestDate'])."</th>
-                                        <th>".$escaper->escapeHtml($lang['ApproximateTime'])."</th>
-                                        <th>&nbsp;</th>
+                                        <th width='110px'>".$escaper->escapeHtml($lang['TestFrequency'])."</th>
+                                        <th width='110px'>".$escaper->escapeHtml($lang['LastTestDate'])."</th>
+                                        <th width='110px'>".$escaper->escapeHtml($lang['NextTestDate'])."</th>
+                                        <th width='130px'>".$escaper->escapeHtml($lang['ApproximateTime'])."</th>
+                                        <th width='50px'>&nbsp;</th>
                                     </tr>
                                 </thead>
                             ";
@@ -4696,10 +4695,10 @@ function getDefineTestsResponse()
                                             <td>".$escaper->escapeHtml($test['name'])."</td>
                                             <td>".$escaper->escapeHtml($test['tester_name'])."</td>
                                             <td>".$escaper->escapeHtml(get_stakeholder_names($test['additional_stakeholders'], 3))."</td>
-                                            <td style='text-align:right'>".(int)$test['test_frequency']. " " .$escaper->escapeHtml($test['test_frequency'] > 1 ? $escaper->escapeHtml($lang['days']) : $escaper->escapeHtml($lang['Day']))."</td>
-                                            <td>".$escaper->escapeHtml($last_date)."</td>
-                                            <td>".$escaper->escapeHtml($next_date)."</td>
-                                            <td style='text-align:right'>".(int)$test['approximate_time']. " " .$escaper->escapeHtml($test['approximate_time'] > 1 ? $escaper->escapeHtml($lang['minutes']) : $escaper->escapeHtml($lang['minute']))."</td>
+                                            <td class='text-center'>".(int)$test['test_frequency']. " " .$escaper->escapeHtml($test['test_frequency'] > 1 ? $escaper->escapeHtml($lang['days']) : $escaper->escapeHtml($lang['Day']))."</td>
+                                            <td class='text-center'>".$escaper->escapeHtml($last_date)."</td>
+                                            <td class='text-center'>".$escaper->escapeHtml($next_date)."</td>
+                                            <td class='text-center'>".(int)$test['approximate_time']. " " .$escaper->escapeHtml($test['approximate_time'] > 1 ? $escaper->escapeHtml($lang['minutes']) : $escaper->escapeHtml($lang['minute']))."</td>
                                             <td class='text-center'>{$edit_row}&nbsp;&nbsp;{$delete_row}
                                             </td>
                                         </tr>
@@ -5267,12 +5266,24 @@ function customization_getCustomField()
  * FUNCTION: GET RESPONSIBILITES BY ROLE ID *
  ********************************************/
 function getResponsibilitiesByRoleIdForm(){
-    $role_id = (int)$_GET['role_id'];
-    
-    // Get responsibilities by role ID
-    $responsibilities = get_role($role_id);
+    global $lang, $escaper;
+    if($_SESSION['admin'] == 1)
+    {
+        $role_id = (int)$_GET['role_id'];
+        
+        // Get responsibilities by role ID
+        $responsibilities = get_role($role_id);
 
-    json_response(200, "Success", $responsibilities);
+        json_response(200, "Success", $responsibilities);
+    }
+    else
+    {
+        $status = "bad";
+        $message = $escaper->escapeHtml($lang["AdminPermissionRequired"]);
+        $status_code = 400;
+        set_alert(true, $status, $message);
+        json_response($status_code, $message);
+    }
 }
 
 /******************************
@@ -7065,7 +7076,7 @@ function getReviewRisksDatatableResponse()
                         }
                         break;
                     case "id":
-                        if(stripos(convert_id($risk_id), $val) === false){
+                        if(stripos(convert_id($risk['id']), $val) === false){
                             $success = false;
                         }
                         break;
@@ -9638,9 +9649,19 @@ function add_project_api(){
         // Otherwise
         else
         {
+            $due_date = isset($_POST['due_date']) ? $_POST['due_date'] : "";
+            if (!validate_date($due_date, get_default_date_format()))
+            {
+                $due_date = "0000-00-00";
+            }
+            // Otherwise, set the proper format for submitting to the database
+            else
+            {
+                $due_date = get_standard_date_from_default_format($due_date);
+            }
             $project = array(
                 'name' => $name,
-                'due_date' => isset($_POST['due_date']) ? $_POST['due_date'] : "",
+                'due_date' => $due_date,
                 'consultant' => isset($_POST['consultant']) ? (int)$_POST['consultant'] : 0,
                 'business_owner' => isset($_POST['business_owner']) ? (int)$_POST['business_owner'] : 0,
                 'data_classification' => isset($_POST['data_classification']) ? (int)$_POST['data_classification'] : 0,
@@ -9688,9 +9709,19 @@ function edit_project_api(){
         // Otherwise
         else
         {
+            $due_date = isset($_POST['due_date']) ? $_POST['due_date'] : "";
+            if (!validate_date($due_date, get_default_date_format()))
+            {
+                $due_date = "0000-00-00";
+            }
+            // Otherwise, set the proper format for submitting to the database
+            else
+            {
+                $due_date = get_standard_date_from_default_format($due_date);
+            }
             $project = array(
                 'name' => $name,
-                'due_date' => isset($_POST['due_date']) ? $_POST['due_date'] : "",
+                'due_date' => $due_date,
                 'consultant' => isset($_POST['consultant']) ? (int)$_POST['consultant'] : 0,
                 'business_owner' => isset($_POST['business_owner']) ? (int)$_POST['business_owner'] : 0,
                 'data_classification' => isset($_POST['data_classification']) ? (int)$_POST['data_classification'] : 0,
@@ -11390,4 +11421,82 @@ function contributing_risks_table_list_api(){
         $table_list = display_contributing_risks_impact_table_list($table);
     echo $table_list;exit;
 }
+
+/***************************************
+ * FUNCTION: SAVE GRAPHICAL SELECTIONS *
+ ***************************************/
+function saveGraphicalSelectionsForm()
+{
+    global $lang, $escaper;
+    
+    $type = get_param("post", "selection_type");
+    $name = get_param("post", "selection_name");
+
+    // If the id is not sent
+    if (!$type || !$name)
+    {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['ThereAreRequiredFields']));
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+    }
+    
+    // Check if this name already existing
+    if(check_exisiting_graphical_selection_name($_SESSION['uid'], $name))
+    {
+        set_alert(true, "bad", $lang['TheNameAlreadyExists']);
+        json_response(400, get_alert(true), []);
+    }
+    else
+    {
+        $graphic_form_data = $_POST;
+        if(isset($graphic_form_data['__csrf_magic'])) unset($graphic_form_data['__csrf_magic']);
+        $id = save_graphical_selections($type, $name, $graphic_form_data);
+
+        $saved_selection = get_graphical_saved_selection($id);
+        if ($saved_selection) {
+            set_alert(true, "good", $lang['SavedSuccess']);
+            json_response(200, get_alert(true), ['value' => $id, 'name' => $saved_selection['name'], 'type' => $saved_selection['type']]);
+        }
+    }
+    set_alert(true, "bad", $lang['SelectionSaveFailed']);
+    json_response(400, get_alert(true), []);
+}
+
+/****************************************
+ * FUNCTION: DELETE GRAPHICAL SELECTION *
+ ****************************************/
+function deleteGraphicalSelectionForm()
+{
+    global $lang, $escaper;
+    
+    $id = get_param("post", "id");
+
+    // If the id is not sent
+    if (!$id) {
+        set_alert(true, "bad", $lang['ThereAreRequiredFields']);
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+    }
+
+    // Get the selection data so we can check if the user has the permission to delete the saved selection
+    $selection = get_graphical_saved_selection($id);
+    
+    // Admins can access/manage all saved selections
+    if($_SESSION['admin'] || $selection['user_id'] == $_SESSION['uid']) {
+
+        delete_graphical_selection($id);
+
+        // Not returning the alert on purpose because the UI logic is refreshing the page and if we user get_alert() here
+        // then it'll remove it from the session and won't be displayed after the reload
+        set_alert(true, "good", $lang['DeletedSuccess']);
+        json_response(200, null, null);
+    }
+
+    set_alert(true, "bad", $lang['NoPermissionForThisSelection']);
+    json_response(400, get_alert(true), null);
+}
+
+
 ?>

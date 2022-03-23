@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'उत्तर जोड़ें',
     'QuestionPlaceholder' => 'एक प्रश्न जोड़ें',
     'NoFileAttached' => 'कोई फ़ाइल संलग्न नहीं है',
-    'MarkAsUnmitigated' => 'अमिट के रूप में चिह्नित करें',
-    'MarkAsUnreviewed' => 'समीक्षा न किए गए के रूप में चिह्नित करें',
     'NoDataToUpdate' => 'अपडेट करने के लिए कोई डेटा नहीं',
     'SelectedQuestions' => 'चयनित प्रश्न',
     'CreateTabs' => 'टैब बनाएं',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'एसएसएल प्रमाणपत्र जांच सक्षम करें',
     'CantDeleteTheDefaultThreatGrouping' => 'डिफ़ॉल्ट थ्रेट ग्रुपिंग को हटा नहीं सकता',
     'ThreatGroupings' => 'थ्रेट ग्रुपिंग',
+    'RiskCatalogDropdownPlaceholder' => 'जोखिम मानचित्रण चुनें या खोजने के लिए टाइप करना प्रारंभ करें',
+    'ThreatCatalogDropdownPlaceholder' => 'खतरे की मैपिंग चुनें या खोजने के लिए टाइप करना शुरू करें',
+    'UserDropdownPlaceholder' => 'कोई उपयोगकर्ता चुनें या खोजने के लिए टाइप करना प्रारंभ करें',
+    'GraphicalRiskAnalysis' => 'ग्राफिकल जोखिम विश्लेषण',
+    'ResetMitigations' => 'शमन रीसेट करें',
+    'ResetReviews' => 'समीक्षा रीसेट करें',
+	'EnableEncryptionDebugLogging' => 'एन्क्रिप्टेड डेटाबेस अतिरिक्त डिबग लॉगिंग सक्षम करें',
+    'Log' => 'लॉग',
+    'Date' => 'दिनांक',
+    'Platform' => 'मंच',
+    'NotifyOnNewDocument' => 'नए दस्तावेज़ पर सूचित करें',
+    'NotifyOnDocumentUpdate' => 'दस्तावेज़ अद्यतन पर सूचित करें',
+    'AuditLog_DocumentCreate' => 'उपयोगकर्ता "{$user_name}" द्वारा "{$document_name}" नामक एक नया दस्तावेज़ बनाया गया था।',
+    'UpdatedBy'=>'द्वारा अपडेट',
+    'AllowTeamToSeeDocuments'=>'टीम को दस्तावेज़ देखने की अनुमति दें',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'दस्तावेज़ स्वामी के प्रबंधक को दस्तावेज़ देखने की अनुमति दें',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

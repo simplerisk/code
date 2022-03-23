@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Válasz hozzáadása',
     'QuestionPlaceholder' => 'Kérdés hozzáadása',
     'NoFileAttached' => 'Nincs fájl csatolva',
-    'MarkAsUnmitigated' => 'Megjelölés nem módosítottként',
-    'MarkAsUnreviewed' => 'Megjelölés felülvizsgálat nélkül',
     'NoDataToUpdate' => 'Nincsenek frissítendő adatok',
     'SelectedQuestions' => 'Kiválasztott kérdések',
     'CreateTabs' => 'Lapok létrehozása',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'SSL-tanúsítvány-ellenőrzés engedélyezése',
     'CantDeleteTheDefaultThreatGrouping' => 'Az alapértelmezett fenyegetéscsoport nem törölhető',
     'ThreatGroupings' => 'Fenyegetési csoportok',
+    'RiskCatalogDropdownPlaceholder' => 'Válasszon ki egy kockázati leképezést, vagy kezdjen el gépelni a kereséshez',
+    'ThreatCatalogDropdownPlaceholder' => 'Válasszon ki egy fenyegetés-leképezést, vagy kezdjen el gépelni a kereséshez',
+    'UserDropdownPlaceholder' => 'Válasszon ki egy felhasználót, vagy kezdjen el gépelni a kereséshez',
+    'GraphicalRiskAnalysis' => 'Grafikus kockázatelemzés',
+    'ResetMitigations' => 'Enyhítő intézkedések visszaállítása',
+    'ResetReviews' => 'Vélemények visszaállítása',
+	'EnableEncryptionDebugLogging' => 'Encrypted Database Extra hibakeresési naplózás engedélyezése',
+    'Log' => 'Napló',
+    'Date' => 'Dátum',
+    'Platform' => 'Felület',
+    'NotifyOnNewDocument' => 'Értesítés az új dokumentumról',
+    'NotifyOnDocumentUpdate' => 'Értesítés a dokumentumfrissítésről',
+    'AuditLog_DocumentCreate' => '"{$user_name}" felhasználó egy új "{$document_name}" nevű dokumentumot hozott létre.',
+    'UpdatedBy'=>'Frissítette',
+    'AllowTeamToSeeDocuments'=>'Dokumentumok megtekintésének engedélyezése a csapat számára',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'A dokumentumok megtekintésének engedélyezése a dokumentumtulajdonos menedzserének',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

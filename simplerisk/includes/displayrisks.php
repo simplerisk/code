@@ -1249,7 +1249,7 @@ function display_main_detail_fields_by_panel_edit($panel_name, $fields, $risk_id
                     require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
                     $custom_values = getCustomFieldValuesByRiskId($risk_id);
-                    display_custom_field_edit($field, $custom_values, false, $panel_name);
+                    display_custom_field_edit($field, $custom_values, "div", false, $panel_name);
                 }
             }
           

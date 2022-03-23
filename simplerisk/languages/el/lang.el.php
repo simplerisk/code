@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Προσθέστε μια απάντηση',
     'QuestionPlaceholder' => 'Προσθέστε μια ερώτηση',
     'NoFileAttached' => 'Δεν επισυνάπτεται αρχείο',
-    'MarkAsUnmitigated' => 'Επισήμανση ως μη κατεβασμένο',
-    'MarkAsUnreviewed' => 'Επισήμανση ως μη ελεγμένο',
     'NoDataToUpdate' => 'Δεν υπάρχουν δεδομένα για ενημέρωση',
     'SelectedQuestions' => 'Επιλεγμένες ερωτήσεις',
     'CreateTabs' => 'Δημιουργία καρτελών',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'Ενεργοποίηση ελέγχου πιστοποιητικού SSL',
     'CantDeleteTheDefaultThreatGrouping' => 'Δεν είναι δυνατή η διαγραφή της προεπιλεγμένης ομαδοποίησης απειλών',
     'ThreatGroupings' => 'Ομάδες απειλών',
+    'RiskCatalogDropdownPlaceholder' => 'Επιλέξτε μια αντιστοίχιση κινδύνου ή ξεκινήστε να πληκτρολογείτε για αναζήτηση',
+    'ThreatCatalogDropdownPlaceholder' => 'Επιλέξτε μια αντιστοίχιση απειλών ή ξεκινήστε να πληκτρολογείτε για αναζήτηση',
+    'UserDropdownPlaceholder' => 'Επιλέξτε έναν χρήστη ή ξεκινήστε να πληκτρολογείτε για αναζήτηση',
+    'GraphicalRiskAnalysis' => 'Γραφική Ανάλυση Κινδύνου',
+    'ResetMitigations' => 'Επαναφορά μετριασμού',
+    'ResetReviews' => 'Επαναφορά κριτικών',
+	'EnableEncryptionDebugLogging' => 'Ενεργοποιήστε την καταγραφή επιπλέον εντοπισμού σφαλμάτων κρυπτογραφημένης βάσης δεδομένων',
+    'Log' => 'Κούτσουρο',
+    'Date' => 'Ημερομηνία',
+    'Platform' => 'Πλατφόρμα',
+    'NotifyOnNewDocument' => 'Ειδοποίηση σε νέο έγγραφο',
+    'NotifyOnDocumentUpdate' => 'Ειδοποίηση σχετικά με την ενημέρωση εγγράφων',
+    'AuditLog_DocumentCreate' => 'Ένα νέο έγγραφο με το όνομα "{$document_name}" δημιουργήθηκε από τον χρήστη "{$user_name}".',
+    'UpdatedBy'=>'Ενημερώθηκε από',
+    'AllowTeamToSeeDocuments'=>'Επιτρέψτε στην ομάδα να δει έγγραφα',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Επιτρέψτε στον Διαχειριστή κατόχου εγγράφων να δει έγγραφα',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

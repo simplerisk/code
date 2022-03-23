@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Add an answer',
     'QuestionPlaceholder' => 'Add a question',
     'NoFileAttached' => 'No file attached',
-    'MarkAsUnmitigated' => 'Mark as Unmitigated',
-    'MarkAsUnreviewed' => 'Mark as Unreviewed',
     'NoDataToUpdate' => 'No data to update',
     'SelectedQuestions' => 'Selected Questions',
     'CreateTabs' => 'Create Tabs',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'Enable SSL Certificate Check',
     'CantDeleteTheDefaultThreatGrouping' => 'Can\'t Delete The Default Threat Grouping',
     'ThreatGroupings' => 'Threat Groupings',
+    'RiskCatalogDropdownPlaceholder' => 'Select a risk mapping or start typing to search',
+    'ThreatCatalogDropdownPlaceholder' => 'Select a threat mapping or start typing to search',
+    'UserDropdownPlaceholder' => 'Select a user or start typing to search',
+    'GraphicalRiskAnalysis' => 'Graphical Risk Analysis',
+    'ResetMitigations' => 'Reset Mitigations',
+    'ResetReviews' => 'Reset Reviews',
+	'EnableEncryptionDebugLogging' => 'Enable Encrypted Database Extra debug logging',
+    'Log' => 'Log',
+    'Date' => 'Date',
+    'Platform' => 'Platform',
+    'NotifyOnNewDocument' => 'Notify on New Document',
+    'NotifyOnDocumentUpdate' => 'Notify on Document Update',
+    'AuditLog_DocumentCreate' => 'A new document named "{$document_name}" was created by user "{$user_name}".',
+    'UpdatedBy'=>'Updated By',
+    'AllowTeamToSeeDocuments'=>'Allow Team to See Documents',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Allow Document Owner\'s Manager to See Documents',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

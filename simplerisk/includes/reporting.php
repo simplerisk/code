@@ -3116,9 +3116,6 @@ function risks_query_select($column_filters=[])
         a.mgmt_review,
         a.assessment AS risk_assessment, 
         a.notes AS additional_notes, 
-        a.owner,
-        a.manager,
-        a.submitted_by,
         b.scoring_method, 
         b.calculated_risk, 
         b.CLASSIC_likelihood AS CLASSIC_likelihood_value, 
@@ -3262,6 +3259,9 @@ function risks_query_select($column_filters=[])
                 rttg.risk_id=a.id AND rttg.technology_id=tech.value
         ) AS technology_values,
 
+        g.name AS owner, 
+        h.name AS manager, 
+        i.name AS submitted_by,
         j.name AS regulation, 
         a.regulation regulation_id, 
         k.name AS project, 
@@ -3300,11 +3300,11 @@ function risks_query_select($column_filters=[])
         s.min_value AS mitigation_min_cost, 
         s.max_value AS mitigation_max_cost, 
         s.valuation_level_name, 
+        t.name AS mitigation_owner,
         IF(s.valuation_level_name IS NULL OR s.valuation_level_name='', 
             CONCAT('\$', s.min_value, ' to \$', s.max_value),
             CONCAT('\$', s.min_value, ' to \$', s.max_value, '(', s.valuation_level_name, ')')
           ) mitigation_cost,
-        p.mitigation_owner,
         (
             SELECT
                 GROUP_CONCAT(DISTINCT team.name SEPARATOR ', ')
@@ -3400,9 +3400,6 @@ function risks_unique_column_query_select()
         a.mgmt_review,
         a.assessment AS risk_assessment, 
         a.notes AS additional_notes, 
-        a.owner,
-        a.manager,
-        a.submitted_by,
         b.scoring_method, 
         b.calculated_risk, 
         p.mitigation_percent,
@@ -3465,6 +3462,12 @@ function risks_unique_column_query_select()
                 rttg.risk_id=a.id AND rttg.technology_id=tech.value
         ) AS technology_values,
 
+        g.name AS owner, 
+        CONCAT(g.name, '{$delimiter}', g.value) AS owner_for_dropdown, 
+        h.name AS manager, 
+        CONCAT(h.name, '{$delimiter}', h.value) AS manager_for_dropdown, 
+        i.name AS submitted_by, 
+        CONCAT(i.name, '{$delimiter}', i.value) AS submitted_by_for_dropdown,
 
         j.name AS regulation, 
         CONCAT(j.name, '{$delimiter}', j.value) AS regulation_for_dropdown, 
@@ -3513,7 +3516,8 @@ function risks_unique_column_query_select()
         
         s.valuation_level_name, 
         
-        p.mitigation_owner,
+        t.name AS mitigation_owner,
+        CONCAT(t.name, '{$delimiter}', t.value) AS mitigation_owner_for_dropdown,
         
         (
             SELECT
@@ -3559,6 +3563,9 @@ function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName
             risks a
             LEFT JOIN risk_scoring b ON a.id = b.id
             LEFT JOIN category d FORCE INDEX(PRIMARY) ON a.category = d.value
+            LEFT JOIN user g FORCE INDEX(PRIMARY) ON a.owner = g.value
+            LEFT JOIN user h FORCE INDEX(PRIMARY) ON a.manager = h.value
+            LEFT JOIN user i FORCE INDEX(PRIMARY) ON a.submitted_by = i.value
             LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON a.regulation = j.value
             LEFT JOIN projects k FORCE INDEX(PRIMARY) ON a.project_id = k.value
             LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id
@@ -3570,6 +3577,7 @@ function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName
             LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
             LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
             LEFT JOIN asset_values s ON p.mitigation_cost = s.id
+            LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
             LEFT JOIN mitigation_accept_users mau ON a.id=mau.risk_id
             LEFT JOIN source v FORCE INDEX(PRIMARY) ON a.source = v.value
             LEFT JOIN risk_scoring_history sh_30 ON sh_30.id = 
@@ -3668,6 +3676,7 @@ function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName
  **************************************/
 function make_full_risks_sql($query_type, $status, $sort, $group, $column_filters=[], &$group_value_from_db="", &$custom_query="", &$bind_params=[], $having_query="", $orderColumnName=null, $orderDir="asc", $risks_by_team=0, $teams=[], $owners=[], $ownersmanagers=[])
 {
+    $orderDir = strtolower($orderDir) == "asc" ? "ASC" : "DESC";
     // Check the status
     switch ($status)
     {
@@ -3813,7 +3822,7 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
             } else if(stripos($orderColumnName, "calculated_risk_") !== false || stripos($orderColumnName, "residual_risk_") !== false) {
                 $sort_name = " {$orderColumnName} {$orderDir} ";
             } else {
-                $sort_name = "{$orderColumnName} {$orderDir}";
+                $sort_name = ":orderColumnName {$orderDir}";
             }
             break;
     }
@@ -3918,7 +3927,7 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
             if(!$column_filter) continue;
             $empty_filter = false;
             // If encryption extra is enabled and Column is a encrypted field
-            if((encryption_extra() && in_array($name, $encrypt_column_names)) || $name == "next_review_date" || $name == "management_review" || $name == "id" || $name == "project_status" || $name == "owner" || $name == "manager" || $name == "submitted_by" || $name == "mitigation_owner" || in_array($name, $date_fields))
+            if((encryption_extra() && in_array($name, $encrypt_column_names)) || $name == "next_review_date" || $name == "management_review" || $name == "id" || $name == "project_status" || in_array($name, $date_fields))
             {
                 $requested_manual_column_filters[$name] = $column_filter;
             }
@@ -4059,9 +4068,9 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                     case "regulation":
                     case "source":
                     case "category":
-                    // case "owner":
-                    // case "manager":
-                    // case "submitted_by":
+                    case "owner":
+                    case "manager":
+                    case "submitted_by":
                         $wheres[] = " FIND_IN_SET(a.{$name}, :{$bind_param_name}) ";
                         if($empty_filter) $column_filter .= ",0";
                         $bind_params[$bind_param_name] = $column_filter;
@@ -4108,7 +4117,7 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                     break;
                     case "planning_strategy":
                     case "mitigation_effort":
-                    // case "mitigation_owner":
+                    case "mitigation_owner":
                         if($empty_filter) $wheres[] = "(FIND_IN_SET(p.{$name}, :{$bind_param_name}) OR p.{$name} IS NULL)";
                         else $wheres[] = " FIND_IN_SET(p.{$name}, :{$bind_param_name}) ";
                         $bind_params[$bind_param_name] = $column_filter;
@@ -4306,27 +4315,11 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
     $start = (int)$start;
     $length = (int)$length;
     
-    // If encrypt filter no exists, get page data by sql
-    if(!$requested_manual_column_filters)
-    {
-        if($length == -1)
-        {
-            $limitQuery = "";
-        }
-        else
-        {
-            $limitQuery = "Limit {$start}, {$length}";
-        }
-        
-        $query .= "
-            {$limitQuery}
-        ";
-    }
-
     // Query the database
     $db = db_open();
 
     $stmt = $db->prepare($query);
+    $stmt->bindParam(":orderColumnName", $orderColumnName);
 
     if($group_name != "none"){
         $stmt->bindParam(":group_value", $group_value_from_db, PDO::PARAM_STR);
@@ -4345,7 +4338,6 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
 
     // Store the results in the risks array
     $risks = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $users = get_user_values_array();
 
     $stmt = $db->prepare("SELECT FOUND_ROWS();");
     $stmt->execute();
@@ -4516,10 +4508,6 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                 }
             }
         }
-        $risk['owner'] = $users[$risk["owner"]];
-        $risk['manager'] = $users[$risk["manager"]];
-        $risk['submitted_by'] = $users[$risk["submitted_by"]];
-        $risk['mitigation_owner'] = $users[$risk["mitigation_owner"]];
         if($success) $filtered_risks[] = $risk;
     }
     if($encryption_order != false) {
@@ -4688,13 +4676,13 @@ function get_dynamicrisk_unique_column_data($status, $group, $group_value_from_d
 {
     global $lang;
 
-    $users = get_user_values_array();
     list($query, $group_name) = make_full_risks_sql($query_type=3, $status, -1, $group, [], $group_value_from_db, $custom_query, $bind_params, "");
 
     // Query the database
     $db = db_open();
 
     $stmt = $db->prepare($query);
+    $stmt->bindParam(":orderColumnName", $orderColumnName);
     
     if($group_name != "none"){
         $stmt->bindParam(":group_value", $group_value_from_db, PDO::PARAM_STR);
@@ -4714,21 +4702,20 @@ function get_dynamicrisk_unique_column_data($status, $group, $group_value_from_d
     
     // Initialize the data array
     $data = array();
-    $delimiter = "---";
 
     // For each risk in the risks array
     foreach($risks as $risk){
         $key_relation_arr = [
             "category" => "category_for_dropdown",
-            // "owner" => "owner_for_dropdown",
-            // "manager" => "manager_for_dropdown",
-            // "submitted_by" => "submitted_by_for_dropdown",
+            "owner" => "owner_for_dropdown",
+            "manager" => "manager_for_dropdown",
+            "submitted_by" => "submitted_by_for_dropdown",
             "regulation" => "regulation_for_dropdown",
             "project" => "project_for_dropdown",
             "next_step" => "next_step_for_dropdown",
             "planning_strategy" => "planning_strategy_for_dropdown",
             "mitigation_effort" => "mitigation_effort_for_dropdown",
-            // "mitigation_owner" => "mitigation_owner_for_dropdown",
+            "mitigation_owner" => "mitigation_owner_for_dropdown",
             "source" => "source_for_dropdown",
         ];
         
@@ -4754,9 +4741,9 @@ function get_dynamicrisk_unique_column_data($status, $group, $group_value_from_d
             "team" => $risk['team'], 
             "additional_stakeholders" => $risk['additional_stakeholders'], 
             "technology" => $risk["technology"], 
-            "owner" => $users[$risk["owner"]].$delimiter.$risk["owner"], 
-            "manager" => $users[$risk["manager"]].$delimiter.$risk["manager"], 
-            "submitted_by" => $users[$risk["submitted_by"]].$delimiter.$risk["submitted_by"], 
+            "owner" => $risk["owner"], 
+            "manager" => $risk["manager"], 
+            "submitted_by" => $risk["submitted_by"],
             "regulation" => $risk["regulation"], 
             "project" => $risk["project"], 
             "next_step" => $risk["next_step"], 
@@ -4764,7 +4751,7 @@ function get_dynamicrisk_unique_column_data($status, $group, $group_value_from_d
             "planning_strategy" => $risk["planning_strategy"], 
             "mitigation_effort" => $risk["mitigation_effort"],
             "mitigation_cost" => $risk["mitigation_cost"], 
-            "mitigation_owner" => $users[$risk["mitigation_owner"]].$delimiter.$risk["mitigation_owner"], 
+            "mitigation_owner" => $risk["mitigation_owner"], 
             "mitigation_team" => $risk["mitigation_team"], 
             "mitigation_controls" => $risk["mitigation_control_names"], 
             "risk_tags" => $risk["risk_tags"],
@@ -6037,10 +6024,15 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
         return get_user_management_reports_report_data_separation($type, $mode, $start, $length, $orderColumn, $orderDir, $filters);
     }
 
+    // $orderColumns = array(
+    //     'users_of_permissions' => [''], // No ordering on the permission names as they're added to the results from PHP code so it's ordered there
+    //     'permissions_of_users' => ['`u`.`name`', '`u`.`username`', '`u`.`enabled`'],
+    //     'users_of_roles' => ['`users_roles`.`r_name`']
+    // );
     $orderColumns = array(
-        'users_of_permissions' => [''], // No ordering on the permission names as they're added to the results from PHP code so it's ordered there
-        'permissions_of_users' => ['`u`.`name`', '`u`.`username`', '`u`.`enabled`'],
-        'users_of_roles' => ['`users_roles`.`r_name`']
+        'users_of_permissions' => [2], // No ordering on the permission names as they're added to the results from PHP code so it's ordered there
+        'permissions_of_users' => [2, 3, 4],
+        'users_of_roles' => [2]
     );
     $orderColumn = $orderColumns[$type][$orderColumn];
 
@@ -6054,9 +6046,9 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
             if (!empty($filters) && isset($filters['users']) && isset($filters['usernames']) && isset($filters['statuses']) && isset($filters['permissions'])) {
 
                 $filter_where_part .= "WHERE
-                    `u`.`value` IN (" . implode(',', $filters['users']) . ")
-                    AND `u`.`value` IN (" . implode(',', $filters['usernames']) . ")
-                    AND `u`.`enabled` IN (" . implode(',', $filters['statuses']) . ")";
+                    `u`.`value` IN (" . implode(',', array_map('intval', $filters['users'])) . ")
+                    AND `u`.`value` IN (" . implode(',', array_map('intval', $filters['usernames'])) . ")
+                    AND `u`.`enabled` IN (" . implode(',', array_map('intval', $filters['statuses'])) . ")";
 
                 $filter_where_parts = [];
 
@@ -6067,7 +6059,7 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
                     $filter_where_parts[] = '`perms`.`name` IS NULL';
                 }
                 if (count($filters['permissions'])) {
-                    $filter_where_parts[] = "`perms`.`id` IN (" . implode(',', $filters['permissions']) . ")";                    
+                    $filter_where_parts[] = "`perms`.`id` IN (" . implode(',', array_map('intval', $filters['permissions'])) . ")";                    
                 }
                 $filter_where_part .= "
                     AND (" . implode(' OR ', $filter_where_parts) . ")";
@@ -6119,7 +6111,7 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
             GROUP BY
                 `u`.`value`
             ORDER BY
-               {$orderColumn} {$orderDir}
+               :orderColumn {$orderDir}
         ";
 
     } elseif ($type === "users_of_permissions") {
@@ -6140,13 +6132,13 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
                 }
                 
                 if ($filters['permissions']) {
-                    $permission_filter_parts[] = "`perms`.`id` IN (" . implode(",", $filters['permissions']) . ")";
+                    $permission_filter_parts[] = "`perms`.`id` IN (" . implode(",", array_map('intval', $filters['permissions'])) . ")";
                 }
 
                 $filter_where_part = "
                     WHERE
                         (" . implode(' OR ', $permission_filter_parts) . ")
-                        AND `u`.`value` IN (" . implode(',', $filters['users']) . ")";
+                        AND `u`.`value` IN (" . implode(',', array_map('intval', $filters['users'])) . ")";
 
             } else {
                 // If there's a filter that has no item selected then we're not returning a single result
@@ -6188,6 +6180,8 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
             {$filter_where_part}
             GROUP BY
                 `perms`.`name`
+            ORDER BY
+               :orderColumn {$orderDir}
         ";
                     
     } elseif ($type === "users_of_roles") {
@@ -6221,14 +6215,14 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
                 // Create the filtering query parts accordingly
                 if ($filters['roles']) {
                     $filter_where_part .= "
-                        (`users_roles`.`r_value` IN (" . implode(',', $filters['roles']) . ") " . ($filter_for_roles_without_users ? "OR `users_roles`.`r_value` IS NULL" : "") . ")";
+                        (`users_roles`.`r_value` IN (" . implode(',', array_map('intval', $filters['roles'])) . ") " . ($filter_for_roles_without_users ? "OR `users_roles`.`r_value` IS NULL" : "") . ")";
                 } else {
                     $filter_where_part .= "`users_roles`.`r_value` IS NULL";
                 }
 
                 if ($filters['users']) {
                     $filter_where_part .= "
-                        AND (`users_roles`.`value` IN (" . implode(',', $filters['users']) . ")" . ($filter_for_users_without_roles ? "OR `users_roles`.`value` IS NULL" : "") . ")";
+                        AND (`users_roles`.`value` IN (" . implode(',', array_map('intval', $filters['users'])) . ")" . ($filter_for_users_without_roles ? "OR `users_roles`.`value` IS NULL" : "") . ")";
                 } else {
                     $filter_where_part .= " AND `users_roles`.`value` IS NULL";
                 }
@@ -6272,13 +6266,13 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
             GROUP BY
                 `users_roles`.`r_name`
             ORDER BY
-               {$orderColumn} {$orderDir}
+               :orderColumn {$orderDir}
         ";
     }
     $db = db_open();
     
     if ($mode === 'normal') {
-        $limitQuery = $length == -1 ? "" : "Limit {$start}, {$length}";
+        $limitQuery = $length == -1 ? "" : "Limit :start, :length";
         
         $query = "
             SELECT SQL_CALC_FOUND_ROWS t1.*
@@ -6291,6 +6285,11 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
         $db = db_open();
 
         $stmt = $db->prepare($query);
+        $stmt->bindParam(":orderColumn", $orderColumn, PDO::PARAM_INT);
+        if($length != -1){
+            $stmt->bindParam(":start", $start, PDO::PARAM_INT);
+            $stmt->bindParam(":length", $length, PDO::PARAM_INT);
+        }
         $stmt->execute();
         
         // Store the results in an array
@@ -6311,6 +6310,7 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
     } else { // If we just need the raw data to be able to populate the unique column filters
 
         $stmt = $db->prepare($query);
+        $stmt->bindParam(":orderColumn", $orderColumn, PDO::PARAM_INT);
         $stmt->execute();
         
         // Store the results in an array

@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Přidejte odpověď',
     'QuestionPlaceholder' => 'Přidejte otázku',
     'NoFileAttached' => 'Není připojen žádný soubor',
-    'MarkAsUnmitigated' => 'Označit jako bez omezení',
-    'MarkAsUnreviewed' => 'Označit jako nezkontrolované',
     'NoDataToUpdate' => 'Žádná data k aktualizaci',
     'SelectedQuestions' => 'Vybrané otázky',
     'CreateTabs' => 'Vytvořit karty',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'Povolit kontrolu certifikátu SSL',
     'CantDeleteTheDefaultThreatGrouping' => 'Nelze odstranit výchozí seskupení hrozeb',
     'ThreatGroupings' => 'Seskupení hrozeb',
+    'RiskCatalogDropdownPlaceholder' => 'Vyberte mapování rizik nebo začněte psát a vyhledávejte',
+    'ThreatCatalogDropdownPlaceholder' => 'Vyberte mapování hrozeb nebo začněte psát a hledat',
+    'UserDropdownPlaceholder' => 'Chcete-li hledat, vyberte uživatele nebo začněte psát',
+    'GraphicalRiskAnalysis' => 'Grafická analýza rizik',
+    'ResetMitigations' => 'Resetujte zmírnění',
+    'ResetReviews' => 'Resetovat recenze',
+	'EnableEncryptionDebugLogging' => 'Povolit protokolování ladění Encrypted Database Extra',
+    'Log' => 'Log',
+    'Date' => 'datum',
+    'Platform' => 'Plošina',
+    'NotifyOnNewDocument' => 'Upozornit na nový dokument',
+    'NotifyOnDocumentUpdate' => 'Upozornit na aktualizaci dokumentu',
+    'AuditLog_DocumentCreate' => 'Nový dokument s názvem "{$document_name}" byl vytvořen uživatelem "{$user_name}".',
+    'UpdatedBy'=>'Aktualizováno uživatelem',
+    'AllowTeamToSeeDocuments'=>'Umožněte týmu vidět dokumenty',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Umožněte správci vlastníka dokumentů prohlížet dokumenty',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

@@ -24,5 +24,7 @@ define('USE_DATABASE_FOR_SESSIONS', 'true');
 // Path to the certificate to be used for SSL connections to the database
 define('DB_SSL_CERTIFICATE_PATH', '');
 
+// Enable SimpleRisk installer script
+define('SIMPLERISK_INSTALLED', 'false');
 
 ?>

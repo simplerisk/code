@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Afegeix una resposta',
     'QuestionPlaceholder' => 'Afegeix una pregunta',
     'NoFileAttached' => 'No hi ha cap fitxer adjunt',
-    'MarkAsUnmitigated' => 'Marca com a sense restriccions',
-    'MarkAsUnreviewed' => 'Marca com a no revisat',
     'NoDataToUpdate' => 'No hi ha dades per actualitzar',
     'SelectedQuestions' => 'Preguntes seleccionades',
     'CreateTabs' => 'Crea pestanyes',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'Activa la comprovació del certificat SSL',
     'CantDeleteTheDefaultThreatGrouping' => 'No es pot suprimir l\'agrupació d\'amenaces predeterminada',
     'ThreatGroupings' => 'Agrupacions d\'amenaça',
+    'RiskCatalogDropdownPlaceholder' => 'Seleccioneu un mapa de risc o comenceu a escriure per cercar',
+    'ThreatCatalogDropdownPlaceholder' => 'Seleccioneu un mapa d\'amenaces o comenceu a escriure per cercar',
+    'UserDropdownPlaceholder' => 'Seleccioneu un usuari o comenceu a escriure per cercar',
+    'GraphicalRiskAnalysis' => 'Anàlisi Gràfica de Riscos',
+    'ResetMitigations' => 'Restablir mitigacions',
+    'ResetReviews' => 'Restableix les ressenyes',
+	'EnableEncryptionDebugLogging' => 'Activa el registre de depuració addicional de la base de dades xifrada',
+    'Log' => 'Registre',
+    'Date' => 'Data',
+    'Platform' => 'Plataforma',
+    'NotifyOnNewDocument' => 'Notificar sobre document nou',
+    'NotifyOnDocumentUpdate' => 'Notificar sobre l\'actualització del document',
+    'AuditLog_DocumentCreate' => 'Un nou document anomenat "{$document_name}" va ser creat per l\'usuari "{$user_name}".',
+    'UpdatedBy'=>'Actualitzat per',
+    'AllowTeamToSeeDocuments'=>'Permet que l\'equip vegi els documents',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Permet que el gestor del propietari del document vegi els documents',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

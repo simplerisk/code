@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Legg til et svar',
     'QuestionPlaceholder' => 'Legg til et spørsmål',
     'NoFileAttached' => 'Ingen fil vedlagt',
-    'MarkAsUnmitigated' => 'Merk som ikke utført',
-    'MarkAsUnreviewed' => 'Merk som uanmeldt',
     'NoDataToUpdate' => 'Ingen data å oppdatere',
     'SelectedQuestions' => 'Utvalgte spørsmål',
     'CreateTabs' => 'Opprett faner',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'Aktiver SSL-sertifikatsjekk',
     'CantDeleteTheDefaultThreatGrouping' => 'Kan ikke slette standard trusselgruppering',
     'ThreatGroupings' => 'Trusselgrupperinger',
+    'RiskCatalogDropdownPlaceholder' => 'Velg en risikokartlegging eller begynn å skrive for å søke',
+    'ThreatCatalogDropdownPlaceholder' => 'Velg en trusseltilordning eller begynn å skrive for å søke',
+    'UserDropdownPlaceholder' => 'Velg en bruker eller begynn å skrive for å søke',
+    'GraphicalRiskAnalysis' => 'Grafisk risikoanalyse',
+    'ResetMitigations' => 'Tilbakestill reduksjoner',
+    'ResetReviews' => 'Tilbakestill anmeldelser',
+	'EnableEncryptionDebugLogging' => 'Aktiver kryptert database Ekstra feilsøkingslogging',
+    'Log' => 'Logg',
+    'Date' => 'Dato',
+    'Platform' => 'Plattform',
+    'NotifyOnNewDocument' => 'Varsle om nytt dokument',
+    'NotifyOnDocumentUpdate' => 'Gi beskjed ved dokumentoppdatering',
+    'AuditLog_DocumentCreate' => 'Et nytt dokument kalt "{$document_name}" ble opprettet av brukeren "{$user_name}".',
+    'UpdatedBy'=>'Oppdatert av',
+    'AllowTeamToSeeDocuments'=>'La teamet se dokumenter',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Tillat dokumenteierens leder å se dokumenter',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Додайте відповідь',
     'QuestionPlaceholder' => 'Додайте запитання',
     'NoFileAttached' => 'Немає вкладеного файлу',
-    'MarkAsUnmitigated' => 'Позначити як Незмінний',
-    'MarkAsUnreviewed' => 'Позначити як непереглянуте',
     'NoDataToUpdate' => 'Немає даних для оновлення',
     'SelectedQuestions' => 'Вибрані запитання',
     'CreateTabs' => 'Створення вкладок',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'Увімкнути перевірку сертифіката SSL',
     'CantDeleteTheDefaultThreatGrouping' => 'Не вдається видалити групування загроз за замовчуванням',
     'ThreatGroupings' => 'Групування загроз',
+    'RiskCatalogDropdownPlaceholder' => 'Виберіть карту ризиків або почніть вводити для пошуку',
+    'ThreatCatalogDropdownPlaceholder' => 'Виберіть зіставлення загроз або почніть вводити для пошуку',
+    'UserDropdownPlaceholder' => 'Виберіть користувача або почніть вводити для пошуку',
+    'GraphicalRiskAnalysis' => 'Графічний аналіз ризиків',
+    'ResetMitigations' => 'Скинути пом’якшення',
+    'ResetReviews' => 'Скинути відгуки',
+	'EnableEncryptionDebugLogging' => 'Увімкнути додаткове ведення журналу налагодження зашифрованої бази даних',
+    'Log' => 'журнал',
+    'Date' => 'Дата',
+    'Platform' => 'Платформа',
+    'NotifyOnNewDocument' => 'Повідомити про новий документ',
+    'NotifyOnDocumentUpdate' => 'Повідомити про оновлення документа',
+    'AuditLog_DocumentCreate' => 'Користувач «{$user_name}» створив новий документ під назвою «{$document_name}».',
+    'UpdatedBy'=>'Оновлено',
+    'AllowTeamToSeeDocuments'=>'Дозволити команді переглядати документи',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Дозволити менеджеру власника документів переглядати документи',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

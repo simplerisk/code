@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Хариулт нэмнэ үү',
     'QuestionPlaceholder' => 'Асуулт нэмнэ үү',
     'NoFileAttached' => 'Хавсаргасан файл байхгүй',
-    'MarkAsUnmitigated' => 'Цуцлагдаагүй гэж тэмдэглэх',
-    'MarkAsUnreviewed' => 'Шалгаагүй гэж тэмдэглэх',
     'NoDataToUpdate' => 'Шинэчлэх өгөгдөл алга',
     'SelectedQuestions' => 'Сонгосон асуултууд',
     'CreateTabs' => 'Таб үүсгэх',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'SSL гэрчилгээ шалгахыг идэвхжүүлнэ үү',
     'CantDeleteTheDefaultThreatGrouping' => 'Өгөгдмөл аюулын бүлэглэлийг устгах боломжгүй',
     'ThreatGroupings' => 'Аюул заналхийллийн бүлгүүд',
+    'RiskCatalogDropdownPlaceholder' => 'Эрсдлийн зураглалыг сонгох эсвэл хайлт хийхийн тулд бичиж эхлээрэй',
+    'ThreatCatalogDropdownPlaceholder' => 'Аюулын зураглалыг сонгох эсвэл хайхын тулд бичиж эхлээрэй',
+    'UserDropdownPlaceholder' => 'Хайлт хийхийн тулд хэрэглэгч сонгох эсвэл бичиж эхлээрэй',
+    'GraphicalRiskAnalysis' => 'График эрсдэлийн шинжилгээ',
+    'ResetMitigations' => 'Зөөллийг дахин тохируулах',
+    'ResetReviews' => 'Шүүмжийг дахин тохируулах',
+	'EnableEncryptionDebugLogging' => 'Шифрлэгдсэн мэдээллийн сангийн нэмэлт дибаг хийх бүртгэлийг идэвхжүүлнэ үү',
+    'Log' => 'Бүртгэл',
+    'Date' => 'Огноо',
+    'Platform' => 'Платформ',
+    'NotifyOnNewDocument' => 'Шинэ баримт бичигт мэдэгдэх',
+    'NotifyOnDocumentUpdate' => 'Баримт бичгийн шинэчлэлтийн талаар мэдэгдэх',
+    'AuditLog_DocumentCreate' => '"{$user_name}" хэрэглэгч "{$document_name}" нэртэй шинэ баримт бичгийг үүсгэсэн.',
+    'UpdatedBy'=>'Шинэчлэгдсэн',
+    'AllowTeamToSeeDocuments'=>'Баг баримт бичгийг харахыг зөвшөөрнө үү',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Баримт бичиг эзэмшигчийн менежерт баримт бичгийг харахыг зөвшөөрөх',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

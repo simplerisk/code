@@ -52,26 +52,28 @@ require_once(language_file());
         // If the user wants to update permissions for risk
         if(isset($_POST['update_permissions'])){
             $permissions = array(
-                'allow_owner_to_risk'                           => isset($_POST['allow_owner_to_risk']) ? 1 : 0,
-                'allow_ownermanager_to_risk'                    => isset($_POST['allow_ownermanager_to_risk']) ? 1 : 0,
-                'allow_submitter_to_risk'                       => isset($_POST['allow_submitter_to_risk']) ? 1 : 0,
-                'allow_team_member_to_risk'                     => isset($_POST['allow_team_member_to_risk']) ? 1 : 0,
-                'allow_stakeholder_to_risk'                     => isset($_POST['allow_stakeholder_to_risk']) ? 1 : 0,
-                'allow_all_to_risk_noassign_team'               => isset($_POST['allow_all_to_risk_noassign_team']) ? 1 : 0,
+                'allow_owner_to_risk'                               => isset($_POST['allow_owner_to_risk']) ? 1 : 0,
+                'allow_ownermanager_to_risk'                        => isset($_POST['allow_ownermanager_to_risk']) ? 1 : 0,
+                'allow_submitter_to_risk'                           => isset($_POST['allow_submitter_to_risk']) ? 1 : 0,
+                'allow_team_member_to_risk'                         => isset($_POST['allow_team_member_to_risk']) ? 1 : 0,
+                'allow_stakeholder_to_risk'                         => isset($_POST['allow_stakeholder_to_risk']) ? 1 : 0,
+                'allow_all_to_risk_noassign_team'                   => isset($_POST['allow_all_to_risk_noassign_team']) ? 1 : 0,
 
-                'allow_control_owner_to_see_test_and_audit'     => isset($_POST['allow_control_owner_to_see_test_and_audit']) ? 1 : 0,
-                'allow_tester_to_see_test_and_audit'            => isset($_POST['allow_tester_to_see_test_and_audit']) ? 1 : 0,
-                'allow_stakeholders_to_see_test_and_audit'      => isset($_POST['allow_stakeholders_to_see_test_and_audit']) ? 1 : 0,
-                'allow_team_members_to_see_test_and_audit'      => isset($_POST['allow_team_members_to_see_test_and_audit']) ? 1 : 0,
-                'allow_everyone_to_see_test_and_audit'          => isset($_POST['allow_everyone_to_see_test_and_audit']) ? 1 : 0,
+                'allow_control_owner_to_see_test_and_audit'         => isset($_POST['allow_control_owner_to_see_test_and_audit']) ? 1 : 0,
+                'allow_tester_to_see_test_and_audit'                => isset($_POST['allow_tester_to_see_test_and_audit']) ? 1 : 0,
+                'allow_stakeholders_to_see_test_and_audit'          => isset($_POST['allow_stakeholders_to_see_test_and_audit']) ? 1 : 0,
+                'allow_team_members_to_see_test_and_audit'          => isset($_POST['allow_team_members_to_see_test_and_audit']) ? 1 : 0,
+                'allow_everyone_to_see_test_and_audit'              => isset($_POST['allow_everyone_to_see_test_and_audit']) ? 1 : 0,
 
-                'allow_all_to_asset_noassign_team'              => isset($_POST['allow_all_to_asset_noassign_team']) ? 1 : 0,
+                'allow_all_to_asset_noassign_team'                  => isset($_POST['allow_all_to_asset_noassign_team']) ? 1 : 0,
 
-                'allow_document_owner_to_see_documents'         => isset($_POST['allow_document_owner_to_see_documents']) ? 1 : 0,
-                'allow_approver_to_see_documents'               => isset($_POST['allow_approver_to_see_documents']) ? 1 : 0,
-                'allow_stakeholders_to_see_documents'           => isset($_POST['allow_stakeholders_to_see_documents']) ? 1 : 0,
-                'allow_all_to_document_noassign_team'           => isset($_POST['allow_all_to_document_noassign_team']) ? 1 : 0,
-                'allow_all_to_see_document'                     => isset($_POST['allow_all_to_see_document']) ? 1 : 0,
+                'allow_document_owner_to_see_documents'             => isset($_POST['allow_document_owner_to_see_documents']) ? 1 : 0,
+                'allow_document_owners_manager_to_see_documents'    => isset($_POST['allow_document_owners_manager_to_see_documents']) ? 1 : 0,
+                'allow_approver_to_see_documents'                   => isset($_POST['allow_approver_to_see_documents']) ? 1 : 0,
+                'allow_stakeholders_to_see_documents'               => isset($_POST['allow_stakeholders_to_see_documents']) ? 1 : 0,
+                'allow_team_to_see_documents'                       => isset($_POST['allow_team_to_see_documents']) ? 1 : 0,
+                'allow_all_to_document_noassign_team'               => isset($_POST['allow_all_to_document_noassign_team']) ? 1 : 0,
+                'allow_all_to_see_document'                         => isset($_POST['allow_all_to_see_document']) ? 1 : 0,
             );
             update_permission_settings($permissions);
             set_alert(true, "good", $lang['SavedSuccess']);
