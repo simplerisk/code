@@ -56,7 +56,7 @@
 <div class="row-fluid">
     <div class="well">
       <form name="unmitigation" method="post" action="">
-        <button type="submit" name="submit" class="btn btn-primary save-unmitigation-risk"><?php echo $escaper->escapeHtml($lang['MarkAsUnmitigated']); ?></button>
+        <button type="submit" name="submit" class="btn btn-primary save-unmitigation-risk"><?php echo $escaper->escapeHtml($lang['ResetMitigations']); ?></button>
       </form>
     </div>
 </div>

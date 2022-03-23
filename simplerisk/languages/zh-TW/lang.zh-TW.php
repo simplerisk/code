@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => '添加答案',
     'QuestionPlaceholder' => '添加問題',
     'NoFileAttached' => '沒有附加文件',
-    'MarkAsUnmitigated' => '標記為未緩解',
-    'MarkAsUnreviewed' => '標記為未審核',
     'NoDataToUpdate' => '沒有要更新的數據',
     'SelectedQuestions' => '精選問題',
     'CreateTabs' => '創建標籤',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => '啟用 SSL 證書檢查',
     'CantDeleteTheDefaultThreatGrouping' => '無法刪除默認威脅分組',
     'ThreatGroupings' => '威脅分組',
+    'RiskCatalogDropdownPlaceholder' => '選擇風險映射或開始輸入搜索',
+    'ThreatCatalogDropdownPlaceholder' => '選擇威脅映射或開始輸入搜索',
+    'UserDropdownPlaceholder' => '選擇用戶或開始輸入搜索',
+    'GraphicalRiskAnalysis' => '圖形風險分析',
+    'ResetMitigations' => '重置緩解措施',
+    'ResetReviews' => '重置評論',
+	'EnableEncryptionDebugLogging' => '啟用加密數據庫額外調試日誌記錄',
+    'Log' => '日誌',
+    'Date' => '日期',
+    'Platform' => '平台',
+    'NotifyOnNewDocument' => '通知新文件',
+    'NotifyOnDocumentUpdate' => '文件更新通知',
+    'AuditLog_DocumentCreate' => '用戶“{$user_name}”創建了一個名為“{$document_name}”的新文檔。',
+    'UpdatedBy'=>'更新者',
+    'AllowTeamToSeeDocuments'=>'允許團隊查看文檔',
+    'AllowDocumentOwnersManagerToSeeDocuments' => '允許文檔所有者的經理查看文檔',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

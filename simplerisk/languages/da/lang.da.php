@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Tilføj et svar',
     'QuestionPlaceholder' => 'Tilføj et spørgsmål',
     'NoFileAttached' => 'Ingen fil vedhæftet',
-    'MarkAsUnmitigated' => 'Marker som Uformindsket',
-    'MarkAsUnreviewed' => 'Marker som uanmeldt',
     'NoDataToUpdate' => 'Ingen data at opdatere',
     'SelectedQuestions' => 'Udvalgte spørgsmål',
     'CreateTabs' => 'Opret faner',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'Aktiver SSL-certifikatkontrol',
     'CantDeleteTheDefaultThreatGrouping' => 'Kan ikke slette standard trusselsgruppering',
     'ThreatGroupings' => 'Trusselsgrupperinger',
+    'RiskCatalogDropdownPlaceholder' => 'Vælg en risikokortlægning, eller begynd at skrive for at søge',
+    'ThreatCatalogDropdownPlaceholder' => 'Vælg en trusselkortlægning, eller begynd at skrive for at søge',
+    'UserDropdownPlaceholder' => 'Vælg en bruger, eller begynd at skrive for at søge',
+    'GraphicalRiskAnalysis' => 'Grafisk risikoanalyse',
+    'ResetMitigations' => 'Nulstil afbødninger',
+    'ResetReviews' => 'Nulstil anmeldelser',
+	'EnableEncryptionDebugLogging' => 'Aktiver krypteret database Ekstra debug-logning',
+    'Log' => 'Log',
+    'Date' => 'Dato',
+    'Platform' => 'Platform',
+    'NotifyOnNewDocument' => 'Giv besked om nyt dokument',
+    'NotifyOnDocumentUpdate' => 'Giv besked om dokumentopdatering',
+    'AuditLog_DocumentCreate' => 'Et nyt dokument med navnet "{$document_name}" blev oprettet af brugeren "{$user_name}".',
+    'UpdatedBy'=>'Opdateret af',
+    'AllowTeamToSeeDocuments'=>'Tillad teamet at se dokumenter',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Tillad dokumentejerens leder at se dokumenter',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

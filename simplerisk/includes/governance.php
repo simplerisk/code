@@ -542,7 +542,7 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
     // Open the database connection
     $db = db_open();
     $sql = "
-        SELECT t1.*, GROUP_CONCAT(DISTINCT f.value) framework_ids, GROUP_CONCAT(DISTINCT f.name) framework_names, t2.name control_class_name, t3.name control_phase_name, t4.name control_priority_name, t5.name family_short_name, t6.name control_owner_name, t7.name control_maturity_name, t8.name desired_maturity_name, group_concat(distinct ctype.value) control_type_ids
+        SELECT t1.*, GROUP_CONCAT(DISTINCT f.value) framework_ids, GROUP_CONCAT(DISTINCT f.name) framework_names, t2.name control_class_name, t3.name control_phase_name, t4.name control_priority_name, t5.name family_short_name, t6.name control_owner_name, t7.name control_maturity_name, t8.name desired_maturity_name, group_concat(distinct ctype.value) control_type_ids, GROUP_CONCAT(DISTINCT m_1.reference_name) reference_name
         FROM `framework_controls` t1 
             LEFT JOIN `framework_control_mappings` m on t1.id=m.control_id
             LEFT JOIN `frameworks` f on m.framework=f.value AND f.status=1
@@ -852,7 +852,8 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
             || (stripos($control['control_priority_name'], $control_text) !== false) 
             || (stripos($control['family_short_name'], $control_text) !== false) 
             || (stripos($control['control_owner_name'], $control_text) !== false) 
-            || (stripos($control['framework_names'], $control_text) !== false) 
+            || (stripos($control['framework_names'], $control_text) !== false)
+            || (stripos($control['reference_name'], $control_text) !== false)
         )
         {
             $filtered_controls[] = $control;
@@ -1857,13 +1858,17 @@ function get_document_versions_by_id($id)
 {
     // Open the database connection
     $db = db_open();
+    if(team_separation_extra()){
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $where = get_user_teams_query_for_documents("t1" , false);
+    } else $where = " 1";
 
     $sql = "
         SELECT t1.*, t2.version file_version, t2.unique_name, t3.value as status
         FROM `documents` t1 
             INNER JOIN `compliance_files` t2 ON t1.id=t2.ref_id AND t2.ref_type='documents'
             LEFT JOIN `document_status` t3 ON t1.document_status=t3.value
-        WHERE t1.id=:id
+        WHERE t1.id=:id AND {$where}
         ORDER BY t2.version
         ;
     ";
@@ -1885,13 +1890,17 @@ function get_document_by_id($id)
 {
     // Open the database connection
     $db = db_open();
+    if(team_separation_extra()){
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $where = get_user_teams_query_for_documents("t1" , false);
+    } else $where = " 1";
 
     $sql = "
         SELECT t1.*, t2.version file_version, t2.unique_name, t3.value as status
         FROM `documents` t1 
             LEFT JOIN `compliance_files` t2 ON t1.file_id=t2.id
             LEFT JOIN `document_status` t3 ON t1.document_status=t3.value
-        WHERE t1.id=:id
+        WHERE t1.id=:id AND {$where}
         ;
     ";
     $stmt = $db->prepare($sql);
@@ -1930,7 +1939,6 @@ function get_documents($type="")
     }
     $sql .= " ORDER BY t1.document_type, t1.document_name";
 
-
     $stmt = $db->prepare($sql);
     if($type) $stmt->bindParam(":type", $type, PDO::PARAM_STR);
     $stmt->execute();
@@ -1965,7 +1973,7 @@ function make_tree_options_html($options, $parent, &$html, $indent="", $selected
 /******************************
  * FUNCTION: ADD NEW DOCUMENT *
  ******************************/
-function add_document($document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, $additional_stakeholders, $approver, $team_ids){
+function add_document($submitted_by, $document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, $additional_stakeholders, $approver, $team_ids){
     global $lang, $escaper;
     
     // Open the database connection
@@ -1982,7 +1990,8 @@ function add_document($document_type, $document_name, $control_ids, $framework_i
         return false;
     }
     // Create a document
-    $stmt = $db->prepare("INSERT INTO `documents` (`document_type`, `document_name`, `control_ids`, `framework_ids`, `parent`, `document_status`, `file_id`, `creation_date`, `last_review_date`, `review_frequency`, `next_review_date`, `approval_date`, `document_owner`, `additional_stakeholders`, `approver`, `team_ids`) VALUES (:document_type, :document_name, :control_ids, :framework_ids, :parent, :status, :file_id, :creation_date, :last_review_date, :review_frequency, :next_review_date, :approval_date, :document_owner, :additional_stakeholders, :approver, :team_ids)");
+    $stmt = $db->prepare("INSERT INTO `documents` (`submitted_by`, `document_type`, `document_name`, `control_ids`, `framework_ids`, `parent`, `document_status`, `file_id`, `creation_date`, `last_review_date`, `review_frequency`, `next_review_date`, `approval_date`, `document_owner`, `additional_stakeholders`, `approver`, `team_ids`) VALUES (:submitted_by, :document_type, :document_name, :control_ids, :framework_ids, :parent, :status, :file_id, :creation_date, :last_review_date, :review_frequency, :next_review_date, :approval_date, :document_owner, :additional_stakeholders, :approver, :team_ids)");
+    $stmt->bindParam(":submitted_by", $submitted_by, PDO::PARAM_INT);
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
     $stmt->bindParam(":control_ids", $control_ids, PDO::PARAM_STR);
@@ -2018,8 +2027,7 @@ function add_document($document_type, $document_name, $control_ids, $framework_i
     }
 
     // Check if error was happen in uploading files
-    if(!empty($errors))
-    {
+    if(!empty($errors)) {
         // Delete added document if failed to upload a document file
         delete_document($document_id);
         $errors = array_unique($errors);
@@ -2027,21 +2035,29 @@ function add_document($document_type, $document_name, $control_ids, $framework_i
             set_alert(true, "bad", $error);
         }
         return false;
-    }elseif(empty($file_id))
-    {
+    } elseif(empty($file_id)) {
         // Delete added document if failed to upload a document file
         delete_document($document_id);
         set_alert(true, "bad", $lang['FailedToUploadFile']);
         return false;
-    }else
-    {
+    } else {
         $stmt = $db->prepare("UPDATE `documents` SET file_id=:file_id WHERE id=:document_id ");
         $stmt->bindParam(":file_id", $file_id, PDO::PARAM_INT);
         $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
         $stmt->execute();
 
-        $message = "A new document named \"" . $escaper->escapeHtml($document_name) . "\" was created by the \"" . $_SESSION['user'] . "\" user.";
-        write_log(1000, $_SESSION['uid'], $message, "document");
+        $submitted_by_name = get_user_name($submitted_by);
+        $message = _lang('AuditLog_DocumentCreate', array('document_name' => $document_name, 'user_name' => $submitted_by_name), false);
+        write_log(1000, $submitted_by, $message, "document");
+
+        // If notification is enabled
+        if (notification_extra()) {
+            // Include the notification extra
+            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+
+            // Send the notification
+            notify_new_document($document_id);
+        }
 
         return $document_id;
     }
@@ -2050,14 +2066,19 @@ function add_document($document_type, $document_name, $control_ids, $framework_i
 /*****************************
  * FUNCTION: UPDATE DOCUMENT *
  *****************************/
-function update_document($document_id, $document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, $additional_stakeholders, $approver, $team_ids, $audit_log=true){
+function update_document($document_id, $updated_by, $document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, $additional_stakeholders, $approver, $team_ids, $audit_log=true){
     global $lang, $escaper;
     
     // Open the database connection
     $db = db_open();
+    if(team_separation_extra()){
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $where = get_user_teams_query_for_documents(false , false);
+    } else $where = " 1";
+    $sql = "SELECT * FROM `documents` where document_name=:document_name AND document_type=:document_type AND id<>:id AND {$where}; ";
 
     // Check if the document exists
-    $stmt = $db->prepare("SELECT * FROM `documents` where document_name=:document_name AND document_type=:document_type AND id<>:id; ");
+    $stmt = $db->prepare($sql);
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
     $stmt->bindParam(":id", $document_id, PDO::PARAM_INT);
@@ -2076,47 +2097,55 @@ function update_document($document_id, $document_type, $document_name, $control_
 
     // Create an array of before values
     $before = [
-	'document_type' => $row['document_type'],
-	'document_name' => $row['document_name'],
-	'control_ids' => $row['control_ids'],
-	'framework_ids' => $row['framework_ids'],
-	'parent' => $row['parent'],
-	'document_status' => $row['document_status'],
-	'creation_date' => $row['creation_date'],
-	'last_review_date' => $row['last_review_date'],
-	'review_frequency' => $row['review_frequency'],
-	'next_review_date' => $row['next_review_date'],
-	'approval_date' => $row['approval_date'],
-	'document_owner' => $row['document_owner'],
-	'additional_stakeholders' => $row['additional_stakeholders'],
-	'approver' => $row['approver'],
-	'team_ids' => $row['team_ids'],
+        'updated_by' => (int)$row['updated_by'],
+    	'document_type' => $row['document_type'],
+    	'document_name' => $row['document_name'],
+    	'control_ids' => $row['control_ids'],
+    	'framework_ids' => $row['framework_ids'],
+    	'parent' => (int)$row['parent'],
+    	'document_status' => $row['document_status'],
+    	'creation_date' => $row['creation_date'],
+    	'last_review_date' => $row['last_review_date'],
+    	'review_frequency' => (int)$row['review_frequency'],
+    	'next_review_date' => $row['next_review_date'],
+    	'approval_date' => $row['approval_date'],
+    	'document_owner' => (int)$row['document_owner'],
+    	'additional_stakeholders' => $row['additional_stakeholders'],
+    	'approver' => (int)$row['approver'],
+    	'team_ids' => $row['team_ids'],
     ];
 
     // Create an array of after values
     $after = [
+        'updated_by' => (int)$updated_by,
         'document_type' => $document_type,
         'document_name' => $document_name,
         'control_ids' => $control_ids,
         'framework_ids' => $framework_ids,
-        'parent' => $parent,
+        'parent' => (int)$parent,
         'document_status' => $status,
         'creation_date' => $creation_date,
         'last_review_date' => $last_review_date,
-        'review_frequency' => $review_frequency,
+        'review_frequency' => (int)$review_frequency,
         'next_review_date' => $next_review_date,
         'approval_date' => $approval_date,
-        'document_owner' => $document_owner,
+        'document_owner' => (int)$document_owner,
         'additional_stakeholders' => $additional_stakeholders,
-        'approver' => $approver,
+        'approver' => (int)$approver,
         'team_ids' => $team_ids,
     ];
 
-    $changes = get_changes('document', $before, $after);
+    // If the notification extra is enabled then get the changes in a format the extra can use too
+    if (notification_extra()) {
+        [$changes, $changes_arr] = get_changes('document', $before, $after, 3);
+    } else {
+        $changes = get_changes('document', $before, $after);
+    }
 
     // Update a document
-    $stmt = $db->prepare("UPDATE `documents` SET `document_type`=:document_type, `document_name`=:document_name, `control_ids`=:control_ids, `framework_ids`=:framework_ids, `parent`=:parent, `document_status`=:document_status, `creation_date`=:creation_date, `last_review_date`=:last_review_date, `review_frequency`=:review_frequency, `next_review_date`=:next_review_date, `approval_date`=:approval_date, `document_owner`=:document_owner, `additional_stakeholders`=:additional_stakeholders , `approver`=:approver, `team_ids`=:team_ids WHERE id=:document_id; ");
+    $stmt = $db->prepare("UPDATE `documents` SET `updated_by` = :updated_by, `document_type`=:document_type, `document_name`=:document_name, `control_ids`=:control_ids, `framework_ids`=:framework_ids, `parent`=:parent, `document_status`=:document_status, `creation_date`=:creation_date, `last_review_date`=:last_review_date, `review_frequency`=:review_frequency, `next_review_date`=:next_review_date, `approval_date`=:approval_date, `document_owner`=:document_owner, `additional_stakeholders`=:additional_stakeholders , `approver`=:approver, `team_ids`=:team_ids WHERE id=:document_id; ");
     $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
+    $stmt->bindParam(":updated_by", $updated_by, PDO::PARAM_INT);
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
     $stmt->bindParam(":control_ids", $control_ids, PDO::PARAM_STR);
@@ -2161,11 +2190,21 @@ function update_document($document_id, $document_type, $document_name, $control_
         $stmt->execute();
     }
 
-    //$message = "A document \"" . $escaper->escapeHtml($document_name) . "\"(ID:".$document_id.") was updated by the \"" . $_SESSION['user'] . "\" user.";
-    //write_log(1000, $_SESSION['uid'], $message, "document");
+    // Only notify of the changes if there's any 
+    if ($changes) {
+        $updated_by_name = get_user_name($updated_by);
+        $message = _lang('AuditLog_DocumentUpdates', array('document_name' => $document_name, 'document_id' => $document_id, 'user_name' => $updated_by_name, 'changes' => $changes), false);
+        write_log(1000, $updated_by, $message, "document");
 
-    $message = _lang('AuditLog_DocumentUpdates', array('document_name' => $document_name, 'document_id' => $document_id, 'user_name' => $_SESSION['name'], 'changes' => $changes), false);
-    write_log(1000, $_SESSION['uid'], $message, "document");
+        // If notification is enabled
+        if (notification_extra()) {
+            // Include the notification extra
+            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+
+            // Send the notification
+            notify_document_update($document_id, ['changes' => $changes_arr]);
+        }
+    }
 
     return $document_id;
 }
@@ -2377,7 +2416,9 @@ function get_documents_as_treegrid($type){
         $document['value'] = $document['id'];
         $document['document_type'] = $escaper->escapeHtml($document['document_type']);
         $document['document_name'] = "<a href=\"".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."\" >".$escaper->escapeHtml($document['document_name'])."</a>";
+        $document['framework_ids'] = $escaper->escapeHtml($document['framework_ids']);
         $document['framework_names'] = $escaper->escapeHtml($framework_names);
+        $document['control_ids'] = $escaper->escapeHtml($document['control_ids']);
         $document['control_names'] = $escaper->escapeHtml($control_names);
         $document['status'] = $escaper->escapeHtml(get_name_by_value('document_status', $document['status']));
         $document['creation_date'] = format_date($document['creation_date']);
@@ -2559,15 +2600,46 @@ function get_exceptions_as_treegrid($type){
     // Open the database connection
     $db = db_open();
 
-    $policy_sql_base = "select p.id as id, p.document_name as parent_name, 'policy' as type, de.*, des.name as document_exceptions_status from document_exceptions de left join documents p on de.policy_document_id = p.id left join document_exceptions_status des on de.status = des.value where p.document_type = 'policies'";
-    $control_sql_base = "select c.id as id, c.short_name as parent_name, 'control' as type, de.*, des.name as document_exceptions_status from document_exceptions de left join framework_controls c on de.control_framework_id = c.id left join document_exceptions_status des on de.status = des.value where c.id is not null";
+    $policy_sql_base = "
+        select
+            p.id as id,
+            p.document_name as parent_name,
+            'policy' as type,
+            de.*,
+            des.name as document_exceptions_status
+        from document_exceptions de
+            left join documents p on de.policy_document_id = p.id
+            left join document_exceptions_status des on de.status = des.value
+        where
+            p.document_type = 'policies'";
 
-    if ($type == 'policy')
+    $control_sql_base = "
+        select
+            c.id as id,
+            c.short_name as parent_name,
+            'control' as type,
+            de.*,
+            des.name as document_exceptions_status
+        from document_exceptions de
+            left join framework_controls c on de.control_framework_id = c.id
+            left join document_exceptions_status des on de.status = des.value
+        where
+            c.id is not null";
+
+    if(team_separation_extra()){
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $where = get_user_teams_query_for_documents("p", false);
+    } else $where = " 1";
+
+    $policy_sql_base .= " AND ".$where;
+
+    if ($type == 'policy') {
         $sql = "{$policy_sql_base} and de.approved = 1 order by p.document_name, de.name;";
-    elseif ($type == 'control')
+    } elseif ($type == 'control') {
         $sql = "{$control_sql_base} and de.approved = 1 order by c.short_name, de.name;";
-    else
+    } else {
         $sql = "select * from ({$policy_sql_base} union all {$control_sql_base}) u where u.approved = 0 order by u.parent_name, u.name;";
+    }
 
     // Query the database
     $stmt = $db->prepare($sql);
@@ -3281,7 +3353,7 @@ function get_control_gaps($framework_id = null, $maturity = "all_maturity", $ord
     $db = db_open();
 
     $sql = "
-        SELECT t1.control_number, t1.short_name, t2.name control_class_name, t3.name control_phase_name, t5.name family_short_name, t7.name control_maturity_name, t8.name desired_maturity_name
+        SELECT m.reference_name as control_number, t1.short_name, t2.name control_class_name, t3.name control_phase_name, t5.name family_short_name, t7.name control_maturity_name, t8.name desired_maturity_name
         FROM `framework_controls` t1 
             LEFT JOIN `control_class` t2 on t1.control_class=t2.value
             LEFT JOIN `control_phase` t3 on t1.control_phase=t3.value
@@ -3964,7 +4036,7 @@ function display_control_name_view($short_name, $panel_name="")
     $html = "
         <div class='row-fluid {$panel_name}'>
             <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['ControlShortName'])."</strong>: </div>
-            <div class='{$span2}'>".$panel_name.$escaper->escapeHtml($short_name)." </div>
+            <div class='{$span2}'>".$escaper->escapeHtml($short_name)." </div>
         </div>";
     return $html;
 
@@ -4250,10 +4322,12 @@ function display_control_status_view($control_status, $panel_name="")
         $span1 = "span5";
         $span2 = "span7";
     }
+    $status_text = array("1" => $escaper->escapeHtml($lang["Pass"]), "0" => $escaper->escapeHtml($lang["Fail"]));
+    
     $html = "
         <div class='row-fluid {$panel_name}'>
             <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['ControlStatus'])."</strong>: </div>
-            <div class='{$span2}'>".$escaper->escapeHtml($control_status)." </div>
+            <div class='{$span2}'>".$status_text[$control_status]." </div>
         </div>";
     return $html;
 }

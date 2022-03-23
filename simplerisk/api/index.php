@@ -66,6 +66,10 @@
         getRoute()->post('/reports/my_open_risk', 'my_open_risk_datatable');
         getRoute()->post('/reports/recent_commented_risk', 'recent_commented_risk_datatable');
         getRoute()->get('/reports/governance/control_gap_analysis', 'controlGapAnalysisResponse');
+
+        getRoute()->post('/reports/save-graphical-selections', 'saveGraphicalSelectionsForm');
+        getRoute()->post('/reports/delete-graphical-selection', 'deleteGraphicalSelectionForm');
+
         getRoute()->get('/management/risk/viewhtml', 'viewriskHtmlForm');
 
         getRoute()->get('/management/risk/closerisk', 'closeriskHtmlForm');

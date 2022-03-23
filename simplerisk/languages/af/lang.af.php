@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Voeg \'n antwoord by',
     'QuestionPlaceholder' => 'Voeg \'n vraag by',
     'NoFileAttached' => 'Geen lêer aangeheg nie',
-    'MarkAsUnmitigated' => 'Merk as ongegrond',
-    'MarkAsUnreviewed' => 'Merk as nie hersien nie',
     'NoDataToUpdate' => 'Geen data om op te dateer nie',
     'SelectedQuestions' => 'Geselekteerde vrae',
     'CreateTabs' => 'Skep oortjies',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'Aktiveer SSL-sertifikaatkontrole',
     'CantDeleteTheDefaultThreatGrouping' => 'Kan nie die verstek bedreigingsgroepering uitvee nie',
     'ThreatGroupings' => 'Bedreigingsgroeperings',
+    'RiskCatalogDropdownPlaceholder' => 'Kies \'n risikokartering of begin tik om te soek',
+    'ThreatCatalogDropdownPlaceholder' => 'Kies \'n bedreigingskartering of begin tik om te soek',
+    'UserDropdownPlaceholder' => 'Kies \'n gebruiker of begin tik om te soek',
+    'GraphicalRiskAnalysis' => 'Grafiese Risiko Analise',
+    'ResetMitigations' => 'Stel versagtings terug',
+    'ResetReviews' => 'Stel resensies terug',
+	'EnableEncryptionDebugLogging' => 'Aktiveer geënkripteerde databasis Ekstra ontfoutinglogboek',
+    'Log' => 'Meld',
+    'Date' => 'Datum',
+    'Platform' => 'Platform',
+    'NotifyOnNewDocument' => 'Stel in kennis op nuwe dokument',
+    'NotifyOnDocumentUpdate' => 'Stel in kennis by dokumentopdatering',
+    'AuditLog_DocumentCreate' => '\'n Nuwe dokument genaamd "{$document_name}" is geskep deur gebruiker "{$user_name}".',
+    'UpdatedBy'=>'Opgedateer deur',
+    'AllowTeamToSeeDocuments'=>'Laat span toe om dokumente te sien',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Laat dokumenteienaar se bestuurder toe om dokumente te sien',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

@@ -56,7 +56,7 @@
 <div class="row-fluid">
     <div class="well">
       <form name="unreview" method="post" action="">
-        <button type="submit" name="submit" class="btn btn-primary save-unreview-risk"><?php echo $escaper->escapeHtml($lang['MarkAsUnreviewed']); ?></button>
+        <button type="submit" name="submit" class="btn btn-primary save-unreview-risk"><?php echo $escaper->escapeHtml($lang['ResetReviews']); ?></button>
       </form>
     </div>
 </div>

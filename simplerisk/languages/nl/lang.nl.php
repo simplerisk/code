@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Voeg een antwoord toe',
     'QuestionPlaceholder' => 'Voeg een vraag toe',
     'NoFileAttached' => 'Geen bestand bijgevoegd',
-    'MarkAsUnmitigated' => 'Markeren als onmiskenbaar',
-    'MarkAsUnreviewed' => 'Markeren als niet beoordeeld',
     'NoDataToUpdate' => 'Geen gegevens om bij te werken',
     'SelectedQuestions' => 'Geselecteerde vragen',
     'CreateTabs' => 'Tabbladen maken',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'SSL-certificaatcontrole inschakelen',
     'CantDeleteTheDefaultThreatGrouping' => 'Kan de standaard bedreigingsgroepering niet verwijderen',
     'ThreatGroupings' => 'Dreigingsgroepen',
+    'RiskCatalogDropdownPlaceholder' => 'Selecteer een risicotoewijzing of begin te typen om te zoeken',
+    'ThreatCatalogDropdownPlaceholder' => 'Selecteer een bedreigingstoewijzing of begin te typen om te zoeken',
+    'UserDropdownPlaceholder' => 'Selecteer een gebruiker of begin te typen om te zoeken',
+    'GraphicalRiskAnalysis' => 'Grafische risicoanalyse',
+    'ResetMitigations' => 'Beperkingen resetten',
+    'ResetReviews' => 'Beoordelingen resetten',
+	'EnableEncryptionDebugLogging' => 'Encrypted Database Extra foutopsporingsregistratie inschakelen',
+    'Log' => 'Logboek',
+    'Date' => 'Datum',
+    'Platform' => 'Platform',
+    'NotifyOnNewDocument' => 'Melden bij nieuw document',
+    'NotifyOnDocumentUpdate' => 'Melden bij documentupdate',
+    'AuditLog_DocumentCreate' => 'Een nieuw document met de naam "{$document_name}" is gemaakt door gebruiker "{$user_name}".',
+    'UpdatedBy'=>'Bijgewerkt door',
+    'AllowTeamToSeeDocuments'=>'Team toestaan om documenten te zien',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Sta de manager van de documenteigenaar toe om documenten te zien',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

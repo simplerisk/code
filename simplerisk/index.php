@@ -9,6 +9,7 @@ require_once(realpath(__DIR__ . '/includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/includes/display.php'));
 require_once(realpath(__DIR__ . '/includes/alerts.php'));
 require_once(realpath(__DIR__ . '/includes/extras.php'));
+require_once(realpath(__DIR__ . '/includes/install.php'));
 require_once(realpath(__DIR__ . '/vendor/autoload.php'));
 
 // Include Laminas Escaper for HTML Output Encoding
@@ -17,282 +18,292 @@ $escaper = new Laminas\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
-if (!isset($_SESSION))
+// If the database hasn't been installed yet
+if (defined('SIMPLERISK_INSTALLED') && SIMPLERISK_INSTALLED == "false")
 {
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
-
-    // Start session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
-    sess_gc(1440);
-    session_name('SimpleRisk');
-    session_start();
+    // Call the SimpleRisk installation process
+    simplerisk_installation();
 }
-
-// Include the language file
-require_once(language_file());
-
-// Checking for the SAML logout status
-if (custom_authentication_extra() && isset($_REQUEST['LogoutState'])) {
-    global $lang;
-    // Parse the logout state
-    $state = \SimpleSAML\Auth\State::loadState((string)$_REQUEST['LogoutState'], 'MyLogoutState');
-    $ls = $state['saml:sp:LogoutStatus']; /* Only works for SAML SP */
-    if ($ls['Code'] === 'urn:oasis:names:tc:SAML:2.0:status:Success' && !isset($ls['SubCode'])) {
-        /* Successful logout. */
-        set_alert(true, "good", $lang['SAMLLogoutSuccessful']);
-    } else {
-        /* Logout failed. Tell the user to close the browser. */
-        set_alert(true, "bad", $lang['SAMLLogoutFailed']);
-    }
-}
-// If the login form was posted
-if (isset($_POST['submit']))
+// Otherwise go about the standard login process
+else
 {
-    $user = $_POST['user'];
-    $pass = $_POST['pass'];
+	if (!isset($_SESSION))
+	{
+		// Session handler is database
+		if (USE_DATABASE_FOR_SESSIONS == "true")
+		{
+			session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+		}
 
-    // Check for expired lockouts
-    check_expired_lockouts();
+		// Start session
+		session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
 
-    // If the user is valid
-    if (is_valid_user($user, $pass))
-    {
-        $uid = get_id_by_user($user);
-        $array = get_user_by_id($uid);
+		sess_gc(1440);
+		session_name('SimpleRisk');
+		session_start();
+	}
 
-        if($array['change_password'])
-        {
-            $_SESSION['first_login_uid'] = $uid;
+	// Include the language file
+	require_once(language_file());
 
-            if (encryption_extra())
-            {
-                // Load the extra
-                require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
+	// Checking for the SAML logout status
+	if (custom_authentication_extra() && isset($_REQUEST['LogoutState'])) {
+		global $lang;
+		// Parse the logout state
+		$state = \SimpleSAML\Auth\State::loadState((string)$_REQUEST['LogoutState'], 'MyLogoutState');
+		$ls = $state['saml:sp:LogoutStatus']; /* Only works for SAML SP */
+		if ($ls['Code'] === 'urn:oasis:names:tc:SAML:2.0:status:Success' && !isset($ls['SubCode'])) {
+			/* Successful logout. */
+			set_alert(true, "good", $lang['SAMLLogoutSuccessful']);
+		} else {
+			/* Logout failed. Tell the user to close the browser. */
+			set_alert(true, "bad", $lang['SAMLLogoutFailed']);
+		}
+	}
+	// If the login form was posted
+	if (isset($_POST['submit']))
+	{
+		$user = $_POST['user'];
+		$pass = $_POST['pass'];
 
-                // Get the current password encrypted with the temp key
-                check_user_enc($user, $pass);
-            }
+		// Check for expired lockouts
+		check_expired_lockouts();
 
-            // Put the posted password in the session before redirecting them to the reset page
-            $_SESSION['first_login_pass'] = $pass;
+		// If the user is valid
+		if (is_valid_user($user, $pass))
+		{
+			$uid = get_id_by_user($user);
+			$array = get_user_by_id($uid);
 
-            header("location: reset_password.php");
-            exit;
-        }
+			if($array['change_password'])
+			{
+				$_SESSION['first_login_uid'] = $uid;
 
-        // Create the SimpleRisk instance ID if it doesn't already exist
-        create_simplerisk_instance_id();
+				if (encryption_extra())
+				{
+					// Load the extra
+					require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
 
-        // Set the user permissions
-        set_user_permissions($user);
+					// Get the current password encrypted with the temp key
+					check_user_enc($user, $pass);
+				}
 
-        // Ping the server
-        ping_server();
+				// Put the posted password in the session before redirecting them to the reset page
+				$_SESSION['first_login_pass'] = $pass;
 
-	// Do a license check
-	simplerisk_license_check();
+				header("location: reset_password.php");
+				exit;
+			}
 
-        // Get base url
-	//$base_url = get_base_url() . $_SERVER['SCRIPT_NAME'];
-        //$base_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://{$_SERVER['SERVER_NAME']}{$_SERVER['SCRIPT_NAME']}";
-        //$base_url = htmlspecialchars( $base_url, ENT_QUOTES, 'UTF-8' );
-        //$base_url = pathinfo($base_url)['dirname'];
+			// Create the SimpleRisk instance ID if it doesn't already exist
+			create_simplerisk_instance_id();
 
-        // Filter out authentication extra from the base url
-        //$base_url = str_replace("/extras/authentication", "", $base_url);
-        //$_SESSION['base_url'] = $base_url;
-	$_SESSION['base_url'] = get_base_url();
+			// Set the user permissions
+			set_user_permissions($user);
 
-        // Set login status
-        login($user, $pass);
+			// Ping the server
+			ping_server();
 
-    }
-    // If the user is not a valid user
-    else {
-        // In case the login attempt fails we're checking the cause.
-        // If it's because the user 'Does Not Exist' we're doing a dummy
-        // validation to make sure we're using the same time on a non-existant
-        // user as we'd use on an existing
-        if (get_user_type($user, false) === "DNE") {
-            fake_simplerisk_user_validity_check();
-        }
+		// Do a license check
+		simplerisk_license_check();
 
-        $_SESSION["access"] = "denied";
+			// Get base url
+		//$base_url = get_base_url() . $_SERVER['SCRIPT_NAME'];
+			//$base_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://{$_SERVER['SERVER_NAME']}{$_SERVER['SCRIPT_NAME']}";
+			//$base_url = htmlspecialchars( $base_url, ENT_QUOTES, 'UTF-8' );
+			//$base_url = pathinfo($base_url)['dirname'];
 
-        // Display an alert
-        set_alert(true, "bad", "Invalid username or password.");
+			// Filter out authentication extra from the base url
+			//$base_url = str_replace("/extras/authentication", "", $base_url);
+			//$_SESSION['base_url'] = $base_url;
+		$_SESSION['base_url'] = get_base_url();
 
-        // If the password attempt lockout is enabled
-        if(get_setting("pass_policy_attempt_lockout") != 0)
-        {
-            // Add the login attempt and block if necessary
-            add_login_attempt_and_block($user);
-        }
-    }
-}
+			// Set login status
+			login($user, $pass);
 
-if (isset($_SESSION["access"]) && ($_SESSION["access"] == "1"))
-{
-    // Select where to redirect the user next
-    select_redirect();
-}
+		}
+		// If the user is not a valid user
+		else {
+			// In case the login attempt fails we're checking the cause.
+			// If it's because the user 'Does Not Exist' we're doing a dummy
+			// validation to make sure we're using the same time on a non-existant
+			// user as we'd use on an existing
+			if (get_user_type($user, false) === "DNE") {
+				fake_simplerisk_user_validity_check();
+			}
 
-// If the user has already authorized and we are authorizing with duo
-if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
-{
-    // If a response has been posted
-    if (isset($_POST['sig_response']))
-    {
-	// Get the username and password and then unset the session values
-	$user = $_SESSION['duo_user'];
-	$pass = $_SESSION['duo_pass'];
-	unset($_SESSION['duo_user']);
-	unset($_SESSION['duo_pass']);
+			$_SESSION["access"] = "denied";
 
-        // Include the custom authentication extra
-        require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
+			// Display an alert
+			set_alert(true, "bad", "Invalid username or password.");
 
-        // Get the authentication settings
-        $configs = get_authentication_settings();
+			// If the password attempt lockout is enabled
+			if(get_setting("pass_policy_attempt_lockout") != 0)
+			{
+				// Add the login attempt and block if necessary
+				add_login_attempt_and_block($user);
+			}
+		}
+	}
 
-        // For each configuration
-        foreach ($configs as $config)
-        {
-              // Set the name value pair as a variable
-              ${$config['name']} = $config['value'];
-        }
+	if (isset($_SESSION["access"]) && ($_SESSION["access"] == "1"))
+	{
+		// Select where to redirect the user next
+		select_redirect();
+	}
 
-        // Get the response back from Duo
-        $resp = Duo\Web::verifyResponse($IKEY, $SKEY, get_duo_akey(), $_POST['sig_response']);
+	// If the user has already authorized and we are authorizing with duo
+	if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
+	{
+		// If a response has been posted
+		if (isset($_POST['sig_response']))
+		{
+		// Get the username and password and then unset the session values
+		$user = $_SESSION['duo_user'];
+		$pass = $_SESSION['duo_pass'];
+		unset($_SESSION['duo_user']);
+		unset($_SESSION['duo_pass']);
 
-        // If the response is not null
-        if ($resp != NULL)
-        {
+			// Include the custom authentication extra
+			require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
 
-            // If the encryption extra is enabled
-            if (encryption_extra())
-            {
-                // Load the extra
-                require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
+			// Get the authentication settings
+			$configs = get_authentication_settings();
 
-                // Check user enc
-                check_user_enc($user, $pass);
-            }
+			// For each configuration
+			foreach ($configs as $config)
+			{
+				  // Set the name value pair as a variable
+				  ${$config['name']} = $config['value'];
+			}
 
-            // Grant the user access
-            grant_access();
+			// Get the response back from Duo
+			$resp = Duo\Web::verifyResponse($IKEY, $SKEY, get_duo_akey(), $_POST['sig_response']);
 
-            // Select where to redirect the user next
-            select_redirect();
-        }
-    }
-}
-?>
-<!doctype html>
-<html ng-app="SimpleRisk">
-<head>
-  <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
-  <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-  <!-- build:css vendor/vendor.min.css -->
-  <!-- endbuild -->
-  <!-- build:css style.min.css -->
-  <link rel="stylesheet" type="text/css" href="css/style.css?<?php echo current_version("app"); ?>" media="screen" />
-  <!-- endbuild -->
+			// If the response is not null
+			if ($resp != NULL)
+			{
 
-  <link rel="stylesheet" href="css/bootstrap.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+				// If the encryption extra is enabled
+				if (encryption_extra())
+				{
+					// Load the extra
+					require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
 
-  <link rel="stylesheet" href="vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="css/theme.css?<?php echo current_version("app"); ?>">
+					// Check user enc
+					check_user_enc($user, $pass);
+				}
+
+				// Grant the user access
+				grant_access();
+
+				// Select where to redirect the user next
+				select_redirect();
+			}
+		}
+	}
+	?>
+	<!doctype html>
+	<html ng-app="SimpleRisk">
+	<head>
+	  <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
+	  <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+	  <!-- build:css vendor/vendor.min.css -->
+	  <!-- endbuild -->
+	  <!-- build:css style.min.css -->
+	  <link rel="stylesheet" type="text/css" href="css/style.css?<?php echo current_version("app"); ?>" media="screen" />
+	  <!-- endbuild -->
+
+	  <link rel="stylesheet" href="css/bootstrap.css?<?php echo current_version("app"); ?>">
+	  <link rel="stylesheet" href="css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+
+	  <link rel="stylesheet" href="vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+	  <link rel="stylesheet" href="css/theme.css?<?php echo current_version("app"); ?>">
   
-  <?php
-      // Use these jQuery scripts
-      $scripts = [
-        'jquery.min.js',
-      ];
+	  <?php
+		  // Use these jQuery scripts
+		  $scripts = [
+			'jquery.min.js',
+		  ];
 
-      // Include the jquery javascript source
-      display_jquery_javascript($scripts);
+		  // Include the jquery javascript source
+		  display_jquery_javascript($scripts);
 
-      display_bootstrap_javascript();
+		  display_bootstrap_javascript();
 
-      setup_favicon();
-      setup_alert_requirements();
-  ?>  
-</head>
-<body ng-controller="MainCtrl" class="login--page">
-  <?php view_top_menu("Home"); ?>
+		  setup_favicon();
+		  setup_alert_requirements();
+	  ?>  
+	</head>
+	<body ng-controller="MainCtrl" class="login--page">
+	  <?php view_top_menu("Home"); ?>
 
-  <?php
-  // If the user has authenticated and now we need to authenticate with duo
-  if (isset($_SESSION["access"]) && $_SESSION["access"] == "duo")
-  {
-    echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span9\">\n";
-    // echo "<div class=\"well\">\n";
+	  <?php
+	  // If the user has authenticated and now we need to authenticate with duo
+	  if (isset($_SESSION["access"]) && $_SESSION["access"] == "duo")
+	  {
+		echo "<div class=\"row-fluid\">\n";
+		echo "<div class=\"span9\">\n";
+		// echo "<div class=\"well\">\n";
 
-    // Include the custom authentication extra
-    require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
+		// Include the custom authentication extra
+		require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
 
-    // Store the user and password temporarily in the session
-    $_SESSION['duo_user'] = $_POST['user'];
-    $_SESSION['duo_pass'] = $_POST['pass'];
+		// Store the user and password temporarily in the session
+		$_SESSION['duo_user'] = $_POST['user'];
+		$_SESSION['duo_pass'] = $_POST['pass'];
 
-    // Perform a duo authentication request for the user
-    duo_authentication($_SESSION["user"]);
+		// Perform a duo authentication request for the user
+		duo_authentication($_SESSION["user"]);
 
-    // echo "</div>\n";
-    echo "</div>\n";
-    echo "</div>\n";
-  }
-  // If the user has not authenticated
-  else if (!isset($_SESSION["access"]) || $_SESSION["access"] != "1")
-  {
-    echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span12\">\n";
-    // echo "<div class=\"well\">\n";
+		// echo "</div>\n";
+		echo "</div>\n";
+		echo "</div>\n";
+	  }
+	  // If the user has not authenticated
+	  else if (!isset($_SESSION["access"]) || $_SESSION["access"] != "1")
+	  {
+		echo "<div class=\"row-fluid\">\n";
+		echo "<div class=\"span12\">\n";
+		// echo "<div class=\"well\">\n";
 
-    // Get any alert messages
-    get_alert();
+		// Get any alert messages
+		get_alert();
 
-    echo "<div class=\"login-wrapper clearfix\">";
-    echo "<h1 class=\"text-center welcome--msg\"> Enterprise Risk Management Simplified... </h1>";
+		echo "<div class=\"login-wrapper clearfix\">";
+		echo "<h1 class=\"text-center welcome--msg\"> Enterprise Risk Management Simplified... </h1>";
 
-    echo "<form name=\"authenticate\" method=\"post\" action=\"\" class=\"loginForm\">\n";
-    echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
-    echo "<tr><td colspan=\"2\"><label class=\"login--label\">" . $escaper->escapeHtml($lang['LogInHere']) . "</label></td></tr>\n";
-    echo "<tr><td width=\"20%\"><label for=\"\">" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</label></td><td class=\"80%\"><input class=\"form-control input-medium\" name=\"user\" id=\"user\" type=\"text\" /></td></tr>\n";
-    echo "<tr><td width=\"20%\"><label for=\"\">" . $escaper->escapeHtml($lang['Password']) . ":&nbsp;</label></td><td class=\"80%\"><input class=\"form-control input-medium\" name=\"pass\" id=\"pass\" type=\"password\" autocomplete=\"off\" /></td></tr>\n";
-    echo "</table>\n";
-    echo "<div class=\"form-actions\">\n";
+		echo "<form name=\"authenticate\" method=\"post\" action=\"\" class=\"loginForm\">\n";
+		echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
+		echo "<tr><td colspan=\"2\"><label class=\"login--label\">" . $escaper->escapeHtml($lang['LogInHere']) . "</label></td></tr>\n";
+		echo "<tr><td width=\"20%\"><label for=\"\">" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</label></td><td class=\"80%\"><input class=\"form-control input-medium\" name=\"user\" id=\"user\" type=\"text\" /></td></tr>\n";
+		echo "<tr><td width=\"20%\"><label for=\"\">" . $escaper->escapeHtml($lang['Password']) . ":&nbsp;</label></td><td class=\"80%\"><input class=\"form-control input-medium\" name=\"pass\" id=\"pass\" type=\"password\" autocomplete=\"off\" /></td></tr>\n";
+		echo "</table>\n";
+		echo "<div class=\"form-actions\">\n";
 
-    // If the custom authentication extra is enabled
-    if (custom_authentication_extra())
-    {
-        // If SSO Login is enabled or not set yet
-    if(get_setting("GO_TO_SSO_LOGIN") === false || get_setting("GO_TO_SSO_LOGIN") === '1')
-        {
-            // Display the SSO login link
-            echo "<tr><td colspan=\"2\"><label><a href=\"extras/authentication/login.php\">" . $escaper->escapeHtml($lang['GoToSSOLoginPage']) . "</a></label></td></tr>\n";
-        }
-    }
+		// If the custom authentication extra is enabled
+		if (custom_authentication_extra())
+		{
+			// If SSO Login is enabled or not set yet
+		if(get_setting("GO_TO_SSO_LOGIN") === false || get_setting("GO_TO_SSO_LOGIN") === '1')
+			{
+				// Display the SSO login link
+				echo "<tr><td colspan=\"2\"><label><a href=\"extras/authentication/login.php\">" . $escaper->escapeHtml($lang['GoToSSOLoginPage']) . "</a></label></td></tr>\n";
+			}
+		}
 
-    echo "<a href=\"reset.php\">" . $escaper->escapeHtml($lang['ForgotYourPassword']) . "</a>";
-    echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary pull-right\">" . $escaper->escapeHtml($lang['Login']) . "</button>\n";
-    echo "<input class=\"btn btn-default pull-right\" value=\"" . $escaper->escapeHtml($lang['Reset']) . "\" type=\"reset\">\n";
-    echo "</div>\n";
-    echo "</form>\n";
-    echo "</div>";
+		echo "<a href=\"reset.php\">" . $escaper->escapeHtml($lang['ForgotYourPassword']) . "</a>";
+		echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary pull-right\">" . $escaper->escapeHtml($lang['Login']) . "</button>\n";
+		echo "<input class=\"btn btn-default pull-right\" value=\"" . $escaper->escapeHtml($lang['Reset']) . "\" type=\"reset\">\n";
+		echo "</div>\n";
+		echo "</form>\n";
+		echo "</div>";
 
 
-    // echo "</div>\n";
-    echo "</div>\n";
-    echo "</div>\n";
+		// echo "</div>\n";
+		echo "</div>\n";
+		echo "</div>\n";
+	  }
   }
 
   ?>

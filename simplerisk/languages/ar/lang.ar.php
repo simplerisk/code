@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'أضف إجابة',
     'QuestionPlaceholder' => 'أضف سؤالاً',
     'NoFileAttached' => 'لا يوجد ملف مرفق',
-    'MarkAsUnmitigated' => 'وضع علامة "غير مخفف"',
-    'MarkAsUnreviewed' => 'وضع علامة "لم تتم مراجعته"',
     'NoDataToUpdate' => 'لا توجد بيانات للتحديث',
     'SelectedQuestions' => 'أسئلة مختارة',
     'CreateTabs' => 'إنشاء علامات التبويب',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'تفعيل فحص شهادة SSL',
     'CantDeleteTheDefaultThreatGrouping' => 'لا يمكن حذف مجموعة التهديد الافتراضية',
     'ThreatGroupings' => 'مجموعات التهديد',
+    'RiskCatalogDropdownPlaceholder' => 'حدد مخططًا للمخاطر أو ابدأ الكتابة للبحث',
+    'ThreatCatalogDropdownPlaceholder' => 'حدد مخطط تهديد أو ابدأ الكتابة للبحث',
+    'UserDropdownPlaceholder' => 'حدد مستخدمًا أو ابدأ الكتابة للبحث',
+    'GraphicalRiskAnalysis' => 'تحليل المخاطر الرسومية',
+    'ResetMitigations' => 'إعادة تعيين وسائل التخفيف',
+    'ResetReviews' => 'إعادة تعيين المراجعات',
+	'EnableEncryptionDebugLogging' => 'تفعيل تسجيل التصحيح الإضافي لقاعدة البيانات المشفرة',
+    'Log' => 'سجل',
+    'Date' => 'تاريخ',
+    'Platform' => 'برنامج',
+    'NotifyOnNewDocument' => 'الإخطار في مستند جديد',
+    'NotifyOnDocumentUpdate' => 'إخطار عند تحديث المستند',
+    'AuditLog_DocumentCreate' => 'تم إنشاء مستند جديد باسم "{$document_name}" بواسطة المستخدم "{$user_name}".',
+    'UpdatedBy'=>'تم التحديث بواسطة',
+    'AllowTeamToSeeDocuments'=>'السماح للفريق بالاطلاع على المستندات',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'السماح لمدير مالك المستند بالاطلاع على المستندات',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

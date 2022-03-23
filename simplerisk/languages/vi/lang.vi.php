@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Thêm câu trả lời',
     'QuestionPlaceholder' => 'Thêm một câu hỏi',
     'NoFileAttached' => 'Không có tệp đính kèm',
-    'MarkAsUnmitigated' => 'Đánh dấu là Không điều chỉnh',
-    'MarkAsUnreviewed' => 'Đánh dấu là Chưa được đánh giá',
     'NoDataToUpdate' => 'Không có dữ liệu để cập nhật',
     'SelectedQuestions' => 'Các câu hỏi đã chọn',
     'CreateTabs' => 'Tạo tab',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'Bật kiểm tra chứng chỉ SSL',
     'CantDeleteTheDefaultThreatGrouping' => 'Không thể xóa nhóm mối đe dọa mặc định',
     'ThreatGroupings' => 'Nhóm Đe doạ',
+    'RiskCatalogDropdownPlaceholder' => 'Chọn một bản đồ rủi ro hoặc bắt đầu nhập để tìm kiếm',
+    'ThreatCatalogDropdownPlaceholder' => 'Chọn bản đồ mối đe dọa hoặc bắt đầu nhập để tìm kiếm',
+    'UserDropdownPlaceholder' => 'Chọn một người dùng hoặc bắt đầu nhập để tìm kiếm',
+    'GraphicalRiskAnalysis' => 'Phân tích rủi ro bằng đồ thị',
+    'ResetMitigations' => 'Đặt lại giảm nhẹ',
+    'ResetReviews' => 'Đặt lại bài đánh giá',
+	'EnableEncryptionDebugLogging' => 'Bật cơ sở dữ liệu được mã hóa Ghi nhật ký gỡ lỗi bổ sung',
+    'Log' => 'Nhật ký',
+    'Date' => 'Ngày',
+    'Platform' => 'Nền tảng',
+    'NotifyOnNewDocument' => 'Thông báo trên tài liệu mới',
+    'NotifyOnDocumentUpdate' => 'Thông báo khi cập nhật tài liệu',
+    'AuditLog_DocumentCreate' => 'Một tài liệu mới có tên "{$document_name}" đã được tạo bởi người dùng "{$user_name}".',
+    'UpdatedBy'=>'Cập nhật',
+    'AllowTeamToSeeDocuments'=>'Cho phép nhóm xem tài liệu',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Cho phép người quản lý của chủ sở hữu tài liệu xem tài liệu',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'הוסף תשובה',
     'QuestionPlaceholder' => 'הוסף שאלה',
     'NoFileAttached' => 'לא מצורף קובץ',
-    'MarkAsUnmitigated' => 'סמן כבלתי מוגבל',
-    'MarkAsUnreviewed' => 'סמן כבלתי נבדק',
     'NoDataToUpdate' => 'אין נתונים לעדכן',
     'SelectedQuestions' => 'שאלות נבחרות',
     'CreateTabs' => 'צור כרטיסיות',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'אפשר בדיקת אישור SSL',
     'CantDeleteTheDefaultThreatGrouping' => 'לא ניתן למחוק את ברירת המחדל של קיבוץ האיום',
     'ThreatGroupings' => 'קיבוץ איומים',
+    'RiskCatalogDropdownPlaceholder' => 'בחר מיפוי סיכונים או התחל להקליד כדי לחפש',
+    'ThreatCatalogDropdownPlaceholder' => 'בחר מיפוי איומים או התחל להקליד כדי לחפש',
+    'UserDropdownPlaceholder' => 'בחר משתמש או התחל להקליד כדי לחפש',
+    'GraphicalRiskAnalysis' => 'ניתוח סיכונים גרפי',
+    'ResetMitigations' => 'אפס את הצמצום',
+    'ResetReviews' => 'אפס ביקורות',
+	'EnableEncryptionDebugLogging' => 'אפשר רישום באגים נוסף של מסד נתונים מוצפן',
+    'Log' => 'עֵץ',
+    'Date' => 'תַאֲרִיך',
+    'Platform' => 'פּלַטפוֹרמָה',
+    'NotifyOnNewDocument' => 'הודע על מסמך חדש',
+    'NotifyOnDocumentUpdate' => 'הודע על עדכון מסמך',
+    'AuditLog_DocumentCreate' => 'מסמך חדש בשם "{$document_name}" נוצר על ידי המשתמש "{$user_name}".',
+    'UpdatedBy'=>'עודכן על ידי',
+    'AllowTeamToSeeDocuments'=>'אפשר לצוות לראות מסמכים',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'אפשר למנהל בעל המסמכים לראות מסמכים',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Lägg till ett svar',
     'QuestionPlaceholder' => 'Lägg till en fråga',
     'NoFileAttached' => 'Ingen fil bifogad',
-    'MarkAsUnmitigated' => 'Markera som obegränsad',
-    'MarkAsUnreviewed' => 'Markera som okänd',
     'NoDataToUpdate' => 'Ingen data att uppdatera',
     'SelectedQuestions' => 'Valda frågor',
     'CreateTabs' => 'Skapa flikar',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'Aktivera SSL-certifikatkontroll',
     'CantDeleteTheDefaultThreatGrouping' => 'Kan inte ta bort standard hotgruppering',
     'ThreatGroupings' => 'Hotgrupperingar',
+    'RiskCatalogDropdownPlaceholder' => 'Välj en riskmappning eller börja skriva för att söka',
+    'ThreatCatalogDropdownPlaceholder' => 'Välj en hotmappning eller börja skriva för att söka',
+    'UserDropdownPlaceholder' => 'Välj en användare eller börja skriva för att söka',
+    'GraphicalRiskAnalysis' => 'Grafisk riskanalys',
+    'ResetMitigations' => 'Återställ begränsningar',
+    'ResetReviews' => 'Återställ recensioner',
+	'EnableEncryptionDebugLogging' => 'Aktivera krypterad databas Extra felsökningsloggning',
+    'Log' => 'Logga',
+    'Date' => 'Datum',
+    'Platform' => 'Plattform',
+    'NotifyOnNewDocument' => 'Meddela om nytt dokument',
+    'NotifyOnDocumentUpdate' => 'Meddela vid dokumentuppdatering',
+    'AuditLog_DocumentCreate' => 'Ett nytt dokument med namnet "{$document_name}" skapades av användaren "{$user_name}".',
+    'UpdatedBy'=>'Uppdaterad av',
+    'AllowTeamToSeeDocuments'=>'Tillåt team att se dokument',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Tillåt dokumentägarens chef att se dokument',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

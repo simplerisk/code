@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Adăugați un răspuns',
     'QuestionPlaceholder' => 'Adăugați o întrebare',
     'NoFileAttached' => 'Niciun fișier atașat',
-    'MarkAsUnmitigated' => 'Marcați ca nelimitat',
-    'MarkAsUnreviewed' => 'Marcați ca fără revizuire',
     'NoDataToUpdate' => 'Nu există date de actualizat',
     'SelectedQuestions' => 'Întrebări selectate',
     'CreateTabs' => 'Creați file',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'Activați verificarea certificatului SSL',
     'CantDeleteTheDefaultThreatGrouping' => 'Nu se poate șterge gruparea implicită a amenințărilor',
     'ThreatGroupings' => 'Grupări de amenințări',
+    'RiskCatalogDropdownPlaceholder' => 'Selectați o mapare a riscurilor sau începeți să tastați pentru a căuta',
+    'ThreatCatalogDropdownPlaceholder' => 'Selectați o mapare a amenințărilor sau începeți să tastați pentru a căuta',
+    'UserDropdownPlaceholder' => 'Selectați un utilizator sau începeți să tastați pentru a căuta',
+    'GraphicalRiskAnalysis' => 'Analiza grafică a riscurilor',
+    'ResetMitigations' => 'Resetați atenuările',
+    'ResetReviews' => 'Resetați recenziile',
+	'EnableEncryptionDebugLogging' => 'Activați înregistrarea de depanare suplimentară a bazei de date criptate',
+    'Log' => 'Buturuga',
+    'Date' => 'Data',
+    'Platform' => 'Platformă',
+    'NotifyOnNewDocument' => 'Notificare pe document nou',
+    'NotifyOnDocumentUpdate' => 'Notificare privind actualizarea documentului',
+    'AuditLog_DocumentCreate' => 'Un nou document numit „{$document_name}” a fost creat de utilizatorul „{$user_name}”.',
+    'UpdatedBy'=>'Actualizat de',
+    'AllowTeamToSeeDocuments'=>'Permiteți echipei să vadă documentele',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Permiteți managerului proprietarului documentelor să vadă documentele',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

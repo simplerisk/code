@@ -30,7 +30,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => '1bfa7fcf7c8759f4c8abb59206a8fa46e0b89d7a',
+    'reference' => 'a4d606ff6a7e0b0d3a0cfe3e8141de62526b159d',
     'name' => 'simplerisk/code',
   ),
   'versions' => 
@@ -82,12 +82,12 @@ private static $installed = array (
     ),
     'doctrine/lexer' => 
     array (
-      'pretty_version' => '1.2.2',
-      'version' => '1.2.2.0',
+      'pretty_version' => '1.2.3',
+      'version' => '1.2.3.0',
       'aliases' => 
       array (
       ),
-      'reference' => '9c50f840f257bbb941e6f4a0e94ccf5db5c3f76c',
+      'reference' => 'c268e882d4dbdd85e36e4ad69e02dc284f89d229',
     ),
     'dragonmantank/cron-expression' => 
     array (
@@ -189,12 +189,12 @@ private static $installed = array (
     ),
     'opis/closure' => 
     array (
-      'pretty_version' => '3.6.2',
-      'version' => '3.6.2.0',
+      'pretty_version' => '3.6.3',
+      'version' => '3.6.3.0',
       'aliases' => 
       array (
       ),
-      'reference' => '06e2ebd25f2869e54a306dda991f7db58066f7f6',
+      'reference' => '3d81e4309d2a927abbe66df935f4bb60082805ad',
     ),
     'phpfastcache/riak-client' => 
     array (
@@ -271,7 +271,7 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => '1bfa7fcf7c8759f4c8abb59206a8fa46e0b89d7a',
+      'reference' => 'a4d606ff6a7e0b0d3a0cfe3e8141de62526b159d',
     ),
     'simplerisk/csrf-magic' => 
     array (
@@ -294,12 +294,12 @@ private static $installed = array (
     ),
     'simplesamlphp/saml2' => 
     array (
-      'pretty_version' => 'v4.4.0',
-      'version' => '4.4.0.0',
+      'pretty_version' => 'v4.5.0',
+      'version' => '4.5.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'f3b13417deb45f882f676108c250143f994eb2a4',
+      'reference' => 'd98020c3d7f7331409959eab286ca3a010e5a868',
     ),
     'simplesamlphp/simplesamlphp' => 
     array (
@@ -645,8 +645,8 @@ private static $installed = array (
     ),
     'symfony/polyfill-ctype' => 
     array (
-      'pretty_version' => 'v1.24.0',
-      'version' => '1.24.0.0',
+      'pretty_version' => 'v1.25.0',
+      'version' => '1.25.0.0',
       'aliases' => 
       array (
       ),
@@ -654,8 +654,8 @@ private static $installed = array (
     ),
     'symfony/polyfill-iconv' => 
     array (
-      'pretty_version' => 'v1.24.0',
-      'version' => '1.24.0.0',
+      'pretty_version' => 'v1.25.0',
+      'version' => '1.25.0.0',
       'aliases' => 
       array (
       ),
@@ -663,8 +663,8 @@ private static $installed = array (
     ),
     'symfony/polyfill-intl-idn' => 
     array (
-      'pretty_version' => 'v1.24.0',
-      'version' => '1.24.0.0',
+      'pretty_version' => 'v1.25.0',
+      'version' => '1.25.0.0',
       'aliases' => 
       array (
       ),
@@ -672,8 +672,8 @@ private static $installed = array (
     ),
     'symfony/polyfill-intl-normalizer' => 
     array (
-      'pretty_version' => 'v1.24.0',
-      'version' => '1.24.0.0',
+      'pretty_version' => 'v1.25.0',
+      'version' => '1.25.0.0',
       'aliases' => 
       array (
       ),
@@ -681,8 +681,8 @@ private static $installed = array (
     ),
     'symfony/polyfill-mbstring' => 
     array (
-      'pretty_version' => 'v1.24.0',
-      'version' => '1.24.0.0',
+      'pretty_version' => 'v1.25.0',
+      'version' => '1.25.0.0',
       'aliases' => 
       array (
       ),
@@ -708,8 +708,8 @@ private static $installed = array (
     ),
     'symfony/polyfill-php72' => 
     array (
-      'pretty_version' => 'v1.24.0',
-      'version' => '1.24.0.0',
+      'pretty_version' => 'v1.25.0',
+      'version' => '1.25.0.0',
       'aliases' => 
       array (
       ),
@@ -771,12 +771,12 @@ private static $installed = array (
     ),
     'twig/twig' => 
     array (
-      'pretty_version' => 'v2.12.5',
-      'version' => '2.12.5.0',
+      'pretty_version' => 'v1.42.5',
+      'version' => '1.42.5.0',
       'aliases' => 
       array (
       ),
-      'reference' => '18772e0190734944277ee97a02a9a6c6555fcd94',
+      'reference' => '87b2ea9d8f6fd014d0621ca089bb1b3769ea3f8e',
     ),
     'twitter/bootstrap' => 
     array (

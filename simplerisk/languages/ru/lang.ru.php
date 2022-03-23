@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Добавить ответ',
     'QuestionPlaceholder' => 'Добавить вопрос',
     'NoFileAttached' => 'Файл не прикреплен',
-    'MarkAsUnmitigated' => 'Отметить как неподтвержденное',
-    'MarkAsUnreviewed' => 'Отметить как непроверенный',
     'NoDataToUpdate' => 'Нет данных для обновления',
     'SelectedQuestions' => 'Избранные вопросы',
     'CreateTabs' => 'Создать вкладки',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'Включить проверку SSL-сертификата',
     'CantDeleteTheDefaultThreatGrouping' => 'Не удается удалить группу угроз по умолчанию',
     'ThreatGroupings' => 'Группы угроз',
+    'RiskCatalogDropdownPlaceholder' => 'Выберите сопоставление рисков или начните вводить текст для поиска',
+    'ThreatCatalogDropdownPlaceholder' => 'Выберите сопоставление угроз или начните вводить текст для поиска',
+    'UserDropdownPlaceholder' => 'Выберите пользователя или начните вводить текст для поиска',
+    'GraphicalRiskAnalysis' => 'Графический анализ рисков',
+    'ResetMitigations' => 'Сбросить меры по смягчению последствий',
+    'ResetReviews' => 'Сбросить отзывы',
+	'EnableEncryptionDebugLogging' => 'Включить дополнительное ведение журнала отладки для зашифрованной базы данных',
+    'Log' => 'Бревно',
+    'Date' => 'Дата',
+    'Platform' => 'Платформа',
+    'NotifyOnNewDocument' => 'Уведомлять о новом документе',
+    'NotifyOnDocumentUpdate' => 'Уведомлять об обновлении документа',
+    'AuditLog_DocumentCreate' => 'Новый документ с именем «{$document_name}» был создан пользователем «{$user_name}».',
+    'UpdatedBy'=>'Обновлено',
+    'AllowTeamToSeeDocuments'=>'Разрешить команде просматривать документы',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Разрешить менеджеру владельца документа просматривать документы',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

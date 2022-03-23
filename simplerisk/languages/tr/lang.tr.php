@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Cevap ekle',
     'QuestionPlaceholder' => 'soru ekle',
     'NoFileAttached' => 'Ekli dosya yok',
-    'MarkAsUnmitigated' => 'Azaltılmamış Olarak İşaretle',
-    'MarkAsUnreviewed' => 'İncelenmedi Olarak İşaretle',
     'NoDataToUpdate' => 'Güncellenecek veri yok',
     'SelectedQuestions' => 'Seçilmiş Sorular',
     'CreateTabs' => 'Sekmeler Oluştur',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'SSL Sertifika Kontrolünü Etkinleştir',
     'CantDeleteTheDefaultThreatGrouping' => 'Varsayılan Tehdit Gruplamasını Silemiyorum',
     'ThreatGroupings' => 'Tehdit Gruplamaları',
+    'RiskCatalogDropdownPlaceholder' => 'Bir risk eşlemesi seçin veya aramaya başlayın',
+    'ThreatCatalogDropdownPlaceholder' => 'Bir tehdit eşlemesi seçin veya aramaya başlayın',
+    'UserDropdownPlaceholder' => 'Bir kullanıcı seçin veya aramaya başlayın',
+    'GraphicalRiskAnalysis' => 'Grafiksel Risk Analizi',
+    'ResetMitigations' => 'Azaltıcıları Sıfırla',
+    'ResetReviews' => 'İncelemeleri Sıfırla',
+	'EnableEncryptionDebugLogging' => 'Şifreli Veritabanı Ekstra hata ayıklama günlüğünü etkinleştir',
+    'Log' => 'Kayıt',
+    'Date' => 'Tarih',
+    'Platform' => 'platformu',
+    'NotifyOnNewDocument' => 'Yeni Belgede Bildir',
+    'NotifyOnDocumentUpdate' => 'Belge Güncellemesinde Bildir',
+    'AuditLog_DocumentCreate' => '"{$user_name}" kullanıcısı tarafından "{$document_name}" adlı yeni bir belge oluşturuldu.',
+    'UpdatedBy'=>'Tarafından güncellendi',
+    'AllowTeamToSeeDocuments'=>'Ekibin Belgeleri Görmesine İzin Ver',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Belge Sahibinin Yöneticisinin Belgeleri Görmesine İzin Ver',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

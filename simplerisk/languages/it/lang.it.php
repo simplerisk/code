@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Aggiungi una risposta',
     'QuestionPlaceholder' => 'Aggiungi una domanda',
     'NoFileAttached' => 'Nessun file allegato',
-    'MarkAsUnmitigated' => 'Contrassegna come non attenuato',
-    'MarkAsUnreviewed' => 'Segna come non recensito',
     'NoDataToUpdate' => 'Nessun dato da aggiornare',
     'SelectedQuestions' => 'Domande selezionate',
     'CreateTabs' => 'Crea schede',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'Abilita controllo certificato SSL',
     'CantDeleteTheDefaultThreatGrouping' => 'Impossibile eliminare il raggruppamento di minacce predefinito',
     'ThreatGroupings' => 'Raggruppamenti di minacce',
+    'RiskCatalogDropdownPlaceholder' => 'Seleziona una mappatura del rischio o inizia a digitare per cercare',
+    'ThreatCatalogDropdownPlaceholder' => 'Seleziona una mappatura delle minacce o inizia a digitare per cercare',
+    'UserDropdownPlaceholder' => 'Seleziona un utente o inizia a digitare per cercare',
+    'GraphicalRiskAnalysis' => 'Analisi grafica del rischio',
+    'ResetMitigations' => 'Ripristina mitigazioni',
+    'ResetReviews' => 'Ripristina recensioni',
+	'EnableEncryptionDebugLogging' => 'Abilita la registrazione di debug aggiuntiva del database crittografato',
+    'Log' => 'Tronco d\'albero',
+    'Date' => 'Data',
+    'Platform' => 'piattaforma',
+    'NotifyOnNewDocument' => 'Notifica su nuovo documento',
+    'NotifyOnDocumentUpdate' => 'Notifica sull\'aggiornamento del documento',
+    'AuditLog_DocumentCreate' => 'Un nuovo documento denominato "{$document_name}" è stato creato dall\'utente "{$user_name}".',
+    'UpdatedBy'=>'Aggiornato da',
+    'AllowTeamToSeeDocuments'=>'Consenti al team di vedere i documenti',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Consenti al responsabile del proprietario del documento di visualizzare i documenti',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

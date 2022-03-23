@@ -114,13 +114,13 @@ function view_top_table($risk_id, $calculated_risk, $subject, $status, $show_det
                 // If the user has permission to plan mitigations
                 if (has_permission("plan_mitigations"))
                 {
-                    echo "<li><a class='mark-unmitigation' href=\"#\">". $escaper->escapeHtml($lang['MarkAsUnmitigated']) ."</a></li>\n";
+                    echo "<li><a class='mark-unmitigation' href=\"#\">". $escaper->escapeHtml($lang['ResetMitigations']) ."</a></li>\n";
                 }
 
                 // If the user has permission to plan mitigations
                 if (has_permission("modify_risks"))
                 {
-                    echo "<li><a class='mark-unreview' href=\"#\">". $escaper->escapeHtml($lang['MarkAsUnreviewed']) ."</a></li>\n";
+                    echo "<li><a class='mark-unreview' href=\"#\">". $escaper->escapeHtml($lang['ResetReviews']) ."</a></li>\n";
                 }
 
                         echo "<li><a class='printable-veiw' href=\"print_view.php?id=" . $escaper->escapeHtml($risk_id) . "\" target=\"_blank\">". $escaper->escapeHtml($lang['PrintableView']) ."</a></li>\n";
@@ -4166,6 +4166,9 @@ function view_reporting_menu($active)
     echo "</li>\n";
     echo ($active == "DynamicRiskReport" ? "<li class=\"active\">\n" : "<li>\n");
     echo "<a href=\"dynamic_risk_report.php\">" . $escaper->escapeHtml($lang['DynamicRiskReport']) . "</a>\n";
+    echo "</li>\n";
+    echo ($active == "GraphicalRiskAnalysis" ? "<li class=\"active\">\n" : "<li>\n");
+    echo "<a href=\"graphical_risk_analysis.php\">" . $escaper->escapeHtml($lang['GraphicalRiskAnalysis']) . "</a>\n";
     echo "</li>\n";
     echo ($active == "ConnectivityVisualizer" ? "<li class=\"active\">\n" : "<li>\n");
     echo "<a href=\"connectivity_visualizer.php\">" . $escaper->escapeHtml($lang['ConnectivityVisualizer']) . "</a>\n";

@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => '답변 추가',
     'QuestionPlaceholder' => '질문 추가',
     'NoFileAttached' => '첨부된 파일이 없습니다',
-    'MarkAsUnmitigated' => '완화되지 않은 것으로 표시',
-    'MarkAsUnreviewed' => '미검토로 표시',
     'NoDataToUpdate' => '업데이트할 데이터가 없습니다.',
     'SelectedQuestions' => '선택한 질문',
     'CreateTabs' => '탭 만들기',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'SSL 인증서 확인 활성화',
     'CantDeleteTheDefaultThreatGrouping' => '기본 위협 그룹을 삭제할 수 없음',
     'ThreatGroupings' => '위협 그룹화',
+    'RiskCatalogDropdownPlaceholder' => '위험 매핑을 선택하거나 검색을 위해 입력을 시작하세요.',
+    'ThreatCatalogDropdownPlaceholder' => '위협 매핑을 선택하거나 검색을 위해 입력을 시작하세요.',
+    'UserDropdownPlaceholder' => '사용자를 선택하거나 입력을 시작하여 검색하세요.',
+    'GraphicalRiskAnalysis' => '그래픽 위험 분석',
+    'ResetMitigations' => '완화 재설정',
+    'ResetReviews' => '리뷰 재설정',
+	'EnableEncryptionDebugLogging' => '암호화된 데이터베이스 추가 디버그 로깅 활성화',
+    'Log' => '통나무',
+    'Date' => '날짜',
+    'Platform' => '플랫폼',
+    'NotifyOnNewDocument' => '새 문서에 알림',
+    'NotifyOnDocumentUpdate' => '문서 업데이트 알림',
+    'AuditLog_DocumentCreate' => '"{$document_name}"이라는 새 문서가 사용자 "{$user_name}"에 의해 생성되었습니다.',
+    'UpdatedBy'=>'업데이트한 사람',
+    'AllowTeamToSeeDocuments'=>'팀이 문서를 볼 수 있도록 허용',
+    'AllowDocumentOwnersManagerToSeeDocuments' => '문서 소유자의 관리자가 문서를 볼 수 있도록 허용',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

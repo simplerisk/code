@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Lisää vastaus',
     'QuestionPlaceholder' => 'Lisää kysymys',
     'NoFileAttached' => 'Ei liitetiedostoa',
-    'MarkAsUnmitigated' => 'Merkitse peruuttamattomaksi',
-    'MarkAsUnreviewed' => 'Merkitse tarkistamattomaksi',
     'NoDataToUpdate' => 'Ei päivitettäviä tietoja',
     'SelectedQuestions' => 'Valitut kysymykset',
     'CreateTabs' => 'Luo välilehtiä',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'Ota SSL-varmenteen tarkistus käyttöön',
     'CantDeleteTheDefaultThreatGrouping' => 'Uhkien oletusryhmittelyä ei voi poistaa',
     'ThreatGroupings' => 'Uhkaryhmät',
+    'RiskCatalogDropdownPlaceholder' => 'Valitse riskikartoitus tai aloita kirjoittaminen etsiäksesi',
+    'ThreatCatalogDropdownPlaceholder' => 'Valitse uhkakuvaus tai aloita kirjoittaminen etsiäksesi',
+    'UserDropdownPlaceholder' => 'Valitse käyttäjä tai aloita kirjoittaminen etsiäksesi',
+    'GraphicalRiskAnalysis' => 'Graafinen riskianalyysi',
+    'ResetMitigations' => 'Nollaa lievennykset',
+    'ResetReviews' => 'Nollaa arvostelut',
+	'EnableEncryptionDebugLogging' => 'Ota Encrypted Database Extra -virheenkorjausloki käyttöön',
+    'Log' => 'Hirsi',
+    'Date' => 'Päivämäärä',
+    'Platform' => 'Alusta',
+    'NotifyOnNewDocument' => 'Ilmoita uudesta asiakirjasta',
+    'NotifyOnDocumentUpdate' => 'Ilmoita asiakirjapäivityksestä',
+    'AuditLog_DocumentCreate' => 'Käyttäjä "{$user_name}" loi uuden asiakirjan nimeltä "{$document_name}".',
+    'UpdatedBy'=>'Päivitetty',
+    'AllowTeamToSeeDocuments'=>'Salli tiimin nähdä asiakirjoja',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Salli asiakirjan omistajan johtajan nähdä asiakirjoja',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

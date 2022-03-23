@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Pridajte odpoveď',
     'QuestionPlaceholder' => 'Pridajte otázku',
     'NoFileAttached' => 'Nie je priložený žiadny súbor',
-    'MarkAsUnmitigated' => 'Označiť ako neobmedzené',
-    'MarkAsUnreviewed' => 'Označiť ako neskontrolované',
     'NoDataToUpdate' => 'Žiadne údaje na aktualizáciu',
     'SelectedQuestions' => 'Vybrané otázky',
     'CreateTabs' => 'Vytvoriť karty',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'Povoliť kontrolu certifikátu SSL',
     'CantDeleteTheDefaultThreatGrouping' => 'Predvolené zoskupenie hrozieb nemožno odstrániť',
     'ThreatGroupings' => 'Zoskupenia hrozieb',
+    'RiskCatalogDropdownPlaceholder' => 'Vyberte mapovanie rizík alebo začnite písať a vyhľadávajte',
+    'ThreatCatalogDropdownPlaceholder' => 'Vyberte mapovanie hrozby alebo začnite písať a vyhľadajte',
+    'UserDropdownPlaceholder' => 'Ak chcete hľadať, vyberte používateľa alebo začnite písať',
+    'GraphicalRiskAnalysis' => 'Grafická analýza rizika',
+    'ResetMitigations' => 'Obnoviť zmiernenia',
+    'ResetReviews' => 'Resetovať recenzie',
+	'EnableEncryptionDebugLogging' => 'Povoliť protokolovanie šifrovanej databázy Extra ladenia',
+    'Log' => 'Log',
+    'Date' => 'Dátum',
+    'Platform' => 'Plošina',
+    'NotifyOnNewDocument' => 'Upozorniť na nový dokument',
+    'NotifyOnDocumentUpdate' => 'Upozorniť na aktualizáciu dokumentu',
+    'AuditLog_DocumentCreate' => 'Nový dokument s názvom "{$document_name}" bol vytvorený používateľom "{$user_name}".',
+    'UpdatedBy'=>'Aktualizované používateľom',
+    'AllowTeamToSeeDocuments'=>'Povoliť tímu vidieť dokumenty',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Umožnite správcovi vlastníka dokumentov vidieť dokumenty',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

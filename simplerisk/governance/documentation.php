@@ -36,90 +36,92 @@ checkUploadedFileSizeErrors();
 // Check if a new document was submitted
 if (isset($_POST['add_document']))
 {
-      $document_type = $_POST['document_type'];
-      $document_name = $_POST['document_name'];
-      $framework_ids = empty($_POST['framework_ids']) ? [] : $_POST['framework_ids'];
-      $control_ids   = empty($_POST['control_ids']) ? [] : $_POST['control_ids'];
-      $parent        = $_POST['parent'];
-      $status        = $_POST['status'];
-      $creation_date = get_standard_date_from_default_format($_POST['creation_date']);
-      $creation_date = ($creation_date && $creation_date!="0000-00-00") ? $creation_date : date("Y-m-d");
-      $last_review_date   = get_standard_date_from_default_format($_POST['last_review_date']);
-      $review_frequency = (int)$_POST['review_frequency'];
-      $next_review_date   = get_standard_date_from_default_format($_POST['next_review_date']);
-      $approval_date   = get_standard_date_from_default_format($_POST['approval_date']);
-      $document_owner = (int)$_POST['document_owner'];
-      $additional_stakeholders   = empty($_POST['additional_stakeholders']) ? [] : $_POST['additional_stakeholders'];
-      $approver = (int)$_POST['approver'];
-      $team_ids     = empty($_POST['team_ids']) ? [] : $_POST['team_ids'];
+    $submitter = (int)$_SESSION['uid'];
+    $document_type = $_POST['document_type'];
+    $document_name = $_POST['document_name'];
+    $framework_ids = empty($_POST['framework_ids']) ? [] : $_POST['framework_ids'];
+    $control_ids   = empty($_POST['control_ids']) ? [] : $_POST['control_ids'];
+    $parent        = $_POST['parent'];
+    $status        = $_POST['status'];
+    $creation_date = get_standard_date_from_default_format($_POST['creation_date']);
+    $creation_date = ($creation_date && $creation_date!="0000-00-00") ? $creation_date : date("Y-m-d");
+    $last_review_date   = get_standard_date_from_default_format($_POST['last_review_date']);
+    $review_frequency = (int)$_POST['review_frequency'];
+    $next_review_date   = get_standard_date_from_default_format($_POST['next_review_date']);
+    $approval_date   = get_standard_date_from_default_format($_POST['approval_date']);
+    $document_owner = (int)$_POST['document_owner'];
+    $additional_stakeholders   = empty($_POST['additional_stakeholders']) ? [] : $_POST['additional_stakeholders'];
+    $approver = (int)$_POST['approver'];
+    $team_ids     = empty($_POST['team_ids']) ? [] : $_POST['team_ids'];
 
-      // Check if the document name is null
-      if (!$document_type || !$document_name)
-      {
+    // Check if the document name is null
+    if (!$document_type || !$document_name)
+    {
+        // Display an alert
+        set_alert(true, "bad", "The document name cannot be empty.");
+    }
+    // Otherwise
+    else
+    {
+        if(empty($_SESSION['add_documentation']))
+        {
             // Display an alert
-            set_alert(true, "bad", "The document name cannot be empty.");
-      }
-      // Otherwise
-      else
-      {
-            if(empty($_SESSION['add_documentation']))
-            {
-                // Display an alert
-                set_alert(true, "bad", $escaper->escapeHtml($lang['NoAddDocumentationPermission']));
-            }
-            // Insert a new document
-            elseif($errors = add_document($document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver, implode(',', $team_ids)))
-            {
-                // Display an alert
-                set_alert(true, "good", $escaper->escapeHtml($lang['DocumentAdded']));
-            }
-      }
-      refresh();
+            set_alert(true, "bad", $escaper->escapeHtml($lang['NoAddDocumentationPermission']));
+        }
+        // Insert a new document
+        elseif($errors = add_document($submitter, $document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver, implode(',', $team_ids)))
+        {
+            // Display an alert
+            set_alert(true, "good", $escaper->escapeHtml($lang['DocumentAdded']));
+        }
+    }
+    refresh();
 }
 
 // Check if a document was submitted to update
 if (isset($_POST['update_document']))
 {
-      $id            = $_POST['document_id'];
-      $document_type = $_POST['document_type'];
-      $document_name = $_POST['document_name'];
-      $framework_ids = empty($_POST['framework_ids']) ? [] : $_POST['framework_ids'];
-      $control_ids   = empty($_POST['control_ids']) ? [] : $_POST['control_ids'];
-      $parent        = (int)$_POST['parent'];
-      $status        = $_POST['status'];
-      $creation_date = get_standard_date_from_default_format($_POST['creation_date']);
-      $creation_date = ($creation_date && $creation_date!="0000-00-00") ? $creation_date : date("Y-m-d");
-      $last_review_date   = get_standard_date_from_default_format($_POST['last_review_date']);
-      $review_frequency = (int)$_POST['review_frequency'];
-      $next_review_date   = get_standard_date_from_default_format($_POST['next_review_date']);
-      $approval_date   = get_standard_date_from_default_format($_POST['approval_date']);
-      $document_owner = (int)$_POST['document_owner'];
-      $additional_stakeholders   = empty($_POST['additional_stakeholders']) ? [] : $_POST['additional_stakeholders'];
-      $approver = (int)$_POST['approver'];
-      $team_ids     = empty($_POST['team_ids']) ? [] : $_POST['team_ids'];
-
-      // Check if the document name is null
-      if (!$document_type || !$document_name)
-      {
+    $id                         = $_POST['document_id'];
+    $updater                    = (int)$_SESSION['uid'];
+    $document_type              = $_POST['document_type'];
+    $document_name              = $_POST['document_name'];
+    $framework_ids              = empty($_POST['framework_ids']) ? [] : $_POST['framework_ids'];
+    $control_ids                = empty($_POST['control_ids']) ? [] : $_POST['control_ids'];
+    $parent                     = (int)$_POST['parent'];
+    $status                     = $_POST['status'];
+    $creation_date              = get_standard_date_from_default_format($_POST['creation_date']);
+    $creation_date              = ($creation_date && $creation_date!="0000-00-00") ? $creation_date : date("Y-m-d");
+    $last_review_date           = get_standard_date_from_default_format($_POST['last_review_date']);
+    $review_frequency           = (int)$_POST['review_frequency'];
+    $next_review_date           = get_standard_date_from_default_format($_POST['next_review_date']);
+    $approval_date              = get_standard_date_from_default_format($_POST['approval_date']);
+    $document_owner             = (int)$_POST['document_owner'];
+    $additional_stakeholders    = empty($_POST['additional_stakeholders']) ? [] : $_POST['additional_stakeholders'];
+    $approver                   = (int)$_POST['approver'];
+    $team_ids                   = empty($_POST['team_ids']) ? [] : $_POST['team_ids'];
+    
+    // Check if the document name is null
+    if (!$document_type || !$document_name)
+    {
+        // Display an alert
+        set_alert(true, "bad", "The document name cannot be empty.");
+    }
+    // Otherwise
+    else
+    {
+        if(empty($_SESSION['modify_documentation']))
+        {
             // Display an alert
-            set_alert(true, "bad", "The document name cannot be empty.");
-      }
-      // Otherwise
-      else
-      {
-            if(empty($_SESSION['modify_documentation']))
-            {
-                // Display an alert
-                set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyDocumentationPermission']));
-            }
-            // Update document
-            elseif($errors = update_document($id, $document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver, implode(',', $team_ids)))
-            {
-                // Display an alert
-                set_alert(true, "good", $escaper->escapeHtml($lang['DocumentUpdated']));
-            }
-      }
-      refresh();
+            set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyDocumentationPermission']));
+        }
+        // Update document
+        elseif($errors = update_document($id, $updater, $document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver, implode(',', $team_ids)))
+        {
+            // Display an alert
+            set_alert(true, "good", $escaper->escapeHtml($lang['DocumentUpdated']));
+        }
+    }
+    refresh();
 }
 
 // Check if a document was submitted to update

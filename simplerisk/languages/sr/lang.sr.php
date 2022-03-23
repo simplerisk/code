@@ -2165,8 +2165,6 @@ $lang = array(
     'AnswerPlaceholder' => 'Додајте одговор',
     'QuestionPlaceholder' => 'Додајте питање',
     'NoFileAttached' => 'Није приложена датотека',
-    'MarkAsUnmitigated' => 'Означи као неометано',
-    'MarkAsUnreviewed' => 'Означи као непрегледано',
     'NoDataToUpdate' => 'Nema podataka za ažuriranje',
     'SelectedQuestions' => 'Изабрана питања',
     'CreateTabs' => 'Креирајте картице',
@@ -2182,8 +2180,24 @@ $lang = array(
     'EnableSSLCertificateCheck' => 'Омогућите проверу ССЛ сертификата',
     'CantDeleteTheDefaultThreatGrouping' => 'Не могу да избришем подразумевано груписање претњи',
     'ThreatGroupings' => 'Групације претњи',
+    'RiskCatalogDropdownPlaceholder' => 'Изаберите мапирање ризика или почните да куцате да бисте претраживали',
+    'ThreatCatalogDropdownPlaceholder' => 'Изаберите мапирање претњи или почните да куцате да бисте претраживали',
+    'UserDropdownPlaceholder' => 'Изаберите корисника или почните да куцате да бисте претражили',
+    'GraphicalRiskAnalysis' => 'Графичка анализа ризика',
+    'ResetMitigations' => 'Ресетуј ублажавања',
+    'ResetReviews' => 'Ресетујте рецензије',
+	'EnableEncryptionDebugLogging' => 'Омогући додатно евидентирање грешака у шифрованој бази података',
+    'Log' => 'Пријава',
+    'Date' => 'Датум',
+    'Platform' => 'Платформа',
+    'NotifyOnNewDocument' => 'Обавестите о новом документу',
+    'NotifyOnDocumentUpdate' => 'Обавестите о ажурирању документа',
+    'AuditLog_DocumentCreate' => 'Нови документ под називом „{$document_name}“ креирао је корисник „{$user_name}“.',
+    'UpdatedBy'=>'Упдатед Би',
+    'AllowTeamToSeeDocuments'=>'Дозволите тиму да види документе',
+    'AllowDocumentOwnersManagerToSeeDocuments' => 'Дозволите менаџеру власника документа да види документе',
 
-    '' => ''
+    '' => '',
 );
 
 ?>

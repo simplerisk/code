@@ -11,6 +11,7 @@ require_once(realpath(__DIR__ . '/services.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
 require_once(realpath(__DIR__ . '/extras.php'));
 require_once(realpath(__DIR__ . '/authenticate.php'));
+require_once(realpath(__DIR__ . '/healthcheck.php'));
 
 // Include the language file
 require_once(language_file());
@@ -303,8 +304,11 @@ function db_open()
     }
     catch (PDOException $e)
     {
-        printf("<br />SimpleRisk is unable to communicate with the database.  You should double-check your settings in the config.php file.  If the problem persists, you can try manually connecting to the database using the command '<i>mysql -h &lt;hostname&gt; -u &lt;username&gt; -p</i>' and specifying the password when prompted.  If the issue persists, contact support and provide a copy of any relevant messages from your web server's error log.<br />\n");
         //die("Database Connection Failed: " . $e->getMessage());
+
+        // We were unable to connect to the SimpleRisk database
+        require_once(realpath(__DIR__ . '/healthcheck.php'));
+        unable_to_communicate_with_database();
     }
 
     return null;
@@ -525,7 +529,7 @@ function delete_dynamic_selection($id)
     // Close the database connection
     db_close($db);
 
-    $message = "The selections for Dynamic Risk Report (ID : {$id}) was created by the \"" . $_SESSION['user'] . "\" user.";
+    $message = "The selections for Dynamic Risk Report (ID : {$id}) was deleted by the \"" . $_SESSION['user'] . "\" user.";
     write_log(1000, $_SESSION['uid'], $message);
 }
 
@@ -11536,8 +11540,16 @@ function write_debug_log($value)
         $GLOBALS['debug_logging'] = get_setting("debug_logging");
     }
 
+    // If a global variable for the debug log file is not already set
+    if (!isset($GLOBALS['debug_log_file']))
+    {
+        // Get the current debug setting from the database
+        $GLOBALS['debug_log_file']  = get_setting("debug_log_file");
+    }
+
     // Set debug logging to the global variable
     $debug_logging = $GLOBALS['debug_logging'];
+    $log_file = $GLOBALS['debug_log_file'];
 
     // If DEBUG is enabled
     if ($debug_logging == 1)
@@ -11545,10 +11557,7 @@ function write_debug_log($value)
         // If the value is not an array
         if (!is_array($value))
         {
-            // Log file to write to
-            $log_file = get_setting("debug_log_file");
-
-	    $root_path = str_replace('/', '\\', realpath(__DIR__ . '/../'));
+	        $root_path = str_replace('/', '\\', realpath(__DIR__ . '/../'));
             $log_path = str_replace('/', '\\', realpath(dirname($log_file)));
             if(strpos($log_path, $root_path) === false && $log_path != ""){
                 // Write to the error log
@@ -18597,6 +18606,8 @@ $change_audit_log_localization_config = [
     ],
 
     'document' => [
+        'submitted_by' => 'SubmittedBy',
+        'updated_by' => 'UpdatedBy',
         'document_type' => 'DocumentType',
         'document_name' => 'DocumentName',
         'control_ids' => 'Controls',
@@ -18613,6 +18624,7 @@ $change_audit_log_localization_config = [
         'approver' => 'Approver',
         'team_ids' => 'Teams',
     ],
+
     'user' => [
         'enabled' => 'Enabled',
         'lockout' => 'AccountLockedOut',
@@ -18633,12 +18645,23 @@ $change_audit_log_localization_config = [
 
 /**
  * Function: GET CHANGES
- * The function is used to get the list of changes of two objects(arrays) of `before` and `after` states in a string format of "`{$field_name}` (`{$before}` => `{$after}`)"
- * Example response: `Audit Status` (`Evidence Submitted / Pending Review` => `Pending Evidence from Control Owner`), `Tester` (`Admin` => `Josh Sokol`)
+ * The function is used to get the list of changes of two objects(arrays) of `before` and `after` states 
+ * Return value is based on the return_type parameter's value.
+ *      1: Returns a string in the format of "`{$field_name}` (`{$before}` => `{$after}`)"
+ *      2: Return the differences in an array in the format of [{'<changed field's name>': {'from': '<original value>', 'to': <new value>}}, ...]
+ *      3: Both of the above in the format of [String, Array]
+ * 
+ * Example response: 
+ *      1: "`Audit Status` (`Evidence Submitted / Pending Review` => `Pending Evidence from Control Owner`), `Tester` (`Admin` => `Josh Sokol`)"
+ *      2: [{'Audit Status': {'from': 'Evidence Submitted / Pending Review', 'to': Pending Evidence from Control Owner}}, {'Tester': {'from': 'Admin', 'to': Josh Sokol}}]
+ *      3: [
+ *              "`Audit Status` (`Evidence Submitted / Pending Review` => `Pending Evidence from Control Owner`), `Tester` (`Admin` => `Josh Sokol`)",
+ *              [{'Audit Status': {'from': 'Evidence Submitted / Pending Review', 'to': Pending Evidence from Control Owner}}, {'Tester': {'from': 'Admin', 'to': Josh Sokol}}]
+ *         ]
  */
 // When adding fields you can skip adding logic for fields that are displayed as-is, like name, subject, title, etc
 // because they're just added to the differences as they are(if changed)
-function get_changes($type, $before, $after) {
+function get_changes($type, $before, $after, $return_type = 1) {
 
     if (!$before || !$after || !is_array($before) || !is_array($after)) {
         return '';
@@ -18646,7 +18669,8 @@ function get_changes($type, $before, $after) {
 
     global $lang, $change_audit_log_localization_config;
 
-    $differences = [];
+    $diff_arr = [];
+    $diff_str = [];
 
     foreach ($change_audit_log_localization_config[$type] as $field => $key) {
         if (isset($before[$field]) && isset($after[$field]) && $before[$field] !== $after[$field]) {
@@ -18681,6 +18705,7 @@ function get_changes($type, $before, $after) {
 
                     case 'control_owner':
                     case 'submitted_by':
+                    case 'updated_by':
                     case 'document_owner':
                     case 'approver':
                     case 'manager':
@@ -18737,7 +18762,7 @@ function get_changes($type, $before, $after) {
                             // Get the document name
                             $document = get_document_by_id($before[$field]);
                             $before[$field] = $document['document_name'];
-                                    }
+                        }
                         else $before[$field] = "--";
 
                         if ($after[$field]) {
@@ -18888,15 +18913,35 @@ function get_changes($type, $before, $after) {
                 }
             }
 
-            $differences[]= _lang('FieldChangeTemplate', [
-                'field_name' => $lang[$key],
-                'before' => $before[$field],
-                'after' => $after[$field]
-            ], false);
+            // return_type is 'array' or 'both'
+            if ($return_type >= 2) {
+                $diff_arr[$lang[$key]] = [
+                    'from' => $before[$field],
+                    'to' => $after[$field]
+                ];
+            }
+            // return_type is 'string' or 'both'
+            if ($return_type == 1 || $return_type == 3) {
+                $diff_str[]= _lang('FieldChangeTemplate', [
+                    'field_name' => $lang[$key],
+                    'before' => $before[$field],
+                    'after' => $after[$field]
+                ], false);
+            }
         }
     }
 
-    return $differences ? implode(', ', $differences) : '';
+    if ($return_type == 1) {
+        return implode(', ', $diff_str);
+    }
+    
+    if ($return_type == 2) {
+        return $diff_arr;
+    }
+    
+    if ($return_type == 3) {
+        return [implode(', ', $diff_str), $diff_arr];
+    }
 }
 
 /*****************************
@@ -19842,6 +19887,7 @@ function create_selectize_dropdown($type, $selected_values, $additional_info = f
             $option_type = 'risk_catalog_grouped';
             $multiple = true;
             $grouped = true;
+            $placeholder = $lang['RiskCatalogDropdownPlaceholder'];
             break;
         case 'threat_catalog' :
             $name = 'threat_catalog_mapping';
@@ -19849,6 +19895,7 @@ function create_selectize_dropdown($type, $selected_values, $additional_info = f
             $option_type = 'threat_catalog_grouped';
             $multiple = true;
             $grouped = true;
+            $placeholder = $lang['ThreatCatalogDropdownPlaceholder'];
             break;
         case 'enabled_users' :
             $name = !empty($additional_info['name']) ? $additional_info['name'] : 'enabled_users';
@@ -19856,6 +19903,7 @@ function create_selectize_dropdown($type, $selected_values, $additional_info = f
             $option_type = 'enabled_users';
             $multiple = !empty($additional_info['multiple']) ? $additional_info['multiple'] : false;
             $grouped = false;
+            $placeholder = !empty($additional_info['placeholder']) ? $additional_info['placeholder'] : $lang['UserDropdownPlaceholder'];
             break;
     }
 
@@ -19872,6 +19920,7 @@ function create_selectize_dropdown($type, $selected_values, $additional_info = f
                             labelField: 'name',
                             create: false,
                             persist: false,
+                            placeholder: '{$escaper->escapeHtml($placeholder)}',
                             options: [";
     if ($grouped) {
         $groups = [];
@@ -19953,30 +20002,6 @@ function sanitize_int_array($int_array) {
 
     return array_filter($int_array, function($id){return ctype_digit((string)$id);});
 }
-/************************************
- * FUNCTION: GET USERS VALUES ARRAY *
- ************************************/
-function get_user_values_array()
-{
-    // Open the database connection
-    $db = db_open();
-
-    $stmt = $db->prepare("SELECT * FROM user");
-    $stmt->bindParam(":user", $user, PDO::PARAM_STR);
-    $stmt->execute();
-
-    // Store the list in the array
-    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Close the database connection
-    db_close($db);
-    $users = array('' => '', 0 => '');
-    foreach ($array as $user) {
-        $users[$user['value']] = $user['name'];
-    }
-    return $users;
-}
-
 function reassign_groupless_risk_catalogs($default_group_id = false) {
 
     $db = db_open();
@@ -20041,6 +20066,142 @@ function reassign_groupless_threat_catalogs($default_group_id = false) {
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->execute();
     }
+}
+
+/***************************************
+ * FUNCTION: SAVE GRAPHICAL SELECTIONS *
+ ***************************************/
+function save_graphical_selections($type, $name, $graphic_form_data=[])
+{
+    global $escaper, $lang;
+
+    $graphical_display_settings = json_encode($graphic_form_data);
+    
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("INSERT INTO `graphical_saved_selections` (`user_id`, `type`, `name`, `graphical_display_settings`) VALUES (:user_id, :type, :name, :graphical_display_settings); ");
+    
+    $stmt->bindParam(":user_id", $_SESSION['uid'], PDO::PARAM_INT);
+    $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+    $stmt->bindParam(":graphical_display_settings", $graphical_display_settings, PDO::PARAM_STR);
+    $stmt->execute();
+
+    $id = $db->lastInsertId();
+
+    // Close the database connection
+    db_close($db);
+
+    $message = "The selections for Graphical Risk Analysis named \"" . $escaper->escapeHtml($name) . "\" was created by the \"" . $_SESSION['user'] . "\" user.";
+    write_log(1000, $_SESSION['uid'], $message);
+
+    return $id;
+}
+
+/********************************************
+ * FUNCTION: DELETE GRAPHICAL SELECTION BY ID *
+ ********************************************/
+function delete_graphical_selection($id)
+{
+    global $escaper, $lang;
+
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("DELETE FROM `graphical_saved_selections` WHERE value=:value; ");
+    
+    $stmt->bindParam(":value", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+
+    $message = "The selections for Graphical Risk Analysis (ID : {$id}) was deleted by the \"" . $_SESSION['user'] . "\" user.";
+    write_log(1000, $_SESSION['uid'], $message);
+}
+
+/***************************************************
+ * FUNCTION: CHECK EXISTING GRAPHICAL SELECTION NAME *
+ ***************************************************/
+function check_exisiting_graphical_selection_name($user_id, $name)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT * FROM `graphical_saved_selections` WHERE name=:name AND (type='private' AND user_id=:user_id || type='public');");
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_STR);
+    $stmt->execute();
+
+    // Store the list in the array
+    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+    
+    return $array ? true: false;
+}
+/******************************************
+ * FUNCTION: GET GRAPHICAL SAVED SELECTIONS *
+ ******************************************/
+function get_graphical_saved_selections($user_id)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // If the requesting user is an admin then return all the saved selections
+    // When returning other users' saved selections add the users' name to the saved selections' names
+    // Results are ordered to have the user's own saved selections first,
+    // then they're ordered to display private saved selections first then the publics 
+    $stmt = $db->prepare("
+        SELECT
+            `dss`.`value`,
+            IF(`u`.`value` <> :user_id, CONCAT(`dss`.`name`, ' (', `u`.`name`, ')'), `dss`.`name`) as name,
+            `dss`.`type`,
+            `dss`.`user_id`,
+            `dss`.`graphical_display_settings`
+        FROM
+            `graphical_saved_selections` dss
+            INNER JOIN `user` u ON `u`.`value` = `dss`.`user_id`
+        WHERE
+            `dss`.`type`='public'
+            OR (`dss`.`type` = 'private' AND `dss`.`user_id` = :user_id)
+            OR (SELECT `admin` FROM `user` WHERE `value` = :user_id) = 1
+        ORDER BY
+            `dss`.`user_id` <> :user_id, `dss`.`type` = 'public';
+    ");
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Get dynamic saved selections
+    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    return $array;
+}
+
+/**************************************************
+ * FUNCTION: GET GRAPHICAL SAVED SELECTION BY VALUE *
+ **************************************************/
+function get_graphical_saved_selection($value)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT user_id, name, type, graphical_display_settings FROM `graphical_saved_selections` WHERE `value`=:value;");
+    $stmt->bindParam(":value", $value, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Get dynamic saved selections
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Close the database connection
+    db_close($db);
+
+    return $row;
 }
 
 ?>

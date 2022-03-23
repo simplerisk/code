@@ -158,6 +158,7 @@ $releases = array(
 	"20211115-001",
 	"20211230-001",
 	"20220122-001",
+	"20220306-001",
 );
 
 /*************************
@@ -6313,6 +6314,58 @@ function upgrade_from_20211230001($db)
                 $stmt->execute();
             }
         }
+    }
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20220122-001 *
+ ***************************************/
+function upgrade_from_20220122001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20220122-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20220306-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    if (!table_exists('graphical_saved_selections')) {
+        // Add the graphical_saved_selections table
+        echo "Adding the table to graphical saved selections.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE `graphical_saved_selections` (
+              `value` int(11) NOT NULL AUTO_INCREMENT,
+              `user_id` int(11) NOT NULL,
+              `type` enum('private','public') NOT NULL,
+              `name` varchar(100) NOT NULL,
+              `graphical_display_settings` varchar(1000) NOT NULL,
+              PRIMARY KEY(value)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $stmt->execute();
+    }
+
+    if (!field_exists_in_table('submitted_by', 'documents')) {
+        // Adding the submitted_by field to the documents table to be able to track who submitted the document
+        echo "Adding the submitted_by field to the documents table to be able to track who submitted the document.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` ADD `submitted_by` INT(11) DEFAULT 0 NOT NULL AFTER `id`;");
+        $stmt->execute();
+    }
+    
+    if (!field_exists_in_table('updated_by', 'documents')) {
+        // Adding the updated_by field to the documents table to be able to track who updated the document
+        echo "Adding the updated_by field to the documents table to be able to track who updated the document.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` ADD `updated_by` INT(11) DEFAULT 0 NOT NULL AFTER `submitted_by`;");
+        $stmt->execute();
     }
 
     // To make sure page loads won't fail after the upgrade
