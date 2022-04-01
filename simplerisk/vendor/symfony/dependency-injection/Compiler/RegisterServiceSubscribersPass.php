@@ -11,12 +11,15 @@
 
 namespace Symfony\Component\DependencyInjection\Compiler;
 
+use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Symfony\Component\DependencyInjection\Argument\BoundArgument;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\DependencyInjection\ServiceSubscriberInterface;
 use Symfony\Component\DependencyInjection\TypedReference;
+use Symfony\Contracts\Service\ServiceProviderInterface;
+use Symfony\Contracts\Service\ServiceSubscriberInterface;
 
 /**
  * Compiler pass to register tagged services that require a service locator.
@@ -65,7 +68,6 @@ class RegisterServiceSubscribersPass extends AbstractRecursivePass
         $class = $r->name;
 
         $subscriberMap = [];
-        $declaringClass = (new \ReflectionMethod($class, 'getSubscribedServices'))->class;
 
         foreach ($class::getSubscribedServices() as $key => $type) {
             if (!\is_string($type) || !preg_match('/^\??[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+)*+$/', $type)) {
@@ -75,8 +77,9 @@ class RegisterServiceSubscribersPass extends AbstractRecursivePass
                 $type = substr($type, 1);
                 $optionalBehavior = ContainerInterface::IGNORE_ON_INVALID_REFERENCE;
             }
-            if (\is_int($key)) {
+            if (\is_int($name = $key)) {
                 $key = $type;
+                $name = null;
             }
             if (!isset($serviceMap[$key])) {
                 if (!$autowire) {
@@ -85,7 +88,20 @@ class RegisterServiceSubscribersPass extends AbstractRecursivePass
                 $serviceMap[$key] = new Reference($type);
             }
 
-            $subscriberMap[$key] = new TypedReference($this->container->normalizeId($serviceMap[$key]), $type, $declaringClass, $optionalBehavior ?: ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE);
+            if ($name) {
+                if (false !== $i = strpos($name, '::get')) {
+                    $name = lcfirst(substr($name, 5 + $i));
+                } elseif (str_contains($name, '::')) {
+                    $name = null;
+                }
+            }
+
+            if (null !== $name && !$this->container->has($name) && !$this->container->has($type.' $'.$name)) {
+                $camelCaseName = lcfirst(str_replace(' ', '', ucwords(preg_replace('/[^a-zA-Z0-9\x7f-\xff]++/', ' ', $name))));
+                $name = $this->container->has($type.' $'.$camelCaseName) ? $camelCaseName : $name;
+            }
+
+            $subscriberMap[$key] = new TypedReference((string) $serviceMap[$key], $type, $optionalBehavior ?: ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $name);
             unset($serviceMap[$key]);
         }
 
@@ -94,7 +110,14 @@ class RegisterServiceSubscribersPass extends AbstractRecursivePass
             throw new InvalidArgumentException(sprintf('Service %s not exist in the map returned by "%s::getSubscribedServices()" for service "%s".', $message, $class, $this->currentId));
         }
 
-        $value->addTag('container.service_subscriber.locator', ['id' => (string) ServiceLocatorTagPass::register($this->container, $subscriberMap, $this->currentId)]);
+        $locatorRef = ServiceLocatorTagPass::register($this->container, $subscriberMap, $this->currentId);
+
+        $value->addTag('container.service_subscriber.locator', ['id' => (string) $locatorRef]);
+
+        $value->setBindings([
+            PsrContainerInterface::class => new BoundArgument($locatorRef, false),
+            ServiceProviderInterface::class => new BoundArgument($locatorRef, false),
+        ] + $value->getBindings());
 
         return parent::processValue($value);
     }

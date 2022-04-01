@@ -185,12 +185,14 @@ require_once(language_file());
           $("#platforms").multiselect({
             includeSelectAllOption: true,
             clearButton: true,
-            filter: true
+            filter: true,
+            enableCaseInsensitiveFiltering: true,
           });
           $("#sites").multiselect({
             includeSelectAllOption: true,
             clearButton: true,
-            filter: true
+            filter: true,
+            enableCaseInsensitiveFiltering: true,
           });
         }); 
 

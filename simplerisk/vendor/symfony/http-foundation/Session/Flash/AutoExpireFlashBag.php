@@ -25,7 +25,7 @@ class AutoExpireFlashBag implements FlashBagInterface
     /**
      * @param string $storageKey The key used to store flashes in the session
      */
-    public function __construct($storageKey = '_symfony_flashes')
+    public function __construct(string $storageKey = '_symfony_flashes')
     {
         $this->storageKey = $storageKey;
     }
@@ -78,7 +78,7 @@ class AutoExpireFlashBag implements FlashBagInterface
      */
     public function peekAll()
     {
-        return \array_key_exists('display', $this->flashes) ? (array) $this->flashes['display'] : [];
+        return \array_key_exists('display', $this->flashes) ? $this->flashes['display'] : [];
     }
 
     /**

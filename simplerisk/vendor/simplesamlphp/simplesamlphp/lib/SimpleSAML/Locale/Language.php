@@ -8,6 +8,8 @@
  * @package SimpleSAMLphp
  */
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Locale;
 
 use SimpleSAML\Configuration;
@@ -122,6 +124,7 @@ class Language
         'af'    => 'Afrikaans', // Afrikaans
         'zu'    => 'IsiZulu', // Zulu
         'xh'    => 'isiXhosa', // Xhosa
+        'st'    => 'Sesotho', // Sesotho
     ];
 
     /**
@@ -162,7 +165,7 @@ class Language
      *
      * @return array The set of languages both in 'language.available' and self::$language_names.
      */
-    private function getInstalledLanguages()
+    private function getInstalledLanguages(): array
     {
         $configuredAvailableLanguages = $this->configuration->getArray('language.available', ['en']);
         $availableLanguages = [];
@@ -287,7 +290,7 @@ class Language
      * @return string|null The preferred language based on the Accept-Language HTTP header,
      * or null if none of the languages in the header is available.
      */
-    private function getHTTPLanguage()
+    private function getHTTPLanguage(): ?string
     {
         $languageScore = Utils\HTTP::getAcceptLanguage();
 
@@ -420,7 +423,7 @@ class Language
         $name = $config->getString('language.cookie.name', 'language');
         $params = [
             'lifetime' => ($config->getInteger('language.cookie.lifetime', 60 * 60 * 24 * 900)),
-            'domain'   => ($config->getString('language.cookie.domain', null)),
+            'domain'   => strval($config->getString('language.cookie.domain', null)),
             'path'     => ($config->getString('language.cookie.path', '/')),
             'secure'   => ($config->getBoolean('language.cookie.secure', false)),
             'httponly' => ($config->getBoolean('language.cookie.httponly', false)),

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Utils;
 
 use SimpleSAML\Configuration;
@@ -17,6 +19,51 @@ use SimpleSAML\XHTML\Template;
 class HTTP
 {
     /**
+     * Determine if the user agent can support cookies being sent with SameSite equal to "None".
+     * Browsers with out support may drop the cookie and or treat is a stricter setting
+     * Browsers with support may have additional requirements on setting it on non-secure websites.
+     *
+     * Based on the Azure teams experience rolling out support and Chromium's advice
+     * https://devblogs.microsoft.com/aspnet/upcoming-samesite-cookie-changes-in-asp-net-and-asp-net-core/
+     * https://www.chromium.org/updates/same-site/incompatible-clients
+     * @return bool true if user agent supports a None value for SameSite.
+     */
+    public static function canSetSameSiteNone(): bool
+    {
+        $useragent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+        if (!$useragent) {
+            return true;
+        }
+        // All iOS 12 based browsers have no support
+        if (strpos($useragent, "CPU iPhone OS 12") !== false || strpos($useragent, "iPad; CPU OS 12") !== false) {
+            return false;
+        }
+
+        // Safari Mac OS X 10.14 has no support
+        // - Safari on Mac OS X.
+        if (strpos($useragent, "Macintosh; Intel Mac OS X 10_14") !== false) {
+            // regular safari
+            if (strpos($useragent, "Version/") !== false && strpos($useragent, "Safari") !== false) {
+                return false;
+            } elseif (preg_match('|AppleWebKit/[\.\d]+ \(KHTML, like Gecko\)$|', $useragent)) {
+                return false;
+            }
+        }
+
+        // Chrome based UCBrowser may have support (>= 12.13.2) even though its chrome version is old
+        $matches = [];
+        if (preg_match('|UCBrowser/(\d+\.\d+\.\d+)[\.\d]*|', $useragent, $matches)) {
+            return version_compare($matches[1], '12.13.2', '>=');
+        }
+
+        // Chrome 50-69 may have broken SameSite=None and don't require it to be set
+        if (strpos($useragent, "Chrome/5") !== false || strpos($useragent, "Chrome/6") !== false) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Obtain a URL where we can redirect to securely post a form with the given data to a specific destination.
      *
      * @param string $destination The destination URL.
@@ -27,7 +74,7 @@ class HTTP
      *
      * @author Jaime Perez, UNINETT AS <jaime.perez@uninett.no>
      */
-    private static function getSecurePOSTRedirectURL($destination, $data)
+    private static function getSecurePOSTRedirectURL(string $destination, array $data): string
     {
         $session = Session::getSessionFromRequest();
         $id = self::savePOSTData($session, $destination, $data);
@@ -56,7 +103,7 @@ class HTTP
      *
      * @author Olav Morken, UNINETT AS <olav.morken@uninett.no>
      */
-    private static function getServerHost()
+    private static function getServerHost(): string
     {
         if (array_key_exists('HTTP_HOST', $_SERVER)) {
             $current = $_SERVER['HTTP_HOST'];
@@ -171,9 +218,9 @@ class HTTP
      * @author Mads Freek Petersen
      * @author Jaime Perez, UNINETT AS <jaime.perez@uninett.no>
      */
-    private static function redirect($url, $parameters = [])
+    private static function redirect(string $url, array $parameters = []): void
     {
-        if (!is_string($url) || empty($url) || !is_array($parameters)) {
+        if (empty($url)) {
             throw new \InvalidArgumentException('Invalid input parameters.');
         }
         if (!self::isValidURL($url)) {
@@ -246,7 +293,7 @@ class HTTP
      * @author Andjelko Horvat
      * @author Jaime Perez, UNINETT AS <jaime.perez@uninett.no>
      */
-    private static function savePOSTData(Session $session, $destination, $data)
+    private static function savePOSTData(Session $session, string $destination, array $data): string
     {
         // generate a random ID to avoid replay attacks
         $id = Random::generateID();
@@ -816,7 +863,7 @@ class HTTP
         // convert that relative path to an HTTP query
         $url_path = str_replace(DIRECTORY_SEPARATOR, '/', $rel_path);
         // find where the relative path starts in the current request URI
-        $uri_pos = (!empty($url_path)) ? strpos($_SERVER['REQUEST_URI'], $url_path) : false;
+        $uri_pos = (!empty($url_path)) ? strpos($_SERVER['REQUEST_URI'] ?? '', $url_path) : false;
 
         if ($cur_path == $rel_path || $uri_pos === false) {
             /*
@@ -1165,7 +1212,7 @@ class HTTP
             'lifetime' => 0,
             'expire'   => null,
             'path'     => '/',
-            'domain'   => null,
+            'domain'   => '',
             'secure'   => false,
             'httponly' => true,
             'raw'      => false,
@@ -1204,7 +1251,7 @@ class HTTP
         if (version_compare(PHP_VERSION, '7.3.0', '>=')) {
             /* use the new options array for PHP >= 7.3 */
             if ($params['raw']) {
-                /** @psalm-suppress InvalidArgument  Remove when Psalm >= 3.4.10 */
+                /** @psalm-suppress InvalidArgument */
                 $success = @setrawcookie(
                     $name,
                     $value,
@@ -1218,7 +1265,7 @@ class HTTP
                     ]
                 );
             } else {
-                /** @psalm-suppress InvalidArgument  Remove when Psalm >= 3.4.10 */
+                /** @psalm-suppress InvalidArgument */
                 $success = @setcookie(
                     $name,
                     $value,

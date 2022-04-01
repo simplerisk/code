@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\core\Storage;
 
 use PDO;
@@ -47,6 +49,7 @@ class SQLPermanentStorage
 
         $dbfile = 'sqlite:' . $sqllitedir . $name . '.sqlite';
         if ($this->db = new PDO($dbfile)) {
+            $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
             $q = @$this->db->query('SELECT key1 FROM data LIMIT 1');
             if ($q === false) {
                 $this->db->exec('
@@ -70,9 +73,9 @@ class SQLPermanentStorage
 
     /**
      * @param string $type
-     * @param mixed $key1
-     * @param mixed $key2
-     * @param mixed $value
+     * @param string $key1
+     * @param string $key2
+     * @param string $value
      * @param int|null $duration
      * @return void
      */
@@ -88,13 +91,13 @@ class SQLPermanentStorage
 
     /**
      * @param string $type
-     * @param mixed $key1
-     * @param mixed $key2
-     * @param mixed $value
+     * @param string $key1
+     * @param string $key2
+     * @param string $value
      * @param int|null $duration
      * @return array
      */
-    private function insert($type, $key1, $key2, $value, $duration = null)
+    private function insert(string $type, string $key1, string $key2, string $value, int $duration = null): array
     {
         $expire = is_null($duration) ? null : (time() + $duration);
 
@@ -114,13 +117,13 @@ class SQLPermanentStorage
 
     /**
      * @param string $type
-     * @param mixed $key1
-     * @param mixed $key2
-     * @param mixed $value
+     * @param string $key1
+     * @param string $key2
+     * @param string $value
      * @param int|null $duration
      * @return array
      */
-    private function update($type, $key1, $key2, $value, $duration = null)
+    private function update(string $type, string $key1, string $key2, string $value, int $duration = null): array
     {
         $expire = is_null($duration) ? null : (time() + $duration);
 
@@ -139,8 +142,8 @@ class SQLPermanentStorage
 
     /**
      * @param string $type
-     * @param mixed $key1
-     * @param mixed $key2
+     * @param string $key1
+     * @param string $key2
      * @return array|null
      */
     public function get($type = null, $key1 = null, $key2 = null)
@@ -164,8 +167,8 @@ class SQLPermanentStorage
      * Return the value directly (not in a container)
      *
      * @param string $type
-     * @param mixed $key1
-     * @param mixed $key2
+     * @param string $key1
+     * @param string $key2
      * @return array|null
      */
     public function getValue($type = null, $key1 = null, $key2 = null)
@@ -180,8 +183,8 @@ class SQLPermanentStorage
 
     /**
      * @param string $type
-     * @param mixed $key1
-     * @param mixed $key2
+     * @param string $key1
+     * @param string $key2
      * @return bool
      */
     public function exists($type, $key1, $key2)
@@ -197,8 +200,8 @@ class SQLPermanentStorage
 
     /**
      * @param string $type
-     * @param mixed $key1
-     * @param mixed $key2
+     * @param string $key1
+     * @param string $key2
      * @return array|false
      */
     public function getList($type = null, $key1 = null, $key2 = null)
@@ -222,8 +225,8 @@ class SQLPermanentStorage
 
     /**
      * @param string $type
-     * @param mixed $key1
-     * @param mixed $key2
+     * @param string $key1
+     * @param string $key2
      * @param string $whichKey
      * @throws \Exception
      * @return array|null
@@ -254,8 +257,8 @@ class SQLPermanentStorage
 
     /**
      * @param string $type
-     * @param mixed $key1
-     * @param mixed $key2
+     * @param string $key1
+     * @param string $key2
      * @return bool
      */
     public function remove($type, $key1, $key2)
@@ -285,11 +288,11 @@ class SQLPermanentStorage
      * Create a SQL condition statement based on parameters
      *
      * @param string $type
-     * @param mixed $key1
-     * @param mixed $key2
+     * @param string $key1
+     * @param string $key2
      * @return string
      */
-    private function getCondition($type = null, $key1 = null, $key2 = null)
+    private function getCondition(string $type = null, string $key1 = null, string $key2 = null): string
     {
         $conditions = [];
         if (!is_null($type)) {

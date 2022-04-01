@@ -18,8 +18,10 @@ namespace Symfony\Component\Config\Resource;
  * The resource can be a file or a directory.
  *
  * @author Charles-Henri Bruyand <charleshenri.bruyand@gmail.com>
+ *
+ * @final since Symfony 4.3
  */
-class FileExistenceResource implements SelfCheckingResourceInterface, \Serializable
+class FileExistenceResource implements SelfCheckingResourceInterface
 {
     private $resource;
 
@@ -28,15 +30,12 @@ class FileExistenceResource implements SelfCheckingResourceInterface, \Serializa
     /**
      * @param string $resource The file path to the resource
      */
-    public function __construct($resource)
+    public function __construct(string $resource)
     {
-        $this->resource = (string) $resource;
+        $this->resource = $resource;
         $this->exists = file_exists($resource);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function __toString()
     {
         return $this->resource;
@@ -56,21 +55,5 @@ class FileExistenceResource implements SelfCheckingResourceInterface, \Serializa
     public function isFresh($timestamp)
     {
         return file_exists($this->resource) === $this->exists;
-    }
-
-    /**
-     * @internal
-     */
-    public function serialize()
-    {
-        return serialize([$this->resource, $this->exists]);
-    }
-
-    /**
-     * @internal
-     */
-    public function unserialize($serialized)
-    {
-        list($this->resource, $this->exists) = unserialize($serialized);
     }
 }

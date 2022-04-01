@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\HTTP;
 
 use Symfony\Component\HttpFoundation\Response;
@@ -61,7 +63,9 @@ class RunnableResponse extends Response
     /**
      * "Send" this response by actually running the callable.
      *
-     * @return self
+     * @return $this
+     *
+     * Note: No return-type possible due to upstream limitations
      */
     public function sendContent()
     {

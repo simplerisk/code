@@ -11,21 +11,24 @@
 
 namespace Symfony\Component\DependencyInjection;
 
+use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
+
 class Alias
 {
+    private const DEFAULT_DEPRECATION_TEMPLATE = 'The "%alias_id%" service alias is deprecated. You should stop using it, as it will be removed in the future.';
+
     private $id;
     private $public;
     private $private;
+    private $deprecated;
+    private $deprecationTemplate;
 
-    /**
-     * @param string $id     Alias identifier
-     * @param bool   $public If this alias is public
-     */
-    public function __construct($id, $public = true)
+    public function __construct(string $id, bool $public = true)
     {
-        $this->id = (string) $id;
+        $this->id = $id;
         $this->public = $public;
         $this->private = 2 > \func_num_args();
+        $this->deprecated = false;
     }
 
     /**
@@ -80,6 +83,46 @@ class Alias
     public function isPrivate()
     {
         return $this->private;
+    }
+
+    /**
+     * Whether this alias is deprecated, that means it should not be referenced
+     * anymore.
+     *
+     * @param bool   $status   Whether this alias is deprecated, defaults to true
+     * @param string $template Optional template message to use if the alias is deprecated
+     *
+     * @return $this
+     *
+     * @throws InvalidArgumentException when the message template is invalid
+     */
+    public function setDeprecated($status = true, $template = null)
+    {
+        if (null !== $template) {
+            if (preg_match('#[\r\n]|\*/#', $template)) {
+                throw new InvalidArgumentException('Invalid characters found in deprecation template.');
+            }
+
+            if (!str_contains($template, '%alias_id%')) {
+                throw new InvalidArgumentException('The deprecation template must contain the "%alias_id%" placeholder.');
+            }
+
+            $this->deprecationTemplate = $template;
+        }
+
+        $this->deprecated = (bool) $status;
+
+        return $this;
+    }
+
+    public function isDeprecated(): bool
+    {
+        return $this->deprecated;
+    }
+
+    public function getDeprecationMessage(string $id): string
+    {
+        return str_replace('%alias_id%', $id, $this->deprecationTemplate ?: self::DEFAULT_DEPRECATION_TEMPLATE);
     }
 
     /**

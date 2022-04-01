@@ -426,7 +426,7 @@ $(document).ready(function(){
                 column_filters : columnFilters
             }
             var filter_uri = $.param( filter_params);
-            var group_value = $(this).closest('.dataTables_wrapper').find(".risk-datatable").data('group');
+            var group_value = encodeURIComponent($(this).closest('.dataTables_wrapper').find(".risk-datatable").data('group'));
             document.get_risks_by.action += "?option=download-by-group&group_value=" + group_value + "&order_column=" + orderColumnName + "&order_dir=" + orderDir + "&" + filter_uri;
             document.get_risks_by.submit();
             document.get_risks_by.action = "";
@@ -434,7 +434,7 @@ $(document).ready(function(){
         })
         $("body").on("click", '.print-by-group', function(){
             // $("#get_risks_by").attr('target', '_blank');
-            var group_value = $(this).closest('.dataTables_wrapper').find(".risk-datatable").data('group');
+            var group_value = encodeURIComponent($(this).closest('.dataTables_wrapper').find(".risk-datatable").data('group'));
             var status = $("#status").val();
             var group = $("#group").val();
             var sort = $("#sort").val();
@@ -452,6 +452,7 @@ $(document).ready(function(){
             maxHeight: 250,
             numberDisplayed: 1,
             includeSelectAllOption: true,
+            enableCaseInsensitiveFiltering: true,
             onSelectAll : function(){
                 selected_all = true;
             },

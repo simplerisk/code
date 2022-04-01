@@ -44,4 +44,12 @@ class BooleanNode extends ScalarNode
         // a boolean value cannot be empty
         return false;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getValidPlaceholderTypes(): array
+    {
+        return ['bool'];
+    }
 }

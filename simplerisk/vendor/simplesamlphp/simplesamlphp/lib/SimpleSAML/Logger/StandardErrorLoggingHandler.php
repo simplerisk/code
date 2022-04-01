@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Logger;
 
 use SimpleSAML\Configuration;
@@ -21,7 +23,8 @@ class StandardErrorLoggingHandler extends FileLoggingHandler
      */
     public function __construct(Configuration $config)
     {
-        $this->processname = $config->getString('logging.processname', 'SimpleSAMLphp');
+        // Remove any non-printable characters before storing
+        $this->processname = preg_replace('/[\x00-\x1F\x7F\xA0]/u', '', $config->getString('logging.processname', 'SimpleSAMLphp'));
         $this->logFile = 'php://stderr';
     }
 }

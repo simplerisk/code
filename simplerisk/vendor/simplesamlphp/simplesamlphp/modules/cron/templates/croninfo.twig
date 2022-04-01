@@ -2,7 +2,7 @@
 {% extends "base.twig" %}
 
 {% block preload %}
-<link rel="stylesheet" href="/{{ baseurlpath }}module.php/cron/assets/css/cron.css">
+<link rel="stylesheet" href="{{ asset('css/cron.css', 'cron') }}">
 {% endblock %}
 
 {% block content %}
@@ -12,6 +12,7 @@
 
     <div class="code-box code-box-content">
         <code id="cronlist">
+        <br />
         {% for url in urls %}
             # {{ 'Run cron:'|trans }} [{{ url.tag }}]<br />
             {{ url.int }} curl --silent "{{ url.exec_href }}" > /dev/null 2>&amp;1<br />

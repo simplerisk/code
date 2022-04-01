@@ -22,11 +22,11 @@ use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
  */
 class PassConfig
 {
-    const TYPE_AFTER_REMOVING = 'afterRemoving';
-    const TYPE_BEFORE_OPTIMIZATION = 'beforeOptimization';
-    const TYPE_BEFORE_REMOVING = 'beforeRemoving';
-    const TYPE_OPTIMIZE = 'optimization';
-    const TYPE_REMOVE = 'removing';
+    public const TYPE_AFTER_REMOVING = 'afterRemoving';
+    public const TYPE_BEFORE_OPTIMIZATION = 'beforeOptimization';
+    public const TYPE_BEFORE_REMOVING = 'beforeRemoving';
+    public const TYPE_OPTIMIZE = 'optimization';
+    public const TYPE_REMOVE = 'removing';
 
     private $mergePass;
     private $afterRemovingPasses = [];
@@ -41,7 +41,7 @@ class PassConfig
 
         $this->beforeOptimizationPasses = [
             100 => [
-                $resolveClassPass = new ResolveClassPass(),
+                new ResolveClassPass(),
                 new ResolveInstanceofConditionalsPass(),
                 new RegisterEnvVarProcessorsPass(),
             ],
@@ -49,17 +49,17 @@ class PassConfig
         ];
 
         $this->optimizationPasses = [[
+            new ValidateEnvPlaceholdersPass(),
             new ResolveChildDefinitionsPass(),
-            new ServiceLocatorTagPass(),
             new RegisterServiceSubscribersPass(),
-            new DecoratorServicePass(),
             new ResolveParameterPlaceHoldersPass(false, false),
             new ResolveFactoryClassPass(),
-            new FactoryReturnTypePass($resolveClassPass),
-            new CheckDefinitionValidityPass(),
             new ResolveNamedArgumentsPass(),
             new AutowireRequiredMethodsPass(),
             new ResolveBindingsPass(),
+            new ServiceLocatorTagPass(),
+            new DecoratorServicePass(),
+            new CheckDefinitionValidityPass(),
             new AutowirePass(false),
             new ResolveTaggedIteratorArgumentPass(),
             new ResolveServiceSubscribersPass(),
@@ -81,14 +81,15 @@ class PassConfig
             new RemovePrivateAliasesPass(),
             new ReplaceAliasByActualDefinitionPass(),
             new RemoveAbstractDefinitionsPass(),
-            new RepeatedPass([
-                new AnalyzeServiceReferencesPass(),
-                new InlineServiceDefinitionsPass(),
-                new AnalyzeServiceReferencesPass(),
-                new RemoveUnusedDefinitionsPass(),
-            ]),
-            new DefinitionErrorExceptionPass(),
+            new RemoveUnusedDefinitionsPass(),
+            new AnalyzeServiceReferencesPass(),
             new CheckExceptionOnInvalidReferenceBehaviorPass(),
+            new InlineServiceDefinitionsPass(new AnalyzeServiceReferencesPass()),
+            new AnalyzeServiceReferencesPass(),
+            new DefinitionErrorExceptionPass(),
+        ]];
+
+        $this->afterRemovingPasses = [[
             new ResolveHotPathPass(),
         ]];
     }
@@ -113,26 +114,13 @@ class PassConfig
     /**
      * Adds a pass.
      *
-     * @param CompilerPassInterface $pass A Compiler pass
-     * @param string                $type The pass type
+     * @param string $type     The pass type
+     * @param int    $priority Used to sort the passes
      *
      * @throws InvalidArgumentException when a pass type doesn't exist
      */
-    public function addPass(CompilerPassInterface $pass, $type = self::TYPE_BEFORE_OPTIMIZATION/*, int $priority = 0*/)
+    public function addPass(CompilerPassInterface $pass, $type = self::TYPE_BEFORE_OPTIMIZATION, int $priority = 0)
     {
-        if (\func_num_args() >= 3) {
-            $priority = func_get_arg(2);
-        } else {
-            if (__CLASS__ !== static::class) {
-                $r = new \ReflectionMethod($this, __FUNCTION__);
-                if (__CLASS__ !== $r->getDeclaringClass()->getName()) {
-                    @trigger_error(sprintf('Method %s() will have a third `int $priority = 0` argument in version 4.0. Not defining it is deprecated since Symfony 3.2.', __METHOD__), \E_USER_DEPRECATED);
-                }
-            }
-
-            $priority = 0;
-        }
-
         $property = $type.'Passes';
         if (!isset($this->$property)) {
             throw new InvalidArgumentException(sprintf('Invalid type "%s".', $type));
@@ -268,7 +256,7 @@ class PassConfig
      *
      * @return CompilerPassInterface[]
      */
-    private function sortPasses(array $passes)
+    private function sortPasses(array $passes): array
     {
         if (0 === \count($passes)) {
             return [];
@@ -277,6 +265,6 @@ class PassConfig
         krsort($passes);
 
         // Flatten the array
-        return \call_user_func_array('array_merge', $passes);
+        return array_merge(...$passes);
     }
 }

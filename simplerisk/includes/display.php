@@ -4380,6 +4380,7 @@ function view_risks_and_assets_selections($report, $sort_by, $asset_tags, $proje
                 maxHeight: 250,
                 buttonWidth: '100%',
                 includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
                 onDropdownHide: function(){
                     $('form[name=select_report]').submit();
                 }
@@ -6588,6 +6589,7 @@ function view_risks_and_controls_selections($report, $sort_by=0, $projects)
                 maxHeight: 250,
                 buttonWidth: 300,
                 includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
                 onDropdownHide: function(){
                     $('form[name=select_report]').submit();
                 }
@@ -6657,6 +6659,7 @@ function view_controls_filter_selections()
                     maxHeight: 250,
                     buttonWidth: '80%',
                     includeSelectAllOption: true,
+                    enableCaseInsensitiveFiltering: true,
                     onDropdownHide: function(){
                         $('form[name=select_report]').submit();
                     }
@@ -8276,7 +8279,10 @@ function get_label_by_risk_field_name($field){
 		'days_open' => js_string_escape($lang['DaysOpen']),
 		'affected_assets' => js_string_escape($lang['AffectedAssets']),
 		'risk_assessment' => js_string_escape($lang['RiskAssessment']),
-		'additional_notes' => js_string_escape($lang['AdditionalNotes']),
+        'additional_notes' => js_string_escape($lang['AdditionalNotes']),
+        'closed_by' => js_string_escape($lang['ClosedBy']),
+        'close_reason' => js_string_escape($lang['CloseReason']),
+        'close_out' => js_string_escape($lang['CloseOutInformation']),
 
 		'mitigation_planned' => js_string_escape($lang['MitigationPlanned']),
 		'planning_strategy' => js_string_escape($lang['PlanningStrategy']),

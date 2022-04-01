@@ -134,6 +134,7 @@ require_once(language_file());
         buttonWidth: '200px', 
         maxHeight: 250, 
         enableFiltering: true,
+        enableCaseInsensitiveFiltering: true,
         onChange: function(){
           changed_value = true;
         },

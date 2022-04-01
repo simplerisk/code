@@ -1120,6 +1120,8 @@ function dynamicriskUniqueColumnDataAPI()
                 case "owner":
                 case "manager":
                 case "submitted_by":
+                case "closed_by":
+                case "close_reason":
                 case "regulation":
                 case "next_step":
                 case "planning_strategy":
@@ -1939,62 +1941,58 @@ function saveDetailsForm()
         // 5 = Custom
 
         // Classic Risk Scoring Inputs
-        $scoring_method = (int)$_POST['scoring_method'];
-        $CLASSIC_likelihood = (int)$_POST['likelihood'];
-        $CLASSIC_impact =(int) $_POST['impact'];
+        $scoring_method = (int)get_param("post", "scoring_method");
+        $CLASSIC_likelihood = (int)get_param("post", "likelihood");
+        $CLASSIC_impact = (int)get_param("post", "impact", 0);
 
-//        if($risk[0]['scoring_method'] != $scoring_method || $risk[0]['CLASSIC_likelihood'] != $CLASSIC_likelihood || $risk[0]['CLASSIC_impact'] != $CLASSIC_impact ){
-            // Classic Risk Scoring Inputs
-    //            $CLASSIClikelihood = (int)$_POST['likelihood'];
-    //            $CLASSICimpact =(int) $_POST['impact'];
 
         // CVSS Risk Scoring Inputs
-        $AccessVector = $_POST['AccessVector'];
-        $AccessComplexity = $_POST['AccessComplexity'];
-        $Authentication = $_POST['Authentication'];
-        $ConfImpact = $_POST['ConfImpact'];
-        $IntegImpact = $_POST['IntegImpact'];
-        $AvailImpact = $_POST['AvailImpact'];
-        $Exploitability = $_POST['Exploitability'];
-        $RemediationLevel = $_POST['RemediationLevel'];
-        $ReportConfidence = $_POST['ReportConfidence'];
-        $CollateralDamagePotential = $_POST['CollateralDamagePotential'];
-        $TargetDistribution = $_POST['TargetDistribution'];
-        $ConfidentialityRequirement = $_POST['ConfidentialityRequirement'];
-        $IntegrityRequirement = $_POST['IntegrityRequirement'];
-        $AvailabilityRequirement = $_POST['AvailabilityRequirement'];
+        $AccessVector = get_param("post", "AccessVector");
+        $AccessComplexity = get_param("post", "AccessComplexity");
+        $Authentication = get_param("post", "Authentication");
+        $ConfImpact = get_param("post", "ConfImpact");
+        $IntegImpact = get_param("post", "IntegImpact");
+        $AvailImpact = get_param("post", "AvailImpact");
+        $Exploitability = get_param("post", "Exploitability");
+        $RemediationLevel = get_param("post", "RemediationLevel");
+        $ReportConfidence = get_param("post", "ReportConfidence");
+        $CollateralDamagePotential = get_param("post", "CollateralDamagePotential");
+        $TargetDistribution = get_param("post", "TargetDistribution");
+        $ConfidentialityRequirement = get_param("post", "ConfidentialityRequirement");
+        $IntegrityRequirement = get_param("post", "IntegrityRequirement");
+        $AvailabilityRequirement = get_param("post", "AvailabilityRequirement");
 
         // DREAD Risk Scoring Inputs
-        $DREADDamagePotential = (int)$_POST['DREADDamage'];
-        $DREADReproducibility = (int)$_POST['DREADReproducibility'];
-        $DREADExploitability = (int)$_POST['DREADExploitability'];
-        $DREADAffectedUsers = (int)$_POST['DREADAffectedUsers'];
-        $DREADDiscoverability = (int)$_POST['DREADDiscoverability'];
+        $DREADDamagePotential = (int)get_param("post", "DREADDamage");
+        $DREADReproducibility = (int)get_param("post", "DREADReproducibility");
+        $DREADExploitability = (int)get_param("post", "DREADExploitability");
+        $DREADAffectedUsers = (int)get_param("post", "DREADAffectedUsers");
+        $DREADDiscoverability = (int)get_param("post", "DREADDiscoverability");
 
         // OWASP Risk Scoring Inputs
-        $OWASPSkillLevel = (int)$_POST['OWASPSkillLevel'];
-        $OWASPMotive = (int)$_POST['OWASPMotive'];
-        $OWASPOpportunity = (int)$_POST['OWASPOpportunity'];
-        $OWASPSize = (int)$_POST['OWASPSize'];
-        $OWASPEaseOfDiscovery = (int)$_POST['OWASPEaseOfDiscovery'];
-        $OWASPEaseOfExploit = (int)$_POST['OWASPEaseOfExploit'];
-        $OWASPAwareness = (int)$_POST['OWASPAwareness'];
-        $OWASPIntrusionDetection = (int)$_POST['OWASPIntrusionDetection'];
-        $OWASPLossOfConfidentiality = (int)$_POST['OWASPLossOfConfidentiality'];
-        $OWASPLossOfIntegrity = (int)$_POST['OWASPLossOfIntegrity'];
-        $OWASPLossOfAvailability = (int)$_POST['OWASPLossOfAvailability'];
-        $OWASPLossOfAccountability = (int)$_POST['OWASPLossOfAccountability'];
-        $OWASPFinancialDamage = (int)$_POST['OWASPFinancialDamage'];
-        $OWASPReputationDamage = (int)$_POST['OWASPReputationDamage'];
-        $OWASPNonCompliance = (int)$_POST['OWASPNonCompliance'];
-        $OWASPPrivacyViolation = (int)$_POST['OWASPPrivacyViolation'];
+        $OWASPSkillLevel = (int)get_param("post", "OWASPSkillLevel");
+        $OWASPMotive = (int)get_param("post", "OWASPMotive");
+        $OWASPOpportunity = (int)get_param("post", "OWASPOpportunity");
+        $OWASPSize = (int)get_param("post", "OWASPSize");
+        $OWASPEaseOfDiscovery = (int)get_param("post", "OWASPEaseOfDiscovery");
+        $OWASPEaseOfExploit = (int)get_param("post", "OWASPEaseOfExploit");
+        $OWASPAwareness = (int)get_param("post", "OWASPAwareness");
+        $OWASPIntrusionDetection = (int)get_param("post", "OWASPIntrusionDetection");
+        $OWASPLossOfConfidentiality = (int)get_param("post", "OWASPLossOfConfidentiality");
+        $OWASPLossOfIntegrity = (int)get_param("post", "OWASPLossOfIntegrity");
+        $OWASPLossOfAvailability = (int)get_param("post", "OWASPLossOfAvailability");
+        $OWASPLossOfAccountability = (int)get_param("post", "OWASPLossOfAccountability");
+        $OWASPFinancialDamage = (int)get_param("post", "OWASPFinancialDamage");
+        $OWASPReputationDamage = (int)get_param("post", "OWASPReputationDamage");
+        $OWASPNonCompliance = (int)get_param("post", "OWASPNonCompliance");
+        $OWASPPrivacyViolation = (int)get_param("post", "OWASPPrivacyViolation");
 
         // Custom Risk Scoring
-        $custom = (float)$_POST['Custom'];
+        $custom = (float)get_param("post", "Custom");
         
         // Contributing Risk Scoring
-        $ContributingLikelihood = (int)$_POST['ContributingLikelihood'];
-        $ContributingImpacts = $_POST['ContributingImpacts'];
+        $ContributingLikelihood = (int)get_param("post", "ContributingLikelihood");
+        $ContributingImpacts = get_param("post", "ContributingImpacts");
 
         update_risk_scoring($id, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts);
 

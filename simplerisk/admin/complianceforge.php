@@ -144,7 +144,8 @@ function display()
     $(function(){
         $("#complianceforge_frameworks").multiselect({
             allSelectedText: '<?php echo $escaper->escapeHtml($lang['AllFrameworks']); ?>',
-            includeSelectAllOption: true
+            includeSelectAllOption: true,
+            enableCaseInsensitiveFiltering: true,
         });
     });
     </script>

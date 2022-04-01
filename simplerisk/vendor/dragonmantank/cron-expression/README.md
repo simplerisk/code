@@ -32,21 +32,21 @@ Usage
 require_once '/vendor/autoload.php';
 
 // Works with predefined scheduling definitions
-$cron = Cron\CronExpression::factory('@daily');
+$cron = new Cron\CronExpression('@daily');
 $cron->isDue();
 echo $cron->getNextRunDate()->format('Y-m-d H:i:s');
 echo $cron->getPreviousRunDate()->format('Y-m-d H:i:s');
 
 // Works with complex expressions
-$cron = Cron\CronExpression::factory('3-59/15 6-12 */15 1 2-5');
+$cron = new Cron\CronExpression('3-59/15 6-12 */15 1 2-5');
 echo $cron->getNextRunDate()->format('Y-m-d H:i:s');
 
 // Calculate a run date two iterations into the future
-$cron = Cron\CronExpression::factory('@daily');
+$cron = new Cron\CronExpression('@daily');
 echo $cron->getNextRunDate(null, 2)->format('Y-m-d H:i:s');
 
 // Calculate a run date relative to a specific time
-$cron = Cron\CronExpression::factory('@monthly');
+$cron = new Cron\CronExpression('@monthly');
 echo $cron->getNextRunDate('2010-01-12 00:00:00')->format('Y-m-d H:i:s');
 ```
 
@@ -70,13 +70,13 @@ This library also supports a few macros:
 * `@yearly`, `@annually` - Run once a year, midnight, Jan. 1 - `0 0 1 1 *`
 * `@monthly` - Run once a month, midnight, first of month - `0 0 1 * *`
 * `@weekly` - Run once a week, midnight on Sun - `0 0 * * 0`
-* `@daily` - Run once a day, midnight - `0 0 * * *`
+* `@daily`, `@midnight` - Run once a day, midnight - `0 0 * * *`
 * `@hourly` - Run once an hour, first minute - `0 * * * *`
 
 Requirements
 ============
 
-- PHP 7.1+
+- PHP 7.2+
 - PHPUnit is required to run the unit tests
 - Composer is required to run the unit tests
 

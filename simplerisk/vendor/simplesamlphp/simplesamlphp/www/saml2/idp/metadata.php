@@ -2,25 +2,28 @@
 
 require_once('../../_include.php');
 
+use Symfony\Component\VarExporter\VarExporter;
+
 use SAML2\Constants;
+use SimpleSAML\Configuration;
+use SimpleSAML\Error;
 use SimpleSAML\Module;
 use SimpleSAML\Utils\Auth as Auth;
 use SimpleSAML\Utils\Crypto as Crypto;
 use SimpleSAML\Utils\HTTP as HTTP;
 use SimpleSAML\Utils\Config\Metadata as Metadata;
 
-// load SimpleSAMLphp configuration and metadata
-$config = \SimpleSAML\Configuration::getInstance();
-$metadata = \SimpleSAML\Metadata\MetaDataStorageHandler::getMetadataHandler();
-
-if (!$config->getBoolean('enable.saml20-idp', false)) {
-    throw new \SimpleSAML\Error\Error('NOACCESS');
+$config = Configuration::getInstance();
+if (!$config->getBoolean('enable.saml20-idp', false) || !Module::isModuleEnabled('saml')) {
+    throw new Error\Error('NOACCESS', null, 403);
 }
 
 // check if valid local session exists
 if ($config->getBoolean('admin.protectmetadata', false)) {
     Auth::requireAdmin();
 }
+
+$metadata = \SimpleSAML\Metadata\MetaDataStorageHandler::getMetadataHandler();
 
 try {
     $idpentityid = isset($_GET['idpentityid']) ?
@@ -148,7 +151,7 @@ try {
         );
 
         if (!$idpmeta->hasValue('OrganizationURL')) {
-            throw new \SimpleSAML\Error\Exception(
+            throw new Error\Exception(
                 'If OrganizationName is set, OrganizationURL must also be set.'
             );
         }
@@ -197,9 +200,11 @@ try {
 
     $technicalContactEmail = $config->getString('technicalcontact_email', false);
     if ($technicalContactEmail && $technicalContactEmail !== 'na@example.org') {
-        $techcontact['emailAddress'] = $technicalContactEmail;
-        $techcontact['name'] = $config->getString('technicalcontact_name', null);
-        $techcontact['contactType'] = 'technical';
+        $techcontact = [
+            'emailAddress' => $technicalContactEmail,
+            'name' => $config->getString('technicalcontact_name', null),
+            'contactType' => 'technical',
+        ];
         $metaArray['contacts'][] = Metadata::getContact($techcontact);
     }
 
@@ -209,7 +214,7 @@ try {
 
     $metaxml = $metaBuilder->getEntityDescriptorText();
 
-    $metaflat = '$metadata[' . var_export($idpentityid, true) . '] = ' . var_export($metaArray, true) . ';';
+    $metaflat = '$metadata[' . var_export($idpentityid, true) . '] = ' . VarExporter::export($metaArray) . ';';
 
     // sign the metadata if enabled
     $metaxml = \SimpleSAML\Metadata\Signer::sign($metaxml, $idpmeta->toArray(), 'SAML 2 IdP');
@@ -237,11 +242,11 @@ try {
         $t->data['metadataflat'] = htmlspecialchars($metaflat);
         $t->show();
     } else {
-        header('Content-Type: application/xml');
+        header('Content-Type: application/samlmetadata+xml');
 
         echo $metaxml;
         exit(0);
     }
 } catch (\Exception $exception) {
-    throw new \SimpleSAML\Error\Error('METADATA', $exception);
+    throw new Error\Error('METADATA', $exception);
 }

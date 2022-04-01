@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Error;
 
 use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
+use Throwable;
 
 /**
  * Base class for SimpleSAMLphp Exceptions
@@ -22,7 +25,7 @@ class Exception extends \Exception
      * We need to save the backtrace, since we cannot rely on
      * serializing the Exception::trace-variable.
      *
-     * @var array
+     * @var array<int, string>
      */
     private $backtrace = [];
 
@@ -30,7 +33,7 @@ class Exception extends \Exception
     /**
      * The cause of this exception.
      *
-     * @var Exception|null
+     * @var \SimpleSAML\Error\Exception|null
      */
     private $cause = null;
 
@@ -43,9 +46,9 @@ class Exception extends \Exception
      *
      * @param string         $message Exception message
      * @param int            $code Error code
-     * @param \Exception|null $cause The cause of this exception.
+     * @param \Throwable|null $cause The cause of this exception.
      */
-    public function __construct($message, $code = 0, \Exception $cause = null)
+    public function __construct(string $message, int $code = 0, Throwable $cause = null)
     {
         assert(is_string($message));
         assert(is_int($code));
@@ -63,11 +66,11 @@ class Exception extends \Exception
     /**
      * Convert any exception into a \SimpleSAML\Error\Exception.
      *
-     * @param \Exception $e The exception.
+     * @param \Throwable $e The exception.
      *
-     * @return Exception The new exception.
+     * @return \SimpleSAML\Error\Exception The new exception.
      */
-    public static function fromException(\Exception $e)
+    public static function fromException(Throwable $e): Exception
     {
         if ($e instanceof Exception) {
             return $e;
@@ -79,10 +82,10 @@ class Exception extends \Exception
     /**
      * Load the backtrace from the given exception.
      *
-     * @param \Exception $exception The exception we should fetch the backtrace from.
+     * @param \Throwable $exception The exception we should fetch the backtrace from.
      * @return void
      */
-    protected function initBacktrace(\Exception $exception)
+    protected function initBacktrace(Throwable $exception): void
     {
         $this->backtrace = [];
 
@@ -122,9 +125,9 @@ class Exception extends \Exception
     /**
      * Retrieve the cause of this exception.
      *
-     * @return Exception|null The cause of this exception.
+     * @return \Throwable|null The cause of this exception.
      */
-    public function getCause()
+    public function getCause(): ?Throwable
     {
         return $this->cause;
     }

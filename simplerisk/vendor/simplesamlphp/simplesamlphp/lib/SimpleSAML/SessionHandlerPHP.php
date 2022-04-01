@@ -9,6 +9,8 @@
  * @package SimpleSAMLphp
  */
 
+declare(strict_types=1);
+
 namespace SimpleSAML;
 
 use SimpleSAML\Error;
@@ -78,7 +80,7 @@ class SessionHandlerPHP extends SessionHandler
 
         if (!headers_sent()) {
             if (version_compare(PHP_VERSION, '7.3.0', '>=')) {
-                /** @psalm-suppress InvalidArgument  This annotation may be removed in Psalm >=3.0.15 */
+                /** @psalm-suppress InvalidArgument */
                 session_set_cookie_params([
                     'lifetime' => $params['lifetime'],
                     'path' => $params['path'],
@@ -91,7 +93,7 @@ class SessionHandlerPHP extends SessionHandler
                 session_set_cookie_params(
                     $params['lifetime'],
                     $params['path'],
-                    is_null($params['domain']) ? '' : $params['domain'],
+                    $params['domain'] ?? '',
                     $params['secure'],
                     $params['httponly']
                 );
@@ -158,20 +160,18 @@ class SessionHandlerPHP extends SessionHandler
      */
     public function newSessionId()
     {
-        $sessionId = false;
-        if (function_exists('session_create_id') && version_compare(PHP_VERSION, '7.2', '<')) {
+        if ($this->hasSessionCookie()) {
+            session_regenerate_id(false);
+            $sessionId = session_id();
+        } else {
             // generate new (secure) session id
-            $sid_length = (int) ini_get('session.sid_length');
-            $sid_bits_per_char = (int) ini_get('session.sid_bits_per_character');
+            $sid_length = intval(ini_get('session.sid_length'));
+            $sid_bits_per_char = intval(ini_get('session.sid_bits_per_character'));
 
             if (($sid_length * $sid_bits_per_char) < 128) {
                 Logger::warning("Unsafe defaults used for sessionId generation!");
             }
 
-            /**
-             * This annotation may be removed as soon as we start using vimeo/psalm 3.x
-             * @psalm-suppress TooFewArguments
-             */
             $sessionId = session_create_id();
         }
 
@@ -181,8 +181,10 @@ class SessionHandlerPHP extends SessionHandler
         }
 
         Session::createSession($sessionId);
+
         return $sessionId;
     }
+
 
     /**
      * Retrieve the session ID saved in the session cookie, if there's one.
@@ -194,7 +196,8 @@ class SessionHandlerPHP extends SessionHandler
     public function getCookieSessionId()
     {
         if (!$this->hasSessionCookie()) {
-            return null; // there's no session cookie, can't return ID
+            // there's no session cookie, can't return ID
+            return null;
         }
 
         if (version_compare(PHP_VERSION, '7.2', 'ge') && headers_sent()) {
@@ -373,13 +376,13 @@ class SessionHandlerPHP extends SessionHandler
         }
 
         if (version_compare(PHP_VERSION, '7.3.0', '>=')) {
-            /** @psalm-suppress InvalidArgument  This annotation may be removed in Psalm >=3.0.15 */
+            /** @psalm-suppress InvalidArgument */
             session_set_cookie_params($cookieParams);
         } else {
             session_set_cookie_params(
                 $cookieParams['lifetime'],
                 $cookieParams['path'],
-                is_null($cookieParams['domain']) ? '' : $cookieParams['domain'],
+                $cookieParams['domain'] ?? '',
                 $cookieParams['secure'],
                 $cookieParams['httponly']
             );

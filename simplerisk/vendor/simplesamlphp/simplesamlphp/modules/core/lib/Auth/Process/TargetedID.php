@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\core\Auth\Process;
 
 use SAML2\Constants;
@@ -64,10 +66,15 @@ class TargetedID extends \SimpleSAML\Auth\ProcessingFilter
 
         assert(is_array($config));
 
-        if (array_key_exists('attributename', $config)) {
+        if (array_key_exists('identifyingAttribute', $config)) {
+            $this->attribute = $config['identifyingAttribute'];
+            if (!is_string($this->attribute)) {
+                throw new \Exception('Invalid `identifyingAttribute` name given to core:TargetedID filter.');
+            }
+        } elseif (array_key_exists('attributename', $config)) {
             $this->attribute = $config['attributename'];
             if (!is_string($this->attribute)) {
-                throw new \Exception('Invalid attribute name given to core:TargetedID filter.');
+                throw new \Exception('Invalid `attributename` given to core:TargetedID filter.');
             }
         }
 
@@ -160,10 +167,8 @@ class TargetedID extends \SimpleSAML\Auth\ProcessingFilter
      * @param array $metadata  The metadata of the entity.
      * @return string  The unique identifier for the entity.
      */
-    private static function getEntityId($metadata)
+    private static function getEntityId(array $metadata): string
     {
-        assert(is_array($metadata));
-
         $id = '';
 
         if (array_key_exists('metadata-set', $metadata)) {

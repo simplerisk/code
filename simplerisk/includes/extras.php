@@ -256,9 +256,9 @@ function core_display_upgrade_extras()
 	echo "</thead>\n";
 	echo "<tbody>\n";
 
-        // If we were able to obtain the purchases
-        if ($purchases != false)
-        {
+    // If we were able to obtain the purchases
+    if ($purchases != false)
+    {
 		// For each available extra
 		foreach ($available_extras as $extra)
 		{
@@ -563,9 +563,9 @@ function core_get_action_button($extra_name, $purchased, $installed, $activated,
             $button_name = "get_organizational_hierarchy_extra";
             $action_link = "organizational_hierarchy.php";
             break;
-	case "vulnmgmt":
-	    $button_name = "get_vulnmgmt_extra";
-	    $action_link = "vulnmgmt.php";
+	    case "vulnmgmt":
+	        $button_name = "get_vulnmgmt_extra";
+	        $action_link = "vulnmgmt.php";
     }
 
     // If the Extra has been purchased
@@ -580,20 +580,11 @@ function core_get_action_button($extra_name, $purchased, $installed, $activated,
         // Otherwise, the Extra is installed
         else
         {
-            // If the current version is not the latest
-            if ($version < $latest_version)
+            // If the Extra is not activated
+            if (!$activated)
             {
-                // Make the Upgrade action button
-                $action_button = "<form style=\"display: inline;\" name=\"install_extras\" method=\"post\" action=\"\"><button type=\"submit\" name=\"" . $button_name . "\" class=\"btn btn-primary\">". $escaper->escapeHtml($lang['Upgrade']) ."</button></form>";
-            }
-            // Otherwise, the Extra is the latest version
-            else
-            {
-                // If the Extra is not activated
-                if (!$activated)
-                {
-                    $action_button = "<form style=\"display: inline;\" name=\"install_extras\" method=\"post\" action=\"" . $action_link . "\"><button type=\"submit\" name=\"activate_extra\" class=\"btn btn-primary\">". $escaper->escapeHtml($lang['Activate']) ."</button></form>";
-                }
+                // Display the Activate button
+                $action_button = "<form style=\"display: inline;\" name=\"install_extras\" method=\"post\" action=\"" . $action_link . "\"><button type=\"submit\" name=\"activate_extra\" class=\"btn btn-primary\">". $escaper->escapeHtml($lang['Activate']) ."</button></form>";
             }
         }
     }

@@ -27,7 +27,7 @@ class ChildDefinition extends Definition
     /**
      * @param string $parent The id of Definition instance to decorate
      */
-    public function __construct($parent)
+    public function __construct(string $parent)
     {
         $this->parent = $parent;
         $this->setPrivate(false);
@@ -97,7 +97,7 @@ class ChildDefinition extends Definition
     {
         if (\is_int($index)) {
             $this->arguments['index_'.$index] = $value;
-        } elseif (0 === strpos($index, '$')) {
+        } elseif (str_starts_with($index, '$')) {
             $this->arguments[$index] = $value;
         } else {
             throw new InvalidArgumentException('The argument must be an existing index or the name of a constructor\'s parameter.');
@@ -109,7 +109,7 @@ class ChildDefinition extends Definition
     /**
      * @internal
      */
-    public function setAutoconfigured($autoconfigured)
+    public function setAutoconfigured($autoconfigured): self
     {
         throw new BadMethodCallException('A ChildDefinition cannot be autoconfigured.');
     }
@@ -117,10 +117,8 @@ class ChildDefinition extends Definition
     /**
      * @internal
      */
-    public function setInstanceofConditionals(array $instanceof)
+    public function setInstanceofConditionals(array $instanceof): self
     {
         throw new BadMethodCallException('A ChildDefinition cannot have instanceof conditionals set on it.');
     }
 }
-
-class_alias(ChildDefinition::class, DefinitionDecorator::class);

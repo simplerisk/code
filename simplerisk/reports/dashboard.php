@@ -114,6 +114,7 @@ $pie_technology_array = get_pie_array("technology", $teams);
             onChange: submitForm,
             onSelectAll: submitForm,
             onDeselectAll: submitForm,
+            enableCaseInsensitiveFiltering: true,
         });
     });
   

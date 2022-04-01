@@ -55,7 +55,7 @@ class ArrayNode extends BaseNode implements PrototypeNodeInterface
         $normalized = [];
 
         foreach ($value as $k => $v) {
-            if (false !== strpos($k, '-') && false === strpos($k, '_') && !\array_key_exists($normalizedKey = str_replace('-', '_', $k), $value)) {
+            if (str_contains($k, '-') && !str_contains($k, '_') && !\array_key_exists($normalizedKey = str_replace('-', '_', $k), $value)) {
                 $normalized[$normalizedKey] = $v;
             } else {
                 $normalized[$k] = $v;
@@ -68,7 +68,7 @@ class ArrayNode extends BaseNode implements PrototypeNodeInterface
     /**
      * Retrieves the children of this node.
      *
-     * @return array The children
+     * @return array<string, NodeInterface>
      */
     public function getChildren()
     {
@@ -192,7 +192,7 @@ class ArrayNode extends BaseNode implements PrototypeNodeInterface
     public function addChild(NodeInterface $node)
     {
         $name = $node->getName();
-        if (!\strlen($name)) {
+        if ('' === $name) {
             throw new \InvalidArgumentException('Child nodes must be named.');
         }
         if (isset($this->children[$name])) {
@@ -203,11 +203,7 @@ class ArrayNode extends BaseNode implements PrototypeNodeInterface
     }
 
     /**
-     * Finalizes the value of this node.
-     *
-     * @param mixed $value
-     *
-     * @return mixed The finalised value
+     * {@inheritdoc}
      *
      * @throws UnsetKeyException
      * @throws InvalidConfigurationException if the node doesn't have enough children
@@ -249,11 +245,7 @@ class ArrayNode extends BaseNode implements PrototypeNodeInterface
     }
 
     /**
-     * Validates the type of the value.
-     *
-     * @param mixed $value
-     *
-     * @throws InvalidTypeException
+     * {@inheritdoc}
      */
     protected function validateType($value)
     {
@@ -269,11 +261,7 @@ class ArrayNode extends BaseNode implements PrototypeNodeInterface
     }
 
     /**
-     * Normalizes the value.
-     *
-     * @param mixed $value The value to normalize
-     *
-     * @return mixed The normalized value
+     * {@inheritdoc}
      *
      * @throws InvalidConfigurationException
      */
@@ -300,7 +288,31 @@ class ArrayNode extends BaseNode implements PrototypeNodeInterface
 
         // if extra fields are present, throw exception
         if (\count($value) && !$this->ignoreExtraKeys) {
-            $ex = new InvalidConfigurationException(sprintf('Unrecognized option%s "%s" under "%s"', 1 === \count($value) ? '' : 's', implode(', ', array_keys($value)), $this->getPath()));
+            $proposals = array_keys($this->children);
+            sort($proposals);
+            $guesses = [];
+
+            foreach (array_keys($value) as $subject) {
+                $minScore = \INF;
+                foreach ($proposals as $proposal) {
+                    $distance = levenshtein($subject, $proposal);
+                    if ($distance <= $minScore && $distance < 3) {
+                        $guesses[$proposal] = $distance;
+                        $minScore = $distance;
+                    }
+                }
+            }
+
+            $msg = sprintf('Unrecognized option%s "%s" under "%s"', 1 === \count($value) ? '' : 's', implode(', ', array_keys($value)), $this->getPath());
+
+            if (\count($guesses)) {
+                asort($guesses);
+                $msg .= sprintf('. Did you mean "%s"?', implode('", "', array_keys($guesses)));
+            } else {
+                $msg .= sprintf('. Available option%s %s "%s".', 1 === \count($proposals) ? '' : 's', 1 === \count($proposals) ? 'is' : 'are', implode('", "', $proposals));
+            }
+
+            $ex = new InvalidConfigurationException($msg);
             $ex->setPath($this->getPath());
 
             throw $ex;
@@ -318,7 +330,7 @@ class ArrayNode extends BaseNode implements PrototypeNodeInterface
      */
     protected function remapXml($value)
     {
-        foreach ($this->xmlRemappings as list($singular, $plural)) {
+        foreach ($this->xmlRemappings as [$singular, $plural]) {
             if (!isset($value[$singular])) {
                 continue;
             }
@@ -331,12 +343,7 @@ class ArrayNode extends BaseNode implements PrototypeNodeInterface
     }
 
     /**
-     * Merges values together.
-     *
-     * @param mixed $leftSide  The left side to merge
-     * @param mixed $rightSide The right side to merge
-     *
-     * @return mixed The merged values
+     * {@inheritdoc}
      *
      * @throws InvalidConfigurationException
      * @throws \RuntimeException
@@ -368,12 +375,25 @@ class ArrayNode extends BaseNode implements PrototypeNodeInterface
             }
 
             if (!isset($this->children[$k])) {
-                throw new \RuntimeException('merge() expects a normalized config array.');
+                if (!$this->ignoreExtraKeys || $this->removeExtraKeys) {
+                    throw new \RuntimeException('merge() expects a normalized config array.');
+                }
+
+                $leftSide[$k] = $v;
+                continue;
             }
 
             $leftSide[$k] = $this->children[$k]->merge($leftSide[$k], $v);
         }
 
         return $leftSide;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function allowPlaceholders(): bool
+    {
+        return false;
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Implementation of the Shibboleth 1.3 Artifact binding.
  *
@@ -24,7 +26,7 @@ class Artifact
      *
      * @return array  The artifacts.
      */
-    private static function getArtifacts()
+    private static function getArtifacts(): array
     {
         assert(array_key_exists('QUERY_STRING', $_SERVER));
 
@@ -53,7 +55,7 @@ class Artifact
      * @param array $artifacts  The artifacts we will request.
      * @return string  The request, as an XML string.
      */
-    private static function buildRequest(array $artifacts)
+    private static function buildRequest(array $artifacts): string
     {
         $msg = '<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">'.
             '<SOAP-ENV:Body>'.
@@ -82,10 +84,8 @@ class Artifact
      * @return string The <saml1p:Response> element, as a string.
      * @throws Error\Exception
      */
-    private static function extractResponse($soapResponse)
+    private static function extractResponse(string $soapResponse): string
     {
-        assert(is_string($soapResponse));
-
         try {
             $doc = DOMDocumentFactory::fromString($soapResponse);
         } catch (\Exception $e) {

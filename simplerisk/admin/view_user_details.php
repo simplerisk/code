@@ -205,7 +205,8 @@ else $admin_editing_itself = false;
         $(function(){
             $("#team").multiselect({
                 allSelectedText: '<?php echo $escaper->escapeHtml($lang['AllTeams']); ?>',
-                includeSelectAllOption: true
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
             });
         });
     </script>

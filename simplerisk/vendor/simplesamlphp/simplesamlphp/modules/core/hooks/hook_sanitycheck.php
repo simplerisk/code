@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Hook to do sanitycheck
  *
@@ -26,7 +28,7 @@ function core_hook_sanitycheck(&$hookinfo)
         $hookinfo['info'][] = '[core] In config.php technicalcontact_email is set properly';
     }
 
-    if (version_compare(phpversion(), '5.6', '>=')) {
+    if (version_compare(phpversion(), '7.1', '>=')) {
         $hookinfo['info'][] = '[core] You are running a PHP version suitable for SimpleSAMLphp.';
     } else {
         $hookinfo['errors'][] = '[core] You are running an old PHP installation. ' .

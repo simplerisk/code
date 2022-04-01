@@ -105,14 +105,16 @@ function display_framework_controls_in_compliance()
                 enableFiltering: true,
                 maxHeight: 250,
                 buttonWidth: '100%',
-                includeSelectAllOption: true
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
             });
             $('#filter_by_control_family').multiselect({
                 allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
                 enableFiltering: true,
                 maxHeight: 250,
                 buttonWidth: '100%',
-                includeSelectAllOption: true
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
             });
            
             $(\"body\").on(\"click\", \".add-test\", function(){
@@ -593,6 +595,7 @@ function display_initiate_audits()
                 maxHeight: 250,
                 includeSelectAllOption: true,
                 buttonWidth: '100%',
+                enableCaseInsensitiveFiltering: true,
                 onDropdownHide: function(){
                     redraw();
                 }
@@ -601,6 +604,7 @@ function display_initiate_audits()
             $('#filter_by_status').multiselect({
                 allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
                 includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
                 onDropdownHide: function(){
                     redraw();
                 }
@@ -912,19 +916,22 @@ function display_active_audits(){
             $('#filter_by_framework').multiselect({
                 allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
                 includeSelectAllOption: true,
-                buttonWidth: '100%'
+                buttonWidth: '100%',
+                enableCaseInsensitiveFiltering: true,
             });
             
             $('#filter_by_status').multiselect({
                 allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
                 includeSelectAllOption: true,
-                buttonWidth: '100%'
+                buttonWidth: '100%',
+                enableCaseInsensitiveFiltering: true,
             });
             
             $('#filter_by_tester').multiselect({
                 allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
                 includeSelectAllOption: true,
-                buttonWidth: '100%'
+                buttonWidth: '100%',
+                enableCaseInsensitiveFiltering: true,
             });
 
             $('#filter_by_testname').multiselect({
@@ -2450,7 +2457,8 @@ function display_past_audits()
                 allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
                 maxHeight: 250,
                 buttonWidth: '100%',
-                includeSelectAllOption: true
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
             });
 
             $('#filter_by_control').multiselect({

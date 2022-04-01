@@ -1546,7 +1546,7 @@ function getAvailableControlOwnerList($control_framework=""){
     $db = db_open();
     
     $sql = "
-        SELECT t2.*
+        SELECT t2.value, t2.username, t2.name
         FROM `framework_controls` t1 
             LEFT JOIN `user` t2 on t1.control_owner=t2.value
             LEFT JOIN `framework_control_mappings` m on t1.id=m.control_id

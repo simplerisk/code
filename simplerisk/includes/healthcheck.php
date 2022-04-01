@@ -781,8 +781,6 @@ function check_php_version()
 	}
 }
 
-
-
 /*********************************
  * FUNCTION: CHECK EXTRA VERSION *
  *********************************/
@@ -1055,7 +1053,7 @@ function unable_to_communicate_with_database()
       <link rel=\"stylesheet\" type=\"text/css\" href=\"css/style.css\" media=\"screen\" />
       <link rel=\"stylesheet\" href=\"css/bootstrap.css\">
       <link rel=\"stylesheet\" href=\"css/bootstrap-responsive.css\">
-      <link rel=\"stylesheet\" href=\"css/font-awesome.min.css\">
+      <link rel=\"stylesheet\" href=\"vendor/components/font-awesome/css/fontawesome.min.css\">
       <link rel=\"stylesheet\" href=\"css/theme.css\">
   </head>
 

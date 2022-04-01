@@ -85,10 +85,7 @@ if ($config->getBoolean('admin.checkforupdates', true) && $current !== 'master')
 
         if ($latest && version_compare($current, ltrim($latest['tag_name'], 'v'), 'lt')) {
             $outdated = true;
-            $warnings[] = [
-                '{core:frontpage:warnings_outdated}',
-                ['%LATEST_URL%' => $latest['html_url']]
-            ];
+            $warnings[] = '{core:frontpage:warnings_outdated}';
         }
     }
 }
@@ -123,8 +120,8 @@ if (\SimpleSAML\Module::isModuleEnabled('radius')) {
 $funcmatrix = [];
 $funcmatrix[] = [
     'required' => 'required',
-    'descr' => 'PHP Version >= 5.6. You run: ' . phpversion(),
-    'enabled' => version_compare(phpversion(), '5.6', '>=')
+    'descr' => 'PHP Version >= 7.1. You run: ' . phpversion(),
+    'enabled' => version_compare(phpversion(), '7.1', '>=')
 ];
 foreach ($functionchecks as $func => $descr) {
     $funcmatrix[] = ['descr' => $descr[1], 'required' => $descr[0], 'enabled' => function_exists($func)];
@@ -168,18 +165,11 @@ $funcmatrix[] = [
 $t = new \SimpleSAML\XHTML\Template($config, 'core:frontpage_config.tpl.php');
 $translator = $t->getTranslator();
 $t->data['pageid'] = 'frontpage_config';
-$t->data['header'] = $translator->t('{core:frontpage:page_title}');
+$t->data['header'] = '{core:frontpage:page_title}';
 $t->data['isadmin'] = $isadmin;
 $t->data['loginurl'] = $loginurl;
 $t->data['logouturl'] = $logouturl;
 
-foreach ($warnings as &$warning) {
-    if (is_array($warning)) {
-        $warning = $translator->t($warning[0], $warning[1]);
-    } else {
-        $warning = $translator->t($warning);
-    }
-}
 $t->data['warnings'] = $warnings;
 
 

@@ -1,6 +1,6 @@
 {
     "name": "components/underscore",
-    "version": "1.13.1",
+    "version": "1.13.2",
     "description": "JavaScript's functional programming helper library.",
     "keywords": ["util", "functional", "server", "client", "browser"],
     "type": "component",
@@ -23,7 +23,7 @@
             ],
             "files": [
                 "underscore-min.js",
-                "underscore-min.map"
+                "underscore-min.js.map"
             ],
             "shim": {
                 "exports": "_"

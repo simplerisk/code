@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * The Shibboleth 1.3 Authentication Request. Not part of SAML 1.1,
  * but an extension using query paramters no XML.
@@ -30,7 +32,7 @@ class AuthnRequest
     {
         $this->relayState = $relayState;
     }
-    
+
 
     /**
      * @return string|null
@@ -39,7 +41,7 @@ class AuthnRequest
     {
         return $this->relayState;
     }
-    
+
 
     /**
      * @param string|null $issuer

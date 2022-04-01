@@ -33,7 +33,7 @@ the ones prefixed with "test".
 
 You will usually make use of the `assert*()` methods provided by
 `PHPUnit\Framework\TestCase`, but you can also tell `phpunit` to expect
-an exception to be thrown using *phpdoc*. For example, if you want to
+an exception to be thrown using the `expectException()`-method. For example, if you want to
 ensure that the `SimpleSAML\Utils\HTTP::addURLParameters()` method
 throws an exception in a specific situation:
 
@@ -65,7 +65,6 @@ the old version installed by composer
 ./vendor/bin/phpunit -c ./phpunit.xml
 ```
 
-All the tests are run by our *continuous integration* platform,
-[travis](https://travis-ci.org/simplesamlphp/simplesamlphp). If you are
-submitting a pull request, Travis will run your tests and notify whether
-your code builds or not according to them.
+All the tests are run by our *continuous integration* platform using GitHub
+Actions. If you are submitting a pull request, GitHub Actions will run your
+tests and notify whether your code builds or not according to them.

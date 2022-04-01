@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Utils;
 
 /**
@@ -12,7 +14,7 @@ class Random
     /**
      * The fixed length of random identifiers.
      */
-    const ID_LENGTH = 43;
+    public const ID_LENGTH = 43;
 
     /**
      * Generate a random identifier, ID_LENGTH bytes long.

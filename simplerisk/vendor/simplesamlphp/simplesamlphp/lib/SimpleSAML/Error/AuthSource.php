@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Error;
+
+use Throwable;
 
 /**
  * Baseclass for auth source exceptions.
@@ -30,9 +34,9 @@ class AuthSource extends Error
      *
      * @param string $authsource  Authsource module name from where this error was thrown.
      * @param string $reason  Description of the error.
-     * @param \Exception|null $cause
+     * @param \Throwable|null $cause
      */
-    public function __construct($authsource, $reason, $cause = null)
+    public function __construct(string $authsource, string $reason, Throwable $cause = null)
     {
         assert(is_string($authsource));
         assert(is_string($reason));

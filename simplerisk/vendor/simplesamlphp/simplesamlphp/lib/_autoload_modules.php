@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file registers an autoloader for SimpleSAMLphp modules.
  *
@@ -17,7 +19,7 @@
  * with 'SimpleSAML_'.
  * @deprecated This function will be removed in SSP 2.0.
  */
-function temporaryLoader($class)
+function temporaryLoader(string $class)
 {
     // handle the upgrade to the latest version of XMLSecLibs using namespaces
     if (strstr($class, 'XMLSec') && !strstr($class, '\\RobRichards\\XMLSecLibs\\')) {
@@ -45,6 +47,7 @@ function temporaryLoader($class)
         'SimpleSAML_IdP_LogoutIFrame' => 'SimpleSAML_IdP_IFrameLogoutHandler',
         'SimpleSAML_IdP_LogoutTraditional' => 'SimpleSAML_IdP_TraditionalLogoutHandler',
         'SimpleSAML_Auth_Default' => 'SimpleSAML_Auth_DefaultAuth',
+        'SimpleSAML_Auth_LDAP' => 'SimpleSAML_Module_ldap_Auth_Ldap',
     ];
     if (array_key_exists($class, $renamed)) {
         // the class has been renamed, try to load it and create an alias
@@ -82,7 +85,7 @@ function temporaryLoader($class)
  *
  * TODO: this autoloader should be removed once everything has been migrated to namespaces.
  */
-function sspmodAutoloadPSR0($className)
+function sspmodAutoloadPSR0(string $className)
 {
     $modulePrefixLength = strlen('sspmod_');
     $classPrefix = substr($className, 0, $modulePrefixLength);
@@ -140,7 +143,7 @@ function sspmodAutoloadPSR0($className)
  *
  * @param string $className Name of the class.
  */
-function sspmodAutoloadPSR4($className)
+function sspmodAutoloadPSR4(string $className)
 {
     $elements = explode('\\', $className);
     if ($elements[0] === '') {

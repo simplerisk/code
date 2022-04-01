@@ -36,7 +36,7 @@ class ResolveNamedArgumentsPass extends AbstractRecursivePass
         $calls[] = ['__construct', $value->getArguments()];
 
         foreach ($calls as $i => $call) {
-            list($method, $arguments) = $call;
+            [$method, $arguments] = $call;
             $parameters = null;
             $resolvedArguments = [];
 
@@ -53,10 +53,20 @@ class ResolveNamedArgumentsPass extends AbstractRecursivePass
                     $parameters = $r->getParameters();
                 }
 
+                if (isset($key[0]) && '$' !== $key[0] && !class_exists($key) && !interface_exists($key, false)) {
+                    throw new InvalidArgumentException(sprintf('Invalid service "%s": did you forget to add the "$" prefix to argument "%s"?', $this->currentId, $key));
+                }
+
                 if (isset($key[0]) && '$' === $key[0]) {
                     foreach ($parameters as $j => $p) {
                         if ($key === '$'.$p->name) {
-                            $resolvedArguments[$j] = $argument;
+                            if ($p->isVariadic() && \is_array($argument)) {
+                                foreach ($argument as $variadicArgument) {
+                                    $resolvedArguments[$j++] = $variadicArgument;
+                                }
+                            } else {
+                                $resolvedArguments[$j] = $argument;
+                            }
 
                             continue 2;
                         }
@@ -88,7 +98,7 @@ class ResolveNamedArgumentsPass extends AbstractRecursivePass
             }
         }
 
-        list(, $arguments) = array_pop($calls);
+        [, $arguments] = array_pop($calls);
 
         if ($arguments !== $value->getArguments()) {
             $value->setArguments($arguments);

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML;
 
 use SimpleSAML\Utils;
@@ -62,7 +64,7 @@ class Memcache
             if ($serializedInfo === false) {
                 // either the server is down, or we don't have the value stored on that server
                 $mustUpdate = true;
-                $up = $server->getStats();
+                $up = $server->getVersion();
                 if ($up !== false) {
                     $allDown = false;
                 }
@@ -218,7 +220,7 @@ class Memcache
      *
      * @throws \Exception If any configuration option for the server is invalid.
      */
-    private static function addMemcacheServer($memcache, $server)
+    private static function addMemcacheServer($memcache, array $server): void
     {
         // the hostname option is required
         if (!array_key_exists('hostname', $server)) {
@@ -309,7 +311,7 @@ class Memcache
      *
      * @throws \Exception If the servers configuration is invalid.
      */
-    private static function loadMemcacheServerGroup(array $group, $index = null)
+    private static function loadMemcacheServerGroup(array $group, string $index = null)
     {
         if (class_exists(\Memcached::class)) {
             if (is_string($index)) {
@@ -379,7 +381,7 @@ class Memcache
      *
      * @throws \Exception If the servers configuration is invalid.
      */
-    private static function getMemcacheServers()
+    private static function getMemcacheServers(): array
     {
         // check if we have loaded the servers already
         if (self::$serverGroups != null) {
@@ -434,7 +436,7 @@ class Memcache
      *
      * @throws \Exception If the option 'memcache_store.expires' has a negative value.
      */
-    private static function getExpireTime()
+    private static function getExpireTime(): int
     {
         // get the configuration instance
         $config = Configuration::getInstance();

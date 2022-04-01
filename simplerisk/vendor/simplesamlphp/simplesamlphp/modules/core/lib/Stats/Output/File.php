@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\core\Stats\Output;
 
 use SimpleSAML\Configuration;
@@ -55,10 +57,8 @@ class File extends \SimpleSAML\Stats\Output
      * @param string $date  The date for the log file.
      * @return void
      */
-    private function openLog($date)
+    private function openLog(string $date): void
     {
-        assert(is_string($date));
-
         if ($this->file !== null && $this->file !== false) {
             fclose($this->file);
             $this->file = null;
@@ -89,9 +89,9 @@ class File extends \SimpleSAML\Stats\Output
         assert(isset($data['time']));
 
         $time = $data['time'];
-        $milliseconds = (int) (($time - (int) $time) * 1000);
+        $milliseconds = intval((($time - intval($time)) * 1000));
 
-        $timestamp = gmdate('Y-m-d\TH:i:s', $time) . sprintf('.%03dZ', $milliseconds);
+        $timestamp = gmdate('Y-m-d\TH:i:s', intval($time)) . sprintf('.%03dZ', $milliseconds);
 
         $outDate = substr($timestamp, 0, 10); // The date-part of the timstamp
 

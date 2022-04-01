@@ -5,7 +5,7 @@
     "keywords": [ "saml2", "shibboleth","oauth","ws-federation","sp","idp" ],
     "homepage": "http://simplesamlphp.org",
     "license": "LGPL-2.1-or-later",
-    "version": "v1.18.8",
+    "version": "v1.19.5",
     "authors": [
         {
             "name": "Andreas Åkre Solberg",
@@ -33,7 +33,7 @@
         "files": ["tests/_autoload_modules.php"]
     },
     "require": {
-        "php": ">=5.6",
+        "php": ">=7.1|^8",
         "ext-SPL": "*",
         "ext-zlib": "*",
         "ext-pcre": "*",
@@ -43,11 +43,12 @@
         "ext-hash": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
-        "gettext/gettext": "^4.6",
-        "phpmailer/phpmailer": "^6.0",
-        "robrichards/xmlseclibs": "^3.0.4",
-        "simplesamlphp/saml2": "^3.4 || ^4.0",
-        "simplesamlphp/simplesamlphp-module-adfs": "^0.9",
+        "gettext/gettext": "^4.8",
+        "phpmailer/phpmailer": "^6.1",
+        "robrichards/xmlseclibs": "^3.1",
+        "simplesamlphp/assert": "^0.0.13",
+        "simplesamlphp/saml2": "^4.3",
+        "simplesamlphp/simplesamlphp-module-adfs": "^1.0",
         "simplesamlphp/simplesamlphp-module-authcrypt": "^0.9",
         "simplesamlphp/simplesamlphp-module-authfacebook": "^0.9",
         "simplesamlphp/simplesamlphp-module-authorize": "^0.9",
@@ -59,15 +60,15 @@
         "simplesamlphp/simplesamlphp-module-cdc": "^0.9",
         "simplesamlphp/simplesamlphp-module-consent": "^0.9",
         "simplesamlphp/simplesamlphp-module-consentadmin": "^0.9",
-        "simplesamlphp/simplesamlphp-module-discopower": "^0.9",
+        "simplesamlphp/simplesamlphp-module-discopower": "^0.10",
         "simplesamlphp/simplesamlphp-module-exampleattributeserver": "^1.0",
         "simplesamlphp/simplesamlphp-module-expirycheck": "^0.9",
-        "simplesamlphp/simplesamlphp-module-ldap": "^0.9",
+        "simplesamlphp/simplesamlphp-module-ldap": "^0.9 | ^1.0",
         "simplesamlphp/simplesamlphp-module-memcookie": "^1.2",
         "simplesamlphp/simplesamlphp-module-memcachemonitor": "^0.9",
         "simplesamlphp/simplesamlphp-module-metarefresh": "^0.9",
         "simplesamlphp/simplesamlphp-module-negotiate": "^0.9",
-        "simplesamlphp/simplesamlphp-module-oauth": "^0.9",
+        "simplesamlphp/simplesamlphp-module-oauth": "^0.9.3",
         "simplesamlphp/simplesamlphp-module-preprodwarning": "^0.9",
         "simplesamlphp/simplesamlphp-module-radius": "^0.9",
         "simplesamlphp/simplesamlphp-module-riak": "^0.9",
@@ -75,23 +76,26 @@
         "simplesamlphp/simplesamlphp-module-sanitycheck": "^0.9",
         "simplesamlphp/simplesamlphp-module-statistics": "^0.9",
         "simplesamlphp/simplesamlphp-module-sqlauth": "^0.9",
-        "simplesamlphp/twig-configurable-i18n": "^2.2",
-        "symfony/routing": "^3.4 || ^4.0",
-        "symfony/http-foundation": "^3.4 || ^4.0",
-        "symfony/config": "^3.4 || ^4.0",
-        "symfony/http-kernel": "^3.4 || ^4.0",
-        "symfony/dependency-injection": "^3.4 || ^4.0",
-        "symfony/yaml": "^3.4 || ^4.0",
-        "twig/twig": "~1.0 || ~2.0"
+        "simplesamlphp/twig-configurable-i18n": "~2.3.3",
+        "symfony/cache": "^4.4 || ^5.0",
+        "symfony/config": "^4.4 || ^5.0",
+        "symfony/console": "^4.4 || ^5.0",
+        "symfony/dependency-injection": "^4.4 || ^5.0",
+        "symfony/finder": "^4.4 || ^5.0",
+        "symfony/framework-bundle": "^4.4 || ^5.0",
+        "symfony/http-foundation": "^4.4 || ^5.0",
+        "symfony/http-kernel": "^4.4 || ^5.0",
+        "symfony/routing": "^4.4 || ^5.0",
+        "symfony/var-exporter": "^4.4 || ^5.0",
+        "symfony/yaml": "^4.4 || ^5.0",
+        "twig/twig": "^1.43 || ^2.0"
     },
     "require-dev": {
         "ext-curl": "*",
         "mikey179/vfsstream": "~1.6",
-        "phpunit/phpunit": "~5.7",
-        "sensiolabs/security-checker": "^5.0.3",
-        "simplesamlphp/simplesamlphp-test-framework": "^0.0.14",
-        "squizlabs/php_codesniffer": "^3.5",
-        "vimeo/psalm": "~1.1.9"
+        "phpunit/phpunit": "^7.5",
+        "simplesamlphp/simplesamlphp-test-framework": "^0.1.2",
+        "vimeo/psalm": "~3.14"
     },
     "suggest": {
         "predis/predis": "Needed if a Redis server is used to store session information",
@@ -106,5 +110,11 @@
     "support": {
         "issues": "https://github.com/simplesamlphp/simplesamlphp/issues",
         "source": "https://github.com/simplesamlphp/simplesamlphp"
+    },
+    "config": {
+        "allow-plugins": {
+            "simplesamlphp/composer-module-installer": true,
+            "composer/package-versions-deprecated": true
+        }
     }
 }

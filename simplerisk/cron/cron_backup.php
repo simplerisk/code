@@ -104,7 +104,7 @@ function do_backup($force=false) {
     $db_backup_file = $timestamp_path . '/simplerisk-db-backup-' . $timestamp . '.sql';
     
     // Sanitize the mysqldump command
-    $db_backup_cmd = escapeshellcmd($mysqldump_path) . ' --opt --lock-tables=false --skip-add-locks -h ' . escapeshellarg(DB_HOSTNAME) . ' -u ' . escapeshellarg(DB_USERNAME) . ' -p' . escapeshellarg(DB_PASSWORD) . ' ' . escapeshellarg(DB_DATABASE) . ' > ' . escapeshellarg($db_backup_file);
+    $db_backup_cmd = escapeshellcmd($mysqldump_path) . ' --opt --lock-tables=false --skip-add-locks --set-gtid-purged=OFF --no-tablespaces -h ' . escapeshellarg(DB_HOSTNAME) . ' -u ' . escapeshellarg(DB_USERNAME) . ' -p' . escapeshellarg(DB_PASSWORD) . ' ' . escapeshellarg(DB_DATABASE) . ' > ' . escapeshellarg($db_backup_file);
     
     // Backup the database
     $mysqldump = system($db_backup_cmd);

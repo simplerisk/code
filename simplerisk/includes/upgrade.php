@@ -159,6 +159,7 @@ $releases = array(
 	"20211230-001",
 	"20220122-001",
 	"20220306-001",
+	"20220401-001",
 );
 
 /*************************
@@ -363,6 +364,8 @@ function check_grants($db)
     $create = false;
     $drop = false;
     $alter = false;
+    $references = false;
+    $index = false;
     $all = false;
 
     // For each row of the array
@@ -419,6 +422,20 @@ function check_grants($db)
                 $alter = true;
         }
 
+        // Match ALTER statement
+        $regex_pattern = "/REFERENCES/";
+        if (preg_match($regex_pattern, $string))
+        {
+            $alter = true;
+        }
+
+        // Match ALTER statement
+        $regex_pattern = "/INDEX/";
+        if (preg_match($regex_pattern, $string))
+        {
+            $alter = true;
+        }
+
         // Match ALL statement
         $regex_pattern = "/ALL/";
         if (preg_match($regex_pattern, $string))
@@ -428,7 +445,7 @@ function check_grants($db)
     }
 
     // If the grants include all values
-    if ($select && $insert && $update && $delete && $create && $drop && $alter)
+    if ($select && $insert && $update && $delete && $create && $drop && $alter && $references && $index)
     {
         return true;
     }
@@ -6377,11 +6394,78 @@ function upgrade_from_20220122001($db)
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20220306-001 *
+ ***************************************/
+function upgrade_from_20220306001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20220306-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20220401-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    if (!index_exists_on_table('rsci_index', 'risk_scoring_contributing_impacts')) {
+        echo "Adding index 'rsci_index' to table 'risk_scoring_contributing_impacts'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX rsci_index ON `risk_scoring_contributing_impacts`(`risk_scoring_id`, `contributing_risk_id`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('rsci_index2', 'risk_scoring_contributing_impacts')) {
+        echo "Adding index 'rsci_index2' to table 'risk_scoring_contributing_impacts'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX rsci_index2 ON `risk_scoring_contributing_impacts`(`contributing_risk_id`, `risk_scoring_id`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('cri_index', 'contributing_risks_impact')) {
+        echo "Adding index 'cri_index' to table 'contributing_risks_impact'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX cri_index ON `contributing_risks_impact`(`contributing_risks_id`, `value`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('cri_index2', 'contributing_risks_impact')) {
+        echo "Adding index 'cri_index2' to table 'contributing_risks_impact'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX cri_index2 ON `contributing_risks_impact`(`value`, `contributing_risks_id`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('crl_index', 'contributing_risks_likelihood')) {
+        echo "Adding index 'crl_index' to table 'contributing_risks_likelihood'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX crl_index ON `contributing_risks_likelihood`(`value`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('likelihood_index', 'likelihood')) {
+        echo "Adding index 'likelihood_index' to table 'likelihood'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX likelihood_index ON `likelihood`(`value`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('impact_index', 'impact')) {
+        echo "Adding index 'impact_index' to table 'impact'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX impact_index ON `impact`(`value`);");
+        $stmt->execute();
+    }
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
 function upgrade_database()
 {
+    global $escaper;
+
     // Connect to the database
     $db = db_open();
 
@@ -6410,7 +6494,7 @@ function upgrade_database()
                     // Recursively run the database upgrade for the next release
                     upgrade_database();
 
-		    // If the composer.json file exists
+		            // If the composer.json file exists
                     $file = realpath(__DIR__ . '/../composer.json');
                     if (file_exists($file))
                     {
@@ -6432,7 +6516,7 @@ function upgrade_database()
                         }
                     }
 
-		    // If the installed.json file exists
+		            // If the installed.json file exists
                     $file = realpath(__DIR__ . '/../vendor/composer/installed.json');
                     if (file_exists($file))
                     {
@@ -6456,7 +6540,7 @@ function upgrade_database()
     // If the grant check was not successful
     else
     {
-        echo "A check of your database user privileges found that one of the necessary grants was missing.  Please ensure that you have granted SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, and ALTER permissions to the user.<br />\n";
+        echo "A check of your database user privileges found that one or more of the necessary grants were missing.  Please ensure that you have granted SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, REFERENCES AND INDEX permissions to the '" . $escaper->escapeHtml(DB_USERNAME) . "' user.<br />\n";
     }
 
     // Disconnect from the database

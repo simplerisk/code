@@ -363,7 +363,7 @@ function display_graphical_risk_analysis_chart($type, $x_axis, $y_axis)
     global $escaper;
 
     // Create the new chart
-    $chart = new Highchart();
+    $chart = new Highchart(0,0);
     $chart->includeExtraScripts();
 
     // Tell the chart which div to render to

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML;
 
 use SAML2\Constants;
@@ -14,6 +16,11 @@ use SimpleSAML\Utils;
  */
 class Configuration implements Utils\ClearableState
 {
+    /**
+     * The release version of this package
+     */
+    public const VERSION = '1.19.5';
+
     /**
      * A default value which means that the given option is required.
      *
@@ -109,11 +116,8 @@ class Configuration implements Utils\ClearableState
      *
      * @throws \Exception If the configuration file is invalid or missing.
      */
-    private static function loadFromFile($filename, $required)
+    private static function loadFromFile(string $filename, bool $required): Configuration
     {
-        assert(is_string($filename));
-        assert(is_bool($required));
-
         if (array_key_exists($filename, self::$loadedConfigs)) {
             return self::$loadedConfigs[$filename];
         }
@@ -426,7 +430,7 @@ class Configuration implements Utils\ClearableState
      */
     public function getVersion()
     {
-        return '1.18.8';
+        return self::VERSION;
     }
 
 
@@ -912,7 +916,8 @@ class Configuration implements Utils\ClearableState
      *                       required if this parameter isn't given. The default value can be any value, including
      *                       null.
      *
-     * @return array The option with the given name, or $default if the option isn't found and $default is specified.
+     * @return array|mixed The option with the given name, or $default
+     * if the option isn't found and $default is specified.
      */
     public function getArrayize($name, $default = self::REQUIRED_OPTION)
     {
@@ -1095,10 +1100,8 @@ class Configuration implements Utils\ClearableState
      *
      * @throws \Exception If the default binding is missing for this endpoint type.
      */
-    private function getDefaultBinding($endpointType)
+    private function getDefaultBinding(string $endpointType): string
     {
-        assert(is_string($endpointType));
-
         $set = $this->getString('metadata-set');
         switch ($set . ':' . $endpointType) {
             case 'saml20-idp-remote:SingleSignOnService':

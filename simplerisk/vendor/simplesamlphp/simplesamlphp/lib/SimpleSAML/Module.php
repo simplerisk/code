@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML;
 
-use SimpleSAML\HTTP\Router;
+use SimpleSAML\Kernel;
 use SimpleSAML\Utils;
 use Symfony\Component\Config\Exception\FileLocatorFileNotFoundException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -143,14 +145,12 @@ class Module
 
         $modEnd = strpos($url, '/', 1);
         if ($modEnd === false) {
-            // the path must always be on the form /module/
-            throw new Error\NotFound('The URL must at least contain a module name followed by a slash.');
-        }
-
-        $module = substr($url, 1, $modEnd - 1);
-        $url = substr($url, $modEnd + 1);
-        if ($url === false) {
+            $modEnd = strlen($url);
+            $module = substr($url, 1);
             $url = '';
+        } else {
+            $module = substr($url, 1, $modEnd - 1);
+            $url = substr($url, $modEnd + 1);
         }
 
         if (!self::isModuleEnabled($module)) {
@@ -169,10 +169,13 @@ class Module
 
         $config = Configuration::getInstance();
 
-        // rebuild REQUEST_URI and SCRIPT_NAME just in case we need to. This is needed for server aliases and rewrites
+        // rebuild REQUEST_URI and SCRIPT_NAME just in case we need to.
+        // This is needed for server aliases and rewrites
         $translated_uri = $config->getBasePath() . 'module.php/' . $module . '/' . $url;
         $request->server->set('REQUEST_URI', $translated_uri);
         $request->server->set('SCRIPT_NAME', $config->getBasePath() . 'module.php');
+        // strip any NULL files (form file fields with nothing selected)
+        // because initialize() will throw an error on them
         $request_files = array_filter(
             $request->files->all(),
             function ($val) {
@@ -190,9 +193,12 @@ class Module
         );
 
         if ($config->getBoolean('usenewui', false) === true) {
-            $router = new Router($module);
             try {
-                return $router->process($request);
+                $kernel = new Kernel($module);
+                $response = $kernel->handle($request);
+                $kernel->terminate($request, $response);
+
+                return $response;
             } catch (FileLocatorFileNotFoundException $e) {
                 // no routes configured for this module, fall back to the old system
             } catch (NotFoundHttpException $e) {
@@ -285,14 +291,16 @@ class Module
             }
         }
 
+        /** @psalm-var \SimpleSAML\Configuration $assetConfig */
         $assetConfig = $config->getConfigItem('assets');
+        /** @psalm-var \SimpleSAML\Configuration $cacheConfig */
         $cacheConfig = $assetConfig->getConfigItem('caching');
         $response = new BinaryFileResponse($path);
         $response->setCache([
             // "public" allows response caching even if the request was authenticated,
             // which is exactly what we want for static resources
             'public' => true,
-            'max_age' => (string)$cacheConfig->getInteger('max_age', 86400)
+            'max_age' => strval($cacheConfig->getInteger('max_age', 86400))
         ]);
         $response->setAutoLastModified();
         if ($cacheConfig->getBoolean('etag', false)) {
@@ -311,7 +319,7 @@ class Module
      * @param array $mod_config
      * @return bool
      */
-    private static function isModuleEnabledWithConf($module, $mod_config)
+    private static function isModuleEnabledWithConf(string $module, array $mod_config): bool
     {
         if (isset(self::$module_info[$module]['enabled'])) {
             return self::$module_info[$module]['enabled'];
@@ -428,6 +436,12 @@ class Module
             if (!class_exists($className)) {
                 throw new \Exception("Could not resolve '$id': no class named '$className'.");
             }
+        } elseif (!in_array($tmp[0], self::getModules())) {
+            // Module not installed
+            throw new \Exception('No module named \'' . $tmp[0]. '\' has been installed.');
+        } elseif (!self::isModuleEnabled($tmp[0])) {
+            // Module installed, but not enabled
+            throw new \Exception('The module \'' . $tmp[0]. '\' is not enabled.');
         } else {
             // should be a module
             // make sure empty types are handled correctly
@@ -545,7 +559,10 @@ class Module
                 self::$module_info[$module]['hooks'] = self::getModuleHooks($module);
             }
 
-            if (!isset(self::$module_info[$module]['hooks'][$hook])) {
+            if (
+                !isset(self::$module_info[$module]['hooks'][$hook])
+                || empty(self::$module_info[$module]['hooks'][$hook])
+            ) {
                 continue;
             }
 
@@ -558,6 +575,22 @@ class Module
             $fn = self::$module_info[$module]['hooks'][$hook]['func'];
             $fn($data);
         }
+    }
+
+
+    /**
+     * Handle a valid request for a module that lacks a trailing slash.
+     *
+     * This method add the trailing slash and redirects to the resulting URL.
+     *
+     * @param Request $request The request to process by this controller method.
+     *
+     * @return RedirectResponse A redirection to the URI specified in the request, but with a trailing slash.
+     */
+    public static function addTrailingSlash(Request $request)
+    {
+        // Must be of form /{module} - append a slash
+        return new RedirectResponse($request->getRequestUri() . '/', 308);
     }
 
 

@@ -194,7 +194,7 @@ require_once(language_file());
                                     </form>
                                     <script>
                                         $(document).ready(function() {
-                                            $('.multiselect').multiselect({buttonWidth: '300px', enableFiltering: true});
+                                            $('.multiselect').multiselect({buttonWidth: '300px', enableFiltering: true, enableCaseInsensitiveFiltering: true,});
                                             $('.datepicker').datepicker();
                                         });
                                     </script>

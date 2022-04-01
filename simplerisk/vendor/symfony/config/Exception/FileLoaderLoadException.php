@@ -15,24 +15,26 @@ namespace Symfony\Component\Config\Exception;
  * Exception class for when a resource cannot be loaded or imported.
  *
  * @author Ryan Weaver <ryan@thatsquality.com>
+ *
+ * @deprecated since Symfony 4.2, use LoaderLoadException instead.
  */
 class FileLoaderLoadException extends \Exception
 {
     /**
-     * @param string     $resource       The resource that could not be imported
-     * @param string     $sourceResource The original resource importing the new resource
-     * @param int        $code           The error code
-     * @param \Exception $previous       A previous exception
-     * @param string     $type           The type of resource
+     * @param string          $resource       The resource that could not be imported
+     * @param string|null     $sourceResource The original resource importing the new resource
+     * @param int|null        $code           The error code
+     * @param \Throwable|null $previous       A previous exception
+     * @param string|null     $type           The type of resource
      */
-    public function __construct($resource, $sourceResource = null, $code = null, $previous = null, $type = null)
+    public function __construct(string $resource, string $sourceResource = null, ?int $code = 0, \Throwable $previous = null, string $type = null)
     {
         $message = '';
         if ($previous) {
             // Include the previous exception, to help the user see what might be the underlying cause
 
             // Trim the trailing period of the previous message. We only want 1 period remove so no rtrim...
-            if ('.' === substr($previous->getMessage(), -1)) {
+            if (str_ends_with($previous->getMessage(), '.')) {
                 $trimmedMessage = substr($previous->getMessage(), 0, -1);
                 $message .= sprintf('%s', $trimmedMessage).' in ';
             } else {
@@ -42,17 +44,17 @@ class FileLoaderLoadException extends \Exception
 
             // show tweaked trace to complete the human readable sentence
             if (null === $sourceResource) {
-                $message .= sprintf('(which is loaded in resource "%s")', $this->varToString($resource));
+                $message .= sprintf('(which is loaded in resource "%s")', $resource);
             } else {
-                $message .= sprintf('(which is being imported from "%s")', $this->varToString($sourceResource));
+                $message .= sprintf('(which is being imported from "%s")', $sourceResource);
             }
             $message .= '.';
 
         // if there's no previous message, present it the default way
         } elseif (null === $sourceResource) {
-            $message .= sprintf('Cannot load resource "%s".', $this->varToString($resource));
+            $message .= sprintf('Cannot load resource "%s".', $resource);
         } else {
-            $message .= sprintf('Cannot import resource "%s" from "%s".', $this->varToString($resource), $this->varToString($sourceResource));
+            $message .= sprintf('Cannot import resource "%s" from "%s".', $resource, $sourceResource);
         }
 
         // Is the resource located inside a bundle?

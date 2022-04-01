@@ -20,13 +20,18 @@ use Symfony\Component\Finder\Glob;
  * Only existence/removal is tracked (not mtimes.)
  *
  * @author Nicolas Grekas <p@tchwork.com>
+ *
+ * @final since Symfony 4.3
  */
-class GlobResource implements \IteratorAggregate, SelfCheckingResourceInterface, \Serializable
+class GlobResource implements \IteratorAggregate, SelfCheckingResourceInterface
 {
     private $prefix;
     private $pattern;
     private $recursive;
     private $hash;
+    private $forExclusion;
+    private $excludedPrefixes;
+    private $globBrace;
 
     /**
      * @param string $prefix    A directory prefix
@@ -35,11 +40,15 @@ class GlobResource implements \IteratorAggregate, SelfCheckingResourceInterface,
      *
      * @throws \InvalidArgumentException
      */
-    public function __construct($prefix, $pattern, $recursive)
+    public function __construct(string $prefix, string $pattern, bool $recursive, bool $forExclusion = false, array $excludedPrefixes = [])
     {
+        ksort($excludedPrefixes);
         $this->prefix = realpath($prefix) ?: (file_exists($prefix) ? $prefix : false);
         $this->pattern = $pattern;
         $this->recursive = $recursive;
+        $this->forExclusion = $forExclusion;
+        $this->excludedPrefixes = $excludedPrefixes;
+        $this->globBrace = \defined('GLOB_BRACE') ? \GLOB_BRACE : 0;
 
         if (false === $this->prefix) {
             throw new \InvalidArgumentException(sprintf('The path "%s" does not exist.', $prefix));
@@ -51,12 +60,9 @@ class GlobResource implements \IteratorAggregate, SelfCheckingResourceInterface,
         return $this->prefix;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function __toString()
     {
-        return 'glob.'.$this->prefix.$this->pattern.(int) $this->recursive;
+        return 'glob.'.$this->prefix.(int) $this->recursive.$this->pattern.(int) $this->forExclusion.implode("\0", $this->excludedPrefixes);
     }
 
     /**
@@ -76,52 +82,86 @@ class GlobResource implements \IteratorAggregate, SelfCheckingResourceInterface,
     /**
      * @internal
      */
-    public function serialize()
+    public function __sleep(): array
     {
         if (null === $this->hash) {
             $this->hash = $this->computeHash();
         }
 
-        return serialize([$this->prefix, $this->pattern, $this->recursive, $this->hash]);
+        return ['prefix', 'pattern', 'recursive', 'hash', 'forExclusion', 'excludedPrefixes'];
     }
 
     /**
      * @internal
      */
-    public function unserialize($serialized)
+    public function __wakeup(): void
     {
-        list($this->prefix, $this->pattern, $this->recursive, $this->hash) = unserialize($serialized);
+        $this->globBrace = \defined('GLOB_BRACE') ? \GLOB_BRACE : 0;
     }
 
+    /**
+     * @return \Traversable
+     */
+    #[\ReturnTypeWillChange]
     public function getIterator()
     {
         if (!file_exists($this->prefix) || (!$this->recursive && '' === $this->pattern)) {
             return;
         }
+        $prefix = str_replace('\\', '/', $this->prefix);
+        $paths = null;
 
-        if (0 !== strpos($this->prefix, 'phar://') && false === strpos($this->pattern, '/**/') && (\defined('GLOB_BRACE') || false === strpos($this->pattern, '{'))) {
-            $paths = glob($this->prefix.$this->pattern, \GLOB_NOSORT | (\defined('GLOB_BRACE') ? \GLOB_BRACE : 0));
-            sort($paths);
+        if (!str_starts_with($this->prefix, 'phar://') && !str_contains($this->pattern, '/**/')) {
+            if ($this->globBrace || !str_contains($this->pattern, '{')) {
+                $paths = glob($this->prefix.$this->pattern, \GLOB_NOSORT | $this->globBrace);
+            } elseif (!str_contains($this->pattern, '\\') || !preg_match('/\\\\[,{}]/', $this->pattern)) {
+                foreach ($this->expandGlob($this->pattern) as $p) {
+                    $paths[] = glob($this->prefix.$p, \GLOB_NOSORT);
+                }
+                $paths = array_merge(...$paths);
+            }
+        }
+
+        if (null !== $paths) {
+            natsort($paths);
             foreach ($paths as $path) {
-                if ($this->recursive && is_dir($path)) {
-                    $files = iterator_to_array(new \RecursiveIteratorIterator(
-                        new \RecursiveCallbackFilterIterator(
-                            new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::FOLLOW_SYMLINKS),
-                            function (\SplFileInfo $file) { return '.' !== $file->getBasename()[0]; }
-                        ),
-                        \RecursiveIteratorIterator::LEAVES_ONLY
-                    ));
-                    uasort($files, function (\SplFileInfo $a, \SplFileInfo $b) {
-                        return (string) $a > (string) $b ? 1 : -1;
-                    });
-
-                    foreach ($files as $path => $info) {
-                        if ($info->isFile()) {
-                            yield $path => $info;
+                if ($this->excludedPrefixes) {
+                    $normalizedPath = str_replace('\\', '/', $path);
+                    do {
+                        if (isset($this->excludedPrefixes[$dirPath = $normalizedPath])) {
+                            continue 2;
                         }
-                    }
-                } elseif (is_file($path)) {
+                    } while ($prefix !== $dirPath && $dirPath !== $normalizedPath = \dirname($dirPath));
+                }
+
+                if (is_file($path)) {
                     yield $path => new \SplFileInfo($path);
+                }
+                if (!is_dir($path)) {
+                    continue;
+                }
+                if ($this->forExclusion) {
+                    yield $path => new \SplFileInfo($path);
+                    continue;
+                }
+                if (!$this->recursive || isset($this->excludedPrefixes[str_replace('\\', '/', $path)])) {
+                    continue;
+                }
+                $files = iterator_to_array(new \RecursiveIteratorIterator(
+                    new \RecursiveCallbackFilterIterator(
+                        new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::FOLLOW_SYMLINKS),
+                        function (\SplFileInfo $file, $path) {
+                            return !isset($this->excludedPrefixes[str_replace('\\', '/', $path)]) && '.' !== $file->getBasename()[0];
+                        }
+                    ),
+                    \RecursiveIteratorIterator::LEAVES_ONLY
+                ));
+                uksort($files, 'strnatcmp');
+
+                foreach ($files as $path => $info) {
+                    if ($info->isFile()) {
+                        yield $path => $info;
+                    }
                 }
             }
 
@@ -140,13 +180,23 @@ class GlobResource implements \IteratorAggregate, SelfCheckingResourceInterface,
 
         $prefixLen = \strlen($this->prefix);
         foreach ($finder->followLinks()->sortByName()->in($this->prefix) as $path => $info) {
-            if (preg_match($regex, substr('\\' === \DIRECTORY_SEPARATOR ? str_replace('\\', '/', $path) : $path, $prefixLen)) && $info->isFile()) {
-                yield $path => $info;
+            $normalizedPath = str_replace('\\', '/', $path);
+            if (!preg_match($regex, substr($normalizedPath, $prefixLen)) || !$info->isFile()) {
+                continue;
             }
+            if ($this->excludedPrefixes) {
+                do {
+                    if (isset($this->excludedPrefixes[$dirPath = $normalizedPath])) {
+                        continue 2;
+                    }
+                } while ($prefix !== $dirPath && $dirPath !== $normalizedPath = \dirname($dirPath));
+            }
+
+            yield $path => $info;
         }
     }
 
-    private function computeHash()
+    private function computeHash(): string
     {
         $hash = hash_init('md5');
 
@@ -155,5 +205,35 @@ class GlobResource implements \IteratorAggregate, SelfCheckingResourceInterface,
         }
 
         return hash_final($hash);
+    }
+
+    private function expandGlob(string $pattern): array
+    {
+        $segments = preg_split('/\{([^{}]*+)\}/', $pattern, -1, \PREG_SPLIT_DELIM_CAPTURE);
+        $paths = [$segments[0]];
+        $patterns = [];
+
+        for ($i = 1; $i < \count($segments); $i += 2) {
+            $patterns = [];
+
+            foreach (explode(',', $segments[$i]) as $s) {
+                foreach ($paths as $p) {
+                    $patterns[] = $p.$s.$segments[1 + $i];
+                }
+            }
+
+            $paths = $patterns;
+        }
+
+        $j = 0;
+        foreach ($patterns as $i => $p) {
+            if (str_contains($p, '{')) {
+                $p = $this->expandGlob($p);
+                array_splice($paths, $i + $j, 1, $p);
+                $j += \count($p) - 1;
+            }
+        }
+
+        return $paths;
     }
 }

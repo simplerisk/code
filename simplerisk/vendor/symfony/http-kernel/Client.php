@@ -11,7 +11,7 @@
 
 namespace Symfony\Component\HttpKernel;
 
-use Symfony\Component\BrowserKit\Client as BaseClient;
+use Symfony\Component\BrowserKit\AbstractBrowser;
 use Symfony\Component\BrowserKit\CookieJar;
 use Symfony\Component\BrowserKit\History;
 use Symfony\Component\BrowserKit\Request as DomRequest;
@@ -21,23 +21,20 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Client simulates a browser and makes requests to a Kernel object.
+ * Client simulates a browser and makes requests to an HttpKernel instance.
  *
- * @author Fabien Potencier <fabien@symfony.com>
+ * @method Request  getRequest()  A Request instance
+ * @method Response getResponse() A Response instance
  *
- * @method Request|null  getRequest()  A Request instance
- * @method Response|null getResponse() A Response instance
+ * @deprecated since Symfony 4.3, use HttpKernelBrowser instead.
  */
-class Client extends BaseClient
+class Client extends AbstractBrowser
 {
     protected $kernel;
     private $catchExceptions = true;
 
     /**
-     * @param HttpKernelInterface $kernel    An HttpKernel instance
-     * @param array               $server    The server parameters (equivalent of $_SERVER)
-     * @param History             $history   A History instance to store the browser history
-     * @param CookieJar           $cookieJar A CookieJar instance to store the cookies
+     * @param array $server The server parameters (equivalent of $_SERVER)
      */
     public function __construct(HttpKernelInterface $kernel, array $server = [], History $history = null, CookieJar $cookieJar = null)
     {
@@ -88,9 +85,9 @@ class Client extends BaseClient
 
         $requires = '';
         foreach (get_declared_classes() as $class) {
-            if (0 === strpos($class, 'ComposerAutoloaderInit')) {
+            if (str_starts_with($class, 'ComposerAutoloaderInit')) {
                 $r = new \ReflectionClass($class);
-                $file = \dirname(\dirname($r->getFileName())).'/autoload.php';
+                $file = \dirname($r->getFileName(), 2).'/autoload.php';
                 if (file_exists($file)) {
                     $requires .= 'require_once '.var_export($file, true).";\n";
                 }
@@ -169,7 +166,6 @@ EOF;
                         '',
                         $value->getClientOriginalName(),
                         $value->getClientMimeType(),
-                        0,
                         \UPLOAD_ERR_INI_SIZE,
                         true
                     );
@@ -178,7 +174,6 @@ EOF;
                         $value->getPathname(),
                         $value->getClientOriginalName(),
                         $value->getClientMimeType(),
-                        $value->getClientSize(),
                         $value->getError(),
                         true
                     );

@@ -195,7 +195,8 @@ $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
                 enableFiltering: true,
                 allSelectedText: "<?php echo $escaper->escapeHtml($lang['ALL']);?>",
                 buttonWidth: '100%',
-                includeSelectAllOption: true
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
             });
 
             $(document).on("click", "#submit_test_result", function(){

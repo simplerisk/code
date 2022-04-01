@@ -322,7 +322,8 @@ $selected_columns = array_merge($risk_columns, $mitigation_columns, $review_colu
                 includeSelectAllOption: true,
                 onChange: throttledFormSubmit,
                 onSelectAll: throttledFormSubmit,
-                onDeselectAll: throttledFormSubmit
+                onDeselectAll: throttledFormSubmit,
+                enableCaseInsensitiveFiltering: true,
             });
             
             // Owner dropdown
@@ -331,7 +332,8 @@ $selected_columns = array_merge($risk_columns, $mitigation_columns, $review_colu
                 includeSelectAllOption: true,
                 onChange: throttledFormSubmit,
                 onSelectAll: throttledFormSubmit,
-                onDeselectAll: throttledFormSubmit
+                onDeselectAll: throttledFormSubmit,
+                enableCaseInsensitiveFiltering: true,
             });
             
             // Owner's dropdown
@@ -340,7 +342,8 @@ $selected_columns = array_merge($risk_columns, $mitigation_columns, $review_colu
                 includeSelectAllOption: true,
                 onChange: throttledFormSubmit,
                 onSelectAll: throttledFormSubmit,
-                onDeselectAll: throttledFormSubmit
+                onDeselectAll: throttledFormSubmit,
+                enableCaseInsensitiveFiltering: true,
             });
         });
     </script>

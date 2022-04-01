@@ -43,7 +43,7 @@ if(!is_array($custom_display_settings)){
 $status = isset($_GET["status"])?$_GET["status"]:0;
 $group = isset($_GET["group"])?$_GET["group"]:"";
 $sort = isset($_GET["sort"])?$_GET["sort"]:0;
-$group_value = isset($_GET["group_value"])?$_GET["group_value"]:"";
+$group_value = isset($_GET["group_value"])?rawurldecode($_GET["group_value"]):"";
 $order_column = isset($_GET["order_column"])?$_GET["order_column"]:null;
 $order_dir = isset($_GET["order_dir"])?$_GET["order_dir"]:"asc";
 $column_filters = isset($_GET["column_filters"])?$_GET["column_filters"]:[];

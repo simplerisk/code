@@ -67,16 +67,21 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
     <?php
     setup_favicon("..");
     setup_alert_requirements("..");
+
+    $settings = [];
     $selection_id = get_param("GET", "selection", "");
     if($selection_id) {
         $selection = get_graphical_saved_selection($selection_id);
-        $settings = json_decode($selection['graphical_display_settings'], true);
-    } else $settings = [];
-
+        if($selection['type'] == 'private' && $selection['user_id'] != $_SESSION['uid'] && !is_admin())
+        {
+            set_alert(true, "bad", $lang['NoPermissionForThisSelection']);
+        } else {
+            $settings = json_decode($selection['graphical_display_settings'], true);
+        }
+    }
     ?>
 </head>
 <body>
-
 <?php view_top_menu("Reporting"); ?>
 
 <div class="container-fluid">
@@ -115,9 +120,8 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
                     <?php display_graphical_risk_analysis(); ?>
                 </div>
             </div>
-            </div>
+        </div>
     </div>
 </div>
 </body>
-
 </html>

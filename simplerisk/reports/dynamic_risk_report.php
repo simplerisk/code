@@ -121,6 +121,9 @@ if(customization_extra()){
         'project',
         'project_status',
         'days_open',
+        'closed_by',
+        'close_reason',
+        'close_out',
     );
     // Names list of Mitigation columns
     $mitigation_fields = array(
@@ -207,6 +210,9 @@ if(customization_extra()){
         'additional_stakeholders',
         'owner',
         'manager',
+        'closed_by',
+        'close_reason',
+        'close_out',
     );
     // Names list of Mitigation columns
     $mitigation_fields = array(
@@ -360,7 +366,7 @@ if (import_export_extra()){
     // if group download request, download risks by the group
     if(isset($_GET['option']) && $_GET['option'] == "download-by-group")
     {
-        $group_value = $_GET['group_value'];
+        $group_value = rawurldecode($_GET['group_value']);
         $column_filters = isset($_GET["column_filters"])?$_GET["column_filters"]:[];
         $order_column = isset($_GET["order_column"])?$_GET["order_column"]:null;
         $order_dir = isset($_GET["order_dir"])?$_GET["order_dir"]:"asc";

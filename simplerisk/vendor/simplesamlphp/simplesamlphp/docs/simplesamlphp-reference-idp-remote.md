@@ -226,8 +226,17 @@ There are two modes of encryption supported by SimpleSAMLphp. One is symmetric e
 :   Note that this option overrides the option with the same name in the SP configuration.
 
 `sharedkey`
-:   Symmetric key which should be used for decryption. This should be a 128-bit key. If this option is not specified, public key encryption will be used instead.
+:   Symmetric key which should be used for decryption. This should be a 128-bit, 192-bit or 256-bit key based on the algorithm used. If this option is not specified, public key encryption will be used instead.
 
+`sharedkey_algorithm`
+:   Algorithm which should be used for decryption. Possible values are:
+
+    * http://www.w3.org/2001/04/xmlenc#aes128-cbc
+    * http://www.w3.org/2001/04/xmlenc#aes192-cbc
+    * http://www.w3.org/2001/04/xmlenc#aes256-cbc
+    * http://www.w3.org/2009/xmlenc11#aes128-gcm
+    * http://www.w3.org/2009/xmlenc11#aes192-gcm
+    * http://www.w3.org/2009/xmlenc11#aes256-gcm
 
 ### Fields for signing and validating messages
 
@@ -247,6 +256,8 @@ SimpleSAMLphp only signs authentication responses by default. Signing of authent
 
 Shibboleth 1.3 options
 ----------------------
+
+Note that Shibboleth 1.3 support is deprecated and will be removed in the next major release of SimpleSAMLphp.
 
 `caFile`
 :   Alternative to specifying a certificate. Allows you to specify a file with root certificates, and responses from the service be validated against these certificates. Note that SimpleSAMLphp doesn't support chains with any itermediate certificates between the root and the certificate used to sign the response. Support for PKIX in SimpleSAMLphp is experimental, and we encourage users to not rely on PKIX for validation of signatures; for background information review [the SAML 2.0 Metadata Interoperability Profile](http://docs.oasis-open.org/security/saml/Post2.0/sstc-metadata-iop-cd-01.pdf).

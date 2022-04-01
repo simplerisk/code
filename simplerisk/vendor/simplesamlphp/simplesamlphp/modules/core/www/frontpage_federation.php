@@ -44,7 +44,6 @@ $allLinks = [
 $metadataHosted = [];
 \SimpleSAML\Module::callHooks('metadata_hosted', $metadataHosted);
 
-
 $metadata = \SimpleSAML\Metadata\MetaDataStorageHandler::getMetadataHandler();
 
 $metaentries = ['hosted' => $metadataHosted, 'remote' => []];

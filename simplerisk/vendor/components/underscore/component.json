@@ -11,13 +11,13 @@
     "browser"
   ],
   "author": "Jeremy Ashkenas <jeremy@documentcloud.org>",
-  "version": "1.13.1",
+  "version": "1.13.2",
   "main": "underscore.js",
   "scripts": [
     "underscore.js"
   ],
   "files": [
     "underscore-min.js",
-    "underscore-min.map"
+    "underscore-min.js.map"
   ]
 }

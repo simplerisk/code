@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Metadata;
 
 use SimpleSAML\Configuration;
@@ -19,7 +21,7 @@ class MetaDataStorageHandlerSerialize extends MetaDataStorageSource
      *
      * @var string
      */
-    const EXTENSION = '.serialized';
+    public const EXTENSION = '.serialized';
 
 
     /**
@@ -62,11 +64,8 @@ class MetaDataStorageHandlerSerialize extends MetaDataStorageSource
      *
      * @return string The path to the metadata file.
      */
-    private function getMetadataPath($entityId, $set)
+    private function getMetadataPath(string $entityId, string $set): string
     {
-        assert(is_string($entityId));
-        assert(is_string($set));
-
         return $this->directory . '/' . rawurlencode($set) . '/' . rawurlencode($entityId) . self::EXTENSION;
     }
 
@@ -169,18 +168,18 @@ class MetaDataStorageHandlerSerialize extends MetaDataStorageSource
     /**
      * Retrieve a metadata entry.
      *
-     * @param string $entityId The entityId we are looking up.
+     * @param string $index The entityId we are looking up.
      * @param string $set The set we are looking for metadata in.
      *
      * @return array|null An associative array with metadata for the given entity, or NULL if we are unable to
      *         locate the entity.
      */
-    public function getMetaData($entityId, $set)
+    public function getMetaData($index, $set)
     {
-        assert(is_string($entityId));
+        assert(is_string($index));
         assert(is_string($set));
 
-        $filePath = $this->getMetadataPath($entityId, $set);
+        $filePath = $this->getMetadataPath($index, $set);
 
         if (!file_exists($filePath)) {
             return null;
@@ -203,7 +202,7 @@ class MetaDataStorageHandlerSerialize extends MetaDataStorageSource
         }
 
         if (!array_key_exists('entityid', $data)) {
-            $data['entityid'] = $entityId;
+            $data['entityid'] = $index;
         }
 
         return $data;

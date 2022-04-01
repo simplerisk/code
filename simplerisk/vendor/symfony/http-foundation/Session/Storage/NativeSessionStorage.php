@@ -17,6 +17,11 @@ use Symfony\Component\HttpFoundation\Session\Storage\Handler\StrictSessionHandle
 use Symfony\Component\HttpFoundation\Session\Storage\Proxy\AbstractProxy;
 use Symfony\Component\HttpFoundation\Session\Storage\Proxy\SessionHandlerProxy;
 
+// Help opcache.preload discover always-needed symbols
+class_exists(MetadataBag::class);
+class_exists(StrictSessionHandler::class);
+class_exists(SessionHandlerProxy::class);
+
 /**
  * This provides a base class for session attribute storage.
  *
@@ -74,18 +79,14 @@ class NativeSessionStorage implements SessionStorageInterface
      * cookie_path, "/"
      * cookie_secure, ""
      * cookie_samesite, null
-     * entropy_file, ""
-     * entropy_length, "0"
      * gc_divisor, "100"
      * gc_maxlifetime, "1440"
      * gc_probability, "1"
-     * hash_bits_per_character, "4"
-     * hash_function, "0"
      * lazy_write, "1"
      * name, "PHPSESSID"
      * referer_check, ""
      * serialize_handler, "php"
-     * use_strict_mode, "0"
+     * use_strict_mode, "1"
      * use_cookies, "1"
      * use_only_cookies, "1"
      * use_trans_sid, "0"
@@ -114,6 +115,7 @@ class NativeSessionStorage implements SessionStorageInterface
             'cache_expire' => 0,
             'use_cookies' => 1,
             'lazy_write' => 1,
+            'use_strict_mode' => 1,
         ];
 
         session_register_shutdown();
@@ -254,7 +256,7 @@ class NativeSessionStorage implements SessionStorageInterface
 
         // Register error handler to add information about the current save handler
         $previousHandler = set_error_handler(function ($type, $msg, $file, $line) use (&$previousHandler) {
-            if (\E_WARNING === $type && 0 === strpos($msg, 'session_write_close():')) {
+            if (\E_WARNING === $type && str_starts_with($msg, 'session_write_close():')) {
                 $handler = $this->saveHandler instanceof SessionHandlerProxy ? $this->saveHandler->getHandler() : $this->saveHandler;
                 $msg = sprintf('session_write_close(): Failed to write session data with "%s" handler', \get_class($handler));
             }
@@ -370,9 +372,8 @@ class NativeSessionStorage implements SessionStorageInterface
         $validOptions = array_flip([
             'cache_expire', 'cache_limiter', 'cookie_domain', 'cookie_httponly',
             'cookie_lifetime', 'cookie_path', 'cookie_secure', 'cookie_samesite',
-            'entropy_file', 'entropy_length', 'gc_divisor',
-            'gc_maxlifetime', 'gc_probability', 'hash_bits_per_character',
-            'hash_function', 'lazy_write', 'name', 'referer_check',
+            'gc_divisor', 'gc_maxlifetime', 'gc_probability',
+            'lazy_write', 'name', 'referer_check',
             'serialize_handler', 'use_strict_mode', 'use_cookies',
             'use_only_cookies', 'use_trans_sid', 'upload_progress.enabled',
             'upload_progress.cleanup', 'upload_progress.prefix', 'upload_progress.name',
@@ -386,6 +387,9 @@ class NativeSessionStorage implements SessionStorageInterface
                     // PHP < 7.3 does not support same_site cookies. We will emulate it in
                     // the start() method instead.
                     $this->emulateSameSite = $value;
+                    continue;
+                }
+                if ('cookie_secure' === $key && 'auto' === $value) {
                     continue;
                 }
                 ini_set('url_rewriter.tags' !== $key ? 'session.'.$key : $key, $value);

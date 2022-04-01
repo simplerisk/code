@@ -3391,10 +3391,10 @@ function get_cvss_numeric_value($abrv_metric_name, $abrv_metric_value)
     $array = $stmt->fetchAll();
 
     // Close the database connection
-    db_close($db);
+    db_close($db); 
 
     // Return the numeric value found
-    return $array[0]['numeric_value'];
+    return isset($array[0]['numeric_value']) ? $array[0]['numeric_value'] : 0;
 }
 
 /*********************************
@@ -4518,7 +4518,7 @@ function save_mitigation_controls($mitigation_id, $control_ids, $post = array())
         $stmt->execute();
 
         // Sanitizing list of ids 
-        $file_ids = sanitize_int_array($post['file_ids_' . $control_id]);
+        $file_ids = !empty($post['file_ids_' . $control_id]) ? sanitize_int_array($post['file_ids_' . $control_id]) : [];
         refresh_files_for_validation($mitigation_id, $control_id, $file_ids);
 
         // If a artifact file was submitted
@@ -5020,15 +5020,18 @@ function update_risk($risk_id, $is_api = false)
     $current_datetime = date('Y-m-d H:i:s');
 
     $submission_date        = get_param("post", "submission_date", false);
+    $risk = get_risk_by_id($risk_id);
     if($submission_date != false){
         $submission_date        =  get_standard_date_from_default_format($submission_date);
-        $risk = get_risk_by_id($risk_id);
         if($risk[0]){
             $existing_submission_date = date('Y-m-d', strtotime($risk[0]['submission_date']));
             if($existing_submission_date == $submission_date) $submission_date = $risk[0]['submission_date'];
         }
     } elseif($submission_date == ""){
-        $submission_date = $current_datetime;
+        if($risk[0]){
+            $existing_submission_date = date('Y-m-d', strtotime($risk[0]['submission_date']));
+            $submission_date = $existing_submission_date;
+        } else $submission_date = $current_datetime;
     }
     $risk_catalog_mapping = get_param("post", "risk_catalog_mapping", []);
 	$risk_catalog_mapping = count($risk_catalog_mapping)?implode(",", $risk_catalog_mapping):"";
@@ -19913,7 +19916,7 @@ function create_selectize_dropdown($type, $selected_values, $additional_info = f
                 <select" . ($required ? " required" : "") . " name='{$name}" . ($multiple ? "[]' multiple='multiple'" : "'") . " id='{$name}'></select>
                 <script>
                     $(document).ready(function(){
-                        $('#{$name}').selectize({
+                        $('[name=\"{$name}".($multiple ? "[]" : "")."\"]').selectize({
                             plugins: ['remove_button'],
                             searchField: " . ($grouped ? "['name', 'class']" : "'name'") . ",
                             valueField: 'value',
@@ -20204,4 +20207,256 @@ function get_graphical_saved_selection($value)
     return $row;
 }
 
+/******************************************
+ * FUNCTION: CREATE DEFAULT ADMIN ACCOUNT *
+ ******************************************/
+function create_default_admin_account()
+{
+    global $escaper;
+
+    // If a value was POSTed
+    if ($_POST && isset($_POST['verify_create_default_admin_account']))
+    {
+        // Verify that the default admin account values are proper
+        $verify_create_default_admin_account = verify_create_default_admin_account();
+
+        // If we were able to verify step 5 default admin account
+        if ($verify_create_default_admin_account['success'])
+        {
+            // Get the POSTed Information
+            $username = $_POST['username'];
+            $full_name = $_POST['full_name'];
+            $email = $_POST['email'];
+            $password = $_POST['password'];
+            $mailing_list = isset($_POST['mailing_list']) ? "true" : "false";
+
+            // Create a unique salt
+            $salt = "";
+            $values = array_merge(range(0, 9), range('a', 'z'), range('A', 'Z'));
+            for ($i = 0; $i < 20; $i++)
+            {
+                $salt .= $values[array_rand($values)];
+            }
+
+            // Hash the salt
+            $salt_hash = '$2a$15$' . md5($salt);
+
+            // Generate the password hash for admin user
+            set_time_limit(120);
+            $hash = crypt($password, $salt_hash);
+
+            // Set other values for the default admin user
+            $type = "simplerisk";
+            $teams = [];
+            $role_id = 1;
+            $admin = 1;
+            $multi_factor = 1;
+            $change_password = 0;
+            $manager = 0;
+
+            // The admin user should have all possible permissions
+            $permissions = get_possible_permission_ids();
+
+            // Add the new default admin user
+            add_user($type, $username, $email, $full_name, $salt, $hash, $teams, $role_id, $admin, $multi_factor, $change_password, $manager, $permissions);
+
+            // Create the SimpleRisk instance ID if it doesn't already exist
+            $instance_id = create_simplerisk_instance_id();
+
+            // Register the instance
+            $data = array(
+                'action' => 'installer_registration',
+                'instance_id' => $instance_id,
+                'name' => $full_name,
+                'email' => $email,
+                'mailing_list' => $mailing_list,
+            );
+            $result = simplerisk_service_call($data);
+
+            // Reload the login page
+            header("Location: index.php");
+        }
+        // If we could not verify step 5 default admin account
+        else
+        {
+            // Get the error message
+            $error_message = $verify_create_default_admin_account['error_message'];
+        }
+    }
+
+    // Page header
+    echo "
+<html ng-app=\"SimpleRisk\">
+  <head>
+    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+      <link rel=\"stylesheet\" type=\"text/css\" href=\"css/bootstrap.min.css\" media=\"screen\" />
+      <link rel=\"stylesheet\" type=\"text/css\" href=\"css/style.css\" media=\"screen\" />
+      <link rel=\"stylesheet\" href=\"css/bootstrap.css\">
+      <link rel=\"stylesheet\" href=\"css/bootstrap-responsive.css\">
+      <link rel=\"stylesheet\" href=\"vendor/components/font-awesome/css/fontawesome.min.css\">
+      <link rel=\"stylesheet\" href=\"css/theme.css\">
+  </head>
+
+  <body ng-controller=\"MainCtrl\" class=\"login--page\">
+
+    <header class=\"l-header\">
+      <div class=\"navbar\">
+        <div class=\"navbar-inner\">
+          <div class=\"container-fluid\">
+            <a class=\"brand\" href=\"https://www.simplerisk.com/\"><img src=\"images/logo@2x.png\" alt=\"SimpleRisk Logo\" /></a>
+            <div class=\"navbar-content pull-right\">
+              <ul class=\"nav\">
+                <li>
+                  <a href=\"index.php\">Default Admin Account Creation</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class=\"container-fluid\">
+      <div class=\"row-fluid\">
+        <div class=\"span12\">
+          <div class=\"login-wrapper clearfix\">
+            <h1 class=\"text-center welcome--msg\">Default Admin Account Creation</h1>
+              <form name=\"install\" method=\"post\" action=\"\" class=\"loginForm\">
+    ";
+
+    // If we have an error message
+    if (isset($error_message))
+    {
+        // For each error message provided
+        foreach ($error_message as $message)
+        {
+            health_check_bad($message);
+        }
+        echo "<br />\n";
+    }
+
+    // Admin account information table
+    echo "<table>\n";
+    echo "<thead>\n";
+    echo "<tr>\n";
+    echo "<th align=\"left\" colspan=\"2\"><label class=\"login--label\">Admin Account Information</label></th>\n";
+    echo "</tr>\n";
+    echo "</thead>\n";
+    echo "<tbody>\n";
+    echo "<tr>\n";
+    echo "<td><label for>Username:&nbsp;&nbsp;</label></td>\n";
+    echo "<td><input type=\"text\" size=\"30\" name=\"username\" value=\"" . (isset($_POST['username']) ? $escaper->escapeHtml($_POST['username']) : "") . "\" /></td>\n";
+    echo "</tr>\n";
+    echo "<tr>\n";
+    echo "<td><label for>Full Name:&nbsp;&nbsp;</label></td>\n";
+    echo "<td><input type=\"text\" size=\"30\" name=\"full_name\" value=\"" . (isset($_POST['full_name']) ? $escaper->escapeHtml($_POST['full_name']) : "") . "\" /></td>\n";
+    echo "</tr>\n";
+    echo "<tr>\n";
+    echo "<td><label for>Email Address:&nbsp;&nbsp;</label></td>\n";
+    echo "<td><input type=\"text\" size=\"30\" name=\"email\" value=\"" . (isset($_POST['email']) ? $escaper->escapeHtml($_POST['email']) : "") . "\" /></td>\n";
+    echo "</tr>\n";
+    echo "<tr>\n";
+    echo "<td><label for>Password:&nbsp;&nbsp;</label></td>\n";
+    echo "<td><input type=\"password\" size=\"30\" name=\"password\" value=\"\" /></td>\n";
+    echo "</tr>\n";
+    echo "<tr>\n";
+    echo "<td><label for>Confirm Password:&nbsp;&nbsp;</label></td>\n";
+    echo "<td><input type=\"password\" size=\"30\" name=\"confirm_password\" value=\"\" /></td>\n";
+    echo "</tr>\n";
+    echo "</tbody>\n";
+    echo "</table>\n";
+    echo "<table>\n";
+    echo "<tbody>\n";
+    echo "<tr>\n";
+    echo "<td style='padding: 10px'><input type='checkbox' id='mailing_list' name='mailing_list'" . (isset($_POST['mailing_list']) ? " checked" : "") . " /></td>\n";
+    echo "<td style='padding: 10px'><label for='mailing_list'>Add me to the SimpleRisk mailing list for educational content and notifications about new releases.</label></td><td>\n";
+    echo "</tr>\n";
+    echo "</tbody>\n";
+    echo "</table>\n";
+
+    echo "<br /><input type=\"submit\" name=\"verify_create_default_admin_account\" value=\"CREATE\" />\n";
+    echo "</form>\n";
+
+    // Page trailer
+    echo "
+                </form>
+              </div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+</html>
+    ";
+}
+
+/*************************************************
+ * FUNCTION: VERIFY CREATE DEFAULT ADMIN ACCOUNT *
+ *************************************************/
+function verify_create_default_admin_account()
+{
+    $error = false;
+
+    // If the Username is empty
+    if ($_POST['username'] == "")
+    {
+        $error_message[] = "The admin account must have a username.";
+        $error = true;
+    }
+
+    // If the Full Name is empty
+    if ($_POST['full_name'] == "")
+    {
+        $error_message[] = "Please specify a full name for the admin account.";
+        $error = true;
+    }
+
+    // If the email address is not a proper email address format
+    if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+        $error_message[] = "An invalid email address was specified.";
+        $error = true;
+    }
+
+    // If the Password is empty
+    if ($_POST['password'] == "")
+    {
+        $error_message[] = "The admin account must have a password.";
+        $error = true;
+    }
+
+    // If the password and confirm password do not match
+    if ($_POST['password'] !== $_POST['confirm_password']) {
+        $error_message[] = "The Password and Confirm Password values do not match.  Please try again.";
+        $error = true;
+    }
+
+    // If there were errors
+    if ($error)
+    {
+        $result['success'] = false;
+        $result['error_message'] = $error_message;
+    }
+    else
+    {
+        $result['success'] = true;
+        $result['error_message'] = null;
+    }
+
+    // Return the validation result
+    return $result;
+}
+function sqli_filter($string) {
+    $filtered_string = $string;
+    $filtered_string = str_replace("--","",$filtered_string);
+    $filtered_string = str_replace(";","",$filtered_string);
+    $filtered_string = str_replace("/*","",$filtered_string);
+    $filtered_string = str_replace("*/","",$filtered_string);
+    $filtered_string = str_replace("//","",$filtered_string);
+    $filtered_string = str_replace(" ","",$filtered_string);
+    $filtered_string = str_replace("#","",$filtered_string);
+    $filtered_string = str_replace("||","",$filtered_string);
+    $filtered_string = str_replace("UNION","",$filtered_string);
+    $filtered_string = str_replace("COLLATE","",$filtered_string);
+    $filtered_string = str_replace("DROP","",$filtered_string);
+    return $filtered_string;
+}
 ?>

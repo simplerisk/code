@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Auth;
 
 use SimpleSAML\Configuration;
@@ -389,6 +391,7 @@ class Simple
             $port = '';
         }
 
+        /** @psalm-var \SimpleSAML\Configuration $this->app_config */
         $base = trim($this->app_config->getString(
             'baseURL',
             $scheme . '://' . $host . $port

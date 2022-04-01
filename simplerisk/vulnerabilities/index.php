@@ -55,6 +55,14 @@ else
 
         // Include the jquery javascript source
         display_jquery_javascript($scripts);
+        
+        // Use these jquery-ui scripts
+        $scripts = [
+                'jquery-ui.min.js',
+        ];
+
+        // Include the jquery-ui javascript source
+        display_jquery_ui_javascript($scripts);
 
 	// If vulnerability management is enabled
 	if (vulnmgmt_extra())

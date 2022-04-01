@@ -4,8 +4,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-require_once(realpath(__DIR__ . '/healthcheck.php'));
-require_once(realpath(__DIR__ . '/services.php'));
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
+
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 /*************************************
  * FUNCTION: SIMPLERISK INSTALLATION *
@@ -162,7 +164,7 @@ function display_install_header()
       <link rel=\"stylesheet\" type=\"text/css\" href=\"css/style.css\" media=\"screen\" />
       <link rel=\"stylesheet\" href=\"css/bootstrap.css\">
       <link rel=\"stylesheet\" href=\"css/bootstrap-responsive.css\">
-      <link rel=\"stylesheet\" href=\"css/font-awesome.min.css\">
+      <link rel=\"stylesheet\" href=\"vendor/components/font-awesome/css/fontawesome.min.css\">
       <link rel=\"stylesheet\" href=\"css/theme.css\">
   </head>
 
@@ -212,8 +214,8 @@ function display_install_trailer()
  *********************************/
 function step_1_install_page()
 {
-    // Get the current application version
-    $app_version = current_version("app");
+    // Get the current SimpleRisk application version
+    $app_version = installer_get_current_version();
 
     echo "<p>You are running the SimpleRisk {$app_version} release installer.  SimpleRisk is a comprehensive GRC solution that is:</p>\n";
     echo "<ul>\n";
@@ -232,44 +234,44 @@ function step_1_install_page()
 function step_2_health_check()
 {
     // Get the current and latest versions
-    $current_app_version = current_version("app");
-    $latest_app_version = latest_version("app");
+    $current_app_version = installer_get_current_version();
+    $latest_app_version = installer_get_latest_version();
 
     // Check that we are running the latest version of the SimpleRisk application
-    $check_app_version = check_app_version($current_app_version, $latest_app_version);
+    $check_app_version = installer_check_app_version($current_app_version, $latest_app_version);
 
     // Check that SimpleRisk can connect to the services platforms
-    $check_web_connectivity = check_web_connectivity();
+    $check_web_connectivity = installer_check_web_connectivity();
 
     // Check that this is PHP 7
-    $check_php_version = check_php_version();
+    $check_php_version = installer_check_php_version();
 
     // Check the PHP memory_limit
-    $check_php_memory_limit = check_php_memory_limit();
+    $check_php_memory_limit = installer_check_php_memory_limit();
 
     // Check the PHP max_input_vars
-    $check_php_max_input_vars = check_php_max_input_vars();
+    $check_php_max_input_vars = installer_check_php_max_input_vars();
 
     // Check the necessary PHP extensions are installed
-    $check_php_extensions = check_php_extensions();
+    $check_php_extensions = installer_check_php_extensions();
 
     // Check the simplerisk directory permissions
-    $check_simplerisk_directory_permissions = check_simplerisk_directory_permissions();
+    $check_simplerisk_directory_permissions = installer_check_simplerisk_directory_permissions();
 
     echo "<b><u>SimpleRisk Version</u></b><br />\n";
-    display_health_check_results($check_app_version);
+    installer_display_health_check_results($check_app_version);
     echo "<br />\n";
     echo "<b><u>Connectivity</u></b><br />";
-    display_health_check_array_results($check_web_connectivity);
+    installer_display_health_check_array_results($check_web_connectivity);
     echo "<br />\n";
     echo "<b><u>PHP</u></b><br />\n";
-    display_health_check_results($check_php_version);
-    display_health_check_results($check_php_memory_limit);
-    display_health_check_results($check_php_max_input_vars);
-    display_health_check_array_results($check_php_extensions);
+    installer_display_health_check_results($check_php_version);
+    installer_display_health_check_results($check_php_memory_limit);
+    installer_display_health_check_results($check_php_max_input_vars);
+    installer_display_health_check_array_results($check_php_extensions);
     echo "<br />\n";
     echo "<b><u>File and Directory Permissions</u></b><br />";
-    display_health_check_array_results($check_simplerisk_directory_permissions);
+    installer_display_health_check_array_results($check_simplerisk_directory_permissions);
     echo "<br />\n";
     echo "If everything looks alright with the health check above, click &quot;CONTINUE&quot; to proceed with the installation.<br /><br />\n";
     echo "<input type=\"submit\" name=\"step_3_database_credentials\" value=\"CONTINUE\" />\n";
@@ -286,7 +288,7 @@ function step_3_database_credentials($error_message = null)
     if (!empty($error_message)) {
         foreach ($error_message as $message)
         {
-            health_check_bad($message);
+            installer_health_check_bad($message);
         }
         echo "<br />\n";
     }
@@ -353,7 +355,7 @@ function verify_step_3_database_credentials()
         if (!empty($error_message)) {
             // For each error message provided
             foreach ($error_message as $message) {
-                health_check_bad($message);
+                installer_health_check_bad($message);
             }
             echo "<br />\n";
         }
@@ -413,7 +415,7 @@ function step_4_simplerisk_info($error_message = null)
     if (!empty($error_message)) {
         // For each error message provided
         foreach ($error_message as $message) {
-            health_check_bad($message);
+            installer_health_check_bad($message);
         }
         echo "<br />\n";
     }
@@ -422,7 +424,7 @@ function step_4_simplerisk_info($error_message = null)
 
     echo "<br /><p>The information below will be used to install and configure your SimpleRisk database in MySQL.</p>\n";
     echo "<ul>\n";
-    echo "<li><b>SimpleRisk IP/Host:</b>&nbsp;&nbsp;This is the IP address or hostname of the server that will be connecting to the SimpleRisk database instance.  It is used to restrict MySQL communication for the SimpleRisk database user to only that system.</li>\n";
+    echo "<li><b>SimpleRisk IP/Host:</b>&nbsp;&nbsp;This is the IP address or hostname of the server that will be connecting to the SimpleRisk database instance.  It is used to restrict MySQL communication for the SimpleRisk database user to only that system.  Use a comma-separated list for multiple instances accessing the same database.</li>\n";
     echo "<li><b>SimpleRisk Database:</b>&nbsp;&nbsp;This is the name of the database that will be created for the SimpleRisk application to use.  This value is limited to 64 characters and a database with this name cannot already exist.</li>\n";
     echo "<li><b>SimpleRisk Username:</b>&nbsp;&nbsp;This is the name of the user that will be created for the SimpleRisk application to use.  This value is limited to 16 characters and a user with this name cannot already exist.</li>\n";
     echo "<li><b>Default Language:</b>&nbsp;&nbsp;This will configure the default language for SimpleRisk and install the appropriate database schema for the language, where available.</li>\n";
@@ -570,11 +572,27 @@ function verify_step_4_simplerisk_info()
     $db_port = addslashes($_POST['db_port']);
     $db_user = addslashes($_POST['db_user']);
     $db_pass = addslashes($_POST['db_pass']);
+    $sr_host = addslashes($_POST['sr_host']);
     $sr_db = addslashes($_POST['sr_db']);
     $sr_user = addslashes($_POST['sr_user']);
     $db_ssl_cert_path = $_POST['db_ssl_cert_path'];
 
     $error = false;
+
+    // Check if the sr_host is a valid value
+    $sr_host_array = explode(",", $sr_host);
+    foreach ($sr_host_array as $sr_host)
+    {
+        // Remove any white space from the string
+        $sr_host = str_replace(" ", "", $sr_host);
+
+        // If the resulting sr_host value is not a valid domain or IP
+        if (!(filter_var($sr_host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) || filter_var($sr_host, FILTER_VALIDATE_IP)))
+        {
+            $error_message[] = "The SimpleRisk IP/Host \"" . $escaper->escapeHtml($sr_host) . "\" is not valid.";
+            $error = true;
+        }
+    }
 
     // If the SimpleRisk username is longer than 16 characters
     if (strlen($sr_user) > 16) {
@@ -665,7 +683,7 @@ function step_5_default_admin_account($error_message = null)
     if (!empty($error_message)) {
         // For each error message provided
         foreach ($error_message as $message) {
-            health_check_bad($message);
+            installer_health_check_bad($message);
         }
         echo "<br />\n";
     }
@@ -675,9 +693,10 @@ function step_5_default_admin_account($error_message = null)
     echo "<input type=\"hidden\" name=\"db_port\" value=\"" . $escaper->escapeHtml($_POST['db_port']) . "\" />\n";
     echo "<input type=\"hidden\" name=\"db_user\" value=\"" . $escaper->escapeHtml($_POST['db_user']) . "\" />\n";
     echo "<input type=\"hidden\" name=\"db_pass\" value=\"" . $escaper->escapeHtml($_POST['db_pass']) . "\" />\n";
+    echo "<input type=\"hidden\" name=\"sr_host\" value=\"" . $escaper->escapeHtml($_POST['sr_host']) . "\" />\n";
     echo "<input type=\"hidden\" name=\"sr_db\" value=\"" . $escaper->escapeHtml($_POST['sr_db']) . "\" />\n";
     echo "<input type=\"hidden\" name=\"sr_user\" value=\"" . $escaper->escapeHtml($_POST['sr_user']) . "\" />\n";
-    echo "<input type=\"hidden\" name=\"db_ssl_cert_path\"" . $escaper->escapeHtml($_POST['db_ssl_cert_path']) . "\" />\n";
+    echo "<input type=\"hidden\" name=\"db_ssl_cert_path\" value=\"" . $escaper->escapeHtml($_POST['db_ssl_cert_path']) . "\" />\n";
     echo "<input type=\"hidden\" name=\"db_sessions\" value=\"" . $escaper->escapeHtml($_POST['db_sessions']) . "\" />\n";
     echo "<input type=\"hidden\" name=\"default_language\" value=\"" . $escaper->escapeHtml($_POST['default_language']) . "\" />\n";
 
@@ -714,7 +733,7 @@ function step_5_default_admin_account($error_message = null)
     echo "<table>\n";
     echo "<tbody>\n";
     echo "<tr>\n";
-    echo "<td style='padding: 10px'><input type='checkbox' id='mailing_list' name='mailing_list'" . ($_POST['mailing_list'] == "true" ? " checked" : "") . " /></td>\n";
+    echo "<td style='padding: 10px'><input type='checkbox' id='mailing_list' name='mailing_list'" . (isset($_POST['mailing_list']) ? " checked" : "") . " /></td>\n";
     echo "<td style='padding: 10px'><label for='mailing_list'>Add me to the SimpleRisk mailing list for educational content and notifications about new releases.</label></td><td>\n";
     echo "</tr>\n";
     echo "</tbody>\n";
@@ -799,7 +818,7 @@ function step_6_simplerisk_installation()
     $full_name = $_POST['full_name'];
     $email = $_POST['email'];
     $password = $_POST['password'];
-    $mailing_list = $_POST['mailing_list'] == "true" ? "true" : "false";
+    $mailing_list = isset($_POST['mailing_list']) ? "true" : "false";
 
     // Remove any backticks from DB connection information
     $pattern = '/`/';
@@ -813,7 +832,7 @@ function step_6_simplerisk_installation()
     $sr_user = preg_replace($pattern, $replacement, $sr_user);
 
     // Generate a password for the SimpleRisk user
-    $sr_pass = generate_token(20);
+    $sr_pass = installer_generate_token(20);
 
     // Connect to the mysql database
     $db = installer_db_open($db_host, $db_port, $db_user, $db_pass, "mysql");
@@ -844,16 +863,36 @@ function step_6_simplerisk_installation()
     }
 
     // Create the SimpleRisk database
+    // Ignoring next line detection as it does not describe the reason for the tainted argument
+    // @phan-suppress-next-line SecurityCheck-SQLInjection
     $stmt = $db->prepare("CREATE DATABASE `" . $sr_db . "`");
     $stmt->execute();
 
-    // Create the SimpleRisk user
-    $stmt = $db->prepare("CREATE USER '" . $sr_user . "'@'" . $sr_host . "' IDENTIFIED BY '" . $sr_pass . "'");
-    $stmt->execute();
+    // Turn the comma-separated sr_host string into an array
+    $sr_host_array = explode(",", $sr_host);
 
-    // Grant the SimpleRisk user permissions
-    $stmt = $db->prepare("GRANT SELECT,INSERT,UPDATE,ALTER,DELETE,CREATE,DROP,INDEX,REFERENCES ON `" . $sr_db . "`.* TO '" . $sr_user . "'@'" . $sr_host . "'");
-    $stmt->execute();
+    // For each sr_host value
+    foreach ($sr_host_array as $sr_host)
+    {
+        // Remove any white space from the string
+        $sr_host = str_replace(" ", "", $sr_host);
+
+        // If the resulting sr_host value is a valid domain or IP
+        if (filter_var($sr_host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) || filter_var($sr_host, FILTER_VALIDATE_IP))
+        {
+            // Create the SimpleRisk user
+            // Ignoring next line detection as it does not describe the reason for the tainted argument
+            // @phan-suppress-next-line SecurityCheck-SQLInjection
+            $stmt = $db->prepare("CREATE USER '" . $sr_user . "'@'" . $sr_host . "' IDENTIFIED BY '" . $sr_pass . "'");
+            $stmt->execute();
+
+            // Grant the SimpleRisk user permissions
+            // Ignoring next line detection as it does not describe the reason for the tainted argument
+            // @phan-suppress-next-line SecurityCheck-SQLInjection
+            $stmt = $db->prepare("GRANT SELECT,INSERT,UPDATE,ALTER,DELETE,CREATE,DROP,INDEX,REFERENCES ON `" . $sr_db . "`.* TO '" . $sr_user . "'@'" . $sr_host . "'");
+            $stmt->execute();
+        }
+    }
 
     // Reload the privileges
     $stmt = $db->prepare("FLUSH PRIVILEGES");
@@ -863,7 +902,7 @@ function step_6_simplerisk_installation()
     installer_db_close($db);
 
     // Get the current application version
-    $app_version = current_version("app");
+    $app_version = installer_get_current_version();
 
     // Depending on the schema selected
     switch ($default_language)
@@ -910,45 +949,30 @@ function step_6_simplerisk_installation()
         unlink($tmp_file_path);
     }
 
-    // Create a unique salt
-    $salt = "";
-    $values = array_merge(range(0, 9), range('a', 'z'), range('A', 'Z'));
-    for ($i = 0; $i < 20; $i++)
-    {
-        $salt .= $values[array_rand($values)];
-    }
-
-    // Hash the salt
-    $salt_hash = '$2a$15$' . md5($salt);
-
-    // Generate the password hash for admin user
-    set_time_limit(120);
-    $hash = crypt($password, $salt_hash);
-
-    // Update the values for the admin user
-    $stmt = $db->prepare("UPDATE `" . $sr_db . "`.`user` SET username=:username, name=:name, email=:email, salt=:salt, password=:password WHERE value=1;");
-    $stmt->bindParam(":username", $username, PDO::PARAM_STR);
-    $stmt->bindParam(":name", $full_name, PDO::PARAM_STR, 50);
-    $stmt->bindParam(":email", $email, PDO::PARAM_STR);
-    $stmt->bindParam(":salt", $salt, PDO::PARAM_STR);
-    $stmt->bindParam(":password", $hash, PDO::PARAM_STR);
-    $stmt->execute();
+    // Add the default admin user
+    installer_add_admin_user($username, $email, $full_name, $password);
 
     // Get the SimpleRisk Base URL
     $simplerisk_base_url = get_simplerisk_base_url();
 
     // Update the simplerisk base url
+    // Ignoring next line detection as it does not describe the reason for the tainted argument
+    // @phan-suppress-next-line SecurityCheck-SQLInjection
     $stmt = $db->prepare("INSERT INTO `" . $sr_db . "`.`settings` (`name`,`value`) VALUES ('simplerisk_base_url', :simplerisk_base_url)");
     $stmt->bindParam(":simplerisk_base_url", $simplerisk_base_url, PDO::PARAM_STR);
     $stmt->execute();
 
     // Set the default language
+    // Ignoring next line detection as it does not describe the reason for the tainted argument
+    // @phan-suppress-next-line SecurityCheck-SQLInjection
     $stmt = $db->prepare("UPDATE `" . $sr_db . "`.`settings` SET `value`=:default_language WHERE `name`='default_language'");
     $stmt->bindParam(":default_language", $default_language, PDO::PARAM_STR, 5);
     $stmt->execute();
 
     // Create a random instance id
-    $instance_id = generate_token(50);
+    $instance_id = installer_generate_token(50);
+    // Ignoring next line detection as it does not describe the reason for the tainted argument
+    // @phan-suppress-next-line SecurityCheck-SQLInjection
     $stmt = $db->prepare("INSERT INTO `" . $sr_db . "`.`settings` (`name`,`value`) VALUES ('instance_id', :instance_id)");
     $stmt->bindParam(":instance_id", $instance_id, PDO::PARAM_STR, 50);
     $stmt->execute();
@@ -967,15 +991,14 @@ function step_6_simplerisk_installation()
         // If the config.php file is writable
         if (is_writable($file))
         {
-            // Write out a temporary config.php file
-            $tmp_dir = sys_get_temp_dir();
-            $tmp_config_file = $tmp_dir . '/config.php';
-            $fh = fopen($tmp_config_file, 'w');
+            // Open the config file for writing
+            $fh = fopen($file, 'w');
             fwrite($fh, $config_file);
             fclose($fh);
 
-            echo "Found a config.php file located at {$file}.  Should I update it with the configuration information below?<br /><br />\n";
-            echo "<input type=\"submit\" name=\"update_config\" value=\"UPDATE\" />\n";
+            echo "Configuration file has been updated successfully.<br /><br />\n";
+            echo "SimpleRisk should now be communicating with the database.<br /><br />\n";
+            echo "<input type=\"button\" value=\"GO TO SIMPLERISK\" onclick=\"window.location.reload(true)\" />\n";
         }
         else
         {
@@ -992,6 +1015,53 @@ function step_6_simplerisk_installation()
     echo "<form name=\"display_config\" method=\"post\" action=\"\" class=\"loginForm\">\n";
     echo nl2br(htmlentities($config_file, ENT_QUOTES, 'utf-8'));
     echo "</form>\n";
+}
+
+/****************************************************
+ * FUNCTION: INSTALLER DISPLAY HEALTH CHECK RESULTS *
+ ****************************************************/
+function installer_display_health_check_results($health_check)
+{
+    // If the result was good
+    if ($health_check['result'] === 1)
+    {
+        installer_health_check_good($health_check['text']);
+    }
+    else
+    {
+        installer_health_check_bad($health_check['text']);
+    }
+}
+
+/**********************************************************
+ * FUNCTION: INSTALLER DISPLAY HEALTH CHECK ARRAY RESULTS *
+ **********************************************************/
+function installer_display_health_check_array_results($health_check_array)
+{
+    foreach($health_check_array as $health_check)
+    {
+        installer_display_health_check_results($health_check);
+    }
+}
+
+/*****************************************
+ * FUNCTION: INSTALLER HEALTH CHECK GOOD *
+ *****************************************/
+function installer_health_check_good($text)
+{
+    global $escaper;
+
+    echo "<img src=\"../images/check-mark-8-16.png\" />&nbsp&nbsp;" . $escaper->escapeHtml($text) . "<br />";
+}
+
+/****************************************
+ * FUNCTION: INSTALLER HEALTH CHECK BAD *
+ ****************************************/
+function installer_health_check_bad($text)
+{
+    global $escaper;
+
+    echo "<img src=\"../images/x-mark-5-16.png\" />&nbsp;&nbsp;" . $escaper->escapeHtml($text) . "<br />";
 }
 
 /********************************
@@ -1209,10 +1279,21 @@ function create_config_file($dbhost, $dbport, $sr_user, $sr_pass, $sr_db, $db_se
     // If the db_ssl_cert_path is not empty
     if ($db_ssl_cert_path != "")
     {
-        // Add the value to the config.php file
-        $content .= "// Path to the certificate to be used for SSL connections to the database\n";
-        $content .= "define('DB_SSL_CERTIFICATE_PATH', '" . $db_ssl_cert_path . "');\n";
-        $content .= "\n";
+        // If the db_ssl_cert_path is to a valid file
+        if (file_exists($db_ssl_cert_path))
+        {
+            // Add the value to the config.php file
+            $content .= "// Path to the certificate to be used for SSL connections to the database\n";
+            $content .= "define('DB_SSL_CERTIFICATE_PATH', '" . $db_ssl_cert_path . "');\n";
+            $content .= "\n";
+        }
+        else
+        {
+            // Put an empty value in the config.php file
+            $content .= "// Path to the certificate to be used for SSL connections to the database\n";
+            $content .= "define('DB_SSL_CERTIFICATE_PATH', '');\n";
+            $content .= "\n";
+        }
     }
 
     $content .= "// Disable SimpleRisk installer script\n";
@@ -1296,8 +1377,480 @@ function installer_instance_registration($instance_id, $full_name, $email, $mail
         'mailing_list' => $mailing_list,
     );
 
-    // Register instance with the web service
-    simplerisk_service_call($data);
+    // Build the HTTP query for the POST data
+    $http_query = http_build_query($data);
+
+    // Configuration for the SimpleRisk service call
+    if (defined('SERVICES_URL'))
+    {
+        $url = SERVICES_URL . "/index.php";
+    }
+    else $url = "https://services.simplerisk.com/index.php";
+
+    // Make the curl request
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
+    curl_setopt($ch, CURLOPT_POST, count($data));
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $http_query);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response  = curl_exec($ch);
+    curl_close($ch);
+}
+
+/*******************************************
+ * FUNCTION: INSTALLER GET CURRENT VERSION *
+ *******************************************/
+function installer_get_current_version()
+{
+        require_once(realpath(__DIR__ . '/version.php'));
+
+        return APP_VERSION;
+}
+
+/******************************************
+ * FUNCTION: INSTALLER GET LATEST VERSION *
+ ******************************************/
+function installer_get_latest_version()
+{
+    // Url for SimpleRisk current versions
+    if (defined('UPDATES_URL'))
+    {
+        $url = UPDATES_URL . '/Current_Version.xml';
+    }
+    else $url = 'https://updates.simplerisk.com/Current_Version.xml';
+
+    // Set the default socket timeout to 5 seconds
+    ini_set('default_socket_timeout', 5);
+
+    // Get the file headers for the URL
+    $file_headers = @get_headers($url, 1);
+
+    // If we were unable to connect to the URL
+    if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found')
+    {
+        error_log("SimpleRisk was unable to connect to {$url}");
+    }
+    // We were able to connect to the URL
+    else
+    {
+        // Load the versions file
+        if (defined('UPDATES_URL'))
+        {
+            $version_page = file_get_contents(UPDATES_URL . '/Current_Version.xml');
+        }
+        else $version_page = file_get_contents('https://updates.simplerisk.com/Current_Version.xml');
+
+        // Convert it to be an array
+        $latest_versions = json_decode(json_encode(new SimpleXMLElement($version_page)), true);
+
+        // Adding aliases, as the values not always requested with the same name the XML serves it
+        $latest_version = $latest_versions['appversion'];
+
+        // Return the latest version
+        return $latest_version;
+    }
+}
+
+/*****************************************
+ * FUNCTION: INSTALLER CHECK APP VERSION *
+ *****************************************/
+function installer_check_app_version($current_app_version, $latest_app_version)
+{
+    // If the current and latest versions are the same
+    if ($current_app_version === $latest_app_version)
+    {
+        return array("result" => 1, "text" => "Running the current version (" . $current_app_version . ") of the SimpleRisk application.");
+    }
+    else
+    {
+        return array("result" => 0, "text" => "Running an outdated version (" . $current_app_version . ") of the SimpleRisk application.");
+    }
+}
+
+/**********************************************
+ * FUNCTION: INSTALLER CHECK WEB CONNECTIVITY *
+ **********************************************/
+function installer_check_web_connectivity()
+{
+    // URLs to check
+    $urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://updates.simplerisk.com", "https://olbat.github.io", "https://github.com", "https://raw.githubusercontent.com");
+
+    // Create an empty array
+    $array = array();
+
+    // Check the URLs
+    foreach ($urls as $url)
+    {
+        // Get the headers for the URL
+        $file_headers = @get_headers($url, 1);
+
+        if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found')
+        {
+            error_log("SimpleRisk was unable to connect to {$url}");
+            $array[] = array("result" => 0, "text" => "SimpleRisk was unable to connect to " . $url . ".");
+        }
+        else
+        {
+            $array[] = array("result" => 1, "text" => "SimpleRisk connected to " . $url . ".");
+        }
+    }
+
+    return $array;
+}
+
+/*****************************************
+ * FUNCTION: INSTALLER CHECK PHP VERSION *
+ *****************************************/
+function installer_check_php_version()
+{
+    // Get the version of PHP
+    if (!defined('PHP_VERSION_ID'))
+    {
+        $version = explode('.', PHP_VERSION);
+
+        define('PHP_VERSION_ID', ($version[0] * 10000 + $version[1] * 100 + $version[2]));
+    }
+
+    // If PHP is at least 7
+    if (PHP_VERSION_ID >= 70000)
+    {
+        return array("result" => 1, "text" => "SimpleRisk is running under PHP version " . phpversion() . ".");
+    }
+    // If this is PHP 5.x
+    else if (PHP_VERSION_ID >= 50000 && PHP_VERSION_ID < 60000)
+    {
+        return array("result" => 0, "text" => "SimpleRisk will no longer run properly under PHP version " . phpversion() . ".  Please upgrade to PHP 7.");
+    }
+    else
+    {
+        return array("result" => 0, "text" => "SimpleRisk requires PHP 7 to run properly.");
+    }
+}
+
+/**********************************************
+ * FUNCTION: INSTALLER CHECK PHP MEMORY LIMIT *
+ **********************************************/
+function installer_check_php_memory_limit()
+{
+    // Get the currently set memory limit
+    $memory_limit = ini_get('memory_limit');
+
+    // If the memory limit is not set
+    if ($memory_limit === false)
+    {
+        return array("result" => 0, "text" => "No memory_limit value is set in the php.ini file and PHP is likely using the default value which is less than the current size of the SimpleRisk application.  SimpleRisk will function normally, however, this creates an issue with the one-click upgrade process.  We recommend setting the memory_limit value to 256M or higher.");
+    }
+    // If the memory limit is set to unlimited
+    else if ($memory_limit == -1)
+    {
+        return array("result" => 1, "text" => "The memory_limit value in the php.ini file is set to -1.  This provides unlimited memory to PHP, which should be acceptable for the SimpleRisk application.");
+    }
+    // Otherwise
+    else
+    {
+        // If the memory limit is a number followed by characters
+        if (preg_match('/^(\d+)(.)$/', $memory_limit, $matches))
+        {
+            // If the memory limit is in megabytes
+            if ($matches[2] == 'M')
+            {
+                // Get the memory limit in bytes
+                $memory_limit_bytes = $matches[1] * 1024 * 1024;
+            }
+            // If the memory limit is in kilobytes
+            else if ($matches[2] == 'K')
+            {
+                // Get the memory limit in bytes
+                $memory_limit_bytes = $matches[1] * 1024;
+            }
+        }
+
+        // Set the current SimpleRisk size in bytes
+        $simplerisk_size_bytes = 180 * 1024 * 1024;
+
+        // If the memory limit is less than the SimpleRisk size
+        if ($memory_limit_bytes < $simplerisk_size_bytes)
+        {
+            return array("result" => 0, "text" => "The memory_limit value in the php.ini file is set to " . $memory_limit . ", which is less than the current size of the SimpleRisk application.  SimpleRisk will function normally, however, this creates an issue with the one-click upgrade process.  We recommend setting the memory_limit value to 256M or higher.");
+        }
+        // The memory limit is higher than the SimpleRisk size
+        else
+        {
+            return array("result" => 1, "text" => "The memory_limit value in the php.ini file is set to " . $memory_limit . ".");
+        }
+    }
+}
+
+/************************************************
+ * FUNCTION: INSTALLER CHECK PHP MAX INPUT VARS *
+ ************************************************/
+function installer_check_php_max_input_vars()
+{
+    // Get the currently set max_iput_vars
+    $max_input_vars = ini_get('max_input_vars');
+
+    // If the max_input_vars is not set
+    if ($max_input_vars === false)
+    {
+        return array("result" => 0, "text" => "The max_input_vars value in the php.ini file is not explicitly set.  The default value of 1000 is too low and the SimpleRisk Dynamic Risk Report will not function properly with this configuration.  We recommend setting the max_input_vars to 3000.");
+    }
+    // If the max_input_vars is set
+    else
+    {
+        // If the max_input_vars is a number followed by characters
+        if (preg_match('/^(\d+)$/', $max_input_vars, $matches))
+        {
+            // If the max_input_vars is 1000
+            if ($max_input_vars == 1000)
+            {
+                return array("result" => 0, "text" => "The max_input_vars value in the php.ini file is set to the default value of 1000.  The SimpleRisk Dynamic Risk Report will not function properly with this configuration.  We recommend setting the max_input_vars to 3000.");
+            }
+            // If the max_input_vars is less than 3000
+            else if ($max_input_vars < 3000)
+            {
+                return array("result" => 0, "text" => "The max_input_vars value in the php.ini file is set to {$max_input_vars}, which could cause issues with the SimpleRisk Dynamic Risk Report.  We recommend setting the max_input_vars to 3000.");
+            }
+            // If the max_input_vars is 3000 or higher
+            else if ($max_input_vars >= 3000)
+            {
+                return array("result" => 1, "text" => "The max_input_vars value in the php.ini file is set to {$max_input_vars}.");
+            }
+        }
+    }
+}
+
+/********************************************
+ * FUNCTION: INSTALLER CHECK PHP EXTENSIONS *
+ ********************************************/
+function installer_check_php_extensions()
+{
+    // List of extensions to check for
+    $extensions = array("pdo", "pdo_mysql", "json", "phar", "zlib", "mbstring", "ldap", "dom", "curl", "posix", "zip", "gd");
+
+    // Create an empty array
+    $array = array();
+
+    // For each extension
+    foreach ($extensions as $extension)
+    {
+        if (extension_loaded($extension))
+        {
+            $array[] = array("result" => 1, "text" => "The PHP \"" . $extension . "\" extension is loaded.");
+        }
+        else
+        {
+            $array[] = array("result" => 0, "text" => "The PHP \"" . $extension . "\" extension is not loaded.");
+        }
+    }
+
+    return $array;
+}
+
+/**************************************************************
+ * FUNCTION: INSTALLER CHECK SIMPLERISK DIRECTORY PERMISSIONS *
+ **************************************************************/
+function installer_check_simplerisk_directory_permissions()
+{
+    // Create an empty array
+    $array = array();
+
+    $simplerisk_dir = realpath(__DIR__ . '/..');
+
+    // If the simplerisk directory is writeable
+    if (is_writeable($simplerisk_dir))
+    {
+        $array[] = array("result" => 1, "text" => "The SimpleRisk directory (" . $simplerisk_dir . ") is writeable by the web user.");
+    }
+    else
+    {
+        $array[] = array("result" => 0, "text" => "The SimpleRisk directory (" . $simplerisk_dir . ") is not writeable by the web user.");
+    }
+
+    $objects = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($simplerisk_dir), RecursiveIteratorIterator::SELF_FIRST);
+
+    foreach ($objects as $name => $object)
+    {
+        // Do not check the directory above the SimpleRisk directory
+        if ($name != $simplerisk_dir . "/..")
+        {
+            // If the directory is writeable
+            if (!is_writeable($name))
+            {
+                $array[] = array("result" => 0, "text" => $name . " is not writeable by the web user.");
+            }
+        }
+    }
+
+    return $array;
+}
+
+/**************************************
+ * FUNCTION: INSTALLER GENERATE TOKEN *
+ **************************************/
+function installer_generate_token($size)
+{
+    $token = "";
+    $values = array_merge(range(0, 9), range('a', 'z'), range('A', 'Z'));
+    $values_count = count($values);
+
+    for ($i = 0; $i < $size; $i++)
+    {
+        // If the random int function exists (PHP 7)
+        if (function_exists('random_int'))
+        {
+            // Generate the token using the random_int function
+            $token .= $values[random_int(0, $values_count-1)];
+        }
+        else $token .= $values[array_rand($values)];
+    }
+
+    return $token;
+}
+
+/********************************
+ * FUNCTION: INSTALLER ADD USER *
+ ********************************/
+function installer_add_admin_user($user, $email, $name, $password)
+{
+    // Set the default values for an admin user
+    $custom_display_settings = json_encode(array(
+        'id',
+        'subject',
+        'calculated_risk',
+        'submission_date',
+        'mitigation_planned',
+        'management_review'
+    ));
+    $type = "simplerisk";
+    $role_id = 1;
+    $admin = 1;
+    $multi_factor = 1;
+    $change_password = 0;
+    $manager = 0;
+
+    // Create a unique salt
+    $salt = "";
+    $values = array_merge(range(0, 9), range('a', 'z'), range('A', 'Z'));
+    for ($i = 0; $i < 20; $i++)
+    {
+        $salt .= $values[array_rand($values)];
+    }
+
+    // Hash the salt
+    $salt_hash = '$2a$15$' . md5($salt);
+
+    // Generate the password hash for admin user
+    set_time_limit(120);
+    $hash = crypt($password, $salt_hash);
+
+    // Get the POSTed Information
+    $db_host = addslashes($_POST['db_host']);
+    $db_port = addslashes($_POST['db_port']);
+    $db_user = addslashes($_POST['db_user']);
+    $db_pass = addslashes($_POST['db_pass']);
+    $sr_db = addslashes($_POST['sr_db']);
+
+    // Remove any backticks from DB connection information
+    $pattern = '/`/';
+    $replacement = '';
+    $db_host = preg_replace($pattern, $replacement, $db_host);
+    $db_port = preg_replace($pattern, $replacement, $db_port);
+    $db_user = preg_replace($pattern, $replacement, $db_user);
+    $db_pass = preg_replace($pattern, $replacement, $db_pass);
+    $sr_db = preg_replace($pattern, $replacement, $sr_db);
+
+    // Open the database connection
+    $db = installer_db_open($db_host, $db_port, $db_user, $db_pass, $sr_db);
+
+    // Insert the new user
+    // Ignoring next line detection as it does not describe the reason for the tainted argument
+    // @phan-suppress-next-line SecurityCheck-SQLInjection
+    $stmt = $db->prepare(
+        "INSERT INTO
+            `{$sr_db}`.`user` (
+                `type`,
+                `username`,
+                `name`,
+                `email`,
+                `salt`,
+                `password`,
+                `role_id`,
+                `admin`,
+                `multi_factor`,
+                `change_password`,
+                `manager`,
+                `custom_display_settings`
+            )
+        VALUES (
+            :type,
+            :user,
+            :name,
+            :email,
+            :salt,
+            :hash,
+            :role_id,
+            :admin,
+            :multi_factor,
+            :change_password,
+            :manager,
+            :custom_display_settings
+        );
+    ");
+    $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+    $stmt->bindParam(":user", $user, PDO::PARAM_STR);
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+    $stmt->bindParam(":email", $email, PDO::PARAM_STR);
+    $stmt->bindParam(":salt", $salt, PDO::PARAM_STR);
+    $stmt->bindParam(":hash", $hash, PDO::PARAM_STR);
+    $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
+    $stmt->bindParam(":admin", $admin, PDO::PARAM_INT);
+    $stmt->bindParam(":multi_factor", $multi_factor, PDO::PARAM_INT);
+    $stmt->bindParam(":change_password", $change_password, PDO::PARAM_INT);
+    $stmt->bindParam(":manager", $manager, PDO::PARAM_INT);
+    $stmt->bindParam(":custom_display_settings", $custom_display_settings, PDO::PARAM_STR);
+    $stmt->execute();
+
+    $user_id = $db->lastInsertId();
+
+    // Get the list of all team values
+    // Ignoring next line detection as it does not describe the reason for the tainted argument
+    // @phan-suppress-next-line SecurityCheck-SQLInjection
+    $stmt = $db->prepare("SELECT `value` FROM `{$sr_db}`.`team` ORDER BY `value`;");
+    $stmt->execute();
+    $teams = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+
+    // Make sure that all teams are assigned to the user
+    foreach ($teams as $team_id)
+    {
+        // Ignoring next line detection as it does not describe the reason for the tainted argument
+        // @phan-suppress-next-line SecurityCheck-SQLInjection
+        $stmt = $db->prepare("INSERT INTO `{$sr_db}`.`user_to_team` VALUES (:user_id, :team_id);");
+        $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+        $stmt->bindParam(":team_id", $team_id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
+    // Get the list of all permission values
+    // Ignoring next line detection as it does not describe the reason for the tainted argument
+    // @phan-suppress-next-line SecurityCheck-SQLInjection
+    $stmt = $db->prepare("SELECT `id` FROM `{$sr_db}`.`permissions`;");
+    $stmt->execute();
+    $permissions = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    // Make sure all permissions are assigned to the user
+    foreach($permissions as $permission_id)
+    {
+        // Ignoring next line detection as it does not describe the reason for the tainted argument
+        // @phan-suppress-next-line SecurityCheck-SQLInjection
+        $stmt = $db->prepare("INSERT INTO `{$sr_db}`.`permission_to_user` VALUES (:permission_id, :user_id);");
+        $stmt->bindParam(":permission_id", $permission_id, PDO::PARAM_INT);
+        $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
+    // Close the database connection
+    installer_db_close($db);
 }
 
 ?>

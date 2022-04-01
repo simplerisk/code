@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\core\Auth\Process;
 
 use SimpleSAML\Logger;
@@ -104,7 +106,7 @@ class StatisticsWithAttribute extends \SimpleSAML\Auth\ProcessingFilter
      *
      * @return string
      */
-    private function setIdentifier($direction, $state)
+    private function setIdentifier(string $direction, array $state): string
     {
         if (array_key_exists($direction, $state)) {
             if (isset($state[$direction]['core:statistics-id'])) {

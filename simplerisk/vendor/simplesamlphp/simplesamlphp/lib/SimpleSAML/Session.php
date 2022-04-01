@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML;
 
 use SAML2\XML\saml\AttributeValue;
@@ -30,7 +32,7 @@ class Session implements \Serializable, Utils\ClearableState
      * This is a timeout value for setData, which indicates that the data
      * should never be deleted, i.e. lasts the whole session lifetime.
      */
-    const DATA_TIMEOUT_SESSION_END = 'sessionEndTimeout';
+    public const DATA_TIMEOUT_SESSION_END = 'sessionEndTimeout';
 
     /**
      * The list of loaded session objects.
@@ -45,8 +47,10 @@ class Session implements \Serializable, Utils\ClearableState
      * This variable holds the instance of the session - Singleton approach.
      *
      * Warning: do not set the instance manually, call Session::load() instead.
+     *
+     * @var \SimpleSAML\Session|null
      */
-    private static $instance;
+    private static $instance = null;
 
     /**
      * The global configuration.
@@ -145,7 +149,7 @@ class Session implements \Serializable, Utils\ClearableState
      *
      * @param boolean $transient Whether to create a transient session or not.
      */
-    private function __construct($transient = false)
+    private function __construct(bool $transient = false)
     {
         $this->setConfiguration(Configuration::getInstance());
 
@@ -174,9 +178,8 @@ class Session implements \Serializable, Utils\ClearableState
             $this->markDirty();
 
             // initialize data for session check function if defined
-            $checkFunction = self::$config->getArray('session.check_function', null);
-            if (isset($checkFunction)) {
-                assert(is_callable($checkFunction));
+            $checkFunction = self::$config->getValue('session.check_function', null);
+            if (is_callable($checkFunction)) {
                 call_user_func($checkFunction, $this, true);
             }
         }
@@ -235,7 +238,7 @@ class Session implements \Serializable, Utils\ClearableState
                 foreach ($values as $idx => $value) {
                     // this should be originally a DOMNodeList
                     /* @var \SAML2\XML\saml\AttributeValue $value */
-                    $this->authData[$authority]['Attributes'][$attribute][$idx] = $value->element->childNodes;
+                    $this->authData[$authority]['Attributes'][$attribute][$idx] = $value->getElement()->childNodes;
                 }
             }
         }
@@ -256,6 +259,7 @@ class Session implements \Serializable, Utils\ClearableState
 
         // check if we have stored a session stored with the session handler
         try {
+            /** @var \SimpleSAML\Session|null $session  Help Scrutinizer with the correct type */
             $session = self::getSession();
         } catch (\Exception $e) {
             /*
@@ -318,8 +322,8 @@ class Session implements \Serializable, Utils\ClearableState
      *
      * @param string|null $sessionId The session we should get, or null to get the current session.
      *
-     * @return Session|null The session that is stored in the session handler, or null if the session wasn't
-     * found.
+     * @return \SimpleSAML\Session|null The session that is stored in the session handler,
+     *   or null if the session wasn't found.
      */
     public static function getSession($sessionId = null)
     {
@@ -367,9 +371,8 @@ class Session implements \Serializable, Utils\ClearableState
             }
 
             // run session check function if defined
-            $checkFunction = $globalConfig->getArray('session.check_function', null);
-            if (isset($checkFunction)) {
-                assert(is_callable($checkFunction));
+            $checkFunction = $globalConfig->getValue('session.check_function', null);
+            if (is_callable($checkFunction)) {
                 $check = call_user_func($checkFunction, $session);
                 if ($check !== true) {
                     Logger::warning('Session did not pass check function.');
@@ -390,10 +393,10 @@ class Session implements \Serializable, Utils\ClearableState
      *
      * Warning: never set self::$instance yourself, call this method instead.
      *
-     * @param Session $session The session to load.
-     * @return Session The session we just loaded, just for convenience.
+     * @param \SimpleSAML\Session $session The session to load.
+     * @return \SimpleSAML\Session The session we just loaded, just for convenience.
      */
-    private static function load(Session $session)
+    private static function load(Session $session): Session
     {
         Logger::setTrackId($session->getTrackID());
         self::$instance = $session;
@@ -636,8 +639,11 @@ class Session implements \Serializable, Utils\ClearableState
                     continue;
                 }
 
+                /** @psalm-var \DOMNode $node   We made sure value has at least 1 item in the check above */
+                $node = $value->item(0);
+
                 // create an AttributeValue object and save it to 'RawAttributes', using same attribute name and index
-                $attrval = new AttributeValue($value->item(0)->parentNode);
+                $attrval = new AttributeValue($node->parentNode);
                 $data['RawAttributes'][$attribute][$idx] = $attrval;
             }
         }
@@ -711,9 +717,8 @@ class Session implements \Serializable, Utils\ClearableState
      *
      * @throws \Exception If the handler is not a valid function or method.
      */
-    private function callLogoutHandlers($authority)
+    private function callLogoutHandlers(string $authority): void
     {
-        assert(is_string($authority));
         assert(isset($this->authData[$authority]));
 
         if (empty($this->authData[$authority]['LogoutHandlers'])) {
@@ -928,7 +933,7 @@ class Session implements \Serializable, Utils\ClearableState
      *
      * @return void
      */
-    private function expireData()
+    private function expireData(): void
     {
         $ct = time();
 

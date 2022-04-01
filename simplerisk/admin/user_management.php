@@ -385,7 +385,8 @@ if (isset($_POST['password_policy_update']))
 
         	$("#team").multiselect({
                 allSelectedText: '<?php echo $escaper->escapeHtml($lang['AllTeams']); ?>',
-                includeSelectAllOption: true
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
             });
 
             var $tabs = $("#main").tabs({

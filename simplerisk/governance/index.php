@@ -355,6 +355,7 @@ if (isset($_POST['delete_controls']))
                 maxHeight: 250,
                 buttonWidth: '100%',
                 includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
                 onDropdownHide: function(){
                     if(this.$select.attr('id') == 'filter_by_control_framework'){
                         rebuild_filters();

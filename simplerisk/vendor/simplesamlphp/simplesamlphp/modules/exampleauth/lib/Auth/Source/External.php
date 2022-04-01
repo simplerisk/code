@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\exampleauth\Auth\Source;
 
 use SimpleSAML\Auth;
@@ -32,7 +34,7 @@ class External extends \SimpleSAML\Auth\Source
     /**
      * The key of the AuthId field in the state.
      */
-    const AUTHID = 'SimpleSAML\Module\exampleauth\Auth\Source\External.AuthId';
+    public const AUTHID = 'SimpleSAML\Module\exampleauth\Auth\Source\External.AuthId';
 
 
     /**
@@ -58,7 +60,7 @@ class External extends \SimpleSAML\Auth\Source
      *
      * @return array|null  The user's attributes, or NULL if the user isn't authenticated.
      */
-    private function getUser()
+    private function getUser(): ?array
     {
         /*
          * In this example we assume that the attributes are

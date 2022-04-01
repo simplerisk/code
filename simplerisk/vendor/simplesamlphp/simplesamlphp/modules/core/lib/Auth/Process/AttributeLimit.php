@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\core\Auth\Process;
 
 use SimpleSAML\Error;
@@ -68,7 +70,7 @@ class AttributeLimit extends \SimpleSAML\Auth\ProcessingFilter
      * @param array &$request  The current request.
      * @return array|null  Array with attribute names, or NULL if no limit is placed.
      */
-    private static function getSPIdPAllowed(array &$request)
+    private static function getSPIdPAllowed(array &$request): ?array
     {
         if (array_key_exists('attributes', $request['Destination'])) {
             // SP Config
@@ -139,7 +141,7 @@ class AttributeLimit extends \SimpleSAML\Auth\ProcessingFilter
      * @param array $allowedConfigValues The allowed values, and possibly configuration options.
      * @return array The filtered values
      */
-    private function filterAttributeValues(array $values, array $allowedConfigValues)
+    private function filterAttributeValues(array $values, array $allowedConfigValues): array
     {
         if (array_key_exists('regex', $allowedConfigValues) && $allowedConfigValues['regex'] === true) {
             $matchedValues = [];

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Utils;
 
 use SimpleSAML\Configuration;
@@ -25,13 +27,8 @@ class Crypto
      *
      * @see \SimpleSAML\Utils\Crypto::aesDecrypt()
      */
-    private static function aesDecryptInternal($ciphertext, $secret)
+    private static function aesDecryptInternal(string $ciphertext, string $secret): string
     {
-        if (!is_string($ciphertext)) {
-            throw new \InvalidArgumentException(
-                'Input parameter "$ciphertext" must be a string with more than 48 characters.'
-            );
-        }
         /** @var int $len */
         $len = mb_strlen($ciphertext, '8bit');
         if ($len < 48) {
@@ -99,12 +96,8 @@ class Crypto
      *
      * @see \SimpleSAML\Utils\Crypto::aesEncrypt()
      */
-    private static function aesEncryptInternal($data, $secret)
+    private static function aesEncryptInternal(string $data, string $secret): string
     {
-        if (!is_string($data)) {
-            throw new \InvalidArgumentException('Input parameter "$data" must be a string.');
-        }
-
         if (!function_exists("openssl_encrypt")) {
             throw new Error\Exception('The openssl PHP module is not loaded.');
         }
@@ -434,6 +427,12 @@ class Crypto
     {
         if (!is_string($hash) || !is_string($password)) {
             throw new \InvalidArgumentException('Invalid input parameters.');
+        }
+
+        // Prior to PHP 7.4 password_get_info() would set the algo to 0 instead of NULL when it's not detected
+        $info = password_get_info($password);
+        if ($info['algo'] !== null && $info['algo'] !== 0) {
+            throw new Error\Exception("Cannot use a hash value for authentication.");
         }
 
         if (password_verify($password, $hash)) {

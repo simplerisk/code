@@ -150,7 +150,7 @@ function addRisk($this){
         /**
         * Build multiselect box
         */
-        $(".multiselect", tabContainer).multiselect({enableFiltering: true, buttonWidth: '100%'});
+        $(".multiselect", tabContainer).multiselect({enableFiltering: true, buttonWidth: '100%', enableCaseInsensitiveFiltering: true,});
     }
     
     

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * A Shibboleth 1.3 authentication response.
  *
@@ -12,6 +14,7 @@ namespace SimpleSAML\XML\Shib13;
 
 use DOMDocument;
 use DOMNode;
+use DOMNodeList;
 use DOMXpath;
 use SAML2\DOMDocumentFactory;
 use SimpleSAML\Configuration;
@@ -160,7 +163,7 @@ class AuthnResponse
      * @param \DOMElement|\SimpleXMLElement $node Node to be validated.
      * @return bool TRUE if the node is validated or FALSE if not.
      */
-    private function isNodeValidated($node)
+    private function isNodeValidated($node): bool
     {
         if ($this->messageValidated) {
             // This message was validated externally
@@ -190,9 +193,8 @@ class AuthnResponse
      *                        then the query will be relative to the root of the response.
      * @return \DOMNodeList
      */
-    private function doXPathQuery($query, $node = null)
+    private function doXPathQuery(string $query, DOMNode $node = null): DOMNodeList
     {
-        assert(is_string($query));
         assert($this->dom instanceof DOMDocument);
 
         if ($node === null) {
@@ -227,12 +229,12 @@ class AuthnResponse
         return null;
     }
 
-    
+
     /**
      * @throws \Exception
      * @return array
      */
-    public function getAttributes()
+    public function getAttributes(): array
     {
         $metadata = MetaDataStorageHandler::getMetadataHandler();
         $md = $metadata->getMetaData($this->getIssuer(), 'shib13-idp-remote');
@@ -252,7 +254,7 @@ class AuthnResponse
             }
 
             $conditions = $this->doXPathQuery('shib:Conditions', $assertion);
-            if ($conditions && $conditions->length > 0) {
+            if ($conditions->length > 0) {
                 $condition = $conditions->item(0);
 
                 $start = $condition->getAttribute('NotBefore');
@@ -307,7 +309,7 @@ class AuthnResponse
         return $attributes;
     }
 
-    
+
     /**
      * @throws \Exception
      * @return string
@@ -367,13 +369,12 @@ class AuthnResponse
         }
 
         $id = Utils\Random::generateID();
-        
+
         $issueInstant = Utils\Time::generateTimestamp();
-        
+
         // 30 seconds timeskew back in time to allow differing clocks
         $notBefore = Utils\Time::generateTimestamp(time() - 30);
-        
-        
+
         $assertionExpire = Utils\Time::generateTimestamp(time() + 300); // 5 minutes
         $assertionid = Utils\Random::generateID();
 
@@ -453,13 +454,8 @@ class AuthnResponse
      * @param array $scopedAttributes  Array of attributes names which are scoped.
      * @return string  The attribute encoded as an XML-string.
      */
-    private function encAttribute($name, $values, $base64, $scopedAttributes)
+    private function encAttribute(string $name, array $values, bool $base64, array $scopedAttributes): string
     {
-        assert(is_string($name));
-        assert(is_array($values));
-        assert(is_bool($base64));
-        assert(is_array($scopedAttributes));
-
         if (in_array($name, $scopedAttributes, true)) {
             $scoped = true;
         } else {

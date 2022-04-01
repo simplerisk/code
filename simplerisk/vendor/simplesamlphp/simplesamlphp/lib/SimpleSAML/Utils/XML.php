@@ -6,6 +6,8 @@
  * @package SimpleSAMLphp
  */
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Utils;
 
 use DOMComment;
@@ -57,12 +59,10 @@ class XML
         $enabled = Configuration::getInstance()->getBoolean('debug.validatexml', false);
 
         if (
-            !(in_array('validatexml', $debug, true) // implicitly enabled
-            || (array_key_exists('validatexml', $debug)
-            && $debug['validatexml'] === true)
-            // explicitly enabled
-            // TODO: deprecate this option and remove it in 2.0
-            || $enabled) // old 'debug.validatexml' configuration option
+            !(
+                in_array('validatexml', $debug, true)
+                || (array_key_exists('validatexml', $debug) && ($debug['validatexml'] === true))
+            )
         ) {
             // XML validation is disabled
             return;
@@ -443,14 +443,20 @@ class XML
             }
         }
 
-        if ($res) {
+        if ($res === true) {
             $config = Configuration::getInstance();
             /** @var string $schemaPath */
             $schemaPath = $config->resolvePath('schemas');
             $schemaFile = $schemaPath . '/' . $schema;
 
             libxml_set_external_entity_loader(
-                function ($public, $system, $context) {
+                /**
+                 * @param string|null $public
+                 * @param string $system
+                 * @param array $context
+                 * @return string|null
+                 */
+                function (string $public = null, string $system, array $context) {
                     if (filter_var($system, FILTER_VALIDATE_URL) === $system) {
                         return null;
                     }
@@ -458,6 +464,7 @@ class XML
                 }
             );
 
+            /** @psalm-suppress PossiblyUndefinedVariable */
             $res = $dom->schemaValidate($schemaFile);
             if ($res) {
                 Errors::end();

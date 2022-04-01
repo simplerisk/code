@@ -27,7 +27,7 @@ class ConfigCacheFactory implements ConfigCacheFactoryInterface
     /**
      * @param bool $debug The debug flag to pass to ConfigCache
      */
-    public function __construct($debug)
+    public function __construct(bool $debug)
     {
         $this->debug = $debug;
     }
@@ -43,7 +43,7 @@ class ConfigCacheFactory implements ConfigCacheFactoryInterface
 
         $cache = new ConfigCache($file, $this->debug);
         if (!$cache->isFresh()) {
-            \call_user_func($callback, $cache);
+            $callback($cache);
         }
 
         return $cache;
