@@ -426,14 +426,14 @@ function check_grants($db)
         $regex_pattern = "/REFERENCES/";
         if (preg_match($regex_pattern, $string))
         {
-            $alter = true;
+            $references = true;
         }
 
         // Match ALTER statement
         $regex_pattern = "/INDEX/";
         if (preg_match($regex_pattern, $string))
         {
-            $alter = true;
+            $index = true;
         }
 
         // Match ALL statement
