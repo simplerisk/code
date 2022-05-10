@@ -1,0 +1,84 @@
+.red {
+    background: repeat-x scroll 50% 50% red !important;
+    border: 1px solid #000000;
+    font-weight: 600;
+    float: left;
+}
+.orangered {
+    background: repeat-x scroll 50% 50% orangered !important;
+    border: 1px solid #000000;
+    font-weight: 600;
+    float: left;
+}
+.orange {
+    background: repeat-x scroll 50% 50% orange !important;
+    border: 1px solid #000000;
+    font-weight: 600;
+    float: left;
+}
+.yellow {
+    background-color: yellow !important;
+    border: 1px solid #000000;
+    font-weight: 600;
+    float: left;
+}
+.white {
+    background: repeat-x scroll 50% 50% white !important;
+    border: 1px solid #000000;
+    font-weight: 600;
+    float: left;
+}
+.project {
+    background: repeat-x scroll 50% 50% lightgrey;
+    border: 1px solid #000000;
+    font-weight: 600;
+    float: left;
+}
+.redalert {
+    background: repeat-x scroll 50% 50% #F70D1A;
+    border: 1px solid #000000;
+    font-weight: 600;
+    float: none;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 2em;
+}
+.greenalert {
+    background: repeat-x scroll 50% 50% #32CD32;
+    border: 1px solid #000000;
+    font-weight: 600;
+    float: none;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 2em;
+}
+.risk-table-veryhigh {
+        width:10px;
+        height:10px;
+        border:1px solid #000;
+        background-color:red;
+}
+.risk-table-high {
+        width:10px;
+        height:10px;
+        border:1px solid #000;
+        background-color:orangered;
+}
+.risk-table-medium {
+        width:10px;
+        height:10px;
+        border:1px solid #000;
+        background-color:orange;
+}
+.risk-table-low {
+        width:10px;
+        height:10px;
+        border:1px solid #000;
+        background-color:yellow;
+}
+.risk-table-insignificant {
+        width:10px;
+        height:10px;
+        border:1px solid #000;
+        background-color:white;
+}

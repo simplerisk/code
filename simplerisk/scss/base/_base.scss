@@ -1,0 +1,155 @@
+/*--------------------------------------------------------------
+ ## Box Model and Font Smoothing
+ --------------------------------------------------------------*/
+*{
+  -webkit-font-smoothing: antialiased;
+  -moz-font-smoothing: antialiased;
+  font-smoothing: antialiased;
+  box-sizing: border-box;
+}
+html{
+/*    min-width: 1260px;*/
+}
+
+/*--------------------------------------------------------------
+ ## Body Styles
+ --------------------------------------------------------------*/
+ body {
+   color: $text-color;
+   font-size: $base-font-size;
+   font-family: $base-font-family;
+   font-weight: $base-font-weight;
+   line-height: 1.6;
+
+   background-color:$theme-bg-color;
+ }
+
+
+/*--------------------------------------------------------------
+ ## Link Styles
+ --------------------------------------------------------------*/
+a{
+    text-decoration:none;
+
+    &:focus,
+    &:active{
+        outline:none;
+    }
+}
+
+/*--------------------------------------------------------------
+ ## Separator Styles
+ --------------------------------------------------------------*/
+hr{
+    margin:0px;
+    padding:0px;
+    border:1px solid $border-color;
+}
+
+
+/*--------------------------------------------------------------
+ ## Label and Span
+ --------------------------------------------------------------*/
+label{
+    font-weight:700;
+}
+
+.dropdown-menu{
+    z-index: 99999;
+    a:hover > label, li.active label{
+        color: #fff;  
+    }
+}
+
+ul.ui-autocomplete {
+    list-style-type: none;
+    color: #3f3f3f;
+    font-family: "Titillium Web", sans-serif;
+    font-size: 14px;
+    background: #fff;
+    border: 1px solid #c5c5c5;
+    max-height: 200px;
+    overflow: auto;
+    
+    > li.ui-menu-item{
+        > .ui-menu-item-wrapper{
+            padding-left: 10px;
+            &.ui-state-active{
+                background: #eee;
+            }
+        }
+    }
+
+    .ui-state-focus{
+        background: #F0F0F0;
+        color: #000;
+    }
+    
+    &.popup-ui-complete{
+        width: 50% !important;
+        color: #fff;
+        background: #1a1b1a;
+        border: 1px solid #1a1b1a;
+        > li.ui-menu-item{
+            > .ui-menu-item-wrapper{
+                &.ui-state-active{
+                    background: #eee;
+                    color: #000;
+                }
+            }
+        }
+    }
+}
+
+.bottom-offset-10{
+    margin-bottom: 10px;
+}
+
+.top-offset-15{
+    margin-top: 15px;
+}
+
+.ui-helper-hidden-accessible {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+}
+
+ul.multiselect-container{
+    li{
+        label{
+            white-space: initial;
+        }
+    }
+}
+
+.collapsible--toggle{
+    > span{
+        cursor: pointer;
+        > i{
+            margin-right: 10px;
+            width:10px;
+        }
+    }
+}
+
+.text-center{
+    text-align: center;
+}
+
+.text-right{
+    text-align: right;
+}
+
+.no-padding {
+    padding: 0px !important;
+}
+
+.padding-left-10{
+    padding-left: 10px;
+}

@@ -1,0 +1,179 @@
+#controls-tab-content{
+    padding-top: 0px;
+}
+.control-block,
+.control-block-unassined {
+
+  &:after{
+    clear: both;
+    content: "";
+    display: block;
+  }
+
+  &--header{
+    background-color: #fff;
+    border: 1px solid $border-color;
+/*    height: 45px;*/
+  }
+  
+  &--row{
+      padding-bottom: 15px;
+      
+      > table{
+          td{
+              padding: 4px 10px;
+          }
+      }
+      
+      &::after{
+          content: "";
+          display: block;
+          clear: both;
+      }
+  }
+
+  &--delete{
+    width: 45px;
+    display: block;
+    text-align: center;
+  }          
+
+  &--name,
+  &--description,
+  &--other{
+    border-right: 1px solid $border-color;
+    height: 45px;
+    line-height: 45px;
+    font-size: 14px;
+    float: left;
+    font-weight: 600;
+    padding-left: 10px;
+  }
+
+  &--name{ width: 30%; }
+  &--description{ width: calc(70% - 90px); }
+  &--other{ width: 90px; }
+  
+  &--edit{
+    width: 22px;
+    padding-left: 6px;      
+  }
+  &--clone{
+    width: 22px;
+    padding-left: 13px;      
+  }
+  &--add-mapping,
+  &--edit-mapping,
+  &--delete-mapping
+  {
+    width: 22px;
+    padding-left: 13px;      
+  }
+}
+ 
+.tab-data{
+    margin-bottom: 30px;
+}
+
+#active-controls{
+    .sorting_1{
+        padding: 0px;
+    }
+    
+    td{
+        vertical-align: top;
+    }
+}
+
+.custom-treegrid-container{
+    .tree-icon{
+        display: none;
+    }
+    td{
+        >div.datagrid-cell{
+            padding: 10px 15px;
+            min-height: 45px;
+            >span{
+                font-size: 14px;    
+            }
+        }
+    }
+    .datagrid-header-row{
+        background-color: #6f6f6f;
+        td{
+            > div{
+                padding: 0px 15px;
+                color: #fff;
+                line-height: 45px;
+                font-weight: 600;
+            }
+        }
+    }
+    
+    .datagrid-row-selected, .datagrid-row-over, td.datagrid-header-over{
+        background: transparent;
+    }
+    
+    .datagrid-header td, .datagrid-body td, .datagrid-footer td{
+        border-color: #d1d3d4;
+        border-style: solid;
+    }
+    .datagrid{
+/*        border-left: 1px solid #d1d3d4;*/
+
+
+        .datagrid-row>td:first-child .tree-title {
+            white-space: normal !important;
+            height: auto;
+        }
+
+        .datagrid-row>td:first-child>.datagrid-cell {
+            white-space: nowrap !important;
+        }
+    }
+    .datagrid-btable tr td:first-child, .datagrid-htable tr td:first-child{
+        border-left: 1px solid #d1d3d4;
+    }
+    .datagrid-cell{
+        white-space: normal;
+    }
+}
+
+.framework-block,
+.framework-block-unassined {
+
+  &:after{
+    clear: both;
+    content: "";
+    display: block;
+  }
+
+  &--header{
+    background-color: #fff;
+    border: 1px solid $border-color;
+    border-right: none;
+    height: 45px;
+  }
+
+  &--delete{
+/*    display: block;*/
+    text-align: center;
+  }
+
+  &--name,
+  &--description,
+  &--other{
+    border-right: 1px solid $border-color;
+    height: 45px;
+    line-height: 45px;
+    font-size: 14px;
+    float: left;
+    font-weight: 600;
+    padding-left: 10px;
+  }
+
+  &--name{ width: 30%; }
+  &--description{ width: calc(70% - 45px); }
+  &--other{ width: 45px; }
+}
+

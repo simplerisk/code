@@ -1,0 +1,96 @@
+.score--help{
+
+  @extend .reset;
+  @extend .animation;
+
+  width: 25px;
+  height: 25px;
+  line-height: 25px;
+  color: #fff;
+  background-color: $color-1;
+  display: inline-block;
+  text-align: center;
+  border-radius: 20px;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-top: 5px;
+
+  &:visited{
+    background-color: $color-1;
+    color: #fff;
+  }
+
+  &:hover{
+    background-color: $color-3;
+    color: #fff;
+  }
+
+}
+
+.well form table td{
+  font-size: 16px;
+}
+
+.vtop{
+  vertical-align: top;
+}
+
+
+.cal-text{
+  padding-left: 30px;
+
+  p{
+    border-bottom: 1px solid $border-color;
+    padding: 5px;
+    font-size: 14px;
+  }
+}
+
+.score--table td{
+  font-size: 16px;
+  padding: 2px 0;
+}
+
+
+#divHelp{
+  padding-left: 50px;
+}
+
+.cal-head{
+  margin-top: 20px;
+  border-top: 1px solid $border-color;
+  padding-top: 20px;
+
+  &.no-border{
+    margin-top: 0px;
+    border-top: none;
+  }
+
+}
+
+.section--header{
+  margin: 30px 0px 20px 0;
+  display:block;
+}
+
+span.editable {
+    cursor: pointer;
+
+
+    &:after {
+        margin-left: 5px;
+        content: "\f303";
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+    }
+}
+
+input.editable {
+    min-width:50px !important;
+    max-width:99.99% !important;
+    transition: width 0.25s;
+    text-align:center;
+    font-family: monospace;
+    max-height: 1.2em;
+    padding: 10px 5px;
+}

@@ -1,0 +1,17 @@
+#dsp_frameworks_tree.ui-widget-content{
+    border: 0px;
+    background: none;
+    .ui-state-active, .ui-widget-content .ui-state-active{
+        background: none;
+        border: 0px;
+    }
+    
+    .daredevel-tree-anchor{
+        cursor: pointer;
+        margin-top: 7px;
+    }
+    
+    input[type=checkbox]{
+        margin-top: -1px;
+    }
+}

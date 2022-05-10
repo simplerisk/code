@@ -1,0 +1,30 @@
+/*--------------------------------------------------------------
+ ## Tab Styles
+ --------------------------------------------------------------*/
+.tabs,
+#tabs{
+	position: relative;;
+}
+.actions.risk-form-actions span{
+    max-width: 69%;
+    display: inline-block;
+    line-height: 16px;
+    vertical-align: middle;
+}
+
+.wrap-text{
+  line-height: 20px !important;
+}
+
+@media (min-width:1025px) { 
+    textarea.form-control{
+        max-width:300px;
+    } 
+}
+
+
+@media (min-width:1281px) { 
+    textarea.form-control{
+        max-width:300px;
+    } 
+}

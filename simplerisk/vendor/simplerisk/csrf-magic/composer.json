@@ -1,0 +1,41 @@
+{
+	"name": "simplerisk/csrf-magic",
+	"description": "Cross Site Request Forgery security library. Fork from ezyang/csrf-magic with extra functions.",
+	"keywords": [
+		"CSRF",
+		"security",
+		"php"
+	],
+	"homepage": "https://github.com/simplerisk/csrf-magic",
+	"type": "library",
+	"license": "BSD-2-Clause",
+	"authors": [
+		{
+			"name": "Edward Z. Yang",
+			"email": "ezyang@mit.edu",
+			"homepage": "https://github.com/ezyang"
+		},
+		{
+			"name": "SimpleRisk",
+			"email": "support@simplerisk.com",
+			"homepage": "https://simplerisk.com/"
+		}
+	],
+	"require": {
+		"php": ">=5.6"
+	},
+	"autoload": {
+		"files": ["csrf-magic.php"]
+	},
+	"extra": {
+		"component": {
+			"scripts": ["csrf-magic.js"]
+		}
+	},
+	"archive": {
+		"exclude": [
+			"js-test",
+			"test.php"
+		]
+	}
+}

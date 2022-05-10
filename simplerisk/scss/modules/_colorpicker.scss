@@ -1,0 +1,30 @@
+.colorSelector{
+    position: relative;
+    width: 36px;
+    height: 36px;
+    background: url(../images/colorpicker/select.png);
+    
+    div {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 30px;
+        height: 30px;
+        background: url(../images/colorpicker/select.png) center;
+    }
+}
+.colorpicker input{
+    padding: 0 !important;
+    height: 11px !important;
+    width: auto;
+    border: 0px !important;
+    top: 6px;
+    right: 13px;
+}
+.risk-levels-container{
+    .colorSelector{
+        display: inline-block;
+        position: relative;
+        top: 10px;
+    }
+} 

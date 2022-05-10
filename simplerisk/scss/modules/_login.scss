@@ -1,0 +1,91 @@
+.login--page{
+  // background-image: url("../images/login--bg.jpg");
+  // background-size: 100%;
+  background-size: 100%;
+  background-color: #252525;
+}
+
+.login-wrapper{
+  position: relative;
+  width: 600px;
+  margin: 100px auto 0 auto;
+}
+
+.loginForm {
+    background: $color-1;
+    width: 600px;
+    border-radius: 2px;
+    padding: 30px;
+    color: white;
+
+    label{
+      color: #fff;
+      font-weight: 400;
+      color: #a4a4a4;
+      font-size: 16px;
+    }
+
+    input[type="text"],  textarea,
+	textarea.form-control,
+    input[type="password"]{
+      max-width: 100%;
+      background-color: #fff !important;
+      color: $color-1 !important;
+    }
+
+    .form-actions{
+      a{
+        color: $color-3;
+        font-weight: 400;
+        font-size: 16px;
+        margin-top: 5px;
+      }
+
+      .btn{
+        margin-left: 10px;
+      }
+    }
+}
+
+
+.welcome--msg{
+  color: #eee;
+  font-size: 30px;
+  font-weight: 600;
+  text-shadow: 2px 2px 5px rgba(0,0,0,.5);
+  -webkit-text-shadow: 2px 2px 5px rgba(0,0,0,.5);
+  -moz-text-shadow: 2px 2px 5px rgba(0,0,0,.5);
+  margin-top:6%;
+}
+
+
+.login--label{
+  color: #fff !important;
+  font-size: 18px;
+  padding-bottom: 20px;
+  font-weight: 600 !important;
+
+}
+
+.send_reset_email,
+.password_reset{
+
+  input[type="text"],textarea, 
+  textarea.form-control,
+  input[type="password"]{
+    max-width: 100%;
+  }
+
+  .login--label{
+    padding-bottom: 20px;
+    color: $text-color !important;
+  }
+}
+
+
+.login--page .redalert {
+
+    top: 115px;
+    left: 50%;
+    transform: translateX(-50%);
+}

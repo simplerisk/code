@@ -1,0 +1,21 @@
+#audit-timeline_wrapper{
+    .links{
+        margin-top: 10px;
+        font-size: 16px;
+        text-transform: none;
+    }
+}
+
+.high-risk-report-score-warning {
+    font-size: 0.9em;
+    color: red;
+}
+
+.sub-filter-box-1{
+    width: 55px !important;
+}
+
+.sub-filter-box-2{
+    width: calc(100% - 65px) !important;
+}
+

@@ -1,0 +1,108 @@
+.navbar{
+  padding: 0px;
+}
+
+.aside--nav{
+
+  overflow: visible !important;
+
+  float: right;
+  position: relative;
+  padding-top: 30px;
+
+  &:before{
+    content: "";
+    display: block;
+    background-color: #ebe7e7;
+    width: 3px;
+    height: 100%;
+    position: absolute;
+    top: -25px;
+    left: 3px;
+  }
+
+  li a{
+    background-color: $color-1;
+    color: #fff;
+    height: 37px;
+    border-radius: 3px;
+    line-height: 37px;
+    font-weight: 600;
+    padding: 0px 10px;
+    min-width:170px;
+    position: relative;
+    padding-left: 30px;
+    font-size: 14px;
+    position: relative;
+
+    span{
+      position: absolute;
+      left: 0px;
+      top: 0px;
+      color: $color-1;
+    }
+
+    @extend .animation;
+
+    &:hover{
+      background-color: $color-3;
+    }
+
+    &:before{
+      width: 31px;
+      height: 31px;
+      content: "";
+      display: block;
+      background-color: #d1d3d4;
+      border-radius: 50%;
+      position: absolute;
+      top: 0px;
+      left: -14px;
+      border: 3px solid #abadaf;
+    }
+
+  }
+
+  li.active a,
+  li.active a:hover,
+  li.active a:visited,
+  li.active a:active
+  {
+    background-color: $color-3;
+  }
+
+  li.active a{
+    position: relative;
+	  background: $color-3;
+
+    span{
+      color: #fff;
+    }
+
+    &:before{
+      background-color: $color-1;
+      border: 3px solid rgba(#abadaf,.5);
+    }
+  }
+
+  li.active a:after {
+  	background-color:$color-3;
+    width: 27px;
+    height: 27px;
+    position: absolute;
+    top: 5px;
+    right: -13px;
+    content: "";
+    display: block;
+    border-radius: 3px;
+    z-index: -1;
+
+    -ms-transform: rotate(45deg); /* IE 9 */
+    -webkit-transform: rotate(45deg); /* Chrome, Safari, Opera */
+    transform: rotate(45deg);
+  }
+
+  &.nav-pills.nav-stacked > li > a{
+    margin-bottom: 8px;
+  }
+}

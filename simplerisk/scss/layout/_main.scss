@@ -1,0 +1,45 @@
+/*--------------------------------------------------------------
+ ## Main Section Styles
+ --------------------------------------------------------------*/
+.l-main{
+
+}
+
+button.multiselect {
+    margin-bottom: 10px;
+}
+
+.content-margin-height{
+    margin-top: 32px;
+}
+
+.content-header-height{
+    height: 32px;
+}
+
+.container-fluid{
+    > .row-fluid{
+        > .span9{
+            position: relative;
+            margin-top: 32px;
+            .content-navbar-container{
+                position: absolute;
+                top: -38px;
+            }        
+        }
+    }
+}
+
+.multiselect-content-container{
+    .btn-group, .multiselect-container{
+        width: 100%;
+        min-width: none;
+        .multiselect.dropdown-toggle{
+            max-width: none !important;
+            min-width: unset !important;
+            width: 100%;
+        }
+    }
+}
+
+

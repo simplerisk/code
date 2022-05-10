@@ -1,0 +1,51 @@
+//--------------------------------------------------------------
+// Typography
+// --------------------------------------------------------------*/
+@import url(https://fonts.googleapis.com/css?family=Titillium+Web:400,300,600,700);
+@import "../../vendor/components/font-awesome/scss/fontawesome.scss";
+@import "../../vendor/components/font-awesome/scss/solid.scss";
+
+$font-1 : 'Titillium Web', sans-serif;
+$font-2 : $font-1;
+$font-3 : "Font Awesome 5 Free";
+
+
+//--------------------------------------------------------------
+// Colors
+// --------------------------------------------------------------*/
+
+$color-1 : #3a3a3a; // Dark Ash
+$color-2 : #6f6f6f; // Light Ash
+$color-3 : #ed3139; // Theme Red
+$color-4 : #e6e6e6; // Theme Light Ash
+$color-5 : #28a745; // Success button's green
+
+$theme-bg-color   : #fff;
+
+$text-color   : #3f3f3f;
+$border-color : #d1d3d4;
+
+$border-radius-small:   3px;
+$border-radius-large:   6px;
+
+$modal-text-color: #ffffff;
+
+$scrollbar-track-color: #f1f1f1;
+$scrollbar-thumb-color: #888;
+$scrollbar-thumb-hover-color: #555;
+
+$asset-option-color: #efefef;
+$asset-group-option-color: darkgrey;
+
+//--------------------------------------------------------------
+// Site Settings
+// --------------------------------------------------------------*/
+
+$base-font-weight   : 400;
+$base-font-size     : 16px;
+$base-line-height   : $base-font-size * 1.5;
+$base-font-family   : $font-1;
+
+$title-font-weight : 700;
+$title-font-family : $font-2;
+$icon-font         : $font-3;

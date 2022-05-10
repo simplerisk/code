@@ -1,0 +1,203 @@
+
+#framework--add, #project--add, #control--add{
+    &.modal{
+        z-index: 9999;
+    }
+}
+
+.status-tabs{
+  position: relative;
+
+   .framework--add, .project--add, .control--add{
+        @extend .reset;
+
+        width: 40px;
+        height: 40px;
+        background-color: $color-1;
+        text-align: center;
+        color: #fff;
+        display: block;
+        line-height: 40px;
+        border-top-left-radius: 2px;
+        border-top-right-radius: 2px;
+        position: absolute;
+        top: 3px;
+        left: 71px;
+
+    }
+      
+  .tabs-nav{
+
+    margin-left: 110px;
+
+    li{
+      float: left;
+/*      margin-left: 10px;*/
+        margin-left: 5px; 
+      a{
+
+        @extend .animation;
+        @extend .reset;
+
+        display: block;
+        padding: 10px;
+        text-align: left;
+        background-color: $color-1;
+        color: #fff;
+        font-weight: 600;
+        font-size: 14px;
+        min-width: 160px;
+        border: 3px solid $color-1;
+        border-bottom: none;
+
+        -webkit-border-top-left-radius: 2px;
+        -webkit-border-top-right-radius: 2px;
+        -moz-border-radius-topleft: 2px;
+        -moz-border-radius-topright: 2px;
+        border-top-left-radius: 2px;
+        border-top-right-radius: 2px;
+
+      }
+
+      &.ui-state-active a{
+        background-color: $color-2;
+        border: 3px solid $color-2;
+        border-bottom: none;
+      }
+    }
+
+  }
+
+  .project-headers, .framework-headers, .control-headers{
+    background-color: $color-2;
+  }
+
+}
+
+.plan-projects{
+  .project-headers{
+    background-color: $color-2;
+  }
+}
+
+
+.white-labels{
+  color: #fff;
+}
+
+
+.project-block,
+.project-block-unassined {
+
+  &:after{
+    clear: both;
+    content: "";
+    display: block;
+  }
+
+  &--header{
+    background-color: #fff;
+    border: 1px solid $border-color;
+    border-right: none;
+    height: 45px;
+  }
+
+  &--delete{
+    border-left: 1px solid $border-color;
+    width: 45px;
+    width: 45px;
+    display: block;
+    text-align: center;
+  }
+
+  &--edit{
+    border-left: 1px solid $border-color;
+    width: 45px;
+    width: 45px;
+    display: block;
+    text-align: center;
+  }
+
+  &--priority,
+  &--name,
+  &--field,
+  &--risks{
+    border-right: 1px solid $border-color;
+    height: 45px;
+    line-height: 45px;
+    font-size: 14px;
+    float: left;
+    font-weight: 600;
+    padding-left: 10px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  &--priority{ width: 100px; }
+  &--name{ width: 350px; }
+  &--field{ width: 150px; }
+  &--risks{ width: 250px; }
+}
+.risks{
+  margin: 10px 0px 10px 8%;
+  display: none;
+
+  a{
+    text-decoration: none;
+    color: #fff;
+  }
+}
+
+.risk{
+  background-color: $color-2;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 0px 10px;
+  border-radius: 2px;
+  margin-bottom: 5px;
+  height: 40px;
+  line-height: 40px;
+}
+
+.project-block-unassined, .framework-block-unassined{
+    .risks{
+      display: block;
+    }
+}
+
+.delete_project{
+  min-width: 80px;
+  margin-left: 5px;
+}
+
+.plan-projects{
+    .risks{
+        .risk{
+            .risk--title{
+                width: calc(100% - 160px);
+                text-overflow: ellipsis;
+                overflow: hidden;
+                white-space: nowrap;
+
+            }
+        }
+    }
+}
+
+.frameworks{
+    .plan-projects{
+        .risks{
+        .risk{
+            .risk--title{
+            width: calc(100% - 160px);
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+
+            }
+        }
+        }
+    }
+}

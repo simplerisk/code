@@ -1,0 +1,222 @@
+/*--------------------------------------------------------------
+ ## Table Styles
+ --------------------------------------------------------------*/
+
+ .table.table-bordered{
+
+    border-radius: 3px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+ 	  td,th{
+      padding: 10px;
+      background-color: #fff;
+    }
+ }
+
+ .table-bordered thead:first-child tr:first-child > th:first-child,
+ .table-bordered tbody:first-child tr:first-child > td:first-child,
+ .table-bordered tbody:first-child tr:first-child > th:first-child {
+    -webkit-border-top-left-radius: 2px;
+    border-top-left-radius: 2px;
+    -moz-border-radius-topleft: 2px;
+}
+
+
+.table-bordered thead:last-child tr:last-child > th:first-child,
+.table-bordered tbody:last-child tr:last-child > td:first-child,
+.table-bordered tbody:last-child tr:last-child > th:first-child,
+.table-bordered tfoot:last-child tr:last-child > td:first-child,
+.table-bordered tfoot:last-child tr:last-child > th:first-child {
+    -webkit-border-bottom-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+    -moz-border-radius-bottomleft: 2px;
+}
+
+.table-bordered thead:first-child tr:first-child > th:last-child,
+.table-bordered tbody:first-child tr:first-child > td:last-child,
+.table-bordered tbody:first-child tr:first-child > th:last-child {
+    -webkit-border-top-right-radius: 2px;
+    border-top-right-radius: 2px;
+    -moz-border-radius-topright: 2px;
+}
+
+.table-bordered thead:last-child tr:last-child > th:last-child,
+.table-bordered tbody:last-child tr:last-child > td:last-child,
+.table-bordered tbody:last-child tr:last-child > th:last-child,
+.table-bordered tfoot:last-child tr:last-child > td:last-child,
+.table-bordered tfoot:last-child tr:last-child > th:last-child {
+    -webkit-border-bottom-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    -moz-border-radius-bottomright: 2px;
+}
+
+.table-striped thead > tr > th,
+.table-striped tbody > tr:nth-child(even) > td,
+.table-striped tbody > tr:nth-child(even) > th {
+    background-color: #ebe7e7 !important;
+}
+
+.table-bordered th, .table-bordered td {
+    border-left: 1px solid #d1d3d4 !important;
+}
+
+.table-striped tbody > tr:nth-child(odd) > td,
+.table-striped tbody > tr:nth-child(odd) > th{
+  background-color: #fff;
+}
+
+.table-striped tbody > tr > td a{
+  display: block;
+  text-align: center;
+  text-transform: uppercase;
+  color: $color-1;
+  &.text-left{
+      text-align: left;
+  }
+}
+
+.table-striped tbody > tr > td.text-center{
+  text-align: center;
+}
+
+.table.table-bordered{
+  margin-top: 0px;
+}
+
+.table tbody tr td:first-child a{
+  font-weight: 400;
+  color: $color-1;
+}
+/*
+.table tbody tr td:last-child a{
+  font-weight: 400;
+  color: $color-1;
+}
+*/
+
+
+.active-cell a{
+  color: #0088cc !important;
+  font-weight: bold !important;
+}
+
+.mitigation.yes{
+  color: $color-1 !important;
+  font-weight: bold;
+}
+
+.management.yes{
+  color: $color-1 !important;
+  font-weight: bold;
+}
+
+/**
+* jquery datatable
+*/
+.dataTables_wrapper{
+    .dataTables_length{
+        float: right;
+    }
+    .dataTables_processing{
+        z-index: 99;
+    }
+    
+    .dataTables_paginate{
+        .paginate_button{
+            background-color: #c1b4b4;
+            color: #fff !important;
+            margin: 0 2px;
+            border-radius: 2px ;
+            border: 0px;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 4px 12px;
+            &:hover, &.current{
+                background: #3a3a3a ;
+                color: #fff !important;
+                border: 0px;
+            }
+            &.current:hover{
+                border: 0px;
+                background: #3a3a3a;
+                color: #fff !important;
+            }
+            &.first, &.next, &.previous, &.last{
+                background: transparent;
+                color: #c1b4b4 !important;
+                &:hover{
+                    color: #3a3a3a !important;
+                }
+                &.disabled{
+                    color: #c1b4b4 !important;
+                }
+                
+            }
+        }
+    }
+    .view-all{
+        float: right;
+        margin-left: 15px;
+        cursor: pointer;
+        display: inline-block;
+        padding: 4px 12px;
+        font-size: 14px;
+        font-weight: bold;
+        background-color: #c1b4b4;
+        color: #fff !important;
+        margin-top: 5px;
+        border-radius: 2px;
+        &.current{
+            background: #3a3a3a ;
+            color: #fff !important;
+            border: 0px;
+        }
+    }
+}
+
+th{
+    &.sorting_asc > .fa{
+        display: inline-block;
+        position: relative;
+        left: 10px;
+        top: 3px;
+        &:before{
+            content: "\f0de";
+        }
+    }
+
+    &.sorting_desc > .fa{
+        display: inline-block;
+        position: relative;
+        left: 10px;
+        top: -3px;
+        &:before{
+            content: "\f0dd";
+        }
+    }
+}
+
+/*jQueryTablesort*/
+.tablesorter-header{
+    background-image: url(data:image/gif;base64,R0lGODlhFQAJAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAkAAAIXjI+AywnaYnhUMoqt3gZXPmVg94yJVQAAOw==);
+    background-repeat: no-repeat;
+    background-position: center right;
+    padding: 4px 18px 4px 4px;
+    white-space: normal;
+    cursor: pointer;
+}
+ .headerSortUp,  .tablesorter-headerSortUp, .tablesorter-headerAsc {
+    background-color: #9fbfdf;
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
+}
+ .headerSortDown, .tablesorter-headerSortDown, .tablesorter-headerDesc{
+    background-color: #8cb3d9;
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
+}
+    
+.dataTables_filter{
+    input{
+        width: 206px;
+    }
+}

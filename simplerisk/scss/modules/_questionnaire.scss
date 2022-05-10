@@ -1,0 +1,199 @@
+.questionnaire-response{
+    .attachment-container{
+        width: 900px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+}
+
+.left-offset-30{
+    margin-left: 30px;
+}
+
+.left-offset-60{
+    margin-left: 60px;
+}
+
+.questionnaire-pending-risk-form, .questionnaire-active-risk-form{
+    border: 1px dotted;
+}
+
+#questionnaire-answers-container{
+    .answers-table{
+        td{
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+    }
+}
+
+.questionnaire-response{
+    .questionnaire-answers{
+        margin-left: 30px;
+        .answer-text{
+            top: 4px;
+            position: relative;
+        }
+    }
+    .button-container{
+        text-align: center;
+    }
+    form.disabled *{
+        pointer-events: none;
+    }
+}
+
+.questionnaire-result-container{
+    counter-reset: parentQuestionCounter;
+    .parent.questionnaire-question:before{
+        content: counter(parentQuestionCounter) ") ";
+        counter-increment: parentQuestionCounter;
+        left: 0px;
+        float: left;
+        margin-left: 0px;
+        margin-right: 10px;
+        font-weight: bold;
+    }
+
+    .questionnaire-questions-container-by-answer{
+        counter-reset: subQuestionCounter;
+        .sub.questionnaire-question:before{
+            content: counter(parentQuestionCounter)"-"counter(subQuestionCounter) ") ";
+            counter-increment: subQuestionCounter;
+            left: 0px;
+            float: left;
+            margin-left: 0px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+    }
+}
+
+.questionnaire-compare-result-container{
+    counter-reset: parentQuestionCounter1 parentQuestionCounter2 ;
+    .parent.questionnaire-question.left:before{
+        left: 0px;
+        float: left;
+        margin-left: 0px;
+        margin-right: 10px;
+        font-weight: bold;
+    }
+
+    .parent.questionnaire-question.left:before{
+        content: counter(parentQuestionCounter1) ") ";
+        counter-increment: parentQuestionCounter1;
+    }
+    .parent.questionnaire-question.right:before{
+        content: counter(parentQuestionCounter2) ") ";
+        counter-increment: parentQuestionCounter2;
+    }
+
+    .questionnaire-questions-container-by-answer{
+        counter-reset: subQuestionCounter1 subQuestionCounter2;
+        .sub.questionnaire-question:before{
+            left: 0px;
+            float: left;
+            margin-left: 0px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .sub.questionnaire-question.left:before{
+            content: counter(parentQuestionCounter1)"-"counter(subQuestionCounter1) ") ";
+            counter-increment: subQuestionCounter1;
+        }
+        .sub.questionnaire-question.right:before{
+            content: counter(parentQuestionCounter2)"-"counter(subQuestionCounter2) ") ";
+            counter-increment: subQuestionCounter2;
+        }
+
+    }
+}
+
+
+.questionnaire-question.question-title{
+    font-weight: bold;
+    &.sub{
+        margin-left: 30px;
+    }
+}
+
+.differency{
+    background: #d1e8cf;
+}
+
+.add-delete-icon{
+    width: 15px;
+    height: 15px;
+}
+
+.questionnaire-compare-result-container, .questionnaire-answers {
+     ul {
+        list-style: none;
+
+        li {
+            span {
+                position: relative;
+
+                &:before {
+                    font-family: "Font Awesome 5 Free";
+                    position: absolute;
+                    left: -5px;
+                    transform: translateX(-100%);
+                }
+
+                &:not(.selected):before {
+                    content: '\f111';
+                }
+
+                &.selected:before {
+                    content: "\f192";
+                }
+            }
+        }
+    }
+
+    p.additional_info {
+        margin-left: 10px;
+    }
+}
+
+.questionnaire-result-container .affected-asset-list span {
+    cursor: pointer;
+    margin: 0 3px 3px 0;
+    padding: 1px 3px;
+    color: #333333;
+    border: 0 solid rgba(0, 0, 0, 0) !important;
+    border-radius: 2px;
+    display: inline-block;
+
+    &.asset {
+        background-color: $asset-option-color !important;
+    }
+
+    &.group {
+        background-color: $asset-group-option-color !important;
+    }
+}
+
+/*--------------------------------------------------
+# Selecttize Style for Assessment dual list contacts
+----------------------------------------------------*/
+.assessment_contacts{
+    .assessment{
+        background-color: $asset-option-color !important;
+    }
+    .user{
+        background-color: $asset-group-option-color !important;
+    }
+    [data-selectable].option:hover{
+        cursor: pointer;
+    }
+}
+
+#questionnaire_edit_form, #questionnaire_new_question_form{
+    .compliance-audit-element{
+        display: none;
+    }
+}
+

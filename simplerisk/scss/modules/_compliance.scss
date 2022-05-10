@@ -1,0 +1,127 @@
+.compliance-content-container{                   
+    .add-test{
+        margin-right: 10px;
+        margin-bottom: 5px;
+    }
+    .framework-control-test-list{
+        margin-left: 10px;
+        margin-right: 10px;
+        .table.table-bordered{
+            border-bottom: 1px solid #dddddd;
+            th{
+                border-bottom: none;
+            }
+        }
+        .delete-row, .edit-test{
+            display: inline-block;
+        }
+    }
+    .text-left{
+        text-align: left;
+    }
+    .comments--wrapper{
+        margin-top: 0px;
+    }
+
+    .framework-control-wrapper {
+		.well {
+			padding: 0px;
+
+		    & > h4 {
+		      	margin: 0px;
+		      	padding: 15px 20px 15px 20px;
+		      	cursor: pointer;
+
+		      	i{
+					margin-right: 10px;
+		      	}
+		    }
+		}
+    }
+
+    .framework-control {
+        background-color: #fff;
+        border: 1px solid #d1d3d4;
+        font-size: 14px;
+        padding: 10px;
+        margin: 10px;
+
+		.well{
+			padding: 20px;
+		}
+    }
+
+    .framework-control td {
+        padding: 8px 10px;
+    }
+}
+
+#framework-controls{
+    .sorting_1{
+        padding: 0px;
+    }
+    
+    td{
+        vertical-align: top;
+    }
+}
+
+.white-background{
+    background-color: #fff !important;
+}
+
+.grey-background{
+    background-color: #ebe7e7 !important;
+}
+
+.red-background{
+    background-color: pink !important;
+}
+
+.green-background{
+    background-color: lightgreen !important;
+}
+
+#active-audits, #past-audits{
+    .white-background{
+        background-color: #fff !important;
+    }
+
+    .grey-background{
+        background-color: #ebe7e7 !important;
+    }
+
+    .red-background{
+        background-color: pink !important;
+    }
+
+    .green-background{
+        background-color: lightgreen !important;
+    }
+}
+.control-block--header{
+    position: relative;
+    .checkbox-in-div{
+        text-align: center;
+        width: 25px;
+        float: left;
+        position: absolute;
+        top: 50%;
+        margin-top: -10px;
+        cursor: pointer;
+    }    
+}
+
+.control-block--header.selected-background{
+    background-color: #f0ebe7;
+    table tbody tr{
+        background-color: #f0ebe7;
+    }
+}
+
+#delete-controls-btn{
+    position: absolute;
+    right: 0px;
+    top: 5px;
+}
+

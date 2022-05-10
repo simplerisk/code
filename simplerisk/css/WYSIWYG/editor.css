@@ -1,0 +1,20 @@
+.tox .tox-mbtn, .tox .tox-tbtn {
+    color: #222f3e !important;
+}
+
+.tox .tox-mbtn:hover, .tox .tox-tbtn:hover {
+    color: #222f3e !important;
+    background-color: #dee0e2 !important;
+}
+
+.tox .tox-listboxfield .tox-listbox--select {
+    color: #222f3e !important;
+}
+
+.tox .tox-listboxfield .tox-listbox--select:hover {
+    background-color: #ffffff !important;
+}
+
+.tox .tox-tbtn--active, .tox .tox-tbtn:active {
+    background-color: #c8cbcf !important;
+}

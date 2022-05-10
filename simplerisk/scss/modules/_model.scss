@@ -1,0 +1,94 @@
+.modal{
+  background-color: $color-1;
+  border-radius: 2px;
+  box-shadow: none;
+  border:none;
+  max-height: calc(100% - 94px);
+  overflow: auto;  
+  padding-top: 20px;
+  padding-bottom: 20px;
+
+  label{
+    color: #fff;
+  }
+
+  form{
+    margin-bottom: 0px;
+  }
+
+  .modal-body{
+    padding-bottom: 0px;
+  }
+
+  input[type="text"], textarea,
+  textarea.form-control 
+  {
+    max-width: 100%;
+  }
+
+  .modal-footer{
+    background-color: transparent;
+    padding: 0px 15px 15px 15px;
+    border-top: 0px;
+    box-shadow: none;
+
+  }
+  
+  .view-field{
+      color: #fff;
+  }
+
+  select:disabled{
+      background-color: #fff;
+  }
+
+}
+
+#alert-modal{
+    .message-container{
+        margin-bottom: 25px;
+        .message{
+            font-size: 20px;
+        }
+    }
+}
+
+.vertical-alignment-helper {
+    display:table;
+    height: 100%;
+    width: 100%;
+    pointer-events:none; /* This makes sure that we can still click outside of the modal to close it */
+}
+.vertical-align-center {
+    /* To center vertically */
+    display: table-cell;
+    vertical-align: middle;
+    pointer-events:none;
+}
+.modal-content {
+    /* Bootstrap sets the size of the modal in the modal-dialog class, we need to inherit it */
+    width:inherit;
+    height:inherit;
+    /* To center horizontally */
+    margin: 0 auto;
+    pointer-events: all;
+}
+
+
+.modal-backdrop {
+    background-color: rgba(255, 255, 255, 0);
+}
+
+.modal.fade.in {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.modal{
+    .file-uploader{
+        color: #fff;
+        .btn{
+            background: #ed3139
+        }
+    }
+}

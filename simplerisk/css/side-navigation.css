@@ -1,0 +1,95 @@
+.container-fluid {
+  padding-left: 0px !important;
+}
+
+.spacer {
+  position: absolute;
+}
+
+.sidenavsmall {
+  height: 100vh;
+  width: 45px;
+  position: relative;
+  float: left;
+  z-index: 1;
+  background-color: #3a3a3a;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 20px;
+  overflow-y: hidden;
+}
+
+.sidenavbig {
+  height: 100vh;
+  width: 150px;
+  position: relative;
+  float: left;
+  z-index: 1;
+  background-color: #3a3a3a;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 20px;
+}
+
+.sidenavsmall .navbtn {
+  width: 40px;
+}
+
+.sidenavbig .navbtn {
+  width: 40px;
+}
+
+.sidenavsmall a {
+  padding: 6px 6px 6px 6px;
+  display: block;
+  text-decoration: none;
+  color: #fff;
+  font-weight: 600;
+  display: block;
+  transition: 0.3s;
+}
+
+.sidenavbig a {
+  padding: 6px 6px 6px 6px;
+  display: block;
+  text-decoration: none;
+  color: #fff;
+  font-weight: 600;
+  display: block;
+  transition: 0.3s;
+}
+
+.sidenavsmall li.active a {
+  padding: 6px 6px 6px 6px;
+  display: block;
+  text-decoration: none;
+  color: #ed3139;
+  font-weight: 600;
+  display: block;
+  transition: 0.3s;
+}
+
+.sidenavbig li.active a {
+  padding: 6px 6px 6px 6px;
+  display: block;
+  text-decoration: none;
+  color: #ed3139;
+  font-weight: 600;
+  display: block;
+  transition: 0.3s;
+}
+
+.sidenavsmall a:hover {
+  text-decoration: none;
+  color: #ed3139;
+}
+
+.sidenavbig a:hover {
+  text-decoration: none;
+  color: #ed3139;
+}
+
+.main {
+  margin-left: 150px; /* Same as the width of the sidenav */
+  transition: margin-left .5s;
+}

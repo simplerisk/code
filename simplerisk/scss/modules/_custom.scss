@@ -1,0 +1,124 @@
+.caret{
+    vertical-align: middle;
+}
+
+#delete_mapping{
+    position: relative;
+    top: -4px;
+}
+
+.specified_time_holder{
+    display: none;
+    select{
+        width: auto;
+    }
+}
+
+.label-for-edit{
+    cursor: pointer;
+}
+
+.audit-option-container{
+    margin-bottom: 10px;
+    .audit-select-folder{
+        float: left;
+    }
+    .audit-download-folder{
+        float: right;
+        >a{
+            cursor: pointer;
+        }
+        .down-icon{
+            margin-top: -10px;
+        }
+    }
+}
+
+.asset-table-container{
+    overflow-x: auto;
+}
+
+#classic-risk-formula{
+    #impact-label{
+        text-orientation: upright;
+        writing-mode: vertical-lr;
+        width: 25px;
+        
+    }
+}
+
+.import-export-tag-warning {
+    display: inline-block;
+    font-size: 0.8em;
+    color: red;
+    position: relative;
+    top: -5px;
+    line-height: 1.2;
+    padding-bottom: 15px; 
+}
+
+.admin_selfediting_warning {
+	display: inline-block;
+	font-size: 0.8em !important;
+	color: red;
+	position: relative;
+	top: -5px;
+	line-height: 1.2;
+	padding-bottom: 15px;
+}
+
+.risk_thread_catalog {
+
+    a.btn.add {
+        margin-bottom: 5px;
+    }
+
+    table.dataTable tbody tr {
+
+        &.dtrg-group.dtrg-start td {
+            color: $modal-text-color;
+            background-color: $color-1 !important;
+
+            button.btn {
+                &.move-group {
+                    padding: 2px 10px;
+
+                    &.move-group-up {
+                        margin-right: 5px;
+                    }
+                }
+            }
+        }
+
+        &.data-row td {
+            vertical-align: middle;
+
+            &:first-child {
+                padding-left: 0px;
+            }
+
+            span.grippy {
+                content: '....';
+                width: 1.5em;
+                height: 2em;
+                display: inline-block;
+                overflow: hidden;
+                line-height: 5px;
+                padding: 3px 4px;
+                cursor: move;
+                vertical-align: middle;
+                margin-top: -.7em;
+                margin-right: .3em;
+                font-size: 12px;
+                font-family: sans-serif;
+                letter-spacing: 2px;
+                color: $color-1;
+                text-shadow: 1px 0 1px black;
+
+                &::after {
+                    content: '.. .. .. .. .. .. ..';
+                }
+            }
+        }
+    }
+}

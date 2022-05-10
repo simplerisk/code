@@ -1,0 +1,29 @@
+name: PHP CI
+on: [push, pull_request]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php: [7.2, 7.3, 7.4]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+    
+      - name: Setup PHP
+        uses: shivammathur/setup-php@86e1ccdd8ddc47bffc29bf667143f363a4cdfdbc
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: xdebug
+    
+      - name: Composer install
+        run: composer install
+    
+      - name: PHP Linting
+        run: ./vendor/bin/phpcs --standard=PSR2 -n src/* tests/*
+
+      - name: PHP tests
+        run: ./vendor/bin/phpunit

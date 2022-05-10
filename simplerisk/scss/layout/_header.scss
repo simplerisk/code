@@ -1,0 +1,285 @@
+/*--------------------------------------------------------------
+ ## Header Styles
+ --------------------------------------------------------------*/
+.l-header{
+	z-index: 99999;
+	position: relative;
+	max-height: 75px;
+
+	&:after{
+		clear: both;
+		display: block;
+		content: "";
+	}
+
+	.navbar .brand {
+	    padding: 11px 20px 10px;
+	    margin: 0px;
+	    color: #777777;
+	    text-shadow: none;
+	    height: 70px;
+	    max-width: 200px;
+			outline: none;
+
+			img{ width: 100%;  margin-top: 7px; }
+
+			@media only screen and (min-width : 1300px ) {
+			 	  max-width: 250px;
+					padding: 5px 20px 10px;
+			}
+	}
+
+	.navbar .nav > li > a {
+    float: none;
+    padding: 10px 20px 20px 10px;
+    color: #fff;
+    text-decoration: none;
+    text-shadow: none;
+    font-weight: 600;
+
+		@extend .animation;
+	}
+
+	.navbar .nav > .active > a,
+	.navbar .nav > .active > a:hover,
+	.navbar .nav > li > a:hover,
+	.navbar .nav > .active > a:focus {
+        color: $color-3 !important;
+        text-decoration: none;
+        background-color: transparent;
+        -webkit-box-shadow: none;
+        -moz-box-shadow: none;
+        box-shadow: none;
+	}
+
+	.navbar .nav {
+        margin: 20px 0px 0 50px;
+	}
+
+	.navbar .nav > .active > a{
+		background-image: url('../images/arrow-top.png');
+		background-repeat: no-repeat;
+		background-position: 50% bottom;
+	}
+    
+    @media only screen and (max-width : 1300px) {
+        .navbar .nav > li > a {
+            padding-right: 9px;
+        }
+        
+        .navbar .nav {
+            margin-left: 30px;
+        }
+    }
+
+}
+
+.navbar-inner{
+	height: 75px;
+	background-color: $color-1;
+	color: #fff;
+	padding: 0px;
+	box-shadow: none;
+	border: none;
+	background-image: none;
+	border-radius: 0px;
+	text-shadow: none;
+	border-bottom: 5px solid $color-2;
+    > .container-fluid{
+        max-height: 75px;
+    }
+}
+
+
+.user--info{
+	margin: 29px 0px 20px 5px;
+
+	a{
+		@extend .reset;
+
+		color: #fff;
+		font-weight: 600;
+	}
+
+	.caret {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    vertical-align: top;
+    border-top: 4px solid #fff;
+    margin-top: 12px;
+    margin-left: 10px;
+	}
+
+}
+
+
+.search-risks {
+    margin-top: 10px;
+/*    margin-right: 50px;*/
+	max-width: 150px;
+    position: relative;
+
+    form{
+        margin: 0px;
+    }
+
+    input[type="text"], textarea, textarea.form-control {
+        background-color: transparent !important;
+        width: 130px;
+        border: none;
+        box-shadow: none;
+        color: #000;
+        border-bottom: 2px solid $color-3;
+        border-radius: 0px;
+        padding-right: 33px
+    }
+
+    .search--wrapper {
+        display: block;
+        position: relative;
+
+        a {
+            display: block;
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            width: 33px;
+            height: 33px;
+            text-align:center;
+            color: #fff;
+            line-height: 33px;
+        }
+        
+        input[name='q'] {
+            float: right;
+        }
+    }
+    
+    #advanced-search-no-results-message {
+        color: $text-color;
+    }
+}
+.search-risks .search-popup {
+    display: none;
+    padding: 8px;
+    background: #002;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: max-content;
+    max-width: 800px;
+    background: #6F6F6F;
+    border-radius: 6px;
+    vertical-align: middle;
+
+  }
+  .edit-subject{
+    display:none;
+  }
+
+   .search-popup i.fa.fa-search{
+    color: red;
+  }
+
+  .search-risks input[type="text"],
+   .search-risks textarea,
+    .search-risks textarea.form-control{
+      width: 214px;
+      padding: 10px;
+      background-color: white !important;
+      border: none;
+      margin-right: 36px;
+      margin-bottom: 0;
+    }
+
+    a#show-search-pop i.fa.fa-search{
+      margin-top: 24px;
+      color: white;
+      padding-right: 2px;
+      cursor: pointer;
+    }
+
+.help {
+    margin: 29px 5px 20px 20px;
+
+    .dropdown-toggle img {
+        width: 1.2em;
+        padding-right: 2px;
+        cursor: pointer;
+    }
+
+    a {
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .caret {
+        display: inline-block;
+        width: 0;
+        height: 0;
+        vertical-align: top;
+        border-top: 4px solid #fff;
+        margin-top: 12px;
+        margin-left: 5px;
+        margin-right: 5px;
+    }
+}
+
+#advanced-search-results-table-wrapper {
+
+    width: 100%;
+    max-height: 500px;
+    overflow-y: auto;
+    margin-top: 5px;
+    float: right;
+    
+    &::-webkit-scrollbar {
+        background: yellow;
+        width: 10px;
+    }
+    &::-webkit-scrollbar-track {
+        background: $scrollbar-track-color;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: $scrollbar-thumb-color;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: $scrollbar-thumb-hover-color;
+    }
+    
+    #advanced-search-results-table {
+
+        color: $text-color;
+
+        span.highlighted {
+            background-color: yellow;
+        }
+        
+        td {
+            padding: 1px 0px;
+        }
+        
+    }
+}
+
+li.dropdown-submenu.business-units a {
+	white-space: unset !important;
+	
+	&.selected {
+		padding-left: 5px !important;
+	}
+	
+	&.selected:before {
+		font-family: "Font Awesome 5 Free";
+		content: "\f058";
+		display: inline-block;
+		padding-right: 3px;
+		vertical-align: middle;
+		font-weight: 900;
+		color: green;
+	}
+	&.selected:hover:before {
+		color: white;
+	}
+}

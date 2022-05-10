@@ -1,0 +1,173 @@
+#edit-assessment-container{
+    #dataTable, .answers-table{
+        input{
+            max-width: none;
+            &[name="risk_score[]"]{
+                width: 63px;
+            }
+        }
+        td{
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+    }
+}
+
+.table.assessment-datatable{
+/*    margin-top: 13px;*/
+}
+
+.multiselect-container{
+    .multiselect-clear-filter{
+        display: none;
+    }
+    *{
+        max-width: none !important;
+    }
+    width: 100%;
+}
+
+table{
+    a.edit-btn, a.copy-btn, a.delete-btn{
+        display: inline !important;
+    }
+}
+
+#questionnaire-answers-container .answers-table .selectize-dropdown {
+/*    width: 180% !important;*/
+    left: auto !important;
+    right: 0px;
+}
+
+textarea[name='reject_comment'] {
+    resize: none;
+}
+
+.result-approved-message {
+    color: $color-5;
+
+    &:before {
+        margin-right: 5px;
+        font: normal normal normal 14px/1 'Font Awesome 5 Free' !important;
+        content: "\f058";
+    }
+}
+
+#questionnaire-audit-container
+{
+    .audit-fail{
+        background-color: red;
+        color: #fff;
+        text-align: center;
+    }
+
+    .audit-pass{
+        background-color: green;
+        color: #fff;
+        text-align: center;
+    }
+}
+
+#pending-risk-container{
+    .table{
+        .text-center{
+            text-align: center;
+        }
+        .text-right{
+            text-align: right;
+        }
+    }
+}
+
+#pending-risk-detail-modal .modal-body{
+    max-height: 90%;
+}
+
+#analysisform{
+    display: none;
+}
+
+#analysis-header, #analysis-content-container{
+    select{
+        margin-bottom: 0px;
+    }
+}
+
+#template-tabs{
+    position: relative;
+    margin-top:20px;
+    .tabs-nav{
+        margin-left: 70px;
+    }
+    .ui-tab{
+        float: left;
+        margin-left: 5px;
+        padding: 0 20px;
+        line-height: 40px;
+        background-color: #3a3a3a;
+        text-align: center;
+        a{
+            display: block;
+            color: #fff;
+            float: left;
+            margin: 0 5px;
+        }
+    }    
+    .ui-state-active{
+        background-color: #6f6f6f;
+    }
+    li{
+        input.tab-name{
+            width: 88px; 
+            display: none;
+            margin: 0px;
+        }
+    }
+    ul.sortable {
+        list-style: none;
+    }
+}
+#tab-add-btn {
+    width: 40px;
+    height: 40px;
+    background-color: #3a3a3a;
+    text-align: center;
+    color: #fff;
+    display: block;
+    line-height: 40px;
+    position: absolute;
+    left: 30px;
+}
+.selected_questions{
+    .list-header{
+        background-color: #6f6f6f;
+        color: #fff;
+    }
+    li{
+        display: block;
+        list-style-type: none;
+        clear: both;
+        background-color: #f5f5f5;
+        span{
+            line-height: 40px;
+            height: 45px;
+            padding:0 10px;
+            border: 1px solid #d1d3d4;
+            display: block;
+            float: left;
+        }
+        span.question_id{
+            width: 5%;
+            text-align: center
+        }
+        span.question_name{
+            width: 90%;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        span.question_open{
+            width: 5%;
+        }
+    }   
+} 
