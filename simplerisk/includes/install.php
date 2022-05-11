@@ -1820,15 +1820,24 @@ function installer_add_admin_user($user, $email, $name, $password)
     $stmt->execute();
     $teams = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
 
+
+    $stmt = $db->prepare("SELECT `team_id` FROM `{$sr_db}`.`user_to_team` WHERE user_id=:user_id ORDER BY `team_id`;");
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $teams_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+
     // Make sure that all teams are assigned to the user
     foreach ($teams as $team_id)
     {
-        // Ignoring next line detection as it does not describe the reason for the tainted argument
-        // @phan-suppress-next-line SecurityCheck-SQLInjection
-        $stmt = $db->prepare("INSERT INTO `{$sr_db}`.`user_to_team` VALUES (:user_id, :team_id);");
-        $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
-        $stmt->bindParam(":team_id", $team_id, PDO::PARAM_INT);
-        $stmt->execute();
+        if(!in_array($team_id, $teams_ids)){
+            // Ignoring next line detection as it does not describe the reason for the tainted argument
+            // @phan-suppress-next-line SecurityCheck-SQLInjection
+            $stmt = $db->prepare("INSERT INTO `{$sr_db}`.`user_to_team` VALUES (:user_id, :team_id);");
+            $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+            $stmt->bindParam(":team_id", $team_id, PDO::PARAM_INT);
+            $stmt->execute();
+        }
+
     }
 
     // Get the list of all permission values
