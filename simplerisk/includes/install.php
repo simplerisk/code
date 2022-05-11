@@ -1847,15 +1847,22 @@ function installer_add_admin_user($user, $email, $name, $password)
     $stmt->execute();
     $permissions = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
+    $stmt = $db->prepare("SELECT `permission_id` FROM `{$sr_db}`.`permission_to_user` WHERE user_id=:user_id;");
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $permissions_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+
     // Make sure all permissions are assigned to the user
     foreach($permissions as $permission_id)
     {
-        // Ignoring next line detection as it does not describe the reason for the tainted argument
-        // @phan-suppress-next-line SecurityCheck-SQLInjection
-        $stmt = $db->prepare("INSERT INTO `{$sr_db}`.`permission_to_user` VALUES (:permission_id, :user_id);");
-        $stmt->bindParam(":permission_id", $permission_id, PDO::PARAM_INT);
-        $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
-        $stmt->execute();
+        if(!in_array($permission_id, $permissions_ids)) {
+            // Ignoring next line detection as it does not describe the reason for the tainted argument
+            // @phan-suppress-next-line SecurityCheck-SQLInjection
+            $stmt = $db->prepare("INSERT INTO `{$sr_db}`.`permission_to_user` VALUES (:permission_id, :user_id);");
+            $stmt->bindParam(":permission_id", $permission_id, PDO::PARAM_INT);
+            $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+            $stmt->execute();
+        }
     }
 
     // Close the database connection
