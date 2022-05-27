@@ -2196,6 +2196,12 @@ $lang = array(
     'UpdatedBy'=>'Шинэчлэгдсэн',
     'AllowTeamToSeeDocuments'=>'Баг баримт бичгийг харахыг зөвшөөрнө үү',
     'AllowDocumentOwnersManagerToSeeDocuments' => 'Баримт бичиг эзэмшигчийн менежерт баримт бичгийг харахыг зөвшөөрөх',
+    'RisksAndIssues'=>'Эрсдэл ба асуудал',
+    'RiskTags' => 'Эрсдлийн шошго',
+    'Trend' => 'Тренд',
+    'Increasing' => 'Нэмэгдэх',
+    'Decreasing' => 'Багасаж байна',
+    'NoChange' => 'Өөрчлөлтгүй',
 
     '' => '',
 );

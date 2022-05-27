@@ -2089,6 +2089,20 @@ function update_document($document_id, $updated_by, $document_type, $document_na
         return false;
     }
 
+    // Check permission for update this document with team separation
+    $sql = "SELECT * FROM `documents` where id = :id AND {$where}; ";
+
+    // Check if the document exists
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(":id", $document_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $row = $stmt->fetch();
+    if(!$row[0]){
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyDocumentationPermission']));
+        return false;
+    }
+
+
     // Get the existing values for this document
     $stmt = $db->prepare("SELECT * FROM `documents` where id=:id;");
     $stmt->bindParam(":id", $document_id, PDO::PARAM_INT);
@@ -2218,9 +2232,25 @@ function delete_document($document_id, $version=null)
     
     // Open the database connection
     $db = db_open();
-//    echo $document_id."<br>";
-//    echo $version."<br>";
-//    exit;
+
+    if(team_separation_extra()){
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $where = get_user_teams_query_for_documents(false , false);
+    } else $where = " 1";
+
+    // Check permission for delete this document with team separation
+    $sql = "SELECT * FROM `documents` where id = :id AND {$where}; ";
+
+    // Check if the document exists
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(":id", $document_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $row = $stmt->fetch();
+    if(!$row[0]){
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoDeleteDocumentationPermission']));
+        return false;
+    }
+
     // Deletes documents only to have this version number
     if($version)
     {

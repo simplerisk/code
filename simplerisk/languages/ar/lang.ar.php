@@ -2196,6 +2196,12 @@ $lang = array(
     'UpdatedBy'=>'تم التحديث بواسطة',
     'AllowTeamToSeeDocuments'=>'السماح للفريق بالاطلاع على المستندات',
     'AllowDocumentOwnersManagerToSeeDocuments' => 'السماح لمدير مالك المستند بالاطلاع على المستندات',
+    'RisksAndIssues'=>'المخاطر والقضايا',
+    'RiskTags' => 'علامات المخاطر',
+    'Trend' => 'اتجاه',
+    'Increasing' => 'في ازدياد',
+    'Decreasing' => 'تناقص',
+    'NoChange' => 'لا تغيير',
 
     '' => '',
 );

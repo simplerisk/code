@@ -2196,6 +2196,12 @@ $lang = array(
     'UpdatedBy'=>'Актуализиран от',
     'AllowTeamToSeeDocuments'=>'Позволете на екипа да вижда документи',
     'AllowDocumentOwnersManagerToSeeDocuments' => 'Позволете на мениджъра на собственика на документа да вижда документите',
+    'RisksAndIssues'=>'Рискове и проблеми',
+    'RiskTags' => 'Етикети за риск',
+    'Trend' => 'Тенденция',
+    'Increasing' => 'Повишаване на',
+    'Decreasing' => 'Намаляване',
+    'NoChange' => 'Няма промяна',
 
     '' => '',
 );

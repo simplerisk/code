@@ -2196,6 +2196,12 @@ $lang = array(
     'UpdatedBy'=>'द्वारा अपडेट',
     'AllowTeamToSeeDocuments'=>'टीम को दस्तावेज़ देखने की अनुमति दें',
     'AllowDocumentOwnersManagerToSeeDocuments' => 'दस्तावेज़ स्वामी के प्रबंधक को दस्तावेज़ देखने की अनुमति दें',
+    'RisksAndIssues'=>'जोखिम और मुद्दे',
+    'RiskTags' => 'जोखिम टैग',
+    'Trend' => 'रुझान',
+    'Increasing' => 'की बढ़ती',
+    'Decreasing' => 'घटाना',
+    'NoChange' => 'कोई परिवर्तन नहीं होता है',
 
     '' => '',
 );

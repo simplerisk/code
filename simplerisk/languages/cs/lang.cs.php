@@ -2196,6 +2196,12 @@ $lang = array(
     'UpdatedBy'=>'Aktualizováno uživatelem',
     'AllowTeamToSeeDocuments'=>'Umožněte týmu vidět dokumenty',
     'AllowDocumentOwnersManagerToSeeDocuments' => 'Umožněte správci vlastníka dokumentů prohlížet dokumenty',
+    'RisksAndIssues'=>'Rizika a problémy',
+    'RiskTags' => 'Risk Tagy',
+    'Trend' => 'Trend',
+    'Increasing' => 'Vzrůstající',
+    'Decreasing' => 'Klesající',
+    'NoChange' => 'Žádná změna',
 
     '' => '',
 );

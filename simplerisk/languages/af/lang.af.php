@@ -2196,6 +2196,12 @@ $lang = array(
     'UpdatedBy'=>'Opgedateer deur',
     'AllowTeamToSeeDocuments'=>'Laat span toe om dokumente te sien',
     'AllowDocumentOwnersManagerToSeeDocuments' => 'Laat dokumenteienaar se bestuurder toe om dokumente te sien',
+    'RisksAndIssues'=>'Risiko\'s en Kwessies',
+    'RiskTags' => 'Risiko-etikette',
+    'Trend' => 'Tendens',
+    'Increasing' => 'Toenemende',
+    'Decreasing' => 'Afnemend',
+    'NoChange' => 'Geen verandering',
 
     '' => '',
 );

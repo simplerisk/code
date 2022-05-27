@@ -2333,6 +2333,160 @@ function get_risks_and_assets_rows($report=0, $sort_by=0, $asset_tags_in_array, 
     db_close($db);
     return $rows;
 }
+/************************************
+ * FUNCTION: RISKS AND ISSUES TABLE *
+ ************************************/
+function risks_and_issues_table($risk_tags, $start_date, $end_date)
+{
+    global $lang;
+    global $escaper;
+
+    $risk_levels = get_risk_levels();
+    echo "<table class=\"\" style='table-layout:fixed;'>\n";
+    echo "<tr>\n";
+    echo "<td style='width:100px; font-weight:bold;'>".$escaper->escapeHtml($lang['Trend'])." : </td>";
+    $trend_lavel = $escaper->escapeHtml($lang['Increasing'])." &#8593; ; ";
+    $trend_lavel .= $escaper->escapeHtml($lang['Decreasing'])." &#8595; ; ";
+    $trend_lavel .= $escaper->escapeHtml($lang['NoChange'])." &#8596; ; ";
+    echo "<td >".$trend_lavel."</td>";
+    echo "<tr>\n";
+    echo "<td style='width:100px; font-weight:bold;'>".$escaper->escapeHtml($lang['Status'])." : </td>";
+    $status_lavel = "";
+    foreach (array_reverse($risk_levels) as $level) {
+        $status_lavel .= "<span class='risk-color1' style='width:20px; height: 20px; position: relative; display:block; float:left; border: 1px solid; background-color:".$level['color']."'></span>";
+        $status_lavel .= "<span style='position: static; display:block; float:left; margin: 0 20px 0 10px'>(".$escaper->escapeHtml($level['display_name']). ");</span>";
+    }
+    $status_lavel .= "<span class='risk-color1' style='width:20px; height: 20px; position: relative; display:block; float:left; border: 1px solid; background-color: white'></span>";
+    $status_lavel .= "<span style='position: static; display:block; float:left; margin: 0 20px 0 10px'>(".$escaper->escapeHtml($lang['Insignificant']). ");</span>";
+    echo "<td >".$status_lavel."</td>";
+    echo "<tr>\n";
+    echo "</table>\n";
+
+    $rows = get_risks_and_issues_rows($risk_tags, $start_date, $end_date);
+    echo "<table class=\"table table-bordered table-condensed\" style='table-layout:fixed;'>\n";
+    echo "<thead>\n";
+    echo "<tr>\n";
+    echo "<th width='10%'>".$escaper->escapeHtml($lang['Category'])."</th>";
+    echo "<th width='8%'>".$escaper->escapeHtml($lang['Status'])."</th>";
+    echo "<th width='8%'>".$escaper->escapeHtml($lang['Trend'])."</th>";
+    echo "<th width='74%'>".$escaper->escapeHtml($lang['Details'])."</th>";
+    echo "</thead>\n";
+    $categories = [];
+    foreach($rows as $risk) {
+        $categories[$risk['category']][] = $risk;
+    }
+    foreach($rows as $index => $risk) {
+        $color = get_risk_color($risk['residual_risk']);
+        $risk_id = $risk['id'] + 1000;
+        $trend = $risk['residual_risk_start'] . " == " . $risk['residual_risk_end'];
+        if($risk['residual_risk_start'] == $risk['residual_risk_end']) $trend = "&#8596;";
+        else if($risk['residual_risk_start'] < $risk['residual_risk_end']) $trend = "&#8593;";
+        else $trend = "&#8595;";
+        $details = "";
+        $title = "<h3>". $risk_id . " : " . $escaper->escapeHtml(try_decrypt($risk['subject'])) . "</h3>";
+        $title = "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) . "\" target=\"_blank\">".$title."</a>";
+        $details = $title;
+        $details .= "<ul>";
+        if($risk['assessment']) {
+            $details .= "<li>".try_decrypt($risk['assessment'])."</li>";
+        }
+        if($risk['notes']) {
+            $details .= "<li>".try_decrypt($risk['notes'])."</li>";
+        }
+        $comments = get_comments($risk_id, false);
+        if(count($comments) > 0){
+            foreach ($comments as $comment) {
+                $details .= "<li>".format_date($comment['date'])." [ ".$comment['name']." ] : ".try_decrypt($comment['comment'])."</li>";
+            }
+        }
+        $details .= "</ul>";
+        echo "<tr>\n";
+        if($index == 0 || $rows[$index-1]['category'] != $risk['category']){
+            echo "<td rowspan='".count($categories[$risk['category']])."'>".$escaper->escapeHtml($risk['category_name'])."</td>";
+        } 
+        echo "<td style='background-color:" .$escaper->escapeHtml($color). "'></td>";
+        echo "<td style='text-align:center; font-weight:bold; font-size: 30px;'>".$trend."</td>";
+        echo "<td style='word-wrap: break-word;'>".$details."</td>";
+        echo "</tr>\n";
+    }
+    echo "</tr>\n";
+    echo "</table>\n";
+    exit;
+}
+/************************************************
+ * FUNCTION: RETURN RISKS AND ISSUES REPORT SQL *
+ ************************************************/
+function get_risks_and_issues_rows($risk_tags_in_array, $start_date, $end_date)
+{
+    global $lang;
+    if($risk_tags_in_array == "all") {
+        $tags = get_options_from_table("asset_tags");
+        $risk_tags_in_array = array_map(function($tag){ return $tag["value"];}, $tags);
+        $risk_tags_in_array[] = "-1";
+    }
+    $risk_tags = implode(",", $risk_tags_in_array);
+
+    // Query the database
+    $db = db_open();
+
+    $where_in_string = "WHERE 1";
+    $bind_params = [];
+    if($risk_tags){
+        $wheres = [];
+        $wheres[] = " FIND_IN_SET(t.tag_id, :risk_tags) ";
+        $bind_params[":risk_tags"] = $risk_tags;
+        if(in_array(-1, $risk_tags_in_array)){
+            $wheres[] = " t.tag_id IS NULL ";
+        }
+        $where_in_string .= " AND (" . implode(" OR", $wheres) . " ) ";
+    }
+    $start_date = date("Y-m-d", strtotime($start_date));
+    $end_date = date("Y-m-d", strtotime($end_date));
+    // If team separation is enabled
+    if (team_separation_extra())
+    {
+        // Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+        $where_in_string .= " AND ".get_user_teams_query("a");
+    } 
+    $sql = "
+        SELECT 
+            a.*, b.calculated_risk, c.name category_name,
+            ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2) AS residual_risk,
+            IFNULL(rsh_s.residual_risk, rsh_e.residual_risk) residual_risk_start,
+            rsh_e.residual_risk residual_risk_end
+        FROM risks a
+        LEFT JOIN risk_scoring b ON a.id = b.id
+        LEFT JOIN category c ON a.category = c.value
+        LEFT JOIN tags_taggees t ON a.id = t.taggee_id and type = 'risk'
+        LEFT JOIN mitigations p ON a.id = p.risk_id
+        LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id 
+        LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0 
+        LEFT JOIN risk_to_additional_stakeholder rtas ON a.id=rtas.risk_id 
+        LEFT JOIN risk_to_team rtt on a.id = rtt.risk_id
+        LEFT JOIN residual_risk_scoring_history rsh_s ON rsh_s.id = 
+            (SELECT id FROM residual_risk_scoring_history sh WHERE sh.risk_id = a.id AND DATE(sh.last_update) >= '{$start_date}' ORDER BY sh.last_update ASC LIMIT 1)
+        LEFT JOIN residual_risk_scoring_history rsh_e ON rsh_e.id = 
+            (SELECT id FROM residual_risk_scoring_history sh WHERE sh.risk_id = a.id AND DATE(sh.last_update) <= '{$end_date}' ORDER BY sh.last_update DESC LIMIT 1)
+        {$where_in_string}
+        GROUP BY
+            a.id
+        ORDER By a.category, ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2) DESC, a.submission_date
+    ";
+    $stmt = $db->prepare($sql);
+    foreach($bind_params as $key => $value){
+        $stmt->bindParam($key, $value, PDO::PARAM_STR);
+    }
+    $stmt->execute();
+
+    // Store the results in the rows array
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database
+    db_close($db);
+    return $rows;
+}
 
 /*********************************************
  * FUNCTION: GET GROUP_NAME FOR DYNAMIC RISK *
@@ -3161,59 +3315,45 @@ function risks_query_select($column_filters=[])
         p.mitigation_percent,
         ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2) AS residual_risk,
 
-        CASE 
-            WHEN DATEDIFF(NOW(), a.submission_date) < 30 THEN '--'
-            WHEN NOT(ISNULL(sh_30.calculated_risk)) THEN sh_30.calculated_risk
-            WHEN NOT(ISNULL(sh_60.calculated_risk)) THEN sh_60.calculated_risk
-            WHEN NOT(ISNULL(sh_90.calculated_risk)) THEN sh_90.calculated_risk
-            ELSE b.calculated_risk
+       CASE 
+            WHEN DATEDIFF(NOW(), `a`.`submission_date`) < 30 THEN '--'
+            WHEN NOT(ISNULL(`rsh_lua_30`.`calculated_risk`)) THEN `rsh_lua_30`.`calculated_risk`
+            WHEN NOT(ISNULL(`rsh_lua_60`.`calculated_risk`)) THEN `rsh_lua_60`.`calculated_risk`
+            WHEN NOT(ISNULL(`rsh_lua_90`.`calculated_risk`)) THEN `rsh_lua_90`.`calculated_risk`
+            ELSE `b`.`calculated_risk`
         END AS calculated_risk_30,
         CASE 
-            WHEN DATEDIFF(NOW(), a.submission_date) < 60 THEN '--'
-            WHEN NOT(ISNULL(sh_60.calculated_risk)) THEN sh_60.calculated_risk
-            WHEN NOT(ISNULL(sh_90.calculated_risk)) THEN sh_90.calculated_risk
-            ELSE b.calculated_risk
+            WHEN DATEDIFF(NOW(), `a`.`submission_date`) < 60 THEN '--'
+            WHEN NOT(ISNULL(`rsh_lua_60`.`calculated_risk`)) THEN `rsh_lua_60`.`calculated_risk`
+            WHEN NOT(ISNULL(`rsh_lua_90`.`calculated_risk`)) THEN `rsh_lua_90`.`calculated_risk`
+            ELSE `b`.`calculated_risk`
         END AS calculated_risk_60,
         CASE 
-            WHEN DATEDIFF(NOW(), a.submission_date) < 90 THEN '--'
-            WHEN NOT(ISNULL(sh_90.calculated_risk)) THEN sh_90.calculated_risk
-            ELSE b.calculated_risk
-        END AS calculated_risk_90,
+            WHEN DATEDIFF(NOW(), `a`.`submission_date`) < 90 THEN '--'
+            WHEN NOT(ISNULL(`rsh_lua_90`.`calculated_risk`)) THEN `rsh_lua_90`.`calculated_risk`
+            ELSE `b`.`calculated_risk`
+        END AS calculated_risk_90,        
         CASE 
-            WHEN DATEDIFF(NOW(), a.submission_date) < 30 THEN '--'
-            WHEN NOT(ISNULL(rsh_30.residual_risk)) THEN rsh_30.residual_risk
-            WHEN NOT(ISNULL(rsh_60.residual_risk)) THEN rsh_60.residual_risk
-            WHEN NOT(ISNULL(rsh_90.residual_risk)) THEN rsh_90.residual_risk
-            ELSE ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2)
+            WHEN DATEDIFF(NOW(), `a`.`submission_date`) < 30 THEN '--'
+            WHEN NOT(ISNULL(`rrsh_lua_30`.`residual_risk`)) THEN `rrsh_lua_30`.`residual_risk`
+            WHEN NOT(ISNULL(`rrsh_lua_60`.`residual_risk`)) THEN `rrsh_lua_60`.`residual_risk`
+            WHEN NOT(ISNULL(`rrsh_lua_90`.`residual_risk`)) THEN `rrsh_lua_90`.`residual_risk`
+            ELSE ROUND((`b`.`calculated_risk` - (`b`.`calculated_risk` * GREATEST(IFNULL(`p`.`mitigation_percent`, 0), IFNULL(MAX(`fc`.`mitigation_percent`), 0))  / 100)), 2)
         END AS residual_risk_30,
         CASE 
-            WHEN DATEDIFF(NOW(), a.submission_date) < 60 THEN '--'
-            WHEN NOT(ISNULL(rsh_60.residual_risk)) THEN rsh_60.residual_risk
-            WHEN NOT(ISNULL(rsh_90.residual_risk)) THEN rsh_90.residual_risk
-            ELSE ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2)
+            WHEN DATEDIFF(NOW(), `a`.`submission_date`) < 60 THEN '--'
+            WHEN NOT(ISNULL(`rrsh_lua_60`.`residual_risk`)) THEN `rrsh_lua_60`.`residual_risk`
+            WHEN NOT(ISNULL(`rrsh_lua_90`.`residual_risk`)) THEN `rrsh_lua_90`.`residual_risk`
+            ELSE ROUND((`b`.`calculated_risk` - (`b`.`calculated_risk` * GREATEST(IFNULL(`p`.`mitigation_percent`, 0), IFNULL(MAX(`fc`.`mitigation_percent`), 0))  / 100)), 2)
         END AS residual_risk_60,
         CASE 
-            WHEN DATEDIFF(NOW(), a.submission_date) < 90 THEN '--'
-            WHEN NOT(ISNULL(rsh_90.residual_risk)) THEN rsh_90.residual_risk
-            ELSE ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2)
+            WHEN DATEDIFF(NOW(), `a`.`submission_date`) < 90 THEN '--'
+            WHEN NOT(ISNULL(`rrsh_lua_90`.`residual_risk`)) THEN `rrsh_lua_90`.`residual_risk`
+            ELSE ROUND((`b`.`calculated_risk` - (`b`.`calculated_risk` * GREATEST(IFNULL(`p`.`mitigation_percent`, 0), IFNULL(MAX(`fc`.`mitigation_percent`), 0))  / 100)), 2)
         END AS residual_risk_90,
 
-        (
-            SELECT
-                GROUP_CONCAT(DISTINCT rc.name SEPARATOR ',')
-            FROM
-                risk_catalog rc
-            WHERE
-                FIND_IN_SET(rc.id, a.risk_catalog_mapping) > 0
-        ) AS risk_mapping,
-        (
-            SELECT
-                GROUP_CONCAT(DISTINCT tc.name SEPARATOR ',')
-            FROM
-                threat_catalog tc
-            WHERE
-                FIND_IN_SET(tc.id, a.threat_catalog_mapping) > 0
-        ) AS threat_mapping,
+        GROUP_CONCAT(DISTINCT `rc`.`name` SEPARATOR ',') AS risk_mapping,
+        GROUP_CONCAT(DISTINCT `tc`.`name` SEPARATOR ',') AS threat_mapping,
 
         (
             SELECT
@@ -3369,8 +3509,8 @@ function risks_query_select($column_filters=[])
     $contributing_risks = get_contributing_risks();
     foreach($contributing_risks as $contributing_risk){
         $id = $contributing_risk['id'];
-        $query .= "CONCAT('[ ',cs_impacts_{$id}.value,' ] ', cs_impacts_{$id}.name) AS Contributing_Impact_{$id}, \n";
-        $query .= "cs_impacts_{$id}.value AS Contributing_Impact_{$id}_value, \n";
+        $query .= "CONCAT('[ ',`cri_data_{$id}`.`value`,' ] ', `cri_data_{$id}`.`name`) AS Contributing_Impact_{$id}, \n";
+        $query .= "`cri_data_{$id}`.`value` AS Contributing_Impact_{$id}_value, \n";
     }
     $query .= "CONCAT('[ ',cr_likelihood.value,' ] ', cr_likelihood.name) AS Contributing_Likelihood, cr_likelihood.value AS Contributing_Likelihood_value";
 
@@ -3603,18 +3743,15 @@ function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName
             LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
             LEFT JOIN mitigation_accept_users mau ON a.id=mau.risk_id
             LEFT JOIN source v FORCE INDEX(PRIMARY) ON a.source = v.value
-            LEFT JOIN risk_scoring_history sh_30 ON sh_30.id = 
-                (SELECT id FROM risk_scoring_history sh WHERE sh.risk_id = a.id AND DATEDIFF(NOW(), sh.last_update) >= 30 AND DATEDIFF(NOW(), sh.last_update) < 60 ORDER BY sh.last_update DESC LIMIT 1)
-            LEFT JOIN risk_scoring_history sh_60 ON sh_60.id = 
-                (SELECT id FROM risk_scoring_history sh WHERE sh.risk_id = a.id AND DATEDIFF(NOW(), sh.last_update) >= 60 AND DATEDIFF(NOW(), sh.last_update) < 90 ORDER BY sh.last_update DESC LIMIT 1)
-            LEFT JOIN risk_scoring_history sh_90 ON sh_90.id = 
-                (SELECT id FROM risk_scoring_history sh WHERE sh.risk_id = a.id AND DATEDIFF(NOW(), sh.last_update) >= 90 ORDER BY sh.last_update DESC LIMIT 1)
-            LEFT JOIN residual_risk_scoring_history rsh_30 ON rsh_30.id = 
-                (SELECT id FROM residual_risk_scoring_history sh WHERE sh.risk_id = a.id AND DATEDIFF(NOW(), sh.last_update) >= 30 AND DATEDIFF(NOW(), sh.last_update) < 60 ORDER BY sh.last_update DESC LIMIT 1)
-            LEFT JOIN residual_risk_scoring_history rsh_60 ON rsh_60.id = 
-                (SELECT id FROM residual_risk_scoring_history sh WHERE sh.risk_id = a.id AND DATEDIFF(NOW(), sh.last_update) >= 60 AND DATEDIFF(NOW(), sh.last_update) < 90 ORDER BY sh.last_update DESC LIMIT 1)
-            LEFT JOIN residual_risk_scoring_history rsh_90 ON rsh_90.id = 
-                (SELECT id FROM residual_risk_scoring_history sh WHERE sh.risk_id = a.id AND DATEDIFF(NOW(), sh.last_update) >= 90 ORDER BY sh.last_update DESC LIMIT 1)
+
+            LEFT JOIN `TEMP_rsh_last_update_age` rsh_lua_30 ON `rsh_lua_30`.`risk_id` = `a`.`id` AND `rsh_lua_30`.`age_range` = '30-60'
+            LEFT JOIN `TEMP_rsh_last_update_age` rsh_lua_60 ON `rsh_lua_60`.`risk_id` = `a`.`id` AND `rsh_lua_60`.`age_range` = '60-90'
+            LEFT JOIN `TEMP_rsh_last_update_age` rsh_lua_90 ON `rsh_lua_90`.`risk_id` = `a`.`id` AND `rsh_lua_90`.`age_range` = '90+'
+
+            LEFT JOIN `TEMP_rrsh_last_update_age` rrsh_lua_30 ON `rrsh_lua_30`.`risk_id` = `a`.`id` AND `rrsh_lua_30`.`age_range` = '30-60'
+            LEFT JOIN `TEMP_rrsh_last_update_age` rrsh_lua_60 ON `rrsh_lua_60`.`risk_id` = `a`.`id` AND `rrsh_lua_60`.`age_range` = '60-90'
+            LEFT JOIN `TEMP_rrsh_last_update_age` rrsh_lua_90 ON `rrsh_lua_90`.`risk_id` = `a`.`id` AND `rrsh_lua_90`.`age_range` = '90+'
+
             LEFT JOIN risk_catalog rc ON FIND_IN_SET(rc.id, a.risk_catalog_mapping) > 0
             LEFT JOIN threat_catalog tc ON FIND_IN_SET(tc.id, a.threat_catalog_mapping) > 0
             LEFT JOIN risk_grouping rg ON rc.grouping = rg.value
@@ -3646,10 +3783,11 @@ function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName
     }
 
     $contributing_risks = get_contributing_risks();
-    foreach($contributing_risks as $contributing_risk){
+    foreach($contributing_risks as $contributing_risk) {
         $id = $contributing_risk['id'];
-        $query .= " LEFT JOIN risk_scoring_contributing_impacts rs_impacts_{$id} FORCE INDEX(rsci_index) ON a.id = rs_impacts_{$id}.risk_scoring_id AND rs_impacts_{$id}.contributing_risk_id = {$id}\n";
-        $query .= " LEFT JOIN contributing_risks_impact cs_impacts_{$id} FORCE INDEX(cri_index) ON cs_impacts_{$id}.contributing_risks_id = rs_impacts_{$id}.contributing_risk_id AND cs_impacts_{$id}.value = rs_impacts_{$id}.impact \n";
+        $query .= "
+            LEFT JOIN `TEMP_contributing_risk_impact_data` cri_data_{$id} FORCE INDEX(PRIMARY) ON `cri_data_{$id}`.`risk_scoring_id` = `a`.`id` AND `cri_data_{$id}`.`contributing_risks_id` = {$id}
+        ";
     }
 
     $query .= " LEFT JOIN contributing_risks_likelihood cr_likelihood FORCE INDEX(crl_index) ON cr_likelihood.value = b.Contributing_Likelihood \n";
@@ -3846,18 +3984,20 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
             $sort_name = "none";
             break;
         default:
-            if(stripos($orderColumnName, "custom_field_") !== false){
-                $sort_name = " {$orderColumnName}.value {$orderDir} ";
-            } else if(stripos($orderColumnName, "Contributing_Impact_") !== false) {
-                $impact_id = str_ireplace("Contributing_Impact_", "", $orderColumnName);
-                $sort_name = " cs_impacts_{$impact_id}.name {$orderDir} ";
-            } else if(stripos($orderColumnName, "CLASSIC_") !== false || stripos($orderColumnName, "CVSS_") !== false || stripos($orderColumnName, "DREAD_") !== false || stripos($orderColumnName, "OWASP_") !== false || stripos($orderColumnName, "Contributing_") !== false) {
-                $sort_name = " b.{$orderColumnName} {$orderDir} ";
-            } else if(stripos($orderColumnName, "calculated_risk_") !== false || stripos($orderColumnName, "residual_risk_") !== false) {
-                $sort_name = " {$orderColumnName} {$orderDir} ";
-            } else {
-                $orderColumnName = sqli_filter($orderColumnName);
-                $sort_name = "{$orderColumnName} {$orderDir}";
+            if (preg_match('/^[A-Za-z0-9_]+$/',$orderColumnName)){
+                if(stripos($orderColumnName, "custom_field_") !== false){
+                    $sort_name = " `{$orderColumnName}`.value {$orderDir} ";
+                } else if(stripos($orderColumnName, "Contributing_Impact_") !== false) {
+                    $impact_id = str_ireplace("Contributing_Impact_", "", $orderColumnName);
+                    $sort_name = " cs_impacts_{$impact_id}.name {$orderDir} ";
+                } else if(stripos($orderColumnName, "CLASSIC_") !== false || stripos($orderColumnName, "CVSS_") !== false || stripos($orderColumnName, "DREAD_") !== false || stripos($orderColumnName, "OWASP_") !== false || stripos($orderColumnName, "Contributing_") !== false) {
+                    $sort_name = " b.`{$orderColumnName}` {$orderDir} ";
+                } else if(stripos($orderColumnName, "calculated_risk_") !== false || stripos($orderColumnName, "residual_risk_") !== false) {
+                    $sort_name = "`{$orderColumnName}` {$orderDir} ";
+                } else {
+                    $orderColumnName = sqli_filter($orderColumnName);
+                    $sort_name = "`{$orderColumnName}` {$orderDir}";
+                }
             }
             break;
     }
@@ -3878,6 +4018,120 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
         $filter_query .= $separation_query;
     }
 
+    /*
+		Added temporary tables to replace some joins that had an impact on performance.
+		
+		`rrsh_last_update_age_base` - gathering the base data of `residual_risk_scoring_history`and adding additional information like the days since
+		the last update(age) and in which age range the history is in.
+		`rrsh_last_update_age` - Using the `rrsh_last_update_age_base` table's data but only keeps the latest entry in each range for each risk
+
+		`rsh_last_update_age_base` and `rsh_last_update_age` does the same with the `risk_scoring_history` data
+
+		`risk_scoring_history` - created to replace joining `contributing_risks_impact` and `risk_scoring_contributing_impacts` tables to reduce
+		main query's runtime		
+	*/
+    $temp_tables = "
+        /*Drop pre-existing 'temporary' tables.*/
+        DROP TABLE IF EXISTS `TEMP_rrsh_last_update_age`;
+        DROP TABLE IF EXISTS `TEMP_rsh_last_update_age`;
+        DROP TABLE IF EXISTS `TEMP_contributing_risk_impact_data`;
+        
+        /*(4) Create the 'temporary' table for data from the `residual_risk_scoring_history` table*/
+        CREATE TABLE `TEMP_rrsh_last_update_age`(
+            PRIMARY KEY(`id`),
+            INDEX (`risk_id`),
+            INDEX (`age_range`)
+        )
+        /*(2b) Create the CTE to be used in the table's select*/
+        WITH `rrsh_last_update_age_base` AS(
+            /*(2a) Add the information on what age range it's in*/
+            SELECT
+                CASE
+                    WHEN `lua`.`age` < 30 THEN '-30'
+                    WHEN `lua`.`age` >= 30 AND `lua`.`age` < 60 THEN '30-60'
+                    WHEN `lua`.`age` >= 60 AND `lua`.`age` < 90 THEN '60-90'
+                    WHEN `lua`.`age` > 90 THEN '90+'
+                END AS age_range,
+                `lua`.*
+            FROM 
+                (/*(1) Select the base data from the `residual_risk_scoring_history` table plus calculate the age of each entry*/
+                    SELECT
+                        `sh`.`id` AS id,
+                        `sh`.`risk_id` AS risk_id,
+                        `sh`.`last_update` AS last_update,
+                        DATEDIFF(NOW(), `sh`.`last_update`) AS age,
+                        `sh`.`residual_risk` AS residual_risk
+                    FROM
+                        `residual_risk_scoring_history` sh
+                    GROUP BY
+                        `sh`.`last_update`
+                ) lua
+        )
+        /*(3) Select the latest entry for each age range*/
+        SELECT
+            `lua`.*
+        FROM
+            `rrsh_last_update_age_base` lua
+            LEFT JOIN `rrsh_last_update_age_base` lua2 ON `lua`.`risk_id` = `lua2`.`risk_id` AND `lua`.`age_range` = `lua2`.`age_range` AND `lua`.`last_update` < `lua2`.`last_update`
+        WHERE
+            `lua2`.`id` IS NULL;
+        
+        /*(4) Create the 'temporary' table for data from the `risk_scoring_history` table*/
+        CREATE TABLE `TEMP_rsh_last_update_age`(
+            PRIMARY KEY(`id`),
+            INDEX (`risk_id`),
+            INDEX (`age_range`)
+        )
+        /*(2b) Create the CTE to be used in the table's select*/
+        WITH `rsh_last_update_age_base` AS (
+            /*(2a) Add the information on what age range it's in*/
+            SELECT
+                CASE
+                    WHEN `lua`.`age` < 30 THEN '-30'
+                    WHEN `lua`.`age` >= 30 AND `lua`.`age` < 60 THEN '30-60'
+                    WHEN `lua`.`age` >= 60 AND `lua`.`age` < 90 THEN '60-90'
+                    WHEN `lua`.`age` > 90 THEN '90+'
+                END AS age_range,
+                `lua`.*
+            FROM 
+                (/*(1) Select the base data from the `residual_risk_scoring_history` table plus calculate the age of each entry*/
+                    SELECT
+                        `sh`.`id` AS id,
+                        `sh`.`risk_id` AS risk_id,
+                        `sh`.`last_update` AS last_update,
+                        DATEDIFF(NOW(), `sh`.`last_update`) AS age,
+                        `sh`.`calculated_risk` AS calculated_risk
+                    FROM
+                        `risk_scoring_history` sh
+                    GROUP BY
+                        `sh`.`last_update`
+                ) lua
+        )
+        /*(3) Select the latest entry for each age range*/
+        SELECT
+            `lua`.*
+        FROM
+            `rsh_last_update_age_base` lua
+            LEFT JOIN `rsh_last_update_age_base` lua2 ON `lua`.`risk_id` = `lua2`.`risk_id` AND `lua`.`age_range` = `lua2`.`age_range` AND `lua`.`last_update` < `lua2`.`last_update`
+        WHERE
+            `lua2`.`id` IS NULL;
+
+        /*Create the 'temporary' table for data from the `risk_scoring_contributing_impacts` and `contributing_risks_impact` tables*/
+        CREATE TABLE `TEMP_contributing_risk_impact_data`(
+            PRIMARY KEY(`risk_scoring_id`, `contributing_risks_id`),
+            INDEX (`risk_scoring_id`),
+            INDEX (`contributing_risks_id`)
+        )
+        SELECT
+            `rs_impacts`.`risk_scoring_id`,
+            `cs_impacts`.`contributing_risks_id`,
+            `cs_impacts`.`value`,
+            `cs_impacts`.`name`
+        FROM
+        	`risk_scoring_contributing_impacts` rs_impacts
+          	LEFT JOIN `contributing_risks_impact` cs_impacts ON `cs_impacts`.`value` = `rs_impacts`.`impact` AND `cs_impacts`.`contributing_risks_id` = `rs_impacts`.`contributing_risk_id`;
+    ";
+    
     /**
     * Query Type = 1
     *   Return total count
@@ -3913,8 +4167,9 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
     ;
 
     return [
-         $query,
-         $group_name
+        $query,
+        $group_name,
+        $temp_tables
     ];
 }
 
@@ -4368,13 +4623,17 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
     }
     $query_type = get_query_type($need_total_count);
     
-    list($query, $group_name) = make_full_risks_sql($query_type, $status, $sort, $group, $column_filters, $group_value_from_db, $custom_query, $bind_params, $having_query, $orderColumnName, $orderDir, $risks_by_team, $teams, $owners, $ownersmanagers);
+    list($query, $group_name, $temporary_tables) = make_full_risks_sql($query_type, $status, $sort, $group, $column_filters, $group_value_from_db, $custom_query, $bind_params, $having_query, $orderColumnName, $orderDir, $risks_by_team, $teams, $owners, $ownersmanagers);
 
     $start = (int)$start;
     $length = (int)$length;
     
     // Query the database
     $db = db_open();
+
+    // Have to separately create the required temporary tables
+    $stmt = $db->prepare($temporary_tables);
+    $stmt->execute();
 
     $stmt = $db->prepare($query);
 
@@ -4733,10 +4992,14 @@ function get_dynamicrisk_unique_column_data($status, $group, $group_value_from_d
 {
     global $lang;
 
-    list($query, $group_name) = make_full_risks_sql($query_type=3, $status, -1, $group, [], $group_value_from_db, $custom_query, $bind_params, "");
+    list($query, $group_name, $temporary_tables) = make_full_risks_sql($query_type=3, $status, -1, $group, [], $group_value_from_db, $custom_query, $bind_params, "");
 
     // Query the database
     $db = db_open();
+
+    // Have to separately create the required temporary tables
+    $stmt = $db->prepare($temporary_tables);
+    $stmt->execute();
 
     $stmt = $db->prepare($query);
     
@@ -7347,6 +7610,8 @@ function display_control_maturity_spider_chart($framework_id)
 	$chart->chart->renderTo = "control_maturity_spider_chart";
 	$chart->chart->polar = true;
 	$chart->chart->type = "line";
+    $chart->chart->width = 1000;
+    $chart->chart->height = 1000;
 	$chart->title->text = "Current vs Desired Maturity by Control Family";
 	$chart->title->x = -80;
 	$chart->pane->size = "80%";
@@ -7360,8 +7625,8 @@ function display_control_maturity_spider_chart($framework_id)
 	$chart->yAxis->tickInterval = 1;
 	$chart->tooltip->shared = true;
 	$chart->tooltip->pointFormat = '<span style="color:{series.color}">{series.name}: <b>{point.y}</b><br/>';
-	$chart->legend->align = "right";
-	$chart->legend->verticalAlign = "middle";
+	$chart->legend->align = "center";
+	$chart->legend->verticalAlign = "top";
 	$chart->legend->layout = "vertical";
 
 	// Draw the Current Maturity series
@@ -7373,12 +7638,6 @@ function display_control_maturity_spider_chart($framework_id)
 	$chart->series[1]->name = $escaper->escapeHtml($lang['DesiredControlMaturity']);
 	$chart->series[1]->data = empty($categories_desired_maturity_average) ? [] : $categories_desired_maturity_average;
 	$chart->series[1]->pointPlacement = "on";
-
-	$chart->responsive->rules->condition->maxWidth = 500;
-	$chart->responsive->rules->chartOptions->legend->align = "center";
-	$chart->responsive->rules->chartOptions->legend->verticalAlign = "bottom";
-	$chart->responsive->rules->chartOptions->legend->layout = "horizontal";
-	$chart->responsive->rules->chartOptions->pane->size = "70%";
 
 	$chart->credits->enabled = false;
 

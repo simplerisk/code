@@ -19,23 +19,37 @@ $escaper = new Laminas\Escaper\Escaper('utf-8');
  *************************************/
 function simplerisk_health_check()
 {
-        // Set the default socket timeout for healthchecks to 5 seconds
-        ini_set('default_socket_timeout', 5);
+	global $escaper;
+
+	// Set the time limit on the health check to 5 minutes
+	set_time_limit(300);
+
+	// Set the default socket timeout for healthchecks to 5 seconds
+	ini_set('default_socket_timeout', 5);
+
+	// Get the SimpleRisk instance ID
+	$instance_id = get_setting("instance_id");
+
+	// Get the OS version information
+	$os_version = getOSInformation();
+
+	// Get the database version
+	$db_version = get_database_version();
 
 	// Get the current and latest versions
-        $current_app_version = current_version("app");
-        $latest_app_version = latest_version("app");
-        $current_db_version = current_version("db");
-        $latest_db_version = latest_version("db");
+	$current_app_version = current_version("app");
+	$latest_app_version = latest_version("app");
+	$current_db_version = current_version("db");
+	$latest_db_version = latest_version("db");
 
 	// Check that we are running the latest version of the SimpleRisk application
 	$check_app_version = check_app_version($current_app_version, $latest_app_version);
 
-        // Check that we are running the latest version of the SimpleRisk database
-        $check_db_version = check_db_version($current_db_version, $latest_db_version);
+	// Check that we are running the latest version of the SimpleRisk database
+	$check_db_version = check_db_version($current_db_version, $latest_db_version);
 
-        // Check that the application and database versions are the same
-        $check_same_app_and_db = check_same_app_and_db($current_app_version, $current_db_version);
+	// Check that the application and database versions are the same
+	$check_same_app_and_db = check_same_app_and_db($current_app_version, $current_db_version);
 
 	// Check that USE_DATABASE_FOR_SESSION is set to true
 	$check_use_database_for_session = check_use_database_for_session();
@@ -43,47 +57,47 @@ function simplerisk_health_check()
 	// Check that the automation cron is configured and running
 	$cron_configured = check_cron_configured();
 
-        // Check the Extra versions match the SimpleRisk version
-        $check_extra_versions = check_extra_versions($current_app_version);
+	// Check the Extra versions match the SimpleRisk version
+	$check_extra_versions = check_extra_versions($current_app_version);
 
-        // Search for any broken extras
-        $check_extra_versions_result = 1;
-        foreach ($check_extra_versions as $extras)
-        {
-                // If the extension result is 0
-                if ($extras['result'] === 0)
-                {
-                        // Set the overall result to 0
-                        $check_extra_versions_result = 0;
-                }
-        }
+	// Search for any broken extras
+	$check_extra_versions_result = 1;
+	foreach ($check_extra_versions as $extras)
+	{
+		// If the extension result is 0
+		if ($extras['result'] === 0)
+		{
+			// Set the overall result to 0
+			$check_extra_versions_result = 0;
+		}
+	}
 
-        // Check the SimpleRisk Base URL
-        $check_simplerisk_base_url = check_simplerisk_base_url();
+	// Check the SimpleRisk Base URL
+	$check_simplerisk_base_url = check_simplerisk_base_url();
 
-        // Check the SimpleRisk database connectivity
-        $check_database_connectivity = check_database_connectivity();
+	// Check the SimpleRisk database connectivity
+	$check_database_connectivity = check_database_connectivity();
 
-        // Check that SimpleRisk can communicate with the API
-        $check_api_connectivity = check_api_connectivity();
+	// Check that SimpleRisk can communicate with the API
+	$check_api_connectivity = check_api_connectivity();
 
-        // Check that SimpleRisk can connect to the services platforms
+	// Check that SimpleRisk can connect to the services platforms
 	$check_web_connectivity = check_web_connectivity();
 
 	// Search for any broken connectivity
 	$check_web_connectivity_result = 1;
-        foreach ($check_web_connectivity as $connectivity)
-        {
-                // If the connectivity result is 0
-                if ($connectivity['result'] === 0)
-                {
-                        // Set the overall result to 0
-                        $check_web_connectivity_result = 0;
-                }
-        }
+	foreach ($check_web_connectivity as $connectivity)
+	{
+		// If the connectivity result is 0
+		if ($connectivity['result'] === 0)
+		{
+			// Set the overall result to 0
+			$check_web_connectivity_result = 0;
+		}
+	}
 
-        // Check that this is PHP 7
-        $check_php_version = check_php_version();
+	// Check that this is PHP 7
+	$check_php_version = check_php_version();
 
 	// Check the PHP memory_limit
 	$check_php_memory_limit = check_php_memory_limit();
@@ -91,8 +105,8 @@ function simplerisk_health_check()
 	// Check the PHP max_input_vars
 	$check_php_max_input_vars = check_php_max_input_vars();
 
-        // Check the necessary PHP extensions are installed
-        $check_php_extensions = check_php_extensions();
+	// Check the necessary PHP extensions are installed
+	$check_php_extensions = check_php_extensions();
 
 	// Search for any missing PHP extensions
 	$check_php_extensions_result = 1;
@@ -106,59 +120,59 @@ function simplerisk_health_check()
 		}
 	}
 
-        // Check the current database size and free space
-        $check_mysql_size = check_mysql_size();
+	// Check the current database size and free space
+	$check_mysql_size = check_mysql_size();
 
-        // Check if MySQL STRICT SQL mode is enabled
-        $check_strict_sql_mode = check_strict_sql_mode();
+	// Check if MySQL STRICT SQL mode is enabled
+	$check_strict_sql_mode = check_strict_sql_mode();
 
-        // Check if MySQL NO_ZERO_DATE mode is enabled
-        $check_no_zero_date = check_no_zero_date();
+	// Check if MySQL NO_ZERO_DATE mode is enabled
+	$check_no_zero_date = check_no_zero_date();
 
-        // Check if MySQL ONLY_FULL_GROUP_BY mode is enabled
-        $check_only_full_group_by = check_only_full_group_by();
+	// Check if MySQL ONLY_FULL_GROUP_BY mode is enabled
+	$check_only_full_group_by = check_only_full_group_by();
 
-        // Check if SELECT permission is enabled
-        $check_mysql_permission_select = check_mysql_permission("SELECT");
+	// Check if SELECT permission is enabled
+	$check_mysql_permission_select = check_mysql_permission("SELECT");
 
-        // Check if INSERT permission is enabled
-        $check_mysql_permission_insert = check_mysql_permission("INSERT");
+	// Check if INSERT permission is enabled
+	$check_mysql_permission_insert = check_mysql_permission("INSERT");
 
-        // Check if UPDATE permission is enabled
-        $check_mysql_permission_update = check_mysql_permission("UPDATE");
+	// Check if UPDATE permission is enabled
+	$check_mysql_permission_update = check_mysql_permission("UPDATE");
 
-        // Check if DELETE permission is enabled
-        $check_mysql_permission_delete = check_mysql_permission("DELETE");
+	// Check if DELETE permission is enabled
+	$check_mysql_permission_delete = check_mysql_permission("DELETE");
 
-        // Check if CREATE permission is enabled
-        $check_mysql_permission_create = check_mysql_permission("CREATE");
+	// Check if CREATE permission is enabled
+	$check_mysql_permission_create = check_mysql_permission("CREATE");
 
-        // Check if DROP permission is enabled
-        $check_mysql_permission_drop = check_mysql_permission("DROP");
+	// Check if DROP permission is enabled
+	$check_mysql_permission_drop = check_mysql_permission("DROP");
 
-        // Check if REFERENCES permission is enabled
-        $check_mysql_permission_references = check_mysql_permission("REFERENCES");
+	// Check if REFERENCES permission is enabled
+	$check_mysql_permission_references = check_mysql_permission("REFERENCES");
 
-        // Check if INDEX permission is enabled
-        $check_mysql_permission_index = check_mysql_permission("INDEX");
+	// Check if INDEX permission is enabled
+	$check_mysql_permission_index = check_mysql_permission("INDEX");
 
-        // Check if ALTER permission is enabled
-        $check_mysql_permission_alter = check_mysql_permission("ALTER");
+	// Check if ALTER permission is enabled
+	$check_mysql_permission_alter = check_mysql_permission("ALTER");
 
 	// Check the simplerisk directory permissions
-        $check_simplerisk_directory_permissions = check_simplerisk_directory_permissions();
+	$check_simplerisk_directory_permissions = check_simplerisk_directory_permissions();
 
-        // Search for any bad directory permissions
-        $check_simplerisk_directory_permissions_result = 1;
-        foreach ($check_simplerisk_directory_permissions as $permission)
-        {
-                // If the permission result is 0
-                if ($permission['result'] === 0)
-                {
-                        // Set the overall result to 0
-                        $check_simplerisk_directory_permissions_result = 0;
-                }
-        }
+	// Search for any bad directory permissions
+	$check_simplerisk_directory_permissions_result = 1;
+	foreach ($check_simplerisk_directory_permissions as $permission)
+	{
+		// If the permission result is 0
+		if ($permission['result'] === 0)
+		{
+			// Set the overall result to 0
+			$check_simplerisk_directory_permissions_result = 0;
+		}
+	}
 
 	echo "<div class=\"wrap\">\n";
 	echo "  <ul class=\"tabs group\">\n";
@@ -171,7 +185,7 @@ function simplerisk_health_check()
 	echo "    <li><a href=\"#/permissions\">Permissions</a></li>\n";
 	echo "  </ul>\n";
 	echo "  <div id=\"content\">\n";
-	
+
 	// Summary Tab
 	echo "    <div id=\"summary\" class=\"settings_tab\">\n";
 	echo "      <b><u>Health Check Summary</u></b><br />";
@@ -215,31 +229,59 @@ function simplerisk_health_check()
 	if ($check_simplerisk_directory_permissions_result === 1)
 	{
 		health_check_good("Permissions");
-        }
-        else health_check_bad("Permissions");
+	}
+	else health_check_bad("Permissions");
+
+	echo "      <br /><b><u>Instance Details</u></b><br />\n";
+	echo "      <table style='border: 0px;'>\n";
+	echo "        <tr>\n";
+	echo "          <td style='padding-right:25px;'><b>OS Version:</b></td>\n";
+	echo "          <td>" . $escaper->escapeHtml($os_version['pretty_name']) . "</td>\n";
+	echo "        </tr>\n";
+	echo "        <tr>\n";
+	echo "          <td style='padding-right:25px;'><b>PHP Version:</b></td>\n";
+	echo "          <td>" . $escaper->escapeHtml(phpversion()) . "</td>\n";
+	echo "        </tr>\n";
+	echo "        <tr>\n";
+	echo "          <td style='padding-right:25px;'><b>Database Version:</b></td>\n";
+	echo "          <td>" . $escaper->escapeHtml($db_version) . "</td>\n";
+	echo "        </tr>\n";
+	echo "        <tr>\n";
+	echo "          <td style='padding-right:25px;'><b>SimpleRisk Version:</b></td>\n";
+	echo "          <td>" . $escaper->escapeHtml($current_app_version) . "</td>\n";
+	echo "        </tr>\n";
+	echo "        <tr>\n";
+	echo "          <td style='padding-right:25px;'><b>SimpleRisk Instance ID:</b></td>\n";
+	echo "          <td>" . $escaper->escapeHtml($instance_id) . "</td>\n";
+	echo "        </tr>\n";
+	echo "        <tr>\n";
+	echo "          <td style='padding-right:25px;'><b>Public IP Address:</b></td>\n";
+	echo "          <td>" . $escaper->escapeHtml(get_public_ip()) . "</td>\n";
+	echo "        </tr>\n";
+	echo "      </table>\n";
 
 	echo "    </div>\n";
 
 	// SimpleRisk Tab
 	echo "    <div id=\"simplerisk\" style=\"display: none;\" class=\"settings_tab\">\n";
-        echo "      <b><u>SimpleRisk Version</u></b><br />";
-        display_health_check_results($check_app_version);
+	echo "      <b><u>SimpleRisk Version</u></b><br />\n";
+	display_health_check_results($check_app_version);
 	display_health_check_results($check_db_version);
 	display_health_check_results($check_same_app_and_db);
-	echo "      <br /><b><u>Configurations</u></b><br />";
+	echo "      <br /><b><u>Configurations</u></b><br />\n";
 	display_health_check_results($check_use_database_for_session);
 	display_health_check_results($cron_configured);
-        echo "    </div>\n";
+	echo "    </div>\n";
 
-        // SimpleRisk Extras Tab
-        echo "    <div id=\"extras\" style=\"display: none;\" class=\"settings_tab\">\n";
+	// SimpleRisk Extras Tab
+	echo "    <div id=\"extras\" style=\"display: none;\" class=\"settings_tab\">\n";
 	echo "      <b><u>SimpleRisk Extras</u></b><br />";
 	display_health_check_array_results($check_extra_versions);
 	echo "    </div>\n";
 
 	// SimpleRisk Connectivity Tab
-        echo "    <div id=\"connectivity\" style=\"display: none;\" class=\"settings_tab\">\n";
-        echo "<b><u>Connectivity</u></b><br />";
+	echo "    <div id=\"connectivity\" style=\"display: none;\" class=\"settings_tab\">\n";
+	echo "<b><u>Connectivity</u></b><br />";
 	display_health_check_results($check_simplerisk_base_url);
 	display_health_check_results($check_database_connectivity);
 	display_health_check_results($check_api_connectivity);
@@ -247,8 +289,8 @@ function simplerisk_health_check()
 	echo "    </div>\n";
 
 	// SimpleRisk PHP Tab
-        echo "    <div id=\"php\" style=\"display: none;\" class=\"settings_tab\">\n";
-        echo "<b><u>PHP</u></b><br />";
+	echo "    <div id=\"php\" style=\"display: none;\" class=\"settings_tab\">\n";
+	echo "<b><u>PHP</u></b><br />";
 	display_health_check_results($check_php_version);
 	display_health_check_results($check_php_memory_limit);
 	display_health_check_results($check_php_max_input_vars);
@@ -256,8 +298,8 @@ function simplerisk_health_check()
 	echo "    </div>\n";
 
 	// SimpleRisk MySQL Tab
-        echo "    <div id=\"mysql\" style=\"display: none;\" class=\"settings_tab\">\n";
-        echo "<b><u>MySQL</u></b><br />";
+	echo "    <div id=\"mysql\" style=\"display: none;\" class=\"settings_tab\">\n";
+	echo "<b><u>MySQL</u></b><br />";
 	display_health_check_results($check_mysql_size);
 	display_health_check_results($check_strict_sql_mode);
 	display_health_check_results($check_no_zero_date);
@@ -274,8 +316,8 @@ function simplerisk_health_check()
 	echo "    </div>\n";
 
 	// SimpleRisk Permissions Tab
-        echo "    <div id=\"permissions\" style=\"display: none;\" class=\"settings_tab\">\n";
-        echo "<b><u>File and Directory Permissions</u></b><br />";
+	echo "    <div id=\"permissions\" style=\"display: none;\" class=\"settings_tab\">\n";
+	echo "<b><u>File and Directory Permissions</u></b><br />";
 	display_health_check_array_results($check_simplerisk_directory_permissions);
 	echo "    </div>\n";
 
@@ -936,14 +978,14 @@ function check_cron_configured()
 	}
 	else
 	{
-		// If the cron was run within the past 60 seconds
-		if (time() - $cron_last_run <= 60)
+		// If the cron was run within the past 3600 seconds (1 hour)
+		if (time() - $cron_last_run <= 3600)
 		{
 			return array("result" => 1, "text" => "The automation cron is configured correctly.");
 		}
 		else
 		{
-			return array("result" => 0, "text" => "The automation cron hasn't run in the past minute. Check the 'Backups' tab under Configure-> Settings to learn more.");
+			return array("result" => 0, "text" => "The automation cron hasn't run in the past hour. Check the 'Backups' tab under Configure-> Settings to learn more.");
 		}
 	}
 }

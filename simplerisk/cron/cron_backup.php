@@ -92,20 +92,16 @@ function do_backup($force=false) {
 
         return;
     }
-
-    // If we haven't hit an error at this point get and check for mysqldump
-    if(!is_process('mysqldump'))
-    {
-        $mysqldump_path = get_setting('mysqldump_path');
-    }
-    else $mysqldump_path = "mysqldump";
     
     // Get the path to the database backup file
     $db_backup_file = $timestamp_path . '/simplerisk-db-backup-' . $timestamp . '.sql';
-    
-    // Sanitize the mysqldump command
-    $db_backup_cmd = escapeshellcmd($mysqldump_path) . ' --opt --lock-tables=false --skip-add-locks --set-gtid-purged=OFF --no-tablespaces -h ' . escapeshellarg(DB_HOSTNAME) . ' -u ' . escapeshellarg(DB_USERNAME) . ' -p' . escapeshellarg(DB_PASSWORD) . ' ' . escapeshellarg(DB_DATABASE) . ' > ' . escapeshellarg($db_backup_file);
-    
+
+    // Get the mysqldump command
+    $cmd = get_mysqldump_command();
+
+    // Add the output redirect to the mysqldump command
+    $db_backup_cmd = $cmd . ' > ' . escapeshellarg($db_backup_file);
+
     // Backup the database
     $mysqldump = system($db_backup_cmd);
     
@@ -126,9 +122,6 @@ function do_backup($force=false) {
     
     // Create a random id for the backup
     $random_id = generate_token(50);
-    
-    // Open the database connection
-    $db = db_open();
     
     // Insert the backup information into the database
     $stmt = $db->prepare("INSERT INTO `backups` (`random_id`, `app_zip_file_name`, `db_zip_file_name`) VALUES (:random_id, :app_zip_file_name, :db_zip_file_name);");

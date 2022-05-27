@@ -2454,7 +2454,7 @@ function display_main_review_fields_by_panel_edit($panel_name, $fields, $risk_id
 /*************************************************
 * FUNCTION: DISPLAY SUPPORTING DOCUMENTATION ADD *
 **************************************************/
-function display_supporting_documentation_add($panel_name="")
+function display_supporting_documentation_add($panel_name="", $template_group_id="")
 {
     global $lang, $escaper;
     if($panel_name=="top" || $panel_name=="bottom"){
@@ -2475,13 +2475,13 @@ function display_supporting_documentation_add($panel_name="")
                         var max_upload_size = " . $escaper->escapeJs(get_setting('max_upload_size', 0)) . ";
                         var fileTooBigMessage = '" . $escaper->escapeJs($lang['FileIsTooBigToUpload']) . "'; 
                     </script>";
-                echo "<label for=\"file-upload\" class=\"btn\">".$escaper->escapeHtml($lang['ChooseFile'])."</label>";
+                echo "<label for=\"file-upload-" . $template_group_id . "\" class=\"btn\">".$escaper->escapeHtml($lang['ChooseFile'])."</label>";
                 echo "<span class=\"file-count-html\"> <span class=\"file-count\">0</span> ".$escaper->escapeHtml($lang['FileAdded'])."</span>";
                 echo "<p><font size=\"2\"><strong>Max ".$escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024))." Mb</strong></font></p>";
                 echo "<ul class=\"file-list\">";
 
                 echo "</ul>";
-                echo "<input type=\"file\" id=\"file-upload\" name=\"file[]\" class=\"hidden-file-upload active\" />";
+                echo "<input type=\"file\" id=\"file-upload-" . $template_group_id . "\" name=\"file[]\" class=\"hidden-file-upload active\" />";
             echo "</div>";
 
         echo "</div>";
@@ -2579,7 +2579,7 @@ function display_risk_tags_view($tags)
 /********************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN DETAILS ADD *
 *********************************************************/
-function display_main_detail_fields_by_panel_add($panel_name, $fields)
+function display_main_detail_fields_by_panel_add($panel_name, $fields, $template_group_id="")
 {
     foreach($fields as $field)
     {
@@ -2659,7 +2659,7 @@ function display_main_detail_fields_by_panel_add($panel_name, $fields)
                     break;
                         
                     case 'SupportingDocumentation':
-                        display_supporting_documentation_add($panel_name);  
+                        display_supporting_documentation_add($panel_name, $template_group_id);  
                     break;
 
                     case 'Tags':

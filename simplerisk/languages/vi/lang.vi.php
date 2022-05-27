@@ -2196,6 +2196,12 @@ $lang = array(
     'UpdatedBy'=>'Cập nhật',
     'AllowTeamToSeeDocuments'=>'Cho phép nhóm xem tài liệu',
     'AllowDocumentOwnersManagerToSeeDocuments' => 'Cho phép người quản lý của chủ sở hữu tài liệu xem tài liệu',
+    'RisksAndIssues'=>'Rủi ro và Vấn đề',
+    'RiskTags' => 'Thẻ rủi ro',
+    'Trend' => 'Xu hướng',
+    'Increasing' => 'Tăng dần',
+    'Decreasing' => 'Đang giảm dần',
+    'NoChange' => 'Không thay đổi',
 
     '' => '',
 );

@@ -258,7 +258,7 @@ function update_framework_control_test($test_id, $tester=false, $test_frequency=
     $stmt->bindParam(":test_frequency", $test_frequency, PDO::PARAM_INT);
     $stmt->bindParam(":last_date", $last_date, PDO::PARAM_STR);
     $stmt->bindParam(":next_date", $next_date, PDO::PARAM_STR);
-    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 100);
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 1000);
     $stmt->bindParam(":objective", $objective, PDO::PARAM_STR, 1000);
     $stmt->bindParam(":test_steps", $test_steps, PDO::PARAM_STR, 1000);
     $stmt->bindParam(":approximate_time", $approximate_time, PDO::PARAM_INT);

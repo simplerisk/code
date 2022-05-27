@@ -2196,6 +2196,12 @@ $lang = array(
     'UpdatedBy'=>'Frissítette',
     'AllowTeamToSeeDocuments'=>'Dokumentumok megtekintésének engedélyezése a csapat számára',
     'AllowDocumentOwnersManagerToSeeDocuments' => 'A dokumentumok megtekintésének engedélyezése a dokumentumtulajdonos menedzserének',
+    'RisksAndIssues'=>'Kockázatok és problémák',
+    'RiskTags' => 'Kockázati címkék',
+    'Trend' => 'Irányzat',
+    'Increasing' => 'Növekvő',
+    'Decreasing' => 'Csökkenő',
+    'NoChange' => 'Nincs változás',
 
     '' => '',
 );

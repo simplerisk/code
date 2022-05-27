@@ -102,14 +102,15 @@ require_once(language_file());
         $db = db_open();
 
         // Get the order for the last place...
-        $stmt = $db->prepare("SELECT MAX(`order`) + 1 FROM `risk_grouping`");
+        $stmt = $db->prepare("SELECT MAX(`order`) FROM `risk_grouping`");
         $stmt->execute();
-        $last_place = $stmt->fetchColumn();
+        $max_order = $stmt->fetchColumn();
+        $new_order = intval($max_order) + 1;
 
         // ...and add it there.
         $stmt = $db->prepare("INSERT INTO `risk_grouping` (`name`, `order`) VALUES (:name, :order)");
         $stmt->bindParam(":name", $name, PDO::PARAM_STR);
-        $stmt->bindParam(":order", $last_place, PDO::PARAM_INT);
+        $stmt->bindParam(":order", $new_order, PDO::PARAM_INT);
         $stmt->execute();
         $risk_grouping_id = $db->lastInsertId();
 
@@ -149,14 +150,15 @@ require_once(language_file());
         $db = db_open();
 
         // Get the order for the last place...
-        $stmt = $db->prepare("SELECT MAX(`order`) + 1 FROM `threat_grouping`");
+        $stmt = $db->prepare("SELECT MAX(`order`) FROM `threat_grouping`");
         $stmt->execute();
-        $last_place = $stmt->fetchColumn();
+        $max_order = $stmt->fetchColumn();
+        $new_order = intval($max_order) + 1;
 
         // ...and add it there.
         $stmt = $db->prepare("INSERT INTO `threat_grouping` (`name`, `order`) VALUES (:name, :order)");
         $stmt->bindParam(":name", $name, PDO::PARAM_STR);
-        $stmt->bindParam(":order", $last_place, PDO::PARAM_INT);
+        $stmt->bindParam(":order", $new_order, PDO::PARAM_INT);
         $stmt->execute();
         $threat_grouping_id = $db->lastInsertId();
 

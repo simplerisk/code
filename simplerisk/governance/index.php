@@ -431,18 +431,10 @@ if (isset($_POST['delete_controls']))
 				// URL for the frameworks
 				$url = "https://github.com/simplerisk/import-content/raw/master/Control%20Frameworks/frameworks.xml";
 
-				// HTTP Options
-				$opts = array(
-					'ssl'=>array(
-						'verify_peer'=>true,
-						'verify_peer_name'=>true,
-					),
-					'http'=>array(
-						'method'=>"GET",
-						'header'=>"content-type: application/json\r\n",
-					)
-				);
-				$context = stream_context_create($opts);
+                // Configure the proxy server if one exists
+                $method = "GET";
+                $header = "content-type: application/json";
+                $context = set_proxy_stream_context($method, $header);
 
 				$frameworks = @file_get_contents($url, false, $context);
 				$frameworks_xml = simplexml_load_string($frameworks);

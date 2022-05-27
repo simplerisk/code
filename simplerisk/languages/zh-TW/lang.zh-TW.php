@@ -2196,6 +2196,12 @@ $lang = array(
     'UpdatedBy'=>'更新者',
     'AllowTeamToSeeDocuments'=>'允許團隊查看文檔',
     'AllowDocumentOwnersManagerToSeeDocuments' => '允許文檔所有者的經理查看文檔',
+    'RisksAndIssues'=>'風險和問題',
+    'RiskTags' => '風險標籤',
+    'Trend' => '趨勢',
+    'Increasing' => '增加',
+    'Decreasing' => '遞減',
+    'NoChange' => '不用找了',
 
     '' => '',
 );

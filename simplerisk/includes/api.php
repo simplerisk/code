@@ -991,7 +991,7 @@ function dynamicriskForm()
                     $row["custom_field_".$field_id] = strip_tags($custom_data_row);
                 }
             }
-            $data_row['risk'] = $row;
+            $data_row['risk'] = utf8ize($row);
             $datas[] = $data_row;
         }
         if(($pos = stripos($orderColumnName, "custom_field_")) !== false){
@@ -9637,12 +9637,19 @@ function add_project_api(){
     // check permission for project add 
     if(isset($_SESSION["add_projects"]) && $_SESSION["add_projects"] == 1){
         $name = isset($_POST['new_project'])?$_POST['new_project']:"";
+        $exist = get_value_by_name("projects", $name);
         // Check if the project name is null
         if ($name == "")
         {
             $message = _lang('FieldRequired', array("field"=>"Project Name"));
             // Return a JSON response
             json_response(400, $escaper->escapeHtml($message), NULL);
+        }
+        // project name exist
+        else if($exist)
+        {
+            // Return a JSON response
+            json_response(400, $escaper->escapeHtml($lang['TheNameAlreadyExists']), NULL);
         }
         // Otherwise
         else
@@ -9697,12 +9704,19 @@ function edit_project_api(){
     // check permission for project add 
     if(isset($_SESSION["add_projects"]) && $_SESSION["add_projects"] == 1){
         $name = isset($_POST['name'])?$_POST['name']:"";
+        $exist = get_value_by_name("projects", $name);
         // Check if the project name is null
         if ($name == "")
         {
             $message = _lang('FieldRequired', array("field"=>"Project Name"));
             // Return a JSON response
             json_response(400, $escaper->escapeHtml($message), NULL);
+        }
+        // project name exist
+        else if($exist && $value != $exist)
+        {
+            // Return a JSON response
+            json_response(400, $escaper->escapeHtml($lang['TheNameAlreadyExists']), NULL);
         }
         // Otherwise
         else
@@ -10997,6 +11011,8 @@ function recent_commented_risk_datatable() {
             LEFT JOIN mitigations mg ON b.id = mg.risk_id
             LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
             LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+            LEFT JOIN risk_to_additional_stakeholder rtas ON b.id=rtas.risk_id 
+            LEFT JOIN risk_to_team rtt on b.id = rtt.risk_id
         WHERE
             `comment` IS NOT NULL ". $filtering_where . $separation_query . "
         GROUP BY b.id

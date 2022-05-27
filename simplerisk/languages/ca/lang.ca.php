@@ -2196,6 +2196,12 @@ $lang = array(
     'UpdatedBy'=>'Actualitzat per',
     'AllowTeamToSeeDocuments'=>'Permet que l\'equip vegi els documents',
     'AllowDocumentOwnersManagerToSeeDocuments' => 'Permet que el gestor del propietari del document vegi els documents',
+    'RisksAndIssues'=>'Riscos i problemes',
+    'RiskTags' => 'Etiquetes de risc',
+    'Trend' => 'Tendència',
+    'Increasing' => 'Augmentant',
+    'Decreasing' => 'Decreixent',
+    'NoChange' => 'Cap canvi',
 
     '' => '',
 );

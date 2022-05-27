@@ -2196,6 +2196,12 @@ $lang = array(
     'UpdatedBy'=>'Päivitetty',
     'AllowTeamToSeeDocuments'=>'Salli tiimin nähdä asiakirjoja',
     'AllowDocumentOwnersManagerToSeeDocuments' => 'Salli asiakirjan omistajan johtajan nähdä asiakirjoja',
+    'RisksAndIssues'=>'Riskit ja ongelmat',
+    'RiskTags' => 'Riskitunnisteet',
+    'Trend' => 'Trendi',
+    'Increasing' => 'Kasvava',
+    'Decreasing' => 'Vähenemässä',
+    'NoChange' => 'Ei muutosta',
 
     '' => '',
 );

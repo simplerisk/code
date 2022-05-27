@@ -4858,15 +4858,17 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
         save_risk_custom_field_values($risk_id, $review_id);
     }
 
-    // Update the risk status and last_update
-    $stmt = $db->prepare("UPDATE risks SET status=:status, last_update=:last_update, review_date=:review_date, mgmt_review=:mgmt_review WHERE id = :risk_id");
-    $stmt->bindParam(":status", $status, PDO::PARAM_STR, 20);
-    $stmt->bindParam(":last_update", $current_datetime, PDO::PARAM_STR, 20);
-    $stmt->bindParam(":review_date", $current_datetime, PDO::PARAM_STR, 20);
-    $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
-    $stmt->bindParam(":mgmt_review", $review_id, PDO::PARAM_INT);
+    if(!is_null($status)){
+        // Update the risk status and last_update
+        $stmt = $db->prepare("UPDATE risks SET status=:status, last_update=:last_update, review_date=:review_date, mgmt_review=:mgmt_review WHERE id = :risk_id");
+        $stmt->bindParam(":status", $status, PDO::PARAM_STR, 20);
+        $stmt->bindParam(":last_update", $current_datetime, PDO::PARAM_STR, 20);
+        $stmt->bindParam(":review_date", $current_datetime, PDO::PARAM_STR, 20);
+        $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+        $stmt->bindParam(":mgmt_review", $review_id, PDO::PARAM_INT);
 
-    $stmt->execute();
+        $stmt->execute();
+    }
 
     // If this is not a risk closure
     if (!$close)
@@ -5661,7 +5663,7 @@ function get_risks_unassigned_project()
     // If we want to get all risks
     if (get_setting('plan_projects_show_all') == 1)
     {
-        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != 'Closed' AND (b.project_id IS NULL or b.project_id=0) ORDER BY calculated_risk DESC;");
+        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != 'Closed' AND (b.project_id IS NULL or b.project_id=0) GROUP BY b.id ORDER BY calculated_risk DESC;");
     }
 // If we only want to get risks reviewed as consider for project
     else
@@ -5678,6 +5680,7 @@ function get_risks_unassigned_project()
                     WHERE next_step = 2
                 ) AS c ON a.id = c.risk_id 
             WHERE status != \"Closed\" AND (b.project_id IS NULL or b.project_id=0) 
+            GROUP BY b.id
             ORDER BY calculated_risk DESC;
         ");
     }
@@ -5740,7 +5743,7 @@ function get_risks_by_project_id($project_id)
     // If we want to get all risks
     if (get_setting('plan_projects_show_all') == 1)
     {
-        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != 'Closed' AND b.project_id = :project_id ORDER BY calculated_risk DESC;");
+        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != 'Closed' AND b.project_id = :project_id GROUP BY b.id ORDER BY calculated_risk DESC;");
     }
     // If we only want to get risks reviewed as consider for project
     else
@@ -5756,7 +5759,8 @@ function get_risks_by_project_id($project_id)
                                         ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date 
                     WHERE next_step = 2
                 ) AS c ON a.id = c.risk_id 
-            WHERE status != \"Closed\" AND b.project_id = :project_id 
+            WHERE status != \"Closed\" AND b.project_id = :project_id
+            GROUP BY b.id
             ORDER BY calculated_risk DESC;
         ");
     }
@@ -7800,7 +7804,8 @@ function get_submitted_risks_table()
                     paging: false,
                     orderCellsTop: true,
                     fixedHeader: true,
-                    dom : 'lrti'
+                    dom : 'lrti',
+                    order: [[2, 'desc']],
                 });
              });
         </script>
@@ -7872,7 +7877,8 @@ function get_mitigations_table()
                     paging: false,
                     orderCellsTop: true,
                     fixedHeader: true,
-                    dom : 'lrti'
+                    dom : 'lrti',
+                    order: [[2, 'desc']],
                 });
              });
         </script>
@@ -7938,7 +7944,8 @@ function get_reviewed_risk_table($sort_order=12)
                     paging: false,
                     orderCellsTop: true,
                     fixedHeader: true,
-                    dom : 'lrti'
+                    dom : 'lrti',
+                    order: [[2, 'desc']],
                 });
              });
         </script>
@@ -8011,6 +8018,7 @@ function get_closed_risks_table($sort_order=17)
                     orderCellsTop: true,
                     fixedHeader: true,
                     dom : 'lrti',
+                    order: [[4, 'desc']],
                 });
              });
         </script>
@@ -9781,7 +9789,7 @@ function add_comment($risk_id, $user_id, $comment)
 /**************************
  * FUNCTION: GET COMMENTS *
  **************************/
-function get_comments($id)
+function get_comments($id, $html = true)
 {
     global $escaper;
 
@@ -9803,22 +9811,24 @@ function get_comments($id)
 
     // Close the database connection
     db_close($db);
-
-    foreach ($comments as $comment)
-    {
-        $text = try_decrypt($comment['comment']);
-        $date = date(get_default_datetime_format("g:i A T"), strtotime($comment['date']));
-        $user = $comment['name'];
-        if($text != null){
-            echo "<p class=\"comment-block\">\n";
-            echo "<b>" . $escaper->escapeHtml($date) ." by ". $escaper->escapeHtml($user) ."</b><br />\n";
-            echo $escaper->escapeHtml($text);
-                    //echo substr($escaper->escapeHtml($text), 0, strpos($escaper->escapeHtml($text),"</p>"));
-            echo "</p>\n";
+    if($html == true){
+        foreach ($comments as $comment)
+        {
+            $text = try_decrypt($comment['comment']);
+            $date = date(get_default_datetime_format("g:i A T"), strtotime($comment['date']));
+            $user = $comment['name'];
+            if($text != null){
+                echo "<p class=\"comment-block\">\n";
+                echo "<b>" . $escaper->escapeHtml($date) ." by ". $escaper->escapeHtml($user) ."</b><br />\n";
+                echo $escaper->escapeHtml($text);
+                        //echo substr($escaper->escapeHtml($text), 0, strpos($escaper->escapeHtml($text),"</p>"));
+                echo "</p>\n";
+            }
         }
+        return true;
+    } else {
+        return $comments;
     }
-
-    return true;
 }
 
 /*****************************
@@ -11016,7 +11026,7 @@ function upload_file($risk_id, $file, $view_type = 1)
         if (in_array($file['type'], $allowed_types))
         {
             // If the file extension is appropriate
-            if (in_array(pathinfo($file['name'], PATHINFO_EXTENSION), $allowed_extensions))
+            if (in_array(strtolower(pathinfo($file['name'], PATHINFO_EXTENSION)), array_map('strtolower', $allowed_extensions)))
             {
             // Get the maximum upload file size
             $max_upload_size = get_setting("max_upload_size");
@@ -13405,12 +13415,12 @@ function delete_file($file)
         // If this is not Windows (directory paths don't start with /)
         if (strpos($tmp, '/', 0) !== false)
         {
-                linux_delete_file($file);
+            return linux_delete_file($file);
         }
         // If this is Windows
         else
         {
-                windows_delete_file($file);
+            return windows_delete_file($file);
         }
 }
 
@@ -14475,7 +14485,7 @@ function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1)
             if (in_array($file['type'], $allowed_types))
             {
                 // If the file extension is appropriate
-                if (in_array(pathinfo($file['name'], PATHINFO_EXTENSION), $allowed_extensions))
+                if (in_array(strtolower(pathinfo($file['name'], PATHINFO_EXTENSION)), array_map('strtolower', $allowed_extensions)))
                 {
                 // Get the maximum upload file size
                 $max_upload_size = get_setting("max_upload_size");
@@ -14609,7 +14619,7 @@ function upload_exception_files($test_audit_id, $ref_type, $files, $version=1)
             if (in_array($file['type'], $allowed_types))
             {
                 // If the file extension is appropriate
-                if (in_array(pathinfo($file['name'], PATHINFO_EXTENSION), $allowed_extensions))
+                if (in_array(strtolower(pathinfo($file['name'], PATHINFO_EXTENSION)), array_map('strtolower', $allowed_extensions)))
                 {
                 // Get the maximum upload file size
                 $max_upload_size = get_setting("max_upload_size");
@@ -17731,10 +17741,10 @@ function add_risk_catalog($data)
 {
     // Open the database connection
     $db = db_open();
-    $stmt = $db->prepare("SELECT MAX(`order`) + 1 as new_order FROM `risk_catalog` WHERE 1");
+    $stmt = $db->prepare("SELECT MAX(`order`) as max_order FROM `risk_catalog` WHERE 1");
     $stmt->execute();
     $result = $stmt->fetch();
-    $new_order = $result["new_order"];
+    $new_order = intval($result["max_order"]) + 1;
     $stmt = $db->prepare("INSERT INTO `risk_catalog` (`number`, `grouping`, `name`, `description`, `function`, `order`) VALUES (:number, :grouping, :name, :description, :function, :order)");
     $stmt->bindParam(":number", $data["number"], PDO::PARAM_STR);
     $stmt->bindParam(":grouping", $data["grouping"], PDO::PARAM_INT);
@@ -17756,10 +17766,10 @@ function add_threat_catalog($data)
 {
     // Open the database connection
     $db = db_open();
-    $stmt = $db->prepare("SELECT MAX(`order`) + 1 as new_order FROM `threat_catalog` WHERE 1");
+    $stmt = $db->prepare("SELECT MAX(`order`) as max_order FROM `threat_catalog` WHERE 1");
     $stmt->execute();
     $result = $stmt->fetch();
-    $new_order = $result["new_order"];
+    $new_order = intval($result["max_order"]) + 1;
     $stmt = $db->prepare("INSERT INTO `threat_catalog` (`number`, `grouping`, `name`, `description`, `order`) VALUES (:number, :grouping, :name, :description, :order)");
     $stmt->bindParam(":number", $data["number"], PDO::PARAM_STR);
     $stmt->bindParam(":grouping", $data["grouping"], PDO::PARAM_INT);
@@ -19363,7 +19373,7 @@ function upload_validation_file($mitigation_id, $control_id, $file)
         if (in_array($file['type'], $allowed_types))
         {
             // If the file extension is appropriate
-            if (in_array(pathinfo($file['name'], PATHINFO_EXTENSION), $allowed_extensions))
+            if (in_array(strtolower(pathinfo($file['name'], PATHINFO_EXTENSION)), array_map('strtolower', $allowed_extensions)))
             {
             // Get the maximum upload file size
             $max_upload_size = get_setting("max_upload_size");
@@ -20444,19 +20454,289 @@ function verify_create_default_admin_account()
     // Return the validation result
     return $result;
 }
+/***********************************************************
+ * FUNCTION: FILTERING STRING FOR SQL INJECTION PREVENTION *
+ ***********************************************************/
 function sqli_filter($string) {
-    $filtered_string = $string;
-    $filtered_string = str_replace("--","",$filtered_string);
-    $filtered_string = str_replace(";","",$filtered_string);
-    $filtered_string = str_replace("/*","",$filtered_string);
-    $filtered_string = str_replace("*/","",$filtered_string);
-    $filtered_string = str_replace("//","",$filtered_string);
-    $filtered_string = str_replace(" ","",$filtered_string);
-    $filtered_string = str_replace("#","",$filtered_string);
-    $filtered_string = str_replace("||","",$filtered_string);
-    $filtered_string = str_replace("UNION","",$filtered_string);
+    // Remove any characters that are not an upper, lower, digit or underscore
+    $chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
+    $pattern = "/[^" . preg_quote($chars, "/") . "]/";
+    $string = preg_replace($pattern, "", $string);
+
+    // Convert the string to uppercase
+    $original_string = strtoupper($string);
+
+    // Apply the filters to the original string
+    $filtered_string = str_replace("UNION","",$original_string);
     $filtered_string = str_replace("COLLATE","",$filtered_string);
     $filtered_string = str_replace("DROP","",$filtered_string);
-    return $filtered_string;
+    //$filtered_string = str_replace("--","",$filtered_string);
+    //$filtered_string = str_replace(";","",$filtered_string);
+    //$filtered_string = str_replace("/*","",$filtered_string);
+    //$filtered_string = str_replace("*/","",$filtered_string);
+    //$filtered_string = str_replace("//","",$filtered_string);
+    //$filtered_string = str_replace(" ","",$filtered_string);
+    //$filtered_string = str_replace("#","",$filtered_string);
+    //$filtered_string = str_replace("||","",$filtered_string);
+
+    // If we made any changes to the original string
+    if ($original_string != $filtered_string)
+    {
+        // Run it through the sqli_filter again
+        // This prevents strings like "UNIUNIONON" from turning into "UNION" when the filter is run
+        sqli_filter($filtered_string);
+    }
+    // If we have our final string return it
+    else return $filtered_string;
+}
+
+/**********************************
+ * FUNCTION: GET DATABASE VERSION *
+ **********************************/
+function get_database_version()
+{
+    // Open a database connection
+    $db = db_open();
+
+    // Get the database version information
+    $stmt = $db->prepare("SELECT VERSION() as version;");
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $db_version = $row['version'];
+
+    // Close the database connection
+    db_close($db);
+
+    // Return the database version
+    return $db_version;
+}
+
+/********************************
+ * FUNCTION: GET OS INFORMATION *
+ ********************************/
+function getOSInformation()
+{
+    if (false == function_exists("shell_exec") || false == is_readable("/etc/os-release")) {
+        $os_version = php_uname('s');
+        $array = [
+            'name' =>   $os_version,
+            'version' => $os_version,
+            'id' => $os_version,
+            'id_like' => $os_version,
+            'pretty_name' => $os_version,
+        ];
+        return $array;
+    }
+
+    $os         = shell_exec('cat /etc/os-release');
+    $listIds    = preg_match_all('/.*=/', $os, $matchListIds);
+    $listIds    = $matchListIds[0];
+
+    $listVal    = preg_match_all('/=.*/', $os, $matchListVal);
+    $listVal    = $matchListVal[0];
+
+    array_walk($listIds, function(&$v, $k){
+        $v = strtolower(str_replace('=', '', $v));
+    });
+
+    array_walk($listVal, function(&$v, $k){
+        $v = preg_replace('/=|"/', '', $v);
+    });
+
+    return array_combine($listIds, $listVal);
+}
+
+/***************************
+ * FUNCTION: GET PUBLIC IP *
+ ***************************/
+function get_public_ip()
+{
+    // Create the request URL
+    $url = "https://icanhazip.com";
+
+    // Initialize a curl request for the request URL
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL,$url);
+
+    // Configure the curl for proxy if one exists
+    configure_curl_proxy($ch);
+
+    // Follow Location headers that the server sends
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+
+    // Return the actual result of the call
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    // Do not include the header in the output
+    curl_setopt($ch, CURLOPT_HEADER, false);
+
+    // Time out after 1 second of trying to connect
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
+
+    // Make the curl request
+    $response = curl_exec($ch);
+
+    // Get the return code
+    $return_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    // Close the curl session
+    curl_close($ch);
+
+    // If the URL call was successful
+    if ($return_code == 200)
+    {
+        // Return the response
+        return $response;
+    }
+    // Otherwise, return false
+    else return false;
+}
+
+/***********************************
+ * FUNCTION: GET MYSQLDUMP COMMAND *
+ ***********************************/
+function get_mysqldump_command()
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Get the database version information
+    $stmt = $db->prepare("SELECT VERSION() as version;");
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $version = $row['version'];
+
+    // MariaDB version looks like "10.5.12-MariaDB-log"
+    // MySQL version looks like "8.0.23"
+
+    // Turn all mysqldump options off by default
+    $column_statistics = false;
+    $set_gtid_purged = false;
+    $lock_tables = false;
+    $skip_add_locks = false;
+    $no_tablespaces = false;
+
+    // If the database is MariaDB
+    if (preg_match('/MariaDB/', $version))
+    {
+        // MariaDB uses the lock-tables option
+        $lock_tables = true;
+
+        // MariaDB uses the skip-add-locks option
+        $skip_add_locks = true;
+
+        // MariaDB uses the no-tablespaces option
+        $no_tablespaces = true;
+    }
+    // Otherwise this is MySQL
+    else
+    {
+        // MySQL uses the set-gtid-purged option
+        $set_gtid_purged = true;
+
+        // MySQL uses the lock-tables option
+        $lock_tables = true;
+
+        // MySQL uses the skip-add-locks option
+        $skip_add_locks = true;
+
+        // MySQL uses the no-tablespaces option
+        $no_tablespaces = true;
+
+        // Split the version by the decimals
+        $version = explode('.', $version);
+        $major_version = $version[0];
+        $minor_version = $version[1].".".$version[2];
+
+        // If the version is MySQL 8 or higher
+        if ($major_version >= 8)
+        {
+            // MySQL >= 8 uses the column-statistics option
+            $column_statistics = true;
+        }
+    }
+
+    // If mysqldump does not exist
+    if(!is_process('mysqldump'))
+    {
+        // Get the path from the SimpleRisk configuration
+        $mysqldump_path = get_setting('mysqldump_path');
+    }
+    // Otherwise use the defined path to mysqldump
+    else $mysqldump_path = "mysqldump";
+
+    // Start the mysqldump command
+    $mysqldump_command = escapeshellcmd($mysqldump_path) . " --opt";
+
+    // If column_statistics is enabled
+    if ($column_statistics)
+    {
+        // Append the column statistics option
+        $mysqldump_command .= " --column-statistics=0";
+    }
+
+    // If lock_tables is enabled
+    if ($lock_tables)
+    {
+        // Append the lock tables option
+        $mysqldump_command .= " --lock-tables=false";
+    }
+
+    // If skip_add_locks is enabled
+    if ($skip_add_locks)
+    {
+        // Append the skip add locks option
+        $mysqldump_command .= " --skip-add-locks";
+    }
+
+    // If no_tablespaces is enabled
+    if ($no_tablespaces)
+    {
+        // Append the no tablespaces option
+        $mysqldump_command .= " --no-tablespaces";
+    }
+
+    // If set_gtid_purged is enabled
+    if ($set_gtid_purged)
+    {
+        // Append the set gtid purged option
+        $mysqldump_command .= " --set-gtid-purged=OFF";
+    }
+
+    // Append the database connection information
+    $mysqldump_command .= "  -h " . escapeshellarg(DB_HOSTNAME) . " -u " . escapeshellarg(DB_USERNAME) . " -p" . escapeshellarg(DB_PASSWORD) . " " . escapeshellarg(DB_DATABASE);
+
+    // Return the mysqldump command
+    return $mysqldump_command;
+}
+/**********************************
+ * FUNCTION: CONVERT DATA TO UTF8 *
+ **********************************/
+function utf8ize( $mixed ) {
+    if (is_array($mixed)) {
+        foreach ($mixed as $key => $value) {
+            $mixed[$key] = utf8ize($value);
+        }
+    } elseif (is_string($mixed)) {
+        return utf8_encode($mixed);
+    }
+    return $mixed;
+}
+/**************************************************
+ * FUNCTION: SETTING CUSTOM RISKS AND ISSUES TAGS *
+ **************************************************/
+function setting_risks_and_issues_tags($risk_tags){
+
+    // Query the database
+    $db = db_open();
+    $tag_ids = implode(",", $risk_tags);
+    $stmt = $db->prepare("UPDATE `user` SET `custom_risks_and_issues_settings` = :tag_ids WHERE value = :user_id");
+    $stmt->bindParam(":user_id", $_SESSION['uid'], PDO::PARAM_INT);
+    $stmt->bindParam(":tag_ids", $tag_ids, PDO::PARAM_STR);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+    return true;
 }
 ?>

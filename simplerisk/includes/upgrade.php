@@ -160,6 +160,7 @@ $releases = array(
 	"20220122-001",
 	"20220306-001",
 	"20220401-001",
+	"20220527-001",
 );
 
 /*************************
@@ -422,14 +423,14 @@ function check_grants($db)
                 $alter = true;
         }
 
-        // Match ALTER statement
+        // Match REFERENCES statement
         $regex_pattern = "/REFERENCES/";
         if (preg_match($regex_pattern, $string))
         {
             $references = true;
         }
 
-        // Match ALTER statement
+        // Match INDEX statement
         $regex_pattern = "/INDEX/";
         if (preg_match($regex_pattern, $string))
         {
@@ -6450,6 +6451,146 @@ function upgrade_from_20220306001($db)
         $stmt->execute();
     }
 
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20220401-001 *
+ ***************************************/
+function upgrade_from_20220401001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20220401-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20220527-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Add a custom_risks_and_issues_settings field to user table
+    if (!field_exists_in_table('custom_risks_and_issues_settings', 'user')) {
+        echo "Adding a custom_risks_and_issues_settings field to user table.<br />\n";
+        $stmt = $db->prepare('ALTER TABLE `user` ADD `custom_risks_and_issues_settings` VARCHAR(2000) NULL DEFAULT NULL;');
+        $stmt->execute();
+    }
+
+    /* Additional indexes on columns used in Dynamic Risk Report's query */
+    if (!index_exists_on_table('rsh_last_update_idx', 'risk_scoring_history')) {
+        echo "Adding index 'rsh_last_update_idx' to table 'risk_scoring_history'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX rsh_last_update_idx ON `risk_scoring_history`(`last_update`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('rrsh_last_update_idx', 'residual_risk_scoring_history')) {
+        echo "Adding index 'rrsh_last_update_idx' to table 'residual_risk_scoring_history'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX rrsh_last_update_idx ON `residual_risk_scoring_history`(`last_update`);");
+        $stmt->execute();
+    }
+    
+    if (!index_exists_on_table('risk2team_risk_id', 'risk_to_team')) {
+        echo "Adding index 'risk2team_risk_id' to table 'risk_to_team'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX risk2team_risk_id ON `risk_to_team`(`risk_id`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('risk2team_team_id', 'risk_to_team')) {
+        echo "Adding index 'risk2team_team_id' to table 'risk_to_team'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX risk2team_team_id ON `risk_to_team`(`team_id`);");
+        $stmt->execute();
+    }
+    
+    if (!index_exists_on_table('mtg2team_mtg_id', 'mitigation_to_team')) {
+        echo "Adding index 'mtg2team_mtg_id' to table 'mitigation_to_team'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX mtg2team_mtg_id ON `mitigation_to_team`(`mitigation_id`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('mtg2team_team_id', 'mitigation_to_team')) {
+        echo "Adding index 'mtg2team_team_id' to table 'mitigation_to_team'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX mtg2team_team_id ON `mitigation_to_team`(`team_id`);");
+        $stmt->execute();
+    }
+    
+    if (index_exists_on_table('risk_id', 'mitigation_accept_users')) {
+        echo "Dropping index 'risk_id' to table 'mitigation_accept_users'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `mitigation_accept_users` DROP INDEX `risk_id`;");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('mau_risk_id_idx', 'mitigation_accept_users')) {
+        echo "Adding index 'mau_risk_id_idx' to table 'mitigation_accept_users'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX mau_risk_id_idx ON `mitigation_accept_users`(`risk_id`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('mau_user_idx', 'mitigation_accept_users')) {
+        echo "Adding index 'mau_user_idx' to table 'mitigation_accept_users'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX mau_user_idx ON `mitigation_accept_users`(`user_id`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('mau_user_risk_idx', 'mitigation_accept_users')) {
+        echo "Adding index 'mau_user_risk_idx' to table 'mitigation_accept_users'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX mau_user_risk_idx ON `mitigation_accept_users`(`user_id`, `risk_id`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('mau_risk_user_idx', 'mitigation_accept_users')) {
+        echo "Adding index 'mau_risk_user_idx' to table 'mitigation_accept_users'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX mau_risk_user_idx ON `mitigation_accept_users`(`risk_id`, `user_id`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('risk_levels_value_idx', 'risk_levels')) {
+        echo "Adding index 'risk_levels_value_idx' to table 'risk_levels'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX risk_levels_value_idx ON `risk_levels`(`value`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('risk_levels_name_idx', 'risk_levels')) {
+        echo "Adding index 'risk_levels_name_idx' to table 'risk_levels'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX risk_levels_name_idx ON `risk_levels`(`name`);");
+        $stmt->execute();
+    }
+    
+    if (!index_exists_on_table('framework_controls_deleted_idx', 'framework_controls')) {
+        echo "Adding index 'framework_controls_deleted_idx' to table 'framework_controls'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX framework_controls_deleted_idx ON `framework_controls`(`deleted`);");
+        $stmt->execute();
+    }
+    
+    if (!index_exists_on_table('mtg2ctrl_mtg_idx', 'mitigation_to_controls')) {
+        echo "Adding index 'mtg2ctrl_mtg_idx' to table 'mitigation_to_controls'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX mtg2ctrl_mtg_idx ON `mitigation_to_controls`(`mitigation_id`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('mtg2ctrl_control_idx', 'mitigation_to_controls')) {
+        echo "Adding index 'mtg2ctrl_control_idx' to table 'mitigation_to_controls'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX mtg2ctrl_control_idx ON `mitigation_to_controls`(`control_id`);");
+        $stmt->execute();
+    }
+    
+    if (!index_exists_on_table('rsci_impact_idx', 'risk_scoring_contributing_impacts')) {
+        echo "Adding index 'rsci_impact_idx' to table 'risk_scoring_contributing_impacts'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX rsci_impact_idx ON `risk_scoring_contributing_impacts`(`impact`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('cri_value_idx', 'contributing_risks_impact')) {
+        echo "Adding index 'cri_value_idx' to table 'contributing_risks_impact'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX cri_value_idx ON `contributing_risks_impact`(`value`);");
+        $stmt->execute();
+    }
+    
+    if (!index_exists_on_table('closures_close_reason_idx', 'closures')) {
+        echo "Adding index 'closures_close_reason_idx' to table 'closures'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX closures_close_reason_idx ON `closures`(`close_reason`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('closures_user_id_idx', 'closures')) {
+        echo "Adding index 'closures_user_id_idx' to table 'closures'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX closures_user_id_idx ON `closures`(`user_id`);");
+        $stmt->execute();
+    }
+    /* End of additional indexes on columns used in Dynamic Risk Report's query */
+    
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic
     $_SESSION['latest_version_app'] = latest_version('app');

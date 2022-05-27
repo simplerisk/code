@@ -246,25 +246,25 @@ function add_risk_details($template_group_id = ""){
 
             // Top panel
             echo "<div class=\"row-fluid top-panel\">\n";
-                display_main_detail_fields_by_panel_add('top', $active_fields);
+                display_main_detail_fields_by_panel_add('top', $active_fields, $template_group_id);
             echo "</div>\n";
             echo "<div class=\"row-fluid\">\n";
                 // Left Panel
                 echo "<div class=\"span5 left-panel\">\n";
-                    display_main_detail_fields_by_panel_add('left', $active_fields);
+                    display_main_detail_fields_by_panel_add('left', $active_fields, $template_group_id);
                     echo "&nbsp;";
                 echo "</div>\n";
 
                 // Right Panel
                 echo "<div class=\"span5 right-panel\">\n";
-                    display_main_detail_fields_by_panel_add('right', $active_fields);
+                    display_main_detail_fields_by_panel_add('right', $active_fields, $template_group_id);
                     echo "&nbsp;";
                 echo "</div>\n";
             echo "</div>\n";
 
             // Bottom panel
             echo "<div class=\"row-fluid bottom-panel\">\n";
-                display_main_detail_fields_by_panel_add('bottom', $active_fields);
+                display_main_detail_fields_by_panel_add('bottom', $active_fields, $template_group_id);
                 echo "&nbsp;";
             echo "</div>\n";
         }
@@ -4158,6 +4158,9 @@ function view_reporting_menu($active)
     echo ($active == "RiskDashboard" ? "<li class=\"active\">\n" : "<li>\n");
     echo "<a href=\"dashboard.php\">" . $escaper->escapeHtml($lang['RiskDashboard']) . "</a>\n";
     echo "</li>\n";
+    echo ($active == "RisksAndIssues" ? "<li class=\"active\">\n" : "<li>\n");
+    echo "<a href=\"risks_and_issues.php\">" . $escaper->escapeHtml($lang['RisksAndIssues']) . "</a>\n";
+    echo "</li>\n";
     echo ($active == "RiskAppetiteReport" ? "<li class=\"active\">\n" : "<li>\n");
     echo "<a href=\"risk_appetite.php\">" . $escaper->escapeHtml($lang['RiskAppetiteReport']) . "</a>\n";
     echo "</li>\n";
@@ -4387,6 +4390,60 @@ function view_risks_and_assets_selections($report, $sort_by, $asset_tags, $proje
             });
         </script>";
 
+}
+/*********************************************
+* FUNCTION: VIEW RISKS AND ISSUES SELECTIONS *
+**********************************************/
+function view_risks_and_issues_selections($risk_tags, $start_date="", $end_date="")
+{
+    global $lang, $escaper;
+    $start_date  = $start_date ? $start_date : format_date(date('Y-m-d', strtotime('-30 days')));
+    $end_date  = $end_date ? $end_date : format_date(date('Y-m-d'));
+
+    echo "<form name=\"issues_report\" method=\"POST\" action=\"\">\n";
+    echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"span12\">\n";
+    echo "<a href=\"javascript:;\" onclick=\"javascript: closeSearchBox()\"><img src=\"../images/X-100.png\" width=\"10\" height=\"10\" align=\"right\" /></a>\n";
+    echo "</div>\n";
+    echo "</div>\n";
+    echo "<div class=\"row-fluid\">\n";
+
+    echo "<div class=\"span3\">";
+    echo $escaper->escapeHtml($lang['RiskTags']).": ";
+    create_multiple_dropdown("risk_tags", $risk_tags, NULL, NULL, true, $lang['Unassigned'], "-1");
+    echo "</div>\n";
+
+    echo "<div class=\"span3\">";
+    echo $escaper->escapeHtml($lang['StartDate']).": ";
+    echo "<input type=\"text\" name=\"start_date\" value=\"".$start_date."\" class=\"form-control datepicker\">";
+    echo "</div>\n";
+
+    echo "<div class=\"span3\">";
+    echo $escaper->escapeHtml($lang['EndDate']).": ";
+    echo "<input type=\"text\" name=\"end_date\" value=\"".$end_date."\" class=\"form-control datepicker\">";
+    echo "</div>\n";
+
+    echo "</div>\n";
+    echo "</form>\n";
+    echo "<script>
+            $(document).ready(function(){
+                $('#risk_tags').multiselect({
+                    allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
+                    enableFiltering: true,
+                    maxHeight: 250,
+                    buttonWidth: '100%',
+                    includeSelectAllOption: true,
+                    enableCaseInsensitiveFiltering: true,
+                    onDropdownHide: function(){
+                        $('form[name=issues_report]').submit();
+                    }
+                });
+                $('.datepicker').datepicker();
+                $('.datepicker').change(function(){
+                    $('form[name=issues_report]').submit();
+                });
+            });
+        </script>";
 }
 
 /******************************************

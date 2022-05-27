@@ -109,25 +109,18 @@ global $escaper, $lang;
 	if (get_setting('hosting_tier') == false && (!core_is_purchased("import-export") || !core_is_installed("import-export") || !core_extra_activated("import-export")))
 	{
 		$import_export_check = false;
-                // URL for the frameworks
-                $url = "https://github.com/simplerisk/import-content/raw/master/Control%20Frameworks/frameworks.xml";
-                
-                // HTTP Options
-                $opts = array(
-                        'ssl'=>array(
-                                'verify_peer'=>true,
-                                'verify_peer_name'=>true,
-                        ),
-                        'http'=>array(
-                                'method'=>"GET",
-                                'header'=>"content-type: application/json\r\n",
-                        )
-                );
-                $context = stream_context_create($opts);
+
+        // URL for the frameworks
+        $url = "https://github.com/simplerisk/import-content/raw/master/Control%20Frameworks/frameworks.xml";
+
+        // Configure the proxy server if one exists
+        $method = "GET";
+        $header = "content-type: application/json";
+        $context = set_proxy_stream_context($method, $header);
                 
 		// Get the list of frameworks from GitHub
-                $frameworks = @file_get_contents($url, false, $context);
-                $frameworks_xml = simplexml_load_string($frameworks);
+        $frameworks = @file_get_contents($url, false, $context);
+        $frameworks_xml = simplexml_load_string($frameworks);
 
 		// If this is not on the hosted platform and the Import-Export Extra is not purchased
 		if (get_setting('hosting_tier') == false && !core_is_purchased("import-export"))

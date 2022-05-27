@@ -30,18 +30,6 @@ input[type="text"]{
     }
 
 }
-
-input[type="text"],
-input[type="url"],
-input[type="password"],
-input[type="number"],
-input[type="tel"],
-input[type="email"],
-input[type="date"],
-input[type="text"]{
-
-}
-
 select{
     border-radius: 2px;
     border: 1px solid $border-color;
@@ -75,20 +63,13 @@ select{
 		background-color: lightgrey;
 	}
 }
-
 textarea:disabled{
-    @extend input, [type="text"], :disabled;
-    //@extend input[type="text"]:disabled;
-
-}
-textarea:focus{
-    @extend input, [type="text"], :focus;
-    //@extend input[type="text"]:focus;
+    background-color: transparent;
+    border: 1px solid transparent;
 }
 textarea,
 textarea.form-control{
-
-
+    width: 100%;
     resize: both;
     overflow: auto;
     height: 100px;

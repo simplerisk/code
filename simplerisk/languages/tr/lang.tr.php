@@ -2196,6 +2196,12 @@ $lang = array(
     'UpdatedBy'=>'Tarafından güncellendi',
     'AllowTeamToSeeDocuments'=>'Ekibin Belgeleri Görmesine İzin Ver',
     'AllowDocumentOwnersManagerToSeeDocuments' => 'Belge Sahibinin Yöneticisinin Belgeleri Görmesine İzin Ver',
+    'RisksAndIssues'=>'Riskler ve Sorunlar',
+    'RiskTags' => 'Risk Etiketleri',
+    'Trend' => 'Akım',
+    'Increasing' => 'Artan',
+    'Decreasing' => 'azalan',
+    'NoChange' => 'Değişiklik yok',
 
     '' => '',
 );

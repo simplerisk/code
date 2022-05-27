@@ -2196,6 +2196,12 @@ $lang = array(
     'UpdatedBy'=>'Aktualizowany przez',
     'AllowTeamToSeeDocuments'=>'Zezwalaj zespołowi na przeglądanie dokumentów',
     'AllowDocumentOwnersManagerToSeeDocuments' => 'Zezwalaj menedżerowi właściciela dokumentu na wyświetlanie dokumentów',
+    'RisksAndIssues'=>'Zagrożenia i problemy',
+    'RiskTags' => 'Tagi ryzyka',
+    'Trend' => 'Tendencja',
+    'Increasing' => 'Wzrastający',
+    'Decreasing' => 'Malejące',
+    'NoChange' => 'Bez zmiany',
 
     '' => '',
 );

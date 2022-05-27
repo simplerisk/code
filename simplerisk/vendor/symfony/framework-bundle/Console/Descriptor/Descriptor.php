@@ -150,6 +150,10 @@ abstract class Descriptor implements DescriptorInterface
      */
     protected function formatValue($value): string
     {
+        if ($value instanceof \UnitEnum) {
+            return ltrim(var_export($value, true), '\\');
+        }
+
         if (\is_object($value)) {
             return sprintf('object(%s)', \get_class($value));
         }
@@ -169,7 +173,7 @@ abstract class Descriptor implements DescriptorInterface
     protected function formatParameter($value): string
     {
         if ($value instanceof \UnitEnum) {
-            return var_export($value, true);
+            return ltrim(var_export($value, true), '\\');
         }
 
         // Recursively search for enum values, so we can replace it
@@ -177,7 +181,7 @@ abstract class Descriptor implements DescriptorInterface
         if (\is_array($value)) {
             array_walk_recursive($value, static function (&$value) {
                 if ($value instanceof \UnitEnum) {
-                    $value = var_export($value, true);
+                    $value = ltrim(var_export($value, true), '\\');
                 }
             });
         }

@@ -331,7 +331,7 @@ if(isset($_POST['delete_test'])){
         <div class="modal-body">
           <div class="form-group">
             <label for=""><?php echo $escaper->escapeHtml($lang['TestName']); ?></label>
-            <input type="text" name="name" required="" value="" class="form-control" maxlength="100">
+            <input type="text" name="name" required="" value="" class="form-control" maxlength="1000">
 
             <label for=""><?php echo $escaper->escapeHtml($lang['Tester']); ?></label>
             <?php create_dropdown("enabled_users", NULL, "tester", false, false, false); ?>
@@ -384,7 +384,7 @@ if(isset($_POST['delete_test'])){
         <div class="modal-body">
           <div class="form-group">
             <label for=""><?php echo $escaper->escapeHtml($lang['TestName']); ?></label>
-            <input type="text" name="name" required="" value="" class="form-control" maxlength="100">
+            <input type="text" name="name" required="" value="" class="form-control" maxlength="1000">
 
             <label for=""><?php echo $escaper->escapeHtml($lang['Tester']); ?></label>
             <?php create_dropdown("enabled_users", NULL, "tester", false, false, false); ?>
