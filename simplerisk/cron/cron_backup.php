@@ -122,6 +122,9 @@ function do_backup($force=false) {
     
     // Create a random id for the backup
     $random_id = generate_token(50);
+
+    // Open the database connection
+    $db = db_open();
     
     // Insert the backup information into the database
     $stmt = $db->prepare("INSERT INTO `backups` (`random_id`, `app_zip_file_name`, `db_zip_file_name`) VALUES (:random_id, :app_zip_file_name, :db_zip_file_name);");
