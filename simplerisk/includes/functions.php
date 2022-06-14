@@ -17387,7 +17387,8 @@ function save_junction_values($tb_name, $first_field_name, $first_id, $second_fi
     }
 
     // Sanitizing the array's values
-    $second_ids = array_values(array_filter($second_ids, 'ctype_digit'));
+    //$second_ids = array_values(array_filter($second_ids, 'sanitize_int_array'));
+    $second_ids = sanitize_int_array($second_ids);
 
     // If wasn't empty before and it's empty now then the sanitizing caught something
     if (!$second_ids) {
