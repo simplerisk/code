@@ -217,11 +217,11 @@ jQuery(document).ready(function($){
             complete: function(response){
                 if(response.status == 200){
                     $("#controls_count").html("("+ response.responseJSON.recordsTotal +")");
-                    rebuild_filter($("#filter_by_control_class"),response.responseJSON.classList);
-                    rebuild_filter($("#filter_by_control_phase"),response.responseJSON.phaseList);
-                    rebuild_filter($("#filter_by_control_family"),response.responseJSON.familyList);
-                    rebuild_filter($("#filter_by_control_owner"),response.responseJSON.ownerList);
-                    rebuild_filter($("#filter_by_control_priority"),response.responseJSON.priorityList);
+                    //rebuild_filter($("#filter_by_control_class"),response.responseJSON.classList);
+                    //rebuild_filter($("#filter_by_control_phase"),response.responseJSON.phaseList);
+                    //rebuild_filter($("#filter_by_control_family"),response.responseJSON.familyList);
+                    //rebuild_filter($("#filter_by_control_owner"),response.responseJSON.ownerList);
+                    //rebuild_filter($("#filter_by_control_priority"),response.responseJSON.priorityList);
                 }
             }
         }
