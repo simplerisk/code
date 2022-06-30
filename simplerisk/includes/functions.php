@@ -10101,7 +10101,8 @@ function update_mitigation($risk_id, $post)
         foreach ($updated_fields as $key => $value) {
             $detail_updated[] = "Field name : `".$key. "` (`".$value["original"]."`=>`".$value["updated"]."`)";
         }
-        $updated_string = implode($detail_updated,", ");
+        //$updated_string = implode($detail_updated,", ");
+        $updated_string = implode(", ",$detail_updated);
     } else $updated_string = "";
     $message = "Risk mitigation details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".\n".$updated_string;
     write_log($risk_id, $_SESSION['uid'], $message);
