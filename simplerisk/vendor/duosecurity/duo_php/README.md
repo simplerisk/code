@@ -1,3 +1,15 @@
+# Deprecation Notice
+
+Duo Security will deprecate and archive this repository on July 18, 2022. The repository will remain public and visible after that date, and integrations built using this repository’s code will continue to work. You can also continue to fork, clone, or pull from this repository after it is deprecated.
+
+However, Duo will not provide any further releases or enhancements after the deprecation date.
+
+Duo recommends migrating your application to the Duo Universal Prompt. Refer to [our documentation](https://duo.com/docs/universal-prompt-update-guide) for more information on how to update.
+
+For frequently asked questions about the impact of this deprecation, please see the [Repository Deprecation FAQ](https://duosecurity.github.io/faq.html)
+
+----
+
 # Overview
 
 [![Build Status](https://github.com/duosecurity/duo_php/workflows/PHP%20CI/badge.svg?branch=master)](https://github.com/duosecurity/duo_php/actions)

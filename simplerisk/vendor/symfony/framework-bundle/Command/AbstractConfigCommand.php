@@ -79,20 +79,20 @@ abstract class AbstractConfigCommand extends ContainerDebugCommand
                 $guess = $bundle->getName();
                 $minScore = $distance;
             }
+        }
 
-            $extension = $bundle->getContainerExtension();
+        $container = $this->getContainerBuilder();
 
-            if ($extension) {
-                if ($name === $extension->getAlias()) {
-                    return $extension;
-                }
+        if ($container->hasExtension($name)) {
+            return $container->getExtension($name);
+        }
 
-                $distance = levenshtein($name, $extension->getAlias());
+        foreach ($container->getExtensions() as $extension) {
+            $distance = levenshtein($name, $extension->getAlias());
 
-                if ($distance < $minScore) {
-                    $guess = $extension->getAlias();
-                    $minScore = $distance;
-                }
+            if ($distance < $minScore) {
+                $guess = $extension->getAlias();
+                $minScore = $distance;
             }
         }
 

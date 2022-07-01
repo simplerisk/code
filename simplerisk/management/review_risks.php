@@ -78,10 +78,9 @@ require_once(language_file());
     <script src="../js/sorttable.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/common.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/pages/risk.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/moment.min.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../vendor/moment/moment/min/moment.min.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/moment.min.js?<?php echo current_version("app"); ?>"></script>
 
     <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">

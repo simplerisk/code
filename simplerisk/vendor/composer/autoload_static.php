@@ -122,6 +122,7 @@ class ComposerStaticInit59d4e07571bbe2f12ae669f9f8611ab9
         'O' => 
         array (
             'Opis\\Closure\\' => 13,
+            'OomphInc\\ComposerInstallersExtender\\' => 36,
         ),
         'M' => 
         array (
@@ -155,6 +156,7 @@ class ComposerStaticInit59d4e07571bbe2f12ae669f9f8611ab9
         'C' => 
         array (
             'Cron\\' => 5,
+            'Composer\\Installers\\' => 20,
             'Complex\\' => 8,
         ),
         'B' => 
@@ -470,6 +472,10 @@ class ComposerStaticInit59d4e07571bbe2f12ae669f9f8611ab9
         array (
             0 => __DIR__ . '/..' . '/opis/closure/src',
         ),
+        'OomphInc\\ComposerInstallersExtender\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/oomphinc/composer-installers-extender/src',
+        ),
         'MyCLabs\\Enum\\' => 
         array (
             0 => __DIR__ . '/..' . '/myclabs/php-enum/src',
@@ -517,6 +523,10 @@ class ComposerStaticInit59d4e07571bbe2f12ae669f9f8611ab9
         'Cron\\' => 
         array (
             0 => __DIR__ . '/..' . '/dragonmantank/cron-expression/src/Cron',
+        ),
+        'Composer\\Installers\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/composer/installers/src/Composer/Installers',
         ),
         'Complex\\' => 
         array (

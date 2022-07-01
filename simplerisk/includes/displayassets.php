@@ -137,7 +137,7 @@ function display_asset_site_location_edit($display = true)
     echo "<div class=\"row-fluid\"{$displayString}>";
         echo "<div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['SiteLocation']).":</div>";
         echo "<div class=\"span10\">";
-            create_dropdown("location");
+            create_multiple_dropdown("location", NULL, NULL, NULL, false, "", "", true, " class='multiselect' ");
         echo "</div>";
     echo "</div>";
 }
@@ -435,8 +435,9 @@ function display_asset_site_location_td($asset_site_location)
     if ($asset_site_location == 0)
     {
         $asset_site_location = "N/A";
+    } else {
+        $asset_site_location = get_names_by_multi_values("location", $asset_site_location);
     }
-    else $asset_site_location = get_name_by_value("location", $asset_site_location);
 
     echo "<td align=\"left\">" . $escaper->escapeHtml($asset_site_location) . "</td>\n";
 }
@@ -569,7 +570,8 @@ function display_asset_site_location_td_edit($asset_id, $asset_site_location)
     global $escaper;
     
     echo "<td>\n";
-        create_dropdown("location", $asset_site_location, "location-" . $escaper->escapeHtml($asset_id));
+        $asset_location_arr = explode(",", $asset_site_location);
+        create_multiple_dropdown("location", $asset_location_arr, "location-" . $escaper->escapeHtml($asset_id), NULL, false, "", "", true, " class='multiselect' ");
     echo "</td>\n";
 }
 

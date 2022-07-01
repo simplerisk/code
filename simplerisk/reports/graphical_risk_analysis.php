@@ -108,7 +108,7 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
                                 <?php display_save_graphic_selection(); ?>
                             </div>
                             <div class="row-fluid">
-                                <input type="submit" name="generate_report" value="Generate Report" />
+                                <input type="submit" name="generate_report" value="<?php echo $escaper->escapeHtml($lang['GenerateReport']);?>" />
                             </div>
                         </form>
                     </div>

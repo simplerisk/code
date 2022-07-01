@@ -190,8 +190,8 @@ function asset_exists_exact($ip, $name, $value, $location, $teams, $details, $ve
         $stmt->bindParam(":ip", $ip, PDO::PARAM_STR, 15);
         $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
         $stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
-        $stmt->bindParam(":location", $location, PDO::PARAM_INT, 2);
-        $stmt->bindParam(":teams", $teams, PDO::PARAM_INT, 2);
+        $stmt->bindParam(":location", $location, PDO::PARAM_STR);
+        $stmt->bindParam(":teams", $teams, PDO::PARAM_STR);
         $stmt->bindParam(":details", $details, PDO::PARAM_STR);
         $stmt->bindParam(":verified", $verified, PDO::PARAM_INT);
         $stmt->execute();
@@ -230,7 +230,7 @@ function add_asset_by_name_with_forced_verification($name, $verified = false) {
 /***********************
  * FUNCTION: ADD ASSET *
  ***********************/
-function add_asset($ip, $name, $value=5, $location=0, $teams="", $details = "", $tags = "", $verified = false, $imported = false)
+function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "", $tags = "", $verified = false, $imported = false)
 {
     global $lang;
 
@@ -240,7 +240,7 @@ function add_asset($ip, $name, $value=5, $location=0, $teams="", $details = "", 
         $name   = trim($name);
         $ip     = trim($ip);
         $value  = trim($value);
-        $location = (int)$location;
+        $location   = is_array($location) ? implode(',', $location) : $location;
         $teams   = is_array($teams) ? implode(',', $teams) : $teams;
         
         if (!$name)
@@ -264,7 +264,7 @@ function add_asset($ip, $name, $value=5, $location=0, $teams="", $details = "", 
         $stmt->bindParam(":ip", $ip, PDO::PARAM_STR);
         $stmt->bindParam(":name", $name, PDO::PARAM_STR);
         $stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
-        $stmt->bindParam(":location", $location, PDO::PARAM_INT, 2);
+        $stmt->bindParam(":location", $location, PDO::PARAM_STR);
         $stmt->bindParam(":teams", $teams, PDO::PARAM_STR);
         $stmt->bindParam(":details", $details, PDO::PARAM_STR);
         $stmt->bindParam(":verified", $verified, PDO::PARAM_INT);
@@ -281,7 +281,7 @@ function add_asset($ip, $name, $value=5, $location=0, $teams="", $details = "", 
             $stmt->bindParam(":ip", $ip, PDO::PARAM_STR, 15);
             $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
             $stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
-            $stmt->bindParam(":location", $location, PDO::PARAM_INT, 2);
+            $stmt->bindParam(":location", $location, PDO::PARAM_STR);
             $stmt->bindParam(":teams", $teams, PDO::PARAM_STR);
             $stmt->bindParam(":details", $details, PDO::PARAM_STR);
             $stmt->bindParam(":verified", $verified, PDO::PARAM_INT);
@@ -1108,8 +1108,8 @@ function edit_asset($id, $value, $location, $team, $details)
     // Update the asset
     $stmt = $db->prepare("UPDATE assets SET value = :value, location = :location, team = :team, details = :details WHERE id = :id");
     $stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
-    $stmt->bindParam(":location", $location, PDO::PARAM_INT, 2);
-    $stmt->bindParam(":team", $team, PDO::PARAM_INT, 2);
+    $stmt->bindParam(":location", $location, PDO::PARAM_STR);
+    $stmt->bindParam(":team", $team, PDO::PARAM_STR);
     $stmt->bindParam(":details", $details, PDO::PARAM_STR);
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
@@ -1138,6 +1138,7 @@ function update_asset_field_value_by_field_name($id, $fieldName, $fieldValue)
         break;
         case "location":
             $fieldName = "location";
+            $fieldValue = is_array($fieldValue) ? implode(",", $fieldValue) : $fieldValue;
         break;
         case "team":
             $fieldName = "teams";
@@ -1196,8 +1197,8 @@ function import_asset($ip, $name, $value, $location, $teams, $details, $tags, $v
     $name       = trim($name);
     $ip         = trim($ip);
     $value      = trim($value);
-    $location   = (int)$location;
-    $teams       = $teams ? trim($teams) : "";
+    $location   = $location ? trim($location) : "";
+    $teams      = $teams ? trim($teams) : "";
 
     $asset_id   = asset_exists($name);
 
@@ -1225,7 +1226,7 @@ function import_asset($ip, $name, $value, $location, $teams, $details, $tags, $v
     $stmt = $db->prepare("UPDATE assets SET ip = :ip, value = :value, location = :location, teams = :teams, details = :details, verified = :verified WHERE id = :asset_id");
     $stmt->bindParam(":ip", $enc_ip, PDO::PARAM_STR);
     $stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
-    $stmt->bindParam(":location", $location, PDO::PARAM_INT, 2);
+    $stmt->bindParam(":location", $location, PDO::PARAM_STR);
     $stmt->bindParam(":teams", $teams, PDO::PARAM_STR);
     $stmt->bindParam(":details", $enc_details, PDO::PARAM_STR);
     $stmt->bindParam(":verified", $verified, PDO::PARAM_INT);

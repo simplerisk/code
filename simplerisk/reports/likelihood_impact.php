@@ -46,7 +46,7 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 
 	display_bootstrap_javascript();
 ?>
-    <script src="../js/moment.min.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../vendor/moment/moment/min/moment.min.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/daterangepicker.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/sorttable.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/obsolete.js?<?php echo current_version("app"); ?>"></script>

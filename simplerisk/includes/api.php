@@ -3421,8 +3421,7 @@ function setCustomDisplay(){
  * FUNCTION: SET CUSTOM AUDITS COLUMNS *
  ****************************************************************/
 function setCustomAuditsColumn(){
-    $_SESSION['custom_audits_solumns'] = isset($_POST['columns']) ? $_POST['columns'] : array();
-    save_custom_display_settings();
+    $_SESSION['custom_audits_columns'] = isset($_POST['columns']) ? $_POST['columns'] : array();
 }
 
 /****************************
@@ -4416,8 +4415,9 @@ function initiateFrameworkControlTestsResponse()
     {
         $id     = (int)$_POST['id'];
         $type   = $_POST['type'];
-        
-        if($name = initiate_framework_control_tests($type, $id))
+        $tags   = empty($_POST['tags']) ? [] : $_POST['tags'];
+
+        if($name = initiate_framework_control_tests($type, $id, $tags))
         {
             if($type == 'framework'){
                 set_alert(true, "good", $escaper->escapeHtml(_lang('InitiatedAllTestsUnderFramework', ['framework' => $name])));
@@ -4604,7 +4604,6 @@ function getDefineTestsResponse()
             }
 
             $tests = get_framework_control_tests_by_control_id($control['id']);
-
             $html = "<div class='control-block item-block clearfix'>\n";
                 $html .= "<div class='control-block--header clearfix' data-project=''>\n";
                     $html .= "<br>\n";
@@ -4661,6 +4660,7 @@ function getDefineTestsResponse()
                                         <th>".$escaper->escapeHtml($lang['TestName'])."</th>
                                         <th>".$escaper->escapeHtml($lang['Tester'])."</th>
                                         <th>".$escaper->escapeHtml($lang['AdditionalStakeholders'])."</th>
+                                        <th width='150px'>".$escaper->escapeHtml($lang['Tags'])."</th>
                                         <th width='110px'>".$escaper->escapeHtml($lang['TestFrequency'])."</th>
                                         <th width='110px'>".$escaper->escapeHtml($lang['LastTestDate'])."</th>
                                         <th width='110px'>".$escaper->escapeHtml($lang['NextTestDate'])."</th>
@@ -4675,6 +4675,14 @@ function getDefineTestsResponse()
                                         if (!is_user_allowed_to_access($_SESSION['uid'], $test['id'], 'test')) {
                                             continue;
                                         }
+                                    }
+                                    $tags_view = "";
+                                    if ($test['tags']) {
+                                        foreach(explode(",", $test['tags']) as $tag) {
+                                            $tags_view .= "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin-right:2px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
+                                        }
+                                    } else {
+                                        $tags_view .= "";
                                     }
                                     
                                     $last_date = format_date($test['last_date']);
@@ -4693,6 +4701,7 @@ function getDefineTestsResponse()
                                             <td>".$escaper->escapeHtml($test['name'])."</td>
                                             <td>".$escaper->escapeHtml($test['tester_name'])."</td>
                                             <td>".$escaper->escapeHtml(get_stakeholder_names($test['additional_stakeholders'], 3))."</td>
+                                            <td>".$tags_view."</td>
                                             <td class='text-center'>".(int)$test['test_frequency']. " " .$escaper->escapeHtml($test['test_frequency'] > 1 ? $escaper->escapeHtml($lang['days']) : $escaper->escapeHtml($lang['Day']))."</td>
                                             <td class='text-center'>".$escaper->escapeHtml($last_date)."</td>
                                             <td class='text-center'>".$escaper->escapeHtml($next_date)."</td>
@@ -4903,6 +4912,7 @@ function getPastTestAuditsResponse()
             "filter_control"        => empty($_POST['filter_control']) ? [] : $_POST['filter_control'],
             "filter_test_result"    => empty($_POST['filter_test_result']) ? [] : $_POST['filter_test_result'],
             "filter_framework"      => empty($_POST['filter_framework']) ? [] : $_POST['filter_framework'],
+            "filter_tags"           => empty($_POST['filter_tags']) ? [] : $_POST['filter_tags'],
             "filter_start_audit_date"   => $_POST['filter_start_audit_date'] ? get_standard_date_from_default_format($_POST['filter_start_audit_date']) : "",
             "filter_end_audit_date"     => $_POST['filter_end_audit_date'] ? get_standard_date_from_default_format($_POST['filter_end_audit_date']) : "",
             "filter_testname"   => empty($_POST['filter_testname']) ? '' : $_POST['filter_testname']
@@ -4913,6 +4923,7 @@ function getPastTestAuditsResponse()
             "last_date",
             "control_name",
             "framework_name",
+            "tags",
             "status",
             "test_result",
         );
@@ -4948,16 +4959,26 @@ function getPastTestAuditsResponse()
 
             $background_class = $escaper->escapeHtml($test_audit['background_class']);
 
-            $last_date = format_date($test_audit['last_date']);
+            $test_date = format_date($test_audit['test_date']);
             if(isset($_SESSION["modify_audits"]) && $_SESSION["modify_audits"] == 1){
                 $reopen_button = "<button class='reopen' data-id='{$test_audit['id']}'>".$escaper->escapeHtml($lang['Reopen'])."</button>";
             } else $reopen_button = "";
 
+            $tags_view = "";
+            if ($test_audit['tags']) {
+                foreach(explode(",", $test_audit['tags']) as $tag) {
+                    $tags_view .= "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin-right:2px; margin-bottom:2px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
+                }
+            } else {
+                $tags_view .= "";
+            }
+
             $data[] = [
                 "<div ><a href='".$_SESSION['base_url']."/compliance/view_test.php?id=".$test_audit['id']."' class='text-left'>".$escaper->escapeHtml($test_audit['name'])."</a><input type='hidden' class='background-class' data-background='{$background_class}'></div>",
-                "<div class=\"{}\">".$escaper->escapeHtml($last_date)."</div>",
+                "<div>".$escaper->escapeHtml($test_date)."</div>",
                 "<div >".$escaper->escapeHtml($test_audit['control_name'])."</div>",
                 "<div >".$escaper->escapeHtml($test_audit['framework_name'])."</div>",
+                "<div >".$tags_view."</div>",
                 "<div >".$escaper->escapeHtml($test_audit['audit_status_name'])."</div>",
                 "<div >".$escaper->escapeHtml($test_audit['test_result'] ? $test_audit['test_result'] : "--")."</div>",
                 "<div class='text-center'>".$reopen_button."</div>",
@@ -5000,7 +5021,8 @@ function getActiveTestAuditsResponse()
             "filter_framework"  => empty($_POST['filter_framework']) ? [] : $_POST['filter_framework'],
             "filter_status"     => empty($_POST['filter_status']) ? [] : $_POST['filter_status'],
             "filter_tester"     => empty($_POST['filter_tester']) ? [] : $_POST['filter_tester'],
-            "filter_testname"   => empty($_POST['filter_testname']) ? '' : $_POST['filter_testname'],
+            "filter_testname"   => empty($_POST['filter_testname']) ? [] : $_POST['filter_testname'],
+            "filter_tags"       => empty($_POST['filter_tags']) ? [] : $_POST['filter_tags'],
         );
 
         $columnNames = array(
@@ -5011,7 +5033,9 @@ function getActiveTestAuditsResponse()
             "objective",
             "control_name",
             "framework_name",
+            "tags",
             "status",
+            "test_date",
             "last_date",
             "next_date",
             "actions"
@@ -5049,6 +5073,7 @@ function getActiveTestAuditsResponse()
                 $next_date_background_class = "red-background";
             }
 
+            $test_date = format_date($test['test_date']);
             $last_date = format_date($test['last_date']);
             $next_date = format_date($test['next_date']);
 
@@ -5056,16 +5081,27 @@ function getActiveTestAuditsResponse()
                 $delete_button = "<button class='btn delete-btn' data-id='{$test['id']}' >".$escaper->escapeHtml($lang['Delete'])."</button>";
             else $delete_button = "";
 
+            $tags_view = "";
+            if ($test['tags']) {
+                foreach(explode(",", $test['tags']) as $tag) {
+                    $tags_view .= "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin-right:2px; margin-bottom:2px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
+                }
+            } else {
+                $tags_view .= "";
+            }
+
             $data[] = [
-                "<div ><a href='".$_SESSION['base_url']."/compliance/testing.php?id=".$test['id']."' class='text-left'>".$escaper->escapeHtml($test['name'])."</a><input type='hidden' class='background-class' data-background='{$next_date_background_class}'></div>",
-                "<div >".(int)$test['test_frequency']. " " .$escaper->escapeHtml($test['test_frequency'] > 1 ? $lang['days'] : $lang['Day'])."</div>",
-                "<div >".$escaper->escapeHtml($test['tester_name'])."</div>",
-                "<div >".$escaper->escapeHtml(get_stakeholder_names($test['additional_stakeholders'], 2))."</div>",                
-                "<div >".$escaper->escapeHtml($test['objective'])."</div>",
-                "<div >".$escaper->escapeHtml($test['control_name'])."</div>",
-                "<div >".$escaper->escapeHtml($test['framework_name'])."</div>",
-                "<div >".$escaper->escapeHtml($test['audit_status_name'])."</div>",
-                "<div >".$escaper->escapeHtml($last_date)."</div>",
+                "<div><a href='".$_SESSION['base_url']."/compliance/testing.php?id=".$test['id']."' class='text-left'>".$escaper->escapeHtml($test['name'])."</a><input type='hidden' class='background-class' data-background='{$next_date_background_class}'></div>",
+                "<div>".(int)$test['test_frequency']. " " .$escaper->escapeHtml($test['test_frequency'] > 1 ? $lang['days'] : $lang['Day'])."</div>",
+                "<div>".$escaper->escapeHtml($test['tester_name'])."</div>",
+                "<div>".$escaper->escapeHtml(get_stakeholder_names($test['additional_stakeholders'], 2))."</div>",                
+                "<div>".$escaper->escapeHtml($test['objective'])."</div>",
+                "<div>".$escaper->escapeHtml($test['control_name'])."</div>",
+                "<div>".$escaper->escapeHtml($test['framework_name'])."</div>",
+                "<div>".$tags_view."</div>",
+                "<div>".$escaper->escapeHtml($test['audit_status_name'])."</div>",
+                "<div>".$escaper->escapeHtml($test_date)."</div>",
+                "<div>".$escaper->escapeHtml($last_date)."</div>",
                 "<div class='text-center '>".$escaper->escapeHtml($next_date)."</div>",
                 "<div class='text-center'>".$delete_button."</div>"
             ];

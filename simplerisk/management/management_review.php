@@ -84,7 +84,7 @@ if (isset($_GET['mitigated']))
     <script src="../js/sorttable.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/common.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/pages/risk.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/moment.min.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../vendor/moment/moment/min/moment.min.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
 
