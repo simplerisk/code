@@ -1291,7 +1291,7 @@ function update_framework_control($control_id, $control){
     // Close the database connection
     db_close($db);
     
-    if(isset($control['map_frameworks'])&&count($control['map_frameworks'])>0) save_control_to_frameworks($control_id, $control['map_frameworks']);
+    if(isset($control['map_frameworks'])) save_control_to_frameworks($control_id, $control['map_frameworks']);
     if(count($framework_ids)>0) save_control_to_framework_by_ids($control_id, $framework_ids);
     
     // If customization extra is enabled

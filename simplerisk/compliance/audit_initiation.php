@@ -111,9 +111,10 @@ if(isset($_POST['update_test'])){
     $test_steps     = $_POST['test_steps'];
     $approximate_time = (int)($_POST['approximate_time']) ? $_POST['approximate_time'] : 0;
     $expected_results = $_POST['expected_results'];
+    $tags           = empty($_POST['tags']) ? [] : $_POST['tags'];
     
     // Update a framework control test
-    update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date, false, $additional_stakeholders, $teams);
+    update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date, false, $additional_stakeholders, $teams, $tags);
     
     set_alert(true, "good", $escaper->escapeHtml($lang['TestSuccessUpdated']));
     
@@ -168,6 +169,7 @@ if(isset($_GET['initiate']) ){
 
 	display_bootstrap_javascript();
 ?>
+    <script src="../js/pages/compliance.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
 
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
@@ -182,6 +184,8 @@ if(isset($_GET['initiate']) ){
     <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
+    <script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");
@@ -317,6 +321,16 @@ if(isset($_GET['initiate']) ){
                         $('[name=approximate_time]', modal).val(data['approximate_time']);
                         $('[name=expected_results]', modal).val(data['expected_results']);
                         $(".datepicker" , modal).datepicker();
+                        $.each(data['tags'], function (i, item) {
+                            $('[name=\'tags[]\']', modal).append($('<option>', { 
+                                value: item,
+                                text : item,
+                                selected : true,
+                            }));
+                        });
+                        var select = $('[name=\'tags[]\']', modal).selectize();
+                        var selectize = select[0].selectize;
+                        selectize.setValue(data['tags']);
                         
                         modal.modal();
                     }
@@ -332,13 +346,33 @@ if(isset($_GET['initiate']) ){
                 }else if($(this).hasClass("initiate-test-btn")){
                     var type = "test";
                 }
+                var modal = $('#tags--edit');
+                $('[name=audit_type]', modal).val(type);
+                $('[name=id]', modal).val($(this).data('id'));
+                modal.modal();
+                return;
+            });
+            // Event when clicks Initiate Framework, Control, Test Audit button
+            $("#tags--edit").on("click", "[name=continue_add_tags], [name=cancel_add_tags]", function(){
+                var type = $("#tags--edit [name=audit_type]").val();
+                var id = $("#tags--edit [name=id]").val();
+                var tags = $("#tags--edit [name='tags[]']").val();
+                if($(this).attr("name") == "continue_add_tags") {
+                    var tags = $("#tags--edit [name='tags[]']").val();
+                } else {
+                    var tags = [];
+                }
+                var select = $("#tags--edit [name='tags[]']").selectize();
+                var selectize = select[0].selectize;
+                selectize.clear();
             
                 $.ajax({
                     url: BASE_URL + '/api/compliance/audit_initiation/initiate',
                     type: 'POST',
                     data: {
-                        type: type,// control, test
-                        id: $(this).data('id'),
+                        type: type, // control, test
+                        tags: tags, // selected tags
+                        id: id,
                     },
                     success : function (res){
                         if(res.status_message){
@@ -480,6 +514,10 @@ if(isset($_GET['initiate']) ){
             <label for=""><?php echo $escaper->escapeHtml($lang['ExpectedResults']); ?></label>
             <textarea name="expected_results" class="form-control" rows="6" style="width:100%;"></textarea>
 
+            <label for=""><?php echo $escaper->escapeHtml($lang['Tags']); ?></label>
+            <select class="test_tags" readonly name="tags[]" multiple placeholder="<?php echo $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);?>"></select>
+            <div class="tag-max-length-warning" style="margin-top:-10px"><?php echo $escaper->escapeHtml($lang['MaxTagLengthWarning']);?></div>
+
             <input type="hidden" name="test_id" value="">
 
           </div>
@@ -490,6 +528,31 @@ if(isset($_GET['initiate']) ){
         </div>
       </form>
     </div>
+
+    <!-- MODEL WINDOW FOR ADD TAGS TO TEST -->
+    <div id="tags--edit" class="modal hide" tabindex="-1" role="dialog" aria-hidden="true">
+      <form class="" id="tags-edit-form" method="post" autocomplete="off">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['AddTagsToTestAudit']); ?></h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 100px;">
+            <label for=""><?php echo $escaper->escapeHtml($lang['Tags']); ?></label>
+            <select class="test_tags" readonly name="tags[]" multiple placeholder="<?php echo $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);?>"></select>
+            <div class="tag-max-length-warning" style="margin-top:-10px"><?php echo $escaper->escapeHtml($lang['MaxTagLengthWarning']);?></div>
+
+            <input type="hidden" name="audit_type" value="">
+            <input type="hidden" name="id" value="">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button name="cancel_add_tags" class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
+          <button name="continue_add_tags" class="btn btn-danger" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Continue']); ?></button>
+        </div>
+      </form>
+    </div>
+
     <script>
         $( document ).ready(function() {
             $("#additional_stakeholders").multiselect();

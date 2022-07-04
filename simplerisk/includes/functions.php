@@ -234,7 +234,7 @@ $junction_config = array(
 // Also have to:
 //      -add localization for tag types(example: 'TagType_risk' => 'Risk')
 //      -add it to the $junction_config 
-$tag_types = ['risk', 'asset', 'questionnaire_risk', 'questionnaire_answer', 'questionnaire_pending_risk', 'incident_management_source', 'incident_management_destination'];
+$tag_types = ['risk', 'asset', 'questionnaire_risk', 'questionnaire_answer', 'questionnaire_pending_risk', 'incident_management_source', 'incident_management_destination', 'test', 'test_audit'];
 
 /******************************
  * FUNCTION: DATABASE CONNECT *
@@ -2627,7 +2627,7 @@ function check_valid_min_chars($password)
     else
     {
         // Display an alert
-        set_alert(true, "bad", "Unabled to update the password because it does not contain the minimum of ". $min_chars . " characters.");
+        set_alert(true, "bad", "Unable to update the password because it does not contain the minimum of ". $min_chars . " characters.");
 
        // Return false
        return false;
@@ -2651,7 +2651,7 @@ function check_valid_alpha($password)
             else
             {
                     // Display an alert
-                    set_alert(true, "bad", "Unabled to update the password because it does not contain an alpha character.");
+                    set_alert(true, "bad", "Unable to update the password because it does not contain an alpha character.");
 
                     // Return false
                     return false;
@@ -2678,7 +2678,7 @@ function check_valid_upper($password)
                 else
                 {
                         // Display an alert
-                        set_alert(true, "bad", "Unabled to update the password because it does not contain an uppercase character.");
+                        set_alert(true, "bad", "Unable to update the password because it does not contain an uppercase character.");
 
                         // Return false
                         return false;
@@ -2705,7 +2705,7 @@ function check_valid_lower($password)
                 else
                 {
                         // Display an alert
-                        set_alert(true, "bad", "Unabled to update the password because it does not contain a lowercase character.");
+                        set_alert(true, "bad", "Unable to update the password because it does not contain a lowercase character.");
 
                         // Return false
                         return false;
@@ -2732,7 +2732,7 @@ function check_valid_digits($password)
                 else
                 {
                         // Display an alert
-                        set_alert(true, "bad", "Unabled to update the password because it does not contain a digit.");
+                        set_alert(true, "bad", "Unable to update the password because it does not contain a digit.");
 
                         // Return false
                         return false;
@@ -2759,7 +2759,7 @@ function check_valid_specials($password)
                 else
                 {
                     // Display an alert
-                    set_alert(true, "bad", "Unabled to update the password because it does not contain a special character.");
+                    set_alert(true, "bad", "Unable to update the password because it does not contain a special character.");
 
                     // Return false
                     return false;
@@ -8800,8 +8800,8 @@ function get_project_tabs($status, $template_group_id="")
                 $no_sort = '';
                 $name = $escaper->escapeHtml($name);
                 $due_date = format_date($project['due_date']);
-                $consultant = get_user_name($project['consultant']);
-                $business_owner = get_user_name($project['business_owner']);
+                $consultant = $escaper->escapeHtml(get_user_name($project['consultant']));
+                $business_owner = $escaper->escapeHtml(get_user_name($project['business_owner']));
                 $data_classification = get_table_value_by_id("data_classification", $project['data_classification']);
 
                 // Get risks for this project
@@ -10101,8 +10101,7 @@ function update_mitigation($risk_id, $post)
         foreach ($updated_fields as $key => $value) {
             $detail_updated[] = "Field name : `".$key. "` (`".$value["original"]."`=>`".$value["updated"]."`)";
         }
-        //$updated_string = implode($detail_updated,", ");
-        $updated_string = implode(", ",$detail_updated);
+        $updated_string = implode(", ", $detail_updated);
     } else $updated_string = "";
     $message = "Risk mitigation details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".\n".$updated_string;
     write_log($risk_id, $_SESSION['uid'], $message);
@@ -12376,7 +12375,7 @@ function check_current_password_age($user_id = false)
         else
         {
             // Display an alert
-            set_alert(true, "bad", "Unabled to update the password because the minimum age of ". $min_password_age . " days has not elapsed.");
+            set_alert(true, "bad", "Unable to update the password because the minimum age of ". $min_password_age . " days has not elapsed.");
 
             // Return false
             return false;
@@ -17349,8 +17348,8 @@ function configure_curl_proxy($curl_handle)
 		if (!$proxy_verify_ssl_certificate)
 		{
 			// Do not verify the SSL host and peer
-			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($curl_handle, CURLOPT_SSL_VERIFYHOST, false);
+			curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, false);
 		}
         }
         else curl_setopt($curl_handle, CURLOPT_PROXY, null);
@@ -17388,7 +17387,6 @@ function save_junction_values($tb_name, $first_field_name, $first_id, $second_fi
     }
 
     // Sanitizing the array's values
-    //$second_ids = array_values(array_filter($second_ids, 'sanitize_int_array'));
     $second_ids = sanitize_int_array($second_ids);
 
     // If wasn't empty before and it's empty now then the sanitizing caught something
@@ -20720,7 +20718,10 @@ function utf8ize( $mixed ) {
             $mixed[$key] = utf8ize($value);
         }
     } elseif (is_string($mixed)) {
-        return utf8_encode($mixed);
+        //return utf8_encode($mixed);
+        if(mb_detect_encoding($mixed) !="UTF-8")
+            return iconv("CP1251", "UTF-8", $mixed);
+        else $mixed;
     }
     return $mixed;
 }
@@ -20741,4 +20742,35 @@ function setting_risks_and_issues_tags($risk_tags){
     db_close($db);
     return true;
 }
+
+/*******************************
+ * FUNCTION: IS VALID BASE URL *
+ *******************************/
+function is_valid_base_url($url)
+{
+    // The protocol is required and it doesn't allow anchors/query parameters/any kind of special characters, but allows the usage of ports
+    // In the URL only allows word characters(a-zA-Z0-9_), dashes(-) and dots(as a separator between domain/subdomains)
+    if (preg_match('/^(https?:\/\/)([\w-]+(?:\.[\w-]+)*)(:\d+)?((?:\/[\w-]*)*)$/', $url))
+    {
+        // Get the current Base URL value
+        $isHTTPS = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on");
+        $port = (isset($_SERVER['SERVER_PORT']) && ((!$isHTTPS && $_SERVER['SERVER_PORT'] != "80") || ($isHTTPS && $_SERVER['SERVER_PORT'] != "443")));
+        $port = ($port) ? ":" . $_SERVER['SERVER_PORT'] : "";
+        $base_url = ($isHTTPS ? "https://" : "http://") . $_SERVER['SERVER_NAME'] . $port;
+        $dir_path = realpath(dirname(dirname(__FILE__)));
+        $document_root = realpath($_SERVER["DOCUMENT_ROOT"]);
+        $app_root = str_replace($document_root,"",$dir_path);
+        $app_root = str_replace(DIRECTORY_SEPARATOR ,"/",$app_root);
+        $base_url .= $app_root;
+
+        // If the base URL being set matches the current base URL
+        if ($url == $base_url)
+        {
+            return true;
+        }
+        else return false;
+    }
+    else return false;
+}
+
 ?>

@@ -287,15 +287,36 @@ if (isset($_POST['password_reset']))
     $addusers_tab = false;
     $manageusers_tab = true;
 
+    // Get the POSTed user ID
     $value = (int)$_POST['user'];
 
     // Verify value is an integer
     if (is_int($value) && $value > 0)
     {
-        password_reset_by_userid($value);
+        // Open the database connection
+        $db = db_open();
 
-        // Display an alert
-        set_alert(true, "good", "A password reset email was sent to the user.");
+        // Get any password resets for this user in the past 10 minutes
+        $stmt = $db->prepare("SELECT * FROM password_reset pw LEFT JOIN user u ON pw.username = u.username WHERE pw.timestamp >= NOW() - INTERVAL 10 MINUTE AND u.value=:value;");
+        $stmt->bindParam(":value", $value, PDO::PARAM_INT);
+        $stmt->execute();
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Close the database connection
+        db_close($db);
+
+        // If we have password resets in the past 10 minutes
+        if (count($results) != 0)
+        {
+            set_alert(true, "bad", $lang['PasswordResetRequestsExceeded']);
+        }
+        else
+        {
+            password_reset_by_userid($value);
+
+            // Display an alert
+            set_alert(true, "good", "A password reset email was sent to the user.");
+        }
     } else {
         set_alert(true, "bad", $lang['PleaseSelectUser']);
     }

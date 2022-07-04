@@ -52,6 +52,7 @@ if(isset($_POST['add_test'])){
         $expected_results           = $_POST['expected_results'];
         $framework_control_id       = (int)$_POST['framework_control_id'];
         $teams                      = isset($_POST['team']) ? array_filter($_POST['team'], 'ctype_digit') : [];
+        $tags                       = empty($_POST['tags']) ? [] : $_POST['tags'];
 
         if (!$last_date)
             $last_date = "0000-00-00";
@@ -72,7 +73,7 @@ if(isset($_POST['add_test'])){
         }
         if($error !== true) {
             // Add a framework control test
-            add_framework_control_test($tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $framework_control_id, $additional_stakeholders, $last_date, false, $teams);
+            add_framework_control_test($tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $framework_control_id, $additional_stakeholders, $last_date, false, $teams, $tags);
             set_alert(true, "good", $lang['TestSuccessCreated']);
 
         } else {
@@ -114,6 +115,7 @@ if(isset($_POST['update_test'])){
         $test_steps                 = $_POST['test_steps'];
         $approximate_time           = !empty($_POST['approximate_time']) ? (int)$_POST['approximate_time'] : 0;
         $expected_results           = $_POST['expected_results'];
+        $tags                       = empty($_POST['tags']) ? [] : $_POST['tags'];
 
         if ($test_frequency < 0) {
             $error = true;
@@ -149,7 +151,7 @@ if(isset($_POST['update_test'])){
         }
         if($error !== true) {
             // Update a framework control test
-            update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date, false, $additional_stakeholders, $teams);
+            update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date, false, $additional_stakeholders, $teams, $tags);
             
             set_alert(true, "good", $lang['TestSuccessUpdated']);
         } else {
@@ -227,6 +229,8 @@ if(isset($_POST['delete_test'])){
     <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
+    <script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");
@@ -360,6 +364,10 @@ if(isset($_POST['delete_test'])){
             <label for=""><?php echo $escaper->escapeHtml($lang['ExpectedResults']); ?></label>
             <textarea name="expected_results" class="form-control" rows="6" style="width:100%;"></textarea>
 
+            <label for=""><?php echo $escaper->escapeHtml($lang['Tags']); ?></label>
+            <select class="test_tags" readonly name="tags[]" multiple placeholder="<?php echo $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);?>"></select>
+            <div class="tag-max-length-warning" style="margin-top:-10px"><?php echo $escaper->escapeHtml($lang['MaxTagLengthWarning']);?></div>
+
             <input type="hidden" name="framework_control_id" value="">
             <input type="hidden" name="filter_by_control" value="">
             <input type="hidden" name="filter_by_control_family" value="">
@@ -415,6 +423,10 @@ if(isset($_POST['delete_test'])){
 
             <label for=""><?php echo $escaper->escapeHtml($lang['ExpectedResults']); ?></label>
             <textarea name="expected_results" class="form-control" rows="6" style="width:100%;"></textarea>
+
+            <label for=""><?php echo $escaper->escapeHtml($lang['Tags']); ?></label>
+            <select class="test_tags" readonly name="tags[]" multiple placeholder="<?php echo $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);?>"></select>
+            <div class="tag-max-length-warning" style="margin-top:-10px"><?php echo $escaper->escapeHtml($lang['MaxTagLengthWarning']);?></div>
 
             <input type="hidden" name="test_id" value="">
             <input type="hidden" name="filter_by_control" value="">

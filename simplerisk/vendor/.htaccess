@@ -1,5 +1,5 @@
 <IfModule mod_rewrite.c>
 	RewriteEngine On
-	RewriteRule ^(?!(simplerisk/csrf-magic/csrf-magic.js|node_modules/highcharts/.*?.js|components/font-awesome/.*?|components/jquery/.*?.js|components/jqueryui/.*?.js|duosecurity/duo_php/js/.*?|duosecurity/duo_php/demos/simple/Duo-Frame.css|components/underscore/.*?.js|tinymce/tinymce/.*?|twbs/bootstrap/dist/js/.*?.js|twbs/bootstrap/dist/css/.*?.css)$)(.*)?$ / [F,L]
+	RewriteRule ^(?!(simplerisk/csrf-magic/csrf-magic.js|node_modules/highcharts/.*?.js|components/font-awesome/.*?|components/jquery/.*?.js|components/jqueryui/.*?.js|duosecurity/duo_php/js/.*?|duosecurity/duo_php/demos/simple/Duo-Frame.css|components/underscore/.*?.js|tinymce/tinymce/.*?|moment/moment/min/.*?|twbs/bootstrap/dist/js/.*?.js|twbs/bootstrap/dist/css/.*?.css)$)(.*)?$ / [F,L]
 	ErrorDocument 301 "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>301 Moved Permanently</title>\n</head><body>\n<h1>Moved Permanently</h1>\n<p>The document has been moved.</p>\n</body></html>"
 </IfModule>

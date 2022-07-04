@@ -43,7 +43,7 @@ require_once(language_file());
         $name       = $_POST['asset_name'];
         $ip         = $_POST['ip'];
         $value      = $_POST['value'];
-        $location   = (int)$_POST['location'];
+        $location   = empty($_POST['location']) ? [] : $_POST['location'];
         $teams      = empty($_POST['team']) ? [] : $_POST['team'];
         $details    = $_POST['details'];
         $tags       = empty($_POST['tags']) ? [] : $_POST['tags'];

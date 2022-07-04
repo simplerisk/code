@@ -30,204 +30,197 @@ include_csrf_magic();
 // Include the SimpleRisk language file
 require_once(language_file());
 
-// Validates the base url
-// The protocol is required and it doesn't allow anchors/query parameters/any kind of special characters, but allows the usage of ports
-// In the URL only allows word characters(a-zA-Z0-9_), dashes(-) and dots(as a separator between domain/subdomains)
-function is_valid_base_url($url) {
-    return preg_match('/^(https?:\/\/)([\w-]+(?:\.[\w-]+)*)(:\d+)?((?:\/[\w-]*)*)$/', $url);
-}
+// If the General tab was submitted
+if (isset($_POST['update_general_settings']))
+{
+    // Set the error to false
+    $error = false;
 
-    // If the General tab was submitted
-    if (isset($_POST['update_general_settings']))
+    // Update the setting to enable pop-up windows for text boxes
+    $enable_popup = (isset($_POST['enable_popup'])) ? 1 : 0;
+    $current_enable_popup = get_setting("enable_popup");
+    if ($enable_popup != $current_enable_popup)
     {
-            // Set the error to false
-            $error = false;
+        update_setting("enable_popup", $enable_popup);
+    }
 
-        // Update the setting to enable pop-up windows for text boxes
-        $enable_popup = (isset($_POST['enable_popup'])) ? 1 : 0;
-        $current_enable_popup = get_setting("enable_popup");
-        if ($enable_popup != $current_enable_popup)
+    // Update the 'Automatically verify new assets' setting
+    $auto_verify_new_assets = (isset($_POST['auto_verify_new_assets'])) ? 1 : 0;
+    $current_auto_verify_new_assets = get_setting("auto_verify_new_assets");
+    if ($auto_verify_new_assets != $current_auto_verify_new_assets)
+    {
+        update_setting("auto_verify_new_assets", $auto_verify_new_assets);
+    }
+
+    // Update the 'Document Exception update resets its approval' setting
+    $exception_update_resets_approval = (isset($_POST['exception_update_resets_approval'])) ? 1 : 0;
+    if ($exception_update_resets_approval != get_setting("exception_update_resets_approval"))
+    {
+        update_setting("exception_update_resets_approval", $exception_update_resets_approval);
+    }
+
+    // Update the 'Require a Risk Mapping for all risks' setting
+    $risk_mapping_required = (isset($_POST['risk_mapping_required'])) ? 1 : 0;
+    if ($risk_mapping_required != get_setting("risk_mapping_required"))
+    {
+        update_setting("risk_mapping_required", $risk_mapping_required);
+    }
+
+    // Update the alert timeout
+    $alert_timeout = $_POST['alert_timeout'];
+    if ($alert_timeout != get_setting("alert_timeout")) {
+        // Update the base url
+        update_setting("alert_timeout", $alert_timeout);
+    }
+
+    // Update the setting to show all risks for plan projects
+    $plan_projects_show_all = (isset($_POST['plan_projects_show_all'])) ? 1 : 0;
+    $current_plan_projects_show_all = get_setting("plan_projects_show_all");
+    if ($plan_projects_show_all != $current_plan_projects_show_all)
+    {
+        update_setting("plan_projects_show_all", $plan_projects_show_all);
+    }
+
+    // Update the default language setting
+    $default_language = get_name_by_value("languages", (int)$_POST['languages']);
+    $current_default_language = get_setting("default_language");
+    if ($default_language != $current_default_language)
+    {
+        update_setting("default_language", $default_language);
+    }
+
+    // Update the default timezone setting
+    $default_timezone = $_POST['default_timezone'];
+    $current_default_timezone = get_setting("default_timezone");
+    if ($default_timezone != $current_default_timezone)
+    {
+        update_setting("default_timezone", $default_timezone);
+    }
+
+    // Update the default date format setting
+    $default_date_format = $_POST['default_date_format'];
+    $current_default_date_format = get_setting("default_date_format");
+    if ($default_date_format != $current_default_date_format)
+    {
+        update_setting("default_date_format", $default_date_format);
+    }
+
+    // Update the default risk score setting
+    $default_risk_score = (float)$_POST['default_risk_score'];
+    $current_default_risk_score = get_setting("default_risk_score");
+    if ($default_risk_score != $current_default_risk_score)
+    {
+        // If the default risk score is a numeric value between 0 and 10
+        if (is_numeric($default_risk_score) && ($default_risk_score >= 0) && ($default_risk_score <= 10))
         {
-            update_setting("enable_popup", $enable_popup);
+            update_setting("default_risk_score", $default_risk_score);
         }
+    }
 
-        // Update the 'Automatically verify new assets' setting
-        $auto_verify_new_assets = (isset($_POST['auto_verify_new_assets'])) ? 1 : 0;
-        $current_auto_verify_new_assets = get_setting("auto_verify_new_assets");
-        if ($auto_verify_new_assets != $current_auto_verify_new_assets)
+    // Update the default risk score setting
+    $maximum_risk_subject_length = (float)$_POST['maximum_risk_subject_length'];
+    $current_maximum_risk_subject_length = get_setting("maximum_risk_subject_length");
+    if ($maximum_risk_subject_length != $current_maximum_risk_subject_length) {
+        // If the maximum_risk_subject_length is a numeric value between 0 and 1000
+        if (is_numeric($maximum_risk_subject_length) && ($maximum_risk_subject_length > 0) && ($maximum_risk_subject_length <= 1000)) {
+            update_setting("maximum_risk_subject_length", $maximum_risk_subject_length);
+        }
+    }
+
+    // Update the default closed audit status setting
+    $default_closed_audit_status = (int)$_POST['closed_audit_status'];
+    $current_default_closed_audit_status = get_setting("closed_audit_status");
+    if ($default_closed_audit_status != $current_default_closed_audit_status)
+    {
+        // If the default closed audit status is empty
+        if (empty($default_closed_audit_status))
         {
-            update_setting("auto_verify_new_assets", $auto_verify_new_assets);
+            set_alert(true, "bad", $escaper->escapeHtml($lang['ClosedAuditStatusIsRequired']));
+            $error = true;
         }
-
-        // Update the 'Document Exception update resets its approval' setting
-        $exception_update_resets_approval = (isset($_POST['exception_update_resets_approval'])) ? 1 : 0;
-        if ($exception_update_resets_approval != get_setting("exception_update_resets_approval"))
+        else
         {
-            update_setting("exception_update_resets_approval", $exception_update_resets_approval);
+            update_setting("closed_audit_status", $default_closed_audit_status);
         }
+    }
 
-        // Update the 'Require a Risk Mapping for all risks' setting
-        $risk_mapping_required = (isset($_POST['risk_mapping_required'])) ? 1 : 0;
-        if ($risk_mapping_required != get_setting("risk_mapping_required"))
+    // Update the default initiated audit status setting
+    $default_initiated_audit_status = (int)$_POST['initiated_audit_status'];
+    $current_default_initiated_audit_status = get_setting("initiated_audit_status");
+    if ($default_initiated_audit_status != $current_default_initiated_audit_status)
+    {
+        update_setting("initiated_audit_status", $default_initiated_audit_status);
+    }
+
+    // Update the default currency setting
+    $default_currency = $_POST['default_currency'];
+    $current_default_currency = get_setting("currency");
+    if ($default_currency != $current_default_currency)
+    {
+        // If the default currency is not empty
+        if ($default_currency != "")
         {
-            update_setting("risk_mapping_required", $risk_mapping_required);
-        }
-
-        // Update the alert timeout
-        $alert_timeout = $_POST['alert_timeout'];
-        if ($alert_timeout != get_setting("alert_timeout")) {
-            // Update the base url
-            update_setting("alert_timeout", $alert_timeout);
-        }
-
-        // Update the setting to show all risks for plan projects
-        $plan_projects_show_all = (isset($_POST['plan_projects_show_all'])) ? 1 : 0;
-        $current_plan_projects_show_all = get_setting("plan_projects_show_all");
-        if ($plan_projects_show_all != $current_plan_projects_show_all)
-        {
-            update_setting("plan_projects_show_all", $plan_projects_show_all);
-        }
-
-        // Update the default language setting
-        $default_language = get_name_by_value("languages", (int)$_POST['languages']);
-        $current_default_language = get_setting("default_language");
-        if ($default_language != $current_default_language)
-        {
-            update_setting("default_language", $default_language);
-        }
-
-        // Update the default timezone setting
-        $default_timezone = $_POST['default_timezone'];
-        $current_default_timezone = get_setting("default_timezone");
-        if ($default_timezone != $current_default_timezone)
-        {
-            update_setting("default_timezone", $default_timezone);
-        }
-
-        // Update the default date format setting
-        $default_date_format = $_POST['default_date_format'];
-        $current_default_date_format = get_setting("default_date_format");
-        if ($default_date_format != $current_default_date_format)
-        {
-            update_setting("default_date_format", $default_date_format);
-        }
-
-        // Update the default risk score setting
-        $default_risk_score = (float)$_POST['default_risk_score'];
-        $current_default_risk_score = get_setting("default_risk_score");
-        if ($default_risk_score != $current_default_risk_score)
-        {
-            // If the default risk score is a numeric value between 0 and 10
-            if (is_numeric($default_risk_score) && ($default_risk_score >= 0) && ($default_risk_score <= 10))
+            // If the default currency value is less than or equal to six characters long
+            if (strlen($default_currency) <= 6)
             {
-                update_setting("default_risk_score", $default_risk_score);
+                // Update the currency
+                update_setting("currency", $default_currency);
             }
         }
+    }
 
-        // Update the default risk score setting
-        $maximum_risk_subject_length = (float)$_POST['maximum_risk_subject_length'];
-        $current_maximum_risk_subject_length = get_setting("maximum_risk_subject_length");
-        if ($maximum_risk_subject_length != $current_maximum_risk_subject_length) {
-            // If the maximum_risk_subject_length is a numeric value between 0 and 1000
-            if (is_numeric($maximum_risk_subject_length) && ($maximum_risk_subject_length > 0) && ($maximum_risk_subject_length <= 1000)) {
-                update_setting("maximum_risk_subject_length", $maximum_risk_subject_length);
-            }
-        }
-
-        // Update the default closed audit status setting
-        $default_closed_audit_status = (int)$_POST['closed_audit_status'];
-        $current_default_closed_audit_status = get_setting("closed_audit_status");
-        if ($default_closed_audit_status != $current_default_closed_audit_status)
+    // Update the default asset valuation setting
+    $default_asset_valuation = (int)$_POST['default_asset_valuation'];
+    $current_default_asset_valuation = get_setting("default_asset_valuation");
+    if ($default_asset_valuation != $current_default_asset_valuation)
+    {
+        // If the default asset valuation is numeric
+        if (is_numeric($default_asset_valuation))
         {
-            // If the default closed audit status is empty
-            if (empty($default_closed_audit_status))
+            // If the default asset valuation is between 1 and 10
+            if ($default_asset_valuation >= 1 && $default_asset_valuation <= 10)
             {
-                set_alert(true, "bad", $escaper->escapeHtml($lang['ClosedAuditStatusIsRequired']));
-                $error = true;
-            }
-            else
-            {
-                update_setting("closed_audit_status", $default_closed_audit_status);
+                // Update the default asset valuation
+                update_setting("default_asset_valuation", $default_asset_valuation);
             }
         }
+    }
 
-        // Update the default initiated audit status setting
-        $default_initiated_audit_status = (int)$_POST['initiated_audit_status'];
-        $current_default_initiated_audit_status = get_setting("initiated_audit_status");
-        if ($default_initiated_audit_status != $current_default_initiated_audit_status)
-        {
-            update_setting("initiated_audit_status", $default_initiated_audit_status);
-        }
+    // Update the default user role setting
+    $default_user_role = (int)$_POST['default_user_role'];
+    $current_default_user_role = get_setting("default_user_role");
+    if ($default_user_role != $current_default_user_role)
+    {
+        // Update the default user role
+        update_setting("default_user_role", $default_user_role);
+    }
 
-        // Update the default currency setting
-        $default_currency = $_POST['default_currency'];
-        $current_default_currency = get_setting("currency");
-        if ($default_currency != $current_default_currency)
-        {
-            // If the default currency is not empty
-            if ($default_currency != "")
-            {
-                // If the default currency value is less than or equal to six characters long
-                if (strlen($default_currency) <= 6)
-                {
-                    // Update the currency
-                    update_setting("currency", $default_currency);
-                }
-            }
-        }
+    // Update the default current maturity setting
+    $default_current_maturity = (int)$_POST['default_current_maturity'];
+    $current_default_current_maturity = get_setting("default_current_maturity");
+    if ($default_current_maturity != $current_default_current_maturity)
+    {
+        // Update the default current maturity
+        update_setting("default_current_maturity", $default_current_maturity);
+    }
 
-        // Update the default asset valuation setting
-        $default_asset_valuation = (int)$_POST['default_asset_valuation'];
-        $current_default_asset_valuation = get_setting("default_asset_valuation");
-        if ($default_asset_valuation != $current_default_asset_valuation)
-        {
-            // If the default asset valuation is numeric
-            if (is_numeric($default_asset_valuation))
-            {
-                // If the default asset valuation is between 1 and 10
-                if ($default_asset_valuation >= 1 && $default_asset_valuation <= 10)
-                {
-                    // Update the default asset valuation
-                    update_setting("default_asset_valuation", $default_asset_valuation);
-                }
-            }
-        }
+    // Update the default desired maturity setting
+    $default_desired_maturity = (int)$_POST['default_desired_maturity'];
+    $current_default_desired_maturity = get_setting("default_desired_maturity");
+    if ($default_desired_maturity != $current_default_desired_maturity)
+    {
+        // Update the default desired maturity
+        update_setting("default_desired_maturity", $default_desired_maturity);
+    }
 
-        // Update the default user role setting
-        $default_user_role = (int)$_POST['default_user_role'];
-        $current_default_user_role = get_setting("default_user_role");
-        if ($default_user_role != $current_default_user_role)
-        {
-            // Update the default user role
-            update_setting("default_user_role", $default_user_role);
-        }
-
-	// Update the default current maturity setting
-	$default_current_maturity = (int)$_POST['default_current_maturity'];
-	$current_default_current_maturity = get_setting("default_current_maturity");
-	if ($default_current_maturity != $current_default_current_maturity)
-	{
-	    // Update the default current maturity
-	    update_setting("default_current_maturity", $default_current_maturity);
-	}
-
-        // Update the default desired maturity setting
-        $default_desired_maturity = (int)$_POST['default_desired_maturity'];
-        $current_default_desired_maturity = get_setting("default_desired_maturity");
-        if ($default_desired_maturity != $current_default_desired_maturity)
-        {
-            // Update the default desired maturity
-            update_setting("default_desired_maturity", $default_desired_maturity);
-        }
-        
-        // Update the next review date setting
-        $next_review_date_uses = $_POST['next_review_date_uses'];
-        $current_next_review_date_uses = get_setting("next_review_date_uses");
-        if ($next_review_date_uses != $current_next_review_date_uses)
-        {
-            // Update the default user role
-            update_setting("next_review_date_uses", $next_review_date_uses);
-        }
+    // Update the next review date setting
+    $next_review_date_uses = $_POST['next_review_date_uses'];
+    $current_next_review_date_uses = get_setting("next_review_date_uses");
+    if ($next_review_date_uses != $current_next_review_date_uses)
+    {
+        // Update the default user role
+        update_setting("next_review_date_uses", $next_review_date_uses);
+    }
 
 	// Update the highcharts delivery method setting
 	$highcharts_delivery_method = $_POST['highcharts_delivery_method'];
@@ -241,28 +234,28 @@ function is_valid_base_url($url) {
 		}
 	}
 
-	// Update the jquery delivery method setting
+        // Update the jquery delivery method setting
         $jquery_delivery_method = $_POST['jquery_delivery_method'];
         $current_jquery_delivery_method = get_setting("jquery_delivery_method");
         if ($jquery_delivery_method != $current_jquery_delivery_method)
         {
-                // If the jquery delivery method is cdn or local
-                if ($jquery_delivery_method == "cdn" || $jquery_delivery_method == "local")
-                {
-                        update_setting("jquery_delivery_method", $jquery_delivery_method);
-                }
+            // If the jquery delivery method is cdn or local
+            if ($jquery_delivery_method == "cdn" || $jquery_delivery_method == "local")
+            {
+                update_setting("jquery_delivery_method", $jquery_delivery_method);
+            }
         }
 
-	// Update the bootstrap delivery method setting
+        // Update the bootstrap delivery method setting
         $bootstrap_delivery_method = $_POST['bootstrap_delivery_method'];
         $current_bootstrap_delivery_method = get_setting("bootstrap_delivery_method");
         if ($bootstrap_delivery_method != $current_bootstrap_delivery_method)
         {
-                // If the bootstrap delivery method is cdn or local
-                if ($bootstrap_delivery_method == "cdn" || $bootstrap_delivery_method == "local")
-                {
-                        update_setting("bootstrap_delivery_method", $bootstrap_delivery_method);
-                }
+            // If the bootstrap delivery method is cdn or local
+            if ($bootstrap_delivery_method == "cdn" || $bootstrap_delivery_method == "local")
+            {
+                update_setting("bootstrap_delivery_method", $bootstrap_delivery_method);
+            }
         }
 
         // Update the base url

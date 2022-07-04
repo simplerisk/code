@@ -101,6 +101,7 @@ $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
     <script src="../js/basescript.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/common.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/pages/risk.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/pages/compliance.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
 
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
@@ -229,6 +230,7 @@ $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
     </body>
     <script>
         $(document).ready(function(){
+            $(".datepicker").datepicker();
             $('#tab-content-container select.assets-asset-groups-select').each(function() {
                 setupAssetsAssetGroupsWidget($(this));
             });

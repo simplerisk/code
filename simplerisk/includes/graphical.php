@@ -20,7 +20,7 @@ $escaper = new Laminas\Escaper\Escaper('utf-8');
  *******************************************/
 function display_graphic_type_dropdown($settings=[])
 {
-    global $escaper;
+    global $escaper, $lang;
 
     $type = $escaper->escapeHtml(get_param("POST", "type", $settings?$settings["type"]:""));
 
@@ -28,22 +28,22 @@ function display_graphic_type_dropdown($settings=[])
     $chart_title = $escaper->escapeHtml(get_param("POST", "chart_title", $settings?$settings["chart_title"]:""));
 
     echo "<div class='row-fluid'>\n";
-    echo "    <div class='span12'>Visualization</div>\n";
+    echo "    <div class='span12'>".$escaper->escapeHtml($lang['Visualization'])."</div>\n";
     echo "</div>\n";
 
     echo "<div class='row-fluid'>\n";
-    echo "    <div class='span2 text-right'>Type:</div>\n";
+    echo "    <div class='span2 text-right'>".$escaper->escapeHtml($lang['Type']).":</div>\n";
     echo "    <div class='span10'>\n";
     echo "        <select id='type' name='type'>\n";
-    echo "            <option value='area'" . (!$type || $type === 'area' ? " selected='selected'" : "") . ">Area Range</option>\n";
-    echo "            <option value='line'" . ($type === 'line' ? " selected='selected'" : "") . ">Line</option>\n";
-    echo "            <option value='column'" . ($type === 'column' ? " selected='selected'" : "") . ">Bar</option>\n";
+    echo "            <option value='area'" . (!$type || $type === 'area' ? " selected='selected'" : "") . ">".$escaper->escapeHtml($lang['AreaRange'])."</option>\n";
+    echo "            <option value='line'" . ($type === 'line' ? " selected='selected'" : "") . ">".$escaper->escapeHtml($lang['Line'])."</option>\n";
+    echo "            <option value='column'" . ($type === 'column' ? " selected='selected'" : "") . ">".$escaper->escapeHtml($lang['Bar'])."</option>\n";
     echo "        </select>\n";
     echo "    </div>\n";
     echo "</div>\n";
 
     echo "<div class='row-fluid'>\n";
-    echo "    <div class='span2 text-right'>Title:</div>\n";
+    echo "    <div class='span2 text-right'>".$escaper->escapeHtml($lang['Title']).":</div>\n";
     echo "    <div class='span4'>\n";
     echo "        <input type='text' name='chart_title' value='{$chart_title}' />\n";
     echo "    </div>\n";
@@ -56,7 +56,7 @@ function display_graphic_type_dropdown($settings=[])
  ****************************/
 function display_y_axis($settings=[])
 {
-    global $escaper;
+    global $escaper, $lang;
 
     // set the Y axis
     $y_axis = $escaper->escapeHtml(get_param("POST", "y_axis", $settings?$settings["y_axis"]:""));
@@ -68,49 +68,55 @@ function display_y_axis($settings=[])
     $y_axis_custom_label = $escaper->escapeHtml(get_param("POST", "y_axis_custom_label", $settings?$settings["y_axis_custom_label"]:""));
 
     // Set the risk_status
-    $risk_status = get_param("POST", "risk_status", $settings?$settings["risk_status"]:"");
+    $risk_status = $escaper->escapeHtml(get_param("POST", "risk_status", $settings?$settings["risk_status"]:""));
 
     // Set the risk_severity
     $default_severity = isset($settings["risk_severity"])?$settings["risk_severity"]:array('very_high' => 1, 'high' => 1, 'medium' => 1, 'low' => 1, 'insignificant' => 1);
     //$default_severity = array('very_high' => 1, 'high' => 1, 'medium' => 1, 'low' => 1, 'insignificant' => 1);
     $risk_severity = get_param("POST", "risk_severity", $default_severity);
 
+    $very_high_display_name = get_risk_level_display_name('Very High');
+    $high_display_name      = get_risk_level_display_name('High');
+    $medium_display_name    = get_risk_level_display_name('Medium');
+    $low_display_name       = get_risk_level_display_name('Low');
+    $insignificant_display_name = get_risk_level_display_name('Insignificant');
+
     echo "<div class='row-fluid'>\n";
-    echo "    <div class='span12'>Y-Axis</div>\n";
+    echo "    <div class='span12'>".$escaper->escapeHtml($lang['Y-Axis'])."</div>\n";
     echo "</div>\n";
 
     echo "<div class='row-fluid'>\n";
-    echo "    <div class='span2 text-right'>Aggregation:</div>\n";
+    echo "    <div class='span2 text-right'>".$escaper->escapeHtml($lang['Aggregation']).":</div>\n";
     echo "    <div class='span4'>\n";
     echo "        <select id='y_axis_aggregation' name='y_axis_aggregation'>\n";
-    echo "          <option value='average'" . (!$y_axis_aggregation || $y_axis_aggregation === 'average' ? " selected='selected'" : "") . ">Average</option>\n";
-    echo "          <option value='count'" . ($y_axis_aggregation === 'count' ? " selected='selected'" : "") . ">Count</option>\n";
-    echo "          <option value='total'" . ($y_axis_aggregation === 'total' ? " selected='selected'" : "") . ">Count Total</option>\n";
-    echo "          <option value='max'" . ($y_axis_aggregation === 'max' ? " selected='selected'" : "") . ">Max</option>\n";
-    echo "          <option value='min'" . ($y_axis_aggregation === 'min' ? " selected='selected'" : "") . ">Min</option>\n";
+    echo "          <option value='average'" . (!$y_axis_aggregation || $y_axis_aggregation === 'average' ? " selected='selected'" : "") . ">".$escaper->escapeHtml($lang['Average'])."</option>\n";
+    echo "          <option value='count'" . ($y_axis_aggregation === 'count' ? " selected='selected'" : "") . ">".$escaper->escapeHtml($lang['Count'])."</option>\n";
+    echo "          <option value='total'" . ($y_axis_aggregation === 'total' ? " selected='selected'" : "") . ">".$escaper->escapeHtml($lang['CountTotal'])."</option>\n";
+    echo "          <option value='max'" . ($y_axis_aggregation === 'max' ? " selected='selected'" : "") . ">".$escaper->escapeHtml($lang['Max'])."</option>\n";
+    echo "          <option value='min'" . ($y_axis_aggregation === 'min' ? " selected='selected'" : "") . ">".$escaper->escapeHtml($lang['Min'])."</option>\n";
     echo "        </select>\n";
     echo "    </div>\n";
     echo "</div>\n";
 
     echo "<div class='row-fluid'>\n";
-    echo "    <div class='span2 text-right'>Custom Label:</div>\n";
+    echo "    <div class='span2 text-right'>".$escaper->escapeHtml($lang['CustomLabel']).":</div>\n";
     echo "    <div class='span4'>\n";
     echo "        <input type='text' name='y_axis_custom_label' value='{$y_axis_custom_label}' />\n";
     echo "    </div>\n";
     echo "</div>\n";
 
     echo "<div class='row-fluid'>\n";
-    echo "    <div class='span2 text-right'>Y-Axis Value:</div>\n";
+    echo "    <div class='span2 text-right'>".$escaper->escapeHtml($lang['Y-AxisValue']).":</div>\n";
     echo "    <div class='span4'>\n";
     echo "        <select id='y_axis' name='y_axis'>\n";
-    echo "          <option value='inherent_risk'" . ($y_axis === false || $y_axis === 'inherent_risk' ? " selected='selected'" : "") . ">Inherent Risk</option>\n";
-    echo "          <option value='residual_risk'" . ($y_axis === false || $y_axis === 'residual_risk' ? " selected='selected'" : "") . ">Residual Risk</option>\n";
+    echo "          <option value='inherent_risk'" . ($y_axis === false || $y_axis === 'inherent_risk' ? " selected='selected'" : "") . ">".$escaper->escapeHtml($lang['InherentRisk'])."</option>\n";
+    echo "          <option value='residual_risk'" . ($y_axis === false || $y_axis === 'residual_risk' ? " selected='selected'" : "") . ">".$escaper->escapeHtml($lang['ResidualRisk'])."</option>\n";
     echo "        </select>\n";
     echo "    </div>\n";
     echo "</div>\n";
 
     echo "<div class='row-fluid form-inline'>\n";
-    echo "    <div class='span2 text-right'>Status:</div>\n";
+    echo "    <div class='span2 text-right'>".$escaper->escapeHtml($lang['Status']).":</div>\n";
     echo "    <div class='span4'>\n";
     echo "        <label><input type='radio' name='risk_status' value='all'" . (!$risk_status || $risk_status === 'all' ? " checked='checked'" : "") . ">&nbsp;<strong>All</strong></label>\n";
     echo "        <label><input type='radio' name='risk_status' value='open'" . ($risk_status === 'open' ? " checked='checked'" : "") . ">&nbsp;<strong>Open</strong></label>\n";
@@ -121,11 +127,11 @@ function display_y_axis($settings=[])
     echo "<div class='row-fluid form-inline'>\n";
     echo "    <div class='span2 text-right'>Severity:</div>\n";
     echo "    <div class='span4'>\n";
-    echo "        <label><input type='checkbox' id='very_high' name='risk_severity[very_high]'" . (isset($risk_severity['very_high']) ? " checked='checked'" : "") . ">&nbsp;<strong>Very High</strong></label>\n";
-    echo "        <label><input type='checkbox' id='high' name='risk_severity[high]'" . (isset($risk_severity['high']) ? " checked='checked'" : "") . ">&nbsp;<strong>High</strong></label>\n";
-    echo "        <label><input type='checkbox' id='medium' name='risk_severity[medium]'" . (isset($risk_severity['medium']) ? " checked='checked'" : "") . ">&nbsp;<strong>Medium</strong></label>\n";
-    echo "        <label><input type='checkbox' id='low' name='risk_severity[low]'" . (isset($risk_severity['low']) ? " checked='checked'" : "") . ">&nbsp;<strong>Low</strong></label>\n";
-    echo "        <label><input type='checkbox' id='insignificant' name='risk_severity[insignificant]'" . (isset($risk_severity['insignificant']) ? " checked='checked'" : "") . ">&nbsp;<strong>Insignificant</strong></label>\n";
+    echo "        <label><input type='checkbox' id='very_high' name='risk_severity[very_high]'" . (isset($risk_severity['very_high']) ? " checked='checked'" : "") . ">&nbsp;<strong>".$escaper->escapeHtml($very_high_display_name)."</strong></label>\n";
+    echo "        <label><input type='checkbox' id='high' name='risk_severity[high]'" . (isset($risk_severity['high']) ? " checked='checked'" : "") . ">&nbsp;<strong>".$escaper->escapeHtml($high_display_name)."</strong></label>\n";
+    echo "        <label><input type='checkbox' id='medium' name='risk_severity[medium]'" . (isset($risk_severity['medium']) ? " checked='checked'" : "") . ">&nbsp;<strong>".$escaper->escapeHtml($medium_display_name)."</strong></label>\n";
+    echo "        <label><input type='checkbox' id='low' name='risk_severity[low]'" . (isset($risk_severity['low']) ? " checked='checked'" : "") . ">&nbsp;<strong>".$escaper->escapeHtml($low_display_name)."</strong></label>\n";
+    echo "        <label><input type='checkbox' id='insignificant' name='risk_severity[insignificant]'" . (isset($risk_severity['insignificant']) ? " checked='checked'" : "") . ">&nbsp;<strong>".$escaper->escapeHtml($insignificant_display_name)."</strong></label>\n";
     echo "    </div>\n";
     echo "</div>\n";
 }
@@ -135,7 +141,7 @@ function display_y_axis($settings=[])
  ****************************/
 function display_x_axis($settings=[])
 {
-    global $escaper;
+    global $escaper, $lang;
 
     // Set the x_axis_aggregation
     $x_axis_aggregation = $escaper->escapeHtml(get_param("POST", "x_axis_aggregation", $settings?$settings["x_axis_aggregation"]:""));
@@ -147,33 +153,33 @@ function display_x_axis($settings=[])
     $x_axis_custom_label = $escaper->escapeHtml(get_param("POST", "x_axis_custom_label", $settings?$settings["x_axis_custom_label"]:""));
 
     echo "<div class='row-fluid'>\n";
-    echo "    <div class='span12'>X-Axis</div>\n";
+    echo "    <div class='span12'>".$escaper->escapeHtml($lang['X-Axis'])."</div>\n";
     echo "</div>\n";
 
     echo "<div class='row-fluid'>\n";
-    echo "    <div class='span2 text-right'>Aggregation:</div>\n";
+    echo "    <div class='span2 text-right'>".$escaper->escapeHtml($lang['Aggregation']).":</div>\n";
     echo "    <div class='span4'>\n";
     echo "        <select id='x_axis_aggregation' name='x_axis_aggregation'>\n";
-    echo "          <option value='date'" . ($x_axis_aggregation === false || $x_axis_aggregation === 'date' ? " selected='selected'" : "") . ">Date</option>\n";
+    echo "          <option value='date'" . ($x_axis_aggregation === false || $x_axis_aggregation === 'date' ? " selected='selected'" : "") . ">".$escaper->escapeHtml($lang['Date'])."</option>\n";
     echo "        </select>\n";
     echo "    </div>\n";
     echo "</div>\n";
 
     echo "<div class='row-fluid'>\n";
-    echo "    <div class='span2 text-right'>Custom Label:</div>\n";
+    echo "    <div class='span2 text-right'>".$escaper->escapeHtml($lang['CustomLabel']).":</div>\n";
     echo "    <div class='span4'>\n";
     echo "        <input type='text' name='x_axis_custom_label' value='{$x_axis_custom_label}' />\n";
     echo "    </div>\n";
     echo "</div>\n";
 
     echo "<div class='row-fluid'>\n";
-    echo "    <div class='span2 text-right'>X-Axis Value:</div>\n";
+    echo "    <div class='span2 text-right'>".$escaper->escapeHtml($lang['X-AxisValue']).":</div>\n";
     echo "    <div class='span4'>\n";
     echo "        <select id='x_axis' name='x_axis'>\n";
-    echo "          <option value='day'" . ($x_axis === 'day' ? " selected='selected'" : "") . ">Time (Days)</option>\n";
-    echo "          <option value='week'" . ($x_axis === 'week' ? " selected='selected'" : "") . ">Time (Weeks)</option>\n";
-    echo "          <option value='month'" . ($x_axis === 'month' ? " selected='selected'" : "") . ">Time (Months)</option>\n";
-    echo "          <option value='year'" . ($x_axis === 'year' ? " selected='selected'" : "") . ">Time (Years)</option>\n";
+    echo "          <option value='day'" . ($x_axis === 'day' ? " selected='selected'" : "") . ">".$escaper->escapeHtml($lang['TimeDays'])."</option>\n";
+    echo "          <option value='week'" . ($x_axis === 'week' ? " selected='selected'" : "") . ">".$escaper->escapeHtml($lang['TimeWeeks'])."</option>\n";
+    echo "          <option value='month'" . ($x_axis === 'month' ? " selected='selected'" : "") . ">".$escaper->escapeHtml($lang['TimeMonths'])."</option>\n";
+    echo "          <option value='year'" . ($x_axis === 'year' ? " selected='selected'" : "") . ">".$escaper->escapeHtml($lang['TimeYears'])."</option>\n";
     echo "        </select>\n";
     echo "    </div>\n";
     echo "</div>\n";
@@ -219,17 +225,17 @@ function display_save_graphic_selection()
         <div class='row-fluid'>
             <div class='span2 text-right'>".$escaper->escapeHtml($lang['Type']).":</div>
             <div class='span2'>
-              <select name='selection_type' title='". $escaper->escapeHtml($lang['PleaseSelectTypeForSaving']) ."'>
-                        <option value=''>--</option>
-                        <option value='public'>".$escaper->escapeHtml($lang['Public'])."</option>
-                        <option value='private'>".$escaper->escapeHtml($lang['Private'])."</option>
-                    </select>
+                <select name='selection_type' title='". $escaper->escapeHtml($lang['PleaseSelectTypeForSaving']) ."'>
+                    <option value=''>--</option>
+                    <option value='public'>".$escaper->escapeHtml($lang['Public'])."</option>
+                    <option value='private'>".$escaper->escapeHtml($lang['Private'])."</option>
+                </select>
             </div>
             <div class='span1 text-right'>".$escaper->escapeHtml($lang['Name']).":</div>
             <div class='span4'>
                 <input name='selection_name' type='text' placeholder='".$escaper->escapeHtml($lang['Name'])."' title='".$escaper->escapeHtml($lang['Name'])."' style='max-width: unset;'>
             </div>
-          <div class='span2'><button class='btn' id='save_selection'>{$escaper->escapeHtml($lang['Save'])}</button></div>
+            <div class='span2'><button class='btn' id='save_selection'>".$escaper->escapeHtml($lang['Save'])."</button></div>
         </div>\n";
     echo "
 
