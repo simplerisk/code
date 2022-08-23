@@ -700,7 +700,7 @@ function display_active_audits(){
     $column_settings = isset($_SESSION['custom_audits_columns'])?$_SESSION['custom_audits_columns']:array();
     if(count($column_settings) == 0) $column_settings = array("test_name","test_frequency","tester","additional_stakeholders","objective","control_name","framework_name","tags","status","last_date","next_date");
     $tags = [];
-    foreach(getTagsOfType("test") as $tag) {
+    foreach(getTagsOfType("test_audit") as $tag) {
         $tags[] = array('name' => $escaper->escapeHtml($tag['tag']), 'value' => (int)$tag['id']);
     }
     echo "
@@ -1168,9 +1168,11 @@ function initiate_test_audit($test_id, $initiated_audit_status, $tags=[]) {
     $stmt->bindParam(":result_id", $result_id, PDO::PARAM_INT);
     $stmt->execute();
     $test_result = $stmt->fetch(PDO::FETCH_ASSOC);
-    $risk_ids = get_test_result_to_risk_ids($test_result["id"]);
-    foreach($risk_ids as $risk_id) {
-        save_test_result_to_risk($result_id, $risk_id);
+    if($test_result){
+        $risk_ids = get_test_result_to_risk_ids($test_result["id"]);
+        foreach($risk_ids as $risk_id) {
+            save_test_result_to_risk($result_id, $risk_id);
+        }
     }
 
     updateTeamsOfItem($audit_id, 'audit', $test['teams']);
@@ -1402,6 +1404,9 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
         } else if($name == "status") {
             $wheres[] = "t6.name LIKE :status ";
             $bind_params[$name] = "%{$column_filter}%";
+        } else if($name == "tags") {
+            $wheres[] = "tg.tag LIKE :tags ";
+            $bind_params[$name] = "%{$column_filter}%";
         } else {
             $manual_column_filters[$name] = $column_filter;
         }
@@ -1443,6 +1448,9 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
     }
     elseif($columnName == "additional_stakeholders"){
         $sql .= " ORDER BY t7.additional_stakeholders {$columnDir} ";
+    }
+    elseif($columnName == "tags"){
+        $sql .= " ORDER BY tg.tag {$columnDir} ";
     }
     else{
         // Active audits
@@ -2440,7 +2448,7 @@ function display_past_audits()
 
     $tableID = "past-audits";
     $tags = [];
-    foreach(getTagsOfType("test") as $tag) {
+    foreach(getTagsOfType("test_audit") as $tag) {
         $tags[] = array('name' => $escaper->escapeHtml($tag['tag']), 'value' => (int)$tag['id']);
     }
 
@@ -2483,7 +2491,7 @@ function display_past_audits()
                 </div>
                 <div class='span4'>
                     <div class='multiselect-content-container'>
-                        <select id='filter_by_framework' class='' multiple=''>
+                        <select id='filter_by_framework' class='' multiple='multiple'>
                             <option selected value='-1'>".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
                             $options = getHasBeenAuditFrameworkList();
                             is_array($options) || $options = array();

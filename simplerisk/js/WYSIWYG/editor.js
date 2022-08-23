@@ -5,7 +5,7 @@ function init_default_editor(selector) {
 	    selector: selector,
 	    statusbar: false,
 	    // Tip! To make TinyMCE leaner, only include the plugins you actually need.
-        plugins: 'paste searchreplace directionality visualblocks visualchars image link table charmap hr advlist lists help charmap quickbars',
+        plugins: 'searchreplace directionality visualblocks visualchars image link table charmap advlist lists help charmap quickbars',
 
         menubar: 'file edit view insert format tools table help',
 

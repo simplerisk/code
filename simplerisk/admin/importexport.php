@@ -61,65 +61,72 @@ require_once(language_file());
         // If the user selected to do a combined export
         if (isset($_POST['combined_export']))
         {
-            // Export the CSV file
-            export_csv("combined");
+            // Export the XLSX file
+            export_xls("combined");
         }
 
         // If the user selected to do a combined export
         if (isset($_POST['risks_export']))
         {
-            // Export the CSV file
-            export_csv("risks");
+            // Export the XLSX file
+            export_xls("risks");
         }
 
         // If the user selected to do a combined export
         if (isset($_POST['mitigations_export']))
         {
-            // Export the CSV file
-            export_csv("mitigations");
+            // Export the XLSX file
+            export_xls("mitigations");
         }
 
         // If the user selected to do a combined export
         if (isset($_POST['reviews_export']))
         {
-            // Export the CSV file
-            export_csv("reviews");
+            // Export the XLSX file
+            export_xls("reviews");
         }
 
         // If the user selected to do a combined export
         if (isset($_POST['assessments_export']))
         {
-            // Export the CSV file
-            export_csv("assessments");
+            // Export the XLSX file
+            export_xls("assessments");
         }
 
         // If the user selected to do an asset export
         if (isset($_POST['assets_export']))
         {
-            // Export the CSV file
-            export_csv("assets");
+            // Export the XLSX file
+            export_xls("assets");
         }
 
         // If the user selected to do an asset group export
         if (isset($_POST['asset_groups_export']))
         {
-            // Export the CSV file
-            export_csv("asset_groups");
+            // Export the XLSX file
+            export_xls("asset_groups");
         }
 
         // If the user selected to do a control export
         if (isset($_POST['controls_export']))
         {
-            // Export the CSV file
-            export_csv("controls");
+            // Export the XLSX file
+            export_xls("controls");
         }
 
-	// If the user selected to do a user export
-	if (isset($_POST['users_export']))
-	{
-	    // Export the CSV file
-	    export_csv("users");
-	}
+        // If the user selected to do a user export
+        if (isset($_POST['users_export']))
+        {
+            // Export the XLSX file
+            export_xls("users");
+        }
+
+        // If the user selected to do a template groups  export
+        if (isset($_POST['template_groups_export']))
+        {
+            // Export the XLSX file
+            export_xls("template_groups");
+        }
     }
 
     /*********************

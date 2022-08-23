@@ -142,7 +142,7 @@ get_alert();
     -->
             <tr>
               <td width="155px"><b>Import / Export</b></td>
-              <td>Enables the import and export of CSV files containing risk information.</td>
+              <td>Enables the import and export of CSV or XLS/XLSX files containing risk information.</td>
               <td width="60px"><?php echo (import_export_extra() ? '<a href="importexport.php">Yes</a>' : '<a href="importexport.php">No</a>'); ?></td>
             </tr>
             <tr>

@@ -30,6 +30,26 @@ include_csrf_magic();
 // Include the SimpleRisk language file
 require_once(language_file());
 
+// Check if we should add a pending risk
+if (isset($_POST['add']))
+{
+    // Push the pending risk to a real risk
+    push_pending_risk();
+}
+
+// Check if we should delete a pending risk
+if (isset($_POST['delete']))
+{
+    // Get the risk id to delete
+    $pending_risk_id = (int)$_POST['pending_risk_id'];
+
+    // Delete the pending risk
+    delete_pending_risk($pending_risk_id);
+
+    // Set the alert message
+    set_alert(true, "good", "The pending risk was deleted successfully.");
+}
+
 // If an assessment was posted
 if (isset($_POST['action']) && $_POST['action'] == "submit")
 {
@@ -69,8 +89,8 @@ if (isset($_GET['action']))
   // If the action is view
   else if ($_GET['action'] == "view")
   {
-    // Use the Available Assessments menu
-    $menu = "AvailableAssessments";
+    // Use the Self Assessments menu
+    $menu = "SelfAssessments";
   }
   // If the action is send
   else if ($_GET['action'] == "send")
@@ -82,8 +102,8 @@ if (isset($_GET['action']))
 // Otherwise
 else
 {
-  // Use the Available Assessments menu
-  $menu = "AvailableAssessments";
+  // Use the Self Assessments menu
+  $menu = "SelfAssessments";
 }
 
 ?>
@@ -109,12 +129,14 @@ else
         // Include the jquery-ui javascript source
         display_jquery_ui_javascript($scripts);
 
-	display_bootstrap_javascript();
+        display_bootstrap_javascript();
 ?>
     <script src="../js/pages/assessment.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/common.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/cve_lookup.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/jquery.datetimepicker.full.min.js?<?php echo current_version("app"); ?>"></script>
     
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -130,9 +152,11 @@ else
     <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/settings_tabs.css?<?php echo current_version("app"); ?>">
   
     <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
     <script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
+    <link rel="stylesheet" href="../css/jquery.datetimepicker.min.css?<?php echo current_version("app"); ?>">
   
   <?php
       setup_favicon("..");
@@ -204,14 +228,28 @@ else
         }
         else
         {
-          // Display the available assessments
-          display_assessment_links();
+          // Display the self assessments
+          display_self_assessments();
         }
         ?>
       </div>
     </div>
   </div>
-    <?php display_set_default_date_format_script(); ?>
+  <script>
+      (function($) {
+
+          var tabs =  $(".tabs li a");
+
+          tabs.click(function() {
+              var content = this.hash.replace('/','');
+              tabs.removeClass("active");
+              $(this).addClass("active");
+              $("#content").find('.settings_tab').hide();
+              $(content).fadeIn(200);
+          });
+      })(jQuery);
+  </script>
+  <?php display_set_default_date_format_script(); ?>
 </body>
 
 </html>

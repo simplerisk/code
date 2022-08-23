@@ -227,7 +227,7 @@ class FrameworkExtension extends Extension
                 // mark any env vars found in the ide setting as used
                 $container->resolveEnvPlaceholders($ide);
 
-                $container->setParameter('templating.helper.code.file_link_format', str_replace('%', '%%', ini_get('xdebug.file_link_format') ?: get_cfg_var('xdebug.file_link_format')) ?: ($links[$ide] ?? $ide));
+                $container->setParameter('templating.helper.code.file_link_format', str_replace('%', '%%', \ini_get('xdebug.file_link_format') ?: get_cfg_var('xdebug.file_link_format')) ?: ($links[$ide] ?? $ide));
             }
             $container->setParameter('debug.file_link_format', '%templating.helper.code.file_link_format%');
         }
@@ -496,6 +496,10 @@ class FrameworkExtension extends Extension
         }
 
         if ($this->isConfigEnabled($container, $config['form']['csrf_protection'])) {
+            if (!$container->hasDefinition('security.csrf.token_generator')) {
+                throw new \LogicException('To use form CSRF protection, "framework.csrf_protection" must be enabled.');
+            }
+
             $loader->load('form_csrf.xml');
 
             $container->setParameter('form.type_extension.csrf.enabled', true);
@@ -719,7 +723,7 @@ class FrameworkExtension extends Extension
                 $markingStoreDefinition = new ChildDefinition('workflow.marking_store.'.$workflow['marking_store']['type']);
                 if ('method' === $workflow['marking_store']['type']) {
                     $markingStoreDefinition->setArguments([
-                        'state_machine' === $type, //single state
+                        'state_machine' === $type, // single state
                         $workflow['marking_store']['property'] ?? 'marking',
                     ]);
                 } else {

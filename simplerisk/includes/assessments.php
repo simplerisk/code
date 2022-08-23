@@ -92,7 +92,7 @@ function process_assessment($redirect = true)
     $assessment_id = (int)$_POST['assessment_id'];
 
     // Get the asset specified by the assessment
-    $asset = $_POST['asset'];
+    $asset = isset($_POST['asset']) ? $_POST['asset'] : null;
 
     // Get the assessment
     $assessment = get_assessment($assessment_id);
@@ -139,7 +139,7 @@ function process_assessment($redirect = true)
         session_write_close();
 
         // Redirect to the pending risks page
-        header("Location: risks.php");
+        header("Location: index.php?tab=pending_risks");
     }
 }
 
@@ -360,7 +360,7 @@ function push_pending_risk() {
         require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
         // Send the notification
-        notify_new_risk($last_insert_id, $subject);
+        notify_new_risk($last_insert_id);
     }
 
     // There is an alert message

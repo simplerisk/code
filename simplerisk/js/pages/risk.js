@@ -677,6 +677,10 @@ $(document).ready(function(){
         var form = new FormData($(getForm)[0]);
         var scoring_method = $("[name=scoring_method]", tabContainer).val();
 
+        $.each($("select.multiselect", getForm), function(i, obj) {
+            if(!form.has(obj.name)) form.append(obj.name, $(obj).val());
+        });
+
         $.each($("input[type=file]", tabContainer), function(i, obj) {
             $.each(obj.files,function(j, file){
                 form.append('file['+j+']', file);

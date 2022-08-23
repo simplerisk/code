@@ -243,8 +243,8 @@ class UploadedFile extends File
      */
     public static function getMaxFilesize()
     {
-        $sizePostMax = self::parseFilesize(ini_get('post_max_size'));
-        $sizeUploadMax = self::parseFilesize(ini_get('upload_max_filesize'));
+        $sizePostMax = self::parseFilesize(\ini_get('post_max_size'));
+        $sizeUploadMax = self::parseFilesize(\ini_get('upload_max_filesize'));
 
         return min($sizePostMax ?: \PHP_INT_MAX, $sizeUploadMax ?: \PHP_INT_MAX);
     }
@@ -273,8 +273,11 @@ class UploadedFile extends File
 
         switch (substr($size, -1)) {
             case 't': $max *= 1024;
+            // no break
             case 'g': $max *= 1024;
+            // no break
             case 'm': $max *= 1024;
+            // no break
             case 'k': $max *= 1024;
         }
 

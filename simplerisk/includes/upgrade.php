@@ -162,6 +162,7 @@ $releases = array(
 	"20220401-001",
 	"20220527-001",
 	"20220701-001",
+	"20220823-001",
 );
 
 /*************************
@@ -6621,6 +6622,53 @@ function upgrade_from_20220527001($db)
 
     /* End of additional indexes on columns used in Dynamic Risk Report's query */
     
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20220701-001 *
+ ***************************************/
+function upgrade_from_20220701001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20220701-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20220823-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Compile the list of unnecessary directories
+    echo "Removing unnecessary directories.<br />\n";
+    $remove_directories = array(
+        realpath(__DIR__ . '/vendor/box'),
+        realpath(__DIR__ . '/assessments/risks.php'),
+    );
+
+    // Remove the unnecessary directories
+    foreach ($remove_directories as $directory)
+    {
+        // If the directory exists
+        if (is_dir($directory))
+        {
+            // Remove the directory
+            delete_dir($directory);
+        }
+    }
+
+    // Altering the type of the comment column to be able to fit in longer comments
+    if (getTypeOfColumn('pending_risks', 'comment') != 'text') {
+        echo "Updating the type of the `comment` column of the `pending_risks` table to be able to fit in longer comments.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `pending_risks` MODIFY `comment` TEXT NOT NULL;");
+        $stmt->execute();
+    }
+
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic
     $_SESSION['latest_version_app'] = latest_version('app');

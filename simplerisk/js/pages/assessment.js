@@ -639,10 +639,9 @@ $(document).ready(function(){
             css: { border: '1px solid black', background: '#ffffff' }
         });
         var selected_questions = [];
-        $('.tab_link').each(function(i, obj) {
-            var data_index = $(this).attr('data-index');
+        $('ul.selected_questions').each(function(i, obj) {
             var tab_questions = [];
-            $('#tab-content-'+data_index+' ul.selected_questions li.selected_question').each(function(i, obj) {
+            $(this).find('li.selected_question').each(function(i, obj) {
                 var data_id = $(this).attr('data-id');
                 tab_questions.push(data_id);
             });
@@ -650,7 +649,7 @@ $(document).ready(function(){
         });
         var form = $(this);
         var form_data = new FormData(form[0]);
-        if($('#disable_tab').is(':checked')) form_data.append('disable_tab',1);
+        if($('#disable_tab').is(':hidden')) form_data.append('disable_tab',1);
         else form_data.append('disable_tab',0);
 
         for (var i = 0; i < selected_questions.length; i++) {

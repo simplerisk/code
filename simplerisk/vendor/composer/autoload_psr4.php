@@ -97,6 +97,5 @@ return array(
     'Cron\\' => array($vendorDir . '/dragonmantank/cron-expression/src/Cron'),
     'Composer\\Installers\\' => array($vendorDir . '/composer/installers/src/Composer/Installers'),
     'Complex\\' => array($vendorDir . '/markbaker/complex/classes/src'),
-    'Box\\Spout\\' => array($vendorDir . '/box/spout/src/Spout'),
     'Basho\\' => array($vendorDir . '/phpfastcache/riak-client/src'),
 );

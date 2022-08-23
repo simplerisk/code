@@ -846,7 +846,7 @@ function get_entered_assets($verified=null)
         GROUP BY
             a.id
         ORDER BY
-            " . (encryption_extra() ? "a.order_by_name" : "a.name") . "
+            a.id, " . (encryption_extra() ? "a.order_by_name" : "a.name") . "
     ;");
     $stmt->execute($params);
 
@@ -1833,7 +1833,7 @@ function update_asset_group($id, $name, $selected_assets) {
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
 
-    update_assets_of_asset_group($selected_assets, $id, $name);
+    if(!is_null($selected_assets)) update_assets_of_asset_group($selected_assets, $id, $name);
 
     db_close($db);
 }

@@ -4123,11 +4123,8 @@ function view_assessments_menu($active)
     global $escaper;
 
     echo "<ul class=\"nav nav-pills nav-stacked aside--nav \">\n";
-    echo ($active == "AvailableAssessments" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"index.php\"> " . $escaper->escapeHtml($lang['AvailableAssessments']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "PendingRisks" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"risks.php\"> " .  $escaper->escapeHtml($lang['PendingRisks']) . "</a>\n";
+    echo ($active == "SelfAssessments" ? "<li class=\"active\">\n" : "<li>\n");
+    echo "<a href=\"index.php\"> " . $escaper->escapeHtml($lang['SelfAssessments']) . "</a>\n";
     echo "</li>\n";
 
     // If the assessments extra is installed
@@ -5371,15 +5368,45 @@ function display_upgrade()
     }
 }
 
-/*********************************
-* FUNCTION: DISPLAY ASSESSMENTS *
-*********************************/
-function display_assessment_links()
+/*************************************
+* FUNCTION: DISPLAY SELF ASSESSMENTS *
+**************************************/
+function display_self_assessments()
 {
+    global $lang;
     global $escaper;
 
     // Get the assessments
     $assessments = get_assessment_names();
+
+    // If the pending_risks tab is selected
+    if ((isset($_GET['tab']) && $_GET['tab'] == "pending_risks") || (isset($_POST['tab']) && $_POST['tab'] == "pending_risks"))
+    {
+        $self_assessments_class = "";
+        $self_assessment_style = "style=\"display: none\"";;
+        $pending_risks_class = "class=\"active\"";
+        $pending_risks_style = "";
+    }
+    // Display the self assessments tab
+    else
+    {
+        $self_assessments_class = "class=\"active\"";
+        $self_assessment_style = "";
+        $pending_risks_class = "";
+        $pending_risks_style = "style=\"display: none\"";;
+    }
+
+    echo "<div class='row-fluid'>\n";
+    echo "
+            <div class=\"span12\">
+              <div class=\"wrap\">
+                <ul class=\"tabs group\">
+                  <li><a {$self_assessments_class} href=\"#/self_assessments\">" . $escaper->escapeHtml($lang['Assessments']) . "</a></li>
+                  <li><a {$pending_risks_class} href=\"#/pending_risks\">" . $escaper->escapeHtml($lang['PendingRisks']) . "</a></li>
+                </ul>
+                <div id=\"content\">
+                  <div id=\"self_assessments\" class=\"settings_tab\" {$self_assessment_style}>
+    ";
 
     // Start the list
     echo "<ul class=\"nav nav-pills nav-stacked \">\n";
@@ -5397,6 +5424,16 @@ function display_assessment_links()
 
     // End the list
     echo "</ul>\n";
+    echo "        </div>\n";
+
+    echo "        <div id=\"pending_risks\" class=\"settings_tab\" {$pending_risks_style}>\n";
+    display_pending_risks();
+    echo "        </div>\n";
+
+    echo "      </div>\n";
+    echo "    </div>\n";
+    echo "  </div>\n";
+    echo "</div>\n";
 }
 
 /*******************************************
@@ -5450,6 +5487,35 @@ function display_view_assessment_questions($assessment_id = NULL)
 {
     global $escaper;
     global $lang;
+
+    // If the pending_risks tab is selected
+    if ((isset($_GET['tab']) && $_GET['tab'] == "pending_risks") || (isset($_POST['tab']) && $_POST['tab'] == "pending_risks"))
+    {
+        $self_assessments_class = "";
+        $self_assessment_style = "style=\"display: none\"";
+        $pending_risks_class = "class=\"active\"";
+        $pending_risks_style = "";
+    }
+    // Display the self assessments tab
+    else
+    {
+        $self_assessments_class = "class=\"active\"";
+        $self_assessment_style = "";
+        $pending_risks_class = "";
+        $pending_risks_style = "style=\"display: none\"";
+    }
+
+    echo "<div class='row-fluid'>\n";
+    echo "
+            <div class=\"span12\">
+              <div class=\"wrap\">
+                <ul class=\"tabs group\">
+                  <li><a {$self_assessments_class} href=\"#/self_assessments\">" . $escaper->escapeHtml($lang['Assessments']) . "</a></li>
+                  <li><a {$pending_risks_class} href=\"#/pending_risks\">" . $escaper->escapeHtml($lang['PendingRisks']) . "</a></li>
+                </ul>
+                <div id=\"content\">
+                  <div id=\"self_assessments\" class=\"settings_tab\" {$self_assessment_style}>
+    ";
 
     echo "<div class=\"row-fluid\">\n";
     echo "<div class=\"span12\">\n";
@@ -5582,6 +5648,17 @@ function display_view_assessment_questions($assessment_id = NULL)
     echo "</form>\n";
     echo "</div>\n";
     echo "</div>\n";
+    echo "</div>\n";
+
+    echo "        </div>\n";
+
+    echo "        <div id=\"pending_risks\" class=\"settings_tab\" {$pending_risks_style}>\n";
+    display_pending_risks();
+    echo "        </div>\n";
+
+    echo "      </div>\n";
+    echo "    </div>\n";
+    echo "  </div>\n";
     echo "</div>\n";
 }
 
@@ -5905,6 +5982,9 @@ function report_likelihood_impact(){
                     )
                 ),
             ),
+        ),
+        "area" => array(
+            "fillOpacity" => 1
         )
     );
 
@@ -5951,7 +6031,7 @@ function report_likelihood_impact(){
             'y'             => intval($point_group['y']),
             'risk_ids'      => implode(",", $point_group['risk_ids']),
             'marker'    => array(
-                'fillColor' => 'rgba(223, 83, 83)'
+                'fillColor' => 'rgb(223, 83, 83)'
             ),
             'color'     => '<div style="width:100%; height:20px; border: solid 1px;border-color: #3f3f3f;"></div>'
         );
@@ -5970,7 +6050,7 @@ function report_likelihood_impact(){
     
     $series[] = array(
         'type' => "scatter",
-        'color' => "rgba(223, 83, 83)",
+        'color' => "rgb(223, 83, 83)",
         'data' => $data,
         'enableMouseTracking' => true,
         'states' => [
@@ -6072,7 +6152,7 @@ function get_area_series_from_likelihood_impact($likelihood, $impact)
     
     $area_series = array(
         'type'=> 'area',
-        'color' => convert_color_code($color) . "ff",
+        'color' => hex2rgba(convert_color_code($color)), 
         'data' => $data,
         'enableMouseTracking' => false,
         'states' => [
@@ -8186,6 +8266,8 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
             'affected_assets' => $escaper->escapeHtml($lang['AffectedAssets']),
             'risk_assessment' => $escaper->escapeHtml($lang['RiskAssessment']),
             'additional_notes' => $escaper->escapeHtml($lang['AdditionalNotes']),
+            'risk_mapping' => $escaper->escapeHtml($lang['RiskMapping']),
+            'threat_mapping' => $escaper->escapeHtml($lang['ThreatMapping']),
         );
         $mitigation_columns = array(
             'mitigation_planned' => $escaper->escapeHtml($lang['MitigationPlanned']),

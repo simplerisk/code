@@ -254,7 +254,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
             require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
             // Send the notification
-            notify_new_risk($last_insert_id, $subject);
+            notify_new_risk($last_insert_id);
         }
 
         // There is an alert message

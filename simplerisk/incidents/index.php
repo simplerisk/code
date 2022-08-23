@@ -182,15 +182,26 @@ if(isset($_GET["action"]) && $_GET["action"] == "download"){
 	<script>
         (function($) {
 
-        var tabs =  $(".tabs li a");
-  
-        tabs.click(function() {
-                var content = this.hash.replace('/','');
+            var tabs =  $(".tabs li a");
+            var hash = window.location.hash;
+            
+            if(hash){
+                tabs.removeClass("active");
+                $(".tabs").find("[href='"+hash+"']").addClass("active");
+
+                var content = hash.replace('/','');
+                $("#content > div").hide();
+                $(content).fadeIn(200);
+            }
+
+            tabs.click(function() {
                 tabs.removeClass("active");
                 $(this).addClass("active");
-                $("#content").find('.settings_tab').hide();
+
+                var content = this.hash.replace('/','');
+                $("#content > div").hide();
                 $(content).fadeIn(200);
-        });
+            });
 
         })(jQuery);
 

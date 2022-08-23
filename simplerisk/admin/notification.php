@@ -202,19 +202,6 @@ require_once(language_file());
       </div>
     </div>
     <script>
-        (function($) {
-
-        var tabs =  $(".tabs li a");
-  
-        tabs.click(function() {
-            var content = this.hash.replace('/','');
-            tabs.removeClass("active");
-            $(this).addClass("active");
-            $("#content").find('.settings_tab').hide();
-            $(content).fadeIn(200);
-        });
-
-        })(jQuery);
 
         $(document).ready(function(){
             $(".period-dropdown").change(function(){
@@ -227,7 +214,26 @@ require_once(language_file());
                 $("#specified_" + period, container).show();
                 $("#specified_" + period + " input," + "#specified_" + period + " select", container).prop('disabled', false);
                 
-            })
+            });
+
+            var tabs =  $(".tabs li a");
+            var hash = window.location.hash;
+            if(hash){
+                tabs.removeClass("active");
+                $(".tabs").find("[href='"+hash+"']").addClass("active");
+
+                var content = hash.replace('/','');
+                $("#content > div").hide();
+                $(content).fadeIn(200);
+            }
+
+            tabs.click(function() {
+                var content = this.hash.replace('/','');
+                tabs.removeClass("active");
+                $(this).addClass("active");
+                $("#content > div").hide();
+                $(content).fadeIn(200);
+            });
         });
 
         <?php prevent_form_double_submit_script(['activate_extra', 'deactivate_extra']); ?>
