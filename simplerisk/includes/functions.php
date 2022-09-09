@@ -5965,6 +5965,10 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
     // If this is the default, sort by risk
     if ($sort_order == 0)
     {
+        // Set default sort field
+        if(empty($sort_query)){
+            $sort_query = " ORDER BY a.calculated_risk DESC ";
+        }
         // If the team separation extra is not enabled
         if (!team_separation_extra())
         {
@@ -5983,8 +5987,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                 WHERE
                     b.status != \"Closed\"
                 GROUP BY b.id
-                ORDER BY
-                    a.calculated_risk DESC
+                {$sort_query}
             ");
         }
         else
@@ -6011,8 +6014,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                 WHERE
                     b.status != \"Closed\"  " . $separation_query . "
                 GROUP BY b.id
-                ORDER BY
-                    a.calculated_risk DESC
+                {$sort_query}
             ");
         }
 

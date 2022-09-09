@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'टेम्पलेट समूह आयात करें',
     'TemplateGroupID' => 'टेम्पलेट समूह आईडी',
     'TemplateGroupName' => 'टेम्पलेट समूह का नाम',
+    'ExportControlTests' => 'निर्यात नियंत्रण परीक्षण',
+    'ImportControlTests' => 'आयात नियंत्रण परीक्षण',
+    'TestID' => 'टेस्ट आईडी',
+    'IDNoEXitFailedToUpdate' => 'आईडी $id मौजूद नहीं है, इसलिए इसे आयात या अपडेट नहीं किया गया है',
 
     '' => '',
 );

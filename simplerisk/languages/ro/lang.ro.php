@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'Importați grupuri de șabloane',
     'TemplateGroupID' => 'ID-ul grupului de șabloane',
     'TemplateGroupName' => 'Numele grupului de șabloane',
+    'ExportControlTests' => 'Teste de control al exportului',
+    'ImportControlTests' => 'Teste de control al importului',
+    'TestID' => 'ID de testare',
+    'IDNoEXitFailedToUpdate' => 'ID-ul $id nu există, deci nu a fost importat sau actualizat',
 
     '' => '',
 );

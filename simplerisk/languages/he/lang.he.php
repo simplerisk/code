@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'ייבוא קבוצות תבניות',
     'TemplateGroupID' => 'מזהה קבוצת תבנית',
     'TemplateGroupName' => 'שם קבוצת תבנית',
+    'ExportControlTests' => 'בדיקות בקרת ייצוא',
+    'ImportControlTests' => 'בדיקות בקרת ייבוא',
+    'TestID' => 'מזהה בדיקה',
+    'IDNoEXitFailedToUpdate' => 'מזהה $id לא קיים, ולכן הוא לא יובא או עודכן',
 
     '' => '',
 );

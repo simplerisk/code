@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'Importera mallgrupper',
     'TemplateGroupID' => 'Mallgrupp-ID',
     'TemplateGroupName' => 'Mallgruppsnamn',
+    'ExportControlTests' => 'Exportkontrolltester',
+    'ImportControlTests' => 'Importkontrolltester',
+    'TestID' => 'Test-ID',
+    'IDNoEXitFailedToUpdate' => 'ID $id finns inte, så det har inte importerats eller uppdaterats',
 
     '' => '',
 );

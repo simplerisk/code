@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'Importar grupos de plantillas',
     'TemplateGroupID' => 'Id. de grupo de plantillas',
     'TemplateGroupName' => 'Nombre del grupo de plantillas',
+    'ExportControlTests' => 'Pruebas de control de exportaciones',
+    'ImportControlTests' => 'Pruebas de control de importaciones',
+    'TestID' => 'Identificación de prueba',
+    'IDNoEXitFailedToUpdate' => 'ID $id no existe, por lo que no se ha importado ni actualizado',
 
     '' => '',
 );

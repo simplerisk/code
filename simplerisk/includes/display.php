@@ -375,7 +375,8 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        if(!$template_group_id) {
+        $template_group = get_custom_template_group_by_id($template_group_id);
+        if(!$template_group_id || !$template_group) {
             $group = get_default_template_group("risk");
             $template_group_id = $group["id"];
         }
@@ -750,7 +751,8 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        if(!$template_group_id){
+        $template_group = get_custom_template_group_by_id($template_group_id);
+        if(!$template_group_id || !$template_group) {
             $group = get_default_template_group("risk");
             $template_group_id = $group["id"];
         }
@@ -866,7 +868,8 @@ function view_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $pl
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        if(!$template_group_id){
+        $template_group = get_custom_template_group_by_id($template_group_id);
+        if(!$template_group_id || !$template_group) {
             $group = get_default_template_group("risk");
             $template_group_id = $group["id"];
         }
@@ -1153,7 +1156,8 @@ function edit_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $pl
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        if(!$template_group_id){
+        $template_group = get_custom_template_group_by_id($template_group_id);
+        if(!$template_group_id || !$template_group) {
             $group = get_default_template_group("risk");
             $template_group_id = $group["id"];
         }
@@ -1466,7 +1470,8 @@ function view_review_details($id, $review_id, $review_date, $reviewer, $review, 
         {
             // Include the extra
             require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-            if(!$template_group_id){
+            $template_group = get_custom_template_group_by_id($template_group_id);
+            if(!$template_group_id || !$template_group) {
                 $group = get_default_template_group("risk");
                 $template_group_id = $group["id"];
             }
@@ -1621,7 +1626,8 @@ function edit_review_submission($id, $review_id, $review, $next_step, $next_revi
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        if(!$template_group_id){
+        $template_group = get_custom_template_group_by_id($template_group_id);
+        if(!$template_group_id || !$template_group) {
             $group = get_default_template_group("risk");
             $template_group_id = $group["id"];
         }

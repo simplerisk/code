@@ -171,7 +171,7 @@ function display($display = "")
                             $("#exception-update-form [name=type]").val(type);
 
                             $("#exception-update-form [name=exception_id]").val(exception_id);
-			    $("#exception-update-form [name=document_exceptions_status]").val(data.document_exceptions_status);
+                            $("#exception-update-form [name=document_exceptions_status]").val(data.document_exceptions_status);
                             $("#exception-update-form [name=name]").val(data.name);
                             $("#exception-update-form [name=policy]").val(data.policy_document_id);
                             $("#exception-update-form [name=control]").val(data.control_framework_id);
@@ -227,7 +227,7 @@ function display($display = "")
                                 $("#exception--view #policy").parent().hide();
                             }
 
-			    $("#exception--view #document_exceptions_status").html(data.document_exceptions_status);
+                            $("#exception--view #document_exceptions_status").html(data.document_exceptions_status);
                             $("#exception--view #owner").html(data.owner);
                             $("#exception--view #additional_stakeholders").html(data.additional_stakeholders);
                             $("#exception--view #associated_risks").html(data.associated_risks);
@@ -694,7 +694,7 @@ function display($display = "")
 
               // Get any alert messages
               get_alert();
-              $risks = get_risks(1);
+              $risks = get_risks(0, "id", "asc");
           ?>
 
 

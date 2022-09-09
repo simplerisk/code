@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'Εισαγωγή ομάδων προτύπων',
     'TemplateGroupID' => 'Αναγνωριστικό ομάδας προτύπων',
     'TemplateGroupName' => 'Όνομα ομάδας προτύπων',
+    'ExportControlTests' => 'Δοκιμές ελέγχου εξαγωγής',
+    'ImportControlTests' => 'Δοκιμές ελέγχου εισαγωγής',
+    'TestID' => 'ID δοκιμής',
+    'IDNoEXitFailedToUpdate' => 'Το αναγνωριστικό $id δεν υπάρχει, επομένως δεν έχει εισαχθεί ή ενημερωθεί',
 
     '' => '',
 );

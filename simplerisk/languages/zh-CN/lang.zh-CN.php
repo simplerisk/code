@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => '导入模板组',
     'TemplateGroupID' => '模板组 ID',
     'TemplateGroupName' => '模板组名称',
+    'ExportControlTests' => '出口管制测试',
+    'ImportControlTests' => '进口控制测试',
+    'TestID' => '测试编号',
+    'IDNoEXitFailedToUpdate' => 'ID $id 不存在，因此尚未导入或更新',
 
     '' => '',
 );

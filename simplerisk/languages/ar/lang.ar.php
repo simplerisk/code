@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'استيراد مجموعات القوالب',
     'TemplateGroupID' => 'معرف مجموعة القالب',
     'TemplateGroupName' => 'اسم مجموعة القالب',
+    'ExportControlTests' => 'اختبارات مراقبة الصادرات',
+    'ImportControlTests' => 'اختبارات التحكم في الاستيراد',
+    'TestID' => 'معرف الاختبار',
+    'IDNoEXitFailedToUpdate' => 'المعرف $id غير موجود ، لذا لم يتم استيراده أو تحديثه',
 
     '' => '',
 );

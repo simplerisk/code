@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'Загварын бүлгүүдийг импортлох',
     'TemplateGroupID' => 'Загварын бүлгийн ID',
     'TemplateGroupName' => 'Загварын бүлгийн нэр',
+    'ExportControlTests' => 'Экспортын хяналтын туршилтууд',
+    'ImportControlTests' => 'Импортын хяналтын тестүүд',
+    'TestID' => 'Туршилтын ID',
+    'IDNoEXitFailedToUpdate' => 'ID $id байхгүй тул импортлоогүй эсвэл шинэчлэгдээгүй байна',
 
     '' => '',
 );

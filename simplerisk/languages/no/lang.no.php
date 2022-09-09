@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'Importer malgrupper',
     'TemplateGroupID' => 'Malgruppe-ID',
     'TemplateGroupName' => 'Malgruppenavn',
+    'ExportControlTests' => 'Eksportkontrolltester',
+    'ImportControlTests' => 'Importkontrolltester',
+    'TestID' => 'Test-ID',
+    'IDNoEXitFailedToUpdate' => 'ID $id eksisterer ikke, så den har ikke blitt importert eller oppdatert',
 
     '' => '',
 );

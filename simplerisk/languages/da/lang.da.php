@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'Importér skabelongrupper',
     'TemplateGroupID' => 'Skabelongruppe-id',
     'TemplateGroupName' => 'Skabelongruppenavn',
+    'ExportControlTests' => 'Eksportkontroltest',
+    'ImportControlTests' => 'Importkontroltest',
+    'TestID' => 'Test ID',
+    'IDNoEXitFailedToUpdate' => 'ID $id eksisterer ikke, så det er ikke blevet importeret eller opdateret',
 
     '' => '',
 );

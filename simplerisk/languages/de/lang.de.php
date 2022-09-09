@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'Vorlagengruppen importieren',
     'TemplateGroupID' => 'Vorlagengruppen-ID',
     'TemplateGroupName' => 'Vorlagengruppenname',
+    'ExportControlTests' => 'Exportkontrolltests',
+    'ImportControlTests' => 'Kontrolltests importieren',
+    'TestID' => 'Test-ID',
+    'IDNoEXitFailedToUpdate' => 'ID $id existiert nicht, daher wurde sie nicht importiert oder aktualisiert',
 
     '' => '',
 );

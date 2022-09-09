@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'Sjabloongroepen importeren',
     'TemplateGroupID' => 'Sjabloongroep-ID',
     'TemplateGroupName' => 'Naam sjabloongroep',
+    'ExportControlTests' => 'Exportcontroletests',
+    'ImportControlTests' => 'Controletests importeren',
+    'TestID' => 'Test-ID',
+    'IDNoEXitFailedToUpdate' => 'ID $id bestaat niet, dus het is niet geïmporteerd of bijgewerkt',
 
     '' => '',
 );

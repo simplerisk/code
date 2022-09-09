@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'Импортиране на шаблонни групи',
     'TemplateGroupID' => 'ID на шаблонна група',
     'TemplateGroupName' => 'Име на шаблонна група',
+    'ExportControlTests' => 'Тестове за контрол на износа',
+    'ImportControlTests' => 'Контролни тестове за импортиране',
+    'TestID' => 'ID на теста',
+    'IDNoEXitFailedToUpdate' => 'ID $id не съществува, така че не е импортиран или актуализиран',
 
     '' => '',
 );

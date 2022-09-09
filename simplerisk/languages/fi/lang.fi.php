@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'Tuo malliryhmät',
     'TemplateGroupID' => 'Malliryhmän tunnus',
     'TemplateGroupName' => 'Malliryhmän nimi',
+    'ExportControlTests' => 'Viennin valvontatestit',
+    'ImportControlTests' => 'Tuo ohjaustestit',
+    'TestID' => 'Testitunnus',
+    'IDNoEXitFailedToUpdate' => 'Tunnusta $id ei ole olemassa, joten sitä ei ole tuotu tai päivitetty',
 
     '' => '',
 );

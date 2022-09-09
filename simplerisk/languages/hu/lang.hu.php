@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'Sabloncsoportok importálása',
     'TemplateGroupID' => 'Sabloncsoport azonosítója',
     'TemplateGroupName' => 'Sabloncsoport neve',
+    'ExportControlTests' => 'Exportellenőrző tesztek',
+    'ImportControlTests' => 'Ellenőrző tesztek importálása',
+    'TestID' => 'Tesztazonosító',
+    'IDNoEXitFailedToUpdate' => 'A $id -s azonosító nem létezik, ezért nem importálták vagy frissítették',
 
     '' => '',
 );

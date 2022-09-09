@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'テンプレート グループのインポート',
     'TemplateGroupID' => 'テンプレート グループ ID',
     'TemplateGroupName' => 'テンプレート グループ名',
+    'ExportControlTests' => '輸出管理試験',
+    'ImportControlTests' => '輸入規制試験',
+    'TestID' => 'テスト ID',
+    'IDNoEXitFailedToUpdate' => 'ID $id は存在しないため、インポートも更新もされていません',
 
     '' => '',
 );

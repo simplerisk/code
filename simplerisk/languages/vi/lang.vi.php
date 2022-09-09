@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'Nhập nhóm mẫu',
     'TemplateGroupID' => 'ID nhóm mẫu',
     'TemplateGroupName' => 'Tên nhóm mẫu',
+    'ExportControlTests' => 'Kiểm tra kiểm soát xuất khẩu',
+    'ImportControlTests' => 'Kiểm tra kiểm soát nhập khẩu',
+    'TestID' => 'ID kiểm tra',
+    'IDNoEXitFailedToUpdate' => 'ID $id không tồn tại nên nó chưa được nhập hoặc cập nhật',
 
     '' => '',
 );

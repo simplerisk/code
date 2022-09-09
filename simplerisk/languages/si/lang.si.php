@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'ආකෘති කණ්ඩායම් ආයාත කරන්න',
     'TemplateGroupID' => 'සැකිලි කණ්ඩායම් හැඳුනුම්පත',
     'TemplateGroupName' => 'සැකිලි කණ්ඩායම් නම',
+    'ExportControlTests' => 'අපනයන පාලන පරීක්ෂණ',
+    'ImportControlTests' => 'ආනයන පාලන පරීක්ෂණ',
+    'TestID' => 'පරීක්ෂණ හැඳුනුම්පත',
+    'IDNoEXitFailedToUpdate' => 'ID $id නොපවතී, එබැවින් එය ආනයනය කර හෝ යාවත්කාලීන කර නොමැත',
 
     '' => '',
 );

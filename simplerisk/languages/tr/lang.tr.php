@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'Şablon Gruplarını İçe Aktar',
     'TemplateGroupID' => 'Şablon Grup Kimliği',
     'TemplateGroupName' => 'Şablon Grubu Adı',
+    'ExportControlTests' => 'İhracat Kontrol Testleri',
+    'ImportControlTests' => 'İthalat Kontrol Testleri',
+    'TestID' => 'Test Kimliği',
+    'IDNoEXitFailedToUpdate' => 'Kimlik $id mevcut değil, bu nedenle içe aktarılmadı veya güncellenmedi',
 
     '' => '',
 );

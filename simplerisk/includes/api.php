@@ -7362,7 +7362,7 @@ function assets_update_asset()
             
             // If success for update
             if($updated){
-                $asset = get_asset_by_id($id)[0];
+                $asset = get_asset_by_id($id);
                 set_alert(true, "good", $escaper->escapeHtml($lang['AssetWasUpdatedSuccessfully']));
                 if ($fieldName == "tags") {
                     $options = [];

@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'Importa gruppi di modelli',
     'TemplateGroupID' => 'ID gruppo di modelli',
     'TemplateGroupName' => 'Nome del gruppo di modelli',
+    'ExportControlTests' => 'Test di controllo delle esportazioni',
+    'ImportControlTests' => 'Test di controllo dell\'importazione',
+    'TestID' => 'ID di prova',
+    'IDNoEXitFailedToUpdate' => 'L\'ID $id non esiste, quindi non è stato importato o aggiornato',
 
     '' => '',
 );

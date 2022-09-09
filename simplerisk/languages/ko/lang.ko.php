@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => '템플릿 그룹 가져오기',
     'TemplateGroupID' => '템플릿 그룹 ID',
     'TemplateGroupName' => '템플릿 그룹 이름',
+    'ExportControlTests' => '수출 통제 테스트',
+    'ImportControlTests' => '수입 통제 테스트',
+    'TestID' => '테스트 ID',
+    'IDNoEXitFailedToUpdate' => 'ID $id 이 존재하지 않으므로 가져오거나 업데이트하지 않았습니다.',
 
     '' => '',
 );

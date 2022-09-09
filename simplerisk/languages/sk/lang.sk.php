@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'Importovať skupiny šablón',
     'TemplateGroupID' => 'ID skupiny šablón',
     'TemplateGroupName' => 'Názov skupiny šablón',
+    'ExportControlTests' => 'Kontrolné testy exportu',
+    'ImportControlTests' => 'Kontrolné testy importu',
+    'TestID' => 'Test ID',
+    'IDNoEXitFailedToUpdate' => 'ID $id neexistuje, takže nebolo importované ani aktualizované',
 
     '' => '',
 );

@@ -121,11 +121,18 @@ require_once(language_file());
             export_xls("users");
         }
 
-        // If the user selected to do a template groups  export
+        // If the user selected to do a template groups export
         if (isset($_POST['template_groups_export']))
         {
             // Export the XLSX file
             export_xls("template_groups");
+        }
+
+        // If the user selected to do a control tests export
+        if (isset($_POST['control_tests_export']))
+        {
+            // Export the XLSX file
+            export_xls("control_tests");
         }
     }
 

@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'Importovat skupiny šablon',
     'TemplateGroupID' => 'ID skupiny šablon',
     'TemplateGroupName' => 'Název skupiny šablon',
+    'ExportControlTests' => 'Kontrolní testy exportu',
+    'ImportControlTests' => 'Kontrolní testy importu',
+    'TestID' => 'ID testu',
+    'IDNoEXitFailedToUpdate' => 'ID $id neexistuje, takže nebylo importováno ani aktualizováno',
 
     '' => '',
 );

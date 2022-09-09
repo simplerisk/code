@@ -2268,6 +2268,10 @@ $lang = array(
     'ImportTemplateGroups' => 'Importuj grupy szablonów',
     'TemplateGroupID' => 'Identyfikator grupy szablonów',
     'TemplateGroupName' => 'Nazwa grupy szablonów',
+    'ExportControlTests' => 'Testy kontroli eksportu',
+    'ImportControlTests' => 'Testy kontroli importu',
+    'TestID' => 'Identyfikator testu',
+    'IDNoEXitFailedToUpdate' => 'ID $id nie istnieje, więc nie został zaimportowany ani zaktualizowany',
 
     '' => '',
 );
