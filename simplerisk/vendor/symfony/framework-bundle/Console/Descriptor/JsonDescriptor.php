@@ -219,7 +219,7 @@ class JsonDescriptor extends Descriptor
                 if ($factory[0] instanceof Reference) {
                     $data['factory_service'] = (string) $factory[0];
                 } elseif ($factory[0] instanceof Definition) {
-                    throw new \InvalidArgumentException('Factory is not describable.');
+                    $data['factory_service'] = sprintf('inline factory service (%s)', $factory[0]->getClass() ?? 'class not configured');
                 } else {
                     $data['factory_class'] = $factory[0];
                 }

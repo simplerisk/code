@@ -935,8 +935,11 @@ function step_6_simplerisk_installation()
         unlink($tmp_file_path);
     }
 
+    // Check if we want to use a custom branch
+    $branch = defined('DB_BRANCH') ? DB_BRANCH : "master";
+
     // Download the database schema file to the tmp directory
-    $file_url = "https://raw.githubusercontent.com/simplerisk/database/master/" . $file;
+    $file_url = "https://raw.githubusercontent.com/simplerisk/database/" . $branch . "/" . $file;
     file_put_contents($tmp_file_path, file_get_contents($file_url));
 
     // If the database schema file exists

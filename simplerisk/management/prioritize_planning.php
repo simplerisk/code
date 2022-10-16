@@ -59,7 +59,7 @@ if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
 
 	display_bootstrap_javascript();
 ?>
-  <script src="../js/plan-project.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/simplerisk/plan-project.js?<?php echo current_version("app"); ?>"></script>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">

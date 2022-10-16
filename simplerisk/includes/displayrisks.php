@@ -852,7 +852,7 @@ function display_technology_edit($technology, $panel_name="")
     echo $escaper->escapeHtml($lang['Technology']) .": \n";
     echo "</div>\n";
     echo "<div class=\"{$span2}\">\n";
-    $technology_values = ":".implode(":", explode(",", $technology)).":";
+    $technology_values = ":".implode(":", explode(",", (string)$technology)).":";
     create_multiple_dropdown("technology", $technology_values, NULL, NULL, false, "", "", true, " class='multiselect' ");
     echo "</div>\n";
     echo "</div>\n";
@@ -876,7 +876,7 @@ function display_team_edit($team, $panel_name="")
     echo $escaper->escapeHtml($lang['Team']) .": \n";
     echo "</div>\n";
     echo "<div class=\"{$span2}\">\n";
-    $team = ":".implode(":", explode(",", $team)).":";
+    $team = ":".implode(":", explode(",", (string)$team)).":";
     create_multiple_dropdown("team", $team, NULL, NULL, false, "", "", true, " class='multiselect' ");
 //    create_dropdown("team", $team);
     echo "</div>\n";
@@ -1827,7 +1827,7 @@ function display_mitigation_team_edit($mitigation_team)
                 .$escaper->escapeHtml($lang['MitigationTeam']) .": 
             </div>
             <div class=\"span7\">";
-                $mitigation_team_values = ":".implode(":", explode(",", $mitigation_team)).":";
+                $mitigation_team_values = ":".implode(":", explode(",", (string)$mitigation_team)).":";
 //                create_dropdown("team", $mitigation_team, "mitigation_team", true);
                 create_multiple_dropdown("team", $mitigation_team_values, "mitigation_team", NULL, false, "", "", true, " class='multiselect' ");
             echo "</div>
@@ -2507,7 +2507,7 @@ function display_risk_tags_edit($tags = "")
     echo "              <div class=\"span12\">";
     echo "                  <select readonly id='tags' class='tags' name='tags[]' multiple placeholder='{$tags_placeholder}'>";
     if ($tags) {
-        foreach(explode("|", $tags) as $tag) {
+        foreach(explode(",", $tags) as $tag) {
             $tag = $escaper->escapeHtml($tag);
             echo "              <option selected value='{$tag}'>{$tag}</option>";
         }
@@ -2563,7 +2563,7 @@ function display_risk_tags_view($tags)
     echo "          <div class=\"row-fluid\">";
     echo "              <div class=\"span12\">";
     if ($tags) {
-        foreach(explode("|", $tags) as $tag) {
+        foreach(explode(",", $tags) as $tag) {
             echo "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin-right:2px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
         }
     } else {

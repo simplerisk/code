@@ -48,8 +48,6 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 
 	display_bootstrap_javascript();
 ?>
-    <!--<script src="../js/jquery.tablesorter.js"></script>
-    <script src="../js/sorttable.js"></script>-->
     <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/obsolete.js?<?php echo current_version("app"); ?>"></script>
 

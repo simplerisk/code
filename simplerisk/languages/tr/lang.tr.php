@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => 'İthalat Kontrol Testleri',
     'TestID' => 'Test Kimliği',
     'IDNoEXitFailedToUpdate' => 'Kimlik $id mevcut değil, bu nedenle içe aktarılmadı veya güncellenmedi',
+    'InvalidUsernameOrPassword' => 'Geçersiz kullanıcı adı veya şifre.',
+    'InvalidUsernameOrPasswordCaseSensitive' => 'Geçersiz kullanıcı adı veya şifre. (Not: Hem kullanıcı adları hem de parolalar büyük/küçük harf duyarlıdır.)',
+
 
     '' => '',
 );

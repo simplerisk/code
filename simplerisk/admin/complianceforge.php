@@ -133,9 +133,6 @@ function display()
     <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
-
-    <script type="text/javascript" src="../js/jquery.tree.min.js?<?php echo current_version("app"); ?>"></script>
-    <link rel="stylesheet" type="text/css" href="../css/jquery.tree.min.css?<?php echo current_version("app"); ?>" />
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");

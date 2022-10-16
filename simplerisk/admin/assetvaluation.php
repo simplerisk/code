@@ -160,7 +160,7 @@ require_once(language_file());
 
 	display_bootstrap_javascript();
 ?>
-        <script language="javascript" src="../js/asset_valuation.js?<?php echo current_version("app"); ?>" type="text/javascript"></script>
+        <script language="javascript" src="../js/simplerisk/asset_valuation.js?<?php echo current_version("app"); ?>" type="text/javascript"></script>
 
         <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">

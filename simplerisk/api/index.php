@@ -194,6 +194,12 @@
         getRoute()->post('/contributing_risks/table_list', 'contributing_risks_table_list_api');
         /******************************************************************/
 
+        /***************** DOCUMENTS API *****************/
+        getRoute()->post('/documents/create', 'create_document_api');
+        getRoute()->post('/documents/update', 'update_document_api');
+        getRoute()->post('/documents/delete', 'delete_document_api');
+        /***********************************************************/
+
         /***************** DOCUMENT EXCEPTIONS API *****************/
         getRoute()->post('/exceptions/create', 'create_exception_api');
         getRoute()->post('/exceptions/update', 'update_exception_api');

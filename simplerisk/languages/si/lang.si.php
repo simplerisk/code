@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => 'ආනයන පාලන පරීක්ෂණ',
     'TestID' => 'පරීක්ෂණ හැඳුනුම්පත',
     'IDNoEXitFailedToUpdate' => 'ID $id නොපවතී, එබැවින් එය ආනයනය කර හෝ යාවත්කාලීන කර නොමැත',
+    'InvalidUsernameOrPassword' => 'වලංගු නොවන පරිශීලක නාමයක් හෝ මුරපදයක්.',
+    'InvalidUsernameOrPasswordCaseSensitive' => 'වලංගු නොවන පරිශීලක නාමයක් හෝ මුරපදයක්. (සටහන: පරිශීලක නාම සහ මුරපද දෙකම සිද්ධි සංවේදී වේ.)',
+
 
     '' => '',
 );

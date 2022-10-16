@@ -84,8 +84,8 @@ if (assessments_extra()) {
 
 	display_bootstrap_javascript();
 ?>
-        <script src="../js/pages/assessment.js?<?php echo current_version("app"); ?>"></script>
-        <script src="../js/cve_lookup.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../js/simplerisk/pages/assessment.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../js/simplerisk/cve_lookup.js?<?php echo current_version("app"); ?>"></script>
         <script src="../extras/assessments/includes/js/questionnaire-result_share.js?<?php echo current_version("app"); ?>"></script>
 
         <?php

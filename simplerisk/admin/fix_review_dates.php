@@ -113,9 +113,9 @@ require_once(language_file());
 	display_bootstrap_javascript();
 ?>
     <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/cve_lookup.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/common.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/pages/risk.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/simplerisk/cve_lookup.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/simplerisk/common.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/simplerisk/pages/risk.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
 
     <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">

@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => 'Імпортні контрольні тести',
     'TestID' => 'Ідентифікатор тесту',
     'IDNoEXitFailedToUpdate' => 'ID $id не існує, тому його не було імпортовано чи оновлено',
+    'InvalidUsernameOrPassword' => 'Неправильне ім\'я користувача або пароль.',
+    'InvalidUsernameOrPasswordCaseSensitive' => 'Неправильне ім\'я користувача або пароль. (Примітка. Імена користувачів, і паролі чутливі до регістру.)',
+
 
     '' => '',
 );

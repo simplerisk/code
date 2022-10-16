@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => '輸入規制試験',
     'TestID' => 'テスト ID',
     'IDNoEXitFailedToUpdate' => 'ID $id は存在しないため、インポートも更新もされていません',
+    'InvalidUsernameOrPassword' => 'ユーザー名かパスワードが無効。',
+    'InvalidUsernameOrPasswordCaseSensitive' => 'ユーザー名かパスワードが無効。 (注: ユーザー名とパスワードの両方で大文字と小文字が区別されます。)',
+
 
     '' => '',
 );

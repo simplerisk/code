@@ -164,6 +164,7 @@ $releases = array(
 	"20220701-001",
 	"20220823-001",
 	"20220909-001",
+	"20221013-001",
 );
 
 /*************************
@@ -6693,6 +6694,111 @@ function upgrade_from_20220823001($db)
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
         // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20220909-001 *
+ ***************************************/
+function upgrade_from_20220909001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20220909-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20221013-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Compile the list of unnecessary files
+    echo "Removing unnecessary files.<br />\n";
+    $remove_files = array(
+        realpath(__DIR__ . '/../assessments/risks.php'),
+        realpath(__DIR__ . '/../js/selectize.min.js'),
+        realpath(__DIR__ . '/../js/adapters/mootools-adapter.js'),
+        realpath(__DIR__ . '/../js/adapters/mootools-adapter.src.js'),
+        realpath(__DIR__ . '/../js/adapters/prototype-adapter.js'),
+        realpath(__DIR__ . '/../js/adapters/prototype-adapter.src.js'),
+        realpath(__DIR__ . '/../js/jquery.ba-throttle-debounce.min.js'),
+        realpath(__DIR__ . '/../js/jquery.tablesorter.js'),
+        realpath(__DIR__ . '/../js/jquery.tree.min.js'),
+        realpath(__DIR__ . '/../css/jquery.tree.min.css'),
+        realpath(__DIR__ . '/../js/angular/angular-resource.min.js'),
+        realpath(__DIR__ . '/../js/angular/angular-ui-router.js'),
+        realpath(__DIR__ . '/../js/angular/angular.min.js'),
+        realpath(__DIR__ . '/../js/angular/appn.js'),
+        realpath(__DIR__ . '/../js/angular/ng-file-upload-shim.min.js'),
+        realpath(__DIR__ . '/../js/angular/ng-file-upload.min.js'),
+        realpath(__DIR__ . '/../js/angular/resources.js'),
+        realpath(__DIR__ . '/../js/angular/routes.js'),
+        realpath(__DIR__ . '/../js/angular/ui-bootstrap-tpls-0.3.0.min.js'),
+        realpath(__DIR__ . '/../js/angular/utils.js'),
+        realpath(__DIR__ . '/../js/controller/mitigation_controller.js'),
+        realpath(__DIR__ . '/../js/controller/risk_controller.js'),
+        realpath(__DIR__ . '/../js/old/jquery-1.11.3.min.js'),
+        realpath(__DIR__ . '/../js/old/jquery-2.1.3.min.js'),
+        realpath(__DIR__ . '/../js/old/jquery-ui-1.11.2.min.js'),
+        realpath(__DIR__ . '/../js/asset_valuation.js'),
+        realpath(__DIR__ . '/../js/common.js'),
+        realpath(__DIR__ . '/../js/contributingrisk_scoring.js'),
+        realpath(__DIR__ . '/../js/cve_lookup.js'),
+        realpath(__DIR__ . '/../js/cvss_scoring.js'),
+        realpath(__DIR__ . '/../js/dread_scoring.js'),
+        realpath(__DIR__ . '/../js/dynamic.js'),
+        realpath(__DIR__ . '/../js/owasp_scoring.js'),
+        realpath(__DIR__ . '/../js/plan-project.js'),
+        realpath(__DIR__ . '/../js/pages/assessment.js'),
+        realpath(__DIR__ . '/../js/pages/asset.js'),
+        realpath(__DIR__ . '/../js/pages/compliance.js'),
+        realpath(__DIR__ . '/../js/pages/governance.js'),
+        realpath(__DIR__ . '/../js/pages/risk.js'),
+    );
+
+    foreach ($remove_files as $file)
+    {
+        // If the file exists
+        if (file_exists($file))
+        {
+            // Remove the file
+            unlink($file);
+        }
+    }
+
+    // Compile the list of unnecessary directories
+    echo "Removing unnecessary directories.<br />\n";
+    $remove_directories = array(
+        realpath(__DIR__ . '/../vendor/box'),
+        realpath(__DIR__ . '/../js/adapters'),
+        realpath(__DIR__ . '/../js/angular'),
+        realpath(__DIR__ . '/../js/controller'),
+        realpath(__DIR__ . '/../js/old'),
+    );
+
+    // Remove the unnecessary directories
+    foreach ($remove_directories as $directory)
+    {
+        // If the directory exists
+        if (is_dir($directory))
+        {
+            // Remove the directory
+            delete_dir($directory);
+        }
+    }
+    
+    // Add a framework id field to document exceptions table
+    if (!field_exists_in_table('framework_id', 'document_exceptions')) {
+        echo "Add a framework id field to document exceptions table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `document_exceptions` ADD `framework_id` INT NOT NULL AFTER `policy_document_id`;");
+        $stmt->execute();
+    }
+
+
+    // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic
     $_SESSION['latest_version_app'] = latest_version('app');
 

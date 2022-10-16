@@ -395,11 +395,11 @@ if (import_export_extra()){
   <script src="../js/obsolete.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../js/dynamic.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../js/common.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/simplerisk/dynamic.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/simplerisk/common.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
 
-  <script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../vendor/simplerisk/selectize.js/dist/js/standalone/selectize.min.js?<?php echo current_version("app"); ?>"></script>
   <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
 
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>

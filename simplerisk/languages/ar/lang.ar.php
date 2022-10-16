@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => 'اختبارات التحكم في الاستيراد',
     'TestID' => 'معرف الاختبار',
     'IDNoEXitFailedToUpdate' => 'المعرف $id غير موجود ، لذا لم يتم استيراده أو تحديثه',
+    'InvalidUsernameOrPassword' => 'خطأ في اسم المستخدم أو كلمة مرور.',
+    'InvalidUsernameOrPasswordCaseSensitive' => 'خطأ في اسم المستخدم أو كلمة مرور. (ملاحظة: كل من أسماء المستخدمين وكلمات المرور حساسة لحالة الأحرف.)',
+
 
     '' => '',
 );

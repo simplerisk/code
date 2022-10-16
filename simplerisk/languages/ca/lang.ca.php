@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => 'Proves de control d\'importació',
     'TestID' => 'ID de prova',
     'IDNoEXitFailedToUpdate' => 'L\'ID $id no existeix, de manera que no s\'ha importat ni actualitzat',
+    'InvalidUsernameOrPassword' => 'Nom d\'usuari o contrasenya incorrectes.',
+    'InvalidUsernameOrPasswordCaseSensitive' => 'Nom d\'usuari o contrasenya incorrectes. (Nota: tant els noms d\'usuari com les contrasenyes distingeixen entre majúscules i minúscules.)',
+
 
     '' => '',
 );

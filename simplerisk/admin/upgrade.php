@@ -69,8 +69,14 @@
         // The user was not valid
         else
         {
-            // Display an alert
-            set_alert(true, "bad", "Invalid username or password.");
+            // If case sensitive usernames are enabled
+            if (get_setting("strict_user_validation") != 0)
+            {
+                // Display an alert
+                set_alert(true, "bad", $escaper->escapeHtml($lang["InvalidUsernameOrPasswordCaseSensitive"]));
+            }
+            else set_alert(true, "bad", $escaper->escapeHtml($lang["InvalidUsernameOrPassword"]));
+            
             // Deny access
             $_SESSION["access"] = "denied";
         }

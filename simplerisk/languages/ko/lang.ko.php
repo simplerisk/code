@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => '수입 통제 테스트',
     'TestID' => '테스트 ID',
     'IDNoEXitFailedToUpdate' => 'ID $id 이 존재하지 않으므로 가져오거나 업데이트하지 않았습니다.',
+    'InvalidUsernameOrPassword' => '잘못된 사용자 이름 또는 비밀번호입니다.',
+    'InvalidUsernameOrPasswordCaseSensitive' => '잘못된 사용자 이름 또는 비밀번호입니다. (참고: 사용자 이름과 암호는 모두 대소문자를 구분합니다.)',
+
 
     '' => '',
 );

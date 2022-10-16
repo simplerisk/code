@@ -1103,7 +1103,7 @@ function dynamicriskUniqueColumnDataAPI()
                     $uniqueColumnArr = get_name_value_array_from_text_array($uniqueColumnArr, ',', $delimiter, true);
                 break;
                 case "location":
-                    $uniqueColumnArr = get_name_value_array_from_text_array($uniqueColumnArr, ',', $delimiter);
+                    $uniqueColumnArr = get_name_value_array_from_text_array($uniqueColumnArr, ';', $delimiter);
                 break;
                 case "risk_tags":
                     $uniqueColumnArr = get_name_value_array_from_text_array($uniqueColumnArr, ',', $delimiter);
@@ -5680,7 +5680,7 @@ function getTabularDocumentsResponse()
                 }
                 if(!empty($_SESSION['delete_documentation']))
                 {
-                    $document['actions'] .= "<a class=\"document--delete\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-trash\"></i></a>&nbsp;&nbsp;&nbsp;";
+                    $document['actions'] .= "<a class=\"document--delete\" data-id=\"".((int)$document['id'])."\" data-type=\"".$document['document_type']."\"><i class=\"fa fa-trash\"></i></a>&nbsp;&nbsp;&nbsp;";
                 }
                 $document['actions'] .= "</div>";
                 $filtered_documents[] = $document;
@@ -7795,6 +7795,7 @@ function get_exception_for_display_api()
 
     $exception['name'] = $escaper->escapeHtml($exception['name']);
     $exception["{$type}_name"] = $escaper->escapeHtml($exception['parent_name']);
+    $exception['framework_name'] = $escaper->escapeHtml(try_decrypt($exception['framework_name']));
     $exception["type"] = $type;
     $exception["type_text"] = $escaper->escapeHtml($lang[ucfirst($type)]);
     $exception['document_exceptions_status'] = $escaper->escapeHtml($exception['document_exceptions_status']);
@@ -7819,13 +7820,145 @@ function get_exception_for_display_api()
     else $exception['file_download'] = "";
 
     foreach($exception as $key => $value) {
-        if (strlen($value) == 0)
+        if (!$value)
             $exception[$key] = "--";
     }
 
     json_response(200, null, $exception);
 }
+function create_document_api() {
+    global $lang;
+    if (!check_permission("governance")) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!check_permission('add_documentation')) {
+        set_alert(true, "bad", $lang['NoAddDocumentationPermission']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    $submitter = (int)$_SESSION['uid'];
+    $document_type = $_POST['document_type'];
+    $document_name = $_POST['document_name'];
+    $framework_ids = empty($_POST['framework_ids']) ? [] : $_POST['framework_ids'];
+    $control_ids   = empty($_POST['control_ids']) ? [] : $_POST['control_ids'];
+    $parent        = $_POST['parent'];
+    $status        = $_POST['status'];
+    $creation_date = get_standard_date_from_default_format($_POST['creation_date']);
+    $creation_date = ($creation_date && $creation_date!="0000-00-00") ? $creation_date : date("Y-m-d");
+    $last_review_date   = get_standard_date_from_default_format($_POST['last_review_date']);
+    $review_frequency = (int)$_POST['review_frequency'];
+    $next_review_date   = get_standard_date_from_default_format($_POST['next_review_date']);
+    $approval_date   = get_standard_date_from_default_format($_POST['approval_date']);
+    $document_owner = (int)$_POST['document_owner'];
+    $additional_stakeholders   = empty($_POST['additional_stakeholders']) ? [] : $_POST['additional_stakeholders'];
+    $approver = (int)$_POST['approver'];
+    $team_ids     = empty($_POST['team_ids']) ? [] : $_POST['team_ids'];
 
+    // Check if the document name is null
+    if (!$document_type || !$document_name)
+    {
+        // Display an alert
+        set_alert(true, "bad", "The document name cannot be empty.");
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    // Otherwise
+    else
+    {
+        // Insert a new document
+        $document_id = add_document($submitter, $document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver, implode(',', $team_ids));
+        if($document_id)
+        {
+            // Display an alert
+            set_alert(true, "good", $lang['DocumentAdded']);
+            json_response(200, get_alert(true), array('type' => $document_type));
+            return;
+        } else {
+            set_alert(true, "bad", $lang['FailedToAddNewItem']);
+            json_response(400, get_alert(true), NULL);
+            return;
+
+        }
+    }
+}
+function update_document_api() {
+    global $lang;
+    if (!check_permission("governance")) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!check_permission('modify_documentation')) {
+        set_alert(true, "bad", $lang['NoModifyDocumentationPermission']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    $id                         = $_POST['document_id'];
+    $updater                    = (int)$_SESSION['uid'];
+    $document_type              = $_POST['document_type'];
+    $document_name              = $_POST['document_name'];
+    $framework_ids              = empty($_POST['framework_ids']) ? [] : $_POST['framework_ids'];
+    $control_ids                = empty($_POST['control_ids']) ? [] : $_POST['control_ids'];
+    $parent                     = (int)$_POST['parent'];
+    $status                     = $_POST['status'];
+    $creation_date              = get_standard_date_from_default_format($_POST['creation_date']);
+    $creation_date              = ($creation_date && $creation_date!="0000-00-00") ? $creation_date : date("Y-m-d");
+    $last_review_date           = get_standard_date_from_default_format($_POST['last_review_date']);
+    $review_frequency           = (int)$_POST['review_frequency'];
+    $next_review_date           = get_standard_date_from_default_format($_POST['next_review_date']);
+    $approval_date              = get_standard_date_from_default_format($_POST['approval_date']);
+    $document_owner             = (int)$_POST['document_owner'];
+    $additional_stakeholders    = empty($_POST['additional_stakeholders']) ? [] : $_POST['additional_stakeholders'];
+    $approver                   = (int)$_POST['approver'];
+    $team_ids                   = empty($_POST['team_ids']) ? [] : $_POST['team_ids'];
+
+    // Check if the document name is null
+    if (!$document_type || !$document_name)
+    {
+        // Display an alert
+        set_alert(true, "bad", "The document name cannot be empty.");
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    // Otherwise
+    else
+    {
+        // Update document
+        $result = update_document($id, $updater, $document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver, implode(',', $team_ids));
+        if($result)
+        {
+            // Display an alert
+            set_alert(true, "good", $lang['DocumentUpdated']);
+            json_response(200, get_alert(true), array('type' => $document_type));
+            return;
+        } else {
+            set_alert(true, "bad", $lang['FailedToUpdateItem']);
+            json_response(400, get_alert(true), NULL);
+            return;
+
+        }
+    }
+}
+function delete_document_api() {
+    global $lang;
+    if (!check_permission("governance")) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!check_permission('delete_documentation')) {
+        set_alert(true, "bad", $lang['NoDeleteDocumentationPermission']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    $id             = $_POST['document_id'];
+    $version        = $_POST['version'];
+    $document_type  = $_POST['document_type'];
+    if($result = delete_document($id, $version)){
+        set_alert(true, "good", $lang['DocumentDeleted']);
+        json_response(200, get_alert(true), array('type' => $document_type));
+    }
+    return;
+}
 function create_exception_api() {
 
     global $lang;
@@ -7857,6 +7990,7 @@ function create_exception_api() {
     }
 
     $policy = isset($_POST['policy']) && ctype_digit($_POST['policy']) ? (int)$_POST['policy'] : false;
+    $framework = isset($_POST['framework']) && ctype_digit($_POST['framework']) ? (int)$_POST['framework'] : 0;
     $control = isset($_POST['control']) && ctype_digit($_POST['control']) ? (int)$_POST['control'] : false;
 
     //You have to choose a policy or a control, you can't choose both
@@ -7937,7 +8071,7 @@ function create_exception_api() {
     }
 
     try {
-        $id = create_exception($name, $status, $policy, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification, $associated_risks);
+        $id = create_exception($name, $status, $policy, $framework, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification, $associated_risks);
     } catch(Exception $e) {
         error_log($e);
         set_alert(true, "bad", $lang['ThereWasAProblemCreatingTheException']);
@@ -7996,6 +8130,7 @@ function update_exception_api() {
     }
 
     $policy = isset($_POST['policy']) && ctype_digit($_POST['policy']) ? (int)$_POST['policy'] : false;
+    $framework = isset($_POST['framework']) && ctype_digit($_POST['framework']) ? (int)$_POST['framework'] : 0;
     $control = isset($_POST['control']) && ctype_digit($_POST['control']) ? (int)$_POST['control'] : false;
 
     //You have to choose a policy or a control, you can't choose both
@@ -8085,8 +8220,9 @@ function update_exception_api() {
     try {
         $result = update_exception(
             $name,
-	    $status,
+            $status,
             $policy,
+            $framework,
             $control,
             $owner,
             $additional_stakeholders,

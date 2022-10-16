@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => 'Kontrolné testy importu',
     'TestID' => 'Test ID',
     'IDNoEXitFailedToUpdate' => 'ID $id neexistuje, takže nebolo importované ani aktualizované',
+    'InvalidUsernameOrPassword' => 'Nesprávne užívateľské meno alebo heslo.',
+    'InvalidUsernameOrPasswordCaseSensitive' => 'Nesprávne užívateľské meno alebo heslo. (Poznámka: V používateľských menách aj heslách sa rozlišujú malé a veľké písmená.)',
+
 
     '' => '',
 );

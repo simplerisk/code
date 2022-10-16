@@ -74,7 +74,7 @@ if(process_assessment_questionnaire_templates()){
     <?php display_bootstrap_javascript(); ?>
     <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/pages/assessment.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/simplerisk/pages/assessment.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/dataTables.rowReorder.min.js?<?php echo current_version("app"); ?>"></script>
 
     

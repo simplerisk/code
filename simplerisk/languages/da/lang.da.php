@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => 'Importkontroltest',
     'TestID' => 'Test ID',
     'IDNoEXitFailedToUpdate' => 'ID $id eksisterer ikke, så det er ikke blevet importeret eller opdateret',
+    'InvalidUsernameOrPassword' => 'Ugyldigt brugernavn eller kodeord.',
+    'InvalidUsernameOrPasswordCaseSensitive' => 'Ugyldigt brugernavn eller kodeord. (Bemærk: Både brugernavne og adgangskoder skelner mellem store og små bogstaver.)',
+
 
     '' => '',
 );

@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => 'आयात नियंत्रण परीक्षण',
     'TestID' => 'टेस्ट आईडी',
     'IDNoEXitFailedToUpdate' => 'आईडी $id मौजूद नहीं है, इसलिए इसे आयात या अपडेट नहीं किया गया है',
+    'InvalidUsernameOrPassword' => 'अमान्य उपयोगकर्ता नाम या पासवर्ड।',
+    'InvalidUsernameOrPasswordCaseSensitive' => 'अमान्य उपयोगकर्ता नाम या पासवर्ड। (नोट: यूजरनेम और पासवर्ड दोनों ही केस सेंसिटिव होते हैं।)',
+
 
     '' => '',
 );

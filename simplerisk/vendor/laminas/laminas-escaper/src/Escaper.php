@@ -144,7 +144,7 @@ class Escaper
      */
     public function escapeHtml($string)
     {
-        return htmlspecialchars($string, $this->htmlSpecialCharsFlags, $this->encoding);
+        return htmlspecialchars($string ?? '', $this->htmlSpecialCharsFlags, $this->encoding);
     }
 
     /**

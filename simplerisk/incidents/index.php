@@ -86,7 +86,7 @@ if(isset($_GET["action"]) && $_GET["action"] == "download"){
     ?>
 
         <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
-        <script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../vendor/simplerisk/selectize.js/dist/js/standalone/selectize.min.js?<?php echo current_version("app"); ?>"></script>
 <?php
         // If the Incident Management Extra is enabled
         if (incident_management_extra())

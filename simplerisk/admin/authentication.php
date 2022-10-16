@@ -138,8 +138,8 @@ require_once(language_file());
 	display_bootstrap_javascript();
 ?>
     <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/common.js?<?php echo current_version("app"); ?>"></script>
-  	<script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/simplerisk/common.js?<?php echo current_version("app"); ?>"></script>
+  	<script src="../vendor/simplerisk/selectize.js/dist/js/standalone/selectize.min.js?<?php echo current_version("app"); ?>"></script>
     
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">

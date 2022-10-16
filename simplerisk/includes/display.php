@@ -476,7 +476,7 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
 /*************************************
 * FUNCTION: VIEW PRINT RISK DETAILS *
 *************************************/
-function view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $additional_stakeholders, $owner, $manager, $assessment, $notes, $tags)
+function view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $additional_stakeholders, $owner, $manager, $assessment, $notes, $tags, $submitted_by, $source, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $risk_catalog_mapping, $threat_catalog_mapping, $template_group_id="")
 {
     global $lang;
     global $escaper;
@@ -488,88 +488,6 @@ function view_print_risk_details($id, $submission_date, $subject, $reference_id,
 
     echo "<h4>" . $escaper->escapeHtml($lang['Details']) . "</h4>\n";
     echo "<table border=\"1\" width=\"100%\" cellspacing=\"10\" cellpadding=\"10\">\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SubmissionDate']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml($submission_date) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Subject']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml($subject) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ExternalReferenceId']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml($reference_id) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ControlRegulation']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml(get_name_by_value("frameworks", $regulation)) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ControlNumber']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml($control_number) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SiteLocation']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml($location) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Category']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml(get_name_by_value("category", $category)) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Team']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml($team) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Technology']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml($technology) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AdditionalStakeholders']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml($additional_stakeholders) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Owner']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $owner)) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['OwnersManager']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $manager)) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['RiskAssessment']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml($assessment) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AdditionalNotes']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml($notes) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AffectedAssets']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml(implode(',', array_map(function($item) use ($escaper) {
-                return $item['class'] === 'group' ? "[{$item['name']}]" : $item['name'];
-            }, get_assets_and_asset_groups_of_type($id, 'risk')))) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Tags']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml($tags) . "</td>\n";
-    echo "</tr>\n";
     // If customization extra is enabled
     if(customization_extra())
     {
@@ -578,15 +496,258 @@ function view_print_risk_details($id, $submission_date, $subject, $reference_id,
         
         $custom_values = getCustomFieldValuesByRiskId($id);
         
-        $active_fields = get_active_fields();
+        $template_group = get_custom_template_group_by_id($template_group_id);
+        if(!$template_group_id || !$template_group) {
+            $group = get_default_template_group("risk");
+            $template_group_id = $group["id"];
+        }
+        $active_fields = get_active_fields("risk", $template_group_id);
         foreach($active_fields as $field){
              // Check if this field is custom field and details
-            if($field['tab_index'] == 1 && $field['is_basic'] == 0)
+            if($field['tab_index'] == 1)
             {
-                display_custom_field_print($field, $custom_values);
+                if($field['is_basic'] == 1){
+                    switch($field['name']){
+                        case 'SubmissionDate':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SubmissionDate']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($submission_date) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                        case 'Category':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Category']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("category", $category)) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                        
+                        case 'SiteLocation':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SiteLocation']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($location) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'ExternalReferenceId':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ExternalReferenceId']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($reference_id) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'ControlRegulation':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ControlRegulation']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("frameworks", $regulation)) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'ControlNumber':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ControlNumber']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($control_number) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'AffectedAssets':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AffectedAssets']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml(implode(',', array_map(function($item) use ($escaper) {
+                                    return $item['class'] === 'group' ? "[{$item['name']}]" : $item['name'];
+                                }, get_assets_and_asset_groups_of_type($id, 'risk')))) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'Technology':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Technology']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($technology) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'Team':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Team']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($team) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'AdditionalStakeholders':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AdditionalStakeholders']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($additional_stakeholders) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                        
+                        case 'Owner':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Owner']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $owner)) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'OwnersManager':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['OwnersManager']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $manager)) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                        
+                        case 'SubmittedBy':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SubmittedBy']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $submitted_by)) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'RiskSource':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['RiskSource']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("source", $source)) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'RiskScoringMethod':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['RiskScoringMethod']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("scoring_methods", $scoring_method)) . "</td>\n";
+                            echo "</tr>\n";
+                            if($scoring_method == "1"){
+                                echo "<tr>\n";
+                                echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['CurrentLikelihood']) . ":</td>\n";
+                                echo "<td>" . $escaper->escapeHtml(get_name_by_value("likelihood", $CLASSIC_likelihood)) . "</td>\n";
+                                echo "</tr>\n";
+                                echo "<tr>\n";
+                                echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['CurrentImpact']) . ":</td>\n";
+                                echo "<td>" . $escaper->escapeHtml(get_name_by_value("impact", $CLASSIC_impact)) . "</td>\n";
+                                echo "</tr>\n";
+                            }
+                        break;
+                        
+                        case 'RiskAssessment':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['RiskAssessment']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($assessment) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+
+                        case 'AdditionalNotes':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AdditionalNotes']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($notes) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+
+                        case 'Tags':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Tags']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($tags) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+
+                        case 'RiskMapping':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['RiskMapping']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml(get_names_by_multi_values("risk_catalog", $risk_catalog_mapping, false, ", ", true)) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+
+                        case 'ThreatMapping':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ThreatMapping']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml(get_names_by_multi_values("threat_catalog", $threat_catalog_mapping, false, ", ", true)) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                    }
+
+                } else {
+                    display_custom_field_print($field, $custom_values);
+                }
             }
             
         }
+    } else {
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SubmissionDate']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($submission_date) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Subject']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($subject) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ExternalReferenceId']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($reference_id) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ControlRegulation']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("frameworks", $regulation)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ControlNumber']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($control_number) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SiteLocation']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($location) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Category']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("category", $category)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Team']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($team) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Technology']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($technology) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AdditionalStakeholders']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($additional_stakeholders) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Owner']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $owner)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['OwnersManager']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $manager)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['RiskAssessment']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($assessment) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AdditionalNotes']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($notes) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AffectedAssets']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(implode(',', array_map(function($item) use ($escaper) {
+                    return $item['class'] === 'group' ? "[{$item['name']}]" : $item['name'];
+                }, get_assets_and_asset_groups_of_type($id, 'risk')))) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Tags']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($tags) . "</td>\n";
+        echo "</tr>\n";
     }
 
     echo "</table>\n";
@@ -950,7 +1111,7 @@ function view_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $pl
 /*******************************************
 * FUNCTION: VIEW PRINT MITIGATION DETAILS *
 *******************************************/
-function view_print_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations)
+function view_print_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_percent, $template_group_id)
 {
     global $lang;
     global $escaper;
@@ -962,37 +1123,6 @@ function view_print_mitigation_details($id, $mitigation_date, $planning_strategy
 
     echo "<h4>". $escaper->escapeHtml($lang['Mitigation']) ."</h4>\n";
     echo "<table border=\"1\" width=\"100%\" cellspacing=\"10\" cellpadding=\"10\">\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationDate']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml($mitigation_date) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['PlanningStrategy']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml(get_name_by_value("planning_strategy", $planning_strategy)) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationEffort']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['CurrentSolution']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml($current_solution) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SecurityRequirements']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml($security_requirements) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SecurityRecommendations']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml($security_recommendations) . "</td>\n";
-    echo "</tr>\n";
-
     // If customization extra is enabled
     if(customization_extra())
     {
@@ -1001,17 +1131,141 @@ function view_print_mitigation_details($id, $mitigation_date, $planning_strategy
         
         $custom_values = getCustomFieldValuesByRiskId($id);
         
-        $active_fields = get_active_fields();
-        foreach($active_fields as $field){
-             // Check if this field is custom field and mitigation
-            if($field['tab_index'] == 2 && $field['is_basic'] == 0)
-            {
-                display_custom_field_print($field, $custom_values);
-            }
-            
+        $template_group = get_custom_template_group_by_id($template_group_id);
+        if(!$template_group_id || !$template_group) {
+            $group = get_default_template_group("risk");
+            $template_group_id = $group["id"];
         }
-    }
+        $active_fields = get_active_fields("risk", $template_group_id);
+        foreach($active_fields as $field){
+             // Check if this field is custom field and details
+            if($field['tab_index'] == 2)
+            {
+                if($field['is_basic'] == 1){
+                    switch($field['name']){
+                        case 'MitigationDate':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationDate']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($mitigation_date) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                        
+                        case 'MitigationPlanning':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationPlanning']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($planning_date) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'PlanningStrategy':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['PlanningStrategy']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("planning_strategy", $planning_strategy)) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'MitigationEffort':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationEffort']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'MitigationCost':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationCost']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml(get_asset_value_by_id($mitigation_cost)) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'MitigationOwner':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationOwner']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $mitigation_owner)) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'MitigationTeam':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationTeam']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml(get_names_by_multi_values("team", $mitigation_team)) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'MitigationPercent':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationPercent']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($id) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'AcceptMitigation':
+                            $message = view_accepted_mitigations($id);
+                            if($message){
+                                echo "<tr>\n";
+                                echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AcceptMitigation']) . ":</td>\n";
+                                echo "<td>" . $message . "</td>\n";
+                                echo "</tr>\n";
+                            }
+                        break;
+                            
+                        case 'CurrentSolution':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['CurrentSolution']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($current_solution) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'SecurityRequirements':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SecurityRequirements']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($security_requirements) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'SecurityRecommendations':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SecurityRecommendations']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($security_recommendations) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                    }
+                } else {
+                   display_custom_field_print($field, $custom_values);
+                }
+            }
+        }
+    } else {
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationDate']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($mitigation_date) . "</td>\n";
+        echo "</tr>\n";
 
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['PlanningStrategy']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("planning_strategy", $planning_strategy)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationEffort']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['CurrentSolution']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($current_solution) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SecurityRequirements']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($security_requirements) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SecurityRecommendations']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($security_recommendations) . "</td>\n";
+        echo "</tr>\n";
+    }
     echo "</table>\n";
 }
 
@@ -1534,7 +1788,7 @@ function view_review_details($id, $review_id, $review_date, $reviewer, $review, 
 /***************************************
 * FUNCTION: VIEW PRINT REVIEW DETAILS *
 ***************************************/
-function view_print_review_details($id, $review_date, $reviewer, $review, $next_step, $next_review, $comments)
+function view_print_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comments, $template_group_id)
 {
     global $lang;
     global $escaper;
@@ -1545,56 +1799,104 @@ function view_print_review_details($id, $review_date, $reviewer, $review, $next_
     echo "<h4>". $escaper->escapeHtml($lang['LastReview']) ."</h4>\n";
     echo "<table border=\"1\" width=\"100%\" cellspacing=\"10\" cellpadding=\"10\">\n";
 
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ReviewDate']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml($review_date) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Reviewer']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $reviewer)) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Review']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml(get_name_by_value("review", $review)) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['NextStep']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml(get_name_by_value("next_step", $next_step)) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['NextReviewDate']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml($next_review) . "</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Comments']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml($comments) . "</td>\n";
-    echo "</tr>\n";
-
     // If customization extra is enabled
     if(customization_extra())
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
         
-        // Get the management reviews for the risk
-        $mgmt_reviews = get_review_by_id($id);
-        
         $custom_values = getCustomFieldValuesByRiskId($id);
         
-        $active_fields = get_active_fields();
+        $template_group = get_custom_template_group_by_id($template_group_id);
+        if(!$template_group_id || !$template_group) {
+            $group = get_default_template_group("risk");
+            $template_group_id = $group["id"];
+        }
+        $active_fields = get_active_fields("risk", $template_group_id);
         foreach($active_fields as $field){
              // Check if this field is custom field and review
-            if($field['tab_index'] == 3 && $field['is_basic'] == 0)
+            if($field['tab_index'] == 3)
             {
-                display_custom_field_print($field, $custom_values, $mgmt_reviews[0]['id']);
+                if($field['is_basic'] == 1){
+                    switch($field['name']){
+                        case 'ReviewDate':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ReviewDate']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($review_date) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                        
+                        case 'Reviewer':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Reviewer']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $reviewer)) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+
+                        case 'Review':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Review']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("review", $review)) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'NextStep':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['NextStep']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("next_step", $next_step)) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                            
+                        case 'NextReviewDate':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['NextReviewDate']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($next_review) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+
+                        case 'Comment':
+                            echo "<tr>\n";
+                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Comments']) . ":</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($comments) . "</td>\n";
+                            echo "</tr>\n";
+                        break;
+                    }
+                } else {
+                    display_custom_field_print($field, $custom_values, $review_id);
+                }
             }
             
         }
+    } else {
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ReviewDate']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($review_date) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Reviewer']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $reviewer)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Review']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("review", $review)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['NextStep']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("next_step", $next_step)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['NextReviewDate']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($next_review) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Comments']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($comments) . "</td>\n";
+        echo "</tr>\n";
     }
 
     echo "</table>\n";
@@ -2831,10 +3133,26 @@ function view_classic_help()
     global $escaper;
 
     // Get the arrray of likelihood values
-    $likelihood = get_table("likelihood");
+    $likelihoods = get_table("likelihood");
+
+    $likelihoods_description = array(
+        "May only occur in exceptional circumstances.",
+        "Expected to occur in a few circumstances.",
+        "Expected to occur in some circumstances.",
+        "Expected to occur in many circumstances.",
+        "Expected to occur frequently and in most circumstances."
+    );
 
     // Get the array of impact values
-    $impact = get_table("impact");
+    $impacts = get_table("impact");
+
+    $impacts_description = array(
+        "No impact on service, no impact on reputation, complaint unlikely, or litigation risk remote.",
+        "Slight impact on service, slight impact on reputation, complaint possible, or litigation possible.",
+        "Some service disruption, potential for adverse publicity (avoidable with careful handling), complaint probable, or litigation probably.",
+        "Service disrupted, adverse publicity not avoidable (local media), complaint probably, or litigation probable.",
+        "Service interrupted for significant time, major adverse publicity not avoidable (national media), major litigation expected, resignation of senior management and board, or loss of benficiary confidence."
+    );
 
     echo "<div id=\"divHelp\" style=\"width:100%;overflow:auto\"></div>\n";
 
@@ -2842,11 +3160,10 @@ function view_classic_help()
     echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
     echo "<tr>\n";
     echo "<td class=\"cal-text\">\n";
-    echo "<p><b>" . $escaper->escapeHtml($likelihood[0]['name']) . ":</b> May only occur in exceptional circumstances.</p>\n";
-    echo "<p><b>" . $escaper->escapeHtml($likelihood[1]['name']) . ":</b> Expected to occur in a few circumstances.</p>\n";
-    echo "<p><b>" . $escaper->escapeHtml($likelihood[2]['name']) . ":</b> Expected to occur in some circumstances.</p>\n";
-    echo "<p><b>" . $escaper->escapeHtml($likelihood[3]['name']) . ":</b> Expected to occur in many circumstances.</p>\n";
-    echo "<p><b>" . $escaper->escapeHtml($likelihood[4]['name']) . ":</b> Expected to occur frequently and in most circumstances.</p>\n";
+    foreach($likelihoods as $index => $likelihood) {
+        $description = isset($likelihoods_description[$index]) ? $likelihoods_description[$index] : "";
+        echo "<p><b>" . $escaper->escapeHtml($likelihood['name']) . ":</b> " . $description . "</p>\n";
+    }
     echo "</td>\n";
     echo "</tr>\n";
     echo "</table>\n";
@@ -2856,11 +3173,10 @@ function view_classic_help()
     echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
     echo "<tr>\n";
     echo "<td class=\"cal-text\">\n";
-    echo "<p><b>" . $escaper->escapeHtml($impact[0]['name']) . ":</b> No impact on service, no impact on reputation, complaint unlikely, or litigation risk remote.</p>\n";
-    echo "<p><b>" . $escaper->escapeHtml($impact[1]['name']) . ":</b> Slight impact on service, slight impact on reputation, complaint possible, or litigation possible.</p>\n";
-    echo "<p><b>" . $escaper->escapeHtml($impact[2]['name']) . ":</b> Some service disruption, potential for adverse publicity (avoidable with careful handling), complaint probable, or litigation probably.</p>\n";
-    echo "<p><b>" . $escaper->escapeHtml($impact[3]['name']) . ":</b> Service disrupted, adverse publicity not avoidable (local media), complaint probably, or litigation probable.</p>\n";
-    echo "<p><b>" . $escaper->escapeHtml($impact[4]['name']) . ":</b> Service interrupted for significant time, major adverse publicity not avoidable (national media), major litigation expected, resignation of senior management and board, or loss of benficiary confidence.</p>\n";
+    foreach($impacts as $index => $impact) {
+        $description = isset($impacts_description[$index]) ? $impacts_description[$index] : "";
+        echo "<p><b>" . $escaper->escapeHtml($impact['name']) . ":</b> " . $description . "</p>\n";
+    }
     echo "</td>\n";
     echo "</tr>\n";
     echo "</table>\n";
@@ -6692,7 +7008,7 @@ function create_risk_formula_table()
 /**********************************************
 * FUNCTION: VIEW RISKS AND CONTROLS SELECTIONS *
 **********************************************/
-function view_risks_and_controls_selections($report, $sort_by=0, $projects)
+function view_risks_and_controls_selections($report, $sort_by, $projects)
 {
     global $lang;
     global $escaper;
@@ -9028,14 +9344,7 @@ function display_add_projects($template_group_id = ""){
             }
             else
             {
-                // If customization extra is enabled
-                if(customization_extra())
-                {
-                    // Include the extra
-                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-                    display_custom_field_edit($field, [], "label");
-                }
+                display_custom_field_edit($field, [], "label");
             }
         }
     } else {
@@ -9103,14 +9412,7 @@ function display_edit_projects($template_group_id = ""){
             }
             else
             {
-                // If customization extra is enabled
-                if(customization_extra())
-                {
-                    // Include the extra
-                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-                    display_custom_field_edit($field, [], "label");
-                }
+                display_custom_field_edit($field, [], "label");
             }
         }
         echo "<input type=\"hidden\" name=\"project_id\" value=\"\">";

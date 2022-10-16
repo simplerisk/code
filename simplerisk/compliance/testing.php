@@ -97,11 +97,11 @@ $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
 	display_bootstrap_javascript();
 ?>
     <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/cve_lookup.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/simplerisk/cve_lookup.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/basescript.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/common.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/pages/risk.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/pages/compliance.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/simplerisk/common.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/simplerisk/pages/risk.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/simplerisk/pages/compliance.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
 
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
@@ -117,7 +117,7 @@ $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
     <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
-    <script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../vendor/simplerisk/selectize.js/dist/js/standalone/selectize.min.js?<?php echo current_version("app"); ?>"></script>
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");

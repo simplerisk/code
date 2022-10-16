@@ -1354,7 +1354,7 @@ function create_multiusers_dropdown($name, $selected = "", $custom_html = "", $r
     global $escaper;
 
     // Make selected to array
-    $selected = explode(",", $selected);
+    $selected = explode(",", (string)$selected);
     if(!is_array($selected)){
         $selected = array();
     }
@@ -1497,7 +1497,7 @@ function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $opti
         if ($selected == "all" ||
            ($is_selected_array && in_array($option['value'], $selected)) ||
            ($selected === null && !$option['value']) ||
-           (!$is_selected_array && preg_match($regex_pattern, $selected, $matches)))
+           (!$is_selected_array && !is_null($selected) && preg_match($regex_pattern, $selected, $matches)))
         {
             $text = " selected";
         }
@@ -5447,7 +5447,7 @@ function get_risk_by_id($id)
             b.*,
             c.next_review,
             ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
-            GROUP_CONCAT(DISTINCT t.tag ORDER BY t.tag ASC SEPARATOR '|') as risk_tags
+            GROUP_CONCAT(DISTINCT t.tag ORDER BY t.tag ASC SEPARATOR ',') as risk_tags
             " . (jira_extra() ?
             ",ji.issue_key as jira_issue_key,
             ji.last_sync as jira_last_sync,
@@ -10379,9 +10379,9 @@ function latest_versions() {
         // Load the versions file
         if (defined('UPDATES_URL'))
         {   
-            $version_page = file_get_contents(UPDATES_URL . '/Current_Version.xml', null, $context);
+            $version_page = file_get_contents(UPDATES_URL . '/Current_Version.xml', false, $context);
         }
-        else $version_page = file_get_contents('https://updates.simplerisk.com/Current_Version.xml', null, $context);
+        else $version_page = file_get_contents('https://updates.simplerisk.com/Current_Version.xml', false, $context);
 
         // Convert it to be an array
         $latest_versions = json_decode(json_encode(new SimpleXMLElement($version_page)), true);
@@ -14202,7 +14202,7 @@ function add_security_headers($x_frame_options = true, $x_xss_protection = true,
 			if (filter_var($simplerisk_base_url, FILTER_VALIDATE_URL))
 			{
 				// Add the Content-Security-Policy header with the simplerisk base url
-				header("Content-Security-Policy: default-src 'self'; style-src-elem 'unsafe-inline' *.googleapis.com cdn.jsdelivr.net " . $simplerisk_base_url . "; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com *.highcharts.com *.jquery.com cdn.jsdelivr.net; font-src *.gstatic.com cdn.jsdelivr.net " . $simplerisk_base_url . "; img-src 'self' *.googleapis.com " . $simplerisk_base_url . " data:; connect-src 'self' *.simplerisk.com; frame-src 'self' *.duosecurity.com;");
+				header("Content-Security-Policy: default-src 'self'; style-src-elem 'unsafe-inline' *.googleapis.com cdn.jsdelivr.net " . $simplerisk_base_url . "; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com *.highcharts.com *.jquery.com cdn.jsdelivr.net; font-src *.gstatic.com cdn.jsdelivr.net " . $simplerisk_base_url . "; img-src 'self' *.googleapis.com " . $simplerisk_base_url . " data:; connect-src 'self' *.simplerisk.com olbat.github.io; frame-src 'self' *.duosecurity.com;");
 			}
 			// Otherwise add the Content-Security-Policy header without it
 			else header("Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' data:");

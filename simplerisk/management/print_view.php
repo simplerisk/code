@@ -122,6 +122,8 @@ require_once(language_file());
             $OWASPNonCompliance = $risk[0]['OWASP_NonCompliance'];
             $OWASPPrivacyViolation = $risk[0]['OWASP_PrivacyViolation'];
             $custom = $risk[0]['Custom'];
+            $risk_catalog_mapping = $risk[0]['risk_catalog_mapping'];
+            $threat_catalog_mapping = $risk[0]['threat_catalog_mapping'];
             $template_group_id  = $risk[0]['template_group_id'];
         }
         // If the risk was not found use null values
@@ -205,6 +207,8 @@ require_once(language_file());
             $OWASPNonCompliance = "";
             $OWASPPrivacyViolation = "";
             $custom = "";
+            $risk_catalog_mapping = "";
+            $threat_catalog_mapping = "";
             $template_group_id  = "";
         }
 
@@ -226,9 +230,15 @@ require_once(language_file());
             $mitigation_date = "";
             $planning_strategy = "";
             $mitigation_effort = "";
+            $mitigation_cost = 1;
+            $mitigation_owner = 0;
+            $mitigation_team = 0;
+            $mitigation_percent = 0;
             $current_solution = "";
             $security_requirements = "";
             $security_recommendations = "";
+            $planning_date = "";
+            $mitigation_percent = "";
         }
         // If a mitigation exists
         else
@@ -238,9 +248,14 @@ require_once(language_file());
             $mitigation_date = date(get_default_datetime_format("g:i A T"), strtotime($mitigation_date));
             $planning_strategy = $mitigation[0]['planning_strategy'];
             $mitigation_effort = $mitigation[0]['mitigation_effort'];
+            $mitigation_cost = $mitigation[0]['mitigation_cost'];
+            $mitigation_owner = $mitigation[0]['mitigation_owner'];
+            $mitigation_team = $mitigation[0]['mitigation_team'];
             $current_solution = $mitigation[0]['current_solution'];
             $security_requirements = $mitigation[0]['security_requirements'];
             $security_recommendations = $mitigation[0]['security_recommendations'];
+            $planning_date = format_date($mitigation[0]['planning_date']);
+            $mitigation_percent = (isset($mitigation[0]['mitigation_percent']) && $mitigation[0]['mitigation_percent'] >= 0 && $mitigation[0]['mitigation_percent'] <= 100) ? $mitigation[0]['mitigation_percent'] : 0;
         }
 
         // Get the management reviews for the risk
@@ -252,6 +267,7 @@ require_once(language_file());
             // Set the values to empty
             $review_date = "N/A";
             $review = "";
+            $review_id = "";
             $next_step = "";
             $reviewer = "";
             $comments = "";
@@ -263,6 +279,7 @@ require_once(language_file());
             $review_date = $mgmt_reviews[0]['submission_date'];
             $review_date = date(get_default_datetime_format("g:i A T"), strtotime($review_date));
             $review = $mgmt_reviews[0]['review'];
+            $review_id = $mgmt_reviews[0]['id'];
             $next_step = $mgmt_reviews[0]['next_step'];
 
             // If next_review_date_uses setting is Residual Risk.
@@ -324,12 +341,12 @@ require_once(language_file());
           </div>
           <div class="row-fluid">
             <div class="well">
-              <?php view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $additional_stakeholders, $owner, $manager, $assessment, $notes, $tags); ?>
+              <?php view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $additional_stakeholders, $owner, $manager, $assessment, $notes, $tags, $submitted_by, $source, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $risk_catalog_mapping, $threat_catalog_mapping, $template_group_id); ?>
             </div>
           </div>
           <div class="row-fluid">
             <div class="well">
-              <?php view_print_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations); ?>
+              <?php view_print_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_percent, $template_group_id); ?>
             </div>
           </div>
           <div class="row-fluid">
@@ -339,7 +356,7 @@ require_once(language_file());
           </div>
           <div class="row-fluid">
             <div class="well">
-              <?php view_print_review_details($id, $review_date, $reviewer, $review, $next_step, $next_review, $comments); ?>
+              <?php view_print_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comments, $template_group_id); ?>
             </div>
           </div>
           <div class="row-fluid">

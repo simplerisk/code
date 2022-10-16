@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => 'בדיקות בקרת ייבוא',
     'TestID' => 'מזהה בדיקה',
     'IDNoEXitFailedToUpdate' => 'מזהה $id לא קיים, ולכן הוא לא יובא או עודכן',
+    'InvalidUsernameOrPassword' => 'שם משתמש או סיסמה לא חוקיים.',
+    'InvalidUsernameOrPasswordCaseSensitive' => 'שם משתמש או סיסמה לא חוקיים. (הערה: הן שמות המשתמש והן הסיסמאות תלויות רישיות.)',
+
 
     '' => '',
 );

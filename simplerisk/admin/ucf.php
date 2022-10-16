@@ -221,9 +221,6 @@ function display()
 	    border: 1px solid transparent;
 	    border-radius: 4px;
     </style>
-
-    <script type="text/javascript" src="../js/jquery.tree.min.js?<?php echo current_version("app"); ?>"></script>
-    <link rel="stylesheet" type="text/css" href="../css/jquery.tree.min.css?<?php echo current_version("app"); ?>" />
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");

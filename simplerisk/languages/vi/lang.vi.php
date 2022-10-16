@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => 'Kiểm tra kiểm soát nhập khẩu',
     'TestID' => 'ID kiểm tra',
     'IDNoEXitFailedToUpdate' => 'ID $id không tồn tại nên nó chưa được nhập hoặc cập nhật',
+    'InvalidUsernameOrPassword' => 'Sai username hoặc password.',
+    'InvalidUsernameOrPasswordCaseSensitive' => 'Sai username hoặc password. (Lưu ý: Cả tên người dùng và mật khẩu đều phân biệt chữ hoa chữ thường).',
+
 
     '' => '',
 );

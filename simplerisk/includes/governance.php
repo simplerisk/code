@@ -827,7 +827,7 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
     foreach ($controls as $key => $control)
     {
         // Get framework names from framework Ids string
-        $framework_ids = explode(",", $control['framework_ids']);
+        $framework_ids = explode(",", (string)$control['framework_ids']);
         
         $decrypted_framework_names = [];
         foreach($framework_ids as $framework_id)
@@ -2337,14 +2337,14 @@ function get_document_tabular_tabs($type, $document_id=0)
     
     echo "<table  class='easyui-treegrid document-table' id='{$type}-table'>";
     echo "<thead >";
-    echo "<th data-options=\"field:'document_name'\" width='25%'>".$escaper->escapeHtml($lang['DocumentName'])."</th>";
+    echo "<th data-options=\"field:'document_name'\" width='23%'>".$escaper->escapeHtml($lang['DocumentName'])."</th>";
     echo "<th data-options=\"field:'document_type'\" width='10%'>".$escaper->escapeHtml($lang['DocumentType'])."</th>";
     echo "<th data-options=\"field:'framework_names'\" width='18%'>".$escaper->escapeHtml($lang['ControlFrameworks'])."</th>";
     echo "<th data-options=\"field:'control_names'\" width='18%'>".$escaper->escapeHtml($lang['Controls'])."</th>";
     echo "<th data-options=\"field:'creation_date'\" width='9%'>".$escaper->escapeHtml($lang['CreationDate'])."</th>";
     echo "<th data-options=\"field:'approval_date'\" width='9%'>".$escaper->escapeHtml($lang['ApprovalDate'])."</th>";
     echo "<th data-options=\"field:'status'\" width='6%'>".$escaper->escapeHtml($lang['Status'])."</th>";
-    echo "<th data-options=\"field:'actions'\" width='5%'>&nbsp;</th>";
+    echo "<th data-options=\"field:'actions'\" width='7%'>".$escaper->escapeHtml($lang['Actions'])."</th>";
     echo "</thead>\n";
 
     echo "</table>";
@@ -2594,7 +2594,8 @@ function get_exception_for_display($id, $type){
             f.version file_version,
             f.unique_name,
             f.name file_name,
-            des.name as document_exceptions_status
+            des.name as document_exceptions_status,
+            fr.name as framework_name
         from
             document_exceptions de
             {$type_based_sql_parts[1]}
@@ -2602,6 +2603,7 @@ function get_exception_for_display($id, $type){
             left join user a on a.value = de.approver
             left join compliance_files f on de.file_id=f.id
             left join document_exceptions_status des on de.status = des.value
+            left join frameworks fr on fr.value = de.framework_id
         where
             {$type_based_sql_parts[2]}
             and de.value = :id;";
@@ -2782,17 +2784,17 @@ function get_exception_tabs($type)
     echo "<thead>";
 
     echo "<th data-options=\"field:'name'\" width='25%'>".$escaper->escapeHtml($lang[ucfirst ($type) . "ExceptionName"])."</th>";
-    echo "<th data-options=\"field:'status'\" width='10%'>".$escaper->escapeHtml($lang['Status'])."</th>";
+    echo "<th data-options=\"field:'status'\" width='8%'>".$escaper->escapeHtml($lang['Status'])."</th>";
     echo "<th data-options=\"field:'description'\" width='25%'>".$escaper->escapeHtml($lang['Description'])."</th>";
-    echo "<th data-options=\"field:'justification'\" width='25%'>".$escaper->escapeHtml($lang['Justification'])."</th>";
+    echo "<th data-options=\"field:'justification'\" width='24%'>".$escaper->escapeHtml($lang['Justification'])."</th>";
     echo "<th data-options=\"field:'next_review_date', align: 'center'\" width='10%'>".$escaper->escapeHtml($lang['NextReviewDate'])."</th>";
-    echo "<th data-options=\"field:'actions'\" width='5%'>&nbsp;</th>";
+    echo "<th data-options=\"field:'actions'\" width='8%'>".$escaper->escapeHtml($lang['Actions'])."</th>";
     echo "</thead>\n";
 
     echo "</table>";
 }
 
-function create_exception($name, $status=1, $policy, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification, $associated_risks) {
+function create_exception($name, $status, $policy, $framework, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification, $associated_risks) {
 
     $db = db_open();
 
@@ -2802,6 +2804,7 @@ function create_exception($name, $status=1, $policy, $control, $owner, $addition
             `document_exceptions` (
                 `name`,
                 `policy_document_id`,
+                `framework_id`,
                 `control_framework_id`,
                 `owner`,
                 `additional_stakeholders`,
@@ -2813,12 +2816,13 @@ function create_exception($name, $status=1, $policy, $control, $owner, $addition
                 `approved`,
                 `description`,
                 `justification`,
-		`associated_risks`,
-		`status`
+                `associated_risks`,
+                `status`
             )
         VALUES (
             :name,
             :policy_document_id,
+            :framework_id,
             :control_framework_id,
             :owner,
             :additional_stakeholders,
@@ -2830,13 +2834,14 @@ function create_exception($name, $status=1, $policy, $control, $owner, $addition
             :approved,
             :description,
             :justification,
-	    :associated_risks,
+            :associated_risks,
             :status
         );"
     );
 
     $stmt->bindParam(":name", $name, PDO::PARAM_STR);
     $stmt->bindParam(":policy_document_id", $policy, PDO::PARAM_INT);
+    $stmt->bindParam(":framework_id", $framework, PDO::PARAM_INT);
     $stmt->bindParam(":control_framework_id", $control, PDO::PARAM_INT);
     $stmt->bindParam(":owner", $owner, PDO::PARAM_INT);
     $stmt->bindParam(":additional_stakeholders", $additional_stakeholders, PDO::PARAM_STR);
@@ -2888,7 +2893,7 @@ function create_exception($name, $status=1, $policy, $control, $owner, $addition
     return $id;
 }
 
-function update_exception($name, $status=1, $policy, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification, $associated_risks, $id) {
+function update_exception($name, $status, $policy, $framework, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification, $associated_risks, $id) {
 
 
     $original = getExceptionForChangeChecking($id);
@@ -2901,6 +2906,7 @@ function update_exception($name, $status=1, $policy, $control, $owner, $addition
             `document_exceptions` SET
                 `name` = :name,
                 `policy_document_id` = :policy_document_id,
+                `framework_id` = :framework_id,
                 `control_framework_id` = :control_framework_id,
                 `owner` = :owner,
                 `additional_stakeholders` = :additional_stakeholders,
@@ -2912,13 +2918,14 @@ function update_exception($name, $status=1, $policy, $control, $owner, $addition
                 `approved` = :approved,
                 `description` = :description,
                 `justification` = :justification,
-		`associated_risks` = :associated_risks,
-		`status` = :status
+                `associated_risks` = :associated_risks,
+                `status` = :status
         WHERE `value` = :id;"
     );
 
     $stmt->bindParam(":name", $name, PDO::PARAM_STR);
     $stmt->bindParam(":policy_document_id", $policy, PDO::PARAM_INT);
+    $stmt->bindParam(":framework_id", $framework, PDO::PARAM_INT);
     $stmt->bindParam(":control_framework_id", $control, PDO::PARAM_INT);
     $stmt->bindParam(":owner", $owner, PDO::PARAM_INT);
     $stmt->bindParam(":additional_stakeholders", $additional_stakeholders, PDO::PARAM_STR);

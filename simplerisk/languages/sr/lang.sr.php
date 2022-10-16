@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => 'Тестови контроле увоза',
     'TestID' => 'ИД теста',
     'IDNoEXitFailedToUpdate' => 'ИД $id не постоји, тако да није увезен или ажуриран',
+    'InvalidUsernameOrPassword' => 'Погрешно корисничко име или лозинка.',
+    'InvalidUsernameOrPasswordCaseSensitive' => 'Погрешно корисничко име или лозинка. (Напомена: И корисничка имена и лозинке разликују велика и мала слова.)',
+
 
     '' => '',
 );

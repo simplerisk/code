@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => 'Импортын хяналтын тестүүд',
     'TestID' => 'Туршилтын ID',
     'IDNoEXitFailedToUpdate' => 'ID $id байхгүй тул импортлоогүй эсвэл шинэчлэгдээгүй байна',
+    'InvalidUsernameOrPassword' => 'Хэрэглэгчийн нэр эсвэл нууц үг буруу.',
+    'InvalidUsernameOrPasswordCaseSensitive' => 'Хэрэглэгчийн нэр эсвэл нууц үг буруу. (Тэмдэглэл: Хэрэглэгчийн нэр болон нууц үг хоёулаа том жижиг үсгээр харгалздаг.)',
+
 
     '' => '',
 );

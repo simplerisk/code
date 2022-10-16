@@ -147,7 +147,7 @@ require_once(language_file());
 
 	display_bootstrap_javascript();
 ?>
-    <script src="../js/common.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/simplerisk/common.js?<?php echo current_version("app"); ?>"></script>
     <script type="text/javascript" src="../js/colorpicker.js?<?php echo current_version("app"); ?>"></script>
 
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>

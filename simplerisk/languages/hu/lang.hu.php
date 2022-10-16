@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => 'Ellenőrző tesztek importálása',
     'TestID' => 'Tesztazonosító',
     'IDNoEXitFailedToUpdate' => 'A $id -s azonosító nem létezik, ezért nem importálták vagy frissítették',
+    'InvalidUsernameOrPassword' => 'Érvénytelen felhasználónév vagy jelszó.',
+    'InvalidUsernameOrPasswordCaseSensitive' => 'Érvénytelen felhasználónév vagy jelszó. (Megjegyzés: A felhasználónevek és a jelszavak is megkülönböztetik a kis- és nagybetűket.)',
+
 
     '' => '',
 );

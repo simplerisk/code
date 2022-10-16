@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => 'Pruebas de control de importaciones',
     'TestID' => 'Identificación de prueba',
     'IDNoEXitFailedToUpdate' => 'ID $id no existe, por lo que no se ha importado ni actualizado',
+    'InvalidUsernameOrPassword' => 'Usuario o contraseña invalido.',
+    'InvalidUsernameOrPasswordCaseSensitive' => 'Usuario o contraseña invalido. (Nota: Tanto los nombres de usuario como las contraseñas distinguen entre mayúsculas y minúsculas).',
+
 
     '' => '',
 );

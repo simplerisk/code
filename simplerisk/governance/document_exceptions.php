@@ -103,7 +103,7 @@ function display($display = "")
 	<?php display_bootstrap_javascript(); ?>
         <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
         <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
-        <script src="../js/pages/governance.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../js/simplerisk/pages/governance.js?<?php echo current_version("app"); ?>"></script>
 
         <title>SimpleRisk: Enterprise Risk Management Simplified</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -174,7 +174,9 @@ function display($display = "")
                             $("#exception-update-form [name=document_exceptions_status]").val(data.document_exceptions_status);
                             $("#exception-update-form [name=name]").val(data.name);
                             $("#exception-update-form [name=policy]").val(data.policy_document_id);
-                            $("#exception-update-form [name=control]").val(data.control_framework_id);
+                            $("#exception-update-form [name=framework]").val(data.framework_id);
+                            $("#exception-update-form .selected_control_values").val(data.control_framework_id);
+                            load_framework_controls($('#exception--update'));
                             $("#exception-update-form [name=owner]").val(data.owner);
                             $("#exception-update-form [name='additional_stakeholders[]']").multiselect('select', data.additional_stakeholders);
 
@@ -220,8 +222,11 @@ function display($display = "")
                             if (data.type == 'policy') {
                                 $("#exception--view #policy").html(data.policy_name);
                                 $("#exception--view #policy").parent().show();
+                                $("#exception--view #framework").parent().hide();
                                 $("#exception--view #control").parent().hide();
                             } else {
+                                $("#exception--view #framework").html(data.framework_name);
+                                $("#exception--view #framework").parent().show();
                                 $("#exception--view #control").html(data.control_name);
                                 $("#exception--view #control").parent().show();
                                 $("#exception--view #policy").parent().hide();
@@ -313,19 +318,23 @@ function display($display = "")
             function refresh_type_selects_display(root) {
 
                 var policy = root.find('#policy');
+                var framework = root.find('#framework');
                 var control = root.find('#control');
 
                 if ((policy.val() && policy.val() > 0) || (control.val() && control.val() > 0)) {
                     if ((policy.val() && policy.val() > 0)) {
                         policy.prop("disabled", false);
                         control.prop("disabled", true);
+                        framework.prop("disabled", true);
                     } else {
                         control.prop("disabled", false);
+                        framework.prop("disabled", false);
                         policy.prop("disabled", true);
                     }
                 } else {
                     policy.prop("disabled", false);
                     control.prop("disabled", false);
+                    framework.prop("disabled", false);
                 }
             }
 
@@ -354,6 +363,29 @@ function display($display = "")
                     iSize = (Math.round(iSize * 100) / 100)
                     label.html("<?php echo $escaper->escapeHtml($lang['FileSize'] . ": ") ?>" + iSize  + "kb");
                 }
+            }
+            function load_framework_controls(obj){
+                var $frameworks = obj.find('#framework');
+                var $controls = obj.find('#control');
+                var framework_id = $frameworks.val();
+                if(framework_id == null) return;
+                $.ajax({
+                    url: BASE_URL + '/api/governance/related_controls_by_framework_ids?fids=' + framework_id,
+                    type: 'GET',
+                    success : function (res){
+                        var options = "<option value='0' selected=''>--</option>";
+                        var selected_control_ids = obj.find(".selected_control_values").length ?  obj.find(".selected_control_values").val() : "";
+                        for(var key in res.data.control_ids){
+                            var control = res.data.control_ids[key];
+                            if(selected_control_ids && selected_control_ids == control.value){
+                                options += "<option value='"+ control.value +"' selected>"+ control.name +"</option>";
+                            }else{
+                                options += "<option value='"+ control.value +"'>"+ control.name +"</option>";
+                            }
+                        }
+                        $controls.html(options);
+                    }
+                });
             }
 
             $(document).ready(function(){
@@ -600,6 +632,9 @@ function display($display = "")
 
                 $('#exception--update').find('#policy, #control').change(function() {refresh_type_selects_display($('#exception--update'));});
 
+                $('#exception--add').find('#framework').change(function() {load_framework_controls($('#exception--add'));});
+                $('#exception--update').find('#framework').change(function() {load_framework_controls($('#exception--update'));});
+
                 $(".exception-table").treegrid('resize');
 
                 $("[name='additional_stakeholders[]']").multiselect();
@@ -788,8 +823,13 @@ function display($display = "")
                             <label id="label_for_policy" for=""><?php echo $escaper->escapeHtml($lang['Policy']); ?></label>
                             <?php create_dropdown("policies", NULL, "policy", true); ?>
 
+                            <label id="label_for_framework" for=""><?php echo $escaper->escapeHtml($lang['Framework']); ?></label>
+                            <?php create_dropdown("frameworks", NULL, "framework", true); ?>
+
                             <label id="label_for_control" for=""><?php echo $escaper->escapeHtml($lang['Control']); ?></label>
-                            <?php create_dropdown("framework_controls", NULL, "control", true); ?>
+                            <select id="control" name="control" class="form-field form-control" style="width:auto;">
+                                <option value="0">--</option>
+                            </select>
 
                             <label for=""><?php echo $escaper->escapeHtml($lang['AssociatedRisks']); ?></label>
                             <select name="associated_risks[]" multiple="true">
@@ -870,8 +910,14 @@ function display($display = "")
                             <label id="label_for_policy" for=""><?php echo $escaper->escapeHtml($lang['Policy']); ?></label>
                             <?php create_dropdown("policies", NULL, "policy", true, false, false, "", "--", "0"); ?>
 
+                            <label id="label_for_framework" for=""><?php echo $escaper->escapeHtml($lang['Framework']); ?></label>
+                            <?php create_dropdown("frameworks", NULL, "framework", true); ?>
+
                             <label id="label_for_control" for=""><?php echo $escaper->escapeHtml($lang['Control']); ?></label>
-                            <?php create_dropdown("framework_controls", NULL, "control", true, false, false, "", "--", "0"); ?>
+                            <select id="control" name="control" class="form-field form-control" style="width:auto;">
+                                <option value="0">--</option>
+                            </select>
+                            <input type="hidden" value="" class="selected_control_values">
 
                             <label for=""><?php echo $escaper->escapeHtml($lang['AssociatedRisks']); ?></label>
                             <select name="associated_risks[]" multiple="true">
@@ -945,6 +991,11 @@ function display($display = "")
                     <span>
                         <h4><?php echo $escaper->escapeHtml($lang['PolicyName']); ?></h4>
                         <span id="policy" class="exception-data"></span>
+                    </span>
+
+                    <span>
+                        <h4><?php echo $escaper->escapeHtml($lang['FrameworkName']); ?></h4>
+                        <span id="framework" class="exception-data"></span>
                     </span>
 
                     <span>

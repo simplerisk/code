@@ -48,7 +48,7 @@ require_once(language_file());
         display_jquery_javascript($scripts);
 ?>
 <script language="javascript" src="../js/basescript.js?<?php echo current_version("app"); ?>" type="text/javascript"></script>
-<script language="javascript" src="../js/dread_scoring.js?<?php echo current_version("app"); ?>" type="text/javascript"></script>
+<script language="javascript" src="../js/simplerisk/dread_scoring.js?<?php echo current_version("app"); ?>" type="text/javascript"></script>
 <script type="text/javascript" language="JavaScript">
   <!--
   var parent_window = window.opener;

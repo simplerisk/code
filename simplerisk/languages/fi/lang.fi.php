@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => 'Tuo ohjaustestit',
     'TestID' => 'Testitunnus',
     'IDNoEXitFailedToUpdate' => 'Tunnusta $id ei ole olemassa, joten sitä ei ole tuotu tai päivitetty',
+    'InvalidUsernameOrPassword' => 'Väärä käyttäjänimi tai salasana.',
+    'InvalidUsernameOrPasswordCaseSensitive' => 'Väärä käyttäjänimi tai salasana. (Huomaa: Sekä käyttäjätunnukset että salasanat ovat kirjainkoolla.)',
+
 
     '' => '',
 );

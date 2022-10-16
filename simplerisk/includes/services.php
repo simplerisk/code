@@ -41,7 +41,7 @@ function simplerisk_service_call($data)
     $context = set_proxy_stream_context($method, $header, $content);
 
     // Make the services call
-    $result = file($url, NULL, $context);
+    $result = file($url, 0, $context);
 
     // If we were unable to connect to the URL
     if(!$result || $result[0] == 'HTTP/1.1 404 Not Found')

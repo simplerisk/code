@@ -87,7 +87,7 @@ else
     ?>
 
         <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
-        <script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../vendor/simplerisk/selectize.js/dist/js/standalone/selectize.min.js?<?php echo current_version("app"); ?>"></script>
 	<script src='../js/alerts/toastr.min.js?<?php echo current_version("app"); ?>'></script>
 	<script src='../js/alerts/alert-helper.js?<?php echo current_version("app"); ?>'></script>
 <?php

@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => 'Invoerbeheertoetse',
     'TestID' => 'Toets ID',
     'IDNoEXitFailedToUpdate' => 'ID $id bestaan nie, so dit is nie ingevoer of opgedateer nie',
+    'InvalidUsernameOrPassword' => 'Ongeldige gebruikersnaam of wagwoord.',
+    'InvalidUsernameOrPasswordCaseSensitive' => 'Ongeldige gebruikersnaam of wagwoord. (Let wel: Beide gebruikersname en wagwoorde is hooflettersensitief.)',
+
 
     '' => '',
 );

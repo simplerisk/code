@@ -2042,7 +2042,7 @@ function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projec
 /************************************************
  * FUNCTION: RETURN RISKS AND ASSETS REPORT SQL *
  ************************************************/
-function get_risks_and_assets_rows($report=0, $sort_by=0, $asset_tags_in_array, $projects_in_array)
+function get_risks_and_assets_rows($report, $sort_by, $asset_tags_in_array, $projects_in_array)
 {
     global $lang;
     if($asset_tags_in_array == "all") {
@@ -3707,7 +3707,7 @@ function risks_unique_column_query_select()
 
         (
             SELECT
-                GROUP_CONCAT(DISTINCT CONCAT(t.tag, '{$delimiter}', t.id) ORDER BY t.tag ASC SEPARATOR '|')
+                GROUP_CONCAT(DISTINCT CONCAT(t.tag, '{$delimiter}', t.id) ORDER BY t.tag ASC SEPARATOR ',')
             FROM
                 tags t, tags_taggees tt 
             WHERE
@@ -3720,7 +3720,7 @@ function risks_unique_column_query_select()
 /*************************************
  * FUNCTION: RETURN REISKS QUERY SQL *
  *************************************/
-function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName=null)
+function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName="")
 {
     global $lang;
     
@@ -3839,7 +3839,7 @@ function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName
  *      1: dynamic risk
  *      2: unique column
  **************************************/
-function make_full_risks_sql($query_type, $status, $sort, $group, $column_filters=[], &$group_value_from_db="", &$custom_query="", &$bind_params=[], $having_query="", $orderColumnName=null, $orderDir="asc", $risks_by_team=0, $teams=[], $owners=[], $ownersmanagers=[])
+function make_full_risks_sql($query_type, $status, $sort, $group, $column_filters=[], &$group_value_from_db="", &$custom_query="", &$bind_params=[], $having_query="", $orderColumnName="", $orderDir="asc", $risks_by_team=0, $teams=[], $owners=[], $ownersmanagers=[])
 {
     $orderDir = strtolower($orderDir) == "asc" ? "ASC" : "DESC";
     // Check the status
@@ -4038,45 +4038,74 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
     $unique_key = '_' . time() . '_' . generate_token(5);
 
     $create_temporary_tables = "
+        CREATE TABLE `temp_rrsh_last_update_age_base{$unique_key}`(
+            PRIMARY KEY(`id`),
+            INDEX (`risk_id`),
+            INDEX (`age_range`)
+        )
+        SELECT
+            CASE
+                WHEN `lua`.`age` < 30 THEN '-30'
+                WHEN `lua`.`age` >= 30 AND `lua`.`age` < 60 THEN '30-60'
+                WHEN `lua`.`age` >= 60 AND `lua`.`age` < 90 THEN '60-90'
+                WHEN `lua`.`age` > 90 THEN '90+'
+            END AS age_range,
+            `lua`.*
+        FROM 
+            (/*(1) Select the base data from the `residual_risk_scoring_history` table plus calculate the age of each entry*/
+                SELECT
+                    `sh`.`id` AS id,
+                    `sh`.`risk_id` AS risk_id,
+                    `sh`.`last_update` AS last_update,
+                    DATEDIFF(NOW(), `sh`.`last_update`) AS age,
+                    `sh`.`residual_risk` AS residual_risk
+                FROM
+                    `residual_risk_scoring_history` sh
+                GROUP BY
+                    `sh`.`last_update`
+            ) lua;
+
         /*(4) Create the 'temporary' table for data from the `residual_risk_scoring_history` table*/
         CREATE TABLE `temp_rrsh_last_update_age{$unique_key}`(
             PRIMARY KEY(`id`),
             INDEX (`risk_id`),
             INDEX (`age_range`)
         )
-        /*(2b) Create the CTE to be used in the table's select*/
-        WITH `rrsh_last_update_age_base` AS(
-            /*(2a) Add the information on what age range it's in*/
-            SELECT
-                CASE
-                    WHEN `lua`.`age` < 30 THEN '-30'
-                    WHEN `lua`.`age` >= 30 AND `lua`.`age` < 60 THEN '30-60'
-                    WHEN `lua`.`age` >= 60 AND `lua`.`age` < 90 THEN '60-90'
-                    WHEN `lua`.`age` > 90 THEN '90+'
-                END AS age_range,
-                `lua`.*
-            FROM 
-                (/*(1) Select the base data from the `residual_risk_scoring_history` table plus calculate the age of each entry*/
-                    SELECT
-                        `sh`.`id` AS id,
-                        `sh`.`risk_id` AS risk_id,
-                        `sh`.`last_update` AS last_update,
-                        DATEDIFF(NOW(), `sh`.`last_update`) AS age,
-                        `sh`.`residual_risk` AS residual_risk
-                    FROM
-                        `residual_risk_scoring_history` sh
-                    GROUP BY
-                        `sh`.`last_update`
-                ) lua
-        )
         /*(3) Select the latest entry for each age range*/
         SELECT
             `lua`.*
         FROM
-            `rrsh_last_update_age_base` lua
-            LEFT JOIN `rrsh_last_update_age_base` lua2 ON `lua`.`risk_id` = `lua2`.`risk_id` AND `lua`.`age_range` = `lua2`.`age_range` AND `lua`.`last_update` < `lua2`.`last_update`
+            `temp_rrsh_last_update_age_base{$unique_key}` lua
+            LEFT JOIN `temp_rrsh_last_update_age_base{$unique_key}` lua2 ON `lua`.`risk_id` = `lua2`.`risk_id` AND `lua`.`age_range` = `lua2`.`age_range` AND `lua`.`last_update` < `lua2`.`last_update`
         WHERE
             `lua2`.`id` IS NULL;
+
+        CREATE TABLE `temp_rsh_last_update_age_base{$unique_key}`(
+            PRIMARY KEY(`id`),
+            INDEX (`risk_id`),
+            INDEX (`age_range`)
+        )
+        SELECT
+            CASE
+                WHEN `lua`.`age` < 30 THEN '-30'
+                WHEN `lua`.`age` >= 30 AND `lua`.`age` < 60 THEN '30-60'
+                WHEN `lua`.`age` >= 60 AND `lua`.`age` < 90 THEN '60-90'
+                WHEN `lua`.`age` > 90 THEN '90+'
+            END AS age_range,
+            `lua`.*
+        FROM 
+            (/*(1) Select the base data from the `risk_scoring_history` table plus calculate the age of each entry*/
+                SELECT
+                    `sh`.`id` AS id,
+                    `sh`.`risk_id` AS risk_id,
+                    `sh`.`last_update` AS last_update,
+                    DATEDIFF(NOW(), `sh`.`last_update`) AS age,
+                    `sh`.`calculated_risk` AS calculated_risk
+                FROM
+                    `risk_scoring_history` sh
+                GROUP BY
+                    `sh`.`last_update`
+            ) lua;
         
         /*(4) Create the 'temporary' table for data from the `risk_scoring_history` table*/
         CREATE TABLE `temp_rsh_last_update_age{$unique_key}`(
@@ -4084,37 +4113,11 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
             INDEX (`risk_id`),
             INDEX (`age_range`)
         )
-        /*(2b) Create the CTE to be used in the table's select*/
-        WITH `rsh_last_update_age_base` AS (
-            /*(2a) Add the information on what age range it's in*/
-            SELECT
-                CASE
-                    WHEN `lua`.`age` < 30 THEN '-30'
-                    WHEN `lua`.`age` >= 30 AND `lua`.`age` < 60 THEN '30-60'
-                    WHEN `lua`.`age` >= 60 AND `lua`.`age` < 90 THEN '60-90'
-                    WHEN `lua`.`age` > 90 THEN '90+'
-                END AS age_range,
-                `lua`.*
-            FROM 
-                (/*(1) Select the base data from the `residual_risk_scoring_history` table plus calculate the age of each entry*/
-                    SELECT
-                        `sh`.`id` AS id,
-                        `sh`.`risk_id` AS risk_id,
-                        `sh`.`last_update` AS last_update,
-                        DATEDIFF(NOW(), `sh`.`last_update`) AS age,
-                        `sh`.`calculated_risk` AS calculated_risk
-                    FROM
-                        `risk_scoring_history` sh
-                    GROUP BY
-                        `sh`.`last_update`
-                ) lua
-        )
-        /*(3) Select the latest entry for each age range*/
         SELECT
             `lua`.*
         FROM
-            `rsh_last_update_age_base` lua
-            LEFT JOIN `rsh_last_update_age_base` lua2 ON `lua`.`risk_id` = `lua2`.`risk_id` AND `lua`.`age_range` = `lua2`.`age_range` AND `lua`.`last_update` < `lua2`.`last_update`
+            `temp_rsh_last_update_age_base{$unique_key}` lua
+            LEFT JOIN `temp_rsh_last_update_age_base{$unique_key}` lua2 ON `lua`.`risk_id` = `lua2`.`risk_id` AND `lua`.`age_range` = `lua2`.`age_range` AND `lua`.`last_update` < `lua2`.`last_update`
         WHERE
             `lua2`.`id` IS NULL;
 
@@ -4174,9 +4177,11 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
     $query = str_replace('temp_contributing_risk_impact_data', "temp_contributing_risk_impact_data{$unique_key}", $query);
 
     $drop_temporary_tables = "
-        /*Drop pre-existing 'temporary' tables.*/
+        /*Drop 'temporary' tables.*/
         DROP TABLE IF EXISTS `temp_rrsh_last_update_age{$unique_key}`;
         DROP TABLE IF EXISTS `temp_rsh_last_update_age{$unique_key}`;
+        DROP TABLE IF EXISTS `temp_rrsh_last_update_age_base{$unique_key}`;
+        DROP TABLE IF EXISTS `temp_rsh_last_update_age_base{$unique_key}`;
         DROP TABLE IF EXISTS `temp_contributing_risk_impact_data{$unique_key}`;
     ";
 
@@ -4196,7 +4201,7 @@ function drr_temp_table_cleanup() {
     
     // Get the DRR temp tables that aren't deleted yet
     $database = DB_DATABASE; //Have to make a variable as bindParam can't take parameter by reference
-    $stmt = $db->prepare("SELECT `table_name` FROM `information_schema`.`tables` WHERE `table_schema` = :database AND (`table_name` LIKE 'temp_rrsh_last_update_age_%' OR `table_name` LIKE 'temp_rsh_last_update_age_%' OR `table_name` LIKE 'temp_contributing_risk_impact_data_%');");
+    $stmt = $db->prepare("SELECT `table_name` FROM `information_schema`.`tables` WHERE `table_schema` = :database AND (`table_name` LIKE 'temp_rrsh_last_update_age_%' OR `table_name` LIKE 'temp_rsh_last_update_age_%' OR `table_name` LIKE 'temp_contributing_risk_impact_data_%' OR `table_name` LIKE 'temp_rsh_last_update_age_base_%' OR `table_name` LIKE 'temp_rrsh_last_update_age_base_%');");
     $stmt->bindParam(":database", $database, PDO::PARAM_STR);
     $stmt->execute();
 
@@ -4244,7 +4249,7 @@ function get_query_type($need_total_count)
 /******************************************
  * FUNCTION: GET DATA FOR ONLY DYNAMIC RISK
  ******************************************/
-function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $column_filters=[], &$rowCount, $start=0, $length=10, $group_value_from_db="", $custom_query="", $bind_params=[], $orderColumnName=null, $orderDir="asc", $risks_by_team=0, $teams=[], $owners=[], $ownersmanagers=[])
+function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $column_filters, &$rowCount, $start=0, $length=10, $group_value_from_db="", $custom_query="", $bind_params=[], $orderColumnName=null, $orderDir="asc", $risks_by_team=0, $teams=[], $owners=[], $ownersmanagers=[])
 {
     global $lang;
 
@@ -5548,7 +5553,7 @@ function encode_data_before_display($array)
 /************************************
  * FUNCTION: RISKS AND CONTROLS TABLE *
  ************************************/
-function risks_and_control_table($report, $sort_by=0, $projects)
+function risks_and_control_table($report, $sort_by, $projects)
 {
     global $lang;
     global $escaper;

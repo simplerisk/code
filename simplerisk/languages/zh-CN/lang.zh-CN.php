@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => '进口控制测试',
     'TestID' => '测试编号',
     'IDNoEXitFailedToUpdate' => 'ID $id 不存在，因此尚未导入或更新',
+    'InvalidUsernameOrPassword' => '用户名或密码无效。',
+    'InvalidUsernameOrPasswordCaseSensitive' => '用户名或密码无效。 （注意：用户名和密码都区分大小写。）',
+
 
     '' => '',
 );

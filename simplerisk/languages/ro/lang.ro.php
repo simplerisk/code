@@ -2272,6 +2272,9 @@ $lang = array(
     'ImportControlTests' => 'Teste de control al importului',
     'TestID' => 'ID de testare',
     'IDNoEXitFailedToUpdate' => 'ID-ul $id nu există, deci nu a fost importat sau actualizat',
+    'InvalidUsernameOrPassword' => 'Nume de utilizator sau parola incorecte.',
+    'InvalidUsernameOrPasswordCaseSensitive' => 'Nume de utilizator sau parola incorecte. (Notă: atât numele de utilizator, cât și parolele sunt sensibile la majuscule și minuscule.)',
+
 
     '' => '',
 );

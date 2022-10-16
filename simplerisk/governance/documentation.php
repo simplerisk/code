@@ -33,117 +33,6 @@ require_once(language_file());
 
 checkUploadedFileSizeErrors();
 
-// Check if a new document was submitted
-if (isset($_POST['add_document']))
-{
-    $submitter = (int)$_SESSION['uid'];
-    $document_type = $_POST['document_type'];
-    $document_name = $_POST['document_name'];
-    $framework_ids = empty($_POST['framework_ids']) ? [] : $_POST['framework_ids'];
-    $control_ids   = empty($_POST['control_ids']) ? [] : $_POST['control_ids'];
-    $parent        = $_POST['parent'];
-    $status        = $_POST['status'];
-    $creation_date = get_standard_date_from_default_format($_POST['creation_date']);
-    $creation_date = ($creation_date && $creation_date!="0000-00-00") ? $creation_date : date("Y-m-d");
-    $last_review_date   = get_standard_date_from_default_format($_POST['last_review_date']);
-    $review_frequency = (int)$_POST['review_frequency'];
-    $next_review_date   = get_standard_date_from_default_format($_POST['next_review_date']);
-    $approval_date   = get_standard_date_from_default_format($_POST['approval_date']);
-    $document_owner = (int)$_POST['document_owner'];
-    $additional_stakeholders   = empty($_POST['additional_stakeholders']) ? [] : $_POST['additional_stakeholders'];
-    $approver = (int)$_POST['approver'];
-    $team_ids     = empty($_POST['team_ids']) ? [] : $_POST['team_ids'];
-
-    // Check if the document name is null
-    if (!$document_type || !$document_name)
-    {
-        // Display an alert
-        set_alert(true, "bad", "The document name cannot be empty.");
-    }
-    // Otherwise
-    else
-    {
-        if(empty($_SESSION['add_documentation']))
-        {
-            // Display an alert
-            set_alert(true, "bad", $escaper->escapeHtml($lang['NoAddDocumentationPermission']));
-        }
-        // Insert a new document
-        elseif($errors = add_document($submitter, $document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver, implode(',', $team_ids)))
-        {
-            // Display an alert
-            set_alert(true, "good", $escaper->escapeHtml($lang['DocumentAdded']));
-        }
-    }
-    refresh();
-}
-
-// Check if a document was submitted to update
-if (isset($_POST['update_document']))
-{
-    $id                         = $_POST['document_id'];
-    $updater                    = (int)$_SESSION['uid'];
-    $document_type              = $_POST['document_type'];
-    $document_name              = $_POST['document_name'];
-    $framework_ids              = empty($_POST['framework_ids']) ? [] : $_POST['framework_ids'];
-    $control_ids                = empty($_POST['control_ids']) ? [] : $_POST['control_ids'];
-    $parent                     = (int)$_POST['parent'];
-    $status                     = $_POST['status'];
-    $creation_date              = get_standard_date_from_default_format($_POST['creation_date']);
-    $creation_date              = ($creation_date && $creation_date!="0000-00-00") ? $creation_date : date("Y-m-d");
-    $last_review_date           = get_standard_date_from_default_format($_POST['last_review_date']);
-    $review_frequency           = (int)$_POST['review_frequency'];
-    $next_review_date           = get_standard_date_from_default_format($_POST['next_review_date']);
-    $approval_date              = get_standard_date_from_default_format($_POST['approval_date']);
-    $document_owner             = (int)$_POST['document_owner'];
-    $additional_stakeholders    = empty($_POST['additional_stakeholders']) ? [] : $_POST['additional_stakeholders'];
-    $approver                   = (int)$_POST['approver'];
-    $team_ids                   = empty($_POST['team_ids']) ? [] : $_POST['team_ids'];
-    
-    // Check if the document name is null
-    if (!$document_type || !$document_name)
-    {
-        // Display an alert
-        set_alert(true, "bad", "The document name cannot be empty.");
-    }
-    // Otherwise
-    else
-    {
-        if(empty($_SESSION['modify_documentation']))
-        {
-            // Display an alert
-            set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyDocumentationPermission']));
-        }
-        // Update document
-        elseif($errors = update_document($id, $updater, $document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver, implode(',', $team_ids)))
-        {
-            // Display an alert
-            set_alert(true, "good", $escaper->escapeHtml($lang['DocumentUpdated']));
-        }
-    }
-    refresh();
-}
-
-// Check if a document was submitted to update
-if (isset($_POST['delete_document']))
-{
-    $id           = $_POST['document_id'];
-    $version      = $_POST['version'];
-      
-    if(empty($_SESSION['delete_documentation']))
-    {
-        // Display an alert
-        set_alert(true, "bad", $escaper->escapeHtml($lang['NoDeleteDocumentationPermission']));
-    }
-    // Delete documents
-    elseif($errors = delete_document($id, $version))
-    {
-        // Display an alert
-        set_alert(true, "good", $escaper->escapeHtml($lang['DocumentDeleted']));
-    }
-    refresh();
-}
-
 
 ?>
 
@@ -177,7 +66,7 @@ if (isset($_POST['delete_document']))
   <?php display_bootstrap_javascript(); ?>
   <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../js/pages/governance.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/simplerisk/pages/governance.js?<?php echo current_version("app"); ?>"></script>
 
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -411,11 +300,12 @@ if (isset($_POST['delete_document']))
     <div id="document-delete-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
       <div class="modal-body">
 
-        <form action="" method="post">
+        <form id="delete-document-form" action="" method="post">
           <div class="form-group text-center">
             <label for=""><?php echo $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisDocument']); ?></label>
             <input type="hidden" class="document_id" name="document_id" value="" />
             <input type="hidden" class="version" name="version" value="" />
+            <input type="hidden" class="document_type" name="document_type" value="" />
           </div>
 
           <div class="form-group text-center control-delete-actions">
@@ -624,17 +514,138 @@ if (isset($_POST['delete_document']))
                 });
 
                 $("#add-document-form").submit(function(event) {
+                    event.preventDefault();
                     if (<?php echo $escaper->escapeHtml(get_setting('max_upload_size')); ?> <= $('#file-upload')[0].files[0].size) {
                         toastr.error("<?php echo $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
-                        event.preventDefault();
+                        return false;
                     }
+                    $.ajax({
+                        type: "POST",
+                        url: BASE_URL + "/api/documents/create",
+                        data: new FormData($('#add-document-form')[0]),
+                        async: true,
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        success: function(data){
+                            if(data.status_message){
+                                showAlertsFromArray(data.status_message);
+                            }
+
+                            $('#document-program--add').modal('hide');
+                            $('#add-document-form')[0].reset();
+                            $('#add-document-form #file-size').text("");
+                            $("#add-document-form [name='framework_ids[]']").multiselect('select', []);
+                            $("#add-document-form [name='control_ids[]']").multiselect('select', []);
+                            $("#add-document-form [name='additional_stakeholders[]']").multiselect('select', []);
+                            $("#add-document-form [name='document_owner[]']").multiselect('select', []);
+                            $("#add-document-form [name='team_ids[]']").multiselect('select', []);
+
+                            var tree = $('#document-hierachy-content .easyui-treegrid');
+                            tree.treegrid('options').animate = false;
+                            tree.treegrid('reload');
+
+                            var tree = $('#' + data.data.type + '-table');
+                            tree.treegrid('options').animate = false;
+                            tree.treegrid('reload');
+
+                        },
+                        error: function(xhr,status,error){
+                            if(!retryCSRF(xhr, this))
+                            {
+                                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
+                            }
+                        }
+                    });
+                    return false;
                 });
 
                 $("#update-document-form").submit(function(event) {
+                    event.preventDefault();
                     if ($('#file-upload-update')[0].files[0] && <?php echo $escaper->escapeHtml(get_setting('max_upload_size')); ?> <= $('#file-upload-update')[0].files[0].size) {
                         toastr.error("<?php echo $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
-                        event.preventDefault();
+                        return false;
                     }
+                    $.ajax({
+                        type: "POST",
+                        url: BASE_URL + "/api/documents/update",
+                        data: new FormData($('#update-document-form')[0]),
+                        async: true,
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        success: function(data){
+                            if(data.status_message){
+                                showAlertsFromArray(data.status_message);
+                            }
+
+                            $('#document-update-modal').modal('hide');
+                            $('#update-document-form')[0].reset();
+                            $('#update-document-form #file-size').text("");
+                            $("#update-document-form [name='framework_ids[]']").multiselect('select', []);
+                            $("#update-document-form [name='control_ids[]']").multiselect('select', []);
+                            $("#update-document-form [name='additional_stakeholders[]']").multiselect('select', []);
+                            $("#update-document-form [name='document_owner[]']").multiselect('select', []);
+                            $("#update-document-form [name='team_ids[]']").multiselect('select', []);
+
+                            var tree = $('#document-hierachy-content .easyui-treegrid');
+                            tree.treegrid('options').animate = false;
+                            tree.treegrid('reload');
+
+                            var tree = $('#' + data.data.type + '-table');
+                            tree.treegrid('options').animate = false;
+                            tree.treegrid('reload');
+
+                        },
+                        error: function(xhr,status,error){
+                            if(!retryCSRF(xhr, this))
+                            {
+                                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
+                            }
+                        }
+                    });
+                    return false;
+                });
+                $("#delete-document-form").submit(function(event) {
+                    event.preventDefault();
+
+                    $.ajax({
+                        type: "POST",
+                        url: BASE_URL + "/api/documents/delete",
+                        data: new FormData($('#delete-document-form')[0]),
+                        async: true,
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        success: function(data){
+                            if(data.status_message){
+                                showAlertsFromArray(data.status_message);
+                            }
+
+                            $('#document-delete-modal').modal('hide');
+
+                            var tree = $('#document-hierachy-content .easyui-treegrid');
+                            tree.treegrid('options').animate = false;
+                            tree.treegrid('reload');
+
+                            var tree = $('#' + data.data.type + '-table');
+                            tree.treegrid('options').animate = false;
+                            tree.treegrid('reload');
+                        },
+                        error: function(xhr,status,error){
+                            if(!retryCSRF(xhr, this))
+                            {
+                                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
+                            }
+                        }
+                    });
+                    return false;
                 });
             } else { // If File API is not supported
                 $("input.readonly").remove();

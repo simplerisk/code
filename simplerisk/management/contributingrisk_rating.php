@@ -48,7 +48,7 @@ require_once(language_file());
         display_jquery_javascript($scripts);
 ?>
 <script language="javascript" src="../js/basescript.js?<?php echo current_version("app"); ?>" type="text/javascript"></script>
-<script language="javascript" src="../js/contributingrisk_scoring.js?<?php echo current_version("app"); ?>" type="text/javascript"></script>
+<script language="javascript" src="../js/simplerisk/contributingrisk_scoring.js?<?php echo current_version("app"); ?>" type="text/javascript"></script>
 
 
 <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
