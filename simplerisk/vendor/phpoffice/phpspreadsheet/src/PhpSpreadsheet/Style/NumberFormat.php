@@ -10,13 +10,16 @@ class NumberFormat extends Supervisor
     const FORMAT_TEXT = '@';
 
     const FORMAT_NUMBER = '0';
+    const FORMAT_NUMBER_0 = '0.0';
     const FORMAT_NUMBER_00 = '0.00';
     const FORMAT_NUMBER_COMMA_SEPARATED1 = '#,##0.00';
     const FORMAT_NUMBER_COMMA_SEPARATED2 = '#,##0.00_-';
 
     const FORMAT_PERCENTAGE = '0%';
+    const FORMAT_PERCENTAGE_0 = '0.0%';
     const FORMAT_PERCENTAGE_00 = '0.00%';
 
+    /** @deprecated 1.26 use FORMAT_DATE_YYYYMMDD instead */
     const FORMAT_DATE_YYYYMMDD2 = 'yyyy-mm-dd';
     const FORMAT_DATE_YYYYMMDD = 'yyyy-mm-dd';
     const FORMAT_DATE_DDMMYYYY = 'dd/mm/yyyy';
@@ -39,6 +42,42 @@ class NumberFormat extends Supervisor
     const FORMAT_DATE_TIME7 = 'i:s.S';
     const FORMAT_DATE_TIME8 = 'h:mm:ss;@';
     const FORMAT_DATE_YYYYMMDDSLASH = 'yyyy/mm/dd;@';
+
+    const DATE_TIME_OR_DATETIME_ARRAY = [
+        self::FORMAT_DATE_YYYYMMDD,
+        self::FORMAT_DATE_DDMMYYYY,
+        self::FORMAT_DATE_DMYSLASH,
+        self::FORMAT_DATE_DMYMINUS,
+        self::FORMAT_DATE_DMMINUS,
+        self::FORMAT_DATE_MYMINUS,
+        self::FORMAT_DATE_XLSX14,
+        self::FORMAT_DATE_XLSX15,
+        self::FORMAT_DATE_XLSX16,
+        self::FORMAT_DATE_XLSX17,
+        self::FORMAT_DATE_XLSX22,
+        self::FORMAT_DATE_DATETIME,
+        self::FORMAT_DATE_TIME1,
+        self::FORMAT_DATE_TIME2,
+        self::FORMAT_DATE_TIME3,
+        self::FORMAT_DATE_TIME4,
+        self::FORMAT_DATE_TIME5,
+        self::FORMAT_DATE_TIME6,
+        self::FORMAT_DATE_TIME7,
+        self::FORMAT_DATE_TIME8,
+        self::FORMAT_DATE_YYYYMMDDSLASH,
+    ];
+    const TIME_OR_DATETIME_ARRAY = [
+        self::FORMAT_DATE_XLSX22,
+        self::FORMAT_DATE_DATETIME,
+        self::FORMAT_DATE_TIME1,
+        self::FORMAT_DATE_TIME2,
+        self::FORMAT_DATE_TIME3,
+        self::FORMAT_DATE_TIME4,
+        self::FORMAT_DATE_TIME5,
+        self::FORMAT_DATE_TIME6,
+        self::FORMAT_DATE_TIME7,
+        self::FORMAT_DATE_TIME8,
+    ];
 
     const FORMAT_CURRENCY_USD_SIMPLE = '"$"#,##0.00_-';
     const FORMAT_CURRENCY_USD = '$#,##0_-';
@@ -104,7 +143,10 @@ class NumberFormat extends Supervisor
      */
     public function getSharedComponent()
     {
-        return $this->parent->getSharedComponent()->getNumberFormat();
+        /** @var Style */
+        $parent = $this->parent;
+
+        return $parent->getSharedComponent()->getNumberFormat();
     }
 
     /**
@@ -157,7 +199,7 @@ class NumberFormat extends Supervisor
         if ($this->isSupervisor) {
             return $this->getSharedComponent()->getFormatCode();
         }
-        if ($this->builtInFormatCode !== false) {
+        if (is_int($this->builtInFormatCode)) {
             return self::builtInFormatCode($this->builtInFormatCode);
         }
 
@@ -198,6 +240,7 @@ class NumberFormat extends Supervisor
             return $this->getSharedComponent()->getBuiltInFormatCode();
         }
 
+        // Scrutinizer says this could return true. It is wrong.
         return $this->builtInFormatCode;
     }
 
@@ -249,7 +292,7 @@ class NumberFormat extends Supervisor
         //      KOR fmt 55: "yyyy/mm/dd"
 
         // Built-in format codes
-        if (self::$builtInFormats === null) {
+        if (empty(self::$builtInFormats)) {
             self::$builtInFormats = [];
 
             // General
@@ -352,7 +395,7 @@ class NumberFormat extends Supervisor
      *
      * @param string $formatCodeIndex
      *
-     * @return bool|int
+     * @return false|int
      */
     public static function builtInFormatCodeIndex($formatCodeIndex)
     {

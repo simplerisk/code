@@ -2,6 +2,10 @@
 {% set frontpage_section = 'federation' %}
 {% extends "base.twig" %}
 
+{% block preload %}
+<link rel="stylesheet" href="{{ asset('css/admin.css', 'admin') }}">
+{% endblock %}
+
 {% block content %}
     {%- include "@admin/includes/menu.twig" %}
     {%- if entries.hosted is iterable %}
@@ -16,15 +20,12 @@
           {%- block general %}
 
           <dl>
-            {%- if set.name is defined %}
-
-              <dt>{{ set.name|translateFromArray }}</dt>
-            {%- endif %}
+            <dt>{{ set|entityDisplayName }}</dt>
 
             <dd>EntityID: <code>{{ set.entityid }}</code></dd>
             {%- if set.deprecated is defined and set.deprecated %}
 
-              <dd><span class="entity-deprecated">Deprecated</span></dd>
+              <dd><span class="entity-deprecated">{{ 'Deprecated'|trans }}</span></dd>
             {%- endif %}
             {% set index = attribute(set, 'metadata-index')|default(false) %}
             {%- if index and set.entityid != index %}
@@ -59,8 +60,7 @@
               <div id="xml-{{ key }}" class="code-box-content xml">{{ set.metadata }}</div>
             </dd>
             <dt>{% trans %}SimpleSAMLphp Metadata{% endtrans %}</dt>
-            <dd>{% trans %}Use this if you are using a SimpleSAMLphp entity on
-              {#- #} the other side:{% endtrans %}</dd>
+            <dd>{% trans %}Use this if you are using a SimpleSAMLphp entity on the other side:{% endtrans %}</dd>
             <dd class="code-box hljs">
               <div class="pure-button-group top-right-corner">
                 <a class="pure-button copy hljs" data-clipboard-target="#php-{{ key }}"
@@ -78,7 +78,7 @@
               {%- endif %}
 
                 <li>
-                  <a href="{{ cert.url }}"><i class="fa fa-download"></i>{{ cert.name }}
+                  <a href="{{ cert.url }}"><i class="fa fa-download"></i>{{ cert.name | default('cert') }}
                     {#- #}{% if cert.signing %}-signing{% endif %}
                     {#- #}{% if cert.encryption %}-encryption{% endif %}.pem
                     {#- #}{% if cert.prefix %} ({% trans %}new{% endtrans %}){% endif %}</a>
@@ -105,22 +105,13 @@
       {% for entityid, entity in set %}
 
         <li><a href="{{ moduleURL('admin/federation/show?entityid=' ~ (entity.entityid|url_encode) ~ '&set=' ~ key) }}">
-          {%- if entity.name_translated is defined -%}
-
-          {{ entity.name_translated }}
-          {%- elseif entity.organizationdisplayname_translated is defined -%}
-
-          {{ entity.organizationdisplayname_translated }}
-          {%- else -%}
-
-          {{ entity.entityid|escape('html') }}
-          {%- endif -%}
+            {{- entity | entityDisplayName -}}
           </a>
           {% if entity.expire is defined %}
             {% if entity.expire < date().timestamp %}
-              <span class="entity-expired"> ({% trans %}expired{% endtrans %} {{ entity.expire | time_diff }})</span>
+              <span class="entity-expired"> ({% trans %}expired{% endtrans %} {{ entity.expire | format_datetime('short', 'short', locale=currentLanguage) }})</span>
             {% else %}
-              <span class="entity-expires"> ({% trans %}expires{% endtrans %} {{ entity.expire | time_diff }})</span>
+              <span class="entity-expires"> ({% trans %}expires{% endtrans %} {{ entity.expire | format_datetime('short', 'short', locale=currentLanguage) }})</span>
             {% endif %}
           {% endif %}
         </li>
@@ -141,7 +132,7 @@
     <form action="{{ moduleURL('admin/federation/show') }}" method="get" class="pure-form">
       <fieldset class="fancyfieldset">
         <legend>{% trans %}Look up metadata for entity:{% endtrans %}</legend>
-        <select name="set">
+        <select name="set" aria-labelledby="lookupbutton">
           {%- if entries.remote %}
             {%- for key, set in entries.remote %}
 
@@ -151,7 +142,7 @@
 
         </select>
         <input type="text" name="entityid" placeholder="{% trans %}EntityID{% endtrans %}">
-        <button class="pure-button pure-button-red" type="submit">{% trans %}Search{% endtrans %}</button>
+        <button class="pure-button pure-button-red" type="submit" id="lookupbutton">{% trans %}Search{% endtrans %}</button>
       </fieldset>
     </form>
 {% endblock %}

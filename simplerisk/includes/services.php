@@ -8,15 +8,13 @@
 require_once(realpath(__DIR__ . '/alerts.php'));
 require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/extras.php'));
+require_once(realpath(__DIR__ . '/connectivity.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 /*************************************
  * FUNCTION: SIMPLERISK SERVICE CALL *
  *************************************/
-function simplerisk_service_call($data)
+function simplerisk_service_call($parameters)
 {
     // Configuration for the SimpleRisk service call
     if (defined('SERVICES_URL'))
@@ -24,27 +22,29 @@ function simplerisk_service_call($data)
         $url = SERVICES_URL . "/index.php";
     }
     else $url = "https://services.simplerisk.com/index.php";
-    $method = "POST";
-    $header = "Content-Type: application/x-www-form-urlencoded";
-    $content = http_build_query($data);
 
-    // Set the http options
-    $opts = array('http' =>
-        array(
-            'method'  => $method,
-            'header'  => $header,
-            'content' => $content
-        )
-    );
+    // Set the HTTP options
+    $http_options = [
+        'method' => 'POST',
+        'header' => [
+            "Content-Type: application/x-www-form-urlencoded",
+        ],
+    ];
 
-    // Set the default proxy stream context
-    $context = set_proxy_stream_context($method, $header, $content);
+    // If SSL certificate checks are enabled for external requests
+    if (get_setting('ssl_certificate_check_external') == 1)
+    {
+        // Verify the SSL host and peer
+        $validate_ssl = true;
+    }
+    else $validate_ssl = false;
 
     // Make the services call
-    $result = file($url, 0, $context);
+    $response = fetch_url_content("stream", $http_options, $validate_ssl, $url, $parameters);
+    $return_code = $response['return_code'];
 
     // If we were unable to connect to the URL
-    if(!$result || $result[0] == 'HTTP/1.1 404 Not Found')
+    if($return_code !== 200)
     {
         write_debug_log("SimpleRisk was unable to connect to " . $url);
         return false;
@@ -53,7 +53,7 @@ function simplerisk_service_call($data)
     else
     {
         write_debug_log("SimpleRisk successfully connected to " . $url);
-        return $result;
+        return $response;
     }
 }
 
@@ -137,16 +137,19 @@ function download_extra($name, $streamed_response = false) {
 	$services_api_key = get_setting("services_api_key");
 
     // Create the data to send
-    $data = array(
+    $parameters = array(
         'action' => 'download_extra',
         'extra_name' => $name,
         'instance_id' => $instance_id,
         'api_key' => $services_api_key,
     );
 
-	$result = simplerisk_service_call($data);
+    // Make the SimpleRisk service call
+	$response = simplerisk_service_call($parameters);
+    $return_code = $response['return_code'];
+    $results = $response['response'];
 
-    if (!$result || !is_array($result)) {
+    if ($return_code !== 200) {
         
         if ($streamed_response) {
             stream_write_error($lang['FailedToDownloadExtra']);
@@ -157,126 +160,127 @@ function download_extra($name, $streamed_response = false) {
         // Return a failure
         return 0;
     }
+    else
+    {
+        if (preg_match("/<result>(.*)<\/result>/", $results, $matches)) {
+            switch ($matches[1]) {
+                case "Not Purchased":
+                    if ($streamed_response) {
+                        stream_write_error($lang['RequestedExtraIsNotPurchased']);
+                    } else {
+                        set_alert(true, "bad", $lang['RequestedExtraIsNotPurchased']);
+                    }
 
-    if (preg_match("/<result>(.*)<\/result>/", $result[0], $matches)) {
-        switch($matches[1]) {
-            case "Not Purchased":
+                    // Return a failure
+                    return 0;
+
+                case "Invalid Extra Name":
+                    if ($streamed_response) {
+                        stream_write_error($lang['RequestedExtraDoesNotExist']);
+                    } else {
+                        set_alert(true, "bad", $lang['RequestedExtraDoesNotExist']);
+                    }
+
+                    // Return a failure
+                    return 0;
+
+                case "Unmatched IP Address":
+                    if ($streamed_response) {
+                        stream_write_error($lang['InstanceWasRegisteredWithDifferentIp']);
+                    } else {
+                        set_alert(true, "bad", $lang['InstanceWasRegisteredWithDifferentIp']);
+                    }
+
+                    // Return a failure
+                    return 0;
+
+                case "Instance Disabled":
+                    if ($streamed_response) {
+                        stream_write_error($lang['InstanceIsDisabled']);
+                    } else {
+                        set_alert(true, "bad", $lang['InstanceIsDisabled']);
+                    }
+
+                    // Return a failure
+                    return 0;
+
+                case "Invalid Instance or Key":
+                    if ($streamed_response) {
+                        stream_write_error($lang['InvalidInstanceIdOrKey']);
+                    } else {
+                        set_alert(true, "bad", $lang['InvalidInstanceIdOrKey']);
+                    }
+
+                    // Return a failure
+                    return 0;
+
+                default:
+                    if ($streamed_response) {
+                        stream_write_error($lang['FailedToDownloadExtra']);
+                    } else {
+                        set_alert(true, "bad", $lang['FailedToDownloadExtra']);
+                    }
+
+                    // Return a failure
+                    return 0;
+            }
+        } else {
+            // Write the extra to a file in the temporary directory
+            $extra_file = sys_get_temp_dir() . '/' . $name . '.tar.gz';
+
+            // Try to remove the file to make sure we can create the new one
+            delete_file($extra_file);
+
+            //Check if we succeeded
+            if (file_exists($extra_file)) {
                 if ($streamed_response) {
-                    stream_write_error($lang['RequestedExtraIsNotPurchased']);
+                    stream_write_error($lang['FailedToCleanupExtraFiles']);
                 } else {
-                    set_alert(true, "bad", $lang['RequestedExtraIsNotPurchased']);
+                    set_alert(true, "bad", $lang['FailedToCleanupExtraFiles']);
                 }
 
                 // Return a failure
                 return 0;
-
-            case "Invalid Extra Name":
-                if ($streamed_response) {
-                    stream_write_error($lang['RequestedExtraDoesNotExist']);
-                } else {
-                    set_alert(true, "bad", $lang['RequestedExtraDoesNotExist']);
-                }
-
-                // Return a failure
-                return 0;
-
-            case "Unmatched IP Address":
-                if ($streamed_response) {
-                    stream_write_error($lang['InstanceWasRegisteredWithDifferentIp']);
-                } else {
-                    set_alert(true, "bad", $lang['InstanceWasRegisteredWithDifferentIp']);
-                }
-
-                // Return a failure
-                return 0;
-
-            case "Instance Disabled":
-                if ($streamed_response) {
-                    stream_write_error($lang['InstanceIsDisabled']);
-                } else {
-                    set_alert(true, "bad", $lang['InstanceIsDisabled']);
-                }
-
-                // Return a failure
-                return 0;
-
-            case "Invalid Instance or Key":
-                if ($streamed_response) {
-                    stream_write_error($lang['InvalidInstanceIdOrKey']);
-                } else {
-                    set_alert(true, "bad", $lang['InvalidInstanceIdOrKey']);
-                }
-
-                // Return a failure
-                return 0;
-
-            default:
-                if ($streamed_response) {
-                    stream_write_error($lang['FailedToDownloadExtra']);
-                } else {
-                    set_alert(true, "bad", $lang['FailedToDownloadExtra']);
-                }
-
-                // Return a failure
-                return 0;
-        }
-    } else {
-        // Write the extra to a file in the temporary directory
-        $extra_file = sys_get_temp_dir() . '/' . $name . '.tar.gz';
-
-        // Try to remove the file to make sure we can create the new one
-        delete_file($extra_file);
-
-        //Check if we succeeded
-        if (file_exists($extra_file)) {
-            if ($streamed_response) {
-                stream_write_error($lang['FailedToCleanupExtraFiles']);
-            } else {
-                set_alert(true, "bad", $lang['FailedToCleanupExtraFiles']);
             }
 
-            // Return a failure
-            return 0;
+            $result = file_put_contents($extra_file, $results);
+
+            // Decompress the extra file
+            $buffer_size = 4096;
+            $out_file_name = str_replace('.gz', '', $extra_file);
+            $file = gzopen($extra_file, 'rb');
+            $out_file = fopen($out_file_name, 'wb');
+            while (!gzeof($file)) {
+                fwrite($out_file, gzread($file, $buffer_size));
+            }
+            fclose($out_file);
+            gzclose($file);
+
+            // Extract the tar to the tmp directory
+            $phar = new PharData(sys_get_temp_dir() . '/' . $name . ".tar");
+            $phar->extractTo(sys_get_temp_dir(), null, true);
+
+            // Copy to the extras directory
+            $source = sys_get_temp_dir() . '/' . $name;
+            $destination = $extras_dir . '/' . $name;
+            recurse_copy($source, $destination);
+
+            // Clean up files
+            $file = sys_get_temp_dir() . '/' . $name . '.tar.gz';
+            delete_file($file);
+            $file = sys_get_temp_dir() . '/' . $name . '.tar';
+            delete_file($file);
+            delete_dir($source);
+
+            if ($streamed_response) {
+                stream_write($lang['ExtraInstalledSuccessfully']);
+            } else {
+                set_alert(true, "good", $lang['ExtraInstalledSuccessfully']);
+            }
+
+            // Return a success
+            return 1;
         }
-
-        $result = file_put_contents($extra_file, $result);
-
-        // Decompress the extra file
-        $buffer_size = 4096;
-        $out_file_name = str_replace('.gz', '', $extra_file);
-        $file = gzopen($extra_file, 'rb');
-        $out_file = fopen($out_file_name, 'wb');
-        while (!gzeof($file))
-        {
-            fwrite($out_file, gzread($file, $buffer_size));
-        }
-        fclose($out_file);
-        gzclose($file);
-
-        // Extract the tar to the tmp directory
-        $phar = new PharData(sys_get_temp_dir() . '/' . $name . ".tar");
-        $phar->extractTo(sys_get_temp_dir(), null, true);
-
-        // Copy to the extras directory
-        $source = sys_get_temp_dir() . '/' . $name;
-        $destination = $extras_dir . '/' . $name;
-        recurse_copy($source, $destination);
-
-        // Clean up files
-        $file = sys_get_temp_dir() . '/' . $name . '.tar.gz';
-        delete_file($file);
-        $file = sys_get_temp_dir() . '/' . $name . '.tar';
-        delete_file($file);
-        delete_dir($source);
-
-        if ($streamed_response) {
-            stream_write($lang['ExtraInstalledSuccessfully']);
-        } else {
-            set_alert(true, "good", $lang['ExtraInstalledSuccessfully']);
-        }
-
-        // Return a success
-        return 1;
     }
 }
 
@@ -413,33 +417,36 @@ function call_extra_api_functionality($extra, $functionality, $target) {
     $url = get_setting("simplerisk_base_url");
     $url .= (endsWith($url, '/') ? '' : '/') . "api/$extra/$uri";
     //error_log("URL: " . json_encode($url));
-    $opts = array(
-        'http' => array(
-            'method'  => 'GET',
-            'header'  =>
-            // 'Cookie: ' . $_SERVER['HTTP_COOKIE']."\r\n".
-            "Cookie: " . session_name() . "=" . session_id() . "\r\n".
-            "Content-Type: application/json\r\n".
-            "Accept: application/json\r\n",
-            'ignore_errors' => true,
-            'timeout' => 600,
-        ),
-        'ssl' => array(
-            'verify_peer' => false,
-            'verify_peer_name' => false,
-            'allow_self_signed' => true
-        )
-    );
-    $context = stream_context_create($opts);
+    $http_options = [
+        'method' => 'GET',
+        'header' => [
+            "Cookie: " . session_name() . "=" . session_id(),
+            "Content-Type: application/json",
+            "Accept: application/json",
+        ],
+        'ignore_errors' => true,
+        'timeout' => 600,
+    ];
+
+    // If SSL certificate checks are enabled
+    if (get_setting('ssl_certificate_check_simplerisk') == 1)
+    {
+        // Verify the SSL host and peer
+        $validate_ssl = true;
+    }
+    else
+    {
+        // Do not verify the SSL host and peer
+        $validate_ssl = false;
+    }
+
     //error_log("url: " . json_encode($url));
     //error_log("context: " . json_encode($context));
-    $result = file_get_contents($url, false, $context);
+    $result = fetch_url_content("stream", $http_options, $validate_ssl, $url);
     //error_log("header: " . json_encode($http_response_header));
     //error_log("result: " . json_encode($result));
 
-    preg_match('{HTTP\/\S*\s(\d{3})}', $http_response_header[0], $match);
-
-    return [(int)$match[1], json_decode($result, true)];
+    return [$result['return_code'], json_decode($result['response'], true)];
 }
 
 ?>

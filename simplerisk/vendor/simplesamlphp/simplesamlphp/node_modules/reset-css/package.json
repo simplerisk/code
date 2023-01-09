@@ -1,0 +1,16 @@
+{
+  "name": "reset-css",
+  "version": "5.0.1",
+  "description": "An unmodified copy of Eric Meyer's CSS reset.",
+  "homepage": "http://meyerweb.com/eric/tools/css/reset/",
+  "author": "Eric Meyer",
+  "license": "Unlicense",
+  "repository": "shannonmoeller/reset-css",
+  "style": "reset.css",
+  "main": "reset.css",
+  "files": [
+    "reset.css",
+    "sass",
+    "less"
+  ]
+}

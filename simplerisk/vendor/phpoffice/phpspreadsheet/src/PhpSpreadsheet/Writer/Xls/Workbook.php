@@ -169,9 +169,12 @@ class Workbook extends BIFFwriter
     /**
      * Escher object corresponding to MSODRAWINGGROUP.
      *
-     * @var \PhpOffice\PhpSpreadsheet\Shared\Escher
+     * @var null|\PhpOffice\PhpSpreadsheet\Shared\Escher
      */
     private $escher;
+
+    /** @var mixed */
+    private static $scrutinizerFalse = false;
 
     /**
      * Class constructor.
@@ -249,7 +252,7 @@ class Workbook extends BIFFwriter
         $xfWriter->setDiagColor($this->addColor($style->getBorders()->getDiagonal()->getColor()->getRGB()));
 
         // Add the number format if it is not a built-in one and not already added
-        if ($style->getNumberFormat()->getBuiltInFormatCode() === false) {
+        if ($style->getNumberFormat()->getBuiltInFormatCode() === self::$scrutinizerFalse) {
             $numberFormatHashCode = $style->getNumberFormat()->getHashCode();
 
             if (isset($this->addedNumberFormats[$numberFormatHashCode])) {
@@ -408,13 +411,13 @@ class Workbook extends BIFFwriter
      * Assemble worksheets into a workbook and send the BIFF data to an OLE
      * storage.
      *
-     * @param array $pWorksheetSizes The sizes in bytes of the binary worksheet streams
+     * @param array $worksheetSizes The sizes in bytes of the binary worksheet streams
      *
      * @return string Binary data for workbook stream
      */
-    public function writeWorkbook(array $pWorksheetSizes)
+    public function writeWorkbook(array $worksheetSizes)
     {
-        $this->worksheetSizes = $pWorksheetSizes;
+        $this->worksheetSizes = $worksheetSizes;
 
         // Calculate the number of selected worksheet tabs and call the finalization
         // methods for each worksheet
@@ -523,9 +526,9 @@ class Workbook extends BIFFwriter
         $this->writeStyle();
     }
 
-    private function parseDefinedNameValue(DefinedName $pDefinedName): string
+    private function parseDefinedNameValue(DefinedName $definedName): string
     {
-        $definedRange = $pDefinedName->getValue();
+        $definedRange = $definedName->getValue();
         $splitCount = preg_match_all(
             '/' . Calculation::CALCULATION_REGEXP_CELLREF . '/mui',
             $definedRange,
@@ -552,7 +555,7 @@ class Workbook extends BIFFwriter
             if (empty($worksheet)) {
                 if (($offset === 0) || ($definedRange[$offset - 1] !== ':')) {
                     // We should have a worksheet
-                    $worksheet = $pDefinedName->getWorksheet() ? $pDefinedName->getWorksheet()->getTitle() : null;
+                    $worksheet = $definedName->getWorksheet() ? $definedName->getWorksheet()->getTitle() : null;
                 }
             } else {
                 $worksheet = str_replace("''", "'", trim($worksheet, "'"));
@@ -591,7 +594,7 @@ class Workbook extends BIFFwriter
 
                 // parse formula
                 try {
-                    $error = $this->parser->parse($range);
+                    $this->parser->parse($range);
                     $formulaData = $this->parser->toReversePolish();
 
                     // make sure tRef3d is of type tRef3dR (0x3A)
@@ -873,7 +876,7 @@ class Workbook extends BIFFwriter
         // sheet type
         $st = 0x00;
 
-        $grbit = 0x0000; // Visibility and sheet type
+        //$grbit = 0x0000; // Visibility and sheet type
 
         $data = pack('VCC', $offset, $ss, $st);
         $data .= StringHelper::UTF8toBIFF8UnicodeShort($sheetname);
@@ -907,7 +910,7 @@ class Workbook extends BIFFwriter
         $record = 0x0017; // Record identifier
         $length = 2 + 6 * $totalReferences; // Number of bytes to follow
 
-        $supbook_index = 0; // FIXME: only using internal SUPBOOK record
+        //$supbook_index = 0; // FIXME: only using internal SUPBOOK record
         $header = pack('vv', $record, $length);
         $data = pack('v', $totalReferences);
         for ($i = 0; $i < $totalReferences; ++$i) {
@@ -1174,21 +1177,17 @@ class Workbook extends BIFFwriter
 
     /**
      * Get Escher object.
-     *
-     * @return \PhpOffice\PhpSpreadsheet\Shared\Escher
      */
-    public function getEscher()
+    public function getEscher(): ?\PhpOffice\PhpSpreadsheet\Shared\Escher
     {
         return $this->escher;
     }
 
     /**
      * Set Escher object.
-     *
-     * @param \PhpOffice\PhpSpreadsheet\Shared\Escher $pValue
      */
-    public function setEscher(?\PhpOffice\PhpSpreadsheet\Shared\Escher $pValue = null): void
+    public function setEscher(?\PhpOffice\PhpSpreadsheet\Shared\Escher $escher): void
     {
-        $this->escher = $pValue;
+        $this->escher = $escher;
     }
 }

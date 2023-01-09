@@ -1,5 +1,5 @@
 /**
- * TinyMCE version 6.0.0 (2020-03-03)
+ * TinyMCE version 6.3.1 (2022-12-06)
  */
 
 (function () {
@@ -27,7 +27,7 @@
       const id = elm.getAttribute('id') || elm.getAttribute('name');
       return id || '';
     };
-    const isAnchor = elm => elm && elm.nodeName.toLowerCase() === 'a';
+    const isAnchor = elm => elm.nodeName.toLowerCase() === 'a';
     const isNamedAnchor = elm => isAnchor(elm) && !elm.getAttribute('href') && getIdFromAnchor(elm) !== '';
     const isEmptyNamedAnchor = elm => isNamedAnchor(elm) && !elm.firstChild;
 
@@ -60,7 +60,7 @@
           editor.insertContent(editor.dom.createHTML('a', { id }));
         } else {
           removeEmptyNamedAnchorsInSelection(editor);
-          editor.formatter.remove('namedAnchor', null, null, true);
+          editor.formatter.remove('namedAnchor', undefined, undefined, true);
           editor.formatter.apply('namedAnchor', { value: id });
           editor.addVisual();
         }
@@ -133,7 +133,7 @@
       });
     };
 
-    const isNamedAnchorNode = node => node && isEmptyString(node.attr('href')) && !isEmptyString(node.attr('id') || node.attr('name'));
+    const isNamedAnchorNode = node => isEmptyString(node.attr('href')) && !isEmptyString(node.attr('id') || node.attr('name'));
     const isEmptyNamedAnchorNode = node => isNamedAnchorNode(node) && !node.firstChild;
     const setContentEditable = state => nodes => {
       for (let i = 0; i < nodes.length; i++) {
@@ -165,16 +165,17 @@
     };
 
     const register = editor => {
+      const onAction = () => editor.execCommand('mceAnchor');
       editor.ui.registry.addToggleButton('anchor', {
         icon: 'bookmark',
         tooltip: 'Anchor',
-        onAction: () => editor.execCommand('mceAnchor'),
+        onAction,
         onSetup: buttonApi => editor.selection.selectorChangedWithUnbind('a:not([href])', buttonApi.setActive).unbind
       });
       editor.ui.registry.addMenuItem('anchor', {
         icon: 'bookmark',
         text: 'Anchor...',
-        onAction: () => editor.execCommand('mceAnchor')
+        onAction
       });
     };
 

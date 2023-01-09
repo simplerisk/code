@@ -18,6 +18,7 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Shared\File;
 use PhpOffice\PhpSpreadsheet\Shared\StringHelper;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use SimpleXMLElement;
 
 /**
@@ -90,9 +91,9 @@ class Xml extends BaseReader
         //    Retrieve charset encoding
         if (preg_match('/<?xml.*encoding=[\'"](.*?)[\'"].*?>/m', $data, $matches)) {
             $charSet = strtoupper($matches[1]);
-            if (1 == preg_match('/^ISO-8859-\d[\dL]?$/i', $charSet)) {
+            if (preg_match('/^ISO-8859-\d[\dL]?$/i', $charSet) === 1) {
                 $data = StringHelper::convertEncoding($data, 'UTF-8', $charSet);
-                $data = preg_replace('/(<?xml.*encoding=[\'"]).*?([\'"].*?>)/um', '$1' . 'UTF-8' . '$2', $data, 1);
+                $data = (string) preg_replace('/(<?xml.*encoding=[\'"]).*?([\'"].*?>)/um', '$1' . 'UTF-8' . '$2', $data, 1);
             }
         }
         $this->fileContents = $data;
@@ -103,20 +104,20 @@ class Xml extends BaseReader
     /**
      * Check if the file is a valid SimpleXML.
      *
-     * @param string $pFilename
+     * @param string $filename
      *
      * @return false|SimpleXMLElement
      */
-    public function trySimpleXMLLoadString($pFilename)
+    public function trySimpleXMLLoadString($filename)
     {
         try {
             $xml = simplexml_load_string(
-                $this->securityScanner->scan($this->fileContents ?: file_get_contents($pFilename)),
+                $this->securityScanner->scan($this->fileContents ?: file_get_contents($filename)),
                 'SimpleXMLElement',
                 Settings::getLibXmlLoaderOptions()
             );
         } catch (\Exception $e) {
-            throw new Exception('Cannot load invalid XML file: ' . $pFilename, 0, $e);
+            throw new Exception('Cannot load invalid XML file: ' . $filename, 0, $e);
         }
         $this->fileContents = '';
 
@@ -231,13 +232,9 @@ class Xml extends BaseReader
 
     /**
      * Loads Spreadsheet from file.
-     *
-     * @return Spreadsheet
      */
-    public function load(string $filename, int $flags = 0)
+    protected function loadSpreadsheetFromFile(string $filename): Spreadsheet
     {
-        $this->processFlags($flags);
-
         // Create new Spreadsheet
         $spreadsheet = new Spreadsheet();
         $spreadsheet->removeSheetByIndex(0);
@@ -281,7 +278,7 @@ class Xml extends BaseReader
 
             if (
                 isset($this->loadSheetsOnly, $worksheet_ss['Name']) &&
-                (!in_array($worksheet_ss['Name'], $this->loadSheetsOnly))
+                (!in_array($worksheet_ss['Name'], /** @scrutinizer ignore-type */ $this->loadSheetsOnly))
             ) {
                 continue;
             }
@@ -368,7 +365,7 @@ class Xml extends BaseReader
                                 $rowTo = $rowTo + $cell_ss['MergeDown'];
                             }
                             $cellRange .= ':' . $columnTo . $rowTo;
-                            $spreadsheet->getActiveSheet()->mergeCells($cellRange);
+                            $spreadsheet->getActiveSheet()->mergeCells($cellRange, Worksheet::MERGE_CELL_CONTENT_HIDE);
                         }
 
                         $hasCalculatedValue = false;

@@ -25,6 +25,8 @@ add_session_check($permissions);
 include_csrf_magic();
 
 // Include the SimpleRisk language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
 // If the Incident Management Extra is enabled

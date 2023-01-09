@@ -4,7 +4,7 @@
 require_once(realpath(__DIR__ . '/../../../../includes/functions.php'));
 
 // Include the SimpleSamlPHP _include.php file
-require_once(realpath(__DIR__ . '/../../../../extras/authentication/simplesamlphp/www/_include.php'));
+require_once(realpath(__DIR__ . '/../../../../vendor/simplesamlphp/simplesamlphp/www/_include.php'));
 
 // Get the SAML metadata
 $saml_metadata_xml = get_setting("SAML_METADATA_XML");
@@ -25,22 +25,22 @@ else if ($saml_metadata_xml != false && $saml_metadata_xml != null)
 // If the metadata is not empty
 if (!empty($xmldata))
 {
-	\SimpleSAML\Utils\XML::checkSAMLMessage($xmldata, 'saml-meta');
+	$xml = new \SimpleSAML\Utils\XML();
+	$xml->checkSAMLMessage($xmldata, 'saml-meta');
 	$entities = \SimpleSAML\Metadata\SAMLParser::parseDescriptorsString($xmldata);
 
 	// Get all metadata for the entries
 	foreach ($entities as &$entity)
 	{
 		$entity = [
-			'shib13-sp-remote'  => $entity->getMetadata1xSP(),
-			'shib13-idp-remote' => $entity->getMetadata1xIdP(),
 			'saml20-sp-remote'  => $entity->getMetadata20SP(),
 			'saml20-idp-remote' => $entity->getMetadata20IdP(),
 		];
 	}
 
 	// Transpose from $entities[entityid][type] to $output[type][entityid]
-	$output = \SimpleSAML\Utils\Arrays::transpose($entities);
+	$transpose = new \SimpleSAML\Utils\Arrays();
+	$output = $transpose->transpose($entities);
 
 	// Get the SAML 2.0 IDP output
 	$output = $output['saml20-idp-remote'];
@@ -50,27 +50,6 @@ if (!empty($xmldata))
 
 	// Get the entityid
 	$entityid = $output['entityid'];
-
-/*
-	// Merge all metadata of each type to a single string which should be added to the corresponding file
-	foreach ($output as $type => &$entities)
-	{
-		$text = '';
-		foreach ($entities as $entityId => $entityMetadata)
-		{
-			if ($entityMetadata === null)
-			{
-				continue;
-			}
-
-			// Remove the entityDescriptor element because it is unused, and only makes the output harder to read
-			unset($entityMetadata['entityDescriptor']);
-
-			$text .= '$metadata[' . var_export($entityId, true) . '] = ' . var_export($entityMetadata, true) . ";\n";
-		}
-		$entities = $text;
-	}
-*/
 }
 else
 {

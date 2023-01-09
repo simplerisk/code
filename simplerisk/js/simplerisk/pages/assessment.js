@@ -473,7 +473,7 @@ function createTagsInstance(tag, options) {
 
 	var selectize_setup = {
         plugins: ['remove_button', 'restore_on_backspace'],
-        delimiter: '|',
+        delimiter: ',',
         createFilter: function(input) { return input.length <= 255; },
         create: true,
         valueField: 'label',

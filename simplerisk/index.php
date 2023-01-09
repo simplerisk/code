@@ -27,9 +27,6 @@ else
     require_once(realpath(__DIR__ . '/includes/install.php'));
     require_once(realpath(__DIR__ . '/vendor/autoload.php'));
 
-    // Include Laminas Escaper for HTML Output Encoding
-    $escaper = new Laminas\Escaper\Escaper('utf-8');
-
     // Add various security headers
     add_security_headers();
 
@@ -40,6 +37,27 @@ else
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
     $count = $result['count'];
     db_close($db);
+
+    if (!isset($_SESSION))
+    {
+        // Session handler is database
+        if (USE_DATABASE_FOR_SESSIONS == "true")
+        {
+            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+        }
+
+        // Start session
+        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
+        sess_gc(1440);
+        session_name('SimpleRisk');
+        session_start();
+    }
+
+    // Include the language file
+    // Ignoring detections related to language files
+    // @phan-suppress-next-line SecurityCheck-PathTraversal
+    require_once(language_file());
 
     // If the database has been installed but there are no users
     if ($count == 0)
@@ -53,25 +71,6 @@ else
     // Otherwise go about the standard login process
     else
     {
-        if (!isset($_SESSION))
-        {
-            // Session handler is database
-            if (USE_DATABASE_FOR_SESSIONS == "true")
-            {
-                session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-            }
-
-            // Start session
-            session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
-            sess_gc(1440);
-            session_name('SimpleRisk');
-            session_start();
-        }
-
-        // Include the language file
-        require_once(language_file());
-
         // Checking for the SAML logout status
         if (custom_authentication_extra() && isset($_REQUEST['LogoutState'])) {
             global $lang;
@@ -100,7 +99,9 @@ else
             {
                 $uid = get_id_by_user($user);
                 $array = get_user_by_id($uid);
+                $_SESSION['user'] = $array['username'];
 
+                // If the user needs to change their password upon login
                 if($array['change_password'])
                 {
                     $_SESSION['first_login_uid'] = $uid;
@@ -174,6 +175,65 @@ else
             select_redirect();
         }
 
+        // If the user has already authorized and we are authorizing with multi factor
+        if (isset($_SESSION["access"]) && ($_SESSION["access"] == "mfa"))
+        {
+            // If a response has been posted
+            if (isset($_POST['authenticate']))
+            {
+                // If the mfa token matches
+                if (does_mfa_token_match())
+                {
+                    // If the encryption extra is enabled
+                    if (encryption_extra())
+                    {
+                        // Load the extra
+                        require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
+
+                        // Check user enc
+                        check_user_enc($user, $pass);
+                    }
+
+                    // Grant the user access
+                    grant_access();
+
+                    // Select where to redirect the user next
+                    select_redirect();
+                }
+            }
+        }
+
+        // If the user has already been authorized and we need to verify their mfa
+        if (isset($_SESSION["access"]) && $_SESSION["access"] == "mfa_verify")
+        {
+            // If a response has ben posted
+            if (isset($_POST['verify']))
+            {
+                // If the MFA verification process worked
+                if (process_mfa_verify())
+                {
+                    // Convert the user to use the core MFA going forward
+                    enable_mfa_for_uid();
+
+                    // If the encryption extra is enabled
+                    if (encryption_extra())
+                    {
+                        // Load the extra
+                        require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
+
+                        // Check user enc
+                        check_user_enc($user, $pass);
+                    }
+
+                    // Grant the user access
+                    grant_access();
+
+                    // Select where to redirect the user next
+                    select_redirect();
+                }
+            }
+        }
+
         // If the user has already authorized and we are authorizing with duo
         if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
         {
@@ -181,10 +241,10 @@ else
             if (isset($_POST['sig_response']))
             {
                 // Get the username and password and then unset the session values
-                $user = $_SESSION['duo_user'];
-                $pass = $_SESSION['duo_pass'];
-                unset($_SESSION['duo_user']);
-                unset($_SESSION['duo_pass']);
+                $user = $_SESSION['user'];
+                $pass = $_SESSION['pass'];
+                unset($_SESSION['user']);
+                unset($_SESSION['pass']);
 
                 // Include the custom authentication extra
                 require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
@@ -205,21 +265,11 @@ else
                 // If the response is not null
                 if ($resp != NULL)
                 {
-                    // If the encryption extra is enabled
-                    if (encryption_extra())
-                    {
-                        // Load the extra
-                        require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
+                    // Create the MFA secret for the uid
+                    create_mfa_secret_for_uid();
 
-                        // Check user enc
-                        check_user_enc($user, $pass);
-                    }
-
-                    // Grant the user access
-                    grant_access();
-
-                    // Select where to redirect the user next
-                    select_redirect();
+                    // Set the session to indicate that the Duo auth was successful, but we need to verify the new MFA
+                    $_SESSION["access"] = "mfa_verify";
                 }
             }
         }
@@ -261,8 +311,36 @@ else
 	  <?php view_top_menu("Home"); ?>
 
 	  <?php
+      // If the user has authenticated and now we need to authenticate with mfa
+      if (isset($_SESSION["access"]) && $_SESSION["access"] == "mfa")
+      {
+          echo "<div class=\"row-fluid\">\n";
+          echo "<div class=\"span9\">\n";
+          echo "<form name='mfa' method='post' action=''>\n";
+
+          // Perform a duo authentication request for the user
+          display_mfa_authentication_page();
+
+          echo "</form>\n";
+          echo "</div>\n";
+          echo "</div>\n";
+      }
+      // If the user needs to verify the new MFA
+      else if(isset($_SESSION["access"]) && $_SESSION["access"] == "mfa_verify")
+      {
+          echo "<div class=\"row-fluid\">\n";
+          echo "<div class=\"span9\">\n";
+          echo "<form name='mfa' method='post' action=''>\n";
+
+          // Display the MFA verification page
+          display_mfa_verification_page();
+
+          echo "</form>\n";
+          echo "</div>\n";
+          echo "</div>\n";
+      }
 	  // If the user has authenticated and now we need to authenticate with duo
-	  if (isset($_SESSION["access"]) && $_SESSION["access"] == "duo")
+	  else if (isset($_SESSION["access"]) && $_SESSION["access"] == "duo")
 	  {
 		echo "<div class=\"row-fluid\">\n";
 		echo "<div class=\"span9\">\n";
@@ -272,8 +350,8 @@ else
 		require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
 
 		// Store the user and password temporarily in the session
-		$_SESSION['duo_user'] = $_POST['user'];
-		$_SESSION['duo_pass'] = $_POST['pass'];
+		$_SESSION['user'] = $_POST['user'];
+		$_SESSION['pass'] = $_POST['pass'];
 
 		// Perform a duo authentication request for the user
 		duo_authentication($_SESSION["user"]);
@@ -307,7 +385,7 @@ else
 		if (custom_authentication_extra())
 		{
 			// If SSO Login is enabled or not set yet
-		if(get_setting("GO_TO_SSO_LOGIN") === false || get_setting("GO_TO_SSO_LOGIN") === '1')
+		    if(get_setting("GO_TO_SSO_LOGIN") === false || get_setting("GO_TO_SSO_LOGIN") === '1')
 			{
 				// Display the SSO login link
 				echo "<tr><td colspan=\"2\"><label><a href=\"extras/authentication/login.php\">" . $escaper->escapeHtml($lang['GoToSSOLoginPage']) . "</a></label></td></tr>\n";

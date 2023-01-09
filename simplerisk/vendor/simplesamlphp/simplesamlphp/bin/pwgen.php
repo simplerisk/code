@@ -10,7 +10,7 @@
 $baseDir = dirname(dirname(__FILE__));
 
 // Add library autoloader
-require_once($baseDir . '/lib/_autoload.php');
+require_once($baseDir . '/src/_autoload.php');
 
 
 echo "Enter password: ";
@@ -21,4 +21,5 @@ if (empty($password)) {
     exit(1);
 }
 
-echo "\n  " . SimpleSAML\Utils\Crypto::pwHash($password) . "\n\n";
+$cryptoUtils = new SimpleSAML\Utils\Crypto();
+echo "\n  " . $cryptoUtils->pwHash($password) . "\n\n";

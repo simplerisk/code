@@ -1,5 +1,5 @@
 /**
- * TinyMCE version 6.0.0 (2020-03-03)
+ * TinyMCE version 6.3.1 (2022-12-06)
  */
 
 (function () {
@@ -35,6 +35,7 @@
     const isArray = isType$1('array');
     const isNull = eq$2(null);
     const isBoolean = isSimpleType('boolean');
+    const isUndefined = eq$2(undefined);
     const isNullable = a => a === null || a === undefined;
     const isNonNullable = a => !isNullable(a);
     const isFunction = isSimpleType('function');
@@ -349,11 +350,9 @@
       r[i] = x;
     };
     const internalFilter = (obj, pred, onTrue, onFalse) => {
-      const r = {};
       each$1(obj, (x, i) => {
         (pred(x, i) ? onTrue : onFalse)(x, i);
       });
-      return r;
     };
     const filter$1 = (obj, pred) => {
       const t = {};
@@ -848,8 +847,13 @@
     const someIf = (b, a) => b ? Optional.some(a) : Optional.none();
 
     const checkRange = (str, substr, start) => substr === '' || str.length >= substr.length && str.substr(start, start + substr.length) === substr;
-    const contains = (str, substr) => {
-      return str.indexOf(substr) !== -1;
+    const contains = (str, substr, start = 0, end) => {
+      const idx = str.indexOf(substr, start);
+      if (idx !== -1) {
+        return isUndefined(end) ? true : idx + substr.length <= end;
+      } else {
+        return false;
+      }
     };
     const startsWith = (str, prefix) => {
       return checkRange(str, prefix, 0);
@@ -2075,6 +2079,7 @@
       f(row, td);
     };
     const fillInGaps = (list, house, stats, isSelected) => {
+      const rows = filter$2(list, row => row.section !== 'colgroup');
       const totalColumns = house.grid.columns;
       const totalRows = house.grid.rows;
       for (let i = 0; i < totalRows; i++) {
@@ -2083,7 +2088,7 @@
           if (!(i < stats.minRow || i > stats.maxRow || j < stats.minCol || j > stats.maxCol)) {
             const needCell = Warehouse.getAt(house, i, j).filter(isSelected).isNone();
             if (needCell) {
-              makeCell(list, seenSelected, i);
+              makeCell(rows, seenSelected, i);
             } else {
               seenSelected = true;
             }
@@ -3446,10 +3451,11 @@
       if (index > 0 && index < grid[0].cells.length) {
         each$2(grid, row => {
           const prevCell = row.cells[index - 1];
-          const current = row.cells[index];
-          const isToReplace = comparator(current.element, prevCell.element);
-          if (isToReplace) {
-            mutateCell(row, index, elementnew(substitution(), true, current.isLocked));
+          let offset = 0;
+          const substitute = substitution();
+          while (row.cells.length > index + offset && comparator(prevCell.element, row.cells[index + offset].element)) {
+            mutateCell(row, index + offset, elementnew(substitute, true, row.cells[index + offset].isLocked));
+            offset++;
           }
         });
       }
@@ -4600,20 +4606,41 @@
     };
 
     const option = name => editor => editor.options.get(name);
-    const determineDefaultTableStyles = (editor, defaultStyles) => {
+    const defaultWidth = '100%';
+    const getPixelForcedWidth = editor => {
       var _a;
-      if (isTablePixelsForced(editor)) {
-        const dom = editor.dom;
-        const parentBlock = (_a = dom.getParent(editor.selection.getStart(), dom.isBlock)) !== null && _a !== void 0 ? _a : editor.getBody();
-        const contentWidth = getInner(SugarElement.fromDom(parentBlock));
+      const dom = editor.dom;
+      const parentBlock = (_a = dom.getParent(editor.selection.getStart(), dom.isBlock)) !== null && _a !== void 0 ? _a : editor.getBody();
+      return getInner(SugarElement.fromDom(parentBlock)) + 'px';
+    };
+    const determineDefaultTableStyles = (editor, defaultStyles) => {
+      if (isTableResponsiveForced(editor) || !shouldStyleWithCss(editor)) {
+        return defaultStyles;
+      } else if (isTablePixelsForced(editor)) {
         return {
           ...defaultStyles,
-          width: contentWidth + 'px'
+          width: getPixelForcedWidth(editor)
         };
-      } else if (isTableResponsiveForced(editor)) {
-        return filter$1(defaultStyles, (_value, key) => key !== 'width');
       } else {
-        return defaultStyles;
+        return {
+          ...defaultStyles,
+          width: defaultWidth
+        };
+      }
+    };
+    const determineDefaultTableAttributes = (editor, defaultAttributes) => {
+      if (isTableResponsiveForced(editor) || shouldStyleWithCss(editor)) {
+        return defaultAttributes;
+      } else if (isTablePixelsForced(editor)) {
+        return {
+          ...defaultAttributes,
+          width: getPixelForcedWidth(editor)
+        };
+      } else {
+        return {
+          ...defaultAttributes,
+          width: defaultWidth
+        };
       }
     };
     const register = editor => {
@@ -4651,10 +4678,7 @@
       });
       registerOption('table_default_styles', {
         processor: 'object',
-        default: {
-          'border-collapse': 'collapse',
-          'width': '100%'
-        }
+        default: { 'border-collapse': 'collapse' }
       });
       registerOption('table_column_resizing', {
         processor: value => {
@@ -4676,6 +4700,10 @@
         processor: 'boolean',
         default: true
       });
+      registerOption('table_style_by_css', {
+        processor: 'boolean',
+        default: true
+      });
     };
     const getTableCloneElements = editor => {
       return Optional.from(editor.options.get('table_clone_elements'));
@@ -4693,7 +4721,12 @@
     const isTablePixelsForced = editor => getTableSizingMode(editor) === 'fixed';
     const isTableResponsiveForced = editor => getTableSizingMode(editor) === 'responsive';
     const hasTableResizeBars = option('table_resize_bars');
-    const getTableDefaultAttributes = option('table_default_attributes');
+    const shouldStyleWithCss = option('table_style_by_css');
+    const getTableDefaultAttributes = editor => {
+      const options = editor.options;
+      const defaultAttributes = options.get('table_default_attributes');
+      return options.isSet('table_default_attributes') ? defaultAttributes : determineDefaultTableAttributes(editor, defaultAttributes);
+    };
     const getTableDefaultStyles = editor => {
       const options = editor.options;
       const defaultStyles = options.get('table_default_styles');
@@ -4713,8 +4746,8 @@
 
     const TableActions = (editor, resizeHandler, cellSelectionHandler) => {
       const isTableBody = editor => name(getBody(editor)) === 'table';
-      const lastRowGuard = table => isTableBody(editor) === false || getGridSize(table).rows > 1;
-      const lastColumnGuard = table => isTableBody(editor) === false || getGridSize(table).columns > 1;
+      const lastRowGuard = table => !isTableBody(editor) || getGridSize(table).rows > 1;
+      const lastColumnGuard = table => !isTableBody(editor) || getGridSize(table).columns > 1;
       const cloneFormats = getTableCloneElements(editor);
       const colMutationOp = isResizeTableColumnResizing(editor) ? noop : halve;
       const getTableSectionType = table => {
@@ -4836,9 +4869,14 @@
         set$2(element, property, Math.min(value, currentColspan));
       }
     };
+    const isColInRange = (minColRange, maxColRange) => cell => {
+      const endCol = cell.column + cell.colspan - 1;
+      const startCol = cell.column;
+      return endCol >= minColRange && startCol < maxColRange;
+    };
     const generateColGroup = (house, minColRange, maxColRange) => {
       if (Warehouse.hasColumns(house)) {
-        const colsToCopy = filter$2(Warehouse.justColumns(house), col => col.column >= minColRange && col.column < maxColRange);
+        const colsToCopy = filter$2(Warehouse.justColumns(house), isColInRange(minColRange, maxColRange));
         const copiedCols = map$1(colsToCopy, c => {
           const clonedCol = deep(c.element);
           constrainSpan(clonedCol, 'span', maxColRange - minColRange);
@@ -4852,7 +4890,7 @@
       }
     };
     const generateRows = (house, minColRange, maxColRange) => map$1(house.all, row => {
-      const cellsToCopy = filter$2(row.cells, cell => cell.column >= minColRange && cell.column < maxColRange);
+      const cellsToCopy = filter$2(row.cells, isColInRange(minColRange, maxColRange));
       const copiedCells = map$1(cellsToCopy, cell => {
         const clonedCell = deep(cell.element);
         constrainSpan(clonedCell, 'colspan', maxColRange - minColRange);
@@ -5208,7 +5246,7 @@
         fireEvents(editor, table);
         selectFirstCellInTable(editor, table);
         return table.dom;
-      }).getOr(null);
+      }).getOrNull();
     };
     const insertTable = (editor, rows, columns, options = {}) => {
       const checkInput = val => isNumber(val) && val > 0;
@@ -6905,7 +6943,7 @@
     const bind = (element, event, handler) => bind$1(element, event, filter, handler);
     const fromRawEvent = fromRawEvent$1;
 
-    const hasInternalTarget = e => has(SugarElement.fromDom(e.target), 'ephox-snooker-resizer-bar') === false;
+    const hasInternalTarget = e => !has(SugarElement.fromDom(e.target), 'ephox-snooker-resizer-bar');
     const TableCellSelectionHandler = (editor, resizeHandler) => {
       const cellSelection = Selections(() => SugarElement.fromDom(editor.getBody()), () => getSelectionCell(getSelectionStart(editor), getIsRoot(editor)), ephemera.selectedSelector);
       const onSelection = (cells, start, finish) => {
@@ -7777,7 +7815,7 @@
       }
     };
 
-    const isTable = node => isNonNullable(node) && node.tagName === 'TABLE';
+    const isTable = node => isNonNullable(node) && node.nodeName === 'TABLE';
     const barResizerPrefix = 'bar-';
     const isResizable = elm => get$b(elm, 'data-mce-resize') !== 'false';
     const syncPixels = table => {

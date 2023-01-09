@@ -10,9 +10,6 @@
     require_once(realpath(__DIR__ . '/../includes/alerts.php'));
     require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
-
 // Add various security headers
 add_security_headers();
 
@@ -27,6 +24,8 @@ add_session_check($permissions);
 include_csrf_magic();
 
 // Include the SimpleRisk language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
     // If the extra directory exists
@@ -39,6 +38,8 @@ require_once(language_file());
         if (isset($_POST['activate']))
         {
             // Enable the ComplianceForge Extra
+            // Ignoring the next line as the function is WIP
+            // @phan-suppress-next-line PhanUndeclaredFunction
             enable_complianceforge_extra();
         }
 
@@ -46,6 +47,8 @@ require_once(language_file());
         if (isset($_POST['deactivate']))
         {
             // Disable the ComplianceForge Extra
+            // Ignoring the next line as the function is WIP
+            // @phan-suppress-next-line PhanUndeclaredFunction
             disable_complianceforge_extra();
         }
     }
@@ -80,6 +83,8 @@ function display()
             // Include the Assessments Extra
             require_once(realpath(__DIR__ . '/../extras/complianceforge/index.php'));
 
+            // Ignoring the next line as the function is WIP
+            // @phan-suppress-next-line PhanUndeclaredFunction
             display_complianceforge();
         }
     }

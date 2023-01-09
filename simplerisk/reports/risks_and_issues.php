@@ -10,9 +10,6 @@ require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/reporting.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
-
 // Add various security headers
 add_security_headers();
 
@@ -23,13 +20,15 @@ add_session_check();
 include_csrf_magic();
 
 // Include the SimpleRisk language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
 // Record the page the workflow started from as a session variable
 $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 
 $user_info = get_user_by_id($_SESSION['uid']);
-$tag_ids = explode(',', $user_info['custom_risks_and_issues_settings']);
+$tag_ids = explode(',', (string)$user_info['custom_risks_and_issues_settings']);
 
 $risk_tags = isset($_REQUEST['risk_tags']) ? $_REQUEST['risk_tags'] : $tag_ids;
 $start_date = isset($_REQUEST['start_date']) ? $_REQUEST['start_date'] : format_date(date('Y-m-d', strtotime('-30 days')));

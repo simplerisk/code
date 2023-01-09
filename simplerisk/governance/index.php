@@ -12,9 +12,6 @@ require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 require_once(realpath(__DIR__ . '/../includes/governance.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
-
 // Add various security headers
 add_security_headers();
 
@@ -29,6 +26,8 @@ add_session_check($permissions);
 include_csrf_magic();
 
 // Include the SimpleRisk language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
 // Check if a new framework was submitted
@@ -429,7 +428,7 @@ if (isset($_POST['delete_controls']))
 			if (get_frameworks_count(1) === "0")
 			{
 				// URL for the frameworks
-				$url = "https://github.com/simplerisk/import-content/raw/master/Control%20Frameworks/frameworks.xml";
+				$url = "https://raw.githubusercontent.com/simplerisk/import-content/master/Control%20Frameworks/frameworks.xml";
 
                 // Configure the proxy server if one exists
                 $method = "GET";
@@ -443,7 +442,7 @@ if (isset($_POST['delete_controls']))
 				echo "<h4>Try one of the following ways to load frameworks into SimpleRisk:</h4>\n";
 				echo "<ol>\n";
 				echo "  <li>Click the plus (+) icon above to manually create a new framework.</li>\n";
-				echo "  <li><a href=\"../admin/register.php\">Register</a> your SimpleRisk instance to download the free ComplianceForge SCF Extra and <a href=\"../admin/complianceforge_scf.php\">select from 148 different frameworks</a> that have been expertly mapped against 875 security and privacy controls.</li>\n";
+				echo "  <li><a href=\"../admin/register.php\">Register</a> your SimpleRisk instance to download the free ComplianceForge SCF Extra and <a href=\"../admin/complianceforge_scf.php\">select from 196 different frameworks</a> that have been expertly mapped against 1090 security and privacy controls.</li>\n";
 				echo "  <li>Use the licensed <a href=\"../admin/content.php\">Import-Export Extra</a> to instantly install any of the following frameworks or import your own:\n";
 				echo "    <ol style=\"list-style-type: disc;\">\n";
 
@@ -496,7 +495,7 @@ if (isset($_POST['delete_controls']))
                     <div class="span4">
                         <div class="well">
                             <h4><?php echo $escaper->escapeHtml($lang['ControlFramework']); ?>:</h4>
-                            <?php create_multiple_dropdown("filter_by_control_framework", "all", null, getAvailableControlFrameworkList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
+                            <?php create_multiple_dropdown("filter_by_control_framework", "all", null, getAvailableControlFrameworkList(true), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
                         </div>
                     </div>
                     <div class="span4">

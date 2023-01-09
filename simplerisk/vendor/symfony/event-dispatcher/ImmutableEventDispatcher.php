@@ -18,84 +18,49 @@ namespace Symfony\Component\EventDispatcher;
  */
 class ImmutableEventDispatcher implements EventDispatcherInterface
 {
-    private $dispatcher;
+    private EventDispatcherInterface $dispatcher;
 
     public function __construct(EventDispatcherInterface $dispatcher)
     {
-        $this->dispatcher = LegacyEventDispatcherProxy::decorate($dispatcher);
+        $this->dispatcher = $dispatcher;
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * @param string|null $eventName
-     */
-    public function dispatch($event/* , string $eventName = null */)
+    public function dispatch(object $event, string $eventName = null): object
     {
-        $eventName = 1 < \func_num_args() ? func_get_arg(1) : null;
-
-        if (\is_scalar($event)) {
-            // deprecated
-            $swap = $event;
-            $event = $eventName ?? new Event();
-            $eventName = $swap;
-        }
-
         return $this->dispatcher->dispatch($event, $eventName);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function addListener($eventName, $listener, $priority = 0)
+    public function addListener(string $eventName, callable|array $listener, int $priority = 0)
     {
         throw new \BadMethodCallException('Unmodifiable event dispatchers must not be modified.');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function addSubscriber(EventSubscriberInterface $subscriber)
     {
         throw new \BadMethodCallException('Unmodifiable event dispatchers must not be modified.');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function removeListener($eventName, $listener)
+    public function removeListener(string $eventName, callable|array $listener)
     {
         throw new \BadMethodCallException('Unmodifiable event dispatchers must not be modified.');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function removeSubscriber(EventSubscriberInterface $subscriber)
     {
         throw new \BadMethodCallException('Unmodifiable event dispatchers must not be modified.');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getListeners($eventName = null)
+    public function getListeners(string $eventName = null): array
     {
         return $this->dispatcher->getListeners($eventName);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getListenerPriority($eventName, $listener)
+    public function getListenerPriority(string $eventName, callable|array $listener): ?int
     {
         return $this->dispatcher->getListenerPriority($eventName, $listener);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function hasListeners($eventName = null)
+    public function hasListeners(string $eventName = null): bool
     {
         return $this->dispatcher->hasListeners($eventName);
     }

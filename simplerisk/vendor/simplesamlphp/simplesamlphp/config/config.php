@@ -13,26 +13,20 @@ $saml_trusted_domains = str_replace(' ', '', $saml_trusted_domains);
 $saml_trusted_domains_array = explode(',', $saml_trusted_domains);
 
 // Get Base URL Path
-$requesturi = $_SERVER['REQUEST_URI'];
-$baseurlpatharray = explode("/", $requesturi);
-$baseurlpath = "";
-foreach ($baseurlpatharray as $path)
-{
-	// Append the path to the base url
-	$baseurlpath .= $path . "/";
-
-	// If we have hit authentication in the path
-	if ($path == "authentication")
-	{
-		break;
-	}
+$simplerisk_base_url = get_base_url();
+if (!endsWith($simplerisk_base_url, '/')) {
+    $simplerisk_base_url .= '/';
 }
-$baseurlpath = $baseurlpath . 'simplesamlphp/www/';
+$baseurlpath = $simplerisk_base_url . 'vendor/simplesamlphp/simplesamlphp/www/';
 
-/*
+// Get the system temp directory
+$temp_dir = sys_get_temp_dir();
+
+/**
  * The configuration of SimpleSAMLphp
- *
  */
+
+$httpUtils = new \SimpleSAML\Utils\HTTP();
 
 $config = [
 
@@ -58,7 +52,6 @@ $config = [
      * reverse proxy).
      */
     'baseurlpath' => $baseurlpath,
-    //'baseurlpath' => 'extras/authentication/simplesamlphp/www/',
 
     /*
      * The 'application' configuration array groups a set configuration options
@@ -85,18 +78,68 @@ $config = [
     /*
      * The following settings are *filesystem paths* which define where
      * SimpleSAMLphp can find or write the following things:
-     * - 'certdir': The base directory for certificate and key material.
-     * - 'loggingdir': Where to write logs.
+     * - 'loggingdir': Where to write logs. MUST be set to NULL when using a logging
+     *                 handler other than `file`.
      * - 'datadir': Storage of general data.
      * - 'tempdir': Saving temporary files. SimpleSAMLphp will attempt to create
      *   this directory if it doesn't exist.
      * When specified as a relative path, this is relative to the SimpleSAMLphp
      * root directory.
      */
-    'certdir' => 'cert/',
-    'loggingdir' => 'log/',
+    'loggingdir' => $temp_dir,
     'datadir' => 'data/',
     'tempdir' => '/tmp/simplesaml',
+
+    /*
+     * Certificate and key material can be loaded from different possible
+     * locations. Currently two locations are supported, the local filesystem
+     * and the database via pdo using the global database configuration. Locations
+     * are specified by a URL-link prefix before the file name/path or database
+     * identifier.
+     */
+
+    /* To load a certificate or key from the filesystem, it should be specified
+     * as 'file://<name>' where <name> is either a relative filename or a fully
+     * qualified path to a file containing the certificate or key in PEM
+     * format, such as 'cert.pem' or '/path/to/cert.pem'. If the path is
+     * relative, it will be searched for in the directory defined by the
+     * 'certdir' parameter below. When 'certdir' is specified as a relative
+     * path, it will be interpreted as relative to the SimpleSAMLphp root
+     * directory. Note that locations with no prefix included will be treated
+     * as file locations for backwards compatibility.
+     */
+    'certdir' => 'cert/',
+
+    /* To load a certificate or key from the database, it should be specified
+     * as 'pdo://<id>' where <id> is the identifier in the database table that
+     * should be matched. While the certificate and key tables are expected to
+     * be in the simplesaml database, they are not created or managed by
+     * simplesaml. The following parameters control how the pdo location
+     * attempts to retrieve certificates and keys from the database:
+     *
+     * - 'cert.pdo.table': name of table where certificates are stored
+     * - 'cert.pdo.keytable': name of table where keys are stored
+     * - 'cert.pdo.apply_prefix': whether or not to prepend the database.prefix
+     *                            parameter to the table names; if you are using
+     *                            database.prefix to separate multiple SSP instances
+     *                            in the same database but want to share certificate/key
+     *                            data between them, set this to false
+     * - 'cert.pdo.id_column': name of column to use as identifier
+     * - 'cert.pdo.data_column': name of column where PEM data is stored
+     *
+     * Basically, the query executed will be:
+     *
+     *   SELECT cert.pdo.data_column FROM cert.pdo.table WHERE cert.pdo.id_column = :id
+     *
+     * Defaults are shown below, to change them, uncomment the line and update as
+     * needed
+     */
+
+    //'cert.pdo.table' => 'certificates',
+    //'cert.pdo.keytable' => 'private_keys',
+    //'cert.pdo.apply_prefix' => true,
+    //'cert.pdo.id_column' => 'id',
+    //'cert.pdo.data_column' => 'data',
 
     /*
      * Some information about the technical persons running this installation.
@@ -279,14 +322,12 @@ $config = [
      * If you want to disable debugging completely, unset this option or set it to an
      * empty array.
      */
-	/*
+
     'debug' => [
         'saml' => false,
         'backtraces' => true,
         'validatexml' => false,
     ],
-	*/
-    'debug' => false,
 
     /*
      * When 'showerrors' is enabled, all error messages and stack traces will be output
@@ -296,7 +337,7 @@ $config = [
      * the error to 'technicalcontact_email'.
      */
     'showerrors' => false,
-    'errorreporting' => true,
+    'errorreporting' => false,
 
     /*
      * Custom error show function called from SimpleSAML\Error\Error::show.
@@ -584,7 +625,7 @@ $config = [
      * Example:
      *  'session.cookie.domain' => '.example.org',
      */
-    'session.cookie.domain' => null,
+    'session.cookie.domain' => '',
 
     /*
      * Set the secure flag in the cookie.
@@ -605,7 +646,7 @@ $config = [
      * Example:
      *  'session.cookie.samesite' => 'None',
      */
-    'session.cookie.samesite' => null,
+    'session.cookie.samesite' => $httpUtils->canSetSameSiteNone() ? 'None' : null,
 
     /*
      * Options to override the default settings for php sessions.
@@ -826,12 +867,12 @@ $config = [
      * Options to override the default settings for the language cookie
      */
     'language.cookie.name' => 'language',
-    'language.cookie.domain' => null,
+    'language.cookie.domain' => '',
     'language.cookie.path' => '/',
-    'language.cookie.secure' => false,
+    'language.cookie.secure' => true,
     'language.cookie.httponly' => false,
     'language.cookie.lifetime' => (60 * 60 * 24 * 900),
-    'language.cookie.samesite' => null,
+    'language.cookie.samesite' => $httpUtils->canSetSameSiteNone() ? 'None' : null,
 
     /**
      * Custom getLanguage function called from SimpleSAML\Locale\Language::getLanguage().

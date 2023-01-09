@@ -1,5 +1,5 @@
 /**
- * TinyMCE version 6.0.0 (2020-03-03)
+ * TinyMCE version 6.3.1 (2022-12-06)
  */
 
 (function () {
@@ -60,6 +60,8 @@
     }
     const never = constant(false);
 
+    const escape = text => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
     var global$1 = tinymce.util.Tools.resolve('tinymce.util.Tools');
 
     const option = name => editor => editor.options.get(name);
@@ -79,7 +81,10 @@
       });
       registerOption('template_preview_replace_values', { processor: 'object' });
       registerOption('template_replace_values', { processor: 'object' });
-      registerOption('templates', { processor: value => isString(value) || isArrayOf(value, isObject) || isFunction(value) });
+      registerOption('templates', {
+        processor: value => isString(value) || isArrayOf(value, isObject) || isFunction(value),
+        default: []
+      });
       registerOption('template_cdate_format', {
         processor: 'string',
         default: editor.translate('%Y-%m-%d')
@@ -132,70 +137,6 @@
       fmt = fmt.replace('%a', '' + editor.translate(daysShort[date.getDay()]));
       fmt = fmt.replace('%%', '%');
       return fmt;
-    };
-
-    const createTemplateList = (editor, callback) => {
-      return () => {
-        const templateList = getTemplates(editor);
-        if (isFunction(templateList)) {
-          templateList(callback);
-        } else if (isString(templateList)) {
-          fetch(templateList).then(res => {
-            if (res.ok) {
-              res.json().then(callback);
-            }
-          });
-        } else {
-          callback(templateList);
-        }
-      };
-    };
-    const replaceTemplateValues = (html, templateValues) => {
-      global$1.each(templateValues, (v, k) => {
-        if (isFunction(v)) {
-          v = v(k);
-        }
-        html = html.replace(new RegExp('\\{\\$' + k + '\\}', 'g'), v);
-      });
-      return html;
-    };
-    const replaceVals = (editor, scope) => {
-      const dom = editor.dom, vl = getTemplateReplaceValues(editor);
-      global$1.each(dom.select('*', scope), e => {
-        global$1.each(vl, (v, k) => {
-          if (dom.hasClass(e, k)) {
-            if (isFunction(v)) {
-              v(e);
-            }
-          }
-        });
-      });
-    };
-    const hasClass = (n, c) => new RegExp('\\b' + c + '\\b', 'g').test(n.className);
-    const insertTemplate = (editor, _ui, html) => {
-      const dom = editor.dom;
-      const sel = editor.selection.getContent();
-      html = replaceTemplateValues(html, getTemplateReplaceValues(editor));
-      let el = dom.create('div', null, html);
-      const n = dom.select('.mceTmpl', el);
-      if (n && n.length > 0) {
-        el = dom.create('div', null);
-        el.appendChild(n[0].cloneNode(true));
-      }
-      global$1.each(dom.select('*', el), n => {
-        if (hasClass(n, getCreationDateClasses(editor).replace(/\s+/g, '|'))) {
-          n.innerHTML = getDateTime(editor, getCdateFormat(editor));
-        }
-        if (hasClass(n, getModificationDateClasses(editor).replace(/\s+/g, '|'))) {
-          n.innerHTML = getDateTime(editor, getMdateFormat(editor));
-        }
-        if (hasClass(n, getSelectedContentClasses(editor).replace(/\s+/g, '|'))) {
-          n.innerHTML = sel;
-        }
-      });
-      replaceVals(editor, el);
-      editor.execCommand('mceInsertContent', false, el.innerHTML);
-      editor.addVisual();
     };
 
     class Optional {
@@ -291,6 +232,15 @@
     }
     Optional.singletonNone = new Optional(false);
 
+    const exists = (xs, pred) => {
+      for (let i = 0, len = xs.length; i < len; i++) {
+        const x = xs[i];
+        if (pred(x, i)) {
+          return true;
+        }
+      }
+      return false;
+    };
     const map = (xs, f) => {
       const len = xs.length;
       const r = new Array(len);
@@ -315,8 +265,6 @@
       return findUntil(xs, pred, never);
     };
 
-    var global = tinymce.util.Tools.resolve('tinymce.Env');
-
     const hasOwnProperty = Object.hasOwnProperty;
     const get = (obj, key) => {
       return has(obj, key) ? Optional.from(obj[key]) : Optional.none();
@@ -331,6 +279,72 @@
       '\'': '&#039;'
     };
     const htmlEscape = html => html.replace(/["'<>&]/g, match => get(entitiesAttr, match).getOr(match));
+    const hasAnyClasses = (dom, n, classes) => exists(classes.split(/\s+/), c => dom.hasClass(n, c));
+
+    const createTemplateList = (editor, callback) => {
+      return () => {
+        const templateList = getTemplates(editor);
+        if (isFunction(templateList)) {
+          templateList(callback);
+        } else if (isString(templateList)) {
+          fetch(templateList).then(res => {
+            if (res.ok) {
+              res.json().then(callback);
+            }
+          });
+        } else {
+          callback(templateList);
+        }
+      };
+    };
+    const replaceTemplateValues = (html, templateValues) => {
+      global$1.each(templateValues, (v, k) => {
+        if (isFunction(v)) {
+          v = v(k);
+        }
+        html = html.replace(new RegExp('\\{\\$' + escape(k) + '\\}', 'g'), v);
+      });
+      return html;
+    };
+    const replaceVals = (editor, scope) => {
+      const dom = editor.dom, vl = getTemplateReplaceValues(editor);
+      global$1.each(dom.select('*', scope), e => {
+        global$1.each(vl, (v, k) => {
+          if (dom.hasClass(e, k)) {
+            if (isFunction(v)) {
+              v(e);
+            }
+          }
+        });
+      });
+    };
+    const insertTemplate = (editor, _ui, html) => {
+      const dom = editor.dom;
+      const sel = editor.selection.getContent();
+      html = replaceTemplateValues(html, getTemplateReplaceValues(editor));
+      let el = dom.create('div', {}, html);
+      const n = dom.select('.mceTmpl', el);
+      if (n && n.length > 0) {
+        el = dom.create('div');
+        el.appendChild(n[0].cloneNode(true));
+      }
+      global$1.each(dom.select('*', el), n => {
+        if (hasAnyClasses(dom, n, getCreationDateClasses(editor))) {
+          n.innerHTML = getDateTime(editor, getCdateFormat(editor));
+        }
+        if (hasAnyClasses(dom, n, getModificationDateClasses(editor))) {
+          n.innerHTML = getDateTime(editor, getMdateFormat(editor));
+        }
+        if (hasAnyClasses(dom, n, getSelectedContentClasses(editor))) {
+          n.innerHTML = sel;
+        }
+      });
+      replaceVals(editor, el);
+      editor.execCommand('mceInsertContent', false, el.innerHTML);
+      editor.addVisual();
+    };
+
+    var global = tinymce.util.Tools.resolve('tinymce.Env');
 
     const getPreviewContent = (editor, html) => {
       var _a;
@@ -456,7 +470,8 @@
               label: 'Preview',
               type: 'iframe',
               name: 'preview',
-              sandboxed: false
+              sandboxed: false,
+              transparent: false
             }
           ];
           const initialData = {
@@ -498,7 +513,7 @@
         global$1.each(dom.select('div', o.node), e => {
           if (dom.hasClass(e, 'mceTmpl')) {
             global$1.each(dom.select('*', e), e => {
-              if (dom.hasClass(e, getModificationDateClasses(editor).replace(/\s+/g, '|'))) {
+              if (hasAnyClasses(dom, e, getModificationDateClasses(editor))) {
                 e.innerHTML = getDateTime(editor, dateFormat);
               }
             });

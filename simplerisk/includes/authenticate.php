@@ -1492,69 +1492,58 @@ function reset_password($user_id, $current_password, $new_password, $confirm_pas
 /*******************
  * FUNCTION: LOGIN *
  *******************/
-function login($user, $pass){
-    // If the custom authentication extra is installed
-    if (custom_authentication_extra())
+function login($user, $pass)
+{
+    // Get the multi_factor value for this uid
+    $multi_factor = get_multi_factor_for_uid();
+
+    // If no multi factor authentication is enabled for the user
+    if ($multi_factor == 0)
     {
-        // Include the custom authentication extra
-        require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
-
-        // Get the enabled authentication for the user
-        $enabled_auth = enabled_auth($user);
-
-        // If no multi factor authentication is enabled for the user
-        if ($enabled_auth == 1)
-        {
-
-            // If the encryption extra is enabled
-            if (encryption_extra())
-            {
-                // Load the extra
-                require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-
-                // Check user enc
-                check_user_enc($user, $pass);
-            }
-
-	    // Grant the user access
-            grant_access();
-
-            // Select where to redirect the user next
-            select_redirect();
-        }
-        // If Duo authentication is enabled for the user
-        else if ($enabled_auth == 2)
-        {
-            // Set session access to duo
-            $_SESSION["access"] = "duo";
-        }
-        // If Toopher authentication is enabled for the user
-        else if ($enabled_auth == 3)
-        {
-            // Set session access to toopher
-            $_SESSION["access"] = "toopher";
-        }
-    }
-    // Otherwise the custom authentication extra is not installed
-    else
-    {
-
         // If the encryption extra is enabled
         if (encryption_extra())
         {
             // Load the extra
             require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+
             // Check user enc
             check_user_enc($user, $pass);
         }
 
-	// Grant the user access
+        // Grant the user access
         grant_access();
 
-	// Select where to redirect the user next
+        // Select where to redirect the user next
         select_redirect();
     }
-    return;
+    // If the core multi_factor authentication is enabled for the user
+    else if ($multi_factor == 1)
+    {
+        // If MFA is already verified for this user
+        if (is_mfa_verified_for_uid())
+        {
+            // Set session access to mfa
+            $_SESSION["access"] = "mfa";
+        }
+        // If the MFA is not verified
+        else
+        {
+            // Set session access to mfa
+            $_SESSION["access"] = "mfa_verify";
+        }
+    }
+    // If Duo authentication is enabled for the user
+    else if ($multi_factor == 2)
+    {
+        // Set session access to duo
+        $_SESSION["access"] = "duo";
+    }
+    // If Toopher authentication is enabled for the user
+    else if ($multi_factor == 3)
+    {
+        // Set session access to toopher
+        $_SESSION["access"] = "toopher";
+    }
 }
 
 /****************************************************************************
@@ -1627,6 +1616,18 @@ function kill_other_sessions_of_current_user() {
 
     // update creation time
     $_SESSION['CREATED'] = time();
+}
+
+/*****************************
+ * FUNCTION: MIGRATE TO TOTP *
+ *****************************/
+function migrate_to_totp($app)
+{
+    // Add a session value to verify the secret
+    $_SESSION['mfa_verify_secret'] = "true";
+
+    // Set the MFA app in the session
+    $_SESSION['mfa_app'] = $app;
 }
 
 ?>

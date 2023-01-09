@@ -7,13 +7,13 @@
 // Include required configuration files
 require_once(realpath(__DIR__ . '/functions.php'));
 
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-use Ghunti\HighchartsPHP\Highchart;
-use Ghunti\HighchartsPHP\HighchartJsExpr;
 
 // Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
+$escaper = new simpleriskEscaper();
 
 /****************************
  * FUNCTION: GET OPEN RISKS *
@@ -221,7 +221,7 @@ function get_risk_count_of_risk_level($risk_level, $scoring='inherent') {
  ****************************/
 function get_risk_trend($title = null)
 {
-    $chart = new Highchart();
+    $chart = new simpleriskHighchart();
     $chart->includeExtraScripts();
 
     // Set the timezone to the one configured for SimpleRisk
@@ -321,7 +321,7 @@ function get_risk_trend($title = null)
         }
 
         // Draw the open risks line
-        $chart->series[] = array(
+        $open_risks_line = array(
             'type' => "line",
             'name' => "Opened Risks",
             'color' => "red",
@@ -330,7 +330,7 @@ function get_risk_trend($title = null)
         );
 
         // Draw the closed risks line
-        $chart->series[] = array(
+        $closed_risks_line = array(
             'type' => "line",
             'name' => "Closed Risks",
             'color' => "blue",
@@ -339,13 +339,14 @@ function get_risk_trend($title = null)
         );
 
         // Draw the trend line
-        $chart->series[] = array(
+        $trend_line = array(
             'type' => "line",
             'name' => "Trend",
             'color' => "#000000",
             'lineWidth' => "2",
             'data' => empty($trend_data) ? [] : $trend_data
         );
+        $chart->series = array($open_risks_line, $closed_risks_line, $trend_line);
     }
 
     $chart->printScripts();
@@ -374,7 +375,7 @@ function get_risk_trend($title = null)
  ******************************/
 function get_risk_pyramid($title = null)
 {
-    $chart = new Highchart();
+    $chart = new simpleriskHighchart();
 
     $chart->chart->type = "pyramid";
     $chart->chart->marginRight = "100";
@@ -383,8 +384,9 @@ function get_risk_pyramid($title = null)
     $chart->credits->enabled = false;
     $chart->plotOptions->series->dataLabels->enabled = true;
     $chart->plotOptions->series->dataLabels->format = "<b>{point.name}</b> ({point.y:,.0f})";
-    $chart->plotOptions->series->dataLabels->color = "(Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'";
+    $chart->plotOptions->series->dataLabels->color = "black";
     $chart->plotOptions->series->dataLabels->softConnector = true;
+    $chart->plotOptions->series->dataLabels->crop = false;
     $chart->legend->enabled = false;
 
     // Open the database connection
@@ -445,6 +447,7 @@ function get_risk_pyramid($title = null)
     // Reverse the order of the array
     $array = array_reverse($array);
 
+    $chart_series = array();
     // If the array is empty
     if (empty($array))
     {
@@ -514,10 +517,11 @@ function get_risk_pyramid($title = null)
 
         $chart->plotOptions->pyramid->colors = $color_array;
 
-        $chart->series[] = array(
+        $chart_series[] = array(
                 'name' => "Risk Pyramid",
                 'data' => $data);
     }
+    $chart->series = $chart_series;
 
 //    $chart->printScripts();
     echo "<div id=\"risk_pyramid_chart\"></div>\n";
@@ -534,7 +538,7 @@ function open_risk_level_pie($title = null, $teams = false, $score_used='inheren
 
     global $lang, $escaper;
 
-    $chart = new Highchart();
+    $chart = new simpleriskHighchart();
 
     $chart->chart->renderTo = "open_risk_level_pie";
     $chart->chart->plotBackgroundColor = null;
@@ -662,6 +666,7 @@ function open_risk_level_pie($title = null, $teams = false, $score_used='inheren
 
     // Close the database connection
     db_close($db);
+    $chart_series = array();
 
     // If the array is empty
     if (empty($array)) {
@@ -729,10 +734,11 @@ function open_risk_level_pie($title = null, $teams = false, $score_used='inheren
 
         $data = encode_data_before_display($data);
 
-        $chart->series[] = array('type' => "pie",
+        $chart_series[] = array('type' => "pie",
                 'name' => "Level",
                 'data' => $data);
     }
+    $chart->series = $chart_series;
 
     echo "<div id=\"open_risk_level_pie\"></div>\n";
     echo "<script type=\"text/javascript\">";
@@ -745,7 +751,7 @@ function open_risk_level_pie($title = null, $teams = false, $score_used='inheren
  **********************************/
 function open_risk_status_pie($array, $title = null, $teams = false)
 {
-    $chart = new Highchart();
+    $chart = new simpleriskHighchart();
 
     $chart->chart->renderTo = "open_risk_status_pie";
     $chart->chart->plotBackgroundColor = null;
@@ -785,9 +791,9 @@ function open_risk_status_pie($array, $title = null, $teams = false)
         $data = encode_data_before_display($data);
 
         // Create the pie chart
-        $chart->series[] = array('type' => "pie",
+        $chart->series = array(array('type' => "pie",
             'name' => $sort,
-            'data' => $data);
+            'data' => $data));
     }
 
     echo "<div id=\"open_risk_status_pie\"></div>\n";
@@ -803,7 +809,7 @@ function closed_risk_reason_pie($title = null, $teams = false)
 {
     $teams_query = generate_teams_query($teams, "rtt.team_id");
 
-    $chart = new Highchart();
+    $chart = new simpleriskHighchart();
 
     $chart->chart->renderTo = "closed_risk_reason_pie";
     $chart->chart->plotBackgroundColor = null;
@@ -862,9 +868,9 @@ function closed_risk_reason_pie($title = null, $teams = false)
             $data[] = array($row['name'], (int)$row['num']);
         }
 
-        $chart->series[] = array('type' => "pie",
+        $chart->series = array(array('type' => "pie",
                     'name' => "Status",
-                    'data' => $data);
+                    'data' => $data));
     }
 
     echo "<div id=\"closed_risk_reason_pie\"></div>\n";
@@ -880,7 +886,7 @@ function open_risk_location_pie($array, $title = null)
 {
     global $escaper, $lang;
     
-    $chart = new Highchart();
+    $chart = new simpleriskHighchart();
 
     $chart->chart->renderTo = "open_risk_location_pie";
     $chart->chart->plotBackgroundColor = null;
@@ -930,11 +936,11 @@ function open_risk_location_pie($array, $title = null)
         }
 
         // Create the pie chart
-        $chart->series[] = array(
+        $chart->series = array(array(
             'type' => "pie",
             'name' => $sort,
             'data' => $data
-        );
+        ));
     }
 
     echo "<div id=\"open_risk_location_pie\"></div>\n";
@@ -948,7 +954,7 @@ function open_risk_location_pie($array, $title = null)
  **********************************/
 function open_risk_source_pie($array, $title = null)
 {
-        $chart = new Highchart();
+        $chart = new simpleriskHighchart();
 
         $chart->chart->renderTo = "open_risk_source_pie";
         $chart->chart->plotBackgroundColor = null;
@@ -985,12 +991,12 @@ function open_risk_source_pie($array, $title = null)
                 // Count the array by status
                 $data = count_array_values($array, $sort);
 
-        $data = encode_data_before_display($data);
+                $data = encode_data_before_display($data);
 
                 // Create the pie chart
-                $chart->series[] = array('type' => "pie",
+                $chart->series = array(array('type' => "pie",
                         'name' => $sort,
-                        'data' => $data);
+                        'data' => $data));
         }
 
     echo "<div id=\"open_risk_source_pie\"></div>\n";
@@ -1004,7 +1010,7 @@ function open_risk_source_pie($array, $title = null)
  ************************************/
 function open_risk_category_pie($array, $title = null)
 {
-        $chart = new Highchart();
+        $chart = new simpleriskHighchart();
 
         $chart->chart->renderTo = "open_risk_category_pie";
         $chart->chart->plotBackgroundColor = null;
@@ -1041,12 +1047,12 @@ function open_risk_category_pie($array, $title = null)
                 // Count the array by status
                 $data = count_array_values($array, $sort);
 
-        $data = encode_data_before_display($data);
+                $data = encode_data_before_display($data);
 
                 // Create the pie chart
-                $chart->series[] = array('type' => "pie",
+                $chart->series = array(array('type' => "pie",
                         'name' => $sort,
-                        'data' => $data);
+                        'data' => $data));
         }
 
     echo "<div id=\"open_risk_category_pie\"></div>\n";
@@ -1060,7 +1066,7 @@ function open_risk_category_pie($array, $title = null)
  ********************************/
 function open_risk_team_pie($array, $title = null)
 {
-    $chart = new Highchart();
+    $chart = new simpleriskHighchart();
 
     $chart->chart->renderTo = "open_risk_team_pie";
     $chart->chart->plotBackgroundColor = null;
@@ -1100,11 +1106,11 @@ function open_risk_team_pie($array, $title = null)
         $data = encode_data_before_display($data);
 
         // Create the pie chart
-        $chart->series[] = array(
+        $chart->series = array(array(
             'type' => "pie",
             'name' => $sort,
             'data' => $data
-        );
+        ));
     }
 
     echo "<div id=\"open_risk_team_pie\"></div>\n";
@@ -1118,7 +1124,7 @@ function open_risk_team_pie($array, $title = null)
  **************************************/
 function open_risk_technology_pie($array, $title = null)
 {
-        $chart = new Highchart();
+        $chart = new simpleriskHighchart();
 
         $chart->chart->renderTo = "open_risk_technology_pie";
         $chart->chart->plotBackgroundColor = null;
@@ -1146,21 +1152,21 @@ function open_risk_technology_pie($array, $title = null)
         // Otherwise
         else
         {
-                // Set the sort value
-                $sort = "technology";
+            // Set the sort value
+            $sort = "technology";
 
-                // Sort the array
-                $array = sort_array($array, $sort);
+            // Sort the array
+            $array = sort_array($array, $sort);
 
-                // Count the array by status
-                $data = count_array_values($array, $sort);
+            // Count the array by status
+            $data = count_array_values($array, $sort);
 
-        $data = encode_data_before_display($data);
+            $data = encode_data_before_display($data);
 
-                // Create the pie chart
-                $chart->series[] = array('type' => "pie",
-                        'name' => $sort,
-                        'data' => $data);
+            // Create the pie chart
+            $chart->series = array(array('type' => "pie",
+                'name' => $sort,
+                'data' => $data));
         }
 
     echo "<div id=\"open_risk_technology_pie\"></div>\n";
@@ -1174,7 +1180,7 @@ function open_risk_technology_pie($array, $title = null)
  **************************************/
 function open_risk_owner_pie($array, $title = null)
 {
-        $chart = new Highchart();
+        $chart = new simpleriskHighchart();
 
         $chart->chart->renderTo = "open_risk_owner_pie";
         $chart->chart->plotBackgroundColor = null;
@@ -1202,21 +1208,21 @@ function open_risk_owner_pie($array, $title = null)
         // Otherwise
         else
         {
-                // Set the sort value
-                $sort = "owner";
+            // Set the sort value
+            $sort = "owner";
 
-                // Sort the array
-                $array = sort_array($array, $sort);
+            // Sort the array
+            $array = sort_array($array, $sort);
 
-                // Count the array by status
-                $data = count_array_values($array, $sort);
+            // Count the array by status
+            $data = count_array_values($array, $sort);
 
-        $data = encode_data_before_display($data);
+            $data = encode_data_before_display($data);
 
-                // Create the pie chart
-                $chart->series[] = array('type' => "pie",
-                        'name' => $sort,
-                        'data' => $data);
+            // Create the pie chart
+            $chart->series = array(array('type' => "pie",
+                'name' => $sort,
+                'data' => $data));
         }
 
     echo "<div id=\"open_risk_owner_pie\"></div>\n";
@@ -1230,7 +1236,7 @@ function open_risk_owner_pie($array, $title = null)
  ******************************************/
 function open_risk_owners_manager_pie($array, $title = null)
 {
-        $chart = new Highchart();
+        $chart = new simpleriskHighchart();
 
         $chart->chart->renderTo = "open_risk_owners_manager_pie";
         $chart->chart->plotBackgroundColor = null;
@@ -1270,9 +1276,9 @@ function open_risk_owners_manager_pie($array, $title = null)
             $data = encode_data_before_display($data);
 
             // Create the pie chart
-            $chart->series[] = array('type' => "pie",
+            $chart->series = array(array('type' => "pie",
                     'name' => $sort,
-                    'data' => $data);
+                    'data' => $data));
         }
 
     echo "<div id=\"open_risk_owners_manager_pie\"></div>\n";
@@ -1286,7 +1292,7 @@ function open_risk_owners_manager_pie($array, $title = null)
  ******************************************/
 function open_risk_scoring_method_pie($array, $title = null)
 {
-        $chart = new Highchart();
+        $chart = new simpleriskHighchart();
 
         $chart->chart->renderTo = "open_risk_scoring_method_pie";
         $chart->chart->plotBackgroundColor = null;
@@ -1314,21 +1320,21 @@ function open_risk_scoring_method_pie($array, $title = null)
         // Otherwise
         else
         {
-                // Set the sort value
-                $sort = "scoring_method";
+            // Set the sort value
+            $sort = "scoring_method";
 
-                // Sort the array
-                $array = sort_array($array, $sort);
+            // Sort the array
+            $array = sort_array($array, $sort);
 
-                // Count the array by status
-                $data = count_array_values($array, $sort);
+            // Count the array by status
+            $data = count_array_values($array, $sort);
 
-        $data = encode_data_before_display($data);
+            $data = encode_data_before_display($data);
 
-                // Create the pie chart
-                $chart->series[] = array('type' => "pie",
-                        'name' => $sort,
-                        'data' => $data);
+            // Create the pie chart
+            $chart->series = array(array('type' => "pie",
+                    'name' => $sort,
+                    'data' => $data));
         }
 
     echo "<div id=\"open_risk_scoring_method_pie\"></div>\n";
@@ -1342,7 +1348,7 @@ function open_risk_scoring_method_pie($array, $title = null)
  *********************************/
 function open_mitigation_pie($title = null)
 {
-        $chart = new Highchart();
+        $chart = new simpleriskHighchart();
 
         $chart->chart->renderTo = "open_mitigation_pie";
         $chart->chart->plotBackgroundColor = null;
@@ -1428,28 +1434,28 @@ function open_mitigation_pie($title = null)
         // Otherwise
         else
         {
-                // Create the data array
-                foreach ($array as $row)
+            // Create the data array
+            foreach ($array as $row)
+            {
+                $data[] = array($row['name'], (int)$row['num']);
+
+                if ($row['name'] == "Planned")
                 {
-                        $data[] = array($row['name'], (int)$row['num']);
-
-			if ($row['name'] == "Planned")
-			{
-				$color_array[] = "green";
-			}
-			else if ($row['name'] == "Unplanned")
-			{
-				$color_array[] = "red";
-			}
+                    $color_array[] = "green";
                 }
+                else if ($row['name'] == "Unplanned")
+                {
+                    $color_array[] = "red";
+                }
+            }
 
-                $chart->plotOptions->pie->colors = $color_array;
+            $chart->plotOptions->pie->colors = $color_array;
 
-        $data = encode_data_before_display($data);
+            $data = encode_data_before_display($data);
 
-                $chart->series[] = array('type' => "pie",
-                        'name' => "Status",
-                        'data' => $data);
+            $chart->series = array(array('type' => "pie",
+                'name' => "Status",
+                'data' => $data));
         }
 
     echo "<div id=\"open_mitigation_pie\"></div>\n";
@@ -1463,7 +1469,7 @@ function open_mitigation_pie($title = null)
  *****************************/
 function open_review_pie($title = null)
 {
-        $chart = new Highchart();
+        $chart = new simpleriskHighchart();
 
         $chart->chart->renderTo = "open_review_pie";
         $chart->chart->plotBackgroundColor = null;
@@ -1548,28 +1554,28 @@ function open_review_pie($title = null)
         // Otherwise
         else
         {
-                // Create the data array
-                foreach ($array as $row)
+            // Create the data array
+            foreach ($array as $row)
+            {
+                $data[] = array($row['name'], (int)$row['num']);
+
+                if ($row['name'] == "Reviewed")
                 {
-                        $data[] = array($row['name'], (int)$row['num']);
-
-            if ($row['name'] == "Reviewed")
-            {
-                $color_array[] = "green";
-            }
-            else if ($row['name'] == "Unreviewed")
-            {
-                $color_array[] = "red";
-            }
+                    $color_array[] = "green";
                 }
+                else if ($row['name'] == "Unreviewed")
+                {
+                    $color_array[] = "red";
+                }
+            }
 
-        $chart->plotOptions->pie->colors = $color_array;
+            $chart->plotOptions->pie->colors = $color_array;
 
-        $data = encode_data_before_display($data);
+            $data = encode_data_before_display($data);
 
-                $chart->series[] = array('type' => "pie",
-                        'name' => "Status",
-                        'data' => $data);
+            $chart->series = array(array('type' => "pie",
+                'name' => "Status",
+                'data' => $data));
         }
 
     echo "<div id=\"open_review_pie\"></div>\n";
@@ -1583,7 +1589,7 @@ function open_review_pie($title = null)
  *****************************/
 function open_closed_pie($title = null)
 {
-        $chart = new Highchart();
+        $chart = new simpleriskHighchart();
 
         $chart->chart->renderTo = "open_closed_pie";
         $chart->chart->plotBackgroundColor = null;
@@ -1687,9 +1693,9 @@ function open_closed_pie($title = null)
 
         $data = encode_data_before_display($data);
 
-                $chart->series[] = array('type' => "pie",
+                $chart->series = array(array('type' => "pie",
                         'name' => "Status",
-                        'data' => $data);
+                        'data' => $data));
         }
 
     echo "<div id=\"open_closed_pie\"></div>\n";
@@ -3818,7 +3824,7 @@ function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName
                 }
             }
         }
-        if(!$join_custom_table && stripos($orderColumnName, "custom_field_") !== false){
+        if(!$join_custom_table && stripos((string)$orderColumnName, "custom_field_") !== false){
             $custom_field_id = (int)str_replace("custom_field_", "", $orderColumnName);
             if($custom_field_id)
             {
@@ -4191,42 +4197,6 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
         $create_temporary_tables,
         $drop_temporary_tables
     ];
-}
-
-// A function to clean up tables that might have stayed behind
-function drr_temp_table_cleanup() {
-    
-    // Open the database connection
-    $db = db_open();
-    
-    // Get the DRR temp tables that aren't deleted yet
-    $database = DB_DATABASE; //Have to make a variable as bindParam can't take parameter by reference
-    $stmt = $db->prepare("SELECT `table_name` FROM `information_schema`.`tables` WHERE `table_schema` = :database AND (`table_name` LIKE 'temp_rrsh_last_update_age_%' OR `table_name` LIKE 'temp_rsh_last_update_age_%' OR `table_name` LIKE 'temp_contributing_risk_impact_data_%' OR `table_name` LIKE 'temp_rsh_last_update_age_base_%' OR `table_name` LIKE 'temp_rrsh_last_update_age_base_%');");
-    $stmt->bindParam(":database", $database, PDO::PARAM_STR);
-    $stmt->execute();
-
-    // Fetch the results
-    $table_names = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-    // If there're tables left behind
-    if (!empty($table_names)) {
-        // Save the current time so we're not getting it multiple times
-        $now = time();
-
-        // Iterate through the list of table names
-        foreach ($table_names as $name) {
-            // Temp table names are like tableName_creationTime_uniqueKey and we need to get the time from it
-            preg_match('/temp_[a-z_]+_([\d]+)_[a-zA-Z0-9]{5}/i', $name, $matches);
-            // Time is added to the temp table's name. We get the creation time and if 10 minutes passed we're safe to clean it up
-            if (isset($matches[1]) && (int)$matches[1] + 600 < $now) {
-                $stmt = $db->prepare("DROP TABLE `{$name}`;");
-                $stmt->execute();
-            }
-        }
-    }
-
-    // Close the database connection
-    db_close($db);
 }
 
 /*********************************************
@@ -4906,9 +4876,9 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
     $filtered_risks = $risks_by_page;
 
     // Do the cleanup of tables that might have been left behind because of failed queries(and the drops not being able to run)
-    drr_temp_table_cleanup();
+    temp_table_cleanup('dynamic_risk_report');
 
-    // Have to separately drop the required temporary tables
+    // Have to separately drop this request's temporary tables
     $stmt = $db->prepare($drop_temporary_tables);
     $stmt->execute();
 
@@ -6131,7 +6101,7 @@ function get_impacts_count()
     // Close the database connection
     db_close($db);
 
-    return $array[0]['count'];
+    return count($array)?intval($array[0]['count']):0;
 }
 
 /**********************************
@@ -6149,7 +6119,7 @@ function get_likelihoods_count()
     // Close the database connection
     db_close($db);
 
-    return $array[0]['count'];
+    return count($array)?intval($array[0]['count']):0;
 }
 
 function get_risks_by_appetite($type, $start, $length, $orderColumn, $orderDir, $column_filters = []) {
@@ -8105,52 +8075,6 @@ function display_control_maturity_spider_chart($framework_id)
 	    // Escaping it here as it's used later both as key and value and wanted to make sure that they match
 	    $value['family_short_name'] = $escaper->escapeHtml($value['family_short_name']);
 
-		// Get the numeric value for the current control maturity
-		switch ($value['control_maturity_name'])
-		{
-			case "Not Performed":
-				$current_control_maturity = 0;
-				break;
-			case "Performed":
-                $current_control_maturity = 1;
-                break;
-			case "Documented":
-                $current_control_maturity = 2;
-                break;
-			case "Managed":
-                $current_control_maturity = 3;
-                break;
-			case "Reviewed":
-                $current_control_maturity = 4;
-                break;
-			case "Optimizing":
-                $current_control_maturity = 5;
-                break;
-		}
-
-        // Get the numeric value for the desired control maturity
-        switch ($value['desired_maturity_name'])
-        {
-            case "Not Performed":
-                $desired_control_maturity = 0;
-                break;
-            case "Performed":
-                $desired_control_maturity = 1;
-                break;
-            case "Documented":
-                $desired_control_maturity = 2;
-                break;
-            case "Managed":
-                $desired_control_maturity = 3;
-                break;
-            case "Reviewed":
-                $desired_control_maturity = 4;
-                break;
-            case "Optimizing":
-                $desired_control_maturity = 5;
-                break;
-        }
-
 		// If this is not the current category
 		if ($value['family_short_name'] != $current_category)
 		{
@@ -8161,10 +8085,10 @@ function display_control_maturity_spider_chart($framework_id)
 			$categories_count[$value['family_short_name']] = 1;
 
 			// Put the first value in the categories current maturity sum array
-			$categories_current_maturity_sum[$value['family_short_name']] = $current_control_maturity;
+			$categories_current_maturity_sum[$value['family_short_name']] = $value['control_maturity'];
 
 			// Put the first value in the categories desired maturity sum array
-			$categories_desired_maturity_sum[$value['family_short_name']] = $desired_control_maturity;
+			$categories_desired_maturity_sum[$value['family_short_name']] = $value['desired_maturity'];
 
 			// Set the new current category
 			$current_category = $value['family_short_name'];
@@ -8176,10 +8100,10 @@ function display_control_maturity_spider_chart($framework_id)
 			$categories_count[$value['family_short_name']] = $categories_count[$value['family_short_name']] + 1;
 
 			// Increment the current maturity sum
-			$categories_current_maturity_sum[$value['family_short_name']] = $categories_current_maturity_sum[$value['family_short_name']] + $current_control_maturity;
+			$categories_current_maturity_sum[$value['family_short_name']] = $categories_current_maturity_sum[$value['family_short_name']] + $value['control_maturity'];
 
 			// Increment the desired maturity sum
-			$categories_desired_maturity_sum[$value['family_short_name']] = $categories_desired_maturity_sum[$value['family_short_name']] + $desired_control_maturity;
+			$categories_desired_maturity_sum[$value['family_short_name']] = $categories_desired_maturity_sum[$value['family_short_name']] + $value['desired_maturity'];
 		}
 	}
 
@@ -8198,7 +8122,7 @@ function display_control_maturity_spider_chart($framework_id)
 	}
 
 	// Create a new Highchart
-	$chart = new Highchart();
+	$chart = new simpleriskHighchart();
 	$chart->includeExtraScripts();
 
 	$chart->chart->renderTo = "control_maturity_spider_chart";
@@ -8224,15 +8148,19 @@ function display_control_maturity_spider_chart($framework_id)
 	$chart->legend->layout = "vertical";
 
 	// Draw the Current Maturity series
-	$chart->series[0]->name = $escaper->escapeHtml($lang['CurrentControlMaturity']);
-	$chart->series[0]->data = empty($categories_current_maturity_average) ? [] : $categories_current_maturity_average;
-	$chart->series[0]->pointPlacement = "on";
+    $current_maturity_series = array(
+        "name" => $escaper->escapeHtml($lang['CurrentControlMaturity']),
+        "data" => empty($categories_current_maturity_average) ? [] : $categories_current_maturity_average,
+        "pointPlacement" => "on"
+    );
 
 	// Draw the Desired Maturity series
-	$chart->series[1]->name = $escaper->escapeHtml($lang['DesiredControlMaturity']);
-	$chart->series[1]->data = empty($categories_desired_maturity_average) ? [] : $categories_desired_maturity_average;
-	$chart->series[1]->pointPlacement = "on";
-
+    $desired_maturity_series = array(
+        "name" => $escaper->escapeHtml($lang['DesiredControlMaturity']),
+        "data" => empty($categories_desired_maturity_average) ? [] : $categories_desired_maturity_average,
+        "pointPlacement" => "on"
+    );
+	$chart->series = array($current_maturity_series, $desired_maturity_series);
 	$chart->credits->enabled = false;
 
 	echo "<figure class=\"highcharts-figure\">\n";

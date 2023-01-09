@@ -48,7 +48,7 @@ textarea[name='reject_comment'] {
 
     &:before {
         margin-right: 5px;
-        font: normal normal normal 14px/1 'Font Awesome 5 Free' !important;
+        font: normal normal normal 14px/1 $font-3 !important;
         content: "\f058";
     }
 }

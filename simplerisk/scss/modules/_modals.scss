@@ -1,27 +1,41 @@
 /*--------------------------------------------------------------
  ## Styles for modal popups
  --------------------------------------------------------------*/
-.modal-body {
-    &::-webkit-scrollbar {
-        background: yellow;
-        width: 10px;
-    }
-    &::-webkit-scrollbar-track {
-        background: $scrollbar-track-color;
-    }
-    &::-webkit-scrollbar-thumb {
-        background: $scrollbar-thumb-color;
-    }
-    &::-webkit-scrollbar-thumb:hover {
-        background: $scrollbar-thumb-hover-color;
-    }
-}
 
-.modal-header {
-    border-bottom: 1px solid $scrollbar-thumb-color;
-    color: $modal-text-color;
-}
+.modal {
+    .modal-header {
+        border-bottom: 1px solid $scrollbar-thumb-color;
+        color: $modal-text-color;
+    
+        .close {
+            color: $modal-text-color !important;
+            opacity: 1;
 
-.modal-footer {
-    padding: 10px !important;
+            &:hover {
+                background-color: $color-1 !important;
+                color: $color-3 !important;
+                text-shadow: 0 1px 0 $color-3;
+            }
+        }
+    }
+    
+    .modal-body {
+        &::-webkit-scrollbar {
+            background: yellow;
+            width: 10px;
+        }
+        &::-webkit-scrollbar-track {
+            background: $scrollbar-track-color;
+        }
+        &::-webkit-scrollbar-thumb {
+            background: $scrollbar-thumb-color;
+        }
+        &::-webkit-scrollbar-thumb:hover {
+            background: $scrollbar-thumb-hover-color;
+        }
+    }
+    
+    .modal-footer {
+        padding: 10px !important;
+    }
 }

@@ -5,14 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required configuration files
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/config.php'));
 require_once(realpath(__DIR__ . '/extras.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 /*************************************
  * FUNCTION: SIMPLERISK HEALTH CHECK *
@@ -474,20 +473,20 @@ function check_simplerisk_directory_permissions()
  ************************************/
 function check_web_connectivity()
 {
-        // Configure the proxy server if one exists
-        $method = "GET";
-        $header = "content-type: Content-Type: application/x-www-form-urlencoded";
-        set_proxy_stream_context($method, $header);
+	// Configure the proxy server if one exists
+	$method = "GET";
+	$header = "content-type: Content-Type: application/x-www-form-urlencoded";
+	set_proxy_stream_context($method, $header);
 
-        // URLs to check
-        $urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://updates.simplerisk.com", "https://olbat.github.io", "https://github.com", "https://raw.githubusercontent.com");
+	// URLs to check
+	$urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://updates.simplerisk.com", "https://olbat.github.io", "https://github.com", "https://raw.githubusercontent.com");
 
 	// Create an empty array
 	$array = array();
 
-        // Check the URLs
-        foreach ($urls as $url)
-        {
+	// Check the URLs
+	foreach ($urls as $url)
+	{
 		write_debug_log("Healthcheck for URL: " . $url);
 
 		// Get the headers for the URL
@@ -503,19 +502,7 @@ function check_web_connectivity()
 			write_debug_log("SimpleRisk connected to " . $url);
 			$array[] = array("result" => 1, "text" => "SimpleRisk connected to " . $url . ".");
 		}
-/*
-                if (get_headers($url, 1))
-                {
-			write_debug_log("SimpleRisk connected to " . $url);
-			$array[] = array("result" => 1, "text" => "SimpleRisk connected to " . $url . ".");
-                }
-                else
-                {
-			write_debug_log("SimpleRisk was unable to connect to " . $url);
-			$array[] = array("result" => 0, "text" => "SimpleRisk was unable to connect to " . $url . ".");
-                }
-*/
-        }
+	}
 
 	return $array;
 }
@@ -570,7 +557,7 @@ function check_mysql_permission($permission)
 function check_php_extensions()
 {
 	// List of extensions to check for
-	$extensions = array("pdo", "pdo_mysql", "json", "phar", "zlib", "mbstring", "ldap", "dom", "curl", "posix", "zip", "gd");
+	$extensions = array("pdo", "pdo_mysql", "json", "phar", "zlib", "mbstring", "ldap", "dom", "curl", "posix", "zip", "gd", "intl");
 
 	// Create an empty array
 	$array = array();
@@ -646,44 +633,67 @@ function check_database_connectivity()
  ************************************/
 function check_api_connectivity()
 {
-	// Get the SimpleRisk base URL
-	$base_url = $_SESSION['base_url'];
+	// If the curl_init function does not exist
+	if (!function_exists('curl_init'))
+	{
+		return array("result" => 0, "text" => "The php-curl library is not installed so we are unable to test the API connectivity.");
+	}
+	else
+	{
+		// Get the SimpleRisk base URL
+		$simplerisk_base_url = get_setting("simplerisk_base_url");
 
-	// Create the whoami URL
-	$url = $base_url . "/api/whoami";
+		// Create the whoami URL
+		$url = $simplerisk_base_url . "/api/whoami";
 
-	// Create a cookie string with the current session ID
-	$strCookie = 'SimpleRisk=' . session_id() . '; path=/';
+		// Set the HTTP options
+		$http_options = [
+			'method' => 'GET',
+			'header' => [
+				"Cookie: " . session_name() . "=" . session_id(),
+				"Content-Type: application/x-www-form-urlencoded",
+			],
+			'timeout' => 5,
+		];
 
-        // If the curl_init function does not exist
-        if (!function_exists('curl_init'))
-        {
-                return array("result" => 0, "text" => "The php-curl library is not installed so we are unable to test the API connectivity.");
-        }
-        else
-        {
-                // Make a curl request to the whoami API endpoint using the cookie
-                $curl = curl_init();
-                curl_setopt($curl, CURLOPT_URL, $url);
-                curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-                curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-                curl_setopt($curl, CURLOPT_COOKIE, $strCookie);
-                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
-                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-                $json_result = curl_exec($curl);
-                $json_array = json_decode($json_result, true);
-                curl_close($curl);
+		// If SSL certificate checks are enabled for the SimpleRisk API
+		if (get_setting('ssl_certificate_check_simplerisk') == 1)
+		{
+			// Verify the SSL host and peer
+			$validate_ssl = true;
+		}
+		else $validate_ssl = false;
 
-                // If we received a json status of 200
-                if ($json_array['status'] === 200)
-                {
-                        return array("result" => 1, "text" => "Communicated with the SimpleRisk API successfully.");
-                }
-                else
-                {
-                        return array("result" => 0, "text" => "Unable to communicate with the SimpleRisk API.");
-                }
-        }
+		// Make a curl request to the whoami API endpoint
+		$response = fetch_url_content("curl", $http_options, $validate_ssl, $url);
+		$return_code = $response['return_code'];
+
+		// If the request was successful
+		if ($return_code === 200)
+		{
+			// If SSL validation is disabled
+			if (!$validate_ssl)
+			{
+				return array("result" => 1, "text" => "Communicated with the SimpleRisk API successfully, but SSL certificate checks are disabled.");
+			}
+			else
+			{
+				return array("result" => 1, "text" => "Communicated with the SimpleRisk API successfully.");
+			}
+		}
+		else
+		{
+			// If SSL validation is disabled
+			if (!$validate_ssl)
+			{
+				return array("result" => 0, "text" => "Unable to communicate with the SimpleRisk API even with SSL certificate checks disabled.");
+			}
+			else
+			{
+				return array("result" => 0, "text" => "Unable to communicate with the SimpleRisk API.  To debug, try disabling SSL certificate checks for SimpleRisk API requests.");
+			}
+		}
+	}
 }
 
 /***********************************
@@ -1025,6 +1035,12 @@ function check_php_memory_limit()
 			{
 				// Get the memory limit in bytes
 				$memory_limit_bytes = $matches[1] * 1024;
+			}
+			// If the memory limit is in Gigabytes
+			else if ($matches[2] == 'G')
+			{
+				// Get the memory limit in bytes
+				$memory_limit_bytes = $matches[1] * 1024 * 1024 * 1024;
 			}
 		}
 

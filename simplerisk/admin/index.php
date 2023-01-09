@@ -11,9 +11,6 @@
     require_once(realpath(__DIR__ . '/../includes/alerts.php'));
     require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
-
 // Add various security headers
 add_security_headers();
 
@@ -28,6 +25,8 @@ add_session_check($permissions);
 include_csrf_magic();
 
 // Include the SimpleRisk language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
 // If the General tab was submitted
@@ -552,12 +551,20 @@ if (isset($_POST['update_general_settings']))
             update_setting("content_security_policy", $content_security_policy);
         }
 
-        // Update the SSL certificate check
-        $ssl_certificate_check = isset($_POST['ssl_certificate_check']) ? 1 : 0;
-        $current_ssl_certificate_check = get_setting("ssl_certificate_check");
+        // Update the SSL certificate check for the SimpleRisk API
+        $ssl_certificate_check = isset($_POST['ssl_certificate_check_simplerisk']) ? 1 : 0;
+        $current_ssl_certificate_check = get_setting("ssl_certificate_check_simplerisk");
         if ($ssl_certificate_check != $current_ssl_certificate_check)
         {
-            update_setting("ssl_certificate_check", $ssl_certificate_check);
+            update_setting("ssl_certificate_check_simplerisk", $ssl_certificate_check);
+        }
+
+        // Update the SSL certificate check for external websites
+        $ssl_certificate_check = isset($_POST['ssl_certificate_check_external']) ? 1 : 0;
+        $current_ssl_certificate_check = get_setting("ssl_certificate_check_external");
+        if ($ssl_certificate_check != $current_ssl_certificate_check)
+        {
+            update_setting("ssl_certificate_check_external", $ssl_certificate_check);
         }
 
         // Update the proxy settings
@@ -1507,7 +1514,16 @@ if (isset($_POST['update_general_settings']))
                               <td colspan="2"><input <?php if($escaper->escapeHtml(get_setting('content_security_policy')) == 1){ echo "checked"; } ?> name="content_security_policy" class="hidden-checkbox" size="2" value="90" id="content_security_policy" type="checkbox">  <label for="content_security_policy"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['EnableCSP']); ?></label></td>
                             </tr>
                             <tr>
-                                <td colspan="2"><input <?php if($escaper->escapeHtml(get_setting('ssl_certificate_check')) == 1){ echo "checked"; } ?> name="ssl_certificate_check" class="hidden-checkbox" size="2" value="90" id="ssl_certificate_check" type="checkbox">  <label for="ssl_certificate_check"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['EnableSSLCertificateCheck']); ?></label></td>
+                                <td colspan="2">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2"><font color='red'><?php echo $escaper->escapeHtml($lang['SSLSecurityCheckWarning']); ?></font></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2"><input <?php if($escaper->escapeHtml(get_setting('ssl_certificate_check_simplerisk')) == 1){ echo "checked"; } ?> name="ssl_certificate_check_simplerisk" class="hidden-checkbox" size="2" value="90" id="ssl_certificate_check_simplerisk" type="checkbox">  <label for="ssl_certificate_check_simplerisk"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['EnableSSLCertificateCheckSimpleRisk']); ?></label></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2"><input <?php if($escaper->escapeHtml(get_setting('ssl_certificate_check_external')) == 1){ echo "checked"; } ?> name="ssl_certificate_check_external" class="hidden-checkbox" size="2" value="90" id="ssl_certificate_check_external" type="checkbox">  <label for="ssl_certificate_check_external"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['EnableSSLCertificateCheckExternal']); ?></label></td>
                             </tr>
                           </tbody>
                         </table>

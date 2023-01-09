@@ -11,9 +11,6 @@ require_once(realpath(__DIR__ . '/../includes/assessments.php'));
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
-
 // Add various security headers
 add_security_headers();
 

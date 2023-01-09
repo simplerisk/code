@@ -40,17 +40,14 @@ class AssetsInstallCommand extends Command
     public const METHOD_RELATIVE_SYMLINK = 'relative symlink';
 
     protected static $defaultName = 'assets:install';
+    protected static $defaultDescription = 'Install bundle\'s web assets under a public directory';
 
     private $filesystem;
     private $projectDir;
 
-    public function __construct(Filesystem $filesystem, string $projectDir = null)
+    public function __construct(Filesystem $filesystem, string $projectDir)
     {
         parent::__construct();
-
-        if (null === $projectDir) {
-            @trigger_error(sprintf('Not passing the project directory to the constructor of %s is deprecated since Symfony 4.3 and will not be supported in 5.0.', __CLASS__), \E_USER_DEPRECATED);
-        }
 
         $this->filesystem = $filesystem;
         $this->projectDir = $projectDir;
@@ -68,7 +65,7 @@ class AssetsInstallCommand extends Command
             ->addOption('symlink', null, InputOption::VALUE_NONE, 'Symlink the assets instead of copying them')
             ->addOption('relative', null, InputOption::VALUE_NONE, 'Make relative symlinks')
             ->addOption('no-cleanup', null, InputOption::VALUE_NONE, 'Do not remove the assets of the bundles that no longer exist')
-            ->setDescription('Install bundle\'s web assets under a public directory')
+            ->setDescription(self::$defaultDescription)
             ->setHelp(<<<'EOT'
 The <info>%command.name%</info> command installs bundle assets into a given
 directory (e.g. the <comment>public</comment> directory).
@@ -235,7 +232,7 @@ EOT
     /**
      * Creates symbolic link.
      *
-     * @throws IOException if link can not be created
+     * @throws IOException if link cannot be created
      */
     private function symlink(string $originDir, string $targetDir, bool $relative = false)
     {

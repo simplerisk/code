@@ -7,13 +7,10 @@
 // Include required configuration files
 require_once(realpath(__DIR__ . '/functions.php'));
 
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-use Ghunti\HighchartsPHP\Highchart;
-use Ghunti\HighchartsPHP\HighchartJsExpr;
-
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 /*******************************************
  * FUNCTION: DISPLAY GRAPHIC TYPE DROPDOWN *
@@ -369,7 +366,7 @@ function display_graphical_risk_analysis_chart($type, $x_axis, $y_axis)
     global $escaper;
 
     // Create the new chart
-    $chart = new Highchart(0,0);
+    $chart = new simpleriskHighchart();
     $chart->includeExtraScripts();
 
     // Tell the chart which div to render to

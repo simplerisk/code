@@ -5,9 +5,6 @@
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
-
 require_once(realpath(__DIR__ . '/functions.php'));
 
 /********************************************************
@@ -337,65 +334,6 @@ function display_asset_tags_th()
     echo "<th align=\"left\">" . $escaper->escapeHtml($lang['Tags']) . "</th>\n";
 }
 
-/*****************************************
-* FUNCTION: DISPLAY MAIN ASSET FIELDS TD *
-******************************************/
-function display_main_detail_asset_fields_td_view($fields, $asset)
-{
-    foreach($fields as $field)
-    {
-        if($field['is_basic'] == 1)
-        {
-            switch($field['name']){
-                case 'AssetName':
-                    display_asset_name_td($asset['name']);
-                break;
-                case 'IPAddress':
-                    display_asset_ip_address_td($asset['ip']);
-                break;
-                case 'AssetValuation':
-                    display_asset_valuation_td($asset['value']);
-                break;
-                case 'SiteLocation':
-                    display_asset_site_location_td($asset['location']);
-                break;
-                case 'Team':
-                    display_asset_team_td($asset['teams']);
-                break;
-                case 'AssetDetails':
-                    display_asset_details_td($asset['details']);
-                break;
-                case 'Tags':
-                    display_asset_tags_td($asset['tags']);
-                break;
-            }
-
-        }
-        else
-        {
-            // If customization extra is enabled
-            if(customization_extra())
-            {
-                // Include the extra
-                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-                
-                $custom_values = get_custom_value_by_row_id($asset['id'], "asset");
-                
-                display_custom_field_asset_view($field, $custom_values);
-            }
-        }
-    }
-}
-
-/**********************************
-* FUNCTION: DISPLAY ASSET NAME TD *
-***********************************/
-function display_asset_name_td($asset_name)
-{
-    global $lang, $escaper;
-
-    echo "<td align=\"left\">" . $escaper->escapeHtml(try_decrypt($asset_name)) . "</td>\n";
-}
 
 /**********************************
 * FUNCTION: DISPLAY IP ADDRESS TD *
@@ -412,16 +350,6 @@ function display_asset_ip_address_td($asset_ip_address)
     }
 
     echo "<td align=\"left\">" . $escaper->escapeHtml($asset_ip) . "</td>\n";
-}
-
-/***************************************
-* FUNCTION: DISPLAY ASSET VALUATION TD *
-****************************************/
-function display_asset_valuation_td($asset_valuation)
-{
-    global $lang, $escaper;
-
-    echo "<td align=\"left\">" . $escaper->escapeHtml(get_asset_value_by_id($asset_valuation)) . "</td>\n";
 }
 
 /*******************************************
@@ -480,7 +408,7 @@ function display_asset_tags_td($asset_tags)
 
     echo "<td align=\"left\">";
     if ($asset_tags) {
-        foreach(explode("|", $asset_tags) as $tag) {
+        foreach(explode(",", $asset_tags) as $tag) {
             echo "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none; margin:1px; padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
         }
     } else {
@@ -612,7 +540,7 @@ function display_asset_tags_td_edit($asset_id, $asset_tags)
     echo "<td>\n";
     echo "  <select class='selectize-marker' readonly id='{$id}' name='tags[]' multiple placeholder='{$tags_placeholder}'>";
     if ($asset_tags) {
-        foreach(explode("|", $asset_tags) as $tag) {
+        foreach(explode(",", $asset_tags) as $tag) {
             $tag = $escaper->escapeHtml($tag);
             echo "<option selected value='{$tag}'>{$tag}</option>";
         }
@@ -621,7 +549,7 @@ function display_asset_tags_td_edit($asset_id, $asset_tags)
             <script>
                 $('#{$id}').selectize({
                     plugins: ['remove_button', 'restore_on_backspace'],
-                    delimiter: '|',
+                    delimiter: ',',
                     create: true,
                     valueField: 'label',
                     labelField: 'label',

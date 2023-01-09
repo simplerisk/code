@@ -22,8 +22,7 @@ $config = [
     ],
 
 
-    // An authentication source which can authenticate against both SAML 2.0
-    // and Shibboleth 1.3 IdPs.
+    // An authentication source which can authenticate against SAML 2.0 IdPs.
     'default-sp' => [
         'saml:SP',
 
@@ -252,7 +251,7 @@ $config = [
 
         // If the directory uses privilege separation,
         // the authenticated user may not be able to retrieve
-        // all required attribures, a privileged entity is required
+        // all required attributes, a privileged entity is required
         // to get them. This is enabled with this option.
         'priv.read' => false,
 

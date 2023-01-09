@@ -14,11 +14,10 @@ require_once(realpath(__DIR__ . '/governance.php'));
 require_once(realpath(__DIR__ . '/permissions.php'));
 
 // Include the language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // These are here to make sure they're available when upgrading
 if (!function_exists('index_exists_on_table')) {
@@ -165,6 +164,7 @@ $releases = array(
 	"20220823-001",
 	"20220909-001",
 	"20221013-001",
+    "20230106-001",
 );
 
 /*************************
@@ -313,7 +313,7 @@ function convert_tables_to_innodb()
         if ($table_name != "sessions")
         {
             // Change the table to InnoDB
-            $stmt = $db->prepare("ALTER TABLE " . $table_name . " ENGINE=InnoDB;");
+            $stmt = $db->prepare("ALTER TABLE `" . $table_name . "` ENGINE=InnoDB;");
             $stmt->execute();
         }
     }
@@ -330,8 +330,8 @@ function convert_tables_to_utf8()
     // Connect to the database
     $db = db_open();
 
-    // Find tables that are not InnoDB
-    $stmt = $db->prepare("SELECT `table_name` as table_name FROM `information_schema`.`tables` WHERE `table_schema` = '" . DB_DATABASE . "' AND `TABLE_COLLATION` != 'utf8_general_ci';");
+    // Find tables that are not InnoDB (utf8mb4)
+    $stmt = $db->prepare("SELECT `table_name` as table_name FROM `information_schema`.`tables` WHERE `table_schema` = '" . DB_DATABASE . "' AND `TABLE_COLLATION` != 'utf8mb4_general_ci';");
     $stmt->execute();
 
     // Store the list in the array
@@ -344,7 +344,7 @@ function convert_tables_to_utf8()
         $table_name = $value['table_name'];
 
         // Change the table to InnoDB
-        $stmt = $db->prepare("ALTER TABLE " . $table_name . " CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;");
+        $stmt = $db->prepare("ALTER TABLE `" . $table_name . "` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;");
         $stmt->execute();
     }
 
@@ -470,8 +470,14 @@ function update_database_version($db, $version_to_upgrade, $version_upgrading_to
     // Update the database version information
     echo "Updating the database version information.<br />\n";
 
-    $stmt = $db->prepare("UPDATE `settings` SET `value` = '" . $version_upgrading_to . "' WHERE `settings`.`name` = 'db_version' AND `settings`.`value` = '" . $version_to_upgrade . "' LIMIT 1 ;");
-    $stmt->execute();
+    // If the version upgrading to is in the proper YYYYMMDD-VVV format
+    // This will prevent us from changing the version while still upgrading the database in test environments
+    if (preg_match("/^\d{8}-\d{3}$/", $version_upgrading_to) !== false)
+    {
+        // Go ahead and update the db version
+        $stmt = $db->prepare("UPDATE `settings` SET `value` = '" . $version_upgrading_to . "' WHERE `settings`.`name` = 'db_version' AND `settings`.`value` = '" . $version_to_upgrade . "' LIMIT 1 ;");
+        $stmt->execute();
+    }
 }
 
 /**************************************
@@ -2433,23 +2439,6 @@ function upgrade_from_20180104001($db){
     // Add support for the Slovak language
     echo "Add support for the Slovak language.<br />\n";
     $stmt = $db->prepare("INSERT INTO languages (`name`, `full`) VALUES ('sk', 'Slovak');");
-    $stmt->execute();
-
-    // Add questionnaire pending risks table
-    echo "Adding questionnaire pending risks table.<br />\n";
-    $stmt = $db->prepare("
-        CREATE TABLE IF NOT EXISTS `questionnaire_pending_risks` (
-          `id` int(11) NOT NULL AUTO_INCREMENT,
-          `questionnaire_tracking_id` int(11) NOT NULL,
-          `questionnaire_scoring_id` int(11) NOT NULL,
-          `subject` blob NOT NULL,
-          `owner` int(11) DEFAULT NULL,
-          `asset` varchar(200) DEFAULT NULL,
-          `comment` varchar(500) DEFAULT NULL,
-          `submission_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          PRIMARY KEY (`id`)
-        ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
-    ");
     $stmt->execute();
 
     // Add a new setting to show all risks in plan projects
@@ -6797,6 +6786,92 @@ function upgrade_from_20220909001($db)
         $stmt->execute();
     }
 
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20221013-001 *
+ ***************************************/
+function upgrade_from_20221013001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20221013-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20230106-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    echo "Changing setting name from ssl_certificate_check to ssl_certificate_check_simplerisk.<br />\n";
+    $stmt = $db->prepare("UPDATE `settings` SET `name` = 'ssl_certificate_check_simplerisk' WHERE `name` = 'ssl_certificate_check';");
+    $stmt->execute();
+
+    echo "Adding a new setting named ssl_certificate_check_external.<br />\n";
+    update_or_insert_setting('ssl_certificate_check_external', 1);
+
+    // If the user_mfa table does not exist
+    if (!table_exists("user_mfa"))
+    {
+        echo "Creating a table for user MFA data.<br />\n";
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `user_mfa` (`uid` int(11) NOT NULL PRIMARY KEY, `verified` INT(1) DEFAULT 0, `secret` VARCHAR(16) DEFAULT null) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt->execute();
+    }
+
+    echo "Adding a new setting to force MFA for all users.<br />\n";
+    update_or_insert_setting('mfa_required', 0);
+
+    // Set the default value for multi_factor to 0
+    $stmt = $db->prepare("ALTER TABLE `user` MODIFY `multi_factor` int NOT NULL DEFAULT '0';");
+
+    echo "Setting MFA disabled value to 0.<br />\n";
+    $stmt = $db->prepare("UPDATE `user` SET `multi_factor` = 0 WHERE `multi_factor` = 1;");
+    $stmt->execute();
+
+    echo "Setting the lang values null to 0 in user tables.<br />\n";
+    $stmt = $db->prepare("Update `user` SET `lang` = '' WHERE ISNULL(`lang`) OR `lang` = 0;");
+    $stmt->execute();
+
+    // Update the assets table's location column to not be a required field
+    echo "Updating the location column on the assets table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `assets` MODIFY `location` varchar(1000) DEFAULT NULL;");
+    $stmt->execute();
+
+    // If the saved_table_display_settings table does not exist
+    if (!table_exists("saved_table_display_settings")) {
+        echo "Creating a table for saved datatable display settings.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE `saved_table_display_settings` (
+                `id` INT(11) NOT NULL AUTO_INCREMENT,
+                `user_id` INT(11) NOT NULL COMMENT 'ID of the user who created the save',
+                `view` VARCHAR(100) NOT NULL COMMENT 'Name of the view like plan_mitigation or asset_edit to be able to get it for the table where it is used',
+                `visibility` ENUM('private','public') DEFAULT 'private' COMMENT 'Visibility of the save. Only used if there are multiple saves for the same view.',
+                `name` VARCHAR(100) COMMENT 'Name of the save. Only used if there are multiple saves for the same view.',
+                `display_settings` TEXT NOT NULL,
+            PRIMARY KEY(id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $stmt->execute();
+    }
+
+    // If the questionnaire_pending_risks table exists and risk assessment is not enabled
+    if (table_exists("questionnaire_pending_risks") && !assessments_extra())
+    {
+        // Remove the table that is not being used by the SimpleRisk Core
+        $stmt = $db->prepare("DROP TABLE IF EXISTS `questionnaire_pending_risks`;");
+        $stmt->execute();
+    }
+
+    // Increase the size of the reference_name field
+    echo "Increasing the size of the reference name field for control mappings.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `framework_control_mappings` MODIFY `reference_name` VARCHAR(1000) NOT NULL;");
+    $stmt->execute();
 
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic

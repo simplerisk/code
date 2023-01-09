@@ -10,9 +10,6 @@
     require_once(realpath(__DIR__ . '/../../includes/permissions.php'));
     require_once(realpath(__DIR__ . '/../../vendor/autoload.php'));
 
-    // Include Laminas Escaper for HTML Output Encoding
-    $escaper = new Laminas\Escaper\Escaper('utf-8');
-
     // Add various security headers
     add_security_headers();
 
@@ -32,7 +29,9 @@
     }
 
     // Include the language file
-    require_once(language_file());
+    // Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
+require_once(language_file());
     
     global $lang;
 

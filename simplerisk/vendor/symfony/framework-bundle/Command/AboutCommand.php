@@ -30,6 +30,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 class AboutCommand extends Command
 {
     protected static $defaultName = 'about';
+    protected static $defaultDescription = 'Display information about the current project';
 
     /**
      * {@inheritdoc}
@@ -37,15 +38,12 @@ class AboutCommand extends Command
     protected function configure()
     {
         $this
-            ->setDescription('Display information about the current project')
+            ->setDescription(self::$defaultDescription)
             ->setHelp(<<<'EOT'
 The <info>%command.name%</info> command displays information about the current Symfony project.
 
 The <info>PHP</info> section displays important configuration that could affect your application. The values might
 be different between web and CLI.
-
-The <info>Environment</info> section displays the current environment variables managed by Symfony Dotenv. It will not
-be shown if no variables were found. The values might be different between web and CLI.
 EOT
             )
         ;
@@ -61,13 +59,19 @@ EOT
         /** @var KernelInterface $kernel */
         $kernel = $this->getApplication()->getKernel();
 
+        if (method_exists($kernel, 'getBuildDir')) {
+            $buildDir = $kernel->getBuildDir();
+        } else {
+            $buildDir = $kernel->getCacheDir();
+        }
+
         $rows = [
             ['<info>Symfony</>'],
             new TableSeparator(),
             ['Version', Kernel::VERSION],
             ['Long-Term Support', 4 === Kernel::MINOR_VERSION ? 'Yes' : 'No'],
-            ['End of maintenance', Kernel::END_OF_MAINTENANCE.(self::isExpired(Kernel::END_OF_MAINTENANCE) ? ' <error>Expired</>' : '')],
-            ['End of life', Kernel::END_OF_LIFE.(self::isExpired(Kernel::END_OF_LIFE) ? ' <error>Expired</>' : '')],
+            ['End of maintenance', Kernel::END_OF_MAINTENANCE.(self::isExpired(Kernel::END_OF_MAINTENANCE) ? ' <error>Expired</>' : ' (<comment>'.self::daysBeforeExpiration(Kernel::END_OF_MAINTENANCE).'</>)')],
+            ['End of life', Kernel::END_OF_LIFE.(self::isExpired(Kernel::END_OF_LIFE) ? ' <error>Expired</>' : ' (<comment>'.self::daysBeforeExpiration(Kernel::END_OF_LIFE).'</>)')],
             new TableSeparator(),
             ['<info>Kernel</>'],
             new TableSeparator(),
@@ -76,6 +80,7 @@ EOT
             ['Debug', $kernel->isDebug() ? 'true' : 'false'],
             ['Charset', $kernel->getCharset()],
             ['Cache directory', self::formatPath($kernel->getCacheDir(), $kernel->getProjectDir()).' (<comment>'.self::formatFileSize($kernel->getCacheDir()).'</>)'],
+            ['Build directory', self::formatPath($buildDir, $kernel->getProjectDir()).' (<comment>'.self::formatFileSize($buildDir).'</>)'],
             ['Log directory', self::formatPath($kernel->getLogDir(), $kernel->getProjectDir()).' (<comment>'.self::formatFileSize($kernel->getLogDir()).'</>)'],
             new TableSeparator(),
             ['<info>PHP</>'],
@@ -88,16 +93,6 @@ EOT
             ['APCu', \extension_loaded('apcu') && filter_var(\ini_get('apc.enabled'), \FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false'],
             ['Xdebug', \extension_loaded('xdebug') ? 'true' : 'false'],
         ];
-
-        if ($dotenv = self::getDotenvVars()) {
-            $rows = array_merge($rows, [
-                new TableSeparator(),
-                ['<info>Environment (.env)</>'],
-                new TableSeparator(),
-            ], array_map(function ($value, $name) {
-                return [$name, $value];
-            }, $dotenv, array_keys($dotenv)));
-        }
 
         $io->table([], $rows);
 
@@ -132,15 +127,10 @@ EOT
         return false !== $date && new \DateTime() > $date->modify('last day of this month 23:59:59');
     }
 
-    private static function getDotenvVars(): array
+    private static function daysBeforeExpiration(string $date): string
     {
-        $vars = [];
-        foreach (explode(',', $_SERVER['SYMFONY_DOTENV_VARS'] ?? $_ENV['SYMFONY_DOTENV_VARS'] ?? '') as $name) {
-            if ('' !== $name && isset($_ENV[$name])) {
-                $vars[$name] = $_ENV[$name];
-            }
-        }
+        $date = \DateTime::createFromFormat('d/m/Y', '01/'.$date);
 
-        return $vars;
+        return (new \DateTime())->diff($date->modify('last day of this month 23:59:59'))->format('in %R%a days');
     }
 }

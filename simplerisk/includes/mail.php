@@ -12,11 +12,9 @@ require_once(realpath(__DIR__ . '/config.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 // Include the language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
-require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 /*******************************
  * FUNCTION: GET MAIL SETTINGS *

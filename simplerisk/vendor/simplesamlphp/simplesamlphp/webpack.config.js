@@ -17,9 +17,10 @@ module.exports = environment => {
     const secondaryBackground = env.hasOwnProperty('secondaryBackground') ? env.secondaryBackground : '#e8410c';
     return {
         entry: {
-            bundle: './src/js/bundle',
-            logout: './src/js/logout/main',
-            stylesheet: './src/js/style'
+            bundle: './resources/js/bundle/main',
+            logout: './resources/js/logout/main',
+            post: './resources/js/post/main',
+            stylesheet: './resources/js/style'
         },
         output: {
             path: path.resolve(buildDir),
@@ -30,9 +31,11 @@ module.exports = environment => {
             rules: [
                 {
                     test: /\.js$/,
-                    exclude: /\/node_modules\//,
                     use: {
-                        loader: 'babel-loader'
+                        loader: 'babel-loader',
+                        options: {
+                            presets: ['@babel/preset-env']
+                        }
                     }
                 },
                 {
@@ -58,24 +61,11 @@ module.exports = environment => {
                             }
                         }
                     ]
-                },
-                {
-                    // expose jquery for use outside webpack bundle
-                    test: require.resolve('jquery'),
-                    loader: "expose-loader",
-                    options: {
-                        exposes: ["$", "jQuery"],
-                    }
                 }
             ]
         },
         devtool: 'source-map',
         plugins: [
-            // Provides jQuery for other JS bundled with Webpack
-            new webpack.ProvidePlugin({
-                $: 'jquery',
-                jQuery: 'jquery'
-            }),
             new MiniCssExtractPlugin({
                 filename: localConfig['css_filename'],
                 ignoreOrder: true
@@ -83,7 +73,7 @@ module.exports = environment => {
             new CopyWebpackPlugin({
                 patterns: [
                     {
-                        from: path.resolve(__dirname + '/node_modules/\@fortawesome/fontawesome-free/webfonts/*'),
+                        from: path.resolve(__dirname + '/node_modules/\@fortawesome/fontawesome-free/webfonts/fa-solid*'),
                         to: 'fonts/[name][ext]'
                     }
                 ]

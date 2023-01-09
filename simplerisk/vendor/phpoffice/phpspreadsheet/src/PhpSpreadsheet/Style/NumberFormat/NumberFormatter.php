@@ -33,6 +33,7 @@ class NumberFormatter
      */
     private static function processComplexNumberFormatMask($number, string $mask): string
     {
+        /** @var string */
         $result = $number;
         $maskingBlockCount = preg_match_all('/0+/', $mask, $maskingBlocks, PREG_OFFSET_CAPTURE);
 
@@ -45,12 +46,16 @@ class NumberFormatter
                 $divisor = 10 ** $size;
                 $offset = $block[1];
 
-                $blockValue = sprintf("%0{$size}d", fmod($number, $divisor));
-                $number = floor($number / $divisor);
+                /** @var float */
+                $numberFloat = $number;
+                $blockValue = sprintf("%0{$size}d", fmod($numberFloat, $divisor));
+                $number = floor($numberFloat / $divisor);
                 $mask = substr_replace($mask, $blockValue, $offset, $size);
             }
+            /** @var string */
+            $numberString = $number;
             if ($number > 0) {
-                $mask = substr_replace($mask, $number, $offset, 0);
+                $mask = substr_replace($mask, $numberString, $offset, 0);
             }
             $result = $mask;
         }
@@ -63,8 +68,18 @@ class NumberFormatter
      */
     private static function complexNumberFormatMask($number, string $mask, bool $splitOnPoint = true): string
     {
-        $sign = ($number < 0.0) ? '-' : '';
-        $number = (string) abs($number);
+        /** @var float */
+        $numberFloat = $number;
+        if ($splitOnPoint) {
+            $masks = explode('.', $mask);
+            if (count($masks) <= 2) {
+                $decmask = $masks[1] ?? '';
+                $decpos = substr_count($decmask, '0');
+                $numberFloat = round($numberFloat, $decpos);
+            }
+        }
+        $sign = ($numberFloat < 0.0) ? '-' : '';
+        $number = self::f2s(abs($numberFloat));
 
         if ($splitOnPoint && strpos($mask, '.') !== false && strpos($number, '.') !== false) {
             $numbers = explode('.', $number);
@@ -73,14 +88,54 @@ class NumberFormatter
                 $masks = self::mergeComplexNumberFormatMasks($numbers, $masks);
             }
             $integerPart = self::complexNumberFormatMask($numbers[0], $masks[0], false);
+            $numlen = strlen($numbers[1]);
+            $msklen = strlen($masks[1]);
+            if ($numlen < $msklen) {
+                $numbers[1] .= str_repeat('0', $msklen - $numlen);
+            }
             $decimalPart = strrev(self::complexNumberFormatMask(strrev($numbers[1]), strrev($masks[1]), false));
+            $decimalPart = substr($decimalPart, 0, $msklen);
 
             return "{$sign}{$integerPart}.{$decimalPart}";
         }
 
+        if (strlen($number) < strlen($mask)) {
+            $number = str_repeat('0', strlen($mask) - strlen($number)) . $number;
+        }
         $result = self::processComplexNumberFormatMask($number, $mask);
 
         return "{$sign}{$result}";
+    }
+
+    public static function f2s(float $f): string
+    {
+        return self::floatStringConvertScientific((string) $f);
+    }
+
+    public static function floatStringConvertScientific(string $s): string
+    {
+        // convert only normalized form of scientific notation:
+        //  optional sign, single digit 1-9,
+        //    decimal point and digits (allowed to be omitted),
+        //    E (e permitted), optional sign, one or more digits
+        if (preg_match('/^([+-])?([1-9])([.]([0-9]+))?[eE]([+-]?[0-9]+)$/', $s, $matches) === 1) {
+            $exponent = (int) $matches[5];
+            $sign = ($matches[1] === '-') ? '-' : '';
+            if ($exponent >= 0) {
+                $exponentPlus1 = $exponent + 1;
+                $out = $matches[2] . $matches[4];
+                $len = strlen($out);
+                if ($len < $exponentPlus1) {
+                    $out .= str_repeat('0', $exponentPlus1 - $len);
+                }
+                $out = substr($out, 0, $exponentPlus1) . ((strlen($out) === $exponentPlus1) ? '' : ('.' . substr($out, $exponentPlus1)));
+                $s = "$sign$out";
+            } else {
+                $s = $sign . '0.' . str_repeat('0', -$exponent - 1) . $matches[2] . $matches[4];
+            }
+        }
+
+        return $s;
     }
 
     /**
@@ -88,6 +143,8 @@ class NumberFormatter
      */
     private static function formatStraightNumericValue($value, string $format, array $matches, bool $useThousands): string
     {
+        /** @var float */
+        $valueFloat = $value;
         $left = $matches[1];
         $dec = $matches[2];
         $right = $matches[3];
@@ -96,7 +153,7 @@ class NumberFormatter
         $minWidth = strlen($left) + strlen($dec) + strlen($right);
         if ($useThousands) {
             $value = number_format(
-                $value,
+                $valueFloat,
                 strlen($right),
                 StringHelper::getDecimalSeparator(),
                 StringHelper::getThousandsSeparator()
@@ -107,17 +164,28 @@ class NumberFormatter
 
         if (preg_match('/[0#]E[+-]0/i', $format)) {
             //    Scientific format
-            return sprintf('%5.2E', $value);
+            return sprintf('%5.2E', $valueFloat);
         } elseif (preg_match('/0([^\d\.]+)0/', $format) || substr_count($format, '.') > 1) {
-            if ($value == (int) $value && substr_count($format, '.') === 1) {
+            if ($valueFloat == floor($valueFloat) && substr_count($format, '.') === 1) {
                 $value *= 10 ** strlen(explode('.', $format)[1]);
             }
 
-            return self::complexNumberFormatMask($value, $format);
+            $result = self::complexNumberFormatMask($value, $format);
+            if (strpos($result, 'E') !== false) {
+                // This is a hack and doesn't match Excel.
+                // It will, at least, be an accurate representation,
+                //  even if formatted incorrectly.
+                // This is needed for absolute values >=1E18.
+                $result = self::f2s($valueFloat);
+            }
+
+            return $result;
         }
 
         $sprintf_pattern = "%0$minWidth." . strlen($right) . 'f';
-        $value = sprintf($sprintf_pattern, $value);
+        /** @var float */
+        $valueFloat = $value;
+        $value = sprintf($sprintf_pattern, round($valueFloat, strlen($right)));
 
         return self::pregReplace(self::NUMBER_REGEX, $value, $format);
     }
@@ -196,15 +264,15 @@ class NumberFormatter
     }
 
     /**
-     * @param mixed $value
+     * @param array|string $value
      */
     private static function makeString($value): string
     {
-        return is_array($value) ? '' : (string) $value;
+        return is_array($value) ? '' : "$value";
     }
 
     private static function pregReplace(string $pattern, string $replacement, string $subject): string
     {
-        return self::makeString(preg_replace($pattern, $replacement, $subject));
+        return self::makeString(preg_replace($pattern, $replacement, $subject) ?? '');
     }
 }

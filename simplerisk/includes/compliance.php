@@ -11,11 +11,10 @@ require_once(realpath(__DIR__ . '/services.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
 
 // Include the language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 /******************************************************
  * FUNCTION: DISPLAY FRAMEWORK CONTROLS IN COMPLIANCE *
@@ -226,13 +225,13 @@ function add_framework_control_test($tester, $test_frequency, $name, $objective,
     $test_id = $db->lastInsertId();
 
     if ($test_id != 0) {
+        updateTeamsOfItem($test_id, 'test', $teams);
         updateTagsOfType($test_id, 'test', $tags);
     }
 
     $message = _lang('TestCreatedAuditLogMessage', array('test_name' => $name, 'test_id' => $test_id, 'user' => $_SESSION['user']), false);
     write_log((int)$test_id + 1000, $_SESSION['uid'], $message, "test");
 
-    updateTeamsOfItem($test_id, 'test', $teams);
 
     // Close the database connection
     db_close($db);
@@ -314,6 +313,8 @@ function delete_framework_control_test($test_id){
 
     // Remove teams of test
     updateTeamsOfItem($test_id, 'test', []);
+    // Remove tags of test
+    updateTagsOfType($test_id, 'test', []);
     
     // Close the database connection
     db_close($db);
@@ -2945,6 +2946,9 @@ function delete_test_audit($test_audit_id) {
 
     // Delete test audit's teams
     updateTeamsOfItem($test_audit_id, 'audit', []);
+
+    // Remove tags of test audit
+    updateTagsOfType($test_id, 'test_audit', []);
 
     // Close the database connection
     db_close($db);

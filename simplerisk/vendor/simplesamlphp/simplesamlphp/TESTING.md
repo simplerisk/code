@@ -18,9 +18,9 @@ classes, and `SimpleSAML\Test\Module\modulename` for classes located in
 modules.
 
 For example, if you want to test the `SimpleSAML\Utils\HTTP` class
-located in `lib/SimpleSAML/Utils/HTTP.php`, the tests must be in a class
+located in `src/SimpleSAML/Utils/HTTP.php`, the tests must be in a class
 named `HTTPTest` implemented in
-`tests/lib/SimpleSAML/Utils/HTTPTest.php`, with the following namespace
+`tests/src/SimpleSAML/Utils/HTTPTest.php`, with the following namespace
 definition:
 
 ```php
@@ -45,9 +45,8 @@ throws an exception in a specific situation:
       $this->expectException(ExpectedException::class);
 ```
 
-Refer to [the `phpunit 5.7` documentation](https://phpunit.de/manual/5.7/en/installation.html)
-for more information on how to write tests. We currently use the `phpunit 5.7`
-since it is the last version to support php 5.6.
+Refer to [the `phpunit 8.5` documentation](https://phpunit.readthedocs.io/en/8.5/)
+for more information on how to write tests.
 
 Once you have implemented your tests, you can run them locally. First,
 make sure the `config` directory is **not** in the root of your

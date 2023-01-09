@@ -6,12 +6,11 @@
 
 // Include required configuration files
 require_once(realpath(__DIR__ . '/functions.php'));
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/displayassets.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 /*****************************
  * FUNCTION: DISCOVER ASSETS *
@@ -118,10 +117,7 @@ function asset_exists($name)
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
         // Call the encrypted asset exists function
-        $exists = encrypted_asset_exists($name);
-
-        // Return the result
-        return $exists;
+        return encrypted_asset_exists($name);
     }
     else
     {
@@ -222,9 +218,7 @@ function asset_exists_exact($ip, $name, $value, $location, $teams, $details, $ve
  ********************************************************/
 function add_asset_by_name_with_forced_verification($name, $verified = false) {
     // !!!!!!Update the values if the add_asset's default values change!!!!!!
-    // $imported is set as true to prevent the `auto_verify_new_assets` setting
-    // to turn our false to true
-    return add_asset('', $name, 5, 0, 0, "", "", $verified, true);
+    return add_asset('', $name, 5, 0, 0, "", "", $verified);
 }
 
 /***********************
@@ -236,6 +230,7 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
 
     // If the asset does not already exist
     if (!asset_exists($name)) {
+    
         // Trim whitespace from the name, ip, and value
         $name   = trim($name);
         $ip     = trim($ip);
@@ -243,13 +238,14 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
         $location   = is_array($location) ? implode(',', $location) : $location;
         $teams   = is_array($teams) ? implode(',', $teams) : $teams;
         
-        if (!$name)
+        if (!$name) {
             return false;
+        }
 
         // See if we need to encrypt values
-        $ip = try_encrypt($ip);
-        $name = try_encrypt($name);
-        $details = try_encrypt($details);
+        $ip_encrypted = try_encrypt($ip);
+        $name_encrypted = try_encrypt($name);
+        $details_encrypted = try_encrypt($details);
 
         $auto_verify_new_assets = get_setting("auto_verify_new_assets");
 
@@ -261,37 +257,16 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
         $db = db_open();
 
         $stmt = $db->prepare("INSERT INTO `assets` (ip, name, value, location, teams, details, verified) VALUES (:ip, :name, :value, :location, :teams, :details, :verified) ON DUPLICATE KEY UPDATE `ip`=:ip, `value`=:value, `location`=:location, `teams`=:teams, `details`=:details, `verified`=:verified;");
-        $stmt->bindParam(":ip", $ip, PDO::PARAM_STR);
-        $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+        $stmt->bindParam(":ip", $ip_encrypted, PDO::PARAM_STR);
+        $stmt->bindParam(":name", $name_encrypted, PDO::PARAM_STR);
         $stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
         $stmt->bindParam(":location", $location, PDO::PARAM_STR);
         $stmt->bindParam(":teams", $teams, PDO::PARAM_STR);
-        $stmt->bindParam(":details", $details, PDO::PARAM_STR);
+        $stmt->bindParam(":details", $details_encrypted, PDO::PARAM_STR);
         $stmt->bindParam(":verified", $verified, PDO::PARAM_INT);
-        $return = $stmt->execute();
+        $stmt->execute();
 
-        // If failed to insert, update the record
-        if(!$stmt->rowCount())
-        {
-            $asset_id = 0;
-        }
-        else
-        {
-            $stmt = $db->prepare("SELECT id FROM `assets` WHERE `name`=:name AND `ip`=:ip AND `value`=:value AND `location`=:location AND `teams`=:teams AND `details`=:details AND `verified`=:verified;");
-            $stmt->bindParam(":ip", $ip, PDO::PARAM_STR, 15);
-            $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
-            $stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
-            $stmt->bindParam(":location", $location, PDO::PARAM_STR);
-            $stmt->bindParam(":teams", $teams, PDO::PARAM_STR);
-            $stmt->bindParam(":details", $details, PDO::PARAM_STR);
-            $stmt->bindParam(":verified", $verified, PDO::PARAM_INT);
-            $stmt->execute();
-            $asset_id = $stmt->fetch(PDO::FETCH_COLUMN);
-        }
-
-        // Update the asset_id column in risks_to_assets
-        //$stmt = $db->prepare("UPDATE `risks_to_assets` INNER JOIN `assets` ON `assets`.name = `risks_to_assets`.asset SET `risks_to_assets`.asset_id = `assets`.id;");
-        //$stmt->execute();
+        $asset_id = $db->lastInsertId();
 
         // Close the database connection
         db_close($db);
@@ -310,19 +285,20 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
             }
         }
 
-        if ($asset_id != 0) {
+        if ($asset_id) {
             updateTagsOfType($asset_id, 'asset', $tags);
         }
 
-        // If the encryption extra is enabled, updates order_by_name
-        if (encryption_extra()) {
+        // If the encryption extra is enabled, updates order_by_name when not through import
+        if (encryption_extra() && !$imported) {
             require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-            create_asset_name_order(base64_decode($_SESSION['encrypted_pass']));
+            //create_asset_name_order(base64_decode($_SESSION['encrypted_pass']));
+            update_name_order_for_asset($asset_id, $name);
         }
 
-        $message = "An asset named \"" . try_decrypt($name) . "\" was added by username \"" . $_SESSION['user'] . "\".";
+        $message = "Asset '{$name}' was added by user '{$_SESSION['user']}'.";
         write_log($asset_id , $_SESSION['uid'], $message, "asset");
-    
+
         // Return success or failure
         return $asset_id;
     }
@@ -337,141 +313,134 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
 /*******************************
  * FUNCTION: DELETE ALL ASSETS *
  *******************************/
-function delete_all_assets($verified)
-{
-    // Open the database connection
-    $db = db_open();
+function delete_all_assets($verified = false) {
+    try {
+        // Open the database connection
+        $db = db_open();
 
-    // Get all asset ID
-    $stmt = $db->prepare("SELECT id FROM `assets` where `verified`=:verified;");
-    $stmt->bindParam(":verified", $verified, PDO::PARAM_INT);
-    $stmt->execute();
-    $asset_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        // Get the names of the affected assets to be able to log which ones got deleted/discarded
+        $stmt = $db->prepare("SELECT `id`, `name` FROM `assets` WHERE `verified` = :verified;");
+        $stmt->bindParam(":verified", $verified, PDO::PARAM_INT);
+        $stmt->execute();
+        $assets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Close the database connection
-    db_close($db);
-    
-    $asset_ids || $asset_ids=[];
-    
-    $return = delete_assets($asset_ids);
+        if (empty($assets)) {
+            return false;
+        }
 
-    // Return success or failure
-    return $return;
-}
+        // Delete the assets
+        $stmt = $db->prepare("DELETE FROM `assets` WHERE `verified` = :verified;");
+        $stmt->bindParam(":verified", $verified, PDO::PARAM_INT);
+        $stmt->execute();
 
-/***************************
- * FUNCTION: DELETE ASSETS *
- ***************************/
-function delete_assets($assets)
-{
-    // Return true by default
-    $return = true;
+        // Close the database connection
+        db_close($db);
 
-    // For each asset
-    foreach ($assets as $asset)
-    {
-        $asset_id = (int) $asset;
+        // If customization extra is enabled, delete custom_asset_data related with asset ID
+        if(customization_extra()) {
+            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+            foreach ($assets as $asset) {
+                delete_custom_data_by_row_id($asset['id'], "asset");
+            }
+        }
 
-        // Delete the asset
-        $success = delete_asset($asset_id);
+        // Clean up after the delete
+        cleanup_after_delete('assets');
 
-        // If it was not a success return false
-        if (!$success) $return = false;
-    }
-
-    // Return success or failure
-    return $return;
-}
+        // Write a log for each asset deleted
+        foreach ($assets as $asset) {
+            $message = _lang($verified ? 'AssetDeletedLog' : 'AssetDiscardedLog', [
+                'name' => try_decrypt($asset['name']),
+                'user' => $_SESSION['user']
+            ]);
+            write_log($asset['id'], $_SESSION['uid'], $message, "asset");
+        }
+        return true;
+    } catch (Exception $e) {
+        // Log the exception and return false
+        error_log($e);
+        return false;
+    }}
 
 /**************************
  * FUNCTION: DELETE ASSET *
  **************************/
-function delete_asset($asset_id)
-{
+function delete_asset($asset_id) {
+    
     // Open the database connection
     $db = db_open();
 
-    $name = get_asset_name($asset_id);
+    // Get the name BEFORE deleting the asset
+    $name = get_name_by_value('assets', $asset_id, "", true);
 
     // Delete the assets entry
     $stmt = $db->prepare("DELETE FROM `assets` WHERE `id`=:id;");
     $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
     $return = $stmt->execute();
 
-    // Remove junction table entries for the Asset
-    foreach(['assets_asset_groups',
-        'risks_to_assets',
-        'assessment_answers_to_assets',
-        'questionnaire_answers_to_assets'] as $junction_name) {
-
-        if (!table_exists($junction_name))
-            continue;
-
-        $stmt = $db->prepare("
-            delete from
-                `$junction_name`
-            where
-                `asset_id`=:id;
-        ");
-        $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
-        $stmt->execute();
-    }
-    
-    // If assessment extra is enabled and `questionnaire_answers_to_assets` table exists, remove entries for the Asset
-    if(assessments_extra() && table_exists("questionnaire_answers_to_assets"))
-    {
-        $stmt = $db->prepare("
-            delete from
-                `questionnaire_answers_to_assets`
-            where
-                `asset_id`=:id;
-        ");
-        $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
-        $stmt->execute();
-    }
-
-    // If customization extra is enabled, delete custom_asset_data related with asset ID
-    if(customization_extra())
-    {
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        delete_custom_data_by_row_id($asset_id, "asset");
-    }
-    
-    $message = "An asset named \"" . $name . "\" was deleted by username \"" . $_SESSION['user'] . "\".";
-    write_log($asset_id , $_SESSION['uid'], $message, "asset");
-
     // Close the database connection
     db_close($db);
 
-    removeTagsOfTaggee($asset_id, 'asset');
+    // If customization extra is enabled, delete custom_asset_data related with asset ID
+    if(customization_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        delete_custom_data_by_row_id($asset_id, "asset");
+    }
+
+    // Clean up after the delete
+    cleanup_after_delete('assets');
+
+    $message = _lang('AssetDeletedLog', [
+        'name' => $name,
+        'user' => $_SESSION['user']
+    ]);
+
+    write_log($asset_id, $_SESSION['uid'], $message, "asset");
 
     // Return success or failure
     return $return;
 }
 
 
-/***************************
- * FUNCTION: VERIFY ASSETS *
- ***************************/
-function verify_assets($assets)
-{
-    // Return true by default
-    $return = true;
+/*******************************
+ * FUNCTION: VERIFY ALL ASSETS *
+ *******************************/
+function verify_all_assets() {
+    try {
+        // Open the database connection
+        $db = db_open();
+        
+        // Get the names of the not verified assets to be able to log which ones got verified
+        $stmt = $db->prepare("SELECT `id`, `name` FROM `assets` WHERE `verified` = 0;");
+        $stmt->execute();
+        $assets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // For each asset
-    foreach ($assets as $asset)
-    {
-        $asset_id = (int) $asset;
+        if (empty($assets)) {
+            return false;
+        }
 
-        // Verify the asset
-        $success = verify_asset($asset_id);
+        // Verify the unverified assets
+        $stmt = $db->prepare("UPDATE `assets` SET `verified` = 1 WHERE `verified` = 0;");
+        $stmt->execute();
 
-        // If it was not a success return false
-        if (!$success) $return = false;
+        // Close the database connection
+        db_close($db);
+
+        // Write a log for each asset verified
+        foreach ($assets as $asset) {
+            $message = _lang('AssetVerifiedLog', [
+                'name' => try_decrypt($asset['name']),
+                'user' => $_SESSION['user']
+            ]);
+            write_log($asset['id'], $_SESSION['uid'], $message, "asset");
+        }
+
+        return true;
+    } catch (Exception $e) {
+        // Log the exception and return false
+        error_log($e);
+        return false;
     }
-
-    // Return success or failure
-    return $return;
 }
 
 /**************************
@@ -479,7 +448,6 @@ function verify_assets($assets)
  **************************/
 function verify_asset($asset_id)
 {
-
     // Open the database connection
     $db = db_open();
 
@@ -487,17 +455,19 @@ function verify_asset($asset_id)
     $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
     $return = $stmt->execute();
 
-    $message = "An asset named \"" . get_asset_name($asset_id) . "\" was verified by username \"" . $_SESSION['user'] . "\".";
-    write_log($asset_id , $_SESSION['uid'], $message, "asset");
-
     // Close the database connection
     db_close($db);
+
+    $message = _lang('AssetVerifiedLog', [
+        'name' => get_name_by_value('assets', $asset_id, "", true),
+        'user' => $_SESSION['user']
+    ]);
+
+    write_log($asset_id, $_SESSION['uid'], $message, "asset");
 
     // Return success or failure
     return $return;
 }
-
-
 
 /*********************************
  * FUNCTION: DISPLAY ASSET DETAIL*
@@ -577,239 +547,6 @@ function display_asset_detail($id)
         echo $display;
 }
 
-/*********************************
- * FUNCTION: DISPLAY ASSET TABLE *
- *********************************/
-function display_asset_table()
-{
-    global $lang;
-    global $escaper;
-
-    echo "<table id=\"verified_asset_table\" class=\"table table-bordered table-condensed sortable\">\n";
-
-    // Display the table header
-    echo "<thead>\n";
-    echo "<tr>\n";
-    echo "<th align=\"left\">&nbsp;</th>\n";
-    
-    // If the customization extra is enabled, shows fields by asset customization
-    if (customization_extra())
-    {
-        // Load the extra
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-        $active_fields = get_active_fields("asset");
-
-        display_main_detail_asset_fields_th($active_fields);
-    }
-    // If the customization extra is disabled, Show default main fields
-    else
-    {
-        display_asset_name_th();
-        display_asset_ip_address_th();
-        display_asset_valuation_th();
-        display_asset_site_location_th();
-        display_asset_team_th();
-        display_asset_details_th();
-        display_asset_tags_th();
-    }
-
-    
-    echo "</tr>\n";
-    echo "</thead>\n";
-    echo "<tbody>\n";
-
-    // print the body
-    display_asset_table_body();
-
-    echo "</tbody>\n";
-    echo "</table>\n";
-}
-
-
-/*********************************
- * FUNCTION: GET ASSET TABLE BODY*
- *********************************/
-function display_asset_table_body()
-{
-    global $lang;
-    global $escaper;
-
-    // Get the array of assets
-    $assets = get_verified_assets();
-
-    // If the customization extra, set custom values
-    if (customization_extra())
-    {
-        // Load the extra
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        $active_fields = get_active_fields("asset");
-    }
-    // If the customization extra is disabled, Show default main fields
-    else
-    {
-        $active_fields = [];
-    }
-
-
-    // For each asset
-    foreach ($assets as $asset)
-    {
-        echo  "<tr id=\"tr-".$asset['id']."\">\n";
-        echo  "<td align=\"center\" style='width:1%; white-space:nowrap; padding: 0px;'>\n";
-        echo  "<button type='button' class='btn btn-danger btn-xs delete-asset' data-id='".$asset['id']."'>";
-        echo  "<i class='fa fa-times' style='font-size:24px'></i>";
-        echo  "</button>";
-        echo  "<input id=\"".$asset['id']."\" style=\"display: none\" type=\"checkbox\" name=\"assets[]\" value=\"" . $escaper->escapeHtml($asset['id']) . "\" checked />";
-        echo  "</td>\n";
-
-        // If the customization extra, set custom values
-        if($active_fields)
-        {
-            display_main_detail_asset_fields_td_view($active_fields, $asset);        
-        }
-        else
-        {
-            display_asset_name_td($asset['name']);
-            display_asset_ip_address_td($asset['ip']);
-            display_asset_valuation_td($asset['value']);
-            display_asset_site_location_td($asset['location']);
-            display_asset_team_td($asset['teams']);
-            display_asset_details_td($asset['details']);
-            display_asset_tags_td($asset['tags']);
-        }
-        
-        echo  "</tr>\n";
-    }
-}
-
-
-
-/********************************************
- * FUNCTION: DISPLAY UNVERIFIED ASSET TABLE *
- ********************************************/
-function display_unverified_asset_table()
-{
-    global $lang;
-    global $escaper;
-
-    echo "<table id=\"unverified_asset_table\" class=\"table table-bordered table-condensed sortable\">\n";
-
-    // Display the table header
-    echo "<thead>\n";
-    echo "<tr>\n";
-    echo "<th align=\"left\" colspan=\"2\">" . $escaper->escapeHtml($lang['VerifyOrDiscard']) . "</th>\n";
-
-    // If the customization extra is enabled, shows fields by asset customization
-    if (customization_extra())
-    {
-        // Load the extra
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-        $active_fields = get_active_fields("asset");
-
-        display_main_detail_asset_fields_th($active_fields);
-    }
-    // If the customization extra is disabled, Show default main fields
-    else
-    {
-        display_asset_name_th();
-        display_asset_ip_address_th();
-        display_asset_valuation_th();
-        display_asset_site_location_th();
-        display_asset_team_th();
-        display_asset_details_th();
-        display_asset_tags_th();
-
-        $active_fields = false;
-    }
-
-    echo "</tr>\n";
-    echo "</thead>\n";
-    echo "<tbody>\n";
-
-    // Get the array of assets
-    $assets = get_unverified_assets();
-
-    // For each asset
-    foreach ($assets as $asset)
-    {
-        echo "<tr>\n";
-        echo "<td align=\"center\" style='width:1%; white-space:nowrap; padding: 0px;'>\n";
-        echo "<button type='button' class='btn btn-success btn-xs verify-asset' data-id='".$asset['id']."'>";
-        echo "<i class='fa fa-check' style='font-size:24px;'></i>";
-        echo "</button>";
-        echo "<input id=\"".$asset['id']."\" style=\"display: none\" type=\"checkbox\" name=\"assets[]\" value=\"" . $escaper->escapeHtml($asset['id']) . "\" checked />";
-        echo "</td>\n";
-        echo "<td align=\"center\" style='width:1%; white-space:nowrap; padding: 0px;'>\n";
-        echo "<button type='button' class='btn btn-danger btn-xs discard-asset' data-id='".$asset['id']."'>";
-        echo "<i class='fa fa-times' style='font-size:24px'></i>";
-        echo "</button>";
-        echo "</td>\n";
-
-        // If the customization extra, set custom values
-        if($active_fields)
-        {
-            display_main_detail_asset_fields_td_view($active_fields, $asset);
-        }
-        else
-        {
-            display_asset_name_td($asset['name']);
-            display_asset_ip_address_td($asset['ip']);
-            display_asset_valuation_td($asset['value']);
-            display_asset_site_location_td($asset['location']);
-            display_asset_team_td($asset['teams']);
-            display_asset_details_td($asset['details']);
-            display_asset_tags_td($asset['tags']);
-        }
-
-        echo "</tr>\n";
-    }
-
-    echo "</tbody>\n";
-    echo "</table>\n";
-}
-
-/**************************************************
- * FUNCTION: CHECK IF THERE ARE ASSETS *
- **************************************************/
-function has_assets($verified=null)
-{
-    // Open the database connection
-    $db = db_open();
-
-    if ($verified === null) {
-        $stmt = $db->prepare("SELECT count(1) as cnt FROM `assets`;");
-    }else {
-        $stmt = $db->prepare("SELECT count(1) as cnt FROM `assets` where `verified` = :verified;");
-        $stmt->bindParam(":verified", $verified, PDO::PARAM_INT);
-    }
-    $stmt->execute();
-
-    $result = boolval($stmt->fetch()['cnt']);
-
-    // Close the database connection
-    db_close($db);
-
-    return $result;
-}
-
-/**************************************************
- * FUNCTION: CHECK IF THERE ARE UNVERIFIED ASSETS *
- **************************************************/
-function has_unverified_assets()
-{
-    return has_assets(false);
-}
-
-/**************************************************
- * FUNCTION: CHECK IF THERE ARE VERIFIED ASSETS *
- **************************************************/
-function has_verified_assets()
-{
-    return has_assets(true);
-}
-
 /********************************
  * FUNCTION: GET ENTERED ASSETS *
  ********************************/
@@ -837,7 +574,7 @@ function get_entered_assets($verified=null)
     $stmt = $db->prepare("
         SELECT
             a.*,
-            GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag ASC SEPARATOR '|') as tags
+            GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag ASC SEPARATOR ',') as tags
         FROM
             `assets` a
             LEFT JOIN tags_taggees tt ON tt.taggee_id = a.id AND tt.type = 'asset'
@@ -884,7 +621,18 @@ function get_asset_by_id($id)
     // Open the database connection
     $db = db_open();
 
-    $stmt = $db->prepare("SELECT * FROM `assets` where id=:id ORDER BY name;");
+    $stmt = $db->prepare("
+        SELECT a.*,
+            GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag ASC SEPARATOR ',') as tags
+        FROM
+            `assets` a
+            LEFT JOIN tags_taggees tt ON tt.taggee_id = a.id AND tt.type = 'asset'
+            LEFT JOIN tags tg on tg.id = tt.tag_id
+        where a.id=:id
+        GROUP BY
+            a.id
+        ORDER BY name;
+        ");
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -953,32 +701,6 @@ function tag_assets_to_risk($risk_id, $assets, $entered_assets=false)
 
     // Close the database connection
     db_close($db);
-}
-
-/**********************************
- * FUNCTION: GET UNENTERED ASSETS *
- **********************************/
-function get_unentered_assets()
-{
-/*
-        // Open the database connection
-        $db = db_open();
-
-        // Get the assets
-        $stmt = $db->prepare("SELECT DISTINCT asset AS name FROM risks_to_assets WHERE asset_id = 0");
-        $stmt->execute();
-
-        // Store the list in the assets array
-        $assets = $stmt->fetchAll();
-
-        // Close the database connection
-        db_close($db);
-*/
-    $assets = array();
-
-        // Return the assets array
-        return $assets;
-
 }
 
 /**************************************
@@ -1095,34 +817,6 @@ function display_edit_asset_table()
     echo "</table>\n";
 }
 
-/************************
- * FUNCTION: EDIT ASSET *
- ************************/
-function edit_asset($id, $value, $location, $team, $details)
-{
-    $details = try_encrypt($details);
-    
-    // Open the database connection
-    $db = db_open();
-
-    // Update the asset
-    $stmt = $db->prepare("UPDATE assets SET value = :value, location = :location, team = :team, details = :details WHERE id = :id");
-    $stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
-    $stmt->bindParam(":location", $location, PDO::PARAM_STR);
-    $stmt->bindParam(":team", $team, PDO::PARAM_STR);
-    $stmt->bindParam(":details", $details, PDO::PARAM_STR);
-    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    $name = get_asset_name($id);
-
-    $message = "An asset named \"" . $name . "\" was modified by username \"" . $_SESSION['user'] . "\".";
-    write_log($id, $_SESSION['uid'], $message, "asset");
-    
-    // Close the database connection
-    db_close($db);
-}
-
 /********************************************************
  * FUNCTION: UPDATE ASSET FIELD VALUE OF THE FIELD NAME *
  ********************************************************/
@@ -1176,9 +870,8 @@ function update_asset_field_value_by_field_name($id, $fieldName, $fieldValue)
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
 
-    $name = get_asset_name($id);
-
-    $message = "An asset named \"" . $name . "\" was modified by username \"" . $_SESSION['user'] . "\".";
+    $name = get_name_by_value('assets', $id, "", true);
+    $message = "Asset '{$name}' was modified by user '{$_SESSION['user']}'.";
     write_log($id, $_SESSION['uid'], $message, "asset");
     
     // Close the database connection
@@ -1247,30 +940,6 @@ function import_asset($ip, $name, $value, $location, $teams, $details, $tags, $v
     }
 
     return $asset_id;
-}
-
-/*****************************
- * FUNCTION: GET ASSET NAME  *
- *****************************/
-function get_asset_name( $asset_id )
-{
-    $db = db_open();
-    $name = "";
-
-    $stmt = $db->prepare("SELECT name from assets where id = :id");
-    $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    $dd = $stmt->fetchAll();
-
-    foreach ($dd as $key => $value) {
-        $name = $value['name'];
-    }
-
-    db_close($db);
-
-    return try_decrypt($name);
-
 }
 
 /*****************************
@@ -1774,14 +1443,6 @@ function display_add_asset()
 
         display_asset_tags_add();
     }
-    
-    echo "
-        <style>
-            #add-asset-container textarea{
-                max-width: 300px;
-            }
-        </style>
-    ";
 }
 
 
@@ -2929,6 +2590,530 @@ function get_asset_ids_from_groups($group_ids)
     }
     return $asset_ids;
 
+}
+
+function get_assets_data_for_view($view, $selected_fields, $verified = null, $start = 0, $length = 10, $orderColumn = 'id', $orderDir = 'ASC', $column_filters = []) {
+
+    global $field_settings_views, $field_settings, $escaper, $lang;
+    $customization = customization_extra();
+    
+    // If there's an edit section setup in the view settings then the view is editable
+    $view_editable = !empty($field_settings_views[$view]['edit']);
+    $view_edit_type_popup = $view_editable && $field_settings_views[$view]['edit']['type'] === 'popup';
+    
+    // Open the database connection
+    $db = db_open();
+    
+    $params = [];
+    $encryption = encryption_extra();
+    
+    $actions_column_info = !empty($field_settings_views[$view]['actions_column']) ? $field_settings_views[$view]['actions_column'] : false;
+    if ($actions_column_info) {
+        // Create an array of escaped localized strings so it doesn't have to be done for every assets
+        $actions_tooltips = [
+            'edit' => $escaper->escapeHtml($lang['Edit']),
+            'verify' => $escaper->escapeHtml($lang['Verify']),
+            'discard' => $escaper->escapeHtml($lang['Discard']),
+            'delete' => $escaper->escapeHtml($lang['Delete']),
+        ];
+    }
+    
+    if (str_starts_with($orderColumn, 'custom_field_')) {
+        $sql_orderable = false;
+    } else {
+        // Can only order fields in the sql if they're not a custom field and encryption isn't enabled or they're not encrypted or if it's specifically stated that it's sql orderable
+        $sql_orderable =
+        (!$encryption || !$field_settings['asset'][$orderColumn]['encrypted']) &&
+        (!array_key_exists('force_php_ordering', $field_settings['asset'][$orderColumn]) || !$field_settings['asset'][$orderColumn]['force_php_ordering']);
+
+        if ($sql_orderable) {
+            $sql_order_column = $field_settings['asset'][$orderColumn]['order_column'];
+        } else {
+            // If encryption is turned on and there's an encrypted order column specified then use that column for ordering and mark it as sql orderable
+            if ($encryption && $field_settings['asset'][$orderColumn]['encrypted'] && !empty($field_settings['asset'][$orderColumn]['encrypted_order_column'])) {
+                $sql_order_column = $field_settings['asset'][$orderColumn]['encrypted_order_column'];
+                $sql_orderable = true;
+            } elseif(array_key_exists('force_php_ordering', $field_settings['asset'][$orderColumn]) && $field_settings['asset'][$orderColumn]['force_php_ordering']) {
+                // technically it would be possible to order in sql, but the result would be wrong, have to order in PHP by the display string
+                $orderColumn = $field_settings['asset'][$orderColumn]['order_column'];
+            }
+        }
+    }
+    
+    if ($verified !== null) {
+        $where = "WHERE `a`.`verified` = :verified";
+        $params['verified'] = $verified;
+    } else {
+        $where = "WHERE 1";
+    }
+    
+    if(team_separation_extra()){
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $where .= get_user_teams_query_for_assets("a", false, true);
+    }
+    
+    // At this point it's safe to add the column directly into the sql as it was validated
+    $order_by = $sql_orderable ?  "ORDER BY {$sql_order_column} {$orderDir}, `a`.`id` ASC" : "";
+    
+    // We can do the paging through sql if there's no filtering and we can do the ordering through sql as well
+    $sql_paging = empty($column_filters) && $sql_orderable;
+    if ($sql_paging) {
+        // When requesting every results the $length is -1 so we only limit the results if $length is greater than 0
+        if ($length > 0) {
+            $paging = "LIMIT {$start}, {$length}";
+        } else {
+            // In this case the $sql_paging = true to not try doing the paging using php code
+            // but we're not limiting the number of returned results as we want all of them
+            $paging = '';
+        }
+    } else {
+        // paging will be done using php code
+        $paging = '';
+    }
+
+    list($select_parts, $join_parts) = field_settings_get_join_parts($view, $selected_fields);
+
+    $sql = "
+        SELECT SQL_CALC_FOUND_ROWS t1.*
+        FROM (
+            SELECT
+                " . implode(',', $select_parts) . "
+            FROM
+                `assets` a
+                " . implode(' ', $join_parts) . "
+            {$where}
+            GROUP BY
+                `a`.`id`
+            {$order_by}
+        ) t1
+        {$paging};
+    ";
+    // error_log("SQL: $sql");
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    $assets = $stmt->fetchAll();
+
+    $stmt = $db->prepare("SELECT FOUND_ROWS();");
+    $stmt->execute();
+    $recordsTotal = $stmt->fetch()[0];
+
+    // Close the database connection
+    db_close($db);
+
+    $columns_with_filters = array_keys($column_filters);
+
+    // Get and store the currency here and not every time in the loop
+    // also, only do it if the value column is selected
+    if (in_array('value', $selected_fields)) {
+        $currency_sign = get_setting("currency");
+    }
+
+    $rows = [];
+    $filtered = false;
+    foreach($assets as &$asset) {
+
+        $drop_row = false;
+        // If customization data for the asset is present
+        if ($customization && !empty($asset['field_data']) && $asset['field_data'] !== '[]') {
+            // extract it as normal fields
+            foreach (json_decode($asset['field_data'], true) as $field_data) {
+                // select/multi-select fields are already on the asset, returned by the sql
+                if (empty($asset["custom_field_{$field_data['field_id']}_display"])) {
+                    // only the rest needs formatting and only those fields that are selected. In this case they're escaped as well
+                    if (in_array("custom_field_{$field_data['field_id']}", $selected_fields)) {
+                        $asset["custom_field_{$field_data['field_id']}"] = get_custom_field_name_by_value($field_data['field_id'], $field_data['type'], $field_data['encryption'], $field_data['value']);
+                    }
+                } else {
+                    // so the custom fields already in the data needs to be escaped
+                    $asset["custom_field_{$field_data['field_id']}_display"] = $escaper->escapeHtml($asset["custom_field_{$field_data['field_id']}_display"]);
+                    $asset["custom_field_{$field_data['field_id']}"] = explode(',', (string)$field_data['value']);
+                }
+            }
+
+            // Custom fields are ordered by their display strings
+            if (!$sql_orderable && str_starts_with($orderColumn, 'custom_field_') && array_key_exists("{$orderColumn}_display", $asset)) {
+                $orderColumn = "{$orderColumn}_display";
+            }
+        }
+
+        $row = ['id' => $asset['id']];
+
+        foreach ($selected_fields as $selected_field_name) {
+            $field_setting = !empty($field_settings['asset'][$selected_field_name]) ? $field_settings['asset'][$selected_field_name] : false;
+            $value = '';
+            $display = false;
+            if (!empty($asset[$selected_field_name])) {
+                // if it's not defined in the settings it's probably a custom field
+                if ($customization && empty($field_settings['asset'][$selected_field_name]) && str_starts_with($selected_field_name, 'custom_field_')) {
+                    // as of now with how the custom field's actual values' getting goes they're already encrypted and escaped at this point
+                    $value = !empty($asset[$selected_field_name]) ? $asset[$selected_field_name] : '';
+                    $display = isset($asset["{$selected_field_name}_display"]) ? $asset["{$selected_field_name}_display"] : false;
+                } else {
+                    $value = $asset[$selected_field_name];
+                    $display = isset($asset["{$selected_field_name}_display"]) ? $asset["{$selected_field_name}_display"] : false;
+                    if ($value && $encryption && !empty($field_setting['encrypted']) && $field_setting['encrypted']) {
+                        $value = try_decrypt($value);
+                    }
+
+                    // For fields that need custom formatting
+                    switch($selected_field_name) {
+                        case "teams":
+                        case "location":
+                            $value = explode(',', $value);
+                            break;
+                        case 'tags':
+                            if ($value) {
+                                $tags = [];
+                                foreach(explode("|", $value) as $tag) {
+                                    $tags []= $escaper->escapeHtml($tag);
+                                }
+                                $value = $tags;
+                            }
+                            break;
+                        case 'value':
+                            $display = $escaper->escapeHtml(str_replace('{currency}', $currency_sign, $display));
+                            break;
+                        case 'created':
+                            $display = $escaper->escapeHtml(format_datetime($value));
+                            break;
+                        case 'verified':
+                            $display = $escaper->escapeHtml(localized_yes_no($value));
+                            break;
+                        default:
+                            // Only have to escape non-custom fields as those are already escaped
+                            $value = $escaper->escapeHtml($value);
+                    }
+                }
+            } elseif(array_key_exists("{$selected_field_name}_display", $asset)) {
+                // To make sure that even empty values are properly sent back
+                $display = '';
+            }
+
+            $row[$selected_field_name] = $value;
+            if ($display !== false) {
+                $row["{$selected_field_name}_display"] = $display;
+            }
+
+            // Do the filtering.
+            // stripos(is_array($value) ? implode('|', $value) : $value, $column_filters[$selected_field_name]) === false
+            // The above line is used to be able to filter within both arrays and primitive values by making the array a single string separated by something that's not likely to be searched on
+            if (!empty($columns_with_filters) && in_array($selected_field_name, $columns_with_filters)) {
+                $filter_value = $display !== false ? $display : $value;
+                if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
+                    $drop_row = true;
+                    $filtered = true;
+                    // If the row is getting filtered out we can stop processing it
+                    break;
+                }
+            }
+        }
+
+        // Add the row only if it's not filtered out
+        if (!$drop_row) {
+
+            // Only if the action column info is set for the view
+            if ($actions_column_info) {
+
+                // Only show the edit button if the view's edit type is popup, no need for the button for inline editing
+                $asset_actions = $view_edit_type_popup ? ["<button type='button' class='btn btn-secondary btn-sm asset-row-action' style='margin:1px; padding: 4px 12px;' role='button' data-action='edit' title='{$actions_tooltips['edit']}'><i class='fa fa-edit'></i></button>"] : [];
+
+                // Different actions are available based on whether we want the verified/unverified/all assets
+                if ($verified === 1) {
+                    // When we display the verified assets the delete button is available
+                    $asset_actions []= "<button class='btn btn-secondary btn-sm asset-row-action' style='margin:1px; padding: 4px 12px;' role='button' data-action='delete' title='{$actions_tooltips['delete']}'><i class='fa fa-trash'></i></button>";
+                } elseif ($verified === 0) {
+                    // When we display the not verified assets both the verify and discard buttons are available
+                    $asset_actions []= "<button class='btn btn-secondary btn-sm asset-row-action' style='margin:1px; padding: 4px 12px;' role='button' data-action='discard' title='{$actions_tooltips['discard']}'><i class='fa fa-trash'></i></button>";
+                    $asset_actions []= "<button class='btn btn-secondary btn-sm asset-row-action' style='margin:1px; padding: 4px 12px;' role='button' data-action='verify' title='{$actions_tooltips['verify']}'><i class='fa fa-check'></i></button>";
+                } else {
+                    
+                    // in case of displaying all assets the presence of the verify button is decided on a per row basis
+                    if (!$asset['verified']) {
+                        $asset_actions []= "<button class='btn btn-secondary btn-sm asset-row-action' style='margin:1px; padding: 4px 12px;' role='button' data-action='discard' title='{$actions_tooltips['discard']}'><i class='fa fa-trash'></i></button>";
+                        $asset_actions []= "<button class='btn btn-secondary btn-sm asset-row-action' style='margin:1px; padding: 4px 12px;' role='button' data-action='verify' title='{$actions_tooltips['verify']}'><i class='fa fa-check'></i></button>";
+                    } else {
+                        $asset_actions []= "<button class='btn btn-secondary btn-sm asset-row-action' style='margin:1px; padding: 4px 12px;' role='button' data-action='delete' title='{$actions_tooltips['delete']}'><i class='fa fa-trash'></i></button>";
+                    }
+                }
+                $row[$actions_column_info['field_name']] = "<span data-id='{$asset['id']}'>" . implode('', $asset_actions) . "</span>";
+            }
+            $rows []= $row;
+        }
+    }
+
+    $recordsFiltered = $filtered ? count($rows) : $recordsTotal;
+
+    if (!$sql_orderable) {
+        usort($rows, function($a, $b) use ($orderDir, $orderColumn){
+            // For identical custom fields we're sorting on the id, so the results' order is not changing randomly
+            if ($a[$orderColumn] === $b[$orderColumn]) {
+                return (int)$a['id'] - (int)$b['id'];
+            }
+            
+            return strcasecmp($a[$orderColumn], $b[$orderColumn]) * ($orderDir === "ASC" ? 1 : -1);
+        });
+    }
+
+    if (!$sql_paging) {
+        // Requesting all results is marked by $length's value being -1. In that case we're not applying the below logic
+        // only when $length is greater than 0
+        if($length > 0) {
+            $page_rows = [];
+            $row_count = count($rows);
+            for($i = $start; $i < $row_count && $i < $start + $length; $i++){
+                $page_rows[] = $rows[$i];
+            }
+            $rows = $page_rows;
+        }
+    }
+
+    $data = [
+        'rows' => $rows,
+        'recordsTotal' => $recordsTotal,
+        'recordsFiltered' => $recordsFiltered,
+    ];
+
+    return $data;
+}
+
+// will be used for the inline editing for the assets
+//TODO: use the update_name_order_for_asset($id, $name) function if encryption is enabled and the name is updated
+function assets_update_asset_field_API($view, $fieldName) {
+    
+    global $field_settings_views, $field_settings, $lang, $escaper;
+    
+    $selected_fields = display_settings_get_display_settings_for_view($view);
+    
+    // Check if the edited field is in the selected fields for the view
+    // no editing for off-screen fields and it also makes sure the field is setup for the view
+    if (!in_array($fieldName, $selected_fields)) {
+        set_alert(true, "bad", $lang['EditFailed_NotSelected']);
+        json_response(400, get_alert(true), NULL);
+    }
+    
+    $view_type = $field_settings_views[$view]['view_type'];
+    
+    
+    // TODO: add check to see if field is editable
+    // TODO: Unique fields
+    // Check if the field is required and if it is, then whether it has a proper value set
+    if (!empty($field_settings[$view_type][$fieldName]['required']) && $field_settings[$view_type][$fieldName]['required'] && empty($_POST['fieldValue'])) {
+        set_alert(true, "bad", $lang['EditFailed_RequiredFieldEmpty']);
+        json_response(400, get_alert(true), NULL);
+    }
+    
+    $id = (int)$_POST['id'];
+    $fieldValue = $_POST['fieldValue'];
+    $customization = customization_extra();
+    
+    // If this is custom field
+    if(stripos($fieldName, "custom_field") !== false) {
+        // If customization extra is enabled
+        if($customization) {
+            // Get the custom field id from the name
+            $custom_field_id = str_replace('custom_field_', '', $fieldName);
+            // Include the extra
+            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+            if (!save_custom_field_values($id, "asset", [$custom_field_id => $fieldValue])) {
+                json_response(400, get_alert(true), NULL);
+            }
+        } else {
+            set_alert(true, "bad", $lang['EditFailed_CustomFieldNeedsCustomization']);
+            json_response(400, get_alert(true), NULL);
+        }
+    } else { // Non-custom fields
+        // Tags handled differently than other fields
+        if ($fieldName === 'tags') {
+            $tags = empty($fieldValue) ? [] : $fieldValue;
+            
+            foreach($tags as $tag){
+                if (strlen($tag) > 255) {
+                    global $lang;
+                    
+                    set_alert(true, "bad", $lang['MaxTagLengthWarning']);
+                    json_response(400, get_alert(true), NULL);
+                }
+            }
+            
+            updateTagsOfType($id, 'asset', $tags);
+        } else {
+            //$updated = update_asset_field_value_by_field_name($id, $fieldName, $fieldValue);
+            
+            // If encryption extra is activated, then encrypt the field's value it if needed
+            if (encryption_extra() && !empty($field_settings[$view_type][$fieldName]['encrypted']) && $field_settings[$view_type][$fieldName]['encrypted']) {
+                $fieldValue = try_encrypt($fieldValue);
+            }
+            
+            // These fields are still comma selected ids, need to remove this part once they're properly converted to use junction tables
+            // and have a separate section for them like for the tags
+            if (($fieldName === "location" || $fieldName === "teams") && is_array($fieldValue)) {
+                $fieldValue = implode(",", $fieldValue);
+            }
+            
+            // Open the database connection
+            $db = db_open();
+            
+            // Update the asset. At this point FieldName is already validated to be an existing field, so no security risk here
+            $stmt = $db->prepare("UPDATE `assets` SET `{$fieldName}` = :value WHERE `id` = :id");
+            $stmt->bindParam(":value", $fieldValue, PDO::PARAM_STR);
+            $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+            $stmt->execute();
+            
+            // Close the database connection
+            db_close($db);
+        }
+        
+        $message = _lang("FieldUpdated_{$view_type}", ['fieldName' => $fieldName, 'name' => get_name_by_value('assets', $id, "", true), 'user' => $_SESSION['user']]);
+        write_log($id, $_SESSION['uid'], $message, "asset");
+    }
+    
+    /* Properly implement this part when finishing inline edits
+     $asset = get_asset_by_id($id);
+     set_alert(true, "good", $lang['AssetWasUpdatedSuccessfully']);
+     if ($fieldName == "tags") {
+     $options = [];
+     foreach(getTagsOfType('asset') as $tag) {
+     $options[] = array('label' => $tag['tag'], 'value' => $tag['id']);
+     }
+     json_response(200, get_alert(true), $options);
+     } else {
+     json_response(200, get_alert(true), null);
+     }*/
+}
+
+// Used to update the asset through the API call
+function assets_update_asset_API($view) {
+    
+    global $field_settings_views, $field_settings, $lang;
+
+    $view_type = $field_settings_views[$view]['view_type'];
+    $id_field = $field_settings_views[$view]['id_field'];
+    $id = (int)$_POST[$id_field];
+
+    // If the asset name is alread taken, but not on this asset
+    $asset_id_tmp = asset_exists($_POST['name']);
+    if (!empty($_POST['name']) && $asset_id_tmp &&  $id !== $asset_id_tmp) {
+        set_alert(true, "bad", _lang('EditFailed_FieldMustBeUnique', ['field' => 'name'], false));
+        json_response(400, get_alert(true), NULL);
+    }
+    
+    // If customization is enabled then gather information about the custom fields
+    if ($customization = customization_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        
+        $active_fields = get_active_fields($view_type);
+        $mapped_custom_field_settings = [];
+        $custom_field_data = [];
+        foreach ($active_fields as $active_field) {
+            // Skip this step for basic fields
+            if ($active_field['is_basic']) {
+                continue;
+            }
+
+            $mapped_custom_field_settings["custom_field_{$active_field['id']}"] = [
+                'field_id' => $active_field['id'],
+                'required' => $active_field['required'],
+                'editable' => true, // Custom fields are always editable for now
+            ];
+        }
+    }
+    
+    $update_parts = [];
+    $params = [":$id_field" => $id];
+    // Do the field validation(like required fields not having a value) and collect the data for the update
+    foreach (field_settings_get_localization($view, false, false) as $field_name => $field_text) {
+
+        // Skipping checks for the ID field here
+        if ($field_name === $id_field) {
+            continue;
+        }
+        
+        // Check if the field is required and if it is, then whether it has a proper value set
+        if (empty($_POST[$field_name]) && ((!empty($field_settings[$view_type][$field_name]) && $field_settings[$view_type][$field_name]['required'])
+            || ($customization && !empty($mapped_custom_field_settings[$field_name]) && $mapped_custom_field_settings[$field_name]['required']))) {
+            set_alert(true, "bad", _lang('EditFailed_RequiredFieldEmpty', ['field' => $field_text]));
+            json_response(400, get_alert(true), NULL);
+        }
+        
+        // check if the field is editable
+        if (((!empty($field_settings[$view_type][$field_name]) && !$field_settings[$view_type][$field_name]['editable']) || ($customization && !empty($mapped_custom_field_settings[$field_name]) && !$mapped_custom_field_settings[$field_name]['editable']))) {
+            // If not editable but it's sent somehow then this is an error
+            if (isset($_POST[$field_name])) {
+                set_alert(true, "bad", _lang('EditFailed_FieldNotEditable', ['field' => $field_text]));
+                json_response(400, get_alert(true), NULL);
+            } else {
+                // otherwise we're just skipping the processing of this field
+                continue;
+            }
+        }
+
+        if ($encryption = encryption_extra()) {
+            require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+        }
+
+        $field_value = $_POST[$field_name] ?? null;
+        // Storing values after validation to update the asset
+        if ($customization && str_starts_with($field_name, 'custom_field_')) {
+            // Storing the field's value so we can save that after the asset is updated
+            $custom_field_data[$mapped_custom_field_settings[$field_name]['field_id']] = $field_value;
+        } else {
+            // These fields are still comma selected ids, need to remove this part once they're properly converted to use junction tables
+            // and have a separate section for them like for the tags
+            if (($field_name === "location" || $field_name === "teams") && is_array($field_value)) {
+                $field_value = implode(",", $field_value);
+            }
+
+            // Tags handled differently than other fields
+            if ($field_name === 'tags') {
+                $tags = $field_value ?? [];
+
+                foreach($tags as $tag){
+                    if (strlen($tag) > 255) {
+                        set_alert(true, "bad", $lang['MaxTagLengthWarning']);
+                        json_response(400, get_alert(true), NULL);
+                    }
+                }
+            } else {
+                // Store the asset name for the audit log before the encryption
+                if ($view_type === 'asset' && $field_name === 'name') {
+                    $asset_name = $field_value;
+                }
+
+                // Encrypt the field if needed
+                if ($encryption && $field_settings[$view_type][$field_name]['encrypted']) {
+                    $field_value = try_encrypt($field_value);
+                }
+
+                // build the parts that'll be used to construct the update
+                $update_parts [] = "`{$field_name}` = :{$field_name}";
+                $params[":{$field_name}"] = $field_value;
+            }
+        }
+    }
+
+    $db = db_open();
+    
+    $stmt = $db->prepare("UPDATE `assets` SET " . implode(',', $update_parts) . " WHERE {$id_field} = :{$id_field};");
+    $stmt->execute($params);
+    
+    db_close($db);
+    
+    // Update tags even when they didn't change as the time we'd win on not saving them is lost on the checks
+    // so if we check and then still have to save we'd basically just wasted time on checking
+    updateTagsOfType($id, $view_type, $tags);
+    
+    if ($customization && !save_custom_field_values($id, $view_type, $custom_field_data)) {
+        // It will basically never happen as we're checking values before even getting to the saving part to make sure we're not saving only half of the data
+        json_response(400, get_alert(true), NULL);
+    }
+
+    //TODO only do this if the name changed
+    if ($encryption) {
+        update_name_order_for_asset($id, $asset_name);
+    }
+
+    $message = _lang("UpdateSuccess_{$view_type}", ['name' => $asset_name, 'user' => $_SESSION['user']]);
+    write_log($id, $_SESSION['uid'], $message, "asset");
 }
 
 ?>

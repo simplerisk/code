@@ -10,9 +10,6 @@
     require_once(realpath(__DIR__ . '/../includes/alerts.php'));
     require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
-
 // Add various security headers
 add_security_headers();
 
@@ -27,28 +24,9 @@ add_session_check($permissions);
 include_csrf_magic();
 
 // Include the SimpleRisk language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
-
-    // If the extra directory exists
-    if (is_dir(realpath(__DIR__ . '/../extras/complianceforgescf')))
-    {
-        // Include the ComplianceForge Extra
-        require_once(realpath(__DIR__ . '/../extras/complianceforgescf/index.php'));
-
-        // If the user wants to activate the extra
-        if (isset($_POST['activate']))
-        {
-            // Enable the ComplianceForge SCF Extra
-            enable_complianceforge_scf_extra();
-        }
-
-        // If the user wants to deactivate the extra
-        if (isset($_POST['deactivate']))
-        {
-            // Disable the ComplianceForge SCF Extra
-            disable_complianceforge_scf_extra();
-        }
-    }
 
 /*********************
  * FUNCTION: DISPLAY *
@@ -64,9 +42,7 @@ function display()
         // But the extra is not activated
         if (!complianceforge_scf_extra())
         {
-            echo "<form name=\"activate\" method=\"post\" action=\"\">\n";
-            echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />\n";
-            echo "</form>\n";
+            echo "<button onclick=\"activateComplianceForgeSCF();\">" . $escaper->escapeHtml($lang['Activate']) . "</button><br />\n";
         }
         // Once it has been activated
         else
@@ -131,43 +107,154 @@ function display()
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");
+        $simplerisk_base_url = get_base_url();
     ?>
     <script type="text/javascript">
-        function blockWithInfoMessage(message) {
-            toastr.options = {
-                "timeOut": "0",
-                "extendedTimeOut": "0",
+            function blockWithInfoMessage(message) {
+                toastr.options = {
+                    "timeOut": "0",
+                    "extendedTimeOut": "0",
+                }
+
+                $('#SCF_wrapper').block({
+                    message: "<?php echo $escaper->escapeHtml($lang['Processing']); ?>",
+                    css: {border: '1px solid black'}
+                });
+                setTimeout(function () {
+                    toastr.info(message);
+                }, 1);
             }
 
-            $('#SCF_wrapper').block({
-                message: "<?php echo $escaper->escapeHtml($lang['Processing']); ?>",
-                css: { border: '1px solid black' }
-            });
-            setTimeout(function(){ toastr.info(message); }, 1);
-        }
+            function blockWithMessage(message) {
+                $('#SCF_wrapper').block({
+                    message: message,
+                    css: {border: '1px solid black'}
+                });
 
-        $(function(){
-            $("#complianceforge_frameworks").multiselect({
-                allSelectedText: "<?php echo $escaper->escapeHtml($lang['AllFrameworks']); ?>",
-                includeSelectAllOption: true,
-                enableCaseInsensitiveFiltering: true,
-            });
-
-            $("form[name='activate']").submit(function(evt) {
-                blockWithInfoMessage("<?php echo $escaper->escapeHtml($lang['ActivatingSCFMessage']); ?>");
                 return true;
-            });
+            }
 
-            $("form[name='deactivate']").submit(function(evt) {
-                blockWithInfoMessage("<?php echo $escaper->escapeHtml($lang['DeactivatingSCFMessage']); ?>");
-                return true;
-            });
+            function activateComplianceForgeSCF() {
+                // Make a call to the API to enable the ComplianceForge SCF framework
+                $.ajax({
+                    type: 'GET',
+                    url: '<?php echo $simplerisk_base_url . '/api/complianceforgescf/enable'; ?>',
+                    async: true,
+                    dataType: 'json',
+                    beforeSend: function() {
+                        blockWithMessage('<?php echo $escaper->escapeHtml($lang['ActivatingSCFMessage']); ?>')
+                    },
+                    success: function (response) {
+                        // Refresh the page
+                        location.reload();
+                    }
+                });
+            }
 
-            $("form[name='refresh_complianceforge_scf'], form[name='complianceforge_scf_frameworks']").submit(function(evt) {
-                blockWithInfoMessage("<?php echo $escaper->escapeHtml($lang['UpdatingSCFMessage']); ?>");
+            function deactivateComplianceForgeSCF() {
+                // Make a call to the API to enable the ComplianceForge SCF framework
+                $.ajax({
+                    type: 'GET',
+                    url: '<?php echo $simplerisk_base_url . '/api/complianceforgescf/disable'; ?>',
+                    async: true,
+                    dataType: 'json',
+                    beforeSend: function() {
+                        blockWithMessage('<?php echo $escaper->escapeHtml($lang['DeactivatingSCFMessage']); ?>')
+                    },
+                    success: function (response) {
+                        // Refresh the page
+                        location.reload();
+                    }
+                });
+            }
+
+            function updateComplianceForgeSCF() {
+                // Make a call to the API to enable the ComplianceForge SCF framework
+                $.ajax({
+                    type: 'GET',
+                    url: '<?php echo $simplerisk_base_url . '/api/complianceforgescf/update'; ?>',
+                    async: true,
+                    dataType: 'json',
+                    beforeSend: function() {
+                        blockWithMessage('<?php echo $escaper->escapeHtml($lang['UpdatingSCFMessage']); ?>')
+                    },
+                    success: function (response) {
+                        // Refresh the page
+                        location.reload();
+                    }
+                });
+            }
+
+            function enableComplianceForgeSCFFrameworks() {
+                // Build an array of selected values
+                var complianceforge_scf_controls_disabled = [];
+                $('#complianceforge_scf_controls_disabled :selected').each(function (i, selected) {
+                    complianceforge_scf_controls_disabled[i] = $(selected).val();
+                });
+
+                // Make a call to the API to enable the ComplianceForge SCF framework
+                $.ajax({
+                    type: 'POST',
+                    url: '<?php echo $simplerisk_base_url . '/api/complianceforgescf/frameworks/enable'; ?>',
+                    data: {'complianceforge_scf_controls_disabled': JSON.stringify(complianceforge_scf_controls_disabled)},
+                    async: true,
+                    dataType: 'json',
+                    beforeSend: function() {
+                        blockWithMessage('<?php echo $escaper->escapeHtml($lang['EnablingSelectedSCFMessage']); ?>')
+                    },
+                    success: function (response) {
+                        // Refresh the page
+                        location.reload();
+                    }
+                });
+
                 return true;
+            }
+
+            function disableComplianceForgeSCFFrameworks() {
+                // Build an array of selected values
+                var complianceforge_scf_controls_enabled = [];
+                $('#complianceforge_scf_controls_enabled :selected').each(function (i, selected) {
+                    complianceforge_scf_controls_enabled[i] = $(selected).val();
+                });
+
+                // Make a call to the API to disable the ComplianceForge SCF framework
+                $.ajax({
+                    type: 'POST',
+                    url: '<?php echo $simplerisk_base_url . '/api/complianceforgescf/frameworks/disable'; ?>',
+                    data: {'complianceforge_scf_controls_enabled': JSON.stringify(complianceforge_scf_controls_enabled)},
+                    async: true,
+                    dataType: 'json',
+                    beforeSend: function() {
+                        blockWithMessage('<?php echo $escaper->escapeHtml($lang['DisablingSelectedSCFMessage']); ?>')
+                    },
+                    success: function (response) {
+                        // Refresh the page
+                        location.reload();
+                    }
+                });
+            }
+
+            $(function () {
+                $("#complianceforge_frameworks").multiselect({
+                    allSelectedText: "<?php echo $escaper->escapeHtml($lang['AllFrameworks']); ?>",
+                    includeSelectAllOption: true,
+                    enableCaseInsensitiveFiltering: true,
+                });
+
+                $('#adListBtnRight').click(function()
+                {
+                    // Enable the selected frameworks
+                    enableComplianceForgeSCFFrameworks();
+                });
+
+                $('#adListBtnLeft').click(function()
+                {
+                    // Disable the selected frameworks
+                    disableComplianceForgeSCFFrameworks();
+                });
+
             });
-        });
     </script>
   </head>
 

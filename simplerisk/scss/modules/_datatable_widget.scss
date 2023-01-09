@@ -1,0 +1,49 @@
+.column-selections-container {
+    label {
+        color: $text-color !important;
+    }
+    ul {
+        list-style:none;
+        margin:0;
+
+        li {
+            border: 1px dotted $border-color;
+            margin:2px 0;
+            padding:5px;
+        }
+    }
+}
+
+.edit-popup-container {
+    label {
+        color: $text-color !important;
+    }
+    span.required {
+        color: $color-3;
+    }
+}
+
+.datatable {
+    td.cell-action {
+        text-align: center;
+    }
+
+    .selectize-dropdown {
+        width: auto !important;
+
+        [data-selectable], .optgroup-header {
+            white-space: nowrap;
+        }
+    }
+
+    textarea.edited-field {
+        height: auto;
+        width: auto;
+    }
+
+    input[type=text].edited-field {
+        margin: unset;
+        height: auto;
+        padding: 5px;
+    }
+}

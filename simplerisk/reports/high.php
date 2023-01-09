@@ -10,9 +10,6 @@
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));
     require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
-
 // Add various security headers
 add_security_headers();
 
@@ -23,6 +20,8 @@ add_session_check();
 include_csrf_magic();
 
 // Include the SimpleRisk language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
     // Record the page the workflow started from as a session variable

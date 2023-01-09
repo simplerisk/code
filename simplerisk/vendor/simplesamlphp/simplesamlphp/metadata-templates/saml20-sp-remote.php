@@ -10,20 +10,27 @@
  * Example SimpleSAMLphp SAML 2.0 SP
  */
 $metadata['https://saml2sp.example.org'] = [
-    'AssertionConsumerService' => 'https://saml2sp.example.org/simplesaml/module.php/saml/sp/saml2-acs.php/default-sp',
-    'SingleLogoutService' => 'https://saml2sp.example.org/simplesaml/module.php/saml/sp/saml2-logout.php/default-sp',
+    'AssertionConsumerService' => 'https://saml2.example.org/module.php/saml/sp/saml2-acs.php/default-sp',
+    'SingleLogoutService' => 'https://saml2sp.example.org/module.php/saml/sp/saml2-logout.php/default-sp',
 ];
 
 /*
  * This example shows an example config that works with Google Workspace (G Suite / Google Apps) for education.
  * What is important is that you have an attribute in your IdP that maps to the local part of the email address at
- * Google Workspace. In example, if your Google account is foo.com, and you have a user that has an email john@foo.com, then you
- * must set the simplesaml.nameidattribute to be the name of an attribute that for this user has the value of 'john'.
+ * Google Workspace. In example, if your Google account is foo.com, and you have a user that has an email john@foo.com,
+ * then you must properly configure the saml:AttributeNameID authproc-filter with the name of an attribute that for
+ * this user has the value of 'john'.
  */
 $metadata['google.com'] = [
     'AssertionConsumerService' => 'https://www.google.com/a/g.feide.no/acs',
     'NameIDFormat' => 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
-    'simplesaml.nameidattribute' => 'uid',
+    'authproc' => [
+      1 => [
+        'saml:AttributeNameID',
+        'attribute' => 'uid',
+        'format' => 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
+      ],
+    ],
     'simplesaml.attributes' => false,
 ];
 

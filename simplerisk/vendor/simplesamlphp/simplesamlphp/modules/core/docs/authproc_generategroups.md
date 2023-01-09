@@ -27,25 +27,23 @@ The following groups will be created:
 * `eduPersonAffiliation-example.org-student`
 * `eduPersonAffiliation-example.org-member`
 
-
 Examples
 --------
 
 Default attributes:
 
-    'authproc' => array(
-        50 => array(
+    'authproc' => [
+        50 => [
             'class' => 'core:GenerateGroups',
-        ),
-    ),
+        ],
+    ],
 
 Custom attributes:
 
-    'authproc' => array(
-        50 => array(
+    'authproc' => [
+        50 => [
             'class' => 'core:GenerateGroups',
             'someAttribute',
             'someOtherAttribute',
-        ),
-    ),
-
+        ],
+    ],

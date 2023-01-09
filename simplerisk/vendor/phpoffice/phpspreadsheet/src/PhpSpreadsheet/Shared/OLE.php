@@ -117,7 +117,7 @@ class OLE
     public function read($filename)
     {
         $fh = fopen($filename, 'rb');
-        if (!$fh) {
+        if ($fh === false) {
             throw new ReaderException("Can't open file $filename");
         }
         $this->_file_handle = $fh;
@@ -251,6 +251,7 @@ class OLE
      */
     private static function readInt1($fileHandle)
     {
+        // @phpstan-ignore-next-line
         [, $tmp] = unpack('c', fread($fileHandle, 1));
 
         return $tmp;
@@ -265,6 +266,7 @@ class OLE
      */
     private static function readInt2($fileHandle)
     {
+        // @phpstan-ignore-next-line
         [, $tmp] = unpack('v', fread($fileHandle, 2));
 
         return $tmp;
@@ -279,6 +281,7 @@ class OLE
      */
     private static function readInt4($fileHandle)
     {
+        // @phpstan-ignore-next-line
         [, $tmp] = unpack('V', fread($fileHandle, 4));
 
         return $tmp;
@@ -346,7 +349,7 @@ class OLE
             if ($pps->Type == self::OLE_PPS_TYPE_DIR || $pps->Type == self::OLE_PPS_TYPE_ROOT) {
                 $nos = [$pps->DirPps];
                 $pps->children = [];
-                while ($nos) {
+                while (!empty($nos)) {
                     $no = array_pop($nos);
                     if ($no != -1) {
                         $childPps = $this->_list[$no];

@@ -69,7 +69,7 @@ class RedisTagAwareAdapter extends AbstractTagAwareAdapter
     public function __construct($redis, string $namespace = '', int $defaultLifetime = 0, MarshallerInterface $marshaller = null)
     {
         if ($redis instanceof \Predis\ClientInterface && $redis->getConnection() instanceof ClusterInterface && !$redis->getConnection() instanceof PredisCluster) {
-            throw new InvalidArgumentException(sprintf('Unsupported Predis cluster connection: only "%s" is, "%s" given.', PredisCluster::class, \get_class($redis->getConnection())));
+            throw new InvalidArgumentException(sprintf('Unsupported Predis cluster connection: only "%s" is, "%s" given.', PredisCluster::class, get_debug_type($redis->getConnection())));
         }
 
         if (\defined('Redis::OPT_COMPRESSION') && ($redis instanceof \Redis || $redis instanceof \RedisArray || $redis instanceof \RedisCluster)) {
@@ -147,7 +147,11 @@ class RedisTagAwareAdapter extends AbstractTagAwareAdapter
     {
         $lua = <<<'EOLUA'
             local v = redis.call('GET', KEYS[1])
-            redis.call('DEL', KEYS[1])
+            local e = redis.pcall('UNLINK', KEYS[1])
+
+            if type(e) ~= 'number' then
+                redis.call('DEL', KEYS[1])
+            end
 
             if not v or v:len() <= 13 or v:byte(1) ~= 0x9D or v:byte(6) ~= 0 or v:byte(10) ~= 0x5F then
                 return ''
@@ -204,7 +208,7 @@ EOLUA;
         // and removes the linked items. When the set is still not empty after
         // the scan, it means we're in cluster mode and that the linked items
         // are on other nodes: we move the links to a temporary set and we
-        // gargage collect that set from the client side.
+        // garbage collect that set from the client side.
 
         $lua = <<<'EOLUA'
             redis.replicate_commands()

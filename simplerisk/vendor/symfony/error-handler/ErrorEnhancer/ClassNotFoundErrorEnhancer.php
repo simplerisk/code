@@ -11,8 +11,7 @@
 
 namespace Symfony\Component\ErrorHandler\ErrorEnhancer;
 
-use Composer\Autoload\ClassLoader as ComposerClassLoader;
-use Symfony\Component\ClassLoader\ClassLoader as SymfonyClassLoader;
+use Composer\Autoload\ClassLoader;
 use Symfony\Component\ErrorHandler\DebugClassLoader;
 use Symfony\Component\ErrorHandler\Error\ClassNotFoundError;
 use Symfony\Component\ErrorHandler\Error\FatalError;
@@ -22,9 +21,6 @@ use Symfony\Component\ErrorHandler\Error\FatalError;
  */
 class ClassNotFoundErrorEnhancer implements ErrorEnhancerInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function enhance(\Throwable $error): ?\Throwable
     {
         // Some specific versions of PHP produce a fatal error when extending a not found class.
@@ -91,23 +87,22 @@ class ClassNotFoundErrorEnhancer implements ErrorEnhancerInterface
                 }
             }
 
-            if ($function[0] instanceof ComposerClassLoader || $function[0] instanceof SymfonyClassLoader) {
+            if ($function[0] instanceof ClassLoader) {
                 foreach ($function[0]->getPrefixes() as $prefix => $paths) {
                     foreach ($paths as $path) {
-                        $classes = array_merge($classes, $this->findClassInPath($path, $class, $prefix));
+                        $classes[] = $this->findClassInPath($path, $class, $prefix);
                     }
                 }
-            }
-            if ($function[0] instanceof ComposerClassLoader) {
+
                 foreach ($function[0]->getPrefixesPsr4() as $prefix => $paths) {
                     foreach ($paths as $path) {
-                        $classes = array_merge($classes, $this->findClassInPath($path, $class, $prefix));
+                        $classes[] = $this->findClassInPath($path, $class, $prefix);
                     }
                 }
             }
         }
 
-        return array_unique($classes);
+        return array_unique(array_merge([], ...$classes));
     }
 
     private function findClassInPath(string $path, string $class, string $prefix): array
@@ -145,7 +140,7 @@ class ClassNotFoundErrorEnhancer implements ErrorEnhancerInterface
         ];
 
         if ($prefix) {
-            $candidates = array_filter($candidates, function ($candidate) use ($prefix) { return 0 === strpos($candidate, $prefix); });
+            $candidates = array_filter($candidates, function ($candidate) use ($prefix) { return str_starts_with($candidate, $prefix); });
         }
 
         // We cannot use the autoloader here as most of them use require; but if the class
@@ -159,7 +154,7 @@ class ClassNotFoundErrorEnhancer implements ErrorEnhancerInterface
 
         try {
             require_once $file;
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return null;
         }
 

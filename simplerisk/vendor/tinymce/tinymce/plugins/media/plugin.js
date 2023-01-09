@@ -1,5 +1,5 @@
 /**
- * TinyMCE version 6.0.0 (2020-03-03)
+ * TinyMCE version 6.3.1 (2022-12-06)
  */
 
 (function () {
@@ -179,6 +179,7 @@
       const registerOption = editor.options.register;
       registerOption('audio_template_callback', { processor: 'function' });
       registerOption('video_template_callback', { processor: 'function' });
+      registerOption('iframe_template_callback', { processor: 'function' });
       registerOption('media_live_embeds', {
         processor: 'boolean',
         default: true
@@ -203,6 +204,7 @@
     };
     const getAudioTemplateCallback = option('audio_template_callback');
     const getVideoTemplateCallback = option('video_template_callback');
+    const getIframeTemplateCallback = option('iframe_template_callback');
     const hasLiveEmbeds = option('media_live_embeds');
     const shouldFilterHtml = option('media_filter_html');
     const getUrlResolver = option('media_url_resolver');
@@ -272,13 +274,14 @@
           }
         }
       }
-      data.source = data.source || data.src || data.data;
+      data.source = data.source || data.src || '';
       data.altsource = data.altsource || '';
       data.poster = data.poster || '';
       return data;
     };
 
     const guess = url => {
+      var _a;
       const mimes = {
         mp3: 'audio/mpeg',
         m4a: 'audio/x-m4a',
@@ -288,9 +291,8 @@
         ogg: 'video/ogg',
         swf: 'application/x-shockwave-flash'
       };
-      const fileEnd = url.toLowerCase().split('.').pop();
-      const mime = mimes[fileEnd];
-      return mime ? mime : '';
+      const fileEnd = (_a = url.toLowerCase().split('.').pop()) !== null && _a !== void 0 ? _a : '';
+      return get$1(mimes, fileEnd).getOr('');
     };
 
     var global$2 = tinymce.util.Tools.resolve('tinymce.html.Node');
@@ -309,8 +311,12 @@
     const updateEphoxEmbed = (data, node) => {
       const style = node.attr('style');
       const styleMap = style ? DOM.parseStyle(style) : {};
-      styleMap['max-width'] = addPx(data.width);
-      styleMap['max-height'] = addPx(data.height);
+      if (isNonNullable(data.width)) {
+        styleMap['max-width'] = addPx(data.width);
+      }
+      if (isNonNullable(data.height)) {
+        styleMap['max-height'] = addPx(data.height);
+      }
       node.attr('style', DOM.serializeStyle(styleMap));
     };
     const sources = [
@@ -357,7 +363,7 @@
                 }
                 break;
               case 'iframe':
-                node.attr('src', data.src);
+                node.attr('src', data.source);
                 break;
               case 'object':
                 const hasImage = node.getAll('img').length > 0;
@@ -472,8 +478,10 @@
       const protocol = getProtocol(url);
       const match = pattern.regex.exec(url);
       let newUrl = protocol + pattern.url;
-      for (let i = 0; i < match.length; i++) {
-        newUrl = newUrl.replace('$' + i, () => match[i] ? match[i] : '');
+      if (isNonNullable(match)) {
+        for (let i = 0; i < match.length; i++) {
+          newUrl = newUrl.replace('$' + i, () => match[i] ? match[i] : '');
+        }
       }
       return newUrl.replace(/\?$/, '');
     };
@@ -486,9 +494,13 @@
       }
     };
 
-    const getIframeHtml = data => {
-      const allowFullscreen = data.allowfullscreen ? ' allowFullscreen="1"' : '';
-      return '<iframe src="' + data.source + '" width="' + data.width + '" height="' + data.height + '"' + allowFullscreen + '></iframe>';
+    const getIframeHtml = (data, iframeTemplateCallback) => {
+      if (iframeTemplateCallback) {
+        return iframeTemplateCallback(data);
+      } else {
+        const allowFullscreen = data.allowfullscreen ? ' allowFullscreen="1"' : '';
+        return '<iframe src="' + data.source + '" width="' + data.width + '" height="' + data.height + '"' + allowFullscreen + '></iframe>';
+      }
     };
     const getFlashHtml = data => {
       let html = '<object data="' + data.source + '" width="' + data.width + '" height="' + data.height + '" type="application/x-shockwave-flash">';
@@ -516,9 +528,10 @@
       return '<script src="' + data.source + '"></script>';
     };
     const dataToHtml = (editor, dataIn) => {
+      var _a;
       const data = global$5.extend({}, dataIn);
       if (!data.source) {
-        global$5.extend(data, htmlToData(data.embed, editor.schema));
+        global$5.extend(data, htmlToData((_a = data.embed) !== null && _a !== void 0 ? _a : '', editor.schema));
         if (!data.source) {
           return '';
         }
@@ -547,13 +560,14 @@
       } else {
         const audioTemplateCallback = getAudioTemplateCallback(editor);
         const videoTemplateCallback = getVideoTemplateCallback(editor);
+        const iframeTemplateCallback = getIframeTemplateCallback(editor);
         data.width = data.width || '300';
         data.height = data.height || '150';
         global$5.each(data, (value, key) => {
           data[key] = editor.dom.encode('' + value);
         });
         if (data.type === 'iframe') {
-          return getIframeHtml(data);
+          return getIframeHtml(data, iframeTemplateCallback);
         } else if (data.sourcemime === 'application/x-shockwave-flash') {
           return getFlashHtml(data);
         } else if (data.sourcemime.indexOf('audio') !== -1) {
@@ -649,7 +663,7 @@
       return dimensions;
     };
     const unwrap = (data, sourceInput) => {
-      const metaData = sourceInput ? extractMeta(sourceInput, data).getOr({}) : {};
+      const metaData = sourceInput && sourceInput !== 'dimensions' ? extractMeta(sourceInput, data).getOr({}) : {};
       const get = getValue(data, metaData, sourceInput);
       return {
         ...get('source'),
@@ -723,7 +737,8 @@
       editor.nodeChanged();
     };
     const submitForm = (prevData, newData, editor) => {
-      newData.embed = updateHtml(newData.embed, newData, false, editor.schema);
+      var _a;
+      newData.embed = updateHtml((_a = newData.embed) !== null && _a !== void 0 ? _a : '', newData, false, editor.schema);
       if (newData.embed && (prevData.source === newData.source || isCached(newData.source))) {
         handleInsert(editor, newData.embed);
       } else {
@@ -747,8 +762,9 @@
         }
       };
       const handleEmbed = api => {
+        var _a;
         const data = unwrap(api.getData());
-        const dataFromEmbed = htmlToData(data.embed, editor.schema);
+        const dataFromEmbed = htmlToData((_a = data.embed) !== null && _a !== void 0 ? _a : '', editor.schema);
         api.setData(wrap(dataFromEmbed));
       };
       const handleUpdate = (api, sourceInput) => {
@@ -928,6 +944,7 @@
       return placeHolder;
     };
     const createPreviewNode = (editor, node) => {
+      var _a;
       const name = node.name;
       const previewWrapper = new global$2('span', 1);
       previewWrapper.attr({
@@ -937,7 +954,7 @@
         'class': 'mce-preview-object mce-object-' + name
       });
       retainAttributesAndInnerHtml(editor, node, previewWrapper);
-      const styles = editor.dom.parseStyle(node.attr('style'));
+      const styles = editor.dom.parseStyle((_a = node.attr('style')) !== null && _a !== void 0 ? _a : '');
       const previewNode = new global$2(name, 1);
       setDimensions(node, previewNode, styles);
       previewNode.attr({
@@ -975,7 +992,8 @@
       return previewWrapper;
     };
     const retainAttributesAndInnerHtml = (editor, sourceNode, targetNode) => {
-      const attribs = sourceNode.attributes;
+      var _a;
+      const attribs = (_a = sourceNode.attributes) !== null && _a !== void 0 ? _a : [];
       let ai = attribs.length;
       while (ai--) {
         const attrName = attribs[ai].name;
@@ -998,11 +1016,12 @@
     };
     const isPageEmbedWrapper = node => {
       const nodeClass = node.attr('class');
-      return nodeClass && /\btiny-pageembed\b/.test(nodeClass);
+      return isString(nodeClass) && /\btiny-pageembed\b/.test(nodeClass);
     };
     const isWithinEmbedWrapper = node => {
-      while (node = node.parent) {
-        if (node.attr('data-ephox-embed-iri') || isPageEmbedWrapper(node)) {
+      let tempNode = node;
+      while (tempNode = tempNode.parent) {
+        if (tempNode.attr('data-ephox-embed-iri') || isPageEmbedWrapper(tempNode)) {
           return true;
         }
       }
@@ -1045,13 +1064,16 @@
         });
         each({ embed: ['wmode'] }, (attrs, name) => {
           const rule = schema.getElementRule(name);
-          each$1(attrs, attr => {
-            rule.attributes[attr] = {};
-            rule.attributesOrder.push(attr);
-          });
+          if (rule) {
+            each$1(attrs, attr => {
+              rule.attributes[attr] = {};
+              rule.attributesOrder.push(attr);
+            });
+          }
         });
         parser.addNodeFilter('iframe,video,audio,object,embed,script', placeHolderConverter(editor));
         serializer.addAttributeFilter('data-mce-object', (nodes, name) => {
+          var _a;
           let i = nodes.length;
           while (i--) {
             const node = nodes[i];
@@ -1062,7 +1084,7 @@
             const realElm = new global$2(realElmName, 1);
             if (realElmName !== 'audio' && realElmName !== 'script') {
               const className = node.attr('class');
-              if (className && className.indexOf('mce-preview-object') !== -1) {
+              if (className && className.indexOf('mce-preview-object') !== -1 && node.firstChild) {
                 realElm.attr({
                   width: node.firstChild.attr('width'),
                   height: node.firstChild.attr('height')
@@ -1075,7 +1097,7 @@
               }
             }
             realElm.attr({ style: node.attr('style') });
-            const attribs = node.attributes;
+            const attribs = (_a = node.attributes) !== null && _a !== void 0 ? _a : [];
             let ai = attribs.length;
             while (ai--) {
               const attrName = attribs[ai].name;

@@ -11,9 +11,6 @@ require_once(realpath(__DIR__ . '/../includes/messages.php'));
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
-
 // Add various security headers
 add_security_headers();
 
@@ -24,6 +21,8 @@ add_session_check();
 include_csrf_magic();
 
 // Include the SimpleRisk language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
     // If the language was changed
@@ -38,6 +37,8 @@ require_once(language_file());
             update_language($_SESSION['uid'], get_name_by_value("languages", $language));
 
             // Use the new language file
+            // Ignoring detections related to language files
+            // @phan-suppress-next-line SecurityCheck-PathTraversal
             require_once(language_file());
 
             // Display an alert
@@ -51,6 +52,13 @@ require_once(language_file());
         }
     }
 
+    // If the user wants to enable or disable MFA
+    if (isset($_POST['mfa_disable']) || isset($_POST['mfa_enable']))
+    {
+        // Redirect to the MFA configuration page
+        header("Location: mfa.php");
+    }
+
     $user_id = $_SESSION['uid'];
     // Get the users information
     $user_info = get_user_by_id($user_id);
@@ -60,7 +68,8 @@ require_once(language_file());
     $manager = $user_info['manager'] ? get_user_name($user_info['manager']) : "-";
     $last_login = format_date($user_info['last_login']);
     $teams = get_names_by_multi_values('team', $user_info['teams'], true);
-    $language = $user_info['lang'];
+    $language = (string)$user_info['lang'];
+    $multi_factor = (int)$user_info['multi_factor'];
     $admin = $user_info['admin'];
 
     $role_id = $user_info['role_id'];
@@ -229,7 +238,7 @@ require_once(language_file());
         }
         
         .admin-info:before {
-            font-family: "Font Awesome 5 Free";
+            font-family: "Font Awesome 6 Free";
             font-weight: "900";
             content: "\f05A";
             display: inline-block;
@@ -262,6 +271,7 @@ require_once(language_file());
                   <tr><td class="profile-data-name"><?php echo $escaper->escapeHtml($lang['Manager']); ?>:</td><td class="profile-data"><?php echo $escaper->escapeHtml($manager); ?></td></tr>
                   <tr><td class="profile-data-name teams"><?php echo $escaper->escapeHtml($lang['Teams']); ?>:</td><td><div class="profile-data teams">
                   <?php
+                    global $escaper;
                     if ($teams) {
                         $teams = array_map(function($team) use ($escaper) {
                             return $escaper->escapeHtml($team);
@@ -288,6 +298,37 @@ require_once(language_file());
                   ?></div></td></tr>
                   <tr><td class="profile-data-name"><?php echo $escaper->escapeHtml($lang['Role']); ?>:</td><td><div class="profile-data"><?php echo $escaper->escapeHtml($role); ?></div></td></tr>
                   <tr><td class="profile-data-name"><i class="admin-info"  title="<?php echo $escaper->escapeHtml($lang['AdminRoleDescription']);?>"></i><?php echo $escaper->escapeHtml($lang['Admin']); ?>:</td><td><div class="profile-data"><?php echo $escaper->escapeHtml(localized_yes_no($admin)); ?></div></td></tr>
+                  <tr><td>&nbsp;</td></tr>
+                  <tr>
+                      <td class ="profile-data-name">MFA:</td>
+                      <td>
+                          <div class="profile-data">
+                          <?php
+
+                          echo ($multi_factor == 1 ? $escaper->escapeHtml($lang['Enabled']) : $escaper->escapeHtml($lang['Disabled']));
+
+                          // If MFA is disabled for this user
+                          if ($multi_factor == 0)
+                          {
+                              // Display the button to enable MFA
+                              echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input name='mfa_enable' type='submit' value='" . $escaper->escapeHtml($lang['EnableMFA']) . "' />";
+                          }
+                          // If MFA is enabled for this user
+                          else
+                          {
+                              // If we do not require MFA for all users
+                              if (!get_setting("mfa_required"))
+                              {
+                                  // Display the button to disable MFA
+                                  echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input name='mfa_disable' type='submit' value='" . $escaper->escapeHtml($lang['DisableMFA']) . "' />";
+                              }
+                          }
+
+                          ?>
+                          </div>
+                      </td>
+                  </tr>
+                  <tr><td>&nbsp;</td></tr>
                   <tr><td class="profile-data-name"><?php echo $escaper->escapeHtml($lang['Language']); ?>:&nbsp;</td><td><?php create_dropdown("languages", get_value_by_name("languages", $language)); ?><input type="submit" name="change_language" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" /></td></tr>
                     <?php
                         // If the API Extra is enabled

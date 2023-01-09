@@ -13,17 +13,15 @@ Parameters
 :   The type of the statistics entry.
 
 `skipPassive`
-:   A boolean indicating whether passive requests should be skipped. Defaults to `FALSE`, in which case the type tag is prefixed with 'passive-'.
-
+:   A boolean indicating whether passive requests should be skipped. Defaults to `false`, in which case the type tag is prefixed with 'passive-'.
 
 Example
 -------
 
 Log the realm of the user:
 
-    45 => array(
+    45 => [
         'class' => 'core:StatisticsWithAttribute',
         'attributename' => 'realm',
         'type' => 'saml20-idp-SSO',
-    ),
-
+    ],

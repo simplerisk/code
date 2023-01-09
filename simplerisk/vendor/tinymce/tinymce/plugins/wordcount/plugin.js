@@ -1,5 +1,5 @@
 /**
- * TinyMCE version 6.0.0 (2020-03-03)
+ * TinyMCE version 6.3.1 (2022-12-06)
  */
 
 (function () {
@@ -237,10 +237,11 @@
       const textBlocks = [];
       let txt = '';
       const treeWalker = new global$1(node, node);
-      while (node = treeWalker.next()) {
-        if (node.nodeType === 3) {
-          txt += removeZwsp$1(node.data);
-        } else if (isNewline(node) && txt.length) {
+      let tempNode;
+      while (tempNode = treeWalker.next()) {
+        if (tempNode.nodeType === 3) {
+          txt += removeZwsp$1(tempNode.data);
+        } else if (isNewline(tempNode) && txt.length) {
           textBlocks.push(txt);
           txt = '';
         }

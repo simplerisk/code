@@ -10,11 +10,10 @@ require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/services.php'));
 
 // Include the language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 /***************************************************
  * FUNCTION: AVAILABLE EXTRAS                      *
@@ -39,7 +38,7 @@ function available_extras()
         array("short_name" => "separation", "long_name" => "Team-Based Separation Extra"),
         array("short_name" => "ucf", "long_name" => "Unified Compliance Framework (UCF) Extra"),
         array("short_name" => "upgrade", "long_name" => "Upgrade Extra"),
-	array("short_name" => "vulnmgmt", "long_name" => "Vulnerability Management Extra"),
+	    array("short_name" => "vulnmgmt", "long_name" => "Vulnerability Management Extra"),
     );
 
     // Return the array of available Extras
@@ -378,7 +377,7 @@ function core_is_purchased($extra)
     $services_api_key = get_setting("services_api_key");
 
     // Create the data to send
-    $data = array(
+    $parameters = array(
         'action' => 'check_purchase',
         'instance_id' => $instance_id,
         'api_key' => $services_api_key,
@@ -388,10 +387,11 @@ function core_is_purchased($extra)
     write_debug_log("Checking for purchase of " . $extra . " for instance ID " . $instance_id);
 
     // Ask the service if the extra is purchased
-    $results = simplerisk_service_call($data);
+    $response = simplerisk_service_call($parameters);
+    $return_code = $response['return_code'];
 
     // If the SimpleRisk service call returned false
-    if (!$results)
+    if ($return_code !== 200)
     {
         write_debug_log("Unable to communicate with the SimpleRisk services API");
 
@@ -401,6 +401,8 @@ function core_is_purchased($extra)
     // If we have valid results from the service call
     else
     {
+        $results = $response['response'];
+        $results = array($results);
         $regex_pattern = "/<result>1<\/result>/";
 
         foreach ($results as $line)
@@ -428,8 +430,8 @@ function core_check_all_purchases()
     // Get the services API key
     $services_api_key = get_setting("services_api_key");
 
-    // Create the data to send
-    $data = array(
+    // Create the parameters to send
+    $parameters = array(
         'action' => 'check_all_purchases',
         'instance_id' => $instance_id,
         'api_key' => $services_api_key,
@@ -443,41 +445,44 @@ function core_check_all_purchases()
         $url = SERVICES_URL . "/index.php";
     } 
     else $url = "https://services.simplerisk.com/index.php";
-    $method = "POST";
-    $header = "Content-Type: application/x-www-form-urlencoded";
-    $content = http_build_query($data);
 
-    // Set the http options
-    $opts = array('http' =>
-        array(
-            'method'  => $method,
-            'header'  => $header,
-            'content' => $content
-        )
-    );
+    // Set the HTTP options
+    $http_options = [
+        'method' => 'POST',
+        'header' => [
+            "Content-Type: application/x-www-form-urlencoded",
+        ],
+    ];
 
-    // Set the default proxy stream context
-    $context = set_proxy_stream_context($method, $header, $content);
+    // If SSL certificate checks are enabled for external requests
+    if (get_setting('ssl_certificate_check_external') == 1)
+    {
+        // Verify the SSL host and peer
+        $validate_ssl = true;
+    }
+    else $validate_ssl = false;
 
     // Make the services call
-    $result = file_get_contents($url, false, $context);
+    $response = fetch_url_content("stream", $http_options, $validate_ssl, $url, $parameters);
+    $return_code = $response['return_code'];
+    $result = $response['response'];
 
     // If we were unable to connect to the URL
-    if(!$result || $result[0] == 'HTTP/1.1 404 Not Found')
+    if($return_code !== 200)
     {
         write_debug_log("SimpleRisk was unable to connect to " . $url);
 
-	// Return false
-	return false;
+	    // Return false
+	    return false;
     }
     // We were able to connect to the URL
     else
     {
         write_debug_log("SimpleRisk successfully connected to " . $url);
 
-	// Return the XML results
-	$xml = simplexml_load_string($result);
-	return $xml;
+	    // Return the XML results
+	    $xml = simplexml_load_string($result);
+	    return $xml;
     }
 }
 
@@ -680,21 +685,33 @@ function extra_simplerisk_version_compatible($extra)
 		$extra_version = core_extra_current_version($extra);
 		write_debug_log("Current version of this extra is " . $extra_version);
 
-		// Configure the proxy server if one exists
-		$method = "GET";
-		$header = "content-type: application/x-www-form-urlencoded\r\n";
-		$context = set_proxy_stream_context($method, $header);
+        // Set the HTTP options
+        $http_options = [
+            'method' => 'GET',
+            'header' => [
+                "Content-Type: application/x-www-form-urlencoded",
+            ],
+        ];
+
+        // If SSL certificate checks are enabled for the SimpleRisk API
+        if (get_setting('ssl_certificate_check_external') == 1)
+        {
+            // Verify the SSL host and peer
+            $validate_ssl = true;
+        }
+        else $validate_ssl = false;
 
 		write_debug_log("Fetching content from the extra compatibility page.");
 
 		// Set the default socket timeout to 5 seconds
 		ini_set('default_socket_timeout', 5);
 
-		// Get the file headers for the URL
-		$file_headers = @get_headers($url, 1);
+        // Make the services call
+        $response = fetch_url_content("stream", $http_options, $validate_ssl, $url);
+        $return_code = $response['return_code'];
 
 		// If we were unable to connect to the URL
-		if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found')
+        if ($return_code !== 200)
 		{
 			write_debug_log("Unable to connect to " . $url);
 			return false;
@@ -703,7 +720,7 @@ function extra_simplerisk_version_compatible($extra)
 		else
 		{
 			// Get the content of the extra compatibility page
-			$extra_compatibility_page = file_get_contents($url, false, $context);
+			$extra_compatibility_page = $response['response'];
 
 			// Parse the XML
 			$ob = simplexml_load_string($extra_compatibility_page);

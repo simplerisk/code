@@ -5,14 +5,12 @@
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/functions.php'));
+    require_once(realpath(__DIR__ . '/../includes/connectivity.php'));
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
     require_once(realpath(__DIR__ . '/../includes/display.php'));
     require_once(realpath(__DIR__ . '/../includes/mail.php'));
     require_once(realpath(__DIR__ . '/../includes/alerts.php'));
     require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -28,6 +26,8 @@ add_session_check($permissions);
 include_csrf_magic();
 
 // Include the SimpleRisk language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
 global $escaper, $lang;
@@ -111,16 +111,26 @@ global $escaper, $lang;
 		$import_export_check = false;
 
         // URL for the frameworks
-        $url = "https://github.com/simplerisk/import-content/raw/master/Control%20Frameworks/frameworks.xml";
+        $url = "https://raw.githubusercontent.com/simplerisk/import-content/master/Control%20Frameworks/frameworks.xml";
 
-        // Configure the proxy server if one exists
-        $method = "GET";
-        $header = "content-type: application/json";
-        $context = set_proxy_stream_context($method, $header);
+        // Set the HTTP options
+        $http_options = [
+                'method' => "GET",
+                'header' => [
+                        "content-type: application/json",
+                ],
+        ];
+
+        // If SSL certificate checks are enabled
+        if (get_setting('ssl_certificate_check_external') == 1)
+        {
+            $validate_ssl = true;
+        }
+        else $validate_ssl = false;
                 
 		// Get the list of frameworks from GitHub
-        $frameworks = @file_get_contents($url, false, $context);
-        $frameworks_xml = simplexml_load_string($frameworks);
+        $frameworks = fetch_url_content("stream", $http_options, $validate_ssl, $url);
+        $frameworks_xml = simplexml_load_string($frameworks['response']);
 
 		// If this is not on the hosted platform and the Import-Export Extra is not purchased
 		if (get_setting('hosting_tier') == false && !core_is_purchased("import-export"))
@@ -170,75 +180,77 @@ global $escaper, $lang;
         // If this is not on the hosted platform and the Risk Assessment Extra is either not purchased, not installed or not activated
         if (get_setting('hosting_tier') == false && (!core_is_purchased("assessments") || !core_is_installed("assessments") || !core_extra_activated("assessments")))
         {
-                // URL for the assessments 
-                $url = "https://raw.githubusercontent.com/simplerisk/import-content/master/Risk%20Assessments/assessments.xml";
+            // URL for the assessments
+            $url = "https://raw.githubusercontent.com/simplerisk/import-content/master/Risk%20Assessments/assessments.xml";
 
-                // HTTP Options
-                $opts = array(
-                        'ssl'=>array(
-                                'verify_peer'=>true,
-                                'verify_peer_name'=>true,
-                        ),
-                        'http'=>array(
-                                'method'=>"GET",
-                                'header'=>"content-type: application/json\r\n",
-                        )
-                );
-                $context = stream_context_create($opts);
+            // Set the HTTP options
+            $http_options = [
+                    'method' => "GET",
+                    'header' => [
+                            "content-type: application/json",
+                    ],
+            ];
 
-                // Get the list of assessments from GitHub
-                $assessments = @file_get_contents($url, false, $context);
-                $assessments_xml = simplexml_load_string($assessments);
+            // If SSL certificate checks are enabled
+            if (get_setting('ssl_certificate_check_external') == 1)
+            {
+                $validate_ssl = true;
+            }
+            else $validate_ssl = false;
 
-                // If this is not on the hosted platform and the Risk Assessment Extra is not purchased
-                if (get_setting('hosting_tier') == false && !core_is_purchased("assessments"))
+            // Get the list of assessments from GitHub
+            $assessments = fetch_url_content("stream", $http_options, $validate_ssl, $url);
+            $assessments_xml = simplexml_load_string($assessments['response']);
+
+            // If this is not on the hosted platform and the Risk Assessment Extra is not purchased
+            if (get_setting('hosting_tier') == false && !core_is_purchased("assessments"))
+            {
+			    // If the Import-Export check passed
+			    if ($import_export_check)
+			    {
+                    echo "<h4><a href=\"register.php\">Purchase</a> the Risk Assessment Extra to gain access to one-click install the following assessments:</h4>";
+			    }
+			    else
+			    {
+				    echo "<h4>The Import-Export and Risk Assessment Extras may be <a href=\"register.php\">purchased</a>, <a href=\"register.php\">installed</a> and <a href=\"register.php\">activated</a> to gain access to one-click install the following assessments:</h4>";
+			    }
+            }
+            // If the Risk Assessment extra is purchased but not installed
+            else if (!core_is_installed("assessments"))
+            {
+                // If the Import-Export check passed
+                if ($import_export_check)
                 {
-			// If the Import-Export check passed
-			if ($import_export_check)
-			{
-                        	echo "<h4><a href=\"register.php\">Purchase</a> the Risk Assessment Extra to gain access to one-click install the following assessments:</h4>";
-			}
-			else
-			{
-				echo "<h4>The Import-Export and Risk Assessment Extras may be <a href=\"register.php\">purchased</a>, <a href=\"register.php\">installed</a> and <a href=\"register.php\">activated</a> to gain access to one-click install the following assessments:</h4>";
-			}
-                }
-                // If the Risk Assessment extra is purchased but not installed
-                else if (!core_is_installed("assessments"))
+                    echo "<h4><a href=\"register.php\">Install</a> your purchased Risk Assessment Extra to gain access to one-click install the following assessments:</h4>";
+			    }
+                else
                 {
-                        // If the Import-Export check passed
-                        if ($import_export_check)
-                        {
-                        	echo "<h4><a href=\"register.php\">Install</a> your purchased Risk Assessment Extra to gain access to one-click install the following assessments:</h4>";
-			}
-                        else
-                        {
-				echo "<h4>The Import-Export and Risk Assessment Extras may be <a href=\"register.php\">purchased</a>, <a href=\"register.php\">installed</a> and <a href=\"register.php\">activated</a> to gain access to one-click install the following assessments:</h4>";
-                        }
+				    echo "<h4>The Import-Export and Risk Assessment Extras may be <a href=\"register.php\">purchased</a>, <a href=\"register.php\">installed</a> and <a href=\"register.php\">activated</a> to gain access to one-click install the following assessments:</h4>";
                 }
-                // If the Risk Assessment extra is purchased and installed but not activated
-                else if (!core_extra_activated("assessments"))
+            }
+            // If the Risk Assessment extra is purchased and installed but not activated
+            else if (!core_extra_activated("assessments"))
+            {
+                // If the Import-Export check passed
+                if ($import_export_check)
                 {
-                        // If the Import-Export check passed
-                        if ($import_export_check)
-                        {
-                        	echo "<h4><a href=\"assessments.php\">Activate</a> your Risk Assessment Extra to gain access to one-click install the following assessments:</h4>";
-			}
-                        else
-                        {
-				echo "<h4>The Import-Export and Risk Assessment Extras may be <a href=\"register.php\">purchased</a>, <a href=\"register.php\">installed</a> and <a href=\"register.php\">activated</a> to gain access to one-click install the following assessments:</h4>";
-                        }
+                    echo "<h4><a href=\"assessments.php\">Activate</a> your Risk Assessment Extra to gain access to one-click install the following assessments:</h4>";
+			    }
+                else
+                {
+				    echo "<h4>The Import-Export and Risk Assessment Extras may be <a href=\"register.php\">purchased</a>, <a href=\"register.php\">installed</a> and <a href=\"register.php\">activated</a> to gain access to one-click install the following assessments:</h4>";
                 }
+            }
 
-                echo "    <ol style=\"list-style-type: disc;\">\n";
+            echo "    <ol style=\"list-style-type: disc;\">\n";
 
-                // For each assessment returned from GitHub
-                foreach ($assessments_xml as $assessment_xml)
-                {
-                        $name = $assessment_xml->{"name"};
-                        echo "      <li>" . $escaper->escapeHtml($name) . "</li>\n";
-                }
-                echo "    </ol>\n";
+            // For each assessment returned from GitHub
+            foreach ($assessments_xml as $assessment_xml)
+            {
+                $name = $assessment_xml->{"name"};
+                echo "      <li>" . $escaper->escapeHtml($name) . "</li>\n";
+            }
+            echo "    </ol>\n";
         }
         // The Risk Assessment Extra is purchased, installed and activated
         else

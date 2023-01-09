@@ -5,9 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
+require_once(realpath(__DIR__ . '/escaper.php'));
 
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
+// Include Escaper for HTML Output Encoding
+$escaper = new simpleriskEscaper();
 
 /*************************************
  * FUNCTION: SIMPLERISK INSTALLATION *
@@ -925,6 +926,7 @@ function step_6_simplerisk_installation()
             break;
     }
 
+    /*
     // If the database file already exists
     $tmp_dir = sys_get_temp_dir();
     $tmp_file_path = $tmp_dir . '/' . $file;
@@ -951,6 +953,50 @@ function step_6_simplerisk_installation()
         // Remove the database file from tmp
         unlink($tmp_file_path);
     }
+    */
+
+    // Check if we want to use a custom branch
+    $branch = defined('DB_BRANCH') ? DB_BRANCH : "master";
+
+    // Download the database schema file to memory
+    $file_url = "https://raw.githubusercontent.com/simplerisk/database/" . $branch . "/" . $file;
+    $web_file = fopen($file_url, "r");
+
+    // If we did not successfully open the file handle
+    if ($web_file === false)
+    {
+        echo "ERROR: Unable to obtain file from ${file_url}";
+        exit(0);
+    }
+
+    $memory_file = fopen("php://memory", "rw");
+
+    // If we did not successfully open the file handle
+    if ($memory_file === false)
+    {
+        echo "ERROR: Unable to open a file handle to memory.";
+        exit(0);
+    }
+
+    // Copy the data from the web file to the memory file
+    $stream_copy_to_stream_result = stream_copy_to_stream($web_file, $memory_file);
+    rewind($memory_file);
+
+    // Close the web file
+    fclose($web_file);
+
+    // If we did not successfully copy from the URL to memory
+    if ($stream_copy_to_stream_result === false)
+    {
+        echo "ERROR: Unable to copy file to memory.";
+        exit(0);
+    }
+
+    // Load the database file
+    load_file($db_host, $db_port, $db_user, $db_pass, $sr_db, $memory_file);
+
+    // Close the memory file
+    fclose($memory_file);
 
     // Add the default admin user
     installer_add_admin_user($username, $email, $full_name, $password);
@@ -964,6 +1010,41 @@ function step_6_simplerisk_installation()
     $stmt = $db->prepare("INSERT INTO `" . $sr_db . "`.`settings` (`name`,`value`) VALUES ('simplerisk_base_url', :simplerisk_base_url)");
     $stmt->bindParam(":simplerisk_base_url", $simplerisk_base_url, PDO::PARAM_STR);
     $stmt->execute();
+
+    // If the SimpleRisk Base URL is using https
+    $parse_url = parse_url($simplerisk_base_url);
+    if ($parse_url['scheme'] == 'https')
+    {
+        // Create a cookie string with the current session ID
+        $strCookie = 'SimpleRisk=' . session_id() . '; path=/';
+
+        // Check if we have a valid SSL certificate
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $simplerisk_base_url);
+        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        curl_setopt($curl, CURLOPT_COOKIE, $strCookie);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
+        $json_result = curl_exec($curl);
+        $json_array = json_decode($json_result, true);
+        curl_close($curl);
+
+        // If the call was successful
+        if ($json_result == true && $json_array['status'] === 200)
+        {
+            // Enable SSL certificate checks
+            // @phan-suppress-next-line SecurityCheck-SQLInjection
+            $stmt = $db->prepare("INSERT INTO `" . $sr_db . "`.`settings` (`name`,`value`) VALUES ('ssl_certificate_check_simplerisk', '1') ON DUPLICATE KEY UPDATE `value`='1';");
+            $stmt->execute();
+        }
+        else
+        {
+            // Disable SSL certificate checks
+            // @phan-suppress-next-line SecurityCheck-SQLInjection
+            $stmt = $db->prepare("INSERT INTO `" . $sr_db . "`.`settings` (`name`,`value`) VALUES ('ssl_certificate_check_simplerisk', '0') ON DUPLICATE KEY UPDATE `value`='0';");
+            $stmt->execute();
+        }
+    }
 
     // Set the default language
     // Ignoring next line detection as it does not describe the reason for the tainted argument
@@ -1310,47 +1391,36 @@ function create_config_file($dbhost, $dbport, $sr_user, $sr_pass, $sr_db, $db_se
 /***********************
  * FUNCTION: LOAD FILE *
  ***********************/
-function load_file($db_host, $db_port, $db_user, $db_pass, $sr_db, $file)
+function load_file($db_host, $db_port, $db_user, $db_pass, $sr_db, $memory_file)
 {
-    // Temporary variable to store current query
-    $templine = "";
-
-    // Read in entire file
-    $lines = file(realpath($file));
-
     // Connect to the simplerisk database
     $db = installer_db_open($db_host, $db_port, $db_user, $db_pass, $sr_db);
 
-    // For each line in the file
+    // Get the data from the memory file
+    $content = stream_get_contents($memory_file);
+
+    // Remove comments from the content
+    $content = preg_replace("/--(.*)\n/", "", $content);
+    $content = preg_replace("/\/\*(.*?)\*\//", "", $content);
+
+    // Get each mysql command
+    $lines = explode(";\n", $content);
+    $lines = array_filter($lines);
+
     foreach ($lines as $line)
     {
-        // Comment pattern
-        $pattern = "(#[^\r\n]+|/\*.*?\*/|//[^\r\n]+|--.*[\r\n])";
-
-        // If the line is a comment
-        if (preg_match($pattern, $line))
-        {
-            // Skip it
-            continue;
-        }
-
-        // Add this line to the current segment
-        $templine .= $line;
-
-        // If it has a semicolon at the end, it's the end of the query
-        if (substr(trim($line), -1, 1) == ';')
+        // If the line is not empty
+        if (preg_match("/[a-zA-Z]+/", $line))
         {
             // Perform the query
-            $stmt = $db->prepare($templine);
+            $stmt = $db->prepare($line);
             try
             {
                 $stmt->execute();
-
-                // Reset the temporary variable to empty
-                $templine = "";
             }
             catch (PDOException $e)
             {
+                echo $line;
                 echo 'Schema load failed: ' . $e->getMessage();
                 installer_db_close($db);
                 return false;
@@ -1419,9 +1489,9 @@ function installer_get_latest_version()
     // Url for SimpleRisk current versions
     if (defined('UPDATES_URL'))
     {
-        $url = UPDATES_URL . '/Current_Version.xml';
+        $url = UPDATES_URL . '/releases.xml';
     }
-    else $url = 'https://updates.simplerisk.com/Current_Version.xml';
+    else $url = 'https://updates.simplerisk.com/releases.xml';
 
     // Set the default socket timeout to 5 seconds
     ini_set('default_socket_timeout', 5);
@@ -1440,12 +1510,14 @@ function installer_get_latest_version()
         // Load the versions file
         if (defined('UPDATES_URL'))
         {
-            $version_page = file_get_contents(UPDATES_URL . '/Current_Version.xml');
+            $version_page = file_get_contents(UPDATES_URL . '/releases.xml');
         }
-        else $version_page = file_get_contents('https://updates.simplerisk.com/Current_Version.xml');
+        else $version_page = file_get_contents('https://updates.simplerisk.com/releases.xml');
 
         // Convert it to be an array
-        $latest_versions = json_decode(json_encode(new SimpleXMLElement($version_page)), true);
+        $releases_array = json_decode(json_encode(new SimpleXMLElement($version_page)), true);
+        $latest_release = reset($releases_array);
+        $latest_versions['appversion'] = $latest_release[0]['@attributes']['version'];
 
         // Adding aliases, as the values not always requested with the same name the XML serves it
         $latest_version = $latest_versions['appversion'];
@@ -1728,7 +1800,7 @@ function installer_add_admin_user($user, $email, $name, $password)
     $type = "simplerisk";
     $role_id = 1;
     $admin = 1;
-    $multi_factor = 1;
+    $multi_factor = 0;
     $change_password = 0;
     $manager = 0;
 

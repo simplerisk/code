@@ -12,13 +12,18 @@ require_once(realpath(__DIR__ . '/alerts.php'));
 require_once(realpath(__DIR__ . '/extras.php'));
 require_once(realpath(__DIR__ . '/authenticate.php'));
 require_once(realpath(__DIR__ . '/healthcheck.php'));
+require_once(realpath(__DIR__ . '/escaper.php'));
+require_once(realpath(__DIR__ . '/highcharts.php'));
+require_once(realpath(__DIR__ . '/mfa.php'));
 
 // Include the language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
+// Include Escaper for HTML Output Encoding
+$escaper = new simpleriskEscaper();
 
 // Set the simplerisk timezone for any datetime functions
 set_simplerisk_timezone();
@@ -236,6 +241,720 @@ $junction_config = array(
 //      -add it to the $junction_config 
 $tag_types = ['risk', 'asset', 'questionnaire_risk', 'questionnaire_answer', 'questionnaire_pending_risk', 'incident_management_source', 'incident_management_destination', 'test', 'test_audit'];
 
+
+// The list of temporary tables mapped by functionality
+// used in the temp_table_cleanup($functionality) function
+$temp_tables = [
+    'dynamic_risk_report' => [
+        'temp_rrsh_last_update_age',
+        'temp_rsh_last_update_age',
+        'temp_contributing_risk_impact_data',
+        'temp_rsh_last_update_age_base',
+        'temp_rrsh_last_update_age_base'
+    ],
+    'asset_name_ordering' => [
+        'temp_asset_order'
+    ]
+];
+
+// add property to mark derived/technical/hidden fields as they're valid fields, but don't have to be validated against active customization fields
+// Have to add searchable/orderable information to risk fields before actively using this for risks
+// Hidden fields are marked by their 'localization_key' being unset/empty
+// Need the encryption info because you can't order by an encrypted field in the sql query
+// select_parts and join_parts are experimental for assets only for now
+// add size to fields where it's relevant to restrict the character size of the input
+
+// Add this in cases where technically it would be possible to order in sql, but the result would be wrong, have to order in PHP by the display string
+//'force_php_ordering' => true,
+
+
+// Use this in case there's an order column for the field, so when encryption is on the logic can still order the results in the sql
+// 'encrypted_order_column' => "`a`.`order_by_name`",
+$field_settings = [
+    'asset' => [
+        'actions' => [
+            'customization_field_name' => '',
+            'localization_key' => 'Actions',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:80px;',
+            'searchable' => false,
+            'orderable' => false,
+            'editable' => false,
+            'select_parts' => [],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        'id' => [
+            'customization_field_name' => '',
+            'localization_key' => '',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => false,
+            'orderable' => true,
+            'order_column' => "`a`.`id`",
+            'editable' => false,
+            'select_parts' => ["`a`.`id`"],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        'name' => [
+            'customization_field_name' => 'AssetName',
+            'localization_key' => 'AssetName',
+            'type' => 'short_text',
+            //'renderer' => "$.fn.dataTable.render.short_text('name')",
+            'required' => true,
+            'encrypted' => true,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "`a`.`name`",
+            'encrypted_order_column' => "`a`.`order_by_name`",
+            'editable' => true,
+            'select_parts' => ["`a`.`name`"],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        'ip' => [
+            'customization_field_name' => 'IPAddress',
+            'localization_key' => 'IPAddress',
+            'type' => 'short_text',
+            //'renderer' => "$.fn.dataTable.render.short_text('ip')",
+            'required' => false,
+            'encrypted' => true,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "`a`.`ip`",
+            'editable' => true,
+            'select_parts' => ["`a`.`ip`"],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        'value' => [
+            'customization_field_name' => 'AssetValuation',
+            'localization_key' => 'AssetValuation',
+            'type' => 'select[asset_valuation]',
+            //'renderer' => "$.fn.dataTable.render.select('asset_valuation')",
+            'required' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'force_php_ordering' => true,
+            'order_column' => "value_display",
+            'editable' => true,
+            'select_parts' => [
+                "`a`.`value`",
+                "
+                    CASE
+                        WHEN `av`.`min_value` = `av`.`max_value` THEN CONCAT('{currency}', FORMAT(`av`.`min_value`, 0), IF(`av`.`valuation_level_name` <> '', CONCAT(' (', `av`.`valuation_level_name`, ')'), ''))
+                        ELSE CONCAT('{currency}', FORMAT(`av`.`min_value`, 0), ' to {currency}', FORMAT(`av`.`max_value`, 0), IF(`av`.`valuation_level_name` <> '', CONCAT(' (', `av`.`valuation_level_name`, ')'), ''))
+                    END AS value_display
+            "],
+            'has_display_field' => true,
+            'join_parts' => ['LEFT JOIN `asset_values` av ON `a`.`value` = `av`.`id`'],
+        ],
+        'location' => [
+            'customization_field_name' => 'SiteLocation',
+            'localization_key' => 'SiteLocation',
+            'type' => 'multiselect[location]',
+            'required' => false,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => false,
+            'editable' => true,
+            //'select_parts' => ["GROUP_CONCAT(DISTINCT `l`.`name` SEPARATOR ', ') as location"],
+            'select_parts' => [// Use it later when the renderers for selects are set up
+                "`a`.`location`",
+                "GROUP_CONCAT(DISTINCT `l`.`name` SEPARATOR ', ') as location_display"
+            ],
+            'has_display_field' => true,
+            'join_parts' => ["LEFT JOIN `location` l ON FIND_IN_SET(`l`.`value`, `a`.`location`)"],
+        ],
+        'teams' => [
+            'customization_field_name' => 'Team',
+            'localization_key' => 'Team',
+            'type' => 'multiselect[team]',
+            'required' => false,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => false,
+            'editable' => true,
+            //'select_parts' => ["GROUP_CONCAT(DISTINCT `t`.`name` SEPARATOR ', ') AS teams"],
+            'select_parts' => [// Use it later when the renderers for selects are set up
+                "`a`.`teams`",
+                "GROUP_CONCAT(DISTINCT `t`.`name` SEPARATOR ', ') AS teams_display"
+            ],
+            'has_display_field' => true,
+            'join_parts' => ["LEFT JOIN `team` t ON FIND_IN_SET(`t`.`value`, `a`.`teams`)"],
+        ],
+        'details' => [
+            'customization_field_name' => 'AssetDetails',
+            'localization_key' => 'AssetDetails',
+            'type' => 'long_text',
+            //'renderer' => "$.fn.dataTable.render.long_text('details')",
+            'required' => false,
+            'encrypted' => true,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "`a`.`details`",
+            'editable' => true,
+            'select_parts' => ["`a`.`details`"],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        'tags' => [
+            'customization_field_name' => 'Tags',
+            'localization_key' => 'Tags',
+            'type' => 'tags',
+            'renderer' => "$.fn.dataTable.render.tags('asset')",
+            'required' => false,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => false,
+            'editable' => true,
+            'select_parts' => ["GROUP_CONCAT(DISTINCT `tg`.`tag` ORDER BY `tg`.`tag` ASC SEPARATOR '|') as tags"],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN `tags_taggees` tt ON `tt`.`taggee_id` = `a`.`id` AND `tt`.`type` = 'asset'
+                 LEFT JOIN `tags` tg ON `tg`.`id` = `tt`.`tag_id`"
+            ],
+        ],
+        'created' => [
+            'customization_field_name' => '',
+            'localization_key' => '',
+            'type' => 'datetime',
+            'required' => true,
+            'encrypted' => false,
+            'technical_field' => true,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "`a`.`created`",
+            'editable' => false,
+            'select_parts' => ["`a`.`created`"],
+            'has_display_field' => true,
+            'join_parts' => [],
+        ],
+        'verified' => [
+            'customization_field_name' => '',
+            'localization_key' => 'Verified',
+            'type' => 'select[yes_no]',
+            'required' => true,
+            'encrypted' => false,
+            'technical_field' => true,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "`a`.`verified`",
+            'editable' => false,
+            'select_parts' => ["`a`.`verified`"],
+            'has_display_field' => true,
+            'join_parts' => [],
+        ],
+    ],
+    'risk' => [
+        'id' => [
+            'customization_field_name' => 'ID',
+            'localization_key' => 'ID',
+            'technical_field' => true,
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'risk_status' => [
+            'customization_field_name' => 'Status',
+            'localization_key' => 'Status',
+            'technical_field' => true,
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'closure_date' => [
+            'customization_field_name' => 'DateClosed',
+            'localization_key' => 'DateClosed',
+            'technical_field' => true,
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'subject' => [
+            'customization_field_name' => 'Subject',
+            'localization_key' => 'Subject',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:250px;',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'reference_id' => [
+            'customization_field_name' => 'ExternalReferenceId',
+            'localization_key' => 'ExternalReferenceId',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'regulation' => [
+            'customization_field_name' => 'ControlRegulation',
+            'localization_key' => 'ControlRegulation',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'control_number' => [
+            'customization_field_name' => 'ControlNumber',
+            'localization_key' => 'ControlNumber',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'location' => [
+            'customization_field_name' => 'SiteLocation',
+            'localization_key' => 'SiteLocation',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'source' => [
+            'customization_field_name' => 'RiskSource',
+            'localization_key' => 'RiskSource',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'category' => [
+            'customization_field_name' => 'Category',
+            'localization_key' => 'Category',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'team' => [
+            'customization_field_name' => 'Team',
+            'localization_key' => 'Team',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'additional_stakeholders' => [
+            'customization_field_name' => 'AdditionalStakeholders',
+            'localization_key' => 'AdditionalStakeholders',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'technology' => [
+            'customization_field_name' => 'Technology',
+            'localization_key' => 'Technology',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'owner' => [
+            'customization_field_name' => 'Owner',
+            'localization_key' => 'Owner',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'manager' => [
+            'customization_field_name' => 'OwnersManager',
+            'localization_key' => 'OwnersManager',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'submitted_by' => [
+            'customization_field_name' => 'SubmittedBy',
+            'localization_key' => 'SubmittedBy',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'risk_tags' => [
+            'customization_field_name' => 'Tags',
+            'localization_key' => 'Tags',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'scoring_method' => [
+            'customization_field_name' => 'RiskScoringMethod',
+            'localization_key' => 'RiskScoringMethod',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'calculated_risk' => [
+            'customization_field_name' => 'InherentRisk',
+            'localization_key' => 'InherentRisk',
+            'technical_field' => true,
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'residual_risk' => [
+            'customization_field_name' => 'ResidualRisk',
+            'localization_key' => 'ResidualRisk',
+            'technical_field' => true,
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'submission_date' => [
+            'customization_field_name' => 'SubmissionDate',
+            'localization_key' => 'SubmissionDate',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'project' => [
+            'customization_field_name' => 'Project',
+            'localization_key' => 'Project',
+            'technical_field' => true,
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'days_open' => [
+            'customization_field_name' => 'DaysOpen',
+            'localization_key' => 'DaysOpen',
+            'technical_field' => true,
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'affected_assets' => [
+            'customization_field_name' => 'AffectedAssets',
+            'localization_key' => 'AffectedAssets',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'risk_assessment' => [
+            'customization_field_name' => 'RiskAssessment',
+            'localization_key' => 'RiskAssessment',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'additional_notes' => [
+            'customization_field_name' => 'AdditionalNotes',
+            'localization_key' => 'AdditionalNotes',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'risk_mapping' => [
+            'customization_field_name' => 'RiskMapping',
+            'localization_key' => 'RiskMapping',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'threat_mapping' => [
+            'customization_field_name' => 'ThreatMapping',
+            'localization_key' => 'ThreatMapping',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'mitigation_planned' => [
+            'customization_field_name' => 'MitigationPlanned',
+            'localization_key' => 'MitigationPlanned',
+            'technical_field' => true,
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'planning_strategy' => [
+            'customization_field_name' => 'PlanningStrategy',
+            'localization_key' => 'PlanningStrategy',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'planning_date' => [
+            'customization_field_name' => 'MitigationPlanning',
+            'localization_key' => 'MitigationPlanning',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'mitigation_effort' => [
+            'customization_field_name' => 'MitigationEffort',
+            'localization_key' => 'MitigationEffort',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'mitigation_cost' => [
+            'customization_field_name' => 'MitigationCost',
+            'localization_key' => 'MitigationCost',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'mitigation_owner' => [
+            'customization_field_name' => 'MitigationOwner',
+            'localization_key' => 'MitigationOwner',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'mitigation_team' => [
+            'customization_field_name' => 'MitigationTeam',
+            'localization_key' => 'MitigationTeam',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'mitigation_accepted' => [
+            'customization_field_name' => 'AcceptMitigation',
+            'localization_key' => 'MitigationAccepted',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'mitigation_percent' => [
+            'customization_field_name' => 'MitigationPercent',
+            'localization_key' => 'MitigationPercent',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'mitigation_date' => [
+            'customization_field_name' => 'MitigationDate',
+            'localization_key' => 'MitigationDate',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'mitigation_controls' => [
+            'customization_field_name' => 'MitigationControls',
+            'localization_key' => 'MitigationControls',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'current_solution' => [
+            'customization_field_name' => 'CurrentSolution',
+            'localization_key' => 'CurrentSolution',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'security_recommendations' => [
+            'customization_field_name' => 'SecurityRecommendations',
+            'localization_key' => 'SecurityRecommendations',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'security_requirements' => [
+            'customization_field_name' => 'SecurityRequirements',
+            'localization_key' => 'SecurityRequirements',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'management_review' => [
+            'customization_field_name' => 'ManagementReview',
+            'localization_key' => 'ManagementReview',
+            'technical_field' => true,
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'review_date' => [
+            'customization_field_name' => 'ReviewDate',
+            'localization_key' => 'ReviewDate',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'next_review_date' => [
+            'customization_field_name' => 'NextReviewDate',
+            'localization_key' => 'NextReviewDate',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'next_step' => [
+            'customization_field_name' => 'NextStep',
+            'localization_key' => 'NextStep',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+        'comments' => [
+            'customization_field_name' => 'Comment',
+            'localization_key' => 'Comments',
+            'searchable' => true,
+            'orderable' => true,
+        ],
+    ],
+];
+
+$field_settings_display_groups = [
+    'asset_fields' => [
+        'header_key' => 'Assets',
+        'field_type' => 'asset',
+        'fields' => [
+            'id',
+            'name',
+            'ip',
+            'value',
+            'location',
+            'teams',
+            'details',
+            'tags',
+            //'verified',
+        ],
+    ],
+    'risk_details' => [
+        'header_key' => 'RiskColumns',
+        'field_type' => 'risk',
+        'customization_tab_index' => 1,
+        'fields' => [
+            'id',
+            'risk_status',
+            'closure_date',
+            'subject',
+            'reference_id',
+            'regulation',
+            'control_number',
+            'location',
+            'source',
+            'category',
+            'team',
+            'additional_stakeholders',
+            'technology',
+            'owner',
+            'manager',
+            'submitted_by',
+            'risk_tags',
+            'scoring_method',
+            'calculated_risk',
+            'residual_risk',
+            'submission_date',
+            'project',
+            'days_open',
+            'affected_assets',
+            'risk_assessment',
+            'additional_notes',
+            'risk_mapping',
+            'threat_mapping',
+        ],
+    ],
+    'mitigation' => [
+        'header_key' => 'MitigationColumns',
+        'field_type' => 'risk',
+        'customization_tab_index' => 2,
+        'fields' => [
+            'mitigation_planned',
+            'planning_strategy',
+            'planning_date',
+            'mitigation_effort',
+            'mitigation_cost',
+            'mitigation_owner',
+            'mitigation_team',
+            'mitigation_accepted',
+            'mitigation_date',
+            'mitigation_controls',
+            'current_solution',
+            'security_recommendations',
+            'security_requirements',
+            'mitigation_percent',
+        ],
+    ],
+    'review' => [
+        'header_key' => 'ReviewColumns',
+        'field_type' => 'risk',
+        'customization_tab_index' => 3,
+        'fields' => [
+            'management_review',
+            'review_date',
+            'next_review_date',
+            'next_step',
+            'comments',
+        ],
+    ],
+];
+
+$field_settings_views = [
+    'asset_verified' => [
+        'view_type' => 'asset',
+        'id_field' => 'id',
+        'datatable_ajax_uri' => '/api/assets/view/asset_data?view=asset_verified&verified=1',
+        'datatable_data_type' => 'associative',
+        'datatable_filter_submit_delay' => 400,
+        'groups' => [
+            'asset_fields',
+        ],
+        'default_enabled_columns' => [
+            'name',
+            'value',
+            'location',
+            'teams',
+            'details',
+            'tags',
+        ],
+        'actions_column' => [
+            'field_name' => 'actions',
+            'position' => 'first'
+        ],
+        'edit' => [
+            'type' => 'popup',
+            'edit_ajax_uri' => '/api/assets/update_asset',
+        ],
+        /*'edit' => [
+         'type' => 'inline',
+         'edit_ajax_uri' => '/api/assets/update_asset_field',
+         ],*/
+    ],
+    'asset_unverified' => [
+        'view_type' => 'asset',
+        'id_field' => 'id',
+        'datatable_ajax_uri' => '/api/assets/view/asset_data?view=asset_unverified&verified=0',
+        'datatable_data_type' => 'associative',
+        'datatable_filter_submit_delay' => 400,
+        'groups' => [
+            'asset_fields'
+        ],
+        'default_enabled_columns' => [
+            'name',
+            'value',
+            'location',
+            'teams',
+            'details',
+            'tags',
+        ],
+        'actions_column' => [
+            'field_name' => 'actions',
+            'position' => 'first'
+        ],
+        'edit' => [
+            'type' => 'popup',
+            'edit_ajax_uri' => '/api/assets/update_asset',
+        ],
+        /*'edit' => [
+         'type' => 'inline',
+         'edit_ajax_uri' => '/api/assets/update_asset_field',
+         ],*/
+    ],
+    
+    'perform_reviews' => [
+        'view_type' => 'risk',
+        'datatable_ajax_uri' => '/api/risk_management/managment_review',
+        'datatable_data_type' => 'list',
+        'groups' => [
+            'risk_details',
+            'mitigation',
+            'review'
+        ],
+        'default_enabled_columns' => [
+            'id',
+            'risk_status',
+            'subject',
+            'calculated_risk',
+            'submission_date',
+            'mitigation_planned',
+            'management_review',
+        ],
+    ],
+    'plan_mitigation' => [
+        'view_type' => 'risk',
+        'datatable_ajax_uri' => '/api/risk_management/plan_mitigation',
+        'datatable_data_type' => 'list',
+        'groups' => [
+            'risk_details',
+            'mitigation',
+            'review'
+        ],
+        'default_enabled_columns' => [
+            'id',
+            'risk_status',
+            'subject',
+            'calculated_risk',
+            'submission_date',
+            'mitigation_planned',
+            'management_review',
+        ],
+    ],
+    'review_regularly' => [
+        'view_type' => 'risk',
+        'datatable_ajax_uri' => '/api/risk_management/review_risks',
+        'datatable_data_type' => 'list',
+        'groups' => [
+            'risk_details',
+            'mitigation',
+            'review'
+        ],
+        'default_enabled_columns' => [
+            'id',
+            'risk_status',
+            'subject',
+            'calculated_risk',
+            'days_open',
+            'management_review',
+            'review_date',
+            'next_step',
+            'next_review_date',
+        ],
+    ],
+    
+];
+
 /******************************
  * FUNCTION: DATABASE CONNECT *
  ******************************/
@@ -435,7 +1154,7 @@ function get_name_value_array_from_text_array($text_array, $delimiter1=",", $del
     $unique_name_values = [];
     foreach($text_array as $text)
     {
-        $unique_name_values = array_merge($unique_name_values, explode($delimiter1, $text));
+        $unique_name_values = array_merge($unique_name_values, explode($delimiter1, (string)$text));
     }
     
     $unique_name_values = array_unique(array_map("trim", $unique_name_values));
@@ -898,6 +1617,8 @@ function get_custom_table($type)
                 `g`.`order`,
                 `c`.`order`;
         ");
+    } elseif($type == "asset_valuation") {
+        $stmt = $db->prepare("SELECT * FROM `asset_values` ORDER BY `min_value` ASC;");
     }
 
     // Execute the database query
@@ -921,6 +1642,24 @@ function get_custom_table($type)
         usort($array, function($a, $b){
             return strcmp( strtolower(trim($a['name'])), strtolower(trim($b['name'])));
         });
+    }
+
+    if($type == "asset_valuation") {
+        global $escaper;
+        $currency_sign = $escaper->escapeHtml(get_setting("currency"));
+        $result = [];
+        foreach ($array as $asset_value) {
+            $valuation_level_name = !empty($asset_value['valuation_level_name']) ? " ({$escaper->escapeHtml($asset_value['valuation_level_name'])})" : '';
+
+            if ($asset_value['min_value'] === $asset_value['max_value']) {
+                $asset_value_name = "{$currency_sign}{$escaper->escapeHtml(number_format($asset_value['min_value']))}{$valuation_level_name}";
+            } else {
+                $asset_value_name = "{$currency_sign}{$escaper->escapeHtml(number_format($asset_value['min_value']))} to {$currency_sign}{$escaper->escapeHtml(number_format($asset_value['max_value']))}{$valuation_level_name}";
+            }
+            $result []= ['value' => $asset_value['id'], 'name' => $asset_value_name];
+        }
+
+        return $result;
     }
 
     // Localize test results names
@@ -948,7 +1687,7 @@ function get_custom_table($type)
 function get_options_from_table($name)
 {
     global $lang, $escaper;
-    
+
     // If we want a table that should be ordered by name instead of value
     if (in_array($name, array("category", "technology",
         "location", "regulation", "projects", "file_types", "file_type_extensions",
@@ -956,10 +1695,21 @@ function get_options_from_table($name)
 
         $options = get_table_ordered_by_name($name);
     }
-    else if (in_array($name, array("user", "team", "enabled_users", "disabled_users", "enabled_users_all", "disabled_users_all", "languages", "family", "date_formats",
+    elseif (in_array($name, array("user", "team", "enabled_users", "disabled_users", "enabled_users_all", "disabled_users_all", "languages", "family", "date_formats",
             "parent_frameworks", "frameworks", "framework_controls", "risk_tags", "asset_tags", "test_results", "test_results_filter",
-            "policies", "framework_control_tests", "risk_catalog", "threat_catalog", "risk_catalog_grouped", "threat_catalog_grouped", "remote_team-SAML", "remote_role-SAML", "remote_team-LDAP", "data_classification"))) {
+            "policies", "framework_control_tests", "risk_catalog", "threat_catalog", "risk_catalog_grouped", "threat_catalog_grouped", "remote_team-SAML", "remote_role-SAML", "remote_team-LDAP", "data_classification", "asset_valuation"))) {
         $options = get_custom_table($name);
+    }elseif ($name === "yes_no") {
+        $options = [
+            [
+                'value' => 0,
+                'name' => $lang['No']
+            ],
+            [
+                'value' => 1,
+                'name' => $lang['Yes']
+            ]
+        ];
     }
     // Otherwise
     else
@@ -2009,6 +2759,9 @@ function update_or_insert_setting($name, $value)
  ****************************/
 function update_setting($name, $value)
 {
+    $old_value = get_setting($name);
+    // if setting value is not changed will be return;
+    if($old_value == $value) return;
     // Open the database connection
     $db = db_open();
 
@@ -2069,11 +2822,15 @@ function delete_setting($name)
 /*************************
  * FUNCTION: GET SETTING *
  *************************/
-function get_setting($setting, $default=false)
+function get_setting($setting, $default=false, $cached=true)
 {
-    $key = 'setting_'.$setting;
-    if(isset($GLOBALS[$key])){
-        return $GLOBALS[$key];
+    // If we want to cache the setting
+    if ($cached)
+    {
+        $key = 'setting_'.$setting;
+        if(isset($GLOBALS[$key])){
+            return $GLOBALS[$key];
+        }
     }
 
     // Open the database connection
@@ -2106,9 +2863,16 @@ function get_setting($setting, $default=false)
     {
         $result = $value;
     }
-    $GLOBALS[$key] = $result;
-    
-    return $GLOBALS[$key];
+
+    // If we want to cache the setting
+    if ($cached)
+    {
+        // Put the setting in the global variable and then return it
+        $GLOBALS[$key] = $result;
+        return $GLOBALS[$key];
+    }
+    // Otherwise just return the result
+    else return $result;
 }
 
 /************************************************************
@@ -2819,7 +3583,7 @@ function check_valid_specials($password)
 /************************************
  * FUNCTION: UPDATE PASSWORD POLICY *
  ************************************/
-function update_password_policy($strict_user_validation, $pass_policy_enabled, $min_characters, $alpha_required, $upper_required, $lower_required, $digits_required, $special_required, $pass_policy_attempt_lockout, $pass_policy_attempt_lockout_time, $pass_policy_min_age, $pass_policy_max_age, $pass_policy_reuse_limit)
+function update_password_policy($strict_user_validation, $mfa_required, $pass_policy_enabled, $min_characters, $alpha_required, $upper_required, $lower_required, $digits_required, $special_required, $pass_policy_attempt_lockout, $pass_policy_attempt_lockout_time, $pass_policy_min_age, $pass_policy_max_age, $pass_policy_reuse_limit)
 {
     // Open the database connection
     $db = db_open();
@@ -2828,6 +3592,18 @@ function update_password_policy($strict_user_validation, $pass_policy_enabled, $
     $stmt = $db->prepare("UPDATE `settings` SET value=:strict_user_validation WHERE name='strict_user_validation'");
     $stmt->bindParam(":strict_user_validation", $strict_user_validation, PDO::PARAM_INT, 1);
     $stmt->execute();
+
+    // If we are requiring MFA for all users
+    if ($mfa_required)
+    {
+        // Enable MFA for all users
+        enable_mfa_for_all_users();
+    }
+    // Otherwise, disable any unverified MFA accounts
+    else disable_mfa_for_unverified_users();
+
+    // Update MFA required
+    update_or_insert_setting('mfa_required', $mfa_required);
 
     // Update the password policy
     $stmt = $db->prepare("UPDATE `settings` SET value=:pass_policy_enabled WHERE name='pass_policy_enabled'");
@@ -2897,6 +3673,14 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
         'mitigation_planned',
         'management_review'
     ));
+
+    // If we require MFA for all users
+    if (get_setting("mfa_required"))
+    {
+        // Set the multi_factor value to enabled regardless of the value passed
+        $multi_factor = 1;
+    }
+
     // Open the database connection
     $db = db_open();
 
@@ -2915,7 +3699,8 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
                 `multi_factor`,
                 `change_password`,
                 `manager`,
-                `custom_display_settings`
+                `custom_display_settings`,
+                `lang`
             )
         VALUES (
             :type,
@@ -2929,7 +3714,8 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
             :multi_factor,
             :change_password,
             :manager,
-            :custom_display_settings
+            :custom_display_settings,
+            ''
         );
     ");
     $stmt->bindParam(":type", $type, PDO::PARAM_STR);
@@ -2958,6 +3744,13 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
     set_teams_of_user($user_id, $teams);
 
     update_permissions($user_id, $permissions);
+
+    // If we require MFA for all users or this user should have MFA enabled
+    if ($multi_factor === 1 || get_setting("mfa_required"))
+    {
+        // Create a MFA secret for this user
+        create_mfa_secret_for_uid($user_id);
+    }
     
     // Audit log
     if(!empty($_SESSION['uid']))
@@ -2980,8 +3773,8 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
 /*************************
  * FUNCTION: UPDATE USER *
  *************************/
-function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id, $language, $admin, $multi_factor, $change_password, $manager, $permissions=[]) {
-
+function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id, $language, $admin, $multi_factor, $change_password, $manager, $permissions=[])
+{
     // Getting the pre-update version of the user for audit logging
     $pre_update_user = get_user_by_id($user_id, true);
 
@@ -2989,11 +3782,11 @@ function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id,
     // It's only true when the user wasn't locked, but with this call it'll be
     $user_got_locked = !is_user_locked_out($user_id) && (int)$lockout == 1;
 
-    // If the language is empty
-    if ($language == "")
+    // If we require MFA for all users
+    if (get_setting("mfa_required"))
     {
-        // Set the value to null
-        $language = NULL;
+        // Set the multi_factor value to enabled regardless of the value passed
+        $multi_factor = 1;
     }
 
     // Open the database connection
@@ -3158,9 +3951,10 @@ function get_user_by_id($id, $include_permissions = false)
     // Get the user information
     $stmt = $db->prepare("
         SELECT
-            u.*, GROUP_CONCAT(DISTINCT `t`.`value`) as teams
+            u.*, um.verified as mfa_verified, GROUP_CONCAT(DISTINCT `t`.`value`) as teams
         FROM
             `user` u
+            LEFT JOIN `user_mfa` um ON `um`.`uid` = `u`.`value`
             LEFT JOIN `user_to_team` u2t ON `u2t`.`user_id` = `u`.`value`
             LEFT JOIN `team` t ON `u2t`.`team_id` = `t`.`value` OR `u`.`admin` = 1
         WHERE
@@ -3241,7 +4035,7 @@ function core_get_mapping_value($prefix, $type, $mappings, $csv_line)
         $value = $csv_line[$key];
 
         // Return the value
-        return trim($value);
+        return trim((string)$value);
     }
     else return null;
 }
@@ -3249,21 +4043,21 @@ function core_get_mapping_value($prefix, $type, $mappings, $csv_line)
 /*****************************
  * FUNCTION: GET OR ADD USER *
  *****************************/
-function core_get_or_add_user($type, $mappings, $csv_line)
+function core_get_mapping_user($type, $mappings, $csv_line)
 {
     // Get the mapping value
-    $value = core_get_mapping_value("risks_", $type, $mappings, $csv_line);
+    $value = (string) core_get_mapping_value("risks_", $type, $mappings, $csv_line);
 
     // Search the corresponding table for the value
     $value_id = get_value_by_name("user", $value);
 
-    // If the value id was not found (the user does not exist)
-    if (is_null($value_id))
-    {
-        // Get the value id for the Admin user instead
-//        $value_id = get_value_by_name("user", "Admin");
-        $value_id = 0;
-    }
+//     // If the value id was not found (the user does not exist)
+//     if (is_null($value_id))
+//     {
+//         // Get the value id for the Admin user instead
+// //        $value_id = get_value_by_name("user", "Admin");
+//         $value_id = 0;
+//     }
 
     // Return the value_id
     return $value_id;
@@ -10346,24 +11140,34 @@ function latest_versions() {
     // Url for SimpleRisk current versions
     if (defined('UPDATES_URL'))
     {   
-        $url = UPDATES_URL . '/Current_Version.xml';
+        $url = UPDATES_URL . '/releases.xml';
     }
-    else $url = 'https://updates.simplerisk.com/Current_Version.xml';
+    else $url = 'https://updates.simplerisk.com/releases.xml';
     write_debug_log("Checking latest versions at " . $url);
 
-    // Configure the proxy server if one exists
-    $method = "GET";
-    $header = "content-type: Content-Type: application/x-www-form-urlencoded";
-    $context = set_proxy_stream_context($method, $header);
+    // Set the HTTP options
+    $http_options = [
+        'method' => 'GET',
+        'header' => [
+            "Content-Type: application/x-www-form-urlencoded",
+        ],
+        'timeout' => 5,
+    ];
 
-    // Set the default socket timeout to 5 seconds
-    ini_set('default_socket_timeout', 5);
+    // If SSL certificate checks are enabled for external requests
+    if (get_setting('ssl_certificate_check_external') == 1)
+    {
+        // Verify the SSL host and peer
+        $validate_ssl = true;
+    }
+    else $validate_ssl = false;
 
-    // Get the file headers for the URL
-    $file_headers = @get_headers($url, 1);
+    // Get the response
+    $response = fetch_url_content("curl", $http_options, $validate_ssl, $url);
+    $return_code = $response['return_code'];
 
     // If we were unable to connect to the URL
-    if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found')
+    if($return_code !== 200)
     {           
         write_debug_log("SimpleRisk was unable to connect to " . $url);
 
@@ -10375,21 +11179,61 @@ function latest_versions() {
     else
     {
         write_debug_log("SimpleRisk connected to " . $url);
-
-        // Load the versions file
-        if (defined('UPDATES_URL'))
-        {   
-            $version_page = file_get_contents(UPDATES_URL . '/Current_Version.xml', false, $context);
-        }
-        else $version_page = file_get_contents('https://updates.simplerisk.com/Current_Version.xml', false, $context);
+        $version_page = $response['response'];
 
         // Convert it to be an array
-        $latest_versions = json_decode(json_encode(new SimpleXMLElement($version_page)), true);
+        //$latest_versions = json_decode(json_encode(new SimpleXMLElement($version_page)), true);
+        //$latest_versions = new SimpleXMLElement($version_page);
+        $releases = simplexml_load_string($version_page);
+        $releases_array = json_decode(json_encode($releases), true);
+        $latest_release = reset($releases_array);
+        $latest_versions['version'] = $latest_release[0]['@attributes']['version'];
+        $latest_versions['appversion'] = $latest_release[0]['@attributes']['version'];
+        $latest_versions['app'] = $latest_release[0]['@attributes']['version'];
+        $latest_versions['dbversion'] = $latest_release[0]['@attributes']['version'];
+        $latest_versions['db'] = $latest_release[0]['@attributes']['version'];
+        $latest_versions['release_date'] = $latest_release[0]['release_date'];
+        $latest_versions['release_number'] = $latest_release[0]['release_number'];
+        $latest_versions['next_release'] = $latest_release[0]['next_release'];
+        $latest_versions['bundle_md5'] = $latest_release[0]['bundle_md5'];
+        $latest_versions['installer_md5'] = $latest_release[0]['installer_md5'];
+        $latest_versions['database_schema'] = $latest_release[0]['database_schema'];
+        $latest_versions['release_notes'] = $latest_release[0]['release_notes'];
+        $latest_versions['release_update'] = $latest_release[0]['release_update'];
 
-        // Adding aliases, as the values not always requested with the same name the XML serves it
-        $latest_versions['import-export'] = $latest_versions['importexport'];
-        $latest_versions['app'] = $latest_versions['appversion'];
-        $latest_versions['db'] = $latest_versions['dbversion'];
+        // Get the list of available extras
+        $available_extras = available_extras();
+
+        // For each available extra
+        foreach($available_extras as $extra)
+        {
+            // Get the short name of the extra
+            $short_name = $extra['short_name'];
+
+            // Get the latest version of the extra
+            $extra_versions = $latest_release[4]['extras'][$short_name];
+
+            // If theres multiple versions of the extra for this release
+            if (count($extra_versions) > 1)
+            {
+                // Set the latest version to null
+                $latest_versions[$short_name] = null;
+
+                // For each of the different versions
+                foreach ($extra_versions as $key => $value)
+                {
+                    $version = $latest_release[4]['extras'][$short_name][$key]['@attributes']['version'];
+
+                    // If this version is the most recent
+                    if ($version > $latest_versions[$short_name])
+                    {
+                        // Set it to the latest version
+                        $latest_versions[$short_name] = $version;
+                    }
+                }
+            }
+            else $latest_versions[$short_name] = $latest_release[4]['extras'][$short_name]['@attributes']['version'];
+        }
 
         // Return the latest versions
         $GLOBALS['latest_versions_cached'] = $latest_versions;
@@ -11678,7 +12522,7 @@ function add_registration($name="", $company="", $title="", $phone="", $email=""
     $instance_id = create_simplerisk_instance_id();
 
     // Create the data to send
-    $data = array(
+    $parameters = array(
         'action' => 'register_instance',
         'instance_id' => $instance_id,
         'name' => $name,
@@ -11691,11 +12535,13 @@ function add_registration($name="", $company="", $title="", $phone="", $email=""
     );
 
     // Register instance with the web service
-    $results = simplerisk_service_call($data);
+    $response = simplerisk_service_call($parameters);
+    $return_code = $response['return_code'];
 
-    // If the result is false or an empty results array was returned
-    if (!$results || !is_array($results)) {
-        write_debug_log("The result of the SimpleRisk services call was false or an empty array was returned");
+    // If there was an error communicating with the SimpleRisk services API
+    if ($return_code !== 200)
+    {
+        write_debug_log("Unable to communicate with the SimpleRisk services API");
 
         set_alert(true, "bad", $lang['FailedToRegisterInstance']);
 
@@ -11706,89 +12552,90 @@ function add_registration($name="", $company="", $title="", $phone="", $email=""
     {
         write_debug_log("Successfully made the SimpleRisk service call");
         set_alert(true, "good", "Successfully made the SimpleRisk service call");
-    }
 
-    // For each line in the results returned from the SimpleRisk service call
-    foreach ($results as $line)
-    {
-        if (preg_match("/<api_key>(.*)<\/api_key>/", $line, $matches))
-        {
-            write_debug_log("An API key was returned from the SimpleRisk services tier");
-            set_alert(true, "good", "An API key was returned from the SimpleRisk services tier");
+        $results = $response['response'];
+        $results = array($results);
 
-            $services_api_key = $matches[1];
+        // For each line in the results returned from the SimpleRisk service call
+        foreach ($results as $line) {
+            if (preg_match("/<api_key>(.*)<\/api_key>/", $line, $matches)) {
+                write_debug_log("An API key was returned from the SimpleRisk services tier");
+                set_alert(true, "good", "An API key was returned from the SimpleRisk services tier");
 
-            // Open the database connection
-            $db = db_open();
+                $services_api_key = $matches[1];
 
-            // Add the registration
-            add_setting("registration_name", $name);
-            add_setting("registration_company", $company);
-            add_setting("registration_title", $title);
-            add_setting("registration_phone", $phone);
-            add_setting("registration_email", $email);
-            add_setting("registration_fname", $fname);
-            add_setting("registration_lname", $lname);
-            add_setting("services_api_key", $services_api_key);
-            update_or_insert_setting("registration_registered", 1);
+                // Open the database connection
+                $db = db_open();
 
-            // Download the upgrade extra
-            $result = download_extra("upgrade");
+                // Add the registration
+                add_setting("registration_name", $name);
+                add_setting("registration_company", $company);
+                add_setting("registration_title", $title);
+                add_setting("registration_phone", $phone);
+                add_setting("registration_email", $email);
+                add_setting("registration_fname", $fname);
+                add_setting("registration_lname", $lname);
+                add_setting("services_api_key", $services_api_key);
+                update_or_insert_setting("registration_registered", 1);
 
-            // Close the database connection
-            db_close($db);
+                // Download the upgrade extra
+                $result = download_extra("upgrade");
 
-            // Return the result
-            return $result;
-        } elseif (preg_match("/<result>(.*)<\/result>/", $line, $matches)) {
-            switch($matches[1]) {
-                case "Not Purchased":
-                    // Display an alert
-                    set_alert(true, "bad", $lang['RequestedExtraIsNotPurchased']);
+                // Close the database connection
+                db_close($db);
 
-                    // Return a failure
-                    return 0;
+                // Return the result
+                return $result;
+            } elseif (preg_match("/<result>(.*)<\/result>/", $line, $matches)) {
+                switch ($matches[1]) {
+                    case "Not Purchased":
+                        // Display an alert
+                        set_alert(true, "bad", $lang['RequestedExtraIsNotPurchased']);
 
-                case "Invalid Extra Name":
-                    // Display an alert
-                    set_alert(true, "bad", $lang['RequestedExtraDoesNotExist']);
+                        // Return a failure
+                        return 0;
 
-                    // Return a failure
-                    return 0;
+                    case "Invalid Extra Name":
+                        // Display an alert
+                        set_alert(true, "bad", $lang['RequestedExtraDoesNotExist']);
 
-                case "Unmatched IP Address":
-                    // Display an alert
-                    set_alert(true, "bad", $lang['InstanceWasRegisteredWithDifferentIp']);
+                        // Return a failure
+                        return 0;
 
-                    // Return a failure
-                    return 0;
+                    case "Unmatched IP Address":
+                        // Display an alert
+                        set_alert(true, "bad", $lang['InstanceWasRegisteredWithDifferentIp']);
 
-                case "Instance Disabled":
-                    // Display an alert
-                    set_alert(true, "bad", $lang['InstanceIsDisabled']);
+                        // Return a failure
+                        return 0;
 
-                    // Return a failure
-                    return 0;
+                    case "Instance Disabled":
+                        // Display an alert
+                        set_alert(true, "bad", $lang['InstanceIsDisabled']);
 
-                case "Invalid Instance or Key":
-                case "failure":
-                    // Display an alert
-                    set_alert(true, "bad", $lang['InvalidInstanceIdOrKey']);
+                        // Return a failure
+                        return 0;
 
-                    // Return a failure
-                    return 0;
+                    case "Invalid Instance or Key":
+                    case "failure":
+                        // Display an alert
+                        set_alert(true, "bad", $lang['InvalidInstanceIdOrKey']);
 
-                default:
-                    set_alert(true, "bad", $lang['FailedToRegisterInstance']);
+                        // Return a failure
+                        return 0;
 
-                    // Return a failure
-                    return 0;
+                    default:
+                        set_alert(true, "bad", $lang['FailedToRegisterInstance']);
+
+                        // Return a failure
+                        return 0;
+                }
             }
         }
-    }
 
-    // Return a failure
-    return 0;
+        // Return a failure
+        return 0;
+    }
 }
 
 /*********************************
@@ -11805,7 +12652,7 @@ function update_registration($name="", $company="", $title="", $phone="", $email
     $services_api_key = get_setting("services_api_key");
 
     // Create the data to send
-    $data = array(
+    $parameters = array(
         'action' => 'update_instance',
         'instance_id' => $instance_id,
         'api_key' => $services_api_key,
@@ -11814,107 +12661,116 @@ function update_registration($name="", $company="", $title="", $phone="", $email
         'title' => $title,
         'phone' => $phone,
         'email' => $email,
-    'fname' => $fname,
-    'lname' => $lname,
+        'fname' => $fname,
+        'lname' => $lname,
     );
 
     // Register instance with the web service
-    $result = simplerisk_service_call($data);
+    $response = simplerisk_service_call($parameters);
+    $return_code = $response['return_code'];
 
-    if (!$result || !is_array($result) || !preg_match("/<result>(.*)<\/result>/", $result[0], $matches)) {
+    // If the SimpleRisk service call failed
+    if ($return_code !== 200) {
         set_alert(true, "bad", $lang['FailedToUpdateInstance']);
 
         // Return a failure
         return 0;
     }
+    else
+    {
+        // Get the result from the response
+        $results = $response['response'];
+        $results = array($results);
+        preg_match("/<result>(.*)<\/result>/", $result[0], $matches);
 
-    switch($matches[1]) {
-        case "Not Purchased":
-            // Display an alert
-            set_alert(true, "bad", $lang['RequestedExtraIsNotPurchased']);
+        switch ($matches[1]) {
+            case "Not Purchased":
+                // Display an alert
+                set_alert(true, "bad", $lang['RequestedExtraIsNotPurchased']);
 
-            // Return a failure
-            return 0;
+                // Return a failure
+                return 0;
 
-        case "Invalid Extra Name":
-            // Display an alert
-            set_alert(true, "bad", $lang['RequestedExtraDoesNotExist']);
+            case "Invalid Extra Name":
+                // Display an alert
+                set_alert(true, "bad", $lang['RequestedExtraDoesNotExist']);
 
-            // Return a failure
-            return 0;
+                // Return a failure
+                return 0;
 
-        case "Unmatched IP Address":
-            // Display an alert
-            set_alert(true, "bad", $lang['InstanceWasRegisteredWithDifferentIp']);
+            case "Unmatched IP Address":
+                // Display an alert
+                set_alert(true, "bad", $lang['InstanceWasRegisteredWithDifferentIp']);
 
-            // Return a failure
-            return 0;
+                // Return a failure
+                return 0;
 
-        case "Instance Disabled":
-            // Display an alert
-            set_alert(true, "bad", $lang['InstanceIsDisabled']);
+            case "Instance Disabled":
+                // Display an alert
+                set_alert(true, "bad", $lang['InstanceIsDisabled']);
 
-            // Return a failure
-            return 0;
+                // Return a failure
+                return 0;
 
-        case "Invalid Instance or Key":
-        case "failure":
-            // Display an alert
-            set_alert(true, "bad", $lang['InvalidInstanceIdOrKey']);
+            case "Invalid Instance or Key":
+            case "failure":
+                // Display an alert
+                set_alert(true, "bad", $lang['InvalidInstanceIdOrKey']);
 
-            // Return a failure
-            return 0;
+                // Return a failure
+                return 0;
 
-        case "success":
-            // Open the database connection
-            $db = db_open();
+            case "success":
+                // Open the database connection
+                $db = db_open();
 
-            // Update the registration
-            $stmt = $db->prepare("UPDATE `settings` SET value=:name WHERE name='registration_name'");
-            $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
-            $stmt->execute();
+                // Update the registration
+                $stmt = $db->prepare("UPDATE `settings` SET value=:name WHERE name='registration_name'");
+                $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
+                $stmt->execute();
 
-            $stmt = $db->prepare("UPDATE `settings` SET value=:company WHERE name='registration_company'");
-            $stmt->bindParam(":company", $company, PDO::PARAM_STR, 200);
-            $stmt->execute();
+                $stmt = $db->prepare("UPDATE `settings` SET value=:company WHERE name='registration_company'");
+                $stmt->bindParam(":company", $company, PDO::PARAM_STR, 200);
+                $stmt->execute();
 
-            $stmt = $db->prepare("UPDATE `settings` SET value=:title WHERE name='registration_title'");
-            $stmt->bindParam(":title", $title, PDO::PARAM_STR, 200);
-            $stmt->execute();
+                $stmt = $db->prepare("UPDATE `settings` SET value=:title WHERE name='registration_title'");
+                $stmt->bindParam(":title", $title, PDO::PARAM_STR, 200);
+                $stmt->execute();
 
-            $stmt = $db->prepare("UPDATE `settings` SET value=:phone WHERE name='registration_phone'");
-            $stmt->bindParam(":phone", $phone, PDO::PARAM_STR, 200);
-            $stmt->execute();
+                $stmt = $db->prepare("UPDATE `settings` SET value=:phone WHERE name='registration_phone'");
+                $stmt->bindParam(":phone", $phone, PDO::PARAM_STR, 200);
+                $stmt->execute();
 
-            $stmt = $db->prepare("UPDATE `settings` SET value=:email WHERE name='registration_email'");
-            $stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
-            $stmt->execute();
+                $stmt = $db->prepare("UPDATE `settings` SET value=:email WHERE name='registration_email'");
+                $stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
+                $stmt->execute();
 
-            $stmt = $db->prepare("UPDATE `settings` SET value=:fname WHERE name='registration_fname'");
-            $stmt->bindParam(":fname", $fname, PDO::PARAM_STR, 200);
-            $stmt->execute();
+                $stmt = $db->prepare("UPDATE `settings` SET value=:fname WHERE name='registration_fname'");
+                $stmt->bindParam(":fname", $fname, PDO::PARAM_STR, 200);
+                $stmt->execute();
 
-            $stmt = $db->prepare("UPDATE `settings` SET value=:lname WHERE name='registration_lname'");
-            $stmt->bindParam(":lname", $lname, PDO::PARAM_STR, 200);
-            $stmt->execute();
+                $stmt = $db->prepare("UPDATE `settings` SET value=:lname WHERE name='registration_lname'");
+                $stmt->bindParam(":lname", $lname, PDO::PARAM_STR, 200);
+                $stmt->execute();
 
-            // Download the update extra
-            $result = download_extra("upgrade");
+                // Download the update extra
+                $result = download_extra("upgrade");
 
-            // Close the database connection
-            db_close($db);
+                // Close the database connection
+                db_close($db);
 
-            // Return the result
-            return $result;
-        default:
-            set_alert(true, "bad", $lang['FailedToUpdateInstance']);
+                // Return the result
+                return $result;
+            default:
+                set_alert(true, "bad", $lang['FailedToUpdateInstance']);
 
-            // Return a failure
-            return 0;
+                // Return a failure
+                return 0;
+        }
+
+        // Return a failure
+        return 0;
     }
-
-    // Return a failure
-    return 0;
 }
 
 /********************************
@@ -12166,8 +13022,14 @@ function get_base_url()
  *****************************/
 function select_redirect()
 {
+    // If we need to verify the mfa secret
+    if (isset($_SESSION['mfa_verify_secret']))
+    {
+        // Redirect to the verify secret page
+        header("Location: account/mfa.php");
+    }
     // If a maximum age for the password is set
-    if(get_setting("pass_policy_max_age") != 0)
+    else if(get_setting("pass_policy_max_age") != 0)
     {
         // If the user needs to reset their password
         if(check_password_max_time($_SESSION['uid']) === "CHANGE")
@@ -12462,7 +13324,7 @@ function _lang($__key, $__params=array(), $__escape=true){
         }
     }
 
-    $__return = $lang[$__key];
+    $__return = (string)$lang[$__key];
 
     // Have to sort the keys from longest to shortest to make sure not replacing 
     // $user instead of $username when encountering the pattern of {$username}
@@ -13115,139 +13977,146 @@ function ping_server()
     // Set the default path
     $path = "?";
 
-        // Get the instance ID
-        $instance_id = get_setting("instance_id");
-
-        // If the instance ID is not false
-        if ($instance_id != false)
-        {
-        // Add the instance ID to the path
-                $path .= "instance_id=" . $instance_id;
-        }
-        else $path .= "instance_id=";
+    // Create the SimpleRisk instance ID if it doesn't already exist
+    $instance_id = create_simplerisk_instance_id();
 
     // Get the timezone
     $timezone = date_default_timezone_get();
 
-    // Add the timezone to the path
-    $path .= "&timezone=" . $timezone;
-
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
     // Get the total number of risks
-        $stmt = $db->prepare("SELECT COUNT(id) FROM risks");
-        $stmt->execute();
-        $array = $stmt->fetchAll();
-        $risks = $array[0][0];
-
-    // Add the risks to the path
-    $path .= "&risks=" . $risks;
+    $stmt = $db->prepare("SELECT COUNT(id) FROM risks");
+    $stmt->execute();
+    $array = $stmt->fetchAll();
+    $risks = $array[0][0];
 
     // Get the total number of users
-        $stmt = $db->prepare("SELECT COUNT(value) FROM user");
-        $stmt->execute();
-        $array = $stmt->fetchAll();
-        $users = $array[0][0];
-
-    // Add the users to the path
-    $path .= "&users=" . $users;
+    $stmt = $db->prepare("SELECT COUNT(value) FROM user");
+    $stmt->execute();
+    $array = $stmt->fetchAll();
+    $users = $array[0][0];
 
     // Get the application version
     $app_version = $escaper->escapeHtml(current_version("app"));
 
-    // Add the app version to the path
-    $path .= "&app_version=" . $app_version;
-
     // Get the database version
     $db_version = $escaper->escapeHtml(current_version("app"));
 
-    // Add the database version to the path
-    $path .= "&db_version=" . $db_version;
+    // Create the parameters
+    $parameters = [
+        'instance_id' => $instance_id,
+        'timezone' => $timezone,
+        'risks' => $risks,
+        'users' => $users,
+        'app_version' => $app_version,
+        'db_version' => $db_version,
+    ];
 
     // If the instance is registered
     if (get_setting('registration_registered') != 0)
     {
-        // Load the upgrade.php file
-        //require_once(realpath(__DIR__ . '/../extras/upgrade/index.php'));
-        $path .= "&email_notification_installed=" . core_is_installed("notification");
-        $path .= "&email_notification_enabled=" . notification_extra();
-        $path .= "&email_notification_version=" . core_extra_current_version("notification");
-        $path .= "&import_export_installed=" . core_is_installed("import-export");
-        $path .= "&import_export_enabled=" . import_export_extra();
-        $path .= "&import_export_version=" . core_extra_current_version("import-export");
-        $path .= "&risk_assessment_installed=" . core_is_installed("assessments");
-        $path .= "&risk_assessment_enabled=" . assessments_extra();
-        $path .= "&risk_assessment_version=" . core_extra_current_version("assessments");
-        $path .= "&team_separation_installed=" . core_is_installed("separation");
-        $path .= "&team_separation_enabled=" . team_separation_extra();
-        $path .= "&team_separation_version=" . core_extra_current_version("separation");
-        $path .= "&custom_authentication_installed=" . core_is_installed("authentication");
-        $path .= "&custom_authentication_enabled=" . custom_authentication_extra();
-        $path .= "&custom_authentication_version=" . core_extra_current_version("authentication");
-        $path .= "&customization_installed=" . core_is_installed("customization");
-        $path .= "&customization_enabled=" . customization_extra();
-        $path .= "&customization_version=" . core_extra_current_version("customization");
-        $path .= "&api_installed=" . core_is_installed("api");
-        $path .= "&api_enabled=" . api_extra();
-        $path .= "&api_version=" . core_extra_current_version("api");
-        $path .= "&encryption_installed=" . core_is_installed("encryption");
-        $path .= "&encryption_enabled=" . encryption_extra();
-        $path .= "&encryption_version=" . core_extra_current_version("encryption");
-        $path .= "&complianceforgescf_installed=" . core_is_installed("complianceforgescf");
-        $path .= "&complianceforgescf_enabled=" . complianceforge_scf_extra();
-        $path .= "&complianceforgescf_version=" . core_extra_current_version("complianceforgescf");
-        $path .= "&advanced_search_installed=" . core_is_installed("advanced_search");
-        $path .= "&advanced_search_enabled=" . advanced_search_extra();
-        $path .= "&advanced_search_version=" . core_extra_current_version("advanced_search");
-        $path .= "&jira_installed=" . core_is_installed("jira");
-        $path .= "&jira_enabled=" . jira_extra();
-        $path .= "&jira_version=" . core_extra_current_version("jira");
-        $path .= "&ucf_installed=" . core_is_installed("ucf");
-        $path .= "&ucf_enabled=" . ucf_extra();
-        $path .= "&ucf_version=" . core_extra_current_version("ucf");
-        $path .= "&incident_management_installed=" . core_is_installed("incident_management");
-        $path .= "&incident_management_enabled=" . incident_management_extra();
-        $path .= "&incident_management_version=" . core_extra_current_version("incident_management");
-        $path .= "&organizational_hierarchy_installed=" . core_is_installed("organizational_hierarchy");
-        $path .= "&organizational_hierarchy_enabled=" . organizational_hierarchy_extra();
-        $path .= "&organizational_hierarchy_version=" . core_extra_current_version("organizational_hierarchy");
-	$path .= "&vulnmgmt_installed=" . core_is_installed("vulnmgmt");
-	$path .= "&vulnmgmt_enabled=" . vulnmgmt_extra();
-	$path .= "&vulnmgmt_version=" . core_extra_current_version("vulnmgmt");
+        // Add the extra parameters
+        $extra_parameters = [
+            'advanced_search_installed' => core_is_installed("advanced_search"),
+            'advanced_search_enabled' => advanced_search_extra(),
+            'advanced_search_version' => core_extra_current_version("advanced_search"),
+            'api_installed' => core_is_installed("api"),
+            'api_enabled' => api_extra(),
+            'api_version' => core_extra_current_version("api"),
+            'risk_assessment_installed' => core_is_installed("assessments"),
+            'risk_assessment_enabled' => assessments_extra(),
+            'risk_assessment_version' => core_extra_current_version("assessments"),
+            'custom_authentication_installed' => core_is_installed("authentication"),
+            'custom_authentication_enabled' => custom_authentication_extra(),
+            'custom_authentication_version' => core_extra_current_version("authentication"),
+            'complianceforgescf_installed' => core_is_installed("complianceforgescf"),
+            'complianceforgescf_enabled' => complianceforge_scf_extra(),
+            'complianceforgescf_version' => core_extra_current_version("complianceforgescf"),
+            'customization_installed' => core_is_installed("customization"),
+            'customization_enabled' => customization_extra(),
+            'customization_version' => core_extra_current_version("customization"),
+            'encryption_installed' => core_is_installed("encryption"),
+            'encryption_enabled' => encryption_extra(),
+            'encryption_version' => core_extra_current_version("encryption"),
+            'import_export_installed' => core_is_installed("import-export"),
+            'import_export_enabled' => import_export_extra(),
+            'import_export_version' => core_extra_current_version("import-export"),
+            'incident_management_installed' => core_is_installed("incident_management"),
+            'incident_management_enabled' => incident_management_extra(),
+            'incident_management_version' => core_extra_current_version("incident_management"),
+            'jira_installed' => core_is_installed("jira"),
+            'jira_enabled' => jira_extra(),
+            'jira_version' => core_extra_current_version("jira"),
+            'email_notification_installed' => core_is_installed("notification"),
+            'email_notification_enabled' => notification_extra(),
+            'email_notification_version' => core_extra_current_version("notification"),
+            'organizational_hierarchy_installed' => core_is_installed("organizational_hierarchy"),
+            'organizational_hierarchy_enabled' => organizational_hierarchy_extra(),
+            'organizational_hierarchy_version' => core_extra_current_version("organizational_hierarchy"),
+            'team_separation_installed' => core_is_installed("separation"),
+            'team_separation_enabled' => team_separation_extra(),
+            'team_separation_version' => core_extra_current_version("separation"),
+            'ucf_installed' => core_is_installed("ucf"),
+            'ucf_enabled' => ucf_extra(),
+            'ucf_version' => core_extra_current_version("ucf"),
+            'vulnmgmt_installed' => core_is_installed("vulnmgmt"),
+            'vulnmgmt_enabled' => vulnmgmt_extra(),
+            'vulnmgmt_version' => core_extra_current_version("vulnmgmt"),
+        ];
+
+        // Merge the parameters together
+        $parameters = array_merge($parameters, $extra_parameters);
 
         // If the organizational hierarchy extra is enabled
-	if (organizational_hierarchy_extra())
-	{
-		// Get the count of business units
-        	$stmt = $db->prepare("SELECT COUNT(id) FROM business_unit;");
-        	$stmt->execute();
-        	$array = $stmt->fetchAll();
-        	$organizational_hierarchy_count = (int)$array[0][0];	
+        if (organizational_hierarchy_extra())
+        {
+            // Get the count of business units
+            $stmt = $db->prepare("SELECT COUNT(id) FROM business_unit;");
+            $stmt->execute();
+            $array = $stmt->fetchAll();
+            $organizational_hierarchy_count = (int)$array[0][0];
 
-		// Add the count of business units to the path
-		$path .= "&organizational_hierarchy_count=" . $organizational_hierarchy_count;
-	}
+            // Add the count of business units to the parameters
+
+            $oh_parameters = [
+                'organizational_hierarchy_count' => $organizational_hierarchy_count,
+            ];
+
+            $parameters = array_merge($parameters, $oh_parameters);
+        }
     }
 
     // Close the database connection
     db_close($db);
 
-    // Configure the proxy server if one exists
-    $context = set_proxy_stream_context();
+    // Set the HTTP options
+    $http_options = [
+        'method' => 'GET',
+        'header' => [
+            "Content-Type: application/x-www-form-urlencoded",
+        ],
+        'timeout' => 5,
+    ];
 
-    // Set the default socket timeout to 5 seconds
-    ini_set('default_socket_timeout', 5);
+    // If SSL certificate checks are enabled for external requests
+    if (get_setting('ssl_certificate_check_external') == 1)
+    {
+        // Verify the SSL host and peer
+        $validate_ssl = true;
+    }
+    else $validate_ssl = false;
 
     // Url for SimpleRisk ping
     if (defined('PING_URL'))
     {
-        $url = PING_URL . $path;
+        $url = PING_URL;
     }
-    else $url = 'https://ping.simplerisk.com' . $path;
+    else $url = 'https://ping.simplerisk.com';
 
     // Make the https request
-    file_get_contents($url, null, $context);
+    fetch_url_content("curl", $http_options, $validate_ssl, $url, $parameters);
 }
 
 /*******************************************
@@ -13263,7 +14132,7 @@ function create_simplerisk_instance_id()
     {
         // Create a random instance id
         $instance_id = generate_token(50);
-	add_setting("instance_id", $instance_id);
+	    add_setting("instance_id", $instance_id);
 
         // Return the instance_id
         return $instance_id;
@@ -13981,7 +14850,7 @@ function get_role($role_id)
     if ($role) {
         $role = $role[0];
         $role['responsibilities'] = get_responsibilites_by_role_id($role_id);
-        $role['admin'] = $role['admin'] === '1';
+        // $role['admin'] = $role['admin'] === '1';
         $role['default'] = $role['default'] === '1';
     }
 
@@ -16157,7 +17026,7 @@ function updateTagsOfType($taggee_id, $type, $tags) {
     if ($tags_to_add) {
         //Sadly we can't do this in a single sql so we have to resort to looping
         foreach ($tags_to_add as $tag) {
-
+            if(!$tag) continue;
             // Get the id of the tag (to either use it or to know that it's not
             // in the database yet)
             $stmt = $db->prepare("
@@ -16708,6 +17577,7 @@ function updateTeamsOfItem($item_id, $type, $teams, $audit_log=true) {
     if ($teams_to_add) {
         //Sadly we can't do this in a single sql so we have to resort to looping
         foreach ($teams_to_add as $team_id) {
+            if(!$team_id) continue;
 
             // We just use the id to create
             // the connection between the item and the team in the junction table
@@ -17403,13 +18273,12 @@ function configure_curl_proxy($curl_handle)
                         curl_setopt($curl_handle, CURLOPT_PROXYUSERPWD, $proxyauth);
                 }
 
-		// If we do not want to verify the proxy SSL certificates
-		if (!$proxy_verify_ssl_certificate)
-		{
-			// Do not verify the SSL host and peer
-			curl_setopt($curl_handle, CURLOPT_SSL_VERIFYHOST, false);
-			curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, false);
-		}
+		        // If we do not want to verify the proxy SSL certificates
+		        if (!$proxy_verify_ssl_certificate)
+		        {
+			        // Do not verify the SSL host and peer
+			        curl_setopt($curl_handle, CURLOPT_PROXY_SSL_VERIFYPEER, false);
+		        }
         }
         else curl_setopt($curl_handle, CURLOPT_PROXY, null);
 }
@@ -20319,7 +21188,7 @@ function create_default_admin_account()
             $teams = [];
             $role_id = 1;
             $admin = 1;
-            $multi_factor = 1;
+            $multi_factor = 0;
             $change_password = 0;
             $manager = 0;
 
@@ -20333,14 +21202,14 @@ function create_default_admin_account()
             $instance_id = create_simplerisk_instance_id();
 
             // Register the instance
-            $data = array(
+            $parameters = array(
                 'action' => 'installer_registration',
                 'instance_id' => $instance_id,
                 'name' => $full_name,
                 'email' => $email,
                 'mailing_list' => $mailing_list,
             );
-            $result = simplerisk_service_call($data);
+            $response = simplerisk_service_call($parameters);
 
             // Reload the login page
             header("Location: index.php");
@@ -20839,4 +21708,427 @@ function add_quotes($str) {
     return sprintf("\"%s\"", addcslashes($str, '",'));
 }
 
+
+
+/*****************************
+ * FUNCTION: OBJECT TO ARRAY *
+ *****************************/
+function object2array($object)
+{
+    return @json_decode(@json_encode($object),1);
+}
+
+/**
+ * Get the default list of displayed columns for a field group
+ * 
+ * @param string $group - field group(asset, risk, ..., etc)
+ * @return string[] the list of enabled field names. Example: ['id', 'name', 'value', ..., etc]
+ */
+function field_settings_get_display_defaults($view) {
+    global $field_settings_views;
+
+    return $field_settings_views[$view]['default_enabled_columns'];
+}
+
+/**
+ * Get localized display strings for the field group
+ * 
+ * @param string $group - field group(asset, risk, ..., etc)
+ * @param boolean $escaped - localization need to be escaped or not
+ * @param boolean $escape_html - HTML escaping or JS  
+ * @return string[] ['field_name1' => 'localized string1', 'field_name2' => 'localized string2', ...] 
+ */
+function field_settings_get_localization($view, $grouped = true, $escaped = true, $escape_html = true) {
+
+    global $field_settings, $field_settings_display_groups, $field_settings_views, $lang, $escaper;
+    $type = $field_settings_views[$view]['view_type'];
+
+    if ($customization = customization_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+    }
+
+    $localizations = [];
+    foreach ($field_settings_views[$view]['groups'] as $group) {
+        $field_names_by_customization_field_names = [];
+        if ($grouped) {
+            $localizations[$group] = [];
+        }
+
+        foreach ($field_settings_display_groups[$group]['fields'] as $field_name) {
+            $field = $field_settings[$type][$field_name];
+            
+            // Skip fields that are not set up to be displayed
+            if (empty($field['localization_key'])) {
+                continue;
+            }
+            
+            if ($customization) {
+                // Have to use the technical fields even when we use the customization fields as these fields are not in customization
+                if (!empty($field['technical_field']) && $field['technical_field']) {
+                    if ($grouped) {
+                        $localizations[$group][$field_name] = $lang[$field['localization_key']];
+                    } else {
+                        $localizations[$field_name] = $lang[$field['localization_key']];
+                    }
+                } else {
+                    // No need to add this in case of technical fields
+                    $field_names_by_customization_field_names[$field['customization_field_name']] = $field_name;
+                }
+            } else {
+                if ($grouped) {
+                    $localizations[$group][$field_name] = $lang[$field['localization_key']];
+                } else {
+                    $localizations[$field_name] = $lang[$field['localization_key']];
+                }
+            }
+        }
+
+        if ($customization) {
+            // Get the active fields for only the required tab(if there's any set up)
+            $active_fields = get_active_fields($type, null, !empty($field_settings_display_groups[$group]['customization_tab_index']) ? $field_settings_display_groups[$group]['customization_tab_index'] : null);
+
+            // The weights for ordering the fields
+            $panel_weights = [
+                'top' => 400,
+                'left' => 300,
+                'right' => 200,
+                'bottom' => 100,
+            ];
+
+            // Order the fields by whether it is a basic field, what's panel it's assigned to and its order within that panel 
+            usort($active_fields, function($a, $b) use ($panel_weights) {
+                return (((int)$b['is_basic'] * 1000) + $panel_weights[$b['panel_name']] - $b['ordering']) <=> (((int)$a['is_basic'] * 1000) + $panel_weights[$a['panel_name']] - $a['ordering']);
+            });
+
+            foreach ($active_fields as $active_field) {
+                if (!$active_field['is_basic']) {
+                    // In case of custom fields use their user-defined names directly
+                    if ($grouped) {
+                        $localizations[$group]["custom_field_{$active_field['id']}"] = $active_field['name'];
+                    } else {
+                        $localizations["custom_field_{$active_field['id']}"] = $active_field['name'];
+                    }
+                } else {
+                    // Only add the field to the localization if it's in the group(Only fields' info in the group are added to the '$field_names_by_customization_field_names' variable)
+                    if (!empty($field_names_by_customization_field_names[$active_field['name']])) {
+                        // This part is pretty loaded, so I break it up
+                        // We're settings up the localizations like [field_name => localized string, ...] be it grouped or not
+                        // getting the field_name from the previously setup list of '$field_names_by_customization_field_names' which is in the format of [customization field name => field name, ...]
+                        // so in $lang[$field_settings[$type][$field_names_by_customization_field_names[$active_field['name']]]['localization_key']]
+                        // $field_names_by_customization_field_names[$active_field['name']] is used to get the field name associated with a given customization field
+                        // and we use it in $field_settings[$type][$field_names_by_customization_field_names[$active_field['name']]]['localization_key'] to get the localization key associated to the customization field
+                        // to get the actual localized string with $lang[$field_settings[$type][$field_names_by_customization_field_names[$active_field['name']]]['localization_key']]
+                        
+                        if ($grouped) {
+                            $localizations[$group][$field_names_by_customization_field_names[$active_field['name']]] = $lang[$field_settings[$type][$field_names_by_customization_field_names[$active_field['name']]]['localization_key']];
+                        } else {
+                            $localizations[$field_names_by_customization_field_names[$active_field['name']]] = $lang[$field_settings[$type][$field_names_by_customization_field_names[$active_field['name']]]['localization_key']];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // escape if needed
+    if ($escaped) {
+        // need different approach if the array is grouped
+        if ($grouped) {
+            foreach (array_keys($localizations) as $group_name) {
+                foreach ($localizations[$group_name] as $_ => &$value) {
+                    $value = $escape_html ? $escaper->escapeHtml($value) : $escaper->escapeJs($value);
+                }
+            }
+        } else {
+            foreach ($localizations as $_ => &$value) {
+                $value = $escape_html ? $escaper->escapeHtml($value) : $escaper->escapeJs($value);
+            }
+        }
+    }
+
+    return $localizations;
+}
+
+/**
+ * Gets the select/join parts that can be used to construct a select query to get the data for the view. 
+ * Can get a list of fields you want to parts for or it can load the saved selections for the view.
+ * 
+ * @param string $view the view
+ * @param array $selected_fields a list of fields you need the select/join parts for. If not specified then tries to load the saved selected fields for the view.
+ * @param boolean $technical_fields whether to return the technical fields as well
+ * @return [string[],string[]] returns two string arrays. One for the select parts the other for the joins
+ */
+function field_settings_get_join_parts($view, $selected_fields = [], $technical_fields = true) {
+    
+    global $field_settings, $field_settings_views;
+    $type = $field_settings_views[$view]['view_type'];
+    $customization = customization_extra();
+    $select_parts = [];
+    $join_parts = [];
+
+    if (empty($selected_fields)) {
+        $selected_fields = display_settings_get_display_settings_for_view($view);
+    }
+
+    // add the data for the technical fields(like the id in most cases) if needed as those are not in the list of selected fields as it's not displayable
+    if ($technical_fields) {
+        foreach ($field_settings[$type] as $_ => $field) {
+            if (!empty($field['technical_field']) && $field['technical_field']) {
+                if (!empty($field['select_parts'])) {
+                    $select_parts = array_merge($select_parts, $field['select_parts']);
+                }
+                if (!empty($field['join_parts'])) {
+                    $join_parts = array_merge($join_parts, $field['join_parts']);
+                }
+            }
+        }
+    }
+
+    $selected_custom_fields = [];
+    foreach ($selected_fields as $selected_field_name) {
+        // collect the custom fields from the selected fields so they can be requested from the customization extra's similar functionality
+        if ($customization && empty($field_settings[$type][$selected_field_name]) && preg_match('/custom_field_([\d]+)/', $selected_field_name, $matches) === 1) {
+            $selected_custom_fields []= (int)$matches[1];
+            continue;
+        }
+        
+        $field = $field_settings[$type][$selected_field_name];
+        if (!empty($field['select_parts'])) {
+            $select_parts = array_merge($select_parts, $field['select_parts']);
+        }
+        if (!empty($field['join_parts'])) {
+            $join_parts = array_merge($join_parts, $field['join_parts']);
+        }
+    }
+
+    if ($customization && !empty($selected_custom_fields)) {
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        list($select_part, $join_part) = get_custom_value_join_parts($type, $selected_custom_fields);
+        $select_parts []= $select_part;
+        $join_parts []= $join_part;
+    }
+
+    return [$select_parts, $join_parts];
+}
+
+/**
+ * 
+ * Returns the valid field keys for the view. Only the active customization fields are returned.
+ * 
+ * @param string $view The view's name
+ * @return string[] The list of valid field keys
+ */
+function display_settings_get_valid_field_keys($view) {
+    global $field_settings, $field_settings_display_groups, $field_settings_views;
+    $type = $field_settings_views[$view]['view_type'];
+
+    $valid_keys = [];
+    if ($customization = customization_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        $field_names_by_customization_field_names = [];
+    }
+
+    foreach ($field_settings_views[$view]['groups'] as $group) {
+        foreach ($field_settings_display_groups[$group]['fields'] as $field_name) {
+            $field = $field_settings[$type][$field_name];
+            // If customization is on we just create a mapping with the customization field names => actual field names in the configuration
+            // so when we're checking the active fields we can get the field names using the names defined in customization
+            if ($customization) {
+                // Have to use the technical fields even when we use the customization fields as these fields are not in customization
+                if (!empty($field['technical_field']) && $field['technical_field']) {
+                    $valid_keys []= $field_name;
+                } else {
+                    $field_names_by_customization_field_names[$field['customization_field_name']] = $field_name;
+                }
+            } else {
+                // I there's no customization then every field is valid if it's configured in the group
+                $valid_keys []= $field_name;
+            }
+        }
+
+        if ($customization) {
+            // Getting only the customization tab for the group if it's set up
+            $active_fields = get_active_fields($type, null, !empty($field_settings_display_groups[$group]['customization_tab_index']) ? $field_settings_display_groups[$group]['customization_tab_index'] : null);
+
+            foreach ($active_fields as $active_field) {
+                if (!$active_field['is_basic']) {
+                    // adding every active custom field
+                    $valid_keys []= "custom_field_{$active_field['id']}";
+                } elseif (!empty($field_names_by_customization_field_names[$active_field['name']])) {
+                    // adding the active basic fields using the mapping setup earlier
+                    $valid_keys []= $field_names_by_customization_field_names[$active_field['name']];
+                }
+            }
+        }
+    }
+
+    return $valid_keys;
+}
+
+
+function display_settings_get_saved_selection($view, $user_id = null) {
+
+    if (empty($user_id)) {
+        $user_id = $_SESSION['uid'];
+    }
+    
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT
+            *
+        FROM
+            `saved_table_display_settings`
+        WHERE
+            `view` = :view
+            AND `user_id` = :user_id;
+    ");
+    $stmt->bindParam(":view", $view, PDO::PARAM_STR);
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_STR);
+    $stmt->execute();
+
+    $saved_settings = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!empty($saved_settings) && !empty($saved_settings['display_settings'])) {
+        $saved_settings['display_settings'] = json_decode($saved_settings['display_settings'], true);
+        return $saved_settings;
+    }
+
+    return  [];
+}
+
+// For when the type+user_id is unique(there're no multiple settings for a user for a type)
+// $id is empty in case of a new one
+function display_settings_save_selection_single($view, $display_settings) {
+
+    $user_id = $_SESSION['uid'];
+    
+    $display_settings = json_encode($display_settings);
+    
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT
+            `id`
+        FROM
+            `saved_table_display_settings`
+        WHERE
+            `view` = :view
+            AND `user_id` = :user_id;
+    ");
+    $stmt->bindParam(":view", $view, PDO::PARAM_STR);
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_STR);
+    $stmt->execute();
+
+    $id = $stmt->fetchColumn();
+
+    $stmt = $db->prepare("
+        INSERT INTO
+            `saved_table_display_settings` (`id`, `user_id`, `view`, `display_settings`)
+        VALUES
+            (:id, :user_id, :view, :display_settings)
+        ON DUPLICATE KEY UPDATE
+            `display_settings` = VALUES(`display_settings`);
+    ");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->bindParam(":view", $view, PDO::PARAM_STR);
+    $stmt->bindParam(":display_settings", $display_settings, PDO::PARAM_STR);
+    $stmt->execute();
+
+    db_close($db);
+}
+
+
+
+/**
+ * Returns the list of selected fields saved for the view or the default if there's no list saved by the user yet.
+ * It will only return currently valid fields, meaning that it'll remove fields from the save that are not in the configuration anymore
+ * or deactivated in the customization extra since the save was created
+ * 
+ * @param string $view Name of the view
+ * @return string[] The list of selected fields for the view
+ */
+function display_settings_get_display_settings_for_view($view) {
+    // The function returns the whole settings including the 'display_settings' field that contains the list of names of selected columns
+    $settings = display_settings_get_saved_selection($view);
+    
+    // If there're no saved settings for this view yet or the save contains no fields selected
+    if (empty($settings) || empty($settings['display_settings'])) {
+        // then we load the list of default selected fields
+        $settings = field_settings_get_display_defaults($view);
+    } else {
+        // For this we only need the list of names in the 'display_settings' field
+        $settings = $settings['display_settings'];
+        
+        // validate it against the currently setup valid fields for this view(if the customization is activated there might be fields that are disabled since the selection was saved)
+        $settings = array_values(array_intersect($settings, display_settings_get_valid_field_keys($view)));
+        
+        // if after the validation the settings are empty
+        if (empty($settings)) {
+            // then we load the list of default selected fields
+            $settings = field_settings_get_display_defaults($view);
+        }
+    }
+    
+    return $settings;
+}
+
+/**
+ * Cleans up temp tables that might have stayed behind when an error occured and the logic couldn't drop the temp table as it would be intended.
+ * Functionalities can be configured in the $temp_tables global variable. Checks the timestamp of the creation in the temp table's name and if it's older than 10 minutes then deletes it.
+ * 
+ * @param string $functionality Name of the functionality as configured in the $temp_tables variable. Leave it empty for cleaning temp tables for every functionality configured.
+ */
+function temp_table_cleanup($functionality = 'all') {
+
+    global $temp_tables;
+
+    // Gather the temp table names by functionality
+    $table_names = [];
+    if ($functionality === 'all') {
+        foreach ($temp_tables as $_ => $temp_table_names) {
+            $table_names = array_merge($table_names, $temp_table_names);
+        }
+    } else {
+        $table_names = $temp_tables[$functionality];
+    }
+
+    // Build the parts that'll be used in the query to get the temp table names
+    $like_parts = [];
+    foreach ($table_names as $table_name) {
+        $like_parts []= "`table_name` LIKE '{$table_name}_%'";
+    }
+
+    // Open the database connection
+    $db = db_open();
+    
+    // Get the DRR temp tables that aren't deleted yet
+    $database = DB_DATABASE; //Have to make a variable as bindParam can't take parameter by reference
+    $stmt = $db->prepare("SELECT `table_name` FROM `information_schema`.`tables` WHERE `table_schema` = :database AND (" . implode(' OR ', $like_parts) . ");");
+    $stmt->bindParam(":database", $database, PDO::PARAM_STR);
+    $stmt->execute();
+    
+    // Fetch the results
+    $table_names = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    
+    // If there're tables left behind
+    if (!empty($table_names)) {
+        // Save the current time so we're not getting it multiple times
+        $now = time();
+        
+        // Iterate through the list of table names
+        foreach ($table_names as $name) {
+            // Temp table names are like tableName_creationTime_uniqueKey and we need to get the time from it
+            preg_match('/temp_[a-z_]+_([\d]+)_[a-zA-Z0-9]{5}/i', $name, $matches);
+            // Time is added to the temp table's name. We get the creation time and if 10 minutes passed we're safe to clean it up
+            if (isset($matches[1]) && (int)$matches[1] + 600 < $now) {
+                $stmt = $db->prepare("DROP TABLE `{$name}`;");
+                $stmt->execute();
+            }
+        }
+    }
+    
+    // Close the database connection
+    db_close($db);
+}
 ?>

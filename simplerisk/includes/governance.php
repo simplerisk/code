@@ -11,11 +11,10 @@ require_once(realpath(__DIR__ . '/services.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
 
 // Include the language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 /****************************
  * FUNCTION: GET FRAMEWORKS *
@@ -842,18 +841,18 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
         // Filter by search text
         if(
             !$control_text 
-            || (stripos($control['short_name'], $control_text) !== false) 
-            || (stripos($control['long_name'], $control_text) !== false) 
-            || (stripos($control['description'], $control_text) !== false) 
-            || (stripos($control['supplemental_guidance'], $control_text) !== false) 
-            || (stripos($control['control_number'], $control_text) !== false)
-            || (stripos($control['control_class_name'], $control_text) !== false) 
-            || (stripos($control['control_phase_name'], $control_text) !== false) 
-            || (stripos($control['control_priority_name'], $control_text) !== false) 
-            || (stripos($control['family_short_name'], $control_text) !== false) 
-            || (stripos($control['control_owner_name'], $control_text) !== false) 
-            || (stripos($control['framework_names'], $control_text) !== false)
-            || (stripos($control['reference_name'], $control_text) !== false)
+            || (stripos((string)$control['short_name'], $control_text) !== false) 
+            || (stripos((string)$control['long_name'], $control_text) !== false) 
+            || (stripos((string)$control['description'], $control_text) !== false) 
+            || (stripos((string)$control['supplemental_guidance'], $control_text) !== false) 
+            || (stripos((string)$control['control_number'], $control_text) !== false)
+            || (stripos((string)$control['control_class_name'], $control_text) !== false) 
+            || (stripos((string)$control['control_phase_name'], $control_text) !== false) 
+            || (stripos((string)$control['control_priority_name'], $control_text) !== false) 
+            || (stripos((string)$control['family_short_name'], $control_text) !== false) 
+            || (stripos((string)$control['control_owner_name'], $control_text) !== false) 
+            || (stripos((string)$control['framework_names'], $control_text) !== false)
+            || (stripos((string)$control['reference_name'], $control_text) !== false)
         )
         {
             $filtered_controls[] = $control;
@@ -3390,7 +3389,7 @@ function get_control_gaps($framework_id = null, $maturity = "all_maturity", $ord
     $db = db_open();
 
     $sql = "
-        SELECT m.reference_name as control_number, t1.short_name, t2.name control_class_name, t3.name control_phase_name, t5.name family_short_name, t7.name control_maturity_name, t8.name desired_maturity_name
+        SELECT m.reference_name as control_number, t1.short_name, t2.name control_class_name, t3.name control_phase_name, t5.name family_short_name, t7.name control_maturity_name, t8.name desired_maturity_name, t1.control_maturity, t1.desired_maturity
         FROM `framework_controls` t1 
             LEFT JOIN `control_class` t2 on t1.control_class=t2.value
             LEFT JOIN `control_phase` t3 on t1.control_phase=t3.value

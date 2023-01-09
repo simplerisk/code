@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace SimpleSAML\Error;
+
+/**
+ * Baseclass for user error exceptions
+ *
+ *
+ * @package SimpleSAMLphp_base
+ *
+ */
+
+class User extends Exception
+{
+}

@@ -86,6 +86,8 @@ class ProxyHelper
             }
         }
 
+        sort($types);
+
         return $types ? implode($glue, $types) : null;
     }
 }

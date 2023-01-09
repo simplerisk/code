@@ -271,7 +271,7 @@ li.dropdown-submenu.business-units a {
 	}
 	
 	&.selected:before {
-		font-family: "Font Awesome 5 Free";
+		font-family: $font-3;
 		content: "\f058";
 		display: inline-block;
 		padding-right: 3px;

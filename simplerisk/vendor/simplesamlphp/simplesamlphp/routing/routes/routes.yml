@@ -11,3 +11,7 @@ add_trailing_slash:
     requirements:
         url: "[a-zA-Z0-9_-]+[^/]$"
     methods: [GET]
+
+admin-shortcut:
+    path:       /admin
+    defaults:   { _controller: 'SimpleSAML\Module\admin\Controller\Config::main', path: /admin, permanent: true }

@@ -25,8 +25,19 @@ use Symfony\Component\DependencyInjection\Reference;
  * @author Fabien Potencier <fabien@symfony.com>
  * @author Diego Saint Esteben <diego@saintesteben.me>
  */
-class DecoratorServicePass implements CompilerPassInterface
+class DecoratorServicePass extends AbstractRecursivePass
 {
+    private $innerId = '.inner';
+
+    public function __construct(?string $innerId = '.inner')
+    {
+        if (0 < \func_num_args()) {
+            trigger_deprecation('symfony/dependency-injection', '5.3', 'Configuring "%s" is deprecated.', __CLASS__);
+        }
+
+        $this->innerId = $innerId;
+    }
+
     public function process(ContainerBuilder $container)
     {
         $definitions = new \SplPriorityQueue();
@@ -42,7 +53,7 @@ class DecoratorServicePass implements CompilerPassInterface
 
         $tagsToKeep = $container->hasParameter('container.behavior_describing_tags')
             ? $container->getParameter('container.behavior_describing_tags')
-            : ['container.do_not_inline', 'container.service_locator', 'container.service_subscriber'];
+            : ['container.do_not_inline', 'container.service_locator', 'container.service_subscriber', 'container.service_subscriber.locator'];
 
         foreach ($definitions as [$id, $definition]) {
             $decoratedService = $definition->getDecoratedService();
@@ -54,6 +65,10 @@ class DecoratorServicePass implements CompilerPassInterface
             if (!$renamedId) {
                 $renamedId = $id.'.inner';
             }
+
+            $this->currentId = $renamedId;
+            $this->processValue($definition);
+
             $definition->innerServiceId = $renamedId;
             $definition->decorationOnInvalid = $invalidBehavior;
 
@@ -62,13 +77,11 @@ class DecoratorServicePass implements CompilerPassInterface
             if ($container->hasAlias($inner)) {
                 $alias = $container->getAlias($inner);
                 $public = $alias->isPublic();
-                $private = $alias->isPrivate();
                 $container->setAlias($renamedId, new Alias((string) $alias, false));
                 $decoratedDefinition = $container->findDefinition($alias);
             } elseif ($container->hasDefinition($inner)) {
                 $decoratedDefinition = $container->getDefinition($inner);
                 $public = $decoratedDefinition->isPublic();
-                $private = $decoratedDefinition->isPrivate();
                 $decoratedDefinition->setPublic(false);
                 $container->setDefinition($renamedId, $decoratedDefinition);
                 $decoratingDefinitions[$inner] = $decoratedDefinition;
@@ -77,7 +90,6 @@ class DecoratorServicePass implements CompilerPassInterface
                 continue;
             } elseif (ContainerInterface::NULL_ON_INVALID_REFERENCE === $invalidBehavior) {
                 $public = $definition->isPublic();
-                $private = $definition->isPrivate();
                 $decoratedDefinition = null;
             } else {
                 throw new ServiceNotFoundException($inner, $id);
@@ -106,7 +118,16 @@ class DecoratorServicePass implements CompilerPassInterface
                 $decoratingDefinitions[$inner] = $definition;
             }
 
-            $container->setAlias($inner, $id)->setPublic($public)->setPrivate($private);
+            $container->setAlias($inner, $id)->setPublic($public);
         }
+    }
+
+    protected function processValue($value, bool $isRoot = false)
+    {
+        if ($value instanceof Reference && $this->innerId === (string) $value) {
+            return new Reference($this->currentId, $value->getInvalidBehavior());
+        }
+
+        return parent::processValue($value, $isRoot);
     }
 }

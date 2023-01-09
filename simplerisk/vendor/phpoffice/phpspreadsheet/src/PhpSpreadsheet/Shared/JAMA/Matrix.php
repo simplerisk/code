@@ -2,9 +2,10 @@
 
 namespace PhpOffice\PhpSpreadsheet\Shared\JAMA;
 
+use PhpOffice\PhpSpreadsheet\Calculation\Engine\FormattedNumber;
 use PhpOffice\PhpSpreadsheet\Calculation\Exception as CalculationException;
 use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PhpOffice\PhpSpreadsheet\Shared\StringHelper;
+use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
 
 /**
  * Matrix class.
@@ -66,21 +67,21 @@ class Matrix
                     $this->A = $args[0];
 
                     break;
-                //Square matrix - n x n
+                    //Square matrix - n x n
                 case 'integer':
                     $this->m = $args[0];
                     $this->n = $args[0];
                     $this->A = array_fill(0, $this->m, array_fill(0, $this->n, 0));
 
                     break;
-                //Rectangular matrix - m x n
+                    //Rectangular matrix - m x n
                 case 'integer,integer':
                     $this->m = $args[0];
                     $this->n = $args[1];
                     $this->A = array_fill(0, $this->m, array_fill(0, $this->n, 0));
 
                     break;
-                //Rectangular matrix - m x n initialized from packed array
+                    //Rectangular matrix - m x n initialized from packed array
                 case 'array,integer':
                     $this->m = $args[1];
                     if ($this->m != 0) {
@@ -188,9 +189,7 @@ class Matrix
                     }
 
                     return $R;
-
-                    break;
-                //A($i0...$iF; $j0...$jF)
+                    //A($i0...$iF; $j0...$jF)
                 case 'integer,integer,integer,integer':
                     [$i0, $iF, $j0, $jF] = $args;
                     if (($iF > $i0) && ($this->m >= $iF) && ($i0 >= 0)) {
@@ -211,9 +210,7 @@ class Matrix
                     }
 
                     return $R;
-
-                    break;
-                //$R = array of row indices; $C = array of column indices
+                    //$R = array of row indices; $C = array of column indices
                 case 'array,array':
                     [$RL, $CL] = $args;
                     if (count($RL) > 0) {
@@ -234,9 +231,7 @@ class Matrix
                     }
 
                     return $R;
-
-                    break;
-                //A($i0...$iF); $CL = array of column indices
+                    //A($i0...$iF); $CL = array of column indices
                 case 'integer,integer,array':
                     [$i0, $iF, $CL] = $args;
                     if (($iF > $i0) && ($this->m >= $iF) && ($i0 >= 0)) {
@@ -257,9 +252,7 @@ class Matrix
                     }
 
                     return $R;
-
-                    break;
-                //$RL = array of row indices
+                    //$RL = array of row indices
                 case 'array,integer,integer':
                     [$RL, $j0, $jF] = $args;
                     if (count($RL) > 0) {
@@ -280,8 +273,6 @@ class Matrix
                     }
 
                     return $R;
-
-                    break;
                 default:
                     throw new CalculationException(self::POLYMORPHIC_ARGUMENT_EXCEPTION);
 
@@ -532,18 +523,12 @@ class Matrix
                 for ($j = 0; $j < $this->n; ++$j) {
                     $validValues = true;
                     $value = $M->get($i, $j);
-                    if ((is_string($this->A[$i][$j])) && (strlen($this->A[$i][$j]) > 0) && (!is_numeric($this->A[$i][$j]))) {
-                        $this->A[$i][$j] = trim($this->A[$i][$j], '"');
-                        $validValues &= StringHelper::convertToNumberIfFraction($this->A[$i][$j]);
-                    }
-                    if ((is_string($value)) && (strlen($value) > 0) && (!is_numeric($value))) {
-                        $value = trim($value, '"');
-                        $validValues &= StringHelper::convertToNumberIfFraction($value);
-                    }
+                    [$this->A[$i][$j], $validValues] = $this->validateExtractedValue($this->A[$i][$j], $validValues);
+                    [$value, $validValues] = $this->validateExtractedValue($value, /** @scrutinizer ignore-type */ $validValues);
                     if ($validValues) {
                         $this->A[$i][$j] += $value;
                     } else {
-                        $this->A[$i][$j] = Functions::NAN();
+                        $this->A[$i][$j] = ExcelError::NAN();
                     }
                 }
             }
@@ -632,18 +617,12 @@ class Matrix
                 for ($j = 0; $j < $this->n; ++$j) {
                     $validValues = true;
                     $value = $M->get($i, $j);
-                    if ((is_string($this->A[$i][$j])) && (strlen($this->A[$i][$j]) > 0) && (!is_numeric($this->A[$i][$j]))) {
-                        $this->A[$i][$j] = trim($this->A[$i][$j], '"');
-                        $validValues &= StringHelper::convertToNumberIfFraction($this->A[$i][$j]);
-                    }
-                    if ((is_string($value)) && (strlen($value) > 0) && (!is_numeric($value))) {
-                        $value = trim($value, '"');
-                        $validValues &= StringHelper::convertToNumberIfFraction($value);
-                    }
+                    [$this->A[$i][$j], $validValues] = $this->validateExtractedValue($this->A[$i][$j], $validValues);
+                    [$value, $validValues] = $this->validateExtractedValue($value, /** @scrutinizer ignore-type */ $validValues);
                     if ($validValues) {
                         $this->A[$i][$j] -= $value;
                     } else {
-                        $this->A[$i][$j] = Functions::NAN();
+                        $this->A[$i][$j] = ExcelError::NAN();
                     }
                 }
             }
@@ -734,18 +713,12 @@ class Matrix
                 for ($j = 0; $j < $this->n; ++$j) {
                     $validValues = true;
                     $value = $M->get($i, $j);
-                    if ((is_string($this->A[$i][$j])) && (strlen($this->A[$i][$j]) > 0) && (!is_numeric($this->A[$i][$j]))) {
-                        $this->A[$i][$j] = trim($this->A[$i][$j], '"');
-                        $validValues &= StringHelper::convertToNumberIfFraction($this->A[$i][$j]);
-                    }
-                    if ((is_string($value)) && (strlen($value) > 0) && (!is_numeric($value))) {
-                        $value = trim($value, '"');
-                        $validValues &= StringHelper::convertToNumberIfFraction($value);
-                    }
+                    [$this->A[$i][$j], $validValues] = $this->validateExtractedValue($this->A[$i][$j], $validValues);
+                    [$value, $validValues] = $this->validateExtractedValue($value, /** @scrutinizer ignore-type */ $validValues);
                     if ($validValues) {
                         $this->A[$i][$j] *= $value;
                     } else {
-                        $this->A[$i][$j] = Functions::NAN();
+                        $this->A[$i][$j] = ExcelError::NAN();
                     }
                 }
             }
@@ -792,23 +765,17 @@ class Matrix
                 for ($j = 0; $j < $this->n; ++$j) {
                     $validValues = true;
                     $value = $M->get($i, $j);
-                    if ((is_string($this->A[$i][$j])) && (strlen($this->A[$i][$j]) > 0) && (!is_numeric($this->A[$i][$j]))) {
-                        $this->A[$i][$j] = trim($this->A[$i][$j], '"');
-                        $validValues &= StringHelper::convertToNumberIfFraction($this->A[$i][$j]);
-                    }
-                    if ((is_string($value)) && (strlen($value) > 0) && (!is_numeric($value))) {
-                        $value = trim($value, '"');
-                        $validValues &= StringHelper::convertToNumberIfFraction($value);
-                    }
+                    [$this->A[$i][$j], $validValues] = $this->validateExtractedValue($this->A[$i][$j], $validValues);
+                    [$value, $validValues] = $this->validateExtractedValue($value, /** @scrutinizer ignore-type */ $validValues);
                     if ($validValues) {
                         if ($value == 0) {
                             //    Trap for Divide by Zero error
-                            $M->set($i, $j, '#DIV/0!');
+                            $M->set($i, $j, /** @scrutinizer ignore-type */ '#DIV/0!');
                         } else {
                             $M->set($i, $j, $this->A[$i][$j] / $value);
                         }
                     } else {
-                        $M->set($i, $j, Functions::NAN());
+                        $M->set($i, $j, /** @scrutinizer ignore-type */ ExcelError::NAN());
                     }
                 }
             }
@@ -1079,18 +1046,12 @@ class Matrix
                 for ($j = 0; $j < $this->n; ++$j) {
                     $validValues = true;
                     $value = $M->get($i, $j);
-                    if ((is_string($this->A[$i][$j])) && (strlen($this->A[$i][$j]) > 0) && (!is_numeric($this->A[$i][$j]))) {
-                        $this->A[$i][$j] = trim($this->A[$i][$j], '"');
-                        $validValues &= StringHelper::convertToNumberIfFraction($this->A[$i][$j]);
-                    }
-                    if ((is_string($value)) && (strlen($value) > 0) && (!is_numeric($value))) {
-                        $value = trim($value, '"');
-                        $validValues &= StringHelper::convertToNumberIfFraction($value);
-                    }
+                    [$this->A[$i][$j], $validValues] = $this->validateExtractedValue($this->A[$i][$j], $validValues);
+                    [$value, $validValues] = $this->validateExtractedValue($value, /** @scrutinizer ignore-type */ $validValues);
                     if ($validValues) {
                         $this->A[$i][$j] = $this->A[$i][$j] ** $value;
                     } else {
-                        $this->A[$i][$j] = Functions::NAN();
+                        $this->A[$i][$j] = ExcelError::NAN();
                     }
                 }
             }
@@ -1134,6 +1095,7 @@ class Matrix
             $this->checkMatrixDimensions($M);
             for ($i = 0; $i < $this->m; ++$i) {
                 for ($j = 0; $j < $this->n; ++$j) {
+                    // @phpstan-ignore-next-line
                     $this->A[$i][$j] = trim($this->A[$i][$j], '"') . trim($M->get($i, $j), '"');
                 }
             }
@@ -1185,5 +1147,21 @@ class Matrix
         $L = new LUDecomposition($this);
 
         return $L->det();
+    }
+
+    /**
+     * @param mixed $value
+     */
+    private function validateExtractedValue($value, bool $validValues): array
+    {
+        if (!is_numeric($value) && is_array($value)) {
+            $value = Functions::flattenArray($value)[0];
+        }
+        if ((is_string($value)) && (strlen($value) > 0) && (!is_numeric($value))) {
+            $value = trim($value, '"');
+            $validValues &= FormattedNumber::convertToNumberIfFormatted($value);
+        }
+
+        return [$value, $validValues];
     }
 }

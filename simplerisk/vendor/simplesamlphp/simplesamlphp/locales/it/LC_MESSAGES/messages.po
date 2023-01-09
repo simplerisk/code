@@ -15,624 +15,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.3.4\n"
 
-msgid "{admin:metadata_saml20-idp}"
-msgstr "Metadati SAML 2.0 IdP"
-
-msgid "{errors:descr_WRONGUSERPASS}"
-msgstr ""
-"L'utente fornito non è stato trovato, oppure la password fornita era "
-"sbagliata. Si prega di verificare il nome utente e provare di nuovo"
-
-msgid "{logout:failed}"
-msgstr "Disconnessione fallita"
-
-msgid "{status:attributes_header}"
-msgstr "I tuoi attributi"
-
-msgid "{admin:metaover_group_metadata.saml20-sp-remote}"
-msgstr "SAML 2.0 Service Provider (Remoto)"
-
-msgid "{errors:descr_NOCERT}"
-msgstr ""
-"L'autenticazione è fallita perché il tuo browser non ha inviato alcun "
-"certificato"
-
-msgid "{errors:title_PROCESSASSERTION}"
-msgstr "Errore nell'elaborazione della risposta ricevuta dall'Identity Provider."
-
-msgid "{errors:title_NOSTATE}"
-msgstr "Informazioni di stato perse"
-
-msgid "{login:username}"
-msgstr "Nome utente"
-
-msgid "{errors:title_METADATA}"
-msgstr "Errore nel caricamento dei metadati"
-
-msgid "{admin:metaconv_title}"
-msgstr "Parser dei metadati"
-
-msgid "{admin:cfg_check_noerrors}"
-msgstr "Nessun errore trovato."
-
-msgid "{errors:descr_LOGOUTINFOLOST}"
-msgstr ""
-"Le informazioni riguardo all'attuale operazione di disconnessione sono "
-"andate perse. Si dovrebbe tornare al servizio da cui si cercava di "
-"disconnettersi e provare di nuovo. Questo errore può essere causato dal "
-"termine della validità delle informazioni di disconnessione. Le "
-"informazioni per la disconnessione sono conservate per un breve arco "
-"temporale, in genere alcune ore. Questo è un tempo superiore a quello che"
-" una operazione di disconnessione dovrebbe richiedere, quindi questo "
-"errore può indicare un problema di configurazione di qualche altro tipo. "
-"Se il problema persiste, consultare il fornitore del service provider."
-
-msgid "{disco:previous_auth}"
-msgstr "Precedentemente si è scelto di autenticarsi con"
-
-msgid "{admin:cfg_check_back}"
-msgstr "Tornare indietro alla lista dei file"
-
-msgid "{errors:report_trackid}"
-msgstr ""
-"Se inoltri questo errore, per favore riporta anche questo tracking ID, "
-"esso render&agrave; possibile all'amministratore del sistema il "
-"tracciamento della tua sessione nei log:"
-
-msgid "{login:change_home_org_title}"
-msgstr "Cambiare la propria organizzazione"
-
-msgid "{errors:descr_METADATANOTFOUND}"
-msgstr "Impossibile individuare i metatadi per %ENTITYID%"
-
-msgid "{admin:metadata_metadata}"
-msgstr "Metadati"
-
-msgid "{errors:report_text}"
-msgstr ""
-"Puoi inserire il tuo indirizzo di email, per consentire agli "
-"amministratori di contattarti per analizzare il problema:"
-
-msgid "{errors:report_header}"
-msgstr "Riporta gli errori"
-
-msgid "{login:change_home_org_text}"
-msgstr ""
-"E' stata selezionata <b>%HOMEORG%</b> come propria organizzazione. Se è "
-"sbagliata, è possibile selezionarne un'altra."
-
-msgid "{errors:title_PROCESSAUTHNREQUEST}"
-msgstr "Errore nell'elaborazione della richiesta dal Service Provider"
-
-msgid "{errors:descr_PROCESSASSERTION}"
-msgstr "Non è stata accettata una risposta proveniente dall'Identity Provider."
-
-msgid "{errors:debuginfo_header}"
-msgstr "Informazioni di debug"
-
-msgid "{admin:debug_sending_message_msg_text}"
-msgstr ""
-"Poichè ci si trova in modalità di debug, si può vedere il contenuto del "
-"messaggio che si sta per inviare:"
-
-msgid "{errors:descr_RESPONSESTATUSNOSUCCESS}"
-msgstr ""
-"L'Identity Provider ha risposto con un errore. (Il codice di stato nel "
-"messaggio SAML Response non indicava un successo)"
-
-msgid "{admin:metadata_shib13-idp}"
-msgstr "Metadati Shib 1.3 IdP"
-
-msgid "{login:help_text}"
-msgstr ""
-"Senza il nome utente e la password, non è possibile effettuare "
-"l'autenticazione al servizio. C'è probabilmente qualcuno che può fornire "
-"aiuto. Consultare il proprio help desk."
-
-msgid "{logout:default_link_text}"
-msgstr "Torna alla pagine di installazione di SimpleSAMLphp"
-
-msgid "{errors:error_header}"
-msgstr "Errore di SimpleSAMLphp"
-
-msgid "{login:help_header}"
-msgstr "Aiuto! Non ricordo la mia password."
-
-msgid "{errors:descr_LDAPERROR}"
-msgstr ""
-"Gli utenti sono memorizzati nel server LDAP, che viene quindi contattato "
-"in fase di connessione dell'utente. Si è verificato un errore proprio in "
-"questa fase."
-
-msgid "{errors:descr_METADATA}"
-msgstr ""
-"C'è qualche errore di configurazione in questa installazione "
-"SimpleSAMLphp. Se sei l'amministratore di sistema, assicurati che la "
-"configurazione dei metadati sia corretta."
-
-msgid "{errors:title_BADREQUEST}"
-msgstr "E' stata ricevuta una richiesta erronea."
-
-msgid "{status:sessionsize}"
-msgstr "Dimensione della session: %SIZE%"
-
-msgid "{logout:title}"
-msgstr "Disconnesso"
-
-msgid "{admin:metaconv_xmlmetadata}"
-msgstr "Metadati XML"
-
-msgid "{admin:metaover_unknown_found}"
-msgstr "I seguenti campi non sono stati riconosciuti"
-
-msgid "{errors:title_AUTHSOURCEERROR}"
-msgstr "Errore di sorgente di autenticazione"
-
-msgid "{login:select_home_org}"
-msgstr "Selezionare la propria organizzazione"
-
-msgid "{logout:hold}"
-msgstr "In attesa"
-
-msgid "{admin:cfg_check_header}"
-msgstr "Verifica della configurazione"
-
-msgid "{admin:debug_sending_message_send}"
-msgstr "Invio messaggio"
-
-msgid "{status:logout}"
-msgstr "Disconnessione"
-
-msgid "{errors:descr_DISCOPARAMS}"
-msgstr "I parametri inviati al discovery service non rispettano le specifiche."
-
-msgid "{errors:descr_CREATEREQUEST}"
-msgstr "Si è verificato un errore durante la creazione della richiesta SAML."
-
-msgid "{admin:metaover_optional_found}"
-msgstr "Campi opzionali"
-
-msgid "{logout:return}"
-msgstr "Ritornare al servizio"
-
-msgid "{admin:metadata_xmlurl}"
-msgstr ""
-"Si possono <a href=\"%METAURL%\">ottenere i metadati in XML dall'URL "
-"dedicata</a>:"
-
-msgid "{logout:logout_all}"
-msgstr "Si, da tutti i servizi"
-
-msgid "{admin:debug_disable_debug_mode}"
-msgstr ""
-"E' possibile disabilitare la modalità di debug nel file di configurazione"
-" globale di SimpleSAMLphp, <tt>config/config.php</tt>."
-
-msgid "{disco:select}"
-msgstr "Selezionare"
-
-msgid "{logout:also_from}"
-msgstr "Attualmente sei anche connesso ai seguenti servizi:"
-
-msgid "{login:login_button}"
-msgstr "Login"
-
-msgid "{logout:progress}"
-msgstr "Disconnessione..."
-
-msgid "{login:error_wrongpassword}"
-msgstr "Nome utente o password errati."
-
-msgid "{admin:metaover_group_metadata.shib13-sp-remote}"
-msgstr "Shib 1.3 Service Provider (Remoto)"
-
-msgid "{errors:descr_PROCESSAUTHNREQUEST}"
-msgstr ""
-"Questo Identity Provider ha ricevuto una richiesta di autenticazione da "
-"parte di un Service Provider, ma si è verificato un errore durante "
-"l'elaborazione di quest'ultima"
-
-msgid "{logout:logout_all_question}"
-msgstr "Vuoi disconnetterti da tutti i servizi qui sopra riportati?"
-
-msgid "{errors:title_NOACCESS}"
-msgstr "Nessun accesso"
-
-msgid "{login:error_nopassword}"
-msgstr ""
-"Sono state inviate delle informazioni alla pagina di login, ma per "
-"qualche motivo la password risulta mancante. Si prega di riprovare."
-
-msgid "{errors:title_NORELAYSTATE}"
-msgstr "Nessun RelayState"
-
-msgid "{errors:descr_NOSTATE}"
-msgstr ""
-"Le informazioni di stato sono andate perse, e non c'è modo di far "
-"ripartire la richiesta"
-
-msgid "{login:password}"
-msgstr "Password"
-
-msgid "{errors:debuginfo_text}"
-msgstr ""
-"Le seguenti informazioni di debug possono interessare l'amministratore di"
-" sistema o il supporto utenti:"
-
-msgid "{admin:cfg_check_missing}"
-msgstr "Opzioni mancanti dal file di configurazione"
-
-msgid "{errors:descr_UNHANDLEDEXCEPTION}"
-msgstr "E' stata generata un'eccezione che non è stata gestita."
-
-msgid "{general:yes}"
-msgstr "Sì"
-
-msgid "{errors:title_CONFIG}"
-msgstr "Errore di configurazione"
-
-msgid "{errors:title_LOGOUTREQUEST}"
-msgstr ""
-"Errore nell'elaborazione della richiesta di disconnessione (Logout "
-"Request)."
-
-msgid "{admin:metaover_errorentry}"
-msgstr "Errore in questo elemento dei metadati"
-
-msgid "{errors:title_METADATANOTFOUND}"
-msgstr "Metadati non trovati"
-
-msgid "{login:contact_info}"
-msgstr "Informazioni di contatto:"
-
-msgid "{errors:title_UNHANDLEDEXCEPTION}"
-msgstr "Eccezione non gestita"
-
-msgid "{status:header_saml20_sp}"
-msgstr "Demo di SAML 2.0 SP"
-
-msgid "{login:error_header}"
-msgstr "Errore"
-
-msgid "{errors:title_USERABORTED}"
-msgstr "Autenticazione interrotta"
-
-msgid "{logout:incapablesps}"
-msgstr ""
-"Uno o pi&ugrave; servizi a cui sei connesso <i>non supportano la "
-"disconnessione</i>. Per assicurarsi di chiudere tutte le sessioni si "
-"consiglia di <i>chiudere il browser</i>"
-
-msgid "{admin:metadata_xmlformat}"
-msgstr "Metadati SAML 2.0 in formato XML:"
-
-msgid "{admin:metaover_group_metadata.saml20-idp-remote}"
-msgstr "SAML 2.0 Identity Provider (Remoto)"
-
-msgid "{admin:metaover_group_metadata.saml20-idp-hosted}"
-msgstr "SAML 2.o Identity Provider (Hosted)"
-
-msgid "{admin:metaover_required_found}"
-msgstr "Campi richiesti"
-
-msgid "{admin:cfg_check_select_file}"
-msgstr "Selezionare il file di configurazione da verificare:"
-
-msgid "{errors:descr_UNKNOWNCERT}"
-msgstr ""
-"L'autenticazione è fallita perché il tuo browser ha inviato un certificat"
-" sconosciuto."
-
-msgid "{logout:logging_out_from}"
-msgstr "Disconnessione in corso dai seguenti servizi:"
-
-msgid "{logout:loggedoutfrom}"
-msgstr "Adesso sei correttamente disconnesso da %SP%"
-
-msgid "{errors:errorreport_text}"
-msgstr "Il rapporto dell'errore è stato inviato agli amministratori."
-
-msgid "{errors:descr_LOGOUTREQUEST}"
-msgstr ""
-"Si è verificato un errore quando si è tentato di elaborare la richiesta "
-"di disconnessione (Logout Request)."
-
-msgid "{logout:success}"
-msgstr "Sei stato disconnesso da tutti i servizi sopra elencati."
-
-msgid "{admin:cfg_check_notices}"
-msgstr "Notifiche"
-
-msgid "{errors:descr_USERABORTED}"
-msgstr "L'autenticazione è stata interrotta dall'utente"
-
-msgid "{errors:descr_CASERROR}"
-msgstr "Errore nella comunicazione con il server CAS."
-
-msgid "{general:no}"
-msgstr "No"
-
-msgid "{admin:metadata_saml20-sp}"
-msgstr "Metadati SAML 2.0 SP"
-
-msgid "{admin:metaconv_converted}"
-msgstr "Metadati convertiti"
-
-msgid "{logout:completed}"
-msgstr "Completato"
-
-msgid "{errors:descr_NOTSET}"
-msgstr ""
-"La password definita nella configurazione (auth.adminpassword) non è "
-"stata cambiata dal valore di default. Si prega di editare il file di "
-"configurazione."
-
-msgid "{general:service_provider}"
-msgstr "Fornitore di servizi"
-
-msgid "{errors:descr_BADREQUEST}"
-msgstr "C'è un errore nella richiesta di questa pagina: %REASON%"
-
-msgid "{logout:no}"
-msgstr "No"
-
-msgid "{disco:icon_prefered_idp}"
+msgid "[Preferred choice]"
 msgstr "[Scelta preferita]"
-
-msgid "{general:no_cancel}"
-msgstr "No, cancellare"
-
-msgid "{login:user_pass_header}"
-msgstr "Inserire nome utente e password"
-
-msgid "{errors:report_explain}"
-msgstr "Descrivi cosa stavi facendo al momento dell'errore"
-
-msgid "{errors:title_ACSPARAMS}"
-msgstr "Nessuna risposta SAML fornita."
-
-msgid "{errors:descr_SLOSERVICEPARAMS}"
-msgstr ""
-"Hai acceduto all'interfaccia di SingleLogoutService, ma senza fornire un "
-"messaggio SAML di LogoutRequest o LogoutResponse."
-
-msgid "{login:organization}"
-msgstr "Organizzazione"
-
-msgid "{errors:title_WRONGUSERPASS}"
-msgstr "Nome utente o password non corretti"
-
-msgid "{admin:metaover_required_not_found}"
-msgstr "I seguenti campi, richiesti, non sono stati trovati"
-
-msgid "{errors:descr_NOACCESS}"
-msgstr ""
-"Questo endpoint non è abilitato. Verifica le opzioni di attivazione nella"
-" configurazione di SimpleSAMLphp."
-
-msgid "{errors:title_SLOSERVICEPARAMS}"
-msgstr "Nessun messaggio SAML fornito"
-
-msgid "{errors:descr_ACSPARAMS}"
-msgstr ""
-"Hai acceduto all'interfaccia di Assertion Consumer Service, ma senza "
-"fornire un messaggio SAML di Authentication Response."
-
-msgid "{admin:debug_sending_message_text_link}"
-msgstr ""
-"Si sta per inviare un messaggio. Premere il pulsante di invio per "
-"continuare."
-
-msgid "{errors:descr_AUTHSOURCEERROR}"
-msgstr "Errore di autenticazione in sorgente %AUTHSOURCE%. La ragione è $REASON%"
-
-msgid "{status:some_error_occurred}"
-msgstr "Si è verificato un errore"
-
-msgid "{login:change_home_org_button}"
-msgstr "Selezionare la propria organizzazione"
-
-msgid "{admin:cfg_check_superfluous}"
-msgstr "Opzioni superflue nel file di configurazione"
-
-msgid "{errors:report_email}"
-msgstr "Indirizzo di e-mail:"
-
-msgid "{errors:howto_header}"
-msgstr "Come ottenere aiuto"
-
-msgid "{errors:title_NOTSET}"
-msgstr "Password non impostata"
-
-msgid "{errors:descr_NORELAYSTATE}"
-msgstr ""
-"Chi ha iniziato la richiesta non ha fornito un parametro RelayState per "
-"specificare come proseguire dopo il login."
-
-msgid "{status:header_diagnostics}"
-msgstr "Diagnostici di SimpleSAMLphp"
-
-msgid "{status:intro}"
-msgstr ""
-"Salve, questa è la pagina di stato di SimpleSAMLphp. Qui è possiible "
-"vedere se la sessione è scaduta, quanto è durata prima di scadere e tutti"
-" gli attributi ad essa collegati."
-
-msgid "{errors:title_NOTFOUNDREASON}"
-msgstr "Pagina non trovata"
-
-msgid "{admin:debug_sending_message_title}"
-msgstr "Invio del messaggio"
-
-msgid "{errors:title_RESPONSESTATUSNOSUCCESS}"
-msgstr "E' stato ricevuto un errore dall'Identity Provider"
-
-msgid "{admin:metadata_shib13-sp}"
-msgstr "Metadati Shib 1.3 SP"
-
-msgid "{admin:metaover_intro}"
-msgstr ""
-"Per visualizzare i dettagli di una entità SAML, cliccare sull'header SAML"
-" dell'entità."
-
-msgid "{errors:title_NOTVALIDCERT}"
-msgstr "Certificato non valido"
-
-msgid "{general:remember}"
-msgstr "Ricordare"
-
-msgid "{disco:selectidp}"
-msgstr "Selezionare il proprio identity provider"
-
-msgid "{login:help_desk_email}"
-msgstr "Invia una mail al servizio di assistenza"
-
-msgid "{login:help_desk_link}"
-msgstr "Homepage del servizio di assistenza"
-
-msgid "{errors:title_CASERROR}"
-msgstr "Errore CAS"
-
-msgid "{login:user_pass_text}"
-msgstr ""
-"Un servizio ha richiesto l'autenticazione. Si prega di inserire le "
-"proprie credenziali nella maschera di login sottostante."
-
-msgid "{errors:title_DISCOPARAMS}"
-msgstr "Richiesta errata al discovery service"
-
-msgid "{general:yes_continue}"
-msgstr "Sì, continuare"
-
-msgid "{disco:remember}"
-msgstr "Ricorda la mia scelta"
-
-msgid "{admin:metaover_group_metadata.saml20-sp-hosted}"
-msgstr "SAML 2.0 Service Provider (Hosted)"
-
-msgid "{admin:metadata_simplesamlformat}"
-msgstr ""
-"In formato flat per SimpleSAMLphp - da utilizzare se dall'altra parte c'è"
-" un'entità che utilizza SimpleSAMLphp"
-
-msgid "{disco:login_at}"
-msgstr "Effettua il login con"
-
-msgid "{errors:title_GENERATEAUTHNRESPONSE}"
-msgstr "Impossibile generare una risposta di autenticazione"
-
-msgid "{errors:errorreport_header}"
-msgstr "Rapporto dell'errore inviato"
-
-msgid "{errors:title_CREATEREQUEST}"
-msgstr "Errore durante la generazione della richiesta"
-
-msgid "{admin:metaover_header}"
-msgstr "Visione generale dei metadati"
-
-msgid "{errors:report_submit}"
-msgstr "Invia un rapporto di errore"
-
-msgid "{errors:title_INVALIDCERT}"
-msgstr "Certificato non valido"
-
-msgid "{errors:title_NOTFOUND}"
-msgstr "Pagina non trovata"
-
-msgid "{logout:logged_out_text}"
-msgstr "Sei stato disconnesso"
-
-msgid "{admin:metaover_group_metadata.shib13-sp-hosted}"
-msgstr "Shib 1.3 Service Provider (Hosted)"
-
-msgid "{admin:metadata_cert_intro}"
-msgstr "Scarica i certificati X509 come file PEM-encoded"
-
-msgid "{admin:debug_sending_message_msg_title}"
-msgstr "Messaggio"
-
-msgid "{errors:title_UNKNOWNCERT}"
-msgstr "Certificato sconosciuto"
-
-msgid "{errors:title_LDAPERROR}"
-msgstr "Errore LDAP"
-
-msgid "{logout:failedsps}"
-msgstr ""
-"Impossibile disconnettersi da uno o più servizi. Per assicurarsi di "
-"chiudere tutte le sessioni si consiglia di <i>chiudere il browser</i>"
-
-msgid "{errors:descr_NOTFOUND}"
-msgstr "La pagina data non è stata trovata. URL della pagina: %URL%"
-
-msgid "{errors:howto_text}"
-msgstr ""
-"Questo errore è probabilmente dovuto a qualche comportamento inatteso di "
-"SimpleSAMLphp o ad un errore di configurazione. Contatta l'amministratore"
-" di questo servizio di login con una copia del messaggio di errore "
-"riportato qui sopra."
-
-msgid "{admin:metaover_group_metadata.shib13-idp-hosted}"
-msgstr "Shib 1.3 Identity Provider (Hosted)"
-
-msgid "{errors:descr_NOTVALIDCERT}"
-msgstr "Non hai fornito un certificato valido."
-
-msgid "{admin:debug_sending_message_text_button}"
-msgstr ""
-"Si sta per inviare un messaggio. Premere il pulsante di invio per "
-"continuare."
-
-msgid "{admin:metaover_optional_not_found}"
-msgstr "I seguenti campi, opzionali, non sono stati trovati"
-
-msgid "{logout:logout_only}"
-msgstr "No, solo da %SP%"
-
-msgid "{login:next}"
-msgstr "Avanti"
-
-msgid "{errors:descr_GENERATEAUTHNRESPONSE}"
-msgstr ""
-"Si è verificato un errore durante la fase di creazione della risposta di "
-"autenticazione da parte dell'Identity Provider."
-
-msgid "{disco:selectidp_full}"
-msgstr "Si prega di selezionare l'identity provider con il quale autenticarsi:"
-
-msgid "{errors:descr_NOTFOUNDREASON}"
-msgstr "La pagina data non è stata trovata. Motivo: %REASON%, URL: %URL%"
-
-msgid "{errors:title_NOCERT}"
-msgstr "Nessun certificato"
-
-msgid "{errors:title_LOGOUTINFOLOST}"
-msgstr "Informazioni di disconnessione smarrite."
-
-msgid "{admin:metaover_group_metadata.shib13-idp-remote}"
-msgstr "Shib 1.3 Identity Provider (Remoto)"
-
-msgid "{errors:descr_CONFIG}"
-msgstr "Sembra che SimpleSAMLphp non sia configurato correttamente."
-
-msgid "{admin:metadata_intro}"
-msgstr ""
-"Questi sono i metadati che SimpleSAMLphp ha generato e che possono essere"
-" inviati ai partner fidati per creare una federazione tra siti."
-
-msgid "{admin:metadata_cert}"
-msgstr "Certificati"
-
-msgid "{errors:descr_INVALIDCERT}"
-msgstr ""
-"L'autenticazione è fallita perché il tuo browser ha inviato un "
-"certificato non valido o illegibile."
-
-msgid "{status:header_shib}"
-msgstr "Demo di Shibboleth"
-
-msgid "{admin:metaconv_parse}"
-msgstr "Analisi"
 
 msgid "Person's principal name at home organization"
 msgstr "Nome identificativo (principal name) nella propria organizzazione"
@@ -689,7 +73,7 @@ msgid "Explain what you did when this error occurred..."
 msgstr "Descrivi cosa stavi facendo al momento dell'errore"
 
 msgid "An unhandled exception was thrown."
-msgstr "E' stata generata un'eccezione che non è stata gestita."
+msgstr "&Egrave; stata generata un'eccezione che non è stata gestita."
 
 msgid "Invalid certificate"
 msgstr "Certificato non valido"
@@ -727,18 +111,14 @@ msgstr "I seguenti campi, richiesti, non sono stati trovati"
 msgid "Download the X509 certificates as PEM-encoded files."
 msgstr "Scarica i certificati X509 come file PEM-encoded"
 
-#, python-format
 msgid "Unable to locate metadata for %ENTITYID%"
 msgstr "Impossibile individuare i metatadi per %ENTITYID%"
 
 msgid "Organizational number"
-msgstr "Numero organizzativo"
+msgstr "Numero dell'organizzazione"
 
 msgid "Password not set"
 msgstr "Password non impostata"
-
-msgid "SAML 2.0 IdP Metadata"
-msgstr "Metadati SAML 2.0 IdP"
 
 msgid "Post office box"
 msgstr "Casella postale"
@@ -784,7 +164,7 @@ msgid ""
 "from the default value. Please edit the configuration file."
 msgstr ""
 "La password definita nella configurazione (auth.adminpassword) non è "
-"stata cambiata dal valore di default. Si prega di editare il file di "
+"stata cambiata dal valore di default. Si prega di modificare il file di "
 "configurazione."
 
 msgid "Converted metadata"
@@ -800,7 +180,7 @@ msgid ""
 "You have chosen <b>%HOMEORG%</b> as your home organization. If this is "
 "wrong you may choose another one."
 msgstr ""
-"E' stata selezionata <b>%HOMEORG%</b> come propria organizzazione. Se è "
+"&Egrave; stata selezionata <b>%HOMEORG%</b> come propria organizzazione. Se è "
 "sbagliata, è possibile selezionarne un'altra."
 
 msgid "Error processing request from Service Provider"
@@ -852,7 +232,7 @@ msgid "Your attributes"
 msgstr "I tuoi attributi"
 
 msgid "Given name"
-msgstr "Nome "
+msgstr "Nome"
 
 msgid "Identity assurance profile"
 msgstr "Profilo di garanzia sull'identità"
@@ -868,7 +248,7 @@ msgstr "Nome dell'organizzazione"
 
 msgid "Authentication failed: the certificate your browser sent is unknown"
 msgstr ""
-"L'autenticazione è fallita perché il tuo browser ha inviato un certificat"
+"L'autenticazione è fallita perché il tuo browser ha inviato un certificato"
 " sconosciuto."
 
 msgid ""
@@ -879,7 +259,7 @@ msgstr ""
 "continuare."
 
 msgid "Home organization domain name"
-msgstr "Nome del dominio della propria organizzazione"
+msgstr "Nome di dominio della propria organizzazione"
 
 msgid "Go back to the file list"
 msgstr "Tornare indietro alla lista dei file"
@@ -897,13 +277,13 @@ msgid "Logout failed"
 msgstr "Disconnessione fallita"
 
 msgid "Identity number assigned by public authorities"
-msgstr "Numero di identità assegnato dall'autorità pubblica"
+msgstr "Numero di identità assegnato dalle autorità pubbliche"
 
 msgid "WS-Federation Identity Provider (Remote)"
 msgstr "WS-Federation Identity Provider (Remoto)"
 
 msgid "Error received from Identity Provider"
-msgstr "E' stato ricevuto un errore dall'Identity Provider"
+msgstr "&Egrave; stato ricevuto un errore dall'Identity Provider"
 
 msgid "LDAP Error"
 msgstr "Errore LDAP"
@@ -912,7 +292,7 @@ msgid ""
 "The information about the current logout operation has been lost. You "
 "should return to the service you were trying to log out from and try to "
 "log out again. This error can be caused by the logout information "
-"expiring. The logout information is stored for a limited amout of time - "
+"expiring. The logout information is stored for a limited amount of time - "
 "usually a number of hours. This is longer than any normal logout "
 "operation should take, so this error may indicate some other error with "
 "the configuration. If the problem persists, contact your service "
@@ -974,7 +354,6 @@ msgstr ""
 " di questo servizio di login con una copia del messaggio di errore "
 "riportato qui sopra."
 
-#, python-format
 msgid "Your session is valid for %remaining% seconds from now."
 msgstr "La tua sessione è valida per ulteriori %remaining% secondi."
 
@@ -1013,7 +392,7 @@ msgid "You are also logged in on these services:"
 msgstr "Attualmente sei anche connesso ai seguenti servizi:"
 
 msgid "SimpleSAMLphp Diagnostics"
-msgstr "Diagnostici di SimpleSAMLphp"
+msgstr "Diagnostica di SimpleSAMLphp"
 
 msgid "Debug information"
 msgstr "Informazioni di debug"
@@ -1031,7 +410,7 @@ msgid "You have successfully logged out from all services listed above."
 msgstr "Sei stato disconnesso da tutti i servizi sopra elencati."
 
 msgid "You are now successfully logged out from %SP%."
-msgstr "Adesso sei correttamente disconnesso da %SP%"
+msgstr "Sei stato correttamente disconnesso da %SP%"
 
 msgid "Affiliation"
 msgstr "Affiliazione"
@@ -1059,9 +438,6 @@ msgstr "WS-Federation Service Provider (Hosted)"
 msgid "Preferred language"
 msgstr "Lingua preferita"
 
-msgid "SAML 2.0 Service Provider (Remote)"
-msgstr "SAML 2.0 Service Provider (Remoto)"
-
 msgid "Surname"
 msgstr "Cognome"
 
@@ -1075,7 +451,7 @@ msgid "Authentication error in source %AUTHSOURCE%. The reason was: %REASON%"
 msgstr "Errore di autenticazione in sorgente %AUTHSOURCE%. La ragione è $REASON%"
 
 msgid "Bad request received"
-msgstr "E' stata ricevuta una richiesta erronea."
+msgstr "&Egrave; stata ricevuta una richiesta erronea."
 
 msgid "User ID"
 msgstr "Identificativo utente"
@@ -1149,7 +525,7 @@ msgid "Metadata not found"
 msgstr "Metadati non trovati"
 
 msgid "SAML 2.0 Identity Provider (Hosted)"
-msgstr "SAML 2.o Identity Provider (Hosted)"
+msgstr "SAML 2.0 Identity Provider (Hosted)"
 
 msgid "Primary affiliation"
 msgstr "Affiliazione primaria"
@@ -1182,7 +558,7 @@ msgstr ""
 "chiudere tutte le sessioni si consiglia di <i>chiudere il browser</i>"
 
 msgid "Bad request to discovery service"
-msgstr "Richiesta errata al discovery service"
+msgstr "Richiesta erronea al discovery service"
 
 msgid "Select your identity provider"
 msgstr "Selezionare il proprio identity provider"
@@ -1280,7 +656,7 @@ msgid ""
 "You can turn off debug mode in the global SimpleSAMLphp configuration "
 "file <tt>config/config.php</tt>."
 msgstr ""
-"E' possibile disabilitare la modalità di debug nel file di configurazione"
+"&Egrave; possibile disabilitare la modalità di debug nel file di configurazione"
 " globale di SimpleSAMLphp, <tt>config/config.php</tt>."
 
 msgid "How to get help"
@@ -1330,7 +706,7 @@ msgstr ""
 msgid "You can <a href=\"%METAURL%\">get the metadata xml on a dedicated URL</a>:"
 msgstr ""
 "Si possono <a href=\"%METAURL%\">ottenere i metadati in XML dall'URL "
-"dedicata</a>:"
+"dedicato</a>:"
 
 msgid "Street"
 msgstr "Via"
@@ -1389,7 +765,7 @@ msgid "Error in this metadata entry"
 msgstr "Errore in questo elemento dei metadati"
 
 msgid "Session size: %SIZE%"
-msgstr "Dimensione della session: %SIZE%"
+msgstr "Dimensione della sessione: %SIZE%"
 
 msgid "Parse"
 msgstr "Analisi"
@@ -1400,11 +776,8 @@ msgid ""
 "you. Consult the help desk at your organization!"
 msgstr ""
 "Senza il nome utente e la password, non è possibile effettuare "
-"l'autenticazione al servizio. C'è probabilmente qualcuno che può fornire "
+"l'autenticazione al servizio. C'è probabilmente qualcuno che può fornirti "
 "aiuto. Consultare il proprio help desk."
-
-msgid "Metadata parser"
-msgstr "Parser dei metadati"
 
 msgid "Choose your home organization"
 msgstr "Selezionare la propria organizzazione"

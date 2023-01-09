@@ -82,6 +82,28 @@ abstract class AbstractServiceConfigurator extends AbstractConfigurator
     }
 
     /**
+     * Removes an already defined service definition or alias.
+     */
+    final public function remove(string $id): ServicesConfigurator
+    {
+        $this->__destruct();
+
+        return $this->parent->remove($id);
+    }
+
+    /**
+     * Registers a stack of decorator services.
+     *
+     * @param InlineServiceConfigurator[]|ReferenceConfigurator[] $services
+     */
+    final public function stack(string $id, array $services): AliasConfigurator
+    {
+        $this->__destruct();
+
+        return $this->parent->stack($id, $services);
+    }
+
+    /**
      * Registers a service.
      */
     final public function __invoke(string $id, string $class = null): ServiceConfigurator

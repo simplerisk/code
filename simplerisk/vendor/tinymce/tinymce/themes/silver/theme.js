@@ -1,11 +1,11 @@
 /**
- * TinyMCE version 6.0.0 (2020-03-03)
+ * TinyMCE version 6.3.1 (2022-12-06)
  */
 
 (function () {
     'use strict';
 
-    const getPrototypeOf = Object.getPrototypeOf;
+    const getPrototypeOf$2 = Object.getPrototypeOf;
     const hasProto = (v, constructor, predicate) => {
       var _a;
       if (predicate(v, constructor.prototype)) {
@@ -29,7 +29,7 @@
     const isType$1 = type => value => typeOf(value) === type;
     const isSimpleType = type => value => typeof value === type;
     const eq$1 = t => a => t === a;
-    const is$2 = (value, constructor) => isObject(value) && hasProto(value, constructor, (o, proto) => getPrototypeOf(o) === proto);
+    const is$2 = (value, constructor) => isObject(value) && hasProto(value, constructor, (o, proto) => getPrototypeOf$2(o) === proto);
     const isString = isType$1('string');
     const isObject = isType$1('object');
     const isPlainObject = value => is$2(value, Object);
@@ -85,7 +85,7 @@
         throw new Error(msg);
       };
     };
-    const apply = f => {
+    const apply$1 = f => {
       return f();
     };
     const never = constant$1(false);
@@ -353,7 +353,7 @@
     };
 
     const keys = Object.keys;
-    const hasOwnProperty = Object.hasOwnProperty;
+    const hasOwnProperty$1 = Object.hasOwnProperty;
     const each = (obj, f) => {
       const props = keys(obj);
       for (let k = 0, len = props.length; k < len; k++) {
@@ -380,11 +380,9 @@
       r[i] = x;
     };
     const internalFilter = (obj, pred, onTrue, onFalse) => {
-      const r = {};
       each(obj, (x, i) => {
         (pred(x, i) ? onTrue : onFalse)(x, i);
       });
-      return r;
     };
     const bifilter = (obj, pred) => {
       const t = {};
@@ -424,7 +422,7 @@
     const get$g = (obj, key) => {
       return has$2(obj, key) ? Optional.from(obj[key]) : Optional.none();
     };
-    const has$2 = (obj, key) => hasOwnProperty.call(obj, key);
+    const has$2 = (obj, key) => hasOwnProperty$1.call(obj, key);
     const hasNonNullableKey = (obj, key) => has$2(obj, key) && obj[key] !== undefined && obj[key] !== null;
 
     const is$1 = (lhs, rhs, comparator = tripleEquals) => lhs.exists(left => comparator(left, rhs));
@@ -470,8 +468,13 @@
     const ensureTrailing = (str, suffix) => {
       return endsWith(str, suffix) ? str : addToEnd(str, suffix);
     };
-    const contains$1 = (str, substr) => {
-      return str.indexOf(substr) !== -1;
+    const contains$1 = (str, substr, start = 0, end) => {
+      const idx = str.indexOf(substr, start);
+      if (idx !== -1) {
+        return isUndefined(end) ? true : idx + substr.length <= end;
+      } else {
+        return false;
+      }
     };
     const startsWith = (str, prefix) => {
       return checkRange(str, prefix, 0);
@@ -522,7 +525,39 @@
       fromPoint
     };
 
-    typeof window !== 'undefined' ? window : Function('return this;')();
+    const Global = typeof window !== 'undefined' ? window : Function('return this;')();
+
+    const path$1 = (parts, scope) => {
+      let o = scope !== undefined && scope !== null ? scope : Global;
+      for (let i = 0; i < parts.length && o !== undefined && o !== null; ++i) {
+        o = o[parts[i]];
+      }
+      return o;
+    };
+    const resolve = (p, scope) => {
+      const parts = p.split('.');
+      return path$1(parts, scope);
+    };
+
+    const unsafe = (name, scope) => {
+      return resolve(name, scope);
+    };
+    const getOrDie$1 = (name, scope) => {
+      const actual = unsafe(name, scope);
+      if (actual === undefined || actual === null) {
+        throw new Error(name + ' not available on this browser');
+      }
+      return actual;
+    };
+
+    const getPrototypeOf$1 = Object.getPrototypeOf;
+    const sandHTMLElement = scope => {
+      return getOrDie$1('HTMLElement', scope);
+    };
+    const isPrototypeOf = x => {
+      const scope = resolve('ownerDocument.defaultView', x);
+      return isObject(x) && (sandHTMLElement(scope).prototype.isPrototypeOf(x) || /^HTML\w*Element$/.test(getPrototypeOf$1(x).constructor.name));
+    };
 
     const DOCUMENT = 9;
     const DOCUMENT_FRAGMENT = 11;
@@ -535,6 +570,7 @@
     };
     const type$1 = element => element.dom.nodeType;
     const isType = t => element => type$1(element) === t;
+    const isHTMLElement = element => isElement$1(element) && isPrototypeOf(element.dom);
     const isElement$1 = isType(ELEMENT);
     const isText = isType(TEXT);
     const isDocument = isType(DOCUMENT);
@@ -673,7 +709,7 @@
     const remove$7 = (element, key) => {
       element.dom.removeAttribute(key);
     };
-    const clone$1 = element => foldl(element.dom.attributes, (acc, attr) => {
+    const clone$2 = element => foldl(element.dom.attributes, (acc, attr) => {
       acc[attr.name] = attr.value;
       return acc;
     }, {});
@@ -1453,8 +1489,8 @@
         forall: always,
         getOr: identity,
         or: identity,
-        getOrThunk: apply,
-        orThunk: apply,
+        getOrThunk: apply$1,
+        orThunk: apply$1,
         getOrDie: die(String(error)),
         each: noop,
         toOptional: Optional.none
@@ -1757,13 +1793,17 @@
         toString
       };
     };
-    const oneOf = props => {
+    const oneOf = (props, rawF) => {
+      const f = rawF !== undefined ? rawF : identity;
       const extract = (path, val) => {
         const errors = [];
         for (const prop of props) {
           const res = prop.extract(path, val);
           if (res.stype === SimpleResultType.Value) {
-            return res;
+            return {
+              stype: SimpleResultType.Value,
+              svalue: f(res.svalue)
+            };
           }
           errors.push(res);
         }
@@ -2198,6 +2238,13 @@
       };
       component.getSystem().triggerEvent(event, target, data);
     };
+    const retargetAndDispatchWith = (component, target, eventName, properties) => {
+      const data = {
+        ...properties,
+        target
+      };
+      component.getSystem().triggerEvent(eventName, target, data);
+    };
     const dispatchEvent = (component, target, event, simulatedEvent) => {
       component.getSystem().triggerEvent(event, target, simulatedEvent.event);
     };
@@ -2322,8 +2369,8 @@
       return get$9(container);
     };
 
-    const clone = (original, isDeep) => SugarElement.fromDom(original.dom.cloneNode(isDeep));
-    const shallow = original => clone(original, false);
+    const clone$1 = (original, isDeep) => SugarElement.fromDom(original.dom.cloneNode(isDeep));
+    const shallow = original => clone$1(original, false);
 
     const getHtml = element => {
       if (isShadowRoot(element)) {
@@ -2853,7 +2900,7 @@
         class: clazz,
         style,
         ...existingAttributes
-      } = clone$1(obsoleted);
+      } = clone$2(obsoleted);
       const {
         toSet: attrsToSet,
         toRemove: attrsToRemove
@@ -2887,7 +2934,10 @@
       };
       const updateValue = () => {
         const valueElement = obsoleted;
-        definition.value.filter(value => value !== get$6(valueElement)).each(value => set$5(valueElement, value));
+        const value = definition.value.getOrUndefined();
+        if (value !== get$6(valueElement)) {
+          set$5(valueElement, value !== null && value !== void 0 ? value : '');
+        }
       };
       updateAttrs();
       updateClasses();
@@ -3022,7 +3072,7 @@
       };
       return Result.value(build$2(completeSpec, obsoleted));
     };
-    const text$1 = textContent => {
+    const text$2 = textContent => {
       const element = SugarElement.fromText(textContent);
       return external$1({ element });
     };
@@ -3501,7 +3551,7 @@
     const loadEvent = (bConfig, bState, f) => runOnInit((component, _simulatedEvent) => {
       f(component, bConfig, bState);
     });
-    const create$4 = (schema, name, active, apis, extra, state) => {
+    const create$5 = (schema, name, active, apis, extra, state) => {
       const configSchema = objOfOnly(schema);
       const schemaSchema = optionObjOf(name, [optionObjOfOnly('config', schema)]);
       return doCreate(configSchema, schemaSchema, name, active, apis, extra, state);
@@ -3578,9 +3628,9 @@
       defaulted('state', NoState),
       defaulted('extra', {})
     ]);
-    const create$3 = data => {
+    const create$4 = data => {
       const value = asRawOrDie$1('Creating behaviour: ' + data.name, simpleSchema, data);
-      return create$4(value.fields, value.name, value.active, value.apis, value.extra, value.state);
+      return create$5(value.fields, value.name, value.active, value.apis, value.extra, value.state);
     };
     const modeSchema = objOfOnly([
       required$1('branchKey'),
@@ -3597,7 +3647,7 @@
     };
     const revoke = constant$1(undefined);
 
-    const Receiving = create$3({
+    const Receiving = create$4({
       fields: ReceivingSchema,
       name: 'receiving',
       active: ActiveReceiving
@@ -4335,13 +4385,13 @@
     const zeroWidth = '\uFEFF';
     const nbsp = '\xA0';
 
-    const create$2 = (start, soffset, finish, foffset) => ({
+    const create$3 = (start, soffset, finish, foffset) => ({
       start,
       soffset,
       finish,
       foffset
     });
-    const SimRange = { create: create$2 };
+    const SimRange = { create: create$3 };
 
     const adt$6 = Adt.generate([
       { before: ['element'] },
@@ -4820,7 +4870,7 @@
         init: init$g
     });
 
-    const Positioning = create$3({
+    const Positioning = create$4({
       fields: PositionSchema,
       name: 'positioning',
       active: ActivePosition,
@@ -5062,7 +5112,7 @@
         init: init$f
     });
 
-    const Sandboxing = create$3({
+    const Sandboxing = create$4({
       fields: SandboxSchema,
       name: 'sandboxing',
       active: ActiveSandbox,
@@ -5317,7 +5367,7 @@
       defaulted('resetOnDom', false)
     ];
 
-    const Representing = create$3({
+    const Representing = create$4({
       fields: RepresentSchema,
       name: 'representing',
       active: ActiveRepresenting,
@@ -5713,7 +5763,7 @@
 
     const ComposeSchema = [required$1('find')];
 
-    const Composing = create$3({
+    const Composing = create$4({
       fields: ComposeSchema,
       name: 'composing',
       apis: ComposeApis
@@ -5795,7 +5845,7 @@
       onHandler('onEnabled')
     ];
 
-    const Disabling = create$3({
+    const Disabling = create$4({
       fields: DisableSchema,
       name: 'disabling',
       active: ActiveDisable,
@@ -5805,7 +5855,8 @@
     const dehighlightAllExcept = (component, hConfig, hState, skip) => {
       const highlighted = descendants(component.element, '.' + hConfig.highlightClass);
       each$1(highlighted, h => {
-        if (!exists(skip, skipComp => skipComp.element === h)) {
+        const shouldSkip = exists(skip, skipComp => eq(skipComp.element, h));
+        if (!shouldSkip) {
           remove$2(h, hConfig.highlightClass);
           component.getSystem().getByDom(h).each(target => {
             hConfig.onDehighlight(component, target);
@@ -5906,7 +5957,7 @@
       onHandler('onDehighlight')
     ];
 
-    const Highlighting = create$3({
+    const Highlighting = create$4({
       fields: HighlightSchema,
       name: 'highlighting',
       apis: HighlightApis
@@ -6064,7 +6115,7 @@
       return me;
     };
 
-    const create$1 = cyclicField => {
+    const create$2 = cyclicField => {
       const schema = [
         option$3('onEscape'),
         option$3('onEnter'),
@@ -6116,19 +6167,18 @@
           inSet(TAB)
         ]), goBackwards),
         rule(inSet(TAB), goForwards),
-        rule(inSet(ESCAPE), exit),
         rule(and([
           isNotShift,
           inSet(ENTER)
         ]), execute)
       ]);
-      const getKeyupRules = constant$1([]);
+      const getKeyupRules = constant$1([rule(inSet(ESCAPE), exit)]);
       return typical(schema, NoState.init, getKeydownRules, getKeyupRules, () => Optional.some(focusIn));
     };
 
-    var AcyclicType = create$1(customField('cyclic', never));
+    var AcyclicType = create$2(customField('cyclic', never));
 
-    var CyclicType = create$1(customField('cyclic', always));
+    var CyclicType = create$2(customField('cyclic', always));
 
     const doDefaultExecute = (component, _simulatedEvent, focused) => {
       dispatch(component, focused, execute$5());
@@ -6298,10 +6348,12 @@
         isNotShift,
         inSet(TAB)
       ]), handleTab),
-      rule(inSet(ESCAPE), doEscape$1),
       rule(inSet(SPACE.concat(ENTER)), execute$3)
     ]);
-    const getKeyupRules$4 = constant$1([rule(inSet(SPACE), stopEventForFirefox)]);
+    const getKeyupRules$4 = constant$1([
+      rule(inSet(ESCAPE), doEscape$1),
+      rule(inSet(SPACE), stopEventForFirefox)
+    ]);
     var FlatgridType = typical(schema$u, flatgrid$1, getKeydownRules$4, getKeyupRules$4, () => Optional.some(focusIn$3));
 
     const horizontal = (container, selector, current, delta) => {
@@ -6347,11 +6399,13 @@
         rule(inSet(westMovers), doMove$1(west$1(moveLeft$2, moveRight$2))),
         rule(inSet(eastMovers), doMove$1(east$1(moveLeft$2, moveRight$2))),
         rule(inSet(ENTER), execute$2),
-        rule(inSet(SPACE), execute$2),
-        rule(inSet(ESCAPE), doEscape)
+        rule(inSet(SPACE), execute$2)
       ];
     };
-    const getKeyupRules$3 = constant$1([rule(inSet(SPACE), stopEventForFirefox)]);
+    const getKeyupRules$3 = constant$1([
+      rule(inSet(SPACE), stopEventForFirefox),
+      rule(inSet(ESCAPE), doEscape)
+    ]);
     var FlowType = typical(schema$t, NoState.init, getKeydownRules$3, getKeyupRules$3, () => Optional.some(focusIn$2));
 
     const toCell = (matrix, rowIndex, columnIndex) => Optional.from(matrix[rowIndex]).bind(row => Optional.from(row[columnIndex]).map(cell => ({
@@ -6507,10 +6561,12 @@
       rule(inSet(DOWN), specialInfo.onDown),
       rule(inSet(LEFT), specialInfo.onLeft),
       rule(inSet(RIGHT), specialInfo.onRight),
-      rule(inSet(SPACE), specialInfo.onSpace),
+      rule(inSet(SPACE), specialInfo.onSpace)
+    ];
+    const getKeyupRules = (component, simulatedEvent, specialInfo) => [
+      ...specialInfo.stopSpaceKeyup ? [rule(inSet(SPACE), stopEventForFirefox)] : [],
       rule(inSet(ESCAPE), specialInfo.onEscape)
     ];
-    const getKeyupRules = (component, simulatedEvent, specialInfo) => specialInfo.stopSpaceKeyup ? [rule(inSet(SPACE), stopEventForFirefox)] : [];
     var SpecialType = typical(schema$q, NoState.init, getKeydownRules, getKeyupRules, specialInfo => specialInfo.focusIn);
 
     const acyclic = AcyclicType.schema();
@@ -6633,7 +6689,7 @@
         contents: contents
     });
 
-    const Replacing = create$3({
+    const Replacing = create$4({
       fields: [defaultedBoolean('reuseDom', true)],
       name: 'replacing',
       apis: ReplaceApis
@@ -6641,7 +6697,7 @@
 
     const events$d = (name, eventHandlers) => {
       const events = derive$2(eventHandlers);
-      return create$3({
+      return create$4({
         fields: [required$1('enabled')],
         name,
         active: { events: constant$1(events) }
@@ -6704,7 +6760,7 @@
       defaulted('ignore', false)
     ];
 
-    const Focusing = create$3({
+    const Focusing = create$4({
       fields: FocusSchema,
       name: 'focusing',
       active: ActiveFocus,
@@ -6741,22 +6797,23 @@
         }
       });
     };
+    const set$2 = (component, toggleConfig, toggleState, state) => {
+      const initialState = toggleState.get();
+      toggleState.set(state);
+      updateClass(component, toggleConfig, toggleState);
+      updateAriaState(component, toggleConfig, toggleState);
+      if (initialState !== state) {
+        toggleConfig.onToggled(component, state);
+      }
+    };
     const toggle$2 = (component, toggleConfig, toggleState) => {
       set$2(component, toggleConfig, toggleState, !toggleState.get());
     };
     const on = (component, toggleConfig, toggleState) => {
-      toggleState.set(true);
-      updateClass(component, toggleConfig, toggleState);
-      updateAriaState(component, toggleConfig, toggleState);
+      set$2(component, toggleConfig, toggleState, true);
     };
     const off = (component, toggleConfig, toggleState) => {
-      toggleState.set(false);
-      updateClass(component, toggleConfig, toggleState);
-      updateAriaState(component, toggleConfig, toggleState);
-    };
-    const set$2 = (component, toggleConfig, toggleState, state) => {
-      const action = state ? on : off;
-      action(component, toggleConfig, toggleState);
+      set$2(component, toggleConfig, toggleState, false);
     };
     const isOn = (component, toggleConfig, toggleState) => toggleState.get();
     const onLoad = (component, toggleConfig, toggleState) => {
@@ -6809,6 +6866,7 @@
       defaulted('selected', false),
       option$3('toggleClass'),
       defaulted('toggleOnExecute', true),
+      onHandler('onToggled'),
       defaultedOf('aria', { mode: 'none' }, choose$1('mode', {
         pressed: [
           defaulted('syncWithExpanded', false),
@@ -6821,7 +6879,7 @@
       }))
     ];
 
-    const Toggling = create$3({
+    const Toggling = create$4({
       fields: ToggleSchema,
       name: 'toggling',
       active: ActiveToggle,
@@ -6854,6 +6912,7 @@
 
     const hoverEvent = 'alloy.item-hover';
     const focusEvent = 'alloy.item-focus';
+    const toggledEvent = 'alloy.item-toggled';
     const onHover = item => {
       if (search(item.element).isNone() || Focusing.isFocused(item)) {
         if (!Focusing.isFocused(item)) {
@@ -6865,25 +6924,40 @@
     const onFocus$1 = item => {
       emitWith(item, focusEvent, { item });
     };
+    const onToggled = (item, state) => {
+      emitWith(item, toggledEvent, {
+        item,
+        state
+      });
+    };
     const hover = constant$1(hoverEvent);
     const focus$1 = constant$1(focusEvent);
+    const toggled = constant$1(toggledEvent);
 
+    const getItemRole = detail => detail.toggling.map(toggling => toggling.exclusive ? 'menuitemradio' : 'menuitemcheckbox').getOr('menuitem');
+    const getTogglingSpec = tConfig => ({
+      aria: { mode: 'checked' },
+      ...filter$1(tConfig, (_value, name) => name !== 'exclusive'),
+      onToggled: (component, state) => {
+        if (isFunction(tConfig.onToggled)) {
+          tConfig.onToggled(component, state);
+        }
+        onToggled(component, state);
+      }
+    });
     const builder$2 = detail => ({
       dom: detail.dom,
       domModification: {
         ...detail.domModification,
         attributes: {
-          'role': detail.toggling.isSome() ? 'menuitemcheckbox' : 'menuitem',
+          'role': getItemRole(detail),
           ...detail.domModification.attributes,
           'aria-haspopup': detail.hasSubmenu,
           ...detail.hasSubmenu ? { 'aria-expanded': false } : {}
         }
       },
       behaviours: SketchBehaviours.augment(detail.itemBehaviours, [
-        detail.toggling.fold(Toggling.revoke, tConfig => Toggling.config({
-          aria: { mode: 'checked' },
-          ...tConfig
-        })),
+        detail.toggling.fold(Toggling.revoke, tConfig => Toggling.config(getTogglingSpec(tConfig))),
         Focusing.config({
           ignore: detail.ignoreFocus,
           stopMousedown: detail.ignoreFocus,
@@ -7060,6 +7134,7 @@
         row: movementInfo.rowSelector,
         cell: '.' + detail.markers.item
       },
+      previousSelector: movementInfo.previousSelector,
       focusManager: detail.focusManager
     });
     const configureMenu = (detail, movementInfo) => ({
@@ -7113,7 +7188,8 @@
         ],
         matrix: [
           output$1('config', configureMatrix),
-          required$1('rowSelector')
+          required$1('rowSelector'),
+          defaulted('previousSelector', Optional.none)
         ],
         menu: [
           defaulted('moveOnTab', true),
@@ -7123,11 +7199,22 @@
       itemMarkers(),
       defaulted('fakeFocus', false),
       defaulted('focusManager', dom$2()),
-      onHandler('onHighlight')
+      onHandler('onHighlight'),
+      onHandler('onDehighlight')
     ]);
 
     const focus = constant$1('alloy.menu-focus');
 
+    const deselectOtherRadioItems = (menu, item) => {
+      const checkedRadioItems = descendants(menu.element, '[role="menuitemradio"][aria-checked="true"]');
+      each$1(checkedRadioItems, ele => {
+        if (!eq(ele, item.element)) {
+          menu.getSystem().getByDom(ele).each(c => {
+            Toggling.off(c);
+          });
+        }
+      });
+    };
     const make$7 = (detail, components, _spec, _externals) => ({
       uid: detail.uid,
       dom: detail.dom,
@@ -7136,7 +7223,8 @@
         Highlighting.config({
           highlightClass: detail.markers.selectedItem,
           itemClass: detail.markers.item,
-          onHighlight: detail.onHighlight
+          onHighlight: detail.onHighlight,
+          onDehighlight: detail.onDehighlight
         }),
         Representing.config({
           store: {
@@ -7162,6 +7250,12 @@
         run$1(hover(), (menu, simulatedEvent) => {
           const item = simulatedEvent.event.item;
           Highlighting.highlight(menu, item);
+        }),
+        run$1(toggled(), (menu, simulatedEvent) => {
+          const {item, state} = simulatedEvent.event;
+          if (state && get$f(item.element, 'role') === 'menuitemradio') {
+            deselectOtherRadioItems(menu, item);
+          }
         })
       ]),
       components,
@@ -7278,6 +7372,16 @@
       extractPreparedMenu
     };
 
+    const onMenuItemHighlightedEvent = generate$6('tiered-menu-item-highlight');
+    const onMenuItemDehighlightedEvent = generate$6('tiered-menu-item-dehighlight');
+
+    var HighlightOnOpen;
+    (function (HighlightOnOpen) {
+      HighlightOnOpen[HighlightOnOpen['HighlightMenuAndItem'] = 0] = 'HighlightMenuAndItem';
+      HighlightOnOpen[HighlightOnOpen['HighlightJustMenu'] = 1] = 'HighlightJustMenu';
+      HighlightOnOpen[HighlightOnOpen['HighlightNone'] = 2] = 'HighlightNone';
+    }(HighlightOnOpen || (HighlightOnOpen = {})));
+
     const make$6 = (detail, _rawUiSpec) => {
       const submenuParentItems = value$2();
       const buildMenus = (container, primaryName, menus) => map$1(menus, (spec, name) => {
@@ -7286,7 +7390,20 @@
           value: name,
           markers: detail.markers,
           fakeFocus: detail.fakeFocus,
-          onHighlight: detail.onHighlight,
+          onHighlight: (menuComp, itemComp) => {
+            const highlightData = {
+              menuComp,
+              itemComp
+            };
+            emitWith(menuComp, onMenuItemHighlightedEvent, highlightData);
+          },
+          onDehighlight: (menuComp, itemComp) => {
+            const dehighlightData = {
+              menuComp,
+              itemComp
+            };
+            emitWith(menuComp, onMenuItemDehighlightedEvent, dehighlightData);
+          },
           focusManager: detail.fakeFocus ? highlights() : dom$2()
         });
         return name === primaryName ? {
@@ -7313,10 +7430,15 @@
         return find$5(candidates, c => getItemValue(c) === itemValue);
       });
       const toDirectory = _container => map$1(detail.data.menus, (data, _menuName) => bind$3(data.items, item => item.type === 'separator' ? [] : [item.data.value]));
-      const setActiveMenu = (container, menu) => {
-        Highlighting.highlight(container, menu);
+      const setActiveMenu = Highlighting.highlight;
+      const setActiveMenuAndItem = (container, menu) => {
+        setActiveMenu(container, menu);
         Highlighting.getHighlighted(menu).orThunk(() => Highlighting.getFirst(menu)).each(item => {
-          dispatch(container, item.element, focusItem());
+          if (detail.fakeFocus) {
+            Highlighting.highlight(menu, item);
+          } else {
+            dispatch(container, item.element, focusItem());
+          }
         });
       };
       const getMenus = (state, menuValues) => cat(map$2(menuValues, mv => state.lookupMenu(mv).bind(prep => prep.type === 'prepared' ? Optional.some(prep.menu) : Optional.none())));
@@ -7362,7 +7484,7 @@
             Replacing.append(container, premade(activeMenu));
           }
           remove$1(activeMenu.element, [detail.markers.backgroundMenu]);
-          setActiveMenu(container, activeMenu);
+          setActiveMenuAndItem(container, activeMenu);
           closeOthers(container, state, path);
           return Optional.some(activeMenu);
         }
@@ -7425,15 +7547,17 @@
       const onRight = (container, item) => inside(item.element) ? Optional.none() : expandRight(container, item, ExpandHighlightDecision.HighlightSubmenu);
       const onLeft = (container, item) => inside(item.element) ? Optional.none() : collapseLeft(container, item);
       const onEscape = (container, item) => collapseLeft(container, item).orThunk(() => detail.onEscape(container, item).map(() => container));
-      const keyOnItem = f => (container, simulatedEvent) => closest$1(simulatedEvent.getSource(), '.' + detail.markers.item).bind(target => container.getSystem().getByDom(target).toOptional().bind(item => f(container, item).map(always)));
+      const keyOnItem = f => (container, simulatedEvent) => {
+        return closest$1(simulatedEvent.getSource(), `.${ detail.markers.item }`).bind(target => container.getSystem().getByDom(target).toOptional().bind(item => f(container, item).map(always)));
+      };
       const events = derive$2([
-        run$1(focus(), (sandbox, simulatedEvent) => {
+        run$1(focus(), (tmenu, simulatedEvent) => {
           const item = simulatedEvent.event.item;
           layeredState.lookupItem(getItemValue(item)).each(() => {
             const menu = simulatedEvent.event.menu;
-            Highlighting.highlight(sandbox, menu);
+            Highlighting.highlight(tmenu, menu);
             const value = getItemValue(simulatedEvent.event.item);
-            layeredState.refresh(value).each(path => closeOthers(sandbox, layeredState, path));
+            layeredState.refresh(value).each(path => closeOthers(tmenu, layeredState, path));
           });
         }),
         runOnExecute$1((component, simulatedEvent) => {
@@ -7452,17 +7576,26 @@
           setup(container).each(primary => {
             Replacing.append(container, premade(primary));
             detail.onOpenMenu(container, primary);
-            if (detail.highlightImmediately) {
+            if (detail.highlightOnOpen === HighlightOnOpen.HighlightMenuAndItem) {
+              setActiveMenuAndItem(container, primary);
+            } else if (detail.highlightOnOpen === HighlightOnOpen.HighlightJustMenu) {
               setActiveMenu(container, primary);
             }
           });
-        })
-      ].concat(detail.navigateOnHover ? [run$1(hover(), (sandbox, simulatedEvent) => {
-          const item = simulatedEvent.event.item;
-          updateView(sandbox, item);
-          expandRight(sandbox, item, ExpandHighlightDecision.HighlightParent);
-          detail.onHover(sandbox, item);
-        })] : []));
+        }),
+        run$1(onMenuItemHighlightedEvent, (tmenuComp, se) => {
+          detail.onHighlightItem(tmenuComp, se.event.menuComp, se.event.itemComp);
+        }),
+        run$1(onMenuItemDehighlightedEvent, (tmenuComp, se) => {
+          detail.onDehighlightItem(tmenuComp, se.event.menuComp, se.event.itemComp);
+        }),
+        ...detail.navigateOnHover ? [run$1(hover(), (tmenu, simulatedEvent) => {
+            const item = simulatedEvent.event.item;
+            updateView(tmenu, item);
+            expandRight(tmenu, item, ExpandHighlightDecision.HighlightParent);
+            detail.onHover(tmenu, item);
+          })] : []
+      ]);
       const getActiveItem = container => Highlighting.getHighlighted(container).bind(Highlighting.getHighlighted);
       const collapseMenuApi = container => {
         getActiveItem(container).each(currentItem => {
@@ -7471,7 +7604,7 @@
       };
       const highlightPrimary = container => {
         layeredState.getPrimary().each(primary => {
-          setActiveMenu(container, primary);
+          setActiveMenuAndItem(container, primary);
         });
       };
       const extractMenuFromContainer = container => Optional.from(container.components()[0]).filter(comp => get$f(comp.element, 'role') === 'menu');
@@ -7555,14 +7688,15 @@
         onStrictHandler('onOpenSubmenu'),
         onHandler('onRepositionMenu'),
         onHandler('onCollapseMenu'),
-        defaulted('highlightImmediately', true),
+        defaulted('highlightOnOpen', HighlightOnOpen.HighlightMenuAndItem),
         requiredObjOf('data', [
           required$1('primary'),
           required$1('menus'),
           required$1('expansions')
         ]),
         defaulted('fakeFocus', false),
-        onHandler('onHighlight'),
+        onHandler('onHighlightItem'),
+        onHandler('onDehighlightItem'),
         onHandler('onHover'),
         tieredMenuMarkers(),
         required$1('dom'),
@@ -7609,7 +7743,8 @@
         dom: { tag: 'div' },
         data: menuSpec.data,
         markers: menuSpec.menu.markers,
-        highlightImmediately: menuSpec.menu.highlightImmediately,
+        highlightOnOpen: menuSpec.menu.highlightOnOpen,
+        fakeFocus: menuSpec.menu.fakeFocus,
         onEscape: () => {
           Sandboxing.close(menuSandbox);
           detail.onEscape.map(handler => handler(menuSandbox));
@@ -7647,7 +7782,7 @@
         }
       });
     };
-    const factory$m = (detail, spec) => {
+    const factory$o = (detail, spec) => {
       const isPartOfRelated = (sandbox, queryElem) => {
         const related = detail.getRelated(sandbox);
         return related.exists(rel => isPartOf$1(rel, queryElem));
@@ -7774,7 +7909,7 @@
         defaulted('isExtraPart', never),
         defaulted('eventOrder', Optional.none)
       ],
-      factory: factory$m,
+      factory: factory$o,
       apis: {
         showAt: (apis, component, anchor, thing) => {
           apis.showAt(component, anchor, thing);
@@ -7807,7 +7942,7 @@
 
     var global$9 = tinymce.util.Tools.resolve('tinymce.util.Delay');
 
-    const factory$l = detail => {
+    const factory$n = detail => {
       const events = events$a(detail.action);
       const tag = detail.dom.tag;
       const lookupAttr = attr => get$g(detail.dom, 'attributes').bind(attrs => get$g(attrs, attr));
@@ -7843,7 +7978,7 @@
     };
     const Button = single({
       name: 'Button',
-      factory: factory$l,
+      factory: factory$n,
       configFields: [
         defaulted('uid', undefined),
         required$1('dom'),
@@ -7943,7 +8078,7 @@
       warn: 'warning',
       info: 'info'
     };
-    const factory$k = detail => {
+    const factory$m = detail => {
       const memBannerText = record({
         dom: {
           tag: 'p',
@@ -8004,7 +8139,7 @@
       const updateText = (comp, text) => {
         if (comp.getSystem().isConnected()) {
           const banner = memBannerText.get(comp);
-          Replacing.set(banner, [text$1(text)]);
+          Replacing.set(banner, [text$2(text)]);
         }
       };
       const apis = {
@@ -8077,11 +8212,11 @@
     };
     const Notification = single({
       name: 'Notification',
-      factory: factory$k,
+      factory: factory$m,
       configFields: [
         option$3('level'),
         required$1('progress'),
-        required$1('icon'),
+        option$3('icon'),
         required$1('onAction'),
         required$1('text'),
         required$1('iconProvider'),
@@ -8124,7 +8259,7 @@
             'info'
           ], settings.type) ? settings.type : undefined,
           progress: settings.progressBar === true,
-          icon: Optional.from(settings.icon),
+          icon: settings.icon,
           closeButton: settings.closeButton,
           onAction: close,
           iconProvider: sharedBackstage.providers.icons,
@@ -8140,7 +8275,7 @@
           ...sharedBackstage.header.isPositionedAtTop() ? {} : { fireRepositionEventInstead: {} }
         }));
         uiMothership.add(notificationWrapper);
-        if (settings.timeout > 0) {
+        if (isNumber(settings.timeout) && settings.timeout > 0) {
           global$9.setEditorTimeout(editor, () => {
             close();
           }, settings.timeout);
@@ -8365,10 +8500,15 @@
         processor: 'boolean',
         default: true
       });
+      registerOption('promotion', {
+        processor: 'boolean',
+        default: true
+      });
       registerOption('resize', {
         processor: value => value === 'both' || isBoolean(value),
         default: !global$5.deviceType.isTouch()
       });
+      registerOption('sidebar_show', { processor: 'string' });
     };
     const isReadOnly = option$2('readonly');
     const getHeightOption = option$2('height');
@@ -8403,6 +8543,8 @@
     const useBranding = option$2('branding');
     const getResize = option$2('resize');
     const getPasteAsText = option$2('paste_as_text');
+    const getSidebarShow = option$2('sidebar_show');
+    const promotionEnabled = option$2('promotion');
     const isSkinDisabled = editor => editor.options.get('skin') === false;
     const isMenubarEnabled = editor => editor.options.get('menubar') !== false;
     const getSkinUrl = editor => {
@@ -8436,10 +8578,11 @@
     }, always);
     const isToolbarLocationBottom = editor => getToolbarLocation(editor) === ToolbarLocation$1.bottom;
     const fixedContainerTarget = editor => {
+      var _a;
       if (!editor.inline) {
         return Optional.none();
       }
-      const selector = fixedContainerSelector(editor);
+      const selector = (_a = fixedContainerSelector(editor)) !== null && _a !== void 0 ? _a : '';
       if (selector.length > 0) {
         return descendant(body(), selector);
       }
@@ -8513,9 +8656,11 @@
         getFilePickerValidatorHandler: getFilePickerValidatorHandler,
         useStatusBar: useStatusBar,
         useElementPath: useElementPath,
+        promotionEnabled: promotionEnabled,
         useBranding: useBranding,
         getResize: getResize,
-        getPasteAsText: getPasteAsText
+        getPasteAsText: getPasteAsText,
+        getSidebarShow: getSidebarShow
     });
 
     const autocompleteSelector = '[data-mce-autocompleter]';
@@ -8526,35 +8671,34 @@
       const redirectKeyToItem = (item, e) => {
         emitWith(item, keydown(), { raw: e });
       };
+      const getItem = () => api.getMenu().bind(Highlighting.getHighlighted);
       editor.on('keydown', e => {
-        const getItem = () => api.getView().bind(Highlighting.getHighlighted);
-        if (api.isActive()) {
-          if (e.which === 27) {
-            api.cancelIfNecessary();
-          }
-          if (api.isMenuOpen()) {
-            if (e.which === 13) {
-              getItem().each(emitExecute);
-              e.preventDefault();
-            } else if (e.which === 40) {
-              getItem().fold(() => {
-                api.getView().each(Highlighting.highlightFirst);
-              }, item => {
-                redirectKeyToItem(item, e);
-              });
+        const keyCode = e.which;
+        if (!api.isActive()) {
+          return;
+        }
+        if (api.isMenuOpen()) {
+          if (keyCode === 13) {
+            getItem().each(emitExecute);
+            e.preventDefault();
+          } else if (keyCode === 40) {
+            getItem().fold(() => {
+              api.getMenu().each(Highlighting.highlightFirst);
+            }, item => {
+              redirectKeyToItem(item, e);
+            });
+            e.preventDefault();
+            e.stopImmediatePropagation();
+          } else if (keyCode === 37 || keyCode === 38 || keyCode === 39) {
+            getItem().each(item => {
+              redirectKeyToItem(item, e);
               e.preventDefault();
               e.stopImmediatePropagation();
-            } else if (e.which === 37 || e.which === 38 || e.which === 39) {
-              getItem().each(item => {
-                redirectKeyToItem(item, e);
-                e.preventDefault();
-                e.stopImmediatePropagation();
-              });
-            }
-          } else {
-            if (e.which === 13 || e.which === 38 || e.which === 40) {
-              api.cancelIfNecessary();
-            }
+            });
+          }
+        } else {
+          if (keyCode === 13 || keyCode === 38 || keyCode === 40) {
+            api.cancelIfNecessary();
           }
         }
       });
@@ -8650,6 +8794,177 @@
       };
     };
 
+    const schema$l = constant$1([
+      option$3('data'),
+      defaulted('inputAttributes', {}),
+      defaulted('inputStyles', {}),
+      defaulted('tag', 'input'),
+      defaulted('inputClasses', []),
+      onHandler('onSetValue'),
+      defaulted('styles', {}),
+      defaulted('eventOrder', {}),
+      field('inputBehaviours', [
+        Representing,
+        Focusing
+      ]),
+      defaulted('selectOnFocus', true)
+    ]);
+    const focusBehaviours = detail => derive$1([Focusing.config({
+        onFocus: !detail.selectOnFocus ? noop : component => {
+          const input = component.element;
+          const value = get$6(input);
+          input.dom.setSelectionRange(0, value.length);
+        }
+      })]);
+    const behaviours = detail => ({
+      ...focusBehaviours(detail),
+      ...augment(detail.inputBehaviours, [Representing.config({
+          store: {
+            mode: 'manual',
+            ...detail.data.map(data => ({ initialValue: data })).getOr({}),
+            getValue: input => {
+              return get$6(input.element);
+            },
+            setValue: (input, data) => {
+              const current = get$6(input.element);
+              if (current !== data) {
+                set$5(input.element, data);
+              }
+            }
+          },
+          onSetValue: detail.onSetValue
+        })])
+    });
+    const dom = detail => ({
+      tag: detail.tag,
+      attributes: {
+        type: 'text',
+        ...detail.inputAttributes
+      },
+      styles: detail.inputStyles,
+      classes: detail.inputClasses
+    });
+
+    const factory$l = (detail, _spec) => ({
+      uid: detail.uid,
+      dom: dom(detail),
+      components: [],
+      behaviours: behaviours(detail),
+      eventOrder: detail.eventOrder
+    });
+    const Input = single({
+      name: 'Input',
+      configFields: schema$l(),
+      factory: factory$l
+    });
+
+    const refetchTriggerEvent = generate$6('refetch-trigger-event');
+    const redirectMenuItemInteractionEvent = generate$6('redirect-menu-item-interaction');
+
+    const menuSearcherClass = 'tox-menu__searcher';
+    const findWithinSandbox = sandboxComp => {
+      return descendant(sandboxComp.element, `.${ menuSearcherClass }`).bind(inputElem => sandboxComp.getSystem().getByDom(inputElem).toOptional());
+    };
+    const findWithinMenu = findWithinSandbox;
+    const restoreState = (inputComp, searcherState) => {
+      Representing.setValue(inputComp, searcherState.fetchPattern);
+      inputComp.element.dom.selectionStart = searcherState.selectionStart;
+      inputComp.element.dom.selectionEnd = searcherState.selectionEnd;
+    };
+    const saveState = inputComp => {
+      const fetchPattern = Representing.getValue(inputComp);
+      const selectionStart = inputComp.element.dom.selectionStart;
+      const selectionEnd = inputComp.element.dom.selectionEnd;
+      return {
+        fetchPattern,
+        selectionStart,
+        selectionEnd
+      };
+    };
+    const setActiveDescendant = (inputComp, active) => {
+      getOpt(active.element, 'id').each(id => set$9(inputComp.element, 'aria-activedescendant', id));
+    };
+    const renderMenuSearcher = spec => {
+      const handleByBrowser = (comp, se) => {
+        se.cut();
+        return Optional.none();
+      };
+      const handleByHighlightedItem = (comp, se) => {
+        const eventData = {
+          interactionEvent: se.event,
+          eventType: se.event.raw.type
+        };
+        emitWith(comp, redirectMenuItemInteractionEvent, eventData);
+        return Optional.some(true);
+      };
+      const customSearcherEventsName = 'searcher-events';
+      return {
+        dom: {
+          tag: 'div',
+          classes: [selectableClass]
+        },
+        components: [Input.sketch({
+            inputClasses: [
+              menuSearcherClass,
+              'tox-textfield'
+            ],
+            inputAttributes: {
+              ...spec.placeholder.map(placeholder => ({ placeholder: spec.i18n(placeholder) })).getOr({}),
+              'type': 'search',
+              'aria-autocomplete': 'list'
+            },
+            inputBehaviours: derive$1([
+              config(customSearcherEventsName, [
+                run$1(input(), inputComp => {
+                  emit(inputComp, refetchTriggerEvent);
+                }),
+                run$1(keydown(), (inputComp, se) => {
+                  if (se.event.raw.key === 'Escape') {
+                    se.stop();
+                  }
+                })
+              ]),
+              Keying.config({
+                mode: 'special',
+                onLeft: handleByBrowser,
+                onRight: handleByBrowser,
+                onSpace: handleByBrowser,
+                onEnter: handleByHighlightedItem,
+                onEscape: handleByHighlightedItem,
+                onUp: handleByHighlightedItem,
+                onDown: handleByHighlightedItem
+              })
+            ]),
+            eventOrder: {
+              keydown: [
+                customSearcherEventsName,
+                Keying.name()
+              ]
+            }
+          })]
+      };
+    };
+
+    const searchResultsClass = 'tox-collection--results__js';
+    const augmentWithAria = item => {
+      var _a;
+      if (item.dom) {
+        return {
+          ...item,
+          dom: {
+            ...item.dom,
+            attributes: {
+              ...(_a = item.dom.attributes) !== null && _a !== void 0 ? _a : {},
+              'id': generate$6('aria-item-search-result-id'),
+              'aria-selected': 'false'
+            }
+          }
+        };
+      } else {
+        return item;
+      }
+    };
+
     const chunk = (rowDom, numColumns) => items => {
       const chunks = chunk$1(items, numColumns);
       return map$2(chunks, c => ({
@@ -8704,7 +9019,7 @@
             allSplits.push(currentSplit);
           }
           currentSplit = [];
-          if (has$2(item.dom, 'innerHtml') || item.components.length > 0) {
+          if (has$2(item.dom, 'innerHtml') || item.components && item.components.length > 0) {
             currentSplit.push(item);
           }
         } else {
@@ -8722,6 +9037,21 @@
         components: s
       }));
     };
+    const insertItemsPlaceholder = (columns, initItems, onItem) => {
+      return Menu.parts.items({
+        preprocess: rawItems => {
+          const enrichedItems = map$2(rawItems, onItem);
+          if (columns !== 'auto' && columns > 1) {
+            return chunk({
+              tag: 'div',
+              classes: ['tox-collection__group']
+            }, columns)(enrichedItems);
+          } else {
+            return preprocessCollection(enrichedItems, (_item, i) => initItems[i].type === 'separator');
+          }
+        }
+      });
+    };
     const forCollection = (columns, initItems, _hasIcons = true) => ({
       dom: {
         tag: 'div',
@@ -8730,19 +9060,52 @@
           'tox-collection'
         ].concat(columns === 1 ? ['tox-collection--list'] : ['tox-collection--grid'])
       },
-      components: [Menu.parts.items({
-          preprocess: items => {
-            if (columns !== 'auto' && columns > 1) {
-              return chunk({
-                tag: 'div',
-                classes: ['tox-collection__group']
-              }, columns)(items);
-            } else {
-              return preprocessCollection(items, (_item, i) => initItems[i].type === 'separator');
-            }
-          }
-        })]
+      components: [insertItemsPlaceholder(columns, initItems, identity)]
     });
+    const forCollectionWithSearchResults = (columns, initItems, _hasIcons = true) => {
+      const ariaControlsSearchResults = generate$6('aria-controls-search-results');
+      return {
+        dom: {
+          tag: 'div',
+          classes: [
+            'tox-menu',
+            'tox-collection',
+            searchResultsClass
+          ].concat(columns === 1 ? ['tox-collection--list'] : ['tox-collection--grid']),
+          attributes: { id: ariaControlsSearchResults }
+        },
+        components: [insertItemsPlaceholder(columns, initItems, augmentWithAria)]
+      };
+    };
+    const forCollectionWithSearchField = (columns, initItems, searchField) => {
+      const ariaControlsSearchResults = generate$6('aria-controls-search-results');
+      return {
+        dom: {
+          tag: 'div',
+          classes: [
+            'tox-menu',
+            'tox-collection'
+          ].concat(columns === 1 ? ['tox-collection--list'] : ['tox-collection--grid'])
+        },
+        components: [
+          renderMenuSearcher({
+            i18n: global$8.translate,
+            placeholder: searchField.placeholder
+          }),
+          {
+            dom: {
+              tag: 'div',
+              classes: [
+                ...columns === 1 ? ['tox-collection--list'] : ['tox-collection--grid'],
+                searchResultsClass
+              ],
+              attributes: { id: ariaControlsSearchResults }
+            },
+            components: [insertItemsPlaceholder(columns, initItems, augmentWithAria)]
+          }
+        ]
+      };
+    };
     const forHorizontalCollection = (initItems, _hasIcons = true) => ({
       dom: {
         tag: 'div',
@@ -8760,7 +9123,7 @@
       console.log(error);
       return Optional.none();
     };
-    const createHorizontalPartialMenuWithAlloyItems = (value, _hasIcons, items, _columns, _presets) => {
+    const createHorizontalPartialMenuWithAlloyItems = (value, _hasIcons, items, _columns, _menuLayout) => {
       const structure = forHorizontalCollection(items);
       return {
         value,
@@ -8769,8 +9132,15 @@
         items
       };
     };
-    const createPartialMenuWithAlloyItems = (value, hasIcons, items, columns, presets) => {
-      if (presets === 'color') {
+    const createPartialMenuWithAlloyItems = (value, hasIcons, items, columns, menuLayout) => {
+      const getNormalStructure = () => {
+        if (menuLayout.menuType !== 'searchable') {
+          return forCollection(columns, items);
+        } else {
+          return menuLayout.searchMode.searchMode === 'search-with-field' ? forCollectionWithSearchField(columns, items, menuLayout.searchMode) : forCollectionWithSearchResults(columns, items);
+        }
+      };
+      if (menuLayout.menuType === 'color') {
         const structure = forSwatch(columns);
         return {
           value,
@@ -8778,8 +9148,7 @@
           components: structure.components,
           items
         };
-      }
-      if (presets === 'normal' && columns === 'auto') {
+      } else if (menuLayout.menuType === 'normal' && columns === 'auto') {
         const structure = forCollection(columns, items);
         return {
           value,
@@ -8787,26 +9156,15 @@
           components: structure.components,
           items
         };
-      }
-      if (presets === 'normal' && columns === 1) {
-        const structure = forCollection(1, items);
+      } else if (menuLayout.menuType === 'normal' || menuLayout.menuType === 'searchable') {
+        const structure = getNormalStructure();
         return {
           value,
           dom: structure.dom,
           components: structure.components,
           items
         };
-      }
-      if (presets === 'normal') {
-        const structure = forCollection(columns, items);
-        return {
-          value,
-          dom: structure.dom,
-          components: structure.components,
-          items
-        };
-      }
-      if (presets === 'listpreview' && columns !== 'auto') {
+      } else if (menuLayout.menuType === 'listpreview' && columns !== 'auto') {
         const structure = forToolbar(columns);
         return {
           value,
@@ -8814,19 +9172,20 @@
           components: structure.components,
           items
         };
+      } else {
+        return {
+          value,
+          dom: dom$1(hasIcons, columns, menuLayout.menuType),
+          components: components,
+          items
+        };
       }
-      return {
-        value,
-        dom: dom$1(hasIcons, columns, presets),
-        components: components,
-        items
-      };
     };
 
     const type = requiredString('type');
     const name$1 = requiredString('name');
     const label = requiredString('label');
-    const text = requiredString('text');
+    const text$1 = requiredString('text');
     const title = requiredString('title');
     const icon = requiredString('icon');
     const value$1 = requiredString('value');
@@ -8950,7 +9309,7 @@
 
     const cardTextFields = [
       type,
-      text,
+      text$1,
       optionalName,
       defaultedArrayOf('classes', ['tox-collection__item-label'], string)
     ];
@@ -9001,6 +9360,7 @@
     const insertTableFields = [defaulted('initData', {})].concat(baseFields);
     const colorSwatchFields = [defaultedObjOf('initData', {}, [
         defaultedBoolean('allowCustomColors', true),
+        defaultedString('storageKey', 'default'),
         optionArrayOf('colors', anyValue())
       ])].concat(baseFields);
     const fancyMenuItemSchema = choose$1('fancytype', {
@@ -9227,7 +9587,7 @@
         init: init$b
     });
 
-    const Tooltipping = create$3({
+    const Tooltipping = create$4({
       fields: TooltippingSchema,
       name: 'tooltipping',
       active: ActiveTooltipping,
@@ -9239,23 +9599,29 @@
 
     const ReadOnlyChannel = 'silver.readonly';
     const ReadOnlyDataSchema = objOf([requiredBoolean('readonly')]);
-    const broadcastReadonly = (uiComponents, readonly) => {
-      const outerContainer = uiComponents.outerContainer;
+    const broadcastReadonly = (uiRefs, readonly) => {
+      const outerContainer = uiRefs.mainUi.outerContainer;
       const target = outerContainer.element;
+      const motherships = [
+        uiRefs.mainUi.mothership,
+        ...uiRefs.uiMotherships
+      ];
       if (readonly) {
-        uiComponents.mothership.broadcastOn([dismissPopups()], { target });
-        uiComponents.uiMothership.broadcastOn([dismissPopups()], { target });
+        each$1(motherships, m => {
+          m.broadcastOn([dismissPopups()], { target });
+        });
       }
-      uiComponents.mothership.broadcastOn([ReadOnlyChannel], { readonly });
-      uiComponents.uiMothership.broadcastOn([ReadOnlyChannel], { readonly });
+      each$1(motherships, m => {
+        m.broadcastOn([ReadOnlyChannel], { readonly });
+      });
     };
-    const setupReadonlyModeSwitch = (editor, uiComponents) => {
+    const setupReadonlyModeSwitch = (editor, uiRefs) => {
       editor.on('init', () => {
         if (editor.mode.isReadOnly()) {
-          broadcastReadonly(uiComponents, true);
+          broadcastReadonly(uiRefs, true);
         }
       });
-      editor.on('SwitchMode', () => broadcastReadonly(uiComponents, editor.mode.isReadOnly()));
+      editor.on('SwitchMode', () => broadcastReadonly(uiRefs, editor.mode.isReadOnly()));
       if (isReadOnly(editor)) {
         editor.mode.set('readonly');
       }
@@ -9328,7 +9694,7 @@
     };
 
     const componentRenderPipeline = cat;
-    const renderCommonItem = (spec, structure, itemResponse, providersbackstage) => {
+    const renderCommonItem = (spec, structure, itemResponse, providersBackstage) => {
       const editorOffCell = Cell(noop);
       return {
         type: 'item',
@@ -9343,7 +9709,7 @@
             onControlAttached(spec, editorOffCell),
             onControlDetached(spec, editorOffCell)
           ]),
-          DisablingConfigs.item(() => !spec.enabled || providersbackstage.isDisabled()),
+          DisablingConfigs.item(() => !spec.enabled || providersBackstage.isDisabled()),
           receivingConfig(),
           Replacing.config({})
         ].concat(spec.itemBehaviours))
@@ -9388,7 +9754,7 @@
         tag: 'div',
         classes: [textClass]
       },
-      components: [text$1(global$8.translate(text))]
+      components: [text$2(global$8.translate(text))]
     });
     const renderHtml = (html, classes) => ({
       dom: {
@@ -9407,7 +9773,7 @@
             tag: style.tag,
             styles: style.styles
           },
-          components: [text$1(global$8.translate(text))]
+          components: [text$2(global$8.translate(text))]
         }]
     });
     const renderShortcut = shortcut => ({
@@ -9415,7 +9781,7 @@
         tag: 'div',
         classes: [accessoryClass]
       },
-      components: [text$1(convertText(shortcut))]
+      components: [text$2(convertText(shortcut))]
     });
     const renderCheckmark = icons => renderIcon$1('checkmark', icons, [checkmarkClass]);
     const renderSubmenuCaret = icons => renderIcon$1('chevron-right', icons, [caretClass]);
@@ -9491,15 +9857,18 @@
             ],
             innerHtml: icon
           };
-        } else {
+        } else if (isNonNullable(itemValue)) {
           return {
             ...baseDom,
             attributes: {
               ...baseDom.attributes,
               'data-mce-color': itemValue
             },
-            styles: { 'background-color': itemValue }
+            styles: { 'background-color': itemValue },
+            innerHtml: icon
           };
+        } else {
+          return baseDom;
         }
       };
       return {
@@ -9690,7 +10059,8 @@
         toggling: {
           toggleClass: tickedClass,
           toggleOnExecute: false,
-          selected: spec.active
+          selected: spec.active,
+          exclusive: true
         }
       });
     };
@@ -9828,12 +10198,83 @@
     const toString = rgba => `rgba(${ rgba.red },${ rgba.green },${ rgba.blue },${ rgba.alpha })`;
     const red = rgbaColour(255, 0, 0, 1);
 
-    const fireSkinLoaded$1 = editor => editor.dispatch('SkinLoaded');
-    const fireSkinLoadError$1 = (editor, error) => editor.dispatch('SkinLoadError', error);
-    const fireResizeEditor = editor => editor.dispatch('ResizeEditor');
-    const fireResizeContent = (editor, e) => editor.dispatch('ResizeContent', e);
-    const fireScrollContent = (editor, e) => editor.dispatch('ScrollContent', e);
-    const fireTextColorChange = (editor, data) => editor.dispatch('TextColorChange', data);
+    const fireSkinLoaded$1 = editor => {
+      editor.dispatch('SkinLoaded');
+    };
+    const fireSkinLoadError$1 = (editor, error) => {
+      editor.dispatch('SkinLoadError', error);
+    };
+    const fireResizeEditor = editor => {
+      editor.dispatch('ResizeEditor');
+    };
+    const fireResizeContent = (editor, e) => {
+      editor.dispatch('ResizeContent', e);
+    };
+    const fireScrollContent = (editor, e) => {
+      editor.dispatch('ScrollContent', e);
+    };
+    const fireTextColorChange = (editor, data) => {
+      editor.dispatch('TextColorChange', data);
+    };
+    const fireAfterProgressState = (editor, state) => {
+      editor.dispatch('AfterProgressState', { state });
+    };
+    const fireResolveName = (editor, node) => editor.dispatch('ResolveName', {
+      name: node.nodeName.toLowerCase(),
+      target: node
+    });
+    const fireToggleToolbarDrawer = (editor, state) => {
+      editor.dispatch('ToggleToolbarDrawer', { state });
+    };
+
+    var global$4 = tinymce.util.Tools.resolve('tinymce.util.LocalStorage');
+
+    const cacheStorage = {};
+    const ColorCache = (storageId, max = 10) => {
+      const storageString = global$4.getItem(storageId);
+      const localstorage = isString(storageString) ? JSON.parse(storageString) : [];
+      const prune = list => {
+        const diff = max - list.length;
+        return diff < 0 ? list.slice(0, max) : list;
+      };
+      const cache = prune(localstorage);
+      const add = key => {
+        indexOf(cache, key).each(remove);
+        cache.unshift(key);
+        if (cache.length > max) {
+          cache.pop();
+        }
+        global$4.setItem(storageId, JSON.stringify(cache));
+      };
+      const remove = idx => {
+        cache.splice(idx, 1);
+      };
+      const state = () => cache.slice(0);
+      return {
+        add,
+        state
+      };
+    };
+    const getCacheForId = id => get$g(cacheStorage, id).getOrThunk(() => {
+      const storageId = `tinymce-custom-colors-${ id }`;
+      const currentData = global$4.getItem(storageId);
+      if (isNullable(currentData)) {
+        const legacyDefault = global$4.getItem('tinymce-custom-colors');
+        global$4.setItem(storageId, isNonNullable(legacyDefault) ? legacyDefault : '[]');
+      }
+      const storage = ColorCache(storageId, 10);
+      cacheStorage[id] = storage;
+      return storage;
+    });
+    const getCurrentColors = id => map$2(getCacheForId(id).state(), color => ({
+      type: 'choiceitem',
+      text: color,
+      icon: 'checkmark',
+      value: color
+    }));
+    const addColor = (id, color) => {
+      getCacheForId(id).add(color);
+    };
 
     const hsvColour = (hue, saturation, value) => ({
       hue,
@@ -9880,36 +10321,8 @@
       return fromRgba(rgbaColour(r, g, b, a));
     });
 
-    var global$4 = tinymce.util.Tools.resolve('tinymce.util.LocalStorage');
-
-    const storageName = 'tinymce-custom-colors';
-    var ColorCache = (max = 10) => {
-      const storageString = global$4.getItem(storageName);
-      const localstorage = isString(storageString) ? JSON.parse(storageString) : [];
-      const prune = list => {
-        const diff = max - list.length;
-        return diff < 0 ? list.slice(0, max) : list;
-      };
-      const cache = prune(localstorage);
-      const add = key => {
-        indexOf(cache, key).each(remove);
-        cache.unshift(key);
-        if (cache.length > max) {
-          cache.pop();
-        }
-        global$4.setItem(storageName, JSON.stringify(cache));
-      };
-      const remove = idx => {
-        cache.splice(idx, 1);
-      };
-      const state = () => cache.slice(0);
-      return {
-        add,
-        state
-      };
-    };
-
-    const colorCache = ColorCache(10);
+    const foregroundId = 'forecolor';
+    const backgroundId = 'hilitecolor';
     const calcCols = colors => Math.max(5, Math.ceil(Math.sqrt(colors)));
     const mapColors = colorMap => {
       const colors = [];
@@ -9917,28 +10330,31 @@
         colors.push({
           text: colorMap[i + 1],
           value: '#' + anyToHex(colorMap[i]).value,
+          icon: 'checkmark',
           type: 'choiceitem'
         });
       }
       return colors;
     };
     const option$1 = name => editor => editor.options.get(name);
+    const fallbackColor = '#000000';
     const register$d = editor => {
       const registerOption = editor.options.register;
+      const colorProcessor = value => {
+        if (isArrayOf(value, isString)) {
+          return {
+            value: mapColors(value),
+            valid: true
+          };
+        } else {
+          return {
+            valid: false,
+            message: 'Must be an array of strings.'
+          };
+        }
+      };
       registerOption('color_map', {
-        processor: value => {
-          if (isArrayOf(value, isString)) {
-            return {
-              value: mapColors(value),
-              valid: true
-            };
-          } else {
-            return {
-              valid: false,
-              message: 'Must be an array of strings.'
-            };
-          }
-        },
+        processor: colorProcessor,
         default: [
           '#BFEDD2',
           'Light Green',
@@ -9986,37 +10402,58 @@
           'White'
         ]
       });
+      registerOption('color_map_background', { processor: colorProcessor });
+      registerOption('color_map_foreground', { processor: colorProcessor });
       registerOption('color_cols', {
         processor: 'number',
-        default: calcCols(getColors$2(editor).length)
+        default: calcCols(getColors$2(editor, 'default').length)
+      });
+      registerOption('color_cols_foreground', {
+        processor: 'number',
+        default: calcCols(getColors$2(editor, foregroundId).length)
+      });
+      registerOption('color_cols_background', {
+        processor: 'number',
+        default: calcCols(getColors$2(editor, backgroundId).length)
       });
       registerOption('custom_colors', {
         processor: 'boolean',
         default: true
       });
-    };
-    const getColorCols$1 = option$1('color_cols');
-    const hasCustomColors$1 = option$1('custom_colors');
-    const getColors$2 = option$1('color_map');
-    const getCurrentColors = () => map$2(colorCache.state(), color => ({
-      type: 'choiceitem',
-      text: color,
-      value: color
-    }));
-    const addColor = color => {
-      colorCache.add(color);
-    };
-
-    const fallbackColor = '#000000';
-    const getCurrentColor = (editor, format) => {
-      let color;
-      editor.dom.getParents(editor.selection.getStart(), elm => {
-        let value;
-        if (value = elm.style[format === 'forecolor' ? 'color' : 'background-color']) {
-          color = color ? color : value;
-        }
+      registerOption('color_default_foreground', {
+        processor: 'string',
+        default: fallbackColor
       });
-      return Optional.from(color);
+      registerOption('color_default_background', {
+        processor: 'string',
+        default: fallbackColor
+      });
+    };
+    const getColorCols$1 = (editor, id) => {
+      if (id === foregroundId) {
+        return option$1('color_cols_foreground')(editor);
+      } else if (id === backgroundId) {
+        return option$1('color_cols_background')(editor);
+      } else {
+        return option$1('color_cols')(editor);
+      }
+    };
+    const hasCustomColors$1 = option$1('custom_colors');
+    const getColors$2 = (editor, id) => {
+      if (id === foregroundId && editor.options.isSet('color_map_foreground')) {
+        return option$1('color_map_foreground')(editor);
+      } else if (id === backgroundId && editor.options.isSet('color_map_background')) {
+        return option$1('color_map_background')(editor);
+      } else {
+        return option$1('color_map')(editor);
+      }
+    };
+    const getDefaultForegroundColor = option$1('color_default_foreground');
+    const getDefaultBackgroundColor = option$1('color_default_background');
+
+    const getCurrentColor = (editor, format) => {
+      const cssRgbValue = get$e(SugarElement.fromDom(editor.selection.getStart()), format === 'hilitecolor' ? 'background-color' : 'color');
+      return fromString(cssRgbValue).map(rgba => '#' + fromRgba(rgba).value);
     };
     const applyFormat = (editor, format, value) => {
       editor.undoManager.transact(() => {
@@ -10028,7 +10465,7 @@
     const removeFormat = (editor, format) => {
       editor.undoManager.transact(() => {
         editor.focus();
-        editor.formatter.remove(format, { value: null }, null, true);
+        editor.formatter.remove(format, { value: null }, undefined, true);
         editor.nodeChanged();
       });
     };
@@ -10064,11 +10501,11 @@
         const dialog = colorPickerDialog(editor);
         dialog(colorOpt => {
           colorOpt.each(color => {
-            addColor(color);
+            addColor(format, color);
             editor.execCommand('mceApplyTextcolor', format, color);
             onChoice(color);
           });
-        }, fallbackColor);
+        }, getCurrentColor(editor, format).getOr(fallbackColor));
       } else if (value === 'remove') {
         onChoice('');
         editor.execCommand('mceRemoveTextcolor', format);
@@ -10077,9 +10514,9 @@
         editor.execCommand('mceApplyTextcolor', format, value);
       }
     };
-    const getColors$1 = (colors, hasCustom) => colors.concat(getCurrentColors().concat(getAdditionalColors(hasCustom)));
-    const getFetch$1 = (colors, hasCustom) => callback => {
-      callback(getColors$1(colors, hasCustom));
+    const getColors$1 = (colors, id, hasCustom) => colors.concat(getCurrentColors(id).concat(getAdditionalColors(hasCustom)));
+    const getFetch$1 = (colors, id, hasCustom) => callback => {
+      callback(getColors$1(colors, id, hasCustom));
     };
     const setIconColor = (splitButtonApi, name, newColor) => {
       const id = name === 'forecolor' ? 'tox-icon-text-color__color' : 'tox-icon-highlight-bg-color__color';
@@ -10091,14 +10528,11 @@
         presets: 'color',
         icon: name === 'forecolor' ? 'text-color' : 'highlight-bg-color',
         select: value => {
-          const optCurrentRgb = getCurrentColor(editor, format);
-          return optCurrentRgb.bind(currentRgb => fromString(currentRgb).map(rgba => {
-            const currentHex = fromRgba(rgba).value;
-            return contains$1(value.toLowerCase(), currentHex);
-          })).getOr(false);
+          const optCurrentHex = getCurrentColor(editor, format);
+          return is$1(optCurrentHex, value.toUpperCase());
         },
-        columns: getColorCols$1(editor),
-        fetch: getFetch$1(getColors$2(editor), hasCustomColors$1(editor)),
+        columns: getColorCols$1(editor, format),
+        fetch: getFetch$1(getColors$2(editor, format), format, hasCustomColors$1(editor)),
         onAction: _splitButtonApi => {
           applyColor(editor, format, lastColor.get(), noop);
         },
@@ -10132,6 +10566,7 @@
         getSubmenuItems: () => [{
             type: 'fancymenuitem',
             fancytype: 'colorswatch',
+            initData: { storageKey: format },
             onAction: data => {
               applyColor(editor, format, data.value, noop);
             }
@@ -10194,8 +10629,10 @@
     };
     const register$c = editor => {
       registerCommands(editor);
-      const lastForeColor = Cell(fallbackColor);
-      const lastBackColor = Cell(fallbackColor);
+      const fallbackColorForeground = getDefaultForegroundColor(editor);
+      const fallbackColorBackground = getDefaultBackgroundColor(editor);
+      const lastForeColor = Cell(fallbackColorForeground);
+      const lastBackColor = Cell(fallbackColorBackground);
       registerTextColorButton(editor, 'forecolor', 'forecolor', 'Text color', lastForeColor);
       registerTextColorButton(editor, 'backcolor', 'hilitecolor', 'Background color', lastBackColor);
       registerTextColorMenuItem(editor, 'forecolor', 'forecolor', 'Text color');
@@ -10206,11 +10643,12 @@
       const hasIcons = menuHasIcons(items);
       const presetItemTypes = presets !== 'color' ? 'normal' : 'color';
       const alloyItems = createChoiceItems(items, onItemValueHandler, columns, presetItemTypes, itemResponse, select, providersBackstage);
-      return createPartialMenuWithAlloyItems(value, hasIcons, alloyItems, columns, presets);
+      const menuLayout = { menuType: presets };
+      return createPartialMenuWithAlloyItems(value, hasIcons, alloyItems, columns, menuLayout);
     };
     const createChoiceItems = (items, onItemValueHandler, columns, itemPresets, itemResponse, select, providersBackstage) => cat(map$2(items, item => {
       if (item.type === 'choiceitem') {
-        return createChoiceMenuItem(item).fold(handleError, d => Optional.some(renderChoiceItem(d, columns === 1, itemPresets, onItemValueHandler, select(item.value), itemResponse, providersBackstage, menuHasIcons(items))));
+        return createChoiceMenuItem(item).fold(handleError, d => Optional.some(renderChoiceItem(d, columns === 1, itemPresets, onItemValueHandler, select(d.value), itemResponse, providersBackstage, menuHasIcons(items))));
       } else {
         return Optional.none();
       }
@@ -10236,7 +10674,10 @@
         const rowClass = presets === 'color' ? 'tox-swatches__row' : 'tox-collection__group';
         return {
           mode: 'matrix',
-          rowSelector: '.' + rowClass
+          rowSelector: '.' + rowClass,
+          previousSelector: menu => {
+            return presets === 'color' ? descendant(menu.element, '[aria-checked=true]') : Optional.none();
+          }
         };
       }
     };
@@ -10269,7 +10710,7 @@
 
     const renderColorSwatchItem = (spec, backstage) => {
       const items = getColorItems(spec, backstage);
-      const columns = backstage.colorinput.getColorCols();
+      const columns = backstage.colorinput.getColorCols(spec.initData.storageKey);
       const presets = 'color';
       const menuSpec = createPartialChoiceMenu(generate$6('menu-value'), items, value => {
         spec.onAction({ value });
@@ -10292,7 +10733,7 @@
     };
     const getColorItems = (spec, backstage) => {
       const useCustomColors = spec.initData.allowCustomColors && backstage.colorinput.hasCustomColors();
-      return spec.initData.colors.fold(() => getColors$1(backstage.colorinput.getColors(), useCustomColors), colors => colors.concat(getAdditionalColors(useCustomColors)));
+      return spec.initData.colors.fold(() => getColors$1(backstage.colorinput.getColors(spec.initData.storageKey), spec.initData.storageKey, useCustomColors), colors => colors.concat(getAdditionalColors(useCustomColors)));
     };
 
     const cellOverEvent = generate$6('cell-over');
@@ -10352,7 +10793,7 @@
       }
     };
     const makeComponents = cells => bind$3(cells, cellRow => map$2(cellRow, premade));
-    const makeLabelText = (row, col) => text$1(`${ col }x${ row }`);
+    const makeLabelText = (row, col) => text$2(`${ col }x${ row }`);
     const renderInsertTableMenuItem = spec => {
       const numRows = 10;
       const numColumns = 10;
@@ -10482,7 +10923,7 @@
           groupHeadingClass
         ]
       },
-      components: spec.text.map(text$1).toArray()
+      components: spec.text.map(text$2).toArray()
     });
 
     const renderToggleMenuItem = (spec, itemResponse, providersBackstage, renderIcons = true) => {
@@ -10530,6 +10971,567 @@
     const fancy = renderFancyMenuItem;
     const card = renderCardMenuItem;
 
+    const getCoupled = (component, coupleConfig, coupleState, name) => coupleState.getOrCreate(component, coupleConfig, name);
+    const getExistingCoupled = (component, coupleConfig, coupleState, name) => coupleState.getExisting(component, coupleConfig, name);
+
+    var CouplingApis = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        getCoupled: getCoupled,
+        getExistingCoupled: getExistingCoupled
+    });
+
+    var CouplingSchema = [requiredOf('others', setOf(Result.value, anyValue()))];
+
+    const init$a = () => {
+      const coupled = {};
+      const lookupCoupled = (coupleConfig, coupledName) => {
+        const available = keys(coupleConfig.others);
+        if (available.length === 0) {
+          throw new Error('Cannot find any known coupled components');
+        } else {
+          return get$g(coupled, coupledName);
+        }
+      };
+      const getOrCreate = (component, coupleConfig, name) => {
+        return lookupCoupled(coupleConfig, name).getOrThunk(() => {
+          const builder = get$g(coupleConfig.others, name).getOrDie('No information found for coupled component: ' + name);
+          const spec = builder(component);
+          const built = component.getSystem().build(spec);
+          coupled[name] = built;
+          return built;
+        });
+      };
+      const getExisting = (component, coupleConfig, name) => {
+        return lookupCoupled(coupleConfig, name).orThunk(() => {
+          get$g(coupleConfig.others, name).getOrDie('No information found for coupled component: ' + name);
+          return Optional.none();
+        });
+      };
+      const readState = constant$1({});
+      return nu$8({
+        readState,
+        getExisting,
+        getOrCreate
+      });
+    };
+
+    var CouplingState = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        init: init$a
+    });
+
+    const Coupling = create$4({
+      fields: CouplingSchema,
+      name: 'coupling',
+      apis: CouplingApis,
+      state: CouplingState
+    });
+
+    const nu$3 = baseFn => {
+      let data = Optional.none();
+      let callbacks = [];
+      const map = f => nu$3(nCallback => {
+        get(data => {
+          nCallback(f(data));
+        });
+      });
+      const get = nCallback => {
+        if (isReady()) {
+          call(nCallback);
+        } else {
+          callbacks.push(nCallback);
+        }
+      };
+      const set = x => {
+        if (!isReady()) {
+          data = Optional.some(x);
+          run(callbacks);
+          callbacks = [];
+        }
+      };
+      const isReady = () => data.isSome();
+      const run = cbs => {
+        each$1(cbs, call);
+      };
+      const call = cb => {
+        data.each(x => {
+          setTimeout(() => {
+            cb(x);
+          }, 0);
+        });
+      };
+      baseFn(set);
+      return {
+        get,
+        map,
+        isReady
+      };
+    };
+    const pure$1 = a => nu$3(callback => {
+      callback(a);
+    });
+    const LazyValue = {
+      nu: nu$3,
+      pure: pure$1
+    };
+
+    const errorReporter = err => {
+      setTimeout(() => {
+        throw err;
+      }, 0);
+    };
+    const make$5 = run => {
+      const get = callback => {
+        run().then(callback, errorReporter);
+      };
+      const map = fab => {
+        return make$5(() => run().then(fab));
+      };
+      const bind = aFutureB => {
+        return make$5(() => run().then(v => aFutureB(v).toPromise()));
+      };
+      const anonBind = futureB => {
+        return make$5(() => run().then(() => futureB.toPromise()));
+      };
+      const toLazy = () => {
+        return LazyValue.nu(get);
+      };
+      const toCached = () => {
+        let cache = null;
+        return make$5(() => {
+          if (cache === null) {
+            cache = run();
+          }
+          return cache;
+        });
+      };
+      const toPromise = run;
+      return {
+        map,
+        bind,
+        anonBind,
+        toLazy,
+        toCached,
+        toPromise,
+        get
+      };
+    };
+    const nu$2 = baseFn => {
+      return make$5(() => new Promise(baseFn));
+    };
+    const pure = a => {
+      return make$5(() => Promise.resolve(a));
+    };
+    const Future = {
+      nu: nu$2,
+      pure
+    };
+
+    const suffix = constant$1('sink');
+    const partType$1 = constant$1(optional({
+      name: suffix(),
+      overrides: constant$1({
+        dom: { tag: 'div' },
+        behaviours: derive$1([Positioning.config({ useFixed: always })]),
+        events: derive$2([
+          cutter(keydown()),
+          cutter(mousedown()),
+          cutter(click())
+        ])
+      })
+    }));
+
+    const getAnchor = (detail, component) => {
+      const hotspot = detail.getHotspot(component).getOr(component);
+      const type = 'hotspot';
+      const overrides = detail.getAnchorOverrides();
+      return detail.layouts.fold(() => ({
+        type,
+        hotspot,
+        overrides
+      }), layouts => ({
+        type,
+        hotspot,
+        overrides,
+        layouts
+      }));
+    };
+    const fetch = (detail, mapFetch, component) => {
+      const fetcher = detail.fetch;
+      return fetcher(component).map(mapFetch);
+    };
+    const openF = (detail, mapFetch, anchor, component, sandbox, externals, highlightOnOpen) => {
+      const futureData = fetch(detail, mapFetch, component);
+      const getLazySink = getSink(component, detail);
+      return futureData.map(tdata => tdata.bind(data => Optional.from(tieredMenu.sketch({
+        ...externals.menu(),
+        uid: generate$5(''),
+        data,
+        highlightOnOpen,
+        onOpenMenu: (tmenu, menu) => {
+          const sink = getLazySink().getOrDie();
+          Positioning.position(sink, menu, { anchor });
+          Sandboxing.decloak(sandbox);
+        },
+        onOpenSubmenu: (tmenu, item, submenu) => {
+          const sink = getLazySink().getOrDie();
+          Positioning.position(sink, submenu, {
+            anchor: {
+              type: 'submenu',
+              item
+            }
+          });
+          Sandboxing.decloak(sandbox);
+        },
+        onRepositionMenu: (tmenu, primaryMenu, submenuTriggers) => {
+          const sink = getLazySink().getOrDie();
+          Positioning.position(sink, primaryMenu, { anchor });
+          each$1(submenuTriggers, st => {
+            Positioning.position(sink, st.triggeredMenu, {
+              anchor: {
+                type: 'submenu',
+                item: st.triggeringItem
+              }
+            });
+          });
+        },
+        onEscape: () => {
+          Focusing.focus(component);
+          Sandboxing.close(sandbox);
+          return Optional.some(true);
+        }
+      }))));
+    };
+    const open = (detail, mapFetch, hotspot, sandbox, externals, onOpenSync, highlightOnOpen) => {
+      const anchor = getAnchor(detail, hotspot);
+      const processed = openF(detail, mapFetch, anchor, hotspot, sandbox, externals, highlightOnOpen);
+      return processed.map(tdata => {
+        tdata.fold(() => {
+          if (Sandboxing.isOpen(sandbox)) {
+            Sandboxing.close(sandbox);
+          }
+        }, data => {
+          Sandboxing.cloak(sandbox);
+          Sandboxing.open(sandbox, data);
+          onOpenSync(sandbox);
+        });
+        return sandbox;
+      });
+    };
+    const close = (detail, mapFetch, component, sandbox, _externals, _onOpenSync, _highlightOnOpen) => {
+      Sandboxing.close(sandbox);
+      return Future.pure(sandbox);
+    };
+    const togglePopup = (detail, mapFetch, hotspot, externals, onOpenSync, highlightOnOpen) => {
+      const sandbox = Coupling.getCoupled(hotspot, 'sandbox');
+      const showing = Sandboxing.isOpen(sandbox);
+      const action = showing ? close : open;
+      return action(detail, mapFetch, hotspot, sandbox, externals, onOpenSync, highlightOnOpen);
+    };
+    const matchWidth = (hotspot, container, useMinWidth) => {
+      const menu = Composing.getCurrent(container).getOr(container);
+      const buttonWidth = get$c(hotspot.element);
+      if (useMinWidth) {
+        set$8(menu.element, 'min-width', buttonWidth + 'px');
+      } else {
+        set$7(menu.element, buttonWidth);
+      }
+    };
+    const getSink = (anyInSystem, sinkDetail) => anyInSystem.getSystem().getByUid(sinkDetail.uid + '-' + suffix()).map(internalSink => () => Result.value(internalSink)).getOrThunk(() => sinkDetail.lazySink.fold(() => () => Result.error(new Error('No internal sink is specified, nor could an external sink be found')), lazySinkFn => () => lazySinkFn(anyInSystem)));
+    const doRepositionMenus = sandbox => {
+      Sandboxing.getState(sandbox).each(tmenu => {
+        tieredMenu.repositionMenus(tmenu);
+      });
+    };
+    const makeSandbox$1 = (detail, hotspot, extras) => {
+      const ariaControls = manager();
+      const onOpen = (component, menu) => {
+        const anchor = getAnchor(detail, hotspot);
+        ariaControls.link(hotspot.element);
+        if (detail.matchWidth) {
+          matchWidth(anchor.hotspot, menu, detail.useMinWidth);
+        }
+        detail.onOpen(anchor, component, menu);
+        if (extras !== undefined && extras.onOpen !== undefined) {
+          extras.onOpen(component, menu);
+        }
+      };
+      const onClose = (component, menu) => {
+        ariaControls.unlink(hotspot.element);
+        if (extras !== undefined && extras.onClose !== undefined) {
+          extras.onClose(component, menu);
+        }
+      };
+      const lazySink = getSink(hotspot, detail);
+      return {
+        dom: {
+          tag: 'div',
+          classes: detail.sandboxClasses,
+          attributes: {
+            id: ariaControls.id,
+            role: 'listbox'
+          }
+        },
+        behaviours: SketchBehaviours.augment(detail.sandboxBehaviours, [
+          Representing.config({
+            store: {
+              mode: 'memory',
+              initialValue: hotspot
+            }
+          }),
+          Sandboxing.config({
+            onOpen,
+            onClose,
+            isPartOf: (container, data, queryElem) => {
+              return isPartOf$1(data, queryElem) || isPartOf$1(hotspot, queryElem);
+            },
+            getAttachPoint: () => {
+              return lazySink().getOrDie();
+            }
+          }),
+          Composing.config({
+            find: sandbox => {
+              return Sandboxing.getState(sandbox).bind(menu => Composing.getCurrent(menu));
+            }
+          }),
+          Receiving.config({
+            channels: {
+              ...receivingChannel$1({ isExtraPart: never }),
+              ...receivingChannel({ doReposition: doRepositionMenus })
+            }
+          })
+        ])
+      };
+    };
+    const repositionMenus = comp => {
+      const sandbox = Coupling.getCoupled(comp, 'sandbox');
+      doRepositionMenus(sandbox);
+    };
+
+    const sandboxFields = () => [
+      defaulted('sandboxClasses', []),
+      SketchBehaviours.field('sandboxBehaviours', [
+        Composing,
+        Receiving,
+        Sandboxing,
+        Representing
+      ])
+    ];
+
+    const schema$k = constant$1([
+      required$1('dom'),
+      required$1('fetch'),
+      onHandler('onOpen'),
+      onKeyboardHandler('onExecute'),
+      defaulted('getHotspot', Optional.some),
+      defaulted('getAnchorOverrides', constant$1({})),
+      schema$y(),
+      field('dropdownBehaviours', [
+        Toggling,
+        Coupling,
+        Keying,
+        Focusing
+      ]),
+      required$1('toggleClass'),
+      defaulted('eventOrder', {}),
+      option$3('lazySink'),
+      defaulted('matchWidth', false),
+      defaulted('useMinWidth', false),
+      option$3('role')
+    ].concat(sandboxFields()));
+    const parts$e = constant$1([
+      external({
+        schema: [
+          tieredMenuMarkers(),
+          defaulted('fakeFocus', false)
+        ],
+        name: 'menu',
+        defaults: detail => {
+          return { onExecute: detail.onExecute };
+        }
+      }),
+      partType$1()
+    ]);
+
+    const factory$k = (detail, components, _spec, externals) => {
+      const lookupAttr = attr => get$g(detail.dom, 'attributes').bind(attrs => get$g(attrs, attr));
+      const switchToMenu = sandbox => {
+        Sandboxing.getState(sandbox).each(tmenu => {
+          tieredMenu.highlightPrimary(tmenu);
+        });
+      };
+      const togglePopup$1 = (dropdownComp, onOpenSync, highlightOnOpen) => {
+        return togglePopup(detail, identity, dropdownComp, externals, onOpenSync, highlightOnOpen);
+      };
+      const action = component => {
+        const onOpenSync = switchToMenu;
+        togglePopup$1(component, onOpenSync, HighlightOnOpen.HighlightMenuAndItem).get(noop);
+      };
+      const apis = {
+        expand: comp => {
+          if (!Toggling.isOn(comp)) {
+            togglePopup$1(comp, noop, HighlightOnOpen.HighlightNone).get(noop);
+          }
+        },
+        open: comp => {
+          if (!Toggling.isOn(comp)) {
+            togglePopup$1(comp, noop, HighlightOnOpen.HighlightMenuAndItem).get(noop);
+          }
+        },
+        refetch: comp => {
+          const optSandbox = Coupling.getExistingCoupled(comp, 'sandbox');
+          return optSandbox.fold(() => {
+            return togglePopup$1(comp, noop, HighlightOnOpen.HighlightMenuAndItem).map(noop);
+          }, sandboxComp => {
+            return open(detail, identity, comp, sandboxComp, externals, noop, HighlightOnOpen.HighlightMenuAndItem).map(noop);
+          });
+        },
+        isOpen: Toggling.isOn,
+        close: comp => {
+          if (Toggling.isOn(comp)) {
+            togglePopup$1(comp, noop, HighlightOnOpen.HighlightMenuAndItem).get(noop);
+          }
+        },
+        repositionMenus: comp => {
+          if (Toggling.isOn(comp)) {
+            repositionMenus(comp);
+          }
+        }
+      };
+      const triggerExecute = (comp, _se) => {
+        emitExecute(comp);
+        return Optional.some(true);
+      };
+      return {
+        uid: detail.uid,
+        dom: detail.dom,
+        components,
+        behaviours: augment(detail.dropdownBehaviours, [
+          Toggling.config({
+            toggleClass: detail.toggleClass,
+            aria: { mode: 'expanded' }
+          }),
+          Coupling.config({
+            others: {
+              sandbox: hotspot => {
+                return makeSandbox$1(detail, hotspot, {
+                  onOpen: () => Toggling.on(hotspot),
+                  onClose: () => Toggling.off(hotspot)
+                });
+              }
+            }
+          }),
+          Keying.config({
+            mode: 'special',
+            onSpace: triggerExecute,
+            onEnter: triggerExecute,
+            onDown: (comp, _se) => {
+              if (Dropdown.isOpen(comp)) {
+                const sandbox = Coupling.getCoupled(comp, 'sandbox');
+                switchToMenu(sandbox);
+              } else {
+                Dropdown.open(comp);
+              }
+              return Optional.some(true);
+            },
+            onEscape: (comp, _se) => {
+              if (Dropdown.isOpen(comp)) {
+                Dropdown.close(comp);
+                return Optional.some(true);
+              } else {
+                return Optional.none();
+              }
+            }
+          }),
+          Focusing.config({})
+        ]),
+        events: events$a(Optional.some(action)),
+        eventOrder: {
+          ...detail.eventOrder,
+          [execute$5()]: [
+            'disabling',
+            'toggling',
+            'alloy.base.behaviour'
+          ]
+        },
+        apis,
+        domModification: {
+          attributes: {
+            'aria-haspopup': 'true',
+            ...detail.role.fold(() => ({}), role => ({ role })),
+            ...detail.dom.tag === 'button' ? { type: lookupAttr('type').getOr('button') } : {}
+          }
+        }
+      };
+    };
+    const Dropdown = composite({
+      name: 'Dropdown',
+      configFields: schema$k(),
+      partFields: parts$e(),
+      factory: factory$k,
+      apis: {
+        open: (apis, comp) => apis.open(comp),
+        refetch: (apis, comp) => apis.refetch(comp),
+        expand: (apis, comp) => apis.expand(comp),
+        close: (apis, comp) => apis.close(comp),
+        isOpen: (apis, comp) => apis.isOpen(comp),
+        repositionMenus: (apis, comp) => apis.repositionMenus(comp)
+      }
+    });
+
+    const identifyMenuLayout = searchMode => {
+      switch (searchMode.searchMode) {
+      case 'no-search': {
+          return { menuType: 'normal' };
+        }
+      default: {
+          return {
+            menuType: 'searchable',
+            searchMode
+          };
+        }
+      }
+    };
+    const handleRefetchTrigger = originalSandboxComp => {
+      const dropdown = Representing.getValue(originalSandboxComp);
+      const optSearcherState = findWithinSandbox(originalSandboxComp).map(saveState);
+      Dropdown.refetch(dropdown).get(() => {
+        const newSandboxComp = Coupling.getCoupled(dropdown, 'sandbox');
+        optSearcherState.each(searcherState => findWithinSandbox(newSandboxComp).each(inputComp => restoreState(inputComp, searcherState)));
+      });
+    };
+    const handleRedirectToMenuItem = (sandboxComp, se) => {
+      getActiveMenuItemFrom(sandboxComp).each(activeItem => {
+        retargetAndDispatchWith(sandboxComp, activeItem.element, se.event.eventType, se.event.interactionEvent);
+      });
+    };
+    const getActiveMenuItemFrom = sandboxComp => {
+      return Sandboxing.getState(sandboxComp).bind(Highlighting.getHighlighted).bind(Highlighting.getHighlighted);
+    };
+    const getSearchResults = activeMenuComp => {
+      return has(activeMenuComp.element, searchResultsClass) ? Optional.some(activeMenuComp.element) : descendant(activeMenuComp.element, '.' + searchResultsClass);
+    };
+    const updateAriaOnHighlight = (tmenuComp, menuComp, itemComp) => {
+      findWithinMenu(tmenuComp).each(inputComp => {
+        setActiveDescendant(inputComp, itemComp);
+        const optActiveResults = getSearchResults(menuComp);
+        optActiveResults.each(resultsElem => {
+          getOpt(resultsElem, 'id').each(controlledId => set$9(inputComp.element, 'aria-controls', controlledId));
+        });
+      });
+      set$9(itemComp.element, 'aria-selected', 'true');
+    };
+    const updateAriaOnDehighlight = (tmenuComp, menuComp, itemComp) => {
+      set$9(itemComp.element, 'aria-selected', 'false');
+    };
+    const focusSearchField = tmenuComp => {
+      findWithinMenu(tmenuComp).each(searcherComp => Focusing.focus(searcherComp));
+    };
+    const getSearchPattern = dropdownComp => {
+      const optSandboxComp = Coupling.getExistingCoupled(dropdownComp, 'sandbox');
+      return optSandboxComp.bind(findWithinSandbox).map(saveState).map(state => state.fetchPattern).getOr('');
+    };
+
     var FocusMode;
     (function (FocusMode) {
       FocusMode[FocusMode['ContentFocus'] = 0] = 'ContentFocus';
@@ -10552,7 +11554,7 @@
       case 'separator':
         return createSeparatorMenuItem(item).fold(handleError, d => Optional.some(separator$3(d)));
       case 'fancymenuitem':
-        return createFancyMenuItem(item).fold(handleError, d => fancy(parseForHorizontalMenu(d), backstage));
+        return createFancyMenuItem(item).fold(handleError, d => fancy(d, backstage));
       default: {
           console.error('Unknown item in general menu', item);
           return Optional.none();
@@ -10586,7 +11588,7 @@
         }
       }));
     };
-    const createPartialMenu = (value, items, itemResponse, backstage, isHorizontalMenu) => {
+    const createPartialMenu = (value, items, itemResponse, backstage, isHorizontalMenu, searchMode) => {
       const hasIcons = menuHasIcons(items);
       const alloyItems = cat(map$2(items, item => {
         const itemHasIcon = i => isHorizontalMenu ? !has$2(i, 'text') : hasIcons;
@@ -10600,31 +11602,28 @@
           return createItem(item);
         }
       }));
+      const menuLayout = identifyMenuLayout(searchMode);
       const createPartial = isHorizontalMenu ? createHorizontalPartialMenuWithAlloyItems : createPartialMenuWithAlloyItems;
-      return createPartial(value, hasIcons, alloyItems, 1, 'normal');
+      return createPartial(value, hasIcons, alloyItems, 1, menuLayout);
     };
     const createTieredDataFrom = partialMenu => tieredMenu.singleData(partialMenu.value, partialMenu);
-    const createMenuFrom = (partialMenu, columns, focusMode, presets) => {
-      const focusManager = focusMode === FocusMode.ContentFocus ? highlights() : dom$2();
+    const createInlineMenuFrom = (partialMenu, columns, focusMode, presets) => {
       const movement = deriveMenuMovement(columns, presets);
       const menuMarkers = markers(presets);
       return {
-        dom: partialMenu.dom,
-        components: partialMenu.components,
-        items: partialMenu.items,
-        value: partialMenu.value,
-        markers: {
-          selectedItem: menuMarkers.selectedItem,
-          item: menuMarkers.item
-        },
-        movement,
-        fakeFocus: focusMode === FocusMode.ContentFocus,
-        focusManager,
-        menuBehaviours: SimpleBehaviours.unnamedEvents(columns !== 'auto' ? [] : [runOnAttached((comp, _se) => {
-            detectSize(comp, 4, menuMarkers.item).each(({numColumns, numRows}) => {
-              Keying.setGridSize(comp, numRows, numColumns);
-            });
-          })])
+        data: createTieredDataFrom({
+          ...partialMenu,
+          movement,
+          menuBehaviours: SimpleBehaviours.unnamedEvents(columns !== 'auto' ? [] : [runOnAttached((comp, _se) => {
+              detectSize(comp, 4, menuMarkers.item).each(({numColumns, numRows}) => {
+                Keying.setGridSize(comp, numRows, numColumns);
+              });
+            })])
+        }),
+        menu: {
+          markers: markers(presets),
+          fakeFocus: focusMode === FocusMode.ContentFocus
+        }
       };
     };
 
@@ -10651,10 +11650,13 @@
       const isMenuOpen = () => InlineView.isOpen(autocompleter);
       const isActive = activeState.get;
       const hideIfNecessary = () => {
-        if (isActive()) {
+        if (isMenuOpen()) {
           InlineView.hide(autocompleter);
         }
       };
+      const getMenu = () => InlineView.getContent(autocompleter).bind(tmenu => {
+        return get$h(tmenu.components(), 0);
+      });
       const cancelIfNecessary = () => editor.execCommand('mceAutocompleterClose');
       const getCombinedItems = matches => {
         const columns = findMap(matches, m => Optional.from(m.columns)).getOr(1);
@@ -10680,15 +11682,15 @@
       const display = (lookupData, items) => {
         findIn(SugarElement.fromDom(editor.getBody())).each(element => {
           const columns = findMap(lookupData, ld => Optional.from(ld.columns)).getOr(1);
-          InlineView.showAt(autocompleter, Menu.sketch(createMenuFrom(createPartialMenuWithAlloyItems('autocompleter-value', true, items, columns, 'normal'), columns, FocusMode.ContentFocus, 'normal')), {
+          InlineView.showMenuAt(autocompleter, {
             anchor: {
               type: 'node',
               root: SugarElement.fromDom(editor.getBody()),
               node: Optional.from(element)
             }
-          });
-          InlineView.getContent(autocompleter).each(Highlighting.highlightFirst);
+          }, createInlineMenuFrom(createPartialMenuWithAlloyItems('autocompleter-value', true, items, columns, { menuType: 'normal' }), columns, FocusMode.ContentFocus, 'normal'));
         });
+        getMenu().each(Highlighting.highlightFirst);
       };
       const updateDisplay = lookupData => {
         const combinedItems = getCombinedItems(lookupData);
@@ -10714,7 +11716,7 @@
         isMenuOpen,
         isActive,
         isProcessingAction: processingAction.get,
-        getView: () => InlineView.getContent(autocompleter)
+        getMenu
       };
       AutocompleterEditorEvents.setup(autocompleterUiApi, editor);
     };
@@ -11269,14 +12271,14 @@
       components: map$2(spec.items, backstage.interpreter)
     });
 
-    const schema$l = constant$1([
+    const schema$j = constant$1([
       defaulted('prefix', 'form-field'),
       field('fieldBehaviours', [
         Composing,
         Representing
       ])
     ]);
-    const parts$e = constant$1([
+    const parts$d = constant$1([
       optional({
         schema: [required$1('dom')],
         name: 'label'
@@ -11365,8 +12367,8 @@
     };
     const FormField = composite({
       name: 'FormField',
-      configFields: schema$l(),
-      partFields: parts$e(),
+      configFields: schema$j(),
+      partFields: parts$d(),
       factory: factory$i,
       apis: {
         getField: (apis, comp) => apis.getField(comp),
@@ -11388,7 +12390,7 @@
 
     var TabstopSchema = [defaulted('tabAttr', 'data-alloy-tabstop')];
 
-    const Tabstopping = create$3({
+    const Tabstopping = create$4({
       fields: TabstopSchema,
       name: 'tabstopping',
       active: ActiveTabstopping
@@ -11416,7 +12418,7 @@
         tag: 'label',
         classes: ['tox-label']
       },
-      components: [text$1(providersBackstage.translate(label))]
+      components: [text$2(providersBackstage.translate(label))]
     });
 
     const formChangeEvent = generate$6('form-component-change');
@@ -11544,170 +12546,6 @@
       return renderFormFieldWith(pLabel, pField, extraClasses, []);
     };
 
-    const schema$k = constant$1([
-      option$3('data'),
-      defaulted('inputAttributes', {}),
-      defaulted('inputStyles', {}),
-      defaulted('tag', 'input'),
-      defaulted('inputClasses', []),
-      onHandler('onSetValue'),
-      defaulted('styles', {}),
-      defaulted('eventOrder', {}),
-      field('inputBehaviours', [
-        Representing,
-        Focusing
-      ]),
-      defaulted('selectOnFocus', true)
-    ]);
-    const focusBehaviours = detail => derive$1([Focusing.config({
-        onFocus: !detail.selectOnFocus ? noop : component => {
-          const input = component.element;
-          const value = get$6(input);
-          input.dom.setSelectionRange(0, value.length);
-        }
-      })]);
-    const behaviours = detail => ({
-      ...focusBehaviours(detail),
-      ...augment(detail.inputBehaviours, [Representing.config({
-          store: {
-            mode: 'manual',
-            ...detail.data.map(data => ({ initialValue: data })).getOr({}),
-            getValue: input => {
-              return get$6(input.element);
-            },
-            setValue: (input, data) => {
-              const current = get$6(input.element);
-              if (current !== data) {
-                set$5(input.element, data);
-              }
-            }
-          },
-          onSetValue: detail.onSetValue
-        })])
-    });
-    const dom = detail => ({
-      tag: detail.tag,
-      attributes: {
-        type: 'text',
-        ...detail.inputAttributes
-      },
-      styles: detail.inputStyles,
-      classes: detail.inputClasses
-    });
-
-    const factory$h = (detail, _spec) => ({
-      uid: detail.uid,
-      dom: dom(detail),
-      components: [],
-      behaviours: behaviours(detail),
-      eventOrder: detail.eventOrder
-    });
-    const Input = single({
-      name: 'Input',
-      configFields: schema$k(),
-      factory: factory$h
-    });
-
-    const nu$3 = baseFn => {
-      let data = Optional.none();
-      let callbacks = [];
-      const map = f => nu$3(nCallback => {
-        get(data => {
-          nCallback(f(data));
-        });
-      });
-      const get = nCallback => {
-        if (isReady()) {
-          call(nCallback);
-        } else {
-          callbacks.push(nCallback);
-        }
-      };
-      const set = x => {
-        if (!isReady()) {
-          data = Optional.some(x);
-          run(callbacks);
-          callbacks = [];
-        }
-      };
-      const isReady = () => data.isSome();
-      const run = cbs => {
-        each$1(cbs, call);
-      };
-      const call = cb => {
-        data.each(x => {
-          setTimeout(() => {
-            cb(x);
-          }, 0);
-        });
-      };
-      baseFn(set);
-      return {
-        get,
-        map,
-        isReady
-      };
-    };
-    const pure$1 = a => nu$3(callback => {
-      callback(a);
-    });
-    const LazyValue = {
-      nu: nu$3,
-      pure: pure$1
-    };
-
-    const errorReporter = err => {
-      setTimeout(() => {
-        throw err;
-      }, 0);
-    };
-    const make$5 = run => {
-      const get = callback => {
-        run().then(callback, errorReporter);
-      };
-      const map = fab => {
-        return make$5(() => run().then(fab));
-      };
-      const bind = aFutureB => {
-        return make$5(() => run().then(v => aFutureB(v).toPromise()));
-      };
-      const anonBind = futureB => {
-        return make$5(() => run().then(() => futureB.toPromise()));
-      };
-      const toLazy = () => {
-        return LazyValue.nu(get);
-      };
-      const toCached = () => {
-        let cache = null;
-        return make$5(() => {
-          if (cache === null) {
-            cache = run();
-          }
-          return cache;
-        });
-      };
-      const toPromise = run;
-      return {
-        map,
-        bind,
-        anonBind,
-        toLazy,
-        toCached,
-        toPromise,
-        get
-      };
-    };
-    const nu$2 = baseFn => {
-      return make$5(() => new Promise(baseFn));
-    };
-    const pure = a => {
-      return make$5(() => Promise.resolve(a));
-    };
-    const Future = {
-      nu: nu$2,
-      pure
-    };
-
     const ariaElements = [
       'input',
       'textarea'
@@ -11804,7 +12642,7 @@
       ])
     ];
 
-    const Invalidating = create$3({
+    const Invalidating = create$4({
       fields: InvalidateSchema,
       name: 'invalidating',
       active: ActiveInvalidate,
@@ -11816,392 +12654,6 @@
             return Future.pure(validator(v));
           };
         }
-      }
-    });
-
-    const getCoupled = (component, coupleConfig, coupleState, name) => coupleState.getOrCreate(component, coupleConfig, name);
-
-    var CouplingApis = /*#__PURE__*/Object.freeze({
-        __proto__: null,
-        getCoupled: getCoupled
-    });
-
-    var CouplingSchema = [requiredOf('others', setOf(Result.value, anyValue()))];
-
-    const init$a = () => {
-      const coupled = {};
-      const getOrCreate = (component, coupleConfig, name) => {
-        const available = keys(coupleConfig.others);
-        if (!available) {
-          throw new Error('Cannot find coupled component: ' + name + '. Known coupled components: ' + JSON.stringify(available, null, 2));
-        } else {
-          return get$g(coupled, name).getOrThunk(() => {
-            const builder = get$g(coupleConfig.others, name).getOrDie('No information found for coupled component: ' + name);
-            const spec = builder(component);
-            const built = component.getSystem().build(spec);
-            coupled[name] = built;
-            return built;
-          });
-        }
-      };
-      const readState = constant$1({});
-      return nu$8({
-        readState,
-        getOrCreate
-      });
-    };
-
-    var CouplingState = /*#__PURE__*/Object.freeze({
-        __proto__: null,
-        init: init$a
-    });
-
-    const Coupling = create$3({
-      fields: CouplingSchema,
-      name: 'coupling',
-      apis: CouplingApis,
-      state: CouplingState
-    });
-
-    const suffix = constant$1('sink');
-    const partType$1 = constant$1(optional({
-      name: suffix(),
-      overrides: constant$1({
-        dom: { tag: 'div' },
-        behaviours: derive$1([Positioning.config({ useFixed: always })]),
-        events: derive$2([
-          cutter(keydown()),
-          cutter(mousedown()),
-          cutter(click())
-        ])
-      })
-    }));
-
-    var HighlightOnOpen;
-    (function (HighlightOnOpen) {
-      HighlightOnOpen[HighlightOnOpen['HighlightFirst'] = 0] = 'HighlightFirst';
-      HighlightOnOpen[HighlightOnOpen['HighlightNone'] = 1] = 'HighlightNone';
-    }(HighlightOnOpen || (HighlightOnOpen = {})));
-    const getAnchor = (detail, component) => {
-      const hotspot = detail.getHotspot(component).getOr(component);
-      const type = 'hotspot';
-      const overrides = detail.getAnchorOverrides();
-      return detail.layouts.fold(() => ({
-        type,
-        hotspot,
-        overrides
-      }), layouts => ({
-        type,
-        hotspot,
-        overrides,
-        layouts
-      }));
-    };
-    const fetch = (detail, mapFetch, component) => {
-      const fetcher = detail.fetch;
-      return fetcher(component).map(mapFetch);
-    };
-    const openF = (detail, mapFetch, anchor, component, sandbox, externals, highlightOnOpen) => {
-      const futureData = fetch(detail, mapFetch, component);
-      const getLazySink = getSink(component, detail);
-      return futureData.map(tdata => tdata.bind(data => Optional.from(tieredMenu.sketch({
-        ...externals.menu(),
-        uid: generate$5(''),
-        data,
-        highlightImmediately: highlightOnOpen === HighlightOnOpen.HighlightFirst,
-        onOpenMenu: (tmenu, menu) => {
-          const sink = getLazySink().getOrDie();
-          Positioning.position(sink, menu, { anchor });
-          Sandboxing.decloak(sandbox);
-        },
-        onOpenSubmenu: (tmenu, item, submenu) => {
-          const sink = getLazySink().getOrDie();
-          Positioning.position(sink, submenu, {
-            anchor: {
-              type: 'submenu',
-              item
-            }
-          });
-          Sandboxing.decloak(sandbox);
-        },
-        onRepositionMenu: (tmenu, primaryMenu, submenuTriggers) => {
-          const sink = getLazySink().getOrDie();
-          Positioning.position(sink, primaryMenu, { anchor });
-          each$1(submenuTriggers, st => {
-            Positioning.position(sink, st.triggeredMenu, {
-              anchor: {
-                type: 'submenu',
-                item: st.triggeringItem
-              }
-            });
-          });
-        },
-        onEscape: () => {
-          Focusing.focus(component);
-          Sandboxing.close(sandbox);
-          return Optional.some(true);
-        }
-      }))));
-    };
-    const open = (detail, mapFetch, hotspot, sandbox, externals, onOpenSync, highlightOnOpen) => {
-      const anchor = getAnchor(detail, hotspot);
-      const processed = openF(detail, mapFetch, anchor, hotspot, sandbox, externals, highlightOnOpen);
-      return processed.map(tdata => {
-        tdata.fold(() => {
-          if (Sandboxing.isOpen(sandbox)) {
-            Sandboxing.close(sandbox);
-          }
-        }, data => {
-          Sandboxing.cloak(sandbox);
-          Sandboxing.open(sandbox, data);
-          onOpenSync(sandbox);
-        });
-        return sandbox;
-      });
-    };
-    const close = (detail, mapFetch, component, sandbox, _externals, _onOpenSync, _highlightOnOpen) => {
-      Sandboxing.close(sandbox);
-      return Future.pure(sandbox);
-    };
-    const togglePopup = (detail, mapFetch, hotspot, externals, onOpenSync, highlightOnOpen) => {
-      const sandbox = Coupling.getCoupled(hotspot, 'sandbox');
-      const showing = Sandboxing.isOpen(sandbox);
-      const action = showing ? close : open;
-      return action(detail, mapFetch, hotspot, sandbox, externals, onOpenSync, highlightOnOpen);
-    };
-    const matchWidth = (hotspot, container, useMinWidth) => {
-      const menu = Composing.getCurrent(container).getOr(container);
-      const buttonWidth = get$c(hotspot.element);
-      if (useMinWidth) {
-        set$8(menu.element, 'min-width', buttonWidth + 'px');
-      } else {
-        set$7(menu.element, buttonWidth);
-      }
-    };
-    const getSink = (anyInSystem, sinkDetail) => anyInSystem.getSystem().getByUid(sinkDetail.uid + '-' + suffix()).map(internalSink => () => Result.value(internalSink)).getOrThunk(() => sinkDetail.lazySink.fold(() => () => Result.error(new Error('No internal sink is specified, nor could an external sink be found')), lazySinkFn => () => lazySinkFn(anyInSystem)));
-    const doRepositionMenus = sandbox => {
-      Sandboxing.getState(sandbox).each(tmenu => {
-        tieredMenu.repositionMenus(tmenu);
-      });
-    };
-    const makeSandbox$1 = (detail, hotspot, extras) => {
-      const ariaControls = manager();
-      const onOpen = (component, menu) => {
-        const anchor = getAnchor(detail, hotspot);
-        ariaControls.link(hotspot.element);
-        if (detail.matchWidth) {
-          matchWidth(anchor.hotspot, menu, detail.useMinWidth);
-        }
-        detail.onOpen(anchor, component, menu);
-        if (extras !== undefined && extras.onOpen !== undefined) {
-          extras.onOpen(component, menu);
-        }
-      };
-      const onClose = (component, menu) => {
-        ariaControls.unlink(hotspot.element);
-        if (extras !== undefined && extras.onClose !== undefined) {
-          extras.onClose(component, menu);
-        }
-      };
-      const lazySink = getSink(hotspot, detail);
-      return {
-        dom: {
-          tag: 'div',
-          classes: detail.sandboxClasses,
-          attributes: {
-            id: ariaControls.id,
-            role: 'listbox'
-          }
-        },
-        behaviours: SketchBehaviours.augment(detail.sandboxBehaviours, [
-          Representing.config({
-            store: {
-              mode: 'memory',
-              initialValue: hotspot
-            }
-          }),
-          Sandboxing.config({
-            onOpen,
-            onClose,
-            isPartOf: (container, data, queryElem) => {
-              return isPartOf$1(data, queryElem) || isPartOf$1(hotspot, queryElem);
-            },
-            getAttachPoint: () => {
-              return lazySink().getOrDie();
-            }
-          }),
-          Composing.config({
-            find: sandbox => {
-              return Sandboxing.getState(sandbox).bind(menu => Composing.getCurrent(menu));
-            }
-          }),
-          Receiving.config({
-            channels: {
-              ...receivingChannel$1({ isExtraPart: never }),
-              ...receivingChannel({ doReposition: doRepositionMenus })
-            }
-          })
-        ])
-      };
-    };
-    const repositionMenus = comp => {
-      const sandbox = Coupling.getCoupled(comp, 'sandbox');
-      doRepositionMenus(sandbox);
-    };
-
-    const sandboxFields = () => [
-      defaulted('sandboxClasses', []),
-      SketchBehaviours.field('sandboxBehaviours', [
-        Composing,
-        Receiving,
-        Sandboxing,
-        Representing
-      ])
-    ];
-
-    const schema$j = constant$1([
-      required$1('dom'),
-      required$1('fetch'),
-      onHandler('onOpen'),
-      onKeyboardHandler('onExecute'),
-      defaulted('getHotspot', Optional.some),
-      defaulted('getAnchorOverrides', constant$1({})),
-      schema$y(),
-      field('dropdownBehaviours', [
-        Toggling,
-        Coupling,
-        Keying,
-        Focusing
-      ]),
-      required$1('toggleClass'),
-      defaulted('eventOrder', {}),
-      option$3('lazySink'),
-      defaulted('matchWidth', false),
-      defaulted('useMinWidth', false),
-      option$3('role')
-    ].concat(sandboxFields()));
-    const parts$d = constant$1([
-      external({
-        schema: [tieredMenuMarkers()],
-        name: 'menu',
-        defaults: detail => {
-          return { onExecute: detail.onExecute };
-        }
-      }),
-      partType$1()
-    ]);
-
-    const factory$g = (detail, components, _spec, externals) => {
-      const lookupAttr = attr => get$g(detail.dom, 'attributes').bind(attrs => get$g(attrs, attr));
-      const switchToMenu = sandbox => {
-        Sandboxing.getState(sandbox).each(tmenu => {
-          tieredMenu.highlightPrimary(tmenu);
-        });
-      };
-      const action = component => {
-        const onOpenSync = switchToMenu;
-        togglePopup(detail, identity, component, externals, onOpenSync, HighlightOnOpen.HighlightFirst).get(noop);
-      };
-      const apis = {
-        expand: comp => {
-          if (!Toggling.isOn(comp)) {
-            togglePopup(detail, identity, comp, externals, noop, HighlightOnOpen.HighlightNone).get(noop);
-          }
-        },
-        open: comp => {
-          if (!Toggling.isOn(comp)) {
-            togglePopup(detail, identity, comp, externals, noop, HighlightOnOpen.HighlightFirst).get(noop);
-          }
-        },
-        isOpen: Toggling.isOn,
-        close: comp => {
-          if (Toggling.isOn(comp)) {
-            togglePopup(detail, identity, comp, externals, noop, HighlightOnOpen.HighlightFirst).get(noop);
-          }
-        },
-        repositionMenus: comp => {
-          if (Toggling.isOn(comp)) {
-            repositionMenus(comp);
-          }
-        }
-      };
-      const triggerExecute = (comp, _se) => {
-        emitExecute(comp);
-        return Optional.some(true);
-      };
-      return {
-        uid: detail.uid,
-        dom: detail.dom,
-        components,
-        behaviours: augment(detail.dropdownBehaviours, [
-          Toggling.config({
-            toggleClass: detail.toggleClass,
-            aria: { mode: 'expanded' }
-          }),
-          Coupling.config({
-            others: {
-              sandbox: hotspot => {
-                return makeSandbox$1(detail, hotspot, {
-                  onOpen: () => Toggling.on(hotspot),
-                  onClose: () => Toggling.off(hotspot)
-                });
-              }
-            }
-          }),
-          Keying.config({
-            mode: 'special',
-            onSpace: triggerExecute,
-            onEnter: triggerExecute,
-            onDown: (comp, _se) => {
-              if (Dropdown.isOpen(comp)) {
-                const sandbox = Coupling.getCoupled(comp, 'sandbox');
-                switchToMenu(sandbox);
-              } else {
-                Dropdown.open(comp);
-              }
-              return Optional.some(true);
-            },
-            onEscape: (comp, _se) => {
-              if (Dropdown.isOpen(comp)) {
-                Dropdown.close(comp);
-                return Optional.some(true);
-              } else {
-                return Optional.none();
-              }
-            }
-          }),
-          Focusing.config({})
-        ]),
-        events: events$a(Optional.some(action)),
-        eventOrder: {
-          ...detail.eventOrder,
-          [execute$5()]: [
-            'disabling',
-            'toggling',
-            'alloy.base.behaviour'
-          ]
-        },
-        apis,
-        domModification: {
-          attributes: {
-            'aria-haspopup': 'true',
-            ...detail.role.fold(() => ({}), role => ({ role })),
-            ...detail.dom.tag === 'button' ? { type: lookupAttr('type').getOr('button') } : {}
-          }
-        }
-      };
-    };
-    const Dropdown = composite({
-      name: 'Dropdown',
-      configFields: schema$j(),
-      partFields: parts$d(),
-      factory: factory$g,
-      apis: {
-        open: (apis, comp) => apis.open(comp),
-        expand: (apis, comp) => apis.expand(comp),
-        close: (apis, comp) => apis.close(comp),
-        isOpen: (apis, comp) => apis.isOpen(comp),
-        repositionMenus: (apis, comp) => apis.repositionMenus(comp)
       }
     });
 
@@ -12222,7 +12674,7 @@
         exhibit: exhibit$1
     });
 
-    const Unselecting = create$3({
+    const Unselecting = create$4({
       fields: [],
       name: 'unselecting',
       active: ActiveUnselecting
@@ -12297,7 +12749,7 @@
             colorInputBackstage.colorPicker(valueOpt => {
               valueOpt.fold(() => emit(colorBit, colorPickerCancelEvent), value => {
                 emitSwatchChange(colorBit, value);
-                addColor(value);
+                addColor(spec.storageKey, value);
               });
             }, '#ffffff');
           } else if (value === 'remove') {
@@ -12325,8 +12777,8 @@
           ]
         },
         components: [],
-        fetch: getFetch$1(colorInputBackstage.getColors(), colorInputBackstage.hasCustomColors()),
-        columns: colorInputBackstage.getColorCols(),
+        fetch: getFetch$1(colorInputBackstage.getColors(spec.storageKey), spec.storageKey, colorInputBackstage.hasCustomColors()),
+        columns: colorInputBackstage.getColorCols(spec.storageKey),
         presets: 'color',
         onItemAction
       }, sharedBackstage));
@@ -12459,10 +12911,10 @@
 
     const _sliderChangeEvent = 'slider.change.value';
     const sliderChangeEvent = constant$1(_sliderChangeEvent);
-    const isTouchEvent$1 = evt => evt.type.indexOf('touch') !== -1;
+    const isTouchEvent$2 = evt => evt.type.indexOf('touch') !== -1;
     const getEventSource = simulatedEvent => {
       const evt = simulatedEvent.event.raw;
-      if (isTouchEvent$1(evt)) {
+      if (isTouchEvent$2(evt)) {
         const touchEvent = evt;
         return touchEvent.touches !== undefined && touchEvent.touches.length === 1 ? Optional.some(touchEvent.touches[0]).map(t => SugarPosition(t.clientX, t.clientY)) : Optional.none();
       } else {
@@ -13256,7 +13708,7 @@
             tag: 'label',
             attributes: { 'aria-label': description }
           },
-          components: [text$1(label)]
+          components: [text$2(label)]
         });
         const pField = FormField.parts.field({
           data,
@@ -13759,13 +14211,13 @@
             return optHex.map(hex => '#' + hex).getOr('');
           }, (comp, newValue) => {
             const pattern = /^#([a-fA-F0-9]{3}(?:[a-fA-F0-9]{3})?)/;
-            const m = pattern.exec(newValue);
+            const valOpt = Optional.from(pattern.exec(newValue)).bind(matches => get$h(matches, 1));
             const picker = memPicker.get(comp);
             const optRgbForm = Composing.getCurrent(picker);
             optRgbForm.fold(() => {
               console.log('Can not find form');
             }, rgbForm => {
-              Representing.setValue(rgbForm, { hex: Optional.from(m[1]).getOr('') });
+              Representing.setValue(rgbForm, { hex: valOpt.getOr('') });
               Form.getField(rgbForm, 'hex').each(hexField => {
                 emit(hexField, input());
               });
@@ -13826,9 +14278,10 @@
         });
       };
       const onDrop = (comp, se) => {
+        var _a;
         if (!Disabling.isDisabled(comp)) {
           const transferEvent = se.event.raw;
-          handleFiles(comp, transferEvent.dataTransfer.files);
+          handleFiles(comp, (_a = transferEvent.dataTransfer) === null || _a === void 0 ? void 0 : _a.files);
         }
       };
       const onSelect = (component, simulatedEvent) => {
@@ -13836,8 +14289,10 @@
         handleFiles(component, input.files);
       };
       const handleFiles = (component, files) => {
-        Representing.setValue(component, filterByExtension(files, providersBackstage));
-        emitWith(component, formChangeEvent, { name: spec.name });
+        if (files) {
+          Representing.setValue(component, filterByExtension(files, providersBackstage));
+          emitWith(component, formChangeEvent, { name: spec.name });
+        }
       };
       const memInput = record({
         dom: {
@@ -13893,7 +14348,7 @@
             components: [
               {
                 dom: { tag: 'p' },
-                components: [text$1(providersBackstage.translate('Drop an image here'))]
+                components: [text$2(providersBackstage.translate('Drop an image here'))]
               },
               Button.sketch({
                 dom: {
@@ -13905,7 +14360,7 @@
                   ]
                 },
                 components: [
-                  text$1(providersBackstage.translate('Browse for an image')),
+                  text$2(providersBackstage.translate('Browse for an image')),
                   memInput.asSpec()
                 ],
                 action: comp => {
@@ -14008,6 +14463,8 @@
     };
     const renderIFrame = (spec, providersBackstage, initialData) => {
       const isSandbox = spec.sandboxed;
+      const isTransparent = spec.transparent;
+      const baseClass = 'tox-dialog__iframe';
       const attributes = {
         ...spec.label.map(title => ({ title })).getOr({}),
         ...initialData.map(html => ({ srcdoc: html })).getOr({}),
@@ -14019,7 +14476,11 @@
         uid: newSpec.uid,
         dom: {
           tag: 'iframe',
-          attributes
+          attributes,
+          classes: isTransparent ? [baseClass] : [
+            baseClass,
+            `${ baseClass }--opaque`
+          ]
         },
         behaviours: derive$1([
           Tabstopping.config({}),
@@ -14090,16 +14551,17 @@
         data.cachedHeight.each(z => translatedData.cachedHeight = z);
         cachedData.set(translatedData);
         const applyFramePositioning = () => {
-          const imageWidth = translatedData.cachedWidth;
-          const imageHeight = translatedData.cachedHeight;
-          if (isUndefined(translatedData.zoom)) {
-            const z = zoomToFit(frameComponent.element, imageWidth, imageHeight);
-            translatedData.zoom = z;
+          const {cachedWidth, cachedHeight, zoom} = translatedData;
+          if (!isUndefined(cachedWidth) && !isUndefined(cachedHeight)) {
+            if (isUndefined(zoom)) {
+              const z = zoomToFit(frameComponent.element, cachedWidth, cachedHeight);
+              translatedData.zoom = z;
+            }
+            const position = calculateImagePosition(get$c(frameComponent.element), get$d(frameComponent.element), cachedWidth, cachedHeight, translatedData.zoom);
+            memContainer.getOpt(frameComponent).each(container => {
+              setAll(container.element, position);
+            });
           }
-          const position = calculateImagePosition(get$c(frameComponent.element), get$d(frameComponent.element), imageWidth, imageHeight, translatedData.zoom);
-          memContainer.getOpt(frameComponent).each(container => {
-            setAll(container.element, position);
-          });
         };
         memImage.getOpt(frameComponent).each(imageComponent => {
           const img = imageComponent.element;
@@ -14107,9 +14569,7 @@
             set$9(img, 'src', data.url);
             remove$2(frameComponent.element, 'tox-imagepreview__loaded');
           }
-          if (!isUndefined(translatedData.cachedWidth) && !isUndefined(translatedData.cachedHeight)) {
-            applyFramePositioning();
-          }
+          applyFramePositioning();
           image(img).then(img => {
             if (frameComponent.getSystem().isConnected()) {
               add$2(frameComponent.element, 'tox-imagepreview__loaded');
@@ -14149,7 +14609,7 @@
           tag: 'label',
           classes: ['tox-label']
         },
-        components: [text$1(backstageShared.providers.translate(spec.label))]
+        components: [text$2(backstageShared.providers.translate(spec.label))]
       };
       const comps = map$2(spec.items, backstageShared.interpreter);
       return {
@@ -14195,13 +14655,13 @@
       behaviours
     }, iconsProvider);
     const renderIconFromPack = (iconName, iconsProvider) => renderIcon(iconName, iconsProvider, []);
-    const renderReplacableIconFromPack = (iconName, iconsProvider) => renderIcon(iconName, iconsProvider, [Replacing.config({})]);
+    const renderReplaceableIconFromPack = (iconName, iconsProvider) => renderIcon(iconName, iconsProvider, [Replacing.config({})]);
     const renderLabel = (text, prefix, providersBackstage) => ({
       dom: {
         tag: 'span',
         classes: [`${ prefix }__select-label`]
       },
-      components: [text$1(providersBackstage.translate(text))],
+      components: [text$2(providersBackstage.translate(text))],
       behaviours: derive$1([Replacing.config({})])
     });
 
@@ -14210,7 +14670,7 @@
     const renderCommonDropdown = (spec, prefix, sharedBackstage) => {
       const editorOffCell = Cell(noop);
       const optMemDisplayText = spec.text.map(text => record(renderLabel(text, prefix, sharedBackstage.providers)));
-      const optMemDisplayIcon = spec.icon.map(iconName => record(renderReplacableIconFromPack(iconName, sharedBackstage.providers.icons)));
+      const optMemDisplayIcon = spec.icon.map(iconName => record(renderReplaceableIconFromPack(iconName, sharedBackstage.providers.icons)));
       const onLeftOrRightInMenu = (comp, se) => {
         const dropdown = Representing.getValue(comp);
         Focusing.focus(dropdown);
@@ -14248,6 +14708,11 @@
         ]),
         matchWidth: true,
         useMinWidth: true,
+        onOpen: (anchor, dropdownComp, tmenuComp) => {
+          if (spec.searchable) {
+            focusSearchField(tmenuComp);
+          }
+        },
         dropdownBehaviours: derive$1([
           ...spec.dropdownBehaviours,
           DisablingConfigs.button(() => spec.disabled || sharedBackstage.providers.isDisabled()),
@@ -14261,12 +14726,12 @@
           config('menubutton-update-display-text', [
             run$1(updateMenuText, (comp, se) => {
               optMemDisplayText.bind(mem => mem.getOpt(comp)).each(displayText => {
-                Replacing.set(displayText, [text$1(sharedBackstage.providers.translate(se.event.text))]);
+                Replacing.set(displayText, [text$2(sharedBackstage.providers.translate(se.event.text))]);
               });
             }),
             run$1(updateMenuIcon, (comp, se) => {
               optMemDisplayIcon.bind(mem => mem.getOpt(comp)).each(displayIcon => {
-                Replacing.set(displayIcon, [renderReplacableIconFromPack(se.event.icon, sharedBackstage.providers.icons)]);
+                Replacing.set(displayIcon, [renderReplaceableIconFromPack(se.event.icon, sharedBackstage.providers.icons)]);
               });
             })
           ])
@@ -14279,21 +14744,45 @@
             'normal-dropdown-events'
           ]
         }),
-        sandboxBehaviours: derive$1([Keying.config({
+        sandboxBehaviours: derive$1([
+          Keying.config({
             mode: 'special',
             onLeft: onLeftOrRightInMenu,
             onRight: onLeftOrRightInMenu
-          })]),
+          }),
+          config('dropdown-sandbox-events', [
+            run$1(refetchTriggerEvent, (originalSandboxComp, se) => {
+              handleRefetchTrigger(originalSandboxComp);
+              se.stop();
+            }),
+            run$1(redirectMenuItemInteractionEvent, (sandboxComp, se) => {
+              handleRedirectToMenuItem(sandboxComp, se);
+              se.stop();
+            })
+          ])
+        ]),
         lazySink: sharedBackstage.getSink,
         toggleClass: `${ prefix }--active`,
-        parts: { menu: part(false, spec.columns, spec.presets) },
+        parts: {
+          menu: {
+            ...part(false, spec.columns, spec.presets),
+            fakeFocus: spec.searchable,
+            onHighlightItem: updateAriaOnHighlight,
+            onCollapseMenu: (tmenuComp, itemCompCausingCollapse, nowActiveMenuComp) => {
+              Highlighting.getHighlighted(nowActiveMenuComp).each(itemComp => {
+                updateAriaOnHighlight(tmenuComp, nowActiveMenuComp, itemComp);
+              });
+            },
+            onDehighlightItem: updateAriaOnDehighlight
+          }
+        },
         fetch: comp => Future.nu(curry(spec.fetch, comp))
       }));
       return memDropdown.asSpec();
     };
 
     const isMenuItemReference = item => isString(item);
-    const isSeparator$1 = item => item.type === 'separator';
+    const isSeparator$2 = item => item.type === 'separator';
     const isExpandingMenuItem = item => has$2(item, 'getSubmenuItems');
     const separator$2 = { type: 'separator' };
     const unwrapReferences = (items, menuItems) => {
@@ -14302,7 +14791,7 @@
           if (item === '') {
             return acc;
           } else if (item === '|') {
-            return acc.length > 0 && !isSeparator$1(acc[acc.length - 1]) ? acc.concat([separator$2]) : acc;
+            return acc.length > 0 && !isSeparator$2(acc[acc.length - 1]) ? acc.concat([separator$2]) : acc;
           } else if (has$2(menuItems, item.toLowerCase())) {
             return acc.concat([menuItems[item.toLowerCase()]]);
           } else {
@@ -14312,7 +14801,7 @@
           return acc.concat([item]);
         }
       }, []);
-      if (realItems.length > 0 && isSeparator$1(realItems[realItems.length - 1])) {
+      if (realItems.length > 0 && isSeparator$2(realItems[realItems.length - 1])) {
         realItems.pop();
       }
       return realItems;
@@ -14320,37 +14809,41 @@
     const getFromExpandingItem = (item, menuItems) => {
       const submenuItems = item.getSubmenuItems();
       const rest = expand(submenuItems, menuItems);
-      const newMenus = deepMerge(rest.menus, wrap$1(item.value, rest.items));
-      const newExpansions = deepMerge(rest.expansions, wrap$1(item.value, item.value));
+      const newMenus = deepMerge(rest.menus, { [item.value]: rest.items });
+      const newExpansions = deepMerge(rest.expansions, { [item.value]: item.value });
       return {
         item,
         menus: newMenus,
         expansions: newExpansions
       };
     };
-    const getFromItem = (item, menuItems) => isExpandingMenuItem(item) ? getFromExpandingItem(item, menuItems) : {
-      item,
-      menus: {},
-      expansions: {}
-    };
     const generateValueIfRequired = item => {
-      if (isSeparator$1(item)) {
-        return item;
-      } else {
-        const itemValue = get$g(item, 'value').getOrThunk(() => generate$6('generated-menu-item'));
-        return deepMerge({ value: itemValue }, item);
-      }
+      const itemValue = get$g(item, 'value').getOrThunk(() => generate$6('generated-menu-item'));
+      return deepMerge({ value: itemValue }, item);
     };
     const expand = (items, menuItems) => {
       const realItems = unwrapReferences(isString(items) ? items.split(' ') : items, menuItems);
       return foldr(realItems, (acc, item) => {
-        const itemWithValue = generateValueIfRequired(item);
-        const newData = getFromItem(itemWithValue, menuItems);
-        return {
-          menus: deepMerge(acc.menus, newData.menus),
-          items: [newData.item].concat(acc.items),
-          expansions: deepMerge(acc.expansions, newData.expansions)
-        };
+        if (isExpandingMenuItem(item)) {
+          const itemWithValue = generateValueIfRequired(item);
+          const newData = getFromExpandingItem(itemWithValue, menuItems);
+          return {
+            menus: deepMerge(acc.menus, newData.menus),
+            items: [
+              newData.item,
+              ...acc.items
+            ],
+            expansions: deepMerge(acc.expansions, newData.expansions)
+          };
+        } else {
+          return {
+            ...acc,
+            items: [
+              item,
+              ...acc.items
+            ]
+          };
+        }
       }, {
         menus: {},
         expansions: {},
@@ -14358,14 +14851,25 @@
       });
     };
 
-    const build = (items, itemResponse, backstage, isHorizontalMenu) => {
+    const getSearchModeForField = settings => {
+      return settings.search.fold(() => ({ searchMode: 'no-search' }), searchSettings => ({
+        searchMode: 'search-with-field',
+        placeholder: searchSettings.placeholder
+      }));
+    };
+    const getSearchModeForResults = settings => {
+      return settings.search.fold(() => ({ searchMode: 'no-search' }), _ => ({ searchMode: 'search-with-results' }));
+    };
+    const build = (items, itemResponse, backstage, settings) => {
       const primary = generate$6('primary-menu');
       const data = expand(items, backstage.shared.providers.menuItems());
       if (data.items.length === 0) {
         return Optional.none();
       }
-      const mainMenu = createPartialMenu(primary, data.items, itemResponse, backstage, isHorizontalMenu);
-      const submenus = map$1(data.menus, (menuItems, menuName) => createPartialMenu(menuName, menuItems, itemResponse, backstage, false));
+      const mainMenuSearchMode = getSearchModeForField(settings);
+      const mainMenu = createPartialMenu(primary, data.items, itemResponse, backstage, settings.isHorizontalMenu, mainMenuSearchMode);
+      const submenuSearchMode = getSearchModeForResults(settings);
+      const submenus = map$1(data.menus, (menuItems, menuName) => createPartialMenu(menuName, menuItems, itemResponse, backstage, false, submenuSearchMode));
       const menus = deepMerge(submenus, wrap$1(primary, mainMenu));
       return Optional.from(tieredMenu.tieredData(primary, menus, data.expansions));
     };
@@ -14415,7 +14919,10 @@
             role: Optional.none(),
             fetch: (comp, callback) => {
               const items = fetchItems(comp, spec.name, spec.items, Representing.getValue(comp));
-              callback(build(items, ItemResponse$1.CLOSE_ON_EXECUTE, backstage, false));
+              callback(build(items, ItemResponse$1.CLOSE_ON_EXECUTE, backstage, {
+                isHorizontalMenu: false,
+                search: Optional.none()
+              }));
             },
             onSetup: constant$1(noop),
             getApi: constant$1({}),
@@ -14470,7 +14977,7 @@
       components: map$2(spec.items, backstage.shared.interpreter)
     });
 
-    const factory$f = (detail, _spec) => {
+    const factory$h = (detail, _spec) => {
       const options = map$2(detail.options, option => ({
         dom: {
           tag: 'option',
@@ -14519,7 +15026,7 @@
         defaulted('selectAttributes', {}),
         option$3('data')
       ],
-      factory: factory$f
+      factory: factory$h
     });
 
     const renderSelectBox = (spec, providersBackstage, initialData) => {
@@ -14628,7 +15135,7 @@
       })
     ]);
 
-    const factory$e = (detail, components, _spec, _externals) => ({
+    const factory$g = (detail, components, _spec, _externals) => ({
       uid: detail.uid,
       dom: detail.dom,
       components,
@@ -14672,7 +15179,7 @@
       name: 'FormCoupledInputs',
       configFields: schema$h(),
       partFields: parts$c(),
-      factory: factory$e,
+      factory: factory$g,
       apis: {
         getField1: (apis, component) => apis.getField1(component),
         getField2: (apis, component) => apis.getField2(component),
@@ -14811,7 +15318,7 @@
           tag: 'label',
           classes: ['tox-label']
         },
-        components: [text$1(providersBackstage.translate(label))]
+        components: [text$2(providersBackstage.translate(label))]
       });
       const widthField = FormCoupledInputs.parts.field1(formGroup([
         FormField.parts.label(getLabel('Width')),
@@ -14884,7 +15391,7 @@
           tag: 'label',
           classes: ['tox-label']
         },
-        components: [text$1(providerBackstage.translate(spec.label))]
+        components: [text$2(providerBackstage.translate(spec.label))]
       });
       const spectrum = Slider.parts.spectrum({
         dom: {
@@ -15182,7 +15689,7 @@
       onStrictHandler('onStream')
     ];
 
-    const Streaming = create$3({
+    const Streaming = create$4({
       fields: StreamingSchema,
       name: 'streaming',
       active: ActiveStreaming,
@@ -15241,7 +15748,7 @@
           const onOpenSync = sandbox => {
             Composing.getCurrent(sandbox).each(highlighter);
           };
-          open(detail, mapFetch(comp), comp, sandbox, externals, onOpenSync, HighlightOnOpen.HighlightFirst).get(noop);
+          open(detail, mapFetch(comp), comp, sandbox, externals, onOpenSync, HighlightOnOpen.HighlightMenuAndItem).get(noop);
         }
       };
       const focusBehaviours$1 = focusBehaviours(detail);
@@ -15252,6 +15759,8 @@
         repState.update(map$2(items, item => item.data));
         return data;
       });
+      const getActiveMenu = sandboxComp => Composing.getCurrent(sandboxComp);
+      const typeaheadCustomEvents = 'typeaheadevents';
       const behaviours = [
         Focusing.config({}),
         Representing.config({
@@ -15280,27 +15789,27 @@
             const focusInInput = Focusing.isFocused(component);
             if (focusInInput) {
               if (get$6(component.element).length >= detail.minChars) {
-                const previousValue = Composing.getCurrent(sandbox).bind(menu => Highlighting.getHighlighted(menu).map(Representing.getValue));
+                const previousValue = getActiveMenu(sandbox).bind(activeMenu => Highlighting.getHighlighted(activeMenu).map(Representing.getValue));
                 detail.previewing.set(true);
                 const onOpenSync = _sandbox => {
-                  Composing.getCurrent(sandbox).each(menu => {
+                  getActiveMenu(sandbox).each(activeMenu => {
                     previousValue.fold(() => {
                       if (detail.model.selectsOver) {
-                        Highlighting.highlightFirst(menu);
+                        Highlighting.highlightFirst(activeMenu);
                       }
                     }, pv => {
-                      Highlighting.highlightBy(menu, item => {
+                      Highlighting.highlightBy(activeMenu, item => {
                         const itemData = Representing.getValue(item);
                         return itemData.value === pv.value;
                       });
-                      Highlighting.getHighlighted(menu).orThunk(() => {
-                        Highlighting.highlightFirst(menu);
+                      Highlighting.getHighlighted(activeMenu).orThunk(() => {
+                        Highlighting.highlightFirst(activeMenu);
                         return Optional.none();
                       });
                     });
                   });
                 };
-                open(detail, mapFetch(component), component, sandbox, externals, onOpenSync, HighlightOnOpen.HighlightFirst).get(noop);
+                open(detail, mapFetch(component), component, sandbox, externals, onOpenSync, HighlightOnOpen.HighlightJustMenu).get(noop);
               }
             }
           },
@@ -15328,7 +15837,7 @@
             const sandbox = Coupling.getCoupled(comp, 'sandbox');
             const sandboxIsOpen = Sandboxing.isOpen(sandbox);
             if (sandboxIsOpen && !detail.previewing.get()) {
-              return Composing.getCurrent(sandbox).bind(menu => Highlighting.getHighlighted(menu)).map(item => {
+              return getActiveMenu(sandbox).bind(activeMenu => Highlighting.getHighlighted(activeMenu)).map(item => {
                 emitWith(comp, itemExecute(), { item });
                 return true;
               });
@@ -15357,10 +15866,16 @@
             }
           }
         }),
-        config('typeaheadevents', [
+        config(typeaheadCustomEvents, [
+          runOnAttached(typeaheadComp => {
+            detail.lazyTypeaheadComp.set(Optional.some(typeaheadComp));
+          }),
+          runOnDetached(_typeaheadComp => {
+            detail.lazyTypeaheadComp.set(Optional.none());
+          }),
           runOnExecute$1(comp => {
             const onOpenSync = noop;
-            togglePopup(detail, mapFetch(comp), comp, externals, onOpenSync, HighlightOnOpen.HighlightFirst).get(noop);
+            togglePopup(detail, mapFetch(comp), comp, externals, onOpenSync, HighlightOnOpen.HighlightMenuAndItem).get(noop);
           }),
           run$1(itemExecute(), (comp, se) => {
             const sandbox = Coupling.getCoupled(comp, 'sandbox');
@@ -15377,6 +15892,14 @@
             }
           })] : []))
       ];
+      const eventOrder = {
+        [detachedFromDom()]: [
+          Representing.name(),
+          Streaming.name(),
+          typeaheadCustomEvents
+        ],
+        ...detail.eventOrder
+      };
       return {
         uid: detail.uid,
         dom: dom(deepMerge(detail, {
@@ -15390,7 +15913,7 @@
           ...focusBehaviours$1,
           ...augment(detail.typeaheadBehaviours, behaviours)
         },
-        eventOrder: detail.eventOrder
+        eventOrder
       };
     };
 
@@ -15428,37 +15951,47 @@
         Toggling,
         Coupling
       ]),
+      customField('lazyTypeaheadComp', () => Cell(Optional.none)),
       customField('previewing', () => Cell(true))
-    ].concat(schema$k()).concat(sandboxFields()));
+    ].concat(schema$l()).concat(sandboxFields()));
     const parts$b = constant$1([external({
         schema: [tieredMenuMarkers()],
         name: 'menu',
         overrides: detail => {
           return {
             fakeFocus: true,
-            onHighlight: (menu, item) => {
+            onHighlightItem: (_tmenu, menu, item) => {
               if (!detail.previewing.get()) {
-                menu.getSystem().getByUid(detail.uid).each(input => {
+                detail.lazyTypeaheadComp.get().each(input => {
                   if (detail.model.populateFromBrowse) {
                     setValueFromItem(detail.model, input, item);
                   }
                 });
               } else {
-                menu.getSystem().getByUid(detail.uid).each(input => {
-                  attemptSelectOver(detail.model, input, item).fold(() => Highlighting.dehighlight(menu, item), fn => fn());
+                detail.lazyTypeaheadComp.get().each(input => {
+                  attemptSelectOver(detail.model, input, item).fold(() => {
+                    if (detail.model.selectsOver) {
+                      Highlighting.dehighlight(menu, item);
+                      detail.previewing.set(true);
+                    } else {
+                      detail.previewing.set(false);
+                    }
+                  }, selectOverTextInInput => {
+                    selectOverTextInInput();
+                    detail.previewing.set(false);
+                  });
                 });
               }
-              detail.previewing.set(false);
             },
-            onExecute: (menu, item) => {
-              return menu.getSystem().getByUid(detail.uid).toOptional().map(typeahead => {
+            onExecute: (_menu, item) => {
+              return detail.lazyTypeaheadComp.get().map(typeahead => {
                 emitWith(typeahead, itemExecute(), { item });
                 return true;
               });
             },
             onHover: (menu, item) => {
               detail.previewing.set(false);
-              menu.getSystem().getByUid(detail.uid).each(input => {
+              detail.lazyTypeaheadComp.get().each(input => {
                 if (detail.model.populateFromBrowse) {
                   setValueFromItem(detail.model, input, item);
                 }
@@ -15570,23 +16103,30 @@
       },
       isActive: () => has(component.element, 'tox-tbtn--enabled')
     });
-    const renderMenuButton = (spec, prefix, backstage, role) => renderCommonDropdown({
-      text: spec.text,
-      icon: spec.icon,
-      tooltip: spec.tooltip,
-      role,
-      fetch: (_comp, callback) => {
-        spec.fetch(items => {
-          callback(build(items, ItemResponse$1.CLOSE_ON_EXECUTE, backstage, false));
-        });
-      },
-      onSetup: spec.onSetup,
-      getApi: getMenuButtonApi,
-      columns: 1,
-      presets: 'normal',
-      classes: [],
-      dropdownBehaviours: [Tabstopping.config({})]
-    }, prefix, backstage.shared);
+    const renderMenuButton = (spec, prefix, backstage, role) => {
+      return renderCommonDropdown({
+        text: spec.text,
+        icon: spec.icon,
+        tooltip: spec.tooltip,
+        searchable: spec.search.isSome(),
+        role,
+        fetch: (dropdownComp, callback) => {
+          const fetchContext = { pattern: spec.search.isSome() ? getSearchPattern(dropdownComp) : '' };
+          spec.fetch(items => {
+            callback(build(items, ItemResponse$1.CLOSE_ON_EXECUTE, backstage, {
+              isHorizontalMenu: false,
+              search: spec.search
+            }));
+          }, fetchContext);
+        },
+        onSetup: spec.onSetup,
+        getApi: getMenuButtonApi,
+        columns: 1,
+        presets: 'normal',
+        classes: [],
+        dropdownBehaviours: [Tabstopping.config({})]
+      }, prefix, backstage.shared);
+    };
     const getFetch = (items, getButton, backstage) => {
       const getMenuItemAction = item => api => {
         const newValue = !api.isActive();
@@ -15677,7 +16217,7 @@
     const renderButtonSpec = (spec, action, providersBackstage, extraBehaviours = [], extraClasses = []) => {
       const translatedText = providersBackstage.translate(spec.text);
       const icon = spec.icon.map(iconName => renderIconFromPack(iconName, providersBackstage.icons));
-      const components = [icon.getOrThunk(() => text$1(translatedText))];
+      const components = [icon.getOrThunk(() => text$2(translatedText))];
       const buttonType = spec.buttonType.getOr(!spec.primary && !spec.borderless ? 'secondary' : 'primary');
       const baseClasses = calculateClassesFromButtonType(buttonType);
       const classes = [
@@ -15719,6 +16259,8 @@
         const menuButtonSpec = spec;
         const fixedSpec = {
           ...spec,
+          type: 'menubutton',
+          search: Optional.none(),
           onSetup: api => {
             api.setEnabled(spec.enabled);
             return noop;
@@ -15731,12 +16273,12 @@
         const action = getAction(spec.name, buttonType);
         const buttonSpec = {
           ...spec,
-          buttonType: Optional.none(),
           borderless: false
         };
         return renderButton(buttonSpec, action, backstage.shared.providers, []);
       } else {
         console.error('Unknown footer button type: ', buttonType);
+        throw new Error('Unknown footer button type');
       }
     };
     const renderDialogButton = (spec, providersBackstage) => {
@@ -15782,8 +16324,10 @@
     const filterByQuery = (term, menuItems) => {
       const lowerCaseTerm = term.toLowerCase();
       return filter$2(menuItems, item => {
+        var _a;
         const text = item.meta !== undefined && item.meta.text !== undefined ? item.meta.text : item.text;
-        return contains$1(text.toLowerCase(), lowerCaseTerm) || contains$1(item.value.toLowerCase(), lowerCaseTerm);
+        const value = (_a = item.value) !== null && _a !== void 0 ? _a : '';
+        return contains$1(text.toLowerCase(), lowerCaseTerm) || contains$1(value.toLowerCase(), lowerCaseTerm);
       });
     };
 
@@ -15811,8 +16355,7 @@
         const urlEntry = Representing.getValue(component);
         urlBackstage.addToHistory(urlEntry.value, spec.filetype);
       };
-      const pField = FormField.parts.field({
-        factory: Typeahead,
+      const typeaheadSpec = {
         ...initialData.map(initialData => ({ initialData })).getOr({}),
         dismissOnBlur: true,
         inputClasses: ['tox-textfield'],
@@ -15825,7 +16368,10 @@
         responseTime: 0,
         fetch: input => {
           const items = getItems(spec.filetype, input, urlBackstage);
-          const tdata = build(items, ItemResponse$1.BUBBLE_TO_SANDBOX, backstage, false);
+          const tdata = build(items, ItemResponse$1.BUBBLE_TO_SANDBOX, backstage, {
+            isHorizontalMenu: false,
+            search: Optional.none()
+          });
           return Future.pure(tdata);
         },
         getHotspot: comp => memUrlBox.getOpt(comp),
@@ -15834,8 +16380,8 @@
             Invalidating.run(comp).get(noop);
           }
         },
-        typeaheadBehaviours: derive$1(flatten([
-          urlBackstage.getValidationHandler().map(handler => Invalidating.config({
+        typeaheadBehaviours: derive$1([
+          ...urlBackstage.getValidationHandler().map(handler => Invalidating.config({
             getRoot: comp => parentElement(comp.element),
             invalidClass: 'tox-control-wrap--status-invalid',
             notify: {
@@ -15866,26 +16412,29 @@
               validateOnLoad: false
             }
           })).toArray(),
-          [
-            Disabling.config({ disabled: () => !spec.enabled || providersBackstage.isDisabled() }),
-            Tabstopping.config({}),
-            config('urlinput-events', flatten([
-              spec.filetype === 'file' ? [run$1(input(), comp => {
-                  emitWith(comp, formChangeEvent, { name: spec.name });
-                })] : [],
-              [
-                run$1(change(), comp => {
-                  emitWith(comp, formChangeEvent, { name: spec.name });
-                  updateHistory(comp);
-                }),
-                run$1(postPaste(), comp => {
-                  emitWith(comp, formChangeEvent, { name: spec.name });
-                  updateHistory(comp);
-                })
-              ]
-            ]))
-          ]
-        ])),
+          Disabling.config({ disabled: () => !spec.enabled || providersBackstage.isDisabled() }),
+          Tabstopping.config({}),
+          config('urlinput-events', [
+            run$1(input(), comp => {
+              const currentValue = get$6(comp.element);
+              const trimmedValue = currentValue.trim();
+              if (trimmedValue !== currentValue) {
+                set$5(comp.element, trimmedValue);
+              }
+              if (spec.filetype === 'file') {
+                emitWith(comp, formChangeEvent, { name: spec.name });
+              }
+            }),
+            run$1(change(), comp => {
+              emitWith(comp, formChangeEvent, { name: spec.name });
+              updateHistory(comp);
+            }),
+            run$1(postPaste(), comp => {
+              emitWith(comp, formChangeEvent, { name: spec.name });
+              updateHistory(comp);
+            })
+          ])
+        ]),
         eventOrder: {
           [input()]: [
             'streaming',
@@ -15908,6 +16457,10 @@
           updateHistory(typeahead);
           emitWith(typeahead, formChangeEvent, { name: spec.name });
         }
+      };
+      const pField = FormField.parts.field({
+        ...typeaheadSpec,
+        factory: Typeahead
       });
       const pLabel = spec.label.map(label => renderLabel$2(label, providersBackstage));
       const makeIcon = (name, errId, icon = name, label = name) => render$3(icon, {
@@ -16083,7 +16636,7 @@
           tag: 'span',
           classes: ['tox-checkbox__label']
         },
-        components: [text$1(providerBackstage.translate(spec.label))],
+        components: [text$2(providerBackstage.translate(spec.label))],
         behaviours: derive$1([Unselecting.config({})])
       });
       const makeIcon = className => {
@@ -16294,7 +16847,7 @@
       const overrides = { maxHeightFunction: expandable$1() };
       const editableAreaAnchor = () => ({
         type: 'node',
-        root: getContentContainer(contentAreaElement()),
+        root: getContentContainer(getRootNode(contentAreaElement())),
         node: Optional.from(contentAreaElement()),
         bubble: nu$5(bubbleSize, bubbleSize, bubbleAlignments$2),
         layouts: {
@@ -16318,7 +16871,7 @@
     const getBannerAnchor = (contentAreaElement, lazyAnchorbar, lazyUseEditableAreaAnchor) => {
       const editableAreaAnchor = () => ({
         type: 'node',
-        root: getContentContainer(contentAreaElement()),
+        root: getContentContainer(getRootNode(contentAreaElement())),
         node: Optional.from(contentAreaElement()),
         layouts: {
           onRtl: () => [north],
@@ -16366,8 +16919,8 @@
       dialog(callback, value);
     };
     const hasCustomColors = editor => () => hasCustomColors$1(editor);
-    const getColors = editor => () => getColors$2(editor);
-    const getColorCols = editor => () => getColorCols$1(editor);
+    const getColors = editor => id => getColors$2(editor, id);
+    const getColorCols = editor => id => getColorCols$1(editor, id);
     const ColorInputBackstage = editor => ({
       colorPicker: colorPicker(editor),
       hasCustomColors: hasCustomColors(editor),
@@ -16387,6 +16940,8 @@
       };
     };
 
+    const isNestedFormat = format => hasNonNullableKey(format, 'items');
+    const isFormatReference = format => hasNonNullableKey(format, 'format');
     const defaultStyleFormats = [
       {
         title: 'Headings',
@@ -16493,12 +17048,12 @@
         ]
       }
     ];
-    const isNestedFormat = format => has$2(format, 'items');
+    const isNestedFormats = format => has$2(format, 'items');
     const isBlockFormat = format => has$2(format, 'block');
     const isInlineFormat = format => has$2(format, 'inline');
     const isSelectorFormat = format => has$2(format, 'selector');
     const mapFormats = userFormats => foldl(userFormats, (acc, fmt) => {
-      if (isNestedFormat(fmt)) {
+      if (isNestedFormats(fmt)) {
         const result = mapFormats(fmt.items);
         return {
           customFormats: acc.customFormats.concat(result.customFormats),
@@ -16554,42 +17109,49 @@
       return shouldMergeStyleFormats(editor) ? defaultStyleFormats.concat(registeredUserFormats) : registeredUserFormats;
     }).getOr(defaultStyleFormats);
 
-    const processBasic = (item, isSelectedFor, getPreviewFor) => {
-      const formatterSpec = {
-        type: 'formatter',
-        isSelected: isSelectedFor(item.format),
-        getStylePreview: getPreviewFor(item.format)
-      };
-      return deepMerge(item, formatterSpec);
+    const isSeparator$1 = format => {
+      const keys$1 = keys(format);
+      return keys$1.length === 1 && contains$2(keys$1, 'title');
     };
+    const processBasic = (item, isSelectedFor, getPreviewFor) => ({
+      ...item,
+      type: 'formatter',
+      isSelected: isSelectedFor(item.format),
+      getStylePreview: getPreviewFor(item.format)
+    });
     const register$a = (editor, formats, isSelectedFor, getPreviewFor) => {
       const enrichSupported = item => processBasic(item, isSelectedFor, getPreviewFor);
       const enrichMenu = item => {
-        const submenuSpec = { type: 'submenu' };
-        return deepMerge(item, submenuSpec);
+        const newItems = doEnrich(item.items);
+        return {
+          ...item,
+          type: 'submenu',
+          getStyleItems: constant$1(newItems)
+        };
       };
       const enrichCustom = item => {
         const formatName = isString(item.name) ? item.name : generate$6(item.title);
         const formatNameWithPrefix = `custom-${ formatName }`;
-        const customSpec = {
+        const newItem = {
+          ...item,
           type: 'formatter',
           format: formatNameWithPrefix,
           isSelected: isSelectedFor(formatNameWithPrefix),
           getStylePreview: getPreviewFor(formatNameWithPrefix)
         };
-        const newItem = deepMerge(item, customSpec);
         editor.formatter.register(formatName, newItem);
         return newItem;
       };
       const doEnrich = items => map$2(items, item => {
-        const keys$1 = keys(item);
-        if (hasNonNullableKey(item, 'items')) {
-          const newItems = doEnrich(item.items);
-          return deepMerge(enrichMenu(item), { getStyleItems: constant$1(newItems) });
-        } else if (hasNonNullableKey(item, 'format')) {
+        if (isNestedFormat(item)) {
+          return enrichMenu(item);
+        } else if (isFormatReference(item)) {
           return enrichSupported(item);
-        } else if (keys$1.length === 1 && contains$2(keys$1, 'title')) {
-          return deepMerge(item, { type: 'separator' });
+        } else if (isSeparator$1(item)) {
+          return {
+            ...item,
+            type: 'separator'
+          };
         } else {
           return enrichCustom(item);
         }
@@ -16606,41 +17168,25 @@
           styles: editor.dom.parseStyle(editor.formatter.getCssText(format))
         }) : Optional.none();
       };
-      const flatten = fmt => {
-        const subs = fmt.items;
-        return subs !== undefined && subs.length > 0 ? bind$3(subs, flatten) : [fmt.format];
-      };
       const settingsFormats = Cell([]);
-      const settingsFlattenedFormats = Cell([]);
       const eventsFormats = Cell([]);
-      const eventsFlattenedFormats = Cell([]);
       const replaceSettings = Cell(false);
       editor.on('PreInit', _e => {
         const formats = getStyleFormats(editor);
         const enriched = register$a(editor, formats, isSelectedFor, getPreviewFor);
         settingsFormats.set(enriched);
-        settingsFlattenedFormats.set(bind$3(enriched, flatten));
       });
       editor.on('addStyleModifications', e => {
         const modifications = register$a(editor, e.items, isSelectedFor, getPreviewFor);
         eventsFormats.set(modifications);
         replaceSettings.set(e.replace);
-        eventsFlattenedFormats.set(bind$3(modifications, flatten));
       });
       const getData = () => {
         const fromSettings = replaceSettings.get() ? [] : settingsFormats.get();
         const fromEvents = eventsFormats.get();
         return fromSettings.concat(fromEvents);
       };
-      const getFlattenedKeys = () => {
-        const fromSettings = replaceSettings.get() ? [] : settingsFlattenedFormats.get();
-        const fromEvents = eventsFlattenedFormats.get();
-        return fromSettings.concat(fromEvents);
-      };
-      return {
-        getData,
-        getFlattenedKeys
-      };
+      return { getData };
     };
 
     const isElement = node => isNonNullable(node) && node.nodeType === 1;
@@ -16660,20 +17206,19 @@
     };
     const isContentEditableTrue = hasContentEditableState('true');
     const isContentEditableFalse = hasContentEditableState('false');
-    const create = (type, title, url, level, attach) => {
-      return {
-        type,
-        title,
-        url,
-        level,
-        attach
-      };
-    };
+    const create$1 = (type, title, url, level, attach) => ({
+      type,
+      title,
+      url,
+      level,
+      attach
+    });
     const isChildOfContentEditableTrue = node => {
-      while (node = node.parentNode) {
-        const value = node.contentEditable;
+      let tempNode = node;
+      while (tempNode = tempNode.parentNode) {
+        const value = tempNode.contentEditable;
         if (value && value !== 'inherit') {
-          return isContentEditableTrue(node);
+          return isContentEditableTrue(tempNode);
         }
       }
       return false;
@@ -16708,16 +17253,17 @@
       return isHeader(elm) ? parseInt(elm.nodeName.substr(1), 10) : 0;
     };
     const headerTarget = elm => {
+      var _a;
       const headerId = getOrGenerateId(elm);
       const attach = () => {
         elm.id = headerId;
       };
-      return create('header', getElementText(elm), '#' + headerId, getLevel(elm), attach);
+      return create$1('header', (_a = getElementText(elm)) !== null && _a !== void 0 ? _a : '', '#' + headerId, getLevel(elm), attach);
     };
     const anchorTarget = elm => {
       const anchorId = elm.id || elm.name;
       const anchorText = getElementText(elm);
-      return create('anchor', anchorText ? anchorText : '#' + anchorId, '#' + anchorId, 0, noop);
+      return create$1('anchor', anchorText ? anchorText : '#' + anchorId, '#' + anchorId, 0, noop);
     };
     const getHeaderTargets = elms => {
       return map$2(filter$2(elms, isValidHeader), headerTarget);
@@ -16841,48 +17387,72 @@
       getUrlPicker: filetype => getUrlPicker(editor, filetype)
     });
 
-    const init$7 = (lazySink, editor, lazyAnchorbar) => {
+    const init$7 = (lazySinks, editor, lazyAnchorbar) => {
       const contextMenuState = Cell(false);
       const toolbar = HeaderBackstage(editor);
-      const backstage = {
-        shared: {
-          providers: {
-            icons: () => editor.ui.registry.getAll().icons,
-            menuItems: () => editor.ui.registry.getAll().menuItems,
-            translate: global$8.translate,
-            isDisabled: () => editor.mode.isReadOnly() || !editor.ui.isEnabled(),
-            getOption: editor.options.get
-          },
-          interpreter: s => interpretWithoutForm(s, {}, backstage),
-          anchors: getAnchors(editor, lazyAnchorbar, toolbar.isPositionedAtTop),
-          header: toolbar,
-          getSink: lazySink
-        },
-        urlinput: UrlInputBackstage(editor),
-        styles: init$8(editor),
-        colorinput: ColorInputBackstage(editor),
-        dialog: DialogBackstage(editor),
-        isContextMenuOpen: () => contextMenuState.get(),
-        setContextMenuState: state => contextMenuState.set(state)
+      const providers = {
+        icons: () => editor.ui.registry.getAll().icons,
+        menuItems: () => editor.ui.registry.getAll().menuItems,
+        translate: global$8.translate,
+        isDisabled: () => editor.mode.isReadOnly() || !editor.ui.isEnabled(),
+        getOption: editor.options.get
       };
-      return backstage;
+      const urlinput = UrlInputBackstage(editor);
+      const styles = init$8(editor);
+      const colorinput = ColorInputBackstage(editor);
+      const dialogSettings = DialogBackstage(editor);
+      const isContextMenuOpen = () => contextMenuState.get();
+      const setContextMenuState = state => contextMenuState.set(state);
+      const commonBackstage = {
+        shared: {
+          providers,
+          anchors: getAnchors(editor, lazyAnchorbar, toolbar.isPositionedAtTop),
+          header: toolbar
+        },
+        urlinput,
+        styles,
+        colorinput,
+        dialog: dialogSettings,
+        isContextMenuOpen,
+        setContextMenuState
+      };
+      const popupBackstage = {
+        ...commonBackstage,
+        shared: {
+          ...commonBackstage.shared,
+          interpreter: s => interpretWithoutForm(s, {}, popupBackstage),
+          getSink: lazySinks.popup
+        }
+      };
+      const dialogBackstage = {
+        ...commonBackstage,
+        shared: {
+          ...commonBackstage.shared,
+          interpreter: s => interpretWithoutForm(s, {}, dialogBackstage),
+          getSink: lazySinks.dialog
+        }
+      };
+      return {
+        popup: popupBackstage,
+        dialog: dialogBackstage
+      };
     };
 
-    const setup$b = (editor, mothership, uiMothership) => {
+    const setup$b = (editor, mothership, uiMotherships) => {
       const broadcastEvent = (name, evt) => {
         each$1([
           mothership,
-          uiMothership
-        ], ship => {
-          ship.broadcastEvent(name, evt);
+          ...uiMotherships
+        ], m => {
+          m.broadcastEvent(name, evt);
         });
       };
       const broadcastOn = (channel, message) => {
         each$1([
           mothership,
-          uiMothership
-        ], ship => {
-          ship.broadcastOn([channel], message);
+          ...uiMotherships
+        ], m => {
+          m.broadcastOn([channel], message);
         });
       };
       const fireDismissPopups = evt => broadcastOn(dismissPopups(), { target: evt.target });
@@ -16951,10 +17521,14 @@
         onMouseup.unbind();
       });
       editor.on('detach', () => {
-        detachSystem(mothership);
-        detachSystem(uiMothership);
-        mothership.destroy();
-        uiMothership.destroy();
+        each$1([
+          mothership,
+          ...uiMotherships
+        ], detachSystem);
+        each$1([
+          mothership,
+          ...uiMotherships
+        ], m => m.destroy());
       });
     };
 
@@ -16975,7 +17549,7 @@
     const parts$9 = constant$1([itemsPart]);
     const name = constant$1('CustomList');
 
-    const factory$d = (detail, components, _spec, _external) => {
+    const factory$f = (detail, components, _spec, _external) => {
       const setItems = (list, items) => {
         getListContainer(list).fold(() => {
           console.error('Custom List was defined to not be a shell, but no item container was specified in components');
@@ -17014,7 +17588,7 @@
       name: name(),
       configFields: schema$f(),
       partFields: parts$9(),
-      factory: factory$d,
+      factory: factory$f,
       apis: {
         setItems: (apis, list, items) => {
           apis.setItems(list, items);
@@ -17033,7 +17607,7 @@
         overrides: enhanceGroups
       })]);
 
-    const factory$c = (detail, components, _spec, _externals) => {
+    const factory$e = (detail, components, _spec, _externals) => {
       const setGroups = (toolbar, groups) => {
         getGroupContainer(toolbar).fold(() => {
           console.error('Toolbar was defined to not be a shell, but no groups container was specified in components');
@@ -17063,7 +17637,7 @@
       name: 'Toolbar',
       configFields: schema$e(),
       partFields: parts$8(),
-      factory: factory$c,
+      factory: factory$e,
       apis: {
         setGroups: (apis, toolbar, groups) => {
           apis.setGroups(toolbar, groups);
@@ -17332,7 +17906,7 @@
         init: init$6
     });
 
-    const Docking = create$3({
+    const Docking = create$4({
       fields: DockingSchema,
       name: 'docking',
       active: ActiveDocking,
@@ -17351,7 +17925,8 @@
     const editorStickyOffClass = 'tox-tinymce--toolbar-sticky-off';
     const scrollFromBehindHeader = (e, containerHeader) => {
       const doc = owner$4(containerHeader);
-      const viewHeight = doc.dom.defaultView.innerHeight;
+      const win = defaultView(containerHeader);
+      const viewHeight = win.dom.innerHeight;
       const scrollPos = get$b(doc);
       const markerElement = SugarElement.fromDom(e.elm);
       const markerPos = absolute$2(markerElement);
@@ -17375,7 +17950,7 @@
     const updateIframeContentFlow = header => {
       const getOccupiedHeight = elm => getOuter$2(elm) + (parseInt(get$e(elm, 'margin-top'), 10) || 0) + (parseInt(get$e(elm, 'margin-bottom'), 10) || 0);
       const elm = header.element;
-      parent(elm).each(parentElem => {
+      parentElement(elm).each(parentElem => {
         const padding = 'padding-' + Docking.getModes(header)[0];
         if (Docking.isDocked(header)) {
           const parentWidth = get$c(parentElem);
@@ -17549,6 +18124,16 @@
       optionString('text'),
       optionString('tooltip'),
       optionString('icon'),
+      defaultedOf('search', false, oneOf([
+        boolean,
+        objOf([optionString('placeholder')])
+      ], x => {
+        if (isBoolean(x)) {
+          return x ? Optional.some({ placeholder: Optional.none() }) : Optional.none();
+        } else {
+          return Optional.some(x);
+        }
+      })),
       requiredFunction('fetch'),
       defaultedFunction('onSetup', () => noop)
     ];
@@ -17578,7 +18163,7 @@
     ]);
     const createSplitButton = spec => asRaw('SplitButton', splitButtonSchema, spec);
 
-    const factory$b = (detail, spec) => {
+    const factory$d = (detail, spec) => {
       const setMenus = (comp, menus) => {
         const newMenus = map$2(menus, m => {
           const buttonSpec = {
@@ -17648,7 +18233,7 @@
       };
     };
     var SilverMenubar = single({
-      factory: factory$b,
+      factory: factory$d,
       name: 'silver.Menubar',
       configFields: [
         required$1('dom'),
@@ -17666,6 +18251,28 @@
         }
       }
     });
+
+    const promotionMessage = '\u26A1\ufe0fUpgrade';
+    const promotionLink = 'https://www.tiny.cloud/tinymce-self-hosted-premium-features/?utm_source=TinyMCE&utm_medium=SPAP&utm_campaign=SPAP&utm_id=editorreferral';
+    const renderPromotion = spec => {
+      return {
+        uid: spec.uid,
+        dom: spec.dom,
+        components: [{
+            dom: {
+              tag: 'a',
+              attributes: {
+                'href': promotionLink,
+                'rel': 'noopener',
+                'target': '_blank',
+                'aria-hidden': 'true'
+              },
+              classes: ['tox-promotion-link'],
+              innerHtml: promotionMessage
+            }
+          }]
+      };
+    };
 
     const getAnimationRoot = (component, slideConfig) => slideConfig.getAnimationRoot.fold(() => component.element, get => get(component));
 
@@ -17692,7 +18299,6 @@
     const doImmediateShrink = (component, slideConfig, slideState, _calculatedSize) => {
       slideState.setCollapsed();
       set$8(component.element, getDimensionProperty(slideConfig), getDimension(slideConfig, component.element));
-      reflow(component.element);
       disableTransitions(component, slideConfig);
       setShrunk(component, slideConfig);
       slideConfig.onStartShrink(component);
@@ -17773,6 +18379,16 @@
       const f = slideState.isExpanded() ? doStartSmartShrink : doStartGrow;
       f(component, slideConfig, slideState);
     };
+    const immediateGrow = (component, slideConfig, slideState) => {
+      if (!slideState.isExpanded()) {
+        setGrown(component, slideConfig);
+        set$8(component.element, getDimensionProperty(slideConfig), getDimension(slideConfig, component.element));
+        disableTransitions(component, slideConfig);
+        slideState.setExpanded();
+        slideConfig.onStartGrow(component);
+        slideConfig.onGrown(component);
+      }
+    };
 
     var SlidingApis = /*#__PURE__*/Object.freeze({
         __proto__: null,
@@ -17786,7 +18402,8 @@
         isShrinking: isShrinking,
         isTransitioning: isTransitioning,
         toggleGrow: toggleGrow,
-        disableTransitions: disableTransitions
+        disableTransitions: disableTransitions,
+        immediateGrow: immediateGrow
     });
 
     const exhibit = (base, slideConfig, _slideState) => {
@@ -17857,7 +18474,7 @@
         init: init$5
     });
 
-    const Sliding = create$3({
+    const Sliding = create$4({
       fields: SlidingSchema,
       name: 'sliding',
       active: ActiveSliding,
@@ -17974,6 +18591,7 @@
             buttonApi.setActive(isActive());
           },
           onSetup: buttonApi => {
+            buttonApi.setActive(isActive());
             const handleToggle = () => buttonApi.setActive(isActive());
             editor.on('ToggleSidebar', handleToggle);
             return () => {
@@ -18026,9 +18644,19 @@
       components: makePanels(parts, panelConfigs),
       slotBehaviours: SimpleBehaviours.unnamedEvents([runOnAttached(slotContainer => SlotContainer.hideAllSlots(slotContainer))])
     }));
-    const setSidebar = (sidebar, panelConfigs) => {
+    const setSidebar = (sidebar, panelConfigs, showSidebar) => {
       const optSlider = Composing.getCurrent(sidebar);
-      optSlider.each(slider => Replacing.set(slider, [makeSidebar(panelConfigs)]));
+      optSlider.each(slider => {
+        Replacing.set(slider, [makeSidebar(panelConfigs)]);
+        const configKey = showSidebar === null || showSidebar === void 0 ? void 0 : showSidebar.toLowerCase();
+        if (isString(configKey) && has$2(panelConfigs, configKey)) {
+          Composing.getCurrent(slider).each(slotContainer => {
+            SlotContainer.showSlot(slotContainer, configKey);
+            Sliding.immediateGrow(slider);
+            remove$6(slider.element, 'width');
+          });
+        }
+      });
     };
     const toggleSidebar = (sidebar, name) => {
       const optSlider = Composing.getCurrent(sidebar);
@@ -18184,7 +18812,7 @@
         init: init$4
     });
 
-    const Blocking = create$3({
+    const Blocking = create$4({
       fields: BlockingSchema,
       name: 'blocking',
       apis: BlockingApis,
@@ -18315,7 +18943,7 @@
         if (state !== throbberState.get()) {
           throbberState.set(state);
           toggleThrobber(editor, lazyThrobber(), state, sharedBackstage.providers);
-          editor.dispatch('AfterProgressState', { state });
+          fireAfterProgressState(editor, state);
         }
       };
       editor.on('ProgressState', e => {
@@ -18437,7 +19065,9 @@
       markers$1(['overflowToggledClass']),
       optionFunction('getOverflowBounds'),
       required$1('lazySink'),
-      customField('overflowGroups', () => Cell([]))
+      customField('overflowGroups', () => Cell([])),
+      onHandler('onOpened'),
+      onHandler('onClosed')
     ].concat(schema$c()));
     const parts$7 = constant$1([
       required({
@@ -18463,7 +19093,8 @@
       requiredFunction('fetch'),
       optionFunction('getBounds'),
       optionObjOf('fireDismissalEventInstead', [defaulted('event', dismissRequested())]),
-      schema$y()
+      schema$y(),
+      onHandler('onToggled')
     ]);
     const parts$6 = constant$1([
       external({
@@ -18473,7 +19104,8 @@
           buttonBehaviours: derive$1([Toggling.config({
               toggleClass: detail.markers.toggledClass,
               aria: { mode: 'expanded' },
-              toggleOnExecute: false
+              toggleOnExecute: false,
+              onToggled: detail.onToggled
             })])
         })
       }),
@@ -18575,7 +19207,7 @@
         ])
       };
     };
-    const factory$a = (detail, components, spec, externals) => ({
+    const factory$c = (detail, components, spec, externals) => ({
       ...Button.sketch({
         ...externals.button(),
         action: button => {
@@ -18613,7 +19245,7 @@
     });
     const FloatingToolbarButton = composite({
       name: 'FloatingToolbarButton',
-      factory: factory$a,
+      factory: factory$c,
       configFields: schema$a(),
       partFields: parts$6(),
       apis: {
@@ -18641,7 +19273,7 @@
         unit: 'item'
       })]);
 
-    const factory$9 = (detail, components, _spec, _externals) => ({
+    const factory$b = (detail, components, _spec, _externals) => ({
       uid: detail.uid,
       dom: detail.dom,
       components,
@@ -18655,7 +19287,7 @@
       name: 'ToolbarGroup',
       configFields: schema$9(),
       partFields: parts$5(),
-      factory: factory$9
+      factory: factory$b
     });
 
     const buildGroups = comps => map$2(comps, g => premade(g));
@@ -18667,7 +19299,7 @@
         });
       });
     };
-    const factory$8 = (detail, components, spec, externals) => {
+    const factory$a = (detail, components, spec, externals) => {
       const memFloatingToolbarButton = record(FloatingToolbarButton.sketch({
         fetch: () => Future.nu(resolve => {
           resolve(buildGroups(detail.overflowGroups.get()));
@@ -18697,7 +19329,8 @@
         parts: {
           button: externals['overflow-button'](),
           toolbar: externals.overflow()
-        }
+        },
+        onToggled: (comp, state) => detail[state ? 'onOpened' : 'onClosed'](comp)
       }));
       return {
         uid: detail.uid,
@@ -18739,7 +19372,7 @@
       name: 'SplitFloatingToolbar',
       configFields: schema$b(),
       partFields: parts$7(),
-      factory: factory$8,
+      factory: factory$a,
       apis: {
         setGroups: (apis, toolbar, groups) => {
           apis.setGroups(toolbar, groups);
@@ -18848,7 +19481,7 @@
         Sliding.refresh(overflow);
       });
     };
-    const factory$7 = (detail, components, spec, externals) => {
+    const factory$9 = (detail, components, spec, externals) => {
       const toolbarToggleEvent = 'alloy.toolbar.toggle';
       const doSetGroups = (toolbar, groups) => {
         const built = map$2(groups, toolbar.getSystem().build);
@@ -18894,7 +19527,7 @@
       name: 'SplitSlidingToolbar',
       configFields: schema$8(),
       partFields: parts$4(),
-      factory: factory$7,
+      factory: factory$9,
       apis: {
         setGroups: (apis, toolbar, groups) => {
           apis.setGroups(toolbar, groups);
@@ -18927,7 +19560,7 @@
       };
     };
     const renderToolbarGroup = toolbarGroup => ToolbarGroup.sketch(renderToolbarGroupCommon(toolbarGroup));
-    const getToolbarbehaviours = (toolbarSpec, modeName) => {
+    const getToolbarBehaviours = (toolbarSpec, modeName) => {
       const onAttached = runOnAttached(component => {
         const groups = map$2(toolbarSpec.initGroups, renderToolbarGroup);
         Toolbar.setGroups(component, groups);
@@ -18966,7 +19599,7 @@
             borderless: false
           }, Optional.none(), toolbarSpec.providers)
         },
-        splitToolbarBehaviours: getToolbarbehaviours(toolbarSpec, modeName)
+        splitToolbarBehaviours: getToolbarBehaviours(toolbarSpec, modeName)
       };
     };
     const renderFloatingMoreToolbar = toolbarSpec => {
@@ -19000,7 +19633,9 @@
           }
         },
         components: [primary],
-        markers: { overflowToggledClass: 'tox-tbtn--enabled' }
+        markers: { overflowToggledClass: 'tox-tbtn--enabled' },
+        onOpened: comp => toolbarSpec.onToggled(comp, true),
+        onClosed: comp => toolbarSpec.onToggled(comp, false)
       });
     };
     const renderSlidingMoreToolbar = toolbarSpec => {
@@ -19032,9 +19667,11 @@
         },
         onOpened: comp => {
           comp.getSystem().broadcastOn([toolbarHeightChange()], { type: 'opened' });
+          toolbarSpec.onToggled(comp, true);
         },
         onClosed: comp => {
           comp.getSystem().broadcastOn([toolbarHeightChange()], { type: 'closed' });
+          toolbarSpec.onToggled(comp, false);
         }
       });
     };
@@ -19047,17 +19684,239 @@
           classes: ['tox-toolbar'].concat(toolbarSpec.type === ToolbarMode$1.scrolling ? ['tox-toolbar--scrolling'] : [])
         },
         components: [Toolbar.parts.groups({})],
-        toolbarBehaviours: getToolbarbehaviours(toolbarSpec, modeName)
+        toolbarBehaviours: getToolbarBehaviours(toolbarSpec, modeName)
       });
     };
 
+    const normalButtonFields = [
+      requiredStringEnum('type', ['button']),
+      text$1,
+      defaultedStringEnum('buttonType', 'secondary', [
+        'primary',
+        'secondary'
+      ]),
+      requiredFunction('onAction')
+    ];
+    const viewButtonSchema = choose$1('type', { button: normalButtonFields });
+
+    const viewSchema = objOf([
+      defaultedArrayOf('buttons', [], viewButtonSchema),
+      requiredFunction('onShow'),
+      requiredFunction('onHide')
+    ]);
+    const createView = spec => asRaw('view', viewSchema, spec);
+
+    const renderViewButton = (spec, providers) => {
+      return renderButton({
+        text: spec.text,
+        enabled: true,
+        primary: false,
+        name: 'name',
+        icon: Optional.none(),
+        borderless: false,
+        buttonType: Optional.some(spec.buttonType)
+      }, _comp => {
+        spec.onAction();
+      }, providers);
+    };
+    const renderViewHeader = spec => {
+      const endButtons = map$2(spec.buttons, btnspec => renderViewButton(btnspec, spec.providers));
+      return {
+        uid: spec.uid,
+        dom: {
+          tag: 'div',
+          classes: ['tox-view__header']
+        },
+        components: [
+          Container.sketch({
+            dom: {
+              tag: 'div',
+              classes: ['tox-view__header-start']
+            },
+            components: []
+          }),
+          Container.sketch({
+            dom: {
+              tag: 'div',
+              classes: ['tox-view__header-end']
+            },
+            components: endButtons
+          })
+        ]
+      };
+    };
+    const renderViewPane = spec => {
+      return {
+        uid: spec.uid,
+        dom: {
+          tag: 'div',
+          classes: ['tox-view__pane']
+        }
+      };
+    };
+    const factory$8 = (detail, components, _spec, _externals) => {
+      const apis = {
+        getPane: comp => parts$a.getPart(comp, detail, 'pane'),
+        getOnShow: _comp => detail.viewConfig.onShow,
+        getOnHide: _comp => detail.viewConfig.onHide
+      };
+      return {
+        uid: detail.uid,
+        dom: detail.dom,
+        components,
+        apis
+      };
+    };
+    var View = composite({
+      name: 'silver.View',
+      configFields: [required$1('viewConfig')],
+      partFields: [
+        optional({
+          factory: { sketch: renderViewHeader },
+          schema: [
+            required$1('buttons'),
+            required$1('providers')
+          ],
+          name: 'header'
+        }),
+        optional({
+          factory: { sketch: renderViewPane },
+          schema: [],
+          name: 'pane'
+        })
+      ],
+      factory: factory$8,
+      apis: {
+        getPane: (apis, comp) => apis.getPane(comp),
+        getOnShow: (apis, comp) => apis.getOnShow(comp),
+        getOnHide: (apis, comp) => apis.getOnHide(comp)
+      }
+    });
+
+    const makeViews = (parts, viewConfigs, providers) => {
+      return mapToArray(viewConfigs, (config, name) => {
+        const internalViewConfig = getOrDie(createView(config));
+        return parts.slot(name, View.sketch({
+          dom: {
+            tag: 'div',
+            classes: ['tox-view']
+          },
+          viewConfig: internalViewConfig,
+          components: [
+            ...internalViewConfig.buttons.length > 0 ? [View.parts.header({
+                buttons: internalViewConfig.buttons,
+                providers
+              })] : [],
+            View.parts.pane({})
+          ]
+        }));
+      });
+    };
+    const makeSlotContainer = (viewConfigs, providers) => SlotContainer.sketch(parts => ({
+      dom: {
+        tag: 'div',
+        classes: ['tox-view-wrap__slot-container']
+      },
+      components: makeViews(parts, viewConfigs, providers),
+      slotBehaviours: SimpleBehaviours.unnamedEvents([runOnAttached(slotContainer => SlotContainer.hideAllSlots(slotContainer))])
+    }));
+    const getCurrentName = slotContainer => {
+      return find$5(SlotContainer.getSlotNames(slotContainer), name => SlotContainer.isShowing(slotContainer, name));
+    };
+    const hideContainer = comp => {
+      const element = comp.element;
+      set$8(element, 'display', 'none');
+      set$9(element, 'aria-hidden', 'true');
+    };
+    const showContainer = comp => {
+      const element = comp.element;
+      remove$6(element, 'display');
+      remove$7(element, 'aria-hidden');
+    };
+    const makeViewInstanceApi = slot => ({ getContainer: constant$1(slot) });
+    const runOnPaneWithInstanceApi = (slotContainer, name, get) => {
+      SlotContainer.getSlot(slotContainer, name).each(view => {
+        View.getPane(view).each(pane => {
+          const onCallback = get(view);
+          onCallback(makeViewInstanceApi(pane.element.dom));
+        });
+      });
+    };
+    const runOnShow = (slotContainer, name) => runOnPaneWithInstanceApi(slotContainer, name, View.getOnShow);
+    const runOnHide = (slotContainer, name) => runOnPaneWithInstanceApi(slotContainer, name, View.getOnHide);
+    const factory$7 = (detail, spec) => {
+      const setViews = (comp, viewConfigs) => {
+        Replacing.set(comp, [makeSlotContainer(viewConfigs, spec.backstage.shared.providers)]);
+      };
+      const whichView = comp => {
+        return Composing.getCurrent(comp).bind(getCurrentName);
+      };
+      const toggleView = (comp, showMainView, hideMainView, name) => {
+        return Composing.getCurrent(comp).exists(slotContainer => {
+          const optCurrentSlotName = getCurrentName(slotContainer);
+          const isTogglingCurrentView = optCurrentSlotName.exists(current => name === current);
+          const exists = SlotContainer.getSlot(slotContainer, name).isSome();
+          if (exists) {
+            SlotContainer.hideAllSlots(slotContainer);
+            if (!isTogglingCurrentView) {
+              hideMainView();
+              showContainer(comp);
+              SlotContainer.showSlot(slotContainer, name);
+              runOnShow(slotContainer, name);
+            } else {
+              hideContainer(comp);
+              showMainView();
+            }
+            optCurrentSlotName.each(prevName => runOnHide(slotContainer, prevName));
+          }
+          return exists;
+        });
+      };
+      const apis = {
+        setViews,
+        whichView,
+        toggleView
+      };
+      return {
+        uid: detail.uid,
+        dom: {
+          tag: 'div',
+          classes: ['tox-view-wrap'],
+          attributes: { 'aria-hidden': 'true' },
+          styles: { display: 'none' }
+        },
+        components: [],
+        behaviours: derive$1([
+          Replacing.config({}),
+          Composing.config({
+            find: comp => {
+              const children = Replacing.contents(comp);
+              return head(children);
+            }
+          })
+        ]),
+        apis
+      };
+    };
+    var ViewWrapper = single({
+      factory: factory$7,
+      name: 'silver.ViewWrapper',
+      configFields: [required$1('backstage')],
+      apis: {
+        setViews: (apis, comp, views) => apis.setViews(comp, views),
+        toggleView: (apis, comp, outerContainer, editorCont, name) => apis.toggleView(comp, outerContainer, editorCont, name),
+        whichView: (apis, comp) => apis.whichView(comp)
+      }
+    });
+
     const factory$6 = (detail, components, _spec) => {
+      let toolbarDrawerOpenState = false;
       const apis = {
         getSocket: comp => {
           return parts$a.getPart(comp, detail, 'socket');
         },
-        setSidebar: (comp, panelConfigs) => {
-          parts$a.getPart(comp, detail, 'sidebar').each(sidebar => setSidebar(sidebar, panelConfigs));
+        setSidebar: (comp, panelConfigs, showSidebar) => {
+          parts$a.getPart(comp, detail, 'sidebar').each(sidebar => setSidebar(sidebar, panelConfigs, showSidebar));
         },
         toggleSidebar: (comp, name) => {
           parts$a.getPart(comp, detail, 'sidebar').each(sidebar => toggleSidebar(sidebar, name));
@@ -19073,12 +19932,14 @@
         },
         setToolbar: (comp, groups) => {
           parts$a.getPart(comp, detail, 'toolbar').each(toolbar => {
-            toolbar.getApis().setGroups(toolbar, groups);
+            const renderedGroups = map$2(groups, renderToolbarGroup);
+            toolbar.getApis().setGroups(toolbar, renderedGroups);
           });
         },
         setToolbars: (comp, toolbars) => {
           parts$a.getPart(comp, detail, 'multiple-toolbar').each(mToolbar => {
-            CustomList.setItems(mToolbar, toolbars);
+            const renderedToolbars = map$2(toolbars, g => map$2(g, renderToolbarGroup));
+            CustomList.setItems(mToolbar, renderedToolbars);
           });
         },
         refreshToolbar: comp => {
@@ -19110,6 +19971,38 @@
         focusMenubar: comp => {
           parts$a.getPart(comp, detail, 'menubar').each(menubar => {
             SilverMenubar.focus(menubar);
+          });
+        },
+        setViews: (comp, viewConfigs) => {
+          parts$a.getPart(comp, detail, 'viewWrapper').each(wrapper => {
+            ViewWrapper.setViews(wrapper, viewConfigs);
+          });
+        },
+        toggleView: (comp, name) => {
+          return parts$a.getPart(comp, detail, 'viewWrapper').exists(wrapper => ViewWrapper.toggleView(wrapper, () => apis.showMainView(comp), () => apis.hideMainView(comp), name));
+        },
+        whichView: comp => {
+          return parts$a.getPart(comp, detail, 'viewWrapper').bind(ViewWrapper.whichView).getOrNull();
+        },
+        hideMainView: comp => {
+          toolbarDrawerOpenState = apis.isToolbarDrawerToggled(comp);
+          if (toolbarDrawerOpenState) {
+            apis.toggleToolbarDrawer(comp);
+          }
+          parts$a.getPart(comp, detail, 'editorContainer').each(editorContainer => {
+            const element = editorContainer.element;
+            set$8(element, 'display', 'none');
+            set$9(element, 'aria-hidden', 'true');
+          });
+        },
+        showMainView: comp => {
+          if (toolbarDrawerOpenState) {
+            apis.toggleToolbarDrawer(comp);
+          }
+          parts$a.getPart(comp, detail, 'editorContainer').each(editorContainer => {
+            const element = editorContainer.element;
+            remove$6(element, 'display');
+            remove$7(element, 'aria-hidden');
           });
         }
       };
@@ -19178,6 +20071,7 @@
               spec.onEscape();
               return Optional.some(true);
             },
+            onToggled: (_comp, state) => spec.onToolbarToggled(state),
             cyclicKeying: false,
             initGroups: [],
             getSink: spec.getSink,
@@ -19204,6 +20098,11 @@
       name: 'header',
       schema: [required$1('dom')]
     });
+    const partPromotion = partType.optional({
+      factory: { sketch: renderPromotion },
+      name: 'promotion',
+      schema: [required$1('dom')]
+    });
     const partSocket = partType.optional({
       name: 'socket',
       schema: [required$1('dom')]
@@ -19217,6 +20116,24 @@
       factory: { sketch: renderThrobber },
       name: 'throbber',
       schema: [required$1('dom')]
+    });
+    const partViewWrapper = partType.optional({
+      factory: ViewWrapper,
+      name: 'viewWrapper',
+      schema: [required$1('backstage')]
+    });
+    const renderEditorContainer = spec => ({
+      uid: spec.uid,
+      dom: {
+        tag: 'div',
+        classes: ['tox-editor-container']
+      },
+      components: spec.components
+    });
+    const partEditorContainer = partType.optional({
+      factory: { sketch: renderEditorContainer },
+      name: 'editorContainer',
+      schema: []
     });
     var OuterContainer = composite({
       name: 'OuterContainer',
@@ -19232,14 +20149,17 @@
         partMultipleToolbar,
         partSocket,
         partSidebar,
-        partThrobber
+        partPromotion,
+        partThrobber,
+        partViewWrapper,
+        partEditorContainer
       ],
       apis: {
         getSocket: (apis, comp) => {
           return apis.getSocket(comp);
         },
-        setSidebar: (apis, comp, panelConfigs) => {
-          apis.setSidebar(comp, panelConfigs);
+        setSidebar: (apis, comp, panelConfigs, showSidebar) => {
+          apis.setSidebar(comp, panelConfigs, showSidebar);
         },
         toggleSidebar: (apis, comp, name) => {
           apis.toggleSidebar(comp, name);
@@ -19253,15 +20173,11 @@
         getToolbar: (apis, comp) => {
           return apis.getToolbar(comp);
         },
-        setToolbar: (apis, comp, grps) => {
-          const groups = map$2(grps, grp => {
-            return renderToolbarGroup(grp);
-          });
+        setToolbar: (apis, comp, groups) => {
           apis.setToolbar(comp, groups);
         },
-        setToolbars: (apis, comp, ts) => {
-          const renderedToolbars = map$2(ts, g => map$2(g, renderToolbarGroup));
-          apis.setToolbars(comp, renderedToolbars);
+        setToolbars: (apis, comp, toolbars) => {
+          apis.setToolbars(comp, toolbars);
         },
         refreshToolbar: (apis, comp) => {
           return apis.refreshToolbar(comp);
@@ -19283,6 +20199,15 @@
         },
         focusToolbar: (apis, comp) => {
           apis.focusToolbar(comp);
+        },
+        setViews: (apis, comp, views) => {
+          apis.setViews(comp, views);
+        },
+        toggleView: (apis, comp, name) => {
+          return apis.toggleView(comp, name);
+        },
+        whichView: (apis, comp) => {
+          return apis.whichView(comp);
         }
       }
     });
@@ -19303,7 +20228,7 @@
       },
       insert: {
         title: 'Insert',
-        items: 'image link media addcomment pageembed template codesample inserttable | charmap emoticons hr | pagebreak nonbreaking anchor tableofcontents | insertdatetime'
+        items: 'image link media addcomment pageembed template codesample inserttable | charmap emoticons hr | pagebreak nonbreaking anchor tableofcontents footnotes | mergetags | insertdatetime'
       },
       format: {
         title: 'Format',
@@ -19311,7 +20236,7 @@
       },
       tools: {
         title: 'Tools',
-        items: 'spellchecker spellcheckerlanguage | a11ycheck code wordcount'
+        items: 'spellchecker spellcheckerlanguage | autocorrect capitalization | a11ycheck code wordcount'
       },
       table: {
         title: 'Table',
@@ -19343,10 +20268,7 @@
       };
     };
     const parseItemsString = items => {
-      if (typeof items === 'string') {
-        return items.split(' ');
-      }
-      return items;
+      return items.split(' ');
     };
     const identifyMenus = (editor, registry) => {
       const rawMenuData = {
@@ -19371,7 +20293,7 @@
         }, registry, editor);
       });
       return filter$2(menus, menu => {
-        const isNotSeparator = item => item.type !== 'separator';
+        const isNotSeparator = item => isString(item) || item.type !== 'separator';
         return menu.getItems().length > 0 && exists(menu.getItems(), isNotSeparator);
       });
     };
@@ -19506,7 +20428,10 @@
       const getFetch = (backstage, getStyleItems) => (comp, callback) => {
         const preItems = getStyleItems();
         const items = validateItems(preItems);
-        const menu = build(items, ItemResponse$1.CLOSE_ON_EXECUTE, backstage, false);
+        const menu = build(items, ItemResponse$1.CLOSE_ON_EXECUTE, backstage, {
+          isHorizontalMenu: false,
+          search: Optional.none()
+        });
         callback(menu);
       };
       return {
@@ -19655,10 +20580,14 @@
       const isSelectedFor = format => () => editor.formatter.match(format);
       const getPreviewFor = format => () => {
         const fmt = editor.formatter.get(format);
-        return Optional.some({
-          tag: fmt.length > 0 ? fmt[0].inline || fmt[0].block || 'div' : 'div',
-          styles: editor.dom.parseStyle(editor.formatter.getCssText(format))
-        });
+        if (fmt) {
+          return Optional.some({
+            tag: fmt.length > 0 ? fmt[0].inline || fmt[0].block || 'div' : 'div',
+            styles: editor.dom.parseStyle(editor.formatter.getCssText(format))
+          });
+        } else {
+          return Optional.none();
+        }
       };
       const updateSelectMenuText = comp => {
         const detectedFormat = findNearest(editor, () => dataset.data);
@@ -19872,11 +20801,16 @@
       };
       const updateSelectMenuText = comp => {
         const getFormatItems = fmt => {
-          const subs = fmt.items;
-          return subs !== undefined && subs.length > 0 ? bind$3(subs, getFormatItems) : [{
-              title: fmt.title,
-              format: fmt.format
-            }];
+          if (isNestedFormat(fmt)) {
+            return bind$3(fmt.items, getFormatItems);
+          } else if (isFormatReference(fmt)) {
+            return [{
+                title: fmt.title,
+                format: fmt.format
+              }];
+          } else {
+            return [];
+          }
         };
         const flattenedItems = bind$3(getStyleFormats(editor), getFormatItems);
         const detectedFormat = findNearest(editor, constant$1(flattenedItems));
@@ -19983,7 +20917,7 @@
         init: init$3
     });
 
-    const Reflecting = create$3({
+    const Reflecting = create$4({
       fields: ReflectingSchema,
       name: 'reflecting',
       active: ActiveReflecting,
@@ -20101,7 +21035,7 @@
       };
       const action = component => {
         const onOpenSync = switchToMenu;
-        togglePopup(detail, identity, component, externals, onOpenSync, HighlightOnOpen.HighlightFirst).get(noop);
+        togglePopup(detail, identity, component, externals, onOpenSync, HighlightOnOpen.HighlightMenuAndItem).get(noop);
       };
       const openMenu = comp => {
         action(comp);
@@ -20289,12 +21223,12 @@
     };
     const renderToolbarButton = (spec, providersBackstage) => renderToolbarButtonWith(spec, providersBackstage, []);
     const renderToolbarButtonWith = (spec, providersBackstage, bonusEvents) => renderCommonToolbarButton(spec, {
-      toolbarButtonBehaviours: [].concat(bonusEvents.length > 0 ? [config('toolbarButtonWith', bonusEvents)] : []),
+      toolbarButtonBehaviours: bonusEvents.length > 0 ? [config('toolbarButtonWith', bonusEvents)] : [],
       getApi: getButtonApi,
       onSetup: spec.onSetup
     }, providersBackstage);
     const renderToolbarToggleButton = (spec, providersBackstage) => renderToolbarToggleButtonWith(spec, providersBackstage, []);
-    const renderToolbarToggleButtonWith = (spec, providersBackstage, bonusEvents) => deepMerge(renderCommonToolbarButton(spec, {
+    const renderToolbarToggleButtonWith = (spec, providersBackstage, bonusEvents) => renderCommonToolbarButton(spec, {
       toolbarButtonBehaviours: [
         Replacing.config({}),
         Toggling.config({
@@ -20305,7 +21239,7 @@
       ].concat(bonusEvents.length > 0 ? [config('toolbarToggleButtonWith', bonusEvents)] : []),
       getApi: getToggleApi,
       onSetup: spec.onSetup
-    }, providersBackstage));
+    }, providersBackstage);
     const fetchChoices = (getApi, spec, providersBackstage) => comp => Future.nu(callback => spec.fetch(callback)).map(items => Optional.from(createTieredDataFrom(deepMerge(createPartialChoiceMenu(generate$6('menu-value'), items, value => {
       spec.onItemAction(getApi(comp), value);
     }, spec.columns, spec.presets, ItemResponse$1.CLOSE_ON_EXECUTE, spec.select.getOr(never), providersBackstage), {
@@ -20442,46 +21376,41 @@
         items: ['addcomment']
       }
     ];
-    const renderFromBridge = (bridgeBuilder, render) => (spec, extras, editor) => {
+    const renderFromBridge = (bridgeBuilder, render) => (spec, backstage, editor) => {
       const internal = bridgeBuilder(spec).mapError(errInfo => formatError(errInfo)).getOrDie();
-      return render(internal, extras, editor);
+      return render(internal, backstage, editor);
     };
     const types = {
-      button: renderFromBridge(createToolbarButton, (s, extras) => renderToolbarButton(s, extras.backstage.shared.providers)),
-      togglebutton: renderFromBridge(createToggleButton, (s, extras) => renderToolbarToggleButton(s, extras.backstage.shared.providers)),
-      menubutton: renderFromBridge(createMenuButton, (s, extras) => renderMenuButton(s, 'tox-tbtn', extras.backstage, Optional.none())),
-      splitbutton: renderFromBridge(createSplitButton, (s, extras) => renderSplitButton(s, extras.backstage.shared)),
-      grouptoolbarbutton: renderFromBridge(createGroupToolbarButton, (s, extras, editor) => {
+      button: renderFromBridge(createToolbarButton, (s, backstage) => renderToolbarButton(s, backstage.shared.providers)),
+      togglebutton: renderFromBridge(createToggleButton, (s, backstage) => renderToolbarToggleButton(s, backstage.shared.providers)),
+      menubutton: renderFromBridge(createMenuButton, (s, backstage) => renderMenuButton(s, 'tox-tbtn', backstage, Optional.none())),
+      splitbutton: renderFromBridge(createSplitButton, (s, backstage) => renderSplitButton(s, backstage.shared)),
+      grouptoolbarbutton: renderFromBridge(createGroupToolbarButton, (s, backstage, editor) => {
         const buttons = editor.ui.registry.getAll().buttons;
         const identify = toolbar => identifyButtons(editor, {
           buttons,
           toolbar,
           allowToolbarGroups: false
-        }, extras, Optional.none());
-        const attributes = { [Attribute]: extras.backstage.shared.header.isPositionedAtTop() ? AttributeValue.TopToBottom : AttributeValue.BottomToTop };
+        }, backstage, Optional.none());
+        const attributes = { [Attribute]: backstage.shared.header.isPositionedAtTop() ? AttributeValue.TopToBottom : AttributeValue.BottomToTop };
         switch (getToolbarMode(editor)) {
         case ToolbarMode$1.floating:
-          return renderFloatingToolbarButton(s, extras.backstage, identify, attributes);
+          return renderFloatingToolbarButton(s, backstage, identify, attributes);
         default:
           throw new Error('Toolbar groups are only supported when using floating toolbar mode');
         }
-      }),
-      styleSelectButton: (editor, extras) => createStylesButton(editor, extras.backstage),
-      fontsizeSelectButton: (editor, extras) => createFontSizeButton(editor, extras.backstage),
-      fontSelectButton: (editor, extras) => createFontFamilyButton(editor, extras.backstage),
-      formatButton: (editor, extras) => createBlocksButton(editor, extras.backstage),
-      alignMenuButton: (editor, extras) => createAlignButton(editor, extras.backstage)
+      })
     };
-    const extractFrom = (spec, extras, editor) => get$g(types, spec.type).fold(() => {
+    const extractFrom = (spec, backstage, editor) => get$g(types, spec.type).fold(() => {
       console.error('skipping button defined by', spec);
       return Optional.none();
-    }, render => Optional.some(render(spec, extras, editor)));
+    }, render => Optional.some(render(spec, backstage, editor)));
     const bespokeButtons = {
-      styles: types.styleSelectButton,
-      fontsize: types.fontsizeSelectButton,
-      fontfamily: types.fontSelectButton,
-      blocks: types.formatButton,
-      align: types.alignMenuButton
+      styles: createStylesButton,
+      fontsize: createFontSizeButton,
+      fontfamily: createFontFamilyButton,
+      blocks: createBlocksButton,
+      align: createAlignButton
     };
     const removeUnusedDefaults = buttons => {
       const filteredItemGroups = map$2(defaultToolbar, group => {
@@ -20514,18 +21443,20 @@
         return [];
       }
     };
-    const lookupButton = (editor, buttons, toolbarItem, allowToolbarGroups, extras, prefixes) => get$g(buttons, toolbarItem.toLowerCase()).orThunk(() => prefixes.bind(ps => findMap(ps, prefix => get$g(buttons, prefix + toolbarItem.toLowerCase())))).fold(() => get$g(bespokeButtons, toolbarItem.toLowerCase()).map(r => r(editor, extras)).orThunk(() => Optional.none()), spec => {
+    const lookupButton = (editor, buttons, toolbarItem, allowToolbarGroups, backstage, prefixes) => get$g(buttons, toolbarItem.toLowerCase()).orThunk(() => prefixes.bind(ps => findMap(ps, prefix => get$g(buttons, prefix + toolbarItem.toLowerCase())))).fold(() => get$g(bespokeButtons, toolbarItem.toLowerCase()).map(r => r(editor, backstage)), spec => {
       if (spec.type === 'grouptoolbarbutton' && !allowToolbarGroups) {
         console.warn(`Ignoring the '${ toolbarItem }' toolbar button. Group toolbar buttons are only supported when using floating toolbar mode and cannot be nested.`);
         return Optional.none();
       } else {
-        return extractFrom(spec, extras, editor);
+        return extractFrom(spec, backstage, editor);
       }
     });
-    const identifyButtons = (editor, toolbarConfig, extras, prefixes) => {
+    const identifyButtons = (editor, toolbarConfig, backstage, prefixes) => {
       const toolbarGroups = createToolbar(toolbarConfig);
       const groups = map$2(toolbarGroups, group => {
-        const items = bind$3(group.items, toolbarItem => toolbarItem.trim().length === 0 ? [] : lookupButton(editor, toolbarConfig.buttons, toolbarItem, toolbarConfig.allowToolbarGroups, extras, prefixes).toArray());
+        const items = bind$3(group.items, toolbarItem => {
+          return toolbarItem.trim().length === 0 ? [] : lookupButton(editor, toolbarConfig.buttons, toolbarItem, toolbarConfig.allowToolbarGroups, backstage, prefixes).toArray();
+        });
         return {
           title: Optional.from(editor.translate(group.name)),
           items
@@ -20534,8 +21465,8 @@
       return filter$2(groups, group => group.items.length > 0);
     };
 
-    const setToolbar = (editor, uiComponents, rawUiConfig, backstage) => {
-      const comp = uiComponents.outerContainer;
+    const setToolbar = (editor, uiRefs, rawUiConfig, backstage) => {
+      const outerContainer = uiRefs.mainUi.outerContainer;
       const toolbarConfig = rawUiConfig.toolbar;
       const toolbarButtonsConfig = rawUiConfig.buttons;
       if (isArrayOf(toolbarConfig, isString)) {
@@ -20545,17 +21476,18 @@
             buttons: toolbarButtonsConfig,
             allowToolbarGroups: rawUiConfig.allowToolbarGroups
           };
-          return identifyButtons(editor, config, { backstage }, Optional.none());
+          return identifyButtons(editor, config, backstage, Optional.none());
         });
-        OuterContainer.setToolbars(comp, toolbars);
+        OuterContainer.setToolbars(outerContainer, toolbars);
       } else {
-        OuterContainer.setToolbar(comp, identifyButtons(editor, rawUiConfig, { backstage }, Optional.none()));
+        OuterContainer.setToolbar(outerContainer, identifyButtons(editor, rawUiConfig, backstage, Optional.none()));
       }
     };
 
     const detection = detect$1();
     const isiOS12 = detection.os.isiOS() && detection.os.version.major <= 12;
-    const setupEvents$1 = (editor, uiComponents) => {
+    const setupEvents$1 = (editor, uiRefs) => {
+      const {uiMotherships} = uiRefs;
       const dom = editor.dom;
       let contentWindow = editor.getWin();
       const initialDocEle = editor.getDoc().documentElement;
@@ -20576,16 +21508,21 @@
           fireResizeContent(editor);
         }
       };
-      const scroll = e => fireScrollContent(editor, e);
+      const scroll = e => {
+        fireScrollContent(editor, e);
+      };
       dom.bind(contentWindow, 'resize', resizeWindow);
       dom.bind(contentWindow, 'scroll', scroll);
       const elementLoad = capture(SugarElement.fromDom(editor.getBody()), 'load', resizeDocument);
-      const mothership = uiComponents.uiMothership.element;
       editor.on('hide', () => {
-        set$8(mothership, 'display', 'none');
+        each$1(uiMotherships, m => {
+          set$8(m.element, 'display', 'none');
+        });
       });
       editor.on('show', () => {
-        remove$6(mothership, 'display');
+        each$1(uiMotherships, m => {
+          remove$6(m.element, 'display');
+        });
       });
       editor.on('NodeChange', resizeDocument);
       editor.on('remove', () => {
@@ -20595,20 +21532,25 @@
         contentWindow = null;
       });
     };
-    const render$1 = (editor, uiComponents, rawUiConfig, backstage, args) => {
+    const attachUiMotherships$1 = (uiRoot, uiRefs) => {
+      attachSystem(uiRoot, uiRefs.dialogUi.mothership);
+    };
+    const render$1 = (editor, uiRefs, rawUiConfig, backstage, args) => {
+      const {mainUi, uiMotherships} = uiRefs;
       const lastToolbarWidth = Cell(0);
-      const outerContainer = uiComponents.outerContainer;
+      const outerContainer = mainUi.outerContainer;
       iframe(editor);
       const eTargetNode = SugarElement.fromDom(args.targetNode);
       const uiRoot = getContentContainer(getRootNode(eTargetNode));
-      attachSystemAfter(eTargetNode, uiComponents.mothership);
-      attachSystem(uiRoot, uiComponents.uiMothership);
+      attachSystemAfter(eTargetNode, mainUi.mothership);
+      attachUiMotherships$1(uiRoot, uiRefs);
       editor.on('PostRender', () => {
-        setToolbar(editor, uiComponents, rawUiConfig, backstage);
+        OuterContainer.setSidebar(outerContainer, rawUiConfig.sidebar, getSidebarShow(editor));
+        setToolbar(editor, uiRefs, rawUiConfig, backstage);
         lastToolbarWidth.set(editor.getWin().innerWidth);
         OuterContainer.setMenubar(outerContainer, identifyMenus(editor, rawUiConfig));
-        OuterContainer.setSidebar(outerContainer, rawUiConfig.sidebar);
-        setupEvents$1(editor, uiComponents);
+        OuterContainer.setViews(outerContainer, rawUiConfig.views);
+        setupEvents$1(editor, uiRefs);
       });
       const socket = OuterContainer.getSocket(outerContainer).getOrDie('Could not find expected socket element');
       if (isiOS12) {
@@ -20622,15 +21564,35 @@
         const unbinder = bind(socket.element, 'scroll', limit.throttle);
         editor.on('remove', unbinder.unbind);
       }
-      setupReadonlyModeSwitch(editor, uiComponents);
+      setupReadonlyModeSwitch(editor, uiRefs);
       editor.addCommand('ToggleSidebar', (_ui, value) => {
         OuterContainer.toggleSidebar(outerContainer, value);
         editor.dispatch('ToggleSidebar');
       });
-      editor.addQueryValueHandler('ToggleSidebar', () => OuterContainer.whichSidebar(outerContainer));
+      editor.addQueryValueHandler('ToggleSidebar', () => {
+        var _a;
+        return (_a = OuterContainer.whichSidebar(outerContainer)) !== null && _a !== void 0 ? _a : '';
+      });
+      editor.addCommand('ToggleView', (_ui, value) => {
+        if (OuterContainer.toggleView(outerContainer, value)) {
+          const target = outerContainer.element;
+          mainUi.mothership.broadcastOn([dismissPopups()], { target });
+          each$1(uiMotherships, m => {
+            m.broadcastOn([dismissPopups()], { target });
+          });
+          if (isNull(OuterContainer.whichView(outerContainer))) {
+            editor.focus();
+            editor.nodeChanged();
+          }
+        }
+      });
+      editor.addQueryValueHandler('ToggleView', () => {
+        var _a;
+        return (_a = OuterContainer.whichView(outerContainer)) !== null && _a !== void 0 ? _a : '';
+      });
       const toolbarMode = getToolbarMode(editor);
       const refreshDrawer = () => {
-        OuterContainer.refreshToolbar(uiComponents.outerContainer);
+        OuterContainer.refreshToolbar(uiRefs.mainUi.outerContainer);
       };
       if (toolbarMode === ToolbarMode$1.sliding || toolbarMode === ToolbarMode$1.floating) {
         editor.on('ResizeWindow ResizeEditor ResizeContent', () => {
@@ -20643,7 +21605,7 @@
       }
       const api = {
         setEnabled: state => {
-          broadcastReadonly(uiComponents, !state);
+          broadcastReadonly(uiRefs, !state);
         },
         isEnabled: () => !Disabling.isDisabled(outerContainer)
       };
@@ -20695,8 +21657,8 @@
     };
 
     const {ToolbarLocation, ToolbarMode} = Options;
-    const InlineHeader = (editor, targetElm, uiComponents, backstage, floatContainer) => {
-      const {uiMothership, outerContainer} = uiComponents;
+    const InlineHeader = (editor, targetElm, uiRefs, backstage, floatContainer) => {
+      const {mainUi, uiMotherships} = uiRefs;
       const DOM = global$7.DOM;
       const useFixedToolbarContainer = useFixedContainer(editor);
       const isSticky = isStickyToolbar(editor);
@@ -20711,7 +21673,7 @@
       const calcMode = container => {
         switch (getToolbarLocation(editor)) {
         case ToolbarLocation.auto:
-          const toolbar = OuterContainer.getToolbar(outerContainer);
+          const toolbar = OuterContainer.getToolbar(mainUi.outerContainer);
           const offset = calcToolbarOffset(toolbar);
           const toolbarHeight = get$d(container.element) - offset;
           const targetBounds = box$1(targetElm);
@@ -20738,32 +21700,39 @@
         }
       };
       const setupMode = mode => {
-        const container = floatContainer.get();
-        Docking.setModes(container, [mode]);
-        headerBackstage.setDockingMode(mode);
-        const verticalDir = isPositionedAtTop() ? AttributeValue.TopToBottom : AttributeValue.BottomToTop;
-        set$9(container.element, Attribute, verticalDir);
+        floatContainer.on(container => {
+          Docking.setModes(container, [mode]);
+          headerBackstage.setDockingMode(mode);
+          const verticalDir = isPositionedAtTop() ? AttributeValue.TopToBottom : AttributeValue.BottomToTop;
+          set$9(container.element, Attribute, verticalDir);
+        });
       };
       const updateChromeWidth = () => {
-        const maxWidth = editorMaxWidthOpt.getOrThunk(() => {
-          const bodyMargin = parseToInt(get$e(body(), 'margin-left')).getOr(0);
-          return get$c(body()) - absolute$3(targetElm).left + bodyMargin;
+        floatContainer.on(container => {
+          const maxWidth = editorMaxWidthOpt.getOrThunk(() => {
+            const bodyMargin = parseToInt(get$e(body(), 'margin-left')).getOr(0);
+            return get$c(body()) - absolute$3(targetElm).left + bodyMargin;
+          });
+          set$8(container.element, 'max-width', maxWidth + 'px');
         });
-        set$8(floatContainer.get().element, 'max-width', maxWidth + 'px');
       };
       const updateChromePosition = () => {
-        const toolbar = OuterContainer.getToolbar(outerContainer);
-        const offset = calcToolbarOffset(toolbar);
-        const targetBounds = box$1(targetElm);
-        const top = isPositionedAtTop() ? Math.max(targetBounds.y - get$d(floatContainer.get().element) + offset, 0) : targetBounds.bottom;
-        setAll(outerContainer.element, {
-          position: 'absolute',
-          top: Math.round(top) + 'px',
-          left: Math.round(targetBounds.x) + 'px'
+        floatContainer.on(container => {
+          const toolbar = OuterContainer.getToolbar(mainUi.outerContainer);
+          const offset = calcToolbarOffset(toolbar);
+          const targetBounds = box$1(targetElm);
+          const top = isPositionedAtTop() ? Math.max(targetBounds.y - get$d(container.element) + offset, 0) : targetBounds.bottom;
+          setAll(mainUi.outerContainer.element, {
+            position: 'absolute',
+            top: Math.round(top) + 'px',
+            left: Math.round(targetBounds.x) + 'px'
+          });
         });
       };
       const repositionPopups$1 = () => {
-        uiMothership.broadcastOn([repositionPopups()], {});
+        each$1(uiMotherships, m => {
+          m.broadcastOn([repositionPopups()], {});
+        });
       };
       const updateChromeUi = (resetDocking = false) => {
         if (!isVisible()) {
@@ -20773,14 +21742,14 @@
           updateChromeWidth();
         }
         if (isSplitToolbar) {
-          OuterContainer.refreshToolbar(outerContainer);
+          OuterContainer.refreshToolbar(mainUi.outerContainer);
         }
         if (!useFixedToolbarContainer) {
           updateChromePosition();
         }
         if (isSticky) {
-          const floatContainerComp = floatContainer.get();
-          resetDocking ? Docking.reset(floatContainerComp) : Docking.refresh(floatContainerComp);
+          const action = resetDocking ? Docking.reset : Docking.refresh;
+          floatContainer.on(action);
         }
         repositionPopups$1();
       };
@@ -20788,30 +21757,34 @@
         if (useFixedToolbarContainer || !isSticky || !isVisible()) {
           return;
         }
-        const currentMode = headerBackstage.getDockingMode();
-        const newMode = calcMode(floatContainer.get());
-        if (newMode !== currentMode) {
-          setupMode(newMode);
-          if (updateUi) {
-            updateChromeUi(true);
+        floatContainer.on(container => {
+          const currentMode = headerBackstage.getDockingMode();
+          const newMode = calcMode(container);
+          if (newMode !== currentMode) {
+            setupMode(newMode);
+            if (updateUi) {
+              updateChromeUi(true);
+            }
           }
-        }
+        });
       };
       const show = () => {
         visible.set(true);
-        set$8(outerContainer.element, 'display', 'flex');
+        set$8(mainUi.outerContainer.element, 'display', 'flex');
         DOM.addClass(editor.getBody(), 'mce-edit-focus');
-        remove$6(uiMothership.element, 'display');
+        each$1(uiMotherships, m => {
+          remove$6(m.element, 'display');
+        });
         updateMode(false);
         updateChromeUi();
       };
       const hide = () => {
         visible.set(false);
-        if (uiComponents.outerContainer) {
-          set$8(outerContainer.element, 'display', 'none');
-          DOM.removeClass(editor.getBody(), 'mce-edit-focus');
-        }
-        set$8(uiMothership.element, 'display', 'none');
+        set$8(mainUi.outerContainer.element, 'display', 'none');
+        DOM.removeClass(editor.getBody(), 'mce-edit-focus');
+        each$1(uiMotherships, m => {
+          set$8(m.element, 'display', 'none');
+        });
       };
       return {
         isVisible,
@@ -20866,60 +21839,58 @@
       });
       editor.on('ScrollWindow', () => ui.updateMode());
       const elementLoad = unbindable();
-      elementLoad.set(capture(SugarElement.fromDom(editor.getBody()), 'load', resizeContent));
+      elementLoad.set(capture(SugarElement.fromDom(editor.getBody()), 'load', e => resizeContent(e.raw)));
       editor.on('remove', () => {
         elementLoad.clear();
       });
     };
-    const render = (editor, uiComponents, rawUiConfig, backstage, args) => {
-      const {mothership, uiMothership, outerContainer} = uiComponents;
-      const floatContainer = Cell(null);
+    const attachUiMotherships = (uiRoot, uiRefs) => {
+      attachSystem(uiRoot, uiRefs.dialogUi.mothership);
+    };
+    const render = (editor, uiRefs, rawUiConfig, backstage, args) => {
+      const {mainUi} = uiRefs;
+      const floatContainer = value$2();
       const targetElm = SugarElement.fromDom(args.targetNode);
-      const ui = InlineHeader(editor, targetElm, uiComponents, backstage, floatContainer);
+      const ui = InlineHeader(editor, targetElm, uiRefs, backstage, floatContainer);
       const toolbarPersist = isToolbarPersist(editor);
       inline(editor);
       const render = () => {
-        if (floatContainer.get()) {
+        if (floatContainer.isSet()) {
           ui.show();
           return;
         }
-        floatContainer.set(OuterContainer.getHeader(outerContainer).getOrDie());
+        floatContainer.set(OuterContainer.getHeader(mainUi.outerContainer).getOrDie());
         const uiContainer = getUiContainer(editor);
-        attachSystem(uiContainer, mothership);
-        attachSystem(uiContainer, uiMothership);
-        setToolbar(editor, uiComponents, rawUiConfig, backstage);
-        OuterContainer.setMenubar(outerContainer, identifyMenus(editor, rawUiConfig));
+        attachSystem(uiContainer, mainUi.mothership);
+        attachUiMotherships(uiContainer, uiRefs);
+        setToolbar(editor, uiRefs, rawUiConfig, backstage);
+        OuterContainer.setMenubar(mainUi.outerContainer, identifyMenus(editor, rawUiConfig));
         ui.show();
         setupEvents(editor, targetElm, ui, toolbarPersist);
         editor.nodeChanged();
       };
-      const delayedRender = () => global$9.setEditorTimeout(editor, render, 0);
       editor.on('show', render);
       editor.on('hide', ui.hide);
       if (!toolbarPersist) {
-        editor.on('focus', delayedRender);
+        editor.on('focus', render);
         editor.on('blur', ui.hide);
       }
       editor.on('init', () => {
         if (editor.hasFocus() || toolbarPersist) {
-          delayedRender();
+          render();
         }
       });
-      setupReadonlyModeSwitch(editor, uiComponents);
+      setupReadonlyModeSwitch(editor, uiRefs);
       const api = {
-        show: () => {
-          render();
-        },
-        hide: () => {
-          ui.hide();
-        },
+        show: render,
+        hide: ui.hide,
         setEnabled: state => {
-          broadcastReadonly(uiComponents, !state);
+          broadcastReadonly(uiRefs, !state);
         },
-        isEnabled: () => !Disabling.isDisabled(outerContainer)
+        isEnabled: () => !Disabling.isDisabled(mainUi.outerContainer)
       };
       return {
-        editorContainer: outerContainer.element.dom,
+        editorContainer: mainUi.outerContainer.element.dom,
         api
       };
     };
@@ -20928,6 +21899,24 @@
         __proto__: null,
         render: render
     });
+
+    const LazyUiReferences = () => {
+      const dialogUi = value$2();
+      const popupUi = value$2();
+      const mainUi = value$2();
+      const setupDialogUi = ui => {
+        dialogUi.set(ui);
+      };
+      const lazyGetInOuterOrDie = (label, f) => () => mainUi.get().bind(oc => f(oc.outerContainer)).getOrDie(`Could not find ${ label } element in OuterContainer`);
+      return {
+        dialogUi,
+        popupUi,
+        mainUi,
+        getUiMotherships: () => [...dialogUi.get().map(e => e.mothership).toArray()],
+        setupDialogUi,
+        lazyGetInOuterOrDie
+      };
+    };
 
     const showContextToolbarEvent = 'contexttoolbar-show';
     const hideContextToolbarEvent = 'contexttoolbar-hide';
@@ -20941,30 +21930,30 @@
       const formApi = getFormApi(input);
       original.onAction(formApi, se.event.buttonApi);
     });
-    const renderContextButton = (memInput, button, extras) => {
+    const renderContextButton = (memInput, button, providers) => {
       const {primary, ...rest} = button.original;
       const bridged = getOrDie(createToolbarButton({
         ...rest,
         type: 'button',
         onAction: noop
       }));
-      return renderToolbarButtonWith(bridged, extras.backstage.shared.providers, [runOnExecute(memInput, button)]);
+      return renderToolbarButtonWith(bridged, providers, [runOnExecute(memInput, button)]);
     };
-    const renderContextToggleButton = (memInput, button, extras) => {
+    const renderContextToggleButton = (memInput, button, providers) => {
       const {primary, ...rest} = button.original;
       const bridged = getOrDie(createToggleButton({
         ...rest,
         type: 'togglebutton',
         onAction: noop
       }));
-      return renderToolbarToggleButtonWith(bridged, extras.backstage.shared.providers, [runOnExecute(memInput, button)]);
+      return renderToolbarToggleButtonWith(bridged, providers, [runOnExecute(memInput, button)]);
     };
+    const isToggleButton = button => button.type === 'contextformtogglebutton';
     const generateOne = (memInput, button, providersBackstage) => {
-      const extras = { backstage: { shared: { providers: providersBackstage } } };
-      if (button.type === 'contextformtogglebutton') {
-        return renderContextToggleButton(memInput, button, extras);
+      if (isToggleButton(button)) {
+        return renderContextToggleButton(memInput, button, providersBackstage);
       } else {
-        return renderContextButton(memInput, button, extras);
+        return renderContextButton(memInput, button, providersBackstage);
       }
     };
     const generate = (memInput, buttons, providersBackstage) => {
@@ -21034,7 +22023,7 @@
       buildInitGroups
     };
 
-    const isVerticalOverlap = (a, b, threshold = 0.01) => b.bottom - a.y >= threshold && a.bottom - b.y >= threshold;
+    const isVerticalOverlap = (a, b, threshold) => b.bottom - a.y >= threshold && a.bottom - b.y >= threshold;
     const getRangeRect = rng => {
       const rect = rng.getBoundingClientRect();
       if (rect.height <= 0 && rect.width <= 0) {
@@ -21056,7 +22045,7 @@
         return bounds(bodyPos.x + rect.left, bodyPos.y + rect.top, rect.width, rect.height);
       }
     };
-    const getAnchorElementBounds = (editor, lastElement) => lastElement.filter(inBody).map(absolute$2).getOrThunk(() => getSelectionBounds(editor));
+    const getAnchorElementBounds = (editor, lastElement) => lastElement.filter(elem => inBody(elem) && isHTMLElement(elem)).map(absolute$2).getOrThunk(() => getSelectionBounds(editor));
     const getHorizontalBounds = (contentAreaBox, viewportBounds, margin) => {
       const x = Math.max(contentAreaBox.x + margin, viewportBounds.x);
       const right = Math.min(contentAreaBox.right - margin, viewportBounds.right);
@@ -21145,7 +22134,7 @@
         return isSameAnchorElement ? preserve : north;
       } else if (isSameAnchorElement) {
         return preservePosition(contextbar, data.getMode(), () => {
-          const isOverlapping = isVerticalOverlap(selectionBounds, box$1(contextbar));
+          const isOverlapping = isVerticalOverlap(selectionBounds, box$1(contextbar), -20);
           return isOverlapping && !data.isReposition() ? flip : preserve;
         });
       } else {
@@ -21486,7 +22475,7 @@
         } else {
           const contextToolbarBounds = getBounds();
           const anchorBounds = is$1(lastContextPosition.get(), 'node') ? getAnchorElementBounds(editor, lastElement.get()) : getSelectionBounds(editor);
-          return contextToolbarBounds.height <= 0 || !isVerticalOverlap(anchorBounds, contextToolbarBounds);
+          return contextToolbarBounds.height <= 0 || !isVerticalOverlap(anchorBounds, contextToolbarBounds, 0.01);
         }
       };
       const close = () => {
@@ -21533,7 +22522,7 @@
         buttons: allButtons,
         toolbar: ctx.items,
         allowToolbarGroups: false
-      }, extras, Optional.some(['form:']));
+      }, extras.backstage, Optional.some(['form:']));
       const buildContextFormGroups = (ctx, providers) => ContextForm.buildInitGroups(ctx, providers);
       const buildToolbar = toolbars => {
         const {buttons} = editor.ui.registry.getAll();
@@ -21809,10 +22798,13 @@
         getOptions: constant$1(settings),
         hash: input => isUndefined(input.customCode) ? input.code : `${ input.code }/${ input.customCode }`,
         display: input => input.title,
-        watcher: (editor, value, callback) => editor.formatter.formatChanged('lang', callback, false, {
-          value: value.code,
-          customValue: value.customCode
-        }).unbind,
+        watcher: (editor, value, callback) => {
+          var _a;
+          return editor.formatter.formatChanged('lang', callback, false, {
+            value: value.code,
+            customValue: (_a = value.customCode) !== null && _a !== void 0 ? _a : null
+          }).unbind;
+        },
         getCurrent: editor => {
           const node = SugarElement.fromDom(editor.selection.getNode());
           return closest$4(node, n => Optional.some(n).filter(isElement$1).bind(ele => {
@@ -22281,9 +23273,9 @@
     const transpose = (pos, dx, dy) => {
       return nu(pos.x + dx, pos.y + dy);
     };
-    const isTouchEvent = e => e.type === 'longpress' || e.type.indexOf('touch') === 0;
+    const isTouchEvent$1 = e => e.type === 'longpress' || e.type.indexOf('touch') === 0;
     const fromPageXY = e => {
-      if (isTouchEvent(e)) {
+      if (isTouchEvent$1(e)) {
         const touch = e.touches[0];
         return nu(touch.pageX, touch.pageY);
       } else {
@@ -22291,7 +23283,7 @@
       }
     };
     const fromClientXY = e => {
-      if (isTouchEvent(e)) {
+      if (isTouchEvent$1(e)) {
         const touch = e.touches[0];
         return nu(touch.clientX, touch.clientY);
       } else {
@@ -22338,7 +23330,10 @@
     const initAndShow$1 = (editor, e, buildMenu, backstage, contextmenu, anchorType) => {
       const items = buildMenu();
       const anchorSpec = getAnchorSpec$1(editor, e, anchorType);
-      build(items, ItemResponse$1.CLOSE_ON_EXECUTE, backstage, false).map(menuData => {
+      build(items, ItemResponse$1.CLOSE_ON_EXECUTE, backstage, {
+        isHorizontalMenu: false,
+        search: Optional.none()
+      }).map(menuData => {
         e.preventDefault();
         InlineView.showMenuAt(contextmenu, { anchor: anchorSpec }, {
           menu: { markers: markers('normal') },
@@ -22436,12 +23431,16 @@
     };
     const show = (editor, e, items, backstage, contextmenu, anchorType, highlightImmediately) => {
       const anchorSpec = getAnchorSpec(editor, e, anchorType);
-      build(items, ItemResponse$1.CLOSE_ON_EXECUTE, backstage, true).map(menuData => {
+      build(items, ItemResponse$1.CLOSE_ON_EXECUTE, backstage, {
+        isHorizontalMenu: true,
+        search: Optional.none()
+      }).map(menuData => {
         e.preventDefault();
+        const highlightOnOpen = highlightImmediately ? HighlightOnOpen.HighlightMenuAndItem : HighlightOnOpen.HighlightNone;
         InlineView.showMenuWithinBounds(contextmenu, { anchor: anchorSpec }, {
           menu: {
             markers: markers('normal'),
-            highlightImmediately
+            highlightOnOpen
           },
           data: menuData,
           type: 'horizontal'
@@ -22505,10 +23504,11 @@
             }
           };
         default:
+          const commonItem = item;
           return {
             type: 'menuitem',
-            ...commonMenuItem(item),
-            onAction: noarg(item.onAction)
+            ...commonMenuItem(commonItem),
+            onAction: noarg(commonItem.onAction)
           };
         }
       }
@@ -22541,7 +23541,8 @@
       return sections;
     };
     const isNativeOverrideKeyEvent = (editor, e) => e.ctrlKey && !shouldNeverUseNative(editor);
-    const isTriggeredByKeyboard = (editor, e) => e.type !== 'longpress' && (e.button !== 2 || e.target === editor.getBody() && e.pointerType === '');
+    const isTouchEvent = e => e.type === 'longpress' || has$2(e, 'touches');
+    const isTriggeredByKeyboard = (editor, e) => !isTouchEvent(e) && (e.button !== 2 || e.target === editor.getBody() && e.pointerType === '');
     const getSelectedElement = (editor, e) => isTriggeredByKeyboard(editor, e) ? editor.selection.getStart(true) : e.target;
     const getAnchorType = (editor, e) => {
       const selector = getAvoidOverlapSelector(editor);
@@ -22569,7 +23570,7 @@
               editor.focus();
             })])])
       }));
-      const hideContextMenu = _e => InlineView.hide(contextmenu);
+      const hideContextMenu = () => InlineView.hide(contextmenu);
       const showContextMenu = e => {
         if (shouldNeverUseNative(editor)) {
           e.preventDefault();
@@ -23267,7 +24268,7 @@
             'aria-level': index + 1
           }
         },
-        components: [text$1(name)],
+        components: [text$2(name)],
         action: _btn => {
           editor.focus();
           editor.selection.select(element);
@@ -23284,7 +24285,7 @@
           classes: ['tox-statusbar__path-divider'],
           attributes: { 'aria-hidden': true }
         },
-        components: [text$1(` ${ delimiter } `)]
+        components: [text$2(` ${ delimiter } `)]
       });
       const renderPathData = data => foldl(data, (acc, path, index) => {
         const element = renderElement(path.name, path.element, index);
@@ -23303,10 +24304,7 @@
         while (i-- > 0) {
           const parent = parents[i];
           if (parent.nodeType === 1 && !isHidden(parent)) {
-            const args = editor.dispatch('ResolveName', {
-              name: parent.nodeName.toLowerCase(),
-              target: parent
-            });
+            const args = fireResolveName(editor, parent);
             if (!args.isDefaultPrevented()) {
               newPath.push({
                 name: args.name,
@@ -23355,8 +24353,7 @@
       ResizeTypes[ResizeTypes['Vertical'] = 2] = 'Vertical';
     }(ResizeTypes || (ResizeTypes = {})));
     const getDimensions = (editor, deltas, resizeType, originalHeight, originalWidth) => {
-      const dimensions = {};
-      dimensions.height = calcCappedSize(originalHeight + deltas.top, getMinHeightOption(editor), getMaxHeightOption(editor));
+      const dimensions = { height: calcCappedSize(originalHeight + deltas.top, getMinHeightOption(editor), getMaxHeightOption(editor)) };
       if (resizeType === ResizeTypes.Both) {
         dimensions.width = calcCappedSize(originalWidth + deltas.left, getMinWidthOption(editor), getMaxWidthOption(editor));
       }
@@ -23365,7 +24362,11 @@
     const resize = (editor, deltas, resizeType) => {
       const container = SugarElement.fromDom(editor.getContainer());
       const dimensions = getDimensions(editor, deltas, resizeType, get$d(container), get$c(container));
-      each(dimensions, (val, dim) => set$8(container, dim, numToPx(val)));
+      each(dimensions, (val, dim) => {
+        if (isNumber(val)) {
+          set$8(container, dim, numToPx(val));
+        }
+      });
       fireResizeEditor(editor);
     };
 
@@ -23415,7 +24416,7 @@
     };
 
     const renderWordCount = (editor, providersBackstage) => {
-      const replaceCountText = (comp, count, mode) => Replacing.set(comp, [text$1(providersBackstage.translate([
+      const replaceCountText = (comp, count, mode) => Replacing.set(comp, [text$2(providersBackstage.translate([
           '{0} ' + mode,
           count[mode]
         ]))]);
@@ -23535,15 +24536,14 @@
       };
     };
 
-    const getLazyMothership = singleton => singleton.get().getOrDie('UI has not been rendered');
+    const getLazyMothership = (label, singleton) => singleton.get().getOrDie(`UI for ${ label } has not been rendered`);
     const setup$3 = editor => {
       const isInline = editor.inline;
       const mode = isInline ? Inline : Iframe;
       const header = isStickyToolbar(editor) ? StickyHeader : StaticHeader;
-      const lazySink = value$2();
-      const lazyOuterContainer = value$2();
+      const lazyUiRefs = LazyUiReferences();
       const lazyMothership = value$2();
-      const lazyUiMothership = value$2();
+      const lazyDialogMothership = value$2();
       const platform = detect$1();
       const isTouch = platform.deviceType.isTouch();
       const touchPlatformClass = 'tox-platform-touch';
@@ -23556,12 +24556,16 @@
           classes: ['tox-anchorbar']
         }
       });
-      const lazyHeader = () => lazyOuterContainer.get().bind(OuterContainer.getHeader);
-      const lazySinkResult = () => Result.fromOption(lazySink.get(), 'UI has not been rendered');
-      const lazyAnchorBar = () => lazyOuterContainer.get().bind(container => memAnchorBar.getOpt(container)).getOrDie('Could not find a anchor bar element');
-      const lazyToolbar = () => lazyOuterContainer.get().bind(container => OuterContainer.getToolbar(container)).getOrDie('Could not find more toolbar element');
-      const lazyThrobber = () => lazyOuterContainer.get().bind(container => OuterContainer.getThrobber(container)).getOrDie('Could not find throbber element');
-      const backstage = init$7(lazySinkResult, editor, lazyAnchorBar);
+      const lazyHeader = () => lazyUiRefs.mainUi.get().map(ui => ui.outerContainer).bind(OuterContainer.getHeader);
+      const lazyDialogSinkResult = () => Result.fromOption(lazyUiRefs.dialogUi.get().map(ui => ui.sink), 'UI has not been rendered');
+      const lazyPopupSinkResult = () => Result.fromOption(lazyUiRefs.popupUi.get().map(ui => ui.sink), '(popup) UI has not been rendered');
+      const lazyAnchorBar = lazyUiRefs.lazyGetInOuterOrDie('anchor bar', memAnchorBar.getOpt);
+      const lazyToolbar = lazyUiRefs.lazyGetInOuterOrDie('toolbar', OuterContainer.getToolbar);
+      const lazyThrobber = lazyUiRefs.lazyGetInOuterOrDie('throbber', OuterContainer.getThrobber);
+      const backstages = init$7({
+        popup: lazyPopupSinkResult,
+        dialog: lazyDialogSinkResult
+      }, editor, lazyAnchorBar);
       const makeHeaderPart = () => {
         const verticalDirAttributes = { attributes: { [Attribute]: isToolbarBottom ? AttributeValue.BottomToTop : AttributeValue.TopToBottom } };
         const partMenubar = OuterContainer.parts.menubar({
@@ -23569,7 +24573,7 @@
             tag: 'div',
             classes: ['tox-menubar']
           },
-          backstage,
+          backstage: backstages.popup,
           onEscape: () => {
             editor.focus();
           }
@@ -23579,10 +24583,13 @@
             tag: 'div',
             classes: ['tox-toolbar']
           },
-          getSink: lazySinkResult,
-          providers: backstage.shared.providers,
+          getSink: backstages.popup.shared.getSink,
+          providers: backstages.popup.shared.providers,
           onEscape: () => {
             editor.focus();
+          },
+          onToolbarToggled: state => {
+            fireToggleToolbarDrawer(editor, state);
           },
           type: toolbarMode,
           lazyToolbar,
@@ -23594,7 +24601,7 @@
             tag: 'div',
             classes: ['tox-toolbar-overlord']
           },
-          providers: backstage.shared.providers,
+          providers: backstages.popup.shared.providers,
           onEscape: () => {
             editor.focus();
           },
@@ -23603,6 +24610,9 @@
         const hasMultipleToolbar = isMultipleToolbars(editor);
         const hasToolbar = isToolbarEnabled(editor);
         const hasMenubar = isMenubarEnabled(editor);
+        const shouldHavePromotion = promotionEnabled(editor);
+        const partPromotion = makePromotion();
+        const hasAnyContents = hasMultipleToolbar || hasToolbar || hasMenubar;
         const getPartToolbar = () => {
           if (hasMultipleToolbar) {
             return [partMultipleToolbar];
@@ -23612,20 +24622,32 @@
             return [];
           }
         };
+        const menubarCollection = shouldHavePromotion ? [
+          partPromotion,
+          partMenubar
+        ] : [partMenubar];
         return OuterContainer.parts.header({
           dom: {
             tag: 'div',
-            classes: ['tox-editor-header'],
+            classes: ['tox-editor-header'].concat(hasAnyContents ? [] : ['tox-editor-header--empty']),
             ...verticalDirAttributes
           },
           components: flatten([
-            hasMenubar ? [partMenubar] : [],
+            hasMenubar ? menubarCollection : [],
             getPartToolbar(),
             useFixedContainer(editor) ? [] : [memAnchorBar.asSpec()]
           ]),
           sticky: isStickyToolbar(editor),
           editor,
-          sharedBackstage: backstage.shared
+          sharedBackstage: backstages.popup.shared
+        });
+      };
+      const makePromotion = () => {
+        return OuterContainer.parts.promotion({
+          dom: {
+            tag: 'div',
+            classes: ['tox-promotion']
+          }
         });
       };
       const makeSidebarDefinition = () => {
@@ -23652,7 +24674,7 @@
           ]
         };
       };
-      const renderSink = () => {
+      const renderDialogUi = () => {
         const uiContainer = getUiContainer(editor);
         const isGridUiContainer = eq(body(), uiContainer) && get$e(uiContainer, 'display') === 'grid';
         const sinkSpec = {
@@ -23675,14 +24697,14 @@
         };
         const sink = build$1(deepMerge(sinkSpec, isGridUiContainer ? reactiveWidthSpec : {}));
         const uiMothership = takeover(sink);
-        lazySink.set(sink);
-        lazyUiMothership.set(uiMothership);
+        lazyDialogMothership.set(uiMothership);
         return {
           sink,
-          uiMothership
+          mothership: uiMothership
         };
       };
-      const renderContainer = () => {
+      const renderPopupUi = identity;
+      const renderMainUi = () => {
         const partHeader = makeHeaderPart();
         const sidebarContainer = makeSidebarDefinition();
         const partThrobber = OuterContainer.parts.throbber({
@@ -23690,26 +24712,21 @@
             tag: 'div',
             classes: ['tox-throbber']
           },
-          backstage
+          backstage: backstages.popup
         });
-        const statusbar = useStatusBar(editor) && !isInline ? Optional.some(renderStatusbar(editor, backstage.shared.providers)) : Optional.none();
+        const partViewWrapper = OuterContainer.parts.viewWrapper({ backstage: backstages.popup });
+        const statusbar = useStatusBar(editor) && !isInline ? Optional.some(renderStatusbar(editor, backstages.popup.shared.providers)) : Optional.none();
         const editorComponents = flatten([
           isToolbarBottom ? [] : [partHeader],
           isInline ? [] : [sidebarContainer],
           isToolbarBottom ? [partHeader] : []
         ]);
-        const editorContainer = {
-          dom: {
-            tag: 'div',
-            classes: ['tox-editor-container']
-          },
-          components: editorComponents
-        };
-        const containerComponents = flatten([
-          [editorContainer],
-          isInline ? [] : statusbar.toArray(),
-          [partThrobber]
-        ]);
+        const editorContainer = OuterContainer.parts.editorContainer({
+          components: flatten([
+            editorComponents,
+            isInline ? [] : statusbar.toArray()
+          ])
+        });
         const isHidden = isDistractionFree(editor);
         const attributes = {
           role: 'application',
@@ -23732,7 +24749,11 @@
             },
             attributes
           },
-          components: containerComponents,
+          components: [
+            editorContainer,
+            ...isInline ? [] : [partViewWrapper],
+            partThrobber
+          ],
           behaviours: derive$1([
             receivingConfig(),
             Disabling.config({ disableClass: 'tox-tinymce--disabled' }),
@@ -23743,7 +24764,6 @@
           ])
         }));
         const mothership = takeover(outerContainer);
-        lazyOuterContainer.set(outerContainer);
         lazyMothership.set(mothership);
         return {
           mothership,
@@ -23777,13 +24797,12 @@
         });
         editor.addQueryStateHandler('ToggleToolbarDrawer', () => OuterContainer.isToolbarDrawerToggled(outerContainer));
       };
-      const renderUI = () => {
-        const {mothership, outerContainer} = renderContainer();
-        const {uiMothership, sink} = renderSink();
+      const renderUIWithRefs = uiRefs => {
+        const {mainUi, popupUi, uiMotherships} = uiRefs;
         map$1(getToolbarGroups(editor), (toolbarGroupButtonConfig, name) => {
           editor.ui.registry.addGroupToolbarButton(name, toolbarGroupButtonConfig);
         });
-        const {buttons, menuItems, contextToolbars, sidebars} = editor.ui.registry.getAll();
+        const {buttons, menuItems, contextToolbars, sidebars, views} = editor.ui.registry.getAll();
         const toolbarOpt = getMultipleToolbarsOption(editor);
         const rawUiConfig = {
           menuItems,
@@ -23792,37 +24811,50 @@
           toolbar: toolbarOpt.getOrThunk(() => getToolbar(editor)),
           allowToolbarGroups: toolbarMode === ToolbarMode$1.floating,
           buttons,
-          sidebar: sidebars
+          sidebar: sidebars,
+          views
         };
-        setupShortcutsAndCommands(outerContainer);
-        setup$b(editor, mothership, uiMothership);
-        header.setup(editor, backstage.shared, lazyHeader);
-        setup$6(editor, backstage);
-        setup$5(editor, lazySinkResult, backstage);
+        setupShortcutsAndCommands(mainUi.outerContainer);
+        setup$b(editor, mainUi.mothership, uiMotherships);
+        header.setup(editor, backstages.popup.shared, lazyHeader);
+        setup$6(editor, backstages.popup);
+        setup$5(editor, backstages.popup.shared.getSink, backstages.popup);
         setup$8(editor);
-        setup$7(editor, lazyThrobber, backstage.shared);
-        register$9(editor, contextToolbars, sink, { backstage });
-        setup$4(editor, sink);
+        setup$7(editor, lazyThrobber, backstages.popup.shared);
+        register$9(editor, contextToolbars, popupUi.sink, { backstage: backstages.popup });
+        setup$4(editor, popupUi.sink);
         const elm = editor.getElement();
-        const height = setEditorSize(outerContainer);
-        const uiComponents = {
-          mothership,
-          uiMothership,
-          outerContainer,
-          sink
-        };
+        const height = setEditorSize(mainUi.outerContainer);
         const args = {
           targetNode: elm,
           height
         };
-        return mode.render(editor, uiComponents, rawUiConfig, backstage, args);
+        return mode.render(editor, uiRefs, rawUiConfig, backstages.popup, args);
       };
-      const getMothership = () => getLazyMothership(lazyMothership);
-      const getUiMothership = () => getLazyMothership(lazyUiMothership);
+      const renderUI = () => {
+        const mainUi = renderMainUi();
+        const dialogUi = renderDialogUi();
+        const popupUi = renderPopupUi(dialogUi);
+        lazyUiRefs.dialogUi.set(dialogUi);
+        lazyUiRefs.popupUi.set(popupUi);
+        lazyUiRefs.mainUi.set(mainUi);
+        const uiRefs = {
+          popupUi,
+          dialogUi,
+          mainUi,
+          uiMotherships: lazyUiRefs.getUiMotherships()
+        };
+        return renderUIWithRefs(uiRefs);
+      };
       return {
-        getMothership,
-        getUiMothership,
-        backstage,
+        popups: {
+          backstage: backstages.popup,
+          getMothership: () => getLazyMothership('popups', lazyDialogMothership)
+        },
+        dialogs: {
+          backstage: backstages.dialog,
+          getMothership: () => getLazyMothership('dialogs', lazyDialogMothership)
+        },
         renderUI
       };
     };
@@ -24028,11 +25060,15 @@
         'end'
       ]),
       primary,
-      enabled
+      enabled,
+      optionStringEnum('buttonType', [
+        'primary',
+        'secondary'
+      ])
     ];
     const dialogFooterButtonFields = [
       ...baseFooterButtonFields,
-      text
+      text$1
     ];
     const normalFooterButtonFields = [
       requiredStringEnum('type', [
@@ -24059,7 +25095,7 @@
 
     const alertBannerFields = [
       type,
-      text,
+      text$1,
       requiredStringEnum('level', [
         'info',
         'warn',
@@ -24078,7 +25114,7 @@
 
     const buttonFields = [
       type,
-      text,
+      text$1,
       enabled,
       generatedName('button'),
       optionalIcon,
@@ -24109,11 +25145,11 @@
     const collectionSchema = objOf(collectionFields);
     const collectionDataProcessor = arrOfObj([
       value$1,
-      text,
+      text$1,
       icon
     ]);
 
-    const colorInputFields = formComponentWithLabelFields;
+    const colorInputFields = formComponentWithLabelFields.concat([defaultedString('storageKey', 'default')]);
     const colorInputSchema = objOf(colorInputFields);
     const colorInputDataProcessor = string;
 
@@ -24154,7 +25190,10 @@
     ];
     const htmlPanelSchema = objOf(htmlPanelFields);
 
-    const iframeFields = formComponentWithLabelFields.concat([defaultedBoolean('sandboxed', true)]);
+    const iframeFields = formComponentWithLabelFields.concat([
+      defaultedBoolean('sandboxed', true),
+      defaultedBoolean('transparent', true)
+    ]);
     const iframeSchema = objOf(iframeFields);
     const iframeDataProcessor = string;
 
@@ -24182,11 +25221,11 @@
     ];
 
     const listBoxSingleItemFields = [
-      text,
+      text$1,
       value$1
     ];
     const listBoxNestedItemFields = [
-      text,
+      text$1,
       requiredArrayOf('items', thunkOf('items', () => listBoxItemSchema))
     ];
     const listBoxItemSchema = oneOf([
@@ -24202,7 +25241,7 @@
 
     const selectBoxFields = formComponentWithLabelFields.concat([
       requiredArrayOfObj('items', [
-        text,
+        text$1,
         value$1
       ]),
       defaultedNumber('size', 1),
@@ -24382,9 +25421,10 @@
     };
 
     const extract = structure => {
+      var _a;
       const internalDialog = getOrDie(createDialog(structure));
       const dataValidator = createDataValidator(structure);
-      const initialData = structure.initialData;
+      const initialData = (_a = structure.initialData) !== null && _a !== void 0 ? _a : {};
       return {
         internalDialog,
         dataValidator,
@@ -24749,73 +25789,59 @@
       });
     };
     const getTabview = dialog => descendant(dialog, '[role="tabpanel"]');
-    const setMode = allTabs => {
-      const smartTabHeight = (() => {
-        const maxTabHeight = value$2();
-        const extraEvents = [
-          runOnAttached(comp => {
-            const dialog = comp.element;
-            getTabview(dialog).each(tabview => {
-              set$8(tabview, 'visibility', 'hidden');
-              comp.getSystem().getByDom(tabview).toOptional().each(tabviewComp => {
-                const heights = measureHeights(allTabs, tabview, tabviewComp);
-                const maxTabHeightOpt = getMaxHeight(heights);
-                maxTabHeightOpt.fold(maxTabHeight.clear, maxTabHeight.set);
-              });
-              updateTabviewHeight(dialog, tabview, maxTabHeight);
-              remove$6(tabview, 'visibility');
-              showTab(allTabs, comp);
-              requestAnimationFrame(() => {
-                updateTabviewHeight(dialog, tabview, maxTabHeight);
-              });
+    const smartMode = allTabs => {
+      const maxTabHeight = value$2();
+      const extraEvents = [
+        runOnAttached(comp => {
+          const dialog = comp.element;
+          getTabview(dialog).each(tabview => {
+            set$8(tabview, 'visibility', 'hidden');
+            comp.getSystem().getByDom(tabview).toOptional().each(tabviewComp => {
+              const heights = measureHeights(allTabs, tabview, tabviewComp);
+              const maxTabHeightOpt = getMaxHeight(heights);
+              maxTabHeightOpt.fold(maxTabHeight.clear, maxTabHeight.set);
             });
-          }),
-          run$1(windowResize(), comp => {
-            const dialog = comp.element;
-            getTabview(dialog).each(tabview => {
+            updateTabviewHeight(dialog, tabview, maxTabHeight);
+            remove$6(tabview, 'visibility');
+            showTab(allTabs, comp);
+            requestAnimationFrame(() => {
               updateTabviewHeight(dialog, tabview, maxTabHeight);
             });
-          }),
-          run$1(formResizeEvent, (comp, _se) => {
-            const dialog = comp.element;
-            getTabview(dialog).each(tabview => {
-              const oldFocus = active$1(getRootNode(tabview));
-              set$8(tabview, 'visibility', 'hidden');
-              const oldHeight = getRaw(tabview, 'height').map(h => parseInt(h, 10));
-              remove$6(tabview, 'height');
-              remove$6(tabview, 'flex-basis');
-              const newHeight = tabview.dom.getBoundingClientRect().height;
-              const hasGrown = oldHeight.forall(h => newHeight > h);
-              if (hasGrown) {
-                maxTabHeight.set(newHeight);
-                updateTabviewHeight(dialog, tabview, maxTabHeight);
-              } else {
-                oldHeight.each(h => {
-                  setTabviewHeight(tabview, h);
-                });
-              }
-              remove$6(tabview, 'visibility');
-              oldFocus.each(focus$3);
-            });
-          })
-        ];
-        const selectFirst = false;
-        return {
-          extraEvents,
-          selectFirst
-        };
-      })();
-      const naiveTabHeight = (() => {
-        const extraEvents = [];
-        const selectFirst = true;
-        return {
-          extraEvents,
-          selectFirst
-        };
-      })();
+          });
+        }),
+        run$1(windowResize(), comp => {
+          const dialog = comp.element;
+          getTabview(dialog).each(tabview => {
+            updateTabviewHeight(dialog, tabview, maxTabHeight);
+          });
+        }),
+        run$1(formResizeEvent, (comp, _se) => {
+          const dialog = comp.element;
+          getTabview(dialog).each(tabview => {
+            const oldFocus = active$1(getRootNode(tabview));
+            set$8(tabview, 'visibility', 'hidden');
+            const oldHeight = getRaw(tabview, 'height').map(h => parseInt(h, 10));
+            remove$6(tabview, 'height');
+            remove$6(tabview, 'flex-basis');
+            const newHeight = tabview.dom.getBoundingClientRect().height;
+            const hasGrown = oldHeight.forall(h => newHeight > h);
+            if (hasGrown) {
+              maxTabHeight.set(newHeight);
+              updateTabviewHeight(dialog, tabview, maxTabHeight);
+            } else {
+              oldHeight.each(h => {
+                setTabviewHeight(tabview, h);
+              });
+            }
+            remove$6(tabview, 'visibility');
+            oldFocus.each(focus$3);
+          });
+        })
+      ];
+      const selectFirst = false;
       return {
-        smartTabHeight,
-        naiveTabHeight
+        extraEvents,
+        selectFirst
       };
     };
 
@@ -24842,7 +25868,7 @@
             tag: 'div',
             classes: ['tox-dialog__body-nav-item']
           },
-          components: [text$1(backstage.shared.providers.translate(tab.title))],
+          components: [text$2(backstage.shared.providers.translate(tab.title))],
           view: () => {
             return [Form.sketch(parts => ({
                 dom: {
@@ -24876,7 +25902,7 @@
           }
         };
       });
-      const tabMode = setMode(allTabs).smartTabHeight;
+      const tabMode = smartMode(allTabs);
       return TabSection.sketch({
         dom: {
           tag: 'div',
@@ -25003,6 +26029,1571 @@
       return ModalDialog.parts.body(bodySpec);
     };
 
+    function _typeof(obj) {
+      '@babel/helpers - typeof';
+      return _typeof = 'function' == typeof Symbol && 'symbol' == typeof Symbol.iterator ? function (obj) {
+        return typeof obj;
+      } : function (obj) {
+        return obj && 'function' == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? 'symbol' : typeof obj;
+      }, _typeof(obj);
+    }
+    function _setPrototypeOf(o, p) {
+      _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+        o.__proto__ = p;
+        return o;
+      };
+      return _setPrototypeOf(o, p);
+    }
+    function _isNativeReflectConstruct() {
+      if (typeof Reflect === 'undefined' || !Reflect.construct)
+        return false;
+      if (Reflect.construct.sham)
+        return false;
+      if (typeof Proxy === 'function')
+        return true;
+      try {
+        Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {
+        }));
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+    function _construct(Parent, args, Class) {
+      if (_isNativeReflectConstruct()) {
+        _construct = Reflect.construct;
+      } else {
+        _construct = function _construct(Parent, args, Class) {
+          var a = [null];
+          a.push.apply(a, args);
+          var Constructor = Function.bind.apply(Parent, a);
+          var instance = new Constructor();
+          if (Class)
+            _setPrototypeOf(instance, Class.prototype);
+          return instance;
+        };
+      }
+      return _construct.apply(null, arguments);
+    }
+    function _toConsumableArray(arr) {
+      return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
+    }
+    function _arrayWithoutHoles(arr) {
+      if (Array.isArray(arr))
+        return _arrayLikeToArray(arr);
+    }
+    function _iterableToArray(iter) {
+      if (typeof Symbol !== 'undefined' && iter[Symbol.iterator] != null || iter['@@iterator'] != null)
+        return Array.from(iter);
+    }
+    function _unsupportedIterableToArray(o, minLen) {
+      if (!o)
+        return;
+      if (typeof o === 'string')
+        return _arrayLikeToArray(o, minLen);
+      var n = Object.prototype.toString.call(o).slice(8, -1);
+      if (n === 'Object' && o.constructor)
+        n = o.constructor.name;
+      if (n === 'Map' || n === 'Set')
+        return Array.from(o);
+      if (n === 'Arguments' || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n))
+        return _arrayLikeToArray(o, minLen);
+    }
+    function _arrayLikeToArray(arr, len) {
+      if (len == null || len > arr.length)
+        len = arr.length;
+      for (var i = 0, arr2 = new Array(len); i < len; i++)
+        arr2[i] = arr[i];
+      return arr2;
+    }
+    function _nonIterableSpread() {
+      throw new TypeError('Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.');
+    }
+    var hasOwnProperty = Object.hasOwnProperty, setPrototypeOf = Object.setPrototypeOf, isFrozen = Object.isFrozen, getPrototypeOf = Object.getPrototypeOf, getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+    var freeze = Object.freeze, seal = Object.seal, create = Object.create;
+    var _ref = typeof Reflect !== 'undefined' && Reflect, apply = _ref.apply, construct = _ref.construct;
+    if (!apply) {
+      apply = function apply(fun, thisValue, args) {
+        return fun.apply(thisValue, args);
+      };
+    }
+    if (!freeze) {
+      freeze = function freeze(x) {
+        return x;
+      };
+    }
+    if (!seal) {
+      seal = function seal(x) {
+        return x;
+      };
+    }
+    if (!construct) {
+      construct = function construct(Func, args) {
+        return _construct(Func, _toConsumableArray(args));
+      };
+    }
+    var arrayForEach = unapply(Array.prototype.forEach);
+    var arrayPop = unapply(Array.prototype.pop);
+    var arrayPush = unapply(Array.prototype.push);
+    var stringToLowerCase = unapply(String.prototype.toLowerCase);
+    var stringMatch = unapply(String.prototype.match);
+    var stringReplace = unapply(String.prototype.replace);
+    var stringIndexOf = unapply(String.prototype.indexOf);
+    var stringTrim = unapply(String.prototype.trim);
+    var regExpTest = unapply(RegExp.prototype.test);
+    var typeErrorCreate = unconstruct(TypeError);
+    function unapply(func) {
+      return function (thisArg) {
+        for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+          args[_key - 1] = arguments[_key];
+        }
+        return apply(func, thisArg, args);
+      };
+    }
+    function unconstruct(func) {
+      return function () {
+        for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+          args[_key2] = arguments[_key2];
+        }
+        return construct(func, args);
+      };
+    }
+    function addToSet(set, array) {
+      if (setPrototypeOf) {
+        setPrototypeOf(set, null);
+      }
+      var l = array.length;
+      while (l--) {
+        var element = array[l];
+        if (typeof element === 'string') {
+          var lcElement = stringToLowerCase(element);
+          if (lcElement !== element) {
+            if (!isFrozen(array)) {
+              array[l] = lcElement;
+            }
+            element = lcElement;
+          }
+        }
+        set[element] = true;
+      }
+      return set;
+    }
+    function clone(object) {
+      var newObject = create(null);
+      var property;
+      for (property in object) {
+        if (apply(hasOwnProperty, object, [property])) {
+          newObject[property] = object[property];
+        }
+      }
+      return newObject;
+    }
+    function lookupGetter(object, prop) {
+      while (object !== null) {
+        var desc = getOwnPropertyDescriptor(object, prop);
+        if (desc) {
+          if (desc.get) {
+            return unapply(desc.get);
+          }
+          if (typeof desc.value === 'function') {
+            return unapply(desc.value);
+          }
+        }
+        object = getPrototypeOf(object);
+      }
+      function fallbackValue(element) {
+        console.warn('fallback value for', element);
+        return null;
+      }
+      return fallbackValue;
+    }
+    var html$1 = freeze([
+      'a',
+      'abbr',
+      'acronym',
+      'address',
+      'area',
+      'article',
+      'aside',
+      'audio',
+      'b',
+      'bdi',
+      'bdo',
+      'big',
+      'blink',
+      'blockquote',
+      'body',
+      'br',
+      'button',
+      'canvas',
+      'caption',
+      'center',
+      'cite',
+      'code',
+      'col',
+      'colgroup',
+      'content',
+      'data',
+      'datalist',
+      'dd',
+      'decorator',
+      'del',
+      'details',
+      'dfn',
+      'dialog',
+      'dir',
+      'div',
+      'dl',
+      'dt',
+      'element',
+      'em',
+      'fieldset',
+      'figcaption',
+      'figure',
+      'font',
+      'footer',
+      'form',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+      'head',
+      'header',
+      'hgroup',
+      'hr',
+      'html',
+      'i',
+      'img',
+      'input',
+      'ins',
+      'kbd',
+      'label',
+      'legend',
+      'li',
+      'main',
+      'map',
+      'mark',
+      'marquee',
+      'menu',
+      'menuitem',
+      'meter',
+      'nav',
+      'nobr',
+      'ol',
+      'optgroup',
+      'option',
+      'output',
+      'p',
+      'picture',
+      'pre',
+      'progress',
+      'q',
+      'rp',
+      'rt',
+      'ruby',
+      's',
+      'samp',
+      'section',
+      'select',
+      'shadow',
+      'small',
+      'source',
+      'spacer',
+      'span',
+      'strike',
+      'strong',
+      'style',
+      'sub',
+      'summary',
+      'sup',
+      'table',
+      'tbody',
+      'td',
+      'template',
+      'textarea',
+      'tfoot',
+      'th',
+      'thead',
+      'time',
+      'tr',
+      'track',
+      'tt',
+      'u',
+      'ul',
+      'var',
+      'video',
+      'wbr'
+    ]);
+    var svg$1 = freeze([
+      'svg',
+      'a',
+      'altglyph',
+      'altglyphdef',
+      'altglyphitem',
+      'animatecolor',
+      'animatemotion',
+      'animatetransform',
+      'circle',
+      'clippath',
+      'defs',
+      'desc',
+      'ellipse',
+      'filter',
+      'font',
+      'g',
+      'glyph',
+      'glyphref',
+      'hkern',
+      'image',
+      'line',
+      'lineargradient',
+      'marker',
+      'mask',
+      'metadata',
+      'mpath',
+      'path',
+      'pattern',
+      'polygon',
+      'polyline',
+      'radialgradient',
+      'rect',
+      'stop',
+      'style',
+      'switch',
+      'symbol',
+      'text',
+      'textpath',
+      'title',
+      'tref',
+      'tspan',
+      'view',
+      'vkern'
+    ]);
+    var svgFilters = freeze([
+      'feBlend',
+      'feColorMatrix',
+      'feComponentTransfer',
+      'feComposite',
+      'feConvolveMatrix',
+      'feDiffuseLighting',
+      'feDisplacementMap',
+      'feDistantLight',
+      'feFlood',
+      'feFuncA',
+      'feFuncB',
+      'feFuncG',
+      'feFuncR',
+      'feGaussianBlur',
+      'feImage',
+      'feMerge',
+      'feMergeNode',
+      'feMorphology',
+      'feOffset',
+      'fePointLight',
+      'feSpecularLighting',
+      'feSpotLight',
+      'feTile',
+      'feTurbulence'
+    ]);
+    var svgDisallowed = freeze([
+      'animate',
+      'color-profile',
+      'cursor',
+      'discard',
+      'fedropshadow',
+      'font-face',
+      'font-face-format',
+      'font-face-name',
+      'font-face-src',
+      'font-face-uri',
+      'foreignobject',
+      'hatch',
+      'hatchpath',
+      'mesh',
+      'meshgradient',
+      'meshpatch',
+      'meshrow',
+      'missing-glyph',
+      'script',
+      'set',
+      'solidcolor',
+      'unknown',
+      'use'
+    ]);
+    var mathMl$1 = freeze([
+      'math',
+      'menclose',
+      'merror',
+      'mfenced',
+      'mfrac',
+      'mglyph',
+      'mi',
+      'mlabeledtr',
+      'mmultiscripts',
+      'mn',
+      'mo',
+      'mover',
+      'mpadded',
+      'mphantom',
+      'mroot',
+      'mrow',
+      'ms',
+      'mspace',
+      'msqrt',
+      'mstyle',
+      'msub',
+      'msup',
+      'msubsup',
+      'mtable',
+      'mtd',
+      'mtext',
+      'mtr',
+      'munder',
+      'munderover'
+    ]);
+    var mathMlDisallowed = freeze([
+      'maction',
+      'maligngroup',
+      'malignmark',
+      'mlongdiv',
+      'mscarries',
+      'mscarry',
+      'msgroup',
+      'mstack',
+      'msline',
+      'msrow',
+      'semantics',
+      'annotation',
+      'annotation-xml',
+      'mprescripts',
+      'none'
+    ]);
+    var text = freeze(['#text']);
+    var html = freeze([
+      'accept',
+      'action',
+      'align',
+      'alt',
+      'autocapitalize',
+      'autocomplete',
+      'autopictureinpicture',
+      'autoplay',
+      'background',
+      'bgcolor',
+      'border',
+      'capture',
+      'cellpadding',
+      'cellspacing',
+      'checked',
+      'cite',
+      'class',
+      'clear',
+      'color',
+      'cols',
+      'colspan',
+      'controls',
+      'controlslist',
+      'coords',
+      'crossorigin',
+      'datetime',
+      'decoding',
+      'default',
+      'dir',
+      'disabled',
+      'disablepictureinpicture',
+      'disableremoteplayback',
+      'download',
+      'draggable',
+      'enctype',
+      'enterkeyhint',
+      'face',
+      'for',
+      'headers',
+      'height',
+      'hidden',
+      'high',
+      'href',
+      'hreflang',
+      'id',
+      'inputmode',
+      'integrity',
+      'ismap',
+      'kind',
+      'label',
+      'lang',
+      'list',
+      'loading',
+      'loop',
+      'low',
+      'max',
+      'maxlength',
+      'media',
+      'method',
+      'min',
+      'minlength',
+      'multiple',
+      'muted',
+      'name',
+      'nonce',
+      'noshade',
+      'novalidate',
+      'nowrap',
+      'open',
+      'optimum',
+      'pattern',
+      'placeholder',
+      'playsinline',
+      'poster',
+      'preload',
+      'pubdate',
+      'radiogroup',
+      'readonly',
+      'rel',
+      'required',
+      'rev',
+      'reversed',
+      'role',
+      'rows',
+      'rowspan',
+      'spellcheck',
+      'scope',
+      'selected',
+      'shape',
+      'size',
+      'sizes',
+      'span',
+      'srclang',
+      'start',
+      'src',
+      'srcset',
+      'step',
+      'style',
+      'summary',
+      'tabindex',
+      'title',
+      'translate',
+      'type',
+      'usemap',
+      'valign',
+      'value',
+      'width',
+      'xmlns',
+      'slot'
+    ]);
+    var svg = freeze([
+      'accent-height',
+      'accumulate',
+      'additive',
+      'alignment-baseline',
+      'ascent',
+      'attributename',
+      'attributetype',
+      'azimuth',
+      'basefrequency',
+      'baseline-shift',
+      'begin',
+      'bias',
+      'by',
+      'class',
+      'clip',
+      'clippathunits',
+      'clip-path',
+      'clip-rule',
+      'color',
+      'color-interpolation',
+      'color-interpolation-filters',
+      'color-profile',
+      'color-rendering',
+      'cx',
+      'cy',
+      'd',
+      'dx',
+      'dy',
+      'diffuseconstant',
+      'direction',
+      'display',
+      'divisor',
+      'dur',
+      'edgemode',
+      'elevation',
+      'end',
+      'fill',
+      'fill-opacity',
+      'fill-rule',
+      'filter',
+      'filterunits',
+      'flood-color',
+      'flood-opacity',
+      'font-family',
+      'font-size',
+      'font-size-adjust',
+      'font-stretch',
+      'font-style',
+      'font-variant',
+      'font-weight',
+      'fx',
+      'fy',
+      'g1',
+      'g2',
+      'glyph-name',
+      'glyphref',
+      'gradientunits',
+      'gradienttransform',
+      'height',
+      'href',
+      'id',
+      'image-rendering',
+      'in',
+      'in2',
+      'k',
+      'k1',
+      'k2',
+      'k3',
+      'k4',
+      'kerning',
+      'keypoints',
+      'keysplines',
+      'keytimes',
+      'lang',
+      'lengthadjust',
+      'letter-spacing',
+      'kernelmatrix',
+      'kernelunitlength',
+      'lighting-color',
+      'local',
+      'marker-end',
+      'marker-mid',
+      'marker-start',
+      'markerheight',
+      'markerunits',
+      'markerwidth',
+      'maskcontentunits',
+      'maskunits',
+      'max',
+      'mask',
+      'media',
+      'method',
+      'mode',
+      'min',
+      'name',
+      'numoctaves',
+      'offset',
+      'operator',
+      'opacity',
+      'order',
+      'orient',
+      'orientation',
+      'origin',
+      'overflow',
+      'paint-order',
+      'path',
+      'pathlength',
+      'patterncontentunits',
+      'patterntransform',
+      'patternunits',
+      'points',
+      'preservealpha',
+      'preserveaspectratio',
+      'primitiveunits',
+      'r',
+      'rx',
+      'ry',
+      'radius',
+      'refx',
+      'refy',
+      'repeatcount',
+      'repeatdur',
+      'restart',
+      'result',
+      'rotate',
+      'scale',
+      'seed',
+      'shape-rendering',
+      'specularconstant',
+      'specularexponent',
+      'spreadmethod',
+      'startoffset',
+      'stddeviation',
+      'stitchtiles',
+      'stop-color',
+      'stop-opacity',
+      'stroke-dasharray',
+      'stroke-dashoffset',
+      'stroke-linecap',
+      'stroke-linejoin',
+      'stroke-miterlimit',
+      'stroke-opacity',
+      'stroke',
+      'stroke-width',
+      'style',
+      'surfacescale',
+      'systemlanguage',
+      'tabindex',
+      'targetx',
+      'targety',
+      'transform',
+      'transform-origin',
+      'text-anchor',
+      'text-decoration',
+      'text-rendering',
+      'textlength',
+      'type',
+      'u1',
+      'u2',
+      'unicode',
+      'values',
+      'viewbox',
+      'visibility',
+      'version',
+      'vert-adv-y',
+      'vert-origin-x',
+      'vert-origin-y',
+      'width',
+      'word-spacing',
+      'wrap',
+      'writing-mode',
+      'xchannelselector',
+      'ychannelselector',
+      'x',
+      'x1',
+      'x2',
+      'xmlns',
+      'y',
+      'y1',
+      'y2',
+      'z',
+      'zoomandpan'
+    ]);
+    var mathMl = freeze([
+      'accent',
+      'accentunder',
+      'align',
+      'bevelled',
+      'close',
+      'columnsalign',
+      'columnlines',
+      'columnspan',
+      'denomalign',
+      'depth',
+      'dir',
+      'display',
+      'displaystyle',
+      'encoding',
+      'fence',
+      'frame',
+      'height',
+      'href',
+      'id',
+      'largeop',
+      'length',
+      'linethickness',
+      'lspace',
+      'lquote',
+      'mathbackground',
+      'mathcolor',
+      'mathsize',
+      'mathvariant',
+      'maxsize',
+      'minsize',
+      'movablelimits',
+      'notation',
+      'numalign',
+      'open',
+      'rowalign',
+      'rowlines',
+      'rowspacing',
+      'rowspan',
+      'rspace',
+      'rquote',
+      'scriptlevel',
+      'scriptminsize',
+      'scriptsizemultiplier',
+      'selection',
+      'separator',
+      'separators',
+      'stretchy',
+      'subscriptshift',
+      'supscriptshift',
+      'symmetric',
+      'voffset',
+      'width',
+      'xmlns'
+    ]);
+    var xml = freeze([
+      'xlink:href',
+      'xml:id',
+      'xlink:title',
+      'xml:space',
+      'xmlns:xlink'
+    ]);
+    var MUSTACHE_EXPR = seal(/\{\{[\w\W]*|[\w\W]*\}\}/gm);
+    var ERB_EXPR = seal(/<%[\w\W]*|[\w\W]*%>/gm);
+    var DATA_ATTR = seal(/^data-[\-\w.\u00B7-\uFFFF]/);
+    var ARIA_ATTR = seal(/^aria-[\-\w]+$/);
+    var IS_ALLOWED_URI = seal(/^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i);
+    var IS_SCRIPT_OR_DATA = seal(/^(?:\w+script|data):/i);
+    var ATTR_WHITESPACE = seal(/[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205F\u3000]/g);
+    var DOCTYPE_NAME = seal(/^html$/i);
+    var getGlobal = function getGlobal() {
+      return typeof window === 'undefined' ? null : window;
+    };
+    var _createTrustedTypesPolicy = function _createTrustedTypesPolicy(trustedTypes, document) {
+      if (_typeof(trustedTypes) !== 'object' || typeof trustedTypes.createPolicy !== 'function') {
+        return null;
+      }
+      var suffix = null;
+      var ATTR_NAME = 'data-tt-policy-suffix';
+      if (document.currentScript && document.currentScript.hasAttribute(ATTR_NAME)) {
+        suffix = document.currentScript.getAttribute(ATTR_NAME);
+      }
+      var policyName = 'dompurify' + (suffix ? '#' + suffix : '');
+      try {
+        return trustedTypes.createPolicy(policyName, {
+          createHTML: function createHTML(html) {
+            return html;
+          }
+        });
+      } catch (_) {
+        console.warn('TrustedTypes policy ' + policyName + ' could not be created.');
+        return null;
+      }
+    };
+    function createDOMPurify() {
+      var window = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : getGlobal();
+      var DOMPurify = function DOMPurify(root) {
+        return createDOMPurify(root);
+      };
+      DOMPurify.version = '2.3.8';
+      DOMPurify.removed = [];
+      if (!window || !window.document || window.document.nodeType !== 9) {
+        DOMPurify.isSupported = false;
+        return DOMPurify;
+      }
+      var originalDocument = window.document;
+      var document = window.document;
+      var DocumentFragment = window.DocumentFragment, HTMLTemplateElement = window.HTMLTemplateElement, Node = window.Node, Element = window.Element, NodeFilter = window.NodeFilter, _window$NamedNodeMap = window.NamedNodeMap, NamedNodeMap = _window$NamedNodeMap === void 0 ? window.NamedNodeMap || window.MozNamedAttrMap : _window$NamedNodeMap, HTMLFormElement = window.HTMLFormElement, DOMParser = window.DOMParser, trustedTypes = window.trustedTypes;
+      var ElementPrototype = Element.prototype;
+      var cloneNode = lookupGetter(ElementPrototype, 'cloneNode');
+      var getNextSibling = lookupGetter(ElementPrototype, 'nextSibling');
+      var getChildNodes = lookupGetter(ElementPrototype, 'childNodes');
+      var getParentNode = lookupGetter(ElementPrototype, 'parentNode');
+      if (typeof HTMLTemplateElement === 'function') {
+        var template = document.createElement('template');
+        if (template.content && template.content.ownerDocument) {
+          document = template.content.ownerDocument;
+        }
+      }
+      var trustedTypesPolicy = _createTrustedTypesPolicy(trustedTypes, originalDocument);
+      var emptyHTML = trustedTypesPolicy ? trustedTypesPolicy.createHTML('') : '';
+      var _document = document, implementation = _document.implementation, createNodeIterator = _document.createNodeIterator, createDocumentFragment = _document.createDocumentFragment, getElementsByTagName = _document.getElementsByTagName;
+      var importNode = originalDocument.importNode;
+      var documentMode = {};
+      try {
+        documentMode = clone(document).documentMode ? document.documentMode : {};
+      } catch (_) {
+      }
+      var hooks = {};
+      DOMPurify.isSupported = typeof getParentNode === 'function' && implementation && typeof implementation.createHTMLDocument !== 'undefined' && documentMode !== 9;
+      var MUSTACHE_EXPR$1 = MUSTACHE_EXPR, ERB_EXPR$1 = ERB_EXPR, DATA_ATTR$1 = DATA_ATTR, ARIA_ATTR$1 = ARIA_ATTR, IS_SCRIPT_OR_DATA$1 = IS_SCRIPT_OR_DATA, ATTR_WHITESPACE$1 = ATTR_WHITESPACE;
+      var IS_ALLOWED_URI$1 = IS_ALLOWED_URI;
+      var ALLOWED_TAGS = null;
+      var DEFAULT_ALLOWED_TAGS = addToSet({}, [].concat(_toConsumableArray(html$1), _toConsumableArray(svg$1), _toConsumableArray(svgFilters), _toConsumableArray(mathMl$1), _toConsumableArray(text)));
+      var ALLOWED_ATTR = null;
+      var DEFAULT_ALLOWED_ATTR = addToSet({}, [].concat(_toConsumableArray(html), _toConsumableArray(svg), _toConsumableArray(mathMl), _toConsumableArray(xml)));
+      var CUSTOM_ELEMENT_HANDLING = Object.seal(Object.create(null, {
+        tagNameCheck: {
+          writable: true,
+          configurable: false,
+          enumerable: true,
+          value: null
+        },
+        attributeNameCheck: {
+          writable: true,
+          configurable: false,
+          enumerable: true,
+          value: null
+        },
+        allowCustomizedBuiltInElements: {
+          writable: true,
+          configurable: false,
+          enumerable: true,
+          value: false
+        }
+      }));
+      var FORBID_TAGS = null;
+      var FORBID_ATTR = null;
+      var ALLOW_ARIA_ATTR = true;
+      var ALLOW_DATA_ATTR = true;
+      var ALLOW_UNKNOWN_PROTOCOLS = false;
+      var SAFE_FOR_TEMPLATES = false;
+      var WHOLE_DOCUMENT = false;
+      var SET_CONFIG = false;
+      var FORCE_BODY = false;
+      var RETURN_DOM = false;
+      var RETURN_DOM_FRAGMENT = false;
+      var RETURN_TRUSTED_TYPE = false;
+      var SANITIZE_DOM = true;
+      var KEEP_CONTENT = true;
+      var IN_PLACE = false;
+      var USE_PROFILES = {};
+      var FORBID_CONTENTS = null;
+      var DEFAULT_FORBID_CONTENTS = addToSet({}, [
+        'annotation-xml',
+        'audio',
+        'colgroup',
+        'desc',
+        'foreignobject',
+        'head',
+        'iframe',
+        'math',
+        'mi',
+        'mn',
+        'mo',
+        'ms',
+        'mtext',
+        'noembed',
+        'noframes',
+        'noscript',
+        'plaintext',
+        'script',
+        'style',
+        'svg',
+        'template',
+        'thead',
+        'title',
+        'video',
+        'xmp'
+      ]);
+      var DATA_URI_TAGS = null;
+      var DEFAULT_DATA_URI_TAGS = addToSet({}, [
+        'audio',
+        'video',
+        'img',
+        'source',
+        'image',
+        'track'
+      ]);
+      var URI_SAFE_ATTRIBUTES = null;
+      var DEFAULT_URI_SAFE_ATTRIBUTES = addToSet({}, [
+        'alt',
+        'class',
+        'for',
+        'id',
+        'label',
+        'name',
+        'pattern',
+        'placeholder',
+        'role',
+        'summary',
+        'title',
+        'value',
+        'style',
+        'xmlns'
+      ]);
+      var MATHML_NAMESPACE = 'http://www.w3.org/1998/Math/MathML';
+      var SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+      var HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
+      var NAMESPACE = HTML_NAMESPACE;
+      var IS_EMPTY_INPUT = false;
+      var PARSER_MEDIA_TYPE;
+      var SUPPORTED_PARSER_MEDIA_TYPES = [
+        'application/xhtml+xml',
+        'text/html'
+      ];
+      var DEFAULT_PARSER_MEDIA_TYPE = 'text/html';
+      var transformCaseFunc;
+      var CONFIG = null;
+      var formElement = document.createElement('form');
+      var isRegexOrFunction = function isRegexOrFunction(testValue) {
+        return testValue instanceof RegExp || testValue instanceof Function;
+      };
+      var _parseConfig = function _parseConfig(cfg) {
+        if (CONFIG && CONFIG === cfg) {
+          return;
+        }
+        if (!cfg || _typeof(cfg) !== 'object') {
+          cfg = {};
+        }
+        cfg = clone(cfg);
+        ALLOWED_TAGS = 'ALLOWED_TAGS' in cfg ? addToSet({}, cfg.ALLOWED_TAGS) : DEFAULT_ALLOWED_TAGS;
+        ALLOWED_ATTR = 'ALLOWED_ATTR' in cfg ? addToSet({}, cfg.ALLOWED_ATTR) : DEFAULT_ALLOWED_ATTR;
+        URI_SAFE_ATTRIBUTES = 'ADD_URI_SAFE_ATTR' in cfg ? addToSet(clone(DEFAULT_URI_SAFE_ATTRIBUTES), cfg.ADD_URI_SAFE_ATTR) : DEFAULT_URI_SAFE_ATTRIBUTES;
+        DATA_URI_TAGS = 'ADD_DATA_URI_TAGS' in cfg ? addToSet(clone(DEFAULT_DATA_URI_TAGS), cfg.ADD_DATA_URI_TAGS) : DEFAULT_DATA_URI_TAGS;
+        FORBID_CONTENTS = 'FORBID_CONTENTS' in cfg ? addToSet({}, cfg.FORBID_CONTENTS) : DEFAULT_FORBID_CONTENTS;
+        FORBID_TAGS = 'FORBID_TAGS' in cfg ? addToSet({}, cfg.FORBID_TAGS) : {};
+        FORBID_ATTR = 'FORBID_ATTR' in cfg ? addToSet({}, cfg.FORBID_ATTR) : {};
+        USE_PROFILES = 'USE_PROFILES' in cfg ? cfg.USE_PROFILES : false;
+        ALLOW_ARIA_ATTR = cfg.ALLOW_ARIA_ATTR !== false;
+        ALLOW_DATA_ATTR = cfg.ALLOW_DATA_ATTR !== false;
+        ALLOW_UNKNOWN_PROTOCOLS = cfg.ALLOW_UNKNOWN_PROTOCOLS || false;
+        SAFE_FOR_TEMPLATES = cfg.SAFE_FOR_TEMPLATES || false;
+        WHOLE_DOCUMENT = cfg.WHOLE_DOCUMENT || false;
+        RETURN_DOM = cfg.RETURN_DOM || false;
+        RETURN_DOM_FRAGMENT = cfg.RETURN_DOM_FRAGMENT || false;
+        RETURN_TRUSTED_TYPE = cfg.RETURN_TRUSTED_TYPE || false;
+        FORCE_BODY = cfg.FORCE_BODY || false;
+        SANITIZE_DOM = cfg.SANITIZE_DOM !== false;
+        KEEP_CONTENT = cfg.KEEP_CONTENT !== false;
+        IN_PLACE = cfg.IN_PLACE || false;
+        IS_ALLOWED_URI$1 = cfg.ALLOWED_URI_REGEXP || IS_ALLOWED_URI$1;
+        NAMESPACE = cfg.NAMESPACE || HTML_NAMESPACE;
+        if (cfg.CUSTOM_ELEMENT_HANDLING && isRegexOrFunction(cfg.CUSTOM_ELEMENT_HANDLING.tagNameCheck)) {
+          CUSTOM_ELEMENT_HANDLING.tagNameCheck = cfg.CUSTOM_ELEMENT_HANDLING.tagNameCheck;
+        }
+        if (cfg.CUSTOM_ELEMENT_HANDLING && isRegexOrFunction(cfg.CUSTOM_ELEMENT_HANDLING.attributeNameCheck)) {
+          CUSTOM_ELEMENT_HANDLING.attributeNameCheck = cfg.CUSTOM_ELEMENT_HANDLING.attributeNameCheck;
+        }
+        if (cfg.CUSTOM_ELEMENT_HANDLING && typeof cfg.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements === 'boolean') {
+          CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements = cfg.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements;
+        }
+        PARSER_MEDIA_TYPE = SUPPORTED_PARSER_MEDIA_TYPES.indexOf(cfg.PARSER_MEDIA_TYPE) === -1 ? PARSER_MEDIA_TYPE = DEFAULT_PARSER_MEDIA_TYPE : PARSER_MEDIA_TYPE = cfg.PARSER_MEDIA_TYPE;
+        transformCaseFunc = PARSER_MEDIA_TYPE === 'application/xhtml+xml' ? function (x) {
+          return x;
+        } : stringToLowerCase;
+        if (SAFE_FOR_TEMPLATES) {
+          ALLOW_DATA_ATTR = false;
+        }
+        if (RETURN_DOM_FRAGMENT) {
+          RETURN_DOM = true;
+        }
+        if (USE_PROFILES) {
+          ALLOWED_TAGS = addToSet({}, _toConsumableArray(text));
+          ALLOWED_ATTR = [];
+          if (USE_PROFILES.html === true) {
+            addToSet(ALLOWED_TAGS, html$1);
+            addToSet(ALLOWED_ATTR, html);
+          }
+          if (USE_PROFILES.svg === true) {
+            addToSet(ALLOWED_TAGS, svg$1);
+            addToSet(ALLOWED_ATTR, svg);
+            addToSet(ALLOWED_ATTR, xml);
+          }
+          if (USE_PROFILES.svgFilters === true) {
+            addToSet(ALLOWED_TAGS, svgFilters);
+            addToSet(ALLOWED_ATTR, svg);
+            addToSet(ALLOWED_ATTR, xml);
+          }
+          if (USE_PROFILES.mathMl === true) {
+            addToSet(ALLOWED_TAGS, mathMl$1);
+            addToSet(ALLOWED_ATTR, mathMl);
+            addToSet(ALLOWED_ATTR, xml);
+          }
+        }
+        if (cfg.ADD_TAGS) {
+          if (ALLOWED_TAGS === DEFAULT_ALLOWED_TAGS) {
+            ALLOWED_TAGS = clone(ALLOWED_TAGS);
+          }
+          addToSet(ALLOWED_TAGS, cfg.ADD_TAGS);
+        }
+        if (cfg.ADD_ATTR) {
+          if (ALLOWED_ATTR === DEFAULT_ALLOWED_ATTR) {
+            ALLOWED_ATTR = clone(ALLOWED_ATTR);
+          }
+          addToSet(ALLOWED_ATTR, cfg.ADD_ATTR);
+        }
+        if (cfg.ADD_URI_SAFE_ATTR) {
+          addToSet(URI_SAFE_ATTRIBUTES, cfg.ADD_URI_SAFE_ATTR);
+        }
+        if (cfg.FORBID_CONTENTS) {
+          if (FORBID_CONTENTS === DEFAULT_FORBID_CONTENTS) {
+            FORBID_CONTENTS = clone(FORBID_CONTENTS);
+          }
+          addToSet(FORBID_CONTENTS, cfg.FORBID_CONTENTS);
+        }
+        if (KEEP_CONTENT) {
+          ALLOWED_TAGS['#text'] = true;
+        }
+        if (WHOLE_DOCUMENT) {
+          addToSet(ALLOWED_TAGS, [
+            'html',
+            'head',
+            'body'
+          ]);
+        }
+        if (ALLOWED_TAGS.table) {
+          addToSet(ALLOWED_TAGS, ['tbody']);
+          delete FORBID_TAGS.tbody;
+        }
+        if (freeze) {
+          freeze(cfg);
+        }
+        CONFIG = cfg;
+      };
+      var MATHML_TEXT_INTEGRATION_POINTS = addToSet({}, [
+        'mi',
+        'mo',
+        'mn',
+        'ms',
+        'mtext'
+      ]);
+      var HTML_INTEGRATION_POINTS = addToSet({}, [
+        'foreignobject',
+        'desc',
+        'title',
+        'annotation-xml'
+      ]);
+      var COMMON_SVG_AND_HTML_ELEMENTS = addToSet({}, [
+        'title',
+        'style',
+        'font',
+        'a',
+        'script'
+      ]);
+      var ALL_SVG_TAGS = addToSet({}, svg$1);
+      addToSet(ALL_SVG_TAGS, svgFilters);
+      addToSet(ALL_SVG_TAGS, svgDisallowed);
+      var ALL_MATHML_TAGS = addToSet({}, mathMl$1);
+      addToSet(ALL_MATHML_TAGS, mathMlDisallowed);
+      var _checkValidNamespace = function _checkValidNamespace(element) {
+        var parent = getParentNode(element);
+        if (!parent || !parent.tagName) {
+          parent = {
+            namespaceURI: HTML_NAMESPACE,
+            tagName: 'template'
+          };
+        }
+        var tagName = stringToLowerCase(element.tagName);
+        var parentTagName = stringToLowerCase(parent.tagName);
+        if (element.namespaceURI === SVG_NAMESPACE) {
+          if (parent.namespaceURI === HTML_NAMESPACE) {
+            return tagName === 'svg';
+          }
+          if (parent.namespaceURI === MATHML_NAMESPACE) {
+            return tagName === 'svg' && (parentTagName === 'annotation-xml' || MATHML_TEXT_INTEGRATION_POINTS[parentTagName]);
+          }
+          return Boolean(ALL_SVG_TAGS[tagName]);
+        }
+        if (element.namespaceURI === MATHML_NAMESPACE) {
+          if (parent.namespaceURI === HTML_NAMESPACE) {
+            return tagName === 'math';
+          }
+          if (parent.namespaceURI === SVG_NAMESPACE) {
+            return tagName === 'math' && HTML_INTEGRATION_POINTS[parentTagName];
+          }
+          return Boolean(ALL_MATHML_TAGS[tagName]);
+        }
+        if (element.namespaceURI === HTML_NAMESPACE) {
+          if (parent.namespaceURI === SVG_NAMESPACE && !HTML_INTEGRATION_POINTS[parentTagName]) {
+            return false;
+          }
+          if (parent.namespaceURI === MATHML_NAMESPACE && !MATHML_TEXT_INTEGRATION_POINTS[parentTagName]) {
+            return false;
+          }
+          return !ALL_MATHML_TAGS[tagName] && (COMMON_SVG_AND_HTML_ELEMENTS[tagName] || !ALL_SVG_TAGS[tagName]);
+        }
+        return false;
+      };
+      var _forceRemove = function _forceRemove(node) {
+        arrayPush(DOMPurify.removed, { element: node });
+        try {
+          node.parentNode.removeChild(node);
+        } catch (_) {
+          try {
+            node.outerHTML = emptyHTML;
+          } catch (_) {
+            node.remove();
+          }
+        }
+      };
+      var _removeAttribute = function _removeAttribute(name, node) {
+        try {
+          arrayPush(DOMPurify.removed, {
+            attribute: node.getAttributeNode(name),
+            from: node
+          });
+        } catch (_) {
+          arrayPush(DOMPurify.removed, {
+            attribute: null,
+            from: node
+          });
+        }
+        node.removeAttribute(name);
+        if (name === 'is' && !ALLOWED_ATTR[name]) {
+          if (RETURN_DOM || RETURN_DOM_FRAGMENT) {
+            try {
+              _forceRemove(node);
+            } catch (_) {
+            }
+          } else {
+            try {
+              node.setAttribute(name, '');
+            } catch (_) {
+            }
+          }
+        }
+      };
+      var _initDocument = function _initDocument(dirty) {
+        var doc;
+        var leadingWhitespace;
+        if (FORCE_BODY) {
+          dirty = '<remove></remove>' + dirty;
+        } else {
+          var matches = stringMatch(dirty, /^[\r\n\t ]+/);
+          leadingWhitespace = matches && matches[0];
+        }
+        if (PARSER_MEDIA_TYPE === 'application/xhtml+xml') {
+          dirty = '<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>' + dirty + '</body></html>';
+        }
+        var dirtyPayload = trustedTypesPolicy ? trustedTypesPolicy.createHTML(dirty) : dirty;
+        if (NAMESPACE === HTML_NAMESPACE) {
+          try {
+            doc = new DOMParser().parseFromString(dirtyPayload, PARSER_MEDIA_TYPE);
+          } catch (_) {
+          }
+        }
+        if (!doc || !doc.documentElement) {
+          doc = implementation.createDocument(NAMESPACE, 'template', null);
+          try {
+            doc.documentElement.innerHTML = IS_EMPTY_INPUT ? '' : dirtyPayload;
+          } catch (_) {
+          }
+        }
+        var body = doc.body || doc.documentElement;
+        if (dirty && leadingWhitespace) {
+          body.insertBefore(document.createTextNode(leadingWhitespace), body.childNodes[0] || null);
+        }
+        if (NAMESPACE === HTML_NAMESPACE) {
+          return getElementsByTagName.call(doc, WHOLE_DOCUMENT ? 'html' : 'body')[0];
+        }
+        return WHOLE_DOCUMENT ? doc.documentElement : body;
+      };
+      var _createIterator = function _createIterator(root) {
+        return createNodeIterator.call(root.ownerDocument || root, root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT, null, false);
+      };
+      var _isClobbered = function _isClobbered(elm) {
+        return elm instanceof HTMLFormElement && (typeof elm.nodeName !== 'string' || typeof elm.textContent !== 'string' || typeof elm.removeChild !== 'function' || !(elm.attributes instanceof NamedNodeMap) || typeof elm.removeAttribute !== 'function' || typeof elm.setAttribute !== 'function' || typeof elm.namespaceURI !== 'string' || typeof elm.insertBefore !== 'function');
+      };
+      var _isNode = function _isNode(object) {
+        return _typeof(Node) === 'object' ? object instanceof Node : object && _typeof(object) === 'object' && typeof object.nodeType === 'number' && typeof object.nodeName === 'string';
+      };
+      var _executeHook = function _executeHook(entryPoint, currentNode, data) {
+        if (!hooks[entryPoint]) {
+          return;
+        }
+        arrayForEach(hooks[entryPoint], function (hook) {
+          hook.call(DOMPurify, currentNode, data, CONFIG);
+        });
+      };
+      var _sanitizeElements = function _sanitizeElements(currentNode) {
+        var content;
+        _executeHook('beforeSanitizeElements', currentNode, null);
+        if (_isClobbered(currentNode)) {
+          _forceRemove(currentNode);
+          return true;
+        }
+        if (regExpTest(/[\u0080-\uFFFF]/, currentNode.nodeName)) {
+          _forceRemove(currentNode);
+          return true;
+        }
+        var tagName = transformCaseFunc(currentNode.nodeName);
+        _executeHook('uponSanitizeElement', currentNode, {
+          tagName: tagName,
+          allowedTags: ALLOWED_TAGS
+        });
+        if (currentNode.hasChildNodes() && !_isNode(currentNode.firstElementChild) && (!_isNode(currentNode.content) || !_isNode(currentNode.content.firstElementChild)) && regExpTest(/<[/\w]/g, currentNode.innerHTML) && regExpTest(/<[/\w]/g, currentNode.textContent)) {
+          _forceRemove(currentNode);
+          return true;
+        }
+        if (tagName === 'select' && regExpTest(/<template/i, currentNode.innerHTML)) {
+          _forceRemove(currentNode);
+          return true;
+        }
+        if (!ALLOWED_TAGS[tagName] || FORBID_TAGS[tagName]) {
+          if (!FORBID_TAGS[tagName] && _basicCustomElementTest(tagName)) {
+            if (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, tagName))
+              return false;
+            if (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.tagNameCheck(tagName))
+              return false;
+          }
+          if (KEEP_CONTENT && !FORBID_CONTENTS[tagName]) {
+            var parentNode = getParentNode(currentNode) || currentNode.parentNode;
+            var childNodes = getChildNodes(currentNode) || currentNode.childNodes;
+            if (childNodes && parentNode) {
+              var childCount = childNodes.length;
+              for (var i = childCount - 1; i >= 0; --i) {
+                parentNode.insertBefore(cloneNode(childNodes[i], true), getNextSibling(currentNode));
+              }
+            }
+          }
+          _forceRemove(currentNode);
+          return true;
+        }
+        if (currentNode instanceof Element && !_checkValidNamespace(currentNode)) {
+          _forceRemove(currentNode);
+          return true;
+        }
+        if ((tagName === 'noscript' || tagName === 'noembed') && regExpTest(/<\/no(script|embed)/i, currentNode.innerHTML)) {
+          _forceRemove(currentNode);
+          return true;
+        }
+        if (SAFE_FOR_TEMPLATES && currentNode.nodeType === 3) {
+          content = currentNode.textContent;
+          content = stringReplace(content, MUSTACHE_EXPR$1, ' ');
+          content = stringReplace(content, ERB_EXPR$1, ' ');
+          if (currentNode.textContent !== content) {
+            arrayPush(DOMPurify.removed, { element: currentNode.cloneNode() });
+            currentNode.textContent = content;
+          }
+        }
+        _executeHook('afterSanitizeElements', currentNode, null);
+        return false;
+      };
+      var _isValidAttribute = function _isValidAttribute(lcTag, lcName, value) {
+        if (SANITIZE_DOM && (lcName === 'id' || lcName === 'name') && (value in document || value in formElement)) {
+          return false;
+        }
+        if (ALLOW_DATA_ATTR && !FORBID_ATTR[lcName] && regExpTest(DATA_ATTR$1, lcName));
+        else if (ALLOW_ARIA_ATTR && regExpTest(ARIA_ATTR$1, lcName));
+        else if (!ALLOWED_ATTR[lcName] || FORBID_ATTR[lcName]) {
+          if (_basicCustomElementTest(lcTag) && (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, lcTag) || CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.tagNameCheck(lcTag)) && (CUSTOM_ELEMENT_HANDLING.attributeNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.attributeNameCheck, lcName) || CUSTOM_ELEMENT_HANDLING.attributeNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.attributeNameCheck(lcName)) || lcName === 'is' && CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements && (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, value) || CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.tagNameCheck(value)));
+          else {
+            return false;
+          }
+        } else if (URI_SAFE_ATTRIBUTES[lcName]);
+        else if (regExpTest(IS_ALLOWED_URI$1, stringReplace(value, ATTR_WHITESPACE$1, '')));
+        else if ((lcName === 'src' || lcName === 'xlink:href' || lcName === 'href') && lcTag !== 'script' && stringIndexOf(value, 'data:') === 0 && DATA_URI_TAGS[lcTag]);
+        else if (ALLOW_UNKNOWN_PROTOCOLS && !regExpTest(IS_SCRIPT_OR_DATA$1, stringReplace(value, ATTR_WHITESPACE$1, '')));
+        else if (!value);
+        else {
+          return false;
+        }
+        return true;
+      };
+      var _basicCustomElementTest = function _basicCustomElementTest(tagName) {
+        return tagName.indexOf('-') > 0;
+      };
+      var _sanitizeAttributes = function _sanitizeAttributes(currentNode) {
+        var attr;
+        var value;
+        var lcName;
+        var l;
+        _executeHook('beforeSanitizeAttributes', currentNode, null);
+        var attributes = currentNode.attributes;
+        if (!attributes) {
+          return;
+        }
+        var hookEvent = {
+          attrName: '',
+          attrValue: '',
+          keepAttr: true,
+          allowedAttributes: ALLOWED_ATTR
+        };
+        l = attributes.length;
+        while (l--) {
+          attr = attributes[l];
+          var _attr = attr, name = _attr.name, namespaceURI = _attr.namespaceURI;
+          value = name === 'value' ? attr.value : stringTrim(attr.value);
+          lcName = transformCaseFunc(name);
+          var initValue = value;
+          hookEvent.attrName = lcName;
+          hookEvent.attrValue = value;
+          hookEvent.keepAttr = true;
+          hookEvent.forceKeepAttr = undefined;
+          _executeHook('uponSanitizeAttribute', currentNode, hookEvent);
+          value = hookEvent.attrValue;
+          if (hookEvent.forceKeepAttr) {
+            continue;
+          }
+          if (!hookEvent.keepAttr) {
+            _removeAttribute(name, currentNode);
+            continue;
+          }
+          if (regExpTest(/\/>/i, value)) {
+            _removeAttribute(name, currentNode);
+            continue;
+          }
+          if (SAFE_FOR_TEMPLATES) {
+            value = stringReplace(value, MUSTACHE_EXPR$1, ' ');
+            value = stringReplace(value, ERB_EXPR$1, ' ');
+          }
+          var lcTag = transformCaseFunc(currentNode.nodeName);
+          if (!_isValidAttribute(lcTag, lcName, value)) {
+            _removeAttribute(name, currentNode);
+            continue;
+          }
+          if (value !== initValue) {
+            try {
+              if (namespaceURI) {
+                currentNode.setAttributeNS(namespaceURI, name, value);
+              } else {
+                currentNode.setAttribute(name, value);
+              }
+            } catch (_) {
+              _removeAttribute(name, currentNode);
+            }
+          }
+        }
+        _executeHook('afterSanitizeAttributes', currentNode, null);
+      };
+      var _sanitizeShadowDOM = function _sanitizeShadowDOM(fragment) {
+        var shadowNode;
+        var shadowIterator = _createIterator(fragment);
+        _executeHook('beforeSanitizeShadowDOM', fragment, null);
+        while (shadowNode = shadowIterator.nextNode()) {
+          _executeHook('uponSanitizeShadowNode', shadowNode, null);
+          if (_sanitizeElements(shadowNode)) {
+            continue;
+          }
+          if (shadowNode.content instanceof DocumentFragment) {
+            _sanitizeShadowDOM(shadowNode.content);
+          }
+          _sanitizeAttributes(shadowNode);
+        }
+        _executeHook('afterSanitizeShadowDOM', fragment, null);
+      };
+      DOMPurify.sanitize = function (dirty, cfg) {
+        var body;
+        var importedNode;
+        var currentNode;
+        var oldNode;
+        var returnNode;
+        IS_EMPTY_INPUT = !dirty;
+        if (IS_EMPTY_INPUT) {
+          dirty = '<!-->';
+        }
+        if (typeof dirty !== 'string' && !_isNode(dirty)) {
+          if (typeof dirty.toString !== 'function') {
+            throw typeErrorCreate('toString is not a function');
+          } else {
+            dirty = dirty.toString();
+            if (typeof dirty !== 'string') {
+              throw typeErrorCreate('dirty is not a string, aborting');
+            }
+          }
+        }
+        if (!DOMPurify.isSupported) {
+          if (_typeof(window.toStaticHTML) === 'object' || typeof window.toStaticHTML === 'function') {
+            if (typeof dirty === 'string') {
+              return window.toStaticHTML(dirty);
+            }
+            if (_isNode(dirty)) {
+              return window.toStaticHTML(dirty.outerHTML);
+            }
+          }
+          return dirty;
+        }
+        if (!SET_CONFIG) {
+          _parseConfig(cfg);
+        }
+        DOMPurify.removed = [];
+        if (typeof dirty === 'string') {
+          IN_PLACE = false;
+        }
+        if (IN_PLACE) {
+          if (dirty.nodeName) {
+            var tagName = transformCaseFunc(dirty.nodeName);
+            if (!ALLOWED_TAGS[tagName] || FORBID_TAGS[tagName]) {
+              throw typeErrorCreate('root node is forbidden and cannot be sanitized in-place');
+            }
+          }
+        } else if (dirty instanceof Node) {
+          body = _initDocument('<!---->');
+          importedNode = body.ownerDocument.importNode(dirty, true);
+          if (importedNode.nodeType === 1 && importedNode.nodeName === 'BODY') {
+            body = importedNode;
+          } else if (importedNode.nodeName === 'HTML') {
+            body = importedNode;
+          } else {
+            body.appendChild(importedNode);
+          }
+        } else {
+          if (!RETURN_DOM && !SAFE_FOR_TEMPLATES && !WHOLE_DOCUMENT && dirty.indexOf('<') === -1) {
+            return trustedTypesPolicy && RETURN_TRUSTED_TYPE ? trustedTypesPolicy.createHTML(dirty) : dirty;
+          }
+          body = _initDocument(dirty);
+          if (!body) {
+            return RETURN_DOM ? null : RETURN_TRUSTED_TYPE ? emptyHTML : '';
+          }
+        }
+        if (body && FORCE_BODY) {
+          _forceRemove(body.firstChild);
+        }
+        var nodeIterator = _createIterator(IN_PLACE ? dirty : body);
+        while (currentNode = nodeIterator.nextNode()) {
+          if (currentNode.nodeType === 3 && currentNode === oldNode) {
+            continue;
+          }
+          if (_sanitizeElements(currentNode)) {
+            continue;
+          }
+          if (currentNode.content instanceof DocumentFragment) {
+            _sanitizeShadowDOM(currentNode.content);
+          }
+          _sanitizeAttributes(currentNode);
+          oldNode = currentNode;
+        }
+        oldNode = null;
+        if (IN_PLACE) {
+          return dirty;
+        }
+        if (RETURN_DOM) {
+          if (RETURN_DOM_FRAGMENT) {
+            returnNode = createDocumentFragment.call(body.ownerDocument);
+            while (body.firstChild) {
+              returnNode.appendChild(body.firstChild);
+            }
+          } else {
+            returnNode = body;
+          }
+          if (ALLOWED_ATTR.shadowroot) {
+            returnNode = importNode.call(originalDocument, returnNode, true);
+          }
+          return returnNode;
+        }
+        var serializedHTML = WHOLE_DOCUMENT ? body.outerHTML : body.innerHTML;
+        if (WHOLE_DOCUMENT && ALLOWED_TAGS['!doctype'] && body.ownerDocument && body.ownerDocument.doctype && body.ownerDocument.doctype.name && regExpTest(DOCTYPE_NAME, body.ownerDocument.doctype.name)) {
+          serializedHTML = '<!DOCTYPE ' + body.ownerDocument.doctype.name + '>\n' + serializedHTML;
+        }
+        if (SAFE_FOR_TEMPLATES) {
+          serializedHTML = stringReplace(serializedHTML, MUSTACHE_EXPR$1, ' ');
+          serializedHTML = stringReplace(serializedHTML, ERB_EXPR$1, ' ');
+        }
+        return trustedTypesPolicy && RETURN_TRUSTED_TYPE ? trustedTypesPolicy.createHTML(serializedHTML) : serializedHTML;
+      };
+      DOMPurify.setConfig = function (cfg) {
+        _parseConfig(cfg);
+        SET_CONFIG = true;
+      };
+      DOMPurify.clearConfig = function () {
+        CONFIG = null;
+        SET_CONFIG = false;
+      };
+      DOMPurify.isValidAttribute = function (tag, attr, value) {
+        if (!CONFIG) {
+          _parseConfig({});
+        }
+        var lcTag = transformCaseFunc(tag);
+        var lcName = transformCaseFunc(attr);
+        return _isValidAttribute(lcTag, lcName, value);
+      };
+      DOMPurify.addHook = function (entryPoint, hookFunction) {
+        if (typeof hookFunction !== 'function') {
+          return;
+        }
+        hooks[entryPoint] = hooks[entryPoint] || [];
+        arrayPush(hooks[entryPoint], hookFunction);
+      };
+      DOMPurify.removeHook = function (entryPoint) {
+        if (hooks[entryPoint]) {
+          return arrayPop(hooks[entryPoint]);
+        }
+      };
+      DOMPurify.removeHooks = function (entryPoint) {
+        if (hooks[entryPoint]) {
+          hooks[entryPoint] = [];
+        }
+      };
+      DOMPurify.removeAllHooks = function () {
+        hooks = {};
+      };
+      return DOMPurify;
+    }
+    var purify = createDOMPurify();
+
+    const sanitizeHtmlString = html => purify().sanitize(html);
+
     const isTouch = global$5.deviceType.isTouch();
     const hiddenHeader = (title, close) => ({
       dom: {
@@ -25049,7 +27640,7 @@
             tag: 'div',
             classes: ['tox-dialog__body-content']
           },
-          components: [{ dom: fromHtml(`<p>${ providersBackstage.translate(message) }</p>`) }]
+          components: [{ dom: fromHtml(`<p>${ sanitizeHtmlString(providersBackstage.translate(message)) }</p>`) }]
         }]
     });
     const pFooter = buttons => ModalDialog.parts.footer({
@@ -25170,7 +27761,7 @@
       }
     });
     const renderTitle = (spec, dialogId, titleId, providersBackstage) => {
-      const renderComponents = data => [text$1(providersBackstage.translate(data.title))];
+      const renderComponents = data => [text$2(providersBackstage.translate(data.title))];
       return {
         dom: {
           tag: 'div',
@@ -25301,10 +27892,7 @@
         };
       };
       return map$2(buttons, button => {
-        if (button.type === 'menu') {
-          return mapItems(button);
-        }
-        return button;
+        return button.type === 'menu' ? mapItems(button) : button;
       });
     };
     const extractCellsToObject = buttons => foldl(buttons, (acc, button) => {
@@ -25577,9 +28165,9 @@
         body: internalDialog.body,
         initialData: internalDialog.initialData
       }, dialogId, backstage);
-      const storagedMenuButtons = mapMenuButtons(internalDialog.buttons);
-      const objOfCells = extractCellsToObject(storagedMenuButtons);
-      const footer = renderModalFooter({ buttons: storagedMenuButtons }, dialogId, backstage);
+      const storedMenuButtons = mapMenuButtons(internalDialog.buttons);
+      const objOfCells = extractCellsToObject(storedMenuButtons);
+      const footer = renderModalFooter({ buttons: storedMenuButtons }, dialogId, backstage);
       const dialogEvents = SilverDialogEvents.initDialog(() => instanceApi, getEventExtras(() => dialog, backstage.shared.providers, extra), backstage.shared.getSink);
       const dialogSize = getDialogSizeClasses(internalDialog.size);
       const spec = {
@@ -25827,7 +28415,9 @@
               onReceive: (comp, data) => {
                 descendant(comp.element, 'iframe').each(iframeEle => {
                   const iframeWin = iframeEle.dom.contentWindow;
-                  iframeWin.postMessage(data, iframeDomain);
+                  if (isNonNullable(iframeWin)) {
+                    iframeWin.postMessage(data, iframeDomain);
+                  }
                 });
               }
             }
@@ -25851,8 +28441,8 @@
       };
     };
 
-    const setup$2 = extras => {
-      const sharedBackstage = extras.backstage.shared;
+    const setup$2 = backstage => {
+      const sharedBackstage = backstage.shared;
       const open = (message, callback) => {
         const closeDialog = () => {
           ModalDialog.hide(alertDialog);
@@ -25862,10 +28452,11 @@
           name: 'close-alert',
           text: 'OK',
           primary: true,
+          buttonType: Optional.some('primary'),
           align: 'end',
           enabled: true,
           icon: Optional.none()
-        }, 'cancel', extras.backstage));
+        }, 'cancel', backstage));
         const titleSpec = pUntitled();
         const closeSpec = pClose(closeDialog, sharedBackstage.providers);
         const alertDialog = build$1(renderDialog$1({
@@ -25887,8 +28478,8 @@
       return { open };
     };
 
-    const setup$1 = extras => {
-      const sharedBackstage = extras.backstage.shared;
+    const setup$1 = backstage => {
+      const sharedBackstage = backstage.shared;
       const open = (message, callback) => {
         const closeDialog = state => {
           ModalDialog.hide(confirmDialog);
@@ -25898,18 +28489,20 @@
           name: 'yes',
           text: 'Yes',
           primary: true,
+          buttonType: Optional.some('primary'),
           align: 'end',
           enabled: true,
           icon: Optional.none()
-        }, 'submit', extras.backstage));
+        }, 'submit', backstage));
         const footerNo = renderFooterButton({
           name: 'no',
           text: 'No',
           primary: false,
+          buttonType: Optional.some('secondary'),
           align: 'end',
           enabled: true,
           icon: Optional.none()
-        }, 'cancel', extras.backstage);
+        }, 'cancel', backstage);
         const titleSpec = pUntitled();
         const closeSpec = pClose(() => closeDialog(false), sharedBackstage.providers);
         const confirmDialog = build$1(renderDialog$1({
@@ -25955,16 +28548,15 @@
       }
     };
     const setup = extras => {
-      const backstage = extras.backstage;
       const editor = extras.editor;
       const isStickyToolbar$1 = isStickyToolbar(editor);
-      const alertDialog = setup$2(extras);
-      const confirmDialog = setup$1(extras);
+      const alertDialog = setup$2(extras.backstages.dialog);
+      const confirmDialog = setup$1(extras.backstages.dialog);
       const open = (config, params, closeWindow) => {
         if (params !== undefined && params.inline === 'toolbar') {
-          return openInlineDialog(config, backstage.shared.anchors.inlineDialog(), closeWindow, params.ariaAttrs);
+          return openInlineDialog(config, extras.backstages.popup.shared.anchors.inlineDialog(), closeWindow, params.ariaAttrs);
         } else if (params !== undefined && params.inline === 'cursor') {
-          return openInlineDialog(config, backstage.shared.anchors.cursor(), closeWindow, params.ariaAttrs);
+          return openInlineDialog(config, extras.backstages.popup.shared.anchors.cursor(), closeWindow, params.ariaAttrs);
         } else {
           return openModalDialog(config, closeWindow);
         }
@@ -25977,7 +28569,7 @@
               ModalDialog.hide(dialog.dialog);
               closeWindow(dialog.instanceApi);
             }
-          }, editor, backstage);
+          }, editor, extras.backstages.dialog);
           ModalDialog.show(dialog.dialog);
           return dialog.instanceApi;
         };
@@ -25997,18 +28589,18 @@
               ModalDialog.hide(dialog.dialog);
               closeWindow(dialog.instanceApi);
             }
-          }, backstage);
+          }, extras.backstages.dialog);
           ModalDialog.show(dialog.dialog);
           dialog.instanceApi.setData(initialData);
           return dialog.instanceApi;
         };
         return DialogManager.open(factory, config);
       };
-      const openInlineDialog = (config$1, anchor, closeWindow, ariaAttrs) => {
+      const openInlineDialog = (config$1, anchor, closeWindow, ariaAttrs = false) => {
         const factory = (contents, internalInitialData, dataValidator) => {
           const initialData = validateData(internalInitialData, dataValidator);
           const inlineDialog = value$2();
-          const isToolbarLocationTop = backstage.shared.header.isPositionedAtTop();
+          const isToolbarLocationTop = extras.backstages.popup.shared.header.isPositionedAtTop();
           const dialogInit = {
             dataValidator,
             initialData,
@@ -26026,9 +28618,9 @@
               inlineDialog.clear();
               closeWindow(dialogUi.instanceApi);
             }
-          }, backstage, ariaAttrs);
+          }, extras.backstages.popup, ariaAttrs);
           const inlineDialogComp = build$1(InlineView.sketch({
-            lazySink: backstage.shared.getSink,
+            lazySink: extras.backstages.popup.shared.getSink,
             dom: {
               tag: 'div',
               classes: []
@@ -26056,14 +28648,10 @@
         return DialogManager.open(factory, config$1);
       };
       const confirm = (message, callback) => {
-        confirmDialog.open(message, state => {
-          callback(state);
-        });
+        confirmDialog.open(message, callback);
       };
       const alert = (message, callback) => {
-        alertDialog.open(message, () => {
-          callback();
-        });
+        alertDialog.open(message, callback);
       };
       const close = instanceApi => {
         instanceApi.close();
@@ -26085,16 +28673,20 @@
     var Theme = () => {
       global$a.add('silver', editor => {
         registerOptions(editor);
-        const {getUiMothership, backstage, renderUI} = setup$3(editor);
-        Autocompleter.register(editor, backstage.shared);
+        const {dialogs, popups, renderUI} = setup$3(editor);
+        Autocompleter.register(editor, popups.backstage.shared);
         const windowMgr = setup({
           editor,
-          backstage
+          backstages: {
+            popup: popups.backstage,
+            dialog: dialogs.backstage
+          }
         });
+        const getNotificationManagerImpl = () => NotificationManagerImpl(editor, { backstage: popups.backstage }, popups.getMothership());
         return {
           renderUI,
           getWindowManagerImpl: constant$1(windowMgr),
-          getNotificationManagerImpl: () => NotificationManagerImpl(editor, { backstage }, getUiMothership())
+          getNotificationManagerImpl
         };
       });
     };

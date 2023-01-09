@@ -20,23 +20,22 @@ Now, the LanguageAdaptor will read the preferred language from the cookie and ad
 
 The name of the attribute can be changed from the default by adding the `attributename` option.
 
-
 Examples
 --------
 
 Default attribute (`preferredLanguage`):
 
-    'authproc' => array(
-        50 => array(
+    'authproc' => [
+        50 => [
             'class' => 'core:LanguageAdaptor',
-        ),
-    ),
+        ],
+    ],
 
-Custon attribute:
+Custom attribute:
 
-    'authproc' => array(
-        50 => array(
+    'authproc' => [
+        50 => [
             'class' => 'core:LanguageAdaptor',
             'attributename' => 'lang',
-        ),
-    ),
+        ],
+    ],

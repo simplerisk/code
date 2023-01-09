@@ -11,7 +11,7 @@
     "browser"
   ],
   "author": "Jeremy Ashkenas <jeremy@documentcloud.org>",
-  "version": "1.13.2",
+  "version": "1.13.6",
   "main": "underscore.js",
   "scripts": [
     "underscore.js"

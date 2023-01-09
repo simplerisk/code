@@ -10,9 +10,6 @@
     require_once(realpath(__DIR__ . '/../includes/alerts.php'));
     require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
-
 // Add various security headers
 add_security_headers();
 
@@ -27,6 +24,8 @@ add_session_check($permissions);
 include_csrf_magic();
 
 // Include the SimpleRisk language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
 // If a user was posted
@@ -54,9 +53,9 @@ else $admin_editing_itself = false;
             $email            = $_POST['email'];
             $manager          = (int)$_POST['manager'];
             $teams            = isset($_POST['team']) ? array_filter($_POST['team'], 'ctype_digit') : [];
-            $role_id          = (int)$_POST['role'];
+            $role_id          = (int)(isset($_POST['role']) ? $_POST['role'] : 0);
             $language         = get_name_by_value("languages", (int)$_POST['languages']);
-            $multi_factor         = (int)$_POST['multi_factor'];
+            $multi_factor         = (int)(isset($_POST['multi_factor']) ? $_POST['multi_factor'] : 0);
             $change_password      = (int)(isset($_POST['change_password']) ? $_POST['change_password'] : 0);
             $admin            = isset($_POST['admin']) ? '1' : '0';
 
@@ -68,7 +67,7 @@ else $admin_editing_itself = false;
                 $role = get_role($role_id);
 
                 // If the role was changed to a non-admin role, the user removed its own admin permission or trying to lock itself out then we can't let this change be saved
-                $admin_role_issue = !$role['admin'] || !$admin || $lockout;
+                $admin_role_issue = !isset($role['admin']) || !$role['admin'] || !$admin || $lockout;
             }
 
             if (!$admin_role_issue) {
@@ -125,7 +124,7 @@ else $admin_editing_itself = false;
           $name = $user_info['name'];
           $email = $user_info['email'];
           $last_login = $user_info['last_login'];
-          $language = $user_info['lang'];
+          $language = (int)$user_info['lang'];
           $teams = $user_info['teams'];
           $role_id = $user_info['role_id'];
           $admin = $user_info['admin'];
@@ -146,7 +145,7 @@ else $admin_editing_itself = false;
           $role_id    = "";
           $admin      = false;
           $manager      = false;
-          $multi_factor       = 1;
+          $multi_factor       = 0;
       }
   }
   else
@@ -164,7 +163,7 @@ else $admin_editing_itself = false;
       $role_id    = "";
       $admin      = false;
       $manager      = false;
-      $multi_factor       = 1;
+      $multi_factor       = 0;
   }
 
 ?>
@@ -364,6 +363,11 @@ else $admin_editing_itself = false;
                                         </td>
                                     </tr>
                                     <tr>
+                                        <td colspan="2">
+                                            <input name="multi_factor" id="multi_factor" <?php if(isset($multi_factor) && $multi_factor == 1) echo "checked"; ?> <?php if(get_setting("mfa_required")) echo "checked readonly=\"readonly\""; ?> class="hidden-checkbox" type="checkbox" value="1" />  <label for="multi_factor">  &nbsp;&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['MultiFactorAuthentication']); ?> </label>
+                                        </td>
+                                    </tr>
+                                    <tr>
                                         <td><?php echo $escaper->escapeHtml($lang['Status']); ?>:&nbsp;</td>
                                         <td><b><?php echo ($enabled == 1 ? $escaper->escapeHtml($lang['Enabled']) : $escaper->escapeHtml($lang['Disabled'])); ?></b></td>
                                     </tr>
@@ -491,22 +495,7 @@ else $admin_editing_itself = false;
                                         </li>
                                     </ul>
                                 </div>
-
-                                <h6>
-                                    <u><?php echo $escaper->escapeHtml($lang['MultiFactorAuthentication']); ?></u>
-                                </h6>
-                                <input type="radio" name="multi_factor" value="1"<?php if ($multi_factor == 1) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['None']); ?><br />
-                                <?php
-                                    // If the custom authentication extra is installed
-                                    if (custom_authentication_extra())
-                                    {
-                                        // Include the custom authentication extra
-                                        require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
-
-                                        // Display the multi factor authentication options
-                                        multi_factor_authentication_options($multi_factor);
-                                    }
-                                ?>
+                                <br />
                                 <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_user" /><br />
                             </form>
                         </div>

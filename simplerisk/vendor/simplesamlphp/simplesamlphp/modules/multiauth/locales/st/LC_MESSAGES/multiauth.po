@@ -16,19 +16,10 @@ msgstr ""
 
 msgid ""
 "The selected authentication source will be used to authenticate you and "
-"and to create a valid session."
-msgstr ""
-"Mohlodi wa netefatso o kgethilweng o tla sebediswa ho netefatsa wena le "
-"ho theha seshene e nepahetseng."
-
-msgid "{multiauth:multiauth:select_source_text}"
+"to create a valid session."
 msgstr ""
 "Mohlodi wa netefatso o kgethilweng o tla sebediswa ho netefatsa wena le "
 "ho theha seshene e nepahetseng."
 
 msgid "Select an authentication source"
 msgstr "Kgetha mohlodi wa netafatso"
-
-msgid "{multiauth:multiauth:select_source_header}"
-msgstr "Kgetha mohlodi wa netafatso"
-

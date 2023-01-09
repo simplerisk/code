@@ -1,6 +1,9 @@
 coverage:
   status:
-    project: yes
+    project:
+      default:
+        target: 0%
+        threshold: 2%
     patch: off
 comment:
   layout: "diff"
@@ -9,3 +12,5 @@ comment:
   require_base: no
   require_head: yes
   branches: null
+github_checks:
+    annotations: false

@@ -12,9 +12,6 @@ require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 require_once(realpath(__DIR__ . '/../includes/reporting.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
-
 // Add various security headers
 add_security_headers();
 
@@ -29,6 +26,8 @@ add_session_check($permissions);
 include_csrf_magic();
 
 // Include the SimpleRisk language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
 // Set the default tab values
@@ -59,7 +58,7 @@ if (isset($_POST['add_user']))
     
     $admin = isset($_POST['admin']) ? '1' : '0';
 
-    $multi_factor = (int)$_POST['multi_factor'];
+    $multi_factor = isset($_POST['multi_factor']) ? 1 : 0;
     $change_password = (int)(isset($_POST['change_password']) ? $_POST['change_password'] : 0);
 
     $permissions            = isset($_POST['permissions']) ? array_filter($_POST['permissions'], 'ctype_digit') : [];
@@ -124,7 +123,7 @@ if (isset($_POST['add_user']))
                     // Insert a new user
                     $user_id = add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $admin, $multi_factor, $change_password, $manager, $permissions);
 
-		    // If the encryption extra is enabled
+		            // If the encryption extra is enabled
                     if (encryption_extra())
                     {
                         // Load the extra
@@ -252,6 +251,9 @@ if (isset($_POST['delete_user']))
             // Remove the leftover associations in the related junction tables
             cleanup_after_delete("user");
 
+            // Delete the user from the user_mfa table
+            mfa_delete_userid($value);
+
             // If the encryption extra is enabled
             if (encryption_extra())
             {
@@ -330,6 +332,7 @@ if (isset($_POST['password_policy_update']))
     $usersettings_tab = true;
 
     $strict_user_validation = (isset($_POST['strict_user_validation'])) ? 1 : 0;
+    $mfa_required = (isset($_POST['mfa_required'])) ? 1 : 0;
     $pass_policy_enabled = (isset($_POST['pass_policy_enabled'])) ? 1 : 0;
     $min_characters = (int)$_POST['min_characters'];
     $alpha_required = (isset($_POST['alpha_required'])) ? 1 : 0;
@@ -344,7 +347,7 @@ if (isset($_POST['password_policy_update']))
     $pass_policy_max_age = (int)$_POST['pass_policy_max_age'];
     $pass_policy_reuse_limit = (int)$_POST['pass_policy_reuse_limit'];
 
-    update_password_policy($strict_user_validation, $pass_policy_enabled, $min_characters, $alpha_required, $upper_required, $lower_required, $digits_required, $special_required, $pass_policy_attempt_lockout, $pass_policy_attempt_lockout_time, $pass_policy_min_age, $pass_policy_max_age, $pass_policy_reuse_limit);
+    update_password_policy($strict_user_validation, $mfa_required, $pass_policy_enabled, $min_characters, $alpha_required, $upper_required, $lower_required, $digits_required, $special_required, $pass_policy_attempt_lockout, $pass_policy_attempt_lockout_time, $pass_policy_min_age, $pass_policy_max_age, $pass_policy_reuse_limit);
 
     // Display an alert
     set_alert(true, "good", "The settings were updated successfully.");
@@ -857,6 +860,9 @@ if (isset($_POST['password_policy_update']))
                                 <tr class="ldap_pass"><td><?php echo $escaper->escapeHtml($lang['RepeatPassword']); ?>:&nbsp;</td><td><input name="repeat_password" type="password" maxlength="50" size="20" autocomplete="off" /></td></tr>
                             </table>
                             <div>
+                                <input name="multi_factor" id="multi_factor" <?php if(isset($multi_factor) && $multi_factor == 1) echo "checked"; ?> <?php if(get_setting("mfa_required")) echo "checked readonly=\"readonly\""; ?> class="hidden-checkbox" type="checkbox" value="1" />  <label for="multi_factor">  &nbsp;&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['MultiFactorAuthentication']); ?> </label>
+                            </div>
+                            <div>
                                 <input name="change_password" id="change_password" <?php if(isset($change_password) && $change_password == 1) echo "checked"; ?> class="hidden-checkbox" type="checkbox" value="1" />  <label for="change_password">  &nbsp;&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['RequirePasswordChangeOnLogin']); ?> </label> 
                             </div>
 
@@ -916,20 +922,6 @@ if (isset($_POST['password_policy_update']))
                                     </li>
                                 </ul>
                             </div>
-                            <h6><u><?php echo $escaper->escapeHtml($lang['MultiFactorAuthentication']); ?></u></h6>
-                            <input id="none" type="radio" name="multi_factor" value="1" checked />&nbsp;<?php echo $escaper->escapeHtml($lang['None']); ?><br />
-                            <?php
-                                // If the custom authentication extra is installed
-                                if (custom_authentication_extra())
-                                {
-                                    // Include the custom authentication extra
-                                    require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
-
-                                    // Display the multi factor authentication options
-                                    multi_factor_authentication_options(1);
-
-                                }
-                            ?>
                             <br />
                             <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_user" /><br />
                         </form>
@@ -1019,6 +1011,7 @@ if (isset($_POST['password_policy_update']))
                       <td>
                             <h4><?php echo $escaper->escapeHtml($lang['UserPolicy']); ?>:</h4>
                             <input class="hidden-checkbox" type="checkbox" id="strict_user_validation" name="strict_user_validation"<?php if (get_setting('strict_user_validation') == 1) echo " checked" ?> /><label for="strict_user_validation">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['UseCaseSensitiveValidationOfUsername']); ?></label>
+                          <input class="hidden-checkbox" type="checkbox" id="mfa_required" name="mfa_required"<?php if (get_setting('mfa_required') == 1) echo " checked" ?> /><label for="mfa_required">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['RequireMFAForAllUsers']); ?></label>
                       </td>
                     </tr>
                   </tbody>

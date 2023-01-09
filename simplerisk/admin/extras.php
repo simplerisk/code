@@ -10,9 +10,6 @@
     require_once(realpath(__DIR__ . '/../includes/alerts.php'));
     require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
-
 // Add various security headers
 add_security_headers();
 
@@ -27,6 +24,8 @@ add_session_check($permissions);
 include_csrf_magic();
 
 // Include the SimpleRisk language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
 ?>
@@ -120,7 +119,7 @@ get_alert();
             </tr>
             <tr>
               <td width="155px"><b>Custom Authentication</b></td>
-              <td>Provides support for Active Directory Authentication, SAML/Single Sign-On and Duo Security multi-factor authentication.</td>
+              <td>Provides support for Active Directory/LDAP and SAML/Single Sign-On authentication.</td>
               <td width="60px"><?php echo (custom_authentication_extra() ? '<a href="authentication.php">Yes</a>' : '<a href="authentication.php">No</a>'); ?></td>
             </tr>
             <tr>
@@ -142,7 +141,7 @@ get_alert();
     -->
             <tr>
               <td width="155px"><b>Import / Export</b></td>
-              <td>Enables the import and export of CSV or XLS/XLSX files containing risk information.</td>
+              <td>Enables the import and export of spreadsheet files containing risk, asset, control, test and user information.</td>
               <td width="60px"><?php echo (import_export_extra() ? '<a href="importexport.php">Yes</a>' : '<a href="importexport.php">No</a>'); ?></td>
             </tr>
             <tr>

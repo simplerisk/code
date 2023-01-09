@@ -15,6 +15,8 @@
     add_security_headers(true, true, true, true, false);
 
     // Include the language file
+    // Ignoring detections related to language files
+    // @phan-suppress-next-line SecurityCheck-PathTraversal
     require_once(language_file());
     
     // If access is authenticated
@@ -154,14 +156,9 @@
         /****************************************** *************************************/
         
         /******************************* Assets API *************************************/
-        getRoute()->post('/assets/verify_asset', 'assets_verify_asset');
-        getRoute()->post('/assets/discard_asset', 'assets_discard_asset');
-        getRoute()->post('/assets/delete_asset', 'assets_delete_asset');
-        getRoute()->post('/assets/update_asset', 'assets_update_asset');
-        getRoute()->get('/assets/verified_asset_body', 'assets_verified_asset_table_body');
-        getRoute()->post('/assets/verify_assets', 'assets_verify_assets');
-        getRoute()->post('/assets/discard_assets', 'assets_discard_assets');
-        getRoute()->post('/assets/delete_assets', 'assets_delete_assets');
+        getRoute()->post('/assets/update_asset', 'assets_update_asset_API_switch');
+        getRoute()->post('/assets/view/asset_data', 'assets_for_view_API');
+        getRoute()->post('/assets/view/action', 'assets_view_action_API');
         getRoute()->get('/assets/options', 'get_asset_options');
         getRoute()->post('/asset-group/create', 'asset_group_create');
         getRoute()->post('/asset-group/update', 'asset_group_update');
@@ -261,287 +258,295 @@
         getRoute()->post('/admin/risk_catalog/delete_risk_catalog', 'deleteRiskCatalogAPI');
         getRoute()->post('/admin/risk_catalog/swap_groups', 'swapGroupCatalogAPI');
 
-	// Get threat catalog table data
-	getRoute()->get('/admin/threat_catalog/datatable', 'getThreatCatalogDatatableAPI');
-	getRoute()->get('/admin/threat_catalog/detail', 'getThreatCatalogAPI');
-	getRoute()->post('/admin/threat_catalog/update_order', 'updateThreatCatalogOrderAPI');
-	getRoute()->post('/admin/threat_catalog/add_threat_catalog', 'addThreatCatalogAPI');
-	getRoute()->post('/admin/threat_catalog/update_threat_catalog', 'updateThreatCatalogAPI');
-	getRoute()->post('/admin/threat_catalog/delete_threat_catalog', 'deleteThreatCatalogAPI');
+        // Get threat catalog table data
+        getRoute()->get('/admin/threat_catalog/datatable', 'getThreatCatalogDatatableAPI');
+        getRoute()->get('/admin/threat_catalog/detail', 'getThreatCatalogAPI');
+        getRoute()->post('/admin/threat_catalog/update_order', 'updateThreatCatalogOrderAPI');
+        getRoute()->post('/admin/threat_catalog/add_threat_catalog', 'addThreatCatalogAPI');
+        getRoute()->post('/admin/threat_catalog/update_threat_catalog', 'updateThreatCatalogAPI');
+        getRoute()->post('/admin/threat_catalog/delete_threat_catalog', 'deleteThreatCatalogAPI');
+
+        // This status call needs to be available with ComplianceForge SCF disabled
+        getRoute()->get('/complianceforgescf/enable', 'api_complianceforgescf_enable');
+        getRoute()->get('/complianceforgescf/disable', 'api_complianceforgescf_disable');
+        getRoute()->get('/complianceforgescf/status', 'api_complianceforgescf_status');
+
+	// Datatable/report column selection settings API
+	getRoute()->post('/admin/column_settings/save_column_settings', 'saveColumnSelectionSettingsAPI');
 
 	/************************** SIMPLERISK EXTRAS APIS ************************************/
 
         // If the Advanced Search Extra is enabled
         if (advanced_search_extra())
         {
-		// Required file
-		$required_file = realpath(__DIR__ . '/../extras/advanced_search/includes/api.php');
+            // Required file
+            $required_file = realpath(__DIR__ . '/../extras/advanced_search/includes/api.php');
 
-		// If the file exists
-		if (file_exists($required_file))
-		{
-			// Include the required file
-			require_once($required_file);
+            // If the file exists
+            if (file_exists($required_file))
+            {
+                // Include the required file
+                require_once($required_file);
 
-			// Get the advanced search routes
-			get_advanced_search_routes();
-		}
+                // Get the advanced search routes
+                get_advanced_search_routes();
+            }
         }
 
         // If the API Extra is enabled
         if (api_extra())
         {
-                // Required file
-                $required_file = realpath(__DIR__ . '/../extras/api/includes/api.php');
+            // Required file
+            $required_file = realpath(__DIR__ . '/../extras/api/includes/api.php');
 
-                // If the file exists
-                if (file_exists($required_file))
-                {       
-                        // Include the required file
-                        require_once($required_file);
-                        
-			// Get the api routes
-			get_api_routes();
-                }
+            // If the file exists
+            if (file_exists($required_file))
+            {
+                // Include the required file
+                require_once($required_file);
+
+                // Get the api routes
+                get_api_routes();
+            }
         }
 
         // If the Assessments Extra is enabled
         if (assessments_extra())
         {
-                // Required file 
-                $required_file = realpath(__DIR__ . '/../extras/assessments/includes/api.php');
+            // Required file
+            $required_file = realpath(__DIR__ . '/../extras/assessments/includes/api.php');
 
-                // If the file exists
-                if (file_exists($required_file))
-                {       
-                        // Include the required file
-                        require_once($required_file);
-                        
-			// Get the assessments routes
-			get_assessments_routes();
-                }
+            // If the file exists
+            if (file_exists($required_file))
+            {
+                // Include the required file
+                require_once($required_file);
+
+                // Get the assessments routes
+                get_assessments_routes();
+            }
         }
 
         // If the Authentication Extra is enabled
         if (custom_authentication_extra())
         {
-		// Required file 
-                $required_file = realpath(__DIR__ . '/../extras/authentication/includes/api.php');
+            // Required file
+            $required_file = realpath(__DIR__ . '/../extras/authentication/includes/api.php');
 
-                // If the file exists
-                if (file_exists($required_file))
-                {       
-                        // Include the required file
-                        require_once($required_file);
-                        
-			// Get the authentication routes
-			get_authentication_routes();
-                }
+            // If the file exists
+            if (file_exists($required_file))
+            {
+                // Include the required file
+                require_once($required_file);
+
+                // Get the authentication routes
+                get_authentication_routes();
+            }
         }
 
         // If the ComplianceForge SCF Extra is enabled
         if (complianceforge_scf_extra())
         {
-                // Required file 
-                $required_file = realpath(__DIR__ . '/../extras/complianceforgescf/includes/api.php');
+            // Required file
+            $required_file = realpath(__DIR__ . '/../extras/complianceforgescf/includes/api.php');
 
-                // If the file exists
-                if (file_exists($required_file))
-                {       
-                        // Include the required file
-                        require_once($required_file);
-                        
-			// Get the complianceforge scf routes
-			get_complianceforge_scf_routes();
-                }
+            // If the file exists
+            if (file_exists($required_file))
+            {
+                // Include the required file
+                require_once($required_file);
+
+                // Get the complianceforge scf routes
+                get_complianceforge_scf_routes();
+            }
         }
 
         // If the Customization Extra is enabled
         if (customization_extra())
         {
-                // Required file 
-                $required_file = realpath(__DIR__ . '/../extras/customization/includes/api.php');
+            // Required file
+            $required_file = realpath(__DIR__ . '/../extras/customization/includes/api.php');
 
-                // If the file exists
-                if (file_exists($required_file))
-                {       
-                        // Include the required file
-                        require_once($required_file);
-                        
-			// Get the customization routes
-			get_customization_routes();
-                }
+            // If the file exists
+            if (file_exists($required_file))
+            {
+                // Include the required file
+                require_once($required_file);
+
+                // Get the customization routes
+                get_customization_routes();
+            }
         }
 
         // If the Encryption Extra is enabled
         if (encryption_extra())
         {
-                // Required file 
-                $required_file = realpath(__DIR__ . '/../extras/encryption/includes/api.php');
+            // Required file
+            $required_file = realpath(__DIR__ . '/../extras/encryption/includes/api.php');
 
-                // If the file exists
-                if (file_exists($required_file))
-                {       
-                        // Include the required file
-                        require_once($required_file);
-                        
-			// Get the encryption routes
-			get_encryption_routes();
-                }
+            // If the file exists
+            if (file_exists($required_file))
+            {
+                // Include the required file
+                require_once($required_file);
+
+                // Get the encryption routes
+                get_encryption_routes();
+            }
         }
 
         // If the Import Export Extra is enabled
         if (import_export_extra())
-        {   
-                // Required file 
-                $required_file = realpath(__DIR__ . '/../extras/import-export/includes/api.php');
+        {
+            // Required file
+            $required_file = realpath(__DIR__ . '/../extras/import-export/includes/api.php');
 
-                // If the file exists
-                if (file_exists($required_file))
-                {       
-                        // Include the required file
-                        require_once($required_file);
-                        
-			// Get the import-export routes
-			get_import_export_routes();
-                }
+            // If the file exists
+            if (file_exists($required_file))
+            {
+                // Include the required file
+                require_once($required_file);
+
+                // Get the import-export routes
+                get_import_export_routes();
+            }
         }
 
         // If the Incident Management Extra is enabled
         if (incident_management_extra())
         {
-                // Required file 
-                $required_file = realpath(__DIR__ . '/../extras/incident_management/includes/api.php');
+            // Required file
+            $required_file = realpath(__DIR__ . '/../extras/incident_management/includes/api.php');
 
-                // If the file exists
-                if (file_exists($required_file))
-                {       
-                        // Include the required file
-                        require_once($required_file);
-                        
-			// Get the incident management routes
-			get_incident_management_routes();
-                }
+            // If the file exists
+            if (file_exists($required_file))
+            {
+                // Include the required file
+                require_once($required_file);
+
+                // Get the incident management routes
+                get_incident_management_routes();
+            }
         }
 
         // If the Jira Extra is enabled
         if (jira_extra())
         {
-                // Required file 
-                $required_file = realpath(__DIR__ . '/../extras/jira/includes/api.php');
+            // Required file
+            $required_file = realpath(__DIR__ . '/../extras/jira/includes/api.php');
 
-                // If the file exists
-                if (file_exists($required_file))
-                {       
-                        // Include the required file
-                        require_once($required_file);
-                        
-			// Get the jira routes
-			get_jira_routes();
-                }
+            // If the file exists
+            if (file_exists($required_file))
+            {
+                // Include the required file
+                require_once($required_file);
+
+                // Get the jira routes
+                get_jira_routes();
+            }
         }
 
         // If the Notification Extra is enabled
         if (notification_extra())
         {
-                // Required file 
-                $required_file = realpath(__DIR__ . '/../extras/notification/includes/api.php');
+            // Required file
+            $required_file = realpath(__DIR__ . '/../extras/notification/includes/api.php');
 
-                // If the file exists
-                if (file_exists($required_file))
-                {       
-                        // Include the required file
-                        require_once($required_file);
-                        
-			// Get the notification routes
-			get_notification_routes();
-                }
+            // If the file exists
+            if (file_exists($required_file))
+            {
+                // Include the required file
+                require_once($required_file);
+
+                // Get the notification routes
+                get_notification_routes();
+            }
         }
 
         // If the Organizational Hierarchy Extra is enabled
         if (organizational_hierarchy_extra())
         {
-                // Required file 
-                $required_file = realpath(__DIR__ . '/../extras/organizational_hierarchy/includes/api.php');
+            // Required file
+            $required_file = realpath(__DIR__ . '/../extras/organizational_hierarchy/includes/api.php');
 
-                // If the file exists
-                if (file_exists($required_file))
-                {       
-                        // Include the required file
-                        require_once($required_file);
-                        
-			// Get the organizational hierarchy routes
-			get_organizational_hierarchy_routes();
-                }
+            // If the file exists
+            if (file_exists($required_file))
+            {
+                // Include the required file
+                require_once($required_file);
+
+                // Get the organizational hierarchy routes
+                get_organizational_hierarchy_routes();
+            }
         }
 
         // If the Separation Extra is enabled
         if (team_separation_extra())
         {
-                // Required file 
-                $required_file = realpath(__DIR__ . '/../extras/separation/includes/api.php');
+            // Required file
+            $required_file = realpath(__DIR__ . '/../extras/separation/includes/api.php');
 
-                // If the file exists
-                if (file_exists($required_file))
-                {       
-                        // Include the required file
-                        require_once($required_file);
-                        
-			// Get the separation routes
-			get_separation_routes();
-                }
+            // If the file exists
+            if (file_exists($required_file))
+            {
+                // Include the required file
+                require_once($required_file);
+
+                // Get the separation routes
+                get_separation_routes();
+            }
         }
 
         // If the UCF Extra is enabled
         if (ucf_extra())
         {
-                // Required file 
-                $required_file = realpath(__DIR__ . '/../extras/ucf/includes/api.php');
+            // Required file
+            $required_file = realpath(__DIR__ . '/../extras/ucf/includes/api.php');
 
-                // If the file exists
-                if (file_exists($required_file))
-                {       
-                        // Include the required file
-                        require_once($required_file);
-                        
-			// Get the ucf routes
-			get_ucf_routes();
-                }
+            // If the file exists
+            if (file_exists($required_file))
+            {
+                // Include the required file
+                require_once($required_file);
+
+                // Get the ucf routes
+                get_ucf_routes();
+            }
         }
 
-	// If the Vulnerability Management Extra is enabled
+        // If the Vulnerability Management Extra is enabled
         if (vulnmgmt_extra())
         {
-                // Required file
-                $required_file = realpath(__DIR__ . '/../extras/vulnmgmt/includes/api.php');
+            // Required file
+            $required_file = realpath(__DIR__ . '/../extras/vulnmgmt/includes/api.php');
 
-                // If the file exists
-                if (file_exists($required_file))
-                {
-                        // Include the required file
-                        require_once($required_file);
+            // If the file exists
+            if (file_exists($required_file))
+            {
+                // Include the required file
+                require_once($required_file);
 
-                        // Get the vulnmgmt routes
-                        get_vulnmgmt_routes();
-                }
+                // Get the vulnmgmt routes
+                get_vulnmgmt_routes();
+            }
         }
 
-	// If the instance is registered
-	if (get_setting('registration_registered') != 0)
-	{
-		// Require file
-		$required_file = realpath(__DIR__ . '/../extras/upgrade/includes/api.php');
+        // If the instance is registered
+        if (get_setting('registration_registered') != 0)
+        {
+            // Require file
+            $required_file = realpath(__DIR__ . '/../extras/upgrade/includes/api.php');
 
-		// If the file exists
-                if (file_exists($required_file))
-                {
-                        // Include the required file
-                        require_once($required_file);
+            // If the file exists
+            if (file_exists($required_file))
+            {
+                // Include the required file
+                require_once($required_file);
 
-                        // Get the upgrade routes
-			get_upgrade_routes();
-		}
-	}
+                // Get the upgrade routes
+                get_upgrade_routes();
+            }
+        }
 
         /**************************************************************************************/
 

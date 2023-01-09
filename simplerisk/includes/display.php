@@ -4,13 +4,8 @@
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-use Ghunti\HighchartsPHP\Highchart;
-
-// Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 require_once(realpath(__DIR__ . '/displayrisks.php'));
-
 require_once(realpath(__DIR__ . '/assets.php'));
 require_once(realpath(__DIR__ . '/assessments.php'));
 require_once(realpath(__DIR__ . '/permissions.php'));
@@ -4422,16 +4417,10 @@ function view_asset_management_menu($active)
     echo "<a href=\"index.php\"> <span>1</span>" . $escaper->escapeHtml($lang['AutomatedDiscovery']) . "</a>\n";
     echo "</li>\n";
     echo ($active == "AddDeleteAssets" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"adddeleteassets.php\"> <span>2</span>" . $escaper->escapeHtml($lang['AddDeleteAssets']) . "</a>\n";
+    echo "<a href=\"manage_assets.php\"> <span>2</span>" . $escaper->escapeHtml($lang['ManageAssets']) . "</a>\n";
     echo "</li>\n";
-    $has_assets = has_assets();
-    if ($has_assets) {
-        echo ($active == "EditAssets" ? "<li id=\"EditAssets\" class=\"active\">\n" : "<li id=\"EditAssets\">\n");
-        echo "<a href=\"edit.php\"> <span>3</span> " . $escaper->escapeHtml($lang['EditAssets']) . "</a>\n";
-        echo "</li>\n";
-    }
     echo ($active == "ManageAssetGroups" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"manage_asset_groups.php\"> <span>" . ($has_assets?"4":"3") . "</span>" . $escaper->escapeHtml($lang['ManageAssetGroups']) . "</a>\n";
+    echo "<a href=\"manage_asset_groups.php\"> <span>3</span>" . $escaper->escapeHtml($lang['ManageAssetGroups']) . "</a>\n";
     echo "</li>\n";    
     echo "</ul>\n";
 }
@@ -6133,7 +6122,7 @@ function display_pending_risks()
 function risk_average_baseline_metric($time = "day", $title = ""){
     global $lang;
 
-    $chart = new Highchart();
+    $chart = new simpleriskHighchart();
     $chart->includeExtraScripts();
 
     // Set the timezone to the one configured for SimpleRisk
@@ -6156,17 +6145,18 @@ function risk_average_baseline_metric($time = "day", $title = ""){
     $risk_levels = get_risk_levels();
     $risk_levels = array_reverse($risk_levels);
 
-    $chart->yAxis->plotBands = array();
+    $plotBands = array();
 
     $to = 10;
     foreach($risk_levels as $risk_level){
-        $chart->yAxis->plotBands[] = array(
+        $plotBands[] = array(
             "color" => $risk_level['color'],
             "to" => $to,
             "from" => $risk_level['value'],
         );
         $to = $risk_level['value'];
     }
+    $chart->yAxis->plotBands = $plotBands;
 
     $chart->tooltip = array(
         'crosshairs' => true,
@@ -6186,6 +6176,7 @@ function risk_average_baseline_metric($time = "day", $title = ""){
 
     // Get the opened risks array by month
     $risk_scores = get_risks_score_averages($time);
+    $chart_series = array();
 
         // If the opened risks array is empty
         if (empty($risk_scores))
@@ -6214,7 +6205,7 @@ function risk_average_baseline_metric($time = "day", $title = ""){
             }
 
         // Draw the open risks line
-            $chart->series[] = array(
+            $chart_series[] = array(
                 'type' => "line",
                 'name' => "Risk Score Average",
                 'color' => "black",
@@ -6223,6 +6214,7 @@ function risk_average_baseline_metric($time = "day", $title = ""){
             );
 
         }
+    $chart->series = $chart_series;
 
     $chart->printScripts();
     echo "<div id=\"risk_score_average\"></div>\n";
@@ -6270,7 +6262,7 @@ function report_likelihood_impact(){
         </style>
     ';
     
-    $chart = new Highchart();
+    $chart = new simpleriskHighchart();
     $chart->includeExtraScripts();
     $chart->title->text = "";
     $chart->chart->renderTo = "likelihood_impact_chart";
@@ -6689,11 +6681,11 @@ function display_score_html_from_pending_risk($scoring_method="5", $custom=false
 ****************************************************/
 function display_set_default_date_format_script()
 {
-    global $lang, $escaper;
+    global $escaper;
     echo "
-        <script type=\"\">
-           \$.datepicker.setDefaults({dateFormat: '".$escaper->escapeHtml(get_default_date_format_for_js())."'});
-           var default_date_format = '".$escaper->escapeHtml(get_default_date_format_for_js())."';
+        <script type=''>
+            $.datepicker.setDefaults({dateFormat: '{$escaper->escapeHtml(get_default_date_format_for_js())}'});
+            var default_date_format = '{$escaper->escapeHtml(get_default_date_format_for_js())}';
         </script>
     ";
 }
@@ -9294,6 +9286,36 @@ function display_bootstrap_css()
 	echo "<link href=\"{$path}?" . current_version("app")  . "\" rel=\"stylesheet\" crossorigin=\"anonymous\">\n";
 }
 
+function display_datetimepicker_javascript($initialize = false) {
+    // Get the SimpleRisk Base URL
+    $simplerisk_base_url = get_setting('simplerisk_base_url');
+
+    // If the last character is not a /
+    if (substr($simplerisk_base_url, -1) != "/") {
+        // Append a / to the SimpleRisk Base URL
+        $simplerisk_base_url .= "/";
+    }
+
+    $app_version = current_version("app");
+    echo "<script src='{$simplerisk_base_url}/js/jquery.datetimepicker.full.min.js?{$app_version}'></script>\n";
+    echo "<link rel='stylesheet' href='{$simplerisk_base_url}/css/jquery.datetimepicker.min.css?{$app_version}'/>\n";
+
+    if ($initialize) {
+        // Initialize if needed
+        echo "
+            <script>
+                $(document).ready(function(){
+                    $('input.datetimepicker').datetimepicker({
+                        lazyInit: true,
+                        format: '" . get_default_datetime_format() . "',
+                        step: 5
+                    });
+                });
+            </script>
+        ";
+    }
+}
+
 /********************************
 * FUNCTION: DISPLAY ADD PROJECT *
 *********************************/
@@ -9510,4 +9532,814 @@ function display_project_table_header($template_group_id = ""){
     echo $header_html;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Renders the column selection widget, including the modal window, the button that opens the modal on click
+ * and the javascripts required for saving the selections
+ */
+function render_column_selection_widget($view) {
+    global $field_settings_display_groups, $escaper, $lang;
+    
+    // The function returns the whole settings including the 'display_settings' field that contains the list of names of selected columns
+    $settings = display_settings_get_saved_selection($view);
+    
+    // If there're no saved settings for this view yet
+    if (empty($settings)) {
+        // then we load the list of default selected fields
+        $settings = field_settings_get_display_defaults($view);
+    } else {
+        // For this we only need the list of names in the 'display_settings' field
+        $settings = $settings['display_settings'];
+    }
+    
+    $groups = [];
+    foreach (field_settings_get_localization($view) as $group_name => $group) {
+        $groups[$group_name] = [
+            'header' => empty($field_settings_display_groups[$group_name]['header_key']) ? false : $escaper->escapeHtml($lang[$field_settings_display_groups[$group_name]['header_key']]),
+            'fields' =>  $group
+        ];
+    }
+    
+    echo "
+        <script>
+            $(function() {
+                // .off() is there to make sure there's no multiple click handlers on it in case multiple of this widget is rendered on the same page
+                $('body').off('click', '.collapsible--toggle span.collapse-title').on('click', '.collapsible--toggle span.collapse-title', function(event) {
+                    event.preventDefault();
+                    $(this).closest('.collapsible--toggle').next('.collapsible').slideToggle('400');
+                    $(this).find('i').toggleClass('fa-caret-right fa-caret-down');
+                });
+                $('form#custom_display_settings-{$view}').submit(function() {
+                    event.preventDefault();
+                    var form = new FormData($(this)[0]);
+                    $.blockUI({message:\"<i class=\'fa fa-spinner fa-spin\' style=\'font-size:24px\'></i>\"});
+                    $.ajax({
+                        type: 'POST',
+                        url: BASE_URL + '/api/admin/column_settings/save_column_settings',
+                        data: form,
+                        async: true,
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        success: function(data){
+                            $('#setting_modal-{$view}').modal('hide');
+                            document.location.reload(true);
+                        },
+                        error: function(xhr,status,error){
+                            if(!retryCSRF(xhr, this)){
+                                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
+                            }
+                        },
+                        complete: function() {
+                            $.unblockUI();
+                        }
+                    });
+                });
+            });
+        </script>
+        <a href='#setting_modal-{$view}' class='btn' title='{$escaper->escapeHtml($lang['Settings'])}' role='button' data-toggle='modal'><i class='fa fa-cog'></i></a>
+        <div id='setting_modal-{$view}' class='modal hide' tabindex='-1' role='dialog' aria-labelledby='setting_modal-{$view}' aria-hidden='true' style='width:800px;'>
+            <div class='modal-header'>
+                <button type='button' class='close' data-dismiss='modal'>&times;</button>
+                <h4 class='modal-title'>{$escaper->escapeHtml($lang['ColumnSelections'])}</h4>
+            </div>
+            <div class='modal-body'>
+                <form id='custom_display_settings-{$view}' name='custom_display_settings-{$view}' method='post'>
+                    <input type='hidden' name='display_settings_view' value='{$view}'>
+                    <div class='well column-selections-container'>
+    ";
+    
+    foreach ($groups as $group_name => $group) {
+        // If the group has a header setup, then render it
+        if ($group['header']) {
+            echo "
+                        <div class='well'>
+                            <h4 class='collapsible--toggle clearfix'>
+                                <span class='collapse-title'><i class='fa fa-caret-down'></i>{$group['header']}</span>
+                            </h4>
+                            <div class='collapsible'>
+            ";
+        }
+        echo "
+                            <div class='row-fluid'>
+                                <div class='span6'>
+                                    <ul>";
+        
+        // Within a section the options are split into two columns.
+        $counter = 1;
+        $halfpoint = count($group['fields']) / 2;
+        foreach ($group['fields'] as $field_name => $text) {
+            echo "
+                                        <li>
+                                            <input class='hidden-checkbox' type='checkbox' name='{$field_name}' id='checkbox_{$field_name}-{$view}-{$group_name}' " . (in_array($field_name, $settings) ? "checked='yes'" : "") . "/>
+                                            <label for='checkbox_{$field_name}-{$view}-{$group_name}'>{$text}</label>
+                                        </li>";
+            
+            // Add the closing of the left column and the start of the right column
+            if ($counter !== false) {
+                if ($counter >= $halfpoint) {
+                    echo "
+                                    </ul>
+                                </div>
+                                <div class='span6'>
+                                    <ul>";
+                    // disable the counting, we're over the halfway point
+                    $counter = false;
+                } else {
+                    $counter += 1;
+                }
+            }
+        }
+        
+        echo "
+                                    </ul>
+                                </div>
+                            </div>";
+        // Only have to add these if the section had a header
+        if ($group['header']) {
+            echo "
+                            </div>
+                        </div>
+            ";
+        }
+    }
+    
+    echo "
+                    </div>
+                </form>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-default' data-dismiss='modal' aria-hidden='true'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+                <button type='submit' form='custom_display_settings-{$view}' class='btn btn-danger'>{$escaper->escapeHtml($lang['Save'])}</button>
+            </div>
+        </div>
+    ";
+}
+
+
+
+function render_field_edit_popup_modal($view) {
+    global $field_settings_views, $field_settings_display_groups, $field_settings, $escaper, $lang;
+
+    $view_type = $field_settings_views[$view]['view_type'];
+    $view_edit_ajax_uri = $field_settings_views[$view]['edit']['edit_ajax_uri'];
+    //$id_field_settings = !empty($field_settings_views[$view]['id_field']) ?  $field_settings[$view_type][$field_settings_views[$view]['id_field']] : false;
+    $groups = [];
+    foreach (field_settings_get_localization($view) as $group_name => $group) {
+        $groups[$group_name] = [
+            'header' => empty($field_settings_display_groups[$group_name]['header_key']) ? false : $escaper->escapeHtml($lang[$field_settings_display_groups[$group_name]['header_key']]),
+            'fields' =>  $group
+        ];
+    }
+    
+    echo "
+        <script>
+            $(function() {
+                // .off() is there to make sure there's no multiple click handlers on it in case multiple of this widget is rendered on the same page
+                $('body').off('click', '.collapsible--toggle span.collapse-title').on('click', '.collapsible--toggle span.collapse-title', function(event) {
+                    event.preventDefault();
+                    $(this).closest('.collapsible--toggle').next('.collapsible').slideToggle('400');
+                    $(this).find('i').toggleClass('fa-caret-right fa-caret-down');
+                });
+                $('form#edit_popup-{$view}').submit(function() {
+                    event.preventDefault();
+                    var form = new FormData($(this)[0]);
+                    $.blockUI({message:\"<i class=\'fa fa-spinner fa-spin\' style=\'font-size:24px\'></i>\"});
+                    $.ajax({
+                        type: 'POST',
+                        url: BASE_URL + '{$view_edit_ajax_uri}',
+                        data: form,
+                        async: true,
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        success: function(data){
+                            $('#edit_popup_modal-{$view}').modal('hide');
+                            // document.location.reload(true);
+                            datatableInstances['{$view}'].draw();
+                        },
+                        error: function(xhr,status,error){
+                            if(!retryCSRF(xhr, this)){
+                                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
+                            }
+                        },
+                        complete: function() {
+                            $.unblockUI();
+                        }
+                    });
+                });
+            });
+        </script>
+        <div id='edit_popup_modal-{$view}' class='modal hide' tabindex='-1' role='dialog' aria-labelledby='edit_popup_modal-{$view}' aria-hidden='true' style='width:800px;'>
+            <div class='modal-header'>
+                <button type='button' class='close' data-dismiss='modal'>&times;</button>
+                <h4 class='modal-title'>{$escaper->escapeHtml($lang['Edit'])}</h4>
+            </div>
+            <div class='modal-body'>
+                <form id='edit_popup-{$view}' name='edit_popup-{$view}' method='post'>
+                    <input type='hidden' name='edit_view' value='{$view}'>
+    ";
+
+    // If there's an id field setup add a hidden field for it
+    if (!empty($field_settings_views[$view]['id_field'])) {
+        echo "
+                    <input type='hidden' name='{$field_settings_views[$view]['id_field']}' class='edit_input'/>
+        ";
+    }
+
+    echo "                    
+                    <div class='well edit-popup-container'>
+    ";
+
+    if ($customization = customization_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+        $active_fields = get_active_fields($view_type);
+        $mapped_custom_field_settings = [];
+        foreach ($active_fields as $active_field) {
+
+            // Skip this step for basic fields
+            if ($active_field['is_basic']) {
+                continue;
+            }
+
+            $field_name = "custom_field_{$active_field['id']}";
+
+            switch($active_field['type']) {
+                case "shorttext":
+                case "hyperlink":
+                    $type = 'short_text';
+                    break;
+                case "longtext":
+                    $type = 'long_text';
+                    break;
+                case "date":
+                    $type = 'date';
+                    break;
+                case "dropdown":
+                    $type = "select[{$field_name}]";
+                    break;
+                case "multidropdown":
+                    $type = "multiselect[{$field_name}]";
+                    break;
+                case "user_multidropdown":
+                    $type = "multiselect[user]";
+                    break;
+            }
+
+            $mapped_custom_field_settings[$field_name] = [
+                'type' => $type,
+                'required' => $active_field['required'],
+                'alphabetical_order' => $active_field['alphabetical_order'],
+                'editable' => true,
+            ];
+        }
+    }
+
+     foreach ($groups as $group_name => $group) {
+        // If the group has a header setup, then render it
+        if ($group['header']) {
+            echo "
+                        <div class='well'>
+                            <h4 class='collapsible--toggle clearfix'>
+                                <span class='collapse-title'><i class='fa fa-caret-down'></i>{$group['header']}</span>
+                            </h4>
+                            <div class='collapsible'>
+            ";
+        }
+        echo "
+                            <div class='row-fluid'>
+                                <div class='span12'>";
+        
+        foreach ($group['fields'] as $field_name => $text) {
+            // If it's not in the field settings then it's a custom field
+            $field_setting = $field_settings[$view_type][$field_name] ?? $mapped_custom_field_settings[$field_name];
+            $required = $field_setting['required'];
+            // Currently not displaying uneditable fields, we could display but make them disabled
+            if (!$field_setting['editable']) {
+                continue;
+            }
+
+            if ($required) {
+                $required_text = "<span class='required'>*</span>";
+                $required_attribute = " required ";
+            } else {
+                $required_text = '';
+                $required_attribute = '';
+            }
+
+            echo "
+                                    <label for='edit_{$field_name}-{$view}-{$group_name}'>{$text}{$required_text}</label>
+            ";
+
+            [$field_type, $field_sub_type] = array_pad(preg_split('/(\[|\])/', $field_setting['type'], 0, PREG_SPLIT_NO_EMPTY), 2, false);
+            switch($field_type) {
+                case 'short_text':
+                    echo "
+                                    <input type='text' name='{$field_name}' id='edit_{$field_name}-{$view}-{$group_name}' autocomplete='off' class='edit_input'{$required_attribute}/>";
+                    break;
+                case 'long_text':
+                    echo "
+                                    <textarea name='{$field_name}' id='edit_{$field_name}-{$view}-{$group_name}' style='width: 100%;' class='edit_input'{$required_attribute}></textarea>";
+                    break;
+                case 'select':
+                    create_dropdown($field_sub_type, null, $field_name, !$field_setting['required'], false, false, " class='edit_input' {$required_attribute}", '--', '', true, $field_setting['alphabetical_order'] ?? 0);
+                    break;
+                case 'multiselect':
+                    create_multiple_dropdown($field_sub_type, null, $field_name, null, false, "--", "", true, " class='multiselect edit_input' {$required_attribute}", $field_setting['alphabetical_order'] ?? 0);
+                    break;
+                case 'datetime':
+                case 'date':
+                    echo "
+                                    <input type='text' name='{$field_name}' id='edit_{$field_name}-{$view}-{$group_name}' style='cursor: default;' class='{$field_type}picker edit_input' autocomplete='off'{$required_attribute}/>";
+                    break;
+                case 'tags':
+                    $tag_input_id = "edit_{$field_name}_{$view}_{$group_name}";
+                    echo "
+                                    <select class='edit_input' readonly id='{$tag_input_id}' name='{$field_name}[]' multiple placeholder='Select/Add tag'{$required_attribute}></select>
+                                    <script>
+                                        var tags_{$tag_input_id}_selectize = $('#{$tag_input_id}').selectize({
+                                            plugins: ['remove_button', 'restore_on_backspace'],
+                                            delimiter: '|',
+                                            create: true,
+                                            valueField: 'label',
+                                            labelField: 'label',
+                                            searchField: 'label',
+                                            sortField: [{ field: 'label', direction: 'asc' }],
+                                            onChange: function() { $('#{$tag_input_id}').data('changed', true);},
+                                        });
+                                        $.ajax({
+                                            url: BASE_URL + '/api/management/tag_options_of_type?type={$view_type}',
+                                            type: 'GET',
+                                            dataType: 'json',
+                                            error: function() {
+                                                console.log('Error loading assets for selectize!');
+                                            },
+                                            success: function(res) {
+                                                tags_{$tag_input_id}_selectize[0].selectize.addOption(res.data);
+                                                tags_{$tag_input_id}_selectize[0].selectize.refreshOptions(true);
+                                            }
+                                        });
+                                    </script>";
+                    break;
+            }
+        }
+
+        echo "
+                                </div>
+                            </div>";
+        // Only have to add these if the section had a header
+        if ($group['header']) {
+            echo "
+                            </div>
+                        </div>
+            ";
+        }
+    }
+
+    echo "
+                    </div>
+                </form>
+            </div>
+            <div class='modal-footer'>
+                <button class='btn btn-default' data-dismiss='modal' aria-hidden='true'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+                <button type='submit' form='edit_popup-{$view}' class='btn btn-danger'>{$escaper->escapeHtml($lang['Save'])}</button>
+            </div>
+        </div>
+    ";
+}
+
+/**
+ * Renders the datatable for the view based on the settings in '$field_settings_views' global variable
+ * 
+ * -Wires in the API endpoint setup in the settings as the datasource
+ * -Adds the filter bar and logic for the filtering
+ * -Adds editing functionality(inline or popup)
+ * 
+ * @param string $view
+ */
+function render_view_table($view) {
+    global $lang, $escaper, $field_settings, $field_settings_views;
+
+    if ($customization = customization_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+    }
+
+    $view_type = $field_settings_views[$view]['view_type'];
+    $datatable_data_type_associative = $field_settings_views[$view]['datatable_data_type'] === 'associative';
+    $datatable_filter_submit_delay = $field_settings_views[$view]['datatable_filter_submit_delay'] ?? 400;
+    $view_editable = !empty($field_settings_views[$view]['edit']);
+    $view_edit_type = $view_editable ? $field_settings_views[$view]['edit']['type'] : false;
+    $view_edit_type_inline = $view_edit_type && $view_edit_type === 'inline';
+    $view_edit_type_popup = $view_edit_type && $view_edit_type === 'popup';
+    $view_edit_ajax_uri = $field_settings_views[$view]['edit']['edit_ajax_uri'];
+    
+    $settings = display_settings_get_display_settings_for_view($view);
+    $localizations = field_settings_get_localization($view, false);
+
+    $actions_column_info = !empty($field_settings_views[$view]['actions_column']) ? $field_settings_views[$view]['actions_column'] : false;
+    $actions_column_first = $actions_column_info && $actions_column_info['position'] === 'first';
+
+    $order_index = false;
+    $order_dir = "asc";
+
+    $header_row = "";
+    $filter_header_row = "";
+
+    if ($actions_column_info) {
+        if ($actions_column_first) {
+            $settings = array_merge([$actions_column_info['field_name']], $settings);
+        } else {
+            $settings []= $actions_column_info['field_name'];
+        }
+
+        $localizations[$actions_column_info['field_name']] = $escaper->escapeHtml($field_settings[$view_type][$actions_column_info['field_name']]['localization_key']);
+    }
+    
+    // Iterate through the list of selected fields
+    foreach ($settings as $field_idx => $field_name) {
+
+        if ($order_index === false && !empty($field_settings[$view_type][$field_name]['orderable']) && $field_settings[$view_type][$field_name]['orderable']) {
+            $order_index = $field_idx;
+        }
+
+        // If there's a custom column style defined for the field then use that instead of the default
+        if (!empty($field_settings[$view_type][$field_name]['custom_column_style'])) {
+            $style = $field_settings[$view_type][$field_name]['custom_column_style'];
+        } else {
+            $style = "min-width:100px;";
+        }
+
+        $header_row .= "<th data-name='{$field_name}' align='left' style='{$style}'>{$localizations[$field_name]}</th>";
+
+        // non render-related logic
+        switch($field_name) {
+            case 'calculated_risk':
+                $order_index = $field_idx;
+                $order_dir = "desc";
+                break;
+        }
+
+        // Only render the search field if in the configuration it's set as searchable or it's a custom field which as of now always searchable
+        if ((!empty($field_settings[$view_type][$field_name]['searchable']) && $field_settings[$view_type][$field_name]['searchable']) || str_starts_with($field_name, 'custom_field_')) {
+
+            // render-related logic
+            $filter_field = "";
+            switch($field_name) {
+                case 'mitigation_planned':
+                    $filter_field = "<select name='mitigation_planned'><option value=''>--</option><option value='{$escaper->escapeHtml($lang['Yes'])}'>{$escaper->escapeHtml($lang['Yes'])}</option><option value='{$escaper->escapeHtml($lang['No'])}'>{$escaper->escapeHtml($lang['No'])}</option></select>";
+                    break;
+                case 'management_review':
+                    $filter_field = "<select name='management_review'><option value=''>--</option><option value='{$escaper->escapeHtml($lang['Yes'])}'>{$escaper->escapeHtml($lang['Yes'])}</option><option value='{$escaper->escapeHtml($lang['No'])}'>{$escaper->escapeHtml($lang['No'])}</option><option value='{$escaper->escapeHtml($lang['PASTDUE'])}'>{$escaper->escapeHtml($lang['PASTDUE'])}</option></select>";
+                    break;
+                default:
+                    $filter_field = "<input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' style='max-width: unset;'>";
+                    break;
+            }
+            
+            $filter_header_row .= "<th data-column-number='{$field_idx}' data-name='{$field_name}' align='left' style='{$style}'>{$filter_field}</th>";
+        } else {
+            // add an empty header cell if the field isn't searchable
+            $filter_header_row .= "<th></th>";
+        }
+    }
+
+    $datatable_id = "{$view}_datatable";
+    echo "
+        <table id='{$datatable_id}' width='100%' class='datatable risk-datatable table table-bordered table-striped table-condensed" . ($view_editable ? " editable-{$view_edit_type}" : '') . "' data-view='{$view}'>
+            <thead >
+                <tr class='header'>{$header_row}</tr>
+                <tr class='header_filter'>{$filter_header_row}</tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    ";
+    
+    if ($view_edit_type_popup) {
+        render_field_edit_popup_modal($view);
+    }
+
+    echo "
+        <script>
+            // Storing the datatable instances in a dictionary so it can be reached by other parts of the code by the name of the view
+            // Only initialize if it doesn't exist yet
+            if (typeof datatableInstances === 'undefined') {
+                datatableInstances = [];
+            }
+
+            var pageLength = 10;
+
+            // Save the datatable instance into the dictionary
+            datatableInstances['{$view}'] = $('#{$datatable_id}').DataTable({
+                bFilter: true,
+                bLengthChange: false,
+                processing: true,
+                serverSide: true,
+                bSort: true,
+                orderCellsTop: true,
+                pagingType: 'full_numbers',
+                pageLength: pageLength,
+                dom : \"lrti<'#view-all.view-all'>p\",
+                scrollX: true,
+    " .
+    ($order_index !== false ? "order: [[{$order_index}, '{$order_dir}']],
+    " : "ordering: false,") .
+                "ajax: {
+                    url: BASE_URL + '{$field_settings_views[$view]['datatable_ajax_uri']}',
+                    type: 'post',
+                    data: function(d){ },
+                    complete: function(response){ }
+                },
+                columns: [
+    ";
+
+    
+    $actions_column_info = !empty($field_settings_views[$view]['actions_column']) ? $field_settings_views[$view]['actions_column'] : false;
+
+    // If the array isn't associative then if the foreach is constructed this way then the $field_idx will have the index of the array element
+    foreach ($settings as $field_idx => $field_name) {
+        
+        // if it's not defined in the settings it's probably a custom field
+        if ($customization && empty($field_settings[$view_type][$field_name]) && preg_match('/custom_field_([\d]+)/', $field_name, $matches) === 1) {
+            $custom_field = get_field_by_id($matches[1]);
+            $searchable = 'true';
+            $orderable = !in_array($custom_field['type'], ['multidropdown', 'user_multidropdown']) ? 'true' : 'false';
+            // by default custom fields are editable, but only need this when the edit type is inline
+            $editable_cell = $view_edit_type_inline;
+            $has_display_field = in_array($custom_field['type'], ['dropdown', 'multidropdown', 'user_multidropdown']);
+        } else {
+            $searchable = $field_settings[$view_type][$field_name]['searchable'] ? 'true' : 'false';
+            $orderable = $field_settings[$view_type][$field_name]['orderable'] ? 'true' : 'false';
+            $editable_cell = $view_edit_type_inline && $field_settings[$view_type][$field_name]['editable'];
+            $has_display_field = $field_settings[$view_type][$field_name]['has_display_field'];
+        }
+
+        // Get the renderer if there's any defined for the field
+        $renderer = !empty($field_settings[$view_type][$field_name]['renderer']) ? $field_settings[$view_type][$field_name]['renderer'] : false;
+        $display_post_fix = $has_display_field ? '_display' : '';
+        
+        
+        if ($actions_column_info && $actions_column_info['field_name'] == $field_name) {
+            $class_name = 'cell-action';
+        } elseif($editable_cell) {
+            $class_name = 'cell-editable';
+        } else {
+            $class_name = false;
+        }
+        
+        // If the data coming from the server side as an associative array we need to add the configuration a bit differently
+        if ($datatable_data_type_associative) {
+            echo "
+                    {'data': '{$field_name}{$display_post_fix}', 'searchable': {$searchable}, 'orderable': {$orderable}" . ($class_name ? ", 'className': '{$class_name}'" : "") . ($renderer ? ", 'render': {$renderer}" : "") . "},
+            ";
+        } else {
+            echo "
+                    {'target': '{$field_idx}', 'searchable': {$searchable}, 'orderable': {$orderable}" . ($class_name ? ", 'className': '{$class_name}'" : "") . ($renderer ? ", 'render': {$renderer}" : "") . "},
+            ";
+        }
+        
+    }
+    echo "
+                ],
+            });";
+    
+    // Only need this section when inline edit is enabled for the view
+    if ($view_edit_type_inline) {
+        echo "
+            // Only define the function if it doesn't exist yet
+            if (typeof getColumnsToTriggerRedrawWhenChanged !== 'function') {
+
+                var columnsToTriggerRedrawWhenChanged = [];
+                // The function is to gather the column names that when their field changed have to trigger a re-draw as the changes could affect the sorting/filtering
+                // defining it as a global function 
+                window.getColumnsToTriggerRedrawWhenChanged = function(instance) {
+                    var settings = instance.settings();
+                    var columns = settings.init().columns;
+                    var fields = [];
+
+                    // Get the fields the datatable is sorted by
+                    for (const order of settings.order()) {
+                        fields.push(columns[order[0]].data);
+                    }
+
+                    // Get the fields filtered on
+                    var len = instance.columns().count();
+                    for (i = 0; i < len; i++) {
+                        // Add to the list if the search field isn't empty and the field isn't added yet
+                        if (instance.column(i).search() && fields.indexOf(columns[i].data) === -1) {
+                            fields.push(columns[i].data);    
+                        }
+                    }
+
+                    return fields;
+                }
+            }
+
+            // Only define the function if it doesn't exist yet
+            if (typeof make_resizable !== 'function') {
+                function make_resizable(element, view) {
+                    var factor = 7.6;
+                    function resize() {
+                        element.width((element.val().length + 1) * factor);
+                        datatableInstances[view].columns.adjust();
+                    }
+
+                    for (const event of ['keyup', 'keypress', 'focus', 'blur', 'change']) {
+                        element.on(event, resize);
+                    }
+                    resize();
+                }
+            }
+        ";
+    }
+    
+    echo "
+            $(document).ready(function(){
+                // Add paginate options
+                datatableInstances['{$view}'].on('draw', function(e, settings) {
+                    $('.paginate_button.first').html('<i class=\"fa fa-chevron-left\"></i><i class=\"fa fa-chevron-left\"></i>');
+                    $('.paginate_button.previous').html('<i class=\"fa fa-chevron-left\"></i>');
+                    $('.paginate_button.last').html('<i class=\"fa fa-chevron-right\"></i><i class=\"fa fa-chevron-right\"></i>');
+                    $('.paginate_button.next').html('<i class=\"fa fa-chevron-right\"></i>');
+                    " . ($view_edit_type_inline ? "columnsToTriggerRedrawWhenChanged = getColumnsToTriggerRedrawWhenChanged(datatableInstances['{$view}']);" : "") . "
+                });
+
+                // Add all text to View All button on bottom
+                $('.view-all').html('{$escaper->escapeHtml($lang['ALL'])}');
+
+                // View All
+                $('#{$datatable_id}_wrapper .view-all').click(function() {
+                    var oSettings = datatableInstances['{$view}'].settings();
+                    if(oSettings[0]._iDisplayLength == -1) {
+                        $(this).parents('#{$datatable_id}_wrapper .dataTables_wrapper').find('.view-all').removeClass('current');
+                        oSettings[0]._iDisplayLength = pageLength;
+                        datatableInstances['{$view}'].draw();
+                    } else {
+                        oSettings[0]._iDisplayLength = -1;
+                        datatableInstances['{$view}'].draw();
+                        $(this).addClass('current');
+                    }
+                });
+
+                // Page event
+                $('body').on('click', '#{$datatable_id}_wrapper span > .paginate_button', function() {
+                    var oSettings = datatableInstances['{$view}'].settings();
+                    if(oSettings[0]._iDisplayLength == -1) {
+                        $(this).parents('#{$datatable_id}_wrapper .dataTables_wrapper').find('.view-all').removeClass('current');
+                        oSettings[0]._iDisplayLength = pageLength;
+                        datatableInstances['{$view}'].draw();
+                    }
+                });
+
+                var filter_submit_timer;
+                $( '#{$datatable_id}_wrapper tr.header_filter input, #{$datatable_id}_wrapper tr.header_filter select').on( 'keyup change', function () {
+                    clearTimeout(filter_submit_timer);
+                    var val = this.value;
+                    var column_number = $(this).closest('th').attr('data-column-number');
+                    if (datatableInstances['{$view}'].column(column_number).search() !== this.value) {
+                        filter_submit_timer = setTimeout(function() {
+                          datatableInstances['{$view}'].column(column_number).search(val).draw();
+                        }, {$datatable_filter_submit_delay});
+                    }
+                });
+    ";
+
+    if ($view_edit_type_inline) {
+        echo "
+                // When clicking on a cell that's not edited the text should be replaced with the component used to edit it
+                $('body').on('click', '#{$datatable_id} td.cell-editable', function() {
+
+                    var _this = $(this);
+                    // If the cell is already edited then there's nothing left to do
+                    if (_this.hasClass('editing')) {
+                        return;
+                    }
+
+                    // Mark the cell as being edited
+                    _this.addClass('editing');
+
+                    var instance = datatableInstances['{$view}'];
+
+                    $(this).html(instance.cell(this).render('edit'));
+                    instance.columns.adjust();
+                    _this.find('.edited-field').focus();
+
+                    // If it's a textarea save its original width to be able to detect if it changed
+                    var textarea = $('textarea.edited-field', _this);
+                    if (textarea !== undefined && textarea.length) {
+                        textarea.data('old_width', textarea[0].clientWidth);
+                    }
+
+                    // If it's an input field, make it resizable
+                    var input = $('input[type=text].edited-field', _this);
+                    if (input !== undefined && input.length) {
+                        make_resizable(input, '{$view}');
+                    }
+                });
+
+                // Save the changes when the component loses focus
+                $('body').on('blur', '#{$datatable_id} td.cell-editable.editing', function() {
+                    var _this = $(this);
+                    _this.removeClass('editing');
+    
+                    var instance = datatableInstances['{$view}'];
+                    var rowData = instance.row(this).data();                
+                    var columns = instance.settings().init().columns;
+                    var colIndex = instance.cell(this).index().column;
+                    var editedField = _this.find('.edited-field');
+                    var fieldDataChanged = editedField.data('changed') === true;
+
+                    // Only if the data changed
+                    if (fieldDataChanged) {
+    
+                        var id = rowData['id'];    
+                        var fieldName = columns[colIndex].data;
+                        var fieldValue = editedField.val();
+
+                        // Check if the field's name is in the list of fields that should trigger a redraw when changed
+                        var needsRedraw = columnsToTriggerRedrawWhenChanged.indexOf(fieldName) !== -1;
+    
+                        // Hit the edit API and save the field's new value
+                        $.ajax({
+                            type: 'POST',
+                            url: BASE_URL + '{$view_edit_ajax_uri}',
+                            data : {
+                                id: id,
+                                fieldName: fieldName,
+                                fieldValue: fieldValue,
+                                view: '{$view}',
+                            },
+                            context: this,
+                            success: function(data){
+                                if(data.status_message){
+                                    showAlertsFromArray(data.status_message);
+                                }
+                                // Have to re-populate the cell with the data coming from the server, not trusting data on the client side
+                                if (data.data) {
+                                    var cell = instance.cell(this);
+                                    // Set the data to the cell and let it be rendered too
+                                    cell.data(data.data);
+                                    // Adjust the columns
+                                    instance.columns.adjust();
+                                    // Redraw the whole table if a column that's used for sorting or filtering is edited
+                                    if (needsRedraw) {
+                                        instance.draw();
+                                    }
+                                }
+                            },
+                            error: function(xhr,status,error){
+                                if(!retryCSRF(xhr, this)) {
+                                	showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
+                                _this.html(instance.cell(this).render('display'));
+                            }
+                        });
+                    } else {
+                        _this.html(instance.cell(this).render('display'));
+                        instance.columns.adjust();
+                    }
+                });
+
+                // Detect width resize of textareas in the table when inline editing to adjust the width of the headers
+                $('body').on('mouseup', '#{$datatable_id} td.cell-editable textarea.edited-field', function() {
+                    // On mouseup(supposedly after dragging the resize widget on the lower right) we check if the current width is matching with the width saved on the textarea
+                    if($(this)[0].clientWidth != $(this).data('old_width')){
+                        // If it doesn't then adjust the header column widths 
+                        datatableInstances['{$view}'].columns.adjust();
+                        // and save the current width so this logic only triggers if the width changed again 
+                        $(this).data('old_width', $(this)[0].clientWidth); 
+                    }
+                });
+        ";
+    }
+
+    echo "
+            });
+        </script>
+    ";
+}
 ?>

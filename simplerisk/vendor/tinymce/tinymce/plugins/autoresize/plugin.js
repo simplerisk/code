@@ -1,5 +1,5 @@
 /**
- * TinyMCE version 6.0.0 (2020-03-03)
+ * TinyMCE version 6.3.1 (2022-12-06)
  */
 
 (function () {
@@ -53,7 +53,8 @@
       }
     };
     const parseCssValueToInt = (dom, elm, name, computed) => {
-      const value = parseInt(dom.getStyle(elm, name, computed), 10);
+      var _a;
+      const value = parseInt((_a = dom.getStyle(elm, name, computed)) !== null && _a !== void 0 ? _a : '', 10);
       return isNaN(value) ? 0 : value;
     };
     const shouldScrollIntoView = trigger => {

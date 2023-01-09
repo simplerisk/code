@@ -136,7 +136,7 @@
                 position: relative;
 
                 &:before {
-                    font-family: "Font Awesome 5 Free";
+                    font-family: $font-3;
                     position: absolute;
                     left: -5px;
                     transform: translateX(-100%);

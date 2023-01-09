@@ -16,10 +16,12 @@ require_once(realpath(__DIR__ . '/extras.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 // Include the language file
+// Ignoring detections related to language files
+// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file(true));
 
 // Include Laminas Escaper for HTML Output Encoding
-$escaper = new Laminas\Escaper\Escaper('utf-8');
+$escaper = new simpleriskEscaper();
 
 /******************************
  * FUNCTION: IS AUTHENTICATED *
@@ -4521,6 +4523,7 @@ function getControlResponse()
     {
         $id = $_GET['control_id'];
         $control = get_framework_control($id);
+        $control['description'] = utf8ize($control['description']);
         $mapped_frameworks = get_mapping_control_frameworks($id);
         $html = "";
         foreach ($mapped_frameworks as $framework){
@@ -7157,260 +7160,6 @@ function getReviewRisksDatatableResponse()
     }
 }
 
-/**************************
- * FUNCTION: VERIFY ASSET *
- **************************/
-function assets_verify_asset()
-{
-    global $lang, $escaper;
-
-        // If the id is not sent
-    if (!isset($_POST['id']))
-    {
-        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
-
-        // Return a JSON response
-        json_response(400, get_alert(true), NULL);
-    } else {
-        // If the user has asset permissions
-        if (check_permission("asset"))
-        {
-            $id = (int)$_POST['id'];
-            if (verify_asset($id)) {
-                set_alert(true, "good", $escaper->escapeHtml($lang['AssetWasVerifiedSuccessfully']));
-                json_response(200, get_alert(true), null);
-            } else {
-                set_alert(true, "bad", $escaper->escapeHtml($lang['ThereWasAProblemVerifyingTheAsset']));
-                json_response(400, get_alert(true), NULL);
-            }
-        }
-        else
-        {
-            set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForAsset']));
-            json_response(400, get_alert(true), NULL);
-        }
-    }
-}
-
-
-/**************************
- * FUNCTION: DELETE ASSET *
- **************************/
-function assets_delete_asset($discard = false)
-{
-    global $lang, $escaper;
-
-        // If the id is not sent
-    if (!isset($_POST['id']))
-    {
-        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
-
-        // Return a JSON response
-        json_response(400, get_alert(true), NULL);
-    } else {
-        // If the user has asset permissions
-        if (check_permission("asset"))
-        {
-            $id = (int)$_POST['id'];
-            if (delete_asset($id)) {
-                set_alert(true, "good", $escaper->escapeHtml($discard? $lang['AssetWasDiscardedSuccessfully']: $lang['AssetWasDeletedSuccessfully']));
-                json_response(200, get_alert(true), null);
-            } else {
-                set_alert(true, "bad", $escaper->escapeHtml($discard? $lang['ThereWasAProblemDiscardingTheAsset'] : $lang['ThereWasAProblemDeletingTheAsset']));
-                json_response(400, get_alert(true), NULL);
-            }
-        }
-        else
-        {
-            set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForAsset']));
-            json_response(400, get_alert(true), NULL);
-        }
-    }
-}
-
-/**************************
- * FUNCTION: DISCARD ASSET *
- **************************/
-function assets_discard_asset()
-{
-    assets_delete_asset(true);
-}
-
-function assets_verify_assets()
-{
-    global $lang, $escaper;
-
-        // If the ids are not sent
-    if (!isset($_POST['ids']))
-    {
-        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
-
-        // Return a JSON response
-        json_response(400, get_alert(true), NULL);
-    } else {
-        // If the user has asset permissions
-        if (check_permission("asset"))
-        {
-            $ids = json_decode($_POST['ids']);
-            if (verify_assets($ids)) {
-                set_alert(true, "good", $escaper->escapeHtml($lang['AssetsWereVerifiedSuccessfully']));
-                json_response(200, get_alert(true), null);
-            } else {
-                set_alert(true, "bad", $escaper->escapeHtml($lang['ThereWasAProblemVerifyingTheAssets']));
-                json_response(400, get_alert(true), NULL);
-            }
-        }
-        else
-        {
-            set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForAsset']));
-            json_response(400, get_alert(true), NULL);
-        }
-    }
-}
-
-
-function assets_delete_assets($discard=false)
-{
-    global $lang, $escaper;
-
-        // If the ids are not sent
-    if (!isset($_POST['ids']))
-    {
-        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
-
-        // Return a JSON response
-        json_response(400, get_alert(true), NULL);
-    } else {
-        // If the user has asset permissions
-        if (check_permission("asset"))
-        {
-            $ids = json_decode($_POST['ids']);
-            if (delete_assets($ids)) {
-                set_alert(true, "good", $escaper->escapeHtml($discard? $lang['AssetsWereDiscardedSuccessfully']: $lang['AssetsWereDeletedSuccessfully']));
-                json_response(200, get_alert(true), null);
-            } else {
-                set_alert(true, "bad", $escaper->escapeHtml($discard? $lang['ThereWasAProblemDiscardingTheAssets'] : $lang['ThereWasAProblemDeletingTheAssets']));
-                json_response(400, get_alert(true), NULL);
-            }
-        }
-        else
-        {
-            set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForAsset']));
-            json_response(400, get_alert(true), NULL);
-        }
-    }
-}
-
-function assets_discard_assets()
-{
-    assets_delete_assets(true);
-}
-
-/**************************
- * FUNCTION: UPDATE ASSET *
- **************************/
-function assets_update_asset()
-{
-    global $lang, $escaper;
-
-    // If the id is not sent
-    if (!isset($_POST['id']))
-    {
-        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
-
-        // Return a JSON response
-        json_response(400, get_alert(true), NULL);
-    } 
-    else 
-    {
-        // If the user has asset permissions
-        if (check_permission("asset"))
-        {
-            $id = (int)get_param("POST", "id");
-            $fieldName = get_param("POST", "fieldName");
-            $fieldValue = get_param("POST", "fieldValue");
-            
-            // If this is custom field
-            if(stripos($fieldName, "custom_field") !== false)
-            {
-                $custom_field_id = str_replace(['custom_field', '[', ']'], '', $fieldName);
-                
-                // If customization extra is enabled
-                if(customization_extra())
-                {
-                    // Include the extra
-                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-                    
-                    //$updated = save_asset_custom_field_by_field_id($id, $custom_field_id, $fieldValue);
-                    $_POST['custom_field'] = array($custom_field_id => $fieldValue); 
-                    $updated = save_custom_field_values($id, "asset");
-                }
-                else
-                {
-                    $updated = false;
-                }
-            }
-            // If this is not custom field
-            else
-            {
-                if($fieldName){
-                    $fieldName = explode("-", $fieldName)[0];
-                }
-
-                $updated = update_asset_field_value_by_field_name($id, $fieldName, $fieldValue);
-            }
-            
-            // If success for update
-            if($updated){
-                $asset = get_asset_by_id($id);
-                set_alert(true, "good", $escaper->escapeHtml($lang['AssetWasUpdatedSuccessfully']));
-                if ($fieldName == "tags") {
-                    $options = [];
-                    foreach(getTagsOfType('asset') as $tag) {
-                        $options[] = array('label' => $tag['tag'], 'value' => $tag['id']);
-                    }
-                    json_response(200, get_alert(true), $options);
-                } else {
-                    json_response(200, get_alert(true), null);
-                }
-            }
-            // If failed for update
-            else
-            {
-                set_alert(true, "bad", $escaper->escapeHtml($lang['ThereWasAProblemUpdatingTheAsset']));
-                json_response(400, get_alert(true), NULL);
-            }
-
-        }
-        else
-        {
-            set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForAsset']));
-            json_response(400, get_alert(true), NULL);
-        }
-    }
-}
-
-
-/*******************************************************************
- * FUNCTION: GET THE BODY OF THE TABLE LISTING THE VERIFIED ASSETS *
- *******************************************************************/
-function assets_verified_asset_table_body()
-{
-    if (check_permission("asset")) {
-
-        ob_start();
-        display_asset_table_body();
-        $body = ob_get_contents();
-        ob_end_clean();
-        
-        json_response(200, null, $body);
-    } else {
-        global $lang;
-        set_alert(true, "bad", $lang['NoPermissionForAsset']);
-        json_response(400, get_alert(true), NULL);
-    }
-}
-
 /*********************************************************
  * FUNCTION: RETURN JSON DATA FOR REVIEW RISKS DATATABLE *
  *********************************************************/
@@ -8394,7 +8143,7 @@ function get_exceptions_audit_log_api()
  *******************************/
 function get_audit_logs_api() 
 {
-    global $lang;
+    global $escaper, $lang;
 
     if (is_admin()) 
     {
@@ -9358,7 +9107,7 @@ function one_click_upgrade() {
                 // Convert tables to InnoDB
                 convert_tables_to_innodb();
 
-                // Convert tables to utf8_general_ci
+                // Convert tables to utf8mb4_general_ci
                 convert_tables_to_utf8();
             }
         }
@@ -11582,5 +11331,421 @@ function deleteGraphicalSelectionForm()
     json_response(400, get_alert(true), null);
 }
 
+// The function to save 
+function saveColumnSelectionSettingsAPI() {
+    global $escaper, $lang, $field_settings_views;
+    
+    $view = $_POST['display_settings_view'];
+    if (!empty($view) && in_array($view, array_keys($field_settings_views))) {
+        $settings = array_values(array_intersect(array_keys($_POST), display_settings_get_valid_field_keys($view)));
 
+        display_settings_save_selection_single($view, $settings);
+
+        set_alert(true, "good", $lang['SelectionSaveSuccessful']);
+
+        // Not returning the alerts here because on success the page is refreshed and we let the alerts render on the page load
+        json_response(200, null, null);
+    }
+
+    set_alert(true, "bad", $lang['SelectionSaveFailed']);
+    json_response(400, get_alert(true), null);
+}
+
+// Gets the assets displayed in the Manage Assets datatables
+function assets_for_view_API() {
+    
+    global $field_settings, $field_settings_views;
+    
+    $view = !empty($_GET['view']) ? $_GET['view'] : false;
+    
+    // Only serving asset type views
+    if (check_permission("asset") && !empty($field_settings_views[$view]['view_type']) && $field_settings_views[$view]['view_type'] === 'asset') {
+        
+        global $escaper;
+
+        $type = $field_settings_views[$view]['view_type'];
+        $customization = customization_extra();
+
+        $selected_fields = display_settings_get_display_settings_for_view($view);
+        
+        // if verified isn't set then it displays all assets so we're passing null
+        $verified = isset($_GET['verified']) ? (int)$_GET['verified'] : null;
+
+        // Validating and defaulting for the paging data
+        $start = !empty($_POST['start']) ? (int)$_POST['start'] : 0;
+        $length = !empty($_POST['length']) ? (int)$_POST['length'] : 10;
+
+        // In case there's no column selected that is orderable the order won't be sent from the client
+        if (!empty($_POST['order'])) {
+
+            $orderDir = strtoupper($_POST['order'][0]['dir']) == "ASC" ? "ASC" : "DESC";
+
+            // Get and validate the order column
+            $orderColumnIndex = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : 0;
+            $orderColumnName = 
+                !empty($_POST['columns'][$orderColumnIndex]['name'])
+                && in_array($_POST['columns'][$orderColumnIndex]['name'], $selected_fields)
+                && (
+                        (!empty($field_settings[$type][$_POST['columns'][$orderColumnIndex]['name']]) && $field_settings[$type][$_POST['columns'][$orderColumnIndex]['name']]['orderable']) 
+                        || str_starts_with($_POST['columns'][$orderColumnIndex]['name'], 'custom_field_')
+                    )
+                ? $_POST['columns'][$orderColumnIndex]['name']
+                : 'id';
+        } else {
+            // so we're defaulting to ordering by the asset's id
+            $orderColumnName = 'id';
+            $orderDir = "ASC";
+        }
+
+        $column_filters = [];
+        for ($i=0; $i<count($_POST['columns']); $i++) {
+            
+            // Gathering filter data for only the fields that are either set as searchable in the field settings
+            // or a custom field which is searchable by default
+            if (
+                !empty($_POST['columns'][$i]['name']) &&
+                !empty($_POST['columns'][$i]['search']['value']) &&
+                in_array($_POST['columns'][$i]['name'], $selected_fields) &&
+                (
+                    (!empty($field_settings[$type][$_POST['columns'][$i]['name']]['searchable']) && $field_settings[$type][$_POST['columns'][$i]['name']]['searchable'])
+                    ||
+                    ($customization && str_starts_with($_POST['columns'][$i]['name'], 'custom_field_'))
+                )
+            ) {
+                $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
+            }
+        }
+
+        // Query the risks
+        $data = get_assets_data_for_view($view, $selected_fields, $verified, $start, $length, $orderColumnName, $orderDir, $column_filters);
+
+        $result = array(
+            'draw' => (int)$_POST['draw'],
+            'data' => $data['rows'],
+            'recordsTotal' => $data['recordsTotal'],
+            'recordsFiltered' => $data['recordsFiltered'],
+        );
+
+        echo json_encode($result);
+        exit;
+    } else {
+        global $lang;
+        set_alert(true, "bad", $lang['NoPermissionForAsset']);
+        json_response(400, get_alert(true), NULL);
+    }
+}
+
+
+function assets_view_action_API() {
+
+    global $lang, $escaper;
+
+    if (check_permission("asset") && isset($_POST['action'])) {
+        $action = $_POST['action'];
+
+        if (isset($_POST['all']) && $_POST['all']) {
+            switch ($action) {
+                case 'verify':
+                    if (verify_all_assets()) {
+                        set_alert(true, "good", $lang['AssetsWereVerifiedSuccessfully']);
+                        json_response(200, get_alert(true), null);
+                    } else {
+                        set_alert(true, "bad", $lang['ThereWasAProblemVerifyingTheAssets']);
+                        json_response(400, get_alert(true), NULL);
+                    }
+                    break;
+                case 'discard':
+                case 'delete':
+                    if (delete_all_assets($action === 'delete')) {
+                        set_alert(true, "good", $action === 'delete' ? $lang['AssetsWereDeletedSuccessfully']: $lang['AssetsWereDiscardedSuccessfully']);
+                        json_response(200, get_alert(true), null);
+                    } else {
+                        set_alert(true, "bad", $action === 'delete' ? $lang['ThereWasAProblemDeletingTheAssets'] : $lang['ThereWasAProblemDiscardingTheAssets']);
+                        json_response(400, get_alert(true), NULL);
+                    }
+                    break;
+            }
+        } elseif (isset($_POST['id'])) {
+            $id = (int)$_POST['id'];
+
+            switch ($action) {
+                case 'verify':
+                    if (verify_asset($id)) {
+                        set_alert(true, "good", $lang['AssetWasVerifiedSuccessfully']);
+                        json_response(200, get_alert(true), null);
+                    } else {
+                        set_alert(true, "bad", $lang['ThereWasAProblemVerifyingTheAsset']);
+                        json_response(400, get_alert(true), NULL);
+                    }
+                    break;
+                case 'discard':
+                case 'delete':
+                    if (delete_asset($id)) {
+                        set_alert(true, "good", $action === 'discard' ? $lang['AssetWasDiscardedSuccessfully']: $lang['AssetWasDeletedSuccessfully']);
+                        json_response(200, get_alert(true), null);
+                    } else {
+                        set_alert(true, "bad", $action === 'discard' ? $lang['ThereWasAProblemDiscardingTheAsset'] : $lang['ThereWasAProblemDeletingTheAsset']);
+                        json_response(400, get_alert(true), NULL);
+                    }
+                    break;
+                case 'edit':
+                    $view = $_POST['view'];
+                    
+                    global $field_settings_views, $field_settings;
+                    $id_field = $field_settings_views[$view]['id_field'];
+                    
+                    // Check if the view sent is valid
+                    if (empty($field_settings_views[$view]) || $field_settings_views[$view]['view_type'] !== 'asset') {
+                        set_alert(true, "bad", $lang['AssetEditFailed_InvalidView']);
+                        json_response(400, get_alert(true), NULL);
+                    }
+                    
+                    $where = "
+                        WHERE `a`.`id` = :id";
+                    
+                    if(team_separation_extra()){
+                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+                        $where .= get_user_teams_query_for_assets("a", false, true);
+                    }
+                    $encryption = encryption_extra();
+                    $customization = customization_extra();
+
+                    $active_field_names = display_settings_get_valid_field_keys($view);
+                    
+                    // We have to get the join parts for all the active fields and not just for the selected ones
+                    list($select_parts, $join_parts) = field_settings_get_join_parts($view, $active_field_names);
+
+                    $db = db_open();
+                    
+                    $sql = "
+                        SELECT
+                            " . implode(',', $select_parts) . "
+                        FROM
+                            `assets` a
+                            " . implode(' ', $join_parts) . "
+                        {$where}
+                        GROUP BY
+                            `a`.`id`;
+                    ";
+
+                    $stmt = $db->prepare($sql);
+                    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+                    $stmt->execute();
+                    $asset = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                    db_close($db);
+
+                    global $field_settings;
+                    $data = [];
+                    foreach ($asset as $field_name => $value) {
+                        $field_setting = !empty($field_settings['asset'][$field_name]) ? $field_settings['asset'][$field_name] : false;
+                        
+                        // Only run this logic if it's not a custom field(has a valid field setting)
+                        if ($field_setting && !empty($value) && ($field_setting['editable'] || $id_field === $field_name)) {
+
+                            if ($value && $encryption && !empty($field_setting['encrypted']) && $field_setting['encrypted']) {
+                                $value = try_decrypt($value);
+                            }
+                            
+                            // For fields that need custom formatting
+                            switch($field_name) {
+                                case "teams":
+                                case "location":
+                                    $data[$field_name] = array_map('intval', explode(',', (string)$value));
+                                    break;
+                                case 'tags':
+                                    if ($value) {
+                                        $tags = [];
+                                        foreach(explode("|", $value) as $tag) {
+                                            // We're not escaping the tags here on purpose as the way it's used on the UI needs no escaping
+                                            $tags []= $tag;
+                                        }
+                                        $data[$field_name] = $tags;
+                                    }
+                                    break;
+                                default:
+                                    // Only have to escape non-custom fields as those are already escaped
+                                    $data[$field_name] = $escaper->escapeHtml($value);
+                            }
+                        }
+                    }
+
+                    if ($customization && !empty($asset['field_data']) && $asset['field_data'] !== '[]') {
+                        // extract it as normal fields, but only the values, we don't need the _display fields here
+                        foreach (json_decode($asset['field_data'], true) as $field_data) {
+                            if (in_array($field_data['type'], ["multidropdown", "user_multidropdown"])) {
+                                $data["custom_field_{$field_data['field_id']}"] = array_map('intval', explode(',', (string)$field_data['value']));
+                            } elseif ((int)$field_data['encryption']) {
+                                $data["custom_field_{$field_data['field_id']}"] = $escaper->escapeHtml(try_decrypt($field_data['value']));
+                            } elseif($field_data['type'] === 'date') {
+                                $data["custom_field_{$field_data['field_id']}"] = format_date($field_data['value']);
+                            } else {
+                                $data["custom_field_{$field_data['field_id']}"] = $escaper->escapeHtml($field_data['value']);
+                            }
+                        }
+                    }
+
+                    json_response(200, get_alert(true), $data);
+                    break;
+            }
+        }
+    } else {
+        set_alert(true, "bad", $lang['NoPermissionForAsset']);
+        json_response(400, get_alert(true), NULL);
+    }
+}
+
+function assets_update_asset_API_switch() {
+
+    global $field_settings_views, $lang;
+    
+    // Check for permission
+    if (!check_permission("asset")) {
+        set_alert(true, "bad", $lang['AssetEditFailed_NoPermission']);
+        json_response(400, get_alert(true), NULL);
+    }
+    
+    $view = !empty($_POST['edit_view']) ? $_POST['edit_view'] : false;
+    // Only serving asset type views. Also check if the required fields have proper values
+    if ($view && !empty($field_settings_views[$view]['view_type']) && $field_settings_views[$view]['view_type'] === 'asset' &&
+        isset($_POST['id']) && ctype_digit((string)$_POST['id'])) {
+
+        switch($field_settings_views[$view]['edit']['type']) {
+            case 'popup':
+                assets_update_asset_API($view);
+                break;
+            case 'inline':
+                if (!empty($_POST['fieldName'])) {
+                    assets_update_asset_field_API($view, $_POST['fieldName']);
+                } else {
+                    set_alert(true, "bad", $lang['AssetEditFailed_IncorrectOrEmptyRequiredFields']);
+                    json_response(400, get_alert(true), NULL);
+                }
+                break;
+        }
+    } else {
+        set_alert(true, "bad", $lang['AssetEditFailed_IncorrectOrEmptyRequiredFields']);
+        json_response(400, get_alert(true), NULL);
+    }
+}
+
+/*******************************************
+ * FUNCTION: API COMPLIANCEFORGESCF STATUS *
+ *******************************************/
+function api_complianceforgescf_status()
+{
+    // If the user calling this is an admin
+    if (is_admin())
+    {
+        // If the ComplianceForge SCF is loading
+        if (get_setting("complianceforge_scf_loading") == true)
+        {
+            // Set the update status to loading
+            $data["loading"] = true;
+        }
+        else $data["loading"] = false;
+
+        // Return a 200 response
+        return json_response(200, "ComplianceForgeSCF Update Status", $data);
+    }
+    else
+    {
+        // Return a 403 response
+        return json_response(403, "Forbidden", null);
+    }
+}
+
+/*******************************************
+ * FUNCTION: API COMPLIANCEFORGESCF ENABLE *
+ *******************************************/
+function api_complianceforgescf_enable()
+{
+    // If the user calling this is an admin
+    if (is_admin())
+    {
+        // If the ComplianceForge SCF Extra is disabled
+        if (!complianceforge_scf_extra())
+        {
+            // Allow this to run as long as necessary
+            ini_set('max_execution_time', 0);
+
+            // Set the status of loading to true
+            update_or_insert_setting("complianceforge_scf_loading", true);
+
+            // Required file
+            $required_file = realpath(__DIR__ . '/../extras/complianceforgescf/index.php');
+
+            // If the file exists
+            if (file_exists($required_file)) {
+                // Include the required file
+                require_once($required_file);
+
+                // If a PHP session is not active (ie. called through the API)
+                if (session_status() !== PHP_SESSION_ACTIVE)
+                {
+                    // Enable the ComplianceForge SCF Extra but don't run the asynchronous updates
+                    // We need to do this because there is no session when this is called through the API
+                    enable_complianceforge_scf_extra(false);
+                }
+                // Otherwise a PHP session is active (ie. called by a user)
+                else
+                {
+                    // Enable the ComplianceForge SCF Extra but don't run the asynchronous updates
+                    // We need to do this because there is no session when this is called through the API
+                    enable_complianceforge_scf_extra(true);
+                }
+            }
+
+            // Delete the complianceforge_scf_loading setting
+            delete_setting("complianceforge_scf_loading");
+
+            // Return a 200 response
+            return json_response(200, "ComplianceForgeSCF Loading Complete", null);
+        }
+        else return json_response(200, "ComplianceForgeSCF Was Already Enabled", null);
+    }
+    else
+    {
+        // Return a 403 response
+        return json_response(403, "Forbidden", null);
+    }
+}
+
+/********************************************
+ * FUNCTION: API COMPLIANCEFORGESCF DISABLE *
+ ********************************************/
+function api_complianceforgescf_disable()
+{
+    // If the user calling this is an admin
+    if (is_admin())
+    {
+        // If the ComplianceForge SCF Extra is enabled
+        if (complianceforge_scf_extra())
+        {
+            // Allow this to run as long as necessary
+            ini_set('max_execution_time', 0);
+
+            // Required file
+            $required_file = realpath(__DIR__ . '/../extras/complianceforgescf/index.php');
+
+            // If the file exists
+            if (file_exists($required_file)) {
+                // Include the required file
+                require_once($required_file);
+
+                // Enable the ComplianceForge SCF Extra
+                disable_complianceforge_scf_extra();
+            }
+
+            // Return a 200 response
+            return json_response(200, "ComplianceForgeSCF Disable Complete", null);
+        }
+        else return json_response(200, "ComplianceForgeSCF Was Already Disabled", null);
+    }
+    else
+    {
+        // Return a 403 response
+        return json_response(403, "Forbidden", null);
+    }
+}
 ?>
