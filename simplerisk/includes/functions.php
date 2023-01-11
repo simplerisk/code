@@ -11211,7 +11211,7 @@ function latest_versions() {
             $short_name = $extra['short_name'];
 
             // Get the latest version of the extra
-            $extra_versions = $latest_release[4]['extras'][$short_name];
+            $extra_versions = $latest_release[0]['extras'][$short_name];
 
             // If theres multiple versions of the extra for this release
             if (count($extra_versions) > 1)
@@ -11222,7 +11222,7 @@ function latest_versions() {
                 // For each of the different versions
                 foreach ($extra_versions as $key => $value)
                 {
-                    $version = $latest_release[4]['extras'][$short_name][$key]['@attributes']['version'];
+                    $version = $latest_release[0]['extras'][$short_name][$key]['@attributes']['version'];
 
                     // If this version is the most recent
                     if ($version > $latest_versions[$short_name])
@@ -11232,7 +11232,7 @@ function latest_versions() {
                     }
                 }
             }
-            else $latest_versions[$short_name] = $latest_release[4]['extras'][$short_name]['@attributes']['version'];
+            else $latest_versions[$short_name] = $latest_release[0]['extras'][$short_name]['@attributes']['version'];
         }
 
         // Return the latest versions
