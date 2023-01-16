@@ -12681,7 +12681,7 @@ function update_registration($name="", $company="", $title="", $phone="", $email
         // Get the result from the response
         $results = $response['response'];
         $results = array($results);
-        preg_match("/<result>(.*)<\/result>/", $result[0], $matches);
+        preg_match("/<result>(.*)<\/result>/", $results[0], $matches);
 
         switch ($matches[1]) {
             case "Not Purchased":
