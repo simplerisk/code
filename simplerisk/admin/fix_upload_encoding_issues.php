@@ -103,7 +103,7 @@
 
         .table-striped tbody > tr > td a:before {
             margin-right: 5px;
-            font: normal normal normal 14px/1 FontAwesome !important;
+            font: normal normal normal 14px/1 "Font Awesome 6 Free" !important;
             content: "\f08e";
         }
     </style>

@@ -2789,12 +2789,6 @@ function display_detail_test()
                                     ".($test_audit['teams'] ? $escaper->escapeHtml(get_names_by_multi_values('team', $test_audit['teams'])) : "--")."
                                 </td>
                             </tr>
-                            <tr>
-                                <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['Tags']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".$tags_view."
-                                </td>
-                            </tr>
                         </table>                    
                     </td>
                     <td valign='top'>
@@ -2824,12 +2818,6 @@ function display_detail_test()
                                 </td>
                             </tr>
                             <tr>
-                                <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['DesiredFrequency']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".(int)$test_audit['desired_frequency']. " " .$escaper->escapeHtml($test_audit['test_frequency'] > 1 ? $lang['days'] : $lang['Day'])."
-                                </td>
-                            </tr>
-                            <tr>
                                 <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['CreatedDate']).":&nbsp;&nbsp;</strong></td>
                                 <td>
                                     ".$escaper->escapeHtml(format_date($test_audit['created_at'], "--"))."
@@ -2839,6 +2827,12 @@ function display_detail_test()
                                 <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['AdditionalStakeholders']).":&nbsp;&nbsp;</strong></td>
                                 <td>
                                     ".$escaper->escapeHtml(get_stakeholder_names($test_audit['additional_stakeholders']))."
+                                </td>
+                            </tr>
+                            <tr>
+                                <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['Tags']).":&nbsp;&nbsp;</strong></td>
+                                <td>
+                                    ".$tags_view."
                                 </td>
                             </tr>
                         </table>                    

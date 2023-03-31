@@ -16,9 +16,49 @@ function init_default_editor(selector) {
         contextmenu: 'link image table',
         height: 600,
 
+        branding: false,  // Remove the "Powered by Tiny"
+        elementpath: false,  // Stop showing the selected element TAG
+        promotion: false, // Don't display the 'Upgrade' button
+
         // Need to set the URL options to prevent converting urls to relative urls that would make it not work in emails and such
         relative_urls : false,
         remove_script_host : false,
-        convert_urls : true
+        convert_urls : true,
+
+		// Turn off the option to allow selection of the target of the link, in the code it'll be set to _blank anyway.
+		link_target_list: false,
+
 	});
+}
+
+// init editor for modal
+function init_minimun_editor(selector) {
+
+    tinymce.init({
+        selector: selector,
+        statusbar: false,
+        // Tip! To make TinyMCE leaner, only include the plugins you actually need.
+        plugins: 'searchreplace directionality visualblocks visualchars image link table charmap advlist lists help charmap quickbars',
+
+        menubar: false,
+        toolbar: 'undo redo bold italic underline forecolor backcolor link align bullist numlist',
+        toolbar_mode: 'wrap',
+        quickbars_insert_toolbar: false,
+        contextmenu: 'link image table',
+        height: 250,
+
+        // Need to set the URL options to prevent converting urls to relative urls that would make it not work in emails and such
+        relative_urls : false,
+        remove_script_host : false,
+        convert_urls : true,
+
+		// Turn off the option to allow selection of the target of the link, in the code it'll be set to _blank anyway.
+		link_target_list: false,
+
+        setup: function (editor) {
+            editor.on('change', function () {
+                editor.save();
+            });
+        }
+    });
 }

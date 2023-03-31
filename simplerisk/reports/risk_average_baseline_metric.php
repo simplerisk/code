@@ -45,6 +45,18 @@ $time = isset($_GET['time']) ? $_GET['time'] : "day";
         display_jquery_javascript($scripts);
 
 	display_bootstrap_javascript();
+
+    // Use these HighCharts scripts
+    $scripts = [
+        'highcharts.js',
+        'highcharts-more.js',
+        'modules/exporting.js',
+        'modules/export-data.js',
+        'modules/accessibility.js',
+    ];
+
+    // Display the highcharts javascript source
+    display_highcharts_javascript($scripts);
 ?>
     <script src="../vendor/moment/moment/min/moment.min.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/daterangepicker.js?<?php echo current_version("app"); ?>"></script>

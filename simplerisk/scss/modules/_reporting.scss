@@ -19,3 +19,16 @@
     width: calc(100% - 65px) !important;
 }
 
+
+.risks-and-controls-report {
+	.control-block--header {
+		padding: 10px;
+	}
+	.control-block--row {
+		padding-bottom: 0px;
+
+		.table.table-bordered {
+			margin-bottom: 0px;
+		}
+	}
+}

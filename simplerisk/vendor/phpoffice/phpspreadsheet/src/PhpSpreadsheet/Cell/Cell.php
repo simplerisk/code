@@ -196,9 +196,9 @@ class Cell
      * @param mixed $oldValue
      * @param mixed $newValue
      */
-    protected static function updateIfCellIsTableHeader(Worksheet $workSheet, self $cell, $oldValue, $newValue): void
+    protected static function updateIfCellIsTableHeader(?Worksheet $workSheet, self $cell, $oldValue, $newValue): void
     {
-        if (StringHelper::strToLower($oldValue ?? '') === StringHelper::strToLower($newValue ?? '')) {
+        if (StringHelper::strToLower($oldValue ?? '') === StringHelper::strToLower($newValue ?? '') || $workSheet === null) {
             return;
         }
 
@@ -221,12 +221,16 @@ class Cell
      *    Sets the value for a cell, automatically determining the datatype using the value binder
      *
      * @param mixed $value Value
+     * @param null|IValueBinder $binder Value Binder to override the currently set Value Binder
+     *
+     * @throws Exception
      *
      * @return $this
      */
-    public function setValue($value): self
+    public function setValue($value, ?IValueBinder $binder = null): self
     {
-        if (!self::getValueBinder()->bindValue($this, $value)) {
+        $binder ??= self::getValueBinder();
+        if (!$binder->bindValue($this, $value)) {
             throw new Exception('Value could not be bound to cell.');
         }
 
@@ -365,14 +369,14 @@ class Cell
     {
         if ($this->dataType === DataType::TYPE_FORMULA) {
             try {
-                $index = $this->getWorksheet()->getParent()->getActiveSheetIndex();
+                $index = $this->getWorksheet()->getParentOrThrow()->getActiveSheetIndex();
                 $selected = $this->getWorksheet()->getSelectedCells();
                 $result = Calculation::getInstance(
                     $this->getWorksheet()->getParent()
                 )->calculateCellValue($this, $resetLog);
                 $result = $this->convertDateTimeInt($result);
                 $this->getWorksheet()->setSelectedCells($selected);
-                $this->getWorksheet()->getParent()->setActiveSheetIndex($index);
+                $this->getWorksheet()->getParentOrThrow()->setActiveSheetIndex($index);
                 //    We don't yet handle array returns
                 if (is_array($result)) {
                     while (is_array($result)) {

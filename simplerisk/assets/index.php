@@ -35,7 +35,7 @@ if (!isset($_SESSION["asset"]) || $_SESSION["asset"] != 1)
   exit(0);
 }
 else $manage_assets = true;
-
+$searchresult = array();
 // Check if an asset search was submitted
 if ((isset($_POST['search'])) && $manage_assets)
 {
@@ -47,6 +47,15 @@ if ((isset($_POST['search'])) && $manage_assets)
   {
     // Display an alert
     set_alert(true, "bad", $escaper->escapeHtml($lang['IPFormatNotRecognized']));
+  } else {
+    if(count($AvailableIPs)){
+      foreach($AvailableIPs as $ip){
+        $searchresult[] = $ip['ip'];
+      }
+    } else {
+      $NoSearchResults = true;
+    }
+
   }
 }
 
@@ -134,12 +143,21 @@ if ((isset($_POST['search'])) && $manage_assets)
               <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
                   <td width="100px"><?php echo $escaper->escapeHtml($lang['IPRange']); ?>:</td>
-                  <td><input maxlength="100" name="range" id="range" class="input-medium" type="text"></td>
+                  <td><input maxlength="100" name="range" id="range" class="input-medium" type="text" required></td>
                 </tr>
               </table>
 
               <div class="form-actions">
                 <button type="submit" name="search" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Search']); ?></button>
+              </div>
+              <div>
+                <?php
+                  if(count($searchresult)) {
+                    echo $escaper->escapeHtml($lang['SearchResults'])." : ".implode(", ", $searchresult);
+                  } else if(isset($NoSearchResults)){
+                    echo $escaper->escapeHtml($lang['NoSearchResults']);
+                  }
+                ?>
               </div>
             </form>
           </div>

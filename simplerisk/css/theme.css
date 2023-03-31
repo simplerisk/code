@@ -8704,6 +8704,14 @@ select#languages {
 .sub-filter-box-2 {
   width: calc(100% - 65px) !important; }
 
+.risks-and-controls-report .control-block--header {
+  padding: 10px; }
+
+.risks-and-controls-report .control-block--row {
+  padding-bottom: 0px; }
+  .risks-and-controls-report .control-block--row .table.table-bordered {
+    margin-bottom: 0px; }
+
 .new-tabs {
   padding-top: 5px;
   position: relative;
@@ -9300,5 +9308,38 @@ input.editable {
 @media (min-width: 1281px) {
   textarea.form-control {
     max-width: 300px; } }
+
+div.asset-assetgroup-select-view .asset, .asset-assetgroup-select .asset, .asset-assetgroup-select-wide .asset {
+  background-color: #efefef !important; }
+
+div.asset-assetgroup-select-view .group, .asset-assetgroup-select .group, .asset-assetgroup-select-wide .group {
+  background-color: darkgrey !important; }
+
+div.asset-assetgroup-select-view {
+  padding-bottom: 10px; }
+  div.asset-assetgroup-select-view .btn {
+    pointer-events: none;
+    margin: 1px 2px 1px 1px;
+    padding: 3px 7px;
+    border: 1px solid #d1d3d4; }
+  div.asset-assetgroup-select-view .asset {
+    color: #3a3a3a !important; }
+  div.asset-assetgroup-select-view .group {
+    color: #3a3a3a !important; }
+
+.asset-assetgroup-select .selectize-dropdown {
+  width: 180% !important; }
+
+.selectize-input.locked, .selectize-input.locked * {
+  cursor: default !important; }
+
+span.asset-assetgroup-instructions {
+  display: inline-block;
+  font-size: 0.8em;
+  color: #ed3139;
+  position: relative;
+  top: -5px;
+  line-height: 1.2;
+  padding-bottom: 15px; }
 
 /*# sourceMappingURL=theme.css.map */

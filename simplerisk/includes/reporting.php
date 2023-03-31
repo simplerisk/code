@@ -5523,7 +5523,7 @@ function encode_data_before_display($array)
 /************************************
  * FUNCTION: RISKS AND CONTROLS TABLE *
  ************************************/
-function risks_and_control_table($report, $sort_by, $projects)
+function risks_and_control_table($report, $sort_by, $projects, $status)
 {
     global $lang;
     global $escaper;
@@ -5556,7 +5556,7 @@ function risks_and_control_table($report, $sort_by, $projects)
       'control_owner' => $control_owner,
     );
 
-    $rows = get_risks_and_controls_rows($report, $sort_by, $projects, $filters);
+    $rows = get_risks_and_controls_rows($report, $sort_by, $projects, $status, $filters);
     
 
     // If team separation is enabled
@@ -5678,53 +5678,52 @@ function risks_and_control_table($report, $sort_by, $projects)
             // Get the risk color
             $color = get_risk_color($calculated_risk);
 
-            echo '<table width="100%" class="table table-bordered table-condensed" role="grid" style="width: 100%;">
+            echo "<table width='100%' class='table table-bordered table-condensed' role='grid' style='width: 100%;'>
                     <tbody>
                         <tr>
-                            <th style="background-color:' . $escaper->escapeHtml($color) . '" bgcolor="' . $escaper->escapeHtml($color) . '" colspan="5">
+                            <th style='background-color:{$escaper->escapeHtml($color)};' bgcolor='{$escaper->escapeHtml($color)}' colspan='5'>
                                 <center>
-                                    <font color="#000000">'. $escaper->escapeHtml($lang['RiskId']) . ':&nbsp;&nbsp;
-                                    <a href="../management/view.php?id='. $escaper->escapeHtml($risk_id) . '" style="color:#000000">'. $escaper->escapeHtml($risk_id) .'</a>
-                                    <br>'. $escaper->escapeHtml($lang['Subject']) .':&nbsp;&nbsp;' . $escaper->escapeHtml($subject) . '
-                                    <br>'. $escaper->escapeHtml($lang['InherentRisk']) .':&nbsp;&nbsp;'. $escaper->escapeHtml($calculated_risk) .'&nbsp;&nbsp;('. $escaper->escapeHtml(get_risk_level_name($calculated_risk)) .')
+                                    <font color='#000000'>{$escaper->escapeHtml($lang['RiskId'])}:&nbsp;&nbsp;
+                                    <a href='../management/view.php?id={$escaper->escapeHtml($risk_id)}' style='color:#000000'>{$escaper->escapeHtml($risk_id)}</a>
+                                    <br />{$escaper->escapeHtml($lang['Subject'])}:&nbsp;&nbsp;{$escaper->escapeHtml($subject)}
+                                    <br />{$escaper->escapeHtml($lang['InherentRisk'])}:&nbsp;&nbsp;{$escaper->escapeHtml($calculated_risk)}&nbsp;&nbsp;({$escaper->escapeHtml(get_risk_level_name($calculated_risk))})
+                                    <br />{$escaper->escapeHtml($lang['Status'])}:&nbsp;&nbsp;{$escaper->escapeHtml($status)}
                                     </font>
                                 </center>
                             </th>
                         </tr>
-                        <tr role="row" style="height: 0px;">
-                            <th class="sorting_asc" aria-controls="mitigation-controls-table140955b56e1c6c5879" rowspan="1" colspan="1" style="width: 0px; padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px;" aria-sort="ascending" aria-label="&amp;nbsp;: activate to sort column descending">
-                                <div class="dataTables_sizing" style="height:0;overflow:hidden;">&nbsp;
+                        <tr role='row' style='height: 0px;'>
+                            <th class='sorting_asc' aria-controls='mitigation-controls-table140955b56e1c6c5879' rowspan='1' colspan='1' style='width: 0px; padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px;' aria-sort='ascending' aria-label='&amp;nbsp;: activate to sort column descending'>
+                                <div class='dataTables_sizing' style='height:0;overflow:hidden;'>&nbsp;
                                 </div>
                             </th>
                         </tr>
-                            
-                    ';
-                    
-                    
-                    foreach($risks as $gr_id => $control){
-                        $control_id = $control['control_id'];
-                        $control_long_name = $control['control_long_name'];
-                        $control_long_name = $control['control_long_name'];
-                        echo '<tr role="row" class="odd">
-                                <td class="sorting_1">
-                                    <div class="control-block item-block clearfix">
-                                        <div class="control-block--header clearfix" data-project="">
-                                            <a href="#" id="show-' . $origin_risk_id . '-' . $control_id . '" class="show-score" data-control-id="'. $escaper->escapeHtml($control_id) .'" data-risk-id="'. (int)$origin_risk_id .'"  onclick="" style="color: #3f3f3f;"> 
-                                                    <i class="fa fa-caret-right"></i>&nbsp; 
-                                            <strong>' . $escaper->escapeHtml($lang['ControlLongName']) . '</strong>: &nbsp; &nbsp;'. $escaper->escapeHtml($control_long_name) .'
-                                            </a>
-                                            <a href="#" id="hide-' . $origin_risk_id . '-' . $control_id . '" class="hide-score" style="display: none;color: #3f3f3f; float: left;" data-control-id="'. $escaper->escapeHtml($control_id) .'" data-risk-id="'. (int)$origin_risk_id .'" > 
-                                                <i class="fa fa-caret-down"></i> &nbsp; 
-                                                <strong>' . $escaper->escapeHtml($lang['ControlLongName']) . '</strong>: &nbsp; &nbsp; &nbsp;'. $escaper->escapeHtml($control_long_name) .'
-                                            </a>
-                                            <div class="control-block--row" id="control-content-' . $origin_risk_id . '-' . $control_id . '" style="display:none"></div>
-                                            <input type="text" name="scroll_top" id="scroll_top" style="display:none" value="">
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        ';
-                    }
+                    ";
+
+            foreach($risks as $gr_id => $control){
+                $control_id = $control['control_id'];
+                $control_long_name = $control['control_long_name'];
+                $control_long_name = $control['control_long_name'];
+                echo '<tr role="row" class="odd">
+                        <td class="sorting_1">
+                            <div class="control-block item-block clearfix">
+                                <div class="control-block--header clearfix" data-project="">
+                                    <a href="#" id="show-' . $origin_risk_id . '-' . $control_id . '" class="show-score" data-control-id="'. $escaper->escapeHtml($control_id) .'" data-risk-id="'. (int)$origin_risk_id .'"  onclick="" style="color: #3f3f3f;"> 
+                                            <i class="fa fa-caret-right"></i>&nbsp; 
+                                    <strong>' . $escaper->escapeHtml($lang['ControlLongName']) . '</strong>: &nbsp; &nbsp;'. $escaper->escapeHtml($control_long_name) .'
+                                    </a>
+                                    <a href="#" id="hide-' . $origin_risk_id . '-' . $control_id . '" class="hide-score" style="display: none;color: #3f3f3f; float: left; padding-bottom: 10px;" data-control-id="'. $escaper->escapeHtml($control_id) .'" data-risk-id="'. (int)$origin_risk_id .'" > 
+                                        <i class="fa fa-caret-down"></i> &nbsp; 
+                                        <strong>' . $escaper->escapeHtml($lang['ControlLongName']) . '</strong>: &nbsp; &nbsp; &nbsp;'. $escaper->escapeHtml($control_long_name) .'
+                                    </a>
+                                    <div class="control-block--row" id="control-content-' . $origin_risk_id . '-' . $control_id . '" style="display:none"></div>
+                                    <input type="text" name="scroll_top" id="scroll_top" style="display:none" value="">
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                ';
+            }
 
             echo "</tbody>
                 </table>\n";
@@ -5796,7 +5795,7 @@ function risks_and_control_table($report, $sort_by, $projects)
 /**************************************************
  * FUNCTION: RETURN RISKS AND CONTROLS REPORT SQL *
  **************************************************/
-function get_risks_and_controls_rows($report, $sort_by, $projects, $filters)
+function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $filters)
 {
 
     $control_framework = $filters['control_framework'];
@@ -5808,7 +5807,19 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $filters)
     // Open the database
     $db = db_open();
     $order = "c.calculated_risk DESC";
-    $where_sql = " ";
+
+    switch($status) {
+        case 0: // Open
+            $where_sql = " AND b.status != 'Closed' ";
+            break;
+        case 1: // Closed
+            $where_sql = " AND b.status = 'Closed' ";
+            break;
+        case 2:
+        default: // All status
+            $where_sql = " ";
+            break;
+    }
 
     if($projects && is_array($projects)){
         $where = [0];
@@ -6809,9 +6820,22 @@ function get_connectivity_graph()
             $result_radius = 10;
             $document_radius = 10;
 
+            // Create default empty arrays
+            $risk_associations = [];
+            $control_associations = [];
+            $framework_associations = [];
+            $test_associations = [];
+            $document_associations = [];
+            $result_associations = [];
+            $asset_associations = [];
+
 			// If we are filtering by risk
 			if ($filter == 1)
 			{
+                // Set default selected values
+                $selected_risk_id = null;
+                $selected_subject = null;
+
                 // Set the risk radius and color values
                 $risk_radius = 20;
                 $risk_color = '#d35400';
@@ -6853,9 +6877,13 @@ function get_connectivity_graph()
 					echo "<option value=\"" . $escaper->escapeHtml($risk_id) . "\"" . ($selected == $risk_id ? " selected" : "") . ">[" . $escaper->escapeHtml($risk_id) . "] " . $escaper->escapeHtml($subject) . "</option>\n";
 				}
 
-                // Get the connectivity for the risk
-                $asset_associations = get_asset_connectivity_for_risk($selected_risk_id, $selected_subject);
-                $control_associations = get_control_connectivity_for_risk($selected_risk_id, $selected_subject);
+                // If a value has been selected
+                if (!is_null($selected_risk_id))
+                {
+                    // Get the connectivity for the risk
+                    $asset_associations = get_asset_connectivity_for_risk($selected_risk_id, $selected_subject);
+                    $control_associations = get_control_connectivity_for_risk($selected_risk_id, $selected_subject);
+                }
 
                 // For each control association
                 foreach ($control_associations as $key => $value)
@@ -6891,6 +6919,10 @@ function get_connectivity_graph()
 			// If we are filtering by asset
 			else if ($filter == 2)
 			{
+                // Set default selected values
+                $selected_asset_id = null;
+                $selected_asset_name = null;
+
                 // Set the asset radius and color values
                 $asset_radius = 20;
                 $asset_color = '#d35400';
@@ -6914,8 +6946,12 @@ function get_connectivity_graph()
 					echo "<option value=\"" . $escaper->escapeHtml($asset_id) . "\"" . ($selected == $asset_id ? " selected" : "") . ">" . $escaper->escapeHtml($asset_name) . "</option>\n";
 				}
 
-                // Get the the connectivity for the asset
-                $risk_associations = get_risk_connectivity_for_asset($selected_asset_id, $selected_asset_name);
+                // If a value has been selected
+                if (!is_null($selected_asset_id))
+                {
+                    // Get the the connectivity for the asset
+                    $risk_associations = get_risk_connectivity_for_asset($selected_asset_id, $selected_asset_name);
+                }
 
 				//  For each risk association
 				foreach ($risk_associations as $key => $value)
@@ -6962,6 +6998,10 @@ function get_connectivity_graph()
 			// If we are filtering by framework
 			else if ($filter == 3)
 			{
+                // Set default selected values
+                $selected_framework_id = null;
+                $selected_framework_name = null;
+
                 // Set the framework radius and color values
                 $framework_radius = 20;
                 $framework_color = '#d35400';
@@ -6985,8 +7025,12 @@ function get_connectivity_graph()
                     echo "<option value=\"" . $escaper->escapeHtml($framework_id) . "\"" . ($selected == $framework_id ? " selected" : "") . ">" . $escaper->escapeHtml($framework_name) . "</option>\n";
                 }
 
-				// Get the control connectivity for the framework
-				$control_associations = get_control_connectivity_for_framework($selected_framework_id, $selected_framework_name);
+                // If a value has been selected
+                if (!is_null($selected_framework_id))
+                {
+                    // Get the control connectivity for the framework
+                    $control_associations = get_control_connectivity_for_framework($selected_framework_id, $selected_framework_name);
+                }
 
 				// For each control association
 				foreach ($control_associations as $key => $value)
@@ -7033,6 +7077,10 @@ function get_connectivity_graph()
             // If we are filtering by control
             else if ($filter == 4)
             {
+                // Set default selected values
+                $selected_control_id = null;
+                $selected_control_name = null;
+
                 // Set the control radius and color values
                 $control_radius = 20;
                 $control_color = '#d35400';
@@ -7056,17 +7104,21 @@ function get_connectivity_graph()
                     echo "<option value=\"" . $escaper->escapeHtml($control_id) . "\"" . ($selected == $control_id ? " selected" : "") . ">" . $escaper->escapeHtml($control_name) . "</option>\n";
                 }
 
-                // Get the framework connectivity for the control
-                $framework_associations = get_framework_connectivity_for_control($selected_control_id, $selected_control_name);
+                // If a value has been selected
+                if (!is_null($selected_control_id))
+                {
+                    // Get the framework connectivity for the control
+                    $framework_associations = get_framework_connectivity_for_control($selected_control_id, $selected_control_name);
 
-                // Get the test connectivity for the control
-                $test_associations = get_test_connectivity_for_control($selected_control_id, $selected_control_name);
+                    // Get the test connectivity for the control
+                    $test_associations = get_test_connectivity_for_control($selected_control_id, $selected_control_name);
 
-                // Get the risk connectivity for the control
-                $risk_associations = get_risk_connectivity_for_control($selected_control_id, $selected_control_name);
+                    // Get the risk connectivity for the control
+                    $risk_associations = get_risk_connectivity_for_control($selected_control_id, $selected_control_name);
 
-                // Get the document connectivity for the control
-                $document_associations = get_document_connectivity_for_control($selected_control_id, $selected_control_name);
+                    // Get the document connectivity for the control
+                    $document_associations = get_document_connectivity_for_control($selected_control_id, $selected_control_name);
+                }
 
                 // For each risk association
                 foreach ($risk_associations as $key => $value)
@@ -7096,6 +7148,10 @@ function get_connectivity_graph()
             // If we are filtering by test
             else if ($filter == 5)
             {
+                // Set default selected values
+                $selected_test_id = null;
+                $selected_test_name = null;
+
                 // Set the test radius and color values
                 $test_radius = 20;
                 $test_color = '#d35400';
@@ -7119,11 +7175,15 @@ function get_connectivity_graph()
                     echo "<option value=\"" . $escaper->escapeHtml($test_id) . "\"" . ($selected == $test_id ? " selected" : "") . ">" . $escaper->escapeHtml($test_name) . "</option>\n";
                 }
 
-                // Get the control connectivity for the test
-                $control_associations = get_control_connectivity_for_test($selected_test_id, $selected_test_name);
+                // If a value has been selected
+                if (!is_null($selected_test_id))
+                {
+                    // Get the control connectivity for the test
+                    $control_associations = get_control_connectivity_for_test($selected_test_id, $selected_test_name);
 
-                // Get the result connectivity for the test
-                $result_associations = get_results_connectivity_for_test($selected_test_id, $selected_test_name);
+                    // Get the result connectivity for the test
+                    $result_associations = get_results_connectivity_for_test($selected_test_id, $selected_test_name);
+                }
 
                 // For each control association
                 foreach ($control_associations as $key => $value)
@@ -7159,6 +7219,10 @@ function get_connectivity_graph()
             // If we are filtering by document
             else if ($filter == 6)
             {
+                // Set default selected values
+                $selected_document_id = null;
+                $selected_document_name = null;
+
                 // Set the document radius and color values
                 $document_radius = 20;
                 $document_color = '#d35400';
@@ -7182,8 +7246,12 @@ function get_connectivity_graph()
                     echo "<option value=\"" . $escaper->escapeHtml($document_id) . "\"" . ($selected == $document_id ? " selected" : "") . ">" . $escaper->escapeHtml($document_name) . "</option>\n";
                 }
 
-                // Get the control connectivity for the document
-                $control_associations = get_control_connectivity_for_document($selected_document_id, $selected_document_name);
+                // If a value has been selected
+                if (!is_null($selected_document_id))
+                {
+                    // Get the control connectivity for the document
+                    $control_associations = get_control_connectivity_for_document($selected_document_id, $selected_document_name);
+                }
 
                 // For each control association
                 foreach ($control_associations as $key => $value)
@@ -7477,7 +7545,7 @@ function get_asset_connectivity_for_risk($risk_id, $subject)
     db_close($db);
 
     // Return the associations
-    return $associations;
+    return $associations ?? [];
 }
 
 /***********************************************
@@ -7535,7 +7603,7 @@ function get_control_connectivity_for_risk($risk_id, $subject)
     db_close($db);
 
     // Return the associations
-    return $associations;
+    return $associations ?? [];
 }
 
 /*********************************************
@@ -7604,7 +7672,7 @@ function get_risk_connectivity_for_asset($asset_id, $asset_name)
     db_close($db);
 
     // Return the associations
-    return $associations;
+    return $associations ?? [];
 }
 
 /****************************************************
@@ -7655,7 +7723,7 @@ function get_framework_connectivity_for_control($control_id, $control_name)
     db_close($db);
 
     // Return the associations
-    return $associations;
+    return $associations ?? [];
 }
 
 /***********************************************
@@ -7724,7 +7792,7 @@ function get_risk_connectivity_for_control($control_id, $control_name)
     db_close($db);
 
     // Return the associations
-    return $associations;
+    return $associations ?? [];
 }
 
 /***********************************************
@@ -7775,7 +7843,7 @@ function get_test_connectivity_for_control($control_id, $control_name)
     db_close($db);
 
     // Return the associations
-    return $associations;
+    return $associations ?? [];
 }
 
 /****************************************************
@@ -7826,7 +7894,7 @@ function get_control_connectivity_for_framework($framework_id, $framework_name)
     db_close($db);
 
     // Return the associations
-    return $associations;
+    return $associations ?? [];
 }
 
 /***********************************************
@@ -7877,7 +7945,7 @@ function get_control_connectivity_for_test($test_id, $test_name)
     db_close($db);
 
     // Return the associations
-    return $associations;
+    return $associations ?? [];
 }
 
 /***************************************************
@@ -7906,39 +7974,39 @@ function get_control_connectivity_for_document($document_id, $document_name)
 
         // Store the list in the array
         $controls = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
 
-    // For each control
-    foreach ($controls as $key => $value)
-    {
-        // Get the control name and id
-        $control_id = $value['id'];
-        $control_name = $value['short_name'];
+        // For each control
+        foreach ($controls as $key => $value)
+        {
+            // Get the control name and id
+            $control_id = $value['id'];
+            $control_name = $value['short_name'];
 
-        // Display the connectivity to documents
-        $associations[] = array(
-            "association_id_1" => $control_id,
-            "association_header_1" => $lang['Control'],
-            "association_name_1" => $control_name,
-            "association_id_2" => $document_id,
-            "association_header_2" => $lang['Document'],
-            "association_name_2" => $document_name
-        );
-        $associations[] = array(
-            "association_id_1" => $document_id,
-            "association_header_1" => $lang['Document'],
-            "association_name_1" => $document_name,
-            "association_id_2" => $control_id,
-            "association_header_2" => $lang['Control'],
-            "association_name_2" => $control_name
-        );
+            // Display the connectivity to documents
+            $associations[] = array(
+                "association_id_1" => $control_id,
+                "association_header_1" => $lang['Control'],
+                "association_name_1" => $control_name,
+                "association_id_2" => $document_id,
+                "association_header_2" => $lang['Document'],
+                "association_name_2" => $document_name
+            );
+            $associations[] = array(
+                "association_id_1" => $document_id,
+                "association_header_1" => $lang['Document'],
+                "association_name_1" => $document_name,
+                "association_id_2" => $control_id,
+                "association_header_2" => $lang['Control'],
+                "association_name_2" => $control_name
+            );
+        }
     }
 
     // Close the database connection
     db_close($db);
 
     // Return the associations
-    return $associations;
+    return $associations ?? [];
 }
 
 /***************************************************
@@ -7989,7 +8057,7 @@ function get_document_connectivity_for_control($control_id, $control_name)
     db_close($db);
 
     // Return the associations
-    return $associations;
+    return $associations ?? [];
 }
 
 /***********************************************
@@ -8041,7 +8109,7 @@ function get_results_connectivity_for_test($test_id, $test_name)
     db_close($db);
 
     // Return the associations
-    return $associations;
+    return $associations ?? [];
 }
 
 /***************************************************

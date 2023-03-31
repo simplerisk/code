@@ -31,15 +31,27 @@ require_once(language_file());
 
 <head>
 <?php
-        // Use these jQuery scripts
-        $scripts = [
-                'jquery.min.js',
-        ];
+// Use these jQuery scripts
+    $scripts = [
+        'jquery.min.js',
+    ];
 
-        // Include the jquery javascript source
-        display_jquery_javascript($scripts);
+    // Include the jquery javascript source
+    display_jquery_javascript($scripts);
 
-	display_bootstrap_javascript();
+    display_bootstrap_javascript();
+
+    // Use these HighCharts scripts
+    $scripts = [
+        'highcharts.js',
+        'highcharts-more.js',
+        'modules/exporting.js',
+        'modules/export-data.js',
+        'modules/accessibility.js',
+    ];
+
+    // Display the highcharts javascript source
+    display_highcharts_javascript($scripts);
 ?>
   <script src="../js/sorttable.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/obsolete.js?<?php echo current_version("app"); ?>"></script>

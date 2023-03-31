@@ -8,6 +8,7 @@
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
     require_once(realpath(__DIR__ . '/../includes/api.php'));
     require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
+    require_once(realpath(__DIR__ . '/../includes/display.php'));
 
 // Add various security headers
 add_security_headers();

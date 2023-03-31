@@ -113,11 +113,6 @@ get_alert();
             </tr>
     -->
             <tr>
-              <td width="155px"><b>ComplianceForge SCF</b></td>
-              <td>Adds the controls from the <a href="https://www.securecontrolsframework.com/" target="_blank">ComplianceForge Secure Controls Framework (SCF)</a> into SimpleRisk for use with our Governance functionality.</td>
-              <td width="60px"><?php echo (complianceforge_scf_extra() ? '<a href="complianceforge_scf.php">Yes</a>' : '<a href="complianceforge_scf.php">No</a>'); ?></td>
-            </tr>
-            <tr>
               <td width="155px"><b>Custom Authentication</b></td>
               <td>Provides support for Active Directory/LDAP and SAML/Single Sign-On authentication.</td>
               <td width="60px"><?php echo (custom_authentication_extra() ? '<a href="authentication.php">Yes</a>' : '<a href="authentication.php">No</a>'); ?></td>
@@ -176,6 +171,11 @@ get_alert();
               <td width="155px"><b>Risk Assessments</b></td>
               <td>Enables ability to create custom risk assessment forms and send them to users.</td>
               <td width="60px"><?php echo (assessments_extra() ? '<a href="assessments.php">Yes</a>' : '<a href="assessments.php">No</a>'); ?></td>
+            </tr>
+            <tr>
+                <td width="155px"><b>Secure Controls Framework (SCF)</b></td>
+                <td>Adds the controls from the <a href="https://www.securecontrolsframework.com/" target="_blank">Secure Controls Framework (SCF)</a> into SimpleRisk for use with our Governance functionality.</td>
+                <td width="60px"><?php echo (complianceforge_scf_extra() ? '<a href="complianceforge_scf.php">Yes</a>' : '<a href="complianceforge_scf.php">No</a>'); ?></td>
             </tr>
             <tr>
               <td width="155px"><b>Team-Based Separation</b></td>

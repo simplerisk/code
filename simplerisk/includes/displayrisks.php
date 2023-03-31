@@ -163,7 +163,7 @@ function display_affected_assets_view($risk_id, $panel_name="")
     echo $escaper->escapeHtml($lang['AffectedAssets']) .": \n";
     echo "</div>\n";
     echo "<div class=\"{$span2}\">\n";
-    $data = get_assets_and_asset_groups_of_type($risk_id, 'risk');
+    $data = get_assets_and_asset_groups_of_type($risk_id, 'risk', true);
     
     if ($data) {
         echo "<select class='assets-asset-groups-select-disabled' multiple >\n";

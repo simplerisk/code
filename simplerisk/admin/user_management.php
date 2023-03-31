@@ -536,6 +536,15 @@ if (isset($_POST['password_policy_update']))
             });
 
             update_admin_button();
+
+            $("#view_user_details").submit(function(){
+                var user_id = $(this).find("[name=user]").val();
+                if(user_id) return true;
+                else {
+                    showAlertFromMessage("<?php echo $lang['PleaseSelectUser'];?>", false);
+                    return false;
+                }
+            });
         });
 
         function update_admin_button() {
@@ -940,7 +949,7 @@ if (isset($_POST['password_policy_update']))
                   <tbody>
                     <tr>
                       <td>
-                        <form name="select_user" method="post" action="view_user_details.php">
+                        <form name="select_user" id="view_user_details" method="post" action="view_user_details.php">
                                 <h4><?php echo $escaper->escapeHtml($lang['ViewDetailsForUser']); ?>:</h4>
                                 <?php echo $escaper->escapeHtml($lang['DetailsForUser']); ?> <?php create_dropdown('enabled_users_all', null, 'user'); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Select']); ?>" name="select_user" />
                         </form>

@@ -31,6 +31,7 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 $report = isset($_POST['report'])?(int)$_POST['report']:0;
 $sort_by = isset($_POST['sort_by'])?(int)$_POST['sort_by']:0;
 $projects = isset($_REQUEST['projects']) ? $_REQUEST['projects'] : [];
+$status = isset($_POST['status'])? (int)$_POST['status'] : 0;
 
 if (import_export_extra()){
     // Include the Import-Export Extra
@@ -53,7 +54,7 @@ if (import_export_extra()){
           'control_priority' => $control_priority,
           'control_owner' => $control_owner,
         );
-        download_risks_and_controls_report($report, $sort_by, $projects, $filters);
+        download_risks_and_controls_report($report, $sort_by, $projects, $status, $filters);
     }
 }
 
@@ -87,7 +88,7 @@ if (import_export_extra()){
   <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>"
+  <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
   <?php
     setup_favicon("..");
     setup_alert_requirements("..");
@@ -114,7 +115,7 @@ if (import_export_extra()){
             <div class="row-fluid">
                 <form name="select_report" method="post" action="">
                     <div class="well">
-                        <?php view_risks_and_controls_selections($report, $sort_by, $projects); ?>
+                        <?php view_risks_and_controls_selections($report, $sort_by, $projects, $status); ?>
                     </div>
                     <?php if($report==0) {?>
                       <div class="well">
@@ -142,8 +143,8 @@ if (import_export_extra()){
                 ?>
             </div>
             <div class="row-fluid">
-                <div class="span12">
-                    <?php risks_and_control_table($report, $sort_by, $projects); ?>
+                <div class="span12 risks-and-controls-report">
+                    <?php risks_and_control_table($report, $sort_by, $projects, $status); ?>
                 </div>
             </div>
         </div>

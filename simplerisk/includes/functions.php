@@ -15,6 +15,8 @@ require_once(realpath(__DIR__ . '/healthcheck.php'));
 require_once(realpath(__DIR__ . '/escaper.php'));
 require_once(realpath(__DIR__ . '/highcharts.php'));
 require_once(realpath(__DIR__ . '/mfa.php'));
+require_once(realpath(__DIR__ . '/Widgets/AssetAssetGroupDropdown.php'));
+
 
 // Include the language file
 // Ignoring detections related to language files
@@ -138,7 +140,11 @@ $junction_config = array(
             'risks_to_assets' => 'asset_id',
             'questionnaire_answers_to_assets' => 'asset_id',
             'assessment_answers_to_assets' => 'asset_id',
-            'assets_asset_groups' => 'asset_id'
+            'assets_asset_groups' => 'asset_id',
+            'questionnaire_risk_to_assets' => 'asset_id',
+            'incident_management_incident_to_assets' => 'asset_id',
+            'control_to_assets' => 'asset_id'
+
         )
     ),
     'asset_groups' => array(
@@ -147,7 +153,9 @@ $junction_config = array(
             'risks_to_asset_groups' => 'asset_group_id',
             'questionnaire_answers_to_asset_groups' => 'asset_group_id',
             'assessment_answers_to_asset_groups' => 'asset_group_id',
-            'assets_asset_groups' => 'asset_group_id'
+            'assets_asset_groups' => 'asset_group_id',
+            'questionnaire_risk_to_asset_groups' => 'asset_group_id',
+            'incident_management_incident_to_asset_groups' => 'asset_group_id',
         )
     ),
     'mitigations' => array(
@@ -170,6 +178,14 @@ $junction_config = array(
         'junctions' => array(
             'questionnaire_answers_to_assets' => 'questionnaire_answer_id',
             'questionnaire_answers_to_asset_groups' => 'questionnaire_answer_id'
+        )
+    ),
+    'questionnaire_risk_details' => array(
+        'id_field' => 'id',
+        'tag_type' => 'questionnaire_risk',
+        'junctions' => array(
+            'questionnaire_risk_to_assets' => 'questionnaire_id',
+            'questionnaire_risk_to_asset_groups' => 'questionnaire_id'
         )
     ),
     'framework_controls' => array(
@@ -231,6 +247,13 @@ $junction_config = array(
             'remote_role_mapping' => 'remote_role_id'
         )
     ),
+    'incident_management_incidents' => [
+        'id_field' => 'id',
+        'junctions' => array(
+            'incident_management_incident_to_assets' => 'incident_id',
+            'incident_management_incident_to_asset_groups' => 'incident_id',
+        )
+    ],
 );
 
 // Add new supported tag types here
@@ -397,6 +420,19 @@ $field_settings = [
             'order_column' => "`a`.`details`",
             'editable' => true,
             'select_parts' => ["`a`.`details`"],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        'mapped_controls' => [
+            'customization_field_name' => 'MappedControls',
+            'localization_key' => 'MappedControls',
+            'type' => 'html',
+            'required' => false,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => false,
+            'editable' => true,
+            'select_parts' => ["1 AS mapped_controls"],
             'has_display_field' => false,
             'join_parts' => [],
         ],
@@ -757,6 +793,7 @@ $field_settings_display_groups = [
             'location',
             'teams',
             'details',
+            'mapped_controls',
             'tags',
             //'verified',
         ],
@@ -843,6 +880,7 @@ $field_settings_views = [
         ],
         'default_enabled_columns' => [
             'name',
+            'ip',
             'value',
             'location',
             'teams',
@@ -873,6 +911,7 @@ $field_settings_views = [
         ],
         'default_enabled_columns' => [
             'name',
+            'ip',
             'value',
             'location',
             'teams',
@@ -2531,7 +2570,6 @@ function update_risk_model($risk_model)
 
     //Get current risk mdel
     $stmt = $db->prepare("SELECT value from settings WHERE name='risk_model'");
-    $stmt->bindParam(":risk_model", $risk_model, PDO::PARAM_INT);
     $stmt->execute();
 
     $current_risk_model = $stmt->fetchAll();
@@ -4201,11 +4239,37 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
         create_subject_order(isset($_SESSION['encrypted_pass']) && $_SESSION['encrypted_pass'] ? base64_decode($_SESSION['encrypted_pass']) : fetch_key());
     }
 
+    $insert_fields = array(
+        "status"                    => $status,
+        "subject"                   => $subject,
+        "reference_id"              => $reference_id,
+        "regulation"                => $regulation,
+        "control_number"            => $control_number,
+        "source"                    => $source,
+        "category"                  => $category,
+        "owner"                     => $owner,
+        "manager"                   => $manager,
+        "assessment"                => $assessment,
+        "notes"                     => $notes,
+        "project_id"                => $project_id,
+        "submitted_by"              => $submitted_by,
+        "submission_date"           => $submission_date,
+        "risk_catalog_mapping"      => $risk_catalog_mapping,
+        "threat_catalog_mapping"    => $threat_catalog_mapping,
+        "template_group_id"         => $template_group_id,
+    );
+    $insert_data = [];
+    foreach ($insert_fields as $key => $value) {
+        $insert_data[] = "`".$key. "` => '".$value."'";
+    }
+    $inserted_string = implode(", ", $insert_data);
+
+
     // If there's no session we get the name of the submitter from the database
     $username = (isset($_SESSION) && !empty($_SESSION['user']) ? $_SESSION['user'] : get_name_by_value("user", $submitted_by));
 
-    $message = "A new risk ID \"" . $risk_id . "\" was submitted by username \"" . $username . "\".";
-    write_log($risk_id, $submitted_by, $message);
+    $message = "A new risk ID \"" . $risk_id . "\" was submitted by username \"" . $username . "\". \n".$inserted_string;
+    write_log($risk_id, $submitted_by, $message); 
 
     // Close the database connection
     db_close($db);
@@ -5428,13 +5492,10 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
         $mitigation_team = [];
     }
     $current_solution           = isset($post['current_solution']) ? $post['current_solution'] : "";
-    $current_solution  = try_encrypt($current_solution);
 
     $security_requirements      = isset($post['security_requirements']) ? $post['security_requirements'] : "";
-    $security_requirements  = try_encrypt($security_requirements);
 
     $security_recommendations   = isset($post['security_recommendations']) ? $post['security_recommendations'] : "";
-    $security_recommendations   = try_encrypt($security_recommendations);
 
     $planning_date              = isset($post['planning_date']) ? $post['planning_date'] : "";
     $mitigation_date            = isset($post['mitigation_date']) ? $post['mitigation_date'] : date(get_default_datetime_format());
@@ -5459,6 +5520,21 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
 
     // Get current datetime for last_update
     $current_datetime = date('Y-m-d H:i:s');
+    $insert_fields = array(
+        "planning_strategy" => $planning_strategy,
+        "mitigation_effort" => $mitigation_effort,
+        "mitigation_cost" => $mitigation_cost,
+        "mitigation_owner" => $mitigation_owner,
+        "current_solution" => $current_solution,
+        "security_requirements" => $security_requirements,
+        "security_recommendations" => $security_recommendations,
+        "planning_date" => $planning_date,
+        "mitigation_percent" => $mitigation_percent
+    );
+
+    $current_solution = try_encrypt($current_solution);
+    $security_requirements = try_encrypt($security_requirements);
+    $security_recommendations = try_encrypt($security_recommendations);
 
     // Open the database connection
     $db = db_open();
@@ -5514,7 +5590,13 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     }
 
     // Audit log
-    $message = "A mitigation was submitted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+    $insert_data = [];
+    foreach ($insert_fields as $key => $value) {
+        $insert_data[] = "`".$key. "` => '".$value."'";
+    }
+    $inserted_string = implode(", ", $insert_data);
+
+    $message = "A mitigation was submitted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\". \n".$inserted_string;
     write_log($risk_id, $_SESSION['uid'], $message);
 
     // Close the database connection
@@ -13333,6 +13415,11 @@ function _lang($__key, $__params=array(), $__escape=true){
     });
     
     foreach($__params as $key => $value) {
+
+        // making sure it's not null as the str_replace() function doesn't accept null
+        // as the second parameter anymore
+        $value = $value ?? '';
+
         // It has to work for all the variable types found in the language files
         $__return = str_replace('{$' . $key .'}', $value, $__return);
         $__return = str_replace('${' . $key .'}', $value, $__return);
@@ -16961,8 +17048,20 @@ function updateTagsOfType($taggee_id, $type, $tags) {
 
     global $tag_types;
 
-    if (!$taggee_id || !in_array($type, $tag_types) || !is_array($tags))
+    if (!$taggee_id || !in_array($type, $tag_types) || !is_array($tags)) {
         return false;
+    }
+
+    // Remove empty values
+    $tags = array_values(
+        array_filter(
+            array_map('trim', $tags),
+            fn($value) => !is_null($value) && $value !== ''
+        )
+    );
+
+    // Remove duplicates (case insensitive)
+    $tags = array_intersect_key($tags, array_unique(array_map('strtolower', $tags)));
 
     //Get the actual tag values(the $result array contains other info as well)
     $tags_current = getTagsOfTaggee($taggee_id, $type);
@@ -17085,10 +17184,13 @@ function updateTagsOfType($taggee_id, $type, $tags) {
         global $lang;
 
         $tag_changes = [];
-        if ($tags_to_add)
+        if ($tags_to_add) {
             $tag_changes[] = _lang('TagUpdateAuditLogAdded', array('tags_added' => implode(", ", $tags_to_add)), false);
-        if ($tags_to_remove)
+        }
+
+        if ($tags_to_remove) {
             $tag_changes[] = _lang('TagUpdateAuditLogRemoved', array('tags_removed' => implode(", ", $tags_to_remove)), false);
+        }
 
         $message = _lang('TagUpdateAuditLog', array(
                 'user' => $_SESSION['user'],
@@ -17215,7 +17317,7 @@ function areTagsEqual($taggee_id, $type, $tags) {
     $tags_current = array_column($result, 'tag');
 
     db_close($db);
-
+    $tags = array_filter($tags, function($value) { return !is_null($value) && $value !== ''; });
     return array_diff($tags_current, $tags) == array_diff($tags, $tags_current);
 }
 
@@ -18964,40 +19066,81 @@ function get_users_with_permission($permission_key) {
  * NEXT SECTION CONTAINS FUNCTIONS DEDICATED TO FIXING FILE UPLOAD ENCODING ISSUES *
  ***********************************************************************************/
 function has_files_with_encoding_issues($type = 'all') {
+    if ($type === 'all') {
+        $sum = 0;
+        foreach (get_settings(['file_encoding_issues_count_compliance', 'file_encoding_issues_count_risk', 'file_encoding_issues_count_questionnaire']) as $_ => $value) {
+            $sum += (int)$value;
+        }
+        return $sum;
+    } else {
+        return (int)get_setting("file_encoding_issues_count_{$type}", 0);
+    }
+}
+
+// Refresh the number of files having an issue, update the settings or delete if there're no file with encoding issue left
+function refresh_file_encoding_issue_counts($type = 'all') {
+
     $db = db_open();
+
+    // Only query the database if it's really necessary
+    $questionnaire_table_exists = (($type === 'questionnaire' || $type === 'all') ? table_exists('questionnaire_files') : false);
+
+    if (($type === 'questionnaire' || $type === 'all') && !$questionnaire_table_exists) {
+        // Make sure there's no leftover data left in the settings table
+        delete_setting("file_encoding_issues_count_questionnaire");
+        
+        // If it's only for the questionnaire then there's nothing else to do here
+        if ($type === 'questionnaire') {
+            return;
+        }
+    }
     
-    switch($type) {
-        case 'compliance':
-            $sql = "SELECT count(1) AS cnt FROM `compliance_files` WHERE `size` <> LENGTH(`content`);";
-        break;
-        case 'risk':
-            $sql = "SELECT count(1) AS cnt FROM `files` WHERE `size` <> LENGTH(`content`);";
-        break;
-        case 'questionnaire':
-            $sql = "SELECT count(1) AS cnt FROM `questionnaire_files` WHERE `size` <> LENGTH(`content`);";
-        break;
-        case 'all':
-        default:
-            $sql = "
-                SELECT sum(u.cnt) FROM
-                    (SELECT count(1) AS cnt FROM `compliance_files` WHERE `size` <> LENGTH(`content`)
-                    UNION ALL
-                    SELECT count(1) AS cnt FROM `files` WHERE `size` <> LENGTH(`content`)" .
-                    (table_exists('questionnaire_files') ? "UNION ALL
-                    SELECT count(1) AS cnt FROM `questionnaire_files` WHERE `size` <> LENGTH(`content`)" : "") . 
-                ") u;
-            ";
-        break;
+    if ($type === 'all') {
+        $types = ['compliance', 'risk'];
+        if ($questionnaire_table_exists) {
+            $types []= 'questionnaire';
+        }
+    } else {
+        $types = [$type];
     }
 
-    $stmt = $db->prepare($sql);
-    $stmt->execute();
-    
-    $results = $stmt->fetch(PDO::FETCH_COLUMN);
-    
+    foreach ($types as $type) {
+        $setting_name = "file_encoding_issues_count_{$type}";
+        switch($type) {
+            case 'compliance':
+                $log_type = 'test_audit';
+                $sql = "SELECT count(1) AS cnt FROM `compliance_files` WHERE `size` <> LENGTH(`content`);";
+                break;
+            case 'risk':
+                $log_type = 'risk';
+                $sql = "SELECT count(1) AS cnt FROM `files` WHERE `size` <> LENGTH(`content`);";
+                break;
+            case 'questionnaire':
+                $log_type = 'questionnaire';
+                $sql = "SELECT count(1) AS cnt FROM `questionnaire_files` WHERE `size` <> LENGTH(`content`);";
+                break;
+        }
+
+        $stmt = $db->prepare($sql);
+        $stmt->execute();
+
+        $count = (int)$stmt->fetch(PDO::FETCH_COLUMN);
+
+        // Refresh the numbers in the database
+        if ($count) {
+            $old_count = (int)get_setting($setting_name);
+            if ($old_count !== $count) {
+                update_or_insert_setting($setting_name, $count);
+                write_log(0, $_SESSION['uid'], _lang('EncodingIssueCountUpdated', ['type' => $type, 'old_count' => $old_count, 'count' => $count]), $log_type);
+            }
+        } else { 
+            // Or delete the setting if the issues were cleaned up
+            delete_setting($setting_name);
+            write_log(0, $_SESSION['uid'], _lang('EncodingIssueCleanedUp', ['type' => $type]), $log_type);
+        }
+    }
+
     db_close($db);
-    
-    return $results && (int)$results > 0;
 }
 
 function get_files_with_encoding_issues($type = 'risk', $order_column = 0, $order_dir = "asc", $offset = 0, $page_size = -1) {
@@ -19005,10 +19148,10 @@ function get_files_with_encoding_issues($type = 'risk', $order_column = 0, $orde
     $limit =  $page_size>0 ? " LIMIT {$offset}, {$page_size}" : "";
 
     $db = db_open();
-    
+    $log_type = '';
     switch($type) {
         case 'compliance':
-
+            $log_type = 'test_audit';
             if ($order_column == 2) {
                 $order_column = "`u`.`name` {$order_dir}, `u`.`id` ASC";
             } elseif ($order_column == 1) {
@@ -19061,6 +19204,7 @@ function get_files_with_encoding_issues($type = 'risk', $order_column = 0, $orde
 
         break;
         case 'risk':
+            $log_type = 'risk';
             if ($order_column == 3) {
                 $order_column = "`f`.`name` {$order_dir}, `r`.`id` ASC";
             } elseif ($order_column == 2) {
@@ -19085,6 +19229,7 @@ function get_files_with_encoding_issues($type = 'risk', $order_column = 0, $orde
             "; 
         break;
         case 'questionnaire':
+            $log_type = 'questionnaire';
             if ($order_column == 2) {
                 $order_column = "`q`.`name` {$order_dir}, `t`.`id` ASC";
             } elseif ($order_column == 1) {
@@ -19125,7 +19270,19 @@ function get_files_with_encoding_issues($type = 'risk', $order_column = 0, $orde
     $recordsTotal = $stmt->fetch()[0];
     
     db_close($db);
-    
+
+    $setting_name = "file_encoding_issues_count_{$type}";
+
+    // Refresh the numbers in the database
+    if ($recordsTotal) {
+        $recordsTotal = (int)$recordsTotal;
+        if ((int)get_setting($setting_name) !== $recordsTotal) {
+            update_or_insert_setting($setting_name, $recordsTotal);
+        }
+    } else { // Or delete the setting if the issues were cleaned up
+        delete_setting($setting_name);
+    }
+
     return array($recordsTotal, $results);
 }
 
@@ -20776,7 +20933,9 @@ function purify_html($html) {
     if (!isset($GLOBALS['DEFAULT_HTML_PURIFIER'])) {
         $GLOBALS['DEFAULT_HTML_PURIFIER'] = new HTMLPurifier();
     }
-    return $GLOBALS['DEFAULT_HTML_PURIFIER']->purify($html);
+    
+    // After pruify strips the target attribute from hyperlinks add it back as _blank to force the links to open in a new tab
+    return str_replace('href=', 'target="_blank" href=', $GLOBALS['DEFAULT_HTML_PURIFIER']->purify($html));
 }
 
 // To purify html with template variables
@@ -20789,7 +20948,8 @@ function purify_html_template($html) {
         $def->addAttribute('span', 'data-id', 'Text');
         $GLOBALS['HTML_TEMPLATE_PURIFIER'] = new HTMLPurifier($config);
     }
-    return $GLOBALS['HTML_TEMPLATE_PURIFIER']->purify($html);
+    // After pruify strips the target attribute from hyperlinks add it back as _blank to force the links to open in a new tab
+    return str_replace('href=', 'target="_blank" href=', $GLOBALS['HTML_TEMPLATE_PURIFIER']->purify($html));
 }
 
 // Populates the template with the variable's value, replacing the variable definitions with the actual value
@@ -20870,7 +21030,7 @@ function create_selectize_dropdown($type, $selected_values, $additional_info = f
             $groups[] = $group_name;
             foreach($group_entries as $group_entry) {
                 echo "
-                                {class: '{$group_name}', value: '{$escaper->escapeHtml($group_entry['value'])}', name: '{$escaper->escapeHtml($group_entry['name'])}'},";
+                                {class: '{$group_name}', value: '{$escaper->escapeHtml($group_entry['value'])}', name: '{$escaper->escapeJs($group_entry['name'])}'},";
             }
         }
 
@@ -20888,7 +21048,7 @@ function create_selectize_dropdown($type, $selected_values, $additional_info = f
     } else {
         foreach($options as $option) {
             echo "
-                                {value: '{$escaper->escapeHtml($option['value'])}', name: '{$escaper->escapeHtml($option['name'])}'},";
+                                {value: '{$escaper->escapeHtml($option['value'])}', name: '{$escaper->escapeJs($option['name'])}'},";
         }
     }
 
@@ -20921,11 +21081,10 @@ function create_selectize_dropdown($type, $selected_values, $additional_info = f
                                     return $('<div>', {class: 'optgroup-header'}).html(data.label);
                                 },
                                 option: function (data) {
-                                    return $('<div>', {class: 'option'}).html(data.name);
+                                    return $('<div>', {class: 'option'}).text(data.name);
                                 },
-                                item: function (data) {
-                                    // Returning an html as apparently the 'remove_button' plugin doesn't like when this function returns a dom element
-                                    return $('<div>', {class: 'item'}).html(data.name)[0].outerHTML;
+                                item: function (data, escape) {
+                                    return `<div class='item'>` + escape(data.name) + `</div>`;
                                 }
                             }
                         });

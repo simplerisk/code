@@ -167,6 +167,9 @@
         getRoute()->get('/asset-group/tree', 'asset_group_tree');
         getRoute()->get('/asset-group/info', 'asset_group_info');
         getRoute()->get('/asset-group/options', 'get_asset_group_options');
+        getRoute()->get('/asset-group/options_by_control', 'get_asset_group_options_by_control');
+        getRoute()->post('/assets/create', 'create_asset_api');
+        getRoute()->post('/assets/delete', 'delete_asset_api');
         /********************************************************************************/
 
         /********************* RISK FORMULA API ***************************/

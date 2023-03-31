@@ -94,6 +94,9 @@ checkUploadedFileSizeErrors();
         max-width: 500px;
         overflow-x: hidden;
     }
+    div.file-uploader {
+        padding-bottom: 1em;
+    }
   </style>
 </head>
 
@@ -123,7 +126,7 @@ checkUploadedFileSizeErrors();
                 <?php 
                     if($_SESSION['add_documentation'])
                     {
-                        echo "<a href=\"#document-program--add\" id=\"document-add-btn\" role=\"button\" data-toggle=\"modal\" class=\"project--add\"><i class=\"fa fa-plus\"></i></a>";
+                        echo "<a href='#' id='document-add-btn' role='button' class='project--add'><i class='fa fa-plus'></i></a>";
                     }
                 ?>
                 
@@ -162,11 +165,15 @@ checkUploadedFileSizeErrors();
       </div>
     </div>
   </div>
-          
+
     <!-- MODEL WINDOW FOR ADDING DOCUMENT -->
-    <div id="document-program--add" class="modal hide fade" tabindex="-1" role="dialog">
-      <div class="modal-body">
-        <form id="add-document-form" class="" action="#" method="post" autocomplete="off" enctype="multipart/form-data">
+    <div id="document-program--add" class="modal hide" tabindex="-1" role="dialog">
+      <form id="add-document-form" class="" action="#" method="post" autocomplete="off" enctype="multipart/form-data">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['AddDocument']); ?></h4>
+        </div>
+        <div class="modal-body">
           <div class="form-group">
             <label for=""><?php echo $escaper->escapeHtml($lang['DocumentType']); ?></label>
             <select required="" class="document_type" name="document_type">
@@ -218,20 +225,22 @@ checkUploadedFileSizeErrors();
                 <label id="file-size" for=""></label>
             </div>
           </div>
-          <br>
-          
-          <div class="form-group text-right">
-            <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-            <button type="submit" name="add_document" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
-          </div>
-        </form>
-      </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
+          <button type="submit" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
+        </div>
+	  </form>
     </div>
     
     <!-- MODEL WINDOW FOR UPDATING DOCUMENT -->
-    <div id="document-update-modal" class="modal hide fade" tabindex="-1" role="dialog">
-      <div class="modal-body">
-        <form id="update-document-form" class="" action="#" method="post" autocomplete="off" enctype="multipart/form-data">
+    <div id="document-update-modal" class="modal hide" tabindex="-1" role="dialog">
+	  <form id="update-document-form" class="" action="#" method="post" autocomplete="off" enctype="multipart/form-data">
+          <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['EditDocument']); ?></h4>
+        </div>
+        <div class="modal-body">
           <div class="form-group">
             <label for=""><?php echo $escaper->escapeHtml($lang['DocumentType']); ?></label>
             <select required="" class="document_type" name="document_type">
@@ -245,7 +254,6 @@ checkUploadedFileSizeErrors();
             <input required="" type="text" name="document_name" id="document_name" value="" class="form-control" />
             <label for=""><?php echo $escaper->escapeHtml($lang['Frameworks']); ?></label>
             <?php create_multiple_dropdown("frameworks", NULL, "framework_ids"); ?>
-            <input type="hidden" value="" class="selected_control_values">
             <label for=""><?php echo $escaper->escapeHtml($lang['Controls']); ?></label>
             <?php // create_multiple_dropdown("framework_controls", NULL, "control_ids"); ?>
             <select multiple="multiple" id="control_ids" name="control_ids[]"></select>
@@ -285,14 +293,12 @@ checkUploadedFileSizeErrors();
                 <label id="file-size" for=""></label>
             </div>
           </div>
-          <br>
-          
-          <div class="form-group text-right">
-            <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-            <button type="submit" name="update_document" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
-          </div>
-        </form>
-      </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
+          <button type="submit" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
+    	</div>
+      </form>
     </div>
     
     <!-- MODEL WINDOW FOR DOCUMENT DELETE CONFIRM -->
@@ -347,7 +353,7 @@ checkUploadedFileSizeErrors();
         }
         
         // Sets controls multiselect options by framework ids
-        function sets_controls_by_framework_ids($frameworks)
+        function sets_controls_by_framework_ids($frameworks, selected_control_ids)
         {
             $parent = $frameworks.closest('.modal');
             $controls = $parent.find("#control_ids");
@@ -358,10 +364,9 @@ checkUploadedFileSizeErrors();
                 type: 'GET',
                 success : function (res){
                     var options = "";
-                    var selected_control_ids = $parent.find(".selected_control_values").length ?  $parent.find(".selected_control_values").val() : "";
                     for(var key in res.data.control_ids){
                         var control = res.data.control_ids[key];
-                        if(selected_control_ids && selected_control_ids.split(",").indexOf(control.value) !== -1){
+                        if(selected_control_ids && selected_control_ids.indexOf('' + control.value) !== -1){
                             options += "<option value='"+ control.value +"' selected>"+ control.name +"</option>";
                         }else{
                             options += "<option value='"+ control.value +"'>"+ control.name +"</option>";
@@ -373,8 +378,27 @@ checkUploadedFileSizeErrors();
             });
         }
 
-        // Build multiselect
+
         $(document).ready(function(){
+        
+    		$("body").on("click", "#document-add-btn", function(){
+    			// reset the form
+    			$("#document-program--add form").trigger('reset');
+    			// re-draw the multiselects as they ARE reset, but their texts still display the previous selections
+    			$('#document-program--add form span.multiselect-native-select select[multiple]').multiselect('updateButtonText');
+    			// remove the options from the parent selector dropdown
+    			$('div.parent_documents_container select').find('option').remove().end().append('<option value="0">--</option>');
+    			$('#file-size').html('');
+    			// show the modal window
+    			$("#document-program--add").modal();
+    		});
+
+            //Have to remove the 'fade' class for the shown event to work for modals
+            $('#document-program--add, #document-update-modal').on('shown.bs.modal', function() {
+                $(this).find('.modal-body').scrollTop(0);
+            });
+
+        	// Build multiselect
             $("[name='framework_ids[]'], [name='control_ids[]'], [name='team_ids[]']").multiselect({
                 enableFiltering: true,
                 enableCaseInsensitiveFiltering: true,
@@ -387,7 +411,7 @@ checkUploadedFileSizeErrors();
                     
                     // If framework is selected, sets control options
                     if($select.attr('id') == "framework_ids"){
-                        sets_controls_by_framework_ids($select)
+                        sets_controls_by_framework_ids($select, []);
                     }
                 }
             });
@@ -439,6 +463,7 @@ checkUploadedFileSizeErrors();
                 $("#document-update-modal [name='control_ids[]']").multiselect("deselectAll", false);
                 $("#document-update-modal [name='framework_ids[]']").multiselect("deselectAll", false);
                 $("#document-update-modal [name='additional_stakeholders[]']").multiselect("deselectAll", false);
+                $("#document-update-modal [name='team_ids[]']").multiselect("deselectAll", false);
                 $.ajax({
                     url: BASE_URL + '/api/governance/document?id=' + document_id,
                     type: 'GET',
@@ -454,10 +479,8 @@ checkUploadedFileSizeErrors();
                         $("#document-update-modal [name=document_id]").val(data.id);
                         $("#document-update-modal [name=document_type]").val(data.document_type);
                         $("#document-update-modal [name=document_name]").val(data.document_name);
-                        $("#document-update-modal .selected_control_values").val(data.control_ids);
-//                        $("#document-update-modal [name='control_ids[]']").multiselect('select', data.control_ids);
                         $("#document-update-modal [name='framework_ids[]']").multiselect('select', data.framework_ids);
-                        sets_controls_by_framework_ids($("#document-update-modal [name='framework_ids[]']"));
+                        sets_controls_by_framework_ids($("#document-update-modal [name='framework_ids[]']"), data.control_ids);
                         $("#document-update-modal [name=creation_date]").val(data.creation_date);
                         $("#document-update-modal [name=last_review_date]").val(data.last_review_date);
                         $("#document-update-modal [name=review_frequency]").val(data.review_frequency);

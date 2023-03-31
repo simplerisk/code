@@ -44,6 +44,9 @@ function display_main_detail_asset_fields_add($fields)
                 case 'AssetDetails':
                     display_asset_details_edit($display);
                 break;
+                case 'MappedControls':
+                    display_asset_mapping_controls_edit($display);
+                break;
                 case 'Tags':
                     display_asset_tags_add($display);
                 break;
@@ -201,6 +204,39 @@ function display_asset_tags_add($display = true)
                     </script>";
     echo "      </div>";
     echo "  </div>";
+}
+
+/************************************
+* FUNCTION: DISPLAY MAPPING CONTROL *
+*************************************/
+function display_asset_mapping_controls_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo "<div class=\"row-fluid\"{$displayString}>";
+        echo "<div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['MappedControls']).":</div>";
+        echo "<div class=\"span8\">";
+            echo "<table width=\"100%\" class=\"table table-bordered mapping_control_table\">
+                    <thead>
+                        <tr>
+                            <th width=\"40%\">".$escaper->escapeHtml($lang['CurrentMaturity'])."</th>
+                            <th width=\"50%\">".$escaper->escapeHtml($lang['Control'])."</th>
+                            <th>".$escaper->escapeHtml($lang['Actions'])."</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <div class=\"row-fluid\">
+                    <div class=\"pull-right control-group\">
+                        <button type=\"button\" name=\"add_control\" class=\"btn btn-primary add-control\">".$escaper->escapeHtml($lang['AddControl'])."</button>
+                    </div>
+                </div>
+";
+        echo "</div>";
+    echo "</div>";
 }
 
 /*****************************************

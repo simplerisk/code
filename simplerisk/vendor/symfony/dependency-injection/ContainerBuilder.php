@@ -1089,6 +1089,10 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
             return $this->services[$id] ?? $this->privates[$id];
         }
 
+        if (!array_is_list($arguments)) {
+            $arguments = array_combine(array_map(function ($k) { return preg_replace('/^.*\\$/', '', $k); }, array_keys($arguments)), $arguments);
+        }
+
         if (null !== $factory) {
             $service = $factory(...$arguments);
 
@@ -1102,7 +1106,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
         } else {
             $r = new \ReflectionClass($parameterBag->resolveValue($definition->getClass()));
 
-            $service = null === $r->getConstructor() ? $r->newInstance() : $r->newInstanceArgs(array_values($arguments));
+            $service = null === $r->getConstructor() ? $r->newInstance() : $r->newInstanceArgs($arguments);
 
             if (!$definition->isDeprecated() && 0 < strpos($r->getDocComment(), "\n * @deprecated ")) {
                 trigger_deprecation('', '', 'The "%s" service relies on the deprecated "%s" class. It should either be deprecated or its implementation upgraded.', $id, $r->name);

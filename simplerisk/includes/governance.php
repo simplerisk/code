@@ -88,7 +88,7 @@ function get_frameworks_as_treegrid($status){
     foreach($frameworks as &$framework){
         $framework_value = (int)$framework['value'];
         $framework['name'] = $escaper->escapeHtml($framework['name']);
-        $framework['description'] = nl2br($escaper->escapeHtml($framework['description']));
+        $framework['description'] = $framework['description'];
         $framework['actions'] = "
             <div class=\"text-center\">
                 <a class=\"framework-block--edit\" data-id=\"" . $framework_value . "\">
@@ -1206,7 +1206,10 @@ function add_framework_control($control){
         }
     }
     if(isset($control['map_frameworks'])&&count($control['map_frameworks'])>0) save_control_to_frameworks($control_id, $control['map_frameworks']);
-    if(count($framework_ids)>0) save_control_to_framework_by_ids($control_id, $framework_ids);
+    else if(count($framework_ids)>0) save_control_to_framework_by_ids($control_id, $framework_ids);
+
+    // Update affected assets and asset groups
+    if(isset($control['mapped_assets']) && is_array($control['mapped_assets'])) save_control_to_assets($control_id, $control['mapped_assets']);
 
     // Close the database connection
     db_close($db);
@@ -1291,7 +1294,10 @@ function update_framework_control($control_id, $control){
     db_close($db);
     
     if(isset($control['map_frameworks'])) save_control_to_frameworks($control_id, $control['map_frameworks']);
-    if(count($framework_ids)>0) save_control_to_framework_by_ids($control_id, $framework_ids);
+    else if(count($framework_ids)>0) save_control_to_framework_by_ids($control_id, $framework_ids);
+
+    // Update affected assets and asset groups
+    if(isset($control['mapped_assets'])) save_control_to_assets($control_id, $control['mapped_assets']);
     
     // If customization extra is enabled
     if(customization_extra())
@@ -1370,6 +1376,15 @@ function delete_framework_control($control_id){
     $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
     $stmt->execute();
 
+    // Delete all current control asset relations
+    $stmt = $db->prepare("DELETE FROM `control_to_assets` WHERE control_id=:control_id;");
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->execute();
+    // Delete all current control asset group relations
+    $stmt = $db->prepare("DELETE FROM `control_to_asset_groups` WHERE control_id=:control_id;");
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->execute();
+
     // Close the database connection
     db_close($db);
 
@@ -1397,7 +1412,7 @@ function get_framework_control($id){
     $db = db_open();
 
     $stmt = $db->prepare("
-        SELECT t1.*, IFNULL(GROUP_CONCAT(m.framework), '') framework_ids, t2.name control_class_name, t3.name control_priority_name, t4.name family_short_name, group_concat(distinct ctype.value) control_type_ids
+        SELECT t1.*, IFNULL(GROUP_CONCAT(DISTINCT m.framework), '') framework_ids, t2.name control_class_name, t3.name control_priority_name, t4.name family_short_name, group_concat(distinct ctype.value) control_type_ids
         FROM `framework_controls` t1 
             LEFT JOIN `framework_control_mappings` m on t1.id=m.control_id
             LEFT JOIN `control_class` t2 on t1.control_class=t2.value
@@ -1657,7 +1672,7 @@ function getAvailableControlFrameworkList($alphabetical_order=false){
         FROM `frameworks` t1
             LEFT JOIN `framework_control_mappings` m ON m.framework=t1.value
             LEFT JOIN `framework_controls` t2 ON m.control_id=t2.id AND t2.deleted=0
-        WHERE t2.id IS NOT NULL AND t1.`status`=1 
+        WHERE t1.`status`=1 
         GROUP BY t1.value
         ;
     ";
@@ -2698,9 +2713,7 @@ function get_exceptions_as_treegrid($type){
             $row['children'] = [];
 
             $row['name'] = "<span class='exception-name'><a href='#' data-id='".((int)$row['value'])."' data-type='{$row['type']}'>{$escaper->escapeHtml($row['name'])}</a></span>";
-	    $row['status'] = $escaper->escapeHtml($row['document_exceptions_status']);
-            $row['description'] = $escaper->escapeHtml($row['description']);
-            $row['justification'] = $escaper->escapeHtml($row['justification']);
+            $row['status'] = $escaper->escapeHtml($row['document_exceptions_status']);
 
             if ($type === "unapproved" && $approve)
                 $approve_action = "<a class='exception--approve' data-id='".((int)$row['value'])."' data-type='{$row['type']}'><i class='fa fa-check'></i></a>&nbsp;&nbsp;&nbsp;";
@@ -3606,6 +3619,8 @@ function display_add_control()
 
         display_mapping_framework_edit();
 
+        display_mapping_asset_edit();
+
         display_control_class_edit();
 
         display_control_phase_edit();
@@ -3663,6 +3678,9 @@ function display_detail_control_fields_add($fields)
                 break;
                 case 'MappedControlFrameworks':
                     display_mapping_framework_edit($display);
+                break;
+                case 'MappedAssets':
+                    display_mapping_asset_edit($display);
                 break;
                 case 'ControlClass':
                     display_control_class_edit($display);
@@ -3802,6 +3820,34 @@ function display_mapping_framework_edit($display = true)
                         <tr>
                             <th width="50%">'.$escaper->escapeHtml($lang['Framework']).'</th>
                             <th width="35%">'.$escaper->escapeHtml($lang['Control']).'</th>
+                            <th>'.$escaper->escapeHtml($lang['Actions']).'</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>';
+}
+
+/******************************************
+* FUNCTION: DISPLAY CONTROL MAPPING ASEET *
+*******************************************/
+function display_mapping_asset_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo '<div class="row-fluid" '.$displayString.'>
+            <div class="well">
+                <h5><span>'.$escaper->escapeHtml($lang['MappedAssets']).'
+                <a href="javascript:void(0);" class="control-block--add-asset" title="'.$escaper->escapeHtml($lang["Add"]).'"><i class="fa fa-plus"></i></a></span></h5>
+                <table width="100%" class="table table-bordered mapping_asset_table">
+                    <thead>
+                        <tr>
+                            <th width="30%">'.$escaper->escapeHtml($lang['CurrentMaturity']).'</th>
+                            <th width="65%">'.$escaper->escapeHtml($lang['Asset']).'</th>
                             <th>'.$escaper->escapeHtml($lang['Actions']).'</th>
                         </tr>
                     </thead>
@@ -3992,6 +4038,9 @@ function display_detail_control_fields_view($panel_name, $fields, $control)
                     case 'MappedControlFrameworks':
                         $html .= display_mapping_framework_view($control['id'], $panel_name);
                     break;
+                    case 'MappedAssets':
+                        $html .= display_mapping_asset_view($control['id'], $panel_name);
+                    break;
                     case 'ControlClass':
                         $html .= display_control_class_view($control['control_class_name'], $panel_name);
                     break;
@@ -4113,7 +4162,7 @@ function display_control_description_view($description, $panel_name="")
     $html = "
         <div class='row-fluid {$panel_name}'>
             <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['Description'])."</strong>: </div>
-            <div class='{$span2}'>".$escaper->escapeHtml($description)." </div>
+            <div class='{$span2}'>".($description)." </div>
         </div>";
     return $html;
 }
@@ -4133,7 +4182,7 @@ function display_supplemental_guidance_view($supplemental_guidance, $panel_name=
     $html = "
         <div class='row-fluid {$panel_name}'>
             <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['SupplementalGuidance'])."</strong>: </div>
-            <div class='{$span2}'>".$escaper->escapeHtml($supplemental_guidance)." </div>
+            <div class='{$span2}'>".($supplemental_guidance)." </div>
         </div>";
     return $html;
 }
@@ -4177,6 +4226,36 @@ function display_mapping_framework_view($control_id, $panel_name="")
                     $html .= "<tr>\n";
                         $html .= "<td>".$escaper->escapeHtml($framework['framework_name'])."</td>\n";
                         $html .= "<td>".$escaper->escapeHtml($framework['reference_name'])."</td>\n";
+                    $html .= "</tr>\n";
+                }
+            $html .= "</table>\n";
+        $html .= "</div>\n";
+    $html .= "</div>\n";
+    return $html;
+}
+/******************************************
+* FUNCTION: DISPLAY CONTROL MAPPING ASSET *
+*******************************************/
+function display_mapping_asset_view($control_id, $panel_name="")
+{
+    global $lang, $escaper;
+
+    $mapped_assets = get_control_to_assets($control_id);
+    $html = "<div class='row-fluid'>\n";
+        $html .= "<div class='well'>";
+            $html .= "<h5><span>".$escaper->escapeHtml($lang['MappedAssets'])."</span></h5>";
+            $html .= "<table width='100%' class='table table-bordered'>\n";
+                $html .= "<tr>\n";
+                    $html .= "<th width='45%'>".$escaper->escapeHtml($lang['CurrentMaturity'])."</th>\n";
+                    $html .= "<th width='55%'>".$escaper->escapeHtml($lang['Asset'])."</th>\n";
+                $html .= "</tr>\n";
+                foreach ($mapped_assets as $assets){
+                    $asset_names = [];
+                    if($assets['asset_name']) $asset_names[] = $escaper->escapeHtml($assets['asset_name']);
+                    if($assets['asset_group_name']) $asset_names[] = "<b>".$escaper->escapeHtml($assets['asset_group_name'])."</b>";
+                    $html .= "<tr>\n";
+                        $html .= "<td>".$escaper->escapeHtml($assets['control_maturity_name'])."</td>\n";
+                        $html .= "<td>".(implode(",", $asset_names ))."</td>\n";
                     $html .= "</tr>\n";
                 }
             $html .= "</table>\n";

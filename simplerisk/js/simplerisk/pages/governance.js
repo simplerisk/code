@@ -82,7 +82,11 @@ jQuery(document).ready(function($){
                     $('[name=family]', modal).val(Number(control.family) ? control.family : "");
                     $('[name=mitigation_percent]', modal).val(Number(control.mitigation_percent) ? control.mitigation_percent : "");
                     $(".mapping_framework_table tbody", modal).html(data.mapped_frameworks);
-
+                    $(".mapping_asset_table tbody", modal).html(data.mapped_assets);
+                    $('.mapping_asset_table select.assets-asset-groups-select', modal).each(function(index, element){
+                        $(element).attr('name', 'assets_asset_groups[' + index + '][]');
+                        setupAssetsAssetGroupsWidget($(element),control_id, control.mapped_maturity[index]);
+                    });
                     $('[name*="custom_field"]', modal).val("");
                     if(control.custom_values){
                       var custom_values = control.custom_values;
@@ -94,6 +98,9 @@ jQuery(document).ready(function($){
                         $('[name*="custom_field"].multiselect', modal).multiselect('refresh');
                       }
                     }
+
+                    tinyMCE.get("update_control_description").setContent(control.description);
+                    tinyMCE.get("update_supplemental_guidance").setContent(control.supplemental_guidance);
 
                     $(modal).modal('show');
                 }
@@ -145,8 +152,16 @@ jQuery(document).ready(function($){
                       }
                     }
 
+                    tinyMCE.get("add_control_description").setContent(control.description);
+                    tinyMCE.get("add_supplemental_guidance").setContent(control.supplemental_guidance);
+
                     $(modal).modal('show');
                     $(".mapping_framework_table tbody", modal).html(data.mapped_frameworks)
+                    $(".mapping_asset_table tbody", modal).html(data.mapped_assets);
+                    $('.mapping_asset_table select.assets-asset-groups-select', modal).each(function(index, element){
+                        $(element).attr('name', 'assets_asset_groups[' + index + '][]');
+                        setupAssetsAssetGroupsWidget($(element),control_id, control.mapped_maturity[index]);
+                    });
                 }
             });
           });
@@ -162,6 +177,17 @@ jQuery(document).ready(function($){
           });
           $('#control--add').on('shown.bs.modal', function () {
               $(".mapping_framework_table tbody", this).html("");
+              $(".mapping_asset_table tbody", this).html("");
+              $('[name="control_type[]"]').multiselect('refresh');
+          });
+          $('#control--add').on('hidden.bs.modal', function () {
+                $("#filter_by_control_framework").multiselect("rebuild");
+                $("#add-control-form")[0].reset();
+                $('#add-control-form [name="control_type[]"]').multiselect('deselectAll', false);
+                $('#add-control-form [name="control_type[]"]').multiselect('select', [1]);
+                $('#add-control-form [name="control_type[]"]').multiselect('refresh');
+                $('#add-control-form [name*="custom_field"]').val("");
+                $('#add-control-form [name*="custom_field"].multiselect').multiselect('refresh');
           });
           $(document).on('change', '[name*=map_framework_id]', function(event) {
               var cur_select = this;
@@ -180,9 +206,39 @@ jQuery(document).ready(function($){
                   $(this).find("option:eq(0)").prop('selected', true);
               });
           })
+          $(document).on('click', '.control-block--add-asset', function(event) {
+            event.preventDefault();
+            var form = $(this).closest('form');
+            var appended_row = $($("#add_asset_row table tr:first-child").parent().html()).appendTo($(".mapping_asset_table tbody", form));
+            $('.mapping_asset_table select.assets-asset-groups-select', form).each(function(index, element){
+                $(element).attr('name', 'assets_asset_groups[' + index + '][]');
+            });
+            // var appended_row = $(".mapping_asset_table tbody", form).append($("#add_asset_row table tr:first-child").parent().html());
+            setupAssetsAssetGroupsWidget($("select.assets-asset-groups-select", appended_row));
+          });
+          $(document).on('click', '.control-block--delete-asset', function(event) {
+            event.preventDefault();
+            var form = $(this).closest('form');
+            $(this).closest("tr").remove();
+            $('.mapping_asset_table select.assets-asset-groups-select', form).each(function(index, element){
+                $(element).attr('name', 'assets_asset_groups[' + index + '][]');
+            });
+          });
+          $(document).on('change', '[name*=asset_maturity]', function(event) {
+              var cur_select = this;
+              if(!$(cur_select).val()) return true;
+              var form = $(this).closest('form');
+              var existing_mappings = $("#existing_mappings").val();
+              $("[name*=asset_maturity]", form).each(function(index){
+                if(this != cur_select && $(this).val() == $(cur_select).val()){
+                    $(cur_select).find("option:eq(0)").prop('selected', true);
+                    showAlertFromMessage(existing_mappings, false);
+                    return false;
+                }
+              });
+          });
         }
     };
-       
 
     controlObject.init();
   
@@ -283,13 +339,13 @@ function rebuild_filters()
 function rebuild_filter(obj,new_options){
     var unselected_classes = [];
     $(obj).find('option').not(':selected').each(function(k, v){
-        unselected_classes.push(v.value);
+        unselected_classes.push(parseInt(v.value));
     });
     
 //    var selected_classes = $(obj).val();
     var unassigned_label = $("#unassigned_label").val();
     $(obj).find("option").remove();
-    if(unselected_classes.indexOf("-1") >= 0){
+    if(unselected_classes.indexOf(-1) >= 0){
         var $option = $("<option/>", {
             value: "-1",
             text: unassigned_label,
@@ -462,4 +518,77 @@ function fixTreeGridCollapsableColumn() {
             $(this).find('.tree-title').css('margin-right', (indentCount * 7) + 'px');
         };
     });
+}
+
+function setupAssetsAssetGroupsWidget(select_tag, control_id, control_maturity) {
+
+    if (!select_tag.length)
+        return;
+    
+    var select = select_tag.selectize({
+        sortField: 'text',
+        plugins: ['optgroup_columns', 'remove_button', 'restore_on_backspace'],
+        delimiter: ',',
+        create: function (input){
+            return { id:'new_asset_' + input, name:input };
+        },
+        persist: false,
+        valueField: 'id',
+        labelField: 'name',
+        searchField: 'name',
+        sortField: 'name',
+        optgroups: [
+            {class: 'asset', name: 'Standard Assets'},
+            {class: 'group', name: 'Asset Groups'}
+        ],
+        optgroupField: 'class',
+        optgroupLabelField: 'name',
+        optgroupValueField: 'class',
+        preload: true,
+        render: {
+            item: function(item, escape) {
+                return '<div class="' + item.class + '">' + escape(item.name) + '</div>';
+            }
+        },
+        onInitialize: function() {
+            select_tag.parent().find('.selectize-control div').block({message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>'});
+        },
+        load: function(query, callback) {
+            if (query.length) return callback();
+            $.ajax({
+                url: BASE_URL + '/api/asset-group/options_by_control' ,
+                data: { 
+                        "control_id": control_id, 
+                        "control_maturity": control_maturity, 
+                    },
+                type: 'GET',
+                dataType: 'json',
+                error: function() {
+                    callback();
+                },
+                success: function(res) {
+                    var data = res.data;
+                    var control = select[0].selectize;
+                    var selected_ids = [];
+                    // Have to do it this way, because addition with simple addOption() will
+                    // bug out when we deselect an option(it wouldn't be added back to the
+                    // list of selectable items)
+                    len = data.length;
+                    for (var i = 0; i < len; i++) {
+                        var item = data[i];
+                        item.id += '_' + item.class;
+                        control.registerOption(item);
+                        if (item.selected == '1') {
+                            selected_ids.push(item.id);
+                        }
+                    }
+                    if (selected_ids.length)
+                        control.setValue(selected_ids);
+                },
+                complete: function() {
+                    select_tag.parent().find('.selectize-control div').unblock({message:null});
+                }
+            });
+        }
+    });        
 }

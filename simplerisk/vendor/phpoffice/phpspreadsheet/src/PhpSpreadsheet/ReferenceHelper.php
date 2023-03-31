@@ -518,7 +518,7 @@ class ReferenceHelper
 
         // Update worksheet: freeze pane
         if ($worksheet->getFreezePane()) {
-            $splitCell = $worksheet->getFreezePane() ?? '';
+            $splitCell = $worksheet->getFreezePane();
             $topLeftCell = $worksheet->getTopLeftCell() ?? '';
 
             $splitCell = $this->updateCellReference($splitCell);
@@ -550,7 +550,7 @@ class ReferenceHelper
         }
 
         // Update workbook: define names
-        if (count($worksheet->getParent()->getDefinedNames()) > 0) {
+        if (count($worksheet->getParentOrThrow()->getDefinedNames()) > 0) {
             $this->updateDefinedNames($worksheet, $beforeCellAddress, $numberOfColumns, $numberOfRows);
         }
 
@@ -862,17 +862,15 @@ class ReferenceHelper
         // Is it in another worksheet? Will not have to update anything.
         if (strpos($cellReference, '!') !== false) {
             return $cellReference;
+        }
         // Is it a range or a single cell?
-        } elseif (!Coordinate::coordinateIsRange($cellReference)) {
+        if (!Coordinate::coordinateIsRange($cellReference)) {
             // Single cell
             return $this->cellReferenceHelper->updateCellReference($cellReference, $includeAbsoluteReferences);
-        } elseif (Coordinate::coordinateIsRange($cellReference)) {
-            // Range
-            return $this->updateCellRange($cellReference, $includeAbsoluteReferences);
         }
 
-        // Return original
-        return $cellReference;
+        // Range
+        return $this->updateCellRange($cellReference, $includeAbsoluteReferences);
     }
 
     /**
@@ -905,7 +903,7 @@ class ReferenceHelper
 
     private function updateDefinedNames(Worksheet $worksheet, string $beforeCellAddress, int $numberOfColumns, int $numberOfRows): void
     {
-        foreach ($worksheet->getParent()->getDefinedNames() as $definedName) {
+        foreach ($worksheet->getParentOrThrow()->getDefinedNames() as $definedName) {
             if ($definedName->isFormula() === false) {
                 $this->updateNamedRange($definedName, $worksheet, $beforeCellAddress, $numberOfColumns, $numberOfRows);
             } else {

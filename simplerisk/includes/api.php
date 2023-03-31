@@ -307,30 +307,32 @@ function allusers()
         // For each item in the users array
         foreach ($users as $user)
         {
-	    // Get the user id for the user
+	       // Get the user id for the user
             $uid = $user['value'];
 
-	    // Get the teams for this user
-	    $teams = get_user_teams($uid);
+            // Get the teams for this user
+            $teams = get_user_teams($uid);
 
-	    // For each team
-	    foreach ($teams as $key => $value)
-	    {
-		    // Convert the number to a name
-		    $teams[$key] = get_name_by_value('team', $value);
-	    }
+            // For each team
+            foreach ($teams as $key => $value)
+            {
+                // Convert the number to a name
+                $teams[$key] = get_name_by_value('team', $value);
+            }
 
-	    // Get the user permissions
-	    $permissions = get_permissions_of_user($uid);
+            // Get the user permissions
+            $permissions = get_permissions_of_user($uid);
 
-	    // Get the role ID
-	    $role_id = $user['role_id'];
+            // Get the role ID
+            $role_id = $user['role_id'];
 
-	    // Get the role
-	    $role = get_role($role_id);
+            // Get the role
+            $role = get_role($role_id);
+            $role_name = ($role) ? $role['name'] : "";
+
 
             // Create the new data array
-            $data[] = array("uid" => $user['value'], "type" => $user['type'], "username" => $user['username'], "email" => $user['email'], "last_login" => $user['last_login'], "teams" => $teams, "role" => $role['name'], "responsibilities" => $permissions);
+            $data[] = array("uid" => $user['value'], "type" => $user['type'], "username" => $user['username'], "email" => $user['email'], "last_login" => $user['last_login'], "teams" => $teams, "role" => $role_name, "responsibilities" => $permissions);
         }
 
         // Return a JSON response
@@ -380,9 +382,10 @@ function enabledusers()
 
             // Get the role
             $role = get_role($role_id);
+            $role_name = ($role) ? $role['name'] : "";
 
             // Create the new data array
-            $data[] = array("uid" => $user['value'], "type" => $user['type'], "username" => $user['username'], "email" => $user['email'], "last_login" => $user['last_login'], "teams" => $teams, "role" => $role['name'], "responsibilities" => $permissions);
+            $data[] = array("uid" => $user['value'], "type" => $user['type'], "username" => $user['username'], "email" => $user['email'], "last_login" => $user['last_login'], "teams" => $teams, "role" => $role_name, "responsibilities" => $permissions);
         }
 
         // Return a JSON response
@@ -432,9 +435,10 @@ function disabledusers()
 
             // Get the role
             $role = get_role($role_id);
+            $role_name = ($role) ? $role['name'] : "";
 
             // Create the new data array
-            $data[] = array("uid" => $user['value'], "type" => $user['type'], "username" => $user['username'], "email" => $user['email'], "last_login" => $user['last_login'], "teams" => $teams, "role" => $role['name'], "responsibilities" => $permissions);
+            $data[] = array("uid" => $user['value'], "type" => $user['type'], "username" => $user['username'], "email" => $user['email'], "last_login" => $user['last_login'], "teams" => $teams, "role" => $role_name, "responsibilities" => $permissions);
         }
 
         // Return a JSON response
@@ -581,7 +585,7 @@ function viewrisk() {
             $manager = get_name_by_value("user", $risk[0]['manager']);
             $assessment = try_decrypt($risk[0]['assessment']);
             $notes = try_decrypt($risk[0]['notes']);
-            $assets = array_map(function($item) { return array('name'=>$item['name'], 'type'=>$item['class']); }, get_assets_and_asset_groups_of_type($id, 'risk'));
+            $assets = array_map(function($item) { return array('name'=>$item['name'], 'type'=>$item['class']); }, get_assets_and_asset_groups_of_type($id, 'risk', true));
             $tags = $risk[0]['risk_tags'];
             $submission_date = $risk[0]['submission_date'];
             $mitigation_id = $risk[0]['mitigation_id'];
@@ -3718,6 +3722,7 @@ function getFrameworkControlsDatatable(){
                             $html .= display_control_description_view($control['description'], 'bottom');
                             $html .= display_supplemental_guidance_view($control['supplemental_guidance'], 'bottom');
                             $html .= display_mapping_framework_view($control['id'], 'bottom');
+                            $html .= display_mapping_asset_view($control['id'], 'bottom');
                         $html .= "</div>";
                     }
                     $html .= "</div>\n";
@@ -4066,6 +4071,13 @@ function addControlResponse()
         $map_frameworks[] = array($frameworks,$reference_name);
     }
     $control["map_frameworks"] = $map_frameworks;
+    $asset_maturity  = isset($_POST['asset_maturity']) ? $_POST['asset_maturity'] : [];
+    $assets_asset_groups = isset($_POST['assets_asset_groups']) ? $_POST['assets_asset_groups'] : [];
+    $mapped_assets = array();
+    foreach($asset_maturity as $index=>$maturity){
+        if($assets_asset_groups[$index]) $mapped_assets[] = array($maturity, $assets_asset_groups[$index]);
+    }
+    $control["mapped_assets"] = $mapped_assets;
     $control_id = "";
     // Check if the control name is null
     if (!$control['short_name'])
@@ -4139,6 +4151,14 @@ function updateControlResponse()
             $map_frameworks[] = array($frameworks,$reference_name);
         }
         $control["map_frameworks"] = $map_frameworks;
+        $asset_maturity  = isset($_POST['asset_maturity']) ? $_POST['asset_maturity'] : [];
+        $assets_asset_groups = isset($_POST['assets_asset_groups']) ? $_POST['assets_asset_groups'] : [];
+        $mapped_assets = array();
+        foreach($asset_maturity as $index=>$maturity){
+            if($assets_asset_groups[$index]) $mapped_assets[] = array($maturity, $assets_asset_groups[$index]);
+        }
+        $control["mapped_assets"] = $mapped_assets;
+
         // Update the control
         update_framework_control($control_id, $control);
 
@@ -4525,15 +4545,25 @@ function getControlResponse()
         $control = get_framework_control($id);
         $control['description'] = utf8ize($control['description']);
         $mapped_frameworks = get_mapping_control_frameworks($id);
-        $html = "";
+        $frameworks_html = "";
         foreach ($mapped_frameworks as $framework){
-            $html .= "<tr>\n";
-                $html .= "<td>".create_dropdown('frameworks', $framework['framework'],'map_framework_id[]', true, false, true, 'required')."</td>\n";
-                $html .= "<td><input type='text' name='reference_name[]' value='".$escaper->escapeHtml($framework['reference_name'])."' class='form-control' maxlength='100' required></td>\n";
-                $html .= "<td><a href='javascript:void(0);' class='control-block--delete-mapping' title='".$escaper->escapeHtml($lang["Delete"])."'><i class='fa fa-trash'></i></a></td>\n";
-            $html .= "</tr>\n";
+            $frameworks_html .= "<tr>\n";
+                $frameworks_html .= "<td>".create_dropdown('frameworks', $framework['framework'],'map_framework_id[]', true, false, true, 'required')."</td>\n";
+                $frameworks_html .= "<td><input type='text' name='reference_name[]' value='".$escaper->escapeHtml($framework['reference_name'])."' class='form-control' maxlength='100' required></td>\n";
+                $frameworks_html .= "<td><a href='javascript:void(0);' class='control-block--delete-mapping' title='".$escaper->escapeHtml($lang["Delete"])."'><i class='fa fa-trash'></i></a></td>\n";
+            $frameworks_html .= "</tr>\n";
         }
-        json_response(200, "Get framework control by ID", ["control" => $control, "mapped_frameworks" => $html]);
+        $mapped_assets = get_control_to_assets($id);
+        $assets_html = "";
+        foreach ($mapped_assets as $assets){
+            $assets_html .= "<tr>\n";
+                $assets_html .= "<td>".create_dropdown("control_maturity", $assets['control_maturity'], "asset_maturity[]", false, false, true, "required")."</td>\n";
+                $assets_html .= "<td><select class='assets-asset-groups-select' name='assets_asset_groups[]' multiple placeholder='".$escaper->escapeHtml($lang['AffectedAssetsWidgetPlaceholder'])."'' required></select></td>\n";
+                $assets_html .= "<td><a href='javascript:void(0);' class='control-block--delete-asset' title='".$escaper->escapeHtml($lang["Delete"])."'><i class='fa fa-trash'></i></a></td>\n";
+            $assets_html .= "</tr>\n";
+            $control['mapped_maturity'][] = $assets['control_maturity'];
+        }
+        json_response(200, "Get framework control by ID", ["control" => $control, "mapped_frameworks" => $frameworks_html, "mapped_assets" => $assets_html]);
     }
     else
     {
@@ -7562,8 +7592,8 @@ function get_exception_for_display_api()
         $exception['approval_date'] = date(get_default_date_format());
         $exception['approver'] = $escaper->escapeHtml($_SESSION['name'] ? $_SESSION['name'] : $_SESSION['user']);
     }
-    $exception['description'] = nl2br($escaper->escapeHtml($exception['description']));
-    $exception['justification'] = nl2br($escaper->escapeHtml($exception['justification']));
+    $exception['description'] = $exception['description'];
+    $exception['justification'] = $exception['justification'];
     if($exception['unique_name'])
         $exception['file_download'] = "<a href=\"".$_SESSION['base_url']."/governance/download.php?id=".$exception['unique_name']."\" >".$escaper->escapeHtml($exception['file_name']). " (".$exception['file_version'].")" ."</a>";
     else $exception['file_download'] = "";
@@ -8424,12 +8454,26 @@ function asset_group_remove_asset()
 
 function get_asset_group_options() {
 
-    if (check_permission("asset") || check_permission("assessments") || check_permission("riskmanagement")) {
-        $risk_id = isset($_GET['risk_id']) && ctype_digit($_GET['risk_id']) ? (int)$_GET['risk_id'] : false;
-        json_response(200, null, get_assets_and_asset_groups_for_dropdown($risk_id));
+    if (check_permission("asset") || check_permission("assessments") || check_permission("riskmanagement") || check_permission('im_incidents')) {
+        $id = isset($_GET['id']) && ctype_digit($_GET['id']) ? (int)$_GET['id'] : null;
+        $type = isset($_GET['type']) ? $_GET['type'] : null;
+        $selected_only = isset($_GET['selected_only']) ? $_GET['selected_only'] : false;
+        json_response(200, null, get_assets_and_asset_groups_of_type($id, $type, $selected_only));
     } else {
         global $lang;
 
+        set_alert(true, "bad", $lang['NoPermissionForAssetAssetGroupList']);
+        json_response(400, get_alert(true), NULL);
+    }
+}
+function get_asset_group_options_by_control() {
+
+    if (check_permission("asset") || check_permission("governance")) {
+        $control_id = isset($_GET['control_id']) ? (int)$_GET['control_id'] : false;
+        $control_maturity = isset($_GET['control_maturity']) ? (int)$_GET['control_maturity'] : false;
+        json_response(200, null, get_assets_and_asset_groups_by_control_for_dropdown($control_id, $control_maturity));
+    } else {
+        global $lang;
         set_alert(true, "bad", $lang['NoPermissionForAssetAssetGroupList']);
         json_response(400, get_alert(true), NULL);
         return;
@@ -8437,16 +8481,12 @@ function get_asset_group_options() {
 }
 
 function get_asset_group_options_noauth() {
-
     if (get_setting("ASSESSMENT_ASSET_SHOW_AVAILABLE") && check_questionnaire_get_token()) {
-        $risk_id = isset($_GET['risk_id']) && ctype_digit($_GET['risk_id']) ? (int)$_GET['risk_id'] : false;
-        json_response(200, null, get_assets_and_asset_groups_for_dropdown($risk_id));
+        json_response(200, null, get_assets_and_asset_groups_of_type());
     } else {
         global $lang;
-
         set_alert(true, "bad", $lang['NoPermissionForAssetAssetGroupList']);
         json_response(400, get_alert(true), NULL);
-        return;
     }
 }
 
@@ -10328,12 +10368,14 @@ function uploadFileToFixFileEncodingIssue() {
         }
 
         // If the user wants to upload a `questionnaire` type file, check if the assessment extra file exists
-        if ($type === 'questionnaire' && file_exists(realpath(__DIR__ . '/../extras/assessments/index.php'))) {
-            // Include the file
-            require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
-        } else {
-            set_alert(true, "bad", $lang['NoPermissionForAssessments']);
-            json_response(400, get_alert(true), NULL);
+        if ($type === 'questionnaire') {
+            if(file_exists(realpath(__DIR__ . '/../extras/assessments/index.php'))) {
+                // Include the file
+                require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
+            } else {
+                set_alert(true, "bad", $lang['NoPermissionForAssessments']);
+                json_response(400, get_alert(true), NULL);
+            }
         }
 
         $unique_name = $_POST['unique_name'];
@@ -10347,6 +10389,7 @@ function uploadFileToFixFileEncodingIssue() {
 
         switch($type) {
             case 'risk':
+                $log_type = 'risk';
                 $error = upload_file($file_info['risk_id'], $_FILES['file'], $file_info['view_type']);
                 if ($error === 1) {
                     delete_db_file($unique_name);
@@ -10355,6 +10398,7 @@ function uploadFileToFixFileEncodingIssue() {
                 }
             break;
             case 'compliance':
+                $log_type = 'test_audit';
                 $files = array(
                     'name' => [$_FILES['file']['name']],
                     'type' => [$_FILES['file']['type']],
@@ -10416,6 +10460,7 @@ function uploadFileToFixFileEncodingIssue() {
                 }
             break;
             case 'questionnaire':
+                $log_type = 'questionnaire';
                 $files = array(
                     'name' => [$_FILES['file']['name']],
                     'type' => [$_FILES['file']['type']],
@@ -10437,11 +10482,29 @@ function uploadFileToFixFileEncodingIssue() {
                 }
             break;
         }
+        $setting_name = "file_encoding_issues_count_{$type}";
 
+        $old_count = (int)get_setting($setting_name);
+        $count = $old_count - 1;
+
+        // Refresh the numbers in the database
+        if ($count > 0) {
+            update_or_insert_setting($setting_name, $count);
+            write_log(0, $_SESSION['uid'], _lang('EncodingIssueCountUpdated', ['type' => $type, 'old_count' => $old_count, 'count' => $count]), $log_type);
+        } else {
+            // If all files of this type are supposedly fixed check if they really are
+            refresh_file_encoding_issue_counts($type);
+        }
     } else {
         unauthorized_access();
     }
 }
+/***************************************************************************************
+ * END OF SECTION CONTAINING FUNCTIONS DEDICATED TO FIXING FILE UPLOAD ENCODING ISSUES *
+ ***************************************************************************************/
+
+
+
 /*****************************************************
  * FUNCTION: REPORTS - All Open Risks Assigned to Me *
  * The My Open Risk Report datatable's API function  *
@@ -11493,7 +11556,7 @@ function assets_view_action_API() {
                     
                     global $field_settings_views, $field_settings;
                     $id_field = $field_settings_views[$view]['id_field'];
-                    
+
                     // Check if the view sent is valid
                     if (empty($field_settings_views[$view]) || $field_settings_views[$view]['view_type'] !== 'asset') {
                         set_alert(true, "bad", $lang['AssetEditFailed_InvalidView']);
@@ -11516,7 +11579,7 @@ function assets_view_action_API() {
                     list($select_parts, $join_parts) = field_settings_get_join_parts($view, $active_field_names);
 
                     $db = db_open();
-                    
+
                     $sql = "
                         SELECT
                             " . implode(',', $select_parts) . "
@@ -11539,7 +11602,7 @@ function assets_view_action_API() {
                     $data = [];
                     foreach ($asset as $field_name => $value) {
                         $field_setting = !empty($field_settings['asset'][$field_name]) ? $field_settings['asset'][$field_name] : false;
-                        
+
                         // Only run this logic if it's not a custom field(has a valid field setting)
                         if ($field_setting && !empty($value) && ($field_setting['editable'] || $id_field === $field_name)) {
 
@@ -11562,6 +11625,43 @@ function assets_view_action_API() {
                                         }
                                         $data[$field_name] = $tags;
                                     }
+                                    break;
+                                case "mapped_controls":
+                                    $html = "<table width=\"100%\" class=\"table table-bordered mapping_control_table\">
+                                        <thead>
+                                            <tr>
+                                                <th width=\"40%\">".$escaper->escapeHtml($lang['CurrentMaturity'])."</th>
+                                                <th width=\"50%\">".$escaper->escapeHtml($lang['Control'])."</th>
+                                                <th>".$escaper->escapeHtml($lang['Actions'])."</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>";
+                                    $asset_id = $asset['id'];
+                                    $mapped_controls = get_mapping_controls_by_asset_id($asset_id);
+                                    foreach ($mapped_controls as $row){
+                                        $controls = get_framework_controls_by_filter("all", "all", "all", "all", "all", "all", "all", "all", "", "all");
+                                        $control_options = array_map(function($control) use ($escaper){
+                                            return array(
+                                                'value' => $control['id'],
+                                                'name' => $escaper->escapeHtml($control['short_name']),
+                                            );
+                                            
+                                        }, $controls);
+                                        $html .= "<tr>\n";
+                                            $html .= "<td>".create_dropdown("control_maturity", $row['control_maturity'], "control_maturity[]", false, false, true, "required")."</td>\n";
+                                            $html .= "<td>".create_dropdown("control_id", $row['control_id'], "control_id[]", false, false, true, "class='mapped_control' required", "", "", true, 0, $control_options)."</td>\n";
+                                            $html .= "<td><a href='javascript:void(0);' class='control-block--delete-mapping' title='".$escaper->escapeHtml($lang["Delete"])."'><i class='fa fa-trash'></i></a></td>\n";
+                                        $html .= "</tr>\n";
+                                    }
+                                    $html .= "
+                                        </tbody>
+                                    </table>
+                                    <div class=\"row-fluid\">
+                                        <div class=\"pull-right control-group\">
+                                            <button type=\"button\" name=\"add_control\" class=\"btn btn-primary add-control\">".$escaper->escapeHtml($lang['AddControl'])."</button>
+                                        </div>
+                                    </div>";
+                                    $data[$field_name] = $html;
                                     break;
                                 default:
                                     // Only have to escape non-custom fields as those are already escaped
@@ -11747,5 +11847,62 @@ function api_complianceforgescf_disable()
         // Return a 403 response
         return json_response(403, "Forbidden", null);
     }
+}
+/**********************************************
+ * FUNCTION: CREATE A ASSET FROM EXTERNAL APP *
+ **********************************************/
+function create_asset_api(){
+    global $escaper, $lang;
+    $name       = isset($_POST['asset_name']) ? $_POST['asset_name'] : "";
+    $ip         = isset($_POST['ip']) ? $_POST['ip'] : "";
+    $value      = isset($_POST['value']) ? $_POST['value'] : "";
+    $location   = empty($_POST['location']) ? [] : $_POST['location'];
+    $teams      = empty($_POST['team']) ? [] : $_POST['team'];
+    $details    = isset($_POST['details']) ? $_POST['details'] : "";
+    $tags       = empty($_POST['tags']) ? [] : $_POST['tags'];
+    foreach($tags as $tag){
+        if (strlen($tag) > 255) {
+            $message = $escaper->escapeHtml($lang['MaxTagLengthWarning']);
+            return json_response(200, "createaseet", $message);
+        }
+    }
+
+    if($name)
+    {
+        // Add the asset
+        $success = add_asset($ip, $name, $value, $location, $teams, $details, $tags, true);
+
+        // If the asset add was successful
+        if ($success)
+        {
+            // Display an alert
+            $message = $escaper->escapeHtml($lang['AssetWasAddedSuccessfully']);
+        }
+        else
+        {
+            $message = $escaper->escapeHtml($lang['ThereWasAProblemAddingTheAsset']);
+        }
+    }
+    else
+    {
+        // Display an alert
+        $message = $escaper->escapeHtml($lang['AssetNameIsRequired']);
+    }
+   
+    return json_response(200, "createaseet", $message);
+}
+/**********************************************
+ * FUNCTION: DELETE A ASSET FROM EXTERNAL APP *
+ **********************************************/
+function delete_asset_api(){
+    global $escaper, $lang;
+    $id = isset($_POST['id']) ? (int)$_POST['id'] : "";
+    if($id) {
+        delete_asset($id);
+        $message = $escaper->escapeHtml($lang['AssetWasDeletedSuccessfully']);
+    } else {
+        $message = $escaper->escapeHtml($lang['ThereWasAProblemDeletingTheAsset']);
+    }
+    return json_response(200, "deleteaseet", $message);
 }
 ?>

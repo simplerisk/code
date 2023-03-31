@@ -73,7 +73,7 @@ class IpUtils
             return false;
         }
 
-        $cacheKey = $requestIp.'-'.$ip;
+        $cacheKey = $requestIp.'-'.$ip.'-v4';
         if (isset(self::$checkedIps[$cacheKey])) {
             return self::$checkedIps[$cacheKey];
         }
@@ -86,7 +86,7 @@ class IpUtils
             [$address, $netmask] = explode('/', $ip, 2);
 
             if ('0' === $netmask) {
-                return self::$checkedIps[$cacheKey] = filter_var($address, \FILTER_VALIDATE_IP, \FILTER_FLAG_IPV4);
+                return self::$checkedIps[$cacheKey] = false !== filter_var($address, \FILTER_VALIDATE_IP, \FILTER_FLAG_IPV4);
             }
 
             if ($netmask < 0 || $netmask > 32) {
@@ -126,7 +126,7 @@ class IpUtils
             return false;
         }
 
-        $cacheKey = $requestIp.'-'.$ip;
+        $cacheKey = $requestIp.'-'.$ip.'-v6';
         if (isset(self::$checkedIps[$cacheKey])) {
             return self::$checkedIps[$cacheKey];
         }
