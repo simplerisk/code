@@ -28,6 +28,11 @@ include_csrf_magic();
 // @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
+// if not selected user, page will be redirect
+if (!isset($_POST['user'])){
+  header('Location: ./user_management.php#manageusers');
+}
+
 // If a user was posted
 if (isset($_POST['user']))
 {

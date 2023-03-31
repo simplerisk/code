@@ -277,7 +277,7 @@ function display()
           <div class="row-fluid">
             <div class="span12">
               <div id="SCF_wrapper" class="hero-unit">
-                <h4>ComplianceForge SCF Extra</h4>
+                <h4>Secure Controls Framework (SCF) Extra</h4>
                 <?php display(); ?>
               </div>
             </div>

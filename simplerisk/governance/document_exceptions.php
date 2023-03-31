@@ -103,6 +103,8 @@ function display($display = "")
         <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
         <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
         <script src="../js/simplerisk/pages/governance.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../vendor/tinymce/tinymce/tinymce.min.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../js/WYSIWYG/editor.js?<?php echo current_version("app"); ?>"></script>
 
         <title>SimpleRisk: Enterprise Risk Management Simplified</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -121,6 +123,7 @@ function display($display = "")
         <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/WYSIWYG/editor.css?<?php echo current_version("app"); ?>">
 
         <?php
             setup_favicon("..");
@@ -149,6 +152,7 @@ function display($display = "")
             .exception-data {
                 padding-left: 10px;
             }
+            .modal {z-index: 1099 !important;}
         </style>
         <script>
         
@@ -190,6 +194,9 @@ function display($display = "")
                             $("#exception-update-form [name=approved_original]").prop('checked', data.approved);
                             $("#exception-update-form [name=description]").val(data.description);
                             $("#exception-update-form [name=justification]").val(data.justification);
+
+                            tinyMCE.get("update_description").setContent(data.description);
+                            tinyMCE.get("update_justification").setContent(data.justification);
 
                             refresh_type_selects_display($('#exception--update'));
 
@@ -401,6 +408,7 @@ function display($display = "")
                         toastr.error("<?php echo $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
                         return false;
                     }
+
                     $.ajax({
                         type: "POST",
                         url: BASE_URL + "/api/exceptions/create",
@@ -716,6 +724,10 @@ function display($display = "")
                     $("input.readonly").remove();
                     $('#file-upload').prop('required',true);
                 }
+                init_minimun_editor("#add_description");
+                init_minimun_editor("#add_justification");
+                init_minimun_editor("#update_description");
+                init_minimun_editor("#update_justification");
             });
         </script>
     </head>
@@ -864,10 +876,10 @@ function display($display = "")
                             <?php create_dropdown("enabled_users", NULL, "approver", true); ?>
 
                             <label for=""><?php echo $escaper->escapeHtml($lang['Description']); ?></label>
-                            <textarea name="description" value="" class="form-control" rows="6" style="width:100%;"></textarea>
+                            <textarea name="description" id="add_description" value="" class="form-control" rows="6" style="width:100%;"></textarea>
 
                             <label for=""><?php echo $escaper->escapeHtml($lang['Justification']); ?></label>
-                            <textarea name="justification" value="" class="form-control" rows="6" style="width:100%;"></textarea>
+                            <textarea name="justification" id="add_justification" value="" class="form-control" rows="6" style="width:100%;"></textarea>
                             <div class="file-uploader">
                                 <label for=""><?php echo $escaper->escapeHtml($lang['File']); ?></label>
                                 <input type="text" class="form-control readonly" style="width: 50%; margin-bottom: 0px; cursor: default;"/>
@@ -952,10 +964,10 @@ function display($display = "")
                             <?php create_dropdown("enabled_users", NULL, "approver", true, false, false, "", "--", "0"); ?>
 
                             <label for=""><?php echo $escaper->escapeHtml($lang['Description']); ?></label>
-                            <textarea name="description" value="" class="form-control" rows="6" style="width:100%;"></textarea>
+                            <textarea name="description" id="update_description" value="" class="form-control" rows="6" style="width:100%;"></textarea>
 
                             <label for=""><?php echo $escaper->escapeHtml($lang['Justification']); ?></label>
-                            <textarea name="justification" value="" class="form-control" rows="6" style="width:100%;"></textarea>
+                            <textarea name="justification" id="update_justification" value="" class="form-control" rows="6" style="width:100%;"></textarea>
                             <div class="file-uploader">
                                 <label for=""><?php echo $escaper->escapeHtml($lang['File']); ?></label>
                                 <input type="text" class="form-control readonly" style="width: 50%; margin-bottom: 0px; cursor: default;"/>

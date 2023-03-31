@@ -76,7 +76,11 @@ $pie_technology_array = get_pie_array("technology", $teams);
     <?php
         // Use these HighCharts scripts
         $scripts = [
-                'highcharts.js',
+            'highcharts.js',
+            'highcharts-more.js',
+            'modules/exporting.js',
+            'modules/export-data.js',
+            'modules/accessibility.js',
         ];
 
         // Display the highcharts javascript source

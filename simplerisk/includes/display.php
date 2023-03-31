@@ -326,19 +326,40 @@ function add_risk_details($template_group_id = ""){
                 echo "<div class=\"actions risk-form-actions\">\n";
                     echo "<span>" . $escaper->escapeHtml($lang['NewRiskInstruction']). "</span>\n";
                     echo "<button type=\"button\" name=\"submit\" class=\"btn btn-primary pull-right save-risk-form\">".$escaper->escapeHtml($lang['SubmitRisk'])."</button>\n";
-                    echo "<input class=\"btn pull-right\" value=\"".$escaper->escapeHtml($lang['ClearForm'])."\" type=\"reset\">\n";
+                    echo "<input id='reset_form' class=\"btn pull-right\" value='{$escaper->escapeHtml($lang['ClearForm'])}' type='reset'>\n";
                 echo "</div>\n";
             echo "</div>\n";
         echo "</div>\n";
 
     echo "</form>\n";
 
-    echo "<script>\n";
-        echo "$(document).ready(function(){\n";
-//            echo "$(\"#team\").multiselect(\"selectAll\", false);\n";
-            // echo "$('#team').multiselect('updateButtonText');\n";
-        echo "})\n";
-    echo "</script>\n";
+    echo "
+        <script>
+            $(document).ready(function(){
+        		$('body').on('click', '#reset_form', function(){
+
+                    // To make sure the reset only affects the current tab
+                    var tab = $(this).closest('.tab-data');
+
+        			// reset the form
+        			$('form[name=submit_risk]', tab).trigger('reset');
+
+        			// re-draw the multiselects as they ARE reset, but their texts still display the previous selections
+        			$('form[name=submit_risk] span.multiselect-native-select select[multiple]', tab).multiselect('refresh');
+
+                    // Clear all the selectize widgets
+                    $('form[name=submit_risk] select.selectized', tab).each(function() {
+                        $(this)[0].selectize.clear();
+                    });
+
+                    // Trigger the file removal logic for the added files
+                    $('form[name=submit_risk] .file-list .remove-file', tab).trigger('click');
+
+                    // Select the classic scoring and trigger a change event instead of click to make sure the logic runs properly
+                    $('#scoring_method', tab).find('option[value=1]').prop('selected', true).trigger('change');
+        		});
+            });
+        </script>\n";
 
 }
 
@@ -549,7 +570,7 @@ function view_print_risk_details($id, $submission_date, $subject, $reference_id,
                             echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AffectedAssets']) . ":</td>\n";
                             echo "<td>" . $escaper->escapeHtml(implode(',', array_map(function($item) use ($escaper) {
                                     return $item['class'] === 'group' ? "[{$item['name']}]" : $item['name'];
-                                }, get_assets_and_asset_groups_of_type($id, 'risk')))) . "</td>\n";
+                                }, get_assets_and_asset_groups_of_type($id, 'risk', true)))) . "</td>\n";
                             echo "</tr>\n";
                         break;
                             
@@ -1190,7 +1211,7 @@ function view_print_mitigation_details($id, $mitigation_date, $planning_strategy
                         case 'MitigationPercent':
                             echo "<tr>\n";
                             echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationPercent']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($id) . "</td>\n";
+                            echo "<td>" . $escaper->escapeHtml($mitigation_percent) . " %</td>\n";
                             echo "</tr>\n";
                         break;
                             
@@ -1244,6 +1265,26 @@ function view_print_mitigation_details($id, $mitigation_date, $planning_strategy
         echo "<tr>\n";
         echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationEffort']) . ":</td>\n";
         echo "<td>" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationCost']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_asset_value_by_id($mitigation_cost)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationOwner']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $mitigation_owner)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationTeam']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_names_by_multi_values("team", $mitigation_team)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationPercent']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($mitigation_percent) . " %</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
@@ -1502,7 +1543,7 @@ function mitigation_controls_dropdown($selected_control_ids_string = "", $elemen
     $controls = get_framework_controls_dropdown_data();
 
     if ($controls && !empty($controls)) {
-        $selected_control_ids = explode(",", $selected_control_ids_string);
+        $selected_control_ids = empty($selected_control_ids_string) ? [] : explode(",", $selected_control_ids_string);
         $eID = "mitigation_controls_".generate_token(10);
         echo  "<select id=\"".$eID."\" name=\"".$element_name."\" title=\"".$escaper->escapeHtml($lang['MitigationControls'])."\" class=\"mitigation_controls\" multiple=\"multiple\">";
             foreach($controls as $control){
@@ -4122,9 +4163,12 @@ function view_top_menu($active)
             echo "<div class=\"pull-right help\">\n";
             echo "<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\"><img src=\"../images/helpicon-top.png\"><span class=\"caret\"></span></a>\n";
             echo "<ul class=\"dropdown-menu\">\n";
-	    echo "<li>\n";
-	    echo "<a href=\"https://help.simplerisk.com/index.php?page=" . get_request_uri() . "\" target=\"_blank\"><i class=\"fa fa-info-circle\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['AboutThisPage']) ."</a>\n";
-	    echo "</li>\n";
+            echo "<li>\n";
+            echo "<a href=\"https://help.simplerisk.com/index.php?page=" . get_request_uri() . "\" target=\"_blank\"><i class=\"fa fa-info-circle\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['AboutThisPage']) ."</a>\n";
+            echo "</li>\n";
+            echo "<li>\n";
+            echo "<a href=\"".$_SESSION['base_url']."/api/v2/documentation.php\" target=\"_blank\"><i class=\"fa fa-book\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['APIDocumentation']) ."</a>\n";
+            echo "</li>\n";
             echo "<li>\n";
             echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/folders/6000228831\" target=\"_blank\"><i class=\"fa fa-video\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['HowToVideos']) ."</a>\n";
             echo "</li>\n";
@@ -4137,23 +4181,23 @@ function view_top_menu($active)
             echo "<li>\n";
             echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/articles/6000190811\" target=\"_blank\"><i class=\"fa fa-map\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['Roadmap']) ."</a>\n";
             echo "</li>\n";
-	    echo "<li>\n";
-	    echo "<a href=\"https://simplerisk.freshdesk.com/support/solutions\" target=\"_blank\"><i class=\"fa fa-cloud\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['SupportPortal']) ."</a>\n";
-	    echo "</li>\n";
-	    echo "<li>\n";
-	    echo "<a href=\"https://simplerisk.freshdesk.com/support/tickets/new\" target=\"_blank\"><i class=\"fa fa-ticket-alt\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['WebSupport']) ."</a>\n";
-	    echo "</li>\n";
-	    echo "<li>\n";
-	    echo "<a href=\"mailto: support@simplerisk.com\"><i class=\"fa fa-envelope\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['EmailSupport']) ."</a>\n";
-	    echo "</li>\n";
+            echo "<li>\n";
+            echo "<a href=\"https://simplerisk.freshdesk.com/support/solutions\" target=\"_blank\"><i class=\"fa fa-cloud\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['SupportPortal']) ."</a>\n";
+            echo "</li>\n";
+            echo "<li>\n";
+            echo "<a href=\"https://simplerisk.freshdesk.com/support/tickets/new\" target=\"_blank\"><i class=\"fa fa-ticket-alt\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['WebSupport']) ."</a>\n";
+            echo "</li>\n";
+            echo "<li>\n";
+            echo "<a href=\"mailto: support@simplerisk.com\"><i class=\"fa fa-envelope\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['EmailSupport']) ."</a>\n";
+            echo "</li>\n";
 
-	    // If the user has support enabled
-	    if (isset($_SESSION['support']) && $_SESSION['support'] == "true")
-	    {
-		    echo "<li>\n";
-		    echo "<a href=\"https://www.simplerisk.com/schedule/support\" target=\"_blank\"><i class=\"fa fa-phone\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['PhoneSupport']) ."</a>\n";
-		    echo "</li>\n";
-	    }
+            // If the user has support enabled
+            if (isset($_SESSION['support']) && $_SESSION['support'] == "true")
+            {
+                echo "<li>\n";
+                echo "<a href=\"https://www.simplerisk.com/schedule/support\" target=\"_blank\"><i class=\"fa fa-phone\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['PhoneSupport']) ."</a>\n";
+                echo "</li>\n";
+            }
 
             echo "</ul>\n";
             echo "</div>\n";
@@ -7000,7 +7044,7 @@ function create_risk_formula_table()
 /**********************************************
 * FUNCTION: VIEW RISKS AND CONTROLS SELECTIONS *
 **********************************************/
-function view_risks_and_controls_selections($report, $sort_by, $projects)
+function view_risks_and_controls_selections($report, $sort_by, $projects, $status)
 {
     global $lang;
     global $escaper;
@@ -7031,6 +7075,18 @@ function view_risks_and_controls_selections($report, $sort_by, $projects)
         echo "</select>\n";
         echo "</div>\n";
     }
+
+    echo "
+        <div class='span3'>
+            {$escaper->escapeHtml($lang['Status'])}:
+            <select id='status' name='status' onchange='javascript: submit();'>
+                <option value='0'" . ($status == 0 ? " selected" : "") . ">{$escaper->escapeHtml($lang['OpenRisks'])}</option>
+                <option value='1'" . ($status == 1 ? " selected" : "") . ">{$escaper->escapeHtml($lang['ClosedRisks'])}</option>
+                <option value='2'" . ($status == 2 ? " selected" : "") . ">{$escaper->escapeHtml($lang['AllRisks'])}</option>
+            </select>
+        </div>
+    ";
+
     echo "</div>\n";
 
     echo "<script>
@@ -9904,6 +9960,10 @@ function render_field_edit_popup_modal($view) {
                                             }
                                         });
                                     </script>";
+                    break;
+                case 'html':
+                    $div_id = "edit_{$field_name}_{$view}_{$group_name}";
+                    echo "<div id='{$div_id}' name='{$field_name}' class='edit_html'></div>";
                     break;
             }
         }

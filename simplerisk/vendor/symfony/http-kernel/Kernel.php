@@ -78,11 +78,11 @@ abstract class Kernel implements KernelInterface, RebootableInterface, Terminabl
      */
     private static $freshCache = [];
 
-    public const VERSION = '5.4.18';
-    public const VERSION_ID = 50418;
+    public const VERSION = '5.4.22';
+    public const VERSION_ID = 50422;
     public const MAJOR_VERSION = 5;
     public const MINOR_VERSION = 4;
-    public const RELEASE_VERSION = 18;
+    public const RELEASE_VERSION = 22;
     public const EXTRA_VERSION = '';
 
     public const END_OF_MAINTENANCE = '11/2024';
@@ -404,9 +404,9 @@ abstract class Kernel implements KernelInterface, RebootableInterface, Terminabl
     /**
      * Gets the container class.
      *
-     * @throws \InvalidArgumentException If the generated classname is invalid
-     *
      * @return string
+     *
+     * @throws \InvalidArgumentException If the generated classname is invalid
      */
     protected function getContainerClass()
     {

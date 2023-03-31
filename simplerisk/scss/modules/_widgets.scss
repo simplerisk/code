@@ -1,0 +1,47 @@
+div.asset-assetgroup-select-view, .asset-assetgroup-select, .asset-assetgroup-select-wide {
+    .asset{
+        background-color: $asset-option-color !important;
+    }
+
+    .group{
+        background-color: $asset-group-option-color !important;
+    }
+}
+
+div.asset-assetgroup-select-view {
+	
+	padding-bottom: 10px;
+
+	.btn {
+		pointer-events: none;
+		margin: 1px 2px 1px 1px;
+		padding: 3px 7px;
+		border: 1px solid $border-color;
+	}
+
+    .asset{
+        color: $color-1 !important;
+    }
+
+    .group{
+        color: $color-1 !important;
+    }
+}
+
+.asset-assetgroup-select .selectize-dropdown {
+    width: 180% !important;
+}
+
+.selectize-input.locked, .selectize-input.locked * {
+    cursor: default !important
+}
+
+span.asset-assetgroup-instructions {
+    display: inline-block;
+    font-size: 0.8em ;
+    color: $color-3;
+    position: relative;
+    top: -5px;
+    line-height: 1.2;
+    padding-bottom: 15px;
+}

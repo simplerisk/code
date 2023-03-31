@@ -233,15 +233,19 @@ if (isset($_POST['delete_controls']))
 
         // Include the jquery-ui javascript source
         display_jquery_ui_javascript($scripts);
+        display_bootstrap_javascript();
 ?>
   <script src="../js/jquery.draggable.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/jquery.droppable.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/treegrid-dnd.js?<?php echo current_version("app"); ?>"></script>
-  <?php display_bootstrap_javascript(); ?>
+  <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../vendor/simplerisk/selectize.js/dist/js/standalone/selectize.min.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/simplerisk/pages/governance.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/simplerisk/common.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../vendor/tinymce/tinymce/tinymce.min.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/WYSIWYG/editor.js?<?php echo current_version("app"); ?>"></script>
 
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -260,6 +264,8 @@ if (isset($_POST['delete_controls']))
   <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/WYSIWYG/editor.css?<?php echo current_version("app"); ?>">
 
   <?php
       setup_favicon("..");
@@ -277,6 +283,7 @@ if (isset($_POST['delete_controls']))
 
   ?>
   <style>
+    .modal {z-index: 1099 !important;}
     .control-content [class*=span]{line-height: 33px;}
     .control-content .top, .control-content .bottom{margin-left: 22px;}
     .control-content .top .span8, .control-content .bottom .span8{margin-left: 13px;}
@@ -325,6 +332,7 @@ if (isset($_POST['delete_controls']))
                         $("#framework--update [name=framework_id]").val(framework_id);
                         $("#framework--update [name=framework_name]").val(data.framework.name);
                         $("#framework--update [name=framework_description]").val(data.framework.description);
+                        tinyMCE.get("update_framework_description").setContent(data.framework.description);
                         if(data.framework.custom_values){
                           var custom_values = data.framework.custom_values;
                           for (var i=0; i<custom_values.length; i++) {
@@ -348,7 +356,7 @@ if (isset($_POST['delete_controls']))
             $(tabContentId).removeClass("hide");
             $(".framework-table").treegrid('resize');
 
-            $('select[multiple]').multiselect({
+            $('.well select[multiple]').multiselect({
                 allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
                 enableFiltering: true,
                 maxHeight: 250,
@@ -363,7 +371,45 @@ if (isset($_POST['delete_controls']))
                     }
                 }
             });
+            $("body").on("click", "#active-controls .checkbox-in-div input[type=checkbox]", function(){
+                if(this.checked)
+                    $(this).closest(".control-block--header").addClass("selected-background");
+                else
+                    $(this).closest(".control-block--header").removeClass("selected-background");
+            })
+            
+            $("#controls-form").submit(function(){
+                if($("#active-controls .checkbox-in-div input[type=checkbox]:checked").length > 0){
+                    confirm("<?php echo $escaper->escapeHtml($lang["AreYouSureYouWantToDeleteControls"]); ?>", "submit_controls_form()");
+                    return false;
+                }else{
+                    alert("<?php echo $escaper->escapeHtml($lang['SelectControlsToDelete']); ?>")
+                    return false;
+                }
+            })
+
+            //Have to remove the 'fade' class for the shown event to work for modals
+            $('.modal').on('shown.bs.modal', function() {
+                $(this).find('.modal-body').scrollTop(0);
+            });
+            $("#framework--add [name=framework_description]").attr("id", "add_framework_description");
+            init_minimun_editor('#add_framework_description');
+            $("#framework--update [name=framework_description]").attr("id", "update_framework_description");
+            init_minimun_editor('#update_framework_description');
+
+            // Add tinymce editor to control modal
+            $("#control--add [name=description]").attr("id", "add_control_description");
+            init_minimun_editor('#add_control_description');
+            $("#control--add [name=supplemental_guidance]").attr("id", "add_supplemental_guidance");
+            init_minimun_editor('#add_supplemental_guidance');
+            $("#control--update [name=description]").attr("id", "update_control_description");
+            init_minimun_editor('#update_control_description');
+            $("#control--update [name=supplemental_guidance]").attr("id", "update_supplemental_guidance");
+            init_minimun_editor('#update_supplemental_guidance');
         });
+        function submit_controls_form(){
+            document.controls_form.submit();
+        }
     </script>
 </head>
 
@@ -376,7 +422,6 @@ if (isset($_POST['delete_controls']))
       // Get any alert messages
       get_alert();
   ?>
-
   <div class="tabs new-tabs planning-tabs">
     <div class="container-fluid">
 
@@ -560,36 +605,6 @@ if (isset($_POST['delete_controls']))
       </div>
     </div>
   </div>
-  
-  <script type="">
-    $(document).ready(function(){
-        $("body").on("click", "#active-controls .checkbox-in-div input[type=checkbox]", function(){
-            if(this.checked)
-                $(this).closest(".control-block--header").addClass("selected-background");
-            else
-                $(this).closest(".control-block--header").removeClass("selected-background");
-        })
-        
-        $("#controls-form").submit(function(){
-            if($("#active-controls .checkbox-in-div input[type=checkbox]:checked").length > 0){
-                confirm("<?php echo $escaper->escapeHtml($lang["AreYouSureYouWantToDeleteControls"]); ?>", "submit_controls_form()");
-                return false;
-            }else{
-                alert("<?php echo $escaper->escapeHtml($lang['SelectControlsToDelete']); ?>")
-                return false;
-            }
-        })
-
-        //Have to remove the 'fade' class for the shown event to work for modals
-        $('.modal').on('shown.bs.modal', function() {
-            $(this).find('.modal-body').scrollTop(0);
-        });
-    })
-    function submit_controls_form(){
-        document.controls_form.submit();
-    }
-  </script>
-  
     <!-- MODEL WINDOW FOR ADDING FRAMEWORK -->
     <div id="framework--add" class="modal hide no-padding" tabindex="-1" role="dialog" aria-labelledby="framework--add" aria-hidden="true">
         <form class="" id="framework--new" action="#" method="post" autocomplete="off">
@@ -722,11 +737,20 @@ if (isset($_POST['delete_controls']))
         </div>
     </div>
     <div id="add_mapping_row" class="hide">
-    	<table>
+      <table>
             <tr>
                 <td><?php create_dropdown("frameworks", NULL,"map_framework_id[]", true, false, false, "required"); ?></td>
                 <td><input type="text" name="reference_name[]" value="" class="form-control" maxlength="100" required></td>
                 <td><a href="javascript:void(0);" class="control-block--delete-mapping" title="<?php echo $escaper->escapeHtml($lang["Delete"]);?>"><i class="fa fa-trash"></i></a></td>
+            </tr>
+        </table>
+    </div>
+    <div id="add_asset_row" class="hide">
+      <table>
+            <tr>
+                <td><?php create_dropdown("control_maturity", "", "asset_maturity[]", true, false, false, "required"); ?></td>
+                <td><select class="assets-asset-groups-select" name="assets_asset_groups[]" multiple placeholder="<?php echo $escaper->escapeHtml($lang['AffectedAssetsWidgetPlaceholder']);?>" required></select></td>
+                <td><a href="javascript:void(0);" class="control-block--delete-asset" title="<?php echo $escaper->escapeHtml($lang["Delete"]);?>"><i class="fa fa-trash"></i></a></td>
             </tr>
         </table>
     </div>

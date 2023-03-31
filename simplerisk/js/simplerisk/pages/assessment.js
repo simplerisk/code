@@ -349,12 +349,8 @@ function setupQuestionnaireContactUserWidget(select_tag) {
         }
     });        
 }
-    function setupQuestionnaireAssetsAssetGroupsWidget(select_tag, risk_id) {
+    function setupQuestionnaireAssetsAssetGroupsWidget(select_tag) {
 
-        // Giving a default value here because IE can't handle
-        // function parameter default values...
-        risk_id = risk_id || 0;
-        
         if (!select_tag.length)
             return;
         
@@ -384,13 +380,12 @@ function setupQuestionnaireContactUserWidget(select_tag) {
                 }
             },
             onInitialize: function() {
-                if (risk_id != 0)
-                    select_tag.parent().find('.selectize-control div').block({message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>'});
+                select_tag.parent().find('.selectize-control div').block({message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>'});
             },
             load: function(query, callback) {
                 if (query.length) return callback();
                 $.ajax({
-                    url: BASE_URL + '/api/asset-group/options?risk_id=' + risk_id,
+                    url: BASE_URL + '/api/asset-group/options',
                     type: 'GET',
                     dataType: 'json',
                     error: function() {
@@ -420,7 +415,7 @@ function setupQuestionnaireContactUserWidget(select_tag) {
                     }
                 });
             }
-        });        
+        });
     }
 
 function redraw_control(){

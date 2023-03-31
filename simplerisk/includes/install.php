@@ -1549,7 +1549,7 @@ function installer_check_app_version($current_app_version, $latest_app_version)
 function installer_check_web_connectivity()
 {
     // URLs to check
-    $urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://updates.simplerisk.com", "https://olbat.github.io", "https://github.com", "https://raw.githubusercontent.com");
+    $urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://updates.simplerisk.com", "https://olbat.github.io", "https://github.com", "https://raw.githubusercontent.com", "https://simplerisk-downloads.s3.amazonaws.com");
 
     // Create an empty array
     $array = array();
@@ -1638,6 +1638,12 @@ function installer_check_php_memory_limit()
             {
                 // Get the memory limit in bytes
                 $memory_limit_bytes = $matches[1] * 1024;
+            }
+            // If the memory limit is in Gigabytes
+            else if ($matches[2] == 'G')
+            {
+                // Get the memory limit in bytes
+                $memory_limit_bytes = $matches[1] * 1024 * 1024 * 1024;
             }
         }
 

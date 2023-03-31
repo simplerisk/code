@@ -39,13 +39,19 @@ require_once(language_file());
     // Check if an asset was added
     if ((isset($_POST['add_asset'])) && $manage_assets)
     {
-        $name       = $_POST['asset_name'];
-        $ip         = $_POST['ip'];
-        $value      = $_POST['value'];
-        $location   = empty($_POST['location']) ? [] : $_POST['location'];
-        $teams      = empty($_POST['team']) ? [] : $_POST['team'];
-        $details    = $_POST['details'];
-        $tags       = empty($_POST['tags']) ? [] : $_POST['tags'];
+        $name               = $_POST['asset_name'];
+        $ip                 = $_POST['ip'];
+        $value              = $_POST['value'];
+        $location           = empty($_POST['location']) ? [] : $_POST['location'];
+        $teams              = empty($_POST['team']) ? [] : $_POST['team'];
+        $details            = $_POST['details'];
+        $tags               = empty($_POST['tags']) ? [] : $_POST['tags'];
+        $control_maturity   = empty($_POST['control_maturity']) ? [] : $_POST['control_maturity'];
+        $control_id         = empty($_POST['control_id']) ? [] : $_POST['control_id'];
+        $mapped_controls = array();
+        foreach($control_maturity as $index=>$maturity){
+            if($control_id[$index]) $mapped_controls[] = array($maturity, $control_id[$index]);
+        }
 
         foreach($tags as $tag){
             if (strlen($tag) > 255) {
@@ -60,7 +66,7 @@ require_once(language_file());
         if($name)
         {
             // Add the asset
-            $success = add_asset($ip, $name, $value, $location, $teams, $details, $tags, true);
+            $success = add_asset($ip, $name, $value, $location, $teams, $details, $tags, true, $mapped_controls);
 
             // If the asset add was successful
             if ($success)
@@ -91,6 +97,13 @@ require_once(language_file());
         
         refresh();
     }
+    $controls = get_framework_controls_by_filter("all", "all", "all", "all", "all", "all", "all", "all", "", "all");
+    $control_options = array_map(function($control) use ($escaper){
+        return array(
+            'value' => $control['id'],
+            'name' => $escaper->escapeHtml($control['short_name']),
+        );
+    }, $controls);
 
 ?>
 
@@ -275,6 +288,15 @@ require_once(language_file());
             </div>
         </div>
     </div>
+    <div id="add_control_row" class="hide">
+        <table>
+            <tr>
+                <td><?php create_dropdown("control_maturity", NULL, "control_maturity[]", false, false, false, "required"); ?></td>
+                <td><?php create_dropdown("control_id", NULL, "control_id[]", true, false, false, "required", $escaper->escapeHtml($lang['NoneSelected']), 0, true, 0, $control_options); ?></td>
+                <td><a href="javascript:void(0);" class="control-block--delete-mapping" title="<?php echo $escaper->escapeHtml($lang["Delete"]);?>"><i class="fa fa-trash"></i></a></td>
+            </tr>
+        </table>
+    </div>
     
     <script>
         $(document).ready(function() {
@@ -315,7 +337,7 @@ require_once(language_file());
                         // we have to populate the popup's fields and show it to the user
                         if (action == 'edit') {
                             // Iterate through all the fields in the form and populate them
-                            $('select.edit_input, input.edit_input, textarea.edit_input', $(`#edit_popup_modal-${view}`)).each(function() {
+                            $('select.edit_input, input.edit_input, textarea.edit_input, div.edit_html', $(`#edit_popup_modal-${view}`)).each(function() {
                                 var tag = $(this);
 
                                 // Theoretically it's already uppercase, so it's just to make sure
@@ -338,10 +360,13 @@ require_once(language_file());
                                         })
                                         tag.multiselect('refresh');
                                     }
+                                } else if (tagName == 'DIV'){
+                                    tag.html(value);
                                 } else {
                                     tag.val(value ? value : '');
                                 }
                             });
+                            $("select.mapped_control").multiselect({buttonWidth: 260, maxHeight: 250,enableFiltering: true});
 
                             $.unblockUI();
                             $(`#edit_popup_modal-${view}`).modal();
@@ -431,6 +456,29 @@ require_once(language_file());
                         $.unblockUI();
                     }
                 });
+            });
+            // Event handler for add control actions
+            $('body').on('click', 'button.add-control', function(e) {
+                e.preventDefault();
+                var form = $(this).closest('form');
+                // To get the html of the <tr> tag
+                $(".mapping_control_table tbody", form).append($("#add_control_row table tr:first-child").parent().html());
+                $(".mapping_control_table tbody select[name='control_id[]']", form).multiselect({buttonWidth: 260, maxHeight: 250,enableFiltering: true});
+            });
+            $('body').on('change', "select[name='control_id[]']", function(e) {
+                var currentObj = this;
+                var form = $(this).closest('form');
+                var control_id = $(this).val();
+                $("select[name='control_id[]']", form).each(function(index,obj){
+                    if(obj != currentObj) {
+                        $(obj).find("option[value='" + control_id + "']").remove();
+                        $(obj).multiselect("rebuild");
+                    }
+                });
+            });
+            $('body').on('click', '.control-block--delete-mapping', function(e) {
+                e.preventDefault();
+                $(this).closest("tr").remove();
             });
         });
     </script>

@@ -35,7 +35,7 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
       xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
 
 <head>
-    <?php
+<?php
     // Use these jQuery scripts
     $scripts = [
         'jquery.min.js',
@@ -45,7 +45,20 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
     display_jquery_javascript($scripts);
 
     display_bootstrap_javascript();
-    ?>
+
+    // Use these HighCharts scripts
+    $scripts = [
+        'highcharts.js',
+        'highcharts-more.js',
+        'modules/exporting.js',
+        'modules/export-data.js',
+        'modules/accessibility.js',
+    ];
+
+    // Display the highcharts javascript source
+    display_highcharts_javascript($scripts);
+
+?>
     <script src="../js/obsolete.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/simplerisk/common.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>

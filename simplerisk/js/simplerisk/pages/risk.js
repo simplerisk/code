@@ -162,7 +162,7 @@ function addRisk($this){
         
         if (!select_tag.length)
             return;
-        
+
         var select = select_tag.selectize({
             sortField: 'text',
             plugins: ['optgroup_columns', 'remove_button', 'restore_on_backspace'],
@@ -189,15 +189,15 @@ function addRisk($this){
                 }
             },
             onInitialize: function() {
-                if (risk_id != 0)
-                    select_tag.parent().find('.selectize-control div').block({message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>'});
+                select_tag.parent().find('.selectize-control div').block({message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>'});
             },
             load: function(query, callback) {
                 if (query.length) return callback();
                 $.ajax({
-                    url: BASE_URL + '/api/asset-group/options?risk_id=' + risk_id,
+                    url: BASE_URL + '/api/asset-group/options',
                     type: 'GET',
                     dataType: 'json',
+                    data: {id: risk_id, type: 'risk'},
                     error: function() {
                         callback();
                     },
@@ -1463,25 +1463,43 @@ $(document).ready(function(){
         
     })
     
-    /**
-    * Event when change risk owner
-    */
     $('body').on('change', '[name=owner]', function(e){
-        var form = $(this).closest("form");
-        $.ajax({
-            type: "GET",
-            url: BASE_URL + "/api/user/manager",
-            data: {
-                id: $(this).val()
-            },
-            success: function(res){
-                var data = res.data;
-                if(data.manager){
-                    $("[name=manager]", form).val(data.manager)
+
+        // Get the form of this tab to make sure this logic won't change values on the other tabs
+        var form = $(this).closest('form');
+
+        // If there's no Owner's Manager field displayed then there's nothing to do
+        if (!$('[name=manager]', form).length) {
+        	return;
+        }
+
+        // Get the id of the owner
+        var ownerId = $(this).val();
+        // If there's anything selected
+        if (ownerId) {
+            // reach out to the server and get the id of the owner's manager
+            $.ajax({
+                type: 'GET',
+                url: BASE_URL + '/api/user/manager',
+                data: {
+                    id: ownerId
+                },
+                success: function(res){
+                    var data = res.data;
+                    if(data.manager){
+                        // If the owner has a manager then select it
+                        $('[name=manager]', form)[0].selectize.setValue(data.manager);
+                    } else {
+                        // if the owner doesn't have a manager then clear the value(if there's any)
+                    	$('[name=manager]', form)[0].selectize.clear();
+                    }
                 }
-            }
-        })
-    })
+            });
+        } else {
+            // If there's no owner selected then clear the owner's manager field
+            $('[name=manager]', form)[0].selectize.clear();
+        }
+    });
 
     /********* Start mark as unmitigation **********/
     $('body').on('click', '.mark-unmitigation', function(e){

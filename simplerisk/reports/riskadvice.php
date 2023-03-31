@@ -48,9 +48,9 @@ require_once(language_file());
     <?php
         // Use these HighCharts scripts
         $scripts = [
-                'highcharts.js',
-		'modules/funnel.js',
-                'modules/exporting.js',
+            'highcharts.js',
+		    'modules/funnel.js',
+            'modules/exporting.js',
         ];
 
         // Display the highcharts javascript source

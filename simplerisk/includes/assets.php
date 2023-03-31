@@ -29,8 +29,8 @@ function discover_assets($range)
             $AvailableIPs[] = array("ip"=>$range, "name"=>$name);
         }
 
-                // Add the live assets to the database
-                add_assets($AvailableIPs);
+        // Add the live assets to the database
+        add_assets($AvailableIPs);
 
         return $AvailableIPs;
     }
@@ -51,12 +51,11 @@ function discover_assets($range)
         {
             for ($ip = ip2long($start); $ip <= ip2long($end); $ip++)
             {
-                        if (ping_check(long2ip($ip)))
-                        {
+                if (ping_check(long2ip($ip)))
+                {
                     $name = gethostbyaddr(long2ip($ip));
-
-                                $AvailableIPs[] = array("ip"=>long2ip($ip), "name"=>$name);
-                        }
+                    $AvailableIPs[] = array("ip"=>long2ip($ip), "name"=>$name);
+                }
             }
         }
 
@@ -74,7 +73,13 @@ function discover_assets($range)
  ************************/
 function ping_check($ip)
 {
-    exec(sprintf('ping -c 1 -W 1 %s', escapeshellarg($ip)), $res, $rval);
+    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // Server OS is Windows
+        $cmd = sprintf('ping -n 1 -w 1 %s', escapeshellarg($ip));
+    } else { // Server OS is Linux
+        $cmd = sprintf('ping -c 1 -W 1 %s', escapeshellarg($ip));
+
+    }
+    exec($cmd, $res, $rval);
     return $rval === 0;
 }
 
@@ -224,7 +229,7 @@ function add_asset_by_name_with_forced_verification($name, $verified = false) {
 /***********************
  * FUNCTION: ADD ASSET *
  ***********************/
-function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "", $tags = "", $verified = false, $imported = false)
+function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "", $tags = "", $verified = false, $mapped_controls=[], $imported = false)
 {
     global $lang;
 
@@ -271,6 +276,9 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
         // Close the database connection
         db_close($db);
 
+        // Save control mappings
+        if(is_array($mapped_controls)&&count($mapped_controls)>0) save_asset_to_controls($asset_id, $mapped_controls);
+
         // If customization extra is enabled
         if(customization_extra())
         {
@@ -289,10 +297,9 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
             updateTagsOfType($asset_id, 'asset', $tags);
         }
 
-        // If the encryption extra is enabled, updates order_by_name when not through import
-        if (encryption_extra() && !$imported) {
+        // If the encryption extra is enabled, updates order_by_name
+        if (encryption_extra()) {
             require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-            //create_asset_name_order(base64_decode($_SESSION['encrypted_pass']));
             update_name_order_for_asset($asset_id, $name);
         }
 
@@ -309,7 +316,200 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
         return false;
     }
 }
+/***************************************
+ * FUNCTION: SAVE CONTROL TO FRAMEWORK *
+ ***************************************/
+function save_control_to_assets($control_id, $mapped_assets)
+{
+    // Open the database connection
+    $db = db_open();
 
+    // Delete all current control asset relations
+    $stmt = $db->prepare("DELETE FROM `control_to_assets` WHERE control_id=:control_id;");
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->execute();
+    // Delete all current control asset group relations
+    $stmt = $db->prepare("DELETE FROM `control_to_asset_groups` WHERE control_id=:control_id;");
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    foreach($mapped_assets as $row){
+        $control_maturity = $row[0];
+        $assets_and_groups = $row[1];
+        // For each asset or group
+        foreach ($assets_and_groups as $value)
+        {
+            // Trim whitespaces
+            $value = trim($value);
+            
+            // Selected an existing asset or group
+            if (preg_match('/^([\d]+)_(group|asset)$/', $value, $matches)) {
+                list(, $id, $type) = $matches;
+            } elseif (preg_match('/^new_asset_(.*)$/', $value, $matches)) { // Entered the name of a new asset
+                $name = trim($matches[1]);
+                // Check if the asset already exists, but not verified(since it didnt show up in the widget)
+                $id = asset_exists($name);
+
+                if ($id) {
+                    set_alert(true, "bad", _lang('ErrorAssetAlreadyExistsAsVerified', array('asset_name' => $name)));
+                    continue;
+                }
+                // Add new asset
+                $id = add_asset('', $name);
+                $type = 'asset';                
+            } else {
+                //Invalid input
+                continue;
+            }
+
+            if ($type=='asset' && !get_exist_mapping_asset_control($id, $control_id, $control_maturity)) {
+                $stmt = $db->prepare("INSERT INTO `control_to_assets` (asset_id, control_id, control_maturity) VALUES (:asset_id, :control_id, :control_maturity)");
+                $stmt->bindParam(":asset_id", $id, PDO::PARAM_INT);
+                $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+                $stmt->bindParam(":control_maturity", $control_maturity, PDO::PARAM_INT);
+                $stmt->execute();
+            } elseif ($type=='group' && !get_exist_mapping_asset_control($id, $control_id, $control_maturity, 'group')) {
+                $stmt = $db->prepare("INSERT INTO `control_to_asset_groups` (asset_group_id, control_id, control_maturity) VALUES (:asset_group_id, :control_id, :control_maturity)");
+                $stmt->bindParam(":asset_group_id", $id, PDO::PARAM_INT);
+                $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+                $stmt->bindParam(":control_maturity", $control_maturity, PDO::PARAM_INT);
+                $stmt->execute();
+            }
+        }
+
+    }
+    // Close the database connection
+    db_close($db);  
+}
+/************************************
+ * FUNCTION: SAVE ASSET TO CONTROLS *
+ ************************************/
+function save_asset_to_controls($asset_id, $mapped_controls)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Delete all current asset control relations
+    $stmt = $db->prepare("DELETE FROM `control_to_assets` WHERE asset_id=:asset_id;");
+    $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
+    $stmt->execute();
+    foreach($mapped_controls as $row){
+        $control_maturity = $row[0];
+        $control_id = $row[1];
+        if(!get_exist_mapping_asset_control($asset_id, $control_id, $control_maturity)){
+            $stmt = $db->prepare("INSERT INTO `control_to_assets` (asset_id, control_id, control_maturity) VALUES (:asset_id, :control_id, :control_maturity)");
+            $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
+            $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+            $stmt->bindParam(":control_maturity", $control_maturity, PDO::PARAM_INT);
+            $stmt->execute();
+        }
+    }
+    // Close the database connection
+    db_close($db);
+    return; 
+}
+/*********************************************
+ * FUNCTION: GET EXIST MAPPING ASSET CONTROL *
+ *********************************************/
+function get_exist_mapping_asset_control($asset_or_group_id, $control_id, $control_maturity, $type = 'asset')
+{
+    // Open the database connection
+    $db = db_open();
+    if($type == 'group') {
+        $tbl_name = 'control_to_asset_groups';
+        $junction_id_name = 'asset_group_id';
+    } else {
+        $tbl_name = 'control_to_assets';
+        $junction_id_name = 'asset_id';
+    }
+    $sql = "SELECT * FROM `{$tbl_name}`  WHERE {$junction_id_name} = :asset_or_group_id AND control_id = :control_id AND control_maturity = :control_maturity;";
+
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(":asset_or_group_id", $asset_or_group_id, PDO::PARAM_INT);
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->bindParam(":control_maturity", $control_maturity, PDO::PARAM_INT);
+    $stmt->execute();
+    $mappings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    db_close($db);
+    return $mappings;
+}
+/**********************************************
+ * FUNCTION: GET MAPPING CONTROLS BY ASSET ID *
+ **********************************************/
+function get_mapping_controls_by_asset_id($asset_id)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT cta.*, cm.name control_maturity_name, c.short_name control_name
+        FROM control_to_assets cta 
+        LEFT JOIN control_maturity cm ON cta.control_maturity = cm.value
+        LEFT JOIN framework_controls c ON c.id = cta.control_id
+        WHERE asset_id=:asset_id ORDER BY id;
+    ");
+    $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $rows = $stmt->fetchALL(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    return $rows;
+}
+/**********************************************
+ * FUNCTION: GET MAPPING ASSETS BY CONTROL ID *
+ **********************************************/
+function get_control_to_assets($control_id)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT t1.value control_maturity, t1.name control_maturity_name, GROUP_CONCAT(DISTINCT t2.asset_id), GROUP_CONCAT(DISTINCT assets.name) asset_name,
+        GROUP_CONCAT(DISTINCT t3.asset_group_id), GROUP_CONCAT(DISTINCT ag.name) asset_group_name
+        FROM control_maturity t1 
+        LEFT JOIN control_to_assets t2 ON t1.value = t2.control_maturity
+        LEFT JOIN assets ON assets.id = t2.asset_id
+        LEFT JOIN control_to_asset_groups t3 ON t1.value = t3.control_maturity
+        LEFT JOIN asset_groups ag ON ag.id = t3.asset_group_id
+        WHERE t2.control_id=:control_id OR t3.control_id=:control_id
+        GROUP BY t2.control_maturity ORDER BY t2.id;
+        ");
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $rows = $stmt->fetchALL(PDO::FETCH_ASSOC);
+    // decrypt data
+    foreach($rows as &$row){
+        $asset_name = explode(',', (string)$row['asset_name']);
+        $asset_name_str = implode(", ", array_map(function($name){
+            return try_decrypt($name);
+        }, $asset_name));
+        // Try to decrypt the asset name
+        $row['asset_name'] = $asset_name_str;
+    }
+
+    // Close the database connection
+    db_close($db);
+
+    return $rows;
+}
+/*****************************************
+ * FUNCTION: GET MAPPED CONTROLS (EXACT) *
+ *****************************************/
+function asset_mapped_control_exact($asset_id, $mapped_controls=[]){
+    if(is_null($mapped_controls)) return true;
+    if(!count($mapped_controls) && get_mapping_controls_by_asset_id($asset_id)) return false;
+    foreach($mapped_controls as $row) {
+        $control_maturity = $row[0];
+        $control_id = $row[1];
+        if(!get_exist_mapping_asset_control($asset_id, $control_id, $control_maturity)) return false;
+    }
+    return true;
+}
 /*******************************
  * FUNCTION: DELETE ALL ASSETS *
  *******************************/
@@ -899,7 +1099,7 @@ function import_asset($ip, $name, $value, $location, $teams, $details, $tags, $v
     {
 	    write_debug_log("An asset named \"{$name} was not found so adding a new asset.");
 
-	    return add_asset($ip, $name, $value, $location, $teams, $details, $tags, $verified, true);
+	    return add_asset($ip, $name, $value, $location, $teams, $details, $tags, $verified, [], true);
     }
 
     if (asset_exists_exact($ip, $name, $value, $location, $teams, $details, $verified)
@@ -1441,6 +1641,8 @@ function display_add_asset()
 
         display_asset_details_edit();
 
+        display_asset_mapping_controls_edit();
+
         display_asset_tags_add();
     }
 }
@@ -1826,63 +2028,103 @@ function update_assets_of_asset_group($assets, $asset_group_id, $asset_group_nam
     }
 }
 
-/**********************************************************
- * FUNCTION: PROCESS SELECTED ASSETS ASSET GROUPS OF TYPE *
- * Processing the data coming from the widget used        *
- * for selecting assets and asset groups.                 *
- * $type_id: Id of the item we want to associate the      *
- * assets and asset groups with                           *
- * $assets_and_groups: data from the widget. Can          *
- * contain asset/asset group ids or names of new assets   *
- **********************************************************/
-function process_selected_assets_asset_groups_of_type($type_id, $assets_and_groups, $type) {
+/************************************************************************************************************
+ * FUNCTION: PROCESS SELECTED ASSETS ASSET GROUPS OF TYPE                                                   *
+ * Processing the data coming from the widget used for selecting assets and asset groups.                   *
+ * $item_id: Id of the item we want to associate the assets and asset groups with                           *
+ * $assets_and_groups: data from the widget. Can contain asset/asset group ids or names of new assets       *
+ * $type: The type of the item the assets/asset groups are being assigned to                                *
+ * Currently supported types: risk, assessment_answer, questionnaire_answer, questionnaire_risk, incident   *
+ *                                                                                                          *
+ * There's also the ability to enforce team separation logic for the assets in a way that prevents          *
+ * accidental removal of assets in case the submitting user had no permission editing an asset that is      *
+ * assigned to the item, but wasn't displayed(because the user has no permission to the asset) thus wasn't  *
+ * sent to the server as a selected asset.                                                                  * 
+ ************************************************************************************************************/
+function process_selected_assets_asset_groups_of_type($item_id, $assets_and_groups, $type) {
 
-    // Open the database connection
     $db = db_open();
 
+    // The logic is about items that have assets with teams assigned when team separation is enabled.
+    // It can happen that a user opens an item to edit but don't have access to all the assets assigned to it.
+    // In this case the user can edit the assets that they have access to, but leave the others intact(they're not even displayed)
+    $team_separation_asset_saving_logic = false;
+
+    // make the junction config that's maintained in the functions.php available here
+    global $junction_config;
+    
+    // set the names of the junction tables and fields required for the query for the type provided
     switch($type) {
         case 'risk':
-            $assets_junction_name = 'risks_to_assets';
-            $asset_groups_junction_name = 'risks_to_asset_groups';
-            $junction_id_name = 'risk_id';
-            $forced_asset_verification_state = null;
-        break;
-        case 'assessment_answer':
-            $assets_junction_name = 'assessment_answers_to_assets';
-            $asset_groups_junction_name = 'assessment_answers_to_asset_groups';
-            $junction_id_name = 'assessment_answer_id';
-            $forced_asset_verification_state = true;
-        break;
-        case 'questionnaire_risk':
-            $assets_junction_name = 'questionnaire_risk_to_assets';
-            $asset_groups_junction_name = 'questionnaire_risk_to_asset_groups';
-            $junction_id_name = 'questionnaire_id';
-            $forced_asset_verification_state = true;
-        break;
-        case 'questionnaire_answer':
-            if(!assessments_extra() || !assessments_extra("questionnaire_answers_to_assets") || !assessments_extra("questionnaire_answers_to_asset_groups"))
-            {
+            if (!check_permission("riskmanagement")) {
                 return;
             }
+            $junction_config_type = 'risks';
+            $assets_junction_name = 'risks_to_assets';
+            $asset_groups_junction_name = 'risks_to_asset_groups';
+            $forced_asset_verification_state = null;
+            $team_separation_asset_saving_logic = true;
+            break;
+        case 'assessment_answer':
+            if (!check_permission("assessments")) {
+                return;
+            }
+            $junction_config_type = 'assessment_answers';
+            $assets_junction_name = 'assessment_answers_to_assets';
+            $asset_groups_junction_name = 'assessment_answers_to_asset_groups';
+            $forced_asset_verification_state = true;
+            break;
+        case 'questionnaire_answer':
+            if(!assessments_extra() || !check_permission("assessments") || !table_exists("questionnaire_answers_to_assets") || !table_exists("questionnaire_answers_to_asset_groups")) {
+                return;
+            }
+            $junction_config_type = 'questionnaire_answers';
             $assets_junction_name = 'questionnaire_answers_to_assets';
             $asset_groups_junction_name = 'questionnaire_answers_to_asset_groups';
-            $junction_id_name = 'questionnaire_answer_id';
             $forced_asset_verification_state = true;
-        break;
-        
+            break;
+        case 'questionnaire_risk':
+            if(!assessments_extra() || !check_permission("assessments")) {
+                return;
+            }
+            $junction_config_type = 'questionnaire_risk_details';
+            $assets_junction_name = 'questionnaire_risk_to_assets';
+            $asset_groups_junction_name = 'questionnaire_risk_to_asset_groups';
+            $forced_asset_verification_state = true;
+            break;
+        case 'incident':
+            if(!incident_management_extra() || !check_permission("im_incidents")) {
+                return;
+            }
+            $junction_config_type = 'incident_management_incidents';
+            $assets_junction_name = 'incident_management_incident_to_assets';
+            $asset_groups_junction_name = 'incident_management_incident_to_asset_groups';
+            $forced_asset_verification_state = null;
+            $team_separation_asset_saving_logic = true;
+            break;
         default:
             return;
     }
     
-    // Clear any current assets for this type
-    $stmt = $db->prepare("DELETE FROM `{$assets_junction_name}` WHERE {$junction_id_name} = :{$junction_id_name}");
-    $stmt->bindParam(":{$junction_id_name}", $type_id, PDO::PARAM_INT);
-    $stmt->execute();
+    // Use the data setup in the junction configuration
+    $asset_junction_item_id_name = $junction_config[$junction_config_type]['junctions'][$assets_junction_name];
+    $asset_group_junction_item_id_name = $junction_config[$junction_config_type]['junctions'][$asset_groups_junction_name];
+    $asset_junction_asset_id_name = $junction_config['assets']['junctions'][$assets_junction_name];
+    $asset_group_junction_asset_group_id_name = $junction_config['asset_groups']['junctions'][$asset_groups_junction_name];
 
-    $stmt = $db->prepare("DELETE FROM `{$asset_groups_junction_name}` WHERE {$junction_id_name} = :{$junction_id_name}");
-    $stmt->bindParam(":{$junction_id_name}", $type_id, PDO::PARAM_INT);
-    $stmt->execute();    
+    // Save whether the separation extra is enabled so don't have to query the database all the time
+    $separation = team_separation_extra();
     
+    // Using the team separation saving logic only makes sense if the team separation extra is activated and the user isn't an admin
+    $team_separation_asset_saving_logic &= $separation && !is_admin();
+
+
+    $stmt = $db->prepare("DELETE FROM `{$asset_groups_junction_name}` WHERE {$asset_group_junction_item_id_name} = :item_id");
+    $stmt->bindParam(":item_id", $item_id, PDO::PARAM_INT);
+    $stmt->execute();
+    
+    $assets = [];
+    $new_assets = [];
     // For each asset or group
     foreach ($assets_and_groups as $value)
     {
@@ -1891,39 +2133,132 @@ function process_selected_assets_asset_groups_of_type($type_id, $assets_and_grou
         
         // Selected an existing asset or group
         if (preg_match('/^([\d]+)_(group|asset)$/', $value, $matches)) {
-            list(, $id, $type) = $matches;
+            list(, $aag_id, $aag_type) = $matches;
         } elseif (preg_match('/^new_asset_(.*)$/', $value, $matches)) { // Entered the name of a new asset
             $name = trim($matches[1]);
             // Check if the asset already exists, but not verified(since it didnt show up in the widget)
-            $id = asset_exists($name);
-
-            if ($id) {
+            $aag_id = asset_exists($name);
+            
+            if ($aag_id) {
                 set_alert(true, "bad", _lang('ErrorAssetAlreadyExistsAsVerified', array('asset_name' => $name)));
                 continue;
             }
-
+            
             if ($forced_asset_verification_state === null) {
-                $id = add_asset('', $name);
+                $aag_id = add_asset('', $name);
             } else {
-                $id = add_asset_by_name_with_forced_verification($name, $forced_asset_verification_state);
+                $aag_id = add_asset_by_name_with_forced_verification($name, $forced_asset_verification_state);
             }
-            $type = 'asset';                
+            $aag_type = 'asset';
+            $new_assets []= $aag_id;
         } else {
             //Invalid input
             continue;
         }
         
-        if ($type=='asset') {
-            // Add the new asset for this type
-            $stmt = $db->prepare("INSERT INTO `$assets_junction_name` (`$junction_id_name`, `asset_id`) VALUES (:$junction_id_name, :asset_id)");
-            $stmt->bindParam(":asset_id", $id, PDO::PARAM_INT);
-        } elseif ($type=='group') {
+        if ($aag_type == 'asset') {
+            // If it's an asset we're storing it for later to apply the team separation asset saving logic if needed
+            $assets []= $aag_id;
+        } elseif ($aag_type == 'group') {
             // Add the new group for this type
-            $stmt = $db->prepare("INSERT INTO `$asset_groups_junction_name` (`$junction_id_name`, `asset_group_id`) VALUES (:$junction_id_name, :asset_group_id)");
-            $stmt->bindParam(":asset_group_id", $id, PDO::PARAM_INT);
+            $stmt = $db->prepare("INSERT INTO `$asset_groups_junction_name` (`$asset_group_junction_item_id_name`, `$asset_group_junction_asset_group_id_name`) VALUES (:type_id, :asset_group_id)");
+            $stmt->bindParam(":asset_group_id", $aag_id, PDO::PARAM_INT);
+            $stmt->bindParam(":type_id", $item_id, PDO::PARAM_INT);
+            $stmt->execute();
         }
+    }
+       
+    // So the Issue we're solving below is that
+    //     a,  there's no validation on whether the user updating the incident has access to the assets sent over to the server
+    //         to be associated to the item(can be exploited by sending over IDs that the user have no permission to)
+    //     b,  when a user who doesn't have permission to all the assets associated with the item edits the item
+    //         can accidentally remove those assets because the logic just saves those that are sent over. To solve this
+    //         we're adding back the assets the user has no permission to edit
+    // If team separation is enabled
+    if ($team_separation_asset_saving_logic) {
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        
+        $user_id = (int)$_SESSION['uid'];
 
-        $stmt->bindParam(":$junction_id_name", $type_id, PDO::PARAM_INT);
+        // If there're assets and we have to check if the user has access to them
+        if (!empty($assets)) {
+            // Sanitize the assets(remove assets sent from the client side that are not accessible by the user)
+            // This logic would wrongly exclude the assets created through the widget if the 'Allow all users to see assets not assigned to a team' option isn't enabled
+            // since they won't have a team assigned, so we're adding back the ids of the newly created assets
+            // It's still needed to filter out attempts of adding pre-existing assets that the user has no permission to
+            $stmt = $db->prepare("
+                SELECT
+                	`a`.`id`
+                FROM `assets` a
+                	LEFT JOIN `user_to_team` u2t ON FIND_IN_SET(`u2t`.`team_id`, `a`.`teams`)
+                WHERE
+                	(`u2t`.`user_id` = :user_id" . (get_setting('allow_all_to_asset_noassign_team') ? " OR `a`.`teams` = ''" : '') . ")
+                    AND `a`.`id` IN (" . implode(',', $assets) . ")
+                GROUP BY
+                	`a`.`id`;
+            ");
+            
+            $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+            $stmt->execute();
+            $assets = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        }
+        
+        // Get all the asset ids that are associated to the item
+        $stmt = $db->prepare("SELECT `asset_id` FROM `{$assets_junction_name}` WHERE `{$asset_junction_item_id_name}` = :item_id;");
+        $stmt->bindParam(":item_id", $item_id, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        // Store the list of associated risk ids in the array
+        $all_associated_assets = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        
+        // If there were associated assets in the first place
+        if (!empty($all_associated_assets)) {
+            // then get the assets the user actually had access to modify
+            $stmt = $db->prepare("
+                SELECT
+                    `a`.`id`
+                FROM `{$assets_junction_name}` aj
+                    INNER JOIN `assets` a ON `aj`.`asset_id` = `a`.`id`
+                WHERE
+                    `aj`.`{$asset_junction_item_id_name}` = :item_id
+                    AND " . get_user_teams_query_for_assets('a', false) . "
+                GROUP BY
+                    `a`.`id`
+            ");
+            $stmt->bindParam(":item_id", $item_id, PDO::PARAM_INT);
+            $stmt->execute();
+            $accessable_assets = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            
+            // If the user had access to any of the assets then to get the assets he/she doesn't have access to
+            // we need the diff of the two lists
+            if (!empty($accessable_assets)) {
+                $not_accessable_assets = array_diff($all_associated_assets, $accessable_assets);
+            } else {
+                // But if the user doesn't have access to any of the already associated assets then it means
+                // we have to add back all of them
+                $not_accessable_assets = $all_associated_assets;
+            }
+            
+            // Add the assets that weren't editable by the user back before saving
+            $assets = array_merge($assets, $not_accessable_assets);
+        }
+    }
+
+    // We add back the new assets to make sure they get assigned even though due to team separation settings
+    // it may be possible that the user won't see the assets they just created(if the 'Allow all users to see assets not assigned to a team' option isn't enabled)
+    $assets = array_unique(array_merge($assets, $new_assets));
+
+    // Clear any current asset associations for this type
+    $stmt = $db->prepare("DELETE FROM `{$assets_junction_name}` WHERE {$asset_junction_item_id_name} = :item_id");
+    $stmt->bindParam(":item_id", $item_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // re-create the asset associations for the item
+    foreach ($assets as $asset_id) {
+        $stmt = $db->prepare("INSERT INTO `$assets_junction_name` (`$asset_junction_item_id_name`, `$asset_junction_asset_id_name`) VALUES (:item_id, :asset_id)");
+        $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
+        $stmt->bindParam(":item_id", $item_id, PDO::PARAM_INT);
         $stmt->execute();
     }
 
@@ -2226,7 +2561,158 @@ function get_assets_of_asset_group_for_treegrid($id){
     return $result;
 }
 
-function get_assets_and_asset_groups_for_dropdown($risk_id = false) {
+/**
+ * Getting the list of verified assets and asset groups. If the id and type are provided then it sets the selected field to true for assets/asset groups that are selected.
+ * You either specify NONE of the id or type to simply get the available assets and asset groups or specify BOTH to get the selected field populated.
+ * 
+ * @param string $type the type of the id
+ * @param int $id the id of the item the function should return the selected state of the assets for
+ * @param bool $selected_only whether we want the function to return only the selected assets(not verified assets will be returned too if they're selected)
+ * @return array The list of all verified assets and asset groups. If the id and type are provided then sets the selected state for those that are selected for that item
+ */
+function get_assets_and_asset_groups_of_type($id = null, $type = null, $selected_only = false) {
+    // Having this variable here so the code is easier to read later
+    $has_id = $id !== null;
+    
+    // If the function got an id as a parameter then the type is required too
+    if ($has_id && $type === null) {
+        return [];
+    }
+
+    // If no type and id provided then we don't need this setup step
+    if ($type !== null) {
+        
+        if (!in_array($type, ['risk', 'assessment_answer', 'questionnaire_answer', 'questionnaire_risk', 'incident'])) {
+            return [];
+        }
+        
+        global $junction_config;
+        // set the names of the junction fields and fields required for the query for the type provided
+        switch($type) {
+            case 'risk':
+                if (!check_permission("riskmanagement")) {
+                    return [];
+                }
+                $id = $has_id ? $id - 1000 : null;
+                $junction_config_type = 'risks';
+                $assets_junction_name = 'risks_to_assets';
+                $asset_groups_junction_name = 'risks_to_asset_groups';
+                break;
+            case 'assessment_answer':
+                if (!check_permission("assessments")) {
+                    return [];
+                }
+                $junction_config_type = 'assessment_answers';
+                $assets_junction_name = 'assessment_answers_to_assets';
+                $asset_groups_junction_name = 'assessment_answers_to_asset_groups';
+                break;
+            case 'questionnaire_answer':
+                if(!assessments_extra() || !check_permission("assessments") || !table_exists("questionnaire_answers_to_assets") || !table_exists("questionnaire_answers_to_asset_groups")) {
+                    return [];
+                }
+                $junction_config_type = 'questionnaire_answers';
+                $assets_junction_name = 'questionnaire_answers_to_assets';
+                $asset_groups_junction_name = 'questionnaire_answers_to_asset_groups';
+                break;
+            case 'questionnaire_risk':
+                if(!assessments_extra() || !check_permission("assessments")) {
+                    return [];
+                }
+                $junction_config_type = 'questionnaire_risk_details';
+                $assets_junction_name = 'questionnaire_risk_to_assets';
+                $asset_groups_junction_name = 'questionnaire_risk_to_asset_groups';
+                break;
+            case 'incident':
+                if(!incident_management_extra() || !check_permission("im_incidents")) {
+                    return [];
+                }
+                $junction_config_type = 'incident_management_incidents';
+                $assets_junction_name = 'incident_management_incident_to_assets';
+                $asset_groups_junction_name = 'incident_management_incident_to_asset_groups';
+                break;
+        }
+
+        // Use the data setup in the 
+        $asset_junction_id_name = $junction_config[$junction_config_type]['junctions'][$assets_junction_name];
+        $asset_group_junction_id_name = $junction_config[$junction_config_type]['junctions'][$asset_groups_junction_name];
+    }
+
+    $db = db_open();
+    $encryption = encryption_extra();
+
+    if ($encryption) {
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+    }
+
+    if (team_separation_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $team_based_separation_where_condition = " AND " . get_user_teams_query_for_assets('', false);
+    } else {
+        $team_based_separation_where_condition = '';
+    }
+
+    // If only have to return the selected items then an inner join is needed
+    $join_type = $selected_only ? 'INNER' : 'LEFT OUTER';
+
+    // So the things that are going on in this query:
+    // If encryption is enabled the order is dictated by the order_by_name field instead of the name
+    // If an id and type are provided then have to flag assets that are asigned to that item as selected
+    // If team separation is enabled then have to add the query part for that
+    $stmt = $db->prepare("
+        SELECT
+            *
+        FROM (
+            SELECT
+                `a`.`id`,
+                `a`.`name`,
+                'asset' AS class,
+                " . ($encryption ? "`a`.`order_by_name`" : "`a`.`name`") . " AS ordr,
+                " . ($has_id ? "`aj`.`asset_id` IS NOT NULL" : '0') . " AS selected,
+                `a`.`verified`
+            FROM
+                `assets` a
+                " . ($has_id ? "{$join_type} JOIN `$assets_junction_name` aj ON `aj`.`asset_id` = `a`.`id` AND `aj`.`$asset_junction_id_name` = :id" : '') . "
+            WHERE
+                (`a`.`verified` = 1" . ($has_id ? " OR `aj`.`asset_id` IS NOT NULL" : '') . "){$team_based_separation_where_condition}
+        UNION ALL
+            SELECT
+                `ag`.`id`,
+                `ag`.`name`,
+                'group' AS class,
+                " . ($encryption ? "@rownum := @rownum + 1" : "`ag`.`name`") . " AS ordr,
+                " . ($has_id ? "`agj`.`asset_group_id` IS NOT NULL" : '0') . " AS selected,
+                '1' AS verified
+            FROM
+                `asset_groups` ag
+                " . ($has_id ? "{$join_type} JOIN `$asset_groups_junction_name` agj ON `agj`.`asset_group_id` = `ag`.`id` AND `agj`.`$asset_group_junction_id_name` = :id" : '') . "
+                " . ($encryption ? "JOIN (SELECT @rownum := 0) rn" : "") . "
+        ) u
+        GROUP BY
+            `u`.`class`, `u`.`id`
+        ORDER BY
+            `u`.`class` ASC, `u`.`ordr` ASC;
+    ");
+
+    if ($has_id) {
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+    }
+
+    $stmt->execute();
+    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    db_close($db);
+
+    if ($encryption) {
+        foreach($data as &$item) {
+            if ($item['class'] === 'asset') {
+                $item['name'] = try_decrypt($item['name']);
+            }
+        }
+    }
+
+    return $data;
+}
+function get_assets_and_asset_groups_by_control_for_dropdown($control_id = false, $control_maturity = false) {
 
     $db = db_open();
 
@@ -2240,9 +2726,6 @@ function get_assets_and_asset_groups_for_dropdown($risk_id = false) {
         $team_based_separation_where_condition = '';
     }
 
-    if ($risk_id)
-        $risk_id -= 1000;
-    
     $sql = "
         SELECT
             *
@@ -2252,22 +2735,22 @@ function get_assets_and_asset_groups_for_dropdown($risk_id = false) {
                 `a`.`name`,
                 'asset' as class,
                 " . (encryption_extra() ? "`a`.`order_by_name`" : "`a`.`name`") . " as ordr" .
-    ($risk_id ? ",`rta`.`asset_id` IS NOT NULL as selected" : "") . "
+    ($control_id ? ",`cta`.`asset_id` IS NOT NULL as selected" : "") . "
             FROM
                 `assets` a " .
-    ($risk_id ? "LEFT OUTER JOIN `risks_to_assets` rta ON `rta`.`asset_id` = `a`.`id` and `rta`.`risk_id` = :risk_id" : "") . "
+    ($control_id ? "LEFT OUTER JOIN `control_to_assets` cta ON `cta`.`asset_id` = `a`.`id` and `cta`.`control_id` = :control_id" . ($control_maturity !== false ? " and cta.control_maturity = :control_maturity " : "") : "") . "
             WHERE
-                `a`.`verified` = 1" . ($risk_id ? " or `rta`.`asset_id` IS NOT NULL" : "") . " {$team_based_separation_where_condition}
+                `a`.`verified` = 1" . ($control_id ? " or `cta`.`asset_id` IS NOT NULL" : "") . " {$team_based_separation_where_condition}
         UNION ALL
             SELECT
                 `ag`.`id`,
                 `ag`.`name`,
                 'group' as class,
                 " . (encryption_extra() ? "@rownum := @rownum + 1" : "`ag`.`name`") . " as ordr" .
-    ($risk_id ? ",`rtag`.`asset_group_id` IS NOT NULL as selected" : "") . "
+    ($control_id ? ",`ctag`.`asset_group_id` IS NOT NULL as selected" : "") . "
             FROM
                 `asset_groups` ag " .
-    ($risk_id ? "LEFT OUTER JOIN `risks_to_asset_groups` rtag ON `rtag`.`asset_group_id` = `ag`.`id` and `rtag`.`risk_id` = :risk_id " : "") . 
+    ($control_id ? "LEFT OUTER JOIN `control_to_asset_groups` ctag ON `ctag`.`asset_group_id` = `ag`.`id` and `ctag`.`control_id` = :control_id " . ($control_maturity !== false ? " and ctag.control_maturity = :control_maturity " : "") : "") . 
     (encryption_extra() ? "JOIN (SELECT @rownum := 0) rn" : "") . "
         ) u
         ORDER BY
@@ -2282,8 +2765,10 @@ function get_assets_and_asset_groups_for_dropdown($risk_id = false) {
 
     $stmt = $db->prepare($sql);
 
-    if ($risk_id)
-        $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+    if ($control_id)
+        $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    if ($control_maturity !== false)
+        $stmt->bindParam(":control_maturity", $control_maturity, PDO::PARAM_INT);
 
     $stmt->execute();
 
@@ -2300,170 +2785,28 @@ function get_assets_and_asset_groups_for_dropdown($risk_id = false) {
 
 function get_assets_and_asset_groups_of_type_as_string($id, $type) {
 
-    switch($type) {
-        case 'assessment_answer':
-            $assets_junction_name = 'assessment_answers_to_assets';
-            $asset_groups_junction_name = 'assessment_answers_to_asset_groups';
-            $junction_id_name = 'assessment_answer_id';
-        break;
-        case 'questionnaire_answer':
-            if(!assessments_extra() || !assessments_extra("questionnaire_answers_to_assets") || !assessments_extra("questionnaire_answers_to_asset_groups"))
-            {
-                return;
-            }
-            $assets_junction_name = 'questionnaire_answers_to_assets';
-            $asset_groups_junction_name = 'questionnaire_answers_to_asset_groups';
-            $junction_id_name = 'questionnaire_answer_id';
-        break;
-        case 'questionnaire_risk':
-            if(!assessments_extra()) return;
-            $assets_junction_name = 'questionnaire_risk_to_assets';
-            $asset_groups_junction_name = 'questionnaire_risk_to_asset_groups';
-            $junction_id_name = 'questionnaire_id';
-            $forced_asset_verification_state = true;
-        break;
-        default:
-            return;
-    }
-
-    $db = db_open();
-
-    $stmt = $db->prepare("
-        SELECT
-            `a`.`name`,
-            'asset' as class
-        FROM
-            `$assets_junction_name` aata
-            INNER JOIN `assets` a ON `a`.`id` = `aata`.`asset_id`
-            and `aata`.`$junction_id_name` = :$junction_id_name
-        UNION ALL
-        SELECT
-            `ag`.`name`,
-            'group' as class
-        FROM
-            `$asset_groups_junction_name` aatag
-            INNER JOIN `asset_groups` ag ON `ag`.`id` = `aatag`.`asset_group_id`
-            and `aatag`.`$junction_id_name` = :$junction_id_name;"
-    );
-    $stmt->bindParam(":$junction_id_name", $id, PDO::PARAM_INT);
-    $stmt->execute();
-    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Close the database connection
-    db_close($db);
-
+    $data = get_assets_and_asset_groups_of_type($id, $type, true);
     if ($data) {
         $affected_assets = [];
-        
         foreach($data as $item) {
-            if ($item['class'] === 'asset')
-                $affected_assets[] = try_decrypt($item['name']);
-            else $affected_assets[] = "[{$item['name']}]";
+            $affected_assets[] = $item['class'] === 'asset' ? $item['name'] : "[{$item['name']}]";
         }
-        
         return implode(',', $affected_assets);
     }
 
     return "";
 }
 
-function get_assets_and_asset_groups_of_type($id, $type) {
-
-    switch($type) {
-        case 'risk':
-            $id = $id - 1000;
-            $assets_junction_name = 'risks_to_assets';
-            $asset_groups_junction_name = 'risks_to_asset_groups';
-            $junction_id_name = 'risk_id';
-        break;
-        case 'assessment_answer':
-            $assets_junction_name = 'assessment_answers_to_assets';
-            $asset_groups_junction_name = 'assessment_answers_to_asset_groups';
-            $junction_id_name = 'assessment_answer_id';
-        break;
-        case 'questionnaire_answer':
-            if(!assessments_extra() || !assessments_extra("questionnaire_answers_to_assets") || !assessments_extra("questionnaire_answers_to_asset_groups"))
-            {
-                return;
-            }
-            $assets_junction_name = 'questionnaire_answers_to_assets';
-            $asset_groups_junction_name = 'questionnaire_answers_to_asset_groups';
-            $junction_id_name = 'questionnaire_answer_id';
-        break;
-        case 'questionnaire_risk':
-            if(!assessments_extra()) return;
-            $assets_junction_name = 'questionnaire_risk_to_assets';
-            $asset_groups_junction_name = 'questionnaire_risk_to_asset_groups';
-            $junction_id_name = 'questionnaire_id';
-            $forced_asset_verification_state = true;
-        break;
-        default:
-            return;
-    }
-
-    $db = db_open();
-
-    if (encryption_extra()) {
-        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-    }
-
-    $stmt = $db->prepare("
-        SELECT
-            *
-        FROM (
-            SELECT
-                `a`.`id`,
-                `a`.`name`,
-                'asset' as class,
-                " . (encryption_extra() ? "`a`.`order_by_name`" : "`a`.`name`") . " as ordr,
-                `a`.`verified`
-            FROM
-                `assets` a
-                INNER JOIN `$assets_junction_name` aj ON `aj`.`asset_id` = `a`.`id` and `aj`.`$junction_id_name` = :$junction_id_name
-        UNION ALL
-            SELECT
-                `ag`.`id`,
-                `ag`.`name`,
-                'group' as class,
-                " . (encryption_extra() ? "@rownum := @rownum + 1" : "`ag`.`name`") . " as ordr,
-                '1' as verified
-            FROM
-                `asset_groups` ag
-                INNER JOIN `$asset_groups_junction_name` agj ON `agj`.`asset_group_id` = `ag`.`id` and `agj`.`$junction_id_name` = :$junction_id_name
-                " . (encryption_extra() ? "JOIN (SELECT @rownum := 0) rn" : "") . "
-        ) u
-        GROUP BY
-            `u`.`class`, `u`.`id`
-        ORDER BY
-            `u`.`class` ASC, `u`.`ordr` ASC;
-    ");
-
-    $stmt->bindParam(":$junction_id_name", $id, PDO::PARAM_INT);
-    $stmt->execute();
-    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    db_close($db);
-
-    foreach($data as &$item)
-        if ($item['class'] === 'asset')
-            $item['name'] = try_decrypt($item['name']);
-
-    return $data;
-}
-
 function get_list_of_asset_and_asset_group_names($risk_id, $formatted = false) {
-    
     global $escaper;
 
     return array_map(function($item) use ($escaper, $formatted) {
-                if ($formatted)
-                    return "<span class='{$item['class']}'>" . $escaper->escapeHtml($item['name']) . "</span>";
-                return $escaper->escapeHtml($item['name']);
-            }, get_assets_and_asset_groups_of_type($risk_id, 'risk'));
-    
+        if ($formatted) {
+            return "<span class='{$item['class']}'>" . $escaper->escapeHtml($item['name']) . "</span>";
+        }
+        return $escaper->escapeHtml($item['name']);
+    }, get_assets_and_asset_groups_of_type($risk_id, 'risk', true));
 }
-
-
 
 /****************************************
  * FUNCTION : ASSETS FOR RISK ID        *
@@ -2779,6 +3122,14 @@ function get_assets_data_for_view($view, $selected_fields, $verified = null, $st
                         case 'verified':
                             $display = $escaper->escapeHtml(localized_yes_no($value));
                             break;
+                        case 'mapped_controls':
+                            $mapped_controls = get_mapping_controls_by_asset_id($asset['id']);
+                            $control_names = array();
+                            foreach ($mapped_controls as $control) {
+                                $control_names[] = $control['control_name'];
+                            }
+                            $value = $escaper->escapeHtml(implode(", ", $control_names));
+                            break;
                         default:
                             // Only have to escape non-custom fields as those are already escaped
                             $value = $escaper->escapeHtml($value);
@@ -3017,6 +3368,7 @@ function assets_update_asset_API($view) {
             ];
         }
     }
+    $mapped_controls = array();
     
     $update_parts = [];
     $params = [":$id_field" => $id];
@@ -3073,6 +3425,12 @@ function assets_update_asset_API($view) {
                         json_response(400, get_alert(true), NULL);
                     }
                 }
+            } else if($field_name === 'mapped_controls') {
+                $control_maturity   = empty($_POST['control_maturity']) ? [] : $_POST['control_maturity'];
+                $control_id         = empty($_POST['control_id']) ? [] : $_POST['control_id'];
+                foreach($control_maturity as $index=>$maturity){
+                    if($control_id[$index]) $mapped_controls[] = array($maturity, $control_id[$index]);
+                }
             } else {
                 // Store the asset name for the audit log before the encryption
                 if ($view_type === 'asset' && $field_name === 'name') {
@@ -3092,12 +3450,14 @@ function assets_update_asset_API($view) {
     }
 
     $db = db_open();
-    
+
     $stmt = $db->prepare("UPDATE `assets` SET " . implode(',', $update_parts) . " WHERE {$id_field} = :{$id_field};");
     $stmt->execute($params);
     
     db_close($db);
     
+    // Save control mappings
+    save_asset_to_controls($id, $mapped_controls);
     // Update tags even when they didn't change as the time we'd win on not saving them is lost on the checks
     // so if we check and then still have to save we'd basically just wasted time on checking
     updateTagsOfType($id, $view_type, $tags);
