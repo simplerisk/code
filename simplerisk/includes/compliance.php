@@ -168,6 +168,9 @@ function display_framework_controls_in_compliance()
                         var select = $('[name=\'tags[]\']', form).selectize();
                         var selectize = select[0].selectize;
                         selectize.setValue(data['tags']);
+                        tinyMCE.get('edit_objective').setContent(data['objective']);
+                        tinyMCE.get('edit_test_steps').setContent(data['test_steps']);
+                        tinyMCE.get('edit_expected_results').setContent(data['expected_results']);
 
                         $('#test--edit').modal();
                     },
@@ -1699,11 +1702,11 @@ function display_testing()
                             </tr>
                             <tr>
                                 <td valign='top'>".$escaper->escapeHtml($lang['Objective']).":&nbsp;&nbsp;</td>
-                                <td align='left'>".$escaper->escapeHtml($test_audit['objective'] ? $test_audit['objective'] : "--")."</td>
+                                <td align='left'>".$escaper->purifyHtml($test_audit['objective'] ? $test_audit['objective'] : "--")."</td>
                             </tr>
                             <tr>
                                 <td valign='top'>".$escaper->escapeHtml($lang['TestSteps']).":&nbsp;&nbsp;</td>
-                                <td align='left'>".$escaper->escapeHtml($test_audit['test_steps'] ? $test_audit['test_steps'] : "--")."</td>
+                                <td align='left'>".$escaper->purifyHtml($test_audit['test_steps'] ? $test_audit['test_steps'] : "--")."</td>
                             </tr>
                             <tr>
                                 <td valign='top'>".$escaper->escapeHtml($lang['Tags']).":&nbsp;&nbsp;</td>
@@ -1721,7 +1724,7 @@ function display_testing()
                             </tr>
                         </table>
                     </td>
-                    <td>
+                    <td valign='top'>
                         <table width='100%'>
                             <tr>
                                 <td valign='top'>".$escaper->escapeHtml($lang['Summary']).":&nbsp;&nbsp;</td>
@@ -1758,7 +1761,7 @@ function display_testing()
                             </tr>
                             <tr>
                                 <td valign='top'>".$escaper->escapeHtml($lang['ExpectedResults']).":&nbsp;&nbsp;</td>
-                                <td align='left'>".$escaper->escapeHtml($test_audit['expected_results'] ? $test_audit['expected_results'] : "--")."</td>
+                                <td align='left'>".$escaper->purifyHtml($test_audit['expected_results'] ? $test_audit['expected_results'] : "--")."</td>
                             </tr>
                             <tr>
                                 <td valign='top'>".$escaper->escapeHtml($lang['ApproximateTime']).":&nbsp;&nbsp;</td>
@@ -1774,7 +1777,10 @@ function display_testing()
 
         </form>
     ";
-    
+
+    // Display the Control Details
+    display_test_audit_framework_control($test_audit['framework_control_id']);
+
     // Display associated risks
     display_associated_risks($risk_ids);
 
@@ -1883,11 +1889,11 @@ function display_test_audit_framework_control($framework_control_id) {
                             </tr>
                             <tr>
                                 <td align='right'><strong>".$escaper->escapeHtml($lang['Description'])."</strong>: </td>
-                                <td colspan='5'>".$escaper->escapeHtml($control['description'])."</td>
+                                <td colspan='5'>".$escaper->purifyHtml($control['description'])."</td>
                             </tr>
                             <tr>
                                 <td align='right'><strong>".$escaper->escapeHtml($lang['SupplementalGuidance'])."</strong>: </td>
-                                <td colspan='5'>".$escaper->escapeHtml($control['supplemental_guidance'])."</td>
+                                <td colspan='5'>".$escaper->purifyHtml($control['supplemental_guidance'])."</td>
                             </tr>
                         </table>\n";
         
@@ -2768,13 +2774,13 @@ function display_detail_test()
                             <tr>
                                 <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['Objective']).":&nbsp;&nbsp;</strong></td>
                                 <td>
-                                    ".$escaper->escapeHtml($test_audit['objective'] ? $test_audit['objective'] : "--")."
+                                    ".$escaper->purifyHtml($test_audit['objective'] ? $test_audit['objective'] : "--")."
                                 </td>
                             </tr>
                             <tr>
                                 <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['TestSteps']).":&nbsp;&nbsp;</strong></td>
                                 <td>
-                                    ".$escaper->escapeHtml($test_audit['test_steps'] ? $test_audit['test_steps'] : "--")."
+                                    ".$escaper->purifyHtml($test_audit['test_steps'] ? $test_audit['test_steps'] : "--")."
                                 </td>
                             </tr>
                             <tr>
@@ -2796,7 +2802,7 @@ function display_detail_test()
                             <tr>
                                 <td valign='top' class='text-right' width='200px'><strong>".$escaper->escapeHtml($lang['ExpectedResults']).":&nbsp;&nbsp;</strong></td>
                                 <td>
-                                    ".$escaper->escapeHtml($test_audit['expected_results'] ? $test_audit['expected_results'] : "--")."
+                                    ".$escaper->purifyHtml($test_audit['expected_results'] ? $test_audit['expected_results'] : "--")."
                                 </td>
                             </tr>
                             <tr>

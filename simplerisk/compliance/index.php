@@ -214,7 +214,7 @@ if(isset($_POST['delete_test'])){
 
 	display_bootstrap_javascript();
 ?>
-    <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/simplerisk/pages/compliance.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
 
@@ -223,18 +223,21 @@ if(isset($_POST['delete_test'])){
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
 
     <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
+    <script src="../vendor/tinymce/tinymce/tinymce.min.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/WYSIWYG/editor.js?<?php echo current_version("app"); ?>"></script>
     <script src="../vendor/simplerisk/selectize.js/dist/js/standalone/selectize.min.js?<?php echo current_version("app"); ?>"></script>
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");
     ?>    
     <style>
+        .modal {z-index: 1099 !important;}
         #test--add .modal-header, #test--edit .modal-header {
             color: #ffffff;
         }
@@ -352,16 +355,16 @@ if(isset($_POST['delete_test'])){
             <input type="text" name="last_date" value="" class="form-control datepicker">
 
             <label for=""><?php echo $escaper->escapeHtml($lang['Objective']); ?></label>
-            <textarea name="objective" class="form-control" rows="6" style="width:100%;"></textarea>
+            <textarea name="objective" id="add_objective" class="form-control" rows="6" style="width:100%;"></textarea>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['TestSteps']); ?></label>
-            <textarea name="test_steps" class="form-control" rows="6" style="width:100%;"></textarea>
+            <textarea name="test_steps" id="add_test_steps" class="form-control" rows="6" style="width:100%;"></textarea>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['ApproximateTime']); ?></label>
             <input type="number" min="0" max="2147483647" name="approximate_time" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['minutes']); ?>)</span>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['ExpectedResults']); ?></label>
-            <textarea name="expected_results" class="form-control" rows="6" style="width:100%;"></textarea>
+            <textarea name="expected_results" id="add_expected_results" class="form-control" rows="6" style="width:100%;"></textarea>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['Tags']); ?></label>
             <select class="test_tags" readonly name="tags[]" multiple placeholder="<?php echo $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);?>"></select>
@@ -412,16 +415,16 @@ if(isset($_POST['delete_test'])){
             <input type="text" name="next_date" value="" class="form-control datepicker"> 
             
             <label for=""><?php echo $escaper->escapeHtml($lang['Objective']); ?></label>
-            <textarea name="objective" class="form-control" rows="6" style="width:100%;"></textarea>
+            <textarea name="objective" id="edit_objective" class="form-control" rows="6" style="width:100%;"></textarea>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['TestSteps']); ?></label>
-            <textarea name="test_steps" class="form-control" rows="6" style="width:100%;"></textarea>
+            <textarea name="test_steps" id="edit_test_steps" class="form-control" rows="6" style="width:100%;"></textarea>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['ApproximateTime']); ?></label>
             <input type="number" min="0" max="2147483647" name="approximate_time" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['minutes']); ?>)</span>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['ExpectedResults']); ?></label>
-            <textarea name="expected_results" class="form-control" rows="6" style="width:100%;"></textarea>
+            <textarea name="expected_results" id="edit_expected_results" class="form-control" rows="6" style="width:100%;"></textarea>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['Tags']); ?></label>
             <select class="test_tags" readonly name="tags[]" multiple placeholder="<?php echo $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);?>"></select>
@@ -479,6 +482,15 @@ if(isset($_POST['delete_test'])){
                 $("input[name=filter_by_control_text]").val($("#filter_by_control_text").val());
                 return true;
             });
+
+            // init tinyMCE WYSIWYG editor
+            init_minimun_editor('#add_objective');
+            init_minimun_editor('#add_test_steps');
+            init_minimun_editor('#add_expected_results');
+            init_minimun_editor('#edit_objective');
+            init_minimun_editor('#edit_test_steps');
+            init_minimun_editor('#edit_expected_results');
+
         });
         if ( window.history.replaceState ) {
             window.history.replaceState( null, null, window.location.href );

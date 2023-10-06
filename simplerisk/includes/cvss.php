@@ -226,3 +226,5 @@ function temporal_score($baseScore,$exploitability,$remediationLevel,$reportConf
 
 	return $temporalScore;
 }
+
+?>

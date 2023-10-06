@@ -268,7 +268,7 @@ else
 
 	display_bootstrap_javascript();
 ?>
-        <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
         <script src="../js/simplerisk/cve_lookup.js?<?php echo current_version("app"); ?>"></script>
         <script src="../js/basescript.js?<?php echo current_version("app"); ?>"></script>
 
@@ -291,7 +291,7 @@ else
 
         <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-        <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
@@ -302,6 +302,8 @@ else
 
         <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
         <script src="../vendor/simplerisk/selectize.js/dist/js/standalone/selectize.min.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../vendor/tinymce/tinymce/tinymce.min.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../js/WYSIWYG/editor.js?<?php echo current_version("app"); ?>"></script>
 
         <script type="text/javascript">
             function showScoreDetails() {
@@ -326,8 +328,10 @@ else
         </script>
         <style>
             .risk-details .row-fluid{max-width: 1400px;}
-            .top-panel .span2, .bottom-panel .span2{max-width: 210px;}
-            .top-panel .span8, .bottom-panel .span8{margin-left:15px;}
+            .top-panel .span2, .bottom-panel .span2{max-width: 210px;line-height: 33px;}
+            .top-panel .span8, .bottom-panel .span8{margin-left:15px;line-height: 33px;}
+            .row-fluid .span7{line-height: 33px;}
+            .row-fluid .span7 input[type="text"]:disabled {padding-left:0px;}
             @media only screen and (min-width: 768px) {
                 .top-panel .span2.text-right, .bottom-panel .span2.text-right{margin-left:10px;}
             }

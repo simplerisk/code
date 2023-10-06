@@ -2336,6 +2336,15 @@ $lang = array(
     'MultipleChoice_SingleSelect' => '多项选择（单选）',
     'MultipleChoice_MultiSelect' => '多项选择（Multi-Select）',
     'APIDocumentation' => 'API文档',
+    'ReviewedBy' => '审阅者',
+    'LimitedTestmailMessage' => '最近发送了一封测试电子邮件。您必须等待 5 分钟才能发送另一封测试电子邮件。',
+    'AutomaticallySendAssessmentResults' => '完成后自动将评估结果发送给评估联系人',
+    'ResendAssessment' => '发送调查问卷后 {$day} 天后重新发送评估',
+    'NotifyNotCompleteAssessment' => '如果未完成，则每隔 {$day} 天通知一次。',
+    'QuestionnaireNotCompleteEmailTemplate' => '未完成的调查问卷电子邮件模板',
+    'RiskAssessmentQuestionnaireNotCompleted' => '风险评估问卷未完成',
+    'SaveAndSend' => '保存并发送',
+    'AssociatedRisks' => '相关风险',
 
     '' => '',
 );

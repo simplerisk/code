@@ -63,7 +63,7 @@ class FileLoggingHandler implements LoggingHandlerInterface
         $this->fileSystem = new Filesystem();
 
         // get the metadata handler option from the configuration
-        $this->logFile = $config->getPathValue('loggingdir', 'log/') .
+        $this->logFile = $config->getPathValue('loggingdir', sys_get_temp_dir()) .
             $config->getOptionalString('logging.logfile', 'simplesamlphp.log');
 
         // Remove any non-printable characters before storing
@@ -73,7 +73,7 @@ class FileLoggingHandler implements LoggingHandlerInterface
             $config->getOptionalString('logging.processname', 'SimpleSAMLphp')
         );
 
-        $file = new File($this->logFile);
+        $file = new File($this->logFile, false);
         // Suppress E_WARNING if not exists
         if (@$this->fileSystem->exists($this->logFile)) {
             if (!$file->isWritable()) {

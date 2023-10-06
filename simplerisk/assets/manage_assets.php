@@ -48,6 +48,8 @@ require_once(language_file());
         $tags               = empty($_POST['tags']) ? [] : $_POST['tags'];
         $control_maturity   = empty($_POST['control_maturity']) ? [] : $_POST['control_maturity'];
         $control_id         = empty($_POST['control_id']) ? [] : $_POST['control_id'];
+        $associated_risks   = empty($_POST['associated_risks']) ? [] : $_POST['associated_risks'];
+
         $mapped_controls = array();
         foreach($control_maturity as $index=>$maturity){
             if($control_id[$index]) $mapped_controls[] = array($maturity, $control_id[$index]);
@@ -66,7 +68,7 @@ require_once(language_file());
         if($name)
         {
             // Add the asset
-            $success = add_asset($ip, $name, $value, $location, $teams, $details, $tags, true, $mapped_controls);
+            $success = add_asset($ip, $name, $value, $location, $teams, $details, $tags, true, $mapped_controls, $associated_risks);
 
             // If the asset add was successful
             if ($success)
@@ -139,9 +141,9 @@ require_once(language_file());
     <script src="../js/simplerisk/pages/asset.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
     
-    <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
 
     <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
@@ -158,6 +160,8 @@ require_once(language_file());
     <script src="../vendor/simplerisk/selectize.js/dist/js/standalone/selectize.min.js?<?php echo current_version("app"); ?>"></script>
     
     <script src="../js/simplerisk/dataTables.renderers.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../vendor/tinymce/tinymce/tinymce.min.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/WYSIWYG/editor.js?<?php echo current_version("app"); ?>"></script>
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");
@@ -174,6 +178,9 @@ require_once(language_file());
             cursor: 'wait'
         };
     </script>
+    <style type="text/css">
+        .modal {z-index: 1099 !important;}
+    </style>
 </head>
 
 <body>
@@ -301,7 +308,6 @@ require_once(language_file());
     <script>
         $(document).ready(function() {
 
-            $('.multiselect').multiselect({buttonWidth: '300px', enableFiltering: true, enableCaseInsensitiveFiltering: true,});
             $('.datepicker').datepicker();
 
             //Have to remove the 'fade' class for the shown event to work for modals
@@ -350,15 +356,15 @@ require_once(language_file());
                                 if (tagName == 'SELECT' && tag.hasClass('selectized')) {
                                     tag[0].selectize.setValue(value ? value : []);
                                 } else if (tagName == 'SELECT' && tag.hasClass('multiselect')) {
+									// Have to do this in case the value is empty to deselect the previous selection
+                                    // in the other cases it's enough to set the value as empty, but for multiselect it just doesn't...
+                                    tag.find('option:selected').each(function() {
+                                    	$(this).prop('selected', false);
+                                    })
+                                    tag.multiselect('refresh');
+
                                     if (value) {
                                         tag.multiselect('select', value);
-                                    } else {
-                                        // Have to do this in case the value is empty to deselect the previous selection
-                                        // in the other cases it's enough to set the value as empty, but for multiselect it just doesn't...
-                                        tag.find('option:selected').each(function() {
-                                            $(this).prop('selected', false);
-                                        })
-                                        tag.multiselect('refresh');
                                     }
                                 } else if (tagName == 'DIV'){
                                     tag.html(value);
@@ -367,6 +373,10 @@ require_once(language_file());
                                 }
                             });
                             $("select.mapped_control").multiselect({buttonWidth: 260, maxHeight: 250,enableFiltering: true});
+                            if(data.data['details'] != undefined) {
+                                if(view == 'asset_verified') tinyMCE.get("edit_details-asset_verified-asset_fields").setContent(data.data['details']);
+                                if(view == 'asset_unverified') tinyMCE.get("edit_details-asset_unverified-asset_fields").setContent(data.data['details']);
+                            }
 
                             $.unblockUI();
                             $(`#edit_popup_modal-${view}`).modal();
@@ -480,6 +490,10 @@ require_once(language_file());
                 e.preventDefault();
                 $(this).closest("tr").remove();
             });
+            // init tinyMCE WYSIWYG editor
+            init_minimun_editor('#details');
+            init_minimun_editor('#edit_details-asset_unverified-asset_fields');
+            init_minimun_editor('#edit_details-asset_verified-asset_fields');
         });
     </script>
     <?php display_set_default_date_format_script(); ?>

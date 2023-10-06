@@ -72,14 +72,14 @@ if(process_assessment_contact()){
 
 	display_bootstrap_javascript();
 ?>
-    <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/simplerisk/pages/assessment.js?<?php echo current_version("app"); ?>"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
 
     <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
@@ -118,7 +118,9 @@ if(process_assessment_contact()){
                 <?php }else{ ?>
                     <div class="row-fluid text-right">
                         <input type="text" class="pull-left" placeholder="Filter by text" id="filter_by_text">
-                        <a class="btn" href="contacts.php?action=add"><?php echo $escaper->escapeHtml($lang['Add']); ?></a>
+                        <?php if(has_permission("assessment_add_contact")){ ?>
+                            <a class="btn" href="contacts.php?action=add"><?php echo $escaper->escapeHtml($lang['Add']); ?></a>
+                        <?php }?>
                     </div>
                     <div class="row-fluid">
                         <?php display_assessment_contacts(); ?>

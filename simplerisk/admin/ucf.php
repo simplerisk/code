@@ -164,7 +164,7 @@ function display()
 
 	display_bootstrap_javascript();
 ?>
-    <link rel="stylesheet" type="text/css" href="../css/jquery-ui.min.css?<?php echo current_version("app"); ?>" />
+    <link rel="stylesheet" type="text/css" href="../vendor/node_modules/jquery-ui/dist/themes/base/jquery-ui.min.css?<?php echo current_version("app"); ?>" />
 
     <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">

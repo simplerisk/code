@@ -14,9 +14,10 @@ repository](simplesamlphp-install-repo).
 ## Prerequisites
 
 * A web server capable of executing PHP scripts.
-* PHP version >= 7.2.0.
+* PHP version >= 7.4.0.
 * Support for the following PHP extensions:
-  * Always required: `date`, `dom`, `hash`, `intl`, `json`, `libxml`, `mbstring`, `openssl`, `pcre`, `SPL`, `zlib`
+  * Always required: `date`, `dom`, `fileinfo`, `filter`, `hash`, `intl`, `json`, `libxml`, `mbstring`, `openssl`,
+                     `pcre`, `session`, `simplexml`, `SPL` and `zlib`
   * When automatically checking for latest versions, and used by some modules: `cURL`
   * When authenticating against an LDAP server: `ldap`
   * When authenticating against a RADIUS server: `radius`
@@ -82,8 +83,8 @@ upgrade notes), you may have to update your configuration and metadata after upd
 
 ### Upgrading configuration files
 
-A good approach is to run a `diff` between your previous `config.php` file and the new `config.php` file located in
-`config-templates/config.php`, and apply relevant modifications to the new template. This will ensure that all new
+A good approach is to run a `diff` between your previous `config.php` file and the new `config.php.dist` file located
+the same directory, and apply relevant modifications to the new template. This will ensure that all new
 entries in the latest version of config.php are included, as well as preserve your local modifications.
 
 ### Upgrading metadata files
@@ -106,13 +107,13 @@ directory doesn't need to be inside the library's directory, making it easier to
 to set this environment variable is to set it in your web server's configuration. See the next section for more
 information.
 
-## Configuring Apache
+## Configuring Apache {#section_4}
 
 Examples below assume that SimpleSAMLphp is installed in the default location, `/var/simplesamlphp`. You may choose
 another location, but this requires a path update in a few files. See Appendix _Installing SimpleSAMLphp
 in alternative locations_ for more details.
 
-The only subdirectory of `SimpleSAMLphp` that needs to be accessible from the web is `www`. There are several ways of
+The only subdirectory of `SimpleSAMLphp` that needs to be accessible from the web is `public`. There are several ways of
 exposing SimpleSAMLphp depending on the way web sites are structured on your Apache web server. The following is just
 one possible configuration.
 
@@ -126,9 +127,9 @@ look like this:
 
     SetEnv SIMPLESAMLPHP_CONFIG_DIR /var/simplesamlphp/config
 
-    Alias /simplesaml /var/simplesamlphp/www
+    Alias /simplesaml /var/simplesamlphp/public
 
-    <Directory /var/simplesamlphp/www>
+    <Directory /var/simplesamlphp/public>
         Require all granted
     </Directory>
 </VirtualHost>
@@ -136,10 +137,10 @@ look like this:
 
 Note the `Alias` directive, which gives control to SimpleSAMLphp for all urls matching
 `http(s)://service.example.com/simplesaml/*`. SimpleSAMLphp makes several SAML interfaces available on the web; all of
-them are accessible through the `www` subdirectory of your SimpleSAMLphp installation. You can name the alias
+them are accessible through the `public` subdirectory of your SimpleSAMLphp installation. You can name the alias
 whatever you want, but the name must be specified in the `baseurlpath` configuration option in the `config.php` file of
 SimpleSAMLphp as described in
-[the section called “SimpleSAMLphp configuration: config.php”](#section_6 "SimpleSAMLphp configuration: config.php").
+[the section called “SimpleSAMLphp configuration: config.php”](simplesamlphp-install#section_6).
 Here is an example of how this configuration may look like in `config.php`:
 
 ```php
@@ -167,7 +168,7 @@ Examples below assume that SimpleSAMLphp is installed in the default location, `
 another location, but this requires a path update in a few files. See Appendix _Installing SimpleSAMLphp
 in alternative locations_ for more details.
 
-The only subdirectory of `SimpleSAMLphp` that needs to be accessible from the web is `www`. There are several ways of
+The only subdirectory of `SimpleSAMLphp` that needs to be accessible from the web is `public`. There are several ways of
 exposing SimpleSAMLphp depending on the way web sites are structured on your Nginx web server. The following is just
 one possible configuration.
 
@@ -185,7 +186,7 @@ server {
     ssl_ciphers            EECDH+AESGCM:EDH+AESGCM;
 
     location ^~ /simplesaml {
-        alias /var/simplesamlphp/www;
+        alias /var/simplesamlphp/public;
 
         location ~^(?<prefix>/simplesaml)(?<phpfile>.+?\.php)(?<pathinfo>/.*)?$ {
             include          fastcgi_params;
@@ -201,7 +202,7 @@ server {
 }
 ```
 
-## SimpleSAMLphp configuration: config.php
+## SimpleSAMLphp configuration: config.php {#section_6}
 
 There are a few steps that you should complete in the main configuration file, `config.php`, right away:
 
@@ -235,13 +236,13 @@ There are a few steps that you should complete in the main configuration file, `
 tr -c -d '0123456789abcdefghijklmnopqrstuvwxyz' </dev/urandom | dd bs=32 count=1 2>/dev/null;echo
 ```
 
-  Here is an example of the configuration option:
+Here is an example of the configuration option:
 
 ```php
 'secretsalt' => 'randombytesinsertedhere',
 ```
 
-  **Please note that changing the secret salt may break access to services for your users**.
+**Please note that changing the secret salt may break access to services for your users**.
 
 * Configure your data storage. You can do this by editing the `store.type` configuration option, and setting it to
   one of the supported values. Now configure the backend of your choice with the relevant options, if needed.
@@ -272,7 +273,7 @@ tr -c -d '0123456789abcdefghijklmnopqrstuvwxyz' </dev/urandom | dd bs=32 count=1
 'timezone' => 'Europe/Oslo',
 ```
 
-  You can see [a list of Supported Timezones at php.net](http://php.net/manual/en/timezones.php).
+You can see [a list of Supported Timezones at php.net](http://php.net/manual/en/timezones.php).
 
 ## Configuring PHP
 
@@ -328,15 +329,6 @@ At the bottom of the admin page there are some green lights. SimpleSAMLphp runs 
 required and recommended prerequisites are met. If any of the lights are red, you may have to install some PHP
 extensions or external PHP packages (e.g. you need the PHP LDAP extension to use the LDAP authentication module).
 
-## Building assets
-
-Run the following commands to build the default theme.
-
-```bash
-npm install
-npm run build
-```
-
 ## Next steps
 
 You have now successfully installed SimpleSAMLphp, and the next steps depend on whether you want to setup a Service
@@ -378,9 +370,9 @@ There may be several reasons why you want to install SimpleSAMLphp in an alterna
 
 The SimpleSAMLphp package contains one folder named `simplesamlphp-x.y.z` (where `x.y.z` is the version number). In
 this folder there are a lot of subfolders for library, metadata, configuration, etc. One of these folders is named
-`www`. **Only this folder should be exposed on the web**. The recommended configuration is to put the whole
-`simplesamlphp` folder outside the web root, and then link to the `www` folder by using the `Alias` directive, as
-described in [the section called “Configuring Apache”](#section_4 "Configuring Apache"). This is not the only
+`public`. **Only this folder should be exposed on the web**. The recommended configuration is to put the whole
+`simplesamlphp` folder outside the web root, and then link to the `public` folder by using the `Alias` directive, as
+described in [the section called “Configuring Apache”](simplesamlphp-install#section_4). This is not the only
 possible way, though.
 
 As an example, let's see how you can install SimpleSAMLphp in your home directory on a shared hosting server.
@@ -397,7 +389,7 @@ As an example, let's see how you can install SimpleSAMLphp in your home director
 
    ```bash
    cd ~/public_html
-   ln -s ../simplesamlphp/www simplesaml
+   ln -s ../simplesamlphp/public simplesaml
    ```
 
 3. Next, you need to set the `baseurlpath` configuration option with the URL pointing to the `simplesaml` link you
@@ -405,7 +397,7 @@ As an example, let's see how you can install SimpleSAMLphp in your home director
    `https://host.example/~myaccount/`, set the base URL path accordingly:
 
    ```bash
-   'baseurlpath' => 'https://host.example/~myaccount/simplesaml/', 
+   'baseurlpath' => 'https://host.example/~myaccount/simplesaml/',
    ```
 
    Now, you can go to the URL of your installation and check if things work:
@@ -415,18 +407,18 @@ As an example, let's see how you can install SimpleSAMLphp in your home director
 ### Tip
 
 Symlinking may fail, because some Apache configurations do not allow you to link to files from outside the
-`public_html` folder. If so, you can move the `www` folder instead of symlinking it:
+`public_html` folder. If so, you can move the `public` folder instead of symlinking it:
 
 ```bash
 cd ~/public_html
-mv ../simplesamlphp/www simplesaml
+mv ../simplesamlphp/public simplesaml
 ```
 
 Now you have the following directory structure.
 
 * `~/simplesamlphp`
 
-* `~/public_html/simplesaml` where `simplesaml` is the `www` directory from the `simplesamlphp` installation directory,
+* `~/public_html/simplesaml` where `simplesaml` is the `public` directory from the `simplesamlphp` installation directory,
   either moved or a symlink.
 
 Now, we need to make a few configuration changes. First, let's edit `~/public_html/simplesaml/_include.php`:
@@ -434,15 +426,15 @@ Now, we need to make a few configuration changes. First, let's edit `~/public_ht
 Change the two lines from:
 
 ```php
-require_once(dirname(dirname(__FILE__)) . '/lib/_autoload.php');
+require_once(dirname(_FILE__, 2) . '/lib/_autoload.php');
 ```
 
 to something like:
 
-```bash
-require_once(dirname(dirname(dirname(__FILE__))) . '/lib/_autoload.php');
+```php
+require_once(dirname(__FILE__, 3) . '/lib/_autoload.php');
 ```
 
 **Warning**: note that this will make upgrading SimpleSAMLphp much more difficult, since you will need to move the
-`www` directory and manually edit files every time you upgrade. It is also possible that this method does not work in
+`public` directory and manually edit files every time you upgrade. It is also possible that this method does not work in
 future versions of SimpleSAMLphp, and therefore it is discouraged and should be used only as a last resort.

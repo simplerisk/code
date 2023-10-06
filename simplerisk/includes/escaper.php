@@ -31,6 +31,9 @@ class simpleriskEscaper
         $string = strval($string);
         return $this->escaper->escapeJs($string);
     }
+    public function purifyHtml($html) {
+        return purify_html($html);
+    }
     public function escapeUrl($string)
     {
         $string = strval($string);

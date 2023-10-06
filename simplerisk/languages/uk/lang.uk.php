@@ -2336,6 +2336,15 @@ $lang = array(
     'MultipleChoice_SingleSelect' => 'Множинний вибір (один вибір)',
     'MultipleChoice_MultiSelect' => 'Множинний вибір (Множинний вибір)',
     'APIDocumentation' => 'Документація API',
+    'ReviewedBy' => 'Переглянуто',
+    'LimitedTestmailMessage' => 'Нещодавно було надіслано тестовий електронний лист. Ви повинні зачекати 5 хвилин, перш ніж буде надіслано інший тестовий електронний лист.',
+    'AutomaticallySendAssessmentResults' => 'Автоматично надсилайте результати оцінювання контактним особам після завершення',
+    'ResendAssessment' => 'Після надсилання анкети повторно надішліть оцінку через {$day} днів',
+    'NotifyNotCompleteAssessment' => 'Повідомляти, якщо не виконано кожні {$day} днів.',
+    'QuestionnaireNotCompleteEmailTemplate' => 'Шаблон електронної пошти для незаповненої анкети',
+    'RiskAssessmentQuestionnaireNotCompleted' => 'Анкета оцінки ризиків не заповнена',
+    'SaveAndSend' => 'Зберегти та надіслати',
+    'AssociatedRisks' => 'Супутні ризики',
 
     '' => '',
 );

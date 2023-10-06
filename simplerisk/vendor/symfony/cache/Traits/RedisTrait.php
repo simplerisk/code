@@ -174,6 +174,11 @@ trait RedisTrait
             throw new CacheException(sprintf('Redis Sentinel support requires the "predis/predis" package or the "redis" extension v5.2 or higher: "%s".', $dsn));
         }
 
+        if (isset($params['lazy'])) {
+            $params['lazy'] = filter_var($params['lazy'], \FILTER_VALIDATE_BOOLEAN);
+        }
+        $params['redis_cluster'] = filter_var($params['redis_cluster'], \FILTER_VALIDATE_BOOLEAN);
+
         if ($params['redis_cluster'] && isset($params['redis_sentinel'])) {
             throw new InvalidArgumentException(sprintf('Cannot use both "redis_cluster" and "redis_sentinel" at the same time: "%s".', $dsn));
         }
@@ -197,6 +202,7 @@ trait RedisTrait
                 do {
                     $host = $hosts[$hostIndex]['host'] ?? $hosts[$hostIndex]['path'];
                     $port = $hosts[$hostIndex]['port'] ?? 0;
+                    $passAuth = \defined('Redis::OPT_NULL_MULTIBULK_AS_NULL') && isset($params['auth']);
                     $address = false;
 
                     if (isset($hosts[$hostIndex]['host']) && $tls) {
@@ -206,14 +212,33 @@ trait RedisTrait
                     if (!isset($params['redis_sentinel'])) {
                         break;
                     }
-                    $extra = [];
-                    if (\defined('Redis::OPT_NULL_MULTIBULK_AS_NULL') && isset($params['auth'])) {
-                        $extra = [$params['auth']];
-                    }
-                    $sentinel = new \RedisSentinel($host, $port, $params['timeout'], (string) $params['persistent_id'], $params['retry_interval'], $params['read_timeout'], ...$extra);
 
-                    if ($address = $sentinel->getMasterAddrByName($params['redis_sentinel'])) {
-                        [$host, $port] = $address;
+                    if (version_compare(phpversion('redis'), '6.0.0', '>=')) {
+                        $options = [
+                            'host' => $host,
+                            'port' => $port,
+                            'connectTimeout' => $params['timeout'],
+                            'persistent' => $params['persistent_id'],
+                            'retryInterval' => $params['retry_interval'],
+                            'readTimeout' => $params['read_timeout'],
+                        ];
+
+                        if ($passAuth) {
+                            $options['auth'] = $params['auth'];
+                        }
+
+                        $sentinel = new \RedisSentinel($options);
+                    } else {
+                        $extra = $passAuth ? [$params['auth']] : [];
+
+                        $sentinel = new \RedisSentinel($host, $port, $params['timeout'], (string) $params['persistent_id'], $params['retry_interval'], $params['read_timeout'], ...$extra);
+                    }
+
+                    try {
+                        if ($address = $sentinel->getMasterAddrByName($params['redis_sentinel'])) {
+                            [$host, $port] = $address;
+                        }
+                    } catch (\RedisException $e) {
                     }
                 } while (++$hostIndex < \count($hosts) && !$address);
 
@@ -332,6 +357,15 @@ trait RedisTrait
             if (null !== $auth) {
                 $params['parameters']['password'] = $auth;
             }
+
+            if (isset($params['ssl'])) {
+                foreach ($hosts as $i => $host) {
+                    if (!isset($host['ssl'])) {
+                        $hosts[$i]['ssl'] = $params['ssl'];
+                    }
+                }
+            }
+
             if (1 === \count($hosts) && !($params['redis_cluster'] || $params['redis_sentinel'])) {
                 $hosts = $hosts[0];
             } elseif (\in_array($params['failover'], ['slaves', 'distribute'], true) && !isset($params['replication'])) {
@@ -340,7 +374,7 @@ trait RedisTrait
             }
             $params['exceptions'] = false;
 
-            $redis = new $class($hosts, array_diff_key($params, array_diff_key(self::$defaultConnectionOptions, ['ssl' => null])));
+            $redis = new $class($hosts, array_diff_key($params, self::$defaultConnectionOptions));
             if (isset($params['redis_sentinel'])) {
                 $redis->getConnection()->setSentinelTimeout($params['timeout']);
             }

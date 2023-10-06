@@ -3,11 +3,6 @@ Installing SimpleSAMLphp from the repository
 
 These are some notes about running SimpleSAMLphp from the repository.
 
-Prerequisites
--------------
-
-* NodeJS version >= 10.0.
-
 Installing from git
 -------------------
 
@@ -27,23 +22,19 @@ Initialize configuration and metadata:
 
 ```bash
 cd /var/simplesamlphp
-cp -r config-templates/* config/
-cp -r metadata-templates/* metadata/
+cp config/config.php.dist config/config.php
+cp config/authsources.php.dist config/authsources.php
+cp metadata/saml20-idp-hosted.php.dist metadata/saml20-idp-hosted.php
+cp metadata/saml20-idp-remote.php.dist metadata/saml20-idp-remote.php
+cp metadata/saml20-sp-remote.php.dist metadata/saml20-sp-remote.php
 ```
 
 Install the external dependencies with Composer (you can refer to
 [getcomposer.org](https://getcomposer.org/) to get detailed
-instructions on how to install Composer itself) and npm:
+instructions on how to install Composer itself):
 
 ```bash
 php composer.phar install
-npm install
-```
-
-Build the assets:
-
-```bash
-npm run build
 ```
 
 Upgrading
@@ -62,10 +53,8 @@ git fetch origin
 git pull origin master
 ```
 
-Install or upgrade the external dependencies with Composer and npm:
+Install or upgrade the external dependencies with Composer:
 
 ```bash
 php composer.phar install
-npm install
-npm run build
 ```

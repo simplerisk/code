@@ -50,6 +50,9 @@ function display_main_detail_asset_fields_add($fields)
                 case 'Tags':
                     display_asset_tags_add($display);
                 break;
+                case 'AssociatedRisks':
+                    display_asset_associated_risks_add($display);
+                break;
             }
 
         }
@@ -132,14 +135,19 @@ function display_asset_site_location_edit($display = true)
 {
     global $lang, $escaper;
 
-    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
-
-    echo "<div class=\"row-fluid\"{$displayString}>";
-        echo "<div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['SiteLocation']).":</div>";
-        echo "<div class=\"span10\">";
-            create_multiple_dropdown("location", NULL, NULL, NULL, false, "", "", true, " class='multiselect' ");
-        echo "</div>";
-    echo "</div>";
+    echo "
+        <div class='row-fluid'" . ($display ? '' : " style='display: none;'" ) . ">
+            <div class='wrap-text span2 text-right'>{$escaper->escapeHtml($lang['SiteLocation'])}:</div>
+            <div class='span10'>";
+    create_multiple_dropdown("location", NULL, NULL, NULL, false, "", "", true, " class='multiselect' ");
+    echo "
+            <script>
+                $(function() {
+                    $('#add-asset-container #location.multiselect').multiselect({buttonWidth: '300px', enableFiltering: true, enableCaseInsensitiveFiltering: true,});
+                });
+            </script>
+            </div>
+        </div>";
 }
 
 /*******************************
@@ -149,14 +157,19 @@ function display_asset_team_edit($display = true)
 {
     global $lang, $escaper;
 
-    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
-
-    echo "<div class=\"row-fluid\"{$displayString}>";
-        echo "<div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['Team']).":</div>";
-        echo "<div class=\"span10\">";
-            create_multiple_dropdown("team", NULL, NULL, NULL, false, "", "", true, " class='multiselect' ");
-        echo "</div>";
-    echo "</div>";
+    echo "
+        <div class='row-fluid'" . ($display ? '' : " style='display: none;'" ) . ">
+            <div class='wrap-text span2 text-right'>{$escaper->escapeHtml($lang['Team'])}:</div>
+            <div class='span10'>";
+    create_multiple_dropdown("team", NULL, NULL, NULL, false, "", "", true, " class='multiselect' ");
+    echo "
+            <script>
+                $(function() {
+                    $('#add-asset-container #team.multiselect').multiselect({buttonWidth: '300px', enableFiltering: true, enableCaseInsensitiveFiltering: true,});
+                });
+            </script>
+            </div>
+        </div>";
 }
 
 /**********************************
@@ -170,8 +183,8 @@ function display_asset_details_edit($display = true)
 
     echo "<div class=\"row-fluid\"{$displayString}>";
         echo "<div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['AssetDetails']).":</div>";
-        echo "<div class=\"span8\">";
-            echo "<textarea name=\"details\" cols=\"\" rows=\"\" style=\"width: 100%;\"></textarea>";
+        echo "<div class=\"span10\">";
+            echo "<textarea name=\"details\" id=\"details\" cols=\"\" rows=\"\" style=\"width: 100%;\"></textarea>";
         echo "</div>";
     echo "</div>";
 }
@@ -188,7 +201,7 @@ function display_asset_tags_add($display = true)
 
     echo "  <div class=\"row-fluid\"{$displayString}>";
     echo "      <div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['Tags']).":</div>";
-    echo "      <div class=\"span8\">";
+    echo "      <div class=\"span10\">";
     echo "          <select class=\"selectize-marker\" readonly id=\"tags\" name=\"tags[]\" multiple placeholder='{$tags_placeholder}'></select>
                     <div class='tag-max-length-warning'>" . $escaper->escapeHtml($lang['MaxTagLengthWarning']) . "</div>\n
                     <script>
@@ -217,7 +230,7 @@ function display_asset_mapping_controls_edit($display = true)
 
     echo "<div class=\"row-fluid\"{$displayString}>";
         echo "<div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['MappedControls']).":</div>";
-        echo "<div class=\"span8\">";
+        echo "<div class=\"span10\">";
             echo "<table width=\"100%\" class=\"table table-bordered mapping_control_table\">
                     <thead>
                         <tr>
@@ -237,6 +250,24 @@ function display_asset_mapping_controls_edit($display = true)
 ";
         echo "</div>";
     echo "</div>";
+}
+
+function display_asset_associated_risks_add($display = true) {
+    global $lang, $escaper;
+
+    echo "
+        <div class='row-fluid'" . ($display ? '' : " style='display: none;'" ) . ">
+            <div class='wrap-text span2 text-right'>{$escaper->escapeHtml($lang['AssociatedRisks'])}:</div>
+            <div class='span10'>";
+    create_multiple_dropdown("risks_with_id", NULL, "associated_risks", NULL, false, "", "", true, " class='multiselect' ");
+    echo "
+            <script>
+                $(function() {
+                    $('#add-asset-container #associated_risks.multiselect').multiselect({buttonWidth: '100%', enableFiltering: true, enableCaseInsensitiveFiltering: true,});
+                });
+            </script>
+            </div>
+        </div>";
 }
 
 /*****************************************

@@ -198,12 +198,15 @@ class Template extends Response
     public function asset(string $asset, string $module = null): string
     {
         $baseDir = $this->configuration->getBaseDir();
+        $basePath = $this->configuration->getBasePath();
         if (is_null($module)) {
-            $file = $baseDir . 'www/assets/' . $asset;
-            $basePath = $this->configuration->getBasePath();
-            $path = $basePath . 'assets/' . $asset;
+            $file = $baseDir . 'public/assets/base/' . $asset;
+            $path = $basePath . 'assets/base/' . $asset;
+        } elseif (file_exists($baseDir . 'public/assets/' . $module)) {
+            $file = $baseDir . '/public/assets/' . $module . '/' . $asset;
+            $path = $basePath . 'assets/' . $module . '/' . $asset;
         } else {
-            $file = $baseDir . 'modules/' . $module . '/www/assets/' . $asset;
+            $file = $baseDir . 'modules/' . $module . '/public/assets/' . $asset;
             $path = Module::getModuleUrl($module . '/assets/' . $asset);
         }
 
@@ -675,6 +678,8 @@ class Template extends Response
      * language and fallback language; it will return the property value (which
      * can be a string, array or other type allowed in metadata, if not found it
      * returns null.
+     *
+     * @psalm-return string|array|null
      */
     public function getEntityPropertyTranslation(string $property, array $data)
     {

@@ -61,7 +61,7 @@ global $escaper, $lang;
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" type="text/css" href="../css/jquery-ui.min.css?<?php echo current_version("app"); ?>" />
+    <link rel="stylesheet" type="text/css" href="../vendor/node_modules/jquery-ui/dist/themes/base/jquery-ui.min.css?<?php echo current_version("app"); ?>" />
     <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
 

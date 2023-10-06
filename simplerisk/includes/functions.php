@@ -433,8 +433,13 @@ $field_settings = [
             'orderable' => false,
             'editable' => true,
             'select_parts' => ["1 AS mapped_controls"],
-            'has_display_field' => false,
             'join_parts' => [],
+            'has_display_field' => false,
+            /*'select_parts' => ["GROUP_CONCAT(DISTINCT `fc`.`short_name` ORDER BY `fc`.`short_name` ASC SEPARATOR ', ') as mapped_controls"],
+            'join_parts' => [
+                "LEFT JOIN `control_to_assets` cta ON `cta`.`asset_id` = `a`.`id`",
+                "LEFT JOIN `framework_controls` fc ON `cta`.`control_id` = `fc`.`id`",
+            ],*/
         ],
         'tags' => [
             'customization_field_name' => 'Tags',
@@ -482,6 +487,39 @@ $field_settings = [
             'select_parts' => ["`a`.`verified`"],
             'has_display_field' => true,
             'join_parts' => [],
+        ],
+        'associated_risks' => [
+            'customization_field_name' => 'AssociatedRisks',
+            'localization_key' => 'AssociatedRisks',
+            'type' => 'multiselect[risks_with_id]',
+            'required' => false,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => false,
+            'editable' => true,
+            'select_parts' => [
+                "CONCAT(
+                    '[',
+                    IF(
+                        `r`.`id` IS NOT NULL,
+                        GROUP_CONCAT(DISTINCT
+                            JSON_OBJECT(
+                                'value', `r`.`id`,
+                                'name', CAST(`r`.`subject` AS CHAR)
+                            )
+                            SEPARATOR ','
+                        ),
+                        ''
+                    ),
+                    ']'
+                ) AS associated_risks"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN `risks_to_assets` r2a ON `r2a`.`asset_id` = `a`.`id`",
+                "LEFT JOIN `risks` r ON `r2a`.`risk_id` = `r`.`id`"
+                
+            ],
         ],
     ],
     'risk' => [
@@ -795,6 +833,7 @@ $field_settings_display_groups = [
             'details',
             'mapped_controls',
             'tags',
+            'associated_risks',
             //'verified',
         ],
     ],
@@ -1017,7 +1056,7 @@ function db_open()
         // Set the default options array
         $options = array(
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8, @@group_concat_max_len = 4294967295, time_zone='{$offset}'"
+            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4, @@group_concat_max_len = 4294967295, time_zone='{$offset}'"
         );
 
         // If a database SSL certificate path has been defined
@@ -1426,6 +1465,7 @@ function get_custom_table($type)
 
     // to notify that the result is supposed to be fetched as grouped
     $grouped = false;
+    $encryption = encryption_extra();
 
     // Array of CVSS values
     $allowed_cvss_values = array('AccessComplexity', 'AccessVector', 'Authentication', 'AvailabilityRequirement', 'AvailImpact', 'CollateralDamagePotential', 'ConfidentialityRequirement', 'ConfImpact', 'Exploitability', 'IntegImpact', 'IntegrityRequirement', 'RemediationLevel', 'ReportConfidence', 'TargetDistribution');
@@ -1656,8 +1696,10 @@ function get_custom_table($type)
                 `g`.`order`,
                 `c`.`order`;
         ");
-    } elseif($type == "asset_valuation") {
+    } elseif ($type == "asset_valuation") {
         $stmt = $db->prepare("SELECT * FROM `asset_values` ORDER BY `min_value` ASC;");
+    } elseif ($type == "risks" || $type == "risks_with_id") {
+        $stmt = $db->prepare("SELECT `id` AS value , `subject` AS name FROM `risks` ORDER BY `" . ($encryption ? 'order_by_subject' : 'subject') . "` ASC;");
     }
 
     // Execute the database query
@@ -1683,6 +1725,21 @@ function get_custom_table($type)
         });
     }
 
+    if ($type == "risks" || $type == "risks_with_id") {
+        if ($encryption) {
+            // Decrypt the subjects
+            foreach ($array as &$option) {
+                $option['name'] = try_decrypt($option['name']);
+            }
+        }
+        if ($type == "risks_with_id") {
+            foreach ($array as &$option) {
+                $risk_id = (int)$option['value'] + 1000;
+                $option['name'] = "[{$risk_id}] {$option['name']}";
+            }
+        }
+    }
+    
     if($type == "asset_valuation") {
         global $escaper;
         $currency_sign = $escaper->escapeHtml(get_setting("currency"));
@@ -1736,7 +1793,8 @@ function get_options_from_table($name)
     }
     elseif (in_array($name, array("user", "team", "enabled_users", "disabled_users", "enabled_users_all", "disabled_users_all", "languages", "family", "date_formats",
             "parent_frameworks", "frameworks", "framework_controls", "risk_tags", "asset_tags", "test_results", "test_results_filter",
-            "policies", "framework_control_tests", "risk_catalog", "threat_catalog", "risk_catalog_grouped", "threat_catalog_grouped", "remote_team-SAML", "remote_role-SAML", "remote_team-LDAP", "data_classification", "asset_valuation"))) {
+            "policies", "framework_control_tests", "risk_catalog", "threat_catalog", "risk_catalog_grouped", "threat_catalog_grouped", "remote_team-SAML",
+            "remote_role-SAML", "remote_team-LDAP", "data_classification", "asset_valuation", "risks", "risks_with_id"))) {
         $options = get_custom_table($name);
     }elseif ($name === "yes_no") {
         $options = [
@@ -2139,7 +2197,7 @@ function create_numeric_dropdown($name, $selected = NULL, $blank = true)
 /****************************************
  * FUNCTION: CREATE MULTIUSERS DROPDOWN *
  ****************************************/
-function create_multiusers_dropdown($name, $selected = "", $custom_html = "", $returnHtml = false){
+function create_multiusers_dropdown($name, $selected = "", $custom_html = "", $returnHtml = false, $rename = NULL){
     global $escaper;
 
     // Make selected to array
@@ -2149,7 +2207,13 @@ function create_multiusers_dropdown($name, $selected = "", $custom_html = "", $r
     }
 
     $options = get_options_from_table("enabled_users");
-    $str = "<select id=\"{$name}\" {$custom_html} name=\"{$name}[]\" multiple class=\"form-field form-control multiselect\" style=\"width:auto;\">\n";
+    if ($rename != NULL)
+    {
+        $str = "<select id=\"{$rename}\" {$custom_html} name=\"{$rename}[]\" multiple class=\"form-field form-control multiselect\" style=\"width:auto;\">\n";
+    }
+    else {
+        $str = "<select id=\"{$name}\" {$custom_html} name=\"{$name}[]\" multiple class=\"form-field form-control multiselect\" style=\"width:auto;\">\n";
+    }
     // For each option
     foreach ($options as $option)
     {
@@ -3079,6 +3143,26 @@ function get_standard_date_from_default_format($formatted_date, $time=false)
 
     return $standard_date;
 }
+/************************************************
+ * FUNCTION: GET STANDARD DATE FROM DATE STRING *
+ ************************************************/
+function get_standard_date_from_date_string($date_string, $time=false)
+{
+    // Return 0000-00-00 if formatted date is invalid or unset
+    if(!$date_string || strpos($date_string, "0000")  !== false){
+        return "0000-00-00";
+    }
+
+    $d = new DateTime($date_string);
+    // If time is requested
+    if($time){
+        $standard_date = $d ? $d->format('Y-m-d H:i:s') : "";
+    }else{
+        $standard_date = $d ? $d->format('Y-m-d') : "";
+    }
+
+    return $standard_date;
+}
 
 /**********************
  * FUNCTION: ADD NAME *
@@ -3089,93 +3173,102 @@ function add_name($table, $name, $size=20)
         return false;
     }
 
-    // Open the database connection
-    $db = db_open();
+    // Check if the value already exists in the table
+    $id = get_value_by_name($table, $name);
 
-    // Get the risk levels
-    $stmt = $db->prepare("INSERT INTO {$table} (`name`) VALUES (:name); ");
-    // If size is null, no set param length
-    if($size === null)
+    // If the id was not returned
+    if (!is_int($id))
     {
-        $stmt->bindParam(":name", $name, PDO::PARAM_STR);
-    }
-    // If size is not null, no set param length
-    else
-    {
-        $stmt->bindParam(":name", $name, PDO::PARAM_STR, $size);
-    }
-    $stmt->execute();
-    $insertedId = $db->lastInsertId();
+        // Open the database connection
+        $db = db_open();
 
-    // Audit log
-    switch ($table)
-    {
-        case "projects":
-            $risk_id = 1000;
-            $message = "A new project \"" . try_decrypt($name) . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
-            break;
-        case "category":
-            $risk_id = 1000;
-            $message = "A new category \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
-            break;
-        case "team":
-            $risk_id = 1000;
-            $message = "A new team \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
-            break;
-        case "technology":
-            $risk_id = 1000;
-            $message = "A new technology \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
-            break;
-        case "location":
-            $risk_id = 1000;
-            $message = "A new location \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
-            break;
-        case "source":
-            $risk_id = 1000;
-            $message = "A new source \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
-            break;
-        case "regulation":
-            $risk_id = 1000;
-            $message = "A new control regulation \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
-            break;
-        case "planning_strategy":
-            $risk_id = 1000;
-            $message = "A new planning strategy \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
-            break;
-        case "close_reason":
-            $risk_id = 1000;
-            $message = "A new close reason \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
-            break;
-        case "file_types":
-            $risk_id = 1000;
-            $message = "A new upload file type \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
-            break;
-        case "control_class":
-            $risk_id = 1000;
-            $message = "A new control_class \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
-            break;
-        default:
-            $risk_id = 1000;
-            $message = "A new " . $table . " \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
-            break;
+        // Get the risk levels
+        $stmt = $db->prepare("INSERT INTO {$table} (`name`) VALUES (:name); ");
+        // If size is null, no set param length
+        if ($size === null)
+        {
+            $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+        }
+        // If size is not null, no set param length
+        else
+        {
+            $stmt->bindParam(":name", $name, PDO::PARAM_STR, $size);
+        }
+        $stmt->execute();
+        $insertedId = $db->lastInsertId();
+
+        // Audit log
+        switch ($table)
+        {
+            case "projects":
+                $risk_id = 1000;
+                $message = "A new project \"" . try_decrypt($name) . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+                break;
+            case "category":
+                $risk_id = 1000;
+                $message = "A new category \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+                break;
+            case "team":
+                $risk_id = 1000;
+                $message = "A new team \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+                break;
+            case "technology":
+                $risk_id = 1000;
+                $message = "A new technology \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+                break;
+            case "location":
+                $risk_id = 1000;
+                $message = "A new location \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+                break;
+            case "source":
+                $risk_id = 1000;
+                $message = "A new source \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+                break;
+            case "regulation":
+                $risk_id = 1000;
+                $message = "A new control regulation \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+                break;
+            case "planning_strategy":
+                $risk_id = 1000;
+                $message = "A new planning strategy \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+                break;
+            case "close_reason":
+                $risk_id = 1000;
+                $message = "A new close reason \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+                break;
+            case "file_types":
+                $risk_id = 1000;
+                $message = "A new upload file type \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+                break;
+            case "control_class":
+                $risk_id = 1000;
+                $message = "A new control_class \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+                break;
+            default:
+                $risk_id = 1000;
+                $message = "A new " . $table . " \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+                break;
+        }
+
+        // Close the database connection
+        db_close($db);
+
+        return $insertedId;
     }
-
-    // Close the database connection
-    db_close($db);
-
-    return $insertedId;
+    // If the value already exists in the table return the id for that value
+    else return $id;
 }
 
 /**********************************
@@ -4166,11 +4259,12 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     $threat_catalog_mapping = count($threat_catalog_mapping)?implode(",", $threat_catalog_mapping):"";
 
     // Add the risk
-    $sql = "INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `source`, `category`, `owner`, `manager`, `assessment`, `notes`, `project_id`, `submitted_by`, `submission_date`, `risk_catalog_mapping`, `threat_catalog_mapping`, `template_group_id`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :source, :category, :owner, :manager, :assessment, :notes, :project_id, :submitted_by, :submission_date, :risk_catalog_mapping, :threat_catalog_mapping, :template_group_id)";
+    $sql = "INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `source`, `category`, `owner`, `manager`, `assessment`, `notes`, `project_id`, `submitted_by`, `submission_date`, `last_update`, `risk_catalog_mapping`, `threat_catalog_mapping`, `template_group_id`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :source, :category, :owner, :manager, :assessment, :notes, :project_id, :submitted_by, :submission_date, :last_update, :risk_catalog_mapping, :threat_catalog_mapping, :template_group_id)";
     
     $try_encrypt_assessment = try_encrypt($assessment);
     $try_encrypt_notes = try_encrypt($notes);
     if($submission_date == false) $submission_date = date("Y-m-d H:i:s");
+    $last_update = date('Y-m-d H:i:s');
 
     $stmt = $db->prepare($sql);
     $stmt->bindParam(":status", $status, PDO::PARAM_STR, 10);
@@ -4188,6 +4282,7 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     $stmt->bindParam(":project_id", $project_id, PDO::PARAM_STR);
     $stmt->bindParam(":submitted_by", $submitted_by, PDO::PARAM_INT);
     $stmt->bindParam(":submission_date", $submission_date, PDO::PARAM_STR);
+    $stmt->bindParam(":last_update", $submission_date, PDO::PARAM_STR);
     $stmt->bindParam(":risk_catalog_mapping", $risk_catalog_mapping, PDO::PARAM_STR);
     $stmt->bindParam(":threat_catalog_mapping", $threat_catalog_mapping, PDO::PARAM_STR);
     $stmt->bindParam(":template_group_id", $template_group_id, PDO::PARAM_INT);
@@ -7494,285 +7589,147 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             $sort_query = " ORDER BY b.review_date ASC ";
         }
 
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-            $stmt = $db->prepare("
-                SELECT
-                    a.calculated_risk,
-                    b.*,
-                    c.next_review,
-                    ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
-                    DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
-                    o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT location.name SEPARATOR '; ')
-                        FROM
-                            location, risk_to_location rtl
-                        WHERE
-                            rtl.risk_id=b.id AND rtl.location_id=location.value
-                    ) AS location,
-                    v.name AS source, 
-                    d.name AS category,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT team.name  SEPARATOR ', ')
-                        FROM
-                            team, risk_to_team rtt
-                        WHERE
-                            rtt.risk_id=b.id AND rtt.team_id=team.value
-                    ) AS team,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT u.name SEPARATOR ', ')
-                        FROM
-                            user u, risk_to_additional_stakeholder rtas
-                        WHERE
-                            rtas.risk_id=b.id AND rtas.user_id=u.value
-                    ) AS additional_stakeholders,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT tech.name SEPARATOR ', ')
-                        FROM
-                            technology tech, risk_to_technology rttg
-                        WHERE
-                            rttg.risk_id=b.id AND rttg.technology_id=tech.value
-                    ) AS technology,
-                    g.name AS owner,
-                    h.name AS manager,
-                    a.scoring_method,
-                    k.name AS project, 
-                    i.name AS submitted_by,
-                    (
-                        SELECT
-                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '|')
-                        FROM
-                            tags t, tags_taggees tt 
-                        WHERE
-                            tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
-                    ) AS risk_tags,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ')
-                        FROM
-                            risks_to_assets rta
-                            INNER JOIN assets a ON a.id = rta.asset_id
-                        WHERE
-                            rta.risk_id=b.id
-                    ) AS affected_assets,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT ag.name SEPARATOR ', ')
-                        FROM
-                            risks_to_asset_groups rtag
-                            INNER JOIN `asset_groups` ag ON ag.id = rtag.asset_group_id
-                        WHERE
-                            rtag.risk_id=b.id
-                    ) AS affected_asset_groups,
-                    q.name AS planning_strategy,
-                    p.planning_date,
-                    r.name AS mitigation_effort,
-                    s.min_value AS mitigation_min_cost,
-                    s.max_value AS mitigation_max_cost,
-                    t.name AS mitigation_owner,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT team.name SEPARATOR ', ')
-                        FROM
-                            team, mitigation_to_team mtt 
-                        WHERE
-                            mtt.mitigation_id=p.id AND mtt.team_id=team.value
-                    ) AS mitigation_team,
-
-
-                    NOT(ISNULL(mau.id)) mitigation_accepted, 
-                    p.submission_date AS mitigation_date,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ', ')
-                        FROM
-                            `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                        WHERE
-                            mtc.mitigation_id=p.id 
-                    ) AS mitigation_controls,
-                    p.current_solution,
-                    p.security_recommendations,
-                    p.security_requirements,
-                    m.name AS next_step,
-                    l.comments
-                FROM
-                    risk_scoring a
-                    LEFT JOIN risks b ON a.id = b.id
-                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations p ON b.id = p.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
-                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                    LEFT JOIN closures o ON b.close_id = o.id
-                    LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
-                    LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
-                    LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
-                    LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
-                    LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
-                    LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
-                    LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
-                    LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
-                    LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
-                    LEFT JOIN asset_values s ON p.mitigation_cost = s.id
-                    LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
-                    LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
-                    LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
-                    LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
-                WHERE b.status != \"Closed\"
-                GROUP BY b.id
-                {$sort_query}
-            ;");
-        }
-        else
-        {
+        if (team_separation_extra()) {
             // Include the team separation extra
             require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
+    
             // Get the separation query string
             $separation_query = get_user_teams_query("b", false, true);
-
-            // Query the database
-            $stmt = $db->prepare("
-                SELECT
-                    a.calculated_risk,
-                    b.*,
-                    c.next_review,
-                    ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
-                    DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
-                    o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT location.name SEPARATOR '; ')
-                        FROM
-                            location, risk_to_location rtl
-                        WHERE
-                            rtl.risk_id=b.id AND rtl.location_id=location.value
-                    ) AS location,
-                    v.name AS source, 
-                    d.name AS category,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT team.name  SEPARATOR ', ')
-                        FROM
-                            team, risk_to_team rtt
-                        WHERE
-                            rtt.risk_id=b.id AND rtt.team_id=team.value
-                    ) AS team,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT u.name SEPARATOR ', ')
-                        FROM
-                            user u, risk_to_additional_stakeholder rtas
-                        WHERE
-                            rtas.risk_id=b.id AND rtas.user_id=u.value
-                    ) AS additional_stakeholders,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT tech.name SEPARATOR ', ')
-                        FROM
-                            technology tech, risk_to_technology rttg
-                        WHERE
-                            rttg.risk_id=b.id AND rttg.technology_id=tech.value
-                    ) AS technology,
-                    g.name AS owner,
-                    h.name AS manager,
-                    a.scoring_method,
-                    k.name AS project, 
-                    i.name AS submitted_by,
-                    (
-                        SELECT
-                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '|')
-                        FROM
-                            tags t, tags_taggees tt 
-                        WHERE
-                            tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
-                    ) AS risk_tags,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ')
-                        FROM
-                            risks_to_assets rta
-                            INNER JOIN assets a ON a.id = rta.asset_id
-                        WHERE
-                            rta.risk_id=b.id
-                    ) AS affected_assets,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT ag.name SEPARATOR ', ')
-                        FROM
-                            risks_to_asset_groups rtag
-                            INNER JOIN `asset_groups` ag ON ag.id = rtag.asset_group_id
-                        WHERE
-                            rtag.risk_id=b.id
-                    ) AS affected_asset_groups,
-                    q.name AS planning_strategy,
-                    p.planning_date,
-                    r.name AS mitigation_effort,
-                    s.min_value AS mitigation_min_cost,
-                    s.max_value AS mitigation_max_cost,
-                    t.name AS mitigation_owner,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT team.name SEPARATOR ', ')
-                        FROM
-                            team, mitigation_to_team mtt 
-                        WHERE
-                            mtt.mitigation_id=p.id AND mtt.team_id=team.value
-                    ) AS mitigation_team,
-
-
-                    NOT(ISNULL(mau.id)) mitigation_accepted, 
-                    p.submission_date AS mitigation_date,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ', ')
-                        FROM
-                            `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                        WHERE
-                            mtc.mitigation_id=p.id 
-                    ) AS mitigation_controls,
-                    p.current_solution,
-                    p.security_recommendations,
-                    p.security_requirements,
-                    m.name AS next_step,
-                    l.comments
-                FROM
-                    risk_scoring a
-                    LEFT JOIN risks b ON a.id = b.id
-                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations p ON b.id = p.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
-                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                    LEFT JOIN closures o ON b.close_id = o.id
-                    LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
-                    LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
-                    LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
-                    LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
-                    LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
-                    LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
-                    LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
-                    LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
-                    LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
-                    LEFT JOIN asset_values s ON p.mitigation_cost = s.id
-                    LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
-                    LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
-                    LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
-                    LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
-                WHERE b.status != \"Closed\" " . $separation_query . "
-                GROUP BY b.id
-                {$sort_query}
-            ;");
+        } else {
+            $separation_query = '';
         }
+
+        // Query the database
+        $stmt = $db->prepare("
+            SELECT
+                a.calculated_risk,
+                b.*,
+                c.next_review,
+                ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
+                DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
+                o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT location.name SEPARATOR '; ')
+                    FROM
+                        location, risk_to_location rtl
+                    WHERE
+                        rtl.risk_id=b.id AND rtl.location_id=location.value
+                ) AS location,
+                v.name AS source, 
+                d.name AS category,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT team.name  SEPARATOR ', ')
+                    FROM
+                        team, risk_to_team rtt
+                    WHERE
+                        rtt.risk_id=b.id AND rtt.team_id=team.value
+                ) AS team,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT u.name SEPARATOR ', ')
+                    FROM
+                        user u, risk_to_additional_stakeholder rtas
+                    WHERE
+                        rtas.risk_id=b.id AND rtas.user_id=u.value
+                ) AS additional_stakeholders,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT tech.name SEPARATOR ', ')
+                    FROM
+                        technology tech, risk_to_technology rttg
+                    WHERE
+                        rttg.risk_id=b.id AND rttg.technology_id=tech.value
+                ) AS technology,
+                g.name AS owner,
+                h.name AS manager,
+                a.scoring_method,
+                k.name AS project, 
+                i.name AS submitted_by,
+                (
+                    SELECT
+                        GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '|')
+                    FROM
+                        tags t, tags_taggees tt 
+                    WHERE
+                        tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
+                ) AS risk_tags,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ')
+                    FROM
+                        risks_to_assets rta
+                        INNER JOIN assets a ON a.id = rta.asset_id
+                    WHERE
+                        rta.risk_id=b.id
+                ) AS affected_assets,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT ag.name SEPARATOR ', ')
+                    FROM
+                        risks_to_asset_groups rtag
+                        INNER JOIN `asset_groups` ag ON ag.id = rtag.asset_group_id
+                    WHERE
+                        rtag.risk_id=b.id
+                ) AS affected_asset_groups,
+                q.name AS planning_strategy,
+                p.planning_date,
+                r.name AS mitigation_effort,
+                s.min_value AS mitigation_min_cost,
+                s.max_value AS mitigation_max_cost,
+                t.name AS mitigation_owner,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT team.name SEPARATOR ', ')
+                    FROM
+                        team, mitigation_to_team mtt 
+                    WHERE
+                        mtt.mitigation_id=p.id AND mtt.team_id=team.value
+                ) AS mitigation_team,
+                NOT(ISNULL(mau.id)) mitigation_accepted, 
+                p.submission_date AS mitigation_date,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ', ')
+                    FROM
+                        `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                    WHERE
+                        mtc.mitigation_id=p.id 
+                ) AS mitigation_controls,
+                p.current_solution,
+                p.security_recommendations,
+                p.security_requirements,
+                m.name AS next_step,
+                l.comments
+            FROM
+                risk_scoring a
+                LEFT JOIN risks b ON a.id = b.id
+                LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
+                LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
+                LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
+                LEFT JOIN mitigations p ON b.id = p.risk_id
+                LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
+                LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                LEFT JOIN closures o ON b.close_id = o.id
+                LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
+                LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
+                LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
+                LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
+                LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
+                LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
+                LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
+                LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
+                LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
+                LEFT JOIN asset_values s ON p.mitigation_cost = s.id
+                LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
+                LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
+                LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
+                LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
+            WHERE b.status != \"Closed\" {$separation_query}
+            GROUP BY b.id
+            {$sort_query}
+        ;");
 
         $stmt->execute();
 
@@ -10561,16 +10518,11 @@ function close_risk($risk_id, $user_id, $status, $close_reason, $note, $closure_
     // Open the database connection
     $db = db_open();
 
-    // Get current datetime for last_update
-    $current_datetime = date('Y-m-d H:i:s');
+    // Get current datetime for closure_date
+    if($closure_date == false) $closure_date = date("Y-m-d H:i:s");
 
-    // Add the closure
-    if($closure_date !== false){
-        $stmt = $db->prepare("INSERT INTO closures (`risk_id`, `user_id`, `close_reason`, `note`, `closure_date`) VALUES (:risk_id, :user_id, :close_reason, :note, :closure_date)");
-        $stmt->bindParam(":closure_date", $closure_date, PDO::PARAM_STR, 20);
-    }else{
-        $stmt = $db->prepare("INSERT INTO closures (`risk_id`, `user_id`, `close_reason`, `note`) VALUES (:risk_id, :user_id, :close_reason, :note)");
-    }
+    $stmt = $db->prepare("INSERT INTO closures (`risk_id`, `user_id`, `close_reason`, `note`, `closure_date`) VALUES (:risk_id, :user_id, :close_reason, :note, :closure_date)");
+    $stmt->bindParam(":closure_date", $closure_date, PDO::PARAM_STR, 20);
 
     $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
     $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
@@ -10585,7 +10537,7 @@ function close_risk($risk_id, $user_id, $status, $close_reason, $note, $closure_
 
 
     // Update the risk
-      $stmt = $db->prepare("UPDATE risks SET status=:status,last_update=:date,close_id=:close_id WHERE id = :id");
+    $stmt = $db->prepare("UPDATE risks SET status=:status,last_update=:date,close_id=:close_id WHERE id = :id");
 
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->bindParam(":status", $status, PDO::PARAM_STR, 50);
@@ -12960,8 +12912,13 @@ function try_decrypt($value)
     // If the encryption extra is enabled
     elseif (encryption_extra())
     {
-        // Load encryption extra
-        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+        // Only load it once as the realpath function call takes too much time if called a lot in a request
+        // and it's totally unnecessary as the extra will only be loaded once anyway
+        if (!isset($GLOBALS['encryption_extra_loaded'])) {
+            // Load encryption extra
+            require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+            $GLOBALS['encryption_extra_loaded'] = true;
+        }
 
         if(!isset($_SESSION['encrypted_pass']) || !$_SESSION['encrypted_pass']){
             // If there's no session, try to get the password from the init.php
@@ -12973,10 +12930,14 @@ function try_decrypt($value)
             } else {
                 $decrypted_value = "XXXX";
             }
-        }
-        else{
+        } else {
+            // Storing it in the request-level $_GLOBALS allows us to not have to do the same call thousands of times
+            if (!isset($GLOBALS['decoded_encrypted_pass'])) {
+                $GLOBALS['decoded_encrypted_pass'] = base64_decode($_SESSION['encrypted_pass']);
+            }
+
             // Decrypt the value
-            $decrypted_value = decrypt(base64_decode($_SESSION['encrypted_pass']), $value);
+            $decrypted_value = decrypt($GLOBALS['decoded_encrypted_pass'], $value);
         }
     }
     // Otherwise return the value
@@ -13789,23 +13750,23 @@ function get_risks_score_averages($time = "day")
     {
         // By day
         case "day":
-                $groupby_query = " GROUP BY DATE_FORMAT(b.last_update, '%Y-%m-%d'), IF(a.status='Closed', 0, 1)  ";
-                $select_time_query = "  DATE_FORMAT(b.last_update, '%Y-%m-%d') timeAtPoint  ";
+                $groupby_query = " GROUP BY DATE_FORMAT(a.last_update, '%Y-%m-%d'), IF(a.status='Closed', 0, 1)  ";
+                $select_time_query = "  DATE_FORMAT(a.last_update, '%Y-%m-%d') timeAtPoint  ";
                 break;
         // By month
         case "month":
-                $groupby_query = " GROUP BY DATE_FORMAT(b.last_update, '%Y-%m'), IF(a.status='Closed', 0, 1) ";
-                $select_time_query = "  DATE_FORMAT(b.last_update, '%Y-%m') timeAtPoint  ";
+                $groupby_query = " GROUP BY DATE_FORMAT(a.last_update, '%Y-%m'), IF(a.status='Closed', 0, 1) ";
+                $select_time_query = "  DATE_FORMAT(a.last_update, '%Y-%m') timeAtPoint  ";
                 break;
         case "year":
         // By year
-                $groupby_query = " GROUP BY DATE_FORMAT(b.last_update, '%Y'), IF(a.status='Closed', 0, 1) ";
-                $select_time_query = " DATE_FORMAT(b.last_update, '%Y') timeAtPoint  ";
+                $groupby_query = " GROUP BY DATE_FORMAT(a.last_update, '%Y'), IF(a.status='Closed', 0, 1) ";
+                $select_time_query = " DATE_FORMAT(a.last_update, '%Y') timeAtPoint  ";
                 break;
         // By day
         default:
-                $groupby_query = " GROUP BY DATE_FORMAT(b.last_update, '%Y-%m-%d' ), IF(a.status='Closed', 0, 1) ";
-                $select_time_query = " DATE_FORMAT(b.last_update, '%Y-%m-%d') timeAtPoint  ";
+                $groupby_query = " GROUP BY DATE_FORMAT(a.last_update, '%Y-%m-%d' ), IF(a.status='Closed', 0, 1) ";
+                $select_time_query = " DATE_FORMAT(a.last_update, '%Y-%m-%d') timeAtPoint  ";
                 break;
     }
 
@@ -14922,28 +14883,25 @@ function save_role_responsibilities($role_id, $admin, $default, $responsibilitie
 /********************************************
  * FUNCTION: GET RESPONSIBILITES BY ROLE ID *
  ********************************************/
-function get_role($role_id)
-{
+function get_role($role_id) {
     // Open the database connection
     $db = db_open();
     
     $stmt = $db->prepare("SELECT `value`, `name`, `admin`, (`r`.`default` IS NOT NULL) AS 'default' FROM `role` r WHERE `r`.`value`=:role_id");
     $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
     $stmt->execute();
-    
+
     // Get responsibilites
     $role = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
     if ($role) {
         $role = $role[0];
         $role['responsibilities'] = get_responsibilites_by_role_id($role_id);
-        // $role['admin'] = $role['admin'] === '1';
-        $role['default'] = $role['default'] === '1';
     }
 
     // Close the database connection
     db_close($db);
-    
+
     return $role;
 }
 
@@ -16913,15 +16871,18 @@ function prevent_form_double_submit_script($forms = false) {
 
 /*********************************
  * FUNCTION: GET RISK BY SUBJECT *
+ *
+ * The return_multiple parameter allows it to return all of the matches' ids
+ * When it's true the function will return an array even when there's only one match
  *********************************/
-function get_risk_by_subject($subject)
+function get_risk_by_subject($subject, $return_multiple = false)
 {
     // If the encrypted db extra is enabled
     if (encryption_extra())
     {
         // Load the extra
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-        return encryption_get_risk_by_subject($subject);
+        return encryption_get_risk_by_subject($subject, $return_multiple);
     }
     // If the encrypted db extra is not enabled
     else
@@ -16930,21 +16891,20 @@ function get_risk_by_subject($subject)
         $db = db_open();
 
         // Search for a risk with this subject
-        $stmt = $db->prepare("SELECT id FROM risks WHERE subject = :subject;");
+        $stmt = $db->prepare("SELECT `id` FROM `risks` WHERE `subject` = :subject;");
         $stmt->bindParam(":subject", $subject, PDO::PARAM_STR);
         $stmt->execute();
 
         // Fetch the result
-        $result = $stmt->fetchAll();
+        $result = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
         // Close the database connection
         db_close($db);
 
         // If we have at least one result
-        if (count($result) > 0)
-        {
-            // Return the first risk id
-            return $result[0]['id'];
+        if (count($result) > 0) {
+            // Return either all matches or just the first risk id
+            return $return_multiple ? $result : $result[0];
         }
         else return false;
     }
@@ -18783,10 +18743,10 @@ function add_risk_catalog($data)
     $stmt->bindParam(":function", $data["function"], PDO::PARAM_INT);
     $stmt->bindParam(":order", $new_order, PDO::PARAM_INT);
     $stmt->execute();
-    $risk_id = $db->lastInsertId();
+    $risk_catalog_id = $db->lastInsertId();
     // Close the database connection
     db_close($db);
-    return true;
+    return $risk_catalog_id;
 }
 
 /********************************
@@ -18828,7 +18788,7 @@ function update_risk_catalog($data)
     $stmt->bindParam(":description", $data["description"], PDO::PARAM_STR);
     $stmt->bindParam(":function", $data["function"], PDO::PARAM_INT);
     $stmt->execute();
-    $risk_id = $db->lastInsertId();
+
     // Close the database connection
     db_close($db);
     return true;
@@ -19923,7 +19883,7 @@ function get_changes($type, $before, $after, $return_type = 1) {
                     break;
 
                     case 'type':
-                        $types = ['1' => 'SimpleRisk', '2' => 'LDAP', '3' => 'SAML'];
+                        $types = ['simplerisk' => 'SimpleRisk', 'ldap' => 'LDAP', 'saml' => 'SAML'];
                         if ($before[$field]) {
                             $before[$field] = $types[$before[$field]];
                         }
@@ -20931,11 +20891,22 @@ function purify_html($html) {
 
     // To make sure it's only created once even when ran in a loop
     if (!isset($GLOBALS['DEFAULT_HTML_PURIFIER'])) {
-        $GLOBALS['DEFAULT_HTML_PURIFIER'] = new HTMLPurifier();
+        $config = HTMLPurifier_Config::createDefault();
+        // Setting the encoding
+        $config->set('Core.Encoding', 'UTF-8');
+        // Setting the doctype
+        $config->set('HTML.Doctype', 'HTML 4.01 Transitional');
+        // Adding rel="nofollow noreferrer noopener" to the links
+        $config->set('HTML.Nofollow', true);
+        // Forcing links to have target="_blank"
+        $config->set('HTML.TargetBlank', true);
+
+        $GLOBALS['DEFAULT_HTML_PURIFIER'] = new HTMLPurifier($config);
     }
-    
-    // After pruify strips the target attribute from hyperlinks add it back as _blank to force the links to open in a new tab
-    return str_replace('href=', 'target="_blank" href=', $GLOBALS['DEFAULT_HTML_PURIFIER']->purify($html));
+
+    $purified = $GLOBALS['DEFAULT_HTML_PURIFIER']->purify($html);
+
+    return $purified;
 }
 
 // To purify html with template variables
@@ -20943,13 +20914,24 @@ function purify_html_template($html) {
     // To make sure it's only created once even when ran in a loop
     if (!isset($GLOBALS['HTML_TEMPLATE_PURIFIER'])) {
         $config = HTMLPurifier_Config::createDefault();
+
+        // Setting the encoding
+        $config->set('Core.Encoding', 'UTF-8');
+        // Setting the doctype
+        $config->set('HTML.Doctype', 'HTML 4.01 Transitional');
+        // Adding rel="nofollow noreferrer noopener" to the links
+        $config->set('HTML.Nofollow', true);
+        // Forcing links to have target="_blank"
+        $config->set('HTML.TargetBlank', true);
+
         $def = $config->getHTMLDefinition(true);
         // Adding the 'id' data attribute to the allowed attribute list
         $def->addAttribute('span', 'data-id', 'Text');
+
         $GLOBALS['HTML_TEMPLATE_PURIFIER'] = new HTMLPurifier($config);
     }
-    // After pruify strips the target attribute from hyperlinks add it back as _blank to force the links to open in a new tab
-    return str_replace('href=', 'target="_blank" href=', $GLOBALS['HTML_TEMPLATE_PURIFIER']->purify($html));
+
+    return $GLOBALS['HTML_TEMPLATE_PURIFIER']->purify($html);
 }
 
 // Populates the template with the variable's value, replacing the variable definitions with the actual value
@@ -21014,7 +20996,7 @@ function create_selectize_dropdown($type, $selected_values, $additional_info = f
                 <select" . ($required ? " required" : "") . " name='{$name}" . ($multiple ? "[]' multiple='multiple'" : "'") . " id='{$name}'></select>
                 <script>
                     $(document).ready(function(){
-                        $('[name=\"{$name}".($multiple ? "[]" : "")."\"]').selectize({
+                        $('#tab-content-container .tab-data').find($('[name=\"{$name}".($multiple ? "[]" : "")."\"]')).selectize({
                             plugins: ['remove_button'],
                             searchField: " . ($grouped ? "['name', 'class']" : "'name'") . ",
                             valueField: 'value',
@@ -22290,4 +22272,67 @@ function temp_table_cleanup($functionality = 'all') {
     // Close the database connection
     db_close($db);
 }
+
+/**
+ * 
+ * Add a risk grouping entry. Only have to provide the name, the order will be set for the new entry to be the last in the list.
+ * 
+ * @param string $name Name of the new risk grouping entry
+ * @return int ID of the newly added risk grouping entry
+ */
+function add_risk_grouping($name) {
+    $db = db_open();
+    
+    // Get the order for the last place...
+    $stmt = $db->prepare("SELECT MAX(`order`) FROM `risk_grouping`");
+    $stmt->execute();
+    $max_order = $stmt->fetchColumn();
+    $new_order = intval($max_order) + 1;
+    
+    // ...and add it there.
+    $stmt = $db->prepare("INSERT INTO `risk_grouping` (`name`, `order`) VALUES (:name, :order)");
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+    $stmt->bindParam(":order", $new_order, PDO::PARAM_INT);
+    $stmt->execute();
+    $risk_grouping_id = $db->lastInsertId();
+    
+    db_close($db);
+    
+    return (int)$risk_grouping_id;
+};
+
+/**
+ * A helper function that changes the PHP Spreadsheet library's behavior when creating XLSX files
+ * to write formulas as plain strings instead to prevent malicious formulas getting into the files.  
+ */
+function setupPhpSpreadsheetFormulaSuppression() {
+    $stringValueBinder = new \PhpOffice\PhpSpreadsheet\Cell\StringValueBinder();
+    $stringValueBinder->setFormulaConversion(true);
+    \PhpOffice\PhpSpreadsheet\Cell\Cell::setValueBinder($stringValueBinder);
+}
+
+/**
+ * A helper function to make sure OpenSpout writes formulas as plain strings instead to prevent malicious formulas getting into the XLSX files.
+ */
+function getOpenSpoutCellDataWithFormulasSuppressed($cellData) {
+    return isset($cellData[0]) && '=' === $cellData[0] ? new OpenSpout\Common\Entity\Cell\StringCell($cellData, null) : OpenSpout\Common\Entity\Cell::fromValue($cellData);
+}
+
+/**
+ * Checks if array values of the two arrays are identical
+ * 
+ * @param array $a
+ * @param array $b
+ * @return boolean
+ */
+function array_equal($a, $b) {
+    return (
+        is_array($a)
+        && is_array($b)
+        && count($a) == count($b)
+        && array_diff($a, $b) === array_diff($b, $a)
+    );
+}
+
+
 ?>

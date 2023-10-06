@@ -63,6 +63,13 @@ class SP extends \SimpleSAML\Auth\Source
     private bool $disable_scoping;
 
     /**
+     * If pass AuthnContextClassRef back to the IdPs in front of the SP/IdP Proxy.
+     *
+     * @var bool
+     */
+    private bool $passAuthnContextClassRef;
+
+    /**
      * A list of supported protocols.
      *
      * @var string[]
@@ -96,11 +103,20 @@ class SP extends \SimpleSAML\Auth\Source
             Constants::SAML2INT_ENTITYID_MAX_LENGTH,
             sprintf('The entityID cannot be longer than %d characters.', Constants::SAML2INT_ENTITYID_MAX_LENGTH)
         );
+        Assert::notEq(
+            $entityId,
+            'https://myapp.example.org/',
+            'Please set a valid and unique entityID',
+        );
 
         $this->entityId = $entityId;
         $this->idp = $this->metadata->getOptionalString('idp', null);
         $this->discoURL = $this->metadata->getOptionalString('discoURL', null);
         $this->disable_scoping = $this->metadata->getOptionalBoolean('disable_scoping', false);
+        $this->passAuthnContextClassRef = $this->metadata->getOptionalBoolean(
+            'proxymode.passAuthnContextClassRef',
+            false
+        );
     }
 
 
@@ -143,14 +159,9 @@ class SP extends \SimpleSAML\Auth\Source
 
         // add NameIDPolicy
         if ($this->metadata->hasValue('NameIDPolicy')) {
-            $format = $this->metadata->getValue('NameIDPolicy');
-            if (is_array($format)) {
-                $metadata['NameIDFormat'] = Configuration::loadFromArray($format)->getOptionalString(
-                    'Format',
-                    Constants::NAMEID_TRANSIENT
-                );
-            } elseif (is_string($format)) {
-                $metadata['NameIDFormat'] = $format;
+            $format = $this->metadata->getArray('NameIDPolicy');
+            if ($format !== []) {
+                $metadata['NameIDFormat'] = $format['Format'] ?? Constants::NAMEID_TRANSIENT;
             }
         }
 
@@ -470,6 +481,30 @@ class SP extends \SimpleSAML\Auth\Source
                 $comp = $state['saml:AuthnContextComparison'];
             }
             $ar->setRequestedAuthnContext(['AuthnContextClassRef' => $accr, 'Comparison' => $comp]);
+        } elseif (
+            $this->passAuthnContextClassRef
+            && isset($state['saml:RequestedAuthnContext'])
+            && isset($state['saml:RequestedAuthnContext']['AuthnContextClassRef'])
+        ) {
+            if (
+                isset($state['saml:RequestedAuthnContext']['Comparison'])
+                && in_array(
+                    $state['saml:RequestedAuthnContext']['Comparison'],
+                    [
+                        Constants::COMPARISON_EXACT,
+                        Constants::COMPARISON_MINIMUM,
+                        Constants::COMPARISON_MAXIMUM,
+                        Constants::COMPARISON_BETTER,
+                    ],
+                    true
+                )
+            ) {
+                // RequestedAuthnContext has been set by an SP behind the proxy so pass it to the upper IdP
+                $ar->setRequestedAuthnContext([
+                    'AuthnContextClassRef' => $state['saml:RequestedAuthnContext']['AuthnContextClassRef'],
+                    'Comparison' => $state['saml:RequestedAuthnContext']['Comparison']
+                ]);
+            }
         }
 
         if (isset($state['saml:Audience'])) {
@@ -518,21 +553,8 @@ class SP extends \SimpleSAML\Auth\Source
             $ar->setNameId($nid);
         }
 
-        if (isset($state['saml:NameIDPolicy'])) {
-            $policy = null;
-            if (is_string($state['saml:NameIDPolicy'])) {
-                $policy = [
-                    'Format' => $state['saml:NameIDPolicy'],
-                    'AllowCreate' => true,
-                ];
-            } elseif (is_array($state['saml:NameIDPolicy'])) {
-                $policy = $state['saml:NameIDPolicy'];
-            } elseif ($state['saml:NameIDPolicy'] === null) {
-                $policy = ['Format' => Constants::NAMEID_TRANSIENT];
-            }
-            if ($policy !== null) {
-                $ar->setNameIdPolicy($policy);
-            }
+        if (!empty($state['saml:NameIDPolicy'])) {
+            $ar->setNameIdPolicy($state['saml:NameIDPolicy']);
         }
 
         $requesterID = [];
@@ -607,6 +629,7 @@ class SP extends \SimpleSAML\Auth\Source
             $dst = $idpMetadata->getEndpointPrioritizedByBinding(
                 'SingleSignOnService',
                 [
+                    Constants::BINDING_HTTP_ARTIFACT,
                     Constants::BINDING_HTTP_REDIRECT,
                     Constants::BINDING_HTTP_POST,
                 ]
@@ -663,14 +686,10 @@ class SP extends \SimpleSAML\Auth\Source
         $idpMetadata = $this->getIdPMetadata($idp);
 
         $type = $idpMetadata->getString('metadata-set');
-        switch ($type) {
-            case 'saml20-idp-remote':
-                $this->startSSO2($idpMetadata, $state);
-                Assert::true(false); // Should not return
-            default:
-                // Should only be one of the known types
-                Assert::true(false);
-        }
+        Assert::oneOf($type, ['saml20-idp-remote']);
+
+        $this->startSSO2($idpMetadata, $state);
+        Assert::true(false); // Should not return
     }
 
 
@@ -825,10 +844,12 @@ class SP extends \SimpleSAML\Auth\Source
              * starting the authentication process again with a different IdP, or
              * cancel the current SSO attempt.
              */
-            Logger::warning(
-                "Reauthentication after logout is needed. The IdP '${state['saml:sp:IdP']}' is not in the IDPList " .
-                "provided by the Service Provider '${state['core:SP']}'."
-            );
+            Logger::warning(sprintf(
+                "Reauthentication after logout is needed. The IdP '%s' is not in the IDPList "
+                . "provided by the Service Provider '%s'.",
+                $state['saml:sp:IdP'],
+                $state['core:SP']
+            ));
 
             $state['saml:sp:IdPMetadata'] = $this->getIdPMetadata($state['saml:sp:IdP']);
             $state['saml:sp:AuthId'] = $this->authId;
@@ -1018,14 +1039,9 @@ class SP extends \SimpleSAML\Auth\Source
         Assert::keyExists($state, 'saml:logout:Type');
 
         $logoutType = $state['saml:logout:Type'];
-        switch ($logoutType) {
-            case 'saml2':
-                $this->startSLO2($state);
-                return;
-            default:
-                // Should never happen
-                Assert::true(false);
-        }
+        Assert::oneOf($logoutType, ['saml2']);
+
+        $this->startSLO2($state);
     }
 
 

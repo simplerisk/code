@@ -6,8 +6,8 @@ require_once(realpath(__DIR__ . '/../../../../extras/authentication/index.php'))
 // Include the SimpleRisk functions.php file
 require_once(realpath(__DIR__ . '/../../../../includes/functions.php'));
 
-// Include the SimpleSamlPHP _include.php file
-require_once(realpath(__DIR__ . '/../../../../vendor/simplesamlphp/simplesamlphp/www/_include.php'));
+// Include the SimpleSamlPHP functions
+require_once(realpath(__DIR__ . '/../../../../vendor/autoload.php'));
 
 // Get the SimpleRisk Base URL
 $simplerisk_base_url = get_base_url();
@@ -17,9 +17,8 @@ if (!endsWith($simplerisk_base_url, '/')) {
 
 // Get the SAML metadata URL
 $metadata_url = get_setting("SAML_METADATA_URL");
-
-// Get the SAML metadata XML
-$metadata_xml = get_setting("SAML_METADATA_XML");
+write_debug_log("SAML Metadata URL:");
+write_debug_log($metadata_url);
 
 // If a SAML Metadata URL exists and it is a valid URL
 if ($metadata_url !== false && filter_var($metadata_url, FILTER_VALIDATE_URL))
@@ -45,16 +44,16 @@ if ($metadata_url !== false && filter_var($metadata_url, FILTER_VALIDATE_URL))
     // Fetch the SAML metadata from the URL
     // NOTE: SAML metadata changes very rarely.  On a production system
     // this data should be cached as appropriate.
-    $xml_content = fetch_url_content("stream", $http_options, $validate_ssl, $url);
-    // Get the CSV file from GitHub and write it to a temporary file
-    $response = fetch_url_content("stream", $http_options, $validate_ssl, $url);
+    $response = fetch_url_content("curl", $http_options, $validate_ssl, $url);
     $return_code = $response['return_code'];
 
     // If we were unable to connect to the URL
     if ($return_code !== 200)
     {
         write_debug_log("SimpleRisk was unable to connect to " . $url);
-        return false;
+
+        // Set the metadata XML to false
+        $metadata_xml = false;
     }
     // We were able to connect to the URL
     else
@@ -65,30 +64,30 @@ if ($metadata_url !== false && filter_var($metadata_url, FILTER_VALIDATE_URL))
         $metadata_xml = $response['response'];
     }
 }
-
-// If no custom metadata is set
-if(!isset($custom_metadata))
+// If the metadata URL is invalid
+else
 {
-	// Set it
-	global $custom_metadata;
+    // Get the SAML metadata XML configuration
+    $metadata_xml = get_setting("SAML_METADATA_XML");
 }
 
-// Is SAML force authentication enabled
-if (get_setting("SAML_FORCE_AUTHENTICATION") == "1")
-{
- 	// Set ForceAuthn to true
-	$ForceAuthn = true;
-}
-// Set ForceAuthn to "false"
-else $ForceAuthn = false;
+write_debug_log("SAML Metadata:");
+write_debug_log($metadata_xml);
 
-// If we have XML metadata
-if ($metadata_xml !== false)
+// Set the default SP entity ID to null
+$entity_id = null;
+
+// Create a new SimpleSAML XML object
+$xml = new \SimpleSAML\Utils\XML();
+
+// If we have metadata and the XML is valid
+if ($metadata_xml !== false && $xml->isValid($metadata_xml, 'saml-schema-metadata-2.0.xsd'))
 {
+    write_debug_log("SAML metadata XML is valid. Parsing metadata.");
+
     try {
         // Parse the SAML metadata using SimpleSAMLPHP's parser
         // See also modules/metaedit/www/edit.php:34
-        $xml = new \SimpleSAML\Utils\XML();
         $xml->checkSAMLMessage($metadata_xml, 'saml-meta');
         $entities = \SimpleSAML\Metadata\SAMLParser::parseDescriptorsString($metadata_xml);
         $entity = array_pop($entities);
@@ -111,16 +110,35 @@ if ($metadata_xml !== false)
         {
             unset($idp['sign.authnrequest']);
         }
+
+        // If no custom metadata is set
+        if(!isset($custom_metadata))
+        {
+            // Set it
+            global $custom_metadata;
+        }
+
+        $custom_metadata[$entity_id."_".$idp['metadata-set']] = $idp;
     }
     catch(Exception $e)
     {
         error_log($e);
-        $entity_id = null;
     }
 }
-// Otherwise set the entity ID to null
-else $entity_id = null;
+// Otherwise, if the metadata XML is not valid
+else
+{
+    write_debug_log("The SAML Metadata was either not configured, not received or was invalid.");
+}
 
+// Is SAML force authentication enabled
+if (get_setting("SAML_FORCE_AUTHENTICATION") == "1")
+{
+    // Set ForceAuthn to true
+    $ForceAuthn = true;
+}
+// Set ForceAuthn to "false"
+else $ForceAuthn = false;
 
 // Get whether to force SAML authentication
 // Set up the "$config" and "$metadata" variables as used by SimpleSAMLPHP
@@ -156,9 +174,16 @@ $config = [
         // The URL to the discovery service.
         // Can be NULL/unset, in which case a builtin discovery service will be used.
         'discoURL' => null,
+
+        // For logout service use an HTTP redirect
+        'SingleLogoutServiceBinding' => [
+            'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+        ],
+
+        // For logout service use the SimpleRisk logout URL
+        'SingleLogoutServiceLocation' => $simplerisk_base_url . 'logout.php',
     ],
 
 ];
 
-$custom_metadata[$entity_id."_".$idp['metadata-set']] = $idp;
-
+?>

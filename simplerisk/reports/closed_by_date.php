@@ -48,7 +48,7 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 ?>
     <script src="../js/sorttable.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/obsolete.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
 
     <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">

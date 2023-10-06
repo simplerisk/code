@@ -9,9 +9,9 @@ The metadata for your SP will be available from the federation page on your Simp
 SimpleSAMLphp supports generating metadata with the MDUI and MDRPI metadata extensions
 and with entity attributes. See the documentation for those extensions for more details:
 
-* [MDUI extension](./simplesamlphp-metadata-extensions-ui)
-* [MDRPI extension](./simplesamlphp-metadata-extensions-rpi)
-* [Attributes extension](./simplesamlphp-metadata-extensions-attributes)
+* [MDUI extension](../simplesamlphp-metadata-extensions-ui)
+* [MDRPI extension](../simplesamlphp-metadata-extensions-rpi)
+* [Attributes extension](../simplesamlphp-metadata-extensions-attributes)
 
 **Parameters**:
 
@@ -57,11 +57,8 @@ All these parameters override the equivalent option from the configuration.
 `saml:NameIDPolicy`
 :   The format of the NameID we request from the IdP: an array in the form of
     `[ 'Format' => the format, 'AllowCreate' => true or false ]`.
-    Set to `false` instead of an array to omit sending any specific NameIDPolicy
+    Set to an empty array `[]` to omit sending any specific NameIDPolicy element
     in the AuthnRequest.
-
-:   For compatibility purposes, `null` is equivalent to transient and a format
-    can be defined as a string instead of an array. These variants are deprecated.
 
 `saml:Audience`
 :   Add a Conditions element to the SAML AuthnRequest containing an
@@ -138,8 +135,9 @@ The following attributes are available:
 : The attributes should still be present in `attributes`.
 
 `AuthnContextClassRef`
-:   The SP can request authentication with a specific authentication context class.
+:   The SP can request authentication with one or more specific authentication context classses.
     One example of usage could be if the IdP supports both username/password authentication as well as software-PKI.
+    Set this to a string for one class identifier or an array of requested class identifiers.
 
 `AuthnContextComparison`
 :   The Comparison attribute of the AuthnContext that will be sent in the login request.
@@ -213,10 +211,10 @@ The following attributes are available:
 `encryption.blacklisted-algorithms`
 :   Blacklisted encryption algorithms. This is an array containing the algorithm identifiers.
 
-:   Note that this option can be set for each IdP in the [IdP-remote metadata](./simplesamlphp-reference-idp-remote).
+:   Note that this option can be set for each IdP in the [IdP-remote metadata](../simplesamlphp-reference-idp-remote).
 
 `entityID`
-:   The entity ID this SP should use.
+:   The entity ID this SP should use. (Must be set or an error will be generated.)
 
 :   The entity ID must be a URI, that is unlikely to change for technical or political
     reasons. We recommend it to be a domain name, like above, if your organization's main
@@ -261,16 +259,23 @@ The following attributes are available:
 :   Whether NameIDs sent from this SP should be encrypted. The default
     value is `false`.
 
-:   Note that this option can be set for each IdP in the [IdP-remote metadata](./simplesamlphp-reference-idp-remote).
+:   Note that this option can be set for each IdP in the [IdP-remote metadata](../simplesamlphp-reference-idp-remote).
+
+`NameIDFormat`
+:   An array of the format(s) listed in the SP metadata that this SP will accept. Example:
+
+        'NameIDFormat' => [
+            \SAML2\Constants::NAMEID_PERSISTENT,
+            \SAML2\Constants::NAMEID_TRANSIENT,
+        ],
 
 `NameIDPolicy`
-:   The format of the NameID we request from the idp: an array in the form of
+:   The format of the NameID we request from the IdP in the AuthnRequest:
+    an array in the form of
     `[ 'Format' => the format, 'AllowCreate' => true or false ]`.
-    Set to `false` instead of an array to omit sending any specific NameIDPolicy
-    in the AuthnRequest.
-
-:   For compatibility purposes, `null` is equivalent to transient and a format
-    can be defined as a string instead of an array. These variants are deprecated.
+    Set to an empty array `[]` to omit sending any specific NameIDPolicy element
+    in the AuthnRequest. When the entire option or either array key is unset,
+    the defaults are transient and true respectively.
 
 `OrganizationName`, `OrganizationDisplayName`, `OrganizationURL`
 :   The name and URL of the organization responsible for this IdP.
@@ -318,7 +323,7 @@ The following attributes are available:
 
 `RegistrationInfo`
 :   Allows to specify information about the registrar of this SP. Please refer to the
-    [MDRPI extension](./simplesamlphp-metadata-extensions-rpi) document for further information.
+    [MDRPI extension](../simplesamlphp-metadata-extensions-rpi) document for further information.
 
 `RelayState`
 :   The page the user should be redirected to after an IdP initiated SSO.

@@ -978,6 +978,14 @@ function dynamicriskForm()
                             $color = get_risk_color_from_levels($row[$column], $risk_levels);
                             $data_row[] = "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($row[$column]) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div>";
                             break;
+                        case 'comments':
+                        case 'risk_assessment':
+                        case 'additional_notes':
+                        case 'current_solution':
+                        case 'security_recommendations':
+                        case 'security_requirements':
+                            $data_row[] = $escaper->purifyHtml($row[$column]);
+                            break;
                     }
                 } else if(customization_extra()) {
                     // Include the extra
@@ -1001,16 +1009,9 @@ function dynamicriskForm()
             $datas[] = $data_row;
         }
         if(($pos = stripos($orderColumnName, "custom_field_")) !== false){
+            // For identical custom fields we're sorting on the id, so the results' order is not changing
             usort($datas, function($a, $b) use ($orderDir, $orderColumnName){
-                // For identical custom fields we're sorting on the id, so the results' order is not changing
-                if ($a['risk'][$orderColumnName] === $b['risk'][$orderColumnName]) {
-                    return (int)$a['risk']['id'] - (int)$b['risk']['id'];
-                }
-                if($orderDir == "asc") {
-                    return strcmp($a['risk'][$orderColumnName], $b['risk'][$orderColumnName]);
-                } else {
-                    return strcmp($b['risk'][$orderColumnName], $a['risk'][$orderColumnName]);
-                }
+                return $orderDir == "asc" ? [$a['risk'][$orderColumnName], (int)$a['risk']['id']] <=> [$b['risk'][$orderColumnName], (int)$b['risk']['id']] : [$b['risk'][$orderColumnName], (int)$b['risk']['id']] <=> [$a['risk'][$orderColumnName], (int)$a['risk']['id']];
             });
         }
 
@@ -1133,10 +1134,20 @@ function dynamicriskUniqueColumnDataAPI()
                 case "mitigation_owner":
                 case "mitigation_team":
                 case "mitigation_controls":
-                case "risk_mapping":
                 case "threat_mapping":
+                case "reviewer":
                     $uniqueColumnArr = get_name_value_array_from_text_array($uniqueColumnArr, ',', $delimiter);
                 break;
+                
+                /*Move over fields here that can't have text separated by a comma(,).
+				Don't forget to also update the query to use '|' as the separator instead of ','*/
+                case "risk_mapping_risk_grouping":
+                case "risk_mapping_risk":
+                case "risk_mapping_function":
+                case "risk_mapping":
+                    $uniqueColumnArr = get_name_value_array_from_text_array($uniqueColumnArr, '|', $delimiter);
+                break;
+
                 case "affected_assets":
                     $affectedAssetsUniqueColumnArr = get_name_value_array_from_text_array($uniqueColumnArr, ',', $delimiter, true);
                     // Set asset data class
@@ -4651,7 +4662,7 @@ function getDefineTestsResponse()
                             $html .= "</tr>\n";
                             $html .= "<tr>\n";
                                 $html .= "<td align='right'><strong>". $escaper->escapeHtml($lang['Description']) ."</strong>: </td>\n";
-                                $html .= "<td>". nl2br($escaper->escapeHtml($control['description'])) ."</td>\n";
+                                $html .= "<td>". $escaper->purifyHtml($control['description']) ."</td>\n";
                             $html .= "</tr>\n";
                             $mapped_frameworks = get_mapping_control_frameworks($control['id']);
                             if(count($mapped_frameworks) > 0){
@@ -5127,7 +5138,7 @@ function getActiveTestAuditsResponse()
                 "<div>".(int)$test['test_frequency']. " " .$escaper->escapeHtml($test['test_frequency'] > 1 ? $lang['days'] : $lang['Day'])."</div>",
                 "<div>".$escaper->escapeHtml($test['tester_name'])."</div>",
                 "<div>".$escaper->escapeHtml(get_stakeholder_names($test['additional_stakeholders'], 2))."</div>",                
-                "<div>".$escaper->escapeHtml($test['objective'])."</div>",
+                "<div>".$escaper->purifyHtml($test['objective'])."</div>",
                 "<div>".$escaper->escapeHtml($test['control_name'])."</div>",
                 "<div>".$escaper->escapeHtml($test['framework_name'])."</div>",
                 "<div>".$tags_view."</div>",
@@ -5690,7 +5701,7 @@ function getTabularDocumentsResponse()
                                 }
                                 break;
                             case "status":
-                                if( stripos($document['status'], $value) === false ){
+                                if( stripos(get_name_by_value('document_status', $document['status']), $value) === false ){
                                     continue 3;
                                 }
                                 break;
@@ -5798,11 +5809,11 @@ function get_mitigation_control_info(){
             </tr>
             <tr>
             <td align="right"><strong>' . $escaper->escapeHtml($lang['Description']) . '</strong>: </td>
-            <td colspan="5">' . nl2br($escaper->escapeHtml( $description )) . '</td>
+            <td colspan="5">' . $escaper->purifyHtml( $description ) . '</td>
             </tr>
             <tr>
             <td align="right"><strong>' . $escaper->escapeHtml($lang['SupplementalGuidance']) . '</strong>: </td>
-            <td colspan="5">' . nl2br($escaper->escapeHtml( $supplemental_guidance )) . '</td>
+            <td colspan="5">' . $escaper->purifyHtml( $supplemental_guidance ) . '</td>
             </tr>
             <tr>
             <td align="right"><strong>' . $escaper->escapeHtml($lang['MappedControlFrameworks']) . '</strong>: </td>
@@ -6086,13 +6097,14 @@ function getPlanMitigationsDatatableResponse()
                         $filter_data[$column] = try_decrypt($risk["project"]);
                         $data_row[] = $escaper->escapeHtml($filter_data[$column]);
                         break;
-                    case "risk_assessment":
-                        $filter_data[$column] = try_decrypt($risk["risk_assessment"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "additional_notes":
-                        $filter_data[$column] = try_decrypt($risk["additional_notes"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
+                    case 'comments':
+                    case 'risk_assessment':
+                    case 'additional_notes':
+                    case 'current_solution':
+                    case 'security_recommendations':
+                    case 'security_requirements':
+                        $filter_data[$column] = try_decrypt($risk[$column]);
+                        $data_row[] = $escaper->purifyHtml($filter_data[$column]);
                         break;
                     case "affected_assets":
                         // Do a lookup for the list of affected assets
@@ -6145,18 +6157,6 @@ function getPlanMitigationsDatatableResponse()
                         $filter_data[$column] = format_datetime($risk['mitigation_date'], "", "H:i");
                         $data_row[] = $escaper->escapeHtml($filter_data[$column]);
                         break;
-                    case "current_solution":
-                        $filter_data[$column] = try_decrypt($risk["current_solution"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "security_recommendations":
-                        $filter_data[$column] = try_decrypt($risk["security_recommendations"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "security_requirements":
-                        $filter_data[$column] = try_decrypt($risk["security_requirements"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
                     case "review_date":
                         $filter_data[$column] = format_datetime($risk['review_date'], "", "H:i");
                         $data_row[] = $escaper->escapeHtml($filter_data[$column]);
@@ -6168,10 +6168,6 @@ function getPlanMitigationsDatatableResponse()
                     case "next_review_date":
                         $data_row[] = $escaper->escapeHtml($next_review);
                         $filter_data[$column] = $next_review;
-                        break;
-                    case "comments":
-                        $filter_data[$column] = try_decrypt($risk["comments"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
                         break;
                     case "risk_tags":
                         $tags = "";
@@ -6520,13 +6516,14 @@ function getManagementReviewsDatatableResponse()
                         $filter_data[$column] = try_decrypt($risk["project"]);
                         $data_row[] = $escaper->escapeHtml($filter_data[$column]);
                         break;
-                    case "risk_assessment":
-                        $filter_data[$column] = try_decrypt($risk["risk_assessment"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "additional_notes":
-                        $filter_data[$column] = try_decrypt($risk["additional_notes"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
+                    case 'comments':
+                    case 'risk_assessment':
+                    case 'additional_notes':
+                    case 'current_solution':
+                    case 'security_recommendations':
+                    case 'security_requirements':
+                        $filter_data[$column] = try_decrypt($risk[$column]);
+                        $data_row[] = $escaper->purifyHtml($filter_data[$column]);
                         break;
                     case "affected_assets":
                         // Do a lookup for the list of affected assets
@@ -6579,18 +6576,6 @@ function getManagementReviewsDatatableResponse()
                         $filter_data[$column] = format_datetime($risk['mitigation_date'], "", "H:i");
                         $data_row[] = $escaper->escapeHtml($filter_data[$column]);
                         break;
-                    case "current_solution":
-                        $filter_data[$column] = try_decrypt($risk["current_solution"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "security_recommendations":
-                        $filter_data[$column] = try_decrypt($risk["security_recommendations"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "security_requirements":
-                        $filter_data[$column] = try_decrypt($risk["security_requirements"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
                     case "review_date":
                         $filter_data[$column] = format_datetime($risk['review_date'], "", "H:i");
                         $data_row[] = $escaper->escapeHtml($filter_data[$column]);
@@ -6602,10 +6587,6 @@ function getManagementReviewsDatatableResponse()
                     case "next_review_date":
                         $data_row[] = $escaper->escapeHtml($next_review);
                         $filter_data[$column] = $next_review;
-                        break;
-                    case "comments":
-                        $filter_data[$column] = try_decrypt($risk["comments"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
                         break;
                     case "risk_tags":
                         $tags = "";
@@ -6989,13 +6970,14 @@ function getReviewRisksDatatableResponse()
                         $filter_data[$column] = try_decrypt($risk["project"]);
                         $data_row[] = $escaper->escapeHtml($filter_data[$column]);
                         break;
-                    case "risk_assessment":
-                        $filter_data[$column] = try_decrypt($risk["risk_assessment"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "additional_notes":
-                        $filter_data[$column] = try_decrypt($risk["additional_notes"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
+                    case 'comments':
+                    case 'risk_assessment':
+                    case 'additional_notes':
+                    case 'current_solution':
+                    case 'security_recommendations':
+                    case 'security_requirements':
+                        $filter_data[$column] = try_decrypt($risk[$column]);
+                        $data_row[] = $escaper->purifyHtml($filter_data[$column]);
                         break;
                     case "affected_assets":
                         // Do a lookup for the list of affected assets
@@ -7048,18 +7030,6 @@ function getReviewRisksDatatableResponse()
                         $filter_data[$column] = format_datetime($risk['mitigation_date'], "", "H:i");
                         $data_row[] = $escaper->escapeHtml($filter_data[$column]);
                         break;
-                    case "current_solution":
-                        $filter_data[$column] = try_decrypt($risk["current_solution"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "security_recommendations":
-                        $filter_data[$column] = try_decrypt($risk["security_recommendations"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "security_requirements":
-                        $filter_data[$column] = try_decrypt($risk["security_requirements"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
                     case "review_date":
                         $filter_data[$column] = format_datetime($risk['review_date'], "", "H:i");
                         $data_row[] = $escaper->escapeHtml($filter_data[$column]);
@@ -7071,10 +7041,6 @@ function getReviewRisksDatatableResponse()
                     case "next_review_date":
                         $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_id($risk_id)) ." class=\"text-center open-review\" >".$next_review_html."</div>";
                         $filter_data[$column] = $next_review;
-                        break;
-                    case "comments":
-                        $filter_data[$column] = try_decrypt($risk["comments"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
                         break;
                     case "risk_tags":
                         $tags = "";
@@ -10027,10 +9993,11 @@ function addRiskCatalogAPI()
             "description" => isset($_POST['description']) ? $_POST['description'] : "",
             "function" => isset($_POST['risk_function']) ? $_POST['risk_function'] : 0,
         );
-        if (!$data["number"])
-        {
+        if (!$data["name"]) {
+            set_alert(true, "bad", "The risk event cannot be empty.");
+        } elseif (!$data["number"]) {
             // Display an alert
-            set_alert(true, "bad", "The risk name cannot be empty.");
+            set_alert(true, "bad", "The risk number cannot be empty.");
         } else {
             add_risk_catalog($data);
             // Display an alert
@@ -10093,10 +10060,14 @@ function updateRiskCatalogAPI()
             "description" => isset($_POST['description']) ? $_POST['description'] : "",
             "function" => isset($_POST['risk_function']) ? $_POST['risk_function'] : 0,
         );
-        if (!$data["id"])
-        {
+        if (!$data["id"]) {
             // Display an alert
             set_alert(true, "bad", "The data ID was not a valid value.  Please try again.");
+        } elseif (!$data["name"]) {
+            set_alert(true, "bad", "The risk event cannot be empty.");
+        } elseif (!$data["number"]) {
+            // Display an alert
+            set_alert(true, "bad", "The risk number cannot be empty.");
         } else {
             update_risk_catalog($data);
             // Display an alert
@@ -11493,8 +11464,8 @@ function assets_for_view_API() {
         exit;
     } else {
         global $lang;
-        set_alert(true, "bad", $lang['NoPermissionForAsset']);
-        json_response(400, get_alert(true), NULL);
+        //set_alert(true, "bad", $lang['NoPermissionForAsset']);
+        json_response(400, $lang['NoPermissionForAsset'], NULL);
     }
 }
 
@@ -11616,6 +11587,9 @@ function assets_view_action_API() {
                                 case "location":
                                     $data[$field_name] = array_map('intval', explode(',', (string)$value));
                                     break;
+                                case "details":
+                                    $data[$field_name] = $escaper->purifyHtml($value);
+                                    break;
                                 case 'tags':
                                     if ($value) {
                                         $tags = [];
@@ -11624,6 +11598,16 @@ function assets_view_action_API() {
                                             $tags []= $tag;
                                         }
                                         $data[$field_name] = $tags;
+                                    }
+                                    break;
+                                case 'associated_risks':
+                                    $data[$field_name] = [];
+                                    // If the data returned isn't empty
+                                    if (!empty($value) && $value !== '[]') {
+                                        // Decode the json list, iterate through it and gather the ids
+                                        foreach (json_decode($value, true) as $associated_risk) {
+                                            $data[$field_name] []= (int)$associated_risk['value'];
+                                        }
                                     }
                                     break;
                                 case "mapped_controls":
@@ -11853,56 +11837,80 @@ function api_complianceforgescf_disable()
  **********************************************/
 function create_asset_api(){
     global $escaper, $lang;
-    $name       = isset($_POST['asset_name']) ? $_POST['asset_name'] : "";
-    $ip         = isset($_POST['ip']) ? $_POST['ip'] : "";
-    $value      = isset($_POST['value']) ? $_POST['value'] : "";
-    $location   = empty($_POST['location']) ? [] : $_POST['location'];
-    $teams      = empty($_POST['team']) ? [] : $_POST['team'];
-    $details    = isset($_POST['details']) ? $_POST['details'] : "";
-    $tags       = empty($_POST['tags']) ? [] : $_POST['tags'];
-    foreach($tags as $tag){
-        if (strlen($tag) > 255) {
-            $message = $escaper->escapeHtml($lang['MaxTagLengthWarning']);
-            return json_response(200, "createaseet", $message);
+    if (check_permission("asset")){
+        $name               = isset($_POST['asset_name']) ? $_POST['asset_name'] : NULL;
+        $ip                 = isset($_POST['ip']) ? $_POST['ip'] : "";
+        $value              = isset($_POST['value']) ? $_POST['value'] : "";
+        $location           = empty($_POST['location']) ? [] : $_POST['location'];
+        $teams              = empty($_POST['team']) ? [] : $_POST['team'];
+        $details            = isset($_POST['details']) ? $_POST['details'] : "";
+        $tags               = empty($_POST['tags']) ? [] : $_POST['tags'];
+        $verified           = $_POST['verified'] ? boolval($_POST['verified']) : 0;
+        $control_maturity   = empty($_POST['control_maturity']) ? [] : $_POST['control_maturity'];
+        $control_id         = empty($_POST['control_id']) ? [] : $_POST['control_id'];
+        $associated_risks   = empty($_POST['associated_risks']) ? [] : $_POST['associated_risks'];
+
+        $mapped_controls = array();
+        foreach($control_maturity as $index=>$maturity){
+            if($control_id[$index]) $mapped_controls[] = array($maturity, $control_id[$index]);
         }
-    }
 
-    if($name)
-    {
-        // Add the asset
-        $success = add_asset($ip, $name, $value, $location, $teams, $details, $tags, true);
+        foreach($tags as $tag){
+            if (strlen($tag) > 255) {
+                $message = $escaper->escapeHtml($lang['MaxTagLengthWarning']);
+                return json_response(400, $message, NULL);
+            }
+        }
 
-        // If the asset add was successful
-        if ($success)
+        if(!is_null($name) && $name != "")
         {
-            // Display an alert
-            $message = $escaper->escapeHtml($lang['AssetWasAddedSuccessfully']);
+            // Add the asset
+            $success = add_asset($ip, $name, $value, $location, $teams, $details, $tags, $verified, $mapped_controls, $associated_risks);
+
+            // If the asset add was successful
+            if ($success)
+            {
+                // Display an alert
+                $message = $escaper->escapeHtml($lang['AssetWasAddedSuccessfully']);
+                return json_response(200, $message, NULL);
+            }
+            else
+            {
+                $message = $escaper->escapeHtml($lang['ThereWasAProblemAddingTheAsset']);
+                return json_response(400, $message, NULL);
+            }
         }
         else
         {
-            $message = $escaper->escapeHtml($lang['ThereWasAProblemAddingTheAsset']);
+            // Display an alert
+            $message = $escaper->escapeHtml($lang['AssetNameIsRequired']);
+            return json_response(400, $message, NULL);
         }
+    } else {
+        $message = $escaper->escapeHtml($lang['NoPermissionForAsset']);
+        return json_response(400, $message, NULL);
     }
-    else
-    {
-        // Display an alert
-        $message = $escaper->escapeHtml($lang['AssetNameIsRequired']);
-    }
-   
-    return json_response(200, "createaseet", $message);
 }
 /**********************************************
  * FUNCTION: DELETE A ASSET FROM EXTERNAL APP *
  **********************************************/
 function delete_asset_api(){
     global $escaper, $lang;
-    $id = isset($_POST['id']) ? (int)$_POST['id'] : "";
-    if($id) {
-        delete_asset($id);
-        $message = $escaper->escapeHtml($lang['AssetWasDeletedSuccessfully']);
+    if (check_permission("asset")){
+        $id = isset($_POST['id']) ? (int)$_POST['id'] : NULL;
+        if(!is_null($id) && $id != "") {
+            delete_asset($id);
+            $message = $escaper->escapeHtml($lang['AssetWasDeletedSuccessfully']);
+            return json_response(200, $message, NULL);
+        } else {
+            $message = $escaper->escapeHtml($lang['ThereWasAProblemDeletingTheAsset']);
+            return json_response(400, $message, NULL);
+        }
+        return json_response(200, "deleteaseet", $message);
     } else {
-        $message = $escaper->escapeHtml($lang['ThereWasAProblemDeletingTheAsset']);
+        $message = $escaper->escapeHtml($lang['NoPermissionForAsset']);
+        return json_response(400, $message, NULL);
     }
-    return json_response(200, "deleteaseet", $message);
 }
+
 ?>

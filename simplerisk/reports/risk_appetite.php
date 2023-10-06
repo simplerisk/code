@@ -57,7 +57,7 @@ $risk_appetite = get_setting("risk_appetite", 0);
 
 	display_bootstrap_javascript();
 ?>
-        <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
 
         <title>SimpleRisk: Enterprise Risk Management Simplified</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -66,7 +66,7 @@ $risk_appetite = get_setting("risk_appetite", 0);
         <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/prioritize.css?<?php echo current_version("app"); ?>">
-        <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">

@@ -152,7 +152,7 @@ class SAML2
         /** @var \SimpleSAML\Module\saml\Error $error */
         $error = \SimpleSAML\Module\saml\Error::fromException($exception);
 
-        Logger::warning("Returning error to SP with entity ID '" . var_export($spEntityId, true) . "'.");
+        Logger::warning(sprintf("Returning error to SP with entity ID %s.", var_export($spEntityId, true)));
         $exception->log(Logger::WARNING);
 
         $ar = self::buildResponse($idpMetadata, $spMetadata, $consumerURL);
@@ -762,11 +762,14 @@ class SAML2
         }
         $config = $handler->getMetaDataConfig($entityid, 'saml20-idp-hosted');
 
+        $host = $config->getOptionalString('host', null);
+        $host = $host === '__DEFAULT__' ? null : $host;
+
         // configure endpoints
-        $ssob = $handler->getGenerated('SingleSignOnServiceBinding', 'saml20-idp-hosted');
-        $slob = $handler->getGenerated('SingleLogoutServiceBinding', 'saml20-idp-hosted');
-        $ssol = $handler->getGenerated('SingleSignOnService', 'saml20-idp-hosted');
-        $slol = $handler->getGenerated('SingleLogoutService', 'saml20-idp-hosted');
+        $ssob = $handler->getGenerated('SingleSignOnServiceBinding', 'saml20-idp-hosted', $host);
+        $slob = $handler->getGenerated('SingleLogoutServiceBinding', 'saml20-idp-hosted', $host);
+        $ssol = $handler->getGenerated('SingleSignOnService', 'saml20-idp-hosted', $host);
+        $slol = $handler->getGenerated('SingleLogoutService', 'saml20-idp-hosted', $host);
 
         $sso = [];
         if (is_array($ssob)) {
@@ -974,16 +977,7 @@ class SAML2
         Configuration $spMetadata,
         array $attributes
     ): array {
-        $base64Attributes = $spMetadata->getOptionalBoolean('base64attributes', null);
-        if ($base64Attributes === null) {
-            $base64Attributes = $idpMetadata->getOptionalBoolean('base64attributes', false);
-        }
-
-        if ($base64Attributes) {
-            $defaultEncoding = 'base64';
-        } else {
-            $defaultEncoding = 'string';
-        }
+        $defaultEncoding = 'string';
 
         $srcEncodings = $idpMetadata->getOptionalArray('attributeencodings', []);
         $dstEncodings = $spMetadata->getOptionalArray('attributeencodings', []);
@@ -1130,8 +1124,12 @@ class SAML2
         }
         $a->setNotOnOrAfter($now + $assertionLifetime);
 
+        $passAuthnContextClassRef = $config->getOptionalBoolean('proxymode.passAuthnContextClassRef', false);
         if (isset($state['saml:AuthnContextClassRef'])) {
             $a->setAuthnContextClassRef($state['saml:AuthnContextClassRef']);
+        } elseif ($passAuthnContextClassRef && isset($state['saml:sp:AuthnContext'])) {
+            // AuthnContext has been set by the upper IdP in front of the proxy, pass it back to the SP behind the proxy
+            $a->setAuthnContextClassRef($state['saml:sp:AuthnContext']);
         } elseif ($httpUtils->isHTTPS()) {
             $a->setAuthnContextClassRef(Constants::AC_PASSWORD_PROTECTED_TRANSPORT);
         } else {

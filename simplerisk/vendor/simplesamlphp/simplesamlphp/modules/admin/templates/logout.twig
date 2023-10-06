@@ -1,0 +1,10 @@
+{% set pagetitle = 'Logged out'|trans %}
+{% extends "base.twig" %}
+
+{% block content %}
+    <h1>{{ 'Logged out'|trans }}</h1>
+    <br>
+    <h3>{% trans %}You have been logged out.{% endtrans %}</h3>
+    <br>
+    <p><a href="./">{{ 'Go back to SimpleSAMLphp installation page'|trans }}</a></p>
+{% endblock %}

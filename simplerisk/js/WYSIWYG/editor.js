@@ -62,3 +62,9 @@ function init_minimun_editor(selector) {
         }
     });
 }
+// Bootstrap modal integration for Bootstrap 4 or below
+$(document).on('focusin', function(e) {
+  if ($(e.target).closest(".tox-tinymce, .tox-tinymce-aux, .moxman-window, .tam-assetmanager-root").length) {
+    e.stopImmediatePropagation();
+  }
+});

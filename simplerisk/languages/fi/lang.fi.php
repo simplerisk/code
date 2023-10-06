@@ -2336,6 +2336,15 @@ $lang = array(
     'MultipleChoice_SingleSelect' => 'Monivalinta (yksittäinen valinta)',
     'MultipleChoice_MultiSelect' => 'Monivalinta (monivalinta)',
     'APIDocumentation' => 'API-dokumentaatio',
+    'ReviewedBy' => 'Arvostellut',
+    'LimitedTestmailMessage' => 'Testasähköposti on lähetetty äskettäin. Sinun on odotettava 5 minuuttia ennen kuin voidaan lähettää uusi testisähköposti.',
+    'AutomaticallySendAssessmentResults' => 'Lähetä arviointitulokset automaattisesti arvioinnin yhteyshenkilöille suoritettuaan',
+    'ResendAssessment' => 'Kyselylomakkeen lähettämisen jälkeen Lähetä arvio uudelleen {$day} päivän kuluttua',
+    'NotifyNotCompleteAssessment' => 'Ilmoita, jos sitä ei ole täytetty {$day} päivän välein.',
+    'QuestionnaireNotCompleteEmailTemplate' => 'Kyselylomaketta ei ole täytetty sähköpostimalli',
+    'RiskAssessmentQuestionnaireNotCompleted' => 'Riskinarviointikyselylomaketta ei ole täytetty',
+    'SaveAndSend' => 'Tallenna & Lähetä',
+    'AssociatedRisks' => 'Liittyvät riskit',
 
     '' => '',
 );

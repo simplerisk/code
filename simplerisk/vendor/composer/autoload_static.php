@@ -7,8 +7,8 @@ namespace Composer\Autoload;
 class ComposerStaticInit4c44aac42d15ffa930addcf2094f8cab
 {
     public static $files = array (
-        'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
         '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
+        'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
         '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
         '0d59ee240a4cd96ddbb4ff164fccea4d' => __DIR__ . '/..' . '/symfony/polyfill-php73/bootstrap.php',
@@ -27,7 +27,6 @@ class ComposerStaticInit4c44aac42d15ffa930addcf2094f8cab
         '2c102faa651ef8ea5874edb585946bce' => __DIR__ . '/..' . '/swiftmailer/swiftmailer/lib/swift_required.php',
         '39f8f809a191c7af11cb6d6aa45edb06' => __DIR__ . '/..' . '/simplerisk/csrf-magic/csrf-magic.php',
         '334983c1b64a31de3c73827b7a6a1e88' => __DIR__ . '/..' . '/simplesamlphp/simplesamlphp/src/_autoload_modules.php',
-        '0ccdf99b8f62f02c52cba55802e0c2e7' => __DIR__ . '/..' . '/zircote/swagger-php/src/functions.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -86,6 +85,7 @@ class ComposerStaticInit4c44aac42d15ffa930addcf2094f8cab
             'SimpleSAML\\Module\\cron\\' => 23,
             'SimpleSAML\\Module\\core\\' => 23,
             'SimpleSAML\\Module\\admin\\' => 24,
+            'SimpleSAML\\Composer\\' => 20,
             'SimpleSAML\\Assert\\' => 18,
             'SimpleSAML\\' => 11,
             'Seld\\Signal\\' => 12,
@@ -115,6 +115,7 @@ class ComposerStaticInit4c44aac42d15ffa930addcf2094f8cab
         'O' => 
         array (
             'Opis\\Closure\\' => 13,
+            'OpenSpout\\' => 10,
             'OpenApi\\' => 8,
             'OomphInc\\ComposerInstallersExtender\\' => 36,
         ),
@@ -341,6 +342,10 @@ class ComposerStaticInit4c44aac42d15ffa930addcf2094f8cab
         array (
             0 => __DIR__ . '/..' . '/simplesamlphp/simplesamlphp/modules/admin/src',
         ),
+        'SimpleSAML\\Composer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/simplesamlphp/composer-module-installer/src',
+        ),
         'SimpleSAML\\Assert\\' => 
         array (
             0 => __DIR__ . '/..' . '/simplesamlphp/assert/src',
@@ -421,6 +426,10 @@ class ComposerStaticInit4c44aac42d15ffa930addcf2094f8cab
         'Opis\\Closure\\' => 
         array (
             0 => __DIR__ . '/..' . '/opis/closure/src',
+        ),
+        'OpenSpout\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/openspout/openspout/src',
         ),
         'OpenApi\\' => 
         array (
@@ -537,6 +546,7 @@ class ComposerStaticInit4c44aac42d15ffa930addcf2094f8cab
 
     public static $classMap = array (
         'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
+        'CURLStringFile' => __DIR__ . '/..' . '/symfony/polyfill-php81/Resources/stubs/CURLStringFile.php',
         'Collator' => __DIR__ . '/..' . '/symfony/intl/Resources/stubs/Collator.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'Epi' => __DIR__ . '/..' . '/raid-software/epiphany/src/Epi.php',

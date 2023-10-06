@@ -2336,6 +2336,15 @@ $lang = array(
     'MultipleChoice_SingleSelect' => 'Множественный выбор (одиночный выбор)',
     'MultipleChoice_MultiSelect' => 'Множественный выбор (Multi-Select)',
     'APIDocumentation' => 'Документация API',
+    'ReviewedBy' => 'Рассмотрено',
+    'LimitedTestmailMessage' => 'Недавно было отправлено тестовое письмо. Вам придется подождать 5 минут, прежде чем будет отправлено еще одно тестовое письмо.',
+    'AutomaticallySendAssessmentResults' => 'Автоматически отправлять результаты оценки контактам оценки после завершения',
+    'ResendAssessment' => 'После отправки анкеты Повторно отправить оценку через {$day} дней',
+    'NotifyNotCompleteAssessment' => 'Уведомлять, если не завершено, каждые {$day}  дней.',
+    'QuestionnaireNotCompleteEmailTemplate' => 'Анкета не заполнена. Шаблон электронного письма',
+    'RiskAssessmentQuestionnaireNotCompleted' => 'Анкета по оценке рисков не заполнена',
+    'SaveAndSend' => 'Сохранить и отправить',
+    'AssociatedRisks' => 'Сопутствующие риски',
 
     '' => '',
 );

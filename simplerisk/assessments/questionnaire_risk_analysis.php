@@ -72,7 +72,7 @@ if(process_questionnaire_pending_risks()){
 
 	display_bootstrap_javascript();
 ?>
-    <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/simplerisk/pages/assessment.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/simplerisk/common.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/simplerisk/cve_lookup.js?<?php echo current_version("app"); ?>"></script>
@@ -83,7 +83,7 @@ if(process_questionnaire_pending_risks()){
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
 
     <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">

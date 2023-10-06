@@ -229,7 +229,7 @@ function add_asset_by_name_with_forced_verification($name, $verified = false) {
 /***********************
  * FUNCTION: ADD ASSET *
  ***********************/
-function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "", $tags = "", $verified = false, $mapped_controls=[], $imported = false)
+function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "", $tags = "", $verified = false, $mapped_controls=[], $associated_risks = [], $imported = false)
 {
     global $lang;
 
@@ -293,8 +293,16 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
             }
         }
 
-        if ($asset_id) {
-            updateTagsOfType($asset_id, 'asset', $tags);
+        updateTagsOfType($asset_id, 'asset', $tags);
+        update_asset_risks_associations($asset_id, $associated_risks);
+
+        if (notification_extra()) {
+            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+
+            // Send the notification about the updated risks
+            foreach ($associated_risks as $risk_id) {
+                notify_risk_update($risk_id);
+            }
         }
 
         // If the encryption extra is enabled, updates order_by_name
@@ -316,6 +324,46 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
         return false;
     }
 }
+/**
+* Returns the list of risk ids that are associated to the asset
+*/
+function get_associated_risks_for_asset($asset_id) {
+    
+    // Open the database connection
+    $db = db_open();
+    
+    $stmt = $db->prepare("SELECT `risk_id` FROM `risks_to_assets` WHERE `asset_id` = :asset_id;");
+    $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
+    $stmt->execute();
+    
+    $risk_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    
+    // Close the database connection
+    db_close($db);
+    
+    return $risk_ids;
+}
+
+function update_asset_risks_associations($asset_id, $associated_risks) {
+    // Open the database connection
+    $db = db_open();
+
+    // Delete all associations for the asset
+    $stmt = $db->prepare("DELETE FROM `risks_to_assets` WHERE `asset_id` = :asset_id;");
+    $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    foreach($associated_risks as $risk_id){
+        $stmt = $db->prepare("INSERT INTO `risks_to_assets` (asset_id, risk_id) VALUES (:asset_id, :risk_id);");
+        $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
+        $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
+    // Close the database connection
+    db_close($db);
+}
+
 /***************************************
  * FUNCTION: SAVE CONTROL TO FRAMEWORK *
  ***************************************/
@@ -788,7 +836,7 @@ function get_entered_assets($verified=null)
     $stmt->execute($params);
 
     // Store the list in the assets array
-    $assets = $stmt->fetchAll();
+    $assets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Close the database connection
     db_close($db);
@@ -1084,7 +1132,7 @@ function update_asset_field_value_by_field_name($id, $fieldName, $fieldValue)
  * FUNCTION: IMPORT ASSET *
  * team: string splitted by comma
  *********************************/
-function import_asset($ip, $name, $value, $location, $teams, $details, $tags, $verified)
+function import_asset($ip, $name, $value, $location, $teams, $details, $tags, $verified, $mapped_controls=[])
 {
     // Trim whitespace from the name, ip, and value
     $name       = trim($name);
@@ -1099,11 +1147,11 @@ function import_asset($ip, $name, $value, $location, $teams, $details, $tags, $v
     {
 	    write_debug_log("An asset named \"{$name} was not found so adding a new asset.");
 
-	    return add_asset($ip, $name, $value, $location, $teams, $details, $tags, $verified, [], true);
+	    return add_asset($ip, $name, $value, $location, $teams, $details, $tags, $verified, [], [], true);
     }
 
     if (asset_exists_exact($ip, $name, $value, $location, $teams, $details, $verified)
-        && areTagsEqual($asset_id, 'asset', $tags)) {
+        && areTagsEqual($asset_id, 'asset', $tags) && asset_mapped_control_exact($asset_id, $mapped_controls)) {
         //return "noop"; // To notify the caller that no operation was done
         $exact = true;
     } else $exact = false;
@@ -1128,6 +1176,8 @@ function import_asset($ip, $name, $value, $location, $teams, $details, $tags, $v
 
     // Close the database connection
     db_close($db);
+
+    if(!is_null($mapped_controls)) save_asset_to_controls($asset_id, $mapped_controls);
 
     updateTagsOfType($asset_id, 'asset', $tags);
 
@@ -1459,7 +1509,15 @@ function get_asset_id_by_value($value){
 function get_asset_value_by_id($id="", $export=false)
 {
     global $escaper;
-    
+
+    if (!empty($GLOBALS['asset_valuations_by_id'])) {
+        if (!empty($GLOBALS['asset_valuations_by_id'][$id])) {
+            return $GLOBALS['asset_valuations_by_id'][$id];
+        }
+    } else {
+        $GLOBALS['asset_valuations_by_id'] = [];
+    }
+
     if(!isset($GLOBALS['default_asset_valuation'])){
         $GLOBALS['default_asset_valuation'] = get_default_asset_valuation();
     }
@@ -1476,8 +1534,7 @@ function get_asset_value_by_id($id="", $export=false)
 
         $GLOBALS['asset_values'] = $stmt->fetchAll();
     }
-    
-    
+
     $value = "";
     foreach($GLOBALS['asset_values'] as $asset_value){
         if($asset_value['id'] == $id){
@@ -1497,21 +1554,23 @@ function get_asset_value_by_id($id="", $export=false)
                 break;
             }
         }
-        
     }
 
-    if(!empty($value)){
-        if($value['min_value'] === $value['max_value']){
+    if(!empty($value)) {
+        if ($value['min_value'] === $value['max_value']) {
             $asset_value = get_setting("currency") . number_format($value['min_value']);
-        }else{
+        } else {
             $asset_value = get_setting("currency") . number_format($value['min_value']) . " to " . get_setting("currency") . number_format($value['max_value']);
         }
 
-        if (!$export && !empty($value['valuation_level_name']))
+        if (!$export && !empty($value['valuation_level_name'])) {
             $asset_value .= " ({$value['valuation_level_name']})";
+        }
     }else{
         $asset_value = "Undefined";
     }
+
+    $GLOBALS['asset_valuations_by_id'][$id] = $asset_value;
 
     // Return the asset value
     return $asset_value;
@@ -1638,6 +1697,8 @@ function display_add_asset()
         display_asset_site_location_edit();
 
         display_asset_team_edit();
+
+        display_asset_associated_risks_add();
 
         display_asset_details_edit();
 
@@ -3035,7 +3096,7 @@ function get_assets_data_for_view($view, $selected_fields, $verified = null, $st
     $stmt = $db->prepare($sql);
     $stmt->execute($params);
     $assets = $stmt->fetchAll();
-
+    // error_log("ASSETS: " . json_encode($assets));
     $stmt = $db->prepare("SELECT FOUND_ROWS();");
     $stmt->execute();
     $recordsTotal = $stmt->fetch()[0];
@@ -3104,6 +3165,9 @@ function get_assets_data_for_view($view, $selected_fields, $verified = null, $st
                         case "location":
                             $value = explode(',', $value);
                             break;
+                        case "details":
+                            $value = $escaper->purifyHtml($value);
+                            break;
                         case 'tags':
                             if ($value) {
                                 $tags = [];
@@ -3129,6 +3193,18 @@ function get_assets_data_for_view($view, $selected_fields, $verified = null, $st
                                 $control_names[] = $control['control_name'];
                             }
                             $value = $escaper->escapeHtml(implode(", ", $control_names));
+                            break;
+                        case 'associated_risks':
+                            if (!empty($value) && $value !== '[]') {
+                                $associated_risks = [];
+                                foreach (json_decode($value, true) as $associated_risk) {
+                                    $associated_risk_id = 1000 + (int)$associated_risk['value'];
+                                    $associated_risks []= $escaper->escapeHtml("[{$associated_risk_id}]" . try_decrypt($associated_risk['name']));
+                                }
+                                $value = implode(', ', $associated_risks);
+                            } else {
+                                $value = '';
+                            }
                             break;
                         default:
                             // Only have to escape non-custom fields as those are already escaped
@@ -3403,6 +3479,10 @@ function assets_update_asset_API($view) {
             require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
         }
 
+        if ($notification = notification_extra()) {
+            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+        }
+
         $field_value = $_POST[$field_name] ?? null;
         // Storing values after validation to update the asset
         if ($customization && str_starts_with($field_name, 'custom_field_')) {
@@ -3415,36 +3495,53 @@ function assets_update_asset_API($view) {
                 $field_value = implode(",", $field_value);
             }
 
-            // Tags handled differently than other fields
-            if ($field_name === 'tags') {
-                $tags = $field_value ?? [];
+            switch ($field_name) {
+                case 'tags':
+                    // If it's empty, we need an empty array, rather than null that's the default behavior for missing data
+                    $tags = $field_value ?? [];
 
-                foreach($tags as $tag){
-                    if (strlen($tag) > 255) {
-                        set_alert(true, "bad", $lang['MaxTagLengthWarning']);
-                        json_response(400, get_alert(true), NULL);
+                    foreach($tags as $tag){
+                        if (strlen($tag) > 255) {
+                            set_alert(true, "bad", $lang['MaxTagLengthWarning']);
+                            json_response(400, get_alert(true), NULL);
+                        }
                     }
-                }
-            } else if($field_name === 'mapped_controls') {
-                $control_maturity   = empty($_POST['control_maturity']) ? [] : $_POST['control_maturity'];
-                $control_id         = empty($_POST['control_id']) ? [] : $_POST['control_id'];
-                foreach($control_maturity as $index=>$maturity){
-                    if($control_id[$index]) $mapped_controls[] = array($maturity, $control_id[$index]);
-                }
-            } else {
-                // Store the asset name for the audit log before the encryption
-                if ($view_type === 'asset' && $field_name === 'name') {
-                    $asset_name = $field_value;
-                }
+                    break;
+                case 'mapped_controls':
+                    $control_maturity   = empty($_POST['control_maturity']) ? [] : $_POST['control_maturity'];
+                    $control_id         = empty($_POST['control_id']) ? [] : $_POST['control_id'];
+                    foreach($control_maturity as $index=>$maturity){
+                        if($control_id[$index]) $mapped_controls[] = array($maturity, $control_id[$index]);
+                    }
+                    break;
+                case 'associated_risks':
+                    // Storing the list of associated risks so we can update it once the asset itself is updated
+                    // If it's empty, we need an empty array, rather than null that's the default behavior for missing data
+                    $associated_risks_new = $field_value ?? [];
 
-                // Encrypt the field if needed
-                if ($encryption && $field_settings[$view_type][$field_name]['encrypted']) {
-                    $field_value = try_encrypt($field_value);
-                }
+                    if ($notification) {
+                        // Also, storing the current list of associated risks so we can calculate the list of risk changes for the risk update notification
+                        $associated_risks_current = get_associated_risks_for_asset($id);
 
-                // build the parts that'll be used to construct the update
-                $update_parts [] = "`{$field_name}` = :{$field_name}";
-                $params[":{$field_name}"] = $field_value;
+                        // Get what risks were removed or added, for the notification we can ignore those that weren't changed
+                        $associated_risks_need_notified = array_unique(array_merge(array_diff($associated_risks_new, $associated_risks_current), array_diff($associated_risks_current, $associated_risks_new)));
+                    }
+                    break;
+                default:
+                    // Store the asset name for the audit log before the encryption
+                    if ($view_type === 'asset' && $field_name === 'name') {
+                        $asset_name = $field_value;
+                    }
+
+                    // Encrypt the field if needed
+                    if ($encryption && $field_settings[$view_type][$field_name]['encrypted']) {
+                        $field_value = try_encrypt($field_value);
+                    }
+
+                    // build the parts that'll be used to construct the update
+                    $update_parts [] = "`{$field_name}` = :{$field_name}";
+                    $params[":{$field_name}"] = $field_value;
+                    break;
             }
         }
     }
@@ -3453,15 +3550,24 @@ function assets_update_asset_API($view) {
 
     $stmt = $db->prepare("UPDATE `assets` SET " . implode(',', $update_parts) . " WHERE {$id_field} = :{$id_field};");
     $stmt->execute($params);
-    
+
     db_close($db);
-    
+
     // Save control mappings
     save_asset_to_controls($id, $mapped_controls);
     // Update tags even when they didn't change as the time we'd win on not saving them is lost on the checks
     // so if we check and then still have to save we'd basically just wasted time on checking
     updateTagsOfType($id, $view_type, $tags);
+
+    update_asset_risks_associations($id, $associated_risks_new);
     
+    if ($notification && !empty($associated_risks_need_notified)) {
+        // Only send the notification about the updated risks that were changed on the asset
+        foreach ($associated_risks_need_notified as $risk_id) {
+            notify_risk_update($risk_id);
+        }
+    }
+
     if ($customization && !save_custom_field_values($id, $view_type, $custom_field_data)) {
         // It will basically never happen as we're checking values before even getting to the saving part to make sure we're not saving only half of the data
         json_response(400, get_alert(true), NULL);

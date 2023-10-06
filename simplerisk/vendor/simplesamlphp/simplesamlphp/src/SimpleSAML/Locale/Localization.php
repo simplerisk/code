@@ -18,7 +18,6 @@ use Gettext\Translator;
 use Gettext\TranslatorFunctions;
 use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\File;
 
 class Localization
@@ -72,11 +71,6 @@ class Localization
      */
     private string $langcode;
 
-    /**
-     * @var \Symfony\Component\Filesystem\Filesystem
-     */
-    private Filesystem $fileSystem;
-
 
     /**
      * Constructor
@@ -85,7 +79,6 @@ class Localization
      */
     public function __construct(Configuration $configuration)
     {
-        $this->fileSystem = new Filesystem();
         $this->configuration = $configuration;
         /** @var string $locales */
         $locales = $this->configuration->resolvePath('locales');
@@ -200,13 +193,13 @@ class Localization
             // Report that the localization for the preferred language is missing
             $error = "Localization not found for langcode '$langcode' at '$langPath', falling back to langcode '" .
                 $defLangcode . "'";
-            Logger::error($_SERVER['PHP_SELF'] . ' - ' . $error);
+            Logger::info($_SERVER['PHP_SELF'] . ' - ' . $error);
             return $langPath;
         }
 
         // Locale for default language missing even, error out
         $error = "Localization directory '$langPath' missing/broken for langcode '$langcode' and domain '$domain'";
-        Logger::critical($_SERVER['PHP_SELF'] . ' - ' . $error);
+        Logger::info($_SERVER['PHP_SELF'] . ' - ' . $error);
         throw new Exception($error);
     }
 
@@ -250,7 +243,7 @@ class Localization
         }
 
         $file = new File($langPath . $domain . '.po', false);
-        if ($this->fileSystem->exists($file->getRealPath()) && $file->isReadable()) {
+        if ($file->getRealPath() !== false && $file->isReadable()) {
             $translations = (new PoLoader())->loadFile($file->getRealPath());
             $arrayGenerator = new ArrayGenerator();
             $this->translator->addTranslations(
@@ -268,7 +261,7 @@ class Localization
 
 
     /**
-     * Set up L18N if configured or fallback to old system
+     * Set up L18N
      */
     private function setupL10N(): void
     {

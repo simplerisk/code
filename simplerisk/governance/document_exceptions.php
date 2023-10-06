@@ -101,7 +101,7 @@ function display($display = "")
         <script src="../js/treegrid-dnd.js?<?php echo current_version("app"); ?>"></script>
 	<?php display_bootstrap_javascript(); ?>
         <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
-        <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
         <script src="../js/simplerisk/pages/governance.js?<?php echo current_version("app"); ?>"></script>
         <script src="../vendor/tinymce/tinymce/tinymce.min.js?<?php echo current_version("app"); ?>"></script>
         <script src="../js/WYSIWYG/editor.js?<?php echo current_version("app"); ?>"></script>
@@ -112,7 +112,7 @@ function display($display = "")
         <link rel="stylesheet" href="../css/easyui.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-        <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/prioritize.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">

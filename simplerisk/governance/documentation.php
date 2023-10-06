@@ -64,7 +64,7 @@ checkUploadedFileSizeErrors();
   <script src="../js/datagrid-filter.js?<?php echo current_version("app"); ?>"></script>
   <?php display_bootstrap_javascript(); ?>
   <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/simplerisk/pages/governance.js?<?php echo current_version("app"); ?>"></script>
 
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
@@ -73,7 +73,7 @@ checkUploadedFileSizeErrors();
   <link rel="stylesheet" href="../css/easyui.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/prioritize.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
@@ -385,7 +385,8 @@ checkUploadedFileSizeErrors();
     			// reset the form
     			$("#document-program--add form").trigger('reset');
     			// re-draw the multiselects as they ARE reset, but their texts still display the previous selections
-    			$('#document-program--add form span.multiselect-native-select select[multiple]').multiselect('updateButtonText');
+          $('#document-program--add form span.multiselect-native-select select[multiple]').multiselect('updateButtonText');
+          $('#document-program--add form span.multiselect-native-select select[multiple]').multiselect('deselectAll', false);
     			// remove the options from the parent selector dropdown
     			$('div.parent_documents_container select').find('option').remove().end().append('<option value="0">--</option>');
     			$('#file-size').html('');

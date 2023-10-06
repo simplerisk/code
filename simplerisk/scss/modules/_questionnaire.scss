@@ -72,7 +72,7 @@
 
 .questionnaire-compare-result-container{
     counter-reset: parentQuestionCounter1 parentQuestionCounter2 ;
-    .parent.questionnaire-question.left:before{
+    .parent.questionnaire-question:before{
         left: 0px;
         float: left;
         margin-left: 0px;

@@ -8,20 +8,21 @@
  */
 
 // This is the base directory of the SimpleSAMLphp installation
-$baseDir = dirname(dirname(dirname(dirname(__FILE__))));
+$baseDir = dirname(__FILE__, 4);
 
 // Add library autoloader.
 require_once($baseDir . '/src/_autoload.php');
 
 if (!SimpleSAML\Module::isModuleEnabled('cron')) {
     echo "You need to enable the cron module before this script can be used.\n";
-    echo "You can enable it by running the following command:\n";
-    echo '  echo >"' . $baseDir . '/modules/cron/enable' . "\"\n";
+    echo "You can enable it by editing your config.php file. Example:\n";
+    echo '  echo \'$config["module.enable"]["cron"] = true;\' >> "' . $baseDir . '/config/config.php' . "\"\n";
     exit(1);
 }
 
 $options = getopt("t:");
-if (function_exists('posix_getuid') && posix_getuid() === 0) {
+$sysUtils = new \SimpleSAML\Utils\System();
+if (($sysUtils->getOS() !== $sysUtils::WINDOWS) && (getmyuid() === 0)) {
     echo "Running as root is discouraged. Some cron jobs will generate files that would have the wrong ownership.\n";
     echo 'Suggested invocation: su -s "/bin/sh" -c "php /var/simplesamlphp/modules/cron/bin/cron.php -t hourly" apache';
     exit(3);

@@ -122,7 +122,7 @@ class Test
             $authsource = new $this->authSimple($as);
 
             if (!is_null($request->query->get('logout'))) {
-                return new RunnableResponse([$authsource, 'logout'], [$this->config->getBasePath() . 'logout.php']);
+                return new RunnableResponse([$authsource, 'logout'], [Module::getModuleURL('admin/logout')]);
             } elseif (!is_null($request->query->get(Auth\State::EXCEPTION_PARAM))) {
                 // This is just a simple example of an error
                 /** @var array $state */
@@ -136,6 +136,7 @@ class Test
                 $params = [
                     'ErrorURL' => $url,
                     'ReturnTo' => $url,
+                    Auth\State::RESTART => $url,
                 ];
                 return new RunnableResponse([$authsource, 'login'], [$params]);
             }
@@ -159,5 +160,17 @@ class Test
 
         $this->menu->addOption('logout', $this->authUtils->getAdminLogoutURL(), Translate::noop('Log out'));
         return $this->menu->insert($t);
+    }
+
+
+    /**
+     * Page to show after logout completed
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @return \SimpleSAML\XHTML\Template
+     */
+    public function logout(Request $request): Template
+    {
+        return new Template($this->config, 'admin:logout.twig');
     }
 }

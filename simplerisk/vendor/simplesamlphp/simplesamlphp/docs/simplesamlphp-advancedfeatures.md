@@ -55,12 +55,6 @@ simpleSAMLphp can be configured to send HTTP/S requests via such a proxy. The pr
 
 The default is not to use a proxy ('proxy' = null) and no username and password are used ('proxy.auth' = false).
 
-## Auth MemCookie
-
-[Auth MemCookie](http://authmemcookie.sourceforge.net/) support is deprecated in the standard code base of SimpleSAMLphp
- and will no longer be available starting in SimpleSAMLphp 2.0. Please use the new
- [memcookie module](https://github.com/simplesamlphp/simplesamlphp-module-memcookie) instead.
-
 ## Metadata signing
 
 SimpleSAMLphp supports signing of the metadata it generates. Metadata signing is configured by four options:
@@ -88,15 +82,12 @@ Optional session checking function, called on session init and loading, defined 
 Example code for the function with GeoIP country check:
 
 ```php
-public static function checkSession($session, $init = false)
+public static function checkSession(\SimpleSAML\Session $session, bool $init = false)
 {
     $data_type = 'example:check_session';
     $data_key = 'remote_addr';
 
-    $remote_addr = null;
-    if (!empty($_SERVER['REMOTE_ADDR'])) {
-        $remote_addr = (string)$_SERVER['REMOTE_ADDR'];
-    }
+    $remote_addr = strval($_SERVER['REMOTE_ADDR']);
 
     if ($init) {
         $session->setData(

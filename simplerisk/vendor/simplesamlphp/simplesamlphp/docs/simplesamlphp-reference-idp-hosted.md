@@ -3,7 +3,7 @@
 [TOC]
 
 This is a reference for the metadata file `metadata/saml20-idp-hosted.php`.
-Both files have the following format:
+The file has the following format:
 
 ```php
 <?php
@@ -147,9 +147,7 @@ The following SAML 2.0 options are available:
 :   -   `string`: Will include the attribute as a normal string. This is
         the default.
 
-:   -   `base64`: Store the attribute as a base64 encoded string. This
-        is the default when the `base64attributes`-option is set to
-        `TRUE`.
+:   -   `base64`: Store the attribute as a base64 encoded string.
 
 :   -   `raw`: Store the attribute without any modifications. This
         makes it possible to include raw XML in the response.

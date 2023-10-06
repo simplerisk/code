@@ -1,0 +1,1383 @@
+/* http://meyerweb.com/eric/tools/css/reset/
+   v5.0.1 | 20191019
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+main, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, main, menu, nav, section {
+	display: block;
+}
+/* HTML5 hidden-attribute fix for newer browsers */
+*[hidden] {
+    display: none;
+}
+body {
+	line-height: 1;
+}
+menu, ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+/*!
+Pure v3.0.0
+Copyright 2013 Yahoo!
+Licensed under the BSD License.
+https://github.com/pure-css/pure/blob/master/LICENSE
+*/
+/*!
+normalize.css v | MIT License | https://necolas.github.io/normalize.css/
+Copyright (c) Nicolas Gallagher and Jonathan Neal
+*/
+/*! normalize.css v8.0.1 | MIT License | github.com/necolas/normalize.css */
+
+/* Document
+   ========================================================================== */
+
+/**
+ * 1. Correct the line height in all browsers.
+ * 2. Prevent adjustments of font size after orientation changes in iOS.
+ */
+
+html {
+  line-height: 1.15; /* 1 */
+  -webkit-text-size-adjust: 100%; /* 2 */
+}
+
+/* Sections
+   ========================================================================== */
+
+/**
+ * Remove the margin in all browsers.
+ */
+
+body {
+  margin: 0;
+}
+
+/**
+ * Render the `main` element consistently in IE.
+ */
+
+main {
+  display: block;
+}
+
+/**
+ * Correct the font size and margin on `h1` elements within `section` and
+ * `article` contexts in Chrome, Firefox, and Safari.
+ */
+
+h1 {
+  font-size: 2em;
+  margin: 0.67em 0;
+}
+
+/* Grouping content
+   ========================================================================== */
+
+/**
+ * 1. Add the correct box sizing in Firefox.
+ * 2. Show the overflow in Edge and IE.
+ */
+
+hr {
+  box-sizing: content-box; /* 1 */
+  height: 0; /* 1 */
+  overflow: visible; /* 2 */
+}
+
+/**
+ * 1. Correct the inheritance and scaling of font size in all browsers.
+ * 2. Correct the odd `em` font sizing in all browsers.
+ */
+
+pre {
+  font-family: monospace, monospace; /* 1 */
+  font-size: 1em; /* 2 */
+}
+
+/* Text-level semantics
+   ========================================================================== */
+
+/**
+ * Remove the gray background on active links in IE 10.
+ */
+
+a {
+  background-color: transparent;
+}
+
+/**
+ * 1. Remove the bottom border in Chrome 57-
+ * 2. Add the correct text decoration in Chrome, Edge, IE, Opera, and Safari.
+ */
+
+abbr[title] {
+  border-bottom: none; /* 1 */
+  text-decoration: underline; /* 2 */
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted; /* 2 */
+}
+
+/**
+ * Add the correct font weight in Chrome, Edge, and Safari.
+ */
+
+b,
+strong {
+  font-weight: bolder;
+}
+
+/**
+ * 1. Correct the inheritance and scaling of font size in all browsers.
+ * 2. Correct the odd `em` font sizing in all browsers.
+ */
+
+code,
+kbd,
+samp {
+  font-family: monospace, monospace; /* 1 */
+  font-size: 1em; /* 2 */
+}
+
+/**
+ * Add the correct font size in all browsers.
+ */
+
+small {
+  font-size: 80%;
+}
+
+/**
+ * Prevent `sub` and `sup` elements from affecting the line height in
+ * all browsers.
+ */
+
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+sup {
+  top: -0.5em;
+}
+
+/* Embedded content
+   ========================================================================== */
+
+/**
+ * Remove the border on images inside links in IE 10.
+ */
+
+img {
+  border-style: none;
+}
+
+/* Forms
+   ========================================================================== */
+
+/**
+ * 1. Change the font styles in all browsers.
+ * 2. Remove the margin in Firefox and Safari.
+ */
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit; /* 1 */
+  font-size: 100%; /* 1 */
+  line-height: 1.15; /* 1 */
+  margin: 0; /* 2 */
+}
+
+/**
+ * Show the overflow in IE.
+ * 1. Show the overflow in Edge.
+ */
+
+button,
+input { /* 1 */
+  overflow: visible;
+}
+
+/**
+ * Remove the inheritance of text transform in Edge, Firefox, and IE.
+ * 1. Remove the inheritance of text transform in Firefox.
+ */
+
+button,
+select { /* 1 */
+  text-transform: none;
+}
+
+/**
+ * Correct the inability to style clickable types in iOS and Safari.
+ */
+
+button,
+[type="button"],
+[type="reset"],
+[type="submit"] {
+  -webkit-appearance: button;
+}
+
+/**
+ * Remove the inner border and padding in Firefox.
+ */
+
+button::-moz-focus-inner,
+[type="button"]::-moz-focus-inner,
+[type="reset"]::-moz-focus-inner,
+[type="submit"]::-moz-focus-inner {
+  border-style: none;
+  padding: 0;
+}
+
+/**
+ * Restore the focus styles unset by the previous rule.
+ */
+
+button:-moz-focusring,
+[type="button"]:-moz-focusring,
+[type="reset"]:-moz-focusring,
+[type="submit"]:-moz-focusring {
+  outline: 1px dotted ButtonText;
+}
+
+/**
+ * Correct the padding in Firefox.
+ */
+
+fieldset {
+  padding: 0.35em 0.75em 0.625em;
+}
+
+/**
+ * 1. Correct the text wrapping in Edge and IE.
+ * 2. Correct the color inheritance from `fieldset` elements in IE.
+ * 3. Remove the padding so developers are not caught out when they zero out
+ *    `fieldset` elements in all browsers.
+ */
+
+legend {
+  box-sizing: border-box; /* 1 */
+  color: inherit; /* 2 */
+  display: table; /* 1 */
+  max-width: 100%; /* 1 */
+  padding: 0; /* 3 */
+  white-space: normal; /* 1 */
+}
+
+/**
+ * Add the correct vertical alignment in Chrome, Firefox, and Opera.
+ */
+
+progress {
+  vertical-align: baseline;
+}
+
+/**
+ * Remove the default vertical scrollbar in IE 10+.
+ */
+
+textarea {
+  overflow: auto;
+}
+
+/**
+ * 1. Add the correct box sizing in IE 10.
+ * 2. Remove the padding in IE 10.
+ */
+
+[type="checkbox"],
+[type="radio"] {
+  box-sizing: border-box; /* 1 */
+  padding: 0; /* 2 */
+}
+
+/**
+ * Correct the cursor style of increment and decrement buttons in Chrome.
+ */
+
+[type="number"]::-webkit-inner-spin-button,
+[type="number"]::-webkit-outer-spin-button {
+  height: auto;
+}
+
+/**
+ * 1. Correct the odd appearance in Chrome and Safari.
+ * 2. Correct the outline style in Safari.
+ */
+
+[type="search"] {
+  -webkit-appearance: textfield; /* 1 */
+  outline-offset: -2px; /* 2 */
+}
+
+/**
+ * Remove the inner padding in Chrome and Safari on macOS.
+ */
+
+[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+/**
+ * 1. Correct the inability to style clickable types in iOS and Safari.
+ * 2. Change font properties to `inherit` in Safari.
+ */
+
+::-webkit-file-upload-button {
+  -webkit-appearance: button; /* 1 */
+  font: inherit; /* 2 */
+}
+
+/* Interactive
+   ========================================================================== */
+
+/*
+ * Add the correct display in Edge, IE 10+, and Firefox.
+ */
+
+details {
+  display: block;
+}
+
+/*
+ * Add the correct display in all browsers.
+ */
+
+summary {
+  display: list-item;
+}
+
+/* Misc
+   ========================================================================== */
+
+/**
+ * Add the correct display in IE 10+.
+ */
+
+template {
+  display: none;
+}
+
+/**
+ * Add the correct display in IE 10.
+ */
+
+[hidden] {
+  display: none;
+}
+
+/*csslint important:false*/
+
+/* ==========================================================================
+   Pure Base Extras
+   ========================================================================== */
+
+/**
+ * Extra rules that Pure adds on top of Normalize.css
+ */
+
+html {
+    font-family: sans-serif;
+}
+
+/**
+ * Always hide an element when it has the `hidden` HTML attribute.
+ */
+
+.hidden,
+[hidden] {
+    display: none !important;
+}
+
+/**
+ * Add this class to an image to make it fit within it's fluid parent wrapper while maintaining
+ * aspect ratio.
+ */
+.pure-img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/*csslint regex-selectors:false, known-properties:false, duplicate-properties:false*/
+
+.pure-g {
+    display: flex;
+    flex-flow: row wrap;
+
+    /* Prevents distributing space between rows */
+    align-content: flex-start;
+}
+
+.pure-u {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.pure-u-1,
+.pure-u-1-1,
+.pure-u-1-2,
+.pure-u-1-3,
+.pure-u-2-3,
+.pure-u-1-4,
+.pure-u-3-4,
+.pure-u-1-5,
+.pure-u-2-5,
+.pure-u-3-5,
+.pure-u-4-5,
+.pure-u-5-5,
+.pure-u-1-6,
+.pure-u-5-6,
+.pure-u-1-8,
+.pure-u-3-8,
+.pure-u-5-8,
+.pure-u-7-8,
+.pure-u-1-12,
+.pure-u-5-12,
+.pure-u-7-12,
+.pure-u-11-12,
+.pure-u-1-24,
+.pure-u-2-24,
+.pure-u-3-24,
+.pure-u-4-24,
+.pure-u-5-24,
+.pure-u-6-24,
+.pure-u-7-24,
+.pure-u-8-24,
+.pure-u-9-24,
+.pure-u-10-24,
+.pure-u-11-24,
+.pure-u-12-24,
+.pure-u-13-24,
+.pure-u-14-24,
+.pure-u-15-24,
+.pure-u-16-24,
+.pure-u-17-24,
+.pure-u-18-24,
+.pure-u-19-24,
+.pure-u-20-24,
+.pure-u-21-24,
+.pure-u-22-24,
+.pure-u-23-24,
+.pure-u-24-24 {
+    display: inline-block;
+    letter-spacing: normal;
+    word-spacing: normal;
+    vertical-align: top;
+    text-rendering: auto;
+}
+
+.pure-u-1-24 {
+    width: 4.1667%;
+}
+
+.pure-u-1-12,
+.pure-u-2-24 {
+    width: 8.3333%;
+}
+
+.pure-u-1-8,
+.pure-u-3-24 {
+    width: 12.5000%;
+}
+
+.pure-u-1-6,
+.pure-u-4-24 {
+    width: 16.6667%;
+}
+
+.pure-u-1-5 {
+    width: 20%;
+}
+
+.pure-u-5-24 {
+    width: 20.8333%;
+}
+
+.pure-u-1-4,
+.pure-u-6-24 {
+    width: 25%;
+}
+
+.pure-u-7-24 {
+    width: 29.1667%;
+}
+
+.pure-u-1-3,
+.pure-u-8-24 {
+    width: 33.3333%;
+}
+
+.pure-u-3-8,
+.pure-u-9-24 {
+    width: 37.5000%;
+}
+
+.pure-u-2-5 {
+    width: 40%;
+}
+
+.pure-u-5-12,
+.pure-u-10-24 {
+    width: 41.6667%;
+}
+
+.pure-u-11-24 {
+    width: 45.8333%;
+}
+
+.pure-u-1-2,
+.pure-u-12-24 {
+    width: 50%;
+}
+
+.pure-u-13-24 {
+    width: 54.1667%;
+}
+
+.pure-u-7-12,
+.pure-u-14-24 {
+    width: 58.3333%;
+}
+
+.pure-u-3-5 {
+    width: 60%;
+}
+
+.pure-u-5-8,
+.pure-u-15-24 {
+    width: 62.5000%;
+}
+
+.pure-u-2-3,
+.pure-u-16-24 {
+    width: 66.6667%;
+}
+
+.pure-u-17-24 {
+    width: 70.8333%;
+}
+
+.pure-u-3-4,
+.pure-u-18-24 {
+    width: 75%;
+}
+
+.pure-u-19-24 {
+    width: 79.1667%;
+}
+
+.pure-u-4-5 {
+    width: 80%;
+}
+
+.pure-u-5-6,
+.pure-u-20-24 {
+    width: 83.3333%;
+}
+
+.pure-u-7-8,
+.pure-u-21-24 {
+    width: 87.5000%;
+}
+
+.pure-u-11-12,
+.pure-u-22-24 {
+    width: 91.6667%;
+}
+
+.pure-u-23-24 {
+    width: 95.8333%;
+}
+
+.pure-u-1,
+.pure-u-1-1,
+.pure-u-5-5,
+.pure-u-24-24 {
+    width: 100%;
+}
+.pure-button {
+    /* Structure */
+    display: inline-block;
+    line-height: normal;
+    white-space: nowrap;
+    vertical-align: middle;
+    text-align: center;
+    cursor: pointer;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+            user-select: none;
+    box-sizing: border-box;
+}
+
+/* Firefox: Get rid of the inner focus border */
+.pure-button::-moz-focus-inner {
+    padding: 0;
+    border: 0;
+}
+
+/* Inherit .pure-g styles */
+.pure-button-group {
+    letter-spacing: -0.31em; /* Webkit: collapse white-space between units */
+    text-rendering: optimizespeed; /* Webkit: fixes text-rendering: optimizeLegibility */
+}
+
+.opera-only :-o-prefocus,
+.pure-button-group {
+    word-spacing: -0.43em;
+}
+
+.pure-button-group .pure-button {
+    letter-spacing: normal;
+    word-spacing: normal;
+    vertical-align: top;
+    text-rendering: auto;
+}
+
+/*csslint outline-none:false*/
+
+.pure-button {
+    font-family: inherit;
+    font-size: 100%;
+    padding: 0.5em 1em;
+    color: rgba(0, 0, 0, 0.80);
+    border: none rgba(0, 0, 0, 0);
+    background-color: #E6E6E6;
+    text-decoration: none;
+    border-radius: 2px;
+}
+
+.pure-button-hover,
+.pure-button:hover,
+.pure-button:focus {
+    background-image: linear-gradient(transparent, rgba(0,0,0, 0.05) 40%, rgba(0,0,0, 0.10));
+}
+.pure-button:focus {
+    outline: 0;
+}
+.pure-button-active,
+.pure-button:active {
+    box-shadow: 0 0 0 1px rgba(0,0,0, 0.15) inset, 0 0 6px rgba(0,0,0, 0.20) inset;
+    border-color: #000;
+}
+
+.pure-button[disabled],
+.pure-button-disabled,
+.pure-button-disabled:hover,
+.pure-button-disabled:focus,
+.pure-button-disabled:active {
+    border: none;
+    background-image: none;
+    opacity: 0.40;
+    cursor: not-allowed;
+    box-shadow: none;
+    pointer-events: none;
+}
+
+.pure-button-hidden {
+    display: none;
+}
+
+.pure-button-primary,
+.pure-button-selected,
+a.pure-button-primary,
+a.pure-button-selected {
+    background-color: rgb(0, 120, 231);
+    color: #fff;
+}
+
+/* Button Groups */
+.pure-button-group .pure-button {
+    margin: 0;
+    border-radius: 0;
+    border-right: 1px solid rgba(0, 0, 0, 0.2);
+
+}
+
+.pure-button-group .pure-button:first-child {
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+.pure-button-group .pure-button:last-child {
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    border-right: none;
+}
+
+/*csslint box-model:false*/
+/*
+Box-model set to false because we're setting a height on select elements, which
+also have border and padding. This is done because some browsers don't render
+the padding. We explicitly set the box-model for select elements to border-box,
+so we can ignore the csslint warning.
+*/
+
+.pure-form input[type="text"],
+.pure-form input[type="password"],
+.pure-form input[type="email"],
+.pure-form input[type="url"],
+.pure-form input[type="date"],
+.pure-form input[type="month"],
+.pure-form input[type="time"],
+.pure-form input[type="datetime"],
+.pure-form input[type="datetime-local"],
+.pure-form input[type="week"],
+.pure-form input[type="number"],
+.pure-form input[type="search"],
+.pure-form input[type="tel"],
+.pure-form input[type="color"],
+.pure-form select,
+.pure-form textarea {
+    padding: 0.5em 0.6em;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-shadow: inset 0 1px 3px #ddd;
+    border-radius: 4px;
+    vertical-align: middle;
+    box-sizing: border-box;
+}
+
+/*
+Need to separate out the :not() selector from the rest of the CSS 2.1 selectors
+since IE8 won't execute CSS that contains a CSS3 selector.
+*/
+.pure-form input:not([type]) {
+    padding: 0.5em 0.6em;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-shadow: inset 0 1px 3px #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+
+/* Chrome (as of v.32/34 on OS X) needs additional room for color to display. */
+/* May be able to remove this tweak as color inputs become more standardized across browsers. */
+.pure-form input[type="color"] {
+    padding: 0.2em 0.5em;
+}
+
+
+.pure-form input[type="text"]:focus,
+.pure-form input[type="password"]:focus,
+.pure-form input[type="email"]:focus,
+.pure-form input[type="url"]:focus,
+.pure-form input[type="date"]:focus,
+.pure-form input[type="month"]:focus,
+.pure-form input[type="time"]:focus,
+.pure-form input[type="datetime"]:focus,
+.pure-form input[type="datetime-local"]:focus,
+.pure-form input[type="week"]:focus,
+.pure-form input[type="number"]:focus,
+.pure-form input[type="search"]:focus,
+.pure-form input[type="tel"]:focus,
+.pure-form input[type="color"]:focus,
+.pure-form select:focus,
+.pure-form textarea:focus {
+    outline: 0;
+    border-color: #129FEA;
+}
+
+/*
+Need to separate out the :not() selector from the rest of the CSS 2.1 selectors
+since IE8 won't execute CSS that contains a CSS3 selector.
+*/
+.pure-form input:not([type]):focus {
+    outline: 0;
+    border-color: #129FEA;
+}
+
+.pure-form input[type="file"]:focus,
+.pure-form input[type="radio"]:focus,
+.pure-form input[type="checkbox"]:focus {
+    outline: thin solid #129FEA;
+    outline: 1px auto #129FEA;
+}
+.pure-form .pure-checkbox,
+.pure-form .pure-radio {
+    margin: 0.5em 0;
+    display: block;
+}
+
+.pure-form input[type="text"][disabled],
+.pure-form input[type="password"][disabled],
+.pure-form input[type="email"][disabled],
+.pure-form input[type="url"][disabled],
+.pure-form input[type="date"][disabled],
+.pure-form input[type="month"][disabled],
+.pure-form input[type="time"][disabled],
+.pure-form input[type="datetime"][disabled],
+.pure-form input[type="datetime-local"][disabled],
+.pure-form input[type="week"][disabled],
+.pure-form input[type="number"][disabled],
+.pure-form input[type="search"][disabled],
+.pure-form input[type="tel"][disabled],
+.pure-form input[type="color"][disabled],
+.pure-form select[disabled],
+.pure-form textarea[disabled] {
+    cursor: not-allowed;
+    background-color: #eaeded;
+    color: #cad2d3;
+}
+
+/*
+Need to separate out the :not() selector from the rest of the CSS 2.1 selectors
+since IE8 won't execute CSS that contains a CSS3 selector.
+*/
+.pure-form input:not([type])[disabled] {
+    cursor: not-allowed;
+    background-color: #eaeded;
+    color: #cad2d3;
+}
+.pure-form input[readonly],
+.pure-form select[readonly],
+.pure-form textarea[readonly] {
+    background-color: #eee; /* menu hover bg color */
+    color: #777; /* menu text color */
+    border-color: #ccc;
+}
+
+.pure-form input:focus:invalid,
+.pure-form textarea:focus:invalid,
+.pure-form select:focus:invalid {
+    color: #b94a48;
+    border-color: #e9322d;
+}
+.pure-form input[type="file"]:focus:invalid:focus,
+.pure-form input[type="radio"]:focus:invalid:focus,
+.pure-form input[type="checkbox"]:focus:invalid:focus {
+    outline-color: #e9322d;
+}
+.pure-form select {
+    /* Normalizes the height; padding is not sufficient. */
+    height: 2.25em;
+    border: 1px solid #ccc;
+    background-color: white;
+}
+.pure-form select[multiple] {
+    height: auto;
+}
+.pure-form label {
+    margin: 0.5em 0 0.2em;
+}
+.pure-form fieldset {
+    margin: 0;
+    padding: 0.35em 0 0.75em;
+    border: 0;
+}
+.pure-form legend {
+    display: block;
+    width: 100%;
+    padding: 0.3em 0;
+    margin-bottom: 0.3em;
+    color: #333;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.pure-form-stacked input[type="text"],
+.pure-form-stacked input[type="password"],
+.pure-form-stacked input[type="email"],
+.pure-form-stacked input[type="url"],
+.pure-form-stacked input[type="date"],
+.pure-form-stacked input[type="month"],
+.pure-form-stacked input[type="time"],
+.pure-form-stacked input[type="datetime"],
+.pure-form-stacked input[type="datetime-local"],
+.pure-form-stacked input[type="week"],
+.pure-form-stacked input[type="number"],
+.pure-form-stacked input[type="search"],
+.pure-form-stacked input[type="tel"],
+.pure-form-stacked input[type="color"],
+.pure-form-stacked input[type="file"],
+.pure-form-stacked select,
+.pure-form-stacked label,
+.pure-form-stacked textarea {
+    display: block;
+    margin: 0.25em 0;
+}
+
+/*
+Need to separate out the :not() selector from the rest of the CSS 2.1 selectors
+since IE8 won't execute CSS that contains a CSS3 selector.
+*/
+.pure-form-stacked input:not([type]) {
+    display: block;
+    margin: 0.25em 0;
+}
+.pure-form-aligned input,
+.pure-form-aligned textarea,
+.pure-form-aligned select,
+.pure-form-message-inline {
+    display: inline-block;
+    vertical-align: middle;
+}
+.pure-form-aligned textarea {
+    vertical-align: top;
+}
+
+/* Aligned Forms */
+.pure-form-aligned .pure-control-group {
+    margin-bottom: 0.5em;
+}
+.pure-form-aligned .pure-control-group label {
+    text-align: right;
+    display: inline-block;
+    vertical-align: middle;
+    width: 10em;
+    margin: 0 1em 0 0;
+}
+.pure-form-aligned .pure-controls {
+    margin: 1.5em 0 0 11em;
+}
+
+/* Rounded Inputs */
+.pure-form input.pure-input-rounded,
+.pure-form .pure-input-rounded {
+    border-radius: 2em;
+    padding: 0.5em 1em;
+}
+
+/* Grouped Inputs */
+.pure-form .pure-group fieldset {
+    margin-bottom: 10px;
+}
+.pure-form .pure-group input,
+.pure-form .pure-group textarea {
+    display: block;
+    padding: 10px;
+    margin: 0 0 -1px;
+    border-radius: 0;
+    position: relative;
+    top: -1px;
+}
+.pure-form .pure-group input:focus,
+.pure-form .pure-group textarea:focus {
+    z-index: 3;
+}
+.pure-form .pure-group input:first-child,
+.pure-form .pure-group textarea:first-child {
+    top: 1px;
+    border-radius: 4px 4px 0 0;
+    margin: 0;
+}
+.pure-form .pure-group input:first-child:last-child,
+.pure-form .pure-group textarea:first-child:last-child {
+    top: 1px;
+    border-radius: 4px;
+    margin: 0;
+}
+.pure-form .pure-group input:last-child,
+.pure-form .pure-group textarea:last-child {
+    top: -2px;
+    border-radius: 0 0 4px 4px;
+    margin: 0;
+}
+.pure-form .pure-group button {
+    margin: 0.35em 0;
+}
+
+.pure-form .pure-input-1 {
+    width: 100%;
+}
+.pure-form .pure-input-3-4 {
+    width: 75%;
+}
+.pure-form .pure-input-2-3 {
+    width: 66%;
+}
+.pure-form .pure-input-1-2 {
+    width: 50%;
+}
+.pure-form .pure-input-1-3 {
+    width: 33%;
+}
+.pure-form .pure-input-1-4 {
+    width: 25%;
+}
+
+/* Inline help for forms */
+.pure-form-message-inline {
+    display: inline-block;
+    padding-left: 0.3em;
+    color: #666;
+    vertical-align: middle;
+    font-size: 0.875em;
+}
+
+/* Block help for forms */
+.pure-form-message {
+    display: block;
+    color: #666;
+    font-size: 0.875em;
+}
+
+@media only screen and (max-width : 480px) {
+    .pure-form button[type="submit"] {
+        margin: 0.7em 0 0;
+    }
+
+    .pure-form input:not([type]),
+    .pure-form input[type="text"],
+    .pure-form input[type="password"],
+    .pure-form input[type="email"],
+    .pure-form input[type="url"],
+    .pure-form input[type="date"],
+    .pure-form input[type="month"],
+    .pure-form input[type="time"],
+    .pure-form input[type="datetime"],
+    .pure-form input[type="datetime-local"],
+    .pure-form input[type="week"],
+    .pure-form input[type="number"],
+    .pure-form input[type="search"],
+    .pure-form input[type="tel"],
+    .pure-form input[type="color"],
+    .pure-form label {
+        margin-bottom: 0.3em;
+        display: block;
+    }
+
+    .pure-group input:not([type]),
+    .pure-group input[type="text"],
+    .pure-group input[type="password"],
+    .pure-group input[type="email"],
+    .pure-group input[type="url"],
+    .pure-group input[type="date"],
+    .pure-group input[type="month"],
+    .pure-group input[type="time"],
+    .pure-group input[type="datetime"],
+    .pure-group input[type="datetime-local"],
+    .pure-group input[type="week"],
+    .pure-group input[type="number"],
+    .pure-group input[type="search"],
+    .pure-group input[type="tel"],
+    .pure-group input[type="color"] {
+        margin-bottom: 0;
+    }
+
+    .pure-form-aligned .pure-control-group label {
+        margin-bottom: 0.3em;
+        text-align: left;
+        display: block;
+        width: 100%;
+    }
+
+    .pure-form-aligned .pure-controls {
+        margin: 1.5em 0 0 0;
+    }
+
+    .pure-form-message-inline,
+    .pure-form-message {
+        display: block;
+        font-size: 0.75em;
+        /* Increased bottom padding to make it group with its related input element. */
+        padding: 0.2em 0 0.8em;
+    }
+}
+
+/*csslint adjoining-classes: false, box-model:false*/
+.pure-menu {
+    box-sizing: border-box;
+}
+
+.pure-menu-fixed {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 3;
+}
+
+.pure-menu-list,
+.pure-menu-item {
+    position: relative;
+}
+
+.pure-menu-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.pure-menu-item {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+}
+
+.pure-menu-link,
+.pure-menu-heading {
+    display: block;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+/* HORIZONTAL MENU */
+.pure-menu-horizontal {
+    width: 100%;
+    white-space: nowrap;
+}
+
+.pure-menu-horizontal .pure-menu-list {
+    display: inline-block;
+}
+
+/* Initial menus should be inline-block so that they are horizontal */
+.pure-menu-horizontal .pure-menu-item,
+.pure-menu-horizontal .pure-menu-heading,
+.pure-menu-horizontal .pure-menu-separator {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Submenus should still be display: block; */
+.pure-menu-item .pure-menu-item {
+    display: block;
+}
+
+.pure-menu-children {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    margin: 0;
+    padding: 0;
+    z-index: 3;
+}
+
+.pure-menu-horizontal .pure-menu-children {
+    left: 0;
+    top: auto;
+    width: inherit;
+}
+
+.pure-menu-allow-hover:hover > .pure-menu-children,
+.pure-menu-active > .pure-menu-children {
+    display: block;
+    position: absolute;
+}
+
+/* Vertical Menus - show the dropdown arrow */
+.pure-menu-has-children > .pure-menu-link:after {
+    padding-left: 0.5em;
+    content: "\25B8";
+    font-size: small;
+}
+
+/* Horizontal Menus - show the dropdown arrow */
+.pure-menu-horizontal .pure-menu-has-children > .pure-menu-link:after {
+    content: "\25BE";
+}
+
+/* scrollable menus */
+.pure-menu-scrollable {
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.pure-menu-scrollable .pure-menu-list {
+    display: block;
+}
+
+.pure-menu-horizontal.pure-menu-scrollable .pure-menu-list {
+    display: inline-block;
+}
+
+.pure-menu-horizontal.pure-menu-scrollable {
+    white-space: nowrap;
+    overflow-y: hidden;
+    overflow-x: auto;
+    /* a little extra padding for this style to allow for scrollbars */
+    padding: .5em 0;
+}
+
+/* misc default styling */
+
+.pure-menu-separator,
+.pure-menu-horizontal .pure-menu-children .pure-menu-separator {
+    background-color: #ccc;
+    height: 1px;
+    margin: .3em 0;
+}
+
+.pure-menu-horizontal .pure-menu-separator {
+    width: 1px;
+    height: 1.3em;
+    margin: 0 .3em ;
+}
+
+/* Need to reset the separator since submenu is vertical */
+.pure-menu-horizontal .pure-menu-children .pure-menu-separator {
+    display: block;
+    width: auto;
+}
+
+.pure-menu-heading {
+    text-transform: uppercase;
+    color: #565d64;
+}
+
+.pure-menu-link {
+    color: #777;
+}
+
+.pure-menu-children {
+    background-color: #fff;
+}
+
+.pure-menu-link,
+.pure-menu-heading {
+    padding: .5em 1em;
+}
+
+.pure-menu-disabled {
+    opacity: .5;
+}
+
+.pure-menu-disabled .pure-menu-link:hover {
+    background-color: transparent;
+    cursor: default;
+}
+
+.pure-menu-active > .pure-menu-link,
+.pure-menu-link:hover,
+.pure-menu-link:focus {
+    background-color: #eee;
+}
+
+.pure-menu-selected > .pure-menu-link,
+.pure-menu-selected > .pure-menu-link:visited {
+    color: #000;
+}
+
+.pure-table {
+    /* Remove spacing between table cells (from Normalize.css) */
+    border-collapse: collapse;
+    border-spacing: 0;
+    empty-cells: show;
+    border: 1px solid #cbcbcb;
+}
+
+.pure-table caption {
+    color: #000;
+    font: italic 85%/1 arial, sans-serif;
+    padding: 1em 0;
+    text-align: center;
+}
+
+.pure-table td,
+.pure-table th {
+    border-left: 1px solid #cbcbcb;/*  inner column border */
+    border-width: 0 0 0 1px;
+    font-size: inherit;
+    margin: 0;
+    overflow: visible; /*to make ths where the title is really long work*/
+    padding: 0.5em 1em; /* cell padding */
+}
+
+.pure-table thead {
+    background-color: #e0e0e0;
+    color: #000;
+    text-align: left;
+    vertical-align: bottom;
+}
+
+/*
+striping:
+   even - #fff (white)
+   odd  - #f2f2f2 (light gray)
+*/
+.pure-table td {
+    background-color: transparent;
+}
+.pure-table-odd td {
+    background-color: #f2f2f2;
+}
+
+/* nth-child selector for modern browsers */
+.pure-table-striped tr:nth-child(2n-1) td {
+    background-color: #f2f2f2;
+}
+
+/* BORDERED TABLES */
+.pure-table-bordered td {
+    border-bottom: 1px solid #cbcbcb;
+}
+.pure-table-bordered tbody > tr:last-child > td {
+    border-bottom-width: 0;
+}
+
+
+/* HORIZONTAL BORDERED TABLES */
+
+.pure-table-horizontal td,
+.pure-table-horizontal th {
+    border-width: 0 0 1px 0;
+    border-bottom: 1px solid #cbcbcb;
+}
+.pure-table-horizontal tbody > tr:last-child > td {
+    border-bottom-width: 0;
+}
+
+/*!
+  Theme: Zenburn
+  Author: elnawe
+  License: ~ MIT (or more permissive) [via base16-schemes-source]
+  Maintainer: @highlightjs/core-team
+  Version: 2021.09.0
+*/pre code.hljs{display:block;overflow-x:auto;padding:1em}code.hljs{padding:3px 5px}.hljs{color:#dcdccc;background:#383838}.hljs ::selection,.hljs::selection{background-color:#606060;color:#dcdccc}.hljs-comment{color:#6f6f6f}.hljs-tag{color:grey}.hljs-operator,.hljs-punctuation,.hljs-subst{color:#dcdccc}.hljs-operator{opacity:.7}.hljs-bullet,.hljs-deletion,.hljs-name,.hljs-selector-tag,.hljs-template-variable,.hljs-variable{color:#dca3a3}.hljs-attr,.hljs-link,.hljs-literal,.hljs-number,.hljs-symbol,.hljs-variable.constant_{color:#dfaf8f}.hljs-class .hljs-title,.hljs-title,.hljs-title.class_{color:#e0cf9f}.hljs-strong{font-weight:700;color:#e0cf9f}.hljs-addition,.hljs-code,.hljs-string,.hljs-title.class_.inherited__{color:#5f7f5f}.hljs-built_in,.hljs-doctag,.hljs-keyword.hljs-atrule,.hljs-quote,.hljs-regexp{color:#93e0e3}.hljs-attribute,.hljs-function .hljs-title,.hljs-section,.hljs-title.function_,.ruby .hljs-property{color:#7cb8bb}.diff .hljs-meta,.hljs-keyword,.hljs-template-tag,.hljs-type{color:#dc8cc3}.hljs-emphasis{color:#dc8cc3;font-style:italic}.hljs-meta,.hljs-meta .hljs-keyword,.hljs-meta .hljs-string{color:#000}.hljs-meta .hljs-keyword,.hljs-meta-keyword{font-weight:700}
+/*!
+ * Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com
+ * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
+ * Copyright 2023 Fonticons, Inc.
+ */.fa{font-family:var(--fa-style-family, "Font Awesome 6 Free");font-weight:var(--fa-style, 900)}.fa,.fa-classic,.fa-sharp,.fas,.fa-solid,.far,.fa-regular,.fab,.fa-brands{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;display:var(--fa-display, inline-block);font-style:normal;font-variant:normal;line-height:1;text-rendering:auto}.fas,.fa-classic,.fa-solid,.far,.fa-regular{font-family:"Font Awesome 6 Free"}.fab,.fa-brands{font-family:"Font Awesome 6 Brands"}.fa-1x{font-size:1em}.fa-2x{font-size:2em}.fa-3x{font-size:3em}.fa-4x{font-size:4em}.fa-5x{font-size:5em}.fa-6x{font-size:6em}.fa-7x{font-size:7em}.fa-8x{font-size:8em}.fa-9x{font-size:9em}.fa-10x{font-size:10em}.fa-2xs{font-size:.625em;line-height:.1em;vertical-align:.225em}.fa-xs{font-size:.75em;line-height:.0833333337em;vertical-align:.125em}.fa-sm{font-size:.875em;line-height:.0714285718em;vertical-align:.0535714295em}.fa-lg{font-size:1.25em;line-height:.05em;vertical-align:-.075em}.fa-xl{font-size:1.5em;line-height:.0416666682em;vertical-align:-0.125em}.fa-2xl{font-size:2em;line-height:.03125em;vertical-align:-0.1875em}.fa-fw{text-align:center;width:1.25em}.fa-ul{list-style-type:none;margin-left:var(--fa-li-margin, 2.5em);padding-left:0}.fa-ul>li{position:relative}.fa-li{left:calc(var(--fa-li-width, 2em)*-1);position:absolute;text-align:center;width:var(--fa-li-width, 2em);line-height:inherit}.fa-border{border-color:var(--fa-border-color, #eee);border-radius:var(--fa-border-radius, 0.1em);border-style:var(--fa-border-style, solid);border-width:var(--fa-border-width, 0.08em);padding:var(--fa-border-padding, 0.2em 0.25em 0.15em)}.fa-pull-left{float:left;margin-right:var(--fa-pull-margin, 0.3em)}.fa-pull-right{float:right;margin-left:var(--fa-pull-margin, 0.3em)}.fa-beat{animation-name:fa-beat;animation-delay:var(--fa-animation-delay, 0s);animation-direction:var(--fa-animation-direction, normal);animation-duration:var(--fa-animation-duration, 1s);animation-iteration-count:var(--fa-animation-iteration-count, infinite);animation-timing-function:var(--fa-animation-timing, ease-in-out)}.fa-bounce{animation-name:fa-bounce;animation-delay:var(--fa-animation-delay, 0s);animation-direction:var(--fa-animation-direction, normal);animation-duration:var(--fa-animation-duration, 1s);animation-iteration-count:var(--fa-animation-iteration-count, infinite);animation-timing-function:var(--fa-animation-timing, cubic-bezier(0.28, 0.84, 0.42, 1))}.fa-fade{animation-name:fa-fade;animation-delay:var(--fa-animation-delay, 0s);animation-direction:var(--fa-animation-direction, normal);animation-duration:var(--fa-animation-duration, 1s);animation-iteration-count:var(--fa-animation-iteration-count, infinite);animation-timing-function:var(--fa-animation-timing, cubic-bezier(0.4, 0, 0.6, 1))}.fa-beat-fade{animation-name:fa-beat-fade;animation-delay:var(--fa-animation-delay, 0s);animation-direction:var(--fa-animation-direction, normal);animation-duration:var(--fa-animation-duration, 1s);animation-iteration-count:var(--fa-animation-iteration-count, infinite);animation-timing-function:var(--fa-animation-timing, cubic-bezier(0.4, 0, 0.6, 1))}.fa-flip{animation-name:fa-flip;animation-delay:var(--fa-animation-delay, 0s);animation-direction:var(--fa-animation-direction, normal);animation-duration:var(--fa-animation-duration, 1s);animation-iteration-count:var(--fa-animation-iteration-count, infinite);animation-timing-function:var(--fa-animation-timing, ease-in-out)}.fa-shake{animation-name:fa-shake;animation-delay:var(--fa-animation-delay, 0s);animation-direction:var(--fa-animation-direction, normal);animation-duration:var(--fa-animation-duration, 1s);animation-iteration-count:var(--fa-animation-iteration-count, infinite);animation-timing-function:var(--fa-animation-timing, linear)}.fa-spin{animation-name:fa-spin;animation-delay:var(--fa-animation-delay, 0s);animation-direction:var(--fa-animation-direction, normal);animation-duration:var(--fa-animation-duration, 2s);animation-iteration-count:var(--fa-animation-iteration-count, infinite);animation-timing-function:var(--fa-animation-timing, linear)}.fa-spin-reverse{--fa-animation-direction: reverse}.fa-pulse,.fa-spin-pulse{animation-name:fa-spin;animation-direction:var(--fa-animation-direction, normal);animation-duration:var(--fa-animation-duration, 1s);animation-iteration-count:var(--fa-animation-iteration-count, infinite);animation-timing-function:var(--fa-animation-timing, steps(8))}@media(prefers-reduced-motion: reduce){.fa-beat,.fa-bounce,.fa-fade,.fa-beat-fade,.fa-flip,.fa-pulse,.fa-shake,.fa-spin,.fa-spin-pulse{animation-delay:-1ms;animation-duration:1ms;animation-iteration-count:1;transition-delay:0s;transition-duration:0s}}@keyframes fa-beat{0%,90%{transform:scale(1)}45%{transform:scale(var(--fa-beat-scale, 1.25))}}@keyframes fa-bounce{0%{transform:scale(1, 1) translateY(0)}10%{transform:scale(var(--fa-bounce-start-scale-x, 1.1), var(--fa-bounce-start-scale-y, 0.9)) translateY(0)}30%{transform:scale(var(--fa-bounce-jump-scale-x, 0.9), var(--fa-bounce-jump-scale-y, 1.1)) translateY(var(--fa-bounce-height, -0.5em))}50%{transform:scale(var(--fa-bounce-land-scale-x, 1.05), var(--fa-bounce-land-scale-y, 0.95)) translateY(0)}57%{transform:scale(1, 1) translateY(var(--fa-bounce-rebound, -0.125em))}64%{transform:scale(1, 1) translateY(0)}100%{transform:scale(1, 1) translateY(0)}}@keyframes fa-fade{50%{opacity:var(--fa-fade-opacity, 0.4)}}@keyframes fa-beat-fade{0%,100%{opacity:var(--fa-beat-fade-opacity, 0.4);transform:scale(1)}50%{opacity:1;transform:scale(var(--fa-beat-fade-scale, 1.125))}}@keyframes fa-flip{50%{transform:rotate3d(var(--fa-flip-x, 0), var(--fa-flip-y, 1), var(--fa-flip-z, 0), var(--fa-flip-angle, -180deg))}}@keyframes fa-shake{0%{transform:rotate(-15deg)}4%{transform:rotate(15deg)}8%,24%{transform:rotate(-18deg)}12%,28%{transform:rotate(18deg)}16%{transform:rotate(-22deg)}20%{transform:rotate(22deg)}32%{transform:rotate(-12deg)}36%{transform:rotate(12deg)}40%,100%{transform:rotate(0deg)}}@keyframes fa-spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}.fa-rotate-90{transform:rotate(90deg)}.fa-rotate-180{transform:rotate(180deg)}.fa-rotate-270{transform:rotate(270deg)}.fa-flip-horizontal{transform:scale(-1, 1)}.fa-flip-vertical{transform:scale(1, -1)}.fa-flip-both,.fa-flip-horizontal.fa-flip-vertical{transform:scale(-1, -1)}.fa-rotate-by{transform:rotate(var(--fa-rotate-angle, none))}.fa-stack{display:inline-block;height:2em;line-height:2em;position:relative;vertical-align:middle;width:2.5em}.fa-stack-1x,.fa-stack-2x{left:0;position:absolute;text-align:center;width:100%;z-index:var(--fa-stack-z-index, auto)}.fa-stack-1x{line-height:inherit}.fa-stack-2x{font-size:2em}.fa-inverse{color:var(--fa-inverse, #fff)}.fa-0::before{content:"\30 "}.fa-1::before{content:"\31 "}.fa-2::before{content:"\32 "}.fa-3::before{content:"\33 "}.fa-4::before{content:"\34 "}.fa-5::before{content:"\35 "}.fa-6::before{content:"\36 "}.fa-7::before{content:"\37 "}.fa-8::before{content:"\38 "}.fa-9::before{content:"\39 "}.fa-fill-drip::before{content:""}.fa-arrows-to-circle::before{content:""}.fa-circle-chevron-right::before{content:""}.fa-chevron-circle-right::before{content:""}.fa-at::before{content:"\@"}.fa-trash-can::before{content:""}.fa-trash-alt::before{content:""}.fa-text-height::before{content:""}.fa-user-xmark::before{content:""}.fa-user-times::before{content:""}.fa-stethoscope::before{content:""}.fa-message::before{content:""}.fa-comment-alt::before{content:""}.fa-info::before{content:""}.fa-down-left-and-up-right-to-center::before{content:""}.fa-compress-alt::before{content:""}.fa-explosion::before{content:""}.fa-file-lines::before{content:""}.fa-file-alt::before{content:""}.fa-file-text::before{content:""}.fa-wave-square::before{content:""}.fa-ring::before{content:""}.fa-building-un::before{content:""}.fa-dice-three::before{content:""}.fa-calendar-days::before{content:""}.fa-calendar-alt::before{content:""}.fa-anchor-circle-check::before{content:""}.fa-building-circle-arrow-right::before{content:""}.fa-volleyball::before{content:""}.fa-volleyball-ball::before{content:""}.fa-arrows-up-to-line::before{content:""}.fa-sort-down::before{content:""}.fa-sort-desc::before{content:""}.fa-circle-minus::before{content:""}.fa-minus-circle::before{content:""}.fa-door-open::before{content:""}.fa-right-from-bracket::before{content:""}.fa-sign-out-alt::before{content:""}.fa-atom::before{content:""}.fa-soap::before{content:""}.fa-icons::before{content:""}.fa-heart-music-camera-bolt::before{content:""}.fa-microphone-lines-slash::before{content:""}.fa-microphone-alt-slash::before{content:""}.fa-bridge-circle-check::before{content:""}.fa-pump-medical::before{content:""}.fa-fingerprint::before{content:""}.fa-hand-point-right::before{content:""}.fa-magnifying-glass-location::before{content:""}.fa-search-location::before{content:""}.fa-forward-step::before{content:""}.fa-step-forward::before{content:""}.fa-face-smile-beam::before{content:""}.fa-smile-beam::before{content:""}.fa-flag-checkered::before{content:""}.fa-football::before{content:""}.fa-football-ball::before{content:""}.fa-school-circle-exclamation::before{content:""}.fa-crop::before{content:""}.fa-angles-down::before{content:""}.fa-angle-double-down::before{content:""}.fa-users-rectangle::before{content:""}.fa-people-roof::before{content:""}.fa-people-line::before{content:""}.fa-beer-mug-empty::before{content:""}.fa-beer::before{content:""}.fa-diagram-predecessor::before{content:""}.fa-arrow-up-long::before{content:""}.fa-long-arrow-up::before{content:""}.fa-fire-flame-simple::before{content:""}.fa-burn::before{content:""}.fa-person::before{content:""}.fa-male::before{content:""}.fa-laptop::before{content:""}.fa-file-csv::before{content:""}.fa-menorah::before{content:""}.fa-truck-plane::before{content:""}.fa-record-vinyl::before{content:""}.fa-face-grin-stars::before{content:""}.fa-grin-stars::before{content:""}.fa-bong::before{content:""}.fa-spaghetti-monster-flying::before{content:""}.fa-pastafarianism::before{content:""}.fa-arrow-down-up-across-line::before{content:""}.fa-spoon::before{content:""}.fa-utensil-spoon::before{content:""}.fa-jar-wheat::before{content:""}.fa-envelopes-bulk::before{content:""}.fa-mail-bulk::before{content:""}.fa-file-circle-exclamation::before{content:""}.fa-circle-h::before{content:""}.fa-hospital-symbol::before{content:""}.fa-pager::before{content:""}.fa-address-book::before{content:""}.fa-contact-book::before{content:""}.fa-strikethrough::before{content:""}.fa-k::before{content:"K"}.fa-landmark-flag::before{content:""}.fa-pencil::before{content:""}.fa-pencil-alt::before{content:""}.fa-backward::before{content:""}.fa-caret-right::before{content:""}.fa-comments::before{content:""}.fa-paste::before{content:""}.fa-file-clipboard::before{content:""}.fa-code-pull-request::before{content:""}.fa-clipboard-list::before{content:""}.fa-truck-ramp-box::before{content:""}.fa-truck-loading::before{content:""}.fa-user-check::before{content:""}.fa-vial-virus::before{content:""}.fa-sheet-plastic::before{content:""}.fa-blog::before{content:""}.fa-user-ninja::before{content:""}.fa-person-arrow-up-from-line::before{content:""}.fa-scroll-torah::before{content:""}.fa-torah::before{content:""}.fa-broom-ball::before{content:""}.fa-quidditch::before{content:""}.fa-quidditch-broom-ball::before{content:""}.fa-toggle-off::before{content:""}.fa-box-archive::before{content:""}.fa-archive::before{content:""}.fa-person-drowning::before{content:""}.fa-arrow-down-9-1::before{content:""}.fa-sort-numeric-desc::before{content:""}.fa-sort-numeric-down-alt::before{content:""}.fa-face-grin-tongue-squint::before{content:""}.fa-grin-tongue-squint::before{content:""}.fa-spray-can::before{content:""}.fa-truck-monster::before{content:""}.fa-w::before{content:"W"}.fa-earth-africa::before{content:""}.fa-globe-africa::before{content:""}.fa-rainbow::before{content:""}.fa-circle-notch::before{content:""}.fa-tablet-screen-button::before{content:""}.fa-tablet-alt::before{content:""}.fa-paw::before{content:""}.fa-cloud::before{content:""}.fa-trowel-bricks::before{content:""}.fa-face-flushed::before{content:""}.fa-flushed::before{content:""}.fa-hospital-user::before{content:""}.fa-tent-arrow-left-right::before{content:""}.fa-gavel::before{content:""}.fa-legal::before{content:""}.fa-binoculars::before{content:""}.fa-microphone-slash::before{content:""}.fa-box-tissue::before{content:""}.fa-motorcycle::before{content:""}.fa-bell-concierge::before{content:""}.fa-concierge-bell::before{content:""}.fa-pen-ruler::before{content:""}.fa-pencil-ruler::before{content:""}.fa-people-arrows::before{content:""}.fa-people-arrows-left-right::before{content:""}.fa-mars-and-venus-burst::before{content:""}.fa-square-caret-right::before{content:""}.fa-caret-square-right::before{content:""}.fa-scissors::before{content:""}.fa-cut::before{content:""}.fa-sun-plant-wilt::before{content:""}.fa-toilets-portable::before{content:""}.fa-hockey-puck::before{content:""}.fa-table::before{content:""}.fa-magnifying-glass-arrow-right::before{content:""}.fa-tachograph-digital::before{content:""}.fa-digital-tachograph::before{content:""}.fa-users-slash::before{content:""}.fa-clover::before{content:""}.fa-reply::before{content:""}.fa-mail-reply::before{content:""}.fa-star-and-crescent::before{content:""}.fa-house-fire::before{content:""}.fa-square-minus::before{content:""}.fa-minus-square::before{content:""}.fa-helicopter::before{content:""}.fa-compass::before{content:""}.fa-square-caret-down::before{content:""}.fa-caret-square-down::before{content:""}.fa-file-circle-question::before{content:""}.fa-laptop-code::before{content:""}.fa-swatchbook::before{content:""}.fa-prescription-bottle::before{content:""}.fa-bars::before{content:""}.fa-navicon::before{content:""}.fa-people-group::before{content:""}.fa-hourglass-end::before{content:""}.fa-hourglass-3::before{content:""}.fa-heart-crack::before{content:""}.fa-heart-broken::before{content:""}.fa-square-up-right::before{content:""}.fa-external-link-square-alt::before{content:""}.fa-face-kiss-beam::before{content:""}.fa-kiss-beam::before{content:""}.fa-film::before{content:""}.fa-ruler-horizontal::before{content:""}.fa-people-robbery::before{content:""}.fa-lightbulb::before{content:""}.fa-caret-left::before{content:""}.fa-circle-exclamation::before{content:""}.fa-exclamation-circle::before{content:""}.fa-school-circle-xmark::before{content:""}.fa-arrow-right-from-bracket::before{content:""}.fa-sign-out::before{content:""}.fa-circle-chevron-down::before{content:""}.fa-chevron-circle-down::before{content:""}.fa-unlock-keyhole::before{content:""}.fa-unlock-alt::before{content:""}.fa-cloud-showers-heavy::before{content:""}.fa-headphones-simple::before{content:""}.fa-headphones-alt::before{content:""}.fa-sitemap::before{content:""}.fa-circle-dollar-to-slot::before{content:""}.fa-donate::before{content:""}.fa-memory::before{content:""}.fa-road-spikes::before{content:""}.fa-fire-burner::before{content:""}.fa-flag::before{content:""}.fa-hanukiah::before{content:""}.fa-feather::before{content:""}.fa-volume-low::before{content:""}.fa-volume-down::before{content:""}.fa-comment-slash::before{content:""}.fa-cloud-sun-rain::before{content:""}.fa-compress::before{content:""}.fa-wheat-awn::before{content:""}.fa-wheat-alt::before{content:""}.fa-ankh::before{content:""}.fa-hands-holding-child::before{content:""}.fa-asterisk::before{content:"\*"}.fa-square-check::before{content:""}.fa-check-square::before{content:""}.fa-peseta-sign::before{content:""}.fa-heading::before{content:""}.fa-header::before{content:""}.fa-ghost::before{content:""}.fa-list::before{content:""}.fa-list-squares::before{content:""}.fa-square-phone-flip::before{content:""}.fa-phone-square-alt::before{content:""}.fa-cart-plus::before{content:""}.fa-gamepad::before{content:""}.fa-circle-dot::before{content:""}.fa-dot-circle::before{content:""}.fa-face-dizzy::before{content:""}.fa-dizzy::before{content:""}.fa-egg::before{content:""}.fa-house-medical-circle-xmark::before{content:""}.fa-campground::before{content:""}.fa-folder-plus::before{content:""}.fa-futbol::before{content:""}.fa-futbol-ball::before{content:""}.fa-soccer-ball::before{content:""}.fa-paintbrush::before{content:""}.fa-paint-brush::before{content:""}.fa-lock::before{content:""}.fa-gas-pump::before{content:""}.fa-hot-tub-person::before{content:""}.fa-hot-tub::before{content:""}.fa-map-location::before{content:""}.fa-map-marked::before{content:""}.fa-house-flood-water::before{content:""}.fa-tree::before{content:""}.fa-bridge-lock::before{content:""}.fa-sack-dollar::before{content:""}.fa-pen-to-square::before{content:""}.fa-edit::before{content:""}.fa-car-side::before{content:""}.fa-share-nodes::before{content:""}.fa-share-alt::before{content:""}.fa-heart-circle-minus::before{content:""}.fa-hourglass-half::before{content:""}.fa-hourglass-2::before{content:""}.fa-microscope::before{content:""}.fa-sink::before{content:""}.fa-bag-shopping::before{content:""}.fa-shopping-bag::before{content:""}.fa-arrow-down-z-a::before{content:""}.fa-sort-alpha-desc::before{content:""}.fa-sort-alpha-down-alt::before{content:""}.fa-mitten::before{content:""}.fa-person-rays::before{content:""}.fa-users::before{content:""}.fa-eye-slash::before{content:""}.fa-flask-vial::before{content:""}.fa-hand::before{content:""}.fa-hand-paper::before{content:""}.fa-om::before{content:""}.fa-worm::before{content:""}.fa-house-circle-xmark::before{content:""}.fa-plug::before{content:""}.fa-chevron-up::before{content:""}.fa-hand-spock::before{content:""}.fa-stopwatch::before{content:""}.fa-face-kiss::before{content:""}.fa-kiss::before{content:""}.fa-bridge-circle-xmark::before{content:""}.fa-face-grin-tongue::before{content:""}.fa-grin-tongue::before{content:""}.fa-chess-bishop::before{content:""}.fa-face-grin-wink::before{content:""}.fa-grin-wink::before{content:""}.fa-ear-deaf::before{content:""}.fa-deaf::before{content:""}.fa-deafness::before{content:""}.fa-hard-of-hearing::before{content:""}.fa-road-circle-check::before{content:""}.fa-dice-five::before{content:""}.fa-square-rss::before{content:""}.fa-rss-square::before{content:""}.fa-land-mine-on::before{content:""}.fa-i-cursor::before{content:""}.fa-stamp::before{content:""}.fa-stairs::before{content:""}.fa-i::before{content:"I"}.fa-hryvnia-sign::before{content:""}.fa-hryvnia::before{content:""}.fa-pills::before{content:""}.fa-face-grin-wide::before{content:""}.fa-grin-alt::before{content:""}.fa-tooth::before{content:""}.fa-v::before{content:"V"}.fa-bangladeshi-taka-sign::before{content:""}.fa-bicycle::before{content:""}.fa-staff-snake::before{content:""}.fa-rod-asclepius::before{content:""}.fa-rod-snake::before{content:""}.fa-staff-aesculapius::before{content:""}.fa-head-side-cough-slash::before{content:""}.fa-truck-medical::before{content:""}.fa-ambulance::before{content:""}.fa-wheat-awn-circle-exclamation::before{content:""}.fa-snowman::before{content:""}.fa-mortar-pestle::before{content:""}.fa-road-barrier::before{content:""}.fa-school::before{content:""}.fa-igloo::before{content:""}.fa-joint::before{content:""}.fa-angle-right::before{content:""}.fa-horse::before{content:""}.fa-q::before{content:"Q"}.fa-g::before{content:"G"}.fa-notes-medical::before{content:""}.fa-temperature-half::before{content:""}.fa-temperature-2::before{content:""}.fa-thermometer-2::before{content:""}.fa-thermometer-half::before{content:""}.fa-dong-sign::before{content:""}.fa-capsules::before{content:""}.fa-poo-storm::before{content:""}.fa-poo-bolt::before{content:""}.fa-face-frown-open::before{content:""}.fa-frown-open::before{content:""}.fa-hand-point-up::before{content:""}.fa-money-bill::before{content:""}.fa-bookmark::before{content:""}.fa-align-justify::before{content:""}.fa-umbrella-beach::before{content:""}.fa-helmet-un::before{content:""}.fa-bullseye::before{content:""}.fa-bacon::before{content:""}.fa-hand-point-down::before{content:""}.fa-arrow-up-from-bracket::before{content:""}.fa-folder::before{content:""}.fa-folder-blank::before{content:""}.fa-file-waveform::before{content:""}.fa-file-medical-alt::before{content:""}.fa-radiation::before{content:""}.fa-chart-simple::before{content:""}.fa-mars-stroke::before{content:""}.fa-vial::before{content:""}.fa-gauge::before{content:""}.fa-dashboard::before{content:""}.fa-gauge-med::before{content:""}.fa-tachometer-alt-average::before{content:""}.fa-wand-magic-sparkles::before{content:""}.fa-magic-wand-sparkles::before{content:""}.fa-e::before{content:"E"}.fa-pen-clip::before{content:""}.fa-pen-alt::before{content:""}.fa-bridge-circle-exclamation::before{content:""}.fa-user::before{content:""}.fa-school-circle-check::before{content:""}.fa-dumpster::before{content:""}.fa-van-shuttle::before{content:""}.fa-shuttle-van::before{content:""}.fa-building-user::before{content:""}.fa-square-caret-left::before{content:""}.fa-caret-square-left::before{content:""}.fa-highlighter::before{content:""}.fa-key::before{content:""}.fa-bullhorn::before{content:""}.fa-globe::before{content:""}.fa-synagogue::before{content:""}.fa-person-half-dress::before{content:""}.fa-road-bridge::before{content:""}.fa-location-arrow::before{content:""}.fa-c::before{content:"C"}.fa-tablet-button::before{content:""}.fa-building-lock::before{content:""}.fa-pizza-slice::before{content:""}.fa-money-bill-wave::before{content:""}.fa-chart-area::before{content:""}.fa-area-chart::before{content:""}.fa-house-flag::before{content:""}.fa-person-circle-minus::before{content:""}.fa-ban::before{content:""}.fa-cancel::before{content:""}.fa-camera-rotate::before{content:""}.fa-spray-can-sparkles::before{content:""}.fa-air-freshener::before{content:""}.fa-star::before{content:""}.fa-repeat::before{content:""}.fa-cross::before{content:""}.fa-box::before{content:""}.fa-venus-mars::before{content:""}.fa-arrow-pointer::before{content:""}.fa-mouse-pointer::before{content:""}.fa-maximize::before{content:""}.fa-expand-arrows-alt::before{content:""}.fa-charging-station::before{content:""}.fa-shapes::before{content:""}.fa-triangle-circle-square::before{content:""}.fa-shuffle::before{content:""}.fa-random::before{content:""}.fa-person-running::before{content:""}.fa-running::before{content:""}.fa-mobile-retro::before{content:""}.fa-grip-lines-vertical::before{content:""}.fa-spider::before{content:""}.fa-hands-bound::before{content:""}.fa-file-invoice-dollar::before{content:""}.fa-plane-circle-exclamation::before{content:""}.fa-x-ray::before{content:""}.fa-spell-check::before{content:""}.fa-slash::before{content:""}.fa-computer-mouse::before{content:""}.fa-mouse::before{content:""}.fa-arrow-right-to-bracket::before{content:""}.fa-sign-in::before{content:""}.fa-shop-slash::before{content:""}.fa-store-alt-slash::before{content:""}.fa-server::before{content:""}.fa-virus-covid-slash::before{content:""}.fa-shop-lock::before{content:""}.fa-hourglass-start::before{content:""}.fa-hourglass-1::before{content:""}.fa-blender-phone::before{content:""}.fa-building-wheat::before{content:""}.fa-person-breastfeeding::before{content:""}.fa-right-to-bracket::before{content:""}.fa-sign-in-alt::before{content:""}.fa-venus::before{content:""}.fa-passport::before{content:""}.fa-heart-pulse::before{content:""}.fa-heartbeat::before{content:""}.fa-people-carry-box::before{content:""}.fa-people-carry::before{content:""}.fa-temperature-high::before{content:""}.fa-microchip::before{content:""}.fa-crown::before{content:""}.fa-weight-hanging::before{content:""}.fa-xmarks-lines::before{content:""}.fa-file-prescription::before{content:""}.fa-weight-scale::before{content:""}.fa-weight::before{content:""}.fa-user-group::before{content:""}.fa-user-friends::before{content:""}.fa-arrow-up-a-z::before{content:""}.fa-sort-alpha-up::before{content:""}.fa-chess-knight::before{content:""}.fa-face-laugh-squint::before{content:""}.fa-laugh-squint::before{content:""}.fa-wheelchair::before{content:""}.fa-circle-arrow-up::before{content:""}.fa-arrow-circle-up::before{content:""}.fa-toggle-on::before{content:""}.fa-person-walking::before{content:""}.fa-walking::before{content:""}.fa-l::before{content:"L"}.fa-fire::before{content:""}.fa-bed-pulse::before{content:""}.fa-procedures::before{content:""}.fa-shuttle-space::before{content:""}.fa-space-shuttle::before{content:""}.fa-face-laugh::before{content:""}.fa-laugh::before{content:""}.fa-folder-open::before{content:""}.fa-heart-circle-plus::before{content:""}.fa-code-fork::before{content:""}.fa-city::before{content:""}.fa-microphone-lines::before{content:""}.fa-microphone-alt::before{content:""}.fa-pepper-hot::before{content:""}.fa-unlock::before{content:""}.fa-colon-sign::before{content:""}.fa-headset::before{content:""}.fa-store-slash::before{content:""}.fa-road-circle-xmark::before{content:""}.fa-user-minus::before{content:""}.fa-mars-stroke-up::before{content:""}.fa-mars-stroke-v::before{content:""}.fa-champagne-glasses::before{content:""}.fa-glass-cheers::before{content:""}.fa-clipboard::before{content:""}.fa-house-circle-exclamation::before{content:""}.fa-file-arrow-up::before{content:""}.fa-file-upload::before{content:""}.fa-wifi::before{content:""}.fa-wifi-3::before{content:""}.fa-wifi-strong::before{content:""}.fa-bath::before{content:""}.fa-bathtub::before{content:""}.fa-underline::before{content:""}.fa-user-pen::before{content:""}.fa-user-edit::before{content:""}.fa-signature::before{content:""}.fa-stroopwafel::before{content:""}.fa-bold::before{content:""}.fa-anchor-lock::before{content:""}.fa-building-ngo::before{content:""}.fa-manat-sign::before{content:""}.fa-not-equal::before{content:""}.fa-border-top-left::before{content:""}.fa-border-style::before{content:""}.fa-map-location-dot::before{content:""}.fa-map-marked-alt::before{content:""}.fa-jedi::before{content:""}.fa-square-poll-vertical::before{content:""}.fa-poll::before{content:""}.fa-mug-hot::before{content:""}.fa-car-battery::before{content:""}.fa-battery-car::before{content:""}.fa-gift::before{content:""}.fa-dice-two::before{content:""}.fa-chess-queen::before{content:""}.fa-glasses::before{content:""}.fa-chess-board::before{content:""}.fa-building-circle-check::before{content:""}.fa-person-chalkboard::before{content:""}.fa-mars-stroke-right::before{content:""}.fa-mars-stroke-h::before{content:""}.fa-hand-back-fist::before{content:""}.fa-hand-rock::before{content:""}.fa-square-caret-up::before{content:""}.fa-caret-square-up::before{content:""}.fa-cloud-showers-water::before{content:""}.fa-chart-bar::before{content:""}.fa-bar-chart::before{content:""}.fa-hands-bubbles::before{content:""}.fa-hands-wash::before{content:""}.fa-less-than-equal::before{content:""}.fa-train::before{content:""}.fa-eye-low-vision::before{content:""}.fa-low-vision::before{content:""}.fa-crow::before{content:""}.fa-sailboat::before{content:""}.fa-window-restore::before{content:""}.fa-square-plus::before{content:""}.fa-plus-square::before{content:""}.fa-torii-gate::before{content:""}.fa-frog::before{content:""}.fa-bucket::before{content:""}.fa-image::before{content:""}.fa-microphone::before{content:""}.fa-cow::before{content:""}.fa-caret-up::before{content:""}.fa-screwdriver::before{content:""}.fa-folder-closed::before{content:""}.fa-house-tsunami::before{content:""}.fa-square-nfi::before{content:""}.fa-arrow-up-from-ground-water::before{content:""}.fa-martini-glass::before{content:""}.fa-glass-martini-alt::before{content:""}.fa-rotate-left::before{content:""}.fa-rotate-back::before{content:""}.fa-rotate-backward::before{content:""}.fa-undo-alt::before{content:""}.fa-table-columns::before{content:""}.fa-columns::before{content:""}.fa-lemon::before{content:""}.fa-head-side-mask::before{content:""}.fa-handshake::before{content:""}.fa-gem::before{content:""}.fa-dolly::before{content:""}.fa-dolly-box::before{content:""}.fa-smoking::before{content:""}.fa-minimize::before{content:""}.fa-compress-arrows-alt::before{content:""}.fa-monument::before{content:""}.fa-snowplow::before{content:""}.fa-angles-right::before{content:""}.fa-angle-double-right::before{content:""}.fa-cannabis::before{content:""}.fa-circle-play::before{content:""}.fa-play-circle::before{content:""}.fa-tablets::before{content:""}.fa-ethernet::before{content:""}.fa-euro-sign::before{content:""}.fa-eur::before{content:""}.fa-euro::before{content:""}.fa-chair::before{content:""}.fa-circle-check::before{content:""}.fa-check-circle::before{content:""}.fa-circle-stop::before{content:""}.fa-stop-circle::before{content:""}.fa-compass-drafting::before{content:""}.fa-drafting-compass::before{content:""}.fa-plate-wheat::before{content:""}.fa-icicles::before{content:""}.fa-person-shelter::before{content:""}.fa-neuter::before{content:""}.fa-id-badge::before{content:""}.fa-marker::before{content:""}.fa-face-laugh-beam::before{content:""}.fa-laugh-beam::before{content:""}.fa-helicopter-symbol::before{content:""}.fa-universal-access::before{content:""}.fa-circle-chevron-up::before{content:""}.fa-chevron-circle-up::before{content:""}.fa-lari-sign::before{content:""}.fa-volcano::before{content:""}.fa-person-walking-dashed-line-arrow-right::before{content:""}.fa-sterling-sign::before{content:""}.fa-gbp::before{content:""}.fa-pound-sign::before{content:""}.fa-viruses::before{content:""}.fa-square-person-confined::before{content:""}.fa-user-tie::before{content:""}.fa-arrow-down-long::before{content:""}.fa-long-arrow-down::before{content:""}.fa-tent-arrow-down-to-line::before{content:""}.fa-certificate::before{content:""}.fa-reply-all::before{content:""}.fa-mail-reply-all::before{content:""}.fa-suitcase::before{content:""}.fa-person-skating::before{content:""}.fa-skating::before{content:""}.fa-filter-circle-dollar::before{content:""}.fa-funnel-dollar::before{content:""}.fa-camera-retro::before{content:""}.fa-circle-arrow-down::before{content:""}.fa-arrow-circle-down::before{content:""}.fa-file-import::before{content:""}.fa-arrow-right-to-file::before{content:""}.fa-square-arrow-up-right::before{content:""}.fa-external-link-square::before{content:""}.fa-box-open::before{content:""}.fa-scroll::before{content:""}.fa-spa::before{content:""}.fa-location-pin-lock::before{content:""}.fa-pause::before{content:""}.fa-hill-avalanche::before{content:""}.fa-temperature-empty::before{content:""}.fa-temperature-0::before{content:""}.fa-thermometer-0::before{content:""}.fa-thermometer-empty::before{content:""}.fa-bomb::before{content:""}.fa-registered::before{content:""}.fa-address-card::before{content:""}.fa-contact-card::before{content:""}.fa-vcard::before{content:""}.fa-scale-unbalanced-flip::before{content:""}.fa-balance-scale-right::before{content:""}.fa-subscript::before{content:""}.fa-diamond-turn-right::before{content:""}.fa-directions::before{content:""}.fa-burst::before{content:""}.fa-house-laptop::before{content:""}.fa-laptop-house::before{content:""}.fa-face-tired::before{content:""}.fa-tired::before{content:""}.fa-money-bills::before{content:""}.fa-smog::before{content:""}.fa-crutch::before{content:""}.fa-cloud-arrow-up::before{content:""}.fa-cloud-upload::before{content:""}.fa-cloud-upload-alt::before{content:""}.fa-palette::before{content:""}.fa-arrows-turn-right::before{content:""}.fa-vest::before{content:""}.fa-ferry::before{content:""}.fa-arrows-down-to-people::before{content:""}.fa-seedling::before{content:""}.fa-sprout::before{content:""}.fa-left-right::before{content:""}.fa-arrows-alt-h::before{content:""}.fa-boxes-packing::before{content:""}.fa-circle-arrow-left::before{content:""}.fa-arrow-circle-left::before{content:""}.fa-group-arrows-rotate::before{content:""}.fa-bowl-food::before{content:""}.fa-candy-cane::before{content:""}.fa-arrow-down-wide-short::before{content:""}.fa-sort-amount-asc::before{content:""}.fa-sort-amount-down::before{content:""}.fa-cloud-bolt::before{content:""}.fa-thunderstorm::before{content:""}.fa-text-slash::before{content:""}.fa-remove-format::before{content:""}.fa-face-smile-wink::before{content:""}.fa-smile-wink::before{content:""}.fa-file-word::before{content:""}.fa-file-powerpoint::before{content:""}.fa-arrows-left-right::before{content:""}.fa-arrows-h::before{content:""}.fa-house-lock::before{content:""}.fa-cloud-arrow-down::before{content:""}.fa-cloud-download::before{content:""}.fa-cloud-download-alt::before{content:""}.fa-children::before{content:""}.fa-chalkboard::before{content:""}.fa-blackboard::before{content:""}.fa-user-large-slash::before{content:""}.fa-user-alt-slash::before{content:""}.fa-envelope-open::before{content:""}.fa-handshake-simple-slash::before{content:""}.fa-handshake-alt-slash::before{content:""}.fa-mattress-pillow::before{content:""}.fa-guarani-sign::before{content:""}.fa-arrows-rotate::before{content:""}.fa-refresh::before{content:""}.fa-sync::before{content:""}.fa-fire-extinguisher::before{content:""}.fa-cruzeiro-sign::before{content:""}.fa-greater-than-equal::before{content:""}.fa-shield-halved::before{content:""}.fa-shield-alt::before{content:""}.fa-book-atlas::before{content:""}.fa-atlas::before{content:""}.fa-virus::before{content:""}.fa-envelope-circle-check::before{content:""}.fa-layer-group::before{content:""}.fa-arrows-to-dot::before{content:""}.fa-archway::before{content:""}.fa-heart-circle-check::before{content:""}.fa-house-chimney-crack::before{content:""}.fa-house-damage::before{content:""}.fa-file-zipper::before{content:""}.fa-file-archive::before{content:""}.fa-square::before{content:""}.fa-martini-glass-empty::before{content:""}.fa-glass-martini::before{content:""}.fa-couch::before{content:""}.fa-cedi-sign::before{content:""}.fa-italic::before{content:""}.fa-church::before{content:""}.fa-comments-dollar::before{content:""}.fa-democrat::before{content:""}.fa-z::before{content:"Z"}.fa-person-skiing::before{content:""}.fa-skiing::before{content:""}.fa-road-lock::before{content:""}.fa-a::before{content:"A"}.fa-temperature-arrow-down::before{content:""}.fa-temperature-down::before{content:""}.fa-feather-pointed::before{content:""}.fa-feather-alt::before{content:""}.fa-p::before{content:"P"}.fa-snowflake::before{content:""}.fa-newspaper::before{content:""}.fa-rectangle-ad::before{content:""}.fa-ad::before{content:""}.fa-circle-arrow-right::before{content:""}.fa-arrow-circle-right::before{content:""}.fa-filter-circle-xmark::before{content:""}.fa-locust::before{content:""}.fa-sort::before{content:""}.fa-unsorted::before{content:""}.fa-list-ol::before{content:""}.fa-list-1-2::before{content:""}.fa-list-numeric::before{content:""}.fa-person-dress-burst::before{content:""}.fa-money-check-dollar::before{content:""}.fa-money-check-alt::before{content:""}.fa-vector-square::before{content:""}.fa-bread-slice::before{content:""}.fa-language::before{content:""}.fa-face-kiss-wink-heart::before{content:""}.fa-kiss-wink-heart::before{content:""}.fa-filter::before{content:""}.fa-question::before{content:"\?"}.fa-file-signature::before{content:""}.fa-up-down-left-right::before{content:""}.fa-arrows-alt::before{content:""}.fa-house-chimney-user::before{content:""}.fa-hand-holding-heart::before{content:""}.fa-puzzle-piece::before{content:""}.fa-money-check::before{content:""}.fa-star-half-stroke::before{content:""}.fa-star-half-alt::before{content:""}.fa-code::before{content:""}.fa-whiskey-glass::before{content:""}.fa-glass-whiskey::before{content:""}.fa-building-circle-exclamation::before{content:""}.fa-magnifying-glass-chart::before{content:""}.fa-arrow-up-right-from-square::before{content:""}.fa-external-link::before{content:""}.fa-cubes-stacked::before{content:""}.fa-won-sign::before{content:""}.fa-krw::before{content:""}.fa-won::before{content:""}.fa-virus-covid::before{content:""}.fa-austral-sign::before{content:""}.fa-f::before{content:"F"}.fa-leaf::before{content:""}.fa-road::before{content:""}.fa-taxi::before{content:""}.fa-cab::before{content:""}.fa-person-circle-plus::before{content:""}.fa-chart-pie::before{content:""}.fa-pie-chart::before{content:""}.fa-bolt-lightning::before{content:""}.fa-sack-xmark::before{content:""}.fa-file-excel::before{content:""}.fa-file-contract::before{content:""}.fa-fish-fins::before{content:""}.fa-building-flag::before{content:""}.fa-face-grin-beam::before{content:""}.fa-grin-beam::before{content:""}.fa-object-ungroup::before{content:""}.fa-poop::before{content:""}.fa-location-pin::before{content:""}.fa-map-marker::before{content:""}.fa-kaaba::before{content:""}.fa-toilet-paper::before{content:""}.fa-helmet-safety::before{content:""}.fa-hard-hat::before{content:""}.fa-hat-hard::before{content:""}.fa-eject::before{content:""}.fa-circle-right::before{content:""}.fa-arrow-alt-circle-right::before{content:""}.fa-plane-circle-check::before{content:""}.fa-face-rolling-eyes::before{content:""}.fa-meh-rolling-eyes::before{content:""}.fa-object-group::before{content:""}.fa-chart-line::before{content:""}.fa-line-chart::before{content:""}.fa-mask-ventilator::before{content:""}.fa-arrow-right::before{content:""}.fa-signs-post::before{content:""}.fa-map-signs::before{content:""}.fa-cash-register::before{content:""}.fa-person-circle-question::before{content:""}.fa-h::before{content:"H"}.fa-tarp::before{content:""}.fa-screwdriver-wrench::before{content:""}.fa-tools::before{content:""}.fa-arrows-to-eye::before{content:""}.fa-plug-circle-bolt::before{content:""}.fa-heart::before{content:""}.fa-mars-and-venus::before{content:""}.fa-house-user::before{content:""}.fa-home-user::before{content:""}.fa-dumpster-fire::before{content:""}.fa-house-crack::before{content:""}.fa-martini-glass-citrus::before{content:""}.fa-cocktail::before{content:""}.fa-face-surprise::before{content:""}.fa-surprise::before{content:""}.fa-bottle-water::before{content:""}.fa-circle-pause::before{content:""}.fa-pause-circle::before{content:""}.fa-toilet-paper-slash::before{content:""}.fa-apple-whole::before{content:""}.fa-apple-alt::before{content:""}.fa-kitchen-set::before{content:""}.fa-r::before{content:"R"}.fa-temperature-quarter::before{content:""}.fa-temperature-1::before{content:""}.fa-thermometer-1::before{content:""}.fa-thermometer-quarter::before{content:""}.fa-cube::before{content:""}.fa-bitcoin-sign::before{content:""}.fa-shield-dog::before{content:""}.fa-solar-panel::before{content:""}.fa-lock-open::before{content:""}.fa-elevator::before{content:""}.fa-money-bill-transfer::before{content:""}.fa-money-bill-trend-up::before{content:""}.fa-house-flood-water-circle-arrow-right::before{content:""}.fa-square-poll-horizontal::before{content:""}.fa-poll-h::before{content:""}.fa-circle::before{content:""}.fa-backward-fast::before{content:""}.fa-fast-backward::before{content:""}.fa-recycle::before{content:""}.fa-user-astronaut::before{content:""}.fa-plane-slash::before{content:""}.fa-trademark::before{content:""}.fa-basketball::before{content:""}.fa-basketball-ball::before{content:""}.fa-satellite-dish::before{content:""}.fa-circle-up::before{content:""}.fa-arrow-alt-circle-up::before{content:""}.fa-mobile-screen-button::before{content:""}.fa-mobile-alt::before{content:""}.fa-volume-high::before{content:""}.fa-volume-up::before{content:""}.fa-users-rays::before{content:""}.fa-wallet::before{content:""}.fa-clipboard-check::before{content:""}.fa-file-audio::before{content:""}.fa-burger::before{content:""}.fa-hamburger::before{content:""}.fa-wrench::before{content:""}.fa-bugs::before{content:""}.fa-rupee-sign::before{content:""}.fa-rupee::before{content:""}.fa-file-image::before{content:""}.fa-circle-question::before{content:""}.fa-question-circle::before{content:""}.fa-plane-departure::before{content:""}.fa-handshake-slash::before{content:""}.fa-book-bookmark::before{content:""}.fa-code-branch::before{content:""}.fa-hat-cowboy::before{content:""}.fa-bridge::before{content:""}.fa-phone-flip::before{content:""}.fa-phone-alt::before{content:""}.fa-truck-front::before{content:""}.fa-cat::before{content:""}.fa-anchor-circle-exclamation::before{content:""}.fa-truck-field::before{content:""}.fa-route::before{content:""}.fa-clipboard-question::before{content:""}.fa-panorama::before{content:""}.fa-comment-medical::before{content:""}.fa-teeth-open::before{content:""}.fa-file-circle-minus::before{content:""}.fa-tags::before{content:""}.fa-wine-glass::before{content:""}.fa-forward-fast::before{content:""}.fa-fast-forward::before{content:""}.fa-face-meh-blank::before{content:""}.fa-meh-blank::before{content:""}.fa-square-parking::before{content:""}.fa-parking::before{content:""}.fa-house-signal::before{content:""}.fa-bars-progress::before{content:""}.fa-tasks-alt::before{content:""}.fa-faucet-drip::before{content:""}.fa-cart-flatbed::before{content:""}.fa-dolly-flatbed::before{content:""}.fa-ban-smoking::before{content:""}.fa-smoking-ban::before{content:""}.fa-terminal::before{content:""}.fa-mobile-button::before{content:""}.fa-house-medical-flag::before{content:""}.fa-basket-shopping::before{content:""}.fa-shopping-basket::before{content:""}.fa-tape::before{content:""}.fa-bus-simple::before{content:""}.fa-bus-alt::before{content:""}.fa-eye::before{content:""}.fa-face-sad-cry::before{content:""}.fa-sad-cry::before{content:""}.fa-audio-description::before{content:""}.fa-person-military-to-person::before{content:""}.fa-file-shield::before{content:""}.fa-user-slash::before{content:""}.fa-pen::before{content:""}.fa-tower-observation::before{content:""}.fa-file-code::before{content:""}.fa-signal::before{content:""}.fa-signal-5::before{content:""}.fa-signal-perfect::before{content:""}.fa-bus::before{content:""}.fa-heart-circle-xmark::before{content:""}.fa-house-chimney::before{content:""}.fa-home-lg::before{content:""}.fa-window-maximize::before{content:""}.fa-face-frown::before{content:""}.fa-frown::before{content:""}.fa-prescription::before{content:""}.fa-shop::before{content:""}.fa-store-alt::before{content:""}.fa-floppy-disk::before{content:""}.fa-save::before{content:""}.fa-vihara::before{content:""}.fa-scale-unbalanced::before{content:""}.fa-balance-scale-left::before{content:""}.fa-sort-up::before{content:""}.fa-sort-asc::before{content:""}.fa-comment-dots::before{content:""}.fa-commenting::before{content:""}.fa-plant-wilt::before{content:""}.fa-diamond::before{content:""}.fa-face-grin-squint::before{content:""}.fa-grin-squint::before{content:""}.fa-hand-holding-dollar::before{content:""}.fa-hand-holding-usd::before{content:""}.fa-bacterium::before{content:""}.fa-hand-pointer::before{content:""}.fa-drum-steelpan::before{content:""}.fa-hand-scissors::before{content:""}.fa-hands-praying::before{content:""}.fa-praying-hands::before{content:""}.fa-arrow-rotate-right::before{content:""}.fa-arrow-right-rotate::before{content:""}.fa-arrow-rotate-forward::before{content:""}.fa-redo::before{content:""}.fa-biohazard::before{content:""}.fa-location-crosshairs::before{content:""}.fa-location::before{content:""}.fa-mars-double::before{content:""}.fa-child-dress::before{content:""}.fa-users-between-lines::before{content:""}.fa-lungs-virus::before{content:""}.fa-face-grin-tears::before{content:""}.fa-grin-tears::before{content:""}.fa-phone::before{content:""}.fa-calendar-xmark::before{content:""}.fa-calendar-times::before{content:""}.fa-child-reaching::before{content:""}.fa-head-side-virus::before{content:""}.fa-user-gear::before{content:""}.fa-user-cog::before{content:""}.fa-arrow-up-1-9::before{content:""}.fa-sort-numeric-up::before{content:""}.fa-door-closed::before{content:""}.fa-shield-virus::before{content:""}.fa-dice-six::before{content:""}.fa-mosquito-net::before{content:""}.fa-bridge-water::before{content:""}.fa-person-booth::before{content:""}.fa-text-width::before{content:""}.fa-hat-wizard::before{content:""}.fa-pen-fancy::before{content:""}.fa-person-digging::before{content:""}.fa-digging::before{content:""}.fa-trash::before{content:""}.fa-gauge-simple::before{content:""}.fa-gauge-simple-med::before{content:""}.fa-tachometer-average::before{content:""}.fa-book-medical::before{content:""}.fa-poo::before{content:""}.fa-quote-right::before{content:""}.fa-quote-right-alt::before{content:""}.fa-shirt::before{content:""}.fa-t-shirt::before{content:""}.fa-tshirt::before{content:""}.fa-cubes::before{content:""}.fa-divide::before{content:""}.fa-tenge-sign::before{content:""}.fa-tenge::before{content:""}.fa-headphones::before{content:""}.fa-hands-holding::before{content:""}.fa-hands-clapping::before{content:""}.fa-republican::before{content:""}.fa-arrow-left::before{content:""}.fa-person-circle-xmark::before{content:""}.fa-ruler::before{content:""}.fa-align-left::before{content:""}.fa-dice-d6::before{content:""}.fa-restroom::before{content:""}.fa-j::before{content:"J"}.fa-users-viewfinder::before{content:""}.fa-file-video::before{content:""}.fa-up-right-from-square::before{content:""}.fa-external-link-alt::before{content:""}.fa-table-cells::before{content:""}.fa-th::before{content:""}.fa-file-pdf::before{content:""}.fa-book-bible::before{content:""}.fa-bible::before{content:""}.fa-o::before{content:"O"}.fa-suitcase-medical::before{content:""}.fa-medkit::before{content:""}.fa-user-secret::before{content:""}.fa-otter::before{content:""}.fa-person-dress::before{content:""}.fa-female::before{content:""}.fa-comment-dollar::before{content:""}.fa-business-time::before{content:""}.fa-briefcase-clock::before{content:""}.fa-table-cells-large::before{content:""}.fa-th-large::before{content:""}.fa-book-tanakh::before{content:""}.fa-tanakh::before{content:""}.fa-phone-volume::before{content:""}.fa-volume-control-phone::before{content:""}.fa-hat-cowboy-side::before{content:""}.fa-clipboard-user::before{content:""}.fa-child::before{content:""}.fa-lira-sign::before{content:""}.fa-satellite::before{content:""}.fa-plane-lock::before{content:""}.fa-tag::before{content:""}.fa-comment::before{content:""}.fa-cake-candles::before{content:""}.fa-birthday-cake::before{content:""}.fa-cake::before{content:""}.fa-envelope::before{content:""}.fa-angles-up::before{content:""}.fa-angle-double-up::before{content:""}.fa-paperclip::before{content:""}.fa-arrow-right-to-city::before{content:""}.fa-ribbon::before{content:""}.fa-lungs::before{content:""}.fa-arrow-up-9-1::before{content:""}.fa-sort-numeric-up-alt::before{content:""}.fa-litecoin-sign::before{content:""}.fa-border-none::before{content:""}.fa-circle-nodes::before{content:""}.fa-parachute-box::before{content:""}.fa-indent::before{content:""}.fa-truck-field-un::before{content:""}.fa-hourglass::before{content:""}.fa-hourglass-empty::before{content:""}.fa-mountain::before{content:""}.fa-user-doctor::before{content:""}.fa-user-md::before{content:""}.fa-circle-info::before{content:""}.fa-info-circle::before{content:""}.fa-cloud-meatball::before{content:""}.fa-camera::before{content:""}.fa-camera-alt::before{content:""}.fa-square-virus::before{content:""}.fa-meteor::before{content:""}.fa-car-on::before{content:""}.fa-sleigh::before{content:""}.fa-arrow-down-1-9::before{content:""}.fa-sort-numeric-asc::before{content:""}.fa-sort-numeric-down::before{content:""}.fa-hand-holding-droplet::before{content:""}.fa-hand-holding-water::before{content:""}.fa-water::before{content:""}.fa-calendar-check::before{content:""}.fa-braille::before{content:""}.fa-prescription-bottle-medical::before{content:""}.fa-prescription-bottle-alt::before{content:""}.fa-landmark::before{content:""}.fa-truck::before{content:""}.fa-crosshairs::before{content:""}.fa-person-cane::before{content:""}.fa-tent::before{content:""}.fa-vest-patches::before{content:""}.fa-check-double::before{content:""}.fa-arrow-down-a-z::before{content:""}.fa-sort-alpha-asc::before{content:""}.fa-sort-alpha-down::before{content:""}.fa-money-bill-wheat::before{content:""}.fa-cookie::before{content:""}.fa-arrow-rotate-left::before{content:""}.fa-arrow-left-rotate::before{content:""}.fa-arrow-rotate-back::before{content:""}.fa-arrow-rotate-backward::before{content:""}.fa-undo::before{content:""}.fa-hard-drive::before{content:""}.fa-hdd::before{content:""}.fa-face-grin-squint-tears::before{content:""}.fa-grin-squint-tears::before{content:""}.fa-dumbbell::before{content:""}.fa-rectangle-list::before{content:""}.fa-list-alt::before{content:""}.fa-tarp-droplet::before{content:""}.fa-house-medical-circle-check::before{content:""}.fa-person-skiing-nordic::before{content:""}.fa-skiing-nordic::before{content:""}.fa-calendar-plus::before{content:""}.fa-plane-arrival::before{content:""}.fa-circle-left::before{content:""}.fa-arrow-alt-circle-left::before{content:""}.fa-train-subway::before{content:""}.fa-subway::before{content:""}.fa-chart-gantt::before{content:""}.fa-indian-rupee-sign::before{content:""}.fa-indian-rupee::before{content:""}.fa-inr::before{content:""}.fa-crop-simple::before{content:""}.fa-crop-alt::before{content:""}.fa-money-bill-1::before{content:""}.fa-money-bill-alt::before{content:""}.fa-left-long::before{content:""}.fa-long-arrow-alt-left::before{content:""}.fa-dna::before{content:""}.fa-virus-slash::before{content:""}.fa-minus::before{content:""}.fa-subtract::before{content:""}.fa-chess::before{content:""}.fa-arrow-left-long::before{content:""}.fa-long-arrow-left::before{content:""}.fa-plug-circle-check::before{content:""}.fa-street-view::before{content:""}.fa-franc-sign::before{content:""}.fa-volume-off::before{content:""}.fa-hands-asl-interpreting::before{content:""}.fa-american-sign-language-interpreting::before{content:""}.fa-asl-interpreting::before{content:""}.fa-hands-american-sign-language-interpreting::before{content:""}.fa-gear::before{content:""}.fa-cog::before{content:""}.fa-droplet-slash::before{content:""}.fa-tint-slash::before{content:""}.fa-mosque::before{content:""}.fa-mosquito::before{content:""}.fa-star-of-david::before{content:""}.fa-person-military-rifle::before{content:""}.fa-cart-shopping::before{content:""}.fa-shopping-cart::before{content:""}.fa-vials::before{content:""}.fa-plug-circle-plus::before{content:""}.fa-place-of-worship::before{content:""}.fa-grip-vertical::before{content:""}.fa-arrow-turn-up::before{content:""}.fa-level-up::before{content:""}.fa-u::before{content:"U"}.fa-square-root-variable::before{content:""}.fa-square-root-alt::before{content:""}.fa-clock::before{content:""}.fa-clock-four::before{content:""}.fa-backward-step::before{content:""}.fa-step-backward::before{content:""}.fa-pallet::before{content:""}.fa-faucet::before{content:""}.fa-baseball-bat-ball::before{content:""}.fa-s::before{content:"S"}.fa-timeline::before{content:""}.fa-keyboard::before{content:""}.fa-caret-down::before{content:""}.fa-house-chimney-medical::before{content:""}.fa-clinic-medical::before{content:""}.fa-temperature-three-quarters::before{content:""}.fa-temperature-3::before{content:""}.fa-thermometer-3::before{content:""}.fa-thermometer-three-quarters::before{content:""}.fa-mobile-screen::before{content:""}.fa-mobile-android-alt::before{content:""}.fa-plane-up::before{content:""}.fa-piggy-bank::before{content:""}.fa-battery-half::before{content:""}.fa-battery-3::before{content:""}.fa-mountain-city::before{content:""}.fa-coins::before{content:""}.fa-khanda::before{content:""}.fa-sliders::before{content:""}.fa-sliders-h::before{content:""}.fa-folder-tree::before{content:""}.fa-network-wired::before{content:""}.fa-map-pin::before{content:""}.fa-hamsa::before{content:""}.fa-cent-sign::before{content:""}.fa-flask::before{content:""}.fa-person-pregnant::before{content:""}.fa-wand-sparkles::before{content:""}.fa-ellipsis-vertical::before{content:""}.fa-ellipsis-v::before{content:""}.fa-ticket::before{content:""}.fa-power-off::before{content:""}.fa-right-long::before{content:""}.fa-long-arrow-alt-right::before{content:""}.fa-flag-usa::before{content:""}.fa-laptop-file::before{content:""}.fa-tty::before{content:""}.fa-teletype::before{content:""}.fa-diagram-next::before{content:""}.fa-person-rifle::before{content:""}.fa-house-medical-circle-exclamation::before{content:""}.fa-closed-captioning::before{content:""}.fa-person-hiking::before{content:""}.fa-hiking::before{content:""}.fa-venus-double::before{content:""}.fa-images::before{content:""}.fa-calculator::before{content:""}.fa-people-pulling::before{content:""}.fa-n::before{content:"N"}.fa-cable-car::before{content:""}.fa-tram::before{content:""}.fa-cloud-rain::before{content:""}.fa-building-circle-xmark::before{content:""}.fa-ship::before{content:""}.fa-arrows-down-to-line::before{content:""}.fa-download::before{content:""}.fa-face-grin::before{content:""}.fa-grin::before{content:""}.fa-delete-left::before{content:""}.fa-backspace::before{content:""}.fa-eye-dropper::before{content:""}.fa-eye-dropper-empty::before{content:""}.fa-eyedropper::before{content:""}.fa-file-circle-check::before{content:""}.fa-forward::before{content:""}.fa-mobile::before{content:""}.fa-mobile-android::before{content:""}.fa-mobile-phone::before{content:""}.fa-face-meh::before{content:""}.fa-meh::before{content:""}.fa-align-center::before{content:""}.fa-book-skull::before{content:""}.fa-book-dead::before{content:""}.fa-id-card::before{content:""}.fa-drivers-license::before{content:""}.fa-outdent::before{content:""}.fa-dedent::before{content:""}.fa-heart-circle-exclamation::before{content:""}.fa-house::before{content:""}.fa-home::before{content:""}.fa-home-alt::before{content:""}.fa-home-lg-alt::before{content:""}.fa-calendar-week::before{content:""}.fa-laptop-medical::before{content:""}.fa-b::before{content:"B"}.fa-file-medical::before{content:""}.fa-dice-one::before{content:""}.fa-kiwi-bird::before{content:""}.fa-arrow-right-arrow-left::before{content:""}.fa-exchange::before{content:""}.fa-rotate-right::before{content:""}.fa-redo-alt::before{content:""}.fa-rotate-forward::before{content:""}.fa-utensils::before{content:""}.fa-cutlery::before{content:""}.fa-arrow-up-wide-short::before{content:""}.fa-sort-amount-up::before{content:""}.fa-mill-sign::before{content:""}.fa-bowl-rice::before{content:""}.fa-skull::before{content:""}.fa-tower-broadcast::before{content:""}.fa-broadcast-tower::before{content:""}.fa-truck-pickup::before{content:""}.fa-up-long::before{content:""}.fa-long-arrow-alt-up::before{content:""}.fa-stop::before{content:""}.fa-code-merge::before{content:""}.fa-upload::before{content:""}.fa-hurricane::before{content:""}.fa-mound::before{content:""}.fa-toilet-portable::before{content:""}.fa-compact-disc::before{content:""}.fa-file-arrow-down::before{content:""}.fa-file-download::before{content:""}.fa-caravan::before{content:""}.fa-shield-cat::before{content:""}.fa-bolt::before{content:""}.fa-zap::before{content:""}.fa-glass-water::before{content:""}.fa-oil-well::before{content:""}.fa-vault::before{content:""}.fa-mars::before{content:""}.fa-toilet::before{content:""}.fa-plane-circle-xmark::before{content:""}.fa-yen-sign::before{content:""}.fa-cny::before{content:""}.fa-jpy::before{content:""}.fa-rmb::before{content:""}.fa-yen::before{content:""}.fa-ruble-sign::before{content:""}.fa-rouble::before{content:""}.fa-rub::before{content:""}.fa-ruble::before{content:""}.fa-sun::before{content:""}.fa-guitar::before{content:""}.fa-face-laugh-wink::before{content:""}.fa-laugh-wink::before{content:""}.fa-horse-head::before{content:""}.fa-bore-hole::before{content:""}.fa-industry::before{content:""}.fa-circle-down::before{content:""}.fa-arrow-alt-circle-down::before{content:""}.fa-arrows-turn-to-dots::before{content:""}.fa-florin-sign::before{content:""}.fa-arrow-down-short-wide::before{content:""}.fa-sort-amount-desc::before{content:""}.fa-sort-amount-down-alt::before{content:""}.fa-less-than::before{content:"\<"}.fa-angle-down::before{content:""}.fa-car-tunnel::before{content:""}.fa-head-side-cough::before{content:""}.fa-grip-lines::before{content:""}.fa-thumbs-down::before{content:""}.fa-user-lock::before{content:""}.fa-arrow-right-long::before{content:""}.fa-long-arrow-right::before{content:""}.fa-anchor-circle-xmark::before{content:""}.fa-ellipsis::before{content:""}.fa-ellipsis-h::before{content:""}.fa-chess-pawn::before{content:""}.fa-kit-medical::before{content:""}.fa-first-aid::before{content:""}.fa-person-through-window::before{content:""}.fa-toolbox::before{content:""}.fa-hands-holding-circle::before{content:""}.fa-bug::before{content:""}.fa-credit-card::before{content:""}.fa-credit-card-alt::before{content:""}.fa-car::before{content:""}.fa-automobile::before{content:""}.fa-hand-holding-hand::before{content:""}.fa-book-open-reader::before{content:""}.fa-book-reader::before{content:""}.fa-mountain-sun::before{content:""}.fa-arrows-left-right-to-line::before{content:""}.fa-dice-d20::before{content:""}.fa-truck-droplet::before{content:""}.fa-file-circle-xmark::before{content:""}.fa-temperature-arrow-up::before{content:""}.fa-temperature-up::before{content:""}.fa-medal::before{content:""}.fa-bed::before{content:""}.fa-square-h::before{content:""}.fa-h-square::before{content:""}.fa-podcast::before{content:""}.fa-temperature-full::before{content:""}.fa-temperature-4::before{content:""}.fa-thermometer-4::before{content:""}.fa-thermometer-full::before{content:""}.fa-bell::before{content:""}.fa-superscript::before{content:""}.fa-plug-circle-xmark::before{content:""}.fa-star-of-life::before{content:""}.fa-phone-slash::before{content:""}.fa-paint-roller::before{content:""}.fa-handshake-angle::before{content:""}.fa-hands-helping::before{content:""}.fa-location-dot::before{content:""}.fa-map-marker-alt::before{content:""}.fa-file::before{content:""}.fa-greater-than::before{content:"\>"}.fa-person-swimming::before{content:""}.fa-swimmer::before{content:""}.fa-arrow-down::before{content:""}.fa-droplet::before{content:""}.fa-tint::before{content:""}.fa-eraser::before{content:""}.fa-earth-americas::before{content:""}.fa-earth::before{content:""}.fa-earth-america::before{content:""}.fa-globe-americas::before{content:""}.fa-person-burst::before{content:""}.fa-dove::before{content:""}.fa-battery-empty::before{content:""}.fa-battery-0::before{content:""}.fa-socks::before{content:""}.fa-inbox::before{content:""}.fa-section::before{content:""}.fa-gauge-high::before{content:""}.fa-tachometer-alt::before{content:""}.fa-tachometer-alt-fast::before{content:""}.fa-envelope-open-text::before{content:""}.fa-hospital::before{content:""}.fa-hospital-alt::before{content:""}.fa-hospital-wide::before{content:""}.fa-wine-bottle::before{content:""}.fa-chess-rook::before{content:""}.fa-bars-staggered::before{content:""}.fa-reorder::before{content:""}.fa-stream::before{content:""}.fa-dharmachakra::before{content:""}.fa-hotdog::before{content:""}.fa-person-walking-with-cane::before{content:""}.fa-blind::before{content:""}.fa-drum::before{content:""}.fa-ice-cream::before{content:""}.fa-heart-circle-bolt::before{content:""}.fa-fax::before{content:""}.fa-paragraph::before{content:""}.fa-check-to-slot::before{content:""}.fa-vote-yea::before{content:""}.fa-star-half::before{content:""}.fa-boxes-stacked::before{content:""}.fa-boxes::before{content:""}.fa-boxes-alt::before{content:""}.fa-link::before{content:""}.fa-chain::before{content:""}.fa-ear-listen::before{content:""}.fa-assistive-listening-systems::before{content:""}.fa-tree-city::before{content:""}.fa-play::before{content:""}.fa-font::before{content:""}.fa-rupiah-sign::before{content:""}.fa-magnifying-glass::before{content:""}.fa-search::before{content:""}.fa-table-tennis-paddle-ball::before{content:""}.fa-ping-pong-paddle-ball::before{content:""}.fa-table-tennis::before{content:""}.fa-person-dots-from-line::before{content:""}.fa-diagnoses::before{content:""}.fa-trash-can-arrow-up::before{content:""}.fa-trash-restore-alt::before{content:""}.fa-naira-sign::before{content:""}.fa-cart-arrow-down::before{content:""}.fa-walkie-talkie::before{content:""}.fa-file-pen::before{content:""}.fa-file-edit::before{content:""}.fa-receipt::before{content:""}.fa-square-pen::before{content:""}.fa-pen-square::before{content:""}.fa-pencil-square::before{content:""}.fa-suitcase-rolling::before{content:""}.fa-person-circle-exclamation::before{content:""}.fa-chevron-down::before{content:""}.fa-battery-full::before{content:""}.fa-battery::before{content:""}.fa-battery-5::before{content:""}.fa-skull-crossbones::before{content:""}.fa-code-compare::before{content:""}.fa-list-ul::before{content:""}.fa-list-dots::before{content:""}.fa-school-lock::before{content:""}.fa-tower-cell::before{content:""}.fa-down-long::before{content:""}.fa-long-arrow-alt-down::before{content:""}.fa-ranking-star::before{content:""}.fa-chess-king::before{content:""}.fa-person-harassing::before{content:""}.fa-brazilian-real-sign::before{content:""}.fa-landmark-dome::before{content:""}.fa-landmark-alt::before{content:""}.fa-arrow-up::before{content:""}.fa-tv::before{content:""}.fa-television::before{content:""}.fa-tv-alt::before{content:""}.fa-shrimp::before{content:""}.fa-list-check::before{content:""}.fa-tasks::before{content:""}.fa-jug-detergent::before{content:""}.fa-circle-user::before{content:""}.fa-user-circle::before{content:""}.fa-user-shield::before{content:""}.fa-wind::before{content:""}.fa-car-burst::before{content:""}.fa-car-crash::before{content:""}.fa-y::before{content:"Y"}.fa-person-snowboarding::before{content:""}.fa-snowboarding::before{content:""}.fa-truck-fast::before{content:""}.fa-shipping-fast::before{content:""}.fa-fish::before{content:""}.fa-user-graduate::before{content:""}.fa-circle-half-stroke::before{content:""}.fa-adjust::before{content:""}.fa-clapperboard::before{content:""}.fa-circle-radiation::before{content:""}.fa-radiation-alt::before{content:""}.fa-baseball::before{content:""}.fa-baseball-ball::before{content:""}.fa-jet-fighter-up::before{content:""}.fa-diagram-project::before{content:""}.fa-project-diagram::before{content:""}.fa-copy::before{content:""}.fa-volume-xmark::before{content:""}.fa-volume-mute::before{content:""}.fa-volume-times::before{content:""}.fa-hand-sparkles::before{content:""}.fa-grip::before{content:""}.fa-grip-horizontal::before{content:""}.fa-share-from-square::before{content:""}.fa-share-square::before{content:""}.fa-child-combatant::before{content:""}.fa-child-rifle::before{content:""}.fa-gun::before{content:""}.fa-square-phone::before{content:""}.fa-phone-square::before{content:""}.fa-plus::before{content:"\+"}.fa-add::before{content:"\+"}.fa-expand::before{content:""}.fa-computer::before{content:""}.fa-xmark::before{content:""}.fa-close::before{content:""}.fa-multiply::before{content:""}.fa-remove::before{content:""}.fa-times::before{content:""}.fa-arrows-up-down-left-right::before{content:""}.fa-arrows::before{content:""}.fa-chalkboard-user::before{content:""}.fa-chalkboard-teacher::before{content:""}.fa-peso-sign::before{content:""}.fa-building-shield::before{content:""}.fa-baby::before{content:""}.fa-users-line::before{content:""}.fa-quote-left::before{content:""}.fa-quote-left-alt::before{content:""}.fa-tractor::before{content:""}.fa-trash-arrow-up::before{content:""}.fa-trash-restore::before{content:""}.fa-arrow-down-up-lock::before{content:""}.fa-lines-leaning::before{content:""}.fa-ruler-combined::before{content:""}.fa-copyright::before{content:""}.fa-equals::before{content:"\="}.fa-blender::before{content:""}.fa-teeth::before{content:""}.fa-shekel-sign::before{content:""}.fa-ils::before{content:""}.fa-shekel::before{content:""}.fa-sheqel::before{content:""}.fa-sheqel-sign::before{content:""}.fa-map::before{content:""}.fa-rocket::before{content:""}.fa-photo-film::before{content:""}.fa-photo-video::before{content:""}.fa-folder-minus::before{content:""}.fa-store::before{content:""}.fa-arrow-trend-up::before{content:""}.fa-plug-circle-minus::before{content:""}.fa-sign-hanging::before{content:""}.fa-sign::before{content:""}.fa-bezier-curve::before{content:""}.fa-bell-slash::before{content:""}.fa-tablet::before{content:""}.fa-tablet-android::before{content:""}.fa-school-flag::before{content:""}.fa-fill::before{content:""}.fa-angle-up::before{content:""}.fa-drumstick-bite::before{content:""}.fa-holly-berry::before{content:""}.fa-chevron-left::before{content:""}.fa-bacteria::before{content:""}.fa-hand-lizard::before{content:""}.fa-notdef::before{content:""}.fa-disease::before{content:""}.fa-briefcase-medical::before{content:""}.fa-genderless::before{content:""}.fa-chevron-right::before{content:""}.fa-retweet::before{content:""}.fa-car-rear::before{content:""}.fa-car-alt::before{content:""}.fa-pump-soap::before{content:""}.fa-video-slash::before{content:""}.fa-battery-quarter::before{content:""}.fa-battery-2::before{content:""}.fa-radio::before{content:""}.fa-baby-carriage::before{content:""}.fa-carriage-baby::before{content:""}.fa-traffic-light::before{content:""}.fa-thermometer::before{content:""}.fa-vr-cardboard::before{content:""}.fa-hand-middle-finger::before{content:""}.fa-percent::before{content:"\%"}.fa-percentage::before{content:"\%"}.fa-truck-moving::before{content:""}.fa-glass-water-droplet::before{content:""}.fa-display::before{content:""}.fa-face-smile::before{content:""}.fa-smile::before{content:""}.fa-thumbtack::before{content:""}.fa-thumb-tack::before{content:""}.fa-trophy::before{content:""}.fa-person-praying::before{content:""}.fa-pray::before{content:""}.fa-hammer::before{content:""}.fa-hand-peace::before{content:""}.fa-rotate::before{content:""}.fa-sync-alt::before{content:""}.fa-spinner::before{content:""}.fa-robot::before{content:""}.fa-peace::before{content:""}.fa-gears::before{content:""}.fa-cogs::before{content:""}.fa-warehouse::before{content:""}.fa-arrow-up-right-dots::before{content:""}.fa-splotch::before{content:""}.fa-face-grin-hearts::before{content:""}.fa-grin-hearts::before{content:""}.fa-dice-four::before{content:""}.fa-sim-card::before{content:""}.fa-transgender::before{content:""}.fa-transgender-alt::before{content:""}.fa-mercury::before{content:""}.fa-arrow-turn-down::before{content:""}.fa-level-down::before{content:""}.fa-person-falling-burst::before{content:""}.fa-award::before{content:""}.fa-ticket-simple::before{content:""}.fa-ticket-alt::before{content:""}.fa-building::before{content:""}.fa-angles-left::before{content:""}.fa-angle-double-left::before{content:""}.fa-qrcode::before{content:""}.fa-clock-rotate-left::before{content:""}.fa-history::before{content:""}.fa-face-grin-beam-sweat::before{content:""}.fa-grin-beam-sweat::before{content:""}.fa-file-export::before{content:""}.fa-arrow-right-from-file::before{content:""}.fa-shield::before{content:""}.fa-shield-blank::before{content:""}.fa-arrow-up-short-wide::before{content:""}.fa-sort-amount-up-alt::before{content:""}.fa-house-medical::before{content:""}.fa-golf-ball-tee::before{content:""}.fa-golf-ball::before{content:""}.fa-circle-chevron-left::before{content:""}.fa-chevron-circle-left::before{content:""}.fa-house-chimney-window::before{content:""}.fa-pen-nib::before{content:""}.fa-tent-arrow-turn-left::before{content:""}.fa-tents::before{content:""}.fa-wand-magic::before{content:""}.fa-magic::before{content:""}.fa-dog::before{content:""}.fa-carrot::before{content:""}.fa-moon::before{content:""}.fa-wine-glass-empty::before{content:""}.fa-wine-glass-alt::before{content:""}.fa-cheese::before{content:""}.fa-yin-yang::before{content:""}.fa-music::before{content:""}.fa-code-commit::before{content:""}.fa-temperature-low::before{content:""}.fa-person-biking::before{content:""}.fa-biking::before{content:""}.fa-broom::before{content:""}.fa-shield-heart::before{content:""}.fa-gopuram::before{content:""}.fa-earth-oceania::before{content:""}.fa-globe-oceania::before{content:""}.fa-square-xmark::before{content:""}.fa-times-square::before{content:""}.fa-xmark-square::before{content:""}.fa-hashtag::before{content:"\#"}.fa-up-right-and-down-left-from-center::before{content:""}.fa-expand-alt::before{content:""}.fa-oil-can::before{content:""}.fa-t::before{content:"T"}.fa-hippo::before{content:""}.fa-chart-column::before{content:""}.fa-infinity::before{content:""}.fa-vial-circle-check::before{content:""}.fa-person-arrow-down-to-line::before{content:""}.fa-voicemail::before{content:""}.fa-fan::before{content:""}.fa-person-walking-luggage::before{content:""}.fa-up-down::before{content:""}.fa-arrows-alt-v::before{content:""}.fa-cloud-moon-rain::before{content:""}.fa-calendar::before{content:""}.fa-trailer::before{content:""}.fa-bahai::before{content:""}.fa-haykal::before{content:""}.fa-sd-card::before{content:""}.fa-dragon::before{content:""}.fa-shoe-prints::before{content:""}.fa-circle-plus::before{content:""}.fa-plus-circle::before{content:""}.fa-face-grin-tongue-wink::before{content:""}.fa-grin-tongue-wink::before{content:""}.fa-hand-holding::before{content:""}.fa-plug-circle-exclamation::before{content:""}.fa-link-slash::before{content:""}.fa-chain-broken::before{content:""}.fa-chain-slash::before{content:""}.fa-unlink::before{content:""}.fa-clone::before{content:""}.fa-person-walking-arrow-loop-left::before{content:""}.fa-arrow-up-z-a::before{content:""}.fa-sort-alpha-up-alt::before{content:""}.fa-fire-flame-curved::before{content:""}.fa-fire-alt::before{content:""}.fa-tornado::before{content:""}.fa-file-circle-plus::before{content:""}.fa-book-quran::before{content:""}.fa-quran::before{content:""}.fa-anchor::before{content:""}.fa-border-all::before{content:""}.fa-face-angry::before{content:""}.fa-angry::before{content:""}.fa-cookie-bite::before{content:""}.fa-arrow-trend-down::before{content:""}.fa-rss::before{content:""}.fa-feed::before{content:""}.fa-draw-polygon::before{content:""}.fa-scale-balanced::before{content:""}.fa-balance-scale::before{content:""}.fa-gauge-simple-high::before{content:""}.fa-tachometer::before{content:""}.fa-tachometer-fast::before{content:""}.fa-shower::before{content:""}.fa-desktop::before{content:""}.fa-desktop-alt::before{content:""}.fa-m::before{content:"M"}.fa-table-list::before{content:""}.fa-th-list::before{content:""}.fa-comment-sms::before{content:""}.fa-sms::before{content:""}.fa-book::before{content:""}.fa-user-plus::before{content:""}.fa-check::before{content:""}.fa-battery-three-quarters::before{content:""}.fa-battery-4::before{content:""}.fa-house-circle-check::before{content:""}.fa-angle-left::before{content:""}.fa-diagram-successor::before{content:""}.fa-truck-arrow-right::before{content:""}.fa-arrows-split-up-and-left::before{content:""}.fa-hand-fist::before{content:""}.fa-fist-raised::before{content:""}.fa-cloud-moon::before{content:""}.fa-briefcase::before{content:""}.fa-person-falling::before{content:""}.fa-image-portrait::before{content:""}.fa-portrait::before{content:""}.fa-user-tag::before{content:""}.fa-rug::before{content:""}.fa-earth-europe::before{content:""}.fa-globe-europe::before{content:""}.fa-cart-flatbed-suitcase::before{content:""}.fa-luggage-cart::before{content:""}.fa-rectangle-xmark::before{content:""}.fa-rectangle-times::before{content:""}.fa-times-rectangle::before{content:""}.fa-window-close::before{content:""}.fa-baht-sign::before{content:""}.fa-book-open::before{content:""}.fa-book-journal-whills::before{content:""}.fa-journal-whills::before{content:""}.fa-handcuffs::before{content:""}.fa-triangle-exclamation::before{content:""}.fa-exclamation-triangle::before{content:""}.fa-warning::before{content:""}.fa-database::before{content:""}.fa-share::before{content:""}.fa-arrow-turn-right::before{content:""}.fa-mail-forward::before{content:""}.fa-bottle-droplet::before{content:""}.fa-mask-face::before{content:""}.fa-hill-rockslide::before{content:""}.fa-right-left::before{content:""}.fa-exchange-alt::before{content:""}.fa-paper-plane::before{content:""}.fa-road-circle-exclamation::before{content:""}.fa-dungeon::before{content:""}.fa-align-right::before{content:""}.fa-money-bill-1-wave::before{content:""}.fa-money-bill-wave-alt::before{content:""}.fa-life-ring::before{content:""}.fa-hands::before{content:""}.fa-sign-language::before{content:""}.fa-signing::before{content:""}.fa-calendar-day::before{content:""}.fa-water-ladder::before{content:""}.fa-ladder-water::before{content:""}.fa-swimming-pool::before{content:""}.fa-arrows-up-down::before{content:""}.fa-arrows-v::before{content:""}.fa-face-grimace::before{content:""}.fa-grimace::before{content:""}.fa-wheelchair-move::before{content:""}.fa-wheelchair-alt::before{content:""}.fa-turn-down::before{content:""}.fa-level-down-alt::before{content:""}.fa-person-walking-arrow-right::before{content:""}.fa-square-envelope::before{content:""}.fa-envelope-square::before{content:""}.fa-dice::before{content:""}.fa-bowling-ball::before{content:""}.fa-brain::before{content:""}.fa-bandage::before{content:""}.fa-band-aid::before{content:""}.fa-calendar-minus::before{content:""}.fa-circle-xmark::before{content:""}.fa-times-circle::before{content:""}.fa-xmark-circle::before{content:""}.fa-gifts::before{content:""}.fa-hotel::before{content:""}.fa-earth-asia::before{content:""}.fa-globe-asia::before{content:""}.fa-id-card-clip::before{content:""}.fa-id-card-alt::before{content:""}.fa-magnifying-glass-plus::before{content:""}.fa-search-plus::before{content:""}.fa-thumbs-up::before{content:""}.fa-user-clock::before{content:""}.fa-hand-dots::before{content:""}.fa-allergies::before{content:""}.fa-file-invoice::before{content:""}.fa-window-minimize::before{content:""}.fa-mug-saucer::before{content:""}.fa-coffee::before{content:""}.fa-brush::before{content:""}.fa-mask::before{content:""}.fa-magnifying-glass-minus::before{content:""}.fa-search-minus::before{content:""}.fa-ruler-vertical::before{content:""}.fa-user-large::before{content:""}.fa-user-alt::before{content:""}.fa-train-tram::before{content:""}.fa-user-nurse::before{content:""}.fa-syringe::before{content:""}.fa-cloud-sun::before{content:""}.fa-stopwatch-20::before{content:""}.fa-square-full::before{content:""}.fa-magnet::before{content:""}.fa-jar::before{content:""}.fa-note-sticky::before{content:""}.fa-sticky-note::before{content:""}.fa-bug-slash::before{content:""}.fa-arrow-up-from-water-pump::before{content:""}.fa-bone::before{content:""}.fa-user-injured::before{content:""}.fa-face-sad-tear::before{content:""}.fa-sad-tear::before{content:""}.fa-plane::before{content:""}.fa-tent-arrows-down::before{content:""}.fa-exclamation::before{content:"\!"}.fa-arrows-spin::before{content:""}.fa-print::before{content:""}.fa-turkish-lira-sign::before{content:""}.fa-try::before{content:""}.fa-turkish-lira::before{content:""}.fa-dollar-sign::before{content:"\$"}.fa-dollar::before{content:"\$"}.fa-usd::before{content:"\$"}.fa-x::before{content:"X"}.fa-magnifying-glass-dollar::before{content:""}.fa-search-dollar::before{content:""}.fa-users-gear::before{content:""}.fa-users-cog::before{content:""}.fa-person-military-pointing::before{content:""}.fa-building-columns::before{content:""}.fa-bank::before{content:""}.fa-institution::before{content:""}.fa-museum::before{content:""}.fa-university::before{content:""}.fa-umbrella::before{content:""}.fa-trowel::before{content:""}.fa-d::before{content:"D"}.fa-stapler::before{content:""}.fa-masks-theater::before{content:""}.fa-theater-masks::before{content:""}.fa-kip-sign::before{content:""}.fa-hand-point-left::before{content:""}.fa-handshake-simple::before{content:""}.fa-handshake-alt::before{content:""}.fa-jet-fighter::before{content:""}.fa-fighter-jet::before{content:""}.fa-square-share-nodes::before{content:""}.fa-share-alt-square::before{content:""}.fa-barcode::before{content:""}.fa-plus-minus::before{content:""}.fa-video::before{content:""}.fa-video-camera::before{content:""}.fa-graduation-cap::before{content:""}.fa-mortar-board::before{content:""}.fa-hand-holding-medical::before{content:""}.fa-person-circle-check::before{content:""}.fa-turn-up::before{content:""}.fa-level-up-alt::before{content:""}.sr-only,.fa-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border-width:0}.sr-only-focusable:not(:focus),.fa-sr-only-focusable:not(:focus){position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border-width:0}/*!
+ * Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com
+ * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
+ * Copyright 2023 Fonticons, Inc.
+ */:root,:host{--fa-style-family-classic: "Font Awesome 6 Free";--fa-font-solid: normal 900 1em/1 "Font Awesome 6 Free"}@font-face{font-family:"Font Awesome 6 Free";font-style:normal;font-weight:900;font-display:block;src:url("../fonts//fa-solid-900.woff2") format("woff2"),url("../fonts//fa-solid-900.ttf") format("truetype")}.fas,.fa-solid{font-weight:900}*{margin:0;padding:0}html,body{height:100%}body{font-family:sans-serif;line-height:1.5;min-height:100%}.wrap{width:80%;max-width:1100px;margin:auto;position:relative}.logospace{float:left}html[dir=rtl] .logospace{float:right}.menuspace{float:right}html[dir=rtl] .menuspace{float:left}.center{padding:auto;text-align:center}.v-center{display:table-cell;vertical-align:middle}i{font-style:italic}h1{margin:1em 0;font-size:2em;font-weight:900}h2{margin:1em 0;font-size:1.5em;font-weight:700;color:#1c1c1c;border-bottom:solid 1px #bbb}h3{font-weight:500;color:#2e3436;padding:0;margin-top:0}p{padding:.5em 0;margin-bottom:1em}a{color:#191970}a:hover,a:focus,a.pure-menu-link:hover,a.pure-menu-link:focus,.pure-menu-selected a.pure-menu-link:hover,.pure-menu-selected a.pure-menu-link:focus{color:#fff;background-color:#444;padding:.5em 1em}a:hover,a:focus{padding:.15rem}.overflow{overflow:hidden}ul{padding-left:1.5em}strong,b{font-weight:bold}pre,code,kbd,samp,tt{font-family:monospace;font-size:.9rem;padding:0 .2rem}.xmldata{font-family:monospace}#layout,#menu,#foot,.menu-link{-webkit-transition:all .2s ease-out;-moz-transition:all .2s ease-out;-ms-transition:all .2s ease-out;-o-transition:all .2s ease-out;transition:all .2s ease-out}#layout.active #menu{right:11em;width:11em}#menu{margin-right:-11em;width:11em;position:fixed;top:0;right:0;bottom:0;z-index:1000;background:#e8410c;overflow-y:auto;-webkit-overflow-scrolling:touch}#menu a{color:#fff;border:none;padding:.6em 0 .6em .6em}#menu .pure-menu,#menu .pure-menu ul{border:none;background:rgba(0,0,0,0)}#menu .pure-menu ul,#menu .pure-menu .menu-item-divided{border-top:1px solid #db0100}#menu .pure-menu-selected,#menu .pure-menu-heading{background:#b8002c;color:#000}#menu .pure-menu-selected a{color:#fff}#menu .pure-menu-heading{font-size:110%;color:#fff;margin:0;text-transform:none}.menu-link{position:relative;display:block;top:0;right:0;background:rgba(0,0,0,0);z-index:10;height:2rem;padding:2rem 0;text-decoration:none}.menu-link:hover,.menu-link:focus{padding:2rem 0;background:none !important}.menu-link span{position:relative;display:block;color:#fff}.menu-link span,.menu-link span::before,.menu-link span::after{background-color:rgba(0,0,0,0)}.menu-link span:focus,.menu-link span:hover{color:rgba(1,1,1,.8)}@media screen and (max-width: 40em){#layout.active{position:relative;right:11em}#menuLink.menu-link.active{position:fixed;right:13em}#foot.active{margin-right:11em}}#header{height:6rem;background:linear-gradient(141deg, #b8002c 0%, #db0100 51%, #e8410c 75%)}.logo-header{min-width:8em;height:6rem;max-width:70%}#logo{font-family:sans-serif;font-size:2.5em;color:#fff;text-shadow:0 3px 2px #532900}.simple{font-weight:300}.saml{font-family:Verdana,sans-serif;letter-spacing:-0.12em;font-weight:600;margin-left:-0.05em}.language-menu{font-family:sans-serif;font-weight:400;min-width:10rem;padding:0em .6em !important}.language-bar{height:6rem}#layout{right:0;padding-right:0;min-height:100%;margin:0 auto -6rem}#content{padding-top:2em;padding-bottom:2rem}.message-box{background-color:#f4f4f4;border-left:.3125rem solid #444;box-shadow:0 5px 8px -6px rgba(0,0,0,.2);margin:1rem 0;padding:1.3rem;position:relative}.message-box.error{background-color:#f7e4e1;border-left-color:#cc4b37}.message-box.warning{background-color:"#fffdbf";border-left-color:#f9f56b}.message-box.success{background-color:#daf7e6;border-left-color:#46cc48}.auth_methods{margin-top:2em;width:35%}.code-box{margin-bottom:1em;border:1px solid #ccc}.code-box a{padding:.5em}.code-box-content{word-break:break-all;font-size:1em;line-height:1.15;padding:.5em 1em;display:inline-block;min-height:1em;width:100%;height:100%;white-space:pre-wrap;font-family:monospace}.code-box-content::selection{color:#000;background:"#fffdbf"}.code-box-title{border-bottom:1px solid #ccc;background-color:#e0e0e0;padding:.5em 0 .5em .5em}pre#xmlmetadata{width:98%}#bottom,#push{height:6rem}#footer{width:100%;background:linear-gradient(141deg, #b8002c 0%, #db0100 51%, #e8410c 75%);height:4rem;padding:2rem 0 0;text-align:center;color:#fff}#footer a,#footer a:visited{color:#fff}#footer a:focus,#footer a:hover,#footer a:visited:focus,#footer a:visited:hover{background-color:#fff;color:#000;padding:.15rem;margin-left:-0.15rem;margin-top:-0.15rem;text-decoration:none}.copyrights{padding-top:.5rem;height:3.5rem;font-size:.8rem}.logo-footer-space{position:absolute;right:0;top:50%;transform:translate(0, -50%)}html[dir=rtl] .logo-footer-space{right:auto;left:0}.logo-footer{height:4rem}.text-area{margin-top:.5em;width:100%;font-size:.9em;line-height:1.15}.file-upload input[type=url][disabled]{cursor:pointer;color:inherit}input[type=file]{color:#000}.center-form{display:flex;justify-content:center}.login-form-start,.login-form-submit{margin-top:3ex}.v-center-right{position:absolute;left:0;top:50%;transform:translate(0, -50%)}.pure-button,.pure-form input.edge,.pure-form textarea.edge{border-radius:0}.pure-form input[type=checkbox]{margin-right:.8ex;vertical-align:baseline}.pure-control-group{margin-bottom:1ex}.pure-form-aligned .pure-controls{margin:0 0 0 11em}.pure-select{float:right}html[dir=rtl] .pure-select{float:left}.code-box-title .clipboard-btn{background-color:#f0f0f0;border:1px solid #ccc;position:absolute;right:0;height:inherit;margin-top:-2em;margin-right:4px}.pure-button{margin-left:1ex}.pure-button:hover,.pure-button:focus{background-color:#555;padding:.5em 1em;color:#fff}.pure-button-red{background-color:#db0100;color:#fff}.pure-button-red:hover,.pure-button-red:focus{background-color:#555;padding:.5em 1em}.pure-button.hollow{background-color:#fff;color:#6f6f6f;border:solid 1px #e6e6e6}.pure-button.hollow:hover{background-image:none}.pure-button.hollow[disabled]{cursor:auto;opacity:initial;pointer-events:auto;-webkit-user-drag:auto;-webkit-user-select:auto;-moz-user-select:text;-ms-user-select:text;user-select:text}.pure-button.hljs{display:inline-block;border:0;background-color:rgba(0,0,0,0)}.pure-button.hljs:hover,.pure-button.hljs:focus{background-color:#f0f0f0;color:#000}.pure-button-group .pure-button:first-child,.pure-button-group .pure-button:last-child{border-radius:0}.pure-button-group.two-elements .pure-button{margin:0;line-height:unset;border:1px solid #e6e6e6}.pure-button-group.two-elements form{display:inline}.pure-button-group.two-elements .pure-button:first-child{border-right:none}.pure-button-group.two-elements .pure-button:last-child{border-right:1px solid #e6e6e6}.pure-button-group .pure-button.show-files{max-width:450px;overflow:hidden}.top-right-corner{position:absolute;right:1.75em}input#postLoginSubmitButton{display:none}.fa{font-family:"Font Awesome 6 Free",sans-serif !important;font-weight:400}span.fa,i.fa{padding:0 .5em}.message-box span.fa,.message-box i.fa{padding:0}.pure-table-attributes{table-layout:fixed;width:100%}.attrname{text-align:right}.attrvalue{overflow-wrap:break-word}table.attributes ul{padding:inherit}@media screen and (max-width: 40em){.pure-form .pure-input-sm-1-1{width:100%}}@media screen and (max-width: 40em){.wrap{width:90%}.pure-form-aligned .pure-controls{margin:.5em 0 0;float:left}#layout{padding-top:0;margin-bottom:-4rem}.auth_methods{width:60%}#logo{font-size:1.8em}#footer{height:2.5rem;padding-top:1.5rem}#footer .copyrights{height:1rem;padding-top:0}}@media screen and (max-width: 0),screen and (min-width: 40em){.show-for-small-only{display:none !important}.input-sm-placeholder{display:inline-block}}@media screen and (min-width: 40em){.hide-for-large{display:none !important}}@media screen and (max-width: 40em){.show-for-large{display:none !important}}div.preferredidp{border:1px dashed #ccc;background:#eee;padding:2px 2em}.clear{clear:both}.breathe-top{margin-top:1em}.expandable{border:solid 1px #bbb;width:100%}.expandable .general{padding:1em}.expandable .content{display:none;padding:1em}.expandable .expander{cursor:pointer;text-align:center;padding:.25em;display:block;color:#000;background-color:#f4f4f4;border-top:solid 1px #bbb}.expandable .expander:focus,.expandable .expander:hover{background-color:#555;color:#fff}.expandable .expander::after{content:"";font-family:"Font Awesome 6 Free",sans-serif;font-weight:400}.expandable.expanded .content{display:block;border-left:solid .25em #555;border-right:solid .25em #555}.expandable.expanded .expander{border-bottom:none;border-top:solid 1px #bbb;border-left:solid .25em #555;border-right:solid .25em #555}.expandable.expanded .expander::after{content:""}.hidden{display:none}.idp{border:1px solid silver;padding:1ex;margin:1ex}.idp .idpname{font-size:larger;font-weight:bold}.idp .idpdesc{font-size:small;color:gray}.right{float:right}.left{float:left}
+
+/*# sourceMappingURL=stylesheet.css.map*/

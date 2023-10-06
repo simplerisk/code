@@ -884,6 +884,9 @@ function add_framework($name, $description, $parent=0, $status=1){
         $order = 0;
     }
     
+    // Sanitizing input that comes from the WYSIWYG editor or outside sources
+    $description = purify_html($description);
+
     $try_encrypt_name = try_encrypt($name);
     $try_encrypt_descryption = try_encrypt($description);
 
@@ -1000,11 +1003,12 @@ function update_framework($framework_id, $name, $description=false, $parent=fals
     }
 
     $framework = get_framework($framework_id);
-    
+
     $framework['name'] = $encrypted_name;
-    $framework['description'] = $description === false ? try_encrypt($framework['description']) : try_encrypt($description);
+    // Sanitizing input that comes from the WYSIWYG editor or outside sources
+    $framework['description'] = $description === false ? try_encrypt($framework['description']) : try_encrypt(/*purify_html(*/$description/*)*/);
     $framework['parent'] = $parent === false ? $framework['parent'] : $parent;
-    
+
     // Create a framework
     $stmt = $db->prepare("UPDATE `frameworks` SET `name`=:name, `description`=:description, `parent`=:parent WHERE value=:framework_id;");
     $stmt->bindParam(":name", $framework['name'], PDO::PARAM_STR, 100);
@@ -2420,37 +2424,37 @@ function get_documents_as_treegrid($type){
                 switch($filter['field']){
                     case "document_name":
                         if( stripos($document['document_name'], $value) === false ){
-                            continue 2;
+                            continue 3;
                         }
                         break;
                     case "document_type":
                         if( stripos($document['document_type'], $value) === false ){
-                            continue 2;
+                            continue 3;
                         }
                         break;
                     case "framework_names":
                         if( stripos($framework_names, $value) === false ){
-                            continue 2;
+                            continue 3;
                         }
                         break;
                     case "control_names":
                         if( stripos($control_names, $value) === false ){
-                            continue 2;
+                            continue 3;
                         }
                         break;
                     case "creation_date":
                         if( stripos(format_date($document['creation_date']), $value) === false ){
-                            continue 2;
+                            continue 3;
                         }
                         break;
                     case "approval_date":
                         if( stripos(format_date($document['approval_date']), $value) === false ){
-                            continue 2;
+                            continue 3;
                         }
                         break;
                     case "status":
-                        if( stripos($document['status'], $value) === false ){
-                            continue 2;
+                        if( stripos(get_name_by_value('document_status', $document['status']), $value) === false ){
+                            continue 3;
                         }
                         break;
                 }
@@ -4162,7 +4166,7 @@ function display_control_description_view($description, $panel_name="")
     $html = "
         <div class='row-fluid {$panel_name}'>
             <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['Description'])."</strong>: </div>
-            <div class='{$span2}'>".($description)." </div>
+            <div class='{$span2}'>".$escaper->purifyHtml($description)." </div>
         </div>";
     return $html;
 }
@@ -4182,7 +4186,7 @@ function display_supplemental_guidance_view($supplemental_guidance, $panel_name=
     $html = "
         <div class='row-fluid {$panel_name}'>
             <div class='{$span1} text-right'><strong>".$escaper->escapeHtml($lang['SupplementalGuidance'])."</strong>: </div>
-            <div class='{$span2}'>".($supplemental_guidance)." </div>
+            <div class='{$span2}'>".$escaper->purifyHtml($supplemental_guidance)." </div>
         </div>";
     return $html;
 }
@@ -4465,6 +4469,37 @@ function display_control_mitigation_percent_view($mitigation_percent, $panel_nam
             <div class='{$span2}''>".$escaper->escapeHtml($mitigation_percent)." </div>
         </div>";
     return $html;
+}
+
+/******************************
+ * FUNCTION: FRAMEWORK EXISTS *
+ ******************************/
+function framework_exists($framework_name)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Get the list of existing frameworks in SimpleRisk
+    $stmt = $db->prepare("SELECT `value`,`name` FROM `frameworks`;");
+    $stmt->execute();
+    $frameworks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    // For each framework
+    foreach($frameworks as $framework)
+    {
+        // If the framework name matches the one we were provided
+        if (try_decrypt($framework['name']) === $framework_name)
+        {
+            // We found the framework so return the framework id
+            return $framework['value'];
+        }
+    }
+
+    // We never found the framework so return false
+    return false;
 }
 
 ?>

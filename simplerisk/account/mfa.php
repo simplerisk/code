@@ -93,7 +93,6 @@ if (isset($_POST['disable']))
         setup_alert_requirements("..");
     ?>
 
-      </style>
   </head>
 
   <body>

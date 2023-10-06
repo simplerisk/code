@@ -15,22 +15,32 @@ require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
  ***********************/
 function set_alert($alert = false, $type = "good", $message = "")
 {
-    // create array to keep the alerts in
-    $alerts = array();    
-
-    // Get it from the session if there's already something in it
-    if (isset($_SESSION['alerts']) && is_array($_SESSION['alerts'])) {
+    // If we have existing alerts in the session
+    if (isset($_SESSION['alerts']) && is_array($_SESSION['alerts']))
+    {
+        // Create an alerts array with the existing alerts
         $alerts = $_SESSION['alerts'];    
     }
+    // Otherwise create an empty alerts array
+    else $alerts = [];
+
+    // Create the alert
+    $alert = [
+        'alert' => $alert,
+        'alert_type' => $type,
+        'alert_message' => $message
+    ];
     
-    // Add the new alert
-    array_push($alerts, array(
-            'alert' => $alert, 
-            'alert_type' => $type,
-            'alert_message' => $message
-        ));
-    
-    $_SESSION['alerts'] = $alerts;
+    // Add the new alert to the alerts array
+    array_push($alerts, $alert);
+
+    // If a session is set
+    if (isset($_SESSION))
+    {
+        // Update the session alerts to include all alerts
+        $_SESSION['alerts'] = $alerts;
+    }
+
     write_debug_log("Core: [set_alert]: Alert with type '{$type}' and message '{$message}' was added.");
 }
 

@@ -151,6 +151,15 @@ function addRisk($this){
         * Build multiselect box
         */
         $(".multiselect", tabContainer).multiselect({enableFiltering: true, buttonWidth: '100%', enableCaseInsensitiveFiltering: true,});
+
+        // init tinyMCE WYSIWYG editor
+        tinymce.remove()
+        init_minimun_editor('#assessment');
+        init_minimun_editor('#notes');
+        init_minimun_editor('#current_solution');
+        init_minimun_editor('#security_requirements');
+        init_minimun_editor('#security_recommendations');
+        init_minimun_editor('#comments');
     }
     
     

@@ -143,7 +143,7 @@ else
     <meta name="google" content="notranslate">
     <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/jquery-ui.min.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../vendor/node_modules/jquery-ui/dist/themes/base/jquery-ui.min.css?<?php echo current_version("app"); ?>">
     
     <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">

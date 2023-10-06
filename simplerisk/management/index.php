@@ -311,7 +311,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
 	display_bootstrap_javascript();
 ?>
-        <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
         <script src="../js/simplerisk/cve_lookup.js?<?php echo current_version("app"); ?>"></script>
         <script src="../js/basescript.js?<?php echo current_version("app"); ?>"></script>
         <script src="../js/simplerisk/common.js?<?php echo current_version("app"); ?>"></script>
@@ -338,7 +338,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
 <!--        <link rel="stylesheet" href="../css/jquery-ui.min.css">-->
 
-        <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
         <link rel="stylesheet" href="../css/style.css?<?php echo current_version("app"); ?>">
@@ -350,6 +350,8 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
         <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
         <script src="../vendor/simplerisk/selectize.js/dist/js/standalone/selectize.min.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../vendor/tinymce/tinymce/tinymce.min.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../js/WYSIWYG/editor.js?<?php echo current_version("app"); ?>"></script>
         <style>
             #risk-submit-form .row-fluid{max-width: 1400px;}
             .top-panel .span2, .bottom-panel .span2{max-width: 210px;}
@@ -524,6 +526,9 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                     if($('.datepicker', "#tab-container"+num_tabs).length){
                         $('.datepicker', "#tab-container"+num_tabs).datepicker();
                     }
+                    tinymce.remove()
+                    init_minimun_editor("#tab-content-container [name=assessment]");
+                    init_minimun_editor("#tab-content-container [name=notes]");
                 });
 
                 focus_add_css_class("#RiskAssessmentTitle", "#assessment", $("#tab-container"));
@@ -540,7 +545,9 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                     $(tabContentId).removeClass("hide").show();
                     return true;
                 });
-
+                // init tinyMCE WYSIWYG editor
+                init_minimun_editor("#tab-content-container [name=assessment]");
+                init_minimun_editor("#tab-content-container [name=notes]");
             });
 
         </script>

@@ -187,11 +187,10 @@ if (isset($_POST['update_general_settings']))
 
     // Update the default user role setting
     $default_user_role = (int)$_POST['default_user_role'];
-    $current_default_user_role = get_setting("default_user_role");
-    if ($default_user_role != $current_default_user_role)
-    {
+    $current_default_user_role = get_default_role_id();
+    if ($default_user_role != $current_default_user_role) {
         // Update the default user role
-        update_setting("default_user_role", $default_user_role);
+        set_default_role($default_user_role);
     }
 
     // Update the default current maturity setting
@@ -407,12 +406,19 @@ if (isset($_POST['update_general_settings']))
                 $email = $_POST['email'];
                 $subject = "SimpleRisk Test Email";
                 $full_message = "This is a test email from SimpleRisk.";
+                $now = time();
+                // Set limit the frequency of test mail to 5 minutes.
+                if((isset($_SESSION['test_mail_sent']) && $now - intval($_SESSION['test_mail_sent']) > 300) || !isset($_SESSION['test_mail_sent'])) {
+                    // Send the e-mail
+                    send_email($name, $email, $subject, $full_message);
 
-                // Send the e-mail
-                send_email($name, $email, $subject, $full_message);
+                    $_SESSION['test_mail_sent'] = time();
 
-                // Display an alert
-                set_alert(true, "good", "A test email has been sent using the current settings.");
+                    // Display an alert
+                    set_alert(true, "good", "A test email has been sent using the current settings.");
+                } else {
+                    set_alert(true, "bad", $escaper->escapeHtml($lang['LimitedTestmailMessage']));
+                }
         }
 
 	// If the Backups tab was submitted
@@ -719,7 +725,7 @@ if (isset($_POST['update_general_settings']))
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" type="text/css" href="../css/jquery-ui.min.css?<?php echo current_version("app"); ?>" />
+    <link rel="stylesheet" type="text/css" href="../vendor/node_modules/jquery-ui/dist/themes/base/jquery-ui.min.css?<?php echo current_version("app"); ?>" />
     <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
 
@@ -967,8 +973,8 @@ if (isset($_POST['update_general_settings']))
                               <td><?php echo $escaper->escapeHtml($lang['DefaultUserRole']) ?>:</td>
                               <td>
                                 <?php
-                                  // Create role dropdown
-                                  create_dropdown("role", $escaper->escapeHtml(get_setting("default_user_role")), "default_user_role");
+                                    // Create role dropdown
+                                    create_dropdown("role", get_default_role_id(), "default_user_role");
                                 ?>
                               </td>
                             </tr>

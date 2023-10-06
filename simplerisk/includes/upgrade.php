@@ -166,6 +166,7 @@ $releases = array(
 	"20221013-001",
 	"20230106-001",
 	"20230331-001",
+    "20231006-001",
 );
 
 /*************************
@@ -6908,6 +6909,159 @@ function upgrade_from_20230106001($db)
     
     echo "Refreshing number of files that have an encoding issue.<br />\n";
     refresh_file_encoding_issue_counts();
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20230331-001 *
+ ***************************************/
+function upgrade_from_20230331001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20230331-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20231006-001';
+    
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Compile the list of unnecessary files
+    echo "Removing unnecessary files.<br />\n";
+    $remove_files = array(
+        realpath(__DIR__ . '/../css/jquery-ui.css'),
+        realpath(__DIR__ . '/../css/jquery-ui.min.css'),
+        realpath(__DIR__ . '/../css/jquery-ui.structure.min.css'),
+        realpath(__DIR__ . '/../css/jquery-ui.theme.css'),
+        realpath(__DIR__ . '/../css/jquery-ui.theme.min.css'),
+    );
+
+    foreach ($remove_files as $file)
+    {
+        // If the file exists
+        if (file_exists($file))
+        {
+            // Remove the file
+            unlink($file);
+        }
+    }
+
+    if (!index_exists_on_table('risk_scoring_method_idx', 'risk_scoring')) {
+        echo "Adding index 'risk_scoring_method_idx' to table 'risk_scoring'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX `risk_scoring_method_idx` ON `risk_scoring` (`scoring_method`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('risk_scoring_contr_likelihood_idx', 'risk_scoring')) {
+        echo "Adding index 'risk_scoring_contr_likelihood_idx' to table 'risk_scoring'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX `risk_scoring_contr_likelihood_idx` ON `risk_scoring` (`Contributing_Likelihood`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('mgmt_reviews_review_idx', 'mgmt_reviews')) {
+        echo "Adding index 'mgmt_reviews_review_idx' to table 'mgmt_reviews'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX `mgmt_reviews_review_idx` ON `mgmt_reviews` (`review`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('mgmt_reviews_reviewer_idx', 'mgmt_reviews')) {
+        echo "Adding index 'mgmt_reviews_reviewer_idx' to table 'mgmt_reviews'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX `mgmt_reviews_reviewer_idx` ON `mgmt_reviews` (`reviewer`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('mgmt_reviews_next_step_idx', 'mgmt_reviews')) {
+        echo "Adding index 'mgmt_reviews_next_step_idx' to table 'mgmt_reviews'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX `mgmt_reviews_next_step_idx` ON `mgmt_reviews` (`next_step`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('mgmt_reviews_risk_id_idx', 'mgmt_reviews')) {
+        echo "Adding index 'mgmt_reviews_risk_id_idx' to table 'mgmt_reviews'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX `mgmt_reviews_risk_id_idx` ON `mgmt_reviews` (`risk_id`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('mgmt_reviews_submission_date_idx', 'mgmt_reviews')) {
+        echo "Adding index 'mgmt_reviews_submission_date_idx' to table 'mgmt_reviews'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX `mgmt_reviews_submission_date_idx` ON `mgmt_reviews` (`submission_date`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('closures_risk_id_idx', 'closures')) {
+        echo "Adding index 'closures_risk_id_idx' to table 'closures'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX `closures_risk_id_idx` ON `closures` (`risk_id`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('closures_closure_date_idx', 'closures')) {
+        echo "Adding index 'closures_closure_date_idx' to table 'closures'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX `closures_closure_date_idx` ON `closures` (`closure_date`);");
+        $stmt->execute();
+    }
+
+    // Gathering the data that will be displayed unescaped and need to be sanitized
+    $stmt = $db->prepare("SELECT `value`, `description` FROM `frameworks` WHERE `description` IS NOT NULL AND `description` <> '';");
+    $stmt->execute();
+    $data_to_sanitize = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (!empty($data_to_sanitize)) {
+
+        echo "Sanitizing framework descriptions.<br />\n";
+        foreach ($data_to_sanitize as $data) {
+
+            $decrypted_data = try_decrypt($data['description']);
+
+            // Sanitizing field data
+            $purified = purify_html($decrypted_data);
+
+            // If it's unchanged then it shouldn't be re-saved
+            if ($purified == $decrypted_data) {
+                continue;
+            }
+
+            // Log the data needed to be cleaned up
+            error_log("[Simplerisk Upgrade] Data needed to be purified for framework(ID: {$data['value']}): " . json_encode($decrypted_data));
+
+            // Save the sanitized data back to where it came from
+            $stmt = $db->prepare("
+                UPDATE
+                    `frameworks`
+                SET
+                    `description` = :description
+                WHERE
+                    `value` = :value;
+            ");
+
+            $encrypted_purified_data = try_encrypt($purified);
+
+            $stmt->bindParam(":description", $encrypted_purified_data, PDO::PARAM_STR);
+            $stmt->bindParam(":value", $data['value'], PDO::PARAM_INT);
+            $stmt->execute();
+        }
+        echo "Sanitizing framework descriptions is done!<br />\n";
+    }
+
+    // If the `default` column doesn't exist in the `role` table yet. (should not be possible, but it's better be safe than sorry)
+    if (!field_exists_in_table('default', 'role')) {
+        echo "Adding the `default` column to the `role` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `role` ADD `default` tinyint(1) UNIQUE DEFAULT NULL;");
+        $stmt->execute();
+    }
+
+    // It was already removed once, but the UI wasn't updated, so it was still possible to change, so now we're doing this along with the UI update
+    $default_user_role = get_setting("default_user_role");
+    if ($default_user_role) {
+        echo "Setting the default role in the `role` table.<br />\n";
+        set_default_role($default_user_role);
+        
+        echo "Removing the 'default_user_role' setting from the `settings` table.<br />\n";
+        $stmt = $db->prepare("DELETE FROM `settings` WHERE `name` = 'default_user_role';");
+        $stmt->execute();
+    }
+
+    // Set last_update to the same value as submission_date if it is empty.
+    echo "Set last_update to the same value as submission_date if it is empty.<br />\n";
+    $stmt = $db->prepare("UPDATE `risks` SET `last_update` = `submission_date` WHERE `last_update` = '0000-00-00 00:00:00' OR `last_update` IS NULL");
+    $stmt->execute();
 
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic

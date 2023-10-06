@@ -1562,7 +1562,7 @@ function mitigation_controls_dropdown($selected_control_ids_string = "", $elemen
                         $('#".$eID."').multiselect({
                             enableFiltering: true,
                             enableCaseInsensitiveFiltering: true,
-                            buttonWidth: '100%',
+                            buttonWidth: '400px',
                             maxHeight: 250,
                             dropUp: true,
                             filterPlaceholder: '".$escaper->escapeHtml($lang["SelectForMitigationControls"])."'" . ($datatable_redraw ? ",
@@ -5450,11 +5450,11 @@ function get_dynamic_names_by_main_field_name($field_name)
                 'name' => "review_date",
                 'text' => $escaper->escapeHtml($lang['ReviewDate']),
             ],
-//        'Reviewer' => 
-//            [
-//                'name' => "submission_date",
-//                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
-//            ],
+       'Reviewer' => 
+           [
+               'name' => "reviewer",
+               'text' => $escaper->escapeHtml($lang['ReviewedBy']),
+           ],
 //        'Review' => 
 //            [
 //                'name' => "submission_date",
@@ -7562,7 +7562,7 @@ function display_plan_mitigations()
                     $('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                 }
 
-                $( 'input, select', this ).on( 'keyup change', function () {
+                $( 'input, select', this ).on( 'change', function () {
                     if ( datatableInstance.column(i).search() !== this.value ) {
                         datatableInstance.column(i).search( this.value ).draw();
                     }
@@ -7768,7 +7768,7 @@ function display_management_review()
                     $('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                 }
 
-                $( 'input, select', this ).on( 'keyup change', function () {
+                $( 'input, select', this ).on( 'change', function () {
                     if ( datatableInstance.column(i).search() !== this.value ) {
                         datatableInstance.column(i).search( this.value ).draw();
                     }
@@ -7973,7 +7973,7 @@ function display_review_risks()
                     $('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                 }
 
-                $( 'input, select', this ).on( 'keyup change', function () {
+                $( 'input, select', this ).on( 'change', function () {
                     if ( datatableInstance.column(i).search() !== this.value ) {
                         datatableInstance.column(i).search( this.value ).draw();
                     }
@@ -8809,7 +8809,8 @@ function get_label_by_risk_field_name($field){
 		'security_requirements' => js_string_escape($lang['SecurityRequirements']),
 
 		'management_review' => js_string_escape($lang['ManagementReview']),
-		'review_date' => js_string_escape($lang['ReviewDate']),
+        'review_date' => js_string_escape($lang['ReviewDate']),
+        'reviewer' => js_string_escape($lang['ReviewedBy']),
 		'next_review_date' => js_string_escape($lang['NextReviewDate']),
 		'next_step' => js_string_escape($lang['NextStep']),
 		'comments' => js_string_escape($lang['Comments']),
@@ -8865,7 +8866,6 @@ function get_label_by_risk_field_name($field){
 
         'risk_mapping_risk_grouping' => js_string_escape($lang['RiskGrouping']),
         'risk_mapping_risk' => js_string_escape($lang['Risk']),
-        'risk_mapping_risk_event' => js_string_escape($lang['RiskEvent']),
         'risk_mapping_description' => js_string_escape($lang['Description']),
         'risk_mapping_function' => js_string_escape($lang['Function']),
 	);
@@ -9195,13 +9195,13 @@ function display_jquery_javascript($scripts)
                 }
 
                 // Append the path to the jquery code
-                $path = $simplerisk_base_url . "vendor/components/jquery/";
+                $path = $simplerisk_base_url . "vendor/node_modules/jquery/dist/";
         }
         // Otherwise
         else
         {
                 // Use the Google CDN as the path
-                $path = "https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/";
+                $path = "https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/";
         }
 
         // For each script provided
@@ -9217,45 +9217,45 @@ function display_jquery_javascript($scripts)
  ******************************************/
 function display_jquery_ui_javascript($scripts)
 {
-        // If the global value is not already set
-        if (!isset($GLOBALS['jquery_delivery_method']))
+    // If the global value is not already set
+    if (!isset($GLOBALS['jquery_delivery_method']))
+    {
+        // Set the jquery delivery method
+        $GLOBALS['jquery_delivery_method'] = get_setting("jquery_delivery_method");
+    }
+
+    // Set the jquery delivery method
+    $jquery_delivery_method = $GLOBALS['jquery_delivery_method'];
+
+    // If the jquery delivery method is local
+    if ($jquery_delivery_method == "local")
+    {
+        // Get the SimpleRisk Base URL
+        $simplerisk_base_url = get_setting('simplerisk_base_url');
+
+        // If the last character is not a /
+        if (substr($simplerisk_base_url, -1) != "/")
         {
-		// Set the jquery delivery method
-		$GLOBALS['jquery_delivery_method'] = get_setting("jquery_delivery_method");
+            // Append a / to the SimpleRisk Base URL
+            $simplerisk_base_url .= "/";
         }
 
-	// Set the jquery delivery method
-	$jquery_delivery_method = $GLOBALS['jquery_delivery_method'];
+        // Append the path to the jquery code
+        $path = $simplerisk_base_url . "vendor/node_modules/jquery-ui/dist/";
+    }
+    // Otherwise
+    else
+    {
+        // Use the Google CDN as the path
+        $path = "https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/";
+    }
 
-        // If the jquery delivery method is local
-        if ($jquery_delivery_method == "local")
-        {
-                // Get the SimpleRisk Base URL
-                $simplerisk_base_url = get_setting('simplerisk_base_url');
-
-                // If the last character is not a /
-                if (substr($simplerisk_base_url, -1) != "/")
-                {
-                        // Append a / to the SimpleRisk Base URL
-                        $simplerisk_base_url .= "/";
-                }
-
-                // Append the path to the jquery code
-                $path = $simplerisk_base_url . "vendor/components/jqueryui/";
-        }
-        // Otherwise
-        else
-        {
-                // Use the Google CDN as the path
-                $path = "https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/";
-        }
-
-        // For each script provided
-        foreach ($scripts as $script)
-        {
-                // Display it as a script src
-                echo "<script src=\"" . $path . $script . "?" . current_version("app") . "\"></script>\n";
-        }
+    // For each script provided
+    foreach ($scripts as $script)
+    {
+        // Display it as a script src
+        echo "<script src=\"" . $path . $script . "?" . current_version("app") . "\"></script>\n";
+    }
 }
 
 /******************************************
@@ -9263,41 +9263,41 @@ function display_jquery_ui_javascript($scripts)
  ******************************************/
 function display_bootstrap_javascript()
 {
-        // If the global value is not already set
-        if (!isset($GLOBALS['bootstrap_delivery_method']))
-        {
-                // Set the bootstrap delivery method
-                $GLOBALS['bootstrap_delivery_method'] = get_setting("bootstrap_delivery_method");
-        }
-
+    // If the global value is not already set
+    if (!isset($GLOBALS['bootstrap_delivery_method']))
+    {
         // Set the bootstrap delivery method
-        $bootstrap_delivery_method = $GLOBALS['bootstrap_delivery_method'];
+        $GLOBALS['bootstrap_delivery_method'] = get_setting("bootstrap_delivery_method");
+    }
 
-        // If the bootstrap delivery method is local
-        if ($bootstrap_delivery_method == "local")
+    // Set the bootstrap delivery method
+    $bootstrap_delivery_method = $GLOBALS['bootstrap_delivery_method'];
+
+    // If the bootstrap delivery method is local
+    if ($bootstrap_delivery_method == "local")
+    {
+        // Get the SimpleRisk Base URL
+        $simplerisk_base_url = get_setting('simplerisk_base_url');
+
+        // If the last character is not a /
+        if (substr($simplerisk_base_url, -1) != "/")
         {
-                // Get the SimpleRisk Base URL
-                $simplerisk_base_url = get_setting('simplerisk_base_url');
-
-                // If the last character is not a /
-                if (substr($simplerisk_base_url, -1) != "/")
-                {
-                        // Append a / to the SimpleRisk Base URL
-                        $simplerisk_base_url .= "/";
-                }
-
-                // Append the path to the bootstrap code
-                $path = $simplerisk_base_url . "vendor/twbs/bootstrap/dist/js/bootstrap.min.js";
-        }
-        // Otherwise
-        else
-        {
-                // Use the jsDelivr CDN as the path
-		$path = "https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js";
+            // Append a / to the SimpleRisk Base URL
+            $simplerisk_base_url .= "/";
         }
 
-	// Display it as a script src
-	echo "<script src=\"{$path}?" . current_version("app") . "\" crossorigin=\"anonymous\"></script>\n";
+        // Append the path to the bootstrap code
+        $path = $simplerisk_base_url . "vendor/twbs/bootstrap/dist/js/bootstrap.min.js";
+    }
+    // Otherwise
+    else
+    {
+        // Use the jsDelivr CDN as the path
+        $path = "https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js";
+    }
+
+    // Display it as a script src
+    echo "<script src=\"{$path}?" . current_version("app") . "\" crossorigin=\"anonymous\"></script>\n";
 }
 
 /***********************************
@@ -9305,41 +9305,41 @@ function display_bootstrap_javascript()
  ***********************************/
 function display_bootstrap_css()
 {
-        // If the global value is not already set
-        if (!isset($GLOBALS['bootstrap_delivery_method']))
-        {
-                // Set the bootstrap delivery method
-                $GLOBALS['bootstrap_delivery_method'] = get_setting("bootstrap_delivery_method");
-        }
-
+    // If the global value is not already set
+    if (!isset($GLOBALS['bootstrap_delivery_method']))
+    {
         // Set the bootstrap delivery method
-        $bootstrap_delivery_method = $GLOBALS['bootstrap_delivery_method'];
+        $GLOBALS['bootstrap_delivery_method'] = get_setting("bootstrap_delivery_method");
+    }
 
-        // If the bootstrap delivery method is local
-        if ($bootstrap_delivery_method == "local")
+    // Set the bootstrap delivery method
+    $bootstrap_delivery_method = $GLOBALS['bootstrap_delivery_method'];
+
+    // If the bootstrap delivery method is local
+    if ($bootstrap_delivery_method == "local")
+    {
+        // Get the SimpleRisk Base URL
+        $simplerisk_base_url = get_setting('simplerisk_base_url');
+
+        // If the last character is not a /
+        if (substr($simplerisk_base_url, -1) != "/")
         {
-                // Get the SimpleRisk Base URL
-                $simplerisk_base_url = get_setting('simplerisk_base_url');
-
-                // If the last character is not a /
-                if (substr($simplerisk_base_url, -1) != "/")
-                {
-                        // Append a / to the SimpleRisk Base URL
-                        $simplerisk_base_url .= "/";
-                }
-
-                // Append the path to the bootstrap code
-                $path = $simplerisk_base_url . "vendor/twbs/bootstrap/dist/css/bootstrap.min.css";
-        }
-        // Otherwise
-        else
-        {
-                // Use the jsDelivr CDN as the path
-		$path = "https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css";
+            // Append a / to the SimpleRisk Base URL
+            $simplerisk_base_url .= "/";
         }
 
-	// Display it as a stylesheet
-	echo "<link href=\"{$path}?" . current_version("app")  . "\" rel=\"stylesheet\" crossorigin=\"anonymous\">\n";
+        // Append the path to the bootstrap code
+        $path = $simplerisk_base_url . "vendor/twbs/bootstrap/dist/css/bootstrap.min.css";
+    }
+    // Otherwise
+    else
+    {
+        // Use the jsDelivr CDN as the path
+        $path = "https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css";
+    }
+
+    // Display it as a stylesheet
+    echo "<link href=\"{$path}?" . current_version("app")  . "\" rel=\"stylesheet\" crossorigin=\"anonymous\">\n";
 }
 
 function display_datetimepicker_javascript($initialize = false) {
@@ -9926,6 +9926,13 @@ function render_field_edit_popup_modal($view) {
                     break;
                 case 'multiselect':
                     create_multiple_dropdown($field_sub_type, null, $field_name, null, false, "--", "", true, " class='multiselect edit_input' {$required_attribute}", $field_setting['alphabetical_order'] ?? 0);
+                    echo "
+                        <script>
+                            $(function() {
+                                $('#edit_popup-{$view} #{$field_name}.multiselect').multiselect({buttonWidth: '100%', enableFiltering: true, enableCaseInsensitiveFiltering: true,});
+                            });
+                        </script>
+                    ";
                     break;
                 case 'datetime':
                 case 'date':
@@ -10174,11 +10181,11 @@ function render_view_table($view) {
         // If the data coming from the server side as an associative array we need to add the configuration a bit differently
         if ($datatable_data_type_associative) {
             echo "
-                    {'data': '{$field_name}{$display_post_fix}', 'searchable': {$searchable}, 'orderable': {$orderable}" . ($class_name ? ", 'className': '{$class_name}'" : "") . ($renderer ? ", 'render': {$renderer}" : "") . "},
+                    {'data': '{$field_name}{$display_post_fix}', 'searchable': {$searchable}, 'orderable': {$orderable}" . ($class_name ? ", 'className': '{$class_name}'" : "") . ($renderer ? ", 'render': {$renderer}" : "") . ", 'defaultContent': ''},
             ";
         } else {
             echo "
-                    {'target': '{$field_idx}', 'searchable': {$searchable}, 'orderable': {$orderable}" . ($class_name ? ", 'className': '{$class_name}'" : "") . ($renderer ? ", 'render': {$renderer}" : "") . "},
+                    {'target': '{$field_idx}', 'searchable': {$searchable}, 'orderable': {$orderable}" . ($class_name ? ", 'className': '{$class_name}'" : "") . ($renderer ? ", 'render': {$renderer}" : "") . ", 'defaultContent': ''},
             ";
         }
         
@@ -10276,7 +10283,7 @@ function render_view_table($view) {
                 });
 
                 var filter_submit_timer;
-                $( '#{$datatable_id}_wrapper tr.header_filter input, #{$datatable_id}_wrapper tr.header_filter select').on( 'keyup change', function () {
+                $( '#{$datatable_id}_wrapper tr.header_filter input, #{$datatable_id}_wrapper tr.header_filter select').on( 'change', function () {
                     clearTimeout(filter_submit_timer);
                     var val = this.value;
                     var column_number = $(this).closest('th').attr('data-column-number');

@@ -176,10 +176,10 @@ if(customization_extra()){
             break;
         }
     }
-    $risk_fields = array_merge($risk_fields, $risk_custom_fields);
-    $mitigation_fields = array_merge($mitigation_fields, $mitigation_custom_fields);
-    $review_fields = array_merge($review_fields, $review_custom_fields);
-    $unassigned_fields = array_merge($unassigned_fields, $unassigned_custom_fileds);
+    $risk_fields = array_unique(array_merge($risk_fields, $risk_custom_fields));
+    $mitigation_fields = array_unique(array_merge($mitigation_fields, $mitigation_custom_fields));
+    $review_fields = array_unique(array_merge($review_fields, $review_custom_fields));
+    $unassigned_fields = array_unique(array_merge($unassigned_fields, $unassigned_custom_fileds));
 } else {
 // Names list of Risk columns
     $risk_fields = array(
@@ -233,6 +233,7 @@ if(customization_extra()){
     // Names list of Review columns
     $review_fields = array(
         'management_review',
+        'reviewer',
         'review_date',
         'next_step',
         'next_review_date',
@@ -298,7 +299,6 @@ foreach($contributing_risks as $contributing_risk){
 $risk_mapping_fields = array(
     'risk_mapping_risk_grouping',
     'risk_mapping_risk',
-    'risk_mapping_risk_event',
     'risk_mapping_description',
     'risk_mapping_function'
 );
@@ -392,7 +392,7 @@ if (import_export_extra()){
 ?>
   <script src="../js/sorttable.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/obsolete.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/simplerisk/dynamic.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/simplerisk/common.js?<?php echo current_version("app"); ?>"></script>
@@ -406,7 +406,7 @@ if (import_export_extra()){
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
   <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
   
   <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">

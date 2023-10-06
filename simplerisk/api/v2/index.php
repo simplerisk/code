@@ -3,12 +3,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-//namespace Tests\storage\annotations\OpenApi;
-use OpenApi\Annotations as OA;
-
 // Include required functions file
-require_once(realpath(__DIR__ . '/api.php'));
-require_once(realpath(__DIR__ . '/simplerisk.php'));
+require_once(realpath(__DIR__ . '/includes/api.php'));
+require_once(realpath(__DIR__ . '/includes/simplerisk.php'));
+require_once(realpath(__DIR__ . '/includes/assets.php'));
 require_once(realpath(__DIR__ . '/../../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../../includes/governance.php'));
@@ -24,80 +22,8 @@ add_security_headers(true, true, true, true, false);
 // @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
-/**
- * @OA\Swagger(
- *   schemes={"https"},
- *   host=SIMPLERISK_BASE_URL,
- *   basePath=API_PATH,
- *   @OA\Info(
- *     title="SimpleRisk API",
- *     description="This is the documentation for the SimpleRisk API",
- *     version="2.0.0",
- *     @OA\Contact(
- *       email="support@simplerisk.com",
- *     ),
- *     @OA\License(
- *       name="Mozilla Public License Version 2.0",
- *       url="https://www.mozilla.org/en-US/MPL/2.0/",
- *     ),
- *   ),
- *   @OA\Server(
- *     url=SIMPLERISK_API_URL,
- *     description="SimpleRisk",
- *   ),
- *   @OA\ExternalDocumentation(
- *     description="SimpleRisk Support Portal",
- *     url="https://support.simplerisk.com",
- *   ),
- *   @OA\Tag(
- *     name="admin",
- *     description="Administrator Operations",
- *   ),
- *   @OA\Tag(
- *     name="user",
- *     description="User Operations",
- *   ),
- *   @OA\Tag(
- *     name="asset",
- *     description="Asset Operations",
- *   ),
- *   @OA\Tag(
- *     name="risk",
- *     description="Risk Operations",
- *   ),
- *   @OA\Tag(
- *     name="framework",
- *     description="Framework Operations",
- *   ),
- *   @OA\Tag(
- *     name="control",
- *     description="Control Operations",
- *   ),
- *   @OA\Parameter(
- *     parameter="key",
- *     in="query",
- *     name="key",
- *     description="The API key used to authenticate with the SimpleRisk API.",
- *     required=false,
- *     @OA\Schema(
- *       type="string",
- *     ),
- *   )
- * )
- */
-
-/**
- * @OA\Get(
- *     path="/api/v2/data.json",
- *     @OA\Response(
- *         response="200",
- *         description="The data"
- *     )
- * )
- */
-
 // If access is authenticated
-if (is_authenticated())
+if (api_v2_is_authenticated())
 {
     // Initialize the epiphany api
     Epi::init('api', 'route', 'session');
@@ -105,11 +31,16 @@ if (is_authenticated())
     // Disable exceptions
     Epi::setSetting('exceptions', true);
 
-    // SimpleRisk Routes
+    // SimpleRisk Admin Routes
 
     getRoute()->get('/admin/version', 'api_v2_admin_version');
     getRoute()->get('/admin/version/app', 'api_v2_admin_version_app');
     getRoute()->get('/admin/version/db', 'api_v2_admin_version_db');
+
+    // SimpleRisk Assets Routes
+
+    getRoute()->get('/assets', 'api_v2_assets');
+
 
     // RISK API from external app
     // Define the normal routes

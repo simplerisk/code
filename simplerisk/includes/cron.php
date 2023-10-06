@@ -12,6 +12,7 @@ $cron_jobs = array(
 	'cron_backup',
 	'cron_vulnmgmt',
 	'cron_notification',
+	'cron_assessments',
 );
 
 /***************************
@@ -129,6 +130,17 @@ function cron_notification()
 {
 	// Get the notification schedule
 	$schedule = cron_schedule("minutely");
+
+	// Return the schedule
+	return $schedule;
+}
+/******************************
+ * FUNCTION: CRON ASSESSMENTS *
+ ******************************/
+function cron_assessments()
+{
+	// Get the notification schedule
+	$schedule = cron_schedule("daily");
 
 	// Return the schedule
 	return $schedule;

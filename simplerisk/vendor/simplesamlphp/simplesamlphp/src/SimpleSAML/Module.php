@@ -124,7 +124,7 @@ class Module
      */
     public static function getModuleDir(string $module): string
     {
-        $baseDir = dirname(dirname(dirname(__FILE__))) . '/modules';
+        $baseDir = dirname(__FILE__, 3) . '/modules';
         $moduleDir = $baseDir . '/' . $module;
 
         return $moduleDir;
@@ -241,7 +241,7 @@ class Module
             // this module has been migrated, but the route wasn't found
         }
 
-        $moduleDir = self::getModuleDir($module) . '/www/';
+        $moduleDir = self::getModuleDir($module) . '/public/';
 
         // check for '.php/' in the path, the presence of which indicates that another php-script should handle the
         // request
@@ -469,7 +469,7 @@ class Module
     /**
      * Get absolute URL to a specified module resource.
      *
-     * This function creates an absolute URL to a resource stored under ".../modules/<module>/www/".
+     * This function creates an absolute URL to a resource stored under ".../modules/<module>/public/".
      *
      * @param string $resource Resource path, on the form "<module name>/<resource>"
      * @param array  $parameters Extra parameters which should be added to the URL. Optional.
@@ -505,7 +505,7 @@ class Module
         }
 
         $hooks = [];
-        $hook_dir = Path::canonicalize(dirname(dirname(dirname(__FILE__))) . '/modules/' . $module . '/hooks');
+        $hook_dir = Path::canonicalize(dirname(__FILE__, 3) . '/modules/' . $module . '/hooks');
         if ((new Filesystem())->exists($hook_dir)) {
             $finder = new Finder();
             $finder->files()->in($hook_dir)->depth(0);

@@ -240,8 +240,8 @@ function get_risk_trend($title = null)
         'valueSuffix' => ' risk(s)'
     );
     $chart->legend->enabled = false;
-        $chart->chart->renderTo = "risk_trend_chart";
-        $chart->credits->enabled = false;
+    $chart->chart->renderTo = "risk_trend_chart";
+    $chart->credits->enabled = false;
     $chart->plotOptions->series->marker->enabled = false;
     $chart->plotOptions->series->marker->lineWidth = "2";
 
@@ -254,13 +254,15 @@ function get_risk_trend($title = null)
 
     // Get the opened risks array by month
     $opened_risks = get_opened_risks_array("day");
-    $open_date = empty($opened_risks[0]) ? [] : $opened_risks[0];
-    $open_count = empty($opened_risks[1]) ? [] : $opened_risks[1];
+
+    $open_dates = empty($opened_risks[0]) ? [] : $opened_risks[0];
+    $open_counts = empty($opened_risks[1]) ? [] : $opened_risks[1];
 
     // Get the closed risks array by month
     $closed_risks = get_closed_risks_array("day");
-    $close_date = empty($closed_risks[0]) ? [] : $closed_risks[0];
-    $close_count = empty($closed_risks[1]) ? [] : $closed_risks[1];
+
+    $close_dates = empty($closed_risks[0]) ? [] : $closed_risks[0];
+    $close_counts = empty($closed_risks[1]) ? [] : $closed_risks[1];
 
     // If the opened risks array is empty
     if (empty($opened_risks[0]))
@@ -270,28 +272,56 @@ function get_risk_trend($title = null)
     // Otherwise
     else
     {
+        // Setting a minimum date so we don't display data that's older
+        // but we still use open/close numbers from those dates
+        $min_date = strtotime("1970-01-01");
+
         // Set the initial values
-        $date = strtotime($open_date[0]);
+        $date = strtotime($open_dates[0]);
+        $current_time = time();
+
         $opened_sum = 0;
         $closed_sum = 0;
 
+        // if the original start date of the report would be before 2000-01-01 then ignore those and search for the first valid date
+        // but keep track of the opened/closed risks before so the numbers are properly accounted for
+        // even if those dates aren't displayed on the chart
+        if ($date < $min_date) {
+            foreach ($open_dates as $position => $open_date) {
+                $date = strtotime($open_date);
+                if ($date < $min_date) {
+                    $opened_sum += $open_counts[$position];
+                } else {
+                    break;
+                }
+            }
+
+            foreach ($close_dates as $position => $close_date) {
+                
+                if (strtotime($close_date) < $date) {
+                    $closed_sum += $close_counts[$position];
+                } else {
+                    break;
+                }
+            }
+        }
+
         // For each date from the start date until today
-        while ($date <= time())
-        {
+        while ($date <= $current_time) {
+
             // If the PHP version is >= 5.5.0
             // array_column is new as of PHP 5.5
             if (strnatcmp(phpversion(),'5.5.0') >= 0)
             {
                 // Search the open risks array
-                $opened_search = array_search(date("Y-m-d", $date), $open_date);
+                $opened_search = array_search(date("Y-m-d", $date), $open_dates);
             }
             else $opened_search = false;
-            
 
             // If the current date is in the opened array
             if ($opened_search !== false)
             {
-                $count = $open_count[$opened_search];
+                $count = $open_counts[$opened_search];
                 $opened_sum += $count;
             }
 
@@ -300,14 +330,14 @@ function get_risk_trend($title = null)
             if (strnatcmp(phpversion(),'5.5.0') >= 0)
             {
                 // Search the closed array for the value
-                $closed_search = array_search(date("Y-m-d", $date), $close_date);
+                $closed_search = array_search(date("Y-m-d", $date), $close_dates);
             }
             else $closed_search = false;
 
             // If the current date is in the closed array
             if ($closed_search !== false)
             {
-                $count = $close_count[$closed_search];
+                $count = $close_counts[$closed_search];
                 $closed_sum += $count;
             }
 
@@ -836,7 +866,7 @@ function closed_risk_reason_pie($title = null, $teams = false)
     if (!team_separation_extra())
     {
         // Query the database
-        $stmt = $db->prepare(" SELECT name, COUNT(*) as num FROM (SELECT a.close_reason, b.name, MAX(closure_date) FROM `closures` a JOIN `close_reason` b ON a.close_reason = b.value JOIN `risks` c ON a.risk_id = c.id LEFT JOIN risk_to_team rtt ON c.id=rtt.risk_id WHERE c.status = \"Closed\" AND {$teams_query} GROUP BY a.risk_id ORDER BY b.name DESC) AS close GROUP BY name ORDER BY COUNT(*) DESC; ");
+        $stmt = $db->prepare(" SELECT name, COUNT(*) as num FROM (SELECT a.close_reason, b.name, MAX(closure_date) FROM `risks` c JOIN `closures` a ON c.close_id = a.id  JOIN `close_reason` b ON a.close_reason = b.value LEFT JOIN risk_to_team rtt ON c.id=rtt.risk_id WHERE c.status = \"Closed\" AND {$teams_query} GROUP BY a.risk_id ORDER BY b.name DESC) AS close GROUP BY name ORDER BY COUNT(*) DESC; ");
         $stmt->execute();
 
         // Store the list in the array
@@ -2093,7 +2123,7 @@ function get_risks_and_assets_rows($report, $sort_by, $asset_tags_in_array, $pro
             $wheres[] = " FIND_IN_SET(u.project_id, :projects) ";
             $bind_params[":projects"] = $projects;
             if(in_array(-1, $projects_in_array)){
-                $wheres[] = " u.project_id IS NULL ";
+                $wheres[] = " p.value IS NULL ";
             }
             $where_in_string .= " AND (" . implode(" OR", $wheres) . " ) ";
         }
@@ -2199,11 +2229,9 @@ function get_risks_and_assets_rows($report, $sort_by, $asset_tags_in_array, $pro
                 u.calculated_risk DESC,
                 u.risk_id;
         ";
+
         $stmt = $db->prepare($sql);
-        foreach($bind_params as $key => $value){
-            $stmt->bindParam($key, $value, PDO::PARAM_STR);
-        }
-        $stmt->execute();
+        $stmt->execute($bind_params);
 
         // Store the results in the rows array
         $rows = $stmt->fetchAll(PDO::FETCH_GROUP);
@@ -2235,7 +2263,7 @@ function get_risks_and_assets_rows($report, $sort_by, $asset_tags_in_array, $pro
             $wheres[] = " FIND_IN_SET(u.project_id, :projects) ";
             $bind_params[":projects"] = $projects;
             if(in_array(-1, $projects_in_array)){
-                $wheres[] = " u.project_id IS NULL ";
+                $wheres[] = " p.value IS NULL ";
             }
             $where_in_string .= " AND (" . implode(" OR", $wheres) . " ) ";
         }
@@ -2326,13 +2354,10 @@ function get_risks_and_assets_rows($report, $sort_by, $asset_tags_in_array, $pro
         ";
 
         $stmt = $db->prepare($sql);
-        foreach($bind_params as $key => $value){
-            $stmt->bindParam($key, $value, PDO::PARAM_STR);
-        }
-        $stmt->execute();
+        $stmt->execute($bind_params);
 
         // Store the results in the rows array
-        $rows = $stmt->fetchAll(PDO::FETCH_GROUP);    
+        $rows = $stmt->fetchAll(PDO::FETCH_GROUP);
     }
 
     // Close the database
@@ -2394,15 +2419,15 @@ function risks_and_issues_table($risk_tags, $start_date, $end_date)
         $details = $title;
         $details .= "<ul>";
         if($risk['assessment']) {
-            $details .= "<li>".$escaper->escapeHtml(try_decrypt($risk['assessment']))."</li>";
+            $details .= "<li>".$escaper->purifyHtml(try_decrypt($risk['assessment']))."</li>";
         }
         if($risk['notes']) {
-            $details .= "<li>".$escaper->escapeHtml(try_decrypt($risk['notes']))."</li>";
+            $details .= "<li>".$escaper->purifyHtml(try_decrypt($risk['notes']))."</li>";
         }
         $comments = get_comments($risk_id, false);
         if(count($comments) > 0){
             foreach ($comments as $comment) {
-                $details .= "<li>".format_date($comment['date'])." [ ".$comment['name']." ] : ".$escaper->escapeHtml(try_decrypt($comment['comment']))."</li>";
+                $details .= "<li>".format_date($comment['date'])." [ ".$comment['name']." ] : ".$escaper->purifyHtml(try_decrypt($comment['comment']))."</li>";
             }
         }
         $details .= "</ul>";
@@ -2753,7 +2778,7 @@ function get_risks_by_table($status, $sort=0, $group=0, $table_columns=[])
             // If the group name is not none
             if ($group_name != "none")
             {
-                $initial_group_value = trim(${$group_name});
+                $initial_group_value = trim(${$group_name} ?? '');
                 
                 // Check comma splitted group
                 if($group_name == "team" || $group_name == "technology")
@@ -2952,6 +2977,14 @@ function get_risks_by_group($status, $group, $sort, $group_value, $display_colum
                         break;
                     case 'management_review':
                         $data_row[] = management_review($row['id'], $row['mgmt_review'], $row['next_review_date']);
+                        break;
+                    case 'comments':
+                    case 'risk_assessment':
+                    case 'additional_notes':
+                    case 'current_solution':
+                    case 'security_recommendations':
+                    case 'security_requirements':
+                        $data_row[] = $escaper->purifyHtml($row[$column]);
                         break;
                     case "calculated_risk":
                     case "calculated_risk_30":
@@ -3362,7 +3395,7 @@ function risks_query_select($column_filters=[])
             ELSE ROUND((`b`.`calculated_risk` - (`b`.`calculated_risk` * GREATEST(IFNULL(`p`.`mitigation_percent`, 0), IFNULL(MAX(`fc`.`mitigation_percent`), 0))  / 100)), 2)
         END AS residual_risk_90,
 
-        GROUP_CONCAT(DISTINCT `rc`.`name` SEPARATOR ',') AS risk_mapping,
+        `associated_rc_entries`.`risk_mapping_risk_event` AS risk_mapping,
         GROUP_CONCAT(DISTINCT `tc`.`name` SEPARATOR ',') AS threat_mapping,
 
         (
@@ -3437,6 +3470,7 @@ function risks_query_select($column_filters=[])
             WHEN 4 THEN '".$lang['CanceledProjects']."'
         END project_status,
         a.project_id,
+        lu.name AS reviewer, 
         l.next_review, 
         l.comments, 
         m.name AS next_step, 
@@ -3510,11 +3544,10 @@ function risks_query_select($column_filters=[])
                 tt.tag_id = t.id AND tt.taggee_id=a.id AND tt.type='risk'
         ) AS risk_tags,
         DATEDIFF(IF(a.status != 'Closed', NOW(), o.closure_date) , a.submission_date) days_open,
-        rc.number risk_mapping_risk,
-        rc.name risk_mapping_risk_event,
-        rc.description risk_mapping_description,
-        rg.name risk_mapping_risk_grouping,
-        rf.name risk_mapping_function,
+        `associated_rc_entries`.`risk_mapping_risk_grouping`,
+        `associated_rc_entries`.`risk_mapping_risk`,
+        `associated_rc_entries`.`risk_mapping_description`,
+        `associated_rc_entries`.`risk_mapping_function`,
     ";
     $contributing_risks = get_contributing_risks();
     foreach($contributing_risks as $contributing_risk){
@@ -3571,8 +3604,11 @@ function risks_unique_column_query_select()
         b.calculated_risk, 
         p.mitigation_percent,
         ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2) AS residual_risk,
-        GROUP_CONCAT(DISTINCT CONCAT(rc.name, '{$delimiter}', rc.id)  SEPARATOR ', ') AS risk_mapping,
+        `associated_rc_entries`.`risk_mapping_risk_event` AS risk_mapping,
         GROUP_CONCAT(DISTINCT CONCAT(tc.name, '{$delimiter}', tc.id)  SEPARATOR ', ') AS threat_mapping,
+        `associated_rc_entries`.`risk_mapping_risk_grouping`,
+        `associated_rc_entries`.`risk_mapping_risk`,
+        `associated_rc_entries`.`risk_mapping_function`,
 
         (
             SELECT
@@ -3642,7 +3678,10 @@ function risks_unique_column_query_select()
         k.name AS project, 
         CONCAT(k.name, '{$delimiter}', k.value) AS project_for_dropdown, 
         
+        lu.name AS reviewer, 
+        CONCAT(lu.name, '{$delimiter}', lu.value) AS reviewer_for_dropdown, 
         l.next_review, 
+        l.comments, 
         m.name AS next_step, 
         CONCAT(m.name, '{$delimiter}', m.value) AS next_step_for_dropdown, 
         (
@@ -3726,10 +3765,12 @@ function risks_unique_column_query_select()
 /*************************************
  * FUNCTION: RETURN REISKS QUERY SQL *
  *************************************/
-function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName="")
+function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName="", $query_type = 1)
 {
     global $lang;
     
+    $delimiter = "---";
+
     $query = "
             risks a
             LEFT JOIN risk_scoring b ON a.id = b.id
@@ -3740,6 +3781,7 @@ function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName
             LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON a.regulation = j.value
             LEFT JOIN projects k FORCE INDEX(PRIMARY) ON a.project_id = k.value
             LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id
+            LEFT JOIN user lu FORCE INDEX(PRIMARY) ON l.reviewer = lu.value
             LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
             LEFT JOIN closures o ON a.close_id = o.id
             LEFT JOIN user cu FORCE INDEX(PRIMARY) ON o.user_id = cu.value
@@ -3762,11 +3804,51 @@ function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName
             LEFT JOIN `temp_rrsh_last_update_age` rrsh_lua_60 ON `rrsh_lua_60`.`risk_id` = `a`.`id` AND `rrsh_lua_60`.`age_range` = '60-90'
             LEFT JOIN `temp_rrsh_last_update_age` rrsh_lua_90 ON `rrsh_lua_90`.`risk_id` = `a`.`id` AND `rrsh_lua_90`.`age_range` = '90+'
 
-            LEFT JOIN risk_catalog rc ON FIND_IN_SET(rc.id, a.risk_catalog_mapping) > 0
             LEFT JOIN threat_catalog tc ON FIND_IN_SET(tc.id, a.threat_catalog_mapping) > 0
-            LEFT JOIN risk_grouping rg ON rc.grouping = rg.value
-            LEFT JOIN risk_function rf ON rc.function = rf.value
     ";
+
+    if ($query_type == 3) {
+        $query .= "
+            LEFT JOIN (
+                SELECT
+                    `rsk`.`id` AS risk_id,
+                    GROUP_CONCAT(DISTINCT CONCAT(`rg`.`name`, '{$delimiter}', `rg`.`value`)  SEPARATOR '|') AS risk_mapping_risk_grouping,
+                    GROUP_CONCAT(DISTINCT CONCAT(`rc`.`number`, '{$delimiter}', `rc`.`id`)  SEPARATOR '|') AS risk_mapping_risk,
+                    GROUP_CONCAT(DISTINCT CONCAT(`rc`.`name`, '{$delimiter}', `rc`.`id`)  SEPARATOR '|') AS risk_mapping_risk_event,
+                    GROUP_CONCAT(DISTINCT CONCAT(`rf`.`name`, '{$delimiter}', `rf`.`value`)  SEPARATOR '|') AS risk_mapping_function
+                FROM
+                    `risks` rsk
+                    LEFT JOIN `risk_catalog` rc ON FIND_IN_SET(`rc`.`id`, `rsk`.`risk_catalog_mapping`)
+                    LEFT JOIN `risk_grouping` rg ON `rc`.`grouping` = `rg`.`value`
+                    LEFT JOIN `risk_function` rf ON `rc`.`function` = `rf`.`value`
+                GROUP BY
+                    `rsk`.`id`
+            ) associated_rc_entries ON `associated_rc_entries`.`risk_id` = `a`.`id`
+        ";
+    } else {
+        $query .= "            
+            LEFT JOIN (
+                SELECT
+                    `rsk`.`id` AS risk_id,
+                    GROUP_CONCAT(DISTINCT `rc`.`id` SEPARATOR ',') AS risk_mapping_risk_catalog_ids,
+                    GROUP_CONCAT(`rg`.`name` SEPARATOR ', ') AS risk_mapping_risk_grouping,
+                    GROUP_CONCAT(DISTINCT `rg`.`value` SEPARATOR ',') AS risk_mapping_risk_grouping_ids,
+                    GROUP_CONCAT(`rc`.`number` SEPARATOR ', ') AS risk_mapping_risk,
+                    GROUP_CONCAT(`rc`.`name` SEPARATOR ', ') AS risk_mapping_risk_event,
+                    GROUP_CONCAT(`rc`.`description` SEPARATOR ', ') AS risk_mapping_description,
+                    GROUP_CONCAT(`rf`.`name` SEPARATOR ', ') AS risk_mapping_function,
+                    GROUP_CONCAT(DISTINCT `rf`.`value` SEPARATOR ',') AS risk_mapping_function_ids
+                FROM
+                    `risk_catalog` rc
+                    LEFT JOIN `risk_grouping` rg ON `rc`.`grouping` = `rg`.`value`
+                    LEFT JOIN `risk_function` rf ON `rc`.`function` = `rf`.`value`
+                    LEFT JOIN `risks` rsk ON FIND_IN_SET(`rc`.`id`, `rsk`.`risk_catalog_mapping`)
+                GROUP BY
+                    `rsk`.`id`
+            ) associated_rc_entries ON `associated_rc_entries`.`risk_id` = `a`.`id`
+        ";
+    }
+    
     // If the team separation extra is enabled
     $team_separation_extra = team_separation_extra();
     if(!empty($column_filters['location'])){
@@ -3989,6 +4071,8 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
                 $sort_name = " l.comments {$orderDir} ";
             }
             break;
+        // Add fields here that are sorted in code to prevent adding sorting logic for them into the query
+        case "management_review":
         case "":
         case null:
             $sort_name = "none";
@@ -4167,7 +4251,7 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
     
     $having_query .= " AND ".get_group_query_for_dynamic_risk($group, $group_value_from_db, "");
 
-    $query .= " FROM ".risks_query_from($column_filters, $risks_by_team, $orderColumnName)."\n"
+    $query .= " FROM ".risks_query_from($column_filters, $risks_by_team, $orderColumnName, $query_type)."\n"
         ." WHERE 1 "
         .$filter_query."\n" 
         .$status_query."\n"
@@ -4410,8 +4494,13 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                         if($empty_filter) $column_filter .= ",0";
                         $bind_params[$bind_param_name] = $column_filter;
                     break;
+                    case "reviewer":
+                        if($empty_filter) $wheres[] = " (FIND_IN_SET(l.{$name}, :{$bind_param_name}) OR l.{$name} IS NULL)";
+                        else $wheres[] = " FIND_IN_SET(l.{$name}, :{$bind_param_name}) ";
+                        $bind_params[$bind_param_name] = $column_filter;
+                    break;
                     case "next_step":
-                        if($empty_filter) $wheres[] = " (FIND_IN_SET(l.{$name}, :{$bind_param_name}) OR  l.{$name} IS NULL)";
+                        if($empty_filter) $wheres[] = " (FIND_IN_SET(l.{$name}, :{$bind_param_name}) OR l.{$name} IS NULL)";
                         else $wheres[] = " FIND_IN_SET(l.{$name}, :{$bind_param_name}) ";
                         $bind_params[$bind_param_name] = $column_filter;
                     break;
@@ -4515,16 +4604,6 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                         $havings[] = " CLASSIC_impact_value {$operator} :{$bind_param_name} ";
                         $bind_params[$bind_param_name] = $column_filter;
                     break;
-                    case "risk_mapping":
-                        if($empty_filter) $wheres[] = "(FIND_IN_SET(rc.id, :{$bind_param_name}) OR rc.id IS NULL)";
-                        else $wheres[] = " FIND_IN_SET(rc.id, :{$bind_param_name}) ";
-                        $bind_params[$bind_param_name] = $column_filter;
-                    break;
-                    case "threat_mapping":
-                        if($empty_filter) $wheres[] = "(FIND_IN_SET(tc.id, :{$bind_param_name}) OR tc.id IS NULL)";
-                        else $wheres[] = " FIND_IN_SET(tc.id, :{$bind_param_name}) ";
-                        $bind_params[$bind_param_name] = $column_filter;
-                    break;
                     case "close_reason":
                         if($empty_filter) $wheres[] = "(FIND_IN_SET(o.close_reason, :{$bind_param_name}) OR o.close_reason IS NULL)";
                         else $wheres[] = " FIND_IN_SET(o.close_reason, :{$bind_param_name}) ";
@@ -4534,6 +4613,59 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                         $wheres[] = " o.note like :{$bind_param_name} ";
                         $bind_params[$bind_param_name] = "%{$column_filter}%";
                     break;
+                    case "threat_mapping":
+                        if($empty_filter) $wheres[] = "(FIND_IN_SET(tc.id, :{$bind_param_name}) OR tc.id IS NULL)";
+                        else $wheres[] = " FIND_IN_SET(tc.id, :{$bind_param_name}) ";
+                        $bind_params[$bind_param_name] = $column_filter;
+                    break;
+
+                    /*
+                     * Had to solve the filtering for the Risk Category fields this way as they're trying to find multiple IDs in a list of IDs.
+                     * Probably can be reworked once the risk's 'risk_catalog_mapping' field will be replaced by a junction table.
+                     **/
+                    case "risk_mapping":
+                    case "risk_mapping_risk":
+                        $wheres[] = "(" . ($empty_filter ? "`a`.`risk_catalog_mapping` IS NULL OR `a`.`risk_catalog_mapping` = '' OR " : "") . "
+                            (
+                                SELECT
+                                    COUNT(5)
+                                FROM `risk_catalog` rc
+                                WHERE
+                                    `rc`.`id` IN (" . implode(',', array_map('intval', explode(',', $column_filter))) . ")
+                                    AND FIND_IN_SET(`rc`.`id`, `a`.`risk_catalog_mapping`)
+                            ) > 0)";
+                    break;
+
+                    case "risk_mapping_risk_grouping":
+                        
+                        $wheres[] = "(" . ($empty_filter ? "`a`.`risk_catalog_mapping` IS NULL OR `a`.`risk_catalog_mapping` = '' OR " : "") . "
+                            (
+                                SELECT
+                                    COUNT(5)
+                                FROM `risk_grouping` rg
+                                WHERE
+                                    `rg`.`value` IN (" . implode(',', array_map('intval', explode(',', $column_filter))) . ")
+                                    AND FIND_IN_SET(`rg`.`value`, `associated_rc_entries`.`risk_mapping_risk_grouping_ids`)
+                            ) > 0)";
+                    break;
+                        
+                    case "risk_mapping_function":
+                        $wheres[] = "(" . ($empty_filter ? "`a`.`risk_catalog_mapping` IS NULL OR `a`.`risk_catalog_mapping` = '' OR " : "") . "
+                            (
+                                SELECT
+                                    COUNT(5)
+                                FROM `risk_function` rf
+                                WHERE
+                                    `rf`.`value` IN (" . implode(',', array_map('intval', explode(',', $column_filter))) . ")
+                                    AND FIND_IN_SET(`rf`.`value`, `associated_rc_entries`.`risk_mapping_function_ids`)
+                            ) > 0)";
+                    break;
+
+                    case "risk_mapping_description":
+                        $havings[] = " {$name} like :{$bind_param_name} ";
+                        $bind_params[$bind_param_name] = "%{$column_filter}%";
+                    break;
+
                     default:
 //                        $wheres[]
                     break;
@@ -4551,10 +4683,6 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                     $bind_params[$bind_param_name] = $column_filter;
                 } else if(stripos($name, "CVSS_") !== false || stripos($name, "DREAD_") !== false || stripos($name, "OWASP_") !== false) {
                     $wheres[] = " b.{$name} like :{$bind_param_name} ";
-                    $bind_params[$bind_param_name] = "%{$column_filter}%";
-                }
-                if(stripos($name, "risk_mapping_") !== false) {
-                    $havings[] = " {$name} like :{$bind_param_name} ";
                     $bind_params[$bind_param_name] = "%{$column_filter}%";
                 }
             }
@@ -4854,9 +4982,9 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
     if($encryption_order != false) {
         usort($filtered_risks, function($a, $b) use ($orderDir) {
             if($orderDir == "asc") 
-                return strcasecmp($a['encryption_order'], $b['encryption_order']);
+                return strcasecmp($a['encryption_order'] ?? '', $b['encryption_order'] ?? '');
             else 
-                return strcasecmp($b['encryption_order'], $a['encryption_order']);
+                return strcasecmp($b['encryption_order'] ?? '', $a['encryption_order'] ?? '');
         });
     }
 
@@ -5025,7 +5153,11 @@ function risks_query($status, $sort, $group, $column_filters, &$rowCount, $start
  ************************************************/
 function get_dynamicrisk_unique_column_data($status, $group, $group_value_from_db="", $custom_query="", $bind_params=array(), $orderColumnName=null, $orderDir="asc", $risks_by_team=0, $teams=[], $owners=[], $ownersmanagers=[])
 {
-    list($query, $group_name, $create_temporary_tables, $drop_temporary_tables) = make_full_risks_sql($query_type=3, $status, -1, $group, [], $group_value_from_db, $custom_query, $bind_params, "");
+
+    // Allow this to run as long as necessary
+    ini_set('max_execution_time', 0);
+
+    list($query, $group_name, $create_temporary_tables, $drop_temporary_tables) = make_full_risks_sql(3, $status, -1, $group, [], $group_value_from_db, $custom_query, $bind_params, "");
 
     // Query the database
     $db = db_open();
@@ -5075,6 +5207,7 @@ function get_dynamicrisk_unique_column_data($status, $group, $group_value_from_d
             "source" => "source_for_dropdown",
             "closed_by" => "closed_by_for_dropdown",
             "close_reason" => "close_reason_for_dropdown",
+            "reviewer" => "reviewer_for_dropdown",
         ];
         
         foreach($key_relation_arr as $key => $related_key)
@@ -5116,6 +5249,9 @@ function get_dynamicrisk_unique_column_data($status, $group, $group_value_from_d
             "affected_asset_groups" => $risk["affected_asset_groups"],
             "closed_by" => $risk["closed_by"],
             "close_reason" => $risk["close_reason"],
+            "risk_mapping_risk_grouping" => $risk["risk_mapping_risk_grouping"],
+            "risk_mapping_risk" => $risk["risk_mapping_risk"],
+            "risk_mapping_function" => $risk["risk_mapping_function"],
         );
     }
 
@@ -5612,8 +5748,8 @@ function risks_and_control_table($report, $sort_by, $projects, $status)
                 </br>" . $escaper->escapeHtml($lang['ControlPriority']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($risks[0]['control_priority_name']) . "
                 </br>" . $escaper->escapeHtml($lang['MitigationPercent']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($risks[0]['mitigation_percent']) . " %
                 </br>" . $escaper->escapeHtml($lang['ControlOwner']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($risks[0]['control_owner_name']) . "
-                </br>" . $escaper->escapeHtml($lang['Description']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($risks[0]['control_number']) . "
-                </br>" . $escaper->escapeHtml($lang['SupplementalGuidance']) . ":&nbsp;&nbsp;". $escaper->escapeHtml($risks[0]['supplemental_guidance']) . "
+                </br>" . $escaper->escapeHtml($lang['Description']) . ":&nbsp;&nbsp;" . $escaper->purifyHtml($risks[0]['control_description']) . "
+                </br>" . $escaper->escapeHtml($lang['SupplementalGuidance']) . ":&nbsp;&nbsp;". $escaper->purifyHtml($risks[0]['supplemental_guidance']) . "
                 </div>
                 </br><a href='javascript:void(0)' class='morelink'>".$escaper->escapeHtml($lang['ShowMore'])."</a>";
             echo "<table class=\"table table-bordered table-condensed sortable\">\n";
@@ -5847,7 +5983,7 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $fil
     if($report == 0)
     {
         $select = "SELECT fc.id gr_id, b.*, c.calculated_risk, fc.short_name control_short_name, fc.long_name control_long_name, fc.id control_id
-                , fc.control_number, fc.mitigation_percent, fc.supplemental_guidance, GROUP_CONCAT(DISTINCT f.name) framework_names, cc.name control_class_name
+                , fc.control_number, fc.mitigation_percent, fc.description control_description, fc.supplemental_guidance, GROUP_CONCAT(DISTINCT f.name) framework_names, cc.name control_class_name
                 , cph.name control_phase_name, cpr.name control_priority_name, cf.name control_family_name, cu.name control_owner_name 
                 , GROUP_CONCAT(DISTINCT l.name) location
                 , GROUP_CONCAT(DISTINCT t.name) team

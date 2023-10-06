@@ -2336,6 +2336,15 @@ $lang = array(
     'MultipleChoice_SingleSelect' => 'බහුවරණ (තනි-තේරීම)',
     'MultipleChoice_MultiSelect' => 'බහුවරණ (බහු-තේරීම)',
     'APIDocumentation' => 'API ලේඛනගත කිරීම',
+    'ReviewedBy' => 'විසින් සමාලෝචනය කරන ලදී',
+    'LimitedTestmailMessage' => 'පරීක්ෂණ විද්‍යුත් තැපෑලක් මෑතකදී යවා ඇත. තවත් පරීක්ෂණ විද්‍යුත් තැපෑලක් යැවීමට පෙර ඔබ විනාඩි 5ක් රැඳී සිටිය යුතුය.',
+    'AutomaticallySendAssessmentResults' => 'ඇගයීම් ප්‍රතිඵල ස්වයංක්‍රීයව ඇගයීම් සම්බන්ධතා වෙත යවන්න',
+    'ResendAssessment' => 'ප්‍රශ්නාවලියක් යැවීමෙන් පසු දින {$day} කට පසු තක්සේරුව නැවත යවන්න',
+    'NotifyNotCompleteAssessment' => 'සෑම දින {$day} කට වරක් සම්පූර්ණ නොකළහොත් දැනුම් දෙන්න.',
+    'QuestionnaireNotCompleteEmailTemplate' => 'ප්‍රශ්නාවලිය සම්පූර්ණ නොකළ විද්‍යුත් තැපැල් අච්චුව',
+    'RiskAssessmentQuestionnaireNotCompleted' => 'අවදානම් තක්සේරු ප්‍රශ්නාවලිය සම්පූර්ණ කර නැත',
+    'SaveAndSend' => 'සුරකින්න සහ යවන්න',
+    'AssociatedRisks' => 'ආශ්රිත අවදානම්',
 
     '' => '',
 );

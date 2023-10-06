@@ -34,7 +34,7 @@ authentication source:
                     'en' => 'Log in using a SAML SP',
                     'es' => 'Entrar usando un SP SAML',
                 ],
-                'css-class' => 'SAML',
+                'css_class' => 'SAML',
                 'AuthnContextClassRef' => ['urn:oasis:names:tc:SAML:2.0:ac:classes:SmartcardPKI', 'urn:oasis:names:tc:SAML:2.0:ac:classes:MobileTwoFactorContract'],
             ],
             'example-admin' => [
@@ -71,18 +71,15 @@ The keys of the sources array are the identifiers of authentication
 sources defined in the authsources.php configuration file. The
 values are arrays with information used to create the user
 interface that will let the user select the authentication source
-he wants. Older versions of the multiauth module did not have
-this structure and just have the authsources identifiers as the
-values of the sources array. It has been improved in a backwards
-compatible fashion so both cases should work.
+they want.
 
 Each source in the sources array has a key and a value. As
 mentioned above the key is the authsource identifier and the value
-is another array with optional keys: 'text', 'css-class', 'help', and 'AuthnContextClassRef'.
+is another array with optional keys: 'text', 'css_class', 'help', and 'AuthnContextClassRef'.
 The text element is another array with localized strings for one
 or more languages. These texts will be shown in the selectsource.php
 view. Note that you should at least enter the text in the default
-language as specified in your config.php file. The css-class
+language as specified in your config.php file. The css_class
 element is a string with the css class that will be applied to
 the &lt;li> element in the selectsource.php view. By default the
 authtype of the authsource is used as the css class with colons

@@ -19,6 +19,9 @@ add_session_check($permissions);
 // Include the CSRF Magic library
 include_csrf_magic();
 
+// It's saved safe so we're assuming it IS safe so dislaying it raw
+$base_url = get_setting('simplerisk_base_url');
+
 ?>
 
 <!DOCTYPE html>
@@ -26,18 +29,18 @@ include_csrf_magic();
 <head>
     <meta charset="UTF-8">
     <title>SimpleRisk API Documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../vendor/swagger-api/swagger-ui/dist/swagger-ui.css">
+    <link rel="stylesheet" type="text/css" href="<?php echo $base_url; ?>/vendor/swagger-api/swagger-ui/dist/swagger-ui.css">
 </head>
 <body>
 <div id="swagger-ui"></div>
 
-<script src="../../../vendor/swagger-api/swagger-ui/dist/swagger-ui-bundle.js"></script>
-<script src="../../../vendor/swagger-api/swagger-ui/dist/swagger-ui-standalone-preset.js"></script>
+<script src="<?php echo $base_url; ?>/vendor/swagger-api/swagger-ui/dist/swagger-ui-bundle.js"></script>
+<script src="<?php echo $base_url; ?>/vendor/swagger-api/swagger-ui/dist/swagger-ui-standalone-preset.js"></script>
 
 <script>
   window.onload = function() {
     const ui = SwaggerUIBundle({
-      url: "<?php echo get_setting('simplerisk_base_url'); ?>/api/v2/swagger.php",
+      url: "<?php echo $base_url; ?>/api/v2/documentation/index.php",
       dom_id: '#swagger-ui',
       presets: [
         SwaggerUIBundle.presets.apis,

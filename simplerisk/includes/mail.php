@@ -169,9 +169,28 @@ function send_email($name, $email, $subject, $body)
 	$smtpautotls = $mail['phpmailer_smtpautotls'];
 	$smtpauth = $mail['phpmailer_smtpauth'];
     $username = $mail['phpmailer_username'];
-    $password = $mail['phpmailer_password'];
     $encryption = $mail['phpmailer_smtpsecure'];
     $port = $mail['phpmailer_port'];
+
+    // Get a Management Extra IV from the settings table
+    $management_extra_iv = get_setting("management_extra_iv");
+
+    // If we have a value, that means this is a hosted instance with SMTP email
+    if ($management_extra_iv !== false)
+    {
+        // Load the Management Extra
+        require_once(realpath(__DIR__ . "/../extras/management/index.php"));
+
+        // We need to base64 decode the IV
+        $iv = base64_decode($management_extra_iv);
+
+        // Decrypt the phpmailer password
+        $phpmailer_password = $mail['phpmailer_password'];
+        $password = openssl_decrypt($phpmailer_password, 'aes-256-cbc', MANAGEMENT_EXTRA_ENCRYPTION_KEY, 0);
+    }
+    // Otherwise use the phpmailer_password value
+    else $password = $mail['phpmailer_password'];
+
 
 	// Create a new PHPMailer instance
 	$mail = new PHPMailer\PHPMailer\PHPMailer;

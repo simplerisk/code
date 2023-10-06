@@ -707,7 +707,7 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
                 db_close($db);
 
                 // Clean up other sessions of the user and roll the current session's id
-                kill_other_sessions_of_current_user();
+                kill_other_sessions_of_current_user($userid);
 
                 // Display an alert
                 set_alert(true, "good", "Your password has been reset successfully!");
@@ -1607,9 +1607,9 @@ function kill_sessions_of_user($user_id, $keep_current_session = false) {
  * logged in user and rolls session id of the                       *
  * current one to make sure noone can re-use the session cookies.   *
  ********************************************************************/
-function kill_other_sessions_of_current_user() {
+function kill_other_sessions_of_current_user($userid = false) {
 
-    if(isset($_SESSION['uid'])) kill_sessions_of_user($_SESSION['uid'], true);
+    if(isset($_SESSION['uid']) || $userid) kill_sessions_of_user($_SESSION['uid'] ?? $userid, true);
 
     // change session ID for the current session and invalidate old session ID
     session_regenerate_id(true);

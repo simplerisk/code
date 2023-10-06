@@ -97,27 +97,6 @@ require_once(language_file());
         }
     };
 
-    $customAddFunction_risk_grouping = function($name) {
-        $db = db_open();
-
-        // Get the order for the last place...
-        $stmt = $db->prepare("SELECT MAX(`order`) FROM `risk_grouping`");
-        $stmt->execute();
-        $max_order = $stmt->fetchColumn();
-        $new_order = intval($max_order) + 1;
-
-        // ...and add it there.
-        $stmt = $db->prepare("INSERT INTO `risk_grouping` (`name`, `order`) VALUES (:name, :order)");
-        $stmt->bindParam(":name", $name, PDO::PARAM_STR);
-        $stmt->bindParam(":order", $new_order, PDO::PARAM_INT);
-        $stmt->execute();
-        $risk_grouping_id = $db->lastInsertId();
-
-        db_close($db);
-
-        return $risk_grouping_id;
-    };
-
     $customDeleteFunction_risk_grouping = function($value) {
 
         $db = db_open();
@@ -266,7 +245,7 @@ require_once(language_file());
         'risk_grouping' => array(
             'headerKey' => 'RiskGroupings',
             'lengthLimit' => 50,
-            'customAddFunction' => $customAddFunction_risk_grouping,
+            'customAddFunction' => 'add_risk_grouping',
             'customDeleteFunction' => $customDeleteFunction_risk_grouping,
         ),
         'risk_function' => array(
@@ -313,7 +292,7 @@ require_once(language_file());
             }
 
             if (in_array($_POST['action'], array('update', 'delete'))) {
-                if (!isset($_POST['id']) || !trim($_POST['id']) || !preg_match('/^\d+$/', trim($_POST['id']))) {
+                if (!isset($_POST['id']) || !preg_match('/^\d+$/', trim($_POST['id']))) {
                     set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
                     json_response(400, get_alert(true), NULL);
                 } else {

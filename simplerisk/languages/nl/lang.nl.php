@@ -2336,6 +2336,15 @@ $lang = array(
     'MultipleChoice_SingleSelect' => 'Meerkeuze (enkelvoudige selectie)',
     'MultipleChoice_MultiSelect' => 'Meerkeuze (Meervoudige selectie)',
     'APIDocumentation' => 'API-documentatie',
+    'ReviewedBy' => 'Beoordeeld door',
+    'LimitedTestmailMessage' => 'Er is onlangs een testmail verzonden. U moet 5 minuten wachten voordat er opnieuw een test-e-mail kan worden verzonden.',
+    'AutomaticallySendAssessmentResults' => 'Stuur na voltooiing automatisch de beoordelingsresultaten naar de beoordelingscontacten',
+    'ResendAssessment' => 'Na het versturen van een vragenlijst. Na {$day} dagen de beoordeling opnieuw versturen',
+    'NotifyNotCompleteAssessment' => 'Geef elke {$day} dagen een melding als dit niet wordt gedaan.',
+    'QuestionnaireNotCompleteEmailTemplate' => 'Vragenlijst niet ingevuld E-mailsjabloon',
+    'RiskAssessmentQuestionnaireNotCompleted' => 'Vragenlijst risicobeoordeling niet ingevuld',
+    'SaveAndSend' => 'Opslaan en verzenden',
+    'AssociatedRisks' => 'Bijbehorende risico\'s',
 
     '' => '',
 );

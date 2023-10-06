@@ -2336,6 +2336,15 @@ $lang = array(
     'MultipleChoice_SingleSelect' => 'Вишеструки избор (један избор)',
     'MultipleChoice_MultiSelect' => 'Вишеструки избор (вишеструки избор)',
     'APIDocumentation' => 'АПИ документација',
+    'ReviewedBy' => 'Ревиевед би',
+    'LimitedTestmailMessage' => 'Тест е-поште је недавно послат. Морате сачекати 5 минута пре него што се пошаље још једна пробна е-порука.',
+    'AutomaticallySendAssessmentResults' => 'Аутоматски пошаљите резултате процене контактима за оцењивање по завршетку',
+    'ResendAssessment' => 'Након слања упитника, поново пошаљите процену након {$day} дана',
+    'NotifyNotCompleteAssessment' => 'Обавестите ако није довршено сваких {$day} дана.',
+    'QuestionnaireNotCompleteEmailTemplate' => 'Упитник није попуњен Шаблон е-поште',
+    'RiskAssessmentQuestionnaireNotCompleted' => 'Упитник за процену ризика није попуњен',
+    'SaveAndSend' => 'Сачувај и пошаљи',
+    'AssociatedRisks' => 'Повезани ризици',
 
     '' => '',
 );

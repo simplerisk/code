@@ -165,13 +165,6 @@ class SAMLParser
     private array $validators = [];
 
     /**
-     * The original EntityDescriptor element for this entity, as a base64 encoded string.
-     *
-     * @var string
-     */
-    private string $entityDescriptor;
-
-    /**
      * @var \Symfony\Component\Filesystem\Filesystem
      */
     protected Filesystem $fileSystem;
@@ -196,9 +189,6 @@ class SAMLParser
         $this->spDescriptors = [];
         $this->idpDescriptors = [];
 
-        $e = $entityElement->toXML();
-        $e = $e->ownerDocument->saveXML($e);
-        $this->entityDescriptor = base64_encode($e);
         $this->entityId = $entityElement->getEntityID();
 
         $expireTime = self::getExpireTime($entityElement, $maxExpireTime);
@@ -472,7 +462,6 @@ class SAMLParser
     {
         $ret = [];
         $ret['entityid'] = $this->entityId;
-        $ret['entityDescriptor'] = $this->entityDescriptor;
 
         // add organizational metadata
         if (!empty($this->organizationName)) {
@@ -541,7 +530,7 @@ class SAMLParser
      *   the browser-post binding.
      * - 'SingleLogoutService': String with the URL where we should send logout requests/responses.
      * - 'NameIDFormat': The name ID format this SP expects. This may be unset.
-     * - 'certData': X509Certificate for entity (if present).
+     * - 'keys': X509Certificate(s) for entity (if present).
      *
      * Metadata must be loaded with one of the parse functions before this function can be called.
      *
@@ -643,7 +632,7 @@ class SAMLParser
      * - 'SingleLogoutServiceResponse': String where we should send logout responses (if this is different from
      *   the 'SingleLogoutService' endpoint.
      * - 'NameIDFormats': The name ID formats this IdP supports.
-     * - 'certData': X509Certificate for entity (if present).
+     * - 'keys': X509Certificate(s) for entity (if present).
      *
      * Metadata must be loaded with one of the parse functions before this function can be called.
      *
@@ -919,16 +908,24 @@ class SAMLParser
                 if ($e instanceof RegistrationInfo) {
                     // Registration Authority cannot be overridden (warn only if override attempts to change the value)
                     if (
-                        isset($ret['RegistrationInfo']['registrationAuthority'])
-                        && $ret['RegistrationInfo']['registrationAuthority'] !== $e->getRegistrationAuthority()
+                        isset($ret['RegistrationInfo']['authority'])
+                        && $ret['RegistrationInfo']['authority'] !== $e->getRegistrationAuthority()
                     ) {
                         Logger::warning(
                             'Invalid attempt to override registrationAuthority \''
-                            . $ret['RegistrationInfo']['registrationAuthority']
+                            . $ret['RegistrationInfo']['authority']
                             . "' with '{$e->getRegistrationAuthority()}'"
                         );
                     } else {
-                        $ret['RegistrationInfo']['registrationAuthority'] = $e->getRegistrationAuthority();
+                        $ret['RegistrationInfo']['authority'] = $e->getRegistrationAuthority();
+                    }
+                    $registrationInstant = $e->getRegistrationInstant();
+                    if ($registrationInstant !== null) {
+                        $ret['RegistrationInfo']['instant'] = $registrationInstant;
+                    }
+                    $registrationPolicy = $e->getRegistrationPolicy();
+                    if (!empty($registrationPolicy)) {
+                        $ret['RegistrationInfo']['policies'] = $registrationPolicy;
                     }
                 }
                 if ($e instanceof EntityAttributes && !empty($e->getChildren())) {
@@ -1149,7 +1146,7 @@ class SAMLParser
      */
     private static function extractEndpoints(array $endpoints): array
     {
-        return array_map('self::parseGenericEndpoint', $endpoints);
+        return array_map([self::class, 'parseGenericEndpoint'], $endpoints);
     }
 
 

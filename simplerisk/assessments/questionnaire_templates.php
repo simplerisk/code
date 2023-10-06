@@ -72,7 +72,7 @@ if(process_assessment_questionnaire_templates()){
     <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
     <?php display_bootstrap_javascript(); ?>
     <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/simplerisk/pages/assessment.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/dataTables.rowReorder.min.js?<?php echo current_version("app"); ?>"></script>
 
@@ -83,7 +83,7 @@ if(process_assessment_questionnaire_templates()){
     <meta name="google" content="notranslate" />
     <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/rowReorder.dataTables.min.css?<?php echo current_version("app"); ?>">
 
@@ -113,9 +113,11 @@ if(process_assessment_questionnaire_templates()){
             </div>
             <div class="span9">
                 <?php if(isset($_GET['action']) && $_GET['action']=="template_list"){ ?>
+                    <?php if(has_permission("assessment_add_template")){ ?>
                     <div class="row-fluid text-right">
                         <a class="btn" href="#aseessment-questionnaire-template--add" role="button" data-toggle="modal"><?php echo $escaper->escapeHtml($lang['Add']); ?></a>
                     </div>
+                    <?php }?>
                     <div class="row-fluid">
                         <?php display_questionnaire_templates(); ?>
                     </div>

@@ -336,14 +336,14 @@ function setupQuestionnaireContactUserWidget(select_tag) {
                         }
 
                         item.id += '_' + item.class;
-                        self.addOption(item);
+                        self.registerOption(item);
                     }
                     
                     if (selected_ids.length)
                         self.setValue(selected_ids);
                 },
                 complete: function() {
-                    originEl.parent().find('.selectize-control div').unblock({message:null});
+                    select_tag.parent().find('.selectize-control div').unblock({message:null});
                 }
             });
         }

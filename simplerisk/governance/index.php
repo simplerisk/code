@@ -241,7 +241,7 @@ if (isset($_POST['delete_controls']))
   <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
   <script src="../vendor/simplerisk/selectize.js/dist/js/standalone/selectize.min.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/simplerisk/pages/governance.js?<?php echo current_version("app"); ?>"></script>
   <script src="../js/simplerisk/common.js?<?php echo current_version("app"); ?>"></script>
   <script src="../vendor/tinymce/tinymce/tinymce.min.js?<?php echo current_version("app"); ?>"></script>
@@ -253,7 +253,7 @@ if (isset($_POST['delete_controls']))
   <link rel="stylesheet" href="../css/easyui.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/prioritize.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
@@ -487,7 +487,7 @@ if (isset($_POST['delete_controls']))
 				echo "<h4>Try one of the following ways to load frameworks into SimpleRisk:</h4>\n";
 				echo "<ol>\n";
 				echo "  <li>Click the plus (+) icon above to manually create a new framework.</li>\n";
-				echo "  <li><a href=\"../admin/register.php\">Register</a> your SimpleRisk instance to download the free ComplianceForge SCF Extra and <a href=\"../admin/complianceforge_scf.php\">select from 196 different frameworks</a> that have been expertly mapped against 1090 security and privacy controls.</li>\n";
+				echo "  <li><a href=\"../admin/register.php\">Register</a> your SimpleRisk instance to download the free Secure Controls Framework (SCF) Extra and <a href=\"../admin/complianceforge_scf.php\">select from over 200 different frameworks</a> that have been expertly mapped against over 1000 security and privacy controls.</li>\n";
 				echo "  <li>Use the licensed <a href=\"../admin/content.php\">Import-Export Extra</a> to instantly install any of the following frameworks or import your own:\n";
 				echo "    <ol style=\"list-style-type: disc;\">\n";
 

@@ -2336,6 +2336,15 @@ $lang = array(
     'MultipleChoice_SingleSelect' => 'Flervalg (enkeltvalg)',
     'MultipleChoice_MultiSelect' => 'Flervalg (Multi-Select)',
     'APIDocumentation' => 'API-dokumentasjon',
+    'ReviewedBy' => 'Anmeldt av',
+    'LimitedTestmailMessage' => 'En test-e-post har nylig blitt sendt. Du må vente 5 minutter før en ny test-e-post kan sendes.',
+    'AutomaticallySendAssessmentResults' => 'Send automatisk vurderingsresultater til vurderingskontaktene ved fullføring',
+    'ResendAssessment' => 'Etter å ha sendt et spørreskjema, send vurderingen på nytt etter {$day} dager',
+    'NotifyNotCompleteAssessment' => 'Gi beskjed hvis ikke fullført hver {$day} dag.',
+    'QuestionnaireNotCompleteEmailTemplate' => 'Spørreskjema ikke fullført e-postmal',
+    'RiskAssessmentQuestionnaireNotCompleted' => 'Spørreskjema for risikovurdering ikke utfylt',
+    'SaveAndSend' => 'Lagre og send',
+    'AssociatedRisks' => 'Tilknyttede risikoer',
 
     '' => '',
 );

@@ -1,0 +1,16 @@
+.github export-ignore
+package.json export-ignore
+package-lock.json export-ignore
+/css/.gitkeep export-ignore
+/fonts/.gitkeep export-ignore
+/icons/.gitkeep export-ignore
+/js/.gitkeep export-ignore
+/js/postSubmit.js export-ignore
+/js/stylesheet.js export-ignore
+/js/postSubmit.js.map export-ignore
+/js/stylesheet.js.map export-ignore
+/resources export-ignore
+/tools export-ignore
+LICENSE export-ignore
+README.md export-ignore
+webpack.config.js export-ignore

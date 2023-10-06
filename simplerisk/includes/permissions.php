@@ -266,6 +266,20 @@ function get_default_role() {
     return $role;
 }
 
+function get_default_role_id() {
+    // Open the database connection
+    $db = db_open();
+    
+    $stmt = $db->prepare("SELECT `value` FROM `role` WHERE `default` IS NOT NULL;");
+    $stmt->execute();
+    $role = $stmt->fetchColumn();
+    
+    // Close the database connection
+    db_close($db);
+    
+    return $role;
+}
+
 /*************************************
  * FUNCTION: GET PERMISSIONS OF USER *
  *************************************/
@@ -292,17 +306,16 @@ function get_grouped_permissions($user_id = false) {
         ORDER BY
         	`pg`.`order`, `p`.`order`;
     ");
-        
-        if ($user_id) {
-            $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
-        }
-        $stmt->execute();
-        $perms = $stmt->fetchAll(PDO::FETCH_GROUP | PDO::FETCH_ASSOC);
-        
-        // Close the database connection
-        db_close($db);
-        
-        return $perms;
+    if ($user_id) {
+        $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    }
+    $stmt->execute();
+    $perms = $stmt->fetchAll(PDO::FETCH_GROUP | PDO::FETCH_ASSOC);
+    
+    // Close the database connection
+    db_close($db);
+    
+    return $perms;
 }
 
 /********************************
@@ -621,33 +634,35 @@ function remove_permissions($permission_groups_and_permissions)
 
 			write_debug_log("Deleting permission named \"" . $permission_name . "\".");
 
-                        // Get the permission id
-                        $stmt = $db->prepare("SELECT `id` FROM `permissions` WHERE `name` = :name;");
-                        $stmt->bindParam(":name", $permission_name, PDO::PARAM_STR);
-                        $stmt->execute();
-                        $permission_id = $stmt->fetch(PDO::FETCH_ASSOC);
-                        $permission_id = $permission_id['id'];
+            // Get the permission id
+            $stmt = $db->prepare("SELECT `id` FROM `permissions` WHERE `name` = :name;");
+            $stmt->bindParam(":name", $permission_name, PDO::PARAM_STR);
+            $stmt->execute();
+            $permission_id = $stmt->fetch(PDO::FETCH_ASSOC);
+            if($permission_id) {
+                $permission_id = $permission_id['id'];
 
-                        // Add the new permission to the removed permissions array
-                        $removed_permissions[] = $permission_id;
+                // Add the new permission to the removed permissions array
+                $removed_permissions[] = $permission_id;
 
-			// Delete the permission from the permission group
-			$stmt = $db->prepare("
-				DELETE FROM `permission_to_permission_group` WHERE `permission_id` = :permission_id;
-			");
-			$stmt->bindParam(":permission_id", $permission_id, PDO::PARAM_INT);
-			$stmt->execute();
+                // Delete the permission from the permission group
+                $stmt = $db->prepare("
+                    DELETE FROM `permission_to_permission_group` WHERE `permission_id` = :permission_id;
+                ");
+                $stmt->bindParam(":permission_id", $permission_id, PDO::PARAM_INT);
+                $stmt->execute();
 
-			// Delete the permission
-			$stmt = $db->prepare("
-				DELETE FROM `permissions` WHERE `name` = :name;
-			");
-			$stmt->bindParam(":name", $permission_name, PDO::PARAM_STR);
-			$stmt->execute();
+                // Delete the permission
+                $stmt = $db->prepare("
+                    DELETE FROM `permissions` WHERE `name` = :name;
+                ");
+                $stmt->bindParam(":name", $permission_name, PDO::PARAM_STR);
+                $stmt->execute();
 
-			// Write audit log
-			$message = "The \"" . $permission_name . "\" permission was removed from the system.";
-			write_log(1000, $_SESSION['uid'], $message, "user");
+                // Write audit log
+                $message = "The \"" . $permission_name . "\" permission was removed from the system.";
+                write_log(1000, $_SESSION['uid'], $message, "user");
+            }
 		}
 
 		// After all permissions have been deleted, delete the permission group

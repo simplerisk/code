@@ -161,8 +161,7 @@ else
                 else set_alert(true, "bad", $escaper->escapeHtml($lang["InvalidUsernameOrPassword"]));
 
                 // If the password attempt lockout is enabled
-                if(get_setting("pass_policy_attempt_lockout") != 0)
-                {
+                if(get_setting("pass_policy_attempt_lockout") != 0) {
                     // Add the login attempt and block if necessary
                     add_login_attempt_and_block($user);
                 }
@@ -182,23 +181,39 @@ else
             if (isset($_POST['authenticate']))
             {
                 // If the mfa token matches
-                if (does_mfa_token_match())
-                {
-                    // If the encryption extra is enabled
-                    if (encryption_extra())
-                    {
-                        // Load the extra
-                        require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
+                if (does_mfa_token_match()) {
 
-                        // Check user enc
-                        check_user_enc($user, $pass);
+                    // still have to check if the user is locked out as failing MFA can now lock out the user
+                    if (!is_user_locked_out($_SESSION['uid'])) {
+
+                        // If the encryption extra is enabled
+                        if (encryption_extra())
+                        {
+                            // Load the extra
+                            require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
+
+                            // Check user enc
+                            check_user_enc($user, $pass);
+                        }
+
+                        // Grant the user access
+                        grant_access();
+
+                        // Select where to redirect the user next
+                        select_redirect();
+                    } else {
+                        // if the user failed the MFA too many times and got locked out
+                        // will still be unable to get in even if finally gets the code right
+
+                        // Destroy the session
+                        session_destroy();
+
+                        // get back to the login screen
+                        header("Location: index.php");
                     }
-
-                    // Grant the user access
-                    grant_access();
-
-                    // Select where to redirect the user next
-                    select_redirect();
+                } elseif(get_setting("pass_policy_attempt_lockout") != 0) {
+                    // Add the login attempt and block if necessary
+                    add_login_attempt_and_block($_SESSION['user']);
                 }
             }
         }

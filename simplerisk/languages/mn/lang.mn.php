@@ -2336,6 +2336,15 @@ $lang = array(
     'MultipleChoice_SingleSelect' => 'Олон сонголт (Нэг сонголт)',
     'MultipleChoice_MultiSelect' => 'Олон сонголт (Олон сонголт)',
     'APIDocumentation' => 'API баримтжуулалт',
+    'ReviewedBy' => 'Хянсан',
+    'LimitedTestmailMessage' => 'Саяхан туршилтын имэйл илгээсэн. Туршилтын өөр имэйл илгээхээс өмнө та 5 минут хүлээх хэрэгтэй.',
+    'AutomaticallySendAssessmentResults' => 'Үнэлгээний үр дүнг дууссаны дараа үнэлгээний харилцагчид руу автоматаар илгээнэ үү',
+    'ResendAssessment' => 'Анкет илгээсний дараа {$day} хоногийн дараа үнэлгээг дахин илгээнэ үү',
+    'NotifyNotCompleteAssessment' => 'Дуусаагүй бол {$day} хоног тутамд мэдэгдэнэ.',
+    'QuestionnaireNotCompleteEmailTemplate' => 'Анкет бөглөөгүй цахим шуудангийн загвар',
+    'RiskAssessmentQuestionnaireNotCompleted' => 'Эрсдэлийн үнэлгээний асуулга бөглөөгүй',
+    'SaveAndSend' => 'Хадгалах & Илгээх',
+    'AssociatedRisks' => 'Холбогдох эрсдэлүүд',
 
     '' => '',
 );

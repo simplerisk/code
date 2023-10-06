@@ -28,6 +28,9 @@ if (!isset($_SESSION))
     session_start();
 }
 
+// Include the CSRF Magic library
+include_csrf_magic();
+
 // Include the language file
 // Ignoring detections related to language files
 // @phan-suppress-next-line SecurityCheck-PathTraversal

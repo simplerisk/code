@@ -71,7 +71,7 @@ function display_site_location_view($location, $panel_name="")
     echo $escaper->escapeHtml($lang['SiteLocation']) .": \n";
     echo "</div>\n";
     echo "<div class=\"{$span2}\">\n";
-    echo "<div style=\"cursor: default;\" type=\"text\" name=\"location\" id=\"location\" size=\"50\" title=\"" . $escaper->escapeHtml(get_names_by_multi_values("location", $location, false, "; ")) . "\" disabled=\"disabled\" >" . $escaper->escapeHtml(get_names_by_multi_values("location", $location, false, "; ")) . "</div>\n";
+    echo "<span>" . $escaper->escapeHtml(get_names_by_multi_values("location", $location, false, "; ")) . "</span>\n";
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -90,7 +90,7 @@ function display_external_reference_id_view($reference_id, $panel_name="")
         $span2 = "span7";
     }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"wrap-text {$span1} text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['ExternalReferenceId']) .": \n";
     echo "</div>\n";
     echo "<div class=\"{$span2}\">\n";
@@ -333,7 +333,7 @@ function display_risk_source_view($source, $panel_name="")
     echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['RiskSource']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"{span2}\">\n";
+    echo "<div class=\"{$span2}\">\n";
     echo "<input style=\"cursor: default;\" type=\"text\" name=\"source\" id=\"source\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("source", $source)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("source", $source)) . "\" disabled=\"disabled\" />\n";
     echo "</div>\n";
     echo "</div>\n";
@@ -400,7 +400,7 @@ function display_risk_assessment_view($assessment , $panel_name="")
     echo $escaper->escapeHtml($lang['RiskAssessment']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    echo "<textarea style=\"cursor: default;\" name=\"assessment\" cols=\"50\" rows=\"3\" id=\"assessment\" title=\"" . $escaper->escapeHtml($assessment) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($assessment) . "</textarea>\n";
+    echo $escaper->purifyHtml($assessment);
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -423,7 +423,7 @@ function display_additional_notes_view($notes, $panel_name="")
     echo $escaper->escapeHtml($lang['AdditionalNotes']) .": \n";
     echo "</div>\n";
     echo "<div class=\"{$span2}\">\n";
-    echo "<textarea style=\"cursor: default;\" name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\" title=\"" . $escaper->escapeHtml($notes) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($notes) . "</textarea>\n";
+    echo $escaper->purifyHtml($notes);
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -477,7 +477,7 @@ function display_supporting_documentation_view($risk_id, $view_type, $panel_name
         $span2 = "span7";
     }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"wrap-text {$span1} text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['SupportingDocumentation']) . ": \n";
     echo "</div>\n";
     echo "<div class=\"{$span2}\">\n";
@@ -750,7 +750,7 @@ function display_external_reference_id_edit($reference_id, $panel_name="")
         $span2 = "span7";
     }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"wrap-text {$span1} text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['ExternalReferenceId']) .": \n";
     echo "</div>\n";
     echo "<div class=\"{$span2}\">\n";
@@ -1060,7 +1060,7 @@ function display_supporting_documentation_edit($risk_id, $view_type, $panel_name
         $span2 = "span7";
     }
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"wrap-text {$span1} text-right\">\n";
+    echo "<div class=\"{$span1} text-right\">\n";
     echo $escaper->escapeHtml($lang['SupportingDocumentation']) . ": \n";
     echo "</div>\n";
     echo "<div class=\"{$span2}\">\n";
@@ -1530,7 +1530,7 @@ function display_current_solution_view($current_solution)
     echo $escaper->escapeHtml($lang['CurrentSolution']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    echo "<textarea style=\"cursor: default;\" name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\" title=\"" . $escaper->escapeHtml($current_solution) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($current_solution) . "</textarea>\n";
+    echo $escaper->purifyHtml($current_solution);
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -1547,7 +1547,7 @@ function display_security_requirements_view($security_requirements)
     echo $escaper->escapeHtml($lang['SecurityRequirements']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    echo "<textarea style=\"cursor: default;\" name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\" title=\"" . $escaper->escapeHtml($security_requirements) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($security_requirements) . "</textarea>\n";
+    echo $escaper->purifyHtml($security_requirements);
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -1564,7 +1564,7 @@ function display_security_recommendations_view($security_recommendations)
     echo $escaper->escapeHtml($lang['SecurityRecommendations']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    echo "<textarea style=\"cursor: default;\" name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\" title=\"" . $escaper->escapeHtml($security_recommendations) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($security_recommendations) . "</textarea>\n";
+    echo $escaper->purifyHtml($security_recommendations);
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -2148,7 +2148,7 @@ function display_comments_view($comment)
     echo $escaper->escapeHtml($lang['Comment']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    echo "<textarea style=\"cursor: default;\" name=\"comment\" cols=\"100\" rows=\"3\" title=\"" . $escaper->escapeHtml($comment) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($comment) . "</textarea>\n";
+    echo $escaper->purifyHtml($comment);
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -2463,7 +2463,7 @@ function display_supporting_documentation_add($panel_name="", $template_group_id
     }
 
     echo "<div class=\"row-fluid\">";
-        echo "<div class=\"wrap-text {$span1} text-right\">".$escaper->escapeHtml($lang['SupportingDocumentation'])."</div>";
+        echo "<div class=\"{$span1} text-right\">".$escaper->escapeHtml($lang['SupportingDocumentation'])."</div>";
         echo "<div class=\"{$span2}\">";
 
             echo "<div class=\"file-uploader\">";
@@ -2513,7 +2513,7 @@ function display_risk_tags_edit($tags = "")
                             </select>
                             <div class='tag-max-length-warning'>" . $escaper->escapeHtml($lang['MaxTagLengthWarning']) . "</div>\n
                             <script>
-                                $('select.tags').selectize({
+                                $('#tab-content-container .tab-data').find('select.tags').selectize({
                                     plugins: ['remove_button', 'restore_on_backspace'],
                                     delimiter: '|',
                                     create: true,

@@ -2336,6 +2336,15 @@ $lang = array(
     'MultipleChoice_SingleSelect' => 'Wielokrotny wybór (pojedynczy wybór)',
     'MultipleChoice_MultiSelect' => 'Wielokrotny wybór (wybór wielokrotny)',
     'APIDocumentation' => 'Dokumentacja API',
+    'ReviewedBy' => 'Zrecenzowany przez',
+    'LimitedTestmailMessage' => 'Niedawno wysłano e-mail testowy. Musisz poczekać 5 minut, zanim będzie można wysłać kolejny testowy e-mail.',
+    'AutomaticallySendAssessmentResults' => 'Po zakończeniu automatycznie wysyłaj wyniki oceny do osób kontaktowych zajmujących się oceną',
+    'ResendAssessment' => 'Po wysłaniu ankiety Wyślij ponownie ocenę po {$day} dniach',
+    'NotifyNotCompleteAssessment' => 'Powiadamiaj, jeśli nie ukończono co {$day} dni.',
+    'QuestionnaireNotCompleteEmailTemplate' => 'Niewypełniony kwestionariusz e-mail. Szablon wiadomości e-mail',
+    'RiskAssessmentQuestionnaireNotCompleted' => 'Kwestionariusz oceny ryzyka nie został wypełniony',
+    'SaveAndSend' => 'Zapisz i wyślij',
+    'AssociatedRisks' => 'Powiązane ryzyko',
 
     '' => '',
 );

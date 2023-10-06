@@ -477,8 +477,8 @@ class Message
         }
 
         $policy = Utils\Config\Metadata::parseNameIdPolicy($nameIdPolicy);
-        if ($policy !== null) {
-            // either we have a policy set, or we used the transient default
+        // empty array signals not to set any NameIdPolicy element
+        if ($policy !== []) {
             $ar->setNameIdPolicy($policy);
         }
 
@@ -534,7 +534,7 @@ class Message
     ): LogoutRequest {
         $lr = new LogoutRequest();
         $issuer = new Issuer();
-        $issuer->setValue($srcMetadata->getString('entityID'));
+        $issuer->setValue($srcMetadata->getString('entityid'));
         $issuer->setFormat(Constants::NAMEID_ENTITY);
         $lr->setIssuer($issuer);
 
@@ -828,21 +828,6 @@ class Message
             throw new SSP_Error\Exception('Error validating SubjectConfirmation in Assertion: ' . $lastError);
         }
         // as far as we can tell, the assertion is valid
-
-        // maybe we need to base64 decode the attributes in the assertion?
-        if ($idpMetadata->getOptionalBoolean('base64attributes', false)) {
-            $attributes = $assertion->getAttributes();
-            $newAttributes = [];
-            foreach ($attributes as $name => $values) {
-                $newAttributes[$name] = [];
-                foreach ($values as $value) {
-                    foreach (explode('_', $value) as $v) {
-                        $newAttributes[$name][] = base64_decode($v);
-                    }
-                }
-            }
-            $assertion->setAttributes($newAttributes);
-        }
 
         // decrypt the NameID element if it is encrypted
         if ($assertion->isNameIdEncrypted()) {

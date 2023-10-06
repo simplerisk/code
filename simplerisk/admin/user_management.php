@@ -36,6 +36,7 @@ $manageusers_tab = false;
 $usersettings_tab = false;
 $userreports_tab = false;
 
+$default_role_id = get_default_role_id();
 
 $separation = team_separation_extra();
 if ($separation) {
@@ -380,7 +381,7 @@ if (isset($_POST['password_policy_update']))
 	display_bootstrap_javascript();
 ?>
     <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
     <script src="../js/permissions-widget.js?<?php echo current_version("app"); ?>"></script>
     
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
@@ -390,7 +391,7 @@ if (isset($_POST['password_policy_update']))
     <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/settings_tabs.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
@@ -541,10 +542,20 @@ if (isset($_POST['password_policy_update']))
                 var user_id = $(this).find("[name=user]").val();
                 if(user_id) return true;
                 else {
-                    showAlertFromMessage("<?php echo $lang['PleaseSelectUser'];?>", false);
+                    showAlertFromMessage("<?php echo $escaper->escapeHtml($lang['PleaseSelectUser']);?>", false);
                     return false;
                 }
             });
+            
+<?php
+    // to make sure the permissions are pre-selected for the default role
+    if ($default_role_id) {
+?>
+            $("#role").trigger('change');
+<?php
+    }
+?>
+
         });
 
         function update_admin_button() {
@@ -884,7 +895,7 @@ if (isset($_POST['password_policy_update']))
                             <?php create_multiple_dropdown("team", null, null, get_all_teams()); ?>
 
                             <h6><u><?php echo $escaper->escapeHtml($lang['Role']); ?></u></h6>
-                            <?php create_dropdown("role", get_setting('default_user_role')); ?>
+                            <?php create_dropdown("role", $default_role_id); ?>
 
 							<br/>
                             <input style="display:none" type="checkbox" name="admin" id="admin">
