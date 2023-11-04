@@ -492,8 +492,12 @@ function add_new_permissions($permission_groups_and_permissions)
 		$stmt->bindParam(":order", $group_order, PDO::PARAM_INT);
 		$stmt->execute();
 
-		// Get the permission group id
-		$group_id = $db->lastInsertId();
+        // Get the permission group id
+        $stmt = $db->prepare("SELECT `id` FROM `permission_groups` WHERE `name` = :name;");
+        $stmt->bindParam(":name", $group_name, PDO::PARAM_STR);
+        $stmt->execute();
+        $group = $stmt->fetch(PDO::FETCH_ASSOC);
+        $group_id = $group['id'];
 
 		// Write debug log
 		write_debug_log("Added new permission group with the following values:");
@@ -513,6 +517,10 @@ function add_new_permissions($permission_groups_and_permissions)
 			$permission_name = $permission['name'];
 			$permission_description = $permission['description'];
 			$permission_order = $permission['order'];
+
+            // If the permission is supported by system default, it is not add.
+            $no_remove_permission = isset($permission['no_remove'])?$permission['no_remove']:0;
+            if($no_remove_permission) continue;
 
 			// Create the permission
 			$stmt = $db->prepare("INSERT IGNORE INTO `permissions` (`key`, `name`, `description`, `order`) VALUES (:key, :name, :description, :order);");
@@ -625,12 +633,17 @@ function remove_permissions($permission_groups_and_permissions)
 		// Pull out the group information
 		$group_name = $group['name'];
 		$permissions = $group['permissions'];
+        $no_remove_group = isset($group['no_remove'])?$group['no_remove']:0;
 
 		// For each of the permissions in this permission group
 		foreach ($permissions as $key => $permission)
 		{
 			// Pull out the permission information
 			$permission_name = $permission['name'];
+
+            // If the permission is supported by system default, it is not remove.
+            $no_remove_permission = isset($permission['no_remove'])?$permission['no_remove']:0;
+            if($no_remove_permission) continue;
 
 			write_debug_log("Deleting permission named \"" . $permission_name . "\".");
 
@@ -664,18 +677,20 @@ function remove_permissions($permission_groups_and_permissions)
                 write_log(1000, $_SESSION['uid'], $message, "user");
             }
 		}
+        if(!$no_remove_group) {
+            // After all permissions have been deleted, delete the permission group
+            write_debug_log("Deleting permission group named \"" . $group_name . "\".");
+            $stmt = $db->prepare("
+                DELETE FROM `permission_groups`  WHERE `name` = :name;
+            ");
+            $stmt->bindParam(":name", $group_name, PDO::PARAM_STR);
+            $stmt->execute();
 
-		// After all permissions have been deleted, delete the permission group
-		write_debug_log("Deleting permission group named \"" . $group_name . "\".");
-		$stmt = $db->prepare("
-			DELETE FROM `permission_groups`  WHERE `name` = :name;
-		");
-		$stmt->bindParam(":name", $group_name, PDO::PARAM_STR);
-		$stmt->execute();
+            // Write audit log
+            $message = "The \"" . $group_name . "\" permission group was removed from the system.";
+            write_log(1000, $_SESSION['uid'], $message, "user");
+        }
 
-		// Write audit log
-		$message = "The \"" . $group_name . "\" permission group was removed from the system.";
-		write_log(1000, $_SESSION['uid'], $message, "user");
 	}
 
 	// Cleanup the permissions after the deletion

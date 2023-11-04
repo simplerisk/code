@@ -186,7 +186,7 @@ function send_email($name, $email, $subject, $body)
 
         // Decrypt the phpmailer password
         $phpmailer_password = $mail['phpmailer_password'];
-        $password = openssl_decrypt($phpmailer_password, 'aes-256-cbc', MANAGEMENT_EXTRA_ENCRYPTION_KEY, 0);
+        $password = openssl_decrypt($phpmailer_password, 'aes-256-cbc', MANAGEMENT_EXTRA_ENCRYPTION_KEY, 0, $iv);
     }
     // Otherwise use the phpmailer_password value
     else $password = $mail['phpmailer_password'];
