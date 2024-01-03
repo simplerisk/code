@@ -166,8 +166,9 @@ $releases = array(
 	"20221013-001",
 	"20230106-001",
 	"20230331-001",
-    "20231006-001",
-    "20231103-001",
+	"20231006-001",
+	"20231103-001",
+	"20240102-001",
 );
 
 /*************************
@@ -7083,6 +7084,28 @@ function upgrade_from_20231006001($db)
 
     // Database version upgrading to
     $version_upgrading_to = '20231103-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20231103-001 *
+ ***************************************/
+function upgrade_from_20231103001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20231103-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20240102-001';
 
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 

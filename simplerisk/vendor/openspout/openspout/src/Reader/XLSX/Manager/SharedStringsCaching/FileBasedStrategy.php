@@ -22,17 +22,17 @@ final class FileBasedStrategy implements CachingStrategyInterface
     public const ESCAPED_LINE_FEED_CHARACTER = '_x000A_';
 
     /** @var FileSystemHelper Helper to perform file system operations */
-    private FileSystemHelper $fileSystemHelper;
+    private readonly FileSystemHelper $fileSystemHelper;
 
     /** @var string Temporary folder where the temporary files will be created */
-    private string $tempFolder;
+    private readonly string $tempFolder;
 
     /**
      * @var int Maximum number of strings that can be stored in one temp file
      *
      * @see CachingStrategyFactory::MAX_NUM_STRINGS_PER_TEMP_FILE
      */
-    private int $maxNumStringsPerTempFile;
+    private readonly int $maxNumStringsPerTempFile;
 
     /** @var null|resource Pointer to the last temp file a shared string was written to */
     private $tempFilePointer;
@@ -61,8 +61,6 @@ final class FileBasedStrategy implements CachingStrategyInterface
         $this->tempFolder = $this->fileSystemHelper->createFolder($tempFolder, uniqid('sharedstrings'));
 
         $this->maxNumStringsPerTempFile = $maxNumStringsPerTempFile;
-
-        $this->tempFilePointer = null;
     }
 
     /**
@@ -164,7 +162,7 @@ final class FileBasedStrategy implements CachingStrategyInterface
     {
         $numTempFile = (int) ($sharedStringIndex / $this->maxNumStringsPerTempFile);
 
-        return $this->tempFolder.'/sharedstrings'.$numTempFile;
+        return $this->tempFolder.\DIRECTORY_SEPARATOR.'sharedstrings'.$numTempFile;
     }
 
     /**

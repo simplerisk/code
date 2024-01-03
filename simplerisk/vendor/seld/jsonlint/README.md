@@ -1,7 +1,7 @@
 JSON Lint
 =========
 
-[![Build Status](https://secure.travis-ci.org/Seldaek/jsonlint.png)](http://travis-ci.org/Seldaek/jsonlint)
+[![Build Status](https://github.com/Seldaek/jsonlint/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/Seldaek/jsonlint/actions/workflows/continuous-integration.yml)
 
 Usage
 -----
@@ -58,7 +58,9 @@ Installation
 
 For a quick install with Composer use:
 
-    $ composer require seld/jsonlint
+```bash
+composer require seld/jsonlint
+```
 
 JSON Lint can easily be used within another app if you have a
 [PSR-4](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-4-autoloader.md)

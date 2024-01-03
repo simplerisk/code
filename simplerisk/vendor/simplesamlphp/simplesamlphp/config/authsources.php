@@ -44,7 +44,7 @@ if ($metadata_url !== false && filter_var($metadata_url, FILTER_VALIDATE_URL))
     // Fetch the SAML metadata from the URL
     // NOTE: SAML metadata changes very rarely.  On a production system
     // this data should be cached as appropriate.
-    $response = fetch_url_content("curl", $http_options, $validate_ssl, $url);
+    $response = fetch_url_content("stream", $http_options, $validate_ssl, $url);
     $return_code = $response['return_code'];
 
     // If we were unable to connect to the URL

@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /**
  *
  * Theme 		  : Simple Risk
@@ -11,9 +12,9 @@
  */
 @import url(https://fonts.googleapis.com/css?family=Titillium+Web:400,300,600,700);
 /*!
- * Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com
+ * Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com
  * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
- * Copyright 2022 Fonticons, Inc.
+ * Copyright 2023 Fonticons, Inc.
  */
 .fa {
   font-family: var(--fa-style-family, "Font Awesome 6 Free");
@@ -43,12 +44,12 @@
 .fa-solid,
 .far,
 .fa-regular {
-  font-family: 'Font Awesome 6 Free';
+  font-family: "Font Awesome 6 Free";
 }
 
 .fab,
 .fa-brands {
-  font-family: 'Font Awesome 6 Brands';
+  font-family: "Font Awesome 6 Brands";
 }
 
 .fa-1x {
@@ -99,14 +100,14 @@
 
 .fa-xs {
   font-size: 0.75em;
-  line-height: 0.08333em;
+  line-height: 0.0833333337em;
   vertical-align: 0.125em;
 }
 
 .fa-sm {
   font-size: 0.875em;
-  line-height: 0.07143em;
-  vertical-align: 0.05357em;
+  line-height: 0.0714285718em;
+  vertical-align: 0.0535714295em;
 }
 
 .fa-lg {
@@ -117,7 +118,7 @@
 
 .fa-xl {
   font-size: 1.5em;
-  line-height: 0.04167em;
+  line-height: 0.0416666682em;
   vertical-align: -0.125em;
 }
 
@@ -228,6 +229,10 @@
   animation-duration: var(--fa-animation-duration, 2s);
   animation-iteration-count: var(--fa-animation-iteration-count, infinite);
   animation-timing-function: var(--fa-animation-timing, linear);
+}
+
+.fa-spin-reverse {
+  --fa-animation-direction: reverse;
 }
 
 .fa-pulse,
@@ -406,43 +411,43 @@
 /* Font Awesome uses the Unicode Private Use Area (PUA) to ensure screen
 readers do not read off random characters that represent icons */
 .fa-0::before {
-  content: "\30";
+  content: "\30 ";
 }
 
 .fa-1::before {
-  content: "\31";
+  content: "\31 ";
 }
 
 .fa-2::before {
-  content: "\32";
+  content: "\32 ";
 }
 
 .fa-3::before {
-  content: "\33";
+  content: "\33 ";
 }
 
 .fa-4::before {
-  content: "\34";
+  content: "\34 ";
 }
 
 .fa-5::before {
-  content: "\35";
+  content: "\35 ";
 }
 
 .fa-6::before {
-  content: "\36";
+  content: "\36 ";
 }
 
 .fa-7::before {
-  content: "\37";
+  content: "\37 ";
 }
 
 .fa-8::before {
-  content: "\38";
+  content: "\38 ";
 }
 
 .fa-9::before {
-  content: "\39";
+  content: "\39 ";
 }
 
 .fa-fill-drip::before {
@@ -462,7 +467,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-at::before {
-  content: "\40";
+  content: "\@";
 }
 
 .fa-trash-can::before {
@@ -830,7 +835,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-k::before {
-  content: "\4b";
+  content: "K";
 }
 
 .fa-landmark-flag::before {
@@ -970,7 +975,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-w::before {
-  content: "\57";
+  content: "W";
 }
 
 .fa-earth-africa::before {
@@ -1370,7 +1375,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-asterisk::before {
-  content: "\2a";
+  content: "\*";
 }
 
 .fa-square-check::before {
@@ -1710,7 +1715,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-i::before {
-  content: "\49";
+  content: "I";
 }
 
 .fa-hryvnia-sign::before {
@@ -1738,7 +1743,11 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-v::before {
-  content: "\56";
+  content: "V";
+}
+
+.fa-bangladeshi-taka-sign::before {
+  content: "\e2e6";
 }
 
 .fa-bicycle::before {
@@ -1810,11 +1819,11 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-q::before {
-  content: "\51";
+  content: "Q";
 }
 
 .fa-g::before {
-  content: "\47";
+  content: "G";
 }
 
 .fa-notes-medical::before {
@@ -1958,7 +1967,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-e::before {
-  content: "\45";
+  content: "E";
 }
 
 .fa-pen-clip::before {
@@ -2038,7 +2047,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-c::before {
-  content: "\43";
+  content: "C";
 }
 
 .fa-tablet-button::before {
@@ -2366,7 +2375,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-l::before {
-  content: "\4c";
+  content: "L";
 }
 
 .fa-fire::before {
@@ -3446,7 +3455,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-z::before {
-  content: "\5a";
+  content: "Z";
 }
 
 .fa-person-skiing::before {
@@ -3462,7 +3471,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-a::before {
-  content: "\41";
+  content: "A";
 }
 
 .fa-temperature-arrow-down::before {
@@ -3482,7 +3491,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-p::before {
-  content: "\50";
+  content: "P";
 }
 
 .fa-snowflake::before {
@@ -3574,7 +3583,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-question::before {
-  content: "\3f";
+  content: "\?";
 }
 
 .fa-file-signature::before {
@@ -3666,7 +3675,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-f::before {
-  content: "\46";
+  content: "F";
 }
 
 .fa-leaf::before {
@@ -3826,7 +3835,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-h::before {
-  content: "\48";
+  content: "H";
 }
 
 .fa-tarp::before {
@@ -3918,7 +3927,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-r::before {
-  content: "\52";
+  content: "R";
 }
 
 .fa-temperature-quarter::before {
@@ -4674,7 +4683,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-j::before {
-  content: "\4a";
+  content: "J";
 }
 
 .fa-users-viewfinder::before {
@@ -4714,7 +4723,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-o::before {
-  content: "\4f";
+  content: "O";
 }
 
 .fa-suitcase-medical::before {
@@ -5169,10 +5178,6 @@ readers do not read off random characters that represent icons */
   content: "\f068";
 }
 
-.fa-child-rifle::before {
-  content: "\e4e0";
-}
-
 .fa-chess::before {
   content: "\f439";
 }
@@ -5282,7 +5287,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-u::before {
-  content: "\55";
+  content: "U";
 }
 
 .fa-square-root-variable::before {
@@ -5322,7 +5327,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-s::before {
-  content: "\53";
+  content: "S";
 }
 
 .fa-timeline::before {
@@ -5518,7 +5523,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-n::before {
-  content: "\4e";
+  content: "N";
 }
 
 .fa-cable-car::before {
@@ -5662,7 +5667,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-b::before {
-  content: "\42";
+  content: "B";
 }
 
 .fa-file-medical::before {
@@ -5914,7 +5919,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-less-than::before {
-  content: "\3c";
+  content: "\<";
 }
 
 .fa-angle-down::before {
@@ -6126,7 +6131,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-greater-than::before {
-  content: "\3e";
+  content: "\>";
 }
 
 .fa-person-swimming::before {
@@ -6546,7 +6551,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-y::before {
-  content: "\59";
+  content: "Y";
 }
 
 .fa-person-snowboarding::before {
@@ -6649,6 +6654,14 @@ readers do not read off random characters that represent icons */
   content: "\f14d";
 }
 
+.fa-child-combatant::before {
+  content: "\e4e0";
+}
+
+.fa-child-rifle::before {
+  content: "\e4e0";
+}
+
 .fa-gun::before {
   content: "\e19b";
 }
@@ -6662,11 +6675,11 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-plus::before {
-  content: "\2b";
+  content: "\+";
 }
 
 .fa-add::before {
-  content: "\2b";
+  content: "\+";
 }
 
 .fa-expand::before {
@@ -6766,7 +6779,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-equals::before {
-  content: "\3d";
+  content: "\=";
 }
 
 .fa-blender::before {
@@ -6885,6 +6898,10 @@ readers do not read off random characters that represent icons */
   content: "\f258";
 }
 
+.fa-notdef::before {
+  content: "\e1fe";
+}
+
 .fa-disease::before {
   content: "\f7fa";
 }
@@ -6958,11 +6975,11 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-percent::before {
-  content: "\25";
+  content: "\%";
 }
 
 .fa-percentage::before {
-  content: "\25";
+  content: "\%";
 }
 
 .fa-truck-moving::before {
@@ -7286,7 +7303,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-hashtag::before {
-  content: "\23";
+  content: "\#";
 }
 
 .fa-up-right-and-down-left-from-center::before {
@@ -7302,7 +7319,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-t::before {
-  content: "\54";
+  content: "T";
 }
 
 .fa-hippo::before {
@@ -7526,7 +7543,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-m::before {
-  content: "\4d";
+  content: "M";
 }
 
 .fa-table-list::before {
@@ -8022,7 +8039,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-exclamation::before {
-  content: "\21";
+  content: "\!";
 }
 
 .fa-arrows-spin::before {
@@ -8046,19 +8063,19 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-dollar-sign::before {
-  content: "\24";
+  content: "\$";
 }
 
 .fa-dollar::before {
-  content: "\24";
+  content: "\$";
 }
 
 .fa-usd::before {
-  content: "\24";
+  content: "\$";
 }
 
 .fa-x::before {
-  content: "\58";
+  content: "X";
 }
 
 .fa-magnifying-glass-dollar::before {
@@ -8110,7 +8127,7 @@ readers do not read off random characters that represent icons */
 }
 
 .fa-d::before {
-  content: "\44";
+  content: "D";
 }
 
 .fa-stapler::before {
@@ -8224,12 +8241,17 @@ readers do not read off random characters that represent icons */
 }
 
 /*!
- * Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com
+ * Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com
  * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
- * Copyright 2022 Fonticons, Inc.
+ * Copyright 2023 Fonticons, Inc.
  */
+:root, :host {
+  --fa-style-family-classic: "Font Awesome 6 Free";
+  --fa-font-solid: normal 900 1em/1 "Font Awesome 6 Free";
+}
+
 @font-face {
-  font-family: 'Font Awesome 6 Free';
+  font-family: "Font Awesome 6 Free";
   font-style: normal;
   font-weight: 900;
   font-display: block;
@@ -8243,16 +8265,15 @@ readers do not read off random characters that represent icons */
 /*--------------------------------------------------------------
  ## Helper Classes
  --------------------------------------------------------------*/
-.animation, #load, .l-header .navbar .nav > li > a, .btn,
+.animation, .score--help, .status-tabs .tabs-nav li a, .aside--nav li a, .add-comments, .btn,
 button,
-input[type="button"],
-input[type="submit"], .add-comments, .aside--nav li a, .status-tabs .tabs-nav li a, .score--help {
-  -webkit-transition: all .2s;
-  /* Safari */
-  transition: all .2s;
+input[type=button],
+input[type=submit], .l-header .navbar .nav > li > a, #load {
+  -webkit-transition: all 0.2s; /* Safari */
+  transition: all 0.2s;
 }
 
-.reset, .user--info a, .status-tabs .framework--add, .status-tabs .project--add, .status-tabs .control--add, .status-tabs .tabs-nav li a, .risk-details .tabs-nav, .risk-session.overview .risk-test a, .score--help {
+.reset, .score--help, .risk-session.overview .risk-test a, .risk-details .tabs-nav, .status-tabs .tabs-nav li a, .status-tabs .framework--add, .status-tabs .project--add, .status-tabs .control--add, .user--info a {
   margin: 0px;
   padding: 0px;
   text-decoration: none;
@@ -8674,14 +8695,14 @@ ul.multiselect-container li label {
 /*--------------------------------------------------------------
  ## Form and From Related Element Styles
  --------------------------------------------------------------*/
-input[type="text"],
-input[type="url"],
-input[type="password"],
-input[type="number"],
-input[type="tel"],
-input[type="email"],
-input[type="date"],
-input[type="text"] {
+input[type=text],
+input[type=url],
+input[type=password],
+input[type=number],
+input[type=tel],
+input[type=email],
+input[type=date],
+input[type=text] {
   border: 1px solid #d1d3d4;
   padding: 10px;
   border-radius: 2px;
@@ -8691,14 +8712,14 @@ input[type="text"] {
   outline: none;
   max-width: 300px;
 }
-input[type="text"]:disabled,
-input[type="url"]:disabled,
-input[type="password"]:disabled,
-input[type="number"]:disabled,
-input[type="tel"]:disabled,
-input[type="email"]:disabled,
-input[type="date"]:disabled,
-input[type="text"]:disabled {
+input[type=text]:disabled,
+input[type=url]:disabled,
+input[type=password]:disabled,
+input[type=number]:disabled,
+input[type=tel]:disabled,
+input[type=email]:disabled,
+input[type=date]:disabled,
+input[type=text]:disabled {
   background-color: transparent;
   border: 1px solid transparent;
   font-weight: 700;
@@ -8794,15 +8815,15 @@ textarea.form-control:disabled {
   content: "\f111";
 }
 
-td[align="center"] .hidden-checkbox + label:before,
-td[align="center"] .hidden-radio + label:before {
+td[align=center] .hidden-checkbox + label:before,
+td[align=center] .hidden-radio + label:before {
   left: 50%;
   margin-left: -10px;
 }
 
-input[type="text"] + input[type="submit"], textarea + input[type="submit"],
-textarea.form-control + input[type="submit"],
-select + input[type="submit"] {
+input[type=text] + input[type=submit], textarea + input[type=submit],
+textarea.form-control + input[type=submit],
+select + input[type=submit] {
   margin-top: -10px;
 }
 
@@ -8850,20 +8871,20 @@ select + input[type="submit"] {
 
 textarea:focus,
 select:focus,
-input[type="text"]:focus,
-input[type="password"]:focus,
-input[type="datetime"]:focus,
-input[type="datetime-local"]:focus,
-input[type="date"]:focus,
-input[type="month"]:focus,
-input[type="time"]:focus,
-input[type="week"]:focus,
-input[type="number"]:focus,
-input[type="email"]:focus,
-input[type="url"]:focus,
-input[type="search"]:focus,
-input[type="tel"]:focus,
-input[type="color"]:focus,
+input[type=text]:focus,
+input[type=password]:focus,
+input[type=datetime]:focus,
+input[type=datetime-local]:focus,
+input[type=date]:focus,
+input[type=month]:focus,
+input[type=time]:focus,
+input[type=week]:focus,
+input[type=number]:focus,
+input[type=email]:focus,
+input[type=url]:focus,
+input[type=search]:focus,
+input[type=tel]:focus,
+input[type=color]:focus,
 .uneditable-input:focus {
   border-color: rgba(82, 168, 236, 0.5) !important;
   outline: 0;
@@ -9230,7 +9251,7 @@ p {
 .search-risks form {
   margin: 0px;
 }
-.search-risks input[type="text"], .search-risks textarea, .search-risks textarea.form-control {
+.search-risks input[type=text], .search-risks textarea, .search-risks textarea.form-control {
   background-color: transparent !important;
   width: 130px;
   border: none;
@@ -9255,7 +9276,7 @@ p {
   color: #fff;
   line-height: 33px;
 }
-.search-risks .search--wrapper input[name='q'] {
+.search-risks .search--wrapper input[name=q] {
   float: right;
 }
 .search-risks #advanced-search-no-results-message {
@@ -9284,7 +9305,7 @@ p {
   color: red;
 }
 
-.search-risks input[type="text"],
+.search-risks input[type=text],
 .search-risks textarea,
 .search-risks textarea.form-control {
   width: 214px;
@@ -9443,7 +9464,7 @@ table a.edit-btn, table a.copy-btn, table a.delete-btn {
   right: 0px;
 }
 
-textarea[name='reject_comment'] {
+textarea[name=reject_comment] {
   resize: none;
 }
 
@@ -9568,8 +9589,8 @@ textarea[name='reject_comment'] {
  --------------------------------------------------------------*/
 .btn,
 button,
-input[type="button"],
-input[type="submit"] {
+input[type=button],
+input[type=submit] {
   border-radius: 2px;
   padding: 7px 20px;
   border: none;
@@ -9585,16 +9606,16 @@ input[type="submit"] {
 .btn:hover, .btn:active,
 button:hover,
 button:active,
-input[type="button"]:hover,
-input[type="button"]:active,
-input[type="submit"]:hover,
-input[type="submit"]:active {
+input[type=button]:hover,
+input[type=button]:active,
+input[type=submit]:hover,
+input[type=submit]:active {
   background-color: #ed3139 !important;
 }
 .btn:visited,
 button:visited,
-input[type="button"]:visited,
-input[type="submit"]:visited {
+input[type=button]:visited,
+input[type=submit]:visited {
   background-color: #3a3a3a;
 }
 
@@ -9740,10 +9761,8 @@ form#comment {
 }
 
 .add-comments.rotate {
-  -ms-transform: rotate(45deg);
-  /* IE 9 */
-  -webkit-transform: rotate(45deg);
-  /* Chrome, Safari, Opera */
+  -ms-transform: rotate(45deg); /* IE 9 */
+  -webkit-transform: rotate(45deg); /* Chrome, Safari, Opera */
   transform: rotate(45deg);
 }
 
@@ -9862,6 +9881,33 @@ form#comment {
   top: 5px;
 }
 
+#template-container .top-panel, #template-container .left-panel, #template-container .right-panel, #template-container .bottom-panel {
+  min-height: 50px;
+  border: 1px dotted;
+  width: 100%;
+  margin-left: 0px;
+  margin-right: 0px;
+  padding: 10px 15px;
+}
+#template-container .field-holder {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  margin-bottom: 5px;
+  padding: 3px;
+  border: 1px solid;
+  position: relative;
+}
+#template-container .field-holder .delete {
+  cursor: pointer;
+  position: absolute;
+  right: 8px;
+}
+
+#edit-assets-table th {
+  min-width: 100px;
+}
+
 .caret {
   vertical-align: middle;
 }
@@ -9948,7 +9994,7 @@ form#comment {
   padding-left: 0px;
 }
 .risk_thread_catalog table.dataTable tbody tr.data-row td span.grippy {
-  content: '....';
+  content: "....";
   width: 1.5em;
   height: 2em;
   display: inline-block;
@@ -9957,8 +10003,8 @@ form#comment {
   padding: 3px 4px;
   cursor: move;
   vertical-align: middle;
-  margin-top: -.7em;
-  margin-right: .3em;
+  margin-top: -0.7em;
+  margin-right: 0.3em;
   font-size: 12px;
   font-family: sans-serif;
   letter-spacing: 2px;
@@ -9966,34 +10012,7 @@ form#comment {
   text-shadow: 1px 0 1px black;
 }
 .risk_thread_catalog table.dataTable tbody tr.data-row td span.grippy::after {
-  content: '.. .. .. .. .. .. ..';
-}
-
-#template-container .top-panel, #template-container .left-panel, #template-container .right-panel, #template-container .bottom-panel {
-  min-height: 50px;
-  border: 1px dotted;
-  width: 100%;
-  margin-left: 0px;
-  margin-right: 0px;
-  padding: 10px 15px;
-}
-#template-container .field-holder {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  margin-bottom: 5px;
-  padding: 3px;
-  border: 1px solid;
-  position: relative;
-}
-#template-container .field-holder .delete {
-  cursor: pointer;
-  position: absolute;
-  right: 8px;
-}
-
-#edit-assets-table th {
-  min-width: 100px;
+  content: ".. .. .. .. .. .. ..";
 }
 
 .column-selections-container label {
@@ -10096,7 +10115,7 @@ form#comment {
   background-image: -o-linear-gradient(top, #f7f7f7 0%, #f1f1f1 100%);
   background-image: -ms-linear-gradient(top, #f7f7f7 0%, #f1f1f1 100%);
   background-image: linear-gradient(top, #f7f7f7 0%, #f1f1f1 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7f7f7', endColorstr='#f1f1f1',GradientType=0 );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#f7f7f7", endColorstr="#f1f1f1",GradientType=0 );
   border-bottom: 1px solid #bbb;
 }
 
@@ -10147,7 +10166,7 @@ form#comment {
   background: -o-linear-gradient(top, #ededed 0%, #dedede 100%);
   background: -ms-linear-gradient(top, #ededed 0%, #dedede 100%);
   background: linear-gradient(top, #ededed 0%, #dedede 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ededed', endColorstr='#dedede',GradientType=0 );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#ededed", endColorstr="#dedede",GradientType=0 );
   -webkit-box-shadow: inset 1px 1px 0px 0px rgba(250, 250, 250, 0.5);
   -moz-box-shadow: inset 1px 1px 0px 0px rgba(250, 250, 250, 0.5);
   box-shadow: inset 1px 1px 0px 0px rgba(250, 250, 250, 0.5);
@@ -10413,9 +10432,9 @@ form#comment {
   color: #a4a4a4;
   font-size: 16px;
 }
-.loginForm input[type="text"], .loginForm textarea,
+.loginForm input[type=text], .loginForm textarea,
 .loginForm textarea.form-control,
-.loginForm input[type="password"] {
+.loginForm input[type=password] {
   max-width: 100%;
   background-color: #fff !important;
   color: #3a3a3a !important;
@@ -10447,13 +10466,13 @@ form#comment {
   font-weight: 600 !important;
 }
 
-.send_reset_email input[type="text"], .send_reset_email textarea,
+.send_reset_email input[type=text], .send_reset_email textarea,
 .send_reset_email textarea.form-control,
-.send_reset_email input[type="password"],
-.password_reset input[type="text"],
+.send_reset_email input[type=password],
+.password_reset input[type=text],
 .password_reset textarea,
 .password_reset textarea.form-control,
-.password_reset input[type="password"] {
+.password_reset input[type=password] {
   max-width: 100%;
 }
 .send_reset_email .login--label,
@@ -10520,7 +10539,7 @@ form#comment {
 .modal .modal-body {
   padding-bottom: 0px;
 }
-.modal input[type="text"], .modal textarea,
+.modal input[type=text], .modal textarea,
 .modal textarea.form-control {
   max-width: 100%;
 }
@@ -10548,8 +10567,7 @@ form#comment {
   display: table;
   height: 100%;
   width: 100%;
-  pointer-events: none;
-  /* This makes sure that we can still click outside of the modal to close it */
+  pointer-events: none; /* This makes sure that we can still click outside of the modal to close it */
 }
 
 .vertical-align-center {
@@ -10652,7 +10670,7 @@ span.multiselect-native-select select {
 .multiselect-container > li > a > label.radio, .multiselect-container > li > a > label.checkbox {
   margin: 0;
 }
-.multiselect-container > li > a > label > input[type="checkbox"] {
+.multiselect-container > li > a > label > input[type=checkbox] {
   margin-bottom: 5px;
 }
 
@@ -10664,7 +10682,7 @@ span.multiselect-native-select select {
 .form-inline .multiselect-container label.checkbox, .form-inline .multiselect-container label.radio {
   padding: 3px 20px 3px 40px;
 }
-.form-inline .multiselect-container li a label.checkbox input[type="checkbox"], .form-inline .multiselect-container li a label.radio input[type="radio"] {
+.form-inline .multiselect-container li a label.checkbox input[type=checkbox], .form-inline .multiselect-container li a label.radio input[type=radio] {
   margin-left: -20px;
   margin-right: 0;
 }
@@ -10752,10 +10770,8 @@ span.multiselect-native-select select {
   display: block;
   border-radius: 3px;
   z-index: -1;
-  -ms-transform: rotate(45deg);
-  /* IE 9 */
-  -webkit-transform: rotate(45deg);
-  /* Chrome, Safari, Opera */
+  -ms-transform: rotate(45deg); /* IE 9 */
+  -webkit-transform: rotate(45deg); /* Chrome, Safari, Opera */
   transform: rotate(45deg);
 }
 .aside--nav.nav-pills.nav-stacked > li > a {
@@ -10811,7 +10827,7 @@ span.multiselect-native-select select {
   margin: 10px 0;
 }
 .permissions-widget .hidden-checkbox:indeterminate + label:before {
-  content: "\2212";
+  content: "−";
 }
 
 /*-------------------------------------------------------------*/
@@ -11117,7 +11133,7 @@ select#languages {
   transform: translateX(-100%);
 }
 .questionnaire-compare-result-container ul li span:not(.selected):before, .questionnaire-answers ul li span:not(.selected):before {
-  content: '\f111';
+  content: "\f111";
 }
 .questionnaire-compare-result-container ul li span.selected:before, .questionnaire-answers ul li span.selected:before {
   content: "\f192";
@@ -11131,7 +11147,7 @@ select#languages {
   margin: 0 3px 3px 0;
   padding: 1px 3px;
   color: #333333;
-  border: 0 solid transparent !important;
+  border: 0 solid rgba(0, 0, 0, 0) !important;
   border-radius: 2px;
   display: inline-block;
 }
@@ -11282,7 +11298,7 @@ select#languages {
   font-size: inherit;
   font-weight: inherit;
 }
-.risk-details select, .risk-details input:not([type='submit']):not([type='reset']), .risk-details textarea {
+.risk-details select, .risk-details input:not([type=submit]):not([type=reset]), .risk-details textarea {
   max-width: none;
 }
 .risk-details .ui-tabs-nav li.ui-tabs-active {
@@ -11358,7 +11374,7 @@ select#languages {
   width: 7.529915%;
 }
 .risk-session.overview .row-fluid .span10 {
-  width: 89.90598%;
+  width: 89.905983%;
 }
 .risk-session.overview label {
   font-size: 16px;
@@ -11389,18 +11405,18 @@ select#languages {
   margin-bottom: 30px;
 }
 @media only screen and (min-width: 320px) {
-  .padded-bottom input[type="text"], .padded-bottom textarea, .padded-bottom textarea.form-control {
+  .padded-bottom input[type=text], .padded-bottom textarea, .padded-bottom textarea.form-control {
     width: 100%;
     max-width: 100%;
   }
 }
 @media only screen and (min-width: 1816px) {
-  .padded-bottom input[type="text"], .padded-bottom textarea, .padded-bottom textarea.form-control {
+  .padded-bottom input[type=text], .padded-bottom textarea, .padded-bottom textarea.form-control {
     max-width: 99%;
   }
 }
 @media only screen and (min-width: 1919px) {
-  .padded-bottom input[type="text"], .padded-bottom textarea, .padded-bottom textarea.form-control {
+  .padded-bottom input[type=text], .padded-bottom textarea, .padded-bottom textarea.form-control {
     max-width: 97.5%;
   }
 }
@@ -11418,7 +11434,7 @@ select#languages {
   margin-right: -260px;
 }
 
-#risk-submit-form select, #risk-submit-form input:not([type='submit']):not([type='reset']), #risk-submit-form textarea {
+#risk-submit-form select, #risk-submit-form input:not([type=submit]):not([type=reset]), #risk-submit-form textarea {
   max-width: none;
 }
 
@@ -11522,7 +11538,6 @@ div.doc-link.edit-mode {
 #risk-table-container .dataTables_wrapper.no-footer .dataTables_scrollBody, #risks-open-by-team-container .dataTables_wrapper.no-footer .dataTables_scrollBody {
   border-bottom: 0px;
 }
-
 #export-dynamic-risk-report {
   cursor: pointer;
 }
@@ -11560,7 +11575,6 @@ div.doc-link.edit-mode {
     /*      max-width:300px;*/
     transition: all 1s ease;
   }
-
   #assets:not([disabled]):focus.enable-popup, #assessment:not([disabled]):focus.enable-popup, #notes:not([disabled]):focus.enable-popup,
   #current_solution:not([disabled]):focus.enable-popup, #security_requirements:not([disabled]):focus.enable-popup, #security_recommendations:not([disabled]):focus.enable-popup, #active-textfield:not([disabled]):focus.enable-popup,
   #assets:not([disabled]):active.enable-popup, #assessment:not([disabled]):active.enable-popup, #notes:not([disabled]):active.enable-popup, #comments:not([disabled]):focus.enable-popup,
@@ -11575,7 +11589,6 @@ div.doc-link.edit-mode {
     z-index: 2001;
     overflow: auto;
   }
-
   .affected-assets-title {
     position: fixed !important;
     top: 0;
@@ -11594,7 +11607,6 @@ div.doc-link.edit-mode {
     font-size: 42px;
     color: #fff;
   }
-
   .ui-widget-content {
     z-index: 999;
   }
@@ -11607,7 +11619,7 @@ div.doc-link.edit-mode {
   margin: 0 3px 3px 0;
   padding: 1px 3px;
   color: #333333;
-  border: 0 solid transparent !important;
+  border: 0 solid rgba(0, 0, 0, 0) !important;
   border-radius: 2px;
   display: inline-block;
 }
@@ -11695,7 +11707,7 @@ div.doc-link.edit-mode {
   width: 200px;
   margin-top: 40px;
   padding: 10px 0 0 0;
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-size: 14px;
   text-align: center;
   text-decoration: none;

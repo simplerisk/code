@@ -277,7 +277,13 @@ $temp_tables = [
     ],
     'asset_name_ordering' => [
         'temp_asset_order'
-    ]
+    ],
+    'encryption' => [
+        'temp_enc_replacement_table',
+        'temp_enc_encrypted_data',
+        'temp_dec_replacement_table',
+        'temp_dec_decrypted_data',
+    ],
 ];
 
 // add property to mark derived/technical/hidden fields as they're valid fields, but don't have to be validated against active customization fields
@@ -12950,12 +12956,17 @@ function try_decrypt($value)
 /*************************
  * FUNCTION: TRY ENCRYPT *
  *************************/
-function try_encrypt($value)
-{
+function try_encrypt($value) {
     // If the encryption extra is enabled
     if (encryption_extra()) {
-        // Load the extra
-        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+
+        // Only load it once as the realpath function call takes too much time if called a lot in a request
+        // and it's totally unnecessary as the extra will only be loaded once anyway
+        if (!isset($GLOBALS['encryption_extra_loaded'])) {
+            // Load encryption extra
+            require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+            $GLOBALS['encryption_extra_loaded'] = true;
+        }
 
         if(!isset($_SESSION['encrypted_pass']) || !$_SESSION['encrypted_pass']){
             // If there's no session, try to get the password from the init.php
@@ -12967,10 +12978,14 @@ function try_encrypt($value)
             } else {
                 $encrypted_value = $value;
             }
-        }
-        else{
+        } else {
+            // Storing it in the request-level $_GLOBALS allows us to not have to do the same call thousands of times
+            if (!isset($GLOBALS['decoded_encrypted_pass'])) {
+                $GLOBALS['decoded_encrypted_pass'] = base64_decode($_SESSION['encrypted_pass']);
+            }
+            
             // Encrypt the value
-            $encrypted_value = encrypt(base64_decode($_SESSION['encrypted_pass']), $value);
+            $encrypted_value = encrypt($GLOBALS['decoded_encrypted_pass'], $value);
         }
 
         return $encrypted_value;

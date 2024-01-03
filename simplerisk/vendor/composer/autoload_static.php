@@ -4,11 +4,11 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit4c44aac42d15ffa930addcf2094f8cab
+class ComposerStaticInite8fad143ce0142af209f9f5aadaa50a8
 {
     public static $files = array (
-        '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
         'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
+        '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
         '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
         '0d59ee240a4cd96ddbb4ff164fccea4d' => __DIR__ . '/..' . '/symfony/polyfill-php73/bootstrap.php',
@@ -121,7 +121,6 @@ class ComposerStaticInit4c44aac42d15ffa930addcf2094f8cab
         ),
         'M' => 
         array (
-            'MyCLabs\\Enum\\' => 13,
             'Matrix\\' => 7,
         ),
         'L' => 
@@ -147,7 +146,6 @@ class ComposerStaticInit4c44aac42d15ffa930addcf2094f8cab
             'Duo\\' => 4,
             'Doctrine\\Deprecations\\' => 22,
             'Doctrine\\Common\\Lexer\\' => 22,
-            'Doctrine\\Common\\Annotations\\' => 28,
         ),
         'C' => 
         array (
@@ -439,10 +437,6 @@ class ComposerStaticInit4c44aac42d15ffa930addcf2094f8cab
         array (
             0 => __DIR__ . '/..' . '/oomphinc/composer-installers-extender/src',
         ),
-        'MyCLabs\\Enum\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/myclabs/php-enum/src',
-        ),
         'Matrix\\' => 
         array (
             0 => __DIR__ . '/..' . '/markbaker/matrix/classes/src',
@@ -483,10 +477,6 @@ class ComposerStaticInit4c44aac42d15ffa930addcf2094f8cab
         'Doctrine\\Common\\Lexer\\' => 
         array (
             0 => __DIR__ . '/..' . '/doctrine/lexer/src',
-        ),
-        'Doctrine\\Common\\Annotations\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/doctrine/annotations/lib/Doctrine/Common/Annotations',
         ),
         'Cron\\' => 
         array (
@@ -586,7 +576,7 @@ class ComposerStaticInit4c44aac42d15ffa930addcf2094f8cab
         'NumberFormatter' => __DIR__ . '/..' . '/symfony/intl/Resources/stubs/NumberFormatter.php',
         'PhpToken' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/PhpToken.php',
         'ReturnTypeWillChange' => __DIR__ . '/..' . '/symfony/polyfill-php81/Resources/stubs/ReturnTypeWillChange.php',
-        'Stringable' => __DIR__ . '/..' . '/myclabs/php-enum/stubs/Stringable.php',
+        'Stringable' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Stringable.php',
         'UnhandledMatchError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/UnhandledMatchError.php',
         'ValueError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/ValueError.php',
     );
@@ -594,10 +584,10 @@ class ComposerStaticInit4c44aac42d15ffa930addcf2094f8cab
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit4c44aac42d15ffa930addcf2094f8cab::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit4c44aac42d15ffa930addcf2094f8cab::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit4c44aac42d15ffa930addcf2094f8cab::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInit4c44aac42d15ffa930addcf2094f8cab::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInite8fad143ce0142af209f9f5aadaa50a8::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInite8fad143ce0142af209f9f5aadaa50a8::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInite8fad143ce0142af209f9f5aadaa50a8::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInite8fad143ce0142af209f9f5aadaa50a8::$classMap;
 
         }, null, ClassLoader::class);
     }

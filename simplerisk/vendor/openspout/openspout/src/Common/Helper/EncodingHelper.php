@@ -33,9 +33,9 @@ final class EncodingHelper
     /** @var array<string, string> Map representing the encodings supporting BOMs (key) and their associated BOM (value) */
     private array $supportedEncodingsWithBom;
 
-    private bool $canUseIconv;
+    private readonly bool $canUseIconv;
 
-    private bool $canUseMbString;
+    private readonly bool $canUseMbString;
 
     public function __construct(bool $canUseIconv, bool $canUseMbString)
     {
@@ -183,7 +183,7 @@ final class EncodingHelper
                 $convertedString = false;
             }
         } else {
-            throw new EncodingConversionException("The conversion from {$sourceEncoding} to {$targetEncoding} is not supported. Please install \"iconv\" or \"PHP Intl\".");
+            throw new EncodingConversionException("The conversion from {$sourceEncoding} to {$targetEncoding} is not supported. Please install \"iconv\" or \"mbstring\".");
         }
 
         if (false === $convertedString) {

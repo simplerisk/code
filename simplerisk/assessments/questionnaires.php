@@ -130,11 +130,12 @@ if($result = process_assessment_questionnaires()){
             </div>
             <div class="span9">
                 <?php if(isset($_GET['action']) && $_GET['action']=="list"){ ?>
-                    <?php if(has_permission("assessment_add_questionnaire")){ ?>
                     <div class="row-fluid text-right">
+                        <a href="#setting_modal" class="btn" title="<?php echo $escaper->escapeHtml($lang['Settings']);?>" role="button" data-toggle="modal">&nbsp;<i class="fa fa-cog"></i></a>
+                        <?php if(has_permission("assessment_add_questionnaire")){ ?>
                         <a class="btn" href="questionnaires.php?action=add"><?php echo $escaper->escapeHtml($lang['Add']); ?></a>
+                        <?php }?>
                     </div>
-                    <?php }?>
                     <div class="row-fluid">
                         <?php display_questionnaires(); ?>
                     </div>
@@ -146,6 +147,25 @@ if($result = process_assessment_questionnaires()){
             </div>
         </div>
     </div>
+
+    <!-- MODEL WINDOW FOR COLUMN SETTING -->
+    <div id="setting_modal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="setting_modal" aria-hidden="true" style="width:800px;">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['ColumnSelections']); ?></h4>
+        </div>
+        <div class="modal-body">
+            <form id="custom_display_settings" name="custom_display_settings" method="post">
+            <?php echo display_custom_questionnaires_columns("custom_plan_mitigation_display_settings");?>
+            <input type="hidden" name="column_settings" value='1'>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
+            <button type="submit" id="save_display_settings" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Save']); ?></button>
+        </div>
+    </div>
+
     <input type="hidden" id="_lang_SimpleriskUsers" value="<?php echo $escaper->escapeHtml($lang['SimpleriskUsers']) ?>">
     <input type="hidden" id="_lang_AssessmentContacts" value="<?php echo $escaper->escapeHtml($lang['AssessmentContacts']) ?>">
     <?php display_set_default_date_format_script(); ?>
