@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'У вас нет разрешения на редактирование анкет.',
     'NoPermissionForDeleteQuestionnaires' => 'У вас нет разрешения на удаление анкет.',
     'NoPermissionForSendQuestionnaires' => 'У вас нет разрешения на отправку анкет',
+    'MissingUser' => 'Отсутствует пользователь',
 
     '' => '',
 );

@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'Sinulla ei ole lupaa muokata kyselylomakkeita',
     'NoPermissionForDeleteQuestionnaires' => 'Sinulla ei ole lupaa poistaa kyselylomakkeita',
     'NoPermissionForSendQuestionnaires' => 'Sinulla ei ole lupaa lähettää kyselylomakkeita',
+    'MissingUser' => 'Puuttuva käyttäjä',
 
     '' => '',
 );

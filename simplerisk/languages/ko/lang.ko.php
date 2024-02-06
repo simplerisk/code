@@ -2115,7 +2115,7 @@ $lang = array(
     'UpdatedSuccess' => '성공적으로 업데이트됨',
     'Vulnerabilities' => '취약점',
     'TriageVulnerabilities' => '취약점 분류',
-    'UpdatedSuccess' => '성공적으로 업데이트됨',
+    'UpdatedSuccess' => '성공적으로 업데이트되었습니다',
     'DueDate' => '마감일',
     'Consultant' => '컨설턴트',
     'BusinessOwner' => '비즈니스 소유자',
@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => '설문지를 편집할 권한이 없습니다.',
     'NoPermissionForDeleteQuestionnaires' => '설문지를 삭제할 권한이 없습니다.',
     'NoPermissionForSendQuestionnaires' => '설문지를 보낼 권한이 없습니다.',
+    'MissingUser' => '누락된 사용자',
 
     '' => '',
 );

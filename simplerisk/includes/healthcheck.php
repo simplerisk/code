@@ -74,6 +74,9 @@ function simplerisk_health_check()
 	// Check the SimpleRisk Base URL
 	$check_simplerisk_base_url = check_simplerisk_base_url();
 
+    // Check the SimpleRisk Base URL DNS
+    $check_simplerisk_base_url_dns = check_simplerisk_base_url_dns();
+
 	// Check the SimpleRisk database connectivity
 	$check_database_connectivity = check_database_connectivity();
 
@@ -204,7 +207,7 @@ function simplerisk_health_check()
 	else health_check_bad("Extras");
 
 	// Connectivity Summary
-	if ($check_simplerisk_base_url['result'] === 1 && $check_database_connectivity['result'] === 1 && $check_api_connectivity['result'] === 1 && $check_web_connectivity_result === 1)
+	if ($check_simplerisk_base_url['result'] === 1 && $check_simplerisk_base_url_dns['result'] ===1 && $check_database_connectivity['result'] === 1 && $check_api_connectivity['result'] === 1 && $check_web_connectivity_result === 1)
 	{
 		health_check_good("Connectivity");
 	}
@@ -282,6 +285,7 @@ function simplerisk_health_check()
 	echo "    <div id=\"connectivity\" style=\"display: none;\" class=\"settings_tab\">\n";
 	echo "<b><u>Connectivity</u></b><br />";
 	display_health_check_results($check_simplerisk_base_url);
+    display_health_check_results($check_simplerisk_base_url_dns);
 	display_health_check_results($check_database_connectivity);
 	display_health_check_results($check_api_connectivity);
 	display_health_check_array_results($check_web_connectivity);
@@ -1096,6 +1100,55 @@ function check_php_max_input_vars()
 			}
 		}
 	}
+}
+
+/*******************************************
+ * FUNCTION: CHECK SIMPLERISK BASE URL DNS *
+ *******************************************/
+function check_simplerisk_base_url_dns()
+{
+    // Get the server name
+    $server_name = $_SERVER['SERVER_NAME'];
+
+    // Regular expression to match a domain
+    $domain_regex = "/^(?!\-)(?:(?:[a-zA-Z\d][a-zA-Z\d\-]{0,61})?[a-zA-Z\d]\.){1,126}(?!\d+)[a-zA-Z\d]{1,63}$/";
+
+    // If the server name is a domain
+    if (filter_var($server_name, FILTER_VALIDATE_DOMAIN))
+    {
+        // See if we can get a DNS record for the domain
+        $result = dns_get_record($server_name);
+
+        // If a result was not returned
+        if ($result === false)
+        {
+            return array("result" => 0, "text" => "The detected server name is a valid domain, but a DNS lookup was not successful.");
+        }
+        else
+        {
+            return array("result" => 1, "text" => "The detected server name is a valid domain and a DNS lookup was successful.");
+        }
+    }
+    // If the server name is an IP address
+    else if (filter_var($server_name, FILTER_VALIDATE_IP))
+    {
+        return array("result" => 1, "text" => "The detected server name is an IP address.");
+    }
+    else
+    {
+        // This is not a domain or IP and should be rejected
+        return array("result" => 0, "text" => "The detected server name is not a valid domain or IP address.");
+    }
+
+    // If the base URL stored in settings and the one we are using are the same
+    if ($simplerisk_base_url == $base_url)
+    {
+        return array("result" => 1, "text" => "Your SimpleRisk Base URL matches the URL you are using to connect to SimpleRisk.");
+    }
+    else
+    {
+        return array("result" => 0, "text" => "Your SimpleRisk Base URL does not match the URL you are using to connect to SimpleRisk.");
+    }
 }
 
 /*************************************************

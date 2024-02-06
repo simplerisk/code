@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'Δεν έχετε άδεια επεξεργασίας ερωτηματολογίων',
     'NoPermissionForDeleteQuestionnaires' => 'Δεν έχετε άδεια διαγραφής ερωτηματολογίων',
     'NoPermissionForSendQuestionnaires' => 'Δεν έχετε άδεια αποστολής ερωτηματολογίων',
+    'MissingUser' => 'Λείπει ο χρήστης',
 
     '' => '',
 );

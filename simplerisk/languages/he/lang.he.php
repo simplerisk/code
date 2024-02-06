@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'אין לך הרשאה לערוך שאלונים',
     'NoPermissionForDeleteQuestionnaires' => 'אין לך הרשאה למחוק שאלונים',
     'NoPermissionForSendQuestionnaires' => 'אין לך הרשאה לשלוח שאלונים',
+    'MissingUser' => 'משתמש חסר',
 
     '' => '',
 );

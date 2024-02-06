@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'Nie masz uprawnień do edytowania kwestionariuszy',
     'NoPermissionForDeleteQuestionnaires' => 'Nie masz uprawnień do usuwania kwestionariuszy',
     'NoPermissionForSendQuestionnaires' => 'Nie masz uprawnień do wysyłania kwestionariuszy',
+    'MissingUser' => 'Brakujący użytkownik',
 
     '' => '',
 );

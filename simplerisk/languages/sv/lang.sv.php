@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'Du har inte behörighet att redigera frågeformulär',
     'NoPermissionForDeleteQuestionnaires' => 'Du har inte behörighet att ta bort frågeformulär',
     'NoPermissionForSendQuestionnaires' => 'Du har inte behörighet att skicka frågeformulär',
+    'MissingUser' => 'Användare saknas',
 
     '' => '',
 );

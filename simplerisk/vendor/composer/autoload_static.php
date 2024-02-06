@@ -146,6 +146,7 @@ class ComposerStaticInite8fad143ce0142af209f9f5aadaa50a8
             'Duo\\' => 4,
             'Doctrine\\Deprecations\\' => 22,
             'Doctrine\\Common\\Lexer\\' => 22,
+            'Doctrine\\Common\\Annotations\\' => 28,
         ),
         'C' => 
         array (
@@ -477,6 +478,10 @@ class ComposerStaticInite8fad143ce0142af209f9f5aadaa50a8
         'Doctrine\\Common\\Lexer\\' => 
         array (
             0 => __DIR__ . '/..' . '/doctrine/lexer/src',
+        ),
+        'Doctrine\\Common\\Annotations\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/doctrine/annotations/lib/Doctrine/Common/Annotations',
         ),
         'Cron\\' => 
         array (

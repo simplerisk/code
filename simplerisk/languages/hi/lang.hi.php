@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'आपके पास प्रश्नावली संपादित करने की अनुमति नहीं है',
     'NoPermissionForDeleteQuestionnaires' => 'आपके पास प्रश्नावली हटाने की अनुमति नहीं है',
     'NoPermissionForSendQuestionnaires' => 'आपके पास प्रश्नावली भेजने की अनुमति नहीं है',
+    'MissingUser' => 'गुम उपयोगकर्ता',
 
     '' => '',
 );

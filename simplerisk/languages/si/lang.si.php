@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'ප්‍රශ්නාවලිය සංස්කරණය කිරීමට ඔබට අවසර නැත',
     'NoPermissionForDeleteQuestionnaires' => 'ප්‍රශ්නාවලිය මකා දැමීමට ඔබට අවසර නැත',
     'NoPermissionForSendQuestionnaires' => 'ඔබට ප්‍රශ්නාවලිය යැවීමට අවසර නැත',
+    'MissingUser' => 'පරිශීලක අතුරුදහන්',
 
     '' => '',
 );

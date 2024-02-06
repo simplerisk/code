@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'Anketleri Düzenleme izniniz yok',
     'NoPermissionForDeleteQuestionnaires' => 'Anketleri Silme izniniz yok',
     'NoPermissionForSendQuestionnaires' => 'Anket Gönderme izniniz yok',
+    'MissingUser' => 'Eksik Kullanıcı',
 
     '' => '',
 );

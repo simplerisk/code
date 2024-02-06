@@ -2344,7 +2344,7 @@ $lang = array(
     'QuestionnaireNotCompleteEmailTemplate' => 'نموذج البريد الإلكتروني للاستبيان غير مكتمل',
     'RiskAssessmentQuestionnaireNotCompleted' => 'استبيان تقييم المخاطر لم يكتمل',
     'SaveAndSend' => 'حفظ وإرسال',
-    'AssociatedRisks' => 'المخاطر المرتبطة',
+    'AssociatedRisks' => 'المخاطر المصاحبة',
     'NoPermissionForAddAssessmentContacts' => 'ليس لديك إذن لإضافة جهات اتصال التقييم',
     'NoPermissionForEditAssessmentContacts' => 'ليس لديك إذن بتحرير جهات اتصال التقييم',
     'NoPermissionForDeleteAssessmentContacts' => 'ليس لديك إذن بحذف جهات اتصال التقييم',
@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'ليس لديك الإذن بتحرير الاستبيانات',
     'NoPermissionForDeleteQuestionnaires' => 'ليس لديك الإذن بحذف الاستبيانات',
     'NoPermissionForSendQuestionnaires' => 'ليس لديك الإذن بإرسال الاستبيانات',
+    'MissingUser' => 'مستخدم مفقود',
 
     '' => '',
 );

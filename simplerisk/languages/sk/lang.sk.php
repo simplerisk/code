@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'Nemáte povolenie na úpravu dotazníkov',
     'NoPermissionForDeleteQuestionnaires' => 'Nemáte povolenie na vymazanie dotazníkov',
     'NoPermissionForSendQuestionnaires' => 'Nemáte povolenie na odosielanie dotazníkov',
+    'MissingUser' => 'Chýbajúci používateľ',
 
     '' => '',
 );

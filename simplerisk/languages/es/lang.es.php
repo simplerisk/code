@@ -2344,7 +2344,7 @@ $lang = array(
     'QuestionnaireNotCompleteEmailTemplate' => 'Plantilla de correo electrónico del cuestionario no completado',
     'RiskAssessmentQuestionnaireNotCompleted' => 'Cuestionario de evaluación de riesgos no completado',
     'SaveAndSend' => 'Guardar y enviar',
-    'AssociatedRisks' => 'Riesgos asociados',
+    'AssociatedRisks' => 'Riesgos Asociados',
     'NoPermissionForAddAssessmentContacts' => 'No tienes permiso para agregar contactos de evaluación',
     'NoPermissionForEditAssessmentContacts' => 'No tienes permiso para editar contactos de evaluación',
     'NoPermissionForDeleteAssessmentContacts' => 'No tienes permiso para eliminar contactos de evaluación',
@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'No tienes permiso para editar cuestionarios',
     'NoPermissionForDeleteQuestionnaires' => 'No tienes permiso para eliminar cuestionarios',
     'NoPermissionForSendQuestionnaires' => 'No tienes permiso para enviar cuestionarios',
+    'MissingUser' => 'Usuario perdido',
 
     '' => '',
 );

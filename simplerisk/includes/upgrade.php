@@ -169,6 +169,7 @@ $releases = array(
 	"20231006-001",
 	"20231103-001",
 	"20240102-001",
+	"20240205-001",
 );
 
 /*************************
@@ -7108,6 +7109,40 @@ function upgrade_from_20231103001($db)
     $version_upgrading_to = '20240102-001';
 
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20240102-001 *
+ ***************************************/
+function upgrade_from_20240102001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20240102-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20240205-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Set last_update to the closure's date if the last_update is invalid or empty.
+    echo "Fixing empty risk last update dates.<br />\n";
+    $stmt = $db->prepare("
+        UPDATE
+            `risks` r
+            LEFT JOIN `closures` c ON `c`.`id` = `r`.`close_id`
+        SET
+           `r`.`last_update` = `c`.`closure_date`
+        WHERE
+           `r`.`status`='Closed' AND (`r`.`last_update` = '0000-00-00 00:00:00' OR `r`.`last_update` IS NULL);
+    ");
+    $stmt->execute();
 
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic

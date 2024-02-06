@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'Nu aveți permisiunea de a edita chestionare',
     'NoPermissionForDeleteQuestionnaires' => 'Nu aveți permisiunea de a șterge chestionare',
     'NoPermissionForSendQuestionnaires' => 'Nu aveți permisiunea de a trimite chestionare',
+    'MissingUser' => 'Utilizator lipsă',
 
     '' => '',
 );

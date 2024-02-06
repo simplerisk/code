@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'Jy het nie toestemming om vraelyste te wysig nie',
     'NoPermissionForDeleteQuestionnaires' => 'Jy het nie toestemming om vraelyste uit te vee nie',
     'NoPermissionForSendQuestionnaires' => 'Jy het nie toestemming om vraelyste te stuur nie',
+    'MissingUser' => 'Vermiste gebruiker',
 
     '' => '',
 );

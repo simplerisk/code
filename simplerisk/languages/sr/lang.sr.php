@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'Немате дозволу за уређивање упитника',
     'NoPermissionForDeleteQuestionnaires' => 'Немате дозволу да избришете упитнике',
     'NoPermissionForSendQuestionnaires' => 'Немате дозволу да шаљете упитнике',
+    'MissingUser' => 'Недостаје корисник',
 
     '' => '',
 );

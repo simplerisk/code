@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'No teniu permís per editar els qüestionaris',
     'NoPermissionForDeleteQuestionnaires' => 'No teniu permís per suprimir qüestionaris',
     'NoPermissionForSendQuestionnaires' => 'No teniu permís per enviar qüestionaris',
+    'MissingUser' => 'Usuari desaparegut',
 
     '' => '',
 );

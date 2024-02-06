@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => '您无权编辑调查问卷',
     'NoPermissionForDeleteQuestionnaires' => '您无权删除调查问卷',
     'NoPermissionForSendQuestionnaires' => '您无权发送调查问卷',
+    'MissingUser' => '缺少用户',
 
     '' => '',
 );

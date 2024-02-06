@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'Танд санал асуулгын хуудсыг засах зөвшөөрөл байхгүй',
     'NoPermissionForDeleteQuestionnaires' => 'Танд санал асуулгын хуудсыг устгах зөвшөөрөл байхгүй',
     'NoPermissionForSendQuestionnaires' => 'Танд санал асуулга илгээх зөвшөөрөл байхгүй байна',
+    'MissingUser' => 'Хэрэглэгч алга',
 
     '' => '',
 );

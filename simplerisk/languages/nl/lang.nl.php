@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'U heeft geen toestemming om vragenlijsten te bewerken',
     'NoPermissionForDeleteQuestionnaires' => 'U heeft geen toestemming om vragenlijsten te verwijderen',
     'NoPermissionForSendQuestionnaires' => 'U heeft geen toestemming om vragenlijsten te verzenden',
+    'MissingUser' => 'Ontbrekende gebruiker',
 
     '' => '',
 );

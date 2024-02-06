@@ -2344,7 +2344,7 @@ $lang = array(
     'QuestionnaireNotCompleteEmailTemplate' => 'E-Mail-Vorlage „Fragebogen nicht ausgefüllt“.',
     'RiskAssessmentQuestionnaireNotCompleted' => 'Fragebogen zur Risikobewertung nicht ausgefüllt',
     'SaveAndSend' => 'Speichern und senden',
-    'AssociatedRisks' => 'Damit verbundene Risiken',
+    'AssociatedRisks' => 'Verbundene Risiken',
     'NoPermissionForAddAssessmentContacts' => 'Sie sind nicht berechtigt, Bewertungskontakte hinzuzufügen',
     'NoPermissionForEditAssessmentContacts' => 'Sie sind nicht berechtigt, Bewertungskontakte zu bearbeiten',
     'NoPermissionForDeleteAssessmentContacts' => 'Sie sind nicht berechtigt, Bewertungskontakte zu löschen',
@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'Sie haben keine Berechtigung zum Bearbeiten von Fragebögen',
     'NoPermissionForDeleteQuestionnaires' => 'Sie haben keine Berechtigung zum Löschen von Fragebögen',
     'NoPermissionForSendQuestionnaires' => 'Sie sind nicht berechtigt, Fragebögen zu senden',
+    'MissingUser' => 'Fehlender Benutzer',
 
     '' => '',
 );

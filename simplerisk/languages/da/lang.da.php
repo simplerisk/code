@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'Du har ikke tilladelse til at redigere spørgeskemaer',
     'NoPermissionForDeleteQuestionnaires' => 'Du har ikke tilladelse til at slette spørgeskemaer',
     'NoPermissionForSendQuestionnaires' => 'Du har ikke tilladelse til at sende spørgeskemaer',
+    'MissingUser' => 'Manglende bruger',
 
     '' => '',
 );

@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'Nincs engedélye a kérdőívek szerkesztésére',
     'NoPermissionForDeleteQuestionnaires' => 'Nincs engedélye a kérdőívek törlésére',
     'NoPermissionForSendQuestionnaires' => 'Nincs engedélye kérdőívek küldésére',
+    'MissingUser' => 'Hiányzó felhasználó',
 
     '' => '',
 );

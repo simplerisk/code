@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'Bạn không có quyền Chỉnh sửa Bảng câu hỏi',
     'NoPermissionForDeleteQuestionnaires' => 'Bạn không có quyền xóa bảng câu hỏi',
     'NoPermissionForSendQuestionnaires' => 'Bạn không có quyền gửi bảng câu hỏi',
+    'MissingUser' => 'Thiếu người dùng',
 
     '' => '',
 );

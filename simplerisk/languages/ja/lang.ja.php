@@ -2358,6 +2358,7 @@ $lang = array(
     'NoPermissionForEditQuestionnaires' => 'アンケートを編集する権限がありません',
     'NoPermissionForDeleteQuestionnaires' => 'アンケートを削除する権限がありません',
     'NoPermissionForSendQuestionnaires' => 'アンケートを送信する権限がありません',
+    'MissingUser' => '行方不明のユーザー',
 
     '' => '',
 );

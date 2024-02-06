@@ -10540,14 +10540,12 @@ function close_risk($risk_id, $user_id, $status, $close_reason, $note, $closure_
     // Get the new mitigation id
     $close_id = $db->lastInsertId();
 
-
-
     // Update the risk
     $stmt = $db->prepare("UPDATE risks SET status=:status,last_update=:date,close_id=:close_id WHERE id = :id");
 
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->bindParam(":status", $status, PDO::PARAM_STR, 50);
-    $stmt->bindParam(":date", $current_datetime, PDO::PARAM_STR);
+    $stmt->bindParam(":date", $closure_date, PDO::PARAM_STR);
     $stmt->bindParam(":close_id", $close_id, PDO::PARAM_INT);
     $stmt->execute();
 
