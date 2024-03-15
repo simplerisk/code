@@ -13,14 +13,14 @@ use SAML2\Binding;
 use SAML2\Constants;
 use SAML2\DOMDocumentFactory;
 use SAML2\EncryptedAssertion;
+use SAML2\Exception\Protocol\UnsupportedBindingException;
 use SAML2\HTTPRedirect;
 use SAML2\LogoutRequest;
 use SAML2\LogoutResponse;
 use SAML2\Response;
-use SAML2\SOAP;
+use SAML2\XML\ds\KeyInfo;
 use SAML2\XML\ds\X509Certificate;
 use SAML2\XML\ds\X509Data;
-use SAML2\XML\ds\KeyInfo;
 use SAML2\XML\saml\AttributeValue;
 use SAML2\XML\saml\Issuer;
 use SAML2\XML\saml\NameID;
@@ -34,6 +34,7 @@ use SimpleSAML\IdP;
 use SimpleSAML\Logger;
 use SimpleSAML\Metadata\MetaDataStorageHandler;
 use SimpleSAML\Module;
+use SimpleSAML\Module\saml\Message;
 use SimpleSAML\Stats;
 use SimpleSAML\Utils;
 
@@ -382,7 +383,11 @@ class SAML2
                 'SAML2.0 - IdP.SSOService: IdP initiated authentication: ' . var_export($spEntityId, true)
             );
         } else {
-            $binding = Binding::getCurrentBinding();
+            try {
+                $binding = Binding::getCurrentBinding();
+            } catch (UnsupportedBindingException $e) {
+                throw new Error\Error('SSOPARAMS', $e, 400);
+            }
             $request = $binding->receive();
 
             if (!($request instanceof AuthnRequest)) {
@@ -400,7 +405,7 @@ class SAML2
             $spEntityId = $issuer->getValue();
             $spMetadata = $metadata->getMetaDataConfig($spEntityId, 'saml20-sp-remote');
 
-            $authnRequestSigned = \SimpleSAML\Module\saml\Message::validateMessage($spMetadata, $idpMetadata, $request);
+            $authnRequestSigned = Message::validateMessage($spMetadata, $idpMetadata, $request);
 
             $relayState = $request->getRelayState();
 
@@ -568,7 +573,7 @@ class SAML2
         $idpMetadata = $idp->getConfig();
         $spMetadata = $metadata->getMetaDataConfig($spEntityId, 'saml20-sp-remote');
 
-        $lr = \SimpleSAML\Module\saml\Message::buildLogoutResponse($idpMetadata, $spMetadata);
+        $lr = Message::buildLogoutResponse($idpMetadata, $spMetadata);
         $lr->setInResponseTo($state['saml:RequestId']);
         $lr->setRelayState($state['saml:RelayState']);
 
@@ -633,7 +638,7 @@ class SAML2
         $idpMetadata = $idp->getConfig();
         $spMetadata = $metadata->getMetaDataConfig($spEntityId, 'saml20-sp-remote');
 
-        \SimpleSAML\Module\saml\Message::validateMessage($spMetadata, $idpMetadata, $message);
+        Message::validateMessage($spMetadata, $idpMetadata, $message);
 
         if ($message instanceof LogoutResponse) {
             Logger::info('Received SAML 2.0 LogoutResponse from: ' . var_export($spEntityId, true));
@@ -649,7 +654,7 @@ class SAML2
             $relayState = $message->getRelayState();
 
             if (!$message->isSuccess()) {
-                $logoutError = \SimpleSAML\Module\saml\Message::getResponseError($message);
+                $logoutError = Message::getResponseError($message);
                 Logger::warning('Unsuccessful logout. Status was: ' . $logoutError);
             } else {
                 $logoutError = null;
@@ -713,7 +718,7 @@ class SAML2
             if ($relayState !== null) {
                 $params['RelayState'] = $relayState;
             }
-            return Module::getModuleURL('core/idp/logout-iframe-post.php', $params);
+            return Module::getModuleURL('core/logout-iframe-post', $params);
         }
 
         $lr = self::buildLogoutRequest($idpMetadata, $spMetadata, $association, $relayState);
@@ -757,6 +762,7 @@ class SAML2
      */
     public static function getHostedMetadata(string $entityid, MetaDataStorageHandler $handler = null): array
     {
+        $globalConfig = Configuration::getInstance();
         if ($handler === null) {
             $handler = MetaDataStorageHandler::getMetadataHandler();
         }
@@ -809,6 +815,24 @@ class SAML2
             'NameIDFormat' => $config->getOptionalArrayizeString('NameIDFormat', [Constants::NAMEID_TRANSIENT]),
         ];
 
+        // metadata signing
+        if ($config->hasValue('metadata.sign.enable')) {
+            $metadata += ['metadata.sign.enable' => $config->getBoolean('metadata.sign.enable')];
+
+            if ($config->hasValue('metadata.sign.privatekey')) {
+                $metadata += ['metadata.sign.privatekey' => $config->getString('metadata.sign.privatekey')];
+            }
+            if ($config->hasValue('metadata.sign.privatekey_pass')) {
+                $metadata += ['metadata.sign.privatekey_pass' => $config->getString('metadata.sign.privatekey_pass')];
+            }
+            if ($config->hasValue('metadata.sign.certificate')) {
+                $metadata += ['metadata.sign.certificate' => $config->getString('metadata.sign.certificate')];
+            }
+            if ($config->hasValue('metadata.sign.algorithm')) {
+                $metadata += ['metadata.sign.algorithm' => $config->getString('metadata.sign.algorithm')];
+            }
+        }
+
         $cryptoUtils = new Utils\Crypto();
         $httpUtils = new Utils\HTTP();
 
@@ -858,7 +882,7 @@ class SAML2
             $metadata['ArtifactResolutionService'][] = [
                 'index' => 0,
                 'Binding' => Constants::BINDING_SOAP,
-                'Location' => $httpUtils->getBaseURL() . 'module.php/saml/idp/artifactResolutionService'
+                'Location' => Module::getModuleURL('saml/idp/artifactResolutionService'),
             ];
         }
 
@@ -869,7 +893,7 @@ class SAML2
                 [
                     'hoksso:ProtocolBinding' => Constants::BINDING_HTTP_REDIRECT,
                     'Binding' => Constants::BINDING_HOK_SSO,
-                    'Location' => $httpUtils->getBaseURL() . 'module.php/saml/idp/singleSignOnService',
+                    'Location' => Module::getModuleURL('saml/idp/singleSignOnService'),
                 ]
             );
         }
@@ -879,7 +903,7 @@ class SAML2
             $metadata['SingleSignOnService'][] = [
                 'index' => 0,
                 'Binding' => Constants::BINDING_SOAP,
-                'Location' => $httpUtils->getBaseURL() . 'module.php/saml/idp/singleSignOnService',
+                'Location' => Module::getModuleURL('saml/idp/singleSignOnService'),
             ];
         }
 
@@ -946,7 +970,6 @@ class SAML2
             }
         }
 
-        $globalConfig = Configuration::getInstance();
         $email = $globalConfig->getOptionalString('technicalcontact_email', 'na@example.org');
         if (!empty($email) && $email !== 'na@example.org') {
             $contact = [
@@ -1105,7 +1128,7 @@ class SAML2
 
         $a = new Assertion();
         if ($signAssertion) {
-            \SimpleSAML\Module\saml\Message::addSign($idpMetadata, $spMetadata, $a);
+            Message::addSign($idpMetadata, $spMetadata, $a);
         }
 
         $issuer = new Issuer();
@@ -1225,7 +1248,7 @@ class SAML2
             $encryptNameId = $idpMetadata->getOptionalBoolean('nameid.encryption', false);
         }
         if ($encryptNameId) {
-            $a->encryptNameId(\SimpleSAML\Module\saml\Message::getEncryptionKey($spMetadata));
+            $a->encryptNameId(Message::getEncryptionKey($spMetadata));
         }
 
         return $a;
@@ -1379,7 +1402,7 @@ class SAML2
         array $association,
         string $relayState = null
     ): LogoutRequest {
-        $lr = \SimpleSAML\Module\saml\Message::buildLogoutRequest($idpMetadata, $spMetadata);
+        $lr = Message::buildLogoutRequest($idpMetadata, $spMetadata);
         $lr->setRelayState($relayState);
         $lr->setSessionIndex($association['saml:SessionIndex']);
         $lr->setNameId($association['saml:NameID']);
@@ -1395,7 +1418,7 @@ class SAML2
             $encryptNameId = $idpMetadata->getOptionalBoolean('nameid.encryption', false);
         }
         if ($encryptNameId) {
-            $lr->encryptNameId(\SimpleSAML\Module\saml\Message::getEncryptionKey($spMetadata));
+            $lr->encryptNameId(Message::getEncryptionKey($spMetadata));
         }
 
         return $lr;
@@ -1429,7 +1452,7 @@ class SAML2
         $r->setDestination($consumerURL);
 
         if ($signResponse) {
-            \SimpleSAML\Module\saml\Message::addSign($idpMetadata, $spMetadata, $r);
+            Message::addSign($idpMetadata, $spMetadata, $r);
         }
 
         return $r;

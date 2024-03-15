@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Module\multiauth\Auth\Source;
 
-use SAML2\Constants;
-use SAML2\Exception\Protocol\NoAuthnContextException;
 use Exception;
+use SAML2\Exception\Protocol\NoAuthnContextException;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Auth;
 use SimpleSAML\Configuration;
@@ -106,15 +105,16 @@ class MultiAuth extends Auth\Source
         }
 
         if (
-            !is_null($state['saml:RequestedAuthnContext'])
+            array_key_exists('saml:RequestedAuthnContext', $state)
+            && !is_null($state['saml:RequestedAuthnContext'])
             && array_key_exists('AuthnContextClassRef', $state['saml:RequestedAuthnContext'])
         ) {
             $refs = array_values($state['saml:RequestedAuthnContext']['AuthnContextClassRef']);
             $new_sources = [];
-            foreach ($this->sources as $source) {
+            foreach ($this->sources as $key => $source) {
                 $config_refs = $arrayUtils->arrayize($source['AuthnContextClassRef']);
                 if (count(array_intersect($config_refs, $refs)) >= 1) {
-                    $new_sources[] = $source;
+                    $new_sources[$key] = $source;
                 }
             }
             $state[self::SOURCESID] = $new_sources;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SimpleSAML\IdP;
 
-use SimpleSAML\Assert\Assert;
 use SimpleSAML\Auth;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error;
@@ -22,21 +21,13 @@ use SimpleSAML\XHTML\Template;
 class IFrameLogoutHandler implements LogoutHandlerInterface
 {
     /**
-     * The IdP we are logging out from.
-     *
-     * @var \SimpleSAML\IdP
-     */
-    private IDP $idp;
-
-
-    /**
      * LogoutIFrame constructor.
      *
      * @param \SimpleSAML\IdP $idp The IdP to log out from.
      */
-    public function __construct(IdP $idp)
-    {
-        $this->idp = $idp;
+    public function __construct(
+        private IdP $idp
+    ) {
     }
 
 

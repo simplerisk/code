@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Module\core\Controller;
 
-use Exception;
-use SimpleSAML\Configuration;
-use SimpleSAML\Error;
+use Exception as BuiltinException;
+use SimpleSAML\{Configuration, Error, Logger, Session, Utils};
 use SimpleSAML\HTTP\RunnableResponse;
-use SimpleSAML\Logger;
-use SimpleSAML\Session;
-use SimpleSAML\Utils;
 use SimpleSAML\XHTML\Template;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,13 +24,6 @@ use function var_export;
  */
 class ErrorReport
 {
-    /** @var \SimpleSAML\Configuration */
-    protected Configuration $config;
-
-    /** @var \SimpleSAML\Session */
-    protected Session $session;
-
-
     /**
      * Controller constructor.
      *
@@ -44,11 +33,9 @@ class ErrorReport
      * @param \SimpleSAML\Session $config The session to use by the controllers.
      */
     public function __construct(
-        Configuration $config,
-        Session $session
+        protected Configuration $config,
+        protected Session $session
     ) {
-        $this->config = $config;
-        $this->session = $session;
     }
 
 
@@ -75,7 +62,7 @@ class ErrorReport
 
         try {
             $data = $this->session->getData('core:errorreport', $reportId);
-        } catch (Exception $e) {
+        } catch (BuiltinException $e) {
             $data = null;
             Logger::error('Error loading error report data: ' . var_export($e->getMessage(), true));
         }

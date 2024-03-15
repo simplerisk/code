@@ -12,23 +12,14 @@ namespace SimpleSAML\Locale;
 
 use Exception;
 use Gettext\Generator\ArrayGenerator;
+use Gettext\Loader\MoLoader;
 use Gettext\Loader\PoLoader;
-use Gettext\Translations;
-use Gettext\Translator;
-use Gettext\TranslatorFunctions;
-use SimpleSAML\Configuration;
-use SimpleSAML\Logger;
+use Gettext\{Translations, Translator, TranslatorFunctions};
+use SimpleSAML\{Configuration, Logger};
 use Symfony\Component\HttpFoundation\File\File;
 
 class Localization
 {
-    /**
-     * The configuration to use.
-     *
-     * @var \SimpleSAML\Configuration
-     */
-    private Configuration $configuration;
-
     /**
      * The default gettext domain.
      *
@@ -77,11 +68,11 @@ class Localization
      *
      * @param \SimpleSAML\Configuration $configuration Configuration object
      */
-    public function __construct(Configuration $configuration)
-    {
-        $this->configuration = $configuration;
+    public function __construct(
+        private Configuration $configuration
+    ) {
         /** @var string $locales */
-        $locales = $this->configuration->resolvePath('locales');
+        $locales = $configuration->resolvePath('locales');
         $this->localeDir = $locales;
         $this->language = new Language($configuration);
         $this->langcode = $this->language->getPosixLanguage($this->language->getLanguage());
@@ -242,20 +233,29 @@ class Localization
             }
         }
 
-        $file = new File($langPath . $domain . '.po', false);
+        $file = new File($langPath . $domain . '.mo', false);
         if ($file->getRealPath() !== false && $file->isReadable()) {
-            $translations = (new PoLoader())->loadFile($file->getRealPath());
+            $translations = (new MoLoader())->loadFile($file->getRealPath());
             $arrayGenerator = new ArrayGenerator();
             $this->translator->addTranslations(
                 $arrayGenerator->generateArray($translations)
             );
         } else {
-            Logger::debug(sprintf(
-                "%s - Localization file '%s' not found or not readable in '%s', falling back to default",
-                $_SERVER['PHP_SELF'],
-                $file->getfileName(),
-                $langPath,
-            ));
+            $file = new File($langPath . $domain . '.po', false);
+            if ($file->getRealPath() !== false && $file->isReadable()) {
+                $translations = (new PoLoader())->loadFile($file->getRealPath());
+                $arrayGenerator = new ArrayGenerator();
+                $this->translator->addTranslations(
+                    $arrayGenerator->generateArray($translations)
+                );
+            } else {
+                Logger::debug(sprintf(
+                    "%s - Localization file '%s' not found or not readable in '%s', falling back to default",
+                    $_SERVER['PHP_SELF'],
+                    $file->getfileName(),
+                    $langPath,
+                ));
+            }
         }
     }
 

@@ -20,21 +20,18 @@ namespace Symfony\Component\Config\Builder;
  */
 class ClassBuilder
 {
-    /** @var string */
-    private $namespace;
-
-    /** @var string */
-    private $name;
+    private string $namespace;
+    private string $name;
 
     /** @var Property[] */
-    private $properties = [];
+    private array $properties = [];
 
     /** @var Method[] */
-    private $methods = [];
-    private $require = [];
-    private $use = [];
-    private $implements = [];
-    private $allowExtraKeys = false;
+    private array $methods = [];
+    private array $require = [];
+    private array $use = [];
+    private array $implements = [];
+    private bool $allowExtraKeys = false;
 
     public function __construct(string $namespace, string $name)
     {
@@ -122,7 +119,7 @@ BODY
         $this->methods[] = new Method(strtr($body, ['NAME' => $this->camelCase($name)] + $params));
     }
 
-    public function addProperty(string $name, string $classType = null, string $defaultValue = null): Property
+    public function addProperty(string $name, ?string $classType = null, ?string $defaultValue = null): Property
     {
         $property = new Property($name, '_' !== $name[0] ? $this->camelCase($name) : $name);
         if (null !== $classType) {

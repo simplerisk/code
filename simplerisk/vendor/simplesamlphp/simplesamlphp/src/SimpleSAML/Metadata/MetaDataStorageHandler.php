@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace SimpleSAML\Metadata;
 
 use SAML2\Constants;
-use SAML2\XML\saml\Issuer;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error;
 use SimpleSAML\Logger;
 use SimpleSAML\Utils;
-use SimpleSAML\Error\MetadataNotFound;
 use SimpleSAML\Utils\ClearableState;
 
 /**
@@ -88,7 +86,7 @@ class MetaDataStorageHandler implements ClearableState
      * @return string|array The auto-generated metadata property.
      * @throws \Exception If the metadata cannot be generated automatically.
      */
-    public function getGenerated(string $property, string $set, string $overrideHost = null)
+    public function getGenerated(string $property, string $set, string $overrideHost = null): string|array
     {
         // first we check if the user has overridden this property in the metadata
         try {
@@ -105,7 +103,7 @@ class MetaDataStorageHandler implements ClearableState
         $httpUtils = new Utils\HTTP();
         $baseurl = $httpUtils->getSelfURLHost() . $config->getBasePath();
         if ($overrideHost !== null) {
-            $baseurl = str_replace('://' . $httpUtils->getSelfHost(), '://' . $overrideHost, $baseurl);
+            $baseurl = str_replace('://' . $httpUtils->getSelfHostWithPath() . '/', '://' . $overrideHost . '/', $baseurl);
         }
 
         if ($set == 'saml20-sp-hosted') {

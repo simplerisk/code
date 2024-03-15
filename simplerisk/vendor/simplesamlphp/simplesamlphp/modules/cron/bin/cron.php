@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 
+declare(strict_types=1);
+
 /*
  * This script can be used to invoke cron jobs from cli.
  * You most likely want to execute as the user running your webserver.
@@ -21,8 +23,7 @@ if (!SimpleSAML\Module::isModuleEnabled('cron')) {
 }
 
 $options = getopt("t:");
-$sysUtils = new \SimpleSAML\Utils\System();
-if (($sysUtils->getOS() !== $sysUtils::WINDOWS) && (getmyuid() === 0)) {
+if (function_exists('posix_getuid') && posix_getuid() === 0) {
     echo "Running as root is discouraged. Some cron jobs will generate files that would have the wrong ownership.\n";
     echo 'Suggested invocation: su -s "/bin/sh" -c "php /var/simplesamlphp/modules/cron/bin/cron.php -t hourly" apache';
     exit(3);

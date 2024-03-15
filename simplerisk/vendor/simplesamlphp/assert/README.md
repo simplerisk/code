@@ -3,8 +3,7 @@
 ![Build Status](https://github.com/simplesamlphp/assert/workflows/CI/badge.svg?branch=master)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/simplesamlphp/assert/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/simplesamlphp/assert/?branch=master)
 [![Coverage Status](https://codecov.io/gh/simplesamlphp/assert/branch/master/graph/badge.svg)](https://codecov.io/gh/simplesamlphp/assert)
-[![Type Coverage](https://shepherd.dev/github/simplesamlphp/assert/coverage.svg)](https://shepherd.dev/github/simplesamlphp/assert)
-[![Psalm Level](https://shepherd.dev/github/simplesamlphp/assert/level.svg)](https://shepherd.dev/github/simplesamlphp/assert)
+[![PHPStan Enabled](https://img.shields.io/badge/PHPStan-enabled-brightgreen.svg?style=flat)](https://github.com/simplesamlphp/assert)
 
 ## Background
 

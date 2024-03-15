@@ -52,6 +52,22 @@ final class Countries extends ResourceBundle
         return self::readEntry(['Alpha2ToAlpha3'], 'meta');
     }
 
+    /**
+     * Returns all available numeric country codes (3 digits).
+     *
+     * Countries are returned as ISO 3166 numeric three-digit country codes.
+     *
+     * This list only contains "officially assigned ISO 3166-1 numeric" country codes.
+     *
+     * Returns an array with Alpha2 country codes as keys, and numeric codes as values.
+     *
+     * @return array<string, string>
+     */
+    public static function getNumericCodes(): array
+    {
+        return self::readEntry(['Alpha2ToNumeric'], 'meta');
+    }
+
     public static function getAlpha3Code(string $alpha2Code): string
     {
         return self::readEntry(['Alpha2ToAlpha3', $alpha2Code], 'meta');
@@ -62,13 +78,24 @@ final class Countries extends ResourceBundle
         return self::readEntry(['Alpha3ToAlpha2', $alpha3Code], 'meta');
     }
 
+    public static function getNumericCode(string $alpha2Code): string
+    {
+        return self::readEntry(['Alpha2ToNumeric', $alpha2Code], 'meta');
+    }
+
+    public static function getAlpha2FromNumeric(string $numericCode): string
+    {
+        // Use an underscore prefix to force numeric strings with leading zeros to remain as strings
+        return self::readEntry(['NumericToAlpha2', '_'.$numericCode], 'meta');
+    }
+
     public static function exists(string $alpha2Code): bool
     {
         try {
             self::readEntry(['Names', $alpha2Code]);
 
             return true;
-        } catch (MissingResourceException $e) {
+        } catch (MissingResourceException) {
             return false;
         }
     }
@@ -77,6 +104,17 @@ final class Countries extends ResourceBundle
     {
         try {
             self::getAlpha2Code($alpha3Code);
+
+            return true;
+        } catch (MissingResourceException) {
+            return false;
+        }
+    }
+
+    public static function numericCodeExists(string $numericCode): bool
+    {
+        try {
+            self::getAlpha2FromNumeric($numericCode);
 
             return true;
         } catch (MissingResourceException $e) {
@@ -89,7 +127,7 @@ final class Countries extends ResourceBundle
      *
      * @throws MissingResourceException if the country code does not exist
      */
-    public static function getName(string $country, string $displayLocale = null): string
+    public static function getName(string $country, ?string $displayLocale = null): string
     {
         return self::readEntry(['Names', $country], $displayLocale);
     }
@@ -99,7 +137,7 @@ final class Countries extends ResourceBundle
      *
      * @throws MissingResourceException if the country code does not exist
      */
-    public static function getAlpha3Name(string $alpha3Code, string $displayLocale = null): string
+    public static function getAlpha3Name(string $alpha3Code, ?string $displayLocale = null): string
     {
         return self::getName(self::getAlpha2Code($alpha3Code), $displayLocale);
     }
@@ -109,7 +147,7 @@ final class Countries extends ResourceBundle
      *
      * @return array<string, string>
      */
-    public static function getNames(string $displayLocale = null): array
+    public static function getNames(?string $displayLocale = null): array
     {
         return self::asort(self::readEntry(['Names'], $displayLocale), $displayLocale);
     }
@@ -121,7 +159,7 @@ final class Countries extends ResourceBundle
      *
      * @return array<string, string>
      */
-    public static function getAlpha3Names(string $displayLocale = null): array
+    public static function getAlpha3Names(?string $displayLocale = null): array
     {
         $alpha2Names = self::getNames($displayLocale);
         $alpha3Names = [];

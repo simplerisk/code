@@ -15,6 +15,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use function array_key_exists;
 use function array_keys;
 use function dirname;
+use function file_exists;
 use function interface_exists;
 use function is_array;
 use function is_int;
@@ -39,7 +40,7 @@ class Configuration implements Utils\ClearableState
     /**
      * The release version of this package
      */
-    public const VERSION = '2.0.4';
+    public const VERSION = '2.2.0';
 
     /**
      * A default value which means that the given option is required.
@@ -47,6 +48,25 @@ class Configuration implements Utils\ClearableState
      * @var string
      */
     public const REQUIRED_OPTION = '___REQUIRED_OPTION___';
+
+    /**
+     * The default security-headers to be sent on responses.
+     */
+    public const DEFAULT_SECURITY_HEADERS = [
+        'Content-Security-Policy' =>
+            "default-src 'none'; " .
+            "frame-ancestors 'self'; " .
+            "object-src 'none'; " .
+            "script-src 'self'; " .
+            "style-src 'self'; " .
+            "font-src 'self'; " .
+            "connect-src 'self'; " .
+            "img-src 'self' data:; " .
+            "base-uri 'none'",
+        'X-Frame-Options' => 'SAMEORIGIN',
+        'X-Content-Type-Options' => 'nosniff',
+        'Referrer-Policy' => 'origin-when-cross-origin',
+    ];
 
     /**
      * Associative array with mappings from instance-names to configuration objects.
@@ -374,7 +394,7 @@ class Configuration implements Utils\ClearableState
      *
      * @throws \SimpleSAML\Assert\AssertionFailedException If the required option cannot be retrieved.
      */
-    public function getValue(string $name)
+    public function getValue(string $name): mixed
     {
         Assert::true(
             $this->hasValue($name),
@@ -396,7 +416,7 @@ class Configuration implements Utils\ClearableState
      *
      * @throws \SimpleSAML\Assert\AssertionFailedException If the required option cannot be retrieved.
      */
-    public function getOptionalValue(string $name, $default)
+    public function getOptionalValue(string $name, mixed $default): mixed
     {
         // return the default value if the option is unset
         if (!$this->hasValue($name)) {
@@ -538,6 +558,25 @@ class Configuration implements Utils\ClearableState
         }
 
         return $path . '/';
+    }
+
+
+    /**
+     * Retrieve the location of the vendor directory
+     *
+     * This function checks whether SimpleSAMLphp is installed as a stand-alone application or as a library
+     * and determines the location of the vendor directory.
+     *
+     * @return string The absolute path to the vendor directory. This path will always end with a slash.
+     */
+    public function getVendorDir(): string
+    {
+        if (file_exists(dirname(__FILE__, 3) . '/vendor')) {
+            return dirname(__FILE__, 3) . '/vendor/';
+        } else {
+            // SSP is loaded as a library.
+            return dirname(__FILE__, 6) . '/vendor/';
+        }
     }
 
 
@@ -832,7 +871,7 @@ class Configuration implements Utils\ClearableState
      *
      * @throws \SimpleSAML\Assert\AssertionFailedException If the option does not have any of the allowed values.
      */
-    public function getValueValidate(string $name, array $allowedValues)
+    public function getValueValidate(string $name, array $allowedValues): mixed
     {
         $ret = $this->getValue($name);
 
@@ -867,7 +906,7 @@ class Configuration implements Utils\ClearableState
      *
      * @throws \SimpleSAML\Assert\AssertionFailedException If the option does not have any of the allowed values.
      */
-    public function getOptionalValueValidate(string $name, array $allowedValues, $default)
+    public function getOptionalValueValidate(string $name, array $allowedValues, mixed $default): mixed
     {
         $ret = $this->getOptionalValue($name, $default);
 
@@ -1238,8 +1277,8 @@ class Configuration implements Utils\ClearableState
     public function getEndpointPrioritizedByBinding(
         string $endpointType,
         array $bindings,
-        $default = self::REQUIRED_OPTION
-    ) {
+        mixed $default = self::REQUIRED_OPTION,
+    ): mixed {
         $endpoints = $this->getEndpoints($endpointType);
 
         foreach ($bindings as $binding) {
@@ -1271,8 +1310,11 @@ class Configuration implements Utils\ClearableState
      *
      * @throws \Exception If no supported endpoint is found and no $default parameter is specified.
      */
-    public function getDefaultEndpoint(string $endpointType, array $bindings = null, $default = self::REQUIRED_OPTION)
-    {
+    public function getDefaultEndpoint(
+        string $endpointType,
+        array $bindings = null,
+        mixed $default = self::REQUIRED_OPTION,
+    ): mixed {
         $endpoints = $this->getEndpoints($endpointType);
 
         $defaultEndpoint = Utils\Config\Metadata::getDefaultEndpoint($endpoints, $bindings);

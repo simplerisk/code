@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace SimpleSAML\Metadata\Sources;
 
 use Exception;
-use RobRichards\XMLSecLibs\XMLSecurityDSig;
-use SimpleSAML\Assert\Assert;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error;
 use SimpleSAML\Logger;
@@ -300,8 +298,13 @@ class MDQ extends MetaDataStorageSource
 
         Logger::debug(sprintf('%s: downloading metadata for "%s" from [%s]', __CLASS__, $entityId, $mdq_url));
         $httpUtils = new Utils\HTTP();
+        $context = [
+            'http' => [
+                'header' => 'Accept: application/samlmetadata+xml'
+            ]
+        ];
         try {
-            $xmldata = $httpUtils->fetch($mdq_url);
+            $xmldata = $httpUtils->fetch($mdq_url, $context);
         } catch (Exception $e) {
             // Avoid propagating the exception, make sure we can handle the error later
             $xmldata = false;

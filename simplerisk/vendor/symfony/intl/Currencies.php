@@ -42,7 +42,7 @@ final class Currencies extends ResourceBundle
             self::readEntry(['Names', $currency, self::INDEX_NAME]);
 
             return true;
-        } catch (MissingResourceException $e) {
+        } catch (MissingResourceException) {
             return false;
         }
     }
@@ -50,7 +50,7 @@ final class Currencies extends ResourceBundle
     /**
      * @throws MissingResourceException if the currency code does not exist
      */
-    public static function getName(string $currency, string $displayLocale = null): string
+    public static function getName(string $currency, ?string $displayLocale = null): string
     {
         return self::readEntry(['Names', $currency, self::INDEX_NAME], $displayLocale);
     }
@@ -58,7 +58,7 @@ final class Currencies extends ResourceBundle
     /**
      * @return string[]
      */
-    public static function getNames(string $displayLocale = null): array
+    public static function getNames(?string $displayLocale = null): array
     {
         // ====================================================================
         // For reference: It is NOT possible to return names indexed by
@@ -82,7 +82,7 @@ final class Currencies extends ResourceBundle
     /**
      * @throws MissingResourceException if the currency code does not exist
      */
-    public static function getSymbol(string $currency, string $displayLocale = null): string
+    public static function getSymbol(string $currency, ?string $displayLocale = null): string
     {
         return self::readEntry(['Names', $currency, self::INDEX_SYMBOL], $displayLocale);
     }
@@ -91,7 +91,7 @@ final class Currencies extends ResourceBundle
     {
         try {
             return self::readEntry(['Meta', $currency, self::INDEX_FRACTION_DIGITS], 'meta');
-        } catch (MissingResourceException $e) {
+        } catch (MissingResourceException) {
             return self::readEntry(['Meta', 'DEFAULT', self::INDEX_FRACTION_DIGITS], 'meta');
         }
     }
@@ -100,7 +100,7 @@ final class Currencies extends ResourceBundle
     {
         try {
             return self::readEntry(['Meta', $currency, self::INDEX_ROUNDING_INCREMENT], 'meta');
-        } catch (MissingResourceException $e) {
+        } catch (MissingResourceException) {
             return self::readEntry(['Meta', 'DEFAULT', self::INDEX_ROUNDING_INCREMENT], 'meta');
         }
     }
@@ -109,7 +109,7 @@ final class Currencies extends ResourceBundle
     {
         try {
             return self::readEntry(['Meta', $currency, self::INDEX_CASH_FRACTION_DIGITS], 'meta');
-        } catch (MissingResourceException $e) {
+        } catch (MissingResourceException) {
             return self::readEntry(['Meta', 'DEFAULT', self::INDEX_CASH_FRACTION_DIGITS], 'meta');
         }
     }
@@ -118,7 +118,7 @@ final class Currencies extends ResourceBundle
     {
         try {
             return self::readEntry(['Meta', $currency, self::INDEX_CASH_ROUNDING_INCREMENT], 'meta');
-        } catch (MissingResourceException $e) {
+        } catch (MissingResourceException) {
             return self::readEntry(['Meta', 'DEFAULT', self::INDEX_CASH_ROUNDING_INCREMENT], 'meta');
         }
     }

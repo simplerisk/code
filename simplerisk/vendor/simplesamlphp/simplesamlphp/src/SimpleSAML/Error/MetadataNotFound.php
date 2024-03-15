@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Error;
 
-use SimpleSAML\Assert\Assert;
-
 /**
  * Error for missing metadata.
  *
@@ -23,7 +21,7 @@ class MetadataNotFound extends Error
     {
         $this->includeTemplate = 'core:no_metadata.twig';
         parent::__construct([
-                'METADATANOTFOUND',
+                ErrorCodes::METADATANOTFOUND,
                 '%ENTITYID%' => $entityId
         ]);
     }

@@ -62,6 +62,11 @@ if (isset($_POST['change_password']))
                 // Clean up other sessions of the user and roll the current session's id
                 kill_other_sessions_of_current_user();
 
+                // Expire any active password reset tokens for this user
+                $user_info = get_user_by_id($_SESSION["uid"]);
+                $username = $user_info['username'];
+                expire_reset_token_for_username($username);
+
                 // Display an alert
                 set_alert(true, "good", $lang['PasswordUpdated']);
 

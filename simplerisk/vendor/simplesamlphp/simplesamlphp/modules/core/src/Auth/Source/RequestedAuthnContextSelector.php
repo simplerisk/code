@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Module\core\Auth\Source;
 
-use SAML2\Constants as C;
 use SAML2\Exception\Protocol\NoAuthnContextException;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Error\Exception;
@@ -108,7 +107,11 @@ class RequestedAuthnContextSelector extends AbstractSourceSelector
     protected function selectAuthSource(array &$state): string
     {
         $requestedContexts = $state['saml:RequestedAuthnContext'];
-        if ($requestedContexts['AuthnContextClassRef'] === null) {
+        if (
+            $requestedContexts === null
+            || !array_key_exists('AuthnContextClassRef', $requestedContexts)
+            || $requestedContexts['AuthnContextClassRef'] === null
+        ) {
             Logger::info(
                 "core:RequestedAuthnContextSelector:  no RequestedAuthnContext provided; selecting default authsource"
             );

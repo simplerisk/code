@@ -32,7 +32,7 @@ class System
      *                   False if we are unable to determine it.
      *
      */
-    public function getOS()
+    public function getOS(): int|false
     {
         if (stristr(PHP_OS, 'LINUX')) {
             return self::LINUX;
@@ -95,11 +95,11 @@ class System
                 );
             }
         } elseif (!is_writable($tempDir)) {
-            throw new Error\Exception(sprintf(
-                'Temporary directory "%s" cannot be written to by the current user "%s".',
-                $tempDir,
-                get_current_user(),
-            ));
+            throw new Error\Exception(
+                'Temporary directory "' . $tempDir .
+                '" cannot be written to by the current user' .
+                (function_exists('posix_getuid') ? ' "' . posix_getuid() . '"' : '')
+            );
         }
 
         return $tempDir;
@@ -187,7 +187,7 @@ class System
      */
     public function writeFile(string $filename, string $data, int $mode = 0600): void
     {
-        $tmpFile = $this->getTempDir() . DIRECTORY_SEPARATOR . rand();
+        $tmpFile = $filename . '.' . bin2hex(random_bytes(4));
 
         $res = @file_put_contents($tmpFile, $data);
         if ($res === false) {

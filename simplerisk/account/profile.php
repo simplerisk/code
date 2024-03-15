@@ -120,6 +120,9 @@ require_once(language_file());
                     // Clean up other sessions of the user and roll the current session's id
                     kill_other_sessions_of_current_user();
 
+                    // Expire any active password reset tokens for this user
+                    expire_reset_token_for_username($username);
+
                     // Display an alert
                     set_alert(true, "good", $lang['PasswordUpdated']);
                 }else{

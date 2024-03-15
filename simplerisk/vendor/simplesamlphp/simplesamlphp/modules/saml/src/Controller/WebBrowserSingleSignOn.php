@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace SimpleSAML\Module\saml\Controller;
 
 use Exception;
-use SAML2\Exception\Protocol\UnsupportedBindingException;
 use SAML2\ArtifactResolve;
 use SAML2\ArtifactResponse;
 use SAML2\DOMDocumentFactory;
+use SAML2\Exception\Protocol\UnsupportedBindingException;
 use SAML2\SOAP;
 use SAML2\XML\saml\Issuer;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error;
-use SimpleSAML\IdP;
 use SimpleSAML\HTTP\RunnableResponse;
+use SimpleSAML\IdP;
 use SimpleSAML\Logger;
 use SimpleSAML\Metadata;
 use SimpleSAML\Module;
@@ -30,10 +30,6 @@ use SimpleSAML\Store\StoreFactory;
  */
 class WebBrowserSingleSignOn
 {
-    /** @var \SimpleSAML\Configuration */
-    protected Configuration $config;
-
-
     /**
      * Controller constructor.
      *
@@ -42,9 +38,8 @@ class WebBrowserSingleSignOn
      * @param \SimpleSAML\Configuration $config The configuration to use by the controllers.
      */
     public function __construct(
-        Configuration $config
+        protected Configuration $config
     ) {
-        $this->config = $config;
     }
 
 
@@ -57,7 +52,7 @@ class WebBrowserSingleSignOn
     public function artifactResolutionService(): RunnableResponse
     {
         if ($this->config->getBoolean('enable.saml20-idp') === false || !Module::isModuleEnabled('saml')) {
-            throw new Error\Error('NOACCESS', null, 403);
+            throw new Error\Error(Error\ErrorCodes::NOACCESS, null, 403);
         }
 
         $metadata = Metadata\MetaDataStorageHandler::getMetadataHandler();
@@ -65,7 +60,7 @@ class WebBrowserSingleSignOn
         $idpMetadata = $metadata->getMetaDataConfig($idpEntityId, 'saml20-idp-hosted');
 
         if (!$idpMetadata->getOptionalBoolean('saml20.sendartifact', false)) {
-            throw new Error\Error('NOACCESS');
+            throw new Error\Error(Error\ErrorCodes::NOACCESS);
         }
 
         $storeType = $this->config->getOptionalString('store.type', 'phpsession');
@@ -78,7 +73,7 @@ class WebBrowserSingleSignOn
         try {
             $request = $binding->receive();
         } catch (UnsupportedBindingException $e) {
-            throw new Error\Error('ARSPARAMS', $e, 400);
+            throw new Error\Error(Error\ErrorCodes::ARSPARAMS, $e, 400);
         }
 
         if (!($request instanceof ArtifactResolve)) {
@@ -125,7 +120,7 @@ class WebBrowserSingleSignOn
         Logger::info('SAML2.0 - IdP.SSOService: Accessing SAML 2.0 IdP endpoint SSOService');
 
         if ($this->config->getBoolean('enable.saml20-idp') === false || !Module::isModuleEnabled('saml')) {
-            throw new Error\Error('NOACCESS', null, 403);
+            throw new Error\Error(Error\ErrorCodes::NOACCESS, null, 403);
         }
 
         $metadata = Metadata\MetaDataStorageHandler::getMetadataHandler();
@@ -135,7 +130,7 @@ class WebBrowserSingleSignOn
         try {
             return new RunnableResponse([Module\saml\IdP\SAML2::class, 'receiveAuthnRequest'], [$idp]);
         } catch (UnsupportedBindingException $e) {
-            throw new Error\Error('SSOPARAMS', $e, 400);
+            throw new Error\Error(Error\ErrorCodes::SSOPARAMS, $e, 400);
         }
     }
 }

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace SimpleSAML\Module\saml\Auth\Process;
 
 use SAML2\Constants;
-use SimpleSAML\Assert\Assert;
 use SimpleSAML\Error;
 use SimpleSAML\Logger;
 use SimpleSAML\Module\saml\BaseNameIDGenerator;
+use SimpleSAML\Module\saml\IdP\SQLNameID;
 
 /**
  * Authentication processing filter to generate a persistent NameID.
@@ -167,7 +167,7 @@ class SQLPersistentNameID extends BaseNameIDGenerator
             return null;
         }
 
-        $value = \SimpleSAML\Module\saml\IdP\SQLNameID::get($idpEntityId, $spEntityId, $uid, $this->storeConfig);
+        $value = SQLNameID::get($idpEntityId, $spEntityId, $uid, $this->storeConfig);
         if ($value !== null) {
             Logger::debug(
                 'SQLPersistentNameID: Found persistent NameID ' . var_export($value, true) . ' for user ' .
@@ -191,7 +191,7 @@ class SQLPersistentNameID extends BaseNameIDGenerator
             'SQLPersistentNameID: Created persistent NameID ' . var_export($value, true) . ' for user ' .
             var_export($uid, true) . '.'
         );
-        \SimpleSAML\Module\saml\IdP\SQLNameID::add($idpEntityId, $spEntityId, $uid, $value, $this->storeConfig);
+        SQLNameID::add($idpEntityId, $spEntityId, $uid, $value, $this->storeConfig);
 
         return $value;
     }

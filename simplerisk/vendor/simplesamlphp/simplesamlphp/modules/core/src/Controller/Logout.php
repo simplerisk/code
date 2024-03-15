@@ -4,19 +4,13 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Module\core\Controller;
 
-use Exception;
+use Exception as BuiltinException;
 use SAML2\Binding;
 use SAML2\Constants;
-use SimpleSAML\Auth;
-use SimpleSAML\Configuration;
-use SimpleSAML\Error;
+use SimpleSAML\{Auth, Configuration, Error, IdP, Logger, Stats, Utils};
 use SimpleSAML\HTTP\RunnableResponse;
-use SimpleSAML\IdP;
-use SimpleSAML\Logger;
 use SimpleSAML\Metadata\MetaDataStorageHandler;
 use SimpleSAML\Module\saml\Message;
-use SimpleSAML\Stats;
-use SimpleSAML\Utils;
 use SimpleSAML\XHTML\Template;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -38,9 +32,6 @@ use function var_export;
  */
 class Logout
 {
-    /** @var \SimpleSAML\Configuration */
-    protected Configuration $config;
-
     /**
      * @var \SimpleSAML\Auth\State|string
      * @psalm-var \SimpleSAML\Auth\State|class-string
@@ -56,9 +47,8 @@ class Logout
      * @param \SimpleSAML\Configuration $config The configuration to use by the controllers.
      */
     public function __construct(
-        Configuration $config
+        protected Configuration $config
     ) {
-        $this->config = $config;
     }
 
 
@@ -330,7 +320,7 @@ class Logout
                 $assocIdP = IdP::getByState($sp);
                 $url = call_user_func([$sp['Handler'], 'getLogoutURL'], $assocIdP, $sp, null);
                 $sp['core:Logout-IFrame:URL'] = $url;
-            } catch (Exception $e) {
+            } catch (BuiltinException $e) {
                 $sp['core:Logout-IFrame:State'] = 'failed';
             }
         }

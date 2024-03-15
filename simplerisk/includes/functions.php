@@ -4002,6 +4002,15 @@ function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id,
         $message = _lang('UserUpdatedFromidPDataAuditLog', ['username' => "{$post_update_user['name']}({$post_update_user['username']})", 'changes' => $changes], false);
         write_log((int)$user_id + 1000, $user_id, $message, 'user');
     }
+
+    // If the email address was changed for the user
+    if ($pre_update_user['email'] !== $post_update_user['email'])
+    {
+        // Expire the existing reset tokens for the user
+        expire_reset_token_for_username($post_update_user['username']);
+    }
+
+
     return true;
 }
 

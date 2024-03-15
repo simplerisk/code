@@ -376,8 +376,8 @@ function get_mfa_secret_for_uid($uid)
     // If we already have an entry in the user_mfa table
     if (!empty($results))
     {
-        // Get the secret key
-        $secret = $results['secret'];
+        // Return the result
+        return $results;
     }
     // Otherwise, create a new entry in the user_mfa table
     else
@@ -388,6 +388,37 @@ function get_mfa_secret_for_uid($uid)
 
     // Return the secret
     return $secret;
+}
+
+/********************************
+ * FUNCTION: UPDATE MFA FOR UID *
+ ********************************/
+function update_mfa_for_uid($uid, $timestamp, $token)
+{
+    // If the uid is null
+    if ($uid === null )
+    {
+        // Set it to the session uid
+        $uid = $_SESSION['uid'];
+    }
+
+    // Create a hash of the token
+    $token_hash = password_hash($token, PASSWORD_BCRYPT);
+
+    // If the timestamp is 1 set it to the current unix timestamp divided by the key regeneration period of 30s
+    $timestamp = ($timestamp === true ? time() / 30 : $timestamp);
+
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("UPDATE `user_mfa` SET timestamp=:timestamp, `last_mfa_token`=:token_hash WHERE uid=:uid;");
+    $stmt->bindParam(":timestamp", $timestamp, PDO::PARAM_INT);
+    $stmt->bindParam(":token_hash", $token_hash);
+    $stmt->bindParam(":uid", $uid, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
 }
 
 /***************************************
@@ -420,11 +451,17 @@ function create_mfa_secret_for_uid($uid = null)
         $stmt->bindParam(":secret", $secret, PDO::PARAM_STR);
         $stmt->execute();
 
+        // Get the results
+        $stmt = $db->prepare("SELECT * FROM `user_mfa` WHERE uid=:uid;");
+        $stmt->bindParam(":uid", $uid, PDO::PARAM_INT);
+        $stmt->execute();
+        $results = $stmt->fetch(PDO::FETCH_ASSOC);
+
         // Close the database connection
         db_close($db);
 
         // Return the MFA secret
-        return $secret;
+        return $results;
     }
 }
 
@@ -438,7 +475,10 @@ function get_mfa_qr_code_url($uid)
     $username = $user['username'];
 
     // Get the MFA secret for the authenticated user
-    $secret = get_mfa_secret_for_uid($uid);
+    $mfa = get_mfa_secret_for_uid($uid);
+
+    // Get the secret key
+    $secret = $mfa['secret'];
 
     // Create a TOTP URI
     $parameters = [
@@ -478,7 +518,10 @@ function process_mfa_verify($uid = null)
     $verify_secret = isset($_POST['mfa_secret']) ? $_POST['mfa_secret'] : null;
 
     // Get the secret for the currently logged in user
-    $secret = get_mfa_secret_for_uid($uid);
+    $mfa = get_mfa_secret_for_uid($uid);
+
+    // Get the secret key
+    $secret = $mfa['secret'];
 
     // Create a new Google2FA
     $google2fa = new \PragmaRX\Google2FA\Google2FA();
@@ -491,6 +534,9 @@ function process_mfa_verify($uid = null)
 
         // Set the user to MFA verified
         verify_mfa_for_uid($uid);
+
+        // Kill any other sessions for this uid
+        kill_sessions_of_user($uid, true);
 
         // Display an alert
         set_alert(true, "good", $lang['MFAEnabledSuccessfully']);
@@ -518,15 +564,25 @@ function process_mfa_disable($uid = null)
     // Get the POSTed MFA token
     $mfa_token = isset($_POST['mfa_token']) ? $_POST['mfa_token'] : null;
 
-    // Get the user_mfa for the currently logged in user
-    $secret = get_mfa_secret_for_uid($uid);
+    // Get the user_mfa for the uid
+    $mfa = get_mfa_secret_for_uid($uid);
+
+    // Get the secret key, timestamp and mfa_token_hash
+    $user_secret = $mfa['secret'];
+    $user_timestamp = $mfa['timestamp'];
+    $user_mfa_token_hash = $mfa['last_mfa_token'];
 
     // Create a new Google2FA
     $google2fa = new \PragmaRX\Google2FA\Google2FA();
 
-    // If the secrets match
-    if ($google2fa->verifyKey($secret, $mfa_token))
+    $timestamp = $google2fa->verifyKeyNewer($user_secret, $mfa_token, $user_timestamp);
+
+    // If we have a valid MFA token and it is not the last one used
+    if ($timestamp !== false && !password_verify($mfa_token, $user_mfa_token_hash))
     {
+        // Update the MFA timestamp and token for this UID
+        update_mfa_for_uid($uid, $timestamp, $mfa_token);
+
         // Disable MFA for the user
         disable_mfa_for_uid($uid);
 
@@ -566,19 +622,75 @@ function does_mfa_token_match($mfa_token = null, $uid = null)
         $uid = $_SESSION['uid'];
     }
 
-    // Get the user_mfa for the uid
-    $secret = get_mfa_secret_for_uid($uid);
-
-    // Create a new Google2FA
-    $google2fa = new \PragmaRX\Google2FA\Google2FA();
-
-    // If the secrets match
-    if ($google2fa->verifyKey($secret, $mfa_token))
+    // Check the MFA attempts for this uid
+    if (!check_mfa_attempts($uid))
     {
-        // Return true
-        return true;
+        // If we have too many MFA attempts return false
+        return false;
     }
-    else return false;
+    // Otherwise keep checking the user MFA
+    else
+    {
+        // Get the user_mfa for the uid
+        $mfa = get_mfa_secret_for_uid($uid);
+
+        // Get the secret key, timestamp and mfa_token_hash
+        $user_secret = $mfa['secret'];
+        $user_timestamp = $mfa['timestamp'];
+        $user_mfa_token_hash = $mfa['last_mfa_token'];
+
+        // Create a new Google2FA
+        $google2fa = new \PragmaRX\Google2FA\Google2FA();
+
+        $timestamp = $google2fa->verifyKeyNewer($user_secret, $mfa_token, $user_timestamp);
+
+        // If we have a valid MFA token
+        if ($timestamp !== false && !password_verify($mfa_token, $user_mfa_token_hash))
+        {
+            // Update the MFA timestamp and token for this UID
+            update_mfa_for_uid($uid, $timestamp, $mfa_token);
+
+            // Return true
+            return true;
+        }
+        else return false;
+    }
+}
+
+/********************************
+ * FUNCTION: CHECK MFA ATTEMPTS *
+ ********************************/
+function check_mfa_attempts($uid)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Delete all MFA attempts over a minute old
+    $stmt = $db->prepare("DELETE FROM `user_mfa_attempts` WHERE `timestamp` < (NOW() - INTERVAL 1 MINUTE);");
+    $stmt->execute();
+
+    // Add this as a new MFA attempt
+    $stmt = $db->prepare("INSERT INTO `user_mfa_attempts` (`userid`) VALUES (:uid);");
+    $stmt->bindParam(":uid", $uid, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Get the number of MFA attempts over the past minute
+    $stmt = $db->prepare("SELECT * FROM `user_mfa_attempts` WHERE userid=:uid;");
+    $stmt->bindParam(":uid", $uid, PDO::PARAM_INT);
+    $stmt->execute();
+    $attempts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    // If we had more than 5 attempts in the past minute
+    if (count($attempts) > 5)
+    {
+        // Return false
+        return false;
+    }
+    // Otherwise, return true
+    else return true;
 }
 
 /*******************************************

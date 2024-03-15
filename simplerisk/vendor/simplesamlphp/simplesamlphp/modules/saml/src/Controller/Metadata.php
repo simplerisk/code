@@ -25,12 +25,10 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class Metadata
 {
-    /** @var \SimpleSAML\Configuration */
-    protected Configuration $config;
-
     /** @var \SimpleSAML\Utils\Auth */
     protected Utils\Auth $authUtils;
 
+    /** @var \SimpleSAML\Metadata\MetaDataStorageHandler */
     protected MetadataStorageHandler $mdHandler;
 
     /**
@@ -41,9 +39,8 @@ class Metadata
      * @param \SimpleSAML\Configuration $config The configuration to use by the controllers.
      */
     public function __construct(
-        Configuration $config
+        protected Configuration $config
     ) {
-        $this->config = $config;
         $this->authUtils = new Utils\Auth();
         $this->mdHandler = MetaDataStorageHandler::getMetadataHandler();
     }
@@ -75,11 +72,12 @@ class Metadata
     public function metadata(Request $request): Response
     {
         if ($this->config->getBoolean('enable.saml20-idp') === false || !Module::isModuleEnabled('saml')) {
-            throw new Error\Error('NOACCESS', null, 403);
+            throw new Error\Error(Error\ErrorCodes::NOACCESS, null, 403);
         }
 
         // check if valid local session exists
-        if ($this->config->getOptionalBoolean('admin.protectmetadata', false)) {
+        $protectedMetadata = $this->config->getOptionalBoolean('admin.protectmetadata', false);
+        if ($protectedMetadata && !$this->authUtils->isAdmin()) {
             return new RunnableResponse([$this->authUtils, 'requireAdmin']);
         }
 
@@ -102,17 +100,23 @@ class Metadata
 
             $response = new Response();
             $response->setEtag(hash('sha256', $metaxml));
-            $response->setPublic();
+            $response->setCache([
+                'no_cache' => $protectedMetadata === true,
+                'public' => $protectedMetadata === false,
+                'private' => $protectedMetadata === true,
+            ]);
+
             if ($response->isNotModified($request)) {
                 return $response;
             }
+
             $response->headers->set('Content-Type', 'application/samlmetadata+xml');
             $response->headers->set('Content-Disposition', 'attachment; filename="idp-metadata.xml"');
             $response->setContent($metaxml);
 
             return $response;
         } catch (Exception $exception) {
-            throw new Error\Error('METADATA', $exception);
+            throw new Error\Error(Error\ErrorCodes::METADATA, $exception);
         }
     }
 }

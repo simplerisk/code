@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SimpleSAML;
 
+use SimpleSAML\Assert\Assert;
 use SimpleSAML\Utils\System;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -14,7 +15,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\DirectoryLoader;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
-use Symfony\Component\Routing\RouteCollectionBuilder;
+use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 use function getenv;
 use function is_dir;
@@ -52,8 +53,13 @@ class Kernel extends BaseKernel
     public function getCacheDir(): string
     {
         $configuration = Configuration::getInstance();
-        $cachePath = $configuration->getString('tempdir') . DIRECTORY_SEPARATOR
-            . 'cache' . DIRECTORY_SEPARATOR . $this->module;
+
+        $temp = $configuration->getOptionalString('tempdir', null);
+        $cache = $configuration->getOptionalString('cachedir', null);
+        $cacheDir = $cache ?? $temp;
+
+        Assert::notNull($cacheDir, "Missing cachedir parameter in config.php");
+        $cachePath = $cacheDir . DIRECTORY_SEPARATOR . $this->module;
 
         $sysUtils = new System();
         if ($sysUtils->isAbsolutePath($cachePath)) {
@@ -83,7 +89,7 @@ class Kernel extends BaseKernel
 
 
     /**
-     * @return array
+     * {@inheritdoc}
      */
     public function registerBundles(): array
     {
@@ -131,16 +137,16 @@ class Kernel extends BaseKernel
     /**
      * Import routes.
      *
-     * @param RouteCollectionBuilder $routes
+     * @param RoutingConfigurator  $routes
      */
-    protected function configureRoutes(RouteCollectionBuilder $routes): void
+    protected function configureRoutes(RoutingConfigurator $routes): void
     {
         $configuration = Configuration::getInstance();
         $baseDir = $configuration->getBaseDir();
-        $routes->import($baseDir . '/routing/routes/*' . self::CONFIG_EXTS, '/', 'glob');
+        $routes->import($baseDir . '/routing/routes/*' . self::CONFIG_EXTS);
         $confDir = Module::getModuleDir($this->module) . '/routing/routes';
         if (is_dir($confDir)) {
-            $routes->import($confDir . '/**/*' . self::CONFIG_EXTS, $this->module, 'glob');
+            $routes->import($confDir . '/**/*' . self::CONFIG_EXTS)->prefix($this->module);
         }
     }
 

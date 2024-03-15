@@ -31,15 +31,15 @@ The configuration of *Auth Proc Filters* is a list of filters with priority as *
 ```php
 'authproc.idp' => [
     10 => [
-        'class' => 'core:AttributeMap', 
+        'class' => 'core:AttributeMap',
         'addurnprefix'
     ],
     20 => 'core:TargetedID',
     50 => 'core:AttributeLimit',
     90 => [
-        'class' => 'consent:Consent', 
-        'store' => 'consent:Cookie', 
-        'focus' => 'yes', 
+        'class' => 'consent:Consent',
+        'store' => 'consent:Cookie',
+        'focus' => 'yes',
         'checked' => true
     ],
 ],
@@ -69,13 +69,13 @@ This is analogous to:
 ],
 ```
 
-Some *Auth Proc Filters* have optional or required *parameters*. To send parameters to *Auth Proc Filters*, you need to choose the second of the two alernatives above. Here is an example of provided parameters to the consent module:
+Some *Auth Proc Filters* have optional or required *parameters*. To send parameters to *Auth Proc Filters*, you need to choose the second of the two alternatives above. Here is an example of provided parameters to the consent module:
 
 ```php
 90 => [
-    'class' => 'consent:Consent', 
-    'store' => 'consent:Cookie', 
-    'focus' => 'yes', 
+    'class' => 'consent:Consent',
+    'store' => 'consent:Cookie',
+    'focus' => 'yes',
     'checked' => true,
 ],
 ```
@@ -110,6 +110,20 @@ $metadata['https://example.org/saml-idp'] = [
 ```
 
 The example above is in `saml20-idp-hosted`.
+
+## Preconditional filters
+
+Any filter can be configured with a precondition that will determine whether or not a filter should run.
+The condition is represented as a string that will be evaluated, similar to the `core:PHP` filter. It also has
+the `$attributes` and `$state` variable available for use.
+The code must return either `true` to run the filter, or `false` to skip it.
+
+```php
+'authproc' => [
+    40 => 'core:TargetedID',
+    '%precondition' => 'return $attributes["displayName"] === "John Doe";',
+],
+```
 
 ## Auth Proc Filters included in the SimpleSAMLphp distribution
 

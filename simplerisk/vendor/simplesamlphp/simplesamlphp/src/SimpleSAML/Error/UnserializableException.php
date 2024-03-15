@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Error;
 
-use PDOException;
 use Throwable;
 
 /**
@@ -38,7 +37,7 @@ class UnserializableException extends Exception
     public function __construct(Throwable $original)
     {
 
-        $this->class = get_class($original);
+        $this->class = $original::class;
         $msg = $original->getMessage();
 
         $code = $original->getCode();

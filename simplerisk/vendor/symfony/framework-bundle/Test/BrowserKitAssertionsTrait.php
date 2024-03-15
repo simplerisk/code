@@ -43,11 +43,17 @@ trait BrowserKitAssertionsTrait
         self::assertThatForResponse(new ResponseConstraint\ResponseFormatSame(self::getRequest(), $expectedFormat), $message);
     }
 
-    public static function assertResponseRedirects(string $expectedLocation = null, int $expectedCode = null, string $message = ''): void
+    public static function assertResponseRedirects(?string $expectedLocation = null, ?int $expectedCode = null, string $message = ''): void
     {
         $constraint = new ResponseConstraint\ResponseIsRedirected();
         if ($expectedLocation) {
-            $constraint = LogicalAnd::fromConstraints($constraint, new ResponseConstraint\ResponseHeaderSame('Location', $expectedLocation));
+            if (class_exists(ResponseConstraint\ResponseHeaderLocationSame::class)) {
+                $locationConstraint = new ResponseConstraint\ResponseHeaderLocationSame(self::getRequest(), $expectedLocation);
+            } else {
+                $locationConstraint = new ResponseConstraint\ResponseHeaderSame('Location', $expectedLocation);
+            }
+
+            $constraint = LogicalAnd::fromConstraints($constraint, $locationConstraint);
         }
         if ($expectedCode) {
             $constraint = LogicalAnd::fromConstraints($constraint, new ResponseConstraint\ResponseStatusCodeSame($expectedCode));
@@ -76,17 +82,17 @@ trait BrowserKitAssertionsTrait
         self::assertThatForResponse(new LogicalNot(new ResponseConstraint\ResponseHeaderSame($headerName, $expectedValue)), $message);
     }
 
-    public static function assertResponseHasCookie(string $name, string $path = '/', string $domain = null, string $message = ''): void
+    public static function assertResponseHasCookie(string $name, string $path = '/', ?string $domain = null, string $message = ''): void
     {
         self::assertThatForResponse(new ResponseConstraint\ResponseHasCookie($name, $path, $domain), $message);
     }
 
-    public static function assertResponseNotHasCookie(string $name, string $path = '/', string $domain = null, string $message = ''): void
+    public static function assertResponseNotHasCookie(string $name, string $path = '/', ?string $domain = null, string $message = ''): void
     {
         self::assertThatForResponse(new LogicalNot(new ResponseConstraint\ResponseHasCookie($name, $path, $domain)), $message);
     }
 
-    public static function assertResponseCookieValueSame(string $name, string $expectedValue, string $path = '/', string $domain = null, string $message = ''): void
+    public static function assertResponseCookieValueSame(string $name, string $expectedValue, string $path = '/', ?string $domain = null, string $message = ''): void
     {
         self::assertThatForResponse(LogicalAnd::fromConstraints(
             new ResponseConstraint\ResponseHasCookie($name, $path, $domain),
@@ -99,17 +105,17 @@ trait BrowserKitAssertionsTrait
         self::assertThatForResponse(new ResponseConstraint\ResponseIsUnprocessable(), $message);
     }
 
-    public static function assertBrowserHasCookie(string $name, string $path = '/', string $domain = null, string $message = ''): void
+    public static function assertBrowserHasCookie(string $name, string $path = '/', ?string $domain = null, string $message = ''): void
     {
         self::assertThatForClient(new BrowserKitConstraint\BrowserHasCookie($name, $path, $domain), $message);
     }
 
-    public static function assertBrowserNotHasCookie(string $name, string $path = '/', string $domain = null, string $message = ''): void
+    public static function assertBrowserNotHasCookie(string $name, string $path = '/', ?string $domain = null, string $message = ''): void
     {
         self::assertThatForClient(new LogicalNot(new BrowserKitConstraint\BrowserHasCookie($name, $path, $domain)), $message);
     }
 
-    public static function assertBrowserCookieValueSame(string $name, string $expectedValue, bool $raw = false, string $path = '/', string $domain = null, string $message = ''): void
+    public static function assertBrowserCookieValueSame(string $name, string $expectedValue, bool $raw = false, string $path = '/', ?string $domain = null, string $message = ''): void
     {
         self::assertThatForClient(LogicalAnd::fromConstraints(
             new BrowserKitConstraint\BrowserHasCookie($name, $path, $domain),
@@ -156,7 +162,7 @@ trait BrowserKitAssertionsTrait
         self::assertThat(self::getClient(), $constraint, $message);
     }
 
-    private static function getClient(AbstractBrowser $newClient = null): ?AbstractBrowser
+    protected static function getClient(?AbstractBrowser $newClient = null): ?AbstractBrowser
     {
         static $client;
 

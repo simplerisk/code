@@ -34,9 +34,6 @@ use Symfony\Component\VarExporter\VarExporter;
  */
 class Federation
 {
-    /** @var \SimpleSAML\Configuration */
-    protected Configuration $config;
-
     /**
      * @var \SimpleSAML\Auth\Source|string
      * @psalm-var \SimpleSAML\Auth\Source|class-string
@@ -61,9 +58,9 @@ class Federation
      *
      * @param \SimpleSAML\Configuration $config The configuration to use.
      */
-    public function __construct(Configuration $config)
-    {
-        $this->config = $config;
+    public function __construct(
+        protected Configuration $config
+    ) {
         $this->menu = new Menu();
         $this->mdHandler = MetaDataStorageHandler::getMetadataHandler();
         $this->authUtils = new Utils\Auth();
@@ -198,10 +195,10 @@ class Federation
                 $httpUtils = new Utils\HTTP();
                 $metadataBase = Module::getModuleURL('saml/idp/metadata');
                 if (count($idps) > 1) {
-                    $selfHost = $httpUtils->getSelfHost();
+                    $selfHost = $httpUtils->getSelfHostWithPath();
                     foreach ($idps as $index => $idp) {
                         if (isset($idp['host']) && $idp['host'] !== '__DEFAULT__') {
-                            $mdHostBase = str_replace('://' . $selfHost, '://' . $idp['host'], $metadataBase);
+                            $mdHostBase = str_replace('://' . $selfHost . '/', '://' . $idp['host'] . '/', $metadataBase);
                         } else {
                             $mdHostBase = $metadataBase;
                         }
@@ -364,7 +361,6 @@ class Federation
             $xml = $builder->getEntityDescriptorText(true);
 
             // sanitize the resulting array
-            unset($metadata['UIInfo']);
             unset($metadata['metadata-set']);
             unset($metadata['entityid']);
 

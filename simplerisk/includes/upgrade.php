@@ -170,6 +170,7 @@ $releases = array(
 	"20231103-001",
 	"20240102-001",
 	"20240205-001",
+	"20240315-001",
 );
 
 /*************************
@@ -7143,6 +7144,54 @@ function upgrade_from_20240102001($db) {
            `r`.`status`='Closed' AND (`r`.`last_update` = '0000-00-00 00:00:00' OR `r`.`last_update` IS NULL);
     ");
     $stmt->execute();
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20240205-001 *
+ ***************************************/
+function upgrade_from_20240205001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20240205-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20240315-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Add a timestamp and last_mfa_token field to the user_mfa table
+    if (!field_exists_in_table("timestamp", "user_mfa"))
+    {
+        echo "Adding a field to track the MFA timestamp in the user_mfa table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user_mfa` ADD timestamp int(11) DEFAULT NULL;");
+        $stmt->execute();
+
+        echo "Adding a field to track the last used MFA token in the user_mfa table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user_mfa` ADD `last_mfa_token` binary(60) DEFAULT NULL;");
+        $stmt->execute();
+    }
+
+    // Create a table to track MFA attempts
+    if (!table_exists("user_mfa_attempts"))
+    {
+        echo "Creating a table to track MFA attempts.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `user_mfa_attempts` (
+                `id` INT(11) NOT NULL AUTO_INCREMENT,
+                `userid` INT(11) NOT NULL,
+                `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY(id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $stmt->execute();
+    }
 
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic

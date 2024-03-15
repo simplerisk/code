@@ -27,11 +27,11 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  */
 class RedirectController
 {
-    private $router;
-    private $httpPort;
-    private $httpsPort;
+    private ?UrlGeneratorInterface $router;
+    private ?int $httpPort;
+    private ?int $httpsPort;
 
-    public function __construct(UrlGeneratorInterface $router = null, int $httpPort = null, int $httpsPort = null)
+    public function __construct(?UrlGeneratorInterface $router = null, ?int $httpPort = null, ?int $httpsPort = null)
     {
         $this->router = $router;
         $this->httpPort = $httpPort;
@@ -54,7 +54,7 @@ class RedirectController
      *
      * @throws HttpException In case the route name is empty
      */
-    public function redirectAction(Request $request, string $route, bool $permanent = false, $ignoreAttributes = false, bool $keepRequestMethod = false, bool $keepQueryParams = false): Response
+    public function redirectAction(Request $request, string $route, bool $permanent = false, bool|array $ignoreAttributes = false, bool $keepRequestMethod = false, bool $keepQueryParams = false): Response
     {
         if ('' == $route) {
             throw new HttpException($permanent ? 410 : 404);
@@ -107,7 +107,7 @@ class RedirectController
      *
      * @throws HttpException In case the path is empty
      */
-    public function urlRedirectAction(Request $request, string $path, bool $permanent = false, string $scheme = null, int $httpPort = null, int $httpsPort = null, bool $keepRequestMethod = false): Response
+    public function urlRedirectAction(Request $request, string $path, bool $permanent = false, ?string $scheme = null, ?int $httpPort = null, ?int $httpsPort = null, bool $keepRequestMethod = false): Response
     {
         if ('' == $path) {
             throw new HttpException($permanent ? 410 : 404);
@@ -124,9 +124,7 @@ class RedirectController
             return new RedirectResponse($path, $statusCode);
         }
 
-        if (null === $scheme) {
-            $scheme = $request->getScheme();
-        }
+        $scheme ??= $request->getScheme();
 
         if ($qs = $request->server->get('QUERY_STRING') ?: $request->getQueryString()) {
             if (!str_contains($path, '?')) {

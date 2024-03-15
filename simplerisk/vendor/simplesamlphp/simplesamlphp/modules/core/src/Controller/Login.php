@@ -4,24 +4,18 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Module\core\Controller;
 
-use Exception;
-use SimpleSAML\Assert\Assert;
-use SimpleSAML\Auth;
-use SimpleSAML\Configuration;
-use SimpleSAML\Error;
-use SimpleSAML\HTTP\RunnableResponse;
-use SimpleSAML\Module;
-use SimpleSAML\Module\core\Auth\UserPassBase;
-use SimpleSAML\Module\core\Auth\UserPassOrgBase;
-use SimpleSAML\Utils;
+use Exception as BuiltinException;
+use SimpleSAML\{Auth, Configuration, Error, Module, Utils};
+use SimpleSAML\Module\core\Auth\{UserPassBase, UserPassOrgBase};
 use SimpleSAML\XHTML\Template;
 use Symfony\Component\HttpFoundation\Cookie;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 use function array_key_exists;
 use function substr;
 use function time;
+use function trim;
 
 /**
  * Controller class for the core module.
@@ -32,9 +26,6 @@ use function time;
  */
 class Login
 {
-    /** @var \SimpleSAML\Configuration */
-    protected Configuration $config;
-
     /**
      * @var \SimpleSAML\Auth\Source|string
      * @psalm-var \SimpleSAML\Auth\Source|class-string
@@ -58,9 +49,8 @@ class Login
      * @throws \Exception
      */
     public function __construct(
-        Configuration $config
+        protected Configuration $config
     ) {
-        $this->config = $config;
     }
 
 
@@ -101,22 +91,22 @@ class Login
      * username/password authentication.
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
-     * @return \SimpleSAML\XHTML\Template
      */
-    public function loginuserpass(Request $request): Template
+    public function loginuserpass(Request $request): Response
     {
         // Retrieve the authentication state
         if (!$request->query->has('AuthState')) {
             throw new Error\BadRequest('Missing AuthState parameter.');
         }
         $authStateId = $request->query->get('AuthState');
+        $this->authState::validateStateId($authStateId);
 
         $state = $this->authState::loadState($authStateId, UserPassBase::STAGEID);
 
         /** @var \SimpleSAML\Module\core\Auth\UserPassBase|null $source */
         $source = $this->authSource::getById($state[UserPassBase::AUTHID]);
         if ($source === null) {
-            throw new Exception(
+            throw new BuiltinException(
                 'Could not find authentication source with id ' . $state[UserPassBase::AUTHID]
             );
         }
@@ -131,12 +121,11 @@ class Login
      * @param \Symfony\Component\HttpFoundation\Request $request
      * @param \SimpleSAML\Module\core\Auth\UserPassBase|\SimpleSAML\Module\core\Auth\UserPassOrgBase $source
      * @param array $state
-     * @return \SimpleSAML\XHTML\Template
      */
-    private function handleLogin(Request $request, $source, array $state): Template
+    private function handleLogin(Request $request, UserPassBase|UserPassOrgBase $source, array $state): Response
     {
-        Assert::isInstanceOfAny($source, [UserPassBase::class, UserPassOrgBase::class]);
         $authStateId = $request->query->get('AuthState');
+        $this->authState::validateStateId($authStateId);
 
         $organizations = $organization = null;
         if ($source instanceof UserPassOrgBase) {
@@ -316,22 +305,22 @@ class Login
      * username/password/organization authentication.
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
-     * @return \SimpleSAML\XHTML\Template
      */
-    public function loginuserpassorg(Request $request): Template
+    public function loginuserpassorg(Request $request): Response
     {
         // Retrieve the authentication state
         if (!$request->query->has('AuthState')) {
             throw new Error\BadRequest('Missing AuthState parameter.');
         }
         $authStateId = $request->query->get('AuthState');
+        $this->authState::validateStateId($authStateId);
 
         $state = $this->authState::loadState($authStateId, UserPassOrgBase::STAGEID);
 
         /** @var \SimpleSAML\Module\core\Auth\UserPassOrgBase $source */
         $source = $this->authSource::getById($state[UserPassOrgBase::AUTHID]);
         if ($source === null) {
-            throw new Exception(
+            throw new BuiltinException(
                 'Could not find authentication source with id ' . $state[UserPassOrgBase::AUTHID]
             );
         }
@@ -380,7 +369,7 @@ class Login
         $username = '';
 
         if ($request->request->has('username')) {
-            $username = $request->request->get('username');
+            $username = trim($request->request->get('username'));
         } elseif (
             $source->getRememberUsernameEnabled()
             && $request->cookies->has($source->getAuthId() . '-username')

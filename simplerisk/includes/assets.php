@@ -1684,6 +1684,14 @@ function display_add_asset()
 
         display_main_detail_asset_fields_add($active_fields);
         display_main_detail_asset_fields_add($inactive_fields);
+
+        echo "
+            <script>
+                $(function() {
+                    $(\"#add-asset-container select[id^='custom_field'].multiselect\").multiselect({buttonWidth: '300px', enableFiltering: true, enableCaseInsensitiveFiltering: true});
+                });
+            </script>
+        ";
     }
     // If the customization extra is disabled, shows fields by default fields
     else

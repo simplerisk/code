@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace SimpleSAML\Module\core\Controller;
 
 use SimpleSAML\Assert\Assert;
-use SimpleSAML\Auth;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error;
-use SimpleSAML\Logger;
-use SimpleSAML\Module;
 use SimpleSAML\Session;
 use SimpleSAML\Utils;
 use SimpleSAML\XHTML\Template;
@@ -25,12 +22,6 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class Redirection
 {
-    /** @var \SimpleSAML\Configuration */
-    protected Configuration $config;
-
-    /** @var \SimpleSAML\Session */
-    protected Session $session;
-
     /** @var \SimpleSAML\Utils\Crypto */
     protected $cryptoUtils;
 
@@ -46,11 +37,9 @@ class Redirection
      * @throws \Exception
      */
     public function __construct(
-        Configuration $config,
-        Session $session
+        protected Configuration $config,
+        protected Session $session
     ) {
-        $this->config = $config;
-        $this->session = $session;
         $this->cryptoUtils = new Utils\Crypto();
     }
 

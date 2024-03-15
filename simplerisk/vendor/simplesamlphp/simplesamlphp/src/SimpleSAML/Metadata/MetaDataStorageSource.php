@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Metadata;
 
-use SimpleSAML\Assert\Assert;
 use SimpleSAML\Error;
 use SimpleSAML\Module;
 use SimpleSAML\Utils;
@@ -302,7 +301,7 @@ abstract class MetaDataStorageSource
      * @param array $metadataSet the already loaded metadata set
      * @return mixed|null
      */
-    protected function lookupIndexFromEntityId(string $entityId, array $metadataSet)
+    protected function lookupIndexFromEntityId(string $entityId, array $metadataSet): mixed
     {
         // check for hostname
         $httpUtils = new Utils\HTTP();

@@ -6,7 +6,6 @@ namespace SimpleSAML\Module\saml\Controller;
 
 use Exception;
 use SAML2\Constants;
-use SimpleSAML\Assert\Assert;
 use SimpleSAML\Auth;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error;
@@ -26,9 +25,6 @@ use Symfony\Component\HttpFoundation\{Request, Response};
  */
 class Proxy
 {
-    /** @var \SimpleSAML\Configuration */
-    protected Configuration $config;
-
     /**
      * @var \SimpleSAML\Auth\State|string
      * @psalm-var \SimpleSAML\Auth\State|class-string
@@ -44,9 +40,8 @@ class Proxy
      * @param \SimpleSAML\Configuration $config The configuration to use by the controllers.
      */
     public function __construct(
-        Configuration $config
+        protected Configuration $config
     ) {
-        $this->config = $config;
     }
 
 
@@ -71,10 +66,14 @@ class Proxy
     public function invalidSession(Request $request): Response
     {
         // retrieve the authentication state
-        if (!$request->query->has('AuthState')) {
+        $stateId = $request->query->get('AuthState'); // GET
+        if ($stateId === null && $request->request->has('AuthState')) {
+            $stateId = $request->request->get('AuthState'); // POST
+        }
+
+        if (!is_string($stateId)) {
             throw new Error\BadRequest('Missing mandatory parameter: AuthState');
         }
-        $stateId = $request->query->get('AuthState');
 
         try {
             // try to get the state
@@ -102,10 +101,10 @@ class Proxy
 
         if ($request->request->has('continue')) {
             /** @var \SimpleSAML\Module\saml\Auth\Source\SP $as */
-            $as = Auth\Source::getById($state['saml:sp:AuthId'], SP::class);
+            $as = new \SimpleSAML\Auth\Simple($state['saml:sp:AuthId']);
 
             // log the user out before being able to login again
-            return new RunnableResponse([$as, 'reauthLogout'], [$state]);
+            return new RunnableResponse([$as, 'login'], [$state]);
         }
 
         $template = new Template($this->config, 'saml:proxy/invalid_session.twig');

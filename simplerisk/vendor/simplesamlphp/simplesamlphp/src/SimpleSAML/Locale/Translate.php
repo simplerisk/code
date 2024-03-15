@@ -10,22 +10,11 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Locale;
 
-use Gettext\Translator;
 use Gettext\TranslatorFunctions;
-use SimpleSAML\Assert\Assert;
 use SimpleSAML\Configuration;
-use SimpleSAML\Logger;
-use SimpleSAML\Module;
 
 class Translate
 {
-    /**
-     * The configuration to be used for this translator.
-     *
-     * @var \SimpleSAML\Configuration
-     */
-    private Configuration $configuration;
-
     /**
      * The language object we'll use internally.
      *
@@ -39,9 +28,9 @@ class Translate
      *
      * @param \SimpleSAML\Configuration $configuration Configuration object
      */
-    public function __construct(Configuration $configuration)
-    {
-        $this->configuration = $configuration;
+    public function __construct(
+        private Configuration $configuration
+    ) {
         $this->language = new Language($configuration);
     }
 

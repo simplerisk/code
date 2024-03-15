@@ -824,16 +824,33 @@ function is_valid_reset_token($username, $token)
  ********************************/
 function expire_reset_token($token)
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
     // Remove the matching token
     $stmt = $db->prepare("DELETE FROM password_reset WHERE token=:token");
     $stmt->bindParam(":token", $token, PDO::PARAM_STR, 20);
     $stmt->execute();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
+}
+
+/*********************************************
+ * FUNCTION: EXPIRE RESET TOKEN FOR USERNAME *
+ *********************************************/
+function expire_reset_token_for_username($username)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Remove the matching token
+    $stmt = $db->prepare("DELETE FROM password_reset WHERE username=:username");
+    $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
 }
 
 /*******************************

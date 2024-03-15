@@ -10,6 +10,8 @@ use SAML2\Binding;
 use SAML2\Constants;
 use SAML2\Exception\Protocol\UnsupportedBindingException;
 use SAML2\HTTPArtifact;
+use SAML2\HTTPPost;
+use SAML2\HTTPRedirect;
 use SAML2\LogoutRequest;
 use SAML2\LogoutResponse;
 use SAML2\Response as SAML2_Response;
@@ -49,12 +51,6 @@ use function var_export;
  */
 class ServiceProvider
 {
-    /** @var \SimpleSAML\Configuration */
-    protected Configuration $config;
-
-    /** @var \SimpleSAML\Session */
-    protected Session $session;
-
     /**
      * @var \SimpleSAML\Auth\State|string
      * @psalm-var \SimpleSAML\Auth\State|class-string
@@ -74,11 +70,9 @@ class ServiceProvider
      * @param \SimpleSAML\Session $session The Session to use by the controllers.
      */
     public function __construct(
-        Configuration $config,
-        Session $session
+        protected Configuration $config,
+        protected Session $session
     ) {
-        $this->config = $config;
-        $this->session = $session;
         $this->authUtils = new Utils\Auth();
     }
 
@@ -199,7 +193,7 @@ class ServiceProvider
         try {
             $b = Binding::getCurrentBinding();
         } catch (UnsupportedBindingException $e) {
-            throw new Error\Error('ACSPARAMS', $e, 400);
+            throw new Error\Error(Error\ErrorCodes::ACSPARAMS, $e, 400);
         }
 
         if ($b instanceof HTTPArtifact) {
@@ -472,7 +466,7 @@ class ServiceProvider
         try {
             $binding = Binding::getCurrentBinding();
         } catch (UnsupportedBindingException $e) {
-            throw new Error\Error('SLOSERVICEPARAMS', $e, 400);
+            throw new Error\Error(Error\ErrorCodes::SLOSERVICEPARAMS, $e, 400);
         }
         $message = $binding->receive();
 
@@ -563,6 +557,9 @@ class ServiceProvider
             $lr->setRelayState($message->getRelayState());
             $lr->setInResponseTo($message->getId());
 
+            // If we set a key, we're sending a signed message
+            $signedMessage = $lr->getSignatureKey() ? true : false;
+
             if ($numLoggedOut < count($sessionIndexes)) {
                 Logger::warning('Logged out of ' . $numLoggedOut . ' of ' . count($sessionIndexes) . ' sessions.');
             }
@@ -583,6 +580,20 @@ class ServiceProvider
                     $dst = $dst['Location'];
                 }
                 $binding->setDestination($dst);
+
+
+                if ($signedMessage && ($binding instanceof HTTPRedirect || $binding instanceof HTTPPost)) {
+                    /**
+                     * Bindings 3.4.5.2 - Security Considerations (HTTP-Redirect)
+                     * Bindings 3.5.5.2 - Security Considerations (HTTP-POST)
+                     *
+                     * If the message is signed, the Destination XML attribute in the root SAML element of the protocol
+                     * message MUST contain the URL to which the sender has instructed the user agent to deliver the
+                     * message. The recipient MUST then verify that the value matches the location at which the message
+                     * has been received.
+                     */
+                    $lr->setDestination($dst);
+                }
             } else {
                 $lr->setDestination($dst['Location']);
             }
@@ -603,7 +614,8 @@ class ServiceProvider
      */
     public function metadata(Request $request, string $sourceId): Response
     {
-        if ($this->config->getOptionalBoolean('admin.protectmetadata', false)) {
+        $protectedMetadata = $this->config->getOptionalBoolean('admin.protectmetadata', false);
+        if ($protectedMetadata && !$this->authUtils->isAdmin()) {
             return new RunnableResponse([$this->authUtils, 'requireAdmin']);
         }
 
@@ -642,10 +654,16 @@ class ServiceProvider
 
         $response = new Response();
         $response->setEtag(hash('sha256', $metaxml));
-        $response->setPublic();
+        $response->setCache([
+            'no_cache' => $protectedMetadata === true,
+            'public' => $protectedMetadata === false,
+            'private' => $protectedMetadata === true,
+        ]);
+
         if ($response->isNotModified($request)) {
             return $response;
         }
+
         $response->headers->set('Content-Type', 'application/samlmetadata+xml');
         $response->headers->set('Content-Disposition', 'attachment; filename="' . basename($sourceId) . '.xml"');
         $response->setContent($metaxml);

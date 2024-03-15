@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Assert;
 
-use BadMethodCallException;
-use DateTime;
-use DateTimeImmutable;
-use InvalidArgumentException;
+use BadMethodCallException; // Requires ext-spl
+use DateTime; // Requires ext-date
+use DateTimeImmutable; // Requires ext-date
+use InvalidArgumentException; // Requires ext-spl
 use Throwable;
 use Webmozart\Assert\Assert as Webmozart;
 
@@ -15,15 +15,13 @@ use function array_pop;
 use function array_unshift;
 use function call_user_func_array;
 use function end;
-use function get_class;
-use function is_array;
-use function is_string;
 use function is_object;
 use function is_resource;
+use function is_string;
 use function is_subclass_of;
 use function lcfirst;
 use function method_exists;
-use function preg_match;
+use function preg_match; // Requires ext-pcre
 use function strval;
 
 /**
@@ -221,8 +219,8 @@ use function strval;
  * @method static void allContains(iterable<string> $value, string $subString, string $message = '', class-string $exception = '')
  * @method static void nullOrNotContains(string|null $value, string $subString, string $message = '', class-string $exception = '')
  * @method static void allNotContains(iterable<string> $value, string $subString, string $message = '', class-string $exception = '')
- * @method static void nullOrWhitespaceOnly(string|null $value, string $message = '', class-string $exception = '')
- * @method static void allWhitespaceOnly(iterable<string> $value, string $message = '', class-string $exception = '')
+ * @method static void nullOrNotWhitespaceOnly(string|null $value, string $message = '', class-string $exception = '')
+ * @method static void allNotWhitespaceOnly(iterable<string> $value, string $message = '', class-string $exception = '')
  * @method static void nullOrStartsWith(string|null $value, string $prefix, string $message = '', class-string $exception = '')
  * @method static void allStartsWith(iterable<string> $value, string $prefix, string $message = '', class-string $exception = '')
  * @method static void nullOrNotStartsWith(string|null $value, string $prefix, string $message = '', class-string $exception = '')
@@ -234,9 +232,9 @@ use function strval;
  * @method static void nullOrNotEndsWith(string|null $value, string $suffix, string $message = '', class-string $exception = '')
  * @method static void allNotEndsWith(iterable<string> $value, string $suffix, string $message = '', class-string $exception = '')
  * @method static void nullOrRegex(string|null $value, string $prefix, string $message = '', class-string $exception = '')
- * @method static void allRegEx(iterable<string> $value, string $prefix, string $message = '', class-string $exception = '')
+ * @method static void allRegex(iterable<string> $value, string $prefix, string $message = '', class-string $exception = '')
  * @method static void nullOrNotRegex(string|null $value, string $prefix, string $message = '', class-string $exception = '')
- * @method static void allNotRegEx(iterable<string> $value, string $prefix, string $message = '', class-string $exception = '')
+ * @method static void allNotRegex(iterable<string> $value, string $prefix, string $message = '', class-string $exception = '')
  * @method static void nullOrUnicodeLetters(mixed $value, string $message = '', class-string $exception = '')
  * @method static void allUnicodeLetters(mixed $value, string $message = '', class-string $exception = '')
  * @method static void nullOrAlpha(mixed $value, string $message = '', class-string $exception = '')
@@ -317,7 +315,7 @@ final class Assert
 
     /**
      * @param string $name
-     * @param array $arguments
+     * @param array<mixed> $arguments
      */
     public static function __callStatic(string $name, array $arguments): void
     {
@@ -369,7 +367,7 @@ final class Assert
      * Handle nullOr* for either Webmozart or for our custom assertions
      *
      * @param callable $method
-     * @param array $arguments
+     * @param array<mixed> $arguments
      * @return void
      */
     private static function nullOr(callable $method, array $arguments): void
@@ -383,7 +381,7 @@ final class Assert
      * all* for our custom assertions
      *
      * @param callable $method
-     * @param array $arguments
+     * @param array<mixed> $arguments
      * @return void
      */
     private static function all(callable $method, array $arguments): void
@@ -402,8 +400,12 @@ final class Assert
      *
      * @return string
      */
-    protected static function valueToString($value): string
+    protected static function valueToString(mixed $value): string
     {
+        if (is_resource($value)) {
+            return 'resource';
+        }
+
         if (null === $value) {
             return 'null';
         }
@@ -422,18 +424,14 @@ final class Assert
 
         if (is_object($value)) {
             if (method_exists($value, '__toString')) {
-                return get_class($value) . ': ' . self::valueToString($value->__toString());
+                return $value::class . ': ' . self::valueToString($value->__toString());
             }
 
             if ($value instanceof DateTime || $value instanceof DateTimeImmutable) {
-                return get_class($value) . ': ' . self::valueToString($value->format('c'));
+                return $value::class . ': ' . self::valueToString($value->format('c'));
             }
 
-            return get_class($value);
-        }
-
-        if (is_resource($value)) {
-            return 'resource';
+            return $value::class;
         }
 
         if (is_string($value)) {
