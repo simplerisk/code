@@ -1,0 +1,15 @@
+platform: linux
+
+image_resource:
+  type: registry-image
+  source:
+    repository: ruby
+    tag: 3.1.1
+    username: ((LicenseFinderDocker.username))
+    password: ((LicenseFinderDocker.password))
+
+inputs:
+- name: LicenseFinder
+
+run:
+  path: ./LicenseFinder/ci/scripts/run-rubocop.sh

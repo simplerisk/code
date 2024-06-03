@@ -59,6 +59,8 @@ if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
 	display_bootstrap_javascript();
 ?>
   <script src="../js/simplerisk/plan-project.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/simplerisk/common.js?<?php echo current_version("app"); ?>"></script>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -75,7 +77,7 @@ if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
   <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
-
+  <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
   <style>
     .plan-projects .sortable{
       overflow: auto;
@@ -207,6 +209,13 @@ if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
 
     $( "#prioritize" ).disableSelection();
     $(".datepicker").datepicker();
+<?php 
+if (customization_extra()) {
+?>
+    $("select[id^='custom_field'].multiselect").multiselect({buttonWidth: '300px', enableFiltering: true, enableCaseInsensitiveFiltering: true});
+<?php 
+}
+?>
   });
   </script>
 </head>

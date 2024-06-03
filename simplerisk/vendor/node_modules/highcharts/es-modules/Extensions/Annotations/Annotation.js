@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009-2021 Highsoft, Black Label
+ *  (c) 2009-2024 Highsoft, Black Label
  *
  *  License: www.highcharts.com/license
  *
@@ -22,7 +22,6 @@ import ControlPoint from './ControlPoint.js';
 import ControlTarget from './ControlTarget.js';
 import EventEmitter from './EventEmitter.js';
 import MockPoint from './MockPoint.js';
-import NavigationBindings from './NavigationBindings.js';
 import PopupComposition from './Popup/PopupComposition.js';
 import U from '../../Core/Utilities.js';
 const { destroyObjectProperties, erase, fireEvent, merge, pick, splat } = U;
@@ -32,7 +31,7 @@ const { destroyObjectProperties, erase, fireEvent, merge, pick, splat } = U;
  *
  * */
 /**
- * Hide or show annotaiton attached to points.
+ * Hide or show annotation attached to points.
  * @private
  */
 function adjustVisibility(item) {
@@ -94,12 +93,12 @@ class Annotation extends EventEmitter {
     /**
      * @private
      */
-    static compose(ChartClass, PointerClass, SVGRendererClass) {
+    static compose(ChartClass, NavigationBindingsClass, PointerClass, SVGRendererClass) {
         AnnotationChart.compose(Annotation, ChartClass, PointerClass);
         ControllableLabel.compose(SVGRendererClass);
         ControllablePath.compose(ChartClass, SVGRendererClass);
-        NavigationBindings.compose(Annotation, ChartClass);
-        PopupComposition.compose(NavigationBindings, PointerClass);
+        NavigationBindingsClass.compose(Annotation, ChartClass);
+        PopupComposition.compose(NavigationBindingsClass, PointerClass);
     }
     /* *
      *
@@ -109,12 +108,6 @@ class Annotation extends EventEmitter {
     constructor(chart, userOptions) {
         super();
         this.coll = 'annotations';
-        this.animationConfig = void 0;
-        this.graphic = void 0;
-        this.group = void 0;
-        this.labelCollector = void 0;
-        this.labelsGroup = void 0;
-        this.shapesGroup = void 0;
         /**
          * The chart that the annotation belongs to.
          *
@@ -260,7 +253,7 @@ class Annotation extends EventEmitter {
      * @private
      */
     destroyItem(item) {
-        // erase from shapes or labels array
+        // Erase from shapes or labels array
         erase(this[item.itemType + 's'], item);
         item.destroy();
     }
@@ -324,7 +317,7 @@ class Annotation extends EventEmitter {
      * Initialisation of a single shape
      * @private
      * @param {Object} shapeOptions
-     * a confg object for a single shape
+     * a config object for a single shape
      * @param {number} index
      * annotation may have many shapes, this is the shape's index saved in
      * shapes.index.
@@ -376,9 +369,8 @@ class Annotation extends EventEmitter {
      */
     redrawItems(items, animation) {
         let i = items.length;
-        // needs a backward loop
-        // labels/shapes array might be modified
-        // due to destruction of the item
+        // Needs a backward loop. Labels/shapes array might be modified due to
+        // destruction of the item
         while (i--) {
             this.redrawItem(items[i], animation);
         }
@@ -388,7 +380,7 @@ class Annotation extends EventEmitter {
      * @private
      */
     remove() {
-        // Let chart.update() remove annoations on demand
+        // Let chart.update() remove annotations on demand
         return this.chart.removeAnnotation(this);
     }
     /**
@@ -415,7 +407,7 @@ class Annotation extends EventEmitter {
         this.labelsGroup = renderer
             .g('annotation-labels')
             .attr({
-            // hideOverlappingLabels requires translation
+            // `hideOverlappingLabels` requires translation
             translateX: 0,
             translateY: 0
         })
@@ -546,7 +538,7 @@ class Annotation extends EventEmitter {
         chart.options.annotations[userOptionsIndex] = options;
         this.isUpdating = true;
         if (pick(redraw, true)) {
-            chart.redraw();
+            chart.drawAnnotations();
         }
         fireEvent(this, 'afterUpdate');
         this.isUpdating = false;
@@ -644,4 +636,4 @@ export default Annotation;
  *          Highcharts.AnnotationMockPointFunction
  *     } Highcharts.AnnotationShapePointOptions
  */
-(''); // keeps doclets above in JS file
+(''); // Keeps doclets above in JS file

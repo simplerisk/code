@@ -2528,6 +2528,7 @@ function get_risks_and_issues_rows($risk_tags_in_array, $start_date, $end_date)
  *********************************************/
 function get_group_name_for_dynamic_risk($group, $sort_name)
 {
+    // If you want to add a new field for grouping, you have to add it to the risks_unique_column_query_select() function as well
     // Check the group
     switch ($group)
     {
@@ -3300,7 +3301,7 @@ function risks_by_month_table()
 function risks_query_select($column_filters=[])
 {
     global $lang;
-    
+
     $query = "
         a.id, 
         a.status, 
@@ -3515,7 +3516,7 @@ function risks_query_select($column_filters=[])
                 mtt.mitigation_id=p.id AND mtt.team_id=team.value
         ) AS mitigation_team,
 
-        NOT(ISNULL(mau.id)) mitigation_accepted, 
+        EXISTS(select 1 from mitigation_accept_users mau WHERE a.id=mau.risk_id) AS mitigation_accepted, 
         p.submission_date AS mitigation_date, 
         
         (
@@ -3537,7 +3538,7 @@ function risks_query_select($column_filters=[])
 
         (
             SELECT
-                GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR ',')
+                GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '|')
             FROM
                 tags t, tags_taggees tt 
             WHERE
@@ -3587,103 +3588,35 @@ function risks_unique_column_query_select()
     global $lang;
     
     $delimiter = "---";
-    
-    $query = "
-        a.id, 
-        a.status, 
-        a.subject, 
-        a.reference_id, 
-        a.control_number, 
-        a.submission_date, 
-        a.last_update, 
-        a.review_date, 
-        a.mgmt_review,
-        a.assessment AS risk_assessment, 
-        a.notes AS additional_notes, 
-        b.scoring_method, 
-        b.calculated_risk, 
-        p.mitigation_percent,
-        ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2) AS residual_risk,
-        `associated_rc_entries`.`risk_mapping_risk_event` AS risk_mapping,
-        GROUP_CONCAT(DISTINCT CONCAT(tc.name, '{$delimiter}', tc.id)  SEPARATOR ', ') AS threat_mapping,
-        `associated_rc_entries`.`risk_mapping_risk_grouping`,
-        `associated_rc_entries`.`risk_mapping_risk`,
-        `associated_rc_entries`.`risk_mapping_function`,
 
+    return "
+        /*Risk columns*/
+        a.id, 
+        a.status,
+        `associated_rc_entries`.`risk_mapping_risk_event` AS risk_mapping,
+        GROUP_CONCAT(DISTINCT CONCAT(tc.name, '{$delimiter}', tc.id)  SEPARATOR '|') AS threat_mapping,
         (
             SELECT
-                GROUP_CONCAT(DISTINCT CONCAT(location.name, '{$delimiter}', location.value) SEPARATOR '; ')
+                GROUP_CONCAT(DISTINCT CONCAT(t.tag, '{$delimiter}', t.id) ORDER BY t.tag ASC SEPARATOR '|')
+            FROM
+                tags t, tags_taggees tt 
+            WHERE
+                tt.tag_id = t.id AND tt.taggee_id=a.id AND tt.type='risk'
+        ) AS risk_tags,
+        
+        CONCAT(i.name, '{$delimiter}', i.value) AS submitted_by_for_dropdown,
+        CONCAT(v.name, '{$delimiter}', v.value) AS source_for_dropdown, 
+        CONCAT(d.name, '{$delimiter}', d.value) AS category_for_dropdown,
+        CONCAT(k.name, '{$delimiter}', k.value) AS project_for_dropdown, 
+        (
+            SELECT
+                GROUP_CONCAT(DISTINCT CONCAT(location.name, '{$delimiter}', location.value) SEPARATOR '|')
             FROM
                 location, risk_to_location rtl
             WHERE
                 rtl.risk_id=a.id AND rtl.location_id=location.value
         ) AS location,
-
-        d.name AS category, 
-        CONCAT(d.name, '{$delimiter}', d.value) AS category_for_dropdown, 
-
-        (
-            SELECT
-                GROUP_CONCAT(DISTINCT CONCAT(team.name, '{$delimiter}', team.value)  SEPARATOR ', ')
-            FROM
-                team, risk_to_team rtt
-            WHERE
-                rtt.risk_id=a.id AND rtt.team_id=team.value
-        ) AS team,
-        (
-            SELECT
-                GROUP_CONCAT(DISTINCT team.value  SEPARATOR ',')
-            FROM
-                team, risk_to_team rtt
-            WHERE
-                rtt.risk_id=a.id AND rtt.team_id=team.value
-        ) AS team_values,
-
-        (
-            SELECT
-                GROUP_CONCAT(DISTINCT CONCAT(u.name, '{$delimiter}', u.value) SEPARATOR ', ')
-            FROM
-                user u, risk_to_additional_stakeholder rtas
-            WHERE
-                rtas.risk_id=a.id AND rtas.user_id=u.value
-        ) AS additional_stakeholders,
-
-        (
-            SELECT
-                GROUP_CONCAT(DISTINCT CONCAT(tech.name, '{$delimiter}', tech.value) SEPARATOR ', ')
-            FROM
-                technology tech, risk_to_technology rttg
-            WHERE
-                rttg.risk_id=a.id AND rttg.technology_id=tech.value
-        ) AS technology,
-        (
-            SELECT
-                GROUP_CONCAT(DISTINCT tech.value SEPARATOR ',')
-            FROM
-                technology tech, risk_to_technology rttg
-            WHERE
-                rttg.risk_id=a.id AND rttg.technology_id=tech.value
-        ) AS technology_values,
-
-        g.name AS owner, 
-        CONCAT(g.name, '{$delimiter}', g.value) AS owner_for_dropdown, 
-        h.name AS manager, 
-        CONCAT(h.name, '{$delimiter}', h.value) AS manager_for_dropdown, 
-        i.name AS submitted_by, 
-        CONCAT(i.name, '{$delimiter}', i.value) AS submitted_by_for_dropdown,
-
-        j.name AS regulation, 
         CONCAT(j.name, '{$delimiter}', j.value) AS regulation_for_dropdown, 
-
-        k.name AS project, 
-        CONCAT(k.name, '{$delimiter}', k.value) AS project_for_dropdown, 
-        
-        lu.name AS reviewer, 
-        CONCAT(lu.name, '{$delimiter}', lu.value) AS reviewer_for_dropdown, 
-        l.next_review, 
-        l.comments, 
-        m.name AS next_step, 
-        CONCAT(m.name, '{$delimiter}', m.value) AS next_step_for_dropdown, 
         (
             SELECT
                 GROUP_CONCAT(DISTINCT CONCAT(assets.name, '{$delimiter}', assets.id) SEPARATOR ', ')
@@ -3692,7 +3625,6 @@ function risks_unique_column_query_select()
             WHERE
                 rta.risk_id=a.id AND rta.asset_id=assets.id
         ) AS affected_assets,
-        
         (
             SELECT
                 GROUP_CONCAT(DISTINCT CONCAT(asset_groups.name, '{$delimiter}', asset_groups.id) SEPARATOR ', ')
@@ -3701,65 +3633,92 @@ function risks_unique_column_query_select()
             WHERE
                 rtag.risk_id=a.id AND rtag.asset_group_id=asset_groups.id
         ) AS affected_asset_groups,
-
-        o.closure_date, 
-        cu.name AS closed_by, 
+        (
+            SELECT
+                GROUP_CONCAT(DISTINCT CONCAT(tech.name, '{$delimiter}', tech.value) SEPARATOR '|')
+            FROM
+                technology tech, risk_to_technology rttg
+            WHERE
+                rttg.risk_id=a.id AND rttg.technology_id=tech.value
+        ) AS technology,
+        (
+            SELECT
+                GROUP_CONCAT(DISTINCT CONCAT(team.name, '{$delimiter}', team.value)  SEPARATOR '|')
+            FROM
+                team, risk_to_team rtt
+            WHERE
+                rtt.risk_id=a.id AND rtt.team_id=team.value
+        ) AS team,
+        (
+            SELECT
+                GROUP_CONCAT(DISTINCT CONCAT(u.name, '{$delimiter}', u.value) SEPARATOR '|')
+            FROM
+                user u, risk_to_additional_stakeholder rtas
+            WHERE
+                rtas.risk_id=a.id AND rtas.user_id=u.value
+        ) AS additional_stakeholders,
+        CONCAT(g.name, '{$delimiter}', g.value) AS owner_for_dropdown, 
+        CONCAT(h.name, '{$delimiter}', h.value) AS manager_for_dropdown,
         CONCAT(cu.name, '{$delimiter}', cu.value) AS closed_by_for_dropdown,
-        cr.name as close_reason,
-        CONCAT(cr.name, '{$delimiter}', cr.value) AS close_reason_for_dropdown, 
-        
-        q.name AS planning_strategy,
-        CONCAT(q.name, '{$delimiter}', q.value) AS planning_strategy_for_dropdown,
-        
-        p.planning_date, 
-        
-        r.name AS mitigation_effort,
+        CONCAT(cr.name, '{$delimiter}', cr.value) AS close_reason_for_dropdown,
+
+        /*Mitigation columns*/
         CONCAT(r.name, '{$delimiter}', r.value) AS mitigation_effort_for_dropdown, 
-        
         IF(s.valuation_level_name IS NULL OR s.valuation_level_name='', 
             CONCAT('\$', s.min_value, ' to \$', s.max_value, '{$delimiter}', s.min_value, '-', s.max_value),
             CONCAT('\$', s.min_value, ' to \$', s.max_value, '(', s.valuation_level_name, ')', '{$delimiter}', s.min_value, '-', s.max_value)
           ) mitigation_cost,
-        
-        s.min_value AS mitigation_min_cost, 
-        s.max_value AS mitigation_max_cost, 
-        
-        s.valuation_level_name, 
-        
-        t.name AS mitigation_owner,
         CONCAT(t.name, '{$delimiter}', t.value) AS mitigation_owner_for_dropdown,
-        
+        CONCAT(q.name, '{$delimiter}', q.value) AS planning_strategy_for_dropdown,        
         (
             SELECT
-                GROUP_CONCAT(DISTINCT CONCAT(team.name, '{$delimiter}', team.value) SEPARATOR ', ')
+                GROUP_CONCAT(DISTINCT CONCAT(team.name, '{$delimiter}', team.value) SEPARATOR '|')
             FROM
                 team, mitigation_to_team mtt 
             WHERE
                 mtt.mitigation_id=p.id AND mtt.team_id=team.value
         ) AS mitigation_team,
+        GROUP_CONCAT(DISTINCT CONCAT(fc.short_name, '{$delimiter}', fc.id) SEPARATOR '|') mitigation_control_names,
 
-        NOT(ISNULL(mau.id)) mitigation_accepted, 
-        p.submission_date AS mitigation_date, 
-        GROUP_CONCAT(DISTINCT CONCAT(fc.short_name, '{$delimiter}', fc.id) SEPARATOR ', ') mitigation_control_names, 
-        
-        v.name AS source, 
-        CONCAT(v.name, '{$delimiter}', v.value) AS source_for_dropdown, 
-        p.id mitigation_id, 
-        p.current_solution,
-        p.security_recommendations, 
-        p.security_requirements, 
+        /*Review columns*/
+        CONCAT(lu.name, '{$delimiter}', lu.value) AS reviewer_for_dropdown, 
+        CONCAT(m.name, '{$delimiter}', m.value) AS next_step_for_dropdown, 
+
+        /*Risk scoring columns*/
+        b.scoring_method,
+
+        /*Risk mapping columns*/
+        `associated_rc_entries`.`risk_mapping_risk_grouping`,
+        `associated_rc_entries`.`risk_mapping_risk`,
+        `associated_rc_entries`.`risk_mapping_function`,
+
+        /*Required for grouping*/
         ifnull((SELECT IF(display_name='', name, display_name) FROM `risk_levels` WHERE value-b.calculated_risk<=0.00001 ORDER BY value DESC LIMIT 1), '{$lang['Insignificant']}') as risk_level_name,
-
+        a.submission_date,
+        v.name AS source, 
+        d.name AS category,
         (
-            SELECT
-                GROUP_CONCAT(DISTINCT CONCAT(t.tag, '{$delimiter}', t.id) ORDER BY t.tag ASC SEPARATOR ',')
-            FROM
-                tags t, tags_taggees tt 
-            WHERE
-                tt.tag_id = t.id AND tt.taggee_id=a.id AND tt.type='risk'
-        ) AS risk_tags
+        	SELECT
+        		GROUP_CONCAT(DISTINCT team.value  SEPARATOR ',')
+        	FROM
+        		team, risk_to_team rtt
+        	WHERE
+        		rtt.risk_id=a.id AND rtt.team_id=team.value
+        ) AS team_values,
+        (
+        	SELECT
+        		GROUP_CONCAT(DISTINCT tech.value SEPARATOR ',')
+        	FROM
+        		technology tech, risk_to_technology rttg
+        	WHERE
+        		rttg.risk_id=a.id AND rttg.technology_id=tech.value
+        ) AS technology_values,
+        g.name AS owner,
+        h.name AS manager, 
+        j.name AS regulation,
+        k.name AS project,
+        m.name AS next_step
     ";
-    return $query;
 }
 
 /*************************************
@@ -3767,34 +3726,37 @@ function risks_unique_column_query_select()
  *************************************/
 function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName="", $query_type = 1)
 {
-    global $lang;
-    
-    $delimiter = "---";
-
     $query = "
             risks a
             LEFT JOIN risk_scoring b ON a.id = b.id
-            LEFT JOIN category d FORCE INDEX(PRIMARY) ON a.category = d.value
-            LEFT JOIN user g FORCE INDEX(PRIMARY) ON a.owner = g.value
-            LEFT JOIN user h FORCE INDEX(PRIMARY) ON a.manager = h.value
-            LEFT JOIN user i FORCE INDEX(PRIMARY) ON a.submitted_by = i.value
-            LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON a.regulation = j.value
-            LEFT JOIN projects k FORCE INDEX(PRIMARY) ON a.project_id = k.value
+            LEFT JOIN category d ON a.category = d.value
+            LEFT JOIN user g ON a.owner = g.value
+            LEFT JOIN user h ON a.manager = h.value
+            LEFT JOIN user i ON a.submitted_by = i.value
+            LEFT JOIN frameworks j ON a.regulation = j.value
+            LEFT JOIN projects k ON a.project_id = k.value
             LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id
-            LEFT JOIN user lu FORCE INDEX(PRIMARY) ON l.reviewer = lu.value
-            LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
+            LEFT JOIN user lu ON l.reviewer = lu.value
+            LEFT JOIN next_step m ON l.next_step = m.value
             LEFT JOIN closures o ON a.close_id = o.id
-            LEFT JOIN user cu FORCE INDEX(PRIMARY) ON o.user_id = cu.value
+            LEFT JOIN user cu ON o.user_id = cu.value
             LEFT JOIN close_reason cr ON cr.value = o.close_reason
             LEFT JOIN mitigations p ON a.id = p.risk_id
             LEFT JOIN `mitigation_to_controls` mtc ON p.id = mtc.mitigation_id
             LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-            LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
-            LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
+            LEFT JOIN planning_strategy q ON p.planning_strategy = q.value
+            LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value
             LEFT JOIN asset_values s ON p.mitigation_cost = s.id
-            LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
+            LEFT JOIN user t ON p.mitigation_owner = t.value
+            LEFT JOIN source v ON a.source = v.value
+            LEFT JOIN threat_catalog tc ON FIND_IN_SET(tc.id, a.threat_catalog_mapping) > 0
+            LEFT JOIN `temp_associated_risk_catalog_entries` associated_rc_entries ON `associated_rc_entries`.`risk_id` = `a`.`id`
+    ";
+
+    if ($query_type != 3) {
+        $query .= "
+
             LEFT JOIN mitigation_accept_users mau ON a.id=mau.risk_id
-            LEFT JOIN source v FORCE INDEX(PRIMARY) ON a.source = v.value
 
             LEFT JOIN `temp_rsh_last_update_age` rsh_lua_30 ON `rsh_lua_30`.`risk_id` = `a`.`id` AND `rsh_lua_30`.`age_range` = '30-60'
             LEFT JOIN `temp_rsh_last_update_age` rsh_lua_60 ON `rsh_lua_60`.`risk_id` = `a`.`id` AND `rsh_lua_60`.`age_range` = '60-90'
@@ -3803,132 +3765,113 @@ function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName
             LEFT JOIN `temp_rrsh_last_update_age` rrsh_lua_30 ON `rrsh_lua_30`.`risk_id` = `a`.`id` AND `rrsh_lua_30`.`age_range` = '30-60'
             LEFT JOIN `temp_rrsh_last_update_age` rrsh_lua_60 ON `rrsh_lua_60`.`risk_id` = `a`.`id` AND `rrsh_lua_60`.`age_range` = '60-90'
             LEFT JOIN `temp_rrsh_last_update_age` rrsh_lua_90 ON `rrsh_lua_90`.`risk_id` = `a`.`id` AND `rrsh_lua_90`.`age_range` = '90+'
-
-            LEFT JOIN threat_catalog tc ON FIND_IN_SET(tc.id, a.threat_catalog_mapping) > 0
-    ";
-
-    if ($query_type == 3) {
+            
+        ";
+    
+        if(!empty($column_filters['location'])){
+            $query .= "
+            LEFT JOIN risk_to_location rtl ON a.id=rtl.risk_id
+            ";
+        }
+        if(!empty($column_filters['technology'])){
+            $query .= "
+            LEFT JOIN risk_to_technology rttg ON a.id=rttg.risk_id
+            ";
+        }
+        if(!empty($column_filters['mitigation_team'])){
+            $query .= "
+            LEFT JOIN mitigation_to_team mtt ON p.id=mtt.mitigation_id
+            ";
+        }
+        if(!empty($column_filters['risk_tags'])){
+            $query .= "
+            LEFT JOIN tags_taggees tt ON tt.taggee_id = a.id AND tt.type = 'risk'
+            ";
+        }
+        if(!empty($column_filters['affected_assets'])){
+            $query .= "
+            LEFT JOIN risks_to_assets rta ON a.id = rta.risk_id
+            LEFT JOIN risks_to_asset_groups rtag ON a.id = rtag.risk_id
+            ";
+        }
+    
+        $contributing_risks = get_contributing_risks();
+        foreach($contributing_risks as $contributing_risk) {
+            $id = $contributing_risk['id'];
+            $query .= "
+            LEFT JOIN `temp_contributing_risk_impact_data` cri_data_{$id} ON `cri_data_{$id}`.`risk_scoring_id` = `a`.`id` AND `cri_data_{$id}`.`contributing_risks_id` = {$id}
+            ";
+        }
+    
         $query .= "
-            LEFT JOIN (
-                SELECT
-                    `rsk`.`id` AS risk_id,
-                    GROUP_CONCAT(DISTINCT CONCAT(`rg`.`name`, '{$delimiter}', `rg`.`value`)  SEPARATOR '|') AS risk_mapping_risk_grouping,
-                    GROUP_CONCAT(DISTINCT CONCAT(`rc`.`number`, '{$delimiter}', `rc`.`id`)  SEPARATOR '|') AS risk_mapping_risk,
-                    GROUP_CONCAT(DISTINCT CONCAT(`rc`.`name`, '{$delimiter}', `rc`.`id`)  SEPARATOR '|') AS risk_mapping_risk_event,
-                    GROUP_CONCAT(DISTINCT CONCAT(`rf`.`name`, '{$delimiter}', `rf`.`value`)  SEPARATOR '|') AS risk_mapping_function
-                FROM
-                    `risks` rsk
-                    LEFT JOIN `risk_catalog` rc ON FIND_IN_SET(`rc`.`id`, `rsk`.`risk_catalog_mapping`)
-                    LEFT JOIN `risk_grouping` rg ON `rc`.`grouping` = `rg`.`value`
-                    LEFT JOIN `risk_function` rf ON `rc`.`function` = `rf`.`value`
-                GROUP BY
-                    `rsk`.`id`
-            ) associated_rc_entries ON `associated_rc_entries`.`risk_id` = `a`.`id`
+            LEFT JOIN contributing_risks_likelihood cr_likelihood ON cr_likelihood.value = b.Contributing_Likelihood
+            LEFT JOIN likelihood ON likelihood.value = b.CLASSIC_likelihood
+            LEFT JOIN impact ON impact.value = b.CLASSIC_impact
         ";
-    } else {
-        $query .= "            
-            LEFT JOIN (
-                SELECT
-                    `rsk`.`id` AS risk_id,
-                    GROUP_CONCAT(DISTINCT `rc`.`id` SEPARATOR ',') AS risk_mapping_risk_catalog_ids,
-                    GROUP_CONCAT(`rg`.`name` SEPARATOR ', ') AS risk_mapping_risk_grouping,
-                    GROUP_CONCAT(DISTINCT `rg`.`value` SEPARATOR ',') AS risk_mapping_risk_grouping_ids,
-                    GROUP_CONCAT(`rc`.`number` SEPARATOR ', ') AS risk_mapping_risk,
-                    GROUP_CONCAT(`rc`.`name` SEPARATOR ', ') AS risk_mapping_risk_event,
-                    GROUP_CONCAT(`rc`.`description` SEPARATOR ', ') AS risk_mapping_description,
-                    GROUP_CONCAT(`rf`.`name` SEPARATOR ', ') AS risk_mapping_function,
-                    GROUP_CONCAT(DISTINCT `rf`.`value` SEPARATOR ',') AS risk_mapping_function_ids
-                FROM
-                    `risk_catalog` rc
-                    LEFT JOIN `risk_grouping` rg ON `rc`.`grouping` = `rg`.`value`
-                    LEFT JOIN `risk_function` rf ON `rc`.`function` = `rf`.`value`
-                    LEFT JOIN `risks` rsk ON FIND_IN_SET(`rc`.`id`, `rsk`.`risk_catalog_mapping`)
-                GROUP BY
-                    `rsk`.`id`
-            ) associated_rc_entries ON `associated_rc_entries`.`risk_id` = `a`.`id`
-        ";
+        
+        // If customization extra is enabled, set join tables for custom filters
+        if(customization_extra())
+        {
+            $join_custom_table = false;
+            foreach($column_filters as $key => $column_filter)
+            {
+                if($column_filter && stripos($key, "custom_field_") !== false)
+                {
+                    $custom_field_id = (int)str_replace("custom_field_", "", $key);
+                    
+                    if($custom_field_id)
+                    {
+                        $table_alias = "custom_field_".$custom_field_id;
+    
+                        $query .= "
+                            LEFT JOIN custom_risk_data {$table_alias} ON a.id={$table_alias}.risk_id AND {$table_alias}.field_id={$custom_field_id} AND ( {$table_alias}.review_id=0 OR {$table_alias}.review_id=a.mgmt_review )
+                        ";
+    
+                        if($table_alias == $orderColumnName) $join_custom_table = true;
+                    }
+                }
+            }
+            if(!$join_custom_table && stripos((string)$orderColumnName, "custom_field_") !== false){
+                $custom_field_id = (int)str_replace("custom_field_", "", $orderColumnName);
+                if($custom_field_id)
+                {
+                    $table_alias = "custom_field_".$custom_field_id;
+    
+                    $query .= "
+                        LEFT JOIN custom_risk_data {$table_alias} ON a.id={$table_alias}.risk_id AND {$table_alias}.field_id={$custom_field_id} AND ( {$table_alias}.review_id=0 OR {$table_alias}.review_id=a.mgmt_review )
+                    ";
+    
+                }
+            }
+        }
     }
     
     // If the team separation extra is enabled
     $team_separation_extra = team_separation_extra();
-    if(!empty($column_filters['location'])){
-        $query .= " LEFT JOIN risk_to_location rtl ON a.id=rtl.risk_id ";
-    }
     if(!empty($column_filters['team']) || $team_separation_extra || $risks_by_team){
-        $query .= " LEFT JOIN risk_to_team rtt ON a.id=rtt.risk_id ";
-    }
-    if(!empty($column_filters['technology'])){
-        $query .= " LEFT JOIN risk_to_technology rttg ON a.id=rttg.risk_id ";
+        $query .= "
+            LEFT JOIN risk_to_team rtt ON a.id=rtt.risk_id
+        ";
     }
     if(!empty($column_filters['additional_stakeholders']) || $team_separation_extra){
-        $query .= " LEFT JOIN risk_to_additional_stakeholder rtas ON a.id=rtas.risk_id ";
-    }
-    if(!empty($column_filters['mitigation_team'])){
-        $query .= " LEFT JOIN mitigation_to_team mtt ON p.id=mtt.mitigation_id ";
-    }
-    if(!empty($column_filters['risk_tags'])){
-        $query .= " LEFT JOIN tags_taggees tt ON tt.taggee_id = a.id AND tt.type = 'risk' ";
-    }
-    if(!empty($column_filters['affected_assets'])){
-        $query .= " LEFT JOIN risks_to_assets rta ON a.id = rta.risk_id ";
-        $query .= " LEFT JOIN risks_to_asset_groups rtag ON a.id = rtag.risk_id ";
-    }
-
-    $contributing_risks = get_contributing_risks();
-    foreach($contributing_risks as $contributing_risk) {
-        $id = $contributing_risk['id'];
         $query .= "
-            LEFT JOIN `temp_contributing_risk_impact_data` cri_data_{$id} FORCE INDEX(PRIMARY) ON `cri_data_{$id}`.`risk_scoring_id` = `a`.`id` AND `cri_data_{$id}`.`contributing_risks_id` = {$id}
+            LEFT JOIN risk_to_additional_stakeholder rtas ON a.id=rtas.risk_id
         ";
     }
 
-    $query .= " LEFT JOIN contributing_risks_likelihood cr_likelihood FORCE INDEX(crl_index) ON cr_likelihood.value = b.Contributing_Likelihood \n";
-    $query .= " LEFT JOIN likelihood FORCE INDEX(likelihood_index) ON likelihood.value = b.CLASSIC_likelihood \n";
-    $query .= " LEFT JOIN impact FORCE INDEX(impact_index) ON impact.value = b.CLASSIC_impact \n";
-    
-    // If customization extra is enabled, set join tables for custom filters
-    if(customization_extra())
-    {
-        $join_custom_table = false;
-        foreach($column_filters as $key => $column_filter)
-        {
-            if($column_filter && stripos($key, "custom_field_") !== false)
-            {
-                $custom_field_id = (int)str_replace("custom_field_", "", $key);
-                
-                if($custom_field_id)
-                {
-                    $table_alias = "custom_field_".$custom_field_id;
-
-                    $query .= " LEFT JOIN custom_risk_data {$table_alias} ON a.id={$table_alias}.risk_id AND {$table_alias}.field_id={$custom_field_id} AND ( {$table_alias}.review_id=0 OR {$table_alias}.review_id=a.mgmt_review ) ";
-
-                    if($table_alias == $orderColumnName) $join_custom_table = true;
-                }
-            }
-        }
-        if(!$join_custom_table && stripos((string)$orderColumnName, "custom_field_") !== false){
-            $custom_field_id = (int)str_replace("custom_field_", "", $orderColumnName);
-            if($custom_field_id)
-            {
-                $table_alias = "custom_field_".$custom_field_id;
-
-                $query .= " LEFT JOIN custom_risk_data {$table_alias} ON a.id={$table_alias}.risk_id AND {$table_alias}.field_id={$custom_field_id} AND ( {$table_alias}.review_id=0 OR {$table_alias}.review_id=a.mgmt_review ) ";
-
-            }
-        }
-    }
-
-    return $query;
+     return $query;
 }
 
 /**************************************
  * FUNCTION: RETURN DYNAMIC RISKS SQL *
  * query_type: 
  *      1: dynamic risk
- *      2: unique column
+ *      3: unique column
  **************************************/
 function make_full_risks_sql($query_type, $status, $sort, $group, $column_filters=[], &$group_value_from_db="", &$custom_query="", &$bind_params=[], $having_query="", $orderColumnName="", $orderDir="asc", $risks_by_team=0, $teams=[], $owners=[], $ownersmanagers=[])
 {
+    $delimiter = "---";
+
     $orderDir = strtolower($orderDir) == "asc" ? "ASC" : "DESC";
     // Check the status
     switch ($status)
@@ -4087,7 +4030,7 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
                 } else if(stripos($orderColumnName, "CLASSIC_") !== false || stripos($orderColumnName, "CVSS_") !== false || stripos($orderColumnName, "DREAD_") !== false || stripos($orderColumnName, "OWASP_") !== false || stripos($orderColumnName, "Contributing_") !== false) {
                     $sort_name = " b.`{$orderColumnName}` {$orderDir} ";
                 } else if(stripos($orderColumnName, "calculated_risk_") !== false || stripos($orderColumnName, "residual_risk_") !== false) {
-                    $sort_name = "`{$orderColumnName}` {$orderDir} ";
+                    $sort_name = "`{$orderColumnName}`+0 {$orderDir} ";
                 } else {
                     $orderColumnName = sqli_filter($orderColumnName);
                     $sort_name = "`{$orderColumnName}` {$orderDir}";
@@ -4113,26 +4056,20 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
     }
 
     /*
-		Added temporary tables to replace some joins that had an impact on performance.
-		
-		`rrsh_last_update_age_base` - gathering the base data of `residual_risk_scoring_history`and adding additional information like the days since
-		the last update(age) and in which age range the history is in.
-		`rrsh_last_update_age` - Using the `rrsh_last_update_age_base` table's data but only keeps the latest entry in each range for each risk
-
-		`rsh_last_update_age_base` and `rsh_last_update_age` does the same with the `risk_scoring_history` data
-
-		`risk_scoring_history` - created to replace joining `contributing_risks_impact` and `risk_scoring_contributing_impacts` tables to reduce
-		main query's runtime		
-	*/
+     Added temporary tables to replace some joins that had an impact on performance.
+     
+     `rrsh_last_update_age_base` - gathering the base data of `residual_risk_scoring_history`and adding additional information like the days since
+     the last update(age) and in which age range the history is in.
+     `rrsh_last_update_age` - Using the `rrsh_last_update_age_base` table's data but only keeps the latest entry in each range for each risk
+     `rsh_last_update_age_base` and `rsh_last_update_age` does the same with the `risk_scoring_history` data
+     `risk_scoring_history` - created to replace joining `contributing_risks_impact` and `risk_scoring_contributing_impacts` tables to reduce
+     main query's runtime
+     */
     // Adding a unique key at the end of the temporary tables so if multiple requests come in they're not deleting eachother's temporary tables
     $unique_key = '_' . time() . '_' . generate_token(5);
-
+    
     $create_temporary_tables = "
-        CREATE TABLE `temp_rrsh_last_update_age_base{$unique_key}`(
-            PRIMARY KEY(`id`),
-            INDEX (`risk_id`),
-            INDEX (`age_range`)
-        )
+        CREATE TABLE `temp_rrsh_last_update_age_base{$unique_key}`
         SELECT
             CASE
                 WHEN `lua`.`age` < 30 THEN '-30'
@@ -4141,7 +4078,7 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
                 WHEN `lua`.`age` > 90 THEN '90+'
             END AS age_range,
             `lua`.*
-        FROM 
+        FROM
             (/*(1) Select the base data from the `residual_risk_scoring_history` table plus calculate the age of each entry*/
                 SELECT
                     `sh`.`id` AS id,
@@ -4154,12 +4091,10 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
                 GROUP BY
                     `sh`.`last_update`
             ) lua;
-
         /*(4) Create the 'temporary' table for data from the `residual_risk_scoring_history` table*/
         CREATE TABLE `temp_rrsh_last_update_age{$unique_key}`(
-            PRIMARY KEY(`id`),
-            INDEX (`risk_id`),
-            INDEX (`age_range`)
+            PRIMARY KEY(`risk_id`, `age_range`),
+            INDEX (`age_range`, `risk_id`)
         )
         /*(3) Select the latest entry for each age range*/
         SELECT
@@ -4169,12 +4104,7 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
             LEFT JOIN `temp_rrsh_last_update_age_base{$unique_key}` lua2 ON `lua`.`risk_id` = `lua2`.`risk_id` AND `lua`.`age_range` = `lua2`.`age_range` AND `lua`.`last_update` < `lua2`.`last_update`
         WHERE
             `lua2`.`id` IS NULL;
-
-        CREATE TABLE `temp_rsh_last_update_age_base{$unique_key}`(
-            PRIMARY KEY(`id`),
-            INDEX (`risk_id`),
-            INDEX (`age_range`)
-        )
+        CREATE TABLE `temp_rsh_last_update_age_base{$unique_key}`
         SELECT
             CASE
                 WHEN `lua`.`age` < 30 THEN '-30'
@@ -4183,7 +4113,7 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
                 WHEN `lua`.`age` > 90 THEN '90+'
             END AS age_range,
             `lua`.*
-        FROM 
+        FROM
             (/*(1) Select the base data from the `risk_scoring_history` table plus calculate the age of each entry*/
                 SELECT
                     `sh`.`id` AS id,
@@ -4196,12 +4126,11 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
                 GROUP BY
                     `sh`.`last_update`
             ) lua;
-        
+            
         /*(4) Create the 'temporary' table for data from the `risk_scoring_history` table*/
         CREATE TABLE `temp_rsh_last_update_age{$unique_key}`(
-            PRIMARY KEY(`id`),
-            INDEX (`risk_id`),
-            INDEX (`age_range`)
+            PRIMARY KEY(`risk_id`, `age_range`),
+            INDEX (`age_range`, `risk_id`)
         )
         SELECT
             `lua`.*
@@ -4214,8 +4143,7 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
         /*Create the 'temporary' table for data from the `risk_scoring_contributing_impacts` and `contributing_risks_impact` tables*/
         CREATE TABLE `temp_contributing_risk_impact_data{$unique_key}`(
             PRIMARY KEY(`risk_scoring_id`, `contributing_risks_id`),
-            INDEX (`risk_scoring_id`),
-            INDEX (`contributing_risks_id`)
+            INDEX (`contributing_risks_id`, `risk_scoring_id`)
         )
         SELECT
             `rs_impacts`.`risk_scoring_id`,
@@ -4225,8 +4153,52 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
         FROM
         	`risk_scoring_contributing_impacts` rs_impacts
           	LEFT JOIN `contributing_risks_impact` cs_impacts ON `cs_impacts`.`value` = `rs_impacts`.`impact` AND `cs_impacts`.`contributing_risks_id` = `rs_impacts`.`contributing_risk_id`;
+
+        /*Create temporary table for the risk catalog entries grouped by the risk id for easier querying*/
+        CREATE TABLE `temp_associated_risk_catalog_entries{$unique_key}`(
+            PRIMARY KEY(`risk_id`)
+        )
     ";
-    
+
+    // The data in the temp_associated_risk_catalog_entries temporary table depends on the query type
+    if ($query_type == 3) { // column unique data
+        $create_temporary_tables .= "
+        SELECT
+            `rsk`.`id` AS risk_id,
+            GROUP_CONCAT(DISTINCT CONCAT(`rg`.`name`, '{$delimiter}', `rg`.`value`)  SEPARATOR '|') AS risk_mapping_risk_grouping,
+            GROUP_CONCAT(DISTINCT CONCAT(`rc`.`number`, '{$delimiter}', `rc`.`id`)  SEPARATOR '|') AS risk_mapping_risk,
+            GROUP_CONCAT(DISTINCT CONCAT(`rc`.`name`, '{$delimiter}', `rc`.`id`)  SEPARATOR '|') AS risk_mapping_risk_event,
+            GROUP_CONCAT(DISTINCT CONCAT(`rf`.`name`, '{$delimiter}', `rf`.`value`)  SEPARATOR '|') AS risk_mapping_function
+        FROM
+            `risks` rsk
+            LEFT JOIN `risk_catalog` rc ON FIND_IN_SET(`rc`.`id`, `rsk`.`risk_catalog_mapping`)
+            LEFT JOIN `risk_grouping` rg ON `rc`.`grouping` = `rg`.`value`
+            LEFT JOIN `risk_function` rf ON `rc`.`function` = `rf`.`value`
+        GROUP BY
+            `rsk`.`id`;
+        ";
+    } else {
+        $create_temporary_tables .= "
+        SELECT
+            `rsk`.`id` AS risk_id,
+            GROUP_CONCAT(DISTINCT `rc`.`id` SEPARATOR ',') AS risk_mapping_risk_catalog_ids,
+            GROUP_CONCAT(`rg`.`name` SEPARATOR ', ') AS risk_mapping_risk_grouping,
+            GROUP_CONCAT(DISTINCT `rg`.`value` SEPARATOR ',') AS risk_mapping_risk_grouping_ids,
+            GROUP_CONCAT(`rc`.`number` SEPARATOR ', ') AS risk_mapping_risk,
+            GROUP_CONCAT(`rc`.`name` SEPARATOR ', ') AS risk_mapping_risk_event,
+            GROUP_CONCAT(`rc`.`description` SEPARATOR ', ') AS risk_mapping_description,
+            GROUP_CONCAT(`rf`.`name` SEPARATOR ', ') AS risk_mapping_function,
+            GROUP_CONCAT(DISTINCT `rf`.`value` SEPARATOR ',') AS risk_mapping_function_ids
+        FROM
+            `risk_catalog` rc
+            LEFT JOIN `risk_grouping` rg ON `rc`.`grouping` = `rg`.`value`
+            LEFT JOIN `risk_function` rf ON `rc`.`function` = `rf`.`value`
+            LEFT JOIN `risks` rsk ON FIND_IN_SET(`rc`.`id`, `rsk`.`risk_catalog_mapping`)
+        GROUP BY
+            `rsk`.`id`;
+        ";
+    }
+
     /**
     * Query Type = 1
     *   Return total count
@@ -4265,6 +4237,7 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
     $query = str_replace('temp_rrsh_last_update_age', "temp_rrsh_last_update_age{$unique_key}", $query);
     $query = str_replace('temp_rsh_last_update_age', "temp_rsh_last_update_age{$unique_key}", $query);
     $query = str_replace('temp_contributing_risk_impact_data', "temp_contributing_risk_impact_data{$unique_key}", $query);
+    $query = str_replace('temp_associated_risk_catalog_entries', "temp_associated_risk_catalog_entries{$unique_key}", $query);
 
     $drop_temporary_tables = "
         /*Drop 'temporary' tables.*/
@@ -4273,6 +4246,7 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
         DROP TABLE IF EXISTS `temp_rrsh_last_update_age_base{$unique_key}`;
         DROP TABLE IF EXISTS `temp_rsh_last_update_age_base{$unique_key}`;
         DROP TABLE IF EXISTS `temp_contributing_risk_impact_data{$unique_key}`;
+        DROP TABLE IF EXISTS `temp_associated_risk_catalog_entries{$unique_key}`;
     ";
 
     return [
@@ -4306,6 +4280,9 @@ function get_query_type($need_total_count)
 function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $column_filters, &$rowCount, $start=0, $length=10, $group_value_from_db="", $custom_query="", $bind_params=[], $orderColumnName=null, $orderDir="asc", $risks_by_team=0, $teams=[], $owners=[], $ownersmanagers=[])
 {
     global $lang;
+
+    // Allow this to run as long as necessary
+    ini_set('max_execution_time', 0);
 
     // Constants for encrypt column names
     $encrypt_column_names = ["subject", "risk_assessment", "additional_notes", "current_solution", "security_requirements", "security_recommendations", "comments"];
@@ -4448,7 +4425,11 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                         $empty_filter = true;
                     }
                     $column_filter = array_map("base64_decode", $column_filter);
-                    $column_filter = implode(",", $column_filter);
+
+                    // For the status we need the original value there so we can escape the ',' character
+                    if (!in_array($name, ['risk_status'])) {
+                        $column_filter = implode(",", $column_filter);
+                    }
                 }
 
                 $bind_param_name = "column_filter_". md5($name);
@@ -4459,9 +4440,11 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                     //     $bind_params[$bind_param_name] = $column_filter;
                     // break;
                     case "risk_status":
-                        if($empty_filter) $wheres[] = "(FIND_IN_SET(a.status, :{$bind_param_name}) OR a.status IS NULL)";
-                        else $wheres[] = " FIND_IN_SET(a.status, :{$bind_param_name}) ";
-                        $bind_params[$bind_param_name] = $column_filter;
+                        // What we're doing here is that we're replacing , with | in both the status and in the statuses we're looking for
+                        // because FIND_IN_SET() was interpreting the , in the second parameter as a separator
+                        if($empty_filter) $wheres[] = "(FIND_IN_SET(REPLACE(a.status, ',', '|'), :{$bind_param_name}) OR a.status IS NULL)";
+                        else $wheres[] = " FIND_IN_SET(REPLACE(a.status, ',', '|'), :{$bind_param_name}) ";
+                        $bind_params[$bind_param_name] = is_array($column_filter) ? implode(",", array_map(fn($e) => str_replace(',', '|', $e), $column_filter)) : $column_filter;
                     break;
                     case "risk_assessment":
                         $wheres[] = " a.assessment like :{$bind_param_name} ";
@@ -4485,6 +4468,15 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                         $bind_params[$bind_param_name] = "%{$column_filter}%";
                     break;
                     case "regulation":
+                        if($empty_filter) {
+                            // It's possible that the regulation is not empty, just points to an invalid/missing framework, in which case it is considered unassigned
+                            $wheres[] = " (FIND_IN_SET(a.regulation, :{$bind_param_name}) OR j.value is null) ";
+                            $column_filter .= ",0";
+                        } else {
+                            $wheres[] = " FIND_IN_SET(a.regulation, :{$bind_param_name}) ";
+                        }
+                        $bind_params[$bind_param_name] = $column_filter;
+                    break;
                     case "source":
                     case "category":
                     case "owner":
@@ -4573,17 +4565,13 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                         $wheres[] = " p.submission_date like :{$bind_param_name} ";
                         $bind_params[$bind_param_name] = "%{$column_filter}%";
                     break;
-                    case "calculated_risk":
-                    case "residual_risk":
-                    case "days_open":
-                        $operator = get_operator_from_value($column_filters[$name."_operator"]);
-                        $havings[] = " {$name} {$operator} :{$bind_param_name} ";
-                        $bind_params[$bind_param_name] = $column_filter;
-                    break;
                     case "comments":
                         $wheres[] = " l.comments like :{$bind_param_name} ";
                         $bind_params[$bind_param_name] = "%{$column_filter}%";
                     break;
+                    case "calculated_risk":
+                    case "residual_risk":
+                    case "days_open":
                     case "calculated_risk_30":
                     case "calculated_risk_60":
                     case "calculated_risk_90":
@@ -4591,7 +4579,7 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                     case "residual_risk_60":
                     case "residual_risk_90":
                         $operator = get_operator_from_value($column_filters[$name."_operator"]);
-                        $havings[] = " CONVERT({$name} ,DECIMAL(10,2)) {$operator} :{$bind_param_name} ";
+                        $havings[] = " {$name} {$operator} :{$bind_param_name} ";
                         $bind_params[$bind_param_name] = $column_filter;
                     break;
                     case "classic_likelihood":
@@ -4612,6 +4600,11 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                     case "close_out":
                         $wheres[] = " o.note like :{$bind_param_name} ";
                         $bind_params[$bind_param_name] = "%{$column_filter}%";
+                    break;
+                    case "closed_by":
+                        if($empty_filter) $wheres[] = " (FIND_IN_SET(o.user_id, :{$bind_param_name}) OR o.user_id IS NULL)";
+                        else $wheres[] = " FIND_IN_SET(o.user_id, :{$bind_param_name}) ";
+                        $bind_params[$bind_param_name] = $column_filter;
                     break;
                     case "threat_mapping":
                         if($empty_filter) $wheres[] = "(FIND_IN_SET(tc.id, :{$bind_param_name}) OR tc.id IS NULL)";
@@ -4804,7 +4797,7 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
     }
 
     $stmt->execute();
-
+    
     // Store the results in the risks array
     $risks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -4854,6 +4847,7 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
             }
         });
     }
+
     foreach($risks as $risk)
     {
         $success = true;
@@ -4862,12 +4856,12 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
             {
                 if(isset($custom_date_filter[$column_name]) && $custom_date_filter[$column_name] == true){
                     $date_str = format_datetime($risk[$column_name],"","");
-                    if( stripos($date_str, $val) === false ){
+                    if(stripos($date_str, $val) === false) {
                         $success = false;
                         break;
                     }
-                } 
-                elseif( stripos(try_decrypt($risk[$column_name]), $val) === false ){
+                }
+                elseif(empty($risk[$column_name]) || (stripos(try_decrypt($risk[$column_name]), $val) === false)) {
                     $success = false;
                     break;
                 }
@@ -4979,6 +4973,7 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
         }
         if($success) $filtered_risks[] = $risk;
     }
+
     if($encryption_order != false) {
         usort($filtered_risks, function($a, $b) use ($orderDir) {
             if($orderDir == "asc") 
@@ -5153,7 +5148,6 @@ function risks_query($status, $sort, $group, $column_filters, &$rowCount, $start
  ************************************************/
 function get_dynamicrisk_unique_column_data($status, $group, $group_value_from_db="", $custom_query="", $bind_params=array(), $orderColumnName=null, $orderDir="asc", $risks_by_team=0, $teams=[], $owners=[], $ownersmanagers=[])
 {
-
     // Allow this to run as long as necessary
     ini_set('max_execution_time', 0);
 
@@ -5167,7 +5161,6 @@ function get_dynamicrisk_unique_column_data($status, $group, $group_value_from_d
     $stmt->execute();
 
     $stmt = $db->prepare($query);
-    
     if($group_name != "none"){
         $stmt->bindParam(":group_value", $group_value_from_db, PDO::PARAM_STR);
     }
@@ -5182,7 +5175,10 @@ function get_dynamicrisk_unique_column_data($status, $group, $group_value_from_d
     // Store the results in the risks array
     $risks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Have to separately drop the required temporary tables
+    // Do the cleanup of tables that might have been left behind because of failed queries(and the drops not being able to run)
+    temp_table_cleanup('dynamic_risk_report');
+
+    // Have to separately drop this request's temporary tables
     $stmt = $db->prepare($drop_temporary_tables);
     $stmt->execute();
 
@@ -5193,62 +5189,46 @@ function get_dynamicrisk_unique_column_data($status, $group, $group_value_from_d
 
     // For each risk in the risks array
     foreach($risks as $risk){
-        $key_relation_arr = [
-            "category" => "category_for_dropdown",
-            "owner" => "owner_for_dropdown",
-            "manager" => "manager_for_dropdown",
-            "submitted_by" => "submitted_by_for_dropdown",
-            "regulation" => "regulation_for_dropdown",
-            "project" => "project_for_dropdown",
-            "next_step" => "next_step_for_dropdown",
-            "planning_strategy" => "planning_strategy_for_dropdown",
-            "mitigation_effort" => "mitigation_effort_for_dropdown",
-            "mitigation_owner" => "mitigation_owner_for_dropdown",
-            "source" => "source_for_dropdown",
-            "closed_by" => "closed_by_for_dropdown",
-            "close_reason" => "close_reason_for_dropdown",
-            "reviewer" => "reviewer_for_dropdown",
-        ];
-        
-        foreach($key_relation_arr as $key => $related_key)
-        {
-            if(isset($risk[$related_key]))
-            {
-                $risk[$key] = $risk[$related_key];
-            }
-        }
 
-        // Create the new data array
         $data[] = array(
-            "id" => $risk['id'], 
-            "risk_status" => $risk['status'], 
-            "scoring_method" => $risk['scoring_method'], 
-            "location" => $risk['location'], 
-            "risk_mapping" =>  $risk['risk_mapping'], 
-            "threat_mapping" =>  $risk['threat_mapping'], 
-            "source" =>  $risk['source'], 
-            "category" => $risk['category'], 
-            "team" => $risk['team'], 
-            "additional_stakeholders" => $risk['additional_stakeholders'], 
-            "technology" => $risk["technology"], 
-            "owner" => $risk["owner"], 
-            "manager" => $risk["manager"], 
-            "submitted_by" => $risk["submitted_by"],
-            "regulation" => $risk["regulation"], 
-            "project" => $risk["project"], 
-            "next_step" => $risk["next_step"], 
-            "affected_assets" => "", 
-            "planning_strategy" => $risk["planning_strategy"], 
-            "mitigation_effort" => $risk["mitigation_effort"],
-            "mitigation_cost" => $risk["mitigation_cost"], 
-            "mitigation_owner" => $risk["mitigation_owner"], 
-            "mitigation_team" => $risk["mitigation_team"], 
-            "mitigation_controls" => $risk["mitigation_control_names"], 
+            // Risk columns
+            "id" => $risk['id'],
+            "risk_status" => $risk['status'],
+            "risk_mapping" =>  $risk['risk_mapping'],
+            "threat_mapping" =>  $risk['threat_mapping'],
             "risk_tags" => $risk["risk_tags"],
+            "submitted_by" => $risk["submitted_by_for_dropdown"],
+            "source" =>  $risk['source_for_dropdown'],
+            "category" => $risk['category_for_dropdown'],
+            "project" => $risk["project_for_dropdown"],
+            "location" => $risk['location'],
+            "regulation" => $risk["regulation_for_dropdown"],
             "affected_assets" => $risk["affected_assets"],
             "affected_asset_groups" => $risk["affected_asset_groups"],
-            "closed_by" => $risk["closed_by"],
-            "close_reason" => $risk["close_reason"],
+            "technology" => $risk["technology"],
+            "team" => $risk['team'],
+            "additional_stakeholders" => $risk['additional_stakeholders'],
+            "owner" => $risk["owner_for_dropdown"],
+            "manager" => $risk["manager_for_dropdown"],
+            "closed_by" => $risk["closed_by_for_dropdown"],
+            "close_reason" => $risk["close_reason_for_dropdown"],
+            
+            // Mitigation columns
+            "mitigation_effort" => $risk["mitigation_effort_for_dropdown"],
+            "mitigation_cost" => $risk["mitigation_cost"],
+            "mitigation_owner" => $risk["mitigation_owner_for_dropdown"],
+            "planning_strategy" => $risk["planning_strategy_for_dropdown"],
+            "mitigation_team" => $risk["mitigation_team"],
+            "mitigation_controls" => $risk["mitigation_control_names"],
+            
+            // Review columns
+            "reviewer" => $risk["reviewer_for_dropdown"],
+            "next_step" => $risk["next_step_for_dropdown"],
+            
+            // Risk scoring columns
+            "scoring_method" => $risk['scoring_method'],
+            
+            // Risk mapping columns
             "risk_mapping_risk_grouping" => $risk["risk_mapping_risk_grouping"],
             "risk_mapping_risk" => $risk["risk_mapping_risk"],
             "risk_mapping_function" => $risk["risk_mapping_function"],

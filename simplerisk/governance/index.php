@@ -315,7 +315,7 @@ if (isset($_POST['delete_controls']))
             })
             
             $("body").on("click", ".framework-block--edit", function(){
-                $("#framework--update input").val();
+            	resetForm('#framework--update>form');
                 var framework_id = $(this).data("id");
                 $.ajax({
                     url: BASE_URL + '/api/governance/framework?framework_id=' + framework_id,
@@ -334,17 +334,20 @@ if (isset($_POST['delete_controls']))
                         $("#framework--update [name=framework_description]").val(data.framework.description);
                         tinyMCE.get("update_framework_description").setContent(data.framework.description);
                         if(data.framework.custom_values){
-                          var custom_values = data.framework.custom_values;
-                          for (var i=0; i<custom_values.length; i++) {
-                            var field_id = custom_values[i].field_id;
-                            var field_value = custom_values[i].value;
-                            $("#framework--update [name='custom_field["+field_id+"]']").val(field_value);
-                          }
+                          	var custom_values = data.framework.custom_values;
+                          	for (var i=0; i<custom_values.length; i++) {
+                            	var field_value = custom_values[i].value;
+                            	var element = $("#framework--update [name^='custom_field[" + custom_values[i].field_id + "]']");
+                                if (field_value && custom_values[i].field_type == 'multidropdown' || custom_values[i].field_type == 'user_multidropdown') {
+                                    element.multiselect('select', field_value);
+                                } else {
+                                    element.val(field_value ? field_value : '');
+                                }
+                          	}
                         }
                         $("#framework--update").modal();
                     }
                 });
-                        
             })
             
             var tabContentId = document.location.hash ? document.location.hash : "#frameworks-tab";
@@ -406,6 +409,14 @@ if (isset($_POST['delete_controls']))
             init_minimun_editor('#update_control_description');
             $("#control--update [name=supplemental_guidance]").attr("id", "update_supplemental_guidance");
             init_minimun_editor('#update_supplemental_guidance');
+<?php 
+if (customization_extra()) {
+?>
+			$('.datepicker').datepicker();
+            $("select[id^='custom_field'].multiselect").multiselect({buttonWidth: '300px', enableFiltering: true, enableCaseInsensitiveFiltering: true});
+<?php 
+}
+?>
         });
         function submit_controls_form(){
             document.controls_form.submit();

@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2010-2021 Torstein Honsi
+ *  (c) 2010-2024 Torstein Honsi
  *
  *  License: www.highcharts.com/license
  *
@@ -154,7 +154,7 @@ const ColumnSeriesDefaults = {
      * When set to `undefined`, the width is calculated from the
      * `pointPadding` and `groupPadding`. The width effects the dimension
      * that is not based on the point value. For column series it is the
-     * hoizontal length and for bar series it is the vertical length.
+     * horizontal length and for bar series it is the vertical length.
      *
      * @see [maxPointWidth](#plotOptions.column.maxPointWidth)
      *
@@ -308,7 +308,7 @@ const ColumnSeriesDefaults = {
          */
         y: void 0
     },
-    // false doesn't work well: https://jsfiddle.net/highcharts/hz8fopan/14/
+    // False doesn't work well: https://jsfiddle.net/highcharts/hz8fopan/14/
     /** @ignore-option */
     startFromThreshold: true,
     stickyTracking: false,
@@ -484,7 +484,7 @@ const ColumnSeriesDefaults = {
  * @product   highcharts highstock
  * @apioption series.column.states.select
  */
-''; // keeps doclets above in JS file
+''; // Keeps doclets above in JS file
 /* *
  *
  *  Default Export

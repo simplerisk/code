@@ -1609,7 +1609,8 @@ function get_compliance_files($ref_id, $ref_type){
     // Open the database connection
     $db = db_open();
 
-    $stmt = $db->prepare("SELECT t1.* FROM `compliance_files` t1 WHERE t1.`ref_id`=:ref_id and t1.`ref_type`=:ref_type;");
+    $stmt = $db->prepare("SELECT t1.id, t1.ref_id, t1.ref_type, t1.name, t1.unique_name, t1.type, t1.
+size, t1.timestamp, t1.user, t1.version FROM `compliance_files` t1 WHERE t1.`ref_id`=:ref_id and t1.`ref_type`=:ref_type;");
     $stmt->bindParam(":ref_id", $ref_id, PDO::PARAM_INT);
     $stmt->bindParam(":ref_type", $ref_type, PDO::PARAM_STR, 20);
     $stmt->execute();

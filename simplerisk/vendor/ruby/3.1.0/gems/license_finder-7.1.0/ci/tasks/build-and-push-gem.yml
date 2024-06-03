@@ -1,0 +1,10 @@
+---
+platform: linux
+inputs:
+- name: lf-git
+- name: semver-version
+run:
+  path: bash
+  args:
+  - "-lc"
+  - lf-git/ci/scripts/pushscript.sh

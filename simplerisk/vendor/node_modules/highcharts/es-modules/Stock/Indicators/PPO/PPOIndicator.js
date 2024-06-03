@@ -25,22 +25,6 @@ const { correctFloat, extend, merge, error } = U;
  * @augments Highcharts.Series
  */
 class PPOIndicator extends EMAIndicator {
-    constructor() {
-        /* *
-         *
-         *  Static Properties
-         *
-         * */
-        super(...arguments);
-        /* *
-         *
-         *   Properties
-         *
-         * */
-        this.data = void 0;
-        this.options = void 0;
-        this.points = void 0;
-    }
     /* *
      *
      *  Functions
@@ -88,6 +72,11 @@ class PPOIndicator extends EMAIndicator {
         };
     }
 }
+/* *
+ *
+ *  Static Properties
+ *
+ * */
 /**
  * Percentage Price Oscillator. This series requires the
  * `linkedTo` option to be set and should be loaded after the
@@ -108,7 +97,7 @@ class PPOIndicator extends EMAIndicator {
  */
 PPOIndicator.defaultOptions = merge(EMAIndicator.defaultOptions, {
     /**
-     * Paramters used in calculation of Percentage Price Oscillator series
+     * Parameters used in calculation of Percentage Price Oscillator series
      * points.
      *
      * @excluding period
@@ -154,4 +143,4 @@ export default PPOIndicator;
  * @requires  stock/indicators/ppo
  * @apioption series.ppo
  */
-''; // to include the above in the js output
+''; // To include the above in the js output

@@ -172,6 +172,7 @@ $releases = array(
 	"20240205-001",
 	"20240315-001",
 	"20240318-001",
+    "20240603-001",
 );
 
 /*************************
@@ -7220,6 +7221,70 @@ function upgrade_from_20240315001($db)
     // as this session variable is not set by the previous version of the login logic
     $_SESSION['latest_version_app'] = latest_version('app');
  
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20240318-001 *
+ ***************************************/
+function upgrade_from_20240318001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20240318-001';
+    
+    // Database version upgrading to
+    $version_upgrading_to = '20240603-001';
+    
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    if (!index_exists_on_table('risk_scoring_CLASSIC_likelihood', 'risk_scoring')) {
+        echo "Adding index 'risk_scoring_CLASSIC_likelihood' to table 'risk_scoring'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX `risk_scoring_CLASSIC_likelihood` ON `risk_scoring`(`CLASSIC_likelihood`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('risk_scoring_CLASSIC_impact', 'risk_scoring')) {
+        echo "Adding index 'risk_scoring_CLASSIC_impact' to table 'risk_scoring'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX `risk_scoring_CLASSIC_impact` ON `risk_scoring`(`CLASSIC_impact`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('framework_controls_id_deleted', 'framework_controls')) {
+        echo "Adding index 'framework_controls_id_deleted' to table 'framework_controls'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX `framework_controls_id_deleted` ON `framework_controls`(`id`, `deleted`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('framework_controls_deleted_id', 'framework_controls')) {
+        echo "Adding index 'framework_controls_deleted_id' to table 'framework_controls'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX `framework_controls_deleted_id` ON `framework_controls`(`deleted`, `id`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('function', 'risk_catalog')) {
+        echo "Adding index 'function' to table 'risk_catalog'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX `function` ON `risk_catalog`(`function`);");
+        $stmt->execute();
+    }
+    if (!index_exists_on_table('grouping', 'risk_catalog')) {
+        echo "Adding index 'grouping' to table 'risk_catalog'.<br />\n";
+        $stmt = $db->prepare("CREATE INDEX `grouping` ON `risk_catalog`(`grouping`);");
+        $stmt->execute();
+    }
+
+    // Change the type of the 'risk_scoring' table's 'calculated_risk' column from float to double.
+    change_float_column_to_double($db, 'risk_scoring', 'id', 'calculated_risk');
+
+    // Change the type of the 'risk_scoring_history' table's 'calculated_risk' column from float to double.
+    change_float_column_to_double($db, 'risk_scoring_history', 'id', 'calculated_risk');
+
+    // Change the type of the 'residual_risk_scoring_history' table's 'residual_risk' column from float to double.
+    change_float_column_to_double($db, 'residual_risk_scoring_history', 'id', 'residual_risk');
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+    
     // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";

@@ -1,0 +1,13 @@
+.bundle
+.gradle/
+.idea/
+.pairs
+.rvmrc
+Gemfile.lock
+pkg/*
+tmp/
+features/fixtures/maven-wrapper/target
+*~
+features/fixtures/sbt/target
+features/fixtures/sbt/project/target
+features/fixtures/sbt/project/project

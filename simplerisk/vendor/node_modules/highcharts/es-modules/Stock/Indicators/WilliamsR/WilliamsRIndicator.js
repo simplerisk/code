@@ -26,22 +26,6 @@ const { extend, isArray, merge } = U;
  * @augments Highcharts.Series
  */
 class WilliamsRIndicator extends SMAIndicator {
-    constructor() {
-        /* *
-         *
-         *  Static Properties
-         *
-         * */
-        super(...arguments);
-        /* *
-         *
-         *  Properties
-         *
-         * */
-        this.data = void 0;
-        this.options = void 0;
-        this.points = void 0;
-    }
     /* *
      *
      *  Functions
@@ -83,6 +67,11 @@ class WilliamsRIndicator extends SMAIndicator {
         };
     }
 }
+/* *
+ *
+ *  Static Properties
+ *
+ * */
 /**
  * Williams %R. This series requires the `linkedTo` option to be
  * set and should be loaded after the `stock/indicators/indicators.js`.
@@ -102,7 +91,7 @@ class WilliamsRIndicator extends SMAIndicator {
  */
 WilliamsRIndicator.defaultOptions = merge(SMAIndicator.defaultOptions, {
     /**
-     * Paramters used in calculation of Williams %R series points.
+     * Parameters used in calculation of Williams %R series points.
      * @excluding index
      */
     params: {
@@ -142,4 +131,4 @@ export default WilliamsRIndicator;
  * @requires  stock/indicators/williams-r
  * @apioption series.williamsr
  */
-''; // adds doclets above to the transpiled file
+''; // Adds doclets above to the transpiled file

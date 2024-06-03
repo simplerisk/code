@@ -16,6 +16,9 @@ function init_default_editor(selector) {
         contextmenu: 'link image table',
         height: 600,
 
+  		color_default_background: '#FBEEB8', // Set the default background color to light yellow
+  		color_default_foreground: '#E03E2D', // Set the default text color to red
+
         branding: false,  // Remove the "Powered by Tiny"
         elementpath: false,  // Stop showing the selected element TAG
         promotion: false, // Don't display the 'Upgrade' button
@@ -46,6 +49,9 @@ function init_minimun_editor(selector) {
         quickbars_insert_toolbar: false,
         contextmenu: 'link image table',
         height: 250,
+
+  		color_default_background: '#FBEEB8', // Set the default background color to light yellow
+  		color_default_foreground: '#E03E2D', // Set the default text color to red
 
         // Need to set the URL options to prevent converting urls to relative urls that would make it not work in emails and such
         relative_urls : false,

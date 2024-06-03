@@ -1,0 +1,80 @@
+AllCops:
+  TargetRubyVersion: 2.4.0
+  Exclude:
+    - 'lib/license_finder/reports/**/*'
+    - 'features/fixtures/**/*'
+    - 'releases/**/*'
+    - 'ci/**/*'
+    - 'tmp/**/*'
+    - 'Gemfile'
+
+#Layout Cops
+HeredocIndentation:
+  Enabled: false
+EmptyLinesAroundArguments:
+  Enabled: false
+
+#Linting Cops
+AmbiguousRegexpLiteral:
+  Enabled: false
+
+# Metrics Cops
+AbcSize:
+  Max: 35
+BlockLength:
+  Enabled: false # TODO: enable and refactor long methods
+#  ExcludedMethods: ['describe', 'context', 'it', 'shared_examples']  # uncomment once enabled
+ClassLength:
+  Enabled: false
+CyclomaticComplexity:
+  Max: 15
+PerceivedComplexity:
+  Max: 15
+LineLength:
+  Max: 200
+MethodLength:
+  Enabled: false
+ModuleLength:
+  Enabled: false
+
+# Security Cops
+YAMLLoad:
+  Enabled: false
+Security/Open:
+  Enabled: false
+
+#Style Cops
+Naming/VariableNumber:
+  Enabled: false
+Lint/MixedRegexpCaptureTypes:
+  Enabled: false
+Lint/MissingSuper:
+  Enabled: false
+Style/OptionalBooleanParameter:
+  Enabled: false
+Style/MissingRespondToMissing:
+  Enabled: false
+Style/FormatStringToken:
+  EnforcedStyle: unannotated
+Style/HashEachMethods:
+  Enabled: true
+Style/HashTransformKeys:
+  Enabled: true
+Style/HashTransformValues:
+  Enabled: true
+Layout/MultilineMethodCallIndentation:
+    Enabled: false
+Lint/EmptyFile:
+  Enabled: false
+DoubleNegation:
+  Enabled: false
+Documentation:
+  Enabled: false
+FileName:
+  Exclude:
+    - '**/Rakefile'
+    - '**/Gemfile'
+    - '**/Podfile'
+ModuleFunction:
+  Enabled: false
+  EnforcedStyle: extend_self

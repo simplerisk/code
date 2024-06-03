@@ -1,0 +1,200 @@
+<% setup_slack = defined?(slack_url) && defined?(slack_channel) %>
+<% ruby_versions = ruby_versions.split(',') %>
+
+resource_types:
+<% if setup_slack %>
+- name: slack-notification
+  type: registry-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: latest
+    username: ((LicenseFinderDocker.username))
+    password: ((LicenseFinderDocker.password))
+<% end %>
+
+resources:
+- name: lf-git
+  type: git
+  source:
+    uri: git@github.com:pivotal/LicenseFinder.git
+    private_key: ((CfOslBot.private_key))
+    branch: master
+    ignore_paths: [VERSION, CHANGELOG.md]
+
+- name: semver-version
+  type: semver
+  source:
+    driver: gcs
+    bucket: lf-semver-version
+    key: version
+    json_key: ((GCPQueuedReportsBucketCredentials))
+
+- name: dockerhub-edge
+  type: docker-image
+  source:
+    tag: edge
+    repository: licensefinder/license_finder
+    email: ((LicenseFinderDockerEmail))
+    username: ((LicenseFinderDocker.username))
+    password: ((LicenseFinderDocker.password))
+
+- name: dockerhub
+  type: docker-image
+  source:
+    repository: licensefinder/license_finder
+    email: ((LicenseFinderDockerEmail))
+    username: ((LicenseFinderDocker.username))
+    password: ((LicenseFinderDocker.password))
+
+- name: lf-release
+  type: github-release
+  check_every: 24h
+  source:
+    owner: pivotal
+    repository: LicenseFinder
+    access_token: ((GithubApiRootToken))
+
+<% if setup_slack %>
+- name: slack-alert
+  type: slack-notification
+  source:
+    url: <%= slack_url %>
+<% end %>
+
+jobs:
+- name: build-docker-image
+  public: true
+  plan:
+    - get: lf-git
+      tags: ["private-worker"]
+      trigger: true
+    - put: dockerhub-edge
+      tags: ["private-worker"]
+      params:
+        build: lf-git
+
+<% ruby_versions.each do |ruby_version| %>
+- name: ruby-<%= ruby_version %>
+  public: true
+  plan:
+  - get: dockerhub-edge
+    tags: ["private-worker"]
+    passed: [build-docker-image]
+    trigger: true
+  - get: LicenseFinder
+    tags: ["private-worker"]
+    resource: lf-git
+    passed: [build-docker-image]
+    version: every
+  - task: ruby-<%= ruby_version %>
+    tags: ["private-worker"]
+    privileged: true
+    image: dockerhub-edge
+    file: LicenseFinder/ci/tasks/run-tests.yml
+    params:
+      RUBY_VERSION_UNDER_TEST: <%= ruby_version %>
+
+<% if setup_slack %>
+  on_failure:
+    put: slack-alert
+    tags: ["private-worker"]
+    params:
+      channel: '<%= slack_channel %>'
+      icon_emoji: ':crying_cat_face:'
+      text: '<%= "License Finder build failed. Build: https://norsk.cf-app.com/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME" %>'
+<% end %>
+<% end %>
+
+- name: rubocop
+  public: true
+  plan:
+  - get: dockerhub-edge
+    tags: ["private-worker"]
+    passed: [build-docker-image]
+    trigger: true
+  - get: LicenseFinder
+    tags: ["private-worker"]
+    resource: lf-git
+    version: every
+    passed: [build-docker-image]
+  - task: run-rubocop
+    tags: ["private-worker"]
+    privileged: true
+    file: LicenseFinder/ci/tasks/rubocop.yml
+    input_mapping: { LicenseFinder: LicenseFinder }
+
+- name: bump-major
+  plan:
+    - get: semver-version
+      tags: ["private-worker"]
+      params: {bump: major}
+    - put: semver-version
+      tags: ["private-worker"]
+      params: {file: semver-version/version}
+
+
+- name: bump-minor
+  plan:
+    - get: semver-version
+      tags: ["private-worker"]
+      params: {bump: minor}
+    - put: semver-version
+      tags: ["private-worker"]
+      params: {file: semver-version/version}
+
+- name: bump-patch
+  plan:
+    - get: semver-version
+      tags: ["private-worker"]
+      params: {bump: patch}
+    - put: semver-version
+      tags: ["private-worker"]
+      params: {file: semver-version/version}
+
+- name: release
+  disable_manual_trigger: true
+  plan:
+  - get: lf-git
+    tags: ["private-worker"]
+    passed: [<%= "#{ruby_versions.map{ |version| "ruby-#{version}" unless version == "jruby-9.3.1.0" }.compact.join(', ') }, rubocop" %>]
+  - get: semver-version
+    tags: ["private-worker"]
+    trigger: true
+  - get: dockerhub
+    tags: ["private-worker"]
+    params:
+      save: true
+  - get: lf-release
+    tags: ["private-worker"]
+  - task: update-changelog
+    tags: ["private-worker"]
+    image: dockerhub
+    params:
+      GIT_USERNAME: ((GithubApiUser))
+      GIT_EMAIL: ((GithubApiEmail))
+    file: lf-git/ci/tasks/update-changelog.yml
+  - put: dockerhub
+    tags: ["private-worker"]
+    params:
+      build: lf-git-changed
+      tag: version/version.txt
+      tag_as_latest: true
+  - put: lf-git
+    tags: ["private-worker"]
+    params:
+      repository: lf-git-changed
+  - task: build-and-push-gem
+    tags: ["private-worker"]
+    image: dockerhub
+    params:
+      GIT_USERNAME: ((GithubApiUser))
+      GIT_EMAIL: ((GithubApiEmail))
+      GIT_PRIVATE_KEY: ((CfOslBot.private_key))
+      GEM_API_KEY: ((LicenseFinderGemApiKey))
+    file: lf-git/ci/tasks/build-and-push-gem.yml
+  - put: lf-release
+    tags: ["private-worker"]
+    params:
+      name: version/tag.txt
+      tag: version/tag.txt
+      body: version/changelog.txt

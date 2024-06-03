@@ -24,17 +24,17 @@ function calculate_cvss_score($CVSS_AccessVector, $CVSS_AccessComplexity, $CVSS_
 	// Calculate the adjusted temporal score
 	$adjustedTemporalScore = adjusted_temporal_score($adjustedBaseScore, $CVSS_Exploitability, $CVSS_RemediationLevel, $CVSS_ReportConfidence);
 
-	$adjustedTemporalScore = round($adjustedTemporalScore,1);
+	$adjustedTemporalScore = round($adjustedTemporalScore, 2);
 
 	// Calculate the environmental score
 	$environmentalScore = environmental_score($adjustedTemporalScore, $CVSS_CollateralDamagePotential, $CVSS_TargetDistribution);
 
-	$environmentalScore = round($environmentalScore,1);
+	$environmentalScore = round($environmentalScore, 2);
 
 	// Calculate the impact
 	$impact = impact($CVSS_ConfImpact, $CVSS_IntegImpact, $CVSS_AvailImpact);
 
-	$impact = round($impact,1);
+	$impact = round($impact, 2);
 
 	// Calculate the impact function
 	$impactFunction = impact_function($impact);
@@ -42,12 +42,12 @@ function calculate_cvss_score($CVSS_AccessVector, $CVSS_AccessComplexity, $CVSS_
 	// Calculate the base score
 	$baseScore = base_score($impact,$exploitabilitySubScore,$impactFunction);
 
-	$baseScore = round($baseScore,1);
+	$baseScore = round($baseScore, 2);
 
 	// Calculate the temporal score
 	$temporalScore = temporal_score($baseScore, $CVSS_Exploitability, $CVSS_RemediationLevel, $CVSS_ReportConfidence);
 
-	$temporalScore = round($temporalScore,1);
+	$temporalScore = round($temporalScore, 2);
 
 	// Identify the score type
 	$scoreType = score_type($CVSS_Exploitability, $CVSS_RemediationLevel, $CVSS_ReportConfidence, $CVSS_CollateralDamagePotential, $CVSS_TargetDistribution);

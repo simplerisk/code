@@ -43,6 +43,7 @@ jQuery(document).ready(function($){
 
           $(document).on('click', '.control-block--edit', function(event) {
             event.preventDefault();
+            resetForm('#control--update>form');
             var control_id  = $(this).attr('data-id');
             $.ajax({
                 url: BASE_URL + '/api/governance/control?control_id=' + control_id,
@@ -91,11 +92,13 @@ jQuery(document).ready(function($){
                     if(control.custom_values){
                       var custom_values = control.custom_values;
                       for (var i=0; i<custom_values.length; i++) {
-                        var field_id = custom_values[i].field_id;
                         var field_value = custom_values[i].value;
-                        $("[name='custom_field["+field_id+"]']", modal).val(field_value);
-                        $('[name*="custom_field"].multiselect', modal).multiselect('select', field_value.split(','));
-                        $('[name*="custom_field"].multiselect', modal).multiselect('refresh');
+                    	var element = $("[name^='custom_field[" + custom_values[i].field_id + "]']", modal);
+                        if (field_value && custom_values[i].field_type == 'multidropdown' || custom_values[i].field_type == 'user_multidropdown') {
+                            element.multiselect('select', field_value);
+                        } else {
+                            element.val(field_value ? field_value : '');
+                        }
                       }
                     }
 
@@ -109,6 +112,7 @@ jQuery(document).ready(function($){
           
           $(document).on('click', '.control-block--clone', function(event) {
             event.preventDefault();
+			resetForm('#control--add>form');
             var control_id  = $(this).attr('data-id');
             $.ajax({
                 url: BASE_URL + '/api/governance/control?control_id=' + control_id,
@@ -144,11 +148,13 @@ jQuery(document).ready(function($){
                     if(control.custom_values){
                       var custom_values = control.custom_values;
                       for (var i=0; i<custom_values.length; i++) {
-                        var field_id = custom_values[i].field_id;
                         var field_value = custom_values[i].value;
-                        $("[name='custom_field["+field_id+"]']", modal).val(field_value);
-                        $('[name*="custom_field"].multiselect', modal).multiselect('select', field_value.split(','));
-                        $('[name*="custom_field"].multiselect', modal).multiselect('refresh');
+                    	var element = $("[name^='custom_field[" + custom_values[i].field_id + "]']", modal);
+                        if (field_value && custom_values[i].field_type == 'multidropdown' || custom_values[i].field_type == 'user_multidropdown') {
+                            element.multiselect('select', field_value);
+                        } else {
+                            element.val(field_value ? field_value : '');
+                        }
                       }
                     }
 

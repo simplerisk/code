@@ -2,7 +2,7 @@
  *
  *  GUI generator for Stock tools
  *
- *  (c) 2009-2021 Sebastian Bochan
+ *  (c) 2009-2024 Sebastian Bochan
  *
  *  License: www.highcharts.com/license
  *
@@ -16,12 +16,6 @@ import StockToolsDefaults from './StockToolsDefaults.js';
 import Toolbar from './StockToolbar.js';
 import U from '../../Core/Utilities.js';
 const { addEvent, getStyle, merge, pick } = U;
-/* *
- *
- *  Constants
- *
- * */
-const composedMembers = [];
 /* *
  *
  *  Functions
@@ -42,7 +36,8 @@ function chartSetStockTools(options) {
  * @private
  */
 function compose(ChartClass, NavigationBindingsClass) {
-    if (U.pushUnique(composedMembers, ChartClass)) {
+    const chartProto = ChartClass.prototype;
+    if (!chartProto.setStockTools) {
         addEvent(ChartClass, 'afterGetContainer', onChartAfterGetContainer);
         addEvent(ChartClass, 'beforeRedraw', onChartBeforeRedraw);
         addEvent(ChartClass, 'beforeRender', onChartBeforeRedraw);
@@ -50,13 +45,9 @@ function compose(ChartClass, NavigationBindingsClass) {
         addEvent(ChartClass, 'getMargins', onChartGetMargins, { order: 0 });
         addEvent(ChartClass, 'redraw', onChartRedraw);
         addEvent(ChartClass, 'render', onChartRender);
-        ChartClass.prototype.setStockTools = chartSetStockTools;
-    }
-    if (U.pushUnique(composedMembers, NavigationBindingsClass)) {
+        chartProto.setStockTools = chartSetStockTools;
         addEvent(NavigationBindingsClass, 'deselectButton', onNavigationBindingsDeselectButton);
         addEvent(NavigationBindingsClass, 'selectButton', onNavigationBindingsSelectButton);
-    }
-    if (U.pushUnique(composedMembers, setOptions)) {
         setOptions(StockToolsDefaults);
     }
 }
@@ -137,8 +128,8 @@ function onChartRender() {
         this.navigationBindings &&
         this.options.series &&
         button) {
-        if (this.navigationBindings.constructor.prototype.utils
-            .isPriceIndicatorEnabled(this.series)) {
+        if (this.navigationBindings.utils
+            ?.isPriceIndicatorEnabled?.(this.series)) {
             button.firstChild.style['background-image'] =
                 'url("' + stockTools.getIconsURL() + 'current-price-hide.svg")';
         }
@@ -171,7 +162,7 @@ function onNavigationBindingsSelectButton(event) {
     const className = 'highcharts-submenu-wrapper', gui = this.chart.stockTools;
     if (gui && gui.guiEnabled) {
         let button = event.button;
-        // Unslect other active buttons
+        // Unselect other active buttons
         gui.unselectAllButtons(event.button);
         // If clicked on a submenu, select state for it's parent
         if (button.parentNode.className.indexOf(className) >= 0) {

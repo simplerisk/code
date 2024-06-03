@@ -928,7 +928,7 @@ function dynamicriskForm()
 
             $tags = "";
             if ($row['risk_tags']) {
-                foreach(str_getcsv($row['risk_tags']) as $tag) {
+                foreach(str_getcsv($row['risk_tags'], '|') as $tag) {
                     $tags .= "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin: 1px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
                 }
             }
@@ -1091,7 +1091,7 @@ function dynamicriskUniqueColumnDataAPI()
                 }
             }
         }
-        
+
         $uniqueColumns = array_map("array_values", array_map("array_unique", $uniqueColumns));
 
         $delimiter = "---";
@@ -1109,38 +1109,35 @@ function dynamicriskUniqueColumnDataAPI()
                 case "project":
                     $uniqueColumnArr = get_name_value_array_from_text_array($uniqueColumnArr, ',', $delimiter, true);
                 break;
-                case "location":
-                    $uniqueColumnArr = get_name_value_array_from_text_array($uniqueColumnArr, ';', $delimiter);
-                break;
-                case "risk_tags":
+                // columns split by ","
+                case "mitigation_cost":
                     $uniqueColumnArr = get_name_value_array_from_text_array($uniqueColumnArr, ',', $delimiter);
                 break;
-                // columns splitted by ","
+
+                /*Move over fields here that can't have text separated by a comma(,).
+				Don't forget to also update the query to use '|' as the separator instead of ','*/
+                case "planning_strategy":
+                case "close_reason":
+                case "next_step":
                 case "risk_status":
                 case "source":
                 case "category":
-                case "team":
+
+                case "closed_by":
                 case "additional_stakeholders":
-                case "technology":
                 case "owner":
                 case "manager":
                 case "submitted_by":
-                case "closed_by":
-                case "close_reason":
-                case "regulation":
-                case "next_step":
-                case "planning_strategy":
-                case "mitigation_cost":
-                case "mitigation_owner":
-                case "mitigation_team":
-                case "mitigation_controls":
-                case "threat_mapping":
                 case "reviewer":
-                    $uniqueColumnArr = get_name_value_array_from_text_array($uniqueColumnArr, ',', $delimiter);
-                break;
-                
-                /*Move over fields here that can't have text separated by a comma(,).
-				Don't forget to also update the query to use '|' as the separator instead of ','*/
+                case "mitigation_owner":
+
+                case "mitigation_controls":
+                case "mitigation_team":
+                case "location":
+                case "risk_tags":
+                case "technology":
+                case "team":
+                case "threat_mapping":
                 case "risk_mapping_risk_grouping":
                 case "risk_mapping_risk":
                 case "risk_mapping_function":
@@ -4555,6 +4552,19 @@ function getControlResponse()
         $id = $_GET['control_id'];
         $control = get_framework_control($id);
         $control['description'] = utf8ize($control['description']);
+
+        foreach ($control['custom_values'] as &$custom_value) {
+            switch ($custom_value['field_type']) {
+                case 'date':
+                    $custom_value['value'] = $custom_value['value'] ? format_date($custom_value['value']) : '';
+                    break;
+                case 'multidropdown':
+                case 'user_multidropdown':
+                    $custom_value['value'] = $custom_value['value'] ? explode(',', $custom_value['value']) : '';
+                    break;
+            }
+        }
+
         $mapped_frameworks = get_mapping_control_frameworks($id);
         $frameworks_html = "";
         foreach ($mapped_frameworks as $framework){
@@ -4594,6 +4604,19 @@ function getFrameworkResponse()
     {
         $id = $_GET['framework_id'];
         $framework = get_framework($id);
+
+        foreach ($framework['custom_values'] as &$custom_value) {
+            switch ($custom_value['field_type']) {
+                case 'date':
+                    $custom_value['value'] = $custom_value['value'] ? format_date($custom_value['value']) : '';
+                    break;
+                case 'multidropdown':
+                case 'user_multidropdown':
+                    $custom_value['value'] = $custom_value['value'] ? explode(',', $custom_value['value']) : '';
+                    break;
+            }
+        }
+
         json_response(200, "Get framework by ID", ["framework" => $framework]);
     }
     else
@@ -9591,6 +9614,19 @@ function detail_project_api(){
         $result = get_project($value);
         $result['name'] = try_decrypt($result['name']);
         $result['due_date'] = format_date($result['due_date']);
+
+        foreach ($result['custom_values'] as &$custom_value) {
+            switch ($custom_value['field_type']) {
+                case 'date':
+                    $custom_value['value'] = $custom_value['value'] ? format_date($custom_value['value']) : '';
+                    break;
+                case 'multidropdown':
+                case 'user_multidropdown':
+                    $custom_value['value'] = $custom_value['value'] ? explode(',', $custom_value['value']) : '';
+                    break;
+            }
+        }
+
         json_response(200, "Get project by ID", $result);
     } else {
         json_response(400, $escaper->escapeHtml($lang['NoPermissionForThisAction']), NULL);

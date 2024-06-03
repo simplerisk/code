@@ -21,6 +21,7 @@ use Symfony\Component\Intl\Timezones;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
 use Twig\Extension\AbstractExtension;
+use Twig\Extension\CoreExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 
@@ -149,7 +150,7 @@ final class IntlExtension extends AbstractExtension
     private $dateFormatterPrototype;
     private $numberFormatterPrototype;
 
-    public function __construct(\IntlDateFormatter $dateFormatterPrototype = null, \NumberFormatter $numberFormatterPrototype = null)
+    public function __construct(?\IntlDateFormatter $dateFormatterPrototype = null, ?\NumberFormatter $numberFormatterPrototype = null)
     {
         $this->dateFormatterPrototype = $dateFormatterPrototype;
         $this->numberFormatterPrototype = $numberFormatterPrototype;
@@ -190,7 +191,7 @@ final class IntlExtension extends AbstractExtension
         ];
     }
 
-    public function getCountryName(?string $country, string $locale = null): string
+    public function getCountryName(?string $country, ?string $locale = null): string
     {
         if (null === $country) {
             return '';
@@ -203,7 +204,7 @@ final class IntlExtension extends AbstractExtension
         }
     }
 
-    public function getCurrencyName(?string $currency, string $locale = null): string
+    public function getCurrencyName(?string $currency, ?string $locale = null): string
     {
         if (null === $currency) {
             return '';
@@ -216,7 +217,7 @@ final class IntlExtension extends AbstractExtension
         }
     }
 
-    public function getCurrencySymbol(?string $currency, string $locale = null): string
+    public function getCurrencySymbol(?string $currency, ?string $locale = null): string
     {
         if (null === $currency) {
             return '';
@@ -229,7 +230,7 @@ final class IntlExtension extends AbstractExtension
         }
     }
 
-    public function getLanguageName(?string $language, string $locale = null): string
+    public function getLanguageName(?string $language, ?string $locale = null): string
     {
         if (null === $language) {
             return '';
@@ -242,7 +243,7 @@ final class IntlExtension extends AbstractExtension
         }
     }
 
-    public function getLocaleName(?string $data, string $locale = null): string
+    public function getLocaleName(?string $data, ?string $locale = null): string
     {
         if (null === $data) {
             return '';
@@ -255,7 +256,7 @@ final class IntlExtension extends AbstractExtension
         }
     }
 
-    public function getTimezoneName(?string $timezone, string $locale = null): string
+    public function getTimezoneName(?string $timezone, ?string $locale = null): string
     {
         if (null === $timezone) {
             return '';
@@ -277,7 +278,7 @@ final class IntlExtension extends AbstractExtension
         }
     }
 
-    public function getLanguageNames(string $locale = null): array
+    public function getLanguageNames(?string $locale = null): array
     {
         try {
             return Languages::getNames($locale);
@@ -286,7 +287,7 @@ final class IntlExtension extends AbstractExtension
         }
     }
 
-    public function getScriptNames(string $locale = null): array
+    public function getScriptNames(?string $locale = null): array
     {
         try {
             return Scripts::getNames($locale);
@@ -295,7 +296,7 @@ final class IntlExtension extends AbstractExtension
         }
     }
 
-    public function getCountryNames(string $locale = null): array
+    public function getCountryNames(?string $locale = null): array
     {
         try {
             return Countries::getNames($locale);
@@ -304,7 +305,7 @@ final class IntlExtension extends AbstractExtension
         }
     }
 
-    public function getLocaleNames(string $locale = null): array
+    public function getLocaleNames(?string $locale = null): array
     {
         try {
             return Locales::getNames($locale);
@@ -313,7 +314,7 @@ final class IntlExtension extends AbstractExtension
         }
     }
 
-    public function getCurrencyNames(string $locale = null): array
+    public function getCurrencyNames(?string $locale = null): array
     {
         try {
             return Currencies::getNames($locale);
@@ -322,7 +323,7 @@ final class IntlExtension extends AbstractExtension
         }
     }
 
-    public function getTimezoneNames(string $locale = null): array
+    public function getTimezoneNames(?string $locale = null): array
     {
         try {
             return Timezones::getNames($locale);
@@ -331,7 +332,7 @@ final class IntlExtension extends AbstractExtension
         }
     }
 
-    public function formatCurrency($amount, string $currency, array $attrs = [], string $locale = null): string
+    public function formatCurrency($amount, string $currency, array $attrs = [], ?string $locale = null): string
     {
         $formatter = $this->createNumberFormatter($locale, 'currency', $attrs);
 
@@ -342,7 +343,7 @@ final class IntlExtension extends AbstractExtension
         return $ret;
     }
 
-    public function formatNumber($number, array $attrs = [], string $style = 'decimal', string $type = 'default', string $locale = null): string
+    public function formatNumber($number, array $attrs = [], string $style = 'decimal', string $type = 'default', ?string $locale = null): string
     {
         if (!isset(self::NUMBER_TYPES[$type])) {
             throw new RuntimeError(sprintf('The type "%s" does not exist, known types are: "%s".', $type, implode('", "', array_keys(self::NUMBER_TYPES))));
@@ -357,7 +358,7 @@ final class IntlExtension extends AbstractExtension
         return $ret;
     }
 
-    public function formatNumberStyle(string $style, $number, array $attrs = [], string $type = 'default', string $locale = null): string
+    public function formatNumberStyle(string $style, $number, array $attrs = [], string $type = 'default', ?string $locale = null): string
     {
         return $this->formatNumber($number, $attrs, $style, $type, $locale);
     }
@@ -366,12 +367,12 @@ final class IntlExtension extends AbstractExtension
      * @param \DateTimeInterface|string|null  $date     A date or null to use the current time
      * @param \DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      */
-    public function formatDateTime(Environment $env, $date, ?string $dateFormat = 'medium', ?string $timeFormat = 'medium', string $pattern = '', $timezone = null, string $calendar = 'gregorian', string $locale = null): string
+    public function formatDateTime(Environment $env, $date, ?string $dateFormat = 'medium', ?string $timeFormat = 'medium', string $pattern = '', $timezone = null, string $calendar = 'gregorian', ?string $locale = null): string
     {
-        $date = twig_date_converter($env, $date, $timezone);
+        $date = CoreExtension::dateConverter($env, $date, $timezone);
 
         $formatterTimezone = $timezone;
-        if (null === $formatterTimezone) {
+        if (null === $formatterTimezone || false === $formatterTimezone) {
             $formatterTimezone = $date->getTimezone();
         } elseif (\is_string($formatterTimezone)) {
             $formatterTimezone = new \DateTimeZone($timezone);
@@ -389,7 +390,7 @@ final class IntlExtension extends AbstractExtension
      * @param \DateTimeInterface|string|null  $date     A date or null to use the current time
      * @param \DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      */
-    public function formatDate(Environment $env, $date, ?string $dateFormat = 'medium', string $pattern = '', $timezone = null, string $calendar = 'gregorian', string $locale = null): string
+    public function formatDate(Environment $env, $date, ?string $dateFormat = 'medium', string $pattern = '', $timezone = null, string $calendar = 'gregorian', ?string $locale = null): string
     {
         return $this->formatDateTime($env, $date, $dateFormat, 'none', $pattern, $timezone, $calendar, $locale);
     }
@@ -398,7 +399,7 @@ final class IntlExtension extends AbstractExtension
      * @param \DateTimeInterface|string|null  $date     A date or null to use the current time
      * @param \DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      */
-    public function formatTime(Environment $env, $date, ?string $timeFormat = 'medium', string $pattern = '', $timezone = null, string $calendar = 'gregorian', string $locale = null): string
+    public function formatTime(Environment $env, $date, ?string $timeFormat = 'medium', string $pattern = '', $timezone = null, string $calendar = 'gregorian', ?string $locale = null): string
     {
         return $this->formatDateTime($env, $date, 'none', $timeFormat, $pattern, $timezone, $calendar, $locale);
     }

@@ -56,6 +56,7 @@ jQuery(document).ready(function($){
 
     $(document).on('click', '.project-block--edit', function(event) {
         event.preventDefault();
+        resetForm('#project--edit>form');
         //$(this).parents('.project-block').fadeOut('400').delay('500').remove();
         var project_id = $(this).attr('data-id');
         $.ajax({
@@ -70,12 +71,16 @@ jQuery(document).ready(function($){
                 $("#project--edit [name=business_owner]").val(project.business_owner);
                 $("#project--edit [name=data_classification]").val(project.data_classification);
                 if(project.custom_values){
-                  var custom_values = project.custom_values;
-                  for (var i=0; i<custom_values.length; i++) {
-                    var field_id = custom_values[i].field_id;
-                    var field_value = custom_values[i].value;
-                    $("#project--edit [name='custom_field["+field_id+"]']").val(field_value);
-                  }
+					var custom_values = project.custom_values;
+					for (var i=0; i<custom_values.length; i++) {
+						var field_value = custom_values[i].value;
+						var element = $("#project--edit [name^='custom_field[" + custom_values[i].field_id + "]']");
+					    if (field_value && custom_values[i].field_type == 'multidropdown' || custom_values[i].field_type == 'user_multidropdown') {
+					        element.multiselect('select', field_value);
+					    } else {
+					        element.val(field_value ? field_value : '');
+					    }
+					}
                 }
                 $("#project--edit").modal();
             }

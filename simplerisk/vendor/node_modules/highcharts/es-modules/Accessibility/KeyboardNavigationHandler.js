@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009-2021 Øystein Moseng
+ *  (c) 2009-2024 Øystein Moseng
  *
  *  Keyboard navigation handler base class definition
  *
@@ -63,7 +63,6 @@ class KeyboardNavigationHandler {
      *  Functions
      *
      * */
-    /* eslint-disable valid-jsdoc */
     /**
      * Find handler function(s) for key code in the keyCodeMap and run it.
      *
@@ -124,4 +123,4 @@ export default KeyboardNavigationHandler;
 * @name Highcharts.KeyboardNavigationHandlerOptionsObject#validate
 * @type {Function|undefined}
 */
-(''); // keeps doclets above in JS file
+(''); // Keeps doclets above in JS file

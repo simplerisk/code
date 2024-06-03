@@ -494,7 +494,7 @@ function get_mfa_qr_code_url($uid)
     $totp_uri = "otpauth://totp/SimpleRisk:" . $username . "?" . $totp_parameters;
 
     // Use the Google Chart API to generate the QR code
-    $image_url = 'https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl='.urlencode($totp_uri);
+    $image_url = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data='.urlencode($totp_uri);
 
     // Return the image URL
     return $image_url;

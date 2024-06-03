@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2010-2021 Torstein Honsi
+ *  (c) 2010-2024 Torstein Honsi
  *
  *  License: www.highcharts.com/license
  *
@@ -24,7 +24,7 @@ const { isNumber, merge, pInt } = U;
  * @name Highcharts.Color
  *
  * @param {Highcharts.ColorType} input
- * The input color in either rbga or hex format
+ * The input color in either rgba or hex format
  */
 class Color {
     /* *
@@ -38,7 +38,7 @@ class Color {
      * @function Highcharts.Color.parse
      *
      * @param {Highcharts.ColorType} [input]
-     * The input color in either rbga or hex format.
+     * The input color in either rgba or hex format.
      *
      * @return {Highcharts.Color}
      * Color instance.
@@ -59,23 +59,6 @@ class Color {
         if (GlobalColor && GlobalColor !== Color) {
             return new GlobalColor(input);
         }
-        this.init(input);
-    }
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    /**
-     * Parse the input color to rgba array
-     *
-     * @private
-     * @function Highcharts.Color#init
-     *
-     * @param {Highcharts.ColorType} input
-     * The input color in either rbga or hex format
-     */
-    init(input) {
         let result, rgba, i, parser;
         // Gradients
         if (typeof input === 'object' &&
@@ -127,6 +110,11 @@ class Color {
             this.rgba = rgba;
         }
     }
+    /* *
+     *
+     *  Functions
+     *
+     * */
     /**
      * Return the color or gradient stops in the specified format
      *
@@ -152,7 +140,7 @@ class Color {
             });
             return ret;
         }
-        // it's NaN if gradient colors on a column chart
+        // It's NaN if gradient colors on a column chart
         if (rgba && isNumber(rgba[0])) {
             if (format === 'rgb' || (!format && rgba[3] === 1)) {
                 return 'rgb(' + rgba[0] + ',' + rgba[1] + ',' + rgba[2] + ')';
@@ -406,9 +394,9 @@ export default Color;
  * @function Highcharts.color
  *
  * @param {Highcharts.ColorType} input
- *        The input color in either rbga or hex format
+ *        The input color in either rgba or hex format
  *
  * @return {Highcharts.Color}
  *         Color instance
  */
-(''); // detach doclets above
+(''); // Detach doclets above

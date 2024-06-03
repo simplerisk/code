@@ -273,7 +273,8 @@ $temp_tables = [
         'temp_rsh_last_update_age',
         'temp_contributing_risk_impact_data',
         'temp_rsh_last_update_age_base',
-        'temp_rrsh_last_update_age_base'
+        'temp_rrsh_last_update_age_base',
+        'temp_associated_risk_catalog_entries',
     ],
     'asset_name_ordering' => [
         'temp_asset_order'
@@ -2472,7 +2473,7 @@ function calculate_risk($impact, $likelihood)
         }
 
         // This puts it on a 1 to 10 scale similar to CVSS
-        $risk = round($risk * (10 / $max_risk), 1);
+        $risk = round($risk * (10 / $max_risk), 2);
     }
     // If the impact or likelihood were not specified risk is 10
     else $risk = get_setting('default_risk_score');
@@ -4437,7 +4438,7 @@ function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_like
         {
             $CLASSIC_likelihood = $GLOBALS['count_of_likelihoods'];
         }
-        
+
         // Create the database query
         $stmt = $db->prepare("INSERT INTO risk_scoring (`id`, `scoring_method`, `calculated_risk`, `CLASSIC_likelihood`, `CLASSIC_impact`) VALUES (:last_insert_id, :scoring_method, :calculated_risk, :CLASSIC_likelihood, :CLASSIC_impact)");
         $stmt->bindParam(":last_insert_id", $last_insert_id, PDO::PARAM_INT);
@@ -4498,7 +4499,7 @@ function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_like
     else if ($scoring_method == 3)
     {
         // Calculate the risk via DREAD method
-        $calculated_risk = ($DREADDamage + $DREADReproducibility + $DREADExploitability + $DREADAffectedUsers + $DREADDiscoverability)/5;
+        $calculated_risk = round(($DREADDamage + $DREADReproducibility + $DREADExploitability + $DREADAffectedUsers + $DREADDiscoverability)/5, 2);
 
         // Create the database query
         $stmt = $db->prepare("INSERT INTO risk_scoring (`id`, `scoring_method`, `calculated_risk`, `DREAD_DamagePotential`, `DREAD_Reproducibility`, `DREAD_Exploitability`, `DREAD_AffectedUsers`, `DREAD_Discoverability`) VALUES (:last_insert_id, :scoring_method, :calculated_risk, :DREAD_DamagePotential, :DREAD_Reproducibility, :DREAD_Exploitability, :DREAD_AffectedUsers, :DREAD_Discoverability)");
@@ -4567,7 +4568,7 @@ function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_like
     		$stmt->execute();
     		$risk_level = $stmt->fetch();
     		$calculated_risk = $risk_level['calculated_risk'];
-    		$calculated_risk = round($risk_level['calculated_risk'], 1);
+    		$calculated_risk = round($risk_level['calculated_risk'], 2);
     	}
     	else if (($OWASP_likelihood_name == "LOW" && $OWASP_impact_name == "HIGH") || ($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "MEDIUM") || ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "LOW"))
     	{
@@ -4577,7 +4578,7 @@ function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_like
     		$stmt->execute();
     		$risk_level = $stmt->fetch();
     		$calculated_risk = $risk_level['calculated_risk'];
-    		$calculated_risk = round($risk_level['calculated_risk'], 1);
+    		$calculated_risk = round($risk_level['calculated_risk'], 2);
     	}
     	else if (($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "HIGH") || ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "MEDIUM"))
     	{
@@ -4586,7 +4587,7 @@ function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_like
     		$stmt = $db->prepare("SELECT AVG(value) AS calculated_risk FROM (SELECT value FROM risk_levels WHERE name='High' OR name='Very High') AS risk_level;");
     		$stmt->execute();
     		$risk_level = $stmt->fetch();
-    		$calculated_risk = round($risk_level['calculated_risk'], 1);
+    		$calculated_risk = round($risk_level['calculated_risk'], 2);
     	}
     	else if ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "HIGH")
     	{
@@ -4904,7 +4905,7 @@ function update_dread_score($risk_id, $DREADDamagePotential, $DREADReproducibili
     $db = db_open();
 
     // Calculate the risk via DREAD method
-    $calculated_risk = ($DREADDamagePotential + $DREADReproducibility + $DREADExploitability + $DREADAffectedUsers + $DREADDiscoverability)/5;
+    $calculated_risk = round(($DREADDamagePotential + $DREADReproducibility + $DREADExploitability + $DREADAffectedUsers + $DREADDiscoverability)/5, 2);
 
     // Create the database query
     $stmt = $db->prepare("UPDATE risk_scoring SET calculated_risk=:calculated_risk, DREAD_DamagePotential=:DREAD_DamagePotential, DREAD_Reproducibility=:DREAD_Reproducibility, DREAD_Exploitability=:DREAD_Exploitability, DREAD_AffectedUsers=:DREAD_AffectedUsers, DREAD_Discoverability=:DREAD_Discoverability WHERE id=:id");
@@ -5008,7 +5009,7 @@ function update_owasp_score($risk_id, $OWASPSkill, $OWASPMotive, $OWASPOpportuni
                 $stmt->execute();
                 $risk_level = $stmt->fetch();
                 $calculated_risk = $risk_level['calculated_risk'];
-                $calculated_risk = round($risk_level['calculated_risk'], 1);
+                $calculated_risk = round($risk_level['calculated_risk'], 2);
         }
         else if (($OWASP_likelihood_name == "LOW" && $OWASP_impact_name == "HIGH") || ($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "MEDIUM") || ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "LOW"))
         {
@@ -5018,7 +5019,7 @@ function update_owasp_score($risk_id, $OWASPSkill, $OWASPMotive, $OWASPOpportuni
                 $stmt->execute();
                 $risk_level = $stmt->fetch();
                 $calculated_risk = $risk_level['calculated_risk'];
-                $calculated_risk = round($risk_level['calculated_risk'], 1);
+                $calculated_risk = round($risk_level['calculated_risk'], 2);
         }
         else if (($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "HIGH") || ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "MEDIUM"))
         {
@@ -5027,7 +5028,7 @@ function update_owasp_score($risk_id, $OWASPSkill, $OWASPMotive, $OWASPOpportuni
                 $stmt = $db->prepare("SELECT AVG(value) AS calculated_risk FROM (SELECT value FROM risk_levels WHERE name='High' OR name='Very High') AS risk_level;");
                 $stmt->execute();
                 $risk_level = $stmt->fetch();
-                $calculated_risk = round($risk_level['calculated_risk'], 1);
+                $calculated_risk = round($risk_level['calculated_risk'], 2);
         }
         else if ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "HIGH")
         {
@@ -5321,7 +5322,7 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
     else if ($scoring_method == 3)
     {
         // Calculate the risk via DREAD method
-        $calculated_risk = ($DREADDamage + $DREADReproducibility + $DREADExploitability + $DREADAffectedUsers + $DREADDiscoverability)/5;
+        $calculated_risk = round(($DREADDamage + $DREADReproducibility + $DREADExploitability + $DREADAffectedUsers + $DREADDiscoverability)/5, 2);
 
         // Create the database query
         $stmt = $db->prepare("UPDATE risk_scoring SET scoring_method=:scoring_method, calculated_risk=:calculated_risk, DREAD_DamagePotential=:DREAD_DamagePotential, DREAD_Reproducibility=:DREAD_Reproducibility, DREAD_Exploitability=:DREAD_Exploitability, DREAD_AffectedUsers=:DREAD_AffectedUsers, DREAD_Discoverability=:DREAD_Discoverability WHERE id=:id; ");
@@ -5388,7 +5389,7 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
                 $stmt->execute();
                 $risk_level = $stmt->fetch();
                 $calculated_risk = $risk_level['calculated_risk'];
-                $calculated_risk = round($risk_level['calculated_risk'], 1);
+                $calculated_risk = round($risk_level['calculated_risk'], 2);
         }
         else if (($OWASP_likelihood_name == "LOW" && $OWASP_impact_name == "HIGH") || ($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "MEDIUM") || ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "LOW"))
         {
@@ -5398,7 +5399,7 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
                 $stmt->execute();
                 $risk_level = $stmt->fetch();
                 $calculated_risk = $risk_level['calculated_risk'];
-                $calculated_risk = round($risk_level['calculated_risk'], 1);
+                $calculated_risk = round($risk_level['calculated_risk'], 2);
         }
         else if (($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "HIGH") || ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "MEDIUM"))
         {
@@ -5407,7 +5408,7 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
                 $stmt = $db->prepare("SELECT AVG(value) AS calculated_risk FROM (SELECT value FROM risk_levels WHERE name='High' OR name='Very High') AS risk_level;");
                 $stmt->execute();
                 $risk_level = $stmt->fetch();
-                $calculated_risk = round($risk_level['calculated_risk'], 1);
+                $calculated_risk = round($risk_level['calculated_risk'], 2);
         }
         else if ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "HIGH")
         {
@@ -16952,7 +16953,7 @@ function getTypeOfColumn($table, $column) {
 
     db_close($db);
 
-    return $result ? $result : "";
+    return $result ? strtolower($result) : "";
 }
 
 /********************************
@@ -22354,6 +22355,112 @@ function array_equal($a, $b) {
         && count($a) == count($b)
         && array_diff($a, $b) === array_diff($b, $a)
     );
+}
+
+/**
+ * Checks if key - value pairs of the two arrays are identical
+ *
+ * @param array $a
+ * @param array $b
+ * @return boolean
+ */
+function array_equal_assoc($a, $b) {
+    return (
+        is_array($a)
+        && is_array($b)
+        && count($a) == count($b)
+        && array_diff_assoc($a, $b) === array_diff_assoc($b, $a)
+    );
+}
+
+/**
+ *
+ * It's a helper/wrapper function for changing a column's type from float to double with the required checks and rollback logic.
+ *
+ * It checks the data of the original and new columns and only allows to do the change if the data in the two columns match.
+ * 
+ * Since the process of the type change includes deleting the original column the associated indexes are getting dropped as well.
+ * There's an option(Default: true) to (re-)create an index for the field. This is a simple index, complex indexes need to be re-created
+ * after the function finished.
+ *
+ * @param PDO $db Database connection
+ * @param string $table_name Name of the table
+ * @param string $id_column_name Name of ID column of the table
+ * @param string $float_column_name Name of the float column that need to be changed to double
+ * @param boolean $create_index Whether to (re-)create an index on the column (Default: true)
+ * @param boolean $print_messages Print messages during the process(for core) or just return the result(for extras) (Default: true)
+ * @param string $double_column_def Specify a different column definition for the double column (Default: 'DOUBLE NOT NULL')
+ */
+function change_float_column_to_double($db, $table_name, $id_column_name, $float_column_name, $create_index = true, $print_messages = true, $double_column_def = 'DOUBLE NOT NULL') {
+
+    if (getTypeOfColumn($table_name, $float_column_name) == 'float') {
+        if ($print_messages) echo "Changing type of column '{$float_column_name}' on table '{$table_name}' from 'float' to 'double'.<br />\n";
+
+        $double_column_name = "dbl_{$float_column_name}";
+        
+        // Create the new column with a temporary name
+        $stmt = $db->prepare("ALTER TABLE `{$table_name}` ADD `{$double_column_name}` {$double_column_def};");
+        $stmt->execute();
+        
+        // Add the data to the temporary column
+        $stmt = $db->prepare("UPDATE `{$table_name}` SET `{$double_column_name}` = ROUND(`{$float_column_name}`, 2);");
+        $stmt->execute();
+        
+        // Get float data
+        $stmt = $db->prepare("SELECT `{$id_column_name}`, `{$float_column_name}` FROM `{$table_name}`;");
+        $stmt->execute();
+        $float_data = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        
+        // Get double data
+        $stmt = $db->prepare("SELECT `{$id_column_name}`, `{$double_column_name}` FROM `{$table_name}`;");
+        $stmt->execute();
+        $double_data = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+
+        // Check if the data in the original and the new column matches
+        if (!array_equal_assoc($float_data, $double_data)) {
+            // Drop the double column because there's an issue with the data
+            $stmt = $db->prepare("ALTER TABLE `{$table_name}` DROP COLUMN `{$double_column_name}`;");
+            $stmt->execute();
+
+            // Change failed, rolled back
+            $success = false;
+        } else {
+            
+            // Data matches, we're good to go
+            
+            // Drop the original column
+            $stmt = $db->prepare("ALTER TABLE `{$table_name}` DROP COLUMN `{$float_column_name}`;");
+            $stmt->execute();
+            
+            // Rename the double column to take the original column's place
+            $stmt = $db->prepare("ALTER TABLE `{$table_name}` RENAME COLUMN `{$double_column_name}` TO `{$float_column_name}`;");
+            $stmt->execute();
+
+            // Change successful, unnecessary data cleaned up
+            $success = true;
+        }
+
+        
+        
+        // Check if the changes were successful. Index (re-)creation is only available if the previous changes succeeded
+        // meaning that the original column were dropped(and its index with it)
+        if ($success) {
+            if ($print_messages) echo "Successfully changed type of column '{$float_column_name}' on table '{$table_name}' from 'float' to 'double'.<br />\n";
+            
+            // re-create index because indexes on the changed columns are removed
+            if ($create_index && !index_exists_on_table($float_column_name, $table_name)) {
+                if ($print_messages) echo "Re-creating index '{$float_column_name}' on table '{$table_name}'.<br />\n";
+                $stmt = $db->prepare("ALTER TABLE `{$table_name}` ADD INDEX `{$float_column_name}` (`{$float_column_name}`);");
+                $stmt->execute();
+            }
+        } else {
+            if ($print_messages) echo "Failed to change type of column '{$float_column_name}' on table '{$table_name}' from 'float' to 'double'. Please contact support@simplerisk.com for assistance.<br />\n";
+
+            return false;
+        }
+    }
+
+    return true;
 }
 
 

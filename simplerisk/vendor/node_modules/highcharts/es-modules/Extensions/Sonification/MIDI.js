@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009-2022 Øystein Moseng
+ *  (c) 2009-2024 Øystein Moseng
  *
  *  Small MIDI file writer for sonification export.
  *
@@ -79,8 +79,10 @@ varLenEnc = (n) => {
                 add({
                     timeMS: t,
                     type: 'CTRL_CHG',
-                    data: [0xB0, parseInt(ctrlSignal, 10),
-                        ctrlDef.valMap(val)]
+                    data: [
+                        0xB0, parseInt(ctrlSignal, 10),
+                        ctrlDef.valMap(val)
+                    ]
                 });
             }
         }));

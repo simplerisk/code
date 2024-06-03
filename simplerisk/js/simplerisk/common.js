@@ -451,3 +451,11 @@ $(document).ready(function(){
     }
     
 })
+
+// A function to properly reset a form.
+// Add logic for new widgets when needed
+function resetForm(formEL) {
+	let $form = $(formEL);
+	$form[0].reset();
+	$form.find('select.multiselect').multiselect('refresh');
+}
