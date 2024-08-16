@@ -1,1 +1,0 @@
-import '../../../indicators/stochastic.src';

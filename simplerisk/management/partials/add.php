@@ -3,43 +3,6 @@
      * License, v. 2.0. If a copy of the MPL was not distributed with this
      * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-    // Include required functions file
-    require_once(realpath(__DIR__ . '/../../includes/functions.php'));
-    require_once(realpath(__DIR__ . '/../../includes/authenticate.php'));
-    require_once(realpath(__DIR__ . '/../../includes/display.php'));
-    require_once(realpath(__DIR__ . '/../../includes/alerts.php'));
-    require_once(realpath(__DIR__ . '/../../includes/permissions.php'));
-    require_once(realpath(__DIR__ . '/../../vendor/autoload.php'));
-
-    // Add various security headers
-    add_security_headers();
-
-    if (!isset($_SESSION))
-    {
-        // Session handler is database
-        if (USE_DATABASE_FOR_SESSIONS == "true")
-        {
-            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-        }
-
-        // Start the session
-        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
-        session_name('SimpleRisk');
-        session_start();
-    }
-
-    // Include the language file
-    // Ignoring detections related to language files
-    // @phan-suppress-next-line SecurityCheck-PathTraversal
-    require_once(language_file());
-    global $lang;
-
-    csrf_init();
-
-    // Check for session timeout or renegotiation
-    session_check();
-
     // Check if access is authorized
     if (!isset($_SESSION["access"]) || $_SESSION["access"] != "1")
     {
@@ -51,8 +14,8 @@
     enforce_permission("riskmanagement");
 
 ?>
-
-    <div class="row-fluid">
+<div class="row">
+    <div class="col-12">
         <?php add_risk_details($template_group_id); ?>
     </div>
-    
+</div>

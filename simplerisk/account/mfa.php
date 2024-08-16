@@ -1,8 +1,13 @@
 <?php
-
 /* This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+// Render the header and sidebar
+require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+
+$breadcrumb_title_key = "MFA Configuration";
+render_header_and_sidebar(breadcrumb_title_key: $breadcrumb_title_key);
 
 // Include required functions file
 require_once(realpath(__DIR__ . '/../includes/functions.php'));
@@ -12,18 +17,6 @@ require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/messages.php'));
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-
-// Add various security headers
-add_security_headers();
-
-// Add the session
-add_session_check();
-
-// Include the CSRF Magic library
-include_csrf_magic();
-
-// Include the SimpleRisk language file
-require_once(language_file());
 
 // If the user attempted to verify the MFA
 if (isset($_POST['verify']))
@@ -48,93 +41,61 @@ if (isset($_POST['disable']))
 }
 
 ?>
-
-<!doctype html>
-<html>
-
-  <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
-	<?php
-        // Use these jQuery scripts
-        $scripts = [
-            'jquery.min.js',
-        ];
-
-        // Include the jquery javascript source
-        display_jquery_javascript($scripts);
-
-		// Use these jquery-ui scripts
-		$scripts = [
-			'jquery-ui.min.js',
-		];
-
-		// Include the jquery-ui javascript source
-		display_jquery_ui_javascript($scripts);
-
-		display_bootstrap_javascript();
-	?>
-    <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/permissions-widget.js?<?php echo current_version("app"); ?>"></script>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+<div class="row bg-white">
+    <div class="col-12">
+        <div class="card-body border my-2">
 
     <?php
-        setup_favicon("..");
-        setup_alert_requirements("..");
+        echo "
+            <form name='mfa' method='post' action=''>
+        ";
+
+        // If the authenticated user does not have MFA enabled
+        if (!mfa_enabled_for_uid($_SESSION['uid'])) {
+
+                // Display the MFA verification webpage content
+                display_mfa_verification_page();
+
+        } else {
+
+                // Display the MFA reset webpage content
+                display_mfa_reset_page();
+
+        }
+
+        echo "
+            </form>
+        ";
+
     ?>
 
-  </head>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function() {
 
-  <body>
-  <?php
-  view_top_menu("Configure");
+        // Configure the 'Back' button
+        setTimeout(() => {
+            $("div.page-breadcrumb ol.breadcrumb li.breadcrumb-item.submenu a").text("Back");
+        }, 0);
+        $("div.page-breadcrumb ol.breadcrumb li.breadcrumb-item.submenu a").attr("href", "javascript:history.go(-1)");
 
-  // Get any alert messages
-  get_alert();
+    });
+</script>
+<style>
 
-  ?>
+    /* Only show the 'Back' button */
+    div.page-breadcrumb ol.breadcrumb li.breadcrumb-item:not(.submenu) {
+        display: none;
+    }
+    
+    div.page-breadcrumb ol.breadcrumb li.breadcrumb-item.submenu::before {
+        display: none;
+    }
 
-  <div class="container-fluid">
-      <div class="row-fluid">
-          <div class="span12">
-              <div class="row-fluid">
-                  <div class="span6">
-
+</style>
 <?php
-
-echo "<form name='mfa' method='post' action=''>\n";
-
-// If the authenticated user does not have MFA enabled
-if (!mfa_enabled_for_uid($_SESSION['uid']))
-{
-    // Display the MFA verification webpage content
-    display_mfa_verification_page();
-}
-else
-{
-    // Display the MFA reset webpage content
-    display_mfa_reset_page();
-}
-
-echo "</form>\n";
-
+	// Render the footer of the page. Please don't put code after this part.
+	render_footer();
 ?>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-
-  </body>
-
-</html>

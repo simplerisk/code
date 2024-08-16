@@ -97,4 +97,25 @@ function api_v2_is_authenticated()
     }
 }
 
+
+// The function to save the selections
+function saveColumnSelectionSettingsAPI() {
+    global $lang, $field_settings_views;
+    
+    $view = $_POST['display_settings_view'];
+    if (!empty($view) && in_array($view, array_keys($field_settings_views))) {
+        $settings = array_values(array_intersect(array_keys($_POST), display_settings_get_valid_field_keys($view)));
+        
+        display_settings_save_selection_single($view, $settings);
+        
+        set_alert(true, "good", $lang['SelectionSaveSuccessful']);
+        
+        // Not returning the alerts here because on success the page should be refreshed and we let the alerts render on the page load
+        api_v2_json_result(200, null, null);
+    }
+    
+    set_alert(true, "bad", $lang['SelectionSaveFailed']);
+    api_v2_json_result(400, get_alert(true), null);
+}
+
 ?>

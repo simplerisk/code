@@ -13,7 +13,6 @@ require_once(realpath(__DIR__ . '/extras.php'));
 require_once(realpath(__DIR__ . '/authenticate.php'));
 require_once(realpath(__DIR__ . '/healthcheck.php'));
 require_once(realpath(__DIR__ . '/escaper.php'));
-require_once(realpath(__DIR__ . '/highcharts.php'));
 require_once(realpath(__DIR__ . '/mfa.php'));
 require_once(realpath(__DIR__ . '/Widgets/AssetAssetGroupDropdown.php'));
 
@@ -36,12 +35,15 @@ set_simplerisk_timezone();
     functions that are getting name(s) by value(s). When querying the names of
     these tables the results should be ran through the 'try_decrypt()' function.
 */
+global $tables_where_name_is_encrypted;
 $tables_where_name_is_encrypted = array('frameworks', 'projects', 'assets');
 
 /* The regex pattern for template variables*/
+global $variable_regex_pattern;
 $variable_regex_pattern = '/<span class="variable" data-id="([^"]+)">.+?<\/span>/';
 
 /* The list of available extras. */
+global $available_extras;
 $available_extras = array(
     'advanced_search',
     'api',
@@ -63,6 +65,7 @@ $available_extras = array(
 
 
 /* A list of types that have teams assigned and are managed through functions updateTeamsOfItem, getTeamsOfItem, hasTeams */
+global $available_item_types;
 $available_item_types = array('test', 'audit');
 
 /*
@@ -89,6 +92,7 @@ Structure of the table configuration through an example:
 When adding a new table please make sure to add all the related junction tables
 you want to clear the associations from, when an entry is deleted from the table.
 */
+global $junction_config;
 $junction_config = array(
     'team' => array(
         'id_field' => 'value',
@@ -143,8 +147,7 @@ $junction_config = array(
             'assets_asset_groups' => 'asset_id',
             'questionnaire_risk_to_assets' => 'asset_id',
             'incident_management_incident_to_assets' => 'asset_id',
-            'control_to_assets' => 'asset_id'
-
+            'control_to_assets' => 'asset_id',
         )
     ),
     'asset_groups' => array(
@@ -156,6 +159,7 @@ $junction_config = array(
             'assets_asset_groups' => 'asset_group_id',
             'questionnaire_risk_to_asset_groups' => 'asset_group_id',
             'incident_management_incident_to_asset_groups' => 'asset_group_id',
+            'control_to_asset_groups' => 'asset_group_id',
         )
     ),
     'mitigations' => array(
@@ -193,7 +197,9 @@ $junction_config = array(
         'junctions' => array(
             'framework_control_mappings' => 'control_id',
             'questionnaire_question_to_control' => 'control_id',
-            'mitigation_to_controls' => 'control_id'
+            'mitigation_to_controls' => 'control_id',
+            'control_to_assets' => 'control_id',
+            'control_to_asset_groups' => 'control_id',
         )
     ),
     'questionnaire_questions' => array(
@@ -261,12 +267,15 @@ $junction_config = array(
 // as those have per type access permission checks.
 // Also have to:
 //      -add localization for tag types(example: 'TagType_risk' => 'Risk')
-//      -add it to the $junction_config 
+//      -add it to the $junction_config
+//      -update the documentation definition's enum in /api/v2/documentation/admin.php for the OpenApiAdminAllTagsDelete() function
+global $tag_types;
 $tag_types = ['risk', 'asset', 'questionnaire_risk', 'questionnaire_answer', 'questionnaire_pending_risk', 'incident_management_source', 'incident_management_destination', 'test', 'test_audit'];
 
 
 // The list of temporary tables mapped by functionality
 // used in the temp_table_cleanup($functionality) function
+global $temp_tables;
 $temp_tables = [
     'dynamic_risk_report' => [
         'temp_rrsh_last_update_age',
@@ -300,6 +309,7 @@ $temp_tables = [
 
 // Use this in case there's an order column for the field, so when encryption is on the logic can still order the results in the sql
 // 'encrypted_order_column' => "`a`.`order_by_name`",
+global $field_settings;
 $field_settings = [
     'asset' => [
         'actions' => [
@@ -433,26 +443,51 @@ $field_settings = [
         'mapped_controls' => [
             'customization_field_name' => 'MappedControls',
             'localization_key' => 'MappedControls',
-            'type' => 'html',
+            'type' => 'mapped_controls',
             'required' => false,
             'encrypted' => false,
             'searchable' => true,
             'orderable' => false,
             'editable' => true,
-            'select_parts' => ["1 AS mapped_controls"],
-            'join_parts' => [],
             'has_display_field' => false,
-            /*'select_parts' => ["GROUP_CONCAT(DISTINCT `fc`.`short_name` ORDER BY `fc`.`short_name` ASC SEPARATOR ', ') as mapped_controls"],
-            'join_parts' => [
-                "LEFT JOIN `control_to_assets` cta ON `cta`.`asset_id` = `a`.`id`",
-                "LEFT JOIN `framework_controls` fc ON `cta`.`control_id` = `fc`.`id`",
-            ],*/
+            'select_parts' => ["
+                CONCAT(
+                    '[',
+                        IF(
+                            `cmd`.`control_mapping_data` IS NOT NULL,
+                            GROUP_CONCAT(DISTINCT `cmd`.`control_mapping_data` SEPARATOR ','), 
+    					''),
+                    ']'
+                ) AS mapped_controls
+            "],
+            'join_parts' => ["
+                LEFT JOIN (SELECT
+                	`a`.`id`,
+                	JSON_OBJECT(
+                        'control_maturity', `cta`.`control_maturity`,
+                        'control_maturity_name', `cm`.`name`,
+                    	'control_id', GROUP_CONCAT(DISTINCT `fc`.`id`),
+                        'control_names', GROUP_CONCAT(DISTINCT `fc`.`short_name` ORDER BY `fc`.`short_name` ASC SEPARATOR '|')
+                    ) as control_mapping_data
+                FROM
+                	`assets` a
+                	LEFT JOIN `control_to_assets` cta ON `cta`.`asset_id` = `a`.`id`
+                    LEFT JOIN `framework_controls` fc ON `cta`.`control_id` = `fc`.`id`
+                    LEFT JOIN `control_maturity` cm ON `cta`.`control_maturity` = `cm`.`value`
+                WHERE
+                	`cta`.`id` IS NOT NULL
+                GROUP BY
+                	`a`.`id`,
+                	`cta`.`control_maturity`
+                ORDER BY
+                	`a`.`id`) cmd ON `cmd`.`id` = `a`.`id`
+            "],
         ],
         'tags' => [
             'customization_field_name' => 'Tags',
             'localization_key' => 'Tags',
             'type' => 'tags',
-            'renderer' => "$.fn.dataTable.render.tags('asset')",
+            'renderer' => "DataTable.render.tags('asset')",
             'required' => false,
             'encrypted' => false,
             'searchable' => true,
@@ -826,9 +861,11 @@ $field_settings = [
     ],
 ];
 
+global $field_settings_display_groups;
 $field_settings_display_groups = [
     'asset_fields' => [
-        'header_key' => 'Assets',
+        //'header_key' => 'Assets',
+        'header_key' => '',
         'field_type' => 'asset',
         'fields' => [
             'id',
@@ -913,14 +950,14 @@ $field_settings_display_groups = [
         ],
     ],
 ];
-
+global $field_settings_views;
 $field_settings_views = [
     'asset_verified' => [
         'view_type' => 'asset',
         'id_field' => 'id',
-        'datatable_ajax_uri' => '/api/assets/view/asset_data?view=asset_verified&verified=1',
+        'datatable_ajax_uri' => '/api/v2/assets/view/asset_data?view=asset_verified&verified=1',
         'datatable_data_type' => 'associative',
-        'datatable_filter_submit_delay' => 400,
+        'datatable_filter_submit_delay' => 600,
         'groups' => [
             'asset_fields',
         ],
@@ -939,19 +976,23 @@ $field_settings_views = [
         ],
         'edit' => [
             'type' => 'popup',
-            'edit_ajax_uri' => '/api/assets/update_asset',
+            'edit_ajax_uri' => '/api/v2/assets/update_asset',
         ],
         /*'edit' => [
          'type' => 'inline',
-         'edit_ajax_uri' => '/api/assets/update_asset_field',
+         'edit_ajax_uri' => '/api/v2/assets/update_asset_field',
          ],*/
+        'create' => [
+            'create_ajax_uri' => '/api/v2/assets/create_asset',
+        ],
     ],
+
     'asset_unverified' => [
         'view_type' => 'asset',
         'id_field' => 'id',
-        'datatable_ajax_uri' => '/api/assets/view/asset_data?view=asset_unverified&verified=0',
+        'datatable_ajax_uri' => '/api/v2/assets/view/asset_data?view=asset_unverified&verified=0',
         'datatable_data_type' => 'associative',
-        'datatable_filter_submit_delay' => 400,
+        'datatable_filter_submit_delay' => 600,
         'groups' => [
             'asset_fields'
         ],
@@ -970,11 +1011,11 @@ $field_settings_views = [
         ],
         'edit' => [
             'type' => 'popup',
-            'edit_ajax_uri' => '/api/assets/update_asset',
+            'edit_ajax_uri' => '/api/v2/assets/update_asset',
         ],
         /*'edit' => [
          'type' => 'inline',
-         'edit_ajax_uri' => '/api/assets/update_asset_field',
+         'edit_ajax_uri' => '/api/v2/assets/update_asset_field',
          ],*/
     ],
     
@@ -2140,34 +2181,41 @@ function create_cvss_dropdown($name, $selected = NULL, $blank = true)
 {
     global $escaper;
 
-    echo "<select id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:120px;\" onClick=\"javascript:showHelp('" . $escaper->escapeHtml($name) . "Help');updateScore();\">\n";
+    echo "
+        <select id='" . $escaper->escapeHtml($name) . "' name='" . $escaper->escapeHtml($name) . "' class='form-select' onclick=\"javascript:showHelp('" . $escaper->escapeHtml($name) . "Help');updateScore();\">
+    ";
 
     // If the blank is true
-    if ($blank == true)
-    {
-        echo "    <option value=\"\">--</option>\n";
+    if ($blank == true) {
+        echo "
+            <option value=''>--</option>
+        ";
     }
 
     // Get the list of options
     $options = get_custom_table($name);
 
     // For each option
-    foreach ($options as $option)
-    {
+    foreach ($options as $option) {
+
         // Create the CVSS metric value
         $value = $option['abrv_metric_value'];
 
         // If the option is selected
-        if ($selected == $value)
-        {
+        if ($selected == $value) {
             $text = " selected";
+        } else {
+            $text = "";
         }
-        else $text = "";
 
-        echo "    <option value=\"" . $escaper->escapeHtml($value) . "\"" . $text . ">" . $escaper->escapeHtml($option['metric_value']) . "</option>\n";
+        echo "
+            <option value='" . $escaper->escapeHtml($value) . "'" . $text . ">" . $escaper->escapeHtml($option['metric_value']) . "</option>
+        ";
     }
 
-    echo "  </select>\n";
+    echo "
+        </select>
+    ";
 }
 
 /*************************************
@@ -2175,30 +2223,38 @@ function create_cvss_dropdown($name, $selected = NULL, $blank = true)
  *************************************/
 function create_numeric_dropdown($name, $selected = NULL, $blank = true)
 {
+
     global $escaper;
 
-    echo "<select id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:50px;\" onClick=\"javascript:showHelp('" . $escaper->escapeHtml($name) . "Help');updateScore();\">\n";
+    echo "
+        <select id='" . $escaper->escapeHtml($name) . "' name='" . $escaper->escapeHtml($name) . "' class='form-select' onclick=\"javascript:showHelp('" . $escaper->escapeHtml($name) . "Help');updateScore();\">
+    ";
 
     // If the blank is true
-    if ($blank == true)
-    {
-        echo "    <option value=\"\">--</option>\n";
+    if ($blank == true) {
+        echo "
+            <option value=''>--</option>
+        ";
     }
 
     // For each option
-    for ($value=0; $value<=10; $value++)
-    {
+    for ($value=0; $value<=10; $value++) {
+        
         // If the option is selected
-        if ("$selected" === "$value")
-        {
+        if ("$selected" === "$value") {
             $text = " selected";
+        } else {
+            $text = "";
         }
-        else $text = "";
 
-        echo "    <option value=\"" . $escaper->escapeHtml($value) . "\"" . $text . ">" . $escaper->escapeHtml($value) . "</option>\n";
+        echo "
+            <option value='" . $escaper->escapeHtml($value) . "'" . $text . ">" . $escaper->escapeHtml($value) . "</option>
+        ";
     }
 
-    echo "  </select>\n";
+    echo "
+        </select>
+    ";
 }
 
 /****************************************
@@ -2263,9 +2319,9 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 
     if ($rename != NULL)
     {
-        $str .= "<select {$customHtml} id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "\" class=\"form-field form-control\" style=\"width:auto;\"" . $helper . ">\n";
+        $str .= "<select {$customHtml} id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "\" class=\"form-select form-control\" " . $helper . ">\n";
     }
-    else $str .= "<select {$customHtml} id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
+    else $str .= "<select {$customHtml} id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-select\" " . $helper . ">\n";
 
     // Get the list of options
     if($options === NULL){
@@ -2319,18 +2375,17 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
  * "enabled/disabled_users": Will return the enabled/disabled users of the selected business unit(EVEN FOR ADMINS). Use it outside of admin-only area
  * "enabled/disabled_users_all": Will return the enabled/disabled users, ignoring the selected business unit. Use it ONLY inside of admin-only area
  **************************************/
-function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $options = NULL, $blank = false, $blankText="--", $blankValue="", $useValue=true, $customHtml="",$alphabetical_order=0, $returnHtml=false)
+function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $options = NULL, $blank = false, $blankText="--", $blankValue="", $useValue=true, $customHtml="",$alphabetical_order=0, $returnHtml=false, $additionalClasses = '')
 {
-    global $lang;
     global $escaper;
     $str = "";
 
     if ($rename != NULL)
     {
-        $str .= "<select {$customHtml} multiple=\"multiple\" id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "[]\">\n";
+        $str .= "<select class='form-select multiselect {$additionalClasses}' {$customHtml} multiple=\"multiple\" id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "[]\">\n";
     }
     else {
-        $str .= "<select {$customHtml} multiple=\"multiple\" id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "[]\">\n";
+        $str .= "<select class='form-select multiselect {$additionalClasses}' {$customHtml} multiple=\"multiple\" id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "[]\">\n";
     }
 
     // Get the list of options
@@ -3052,18 +3107,28 @@ function get_default_date_format()
     return $php_date_format;
 }
 
+/*******************************************************
+ * FUNCTION: CONVERT DEFAULT DATE FORMAT FOR DATEPICKER *
+ *******************************************************/
+function get_default_date_format_for_datepicker() {
+    $default_date_format = get_setting("default_date_format");
+    $php_date_format = str_ireplace("YYYY", "yy", $default_date_format);
+    $php_date_format = str_ireplace("MM", "mm", $php_date_format);
+    $php_date_format = str_ireplace("DD", "dd", $php_date_format);
+    return $php_date_format;
+}
+
 /******************************************************
  * FUNCTION: CONVERT DEFAULT DATE FORMAT TO JS FORMAT *
  ******************************************************/
 function get_default_date_format_for_js()
 {
-    $default_date_format = get_setting("default_date_format");
-    $js_date_format = str_ireplace("YYYY", "yy", $default_date_format);
-    $js_date_format = str_ireplace("MM", "mm", $js_date_format);
-    $js_date_format = str_ireplace("DD", "dd", $js_date_format);
-    return $js_date_format;
+    return get_setting("default_date_format");
 }
 
+function get_default_datetime_format_for_js() {
+    return get_default_date_format_for_js() . " HH:mm:ss";
+}
 /************************************************************
  * FUNCTION: CONVERT DEFAULT DATE TIME FORMAT TO PHP FORMAT *
  ************************************************************/
@@ -3927,6 +3992,13 @@ function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id,
         $multi_factor = 1;
     }
 
+    // If mfa is not currently enabled for the user
+    if (!mfa_enabled_for_uid($user_id))
+    {
+        // Delete the MFA for the user so they can start fresh if enabled
+        mfa_delete_userid($user_id);
+    }
+
     // Open the database connection
     $db = db_open();
 
@@ -4315,7 +4387,7 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     save_junction_values("risk_to_technology", "risk_id", $last_insert_id, "technology_id", $technology);
     // Save additional stakeholders
     save_junction_values("risk_to_additional_stakeholder", "risk_id", $last_insert_id, "user_id", $additional_stakeholders);
-    
+
     // Audit log
     $risk_id = (int)$last_insert_id + 1000;
 
@@ -4710,6 +4782,9 @@ function add_risk_scoring_history($risk_id, $calculated_risk)
     // Open the database connection
     $db = db_open();
 
+    // Get the date
+    $last_update = date('Y-m-d H:i:s');
+
     // Check if row exists
     $stmt = $db->prepare("SELECT calculated_risk FROM risk_scoring_history WHERE risk_id = :risk_id order by last_update desc limit 1;");
     $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
@@ -4719,7 +4794,6 @@ function add_risk_scoring_history($risk_id, $calculated_risk)
         return;
     }
 
-    $last_update = date('Y-m-d H:i:s');
     // There is no entry like that, adding new one
     $stmt = $db->prepare("INSERT INTO risk_scoring_history (risk_id, calculated_risk, last_update) VALUES (:risk_id, :calculated_risk, :last_update);");
     $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
@@ -7008,7 +7082,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 1 = Show risks requiring mitigations
@@ -7123,7 +7197,8 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     p.security_recommendations,
                     p.security_requirements,
                     m.name AS next_step,
-                    l.comments
+                    l.comments,
+                    n.name AS reviewer
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -7148,6 +7223,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
                     LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
                     LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
+                    LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
                 WHERE
                     b.mitigation_id = 0 and b.status != \"Closed\"
                 GROUP BY b.id
@@ -7264,7 +7340,8 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     p.security_recommendations,
                     p.security_requirements,
                     m.name AS next_step,
-                    l.comments
+                    l.comments,
+                    n.name AS reviewer
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -7289,6 +7366,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
                     LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
                     LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
+                    LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
                 WHERE
                     b.mitigation_id = 0 and b.status != \"Closed\"  " . $separation_query . "
                 GROUP BY b.id
@@ -7300,7 +7378,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 2 = Show risks requiring management review
@@ -7415,7 +7493,8 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     p.security_recommendations,
                     p.security_requirements,
                     m.name AS next_step,
-                    l.comments
+                    l.comments,
+                    n.name AS reviewer
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -7440,6 +7519,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
                     LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
                     LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
+                    LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
                 WHERE
                     b.mgmt_review = 0 and b.status != \"Closed\"
                 GROUP BY
@@ -7557,7 +7637,8 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     p.security_recommendations,
                     p.security_requirements,
                     m.name AS next_step,
-                    l.comments
+                    l.comments,
+                    n.name AS reviewer
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -7582,6 +7663,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
                     LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
                     LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
+                    LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
                 WHERE
                     b.mgmt_review = 0 and b.status != \"Closed\"  {$separation_query}
                 GROUP BY
@@ -7594,7 +7676,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 3 = Show risks by review date
@@ -7717,7 +7799,8 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                 p.security_recommendations,
                 p.security_requirements,
                 m.name AS next_step,
-                l.comments
+                l.comments,
+                n.name AS reviewer
             FROM
                 risk_scoring a
                 LEFT JOIN risks b ON a.id = b.id
@@ -7742,6 +7825,8 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                 LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
                 LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
                 LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
+                LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
+
             WHERE b.status != \"Closed\" {$separation_query}
             GROUP BY b.id
             {$sort_query}
@@ -7750,7 +7835,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 4 = Show risks that are closed
@@ -7815,7 +7900,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 5 = Show open risks that should be considered for projects
@@ -7859,7 +7944,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 6 = Show open risks accepted until next review
@@ -7906,7 +7991,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 7 = Show open risks to submit as production issues
@@ -7951,7 +8036,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 8 = Show all open risks assigned to this user by risk level
@@ -8006,7 +8091,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 9 = Show open risks scored by CVSS Scoring
@@ -8036,7 +8121,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 10 = Show open risks scored by Classic Scoring
@@ -8046,7 +8131,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         if (!team_separation_extra())
         {
             // Query the database
-    $stmt = $db->prepare("SELECT a.calculated_risk, a.CLASSIC_likelihood, a.CLASSIC_impact, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id WHERE b.status != \"Closed\" AND a.scoring_method = 1 ORDER BY calculated_risk DESC");
+    $stmt = $db->prepare("SELECT a.calculated_risk, a.CLASSIC_likelihood, a.CLASSIC_impact, b.*, mit.mitigation_percent FROM risk_scoring a JOIN risks b ON a.id = b.id LEFT JOIN mitigations mit ON b.mitigation_id = mit.id WHERE b.status != \"Closed\" AND a.scoring_method = 1 ORDER BY calculated_risk DESC, mitigation_percent ASC");
         }
         else
         {
@@ -8057,11 +8142,12 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             $separation_query = get_user_teams_query("b", false, true);
 
             // Query the database
-            $stmt = $db->prepare("SELECT a.calculated_risk, a.CLASSIC_likelihood, a.CLASSIC_impact, b.* FROM risk_scoring a 
+            $stmt = $db->prepare("SELECT a.calculated_risk, a.CLASSIC_likelihood, a.CLASSIC_impact, b.*, mit.mitigation_percent FROM risk_scoring a 
                     JOIN risks b ON a.id = b.id 
                     LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
                     LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                WHERE b.status != \"Closed\" AND a.scoring_method = 1 " . $separation_query . " GROUP BY b.id ORDER BY calculated_risk DESC");
+                    LEFT JOIN mitigations mit ON b.mitigation_id = mit.id
+                WHERE b.status != \"Closed\" AND a.scoring_method = 1 " . $separation_query . " GROUP BY b.id ORDER BY calculated_risk DESC, mitigation_percent ASC");
         }
 
         $stmt->execute();
@@ -8094,7 +8180,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 12 = Show management reviews by date
@@ -8124,7 +8210,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 13 = Show mitigations by date
@@ -8154,7 +8240,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 14 = Show open risks scored by DREAD Scoring
@@ -8186,7 +8272,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             $stmt->execute();
 
             // Store the list in the array
-            $array = $stmt->fetchAll();
+            $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 15 = Show open risks scored by OWASP Scoring
@@ -8218,7 +8304,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             $stmt->execute();
 
             // Store the list in the array
-            $array = $stmt->fetchAll();
+            $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 16 = Show open risks scored by Custom Scoring
@@ -8249,7 +8335,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 17 = Show closed risks by date
@@ -8278,7 +8364,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 18 = Get open risks by team
@@ -8305,7 +8391,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 19 = Get open risks by technology
@@ -8335,7 +8421,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 20 = Get open high risks
@@ -8344,7 +8430,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         // Get the high risk level
         $stmt = $db->prepare("SELECT value FROM `risk_levels` WHERE name = 'High'");
         $stmt->execute();
-        $array = $stmt->fetch();
+        $array = $stmt->fetch(PDO::FETCH_ASSOC);
         $high = $array['value'];
 
         // If the team separation extra is not enabled
@@ -8397,7 +8483,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 21 = Get all risks
@@ -8428,7 +8514,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $stmt->execute();
 
         // Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // Close the database connection
@@ -8545,7 +8631,7 @@ function get_risk_table($sort_order=0, $activecol="")
         if($sort_order == 22){
             echo "<td align=\"center\" >". $escaper->escapeHtml($risk['team_name']) ."</td>\n";
         }
-        echo "<td align=\"center\" class=\"" . $escaper->escapeHtml($color) . " risk-cell \">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></td>\n";
+        echo "<td align=\"center\" class=\"" . $escaper->escapeHtml($color) . " risk-cell \"><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></td>\n";
         echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("g:i A T"), strtotime($risk['submission_date']))) . "</td>\n";
 
         // If the active column is management
@@ -8681,10 +8767,10 @@ function get_submitted_risks_table()
             $color = get_risk_color($risk['calculated_risk']);
 
             echo "<tr>\n";
-            echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
+            echo "<td align=\"left\" width=\"50px\"><a class='open-in-new-tab' href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
             echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
             echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
-            echo "<td class=\"risk-cell\" align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"150px\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . " \"></span> </td>\n";
+            echo "<td class=\"risk-cell\" align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"150px\"><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . " \"></span> </div></td>\n";
             echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['status']) . "</td>\n";
             echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['team']) . "</td>\n";
             echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['name']) . "</td>\n";
@@ -8700,7 +8786,7 @@ function get_submitted_risks_table()
                 $('#submitted_risk  thead tr:eq(1) th').each( function (i) {
                     var title = $(this).text();
                     $(this).html(''); // To clear the title out of the header cell
-                    $('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
+                    $('<input type=\"text\" class=\"form-control\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                     $( 'input, select', this ).on( 'keyup change', function () {
                         if ( riskTable.column(i).search() !== this.value ) {
                             riskTable.column(i).search( this.value ).draw();
@@ -8711,8 +8797,8 @@ function get_submitted_risks_table()
                     paging: false,
                     orderCellsTop: true,
                     fixedHeader: true,
-                    dom : 'lrti',
                     order: [[2, 'desc']],
+                    serverSide: false
                 });
              });
         </script>
@@ -8752,7 +8838,7 @@ function get_mitigations_table()
         foreach ($risks as $risk)
         {
             echo "<tr>\n";
-            echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
+            echo "<td align=\"left\" width=\"50px\"><a class='open-in-new-tab' href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
             echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
             echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
             echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['planning_strategy']) . "</td>\n";
@@ -8773,7 +8859,7 @@ function get_mitigations_table()
                 $('#mitigations_risk  thead tr:eq(1) th').each( function (i) {
                     var title = $(this).text();
                     $(this).html(''); // To clear the title out of the header cell
-                    $('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
+                    $('<input type=\"text\" class=\"form-control\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                     $( 'input, select', this ).on( 'keyup change', function () {
                         if ( riskTable.column(i).search() !== this.value ) {
                             riskTable.column(i).search( this.value ).draw();
@@ -8784,8 +8870,8 @@ function get_mitigations_table()
                     paging: false,
                     orderCellsTop: true,
                     fixedHeader: true,
-                    dom : 'lrti',
                     order: [[2, 'desc']],
+                    serverSide: false
                 });
              });
         </script>
@@ -8822,7 +8908,7 @@ function get_reviewed_risk_table($sort_order=12)
         foreach ($risks as $risk)
         {
             echo "<tr>\n";
-            echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
+            echo "<td align=\"left\" width=\"50px\"><a class='open-in-new-tab' href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
             echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
             echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
             echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['review']) . "</td>\n";
@@ -8840,7 +8926,7 @@ function get_reviewed_risk_table($sort_order=12)
                 $('#reviewed_risk  thead tr:eq(1) th').each( function (i) {
                     var title = $(this).text();
                     $(this).html(''); // To clear the title out of the header cell
-                    $('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
+                    $('<input type=\"text\" class=\"form-control\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                     $( 'input, select', this ).on( 'keyup change', function () {
                         if ( riskTable.column(i).search() !== this.value ) {
                             riskTable.column(i).search( this.value ).draw();
@@ -8851,8 +8937,8 @@ function get_reviewed_risk_table($sort_order=12)
                     paging: false,
                     orderCellsTop: true,
                     fixedHeader: true,
-                    dom : 'lrti',
                     order: [[2, 'desc']],
+                    serverSide: false
                 });
              });
         </script>
@@ -8893,9 +8979,9 @@ function get_closed_risks_table($sort_order=17)
         $color = get_risk_color($risk['calculated_risk']);
         
         echo "<tr>\n";
-        echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
+        echo "<td align=\"left\" width=\"50px\"><a class='open-in-new-tab' href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
         echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
-        echo "<td class=\"risk-cell\" align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"150px\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . " \"></span> </td>\n";
+        echo "<td class=\"risk-cell\" align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"150px\"><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . " \"></span></div></td>\n";
                 echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['team']) . "</td>\n";
         echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . (!$risk['closure_date'] ? "" : $escaper->escapeHtml(date("YmdHis", strtotime($risk['closure_date'])))) . "\">"
             . ( !$risk['closure_date'] ? $lang["Unknown"] : $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['closure_date']))) ) . "</td>\n";
@@ -8913,7 +8999,7 @@ function get_closed_risks_table($sort_order=17)
                 $('#closeded_risk  thead tr:eq(1) th').each( function (i) {
                     var title = $(this).text();
                     $(this).html(''); // To clear the title out of the header cell
-                    $('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
+                    $('<input type=\"text\" class=\"form-control\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                     $( 'input, select', this ).on( 'keyup change', function () {
                         if ( riskTable.column(i).search() !== this.value ) {
                             riskTable.column(i).search( this.value ).draw();
@@ -8921,11 +9007,11 @@ function get_closed_risks_table($sort_order=17)
                     });
                 });
                 var riskTable = $('#closeded_risk').DataTable( {
-                    paging: false,
+                    paging: true,
                     orderCellsTop: true,
                     fixedHeader: true,
-                    dom : 'lrti',
                     order: [[4, 'desc']],
+                    serverSide: false
                 });
              });
         </script>
@@ -9498,8 +9584,6 @@ function clone_risk_project($project_id, $risk_id)
 
     // Store the list in the array
     $array = $stmt->fetchAll();
-//        var_dump($array[0]['project_id']);
-//        exit;
 
     if (!empty ($array) && $array[0]['project_id'] != 0)
     {
@@ -9640,8 +9724,8 @@ function get_projects_count($status)
 /********************************************
  * FUNCTION: UPDATE PROJECTS HTML BY STATUS *
  ********************************************/
-function get_project_tabs($status, $template_group_id="")
-{
+function get_project_tabs($status, $template_group_id="") {
+
     global $lang;
     global $escaper;
 
@@ -9649,8 +9733,7 @@ function get_project_tabs($status, $template_group_id="")
 
     $projects = get_projects();
 
-    if ($status == 1)
-    {
+    if ($status == 1) {
         array_unshift($projects, ['value' => 0, 'name' => $escaper->escapeHtml($lang['UnassignedRisks']), 'status' => 1]);
     } 
     
@@ -9658,33 +9741,38 @@ function get_project_tabs($status, $template_group_id="")
     $str = "";
     $row_width = "1301";
     $custom_field_count = 0;
+
     // If customization extra is enabled
-    if(customization_extra())
-    {
+    if(customization_extra()) {
+
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
         $customization = true;
-        if(!$template_group_id){
+
+        if(!$template_group_id) {
             $group = get_default_template_group("project");
             $template_group_id = $group["id"];
 
         }
+
         $active_fields = get_active_fields("project", $template_group_id);
-        foreach($active_fields as $field){
+        foreach($active_fields as $field) {
             if($field['is_basic'] != 1) $custom_field_count++;
         }
+
     } else $customization = false;
+
     $row_width += $custom_field_count * 150;
-    foreach ($projects as $project)
-    {
-        if ($project['status'] == $status)
-        {
+
+    foreach ($projects as $project) {
+        if ($project['status'] == $status) {
+
             $id = (int)$project['value'];
             $name = $project['name'];
 
             // If unassigned risks
-            if (!$id)
-            {
+            if (!$id) {
                 $delete = '';
                 $no_sort = 'id = "no-sort"';
                 $name = $escaper->escapehtml($lang['UnassignedRisks']);
@@ -9697,13 +9785,15 @@ function get_project_tabs($status, $template_group_id="")
                 $risks = get_risks_unassigned_project();
                 $priority = "";
                 $edit_link = "";
-            }
+
             // If project ID was defined
-            else
-            {
+            } else {
                 if(isset($_SESSION["delete_projects"]) && $_SESSION["delete_projects"] == 1) {
-                    $delete = '<a href="javascript:void(0);" class="project-block--delete pull-right" data-id="'.$escaper->escapeHtml($id).'"><i class="fa fa-trash"></i></a>';
+                    $delete = '
+                        <button type="button" class="project-block--delete float-end btn btn-outline-secondary btn-sm mx-1"><i class="fa fa-trash"></i></button>
+                    ';
                 } else $delete ='';
+
                 $no_sort = '';
                 $name = $escaper->escapeHtml($name);
                 $due_date = format_date($project['due_date']);
@@ -9715,86 +9805,113 @@ function get_project_tabs($status, $template_group_id="")
                 $risks = get_risks_by_project_id($id);
                 $index++;
                 $priority = $index;
-                $edit_link = '<a href="javascript:void(0);" class="project-block--edit pull-right" data-id="'.$escaper->escapeHtml($id).'" data-name="'.$name.'"><i class="fa fa-edit"></i></a>';
+                $edit_link = '
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#project--edit" class="project-block--edit float-end btn btn-outline-secondary btn-sm mx-1" data-id="' . $escaper->escapeHtml($id) . '" data-name="' . $name . '"><i class="fa fa-edit"></i></button>
+                ';
             }
             
             // Get count of risks for this project
             $count = count($risks);
 
-            $str .= '<div class="project-block clearfix" '.$no_sort.' style="width:'.$row_width.'px">';
-                $str .= '<div class="project-block--header clearfix" data-project="'.$escaper->escapeHtml($id).'">
-                <div class="project-block--priority pull-left">'.$escaper->escapeHtml($priority).'</div>';
-                if($customization == true){
-                    foreach($active_fields as $field)
-                    {
-                        if($field['is_basic'] == 1)
-                        {
-                            switch($field['name']){
-                                case 'ProjectName':
-                                    $str .= '<div class="project-block--name pull-left">'. $name .'</div>';
+            $str .= '
+                <div class="project-block clearfix" ' . $no_sort . ' style="width:' . $row_width . 'px">
+                    <div class="d-flex project-block--header" data-project="' . $escaper->escapeHtml($id) . '" style="width:' . $row_width . 'px">
+                        <div class="col p-2 border ">' . $escaper->escapeHtml($priority) . '</div>
+            ';
+            if($customization == true) {
+                foreach($active_fields as $field) {
+                    if($field['is_basic'] == 1) {
+                        switch($field['name']) {
+                            case 'ProjectName':
+                                $str .= '
+                        <div class="col-3 p-2 border">' . $name . '</div>
+                                ';
                                 break;
-                                case 'DueDate':
-                                    $str .= '<div class="project-block--field pull-left">'. $due_date .'</div>';
+                            case 'DueDate':
+                                $str .= '
+                        <div class="col p-2 border">' . $due_date . '</div>
+                        ';
                                 break;
-                                case 'Consultant':
-                                    $str .= '<div class="project-block--field pull-left">'. $consultant .'</div>';
+                            case 'Consultant':
+                                $str .= '
+                        <div class="col p-2 border">' . $consultant . '</div>
+                                ';
                                 break;
-                                case 'BusinessOwner':
-                                    $str .= '<div class="project-block--field pull-left">'. $business_owner .'</div>';
+                            case 'BusinessOwner':
+                                $str .= '
+                        <div class="col p-2 border">' . $business_owner . '</div>
+                                ';
                                 break;
-                                case 'DataClassification':
-                                    $str .= '<div class="project-block--field pull-left">'. $data_classification .'</div>';
+                            case 'DataClassification':
+                                $str .= '
+                        <div class="col p-2 border">' . $data_classification . '</div>
+                                ';
                                 break;
-                            }
-                        } 
-                        else {
-                            $custom_field_count++;
-                            $text = get_plan_custom_field_name_by_row_id($field, $id, "project");
-                            $str .= '<div class="project-block--field pull-left">'. $text .'</div>';
                         }
+                    } 
+                    else {
+                        $custom_field_count++;
+                        $text = get_plan_custom_field_name_by_row_id($field, $id, "project");
+                        $str .= '
+                        <div class="col p-2 border">' . $text . '</div>
+                        ';
                     }
-
-                } else {
-                    $str .= '
-                        <div class="project-block--name pull-left">'. $name .'</div>
-                        <div class="project-block--field pull-left">'. $due_date .'</div>
-                        <div class="project-block--field pull-left">'. $consultant .'</div>
-                        <div class="project-block--field pull-left">'. $business_owner .'</div>
-                        <div class="project-block--field pull-left">'. $data_classification .'</div>
-                    ';
                 }
+            } else {
                 $str .= '
-                    <div class="project-block--risks pull-left"><span>'.$count.'</span><a href="#" class="view--risks">'.$escaper->escapeHtml($lang['ViewRisk']).'</a>'.$delete.$edit_link.'</div>
-                </div>';
+                        <div class="col-3 p-2 border">' . $name . '</div>
+                        <div class="col p-2 border">' . $due_date . '</div>
+                        <div class="col p-2 border">' . $consultant . '</div>
+                        <div class="col p-2 border">' . $business_owner . '</div>
+                        <div class="col p-2 border">' . $data_classification . '</div>
+                ';
+            }
+            $str .= '
+                        <div class="col-2 p-2 border">
+                            <span class="p-2 risk-count">' . $count . '</span>
+                            <a href="#" class="view--risks link-info">' . $escaper->escapeHtml($lang['ViewRisk']) . '</a>' . 
+                            $delete . 
+                            $edit_link . '
+                        </div>
+                    </div>
+                    
+                    <div class="risks hide">
+            ';
 
-                $str .= '<div class="risks">';
+            // For each risk
+            foreach ($risks as $risk)
+            {
+                $subject = try_decrypt($risk['subject']);
+                $risk_id = (int)$risk['id'];
+                $project_id = (int)$risk['project_id'];
+                $color = get_risk_color($risk['calculated_risk']);
 
-                // For each risk
-                foreach ($risks as $risk)
-                {
-                    $subject = try_decrypt($risk['subject']);
-                    $risk_id = (int)$risk['id'];
-                    $project_id = (int)$risk['project_id'];
-                    $color = get_risk_color($risk['calculated_risk']);
+                $risk_number = (int)$risk_id + 1000;
 
-                    $risk_number = (int)$risk_id + 1000;
+                $str .= '
+                        <div class="risk row" style="width:' . $row_width . 'px" data-risk="' . $escaper->escapeHtml($risk_id) . '" data-project="' . $escaper->escapeHtml($project_id) . '">
+                            <div class="col-1"></div>
+                            <div class="col-11 bg-secondary my-1 p-2 text-light">
+                                <div class="float-start">
+                                    <span class="grippy"></span>
+                                    <a class="text-light" href="../management/view.php?id=' . $escaper->escapeHtml(convert_id($risk_id)) . '" target="_blank">#' . $risk_number . ' ' . $escaper->escapeHtml($subject) . '</a>
+                                </div>
+                                <div class="float-end risk--score"> ' . 
+                                    $escaper->escapeHtml($lang['InherentRisk']) . ' : 
+                                    <span class="label label-danger" style="background-color: ' . $escaper->escapeHtml($color) . '; color: #000000;">' . $risk['calculated_risk'] .'</span> 
+                                </div>
+                            </div>
+                        </div>
+                ';
+            }
 
-                    $str .= '<div class="risk clearfix">
-                            <div class="pull-left risk--title"  data-risk="'.$escaper->escapeHtml($risk_id).'"><a href="../management/view.php?id=' . $escaper->escapeHtml(convert_id($risk_id)) . '" target="_blank">#'.$risk_number.' '.$escaper->escapeHtml($subject).'</a></div>
-                            <div class="pull-right risk--score"> ' . $escaper->escapeHtml($lang['InherentRisk']) . ' : <span class="label label-danger" style="background-color: '. $escaper->escapeHtml($color) .'">'.$risk['calculated_risk'].'</span> </div>
-                            </div>';
-                }
-
-                $str .= "</div>\n";
-
-            $str .= "</div>\n";
+            $str .= "
+                    </div>
+                </div>
+            ";
         }
     }
     return $str;
-
-    //echo "</div>\n";
-    //echo "<br /><input type=\"submit\" name=\"update_projects\" value=\"". $escaper->escapeHtml($lang['SaveRisksToProjects']) ."\" />\n";
-    //echo "</form>\n";
 }
 
 /**************************************************
@@ -9900,16 +10017,20 @@ function get_delete_risk_table()
     // Get risks
     $risks = get_risks(21);
 
-    echo "<table class=\"table table-bordered table-condensed sortable\">\n";
-    echo "<thead>\n";
-    echo "<tr>\n";
-    echo "<th align=\"left\" width=\"75\"><input type=\"checkbox\" onclick=\"checkAll(this)\" />&nbsp;&nbsp;" . $escaper->escapeHtml($lang['Delete']) . "</th>\n";
-    echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
-    echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
-    echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
-    echo "</tr>\n";
-    echo "</thead>\n";
-    echo "<tbody>\n";
+    echo "
+        <table class='table table-bordered table-striped sortable' id='zero_config'>
+            <thead>
+                <tr>
+                    <th align='left' width='75'>
+                        <input type='checkbox' class='form-check-input' onclick='checkAll(this)' />&nbsp;&nbsp;" . $escaper->escapeHtml($lang['Delete']) . "
+                    </th>
+                    <th align='left' width='50px'>" . $escaper->escapeHtml($lang['ID']) . "</th>
+                    <th align='left' width='150px'>" . $escaper->escapeHtml($lang['Status']) . "</th>
+                    <th align='left' width='300px'>" . $escaper->escapeHtml($lang['Subject']) . "</th>
+                </tr>
+            </thead>
+            <tbody>
+        ";
 
     // For each risk
     foreach ($risks as $risk)
@@ -9918,18 +10039,24 @@ function get_delete_risk_table()
         $subject = $risk['subject'];
         $status = $risk['status'];
 
-        echo "<tr>\n";
-        echo "<td align=\"center\">\n";
-        echo "<input type=\"checkbox\" name=\"risks[]\" value=\"" . $escaper->escapeHtml($risk['id']) . "\" />\n";
-        echo "</td>\n";
-        echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
-        echo "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($status) . "</td>\n";
-        echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-        echo "</tr>\n";
+        echo "
+                <tr>
+                    <td align='center'>
+                        <input type='checkbox' class='form-check-input' name='risks[]' value='" . $escaper->escapeHtml($risk['id']) . "' />
+                    </td>
+                    <td align='left' width='50px'>
+                        <a class='open-in-new-tab' href='../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "'>" . $escaper->escapeHtml(convert_id($risk_id)) . "</a>
+                    </td>
+                    <td align='left' width='150px'>" . $escaper->escapeHtml($status) . "</td>
+                    <td align='left' width='300px'>" . $escaper->escapeHtml($subject) . "</td>
+                </tr>
+            ";
     }
 
-    echo "</tbody>\n";
-    echo "</table>\n";
+    echo "
+            </tbody>
+        </table>
+        ";
 }
 
 /*******************************
@@ -9943,18 +10070,18 @@ function management_review($risk_id, $mgmt_review, $next_review, $is_html = true
     // If the review hasn't happened
     if ($mgmt_review == "0")
     {
-        $html = "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) ."&type=2&action=editreview&active={$active}\">". $escaper->escapeHtml($lang['No']) ."</a>";
+        $html = "<a href='../management/view.php?id={$escaper->escapeHtml($risk_id)}&type=2&action=editreview&active={$active}#review' target='_blank' class='open-in-new-tab'>{$escaper->escapeHtml($lang['No'])}</a>";
         $text = $lang['No'];
     }
     else
     {
         if($next_review != $lang['PASTDUE'] ){
             // If review doensn't past due.
-            $html = "<a class=\"management yes\" href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) ."&type=2&action=editreview&active={$active}\">".$escaper->escapeHtml($lang['Yes']).'</a>';
+            $html = "<a href='../management/view.php?id={$escaper->escapeHtml($risk_id)}&type=2&action=editreview&active={$active}#review' target='_blank' class='management yes open-in-new-tab'>{$escaper->escapeHtml($lang['Yes'])}</a>";
             $text = $lang['Yes'];
         }else{
             // If review past due.
-            $html = "<a class=\"management pastdue\" href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) ."&type=2&action=editreview&active={$active}\">".$escaper->escapeHtml($lang['PASTDUE']).'</a>';
+            $html = "<a href='../management/view.php?id={$escaper->escapeHtml($risk_id)}&type=2&action=editreview&active={$active}#review' target='_blank' class='management pastdue open-in-new-tab'>{$escaper->escapeHtml($lang['PASTDUE'])}</a>";
             $text = $lang['PASTDUE'];
         }
     }
@@ -9989,11 +10116,11 @@ function planned_mitigation($risk_id, $mitigation_id, $active="ReviewRisksRegula
     // If the review hasn't happened
     if (!$mitigation_id)
     {
-        $value = "<a href=\"../management/view.php?type=1&id=" . $escaper->escapeHtml($risk_id) . "&action=editmitigation&active={$active}\">". $escaper->escapeHtml($lang['No']) ."</a>";
+        $value = "<a href='../management/view.php?type=1&id={$escaper->escapeHtml($risk_id)}&action=editmitigation&active={$active}#mitigation' target='_blank' class='open-in-new-tab'>{$escaper->escapeHtml($lang['No'])}</a>";
     }
     else
     {
-        $value = "<a class=\"mitigation yes\" href=\"../management/view.php?type=1&id=" . $escaper->escapeHtml($risk_id) . "&active={$active}\">".$escaper->escapeHtml($lang['Yes'])."</a>";
+        $value = "<a href='../management/view.php?type=1&id={$escaper->escapeHtml($risk_id)}&active={$active}#mitigation' target='_blank' class='mitigation yes open-in-new-tab'>{$escaper->escapeHtml($lang['Yes'])}</a>";
     }
 
     return $value;
@@ -10455,7 +10582,7 @@ function next_review($risk_level, $id, $next_review, $html = true, $review_level
         $risk_id = convert_id($id);
 
         // Add the href tag to make it HTML
-        $html = "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) . "&type=2&action=editreview\">" . $escaper->escapeHtml($text) . "</a>";
+        $html = "<a href='../management/view.php?id={$escaper->escapeHtml($risk_id)}&type=2&action=editreview#review' target='_blank' class='open-in-new-tab'>{$escaper->escapeHtml($text)}</a>";
 
         // Return the HTML code
         return $html;
@@ -10559,6 +10686,12 @@ function close_risk($risk_id, $user_id, $status, $close_reason, $note, $closure_
     $stmt->bindParam(":close_id", $close_id, PDO::PARAM_INT);
     $stmt->execute();
 
+    // Update the risk scoring history to set the risk score to zero since it is closed
+    $stmt = $db->prepare("INSERT INTO risk_scoring_history (`risk_id`, `calculated_risk`, `last_update`) VALUES (:id, 0, :date);");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->bindParam(":date", $closure_date, PDO::PARAM_STR);
+    $stmt->execute();
+
     // If notification is enabled
     if (notification_extra())
     {
@@ -10618,9 +10751,13 @@ function reopen_risk($risk_id)
 
     // Update the risk
     $stmt = $db->prepare("UPDATE risks SET status=\"Reopened\",last_update=:date,close_id=\"0\" WHERE id = :id");
-
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->bindParam(":date", $current_datetime, PDO::PARAM_STR);
+    $stmt->execute();
+
+    // Update the risk scoring history
+    $stmt = $db->prepare("INSERT INTO risk_scoring_history (`risk_id`, `calculated_risk`, `last_update`) SELECT r.id, rs.calculated_risk, r.last_update FROM risks r LEFT JOIN risk_scoring rs ON r.id = rs.id WHERE r.id = :id;");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
 
     // Audit log
@@ -11094,69 +11231,84 @@ function get_reviews($risk_id, $template_group_id="")
     db_close($db);
 
     // If customization extra is enabled
-    if(customization_extra())
-    {
+    if(customization_extra()) {
+
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
         if(!$template_group_id) {
             $group = get_default_template_group("risk");
             $template_group_id = $group["id"];
         }
+
         $active_fields = get_active_fields("risk", $template_group_id);
-        foreach($active_fields as $key => $field){
-            if($field['name'] == 'NextReviewDate'){
+        foreach($active_fields as $key => $field) {
+            if($field['name'] == 'NextReviewDate') {
                 unset($active_fields[$key]);
             }
         }
     }
 
-    foreach ($reviews as $review)
-    {
+    foreach ($reviews as $review) {
+
         $review_date = date(get_default_datetime_format("g:i A T"), strtotime($review['submission_date']));
         $comment = try_decrypt($review['comments']);
 
         // If customization extra is enabled
-        if(customization_extra())
-        {
-            echo "<div class=\"row-fluid\">\n";
-                // Left Panel
-                echo "<div class=\"span5 left-panel\">\n";
-                    display_main_review_fields_by_panel_view('left', $active_fields, $risk_id, $review['id'], $review_date, $review['reviewer'], $review['review'], $review['next_step'], "", $comment);
-                    echo "&nbsp;";
-                echo "</div>";
+        if(customization_extra()) {
 
-                // Right Panel
-                echo "<div class=\"span5 right-panel\">\n";
-                    display_main_review_fields_by_panel_view('right', $active_fields, $risk_id, $review['id'], $review_date, $review['reviewer'], $review['review'], $review['next_step'], "", $comment);
-                    echo "&nbsp;";
-                echo "</div>";
-            echo "</div>";
-
+            echo "
+                <div class='row card-body my-2 border'>
+            ";
+            // Left Panel
+            echo "
+                    <div class='col-6 left-panel'>
+            ";
+                        display_main_review_fields_by_panel_view('left', $active_fields, $risk_id, $review['id'], $review_date, $review['reviewer'], $review['review'], $review['next_step'], "", $comment);
+            echo "
+                    </div>
+            ";
+            // Right Panel
+            echo "
+                    <div class='col-6 right-panel'>
+            ";
+                        display_main_review_fields_by_panel_view('right', $active_fields, $risk_id, $review['id'], $review_date, $review['reviewer'], $review['review'], $review['next_step'], "", $comment);
+            echo "
+                    </div>
+                </div>
+            ";
             // Bottom panel
-            echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 bottom-panel\">";
-                    display_main_review_fields_by_panel_view('bottom', $active_fields, $risk_id, $review['id'], $review_date, $review['reviewer'], $review['review'], $review['next_step'], "", $comment);
-                    echo "&nbsp;";
-                echo "</div>";
-            echo "</div>";
+            echo "
+                <div class='row'>
+                    <div class='col-12 bottom-panel'>
+            ";
+                        display_main_review_fields_by_panel_view('bottom', $active_fields, $risk_id, $review['id'], $review_date, $review['reviewer'], $review['review'], $review['next_step'], "", $comment);
+            echo "
+                    </div>
+                </div>
+            ";
+
+        } else {
+            
+            echo "
+                <div class='row card-body my-2 border'>
+                    <div class='col-6 left-panel'>
+            ";
+                        display_review_date_view($review_date);
+
+                        display_reviewer_view($review['reviewer']);
+
+                        display_review_view($review['review']);
+
+                        display_next_step_view($review['next_step'], $risk_id);
+
+                        display_comments_view($comment);
+            echo "
+                    </div>
+                </div>
+            ";
+            
         }
-        else
-        {
-            echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span5 left-panel\">\n";
-                    display_review_date_view($review_date);
-
-                    display_reviewer_view($review['reviewer']);
-
-                    display_review_view($review['review']);
-
-                    display_next_step_view($review['next_step'], $risk_id);
-
-                    display_comments_view($comment);
-                echo "</div>";
-            echo "</div>";
-        }
-
     }
 
     return true;
@@ -11190,7 +11342,7 @@ function latest_versions() {
     {   
         $url = UPDATES_URL . '/releases.xml';
     }
-    else $url = 'https://updates.simplerisk.com/releases.xml';
+    else $url = 'https://raw.githubusercontent.com/simplerisk/updates.simplerisk.com/updates.simplerisk.com/releases.xml';
     write_debug_log("Checking latest versions at " . $url);
 
     // Set the HTTP options
@@ -11398,7 +11550,7 @@ function get_announcements()
     {   
         $announcement_file = file(UPDATES_URL . '/announcements.xml');
     }
-    else $announcement_file = file('https://updates.simplerisk.com/announcements.xml');
+    else $announcement_file = file('https://raw.githubusercontent.com/simplerisk/updates.simplerisk.com/updates.simplerisk.com/announcements.xml');
 
     $regex_pattern = "/<announcement>(.*)<\/announcement>/";
 
@@ -12180,8 +12332,8 @@ function download_file($unique_name, $file_type = "file")
  **************************************/
 function supporting_documentation($id, $mode = "view", $view_type = 1)
 {
-    global $lang;
-        global $escaper;
+    
+    global $lang, $escaper;
 
     // Convert the ID to a database risk id
     $id = $id-1000;
@@ -12202,85 +12354,84 @@ function supporting_documentation($id, $mode = "view", $view_type = 1)
     db_close($db);
 
     // If the mode is view
-    if ($mode == "view")
-    {
-
+    if ($mode == "view") {
 
         // If the array is empty
-        if (empty($array))
-        {
-            echo "<input style=\"cursor: default;\" type=\"text\" value=\"". $escaper->escapeHtml($lang['None']) ."\" disabled=\"disabled\">";
-        }
-        else
-        {
+        if (empty($array)) {
+            echo $escaper->escapeHtml($lang['None']);
+        } else {
             // For each entry in the array
-            foreach ($array as $file)
-            {
-                echo "<div class =\"doc-link edit-mode\"><a href=\"download.php?id=" . $escaper->escapeHtml($file['unique_name']) . "\" >" . $escaper->escapeHtml($file['name']) . "</a></div>\n";
+            foreach ($array as $file) {
+                echo "
+                    <div class ='doc-link edit-mode'>
+                        <a class='link-success' href='download.php?id=" . $escaper->escapeHtml($file['unique_name']) . "' >" . $escaper->escapeHtml($file['name']) . "</a>
+                    </div>
+                ";
             }
         }
 
-
-    }
     // If the mode is edit
-    else if ($mode == "edit")
-    {
+    } else if ($mode == "edit") {
         // If the array is empty
-        if (empty($array))
-        {
+        if (empty($array)) {
+
             // echo "<input type=\"file\" name=\"file\" />\n";
-            echo '<div class="file-uploader">';
             echo "
-                  <script>
-                      var max_upload_size = " . $escaper->escapeJs(get_setting('max_upload_size', 0)) . ";
-                      var fileTooBigMessage = '" . $escaper->escapeJs($lang['FileIsTooBigToUpload']) . "';
-                  </script>";
-            echo '<label for="file-upload" class="btn active-textfield">'.$escaper->escapeHtml($lang['ChooseFile']).'</label> <span class="file-count-html"><span class="file-count">0</span> '.$escaper->escapeHtml($lang['FileAdded']).'</span>';
-            echo "<p><font size=\"2\"><strong>Max ". $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)) ." Mb</strong></font></p>";
-            echo '<ul class="file-list">';
+                <div class='file-uploader'>
+                    <script>
+                        var max_upload_size = " . $escaper->escapeJs(get_setting('max_upload_size', 0)) . ";
+                        var fileTooBigMessage = '" . $escaper->escapeJs($lang['FileIsTooBigToUpload']) . "';
+                    </script>
+                    <label for='file-upload' class='btn btn-primary active-textfield'>" . $escaper->escapeHtml($lang['ChooseFile']) . "</label> 
+                    <span class='file-count-html'><span class='file-count'>0</span> " . $escaper->escapeHtml($lang['FileAdded']) . "</span>
+                    <p><font size='2'><strong>Max ". $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)) . " Mb</strong></font></p>
+                    <ul class='file-list'>
+                    </ul>
+                    <input type='file' name='file[]' id='file-upload' class='hidden-file-upload active d-none' />
+                </div>
+            ";
 
-            echo '</ul>';
-            echo '<input type="file" name="file[]" id="file-upload" class="hidden-file-upload active" />';
-            echo '</div>';
+        } else {
 
-        }
-        else
-        {
             $documentHtml = "";
             // For each entry in the array
-            foreach ($array as $file)
-            {
+            foreach ($array as $file) {
 //                $documentHtml .= "<div class =\"doc-link\">
 //                    <a href=\"download.php?id=" . $escaper->escapeHtml($file['unique_name']) . "\" target=\"_blank\" />" . $escaper->escapeHtml($file['name']) . "</a>&nbsp;&nbsp;--&nbsp;" . $escaper->escapeHtml($lang['Delete']) . "?<input class=\"delete-link-check active-textfield\" type=\"checkbox\" name=\"delete[]\" value=\"" . $escaper->escapeHtml($file['unique_name']) . "\" /></div>\n";
-                $documentHtml .= "<li>
-                    <div class='file-name'><a href=\"download.php?id=" . $escaper->escapeHtml($file['unique_name']) . "\" target=\"_blank\" />" . $escaper->escapeHtml($file['name']) . "</a></div>
-                    <a href='#' class='remove-file' ><i class='fa fa-times'></i></a>
-                    <input type='hidden' name='unique_names[]' value='".$escaper->escapeHtml($file['unique_name'])."'>
-                </li>";
+                $documentHtml .= "
+                    <li>
+                        <div class='file-name float-start me-2'>
+                            <a href='download.php?id=" . $escaper->escapeHtml($file['unique_name']) . "' target='_blank' />" . $escaper->escapeHtml($file['name']) . "</a>
+                        </div>
+                        <a href='#' class='remove-file' ><i class='fa fa-times'></i></a>
+                        <input type='hidden' name='unique_names[]' value='" . $escaper->escapeHtml($file['unique_name']) . "'>
+                    </li>
+                ";
             }
-
 
             // echo "<input type=\"file\" name=\"file\" />\n";
-            if(count($array)>1){
-                $count = '<span class="file-count">'. count($array)."</span> Files";
-            }else{
-                $count = '<span class="file-count">'. count($array)."</span> File";
+            if(count($array)>1) {
+                $count = '<span class="file-count">' . count($array) . "</span> Files";
+            } else {
+                $count = '<span class="file-count">' . count($array) . "</span> File";
             }
-            echo '
-                <div class="file-uploader">
+
+            echo "
+                <div class='file-uploader'>
                 <script>
-                    var max_upload_size = ' . $escaper->escapeJs(get_setting('max_upload_size', 0)) . ';
-                    var fileTooBigMessage = "' . $escaper->escapeJs($lang['FileIsTooBigToUpload']) . '"; 
+                    var max_upload_size = " . $escaper->escapeJs(get_setting('max_upload_size', 0)) . ";
+                    var fileTooBigMessage = '" . $escaper->escapeJs($lang['FileIsTooBigToUpload']) . "'; 
                 </script>
-                <label for="file-upload" class="btn active-textfield">Choose File</label> <span class="file-count-html">'.$count.' Added</span>
-                    <ul class="exist-files">
-                        '.$documentHtml.'
+                    <label for='file-upload' class='btn btn-primary active-textfield'>Choose File</label> 
+                    <span class='file-count-html'>" . $count . " Added</span>
+                    <ul class='exist-files m-b-0'>" . 
+                        $documentHtml . "
                     </ul>
-                    <ul class="file-list">
+                    <ul class='file-list'>
                     </ul>
-                    <input type="file" name="file[]" id="file-upload" class="hidden-file-upload active" />
+                    <input type='file' name='file[]' id='file-upload' class='hidden-file-upload active d-none' />
                 </div>
-            ';
+            ";
         }
     }
 }
@@ -12690,7 +12841,7 @@ function add_registration($name="", $company="", $title="", $phone="", $email=""
  * FUNCTION: UPDATE REGISTRATION *
  *********************************/
 function update_registration($name="", $company="", $title="", $phone="", $email="", $fname="", $lname="")
-{
+{ 
     global $lang;
 
     // Get the instance id
@@ -13226,11 +13377,10 @@ function js_string_escape($string)
     return $string;
 }
 
-
-/******************************
- * FUNCTION: CHECK TEAM ACCESS *
- * $risk_id: Risk ID from front
- ******************************/
+/***********************************
+ * FUNCTION: CHECK ACCESS FOR RISK *
+ * $risk_id: Risk ID to check      *
+ ***********************************/
 function check_access_for_risk($risk_id)
 {
     // If team separation is enabled
@@ -13241,13 +13391,121 @@ function check_access_for_risk($risk_id)
 
         if (!extra_grant_access($_SESSION['uid'], $risk_id))
         {
-            // Do not allow the user to update the risk
+            // Set the access to disallowed
             $access = false;
         }
-        // Otherwise, allow the user to update the risk
+        // Otherwise, set the access to allowed
         else $access = true;
     }
-    // Otherwise, allow the user to update the risk
+    // Otherwise, set the access to allow
+    else $access = true;
+
+    return $access;
+}
+
+/************************************
+ * FUNCTION: CHECK ACCESS FOR ASSET *
+ * $asset_id: Asset ID to check     *
+ ************************************/
+function check_access_for_asset($asset_id)
+{
+    // If team separation is enabled
+    if (team_separation_extra())
+    {
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+        // If the user is not allowed to access the asset id provided
+        if (!is_user_allowed_to_access_asset($asset_id))
+        {
+            // Set the access to disallowed
+            $access = false;
+        }
+        // Otherwise, set the access to allowed
+        else $access = true;
+    }
+    // Otherwise, set the access to allow
+    else $access = true;
+
+    return $access;
+}
+
+/*****************************************
+ * FUNCTION: CHECK ACCESS FOR AUDIT       *
+ * $audit_id: Audit id to check access for *
+ *****************************************/
+function check_access_for_audit($audit_id)
+{
+    // If team separation is enabled
+    if (team_separation_extra())
+    {
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+        // If the user is not allowed to access the audit id provided
+        if (!is_user_allowed_to_access($_SESSION['uid'], $audit_id, "audit"))
+        {
+            // Set the access to disallowed
+            $access = false;
+        }
+        // Otherwise, set the access to allowed
+        else $access = true;
+    }
+    // Otherwise, set the access to allow
+    else $access = true;
+
+    return $access;
+}
+
+/*****************************************
+ * FUNCTION: CHECK ACCESS FOR TEST       *
+ * $test_id: Test id to check access for *
+ *****************************************/
+function check_access_for_test($test_id)
+{
+    // If team separation is enabled
+    if (team_separation_extra())
+    {
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+        // If the user is not allowed to access the test id provided
+        if (!is_user_allowed_to_access($_SESSION['uid'], $test_id, "test"))
+        {
+            // Set the access to disallowed
+            $access = false;
+        }
+        // Otherwise, set the access to allowed
+        else $access = true;
+    }
+    // Otherwise, set the access to allow
+    else $access = true;
+
+    return $access;
+}
+
+/*************************************************
+ * FUNCTION: CHECK ACCESS FOR DOCUMENT           *
+ * $document_id: Document id to check access for *
+ *************************************************/
+function check_access_for_document($document_id)
+{
+    // If team separation is enabled
+    if (team_separation_extra())
+    {
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+        // If the user is not allowed to access the document id provided
+        if (!is_user_allowed_to_access_document($document_id))
+        {
+            // Set the access to disallowed
+            $access = false;
+        }
+        // Otherwise, set the access to allowed
+        else $access = true;
+    }
+    // Otherwise, set the access to allow
     else $access = true;
 
     return $access;
@@ -14038,6 +14296,19 @@ function get_names_by_values($table, $values, $limit=4, $escape=true, $force_id=
     return implode(", ", $names) . ($limit && count($results) > $limit ? ", ...": "");
 }
 
+/****************************************
+ * FUNCTION: PING SERVER ASYNCHRONOUSLY *
+ ****************************************/
+function ping_server_asynchronously()
+{
+    // Asynchronously ping the server
+    $pool = Spatie\Async\Pool::create();
+    $pool->add(function() {
+        ping_server();
+    });
+    await($pool);
+}
+
 /*************************
  * FUNCTION: PING SERVER *
  *************************/
@@ -14818,6 +15089,10 @@ function save_role_responsibilities($role_id, $admin, $default, $responsibilitie
 
     if ($default) {
         set_default_role($role_id);
+    } else {
+        $stmt = $db->prepare("UPDATE `role` SET `default` = NULL WHERE `value` = :role_id;");
+        $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
+        $stmt->execute();
     }
 
     if ($role_admin_status_changed) {
@@ -15046,7 +15321,7 @@ function view_accepted_mitigations($risk_id)
         $name = isset($info['name']) ? $info['name'] : "Unknown User";
         $date = isset($info['created_at']) ? date(get_default_date_format(), strtotime($info['created_at'])) : "";
         $time = $info['created_at'] ? date("H:i", strtotime($info['created_at'])) : "";
-        $message .= "<input disabled type=\"checkbox\" checked> &nbsp;&nbsp;&nbsp;"._lang("MitigationAcceptedByUserOnTime", ["name"=>$name, "date"=>$date, "time"=>$time])."<br>";
+        $message .= "<input class='form-check-input mb-2' disabled type=\"checkbox\" checked> &nbsp;&nbsp;&nbsp;"._lang("MitigationAcceptedByUserOnTime", ["name"=>$name, "date"=>$date, "time"=>$time])."<br>";
 
     }
 
@@ -15139,7 +15414,7 @@ function add_security_headers($x_frame_options = true, $x_xss_protection = true,
 			if (filter_var($simplerisk_base_url, FILTER_VALIDATE_URL))
 			{
 				// Add the Content-Security-Policy header with the simplerisk base url
-				header("Content-Security-Policy: default-src 'self'; style-src-elem 'unsafe-inline' *.googleapis.com cdn.jsdelivr.net " . $simplerisk_base_url . "; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com *.highcharts.com *.jquery.com cdn.jsdelivr.net; font-src *.gstatic.com cdn.jsdelivr.net " . $simplerisk_base_url . "; img-src 'self' *.googleapis.com " . $simplerisk_base_url . " data:; connect-src 'self' *.simplerisk.com olbat.github.io; frame-src 'self' *.duosecurity.com;");
+				header("Content-Security-Policy: default-src 'self'; style-src-elem 'unsafe-inline' *.googleapis.com cdn.jsdelivr.net " . $simplerisk_base_url . "; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com cdn.jsdelivr.net; font-src cdn.jsdelivr.net " . $simplerisk_base_url . "; img-src 'self' *.googleapis.com " . $simplerisk_base_url . " data:; connect-src 'self' *.simplerisk.com olbat.github.io; frame-src 'self';");
 			}
 			// Otherwise add the Content-Security-Policy header without it
 			else header("Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' data:");
@@ -15392,9 +15667,12 @@ function delete_likelihood()
     return $stmt->rowCount();
 }
 
-/**********************
- * FUNCTION: IS ADMIN *
- **********************/
+/**
+ * Returns the admin status of the current user(or the user with the specified id).
+ * 
+ * @param boolean $id [Optional] If no user id provided then the function will return whether the current user is an admin user.
+ * @return boolean admin status of the user(current or the one with the specified id)
+ */
 function is_admin($id = false)
 {
     // If there's no user id provided OR we're checking the logged in user then it will work the way it did before
@@ -15705,7 +15983,7 @@ function get_user_teams($user_id) {
     // Query the database
     if (!is_admin($user_id) && organizational_hierarchy_extra()) {
         // If the Organizational Hierarchy is activated only those teams should be returned that the user is assigned to
-        // AND in the user's selected business unit. Unless it's an Admin user. Admins can see eerything.
+        // AND in the user's selected business unit. Unless it's an Admin user. Admins can see everything.
         require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
         
         return get_teams_of_user_from_selected_business_unit($user_id, false);
@@ -16866,7 +17144,7 @@ function prevent_extra_double_submit($extra, $is_enable) {
  * will trigger the page-wide disablement of form submit buttons.   *
  ********************************************************************/
 function prevent_form_double_submit_script($forms = false) {
-    if ($forms) {
+        if ($forms) {
         echo "
             $(document).ready(function(){";
         foreach ($forms as $form) {
@@ -17373,10 +17651,10 @@ function update_risk_level($field, $value, $name) {
  *********************************/
 function include_csrf_magic() {
 
-    function csrf_startup() {
+    //function csrf_startup() {
         global $escaper;
         csrf_conf('rewrite-js', $escaper->escapeHtml(get_setting('simplerisk_base_url')).'/vendor/simplerisk/csrf-magic/csrf-magic.js');
-    }
+    //}
     csrf_init();
 }
 
@@ -18933,7 +19211,7 @@ function file_upload_error_message($error)
 	write_debug_log($message);
 
 	// Display an alert
-        set_alert(true, "bad", $message);
+    set_alert(true, "bad", $message);
 
 	// Return the message
 	return $message;
@@ -19275,33 +19553,33 @@ function display_file_encoding_issues($type) {
     $tableID = "upload-encoding-issues-$type";
     
     echo "
-        <table id=\"{$tableID}\" width=\"100%\" class=\"risk-datatable table table-bordered table-striped table-condensed\">
+        <table id='{$tableID}' width='100%' class='risk-datatable table table-bordered table-striped table-condensed'>
             <thead>
                 <tr>";
     switch($type) {
         case 'risk':
             echo "
-                    <th align='left' valign='top' width='5%'>".$escaper->escapeHtml($lang['ID'])."</th>
-                    <th align='left' valign='top'>".$escaper->escapeHtml($lang['Subject'])."</th>
-                    <th align='left' valign='top' width='10%'>".$escaper->escapeHtml($lang['AttachmentType'])."</th>";
+                    <th align='left' valign='top' width='5%'>" . $escaper->escapeHtml($lang['ID']) . "</th>
+                    <th align='left' valign='top'>" . $escaper->escapeHtml($lang['Subject']) . "</th>
+                    <th align='left' valign='top' width='10%'>" . $escaper->escapeHtml($lang['AttachmentType']) . "</th>";
             $data_list = ['id', 'subject', 'view_type'];
         break;
         case 'compliance':
             echo "
-                    <th align='left' valign='top'>".$escaper->escapeHtml($lang['Name'])."</th>
-                    <th align='left' valign='top' width='12%'>".$escaper->escapeHtml($lang['AttachmentType'])."</th>";
+                    <th align='left' valign='top'>" . $escaper->escapeHtml($lang['Name']) . "</th>
+                    <th align='left' valign='top' width='12%'>" . $escaper->escapeHtml($lang['AttachmentType']) . "</th>";
             $data_list = ['name', 'ref_type'];
         break;
         case 'questionnaire':
             echo "
-                    <th align='left' valign='top'>".$escaper->escapeHtml($lang['QuestionnaireName'])."</th>
-                    <th align='left' valign='top' width='12%'>".$escaper->escapeHtml($lang['AttachmentType'])."</th>";
+                    <th align='left' valign='top'>" . $escaper->escapeHtml($lang['QuestionnaireName']) . "</th>
+                    <th align='left' valign='top' width='12%'>" . $escaper->escapeHtml($lang['AttachmentType']) . "</th>";
             $data_list = ['name', 'type'];
         break;
     }
     
     echo "
-                    <th align='left' valign='top' width='20%'>".$escaper->escapeHtml($lang['FileName'])."</th>
+                    <th align='left' valign='top' width='20%'>" . $escaper->escapeHtml($lang['FileName']) . "</th>
                     <th align='left' valign='top' width='17%'></th>
                     <th align='center' valign='top' width='5%'></th>
                 </tr>
@@ -19309,143 +19587,110 @@ function display_file_encoding_issues($type) {
             <tbody>
             </tbody>
         </table>
-        <br>
+        
         <script>
-            var pageLength = 10;
-            var datatableInstance_{$type} = $('#{$tableID}').DataTable({
-                bFilter: false,
-                bLengthChange: false,
-                processing: true,
-                serverSide: true,
-                bSort: true,
-                pagingType: \"full_numbers\",
-                dom : \"flrtip\",
-                pageLength: pageLength,
-                dom : \"flrti<'#view-all.view-all'>p\",
-                createdRow: function(row, data, index){
-                    var background = $('.background-class', $(row)).data('background');
-                    $(row).find('td').addClass(background)
-                },
-                order: [[0, 'asc']],
-                ajax: {
-                    url: BASE_URL + '/api/upload_encoding_issue_fix/datatable?type=$type',
-                    data: function(d){ },
-                    complete: function(response){ }
-                },
-                columnDefs : [";
+            $(function() {
+
+                var datatableInstance_{$type} = $('#{$tableID}').DataTable({
+                    bFilter: false,
+                    bSort: true,
+                    createdRow: function(row, data, index){
+                        var background = $('.background-class', $(row)).data('background');
+                        $(row).find('td').addClass(background)
+                    },
+                    order: [[0, 'asc']],
+                    ajax: {
+                        url: BASE_URL + '/api/upload_encoding_issue_fix/datatable?type=$type',
+                        data: function(d){ },
+                        complete: function(response){ }
+                    },
+                    columnDefs : [";
     foreach ($data_list as $target => $data) {
         echo "
-                    {
-                        'targets': [$target],
-                        'data': '$data'
-                    },";
+                        {
+                            'targets': [$target],
+                            'data': '$data'
+                        },";
     }
 
     echo "
-                    {
-                        'targets': [-3],
-                        'data': 'file_name'
-                    },
-                    {
-                        'targets': [-2],
-                        'data': 'file_uploader',
-                        'orderable': false
-                    },
-                    {
-                        'targets': -1,
-                        'data': null,
-                        'defaultContent': '<button class=\"confirm upload-button\" style=\"padding: 2px 15px;\">" . $escaper->escapeHtml($lang['Upload']) . "</button>',
-                        'orderable': false
-                    }
-                ]
-            });
-            
-            // Add paginate options
-            datatableInstance_{$type}.on('draw', function(e, settings){
-                $('.paginate_button.first').html('<i class=\"fa fa-chevron-left\"></i><i class=\"fa fa-chevron-left\"></i>');
-                $('.paginate_button.previous').html('<i class=\"fa fa-chevron-left\"></i>');
-                
-                $('.paginate_button.last').html('<i class=\"fa fa-chevron-right\"></i><i class=\"fa fa-chevron-right\"></i>');
-                $('.paginate_button.next').html('<i class=\"fa fa-chevron-right\"></i>');
-                
-                if (datatableInstance_{$type}.page() == 0) {
-                    // Reload the page when no more issues left so the page load code can
-                    // run the wrap-up logic
-                    if (datatableInstance_{$type}.rows( {page:'current'} ).count() == 0) {
-                        setTimeout(function(){window.location=window.location;}, 1);
-                    }
-                } else {// get to the previous page in case we confirmed the last one from the page and it's not the first page
-                    if (datatableInstance_{$type}.rows( {page:'current'} ).count() == 0) {
-                        setTimeout(function(){datatableInstance_{$type}.page('previous').draw('page');}, 1);
-                    }
-                }
-                
-                $('#{$tableID} tbody').off('click', 'button.confirm');
-                $('#{$tableID} tbody').on('click', 'button.confirm', function () {
-                    var data = datatableInstance_{$type}.row($(this).closest('tr')).data();
-                    var unique_name = data['unique_name'];
-                    var file_upload = $('#file-upload-' + unique_name)[0];
-
-                    if (!file_upload.files[0]) {
-                        alert('" . $escaper->escapeHtml($lang['YouHaveToSelectAFileToUpload']) . "');
-                        return false;
-                    }
-
-                    if (file_upload.files[0].size > " . (int)get_setting('max_upload_size') . ") {
-                        alert('" . $escaper->escapeHtml($lang['UploadingFileTooBig']) . "');
-                        return false;
-                    }
-
-                    var form_data = new FormData();
-                    form_data.append('file', file_upload.files[0]);
-                    form_data.append('type', '{$type}');
-                    form_data.append('unique_name', unique_name);
-
-                    $.ajax({
-                        type: 'POST',
-                        url: BASE_URL + '/api/upload_encoding_issue_fix/file_upload',
-                        cache: false,
-                        contentType: false,
-                        processData: false,
-                        data : form_data,
-                        success: function(data) {
-                            if(data.status_message) {
-                                showAlertsFromArray(data.status_message);
-                            }
-                            datatableInstance_{$type}.ajax.reload(null, false);
+                        {
+                            'targets': [-3],
+                            'data': 'file_name'
                         },
-                        error: function(xhr,status,error) {
-                            if(!retryCSRF(xhr, this)) {
-                                if(xhr.responseJSON && xhr.responseJSON.status_message) {
-                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                        {
+                            'targets': [-2],
+                            'data': 'file_uploader',
+                            'orderable': false
+                        },
+                        {
+                            'targets': -1,
+                            'data': null,
+                            'defaultContent': '<button class=\"confirm upload-button btn btn-dark\" style=\"padding: 2px 15px;\">" . $escaper->escapeHtml($lang['Upload']) . "</button>',
+                            'orderable': false
+                        }
+                    ]
+                });
+                
+                // Add paginate options
+                datatableInstance_{$type}.on('draw', function(e, settings){
+                    
+                    if (datatableInstance_{$type}.page() == 0) {
+                        // Reload the page when no more issues left so the page load code can
+                        // run the wrap-up logic
+                        if (datatableInstance_{$type}.rows( {page:'current'} ).count() == 0) {
+                            setTimeout(function(){window.location=window.location;}, 1);
+                        }
+                    } else {// get to the previous page in case we confirmed the last one from the page and it's not the first page
+                        if (datatableInstance_{$type}.rows( {page:'current'} ).count() == 0) {
+                            setTimeout(function(){datatableInstance_{$type}.page('previous').draw('page');}, 1);
+                        }
+                    }
+                    
+                    $('#{$tableID} tbody').off('click', 'button.confirm');
+                    $('#{$tableID} tbody').on('click', 'button.confirm', function () {
+                        var data = datatableInstance_{$type}.row($(this).closest('tr')).data();
+                        var unique_name = data['unique_name'];
+                        var file_upload = $('#file-upload-' + unique_name)[0];
+
+                        if (!file_upload.files[0]) {
+                            alert('" . $escaper->escapeHtml($lang['YouHaveToSelectAFileToUpload']) . "');
+                            return false;
+                        }
+
+                        if (file_upload.files[0].size > " . (int)get_setting('max_upload_size') . ") {
+                            alert('" . $escaper->escapeHtml($lang['UploadingFileTooBig']) . "');
+                            return false;
+                        }
+
+                        var form_data = new FormData();
+                        form_data.append('file', file_upload.files[0]);
+                        form_data.append('type', '{$type}');
+                        form_data.append('unique_name', unique_name);
+
+                        $.ajax({
+                            type: 'POST',
+                            url: BASE_URL + '/api/upload_encoding_issue_fix/file_upload',
+                            cache: false,
+                            contentType: false,
+                            processData: false,
+                            data : form_data,
+                            success: function(data) {
+                                if(data.status_message) {
+                                    showAlertsFromArray(data.status_message);
+                                }
+                                datatableInstance_{$type}.ajax.reload(null, false);
+                            },
+                            error: function(xhr,status,error) {
+                                if(!retryCSRF(xhr, this)) {
+                                    if(xhr.responseJSON && xhr.responseJSON.status_message) {
+                                        showAlertsFromArray(xhr.responseJSON.status_message);
+                                    }
                                 }
                             }
-                        }
+                        });
                     });
                 });
-            });
-
-            // Add all text to View All button on bottom
-            $('#{$tableID}_wrapper .view-all').html('".$escaper->escapeHtml($lang['ALL'])."');
-
-            // View All
-            $('#{$tableID}_wrapper .view-all').click(function() {
-                var oSettings =  datatableInstance_{$type}.settings();
-                oSettings[0]._iDisplayLength = -1;
-                datatableInstance_{$type}.draw();
-                $(this).addClass('current');
-            });
-                
-            // Page event
-            $('body').on('click', '#{$tableID}_paginate span > .paginate_button', function(){
-                var index = $(this).attr('aria-controls').replace('DataTables_Table_', '');
-                
-                var oSettings =  datatableInstance_{$type}.settings();
-                if(oSettings[0]._iDisplayLength == -1){
-                    $(this).parents(\".dataTables_wrapper\").find('#{$tableID}_wrapper .view-all').removeClass('current');
-                    oSettings[0]._iDisplayLength = pageLength;
-                    datatableInstance_{$type}.draw();
-                }
             });
         </script>
     ";
@@ -20135,39 +20380,65 @@ function renderCRUDUI($tableConfig) {
     global $lang, $escaper;
     
     echo "
-        <div class='row-fluid table-selection'>
-            <b>{$escaper->escapeHtml($lang['Select'])}: </b>
-            <select id='table-sections'>";
-    foreach($tableConfig as $table => $config){
-        echo "
-                <option value='{$table}'>{$escaper->escapeHtml($lang[$config['headerKey']])}</option>\n";
-    }
-    echo "
-            </select>
+        <div class='row table-selection'>
+            <div class='col-12'>
+                <b>{$escaper->escapeHtml($lang['Select'])}: </b>
+                <select id='table-sections' class='form-select'>";
+                    foreach($tableConfig as $table => $config){
+                    echo "<option value='{$table}'>{$escaper->escapeHtml($lang[$config['headerKey']])}</option>\n";
+                    }
+                echo "
+                </select>
+            </div>
         </div>
-        <div class='row-fluid'>
+        <br/>
+        <div class='row'>
             <div id='crud-wrapper' class='span12'>";
-    $text_change = $escaper->escapeHtml($lang['Change']);
-    $text_to = $escaper->escapeHtml($lang['to']);
-    $text_update = $escaper->escapeHtml($lang['Update']);
-    $text_add = $escaper->escapeHtml($lang['Add']);
-    $text_delete = $escaper->escapeHtml($lang['Delete']);
-    $text_deleteItem = $escaper->escapeHtml($lang['DeleteItemNamed']);
-    $text_addItem = $escaper->escapeHtml($lang['AddNewItemNamed']);
+            $text_change = $escaper->escapeHtml($lang['Change']);
+            $text_to = $escaper->escapeHtml($lang['to']);
+            $text_update = $escaper->escapeHtml($lang['Update']);
+            $text_add = $escaper->escapeHtml($lang['Add']);
+            $text_delete = $escaper->escapeHtml($lang['Delete']);
+            $text_deleteItem = $escaper->escapeHtml($lang['DeleteItemNamed']);
+            $text_addItem = $escaper->escapeHtml($lang['AddNewItemNamed']);
     
-    $display = true;
-    foreach ($tableConfig as $table => $config) {
+        $display = true;
+        foreach ($tableConfig as $table => $config) {
         
-        echo "
-                <div class='hero-unit' data-table_name='{$table}' style='" . ($display ? 'display: block;' : 'display: none;' ) . "'>\n
-                    <h4>" . $escaper->escapeHtml($lang[$config['headerKey']]) . ":</h4>\n
-                    " . $text_addItem . ":&nbsp;&nbsp;<input id='" . $table . "_new' type='text' maxlength='" . $config['lengthLimit'] . "' size='20' />&nbsp;&nbsp;<input type='submit' value=" .  $text_add . " data-action='add' /><br />\n
-                    " . $text_change . "&nbsp;&nbsp;";
-        create_dropdown($table, NULL, $table . "_update_from");
-        echo $text_to . "&nbsp;<input id='" . $table . "_update_to' type='text' maxlength='" . $config['lengthLimit'] . "' size='20' />&nbsp;&nbsp;<input type='submit' value='" . $text_update . "' data-action='update' /><br />" . $text_deleteItem . ":&nbsp;&nbsp;";
-        create_dropdown($table, NULL, $table . "_delete");
-        echo "
-                    &nbsp;&nbsp;<input type='submit' value='" . $text_delete . "' data-action='delete' />
+            echo "
+                <div class='hero-unit' data-table_name='{$table}' style='" . ($display ? 'display: block;' : 'display: none;' ) . "'>
+                    <h4>" . $escaper->escapeHtml($lang[$config['headerKey']]) . "</h4>
+                    <div class='row cust-align'>
+                        <div class='col-10'>
+                            <label>" . $text_addItem . ":</label>
+                            <input id='" . $table . "_new' type='text' maxlength='" . $config['lengthLimit'] . "' size='20' class='form-control'/>
+                        </div>
+                        <div class='col-2'>
+                            <input type='submit' value=" .  $text_add . " data-action='add' class='btn btn-submit'/>
+                        </div>  
+                    </div>  
+                    <div class='row cust-align'>
+                        <div class='col-5'>
+                            <label>" . $text_change . ":</label>";
+                            create_dropdown($table, NULL, $table . "_update_from");
+            echo       "</div>
+                        <div class='col-5'>
+                            <label>" . $text_to . ":</label>
+                            <input id='" . $table . "_update_to' type='text' maxlength='" . $config['lengthLimit'] . "' size='20' class='form-control'/>
+                        </div>
+                        <div class='col-2'>
+                            <input type='submit' value='" . $text_update . "' data-action='update' class='btn btn-submit'/>
+                        </div>
+                    </div>
+                    <div class='row cust-align'>
+                        <div class='col-10'>
+                            <label>" . $text_deleteItem . ":</label>";
+                            create_dropdown($table, NULL, $table . "_delete");
+            echo "      </div>
+                        <div class='col-2'>
+                            <input type='submit' value='" . $text_delete . "' data-action='delete' class='btn btn-submit'/>
+                        </div>
+                    </div>
                 </div>";
         
         $display = false;
@@ -20193,15 +20464,14 @@ function renderCRUDUI($tableConfig) {
                         
             function crudAction() {
                         
-                var div = $(this).closest('div');
+                var div = $(this).closest('div .hero-unit');
                 if (div) {
                     var tableName = div.data('table_name');
                     var action = $(this).data('action');
-                        
                     if (tableName && action) {
                         $.ajax({
                             type: 'POST',
-                            url: window.location.href,
+                            url: BASE_URL + '/api/authentication/remote_items',
                             data: (function() {
                                 var d = new Object();
                                 d.table_name = tableName;
@@ -20227,7 +20497,6 @@ function renderCRUDUI($tableConfig) {
                                 if(data.status_message){
                                     showAlertsFromArray(data.status_message);
                                 }
-                        
                                 // Empty input boxes
                                 div.find('#' + tableName + '_new').val('');
                                 div.find('#' + tableName + '_update_to').val('');
@@ -20984,6 +21253,7 @@ function strip_tags_and_extra_whitespace($html) {
 // just please make sure the the already existing usecases keep working.
 // Added the 'additional_info' variable to be able to pass on additional information without having to add myriads of extra parameters
 function create_selectize_dropdown($type, $selected_values, $additional_info = false) {
+
     global $escaper, $lang;
 
     switch($type) {
@@ -21016,18 +21286,19 @@ function create_selectize_dropdown($type, $selected_values, $additional_info = f
     $options = get_options_from_table($option_type);
 
     echo "
-                <select" . ($required ? " required" : "") . " name='{$name}" . ($multiple ? "[]' multiple='multiple'" : "'") . " id='{$name}'></select>
-                <script>
-                    $(document).ready(function(){
-                        $('#tab-content-container .tab-data').find($('[name=\"{$name}".($multiple ? "[]" : "")."\"]')).selectize({
-                            plugins: ['remove_button'],
-                            searchField: " . ($grouped ? "['name', 'class']" : "'name'") . ",
-                            valueField: 'value',
-                            labelField: 'name',
-                            create: false,
-                            persist: false,
-                            placeholder: '{$escaper->escapeHtml($placeholder)}',
-                            options: [";
+        <select" . ($required ? " required" : "") . " name='{$name}" . ($multiple ? "[]' multiple='multiple'" : "'") . " id='{$name}'></select>
+        <script>
+            $(document).ready(function(){
+                $(document).find($('[name=\"{$name}".($multiple ? "[]" : "")."\"]')).selectize({
+                    plugins: ['remove_button'],
+                    searchField: " . ($grouped ? "['name', 'class']" : "'name'") . ",
+                    valueField: 'value',
+                    labelField: 'name',
+                    create: false,
+                    persist: false,
+                    placeholder: '{$escaper->escapeHtml($placeholder)}',
+                    options: [
+    ";
     if ($grouped) {
         $groups = [];
         foreach($options as $group_name => $group_entries) {
@@ -21035,35 +21306,39 @@ function create_selectize_dropdown($type, $selected_values, $additional_info = f
             $groups[] = $group_name;
             foreach($group_entries as $group_entry) {
                 echo "
-                                {class: '{$group_name}', value: '{$escaper->escapeHtml($group_entry['value'])}', name: '{$escaper->escapeJs($group_entry['name'])}'},";
+                        {class: '{$group_name}', value: '{$escaper->escapeHtml($group_entry['value'])}', name: '{$escaper->escapeJs($group_entry['name'])}'},
+                ";
             }
         }
 
         echo "
-                            ],
-                            optgroupField: 'class',
-                            optgroupLabelField: 'label',
-                            optgroupValueField: 'value',
-                            optgroups: [";
+                    ],
+                    optgroupField: 'class',
+                    optgroupLabelField: 'label',
+                    optgroupValueField: 'value',
+                    optgroups: [
+        ";
 
         foreach($groups as $group) {
             echo "
-                                {value: '{$group}', label: '{$group}'},";
+                        {value: '{$group}', label: '{$group}'},
+            ";
         }
     } else {
         foreach($options as $option) {
             echo "
-                                {value: '{$escaper->escapeHtml($option['value'])}', name: '{$escaper->escapeJs($option['name'])}'},";
+                        {value: '{$escaper->escapeHtml($option['value'])}', name: '{$escaper->escapeJs($option['name'])}'},
+            ";
         }
     }
 
     echo "
-                            ],
+                    ],
     ";
 
     if (!$multiple) {
         echo "
-                            maxItems: 1,
+                    maxItems: 1,
         ";
     }
 
@@ -21077,24 +21352,25 @@ function create_selectize_dropdown($type, $selected_values, $additional_info = f
         $selected_values = sanitize_int_array($selected_values);
 
         echo "
-                            items: [" . implode(', ', $selected_values) . "],";
+                    items: [" . implode(', ', $selected_values) . "],
+        ";
     }
 
     echo "
-                            render: {
-                                optgroup_header: function (data) {
-                                    return $('<div>', {class: 'optgroup-header'}).html(data.label);
-                                },
-                                option: function (data) {
-                                    return $('<div>', {class: 'option'}).text(data.name);
-                                },
-                                item: function (data, escape) {
-                                    return `<div class='item'>` + escape(data.name) + `</div>`;
-                                }
-                            }
-                        });
-                    });
-                </script>
+                    render: {
+                        optgroup_header: function (data) {
+                            return $('<div>', {class: 'optgroup-header'}).html(data.label);
+                        },
+                        option: function (data) {
+                            return $('<div>', {class: 'option'}).text(data.name);
+                        },
+                        item: function (data, escape) {
+                            return `<div class='item'>` + escape(data.name) + `</div>`;
+                        }
+                    }
+                });
+            });
+        </script>
     ";
 }
 
@@ -21387,43 +21663,68 @@ function create_default_admin_account()
     }
 
     // Page header
-    echo "
-<html ng-app=\"SimpleRisk\">
-  <head>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-      <link rel=\"stylesheet\" type=\"text/css\" href=\"css/bootstrap.min.css\" media=\"screen\" />
-      <link rel=\"stylesheet\" type=\"text/css\" href=\"css/style.css\" media=\"screen\" />
-      <link rel=\"stylesheet\" href=\"css/bootstrap.css\">
-      <link rel=\"stylesheet\" href=\"css/bootstrap-responsive.css\">
-      <link rel=\"stylesheet\" href=\"vendor/components/font-awesome/css/fontawesome.min.css\">
-      <link rel=\"stylesheet\" href=\"css/theme.css\">
-  </head>
+?>
 
-  <body ng-controller=\"MainCtrl\" class=\"login--page\">
-
-    <header class=\"l-header\">
-      <div class=\"navbar\">
-        <div class=\"navbar-inner\">
-          <div class=\"container-fluid\">
-            <a class=\"brand\" href=\"https://www.simplerisk.com/\"><img src=\"images/logo@2x.png\" alt=\"SimpleRisk Logo\" /></a>
-            <div class=\"navbar-content pull-right\">
-              <ul class=\"nav\">
-                <li>
-                  <a href=\"index.php\">Default Admin Account Creation</a>
-                </li>
-              </ul>
+<!DOCTYPE html>
+<html dir="ltr" lang="en" xml:lang="en">
+	<head>
+        <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+        <!-- Favicon icon -->
+        <link rel='shortcut icon' href='favicon.ico' />
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="css/style.min.css" />
+        <!-- jQuery Javascript -->
+        <script src="vendor/node_modules/jquery/dist/jquery.min.js" id="script_jquery"></script>
+        <!-- Bootstrap tether Core JavaScript -->
+        <script src="vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js" defer></script>
+    </head>
+    <body>
+        <div class="preloader">
+            <div class="lds-ripple">
+                <div class="lds-pos"></div>
+                <div class="lds-pos"></div>
             </div>
-          </div>
         </div>
-      </div>
-    </header>
-    <div class=\"container-fluid\">
-      <div class=\"row-fluid\">
-        <div class=\"span12\">
-          <div class=\"login-wrapper clearfix\">
-            <h1 class=\"text-center welcome--msg\">Default Admin Account Creation</h1>
-              <form name=\"install\" method=\"post\" action=\"\" class=\"loginForm\">
-    ";
+        <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="none" data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full" data-function="assessment">
+            <header class="topbar" data-navbarbg="skin5">
+                <nav class="navbar top-navbar navbar-expand-md navbar-dark">
+                    <div class="navbar-header-1">
+                        <a class="navbar-brand" href="https://www.simplerisk.com/">
+                        <span class="logo-text ms-2">
+                            <!-- dark Logo text -->
+                            <img src="images/logo@2x.png" alt="homepage" class="light-logo"/>  
+                        </span>
+                        </a>
+                    </div>
+              		<div class="navbar-collapse collapse show" id="navbarSupportedContent" data-navbarbg="skin5">
+                        <!-- Right side toggle and nav items -->
+						<ul class="navbar-nav float-end ms-auto">
+			  				<li class="nav-item dropdown">
+                				<a href="index.php" style='color: var(--sr-light)'>Default Admin Account Creation</a>
+              				</li>
+            			</ul>
+          			</div>
+                </nav>
+            </header>
+            <!-- ============================================================== -->
+            <!-- Page wrapper  -->
+            <div class="page-wrapper">
+            	<div class="scroll-content">
+            		<div class="content-wrapper">
+                        <!-- container - It's the direct container of all the -->
+                        <div class="content container-fluid">
+
+      						<div class="row-fluid">
+        						<div class="span12">
+          							<div class="login-wrapper clearfix">
+            							<h1 class="text-center welcome--msg">Default Admin Account Creation</h1>
+              							<form name="install" method="post" action="" class="loginForm">
+
+<?php
+    // in the above part don't forget to replace the row-fluid and span12 classes
+    // only leaving it there so it won't break the tests for now
 
     // If we have an error message
     if (isset($error_message))
@@ -21478,17 +21779,34 @@ function create_default_admin_account()
     echo "<br /><input type=\"submit\" name=\"verify_create_default_admin_account\" value=\"CREATE\" />\n";
     echo "</form>\n";
 
-    // Page trailer
-    echo "
-                </form>
-              </div>
+?>
+            			            </div>
+    		                    </div>
+	                        </div>
+                        </div>
+                        <!-- End of content -->
+                        <footer class="footer text-center">
+                  			Copyright 2024 SimpleRisk, Inc. All rights reserved.
+                		</footer>
+                	</div>
+                	<!-- End of content-wrapper -->
+        		</div>
+        		<!-- End of scroll-content -->
+          	</div>
+          <!-- End Page wrapper  -->
         </div>
-      </div>
-    </div>
-  </body>
+        <!-- End Wrapper -->
 
+    	<script>
+        	$(function() {
+        		// Fading out the preloader once everything is done rendering
+        		$(".preloader").fadeOut();
+            });
+    	</script>
+    </body>
 </html>
-    ";
+
+<?php
 }
 
 /*************************************************
@@ -21828,7 +22146,7 @@ function setting_risks_and_issues_tags($risk_tags){
     $stmt = $db->prepare("UPDATE `user` SET `custom_risks_and_issues_settings` = :tag_ids WHERE value = :user_id");
     $stmt->bindParam(":user_id", $_SESSION['uid'], PDO::PARAM_INT);
     $stmt->bindParam(":tag_ids", $tag_ids, PDO::PARAM_STR);
-    $stmt->execute();
+    //$stmt->execute();
 
     // Close the database connection
     db_close($db);
@@ -22374,6 +22692,13 @@ function array_equal_assoc($a, $b) {
 }
 
 /**
+ * Merge any number of arrays and get back the results without duplicates.
+ */
+function array_merge_unique(array ...$arrays) {
+    return array_values(array_unique(array_merge(...$arrays)));
+}
+
+/**
  *
  * It's a helper/wrapper function for changing a column's type from float to double with the required checks and rollback logic.
  *
@@ -22463,5 +22788,118 @@ function change_float_column_to_double($db, $table_name, $id_column_name, $float
     return true;
 }
 
+/************************
+ * FUNCTION: DELETE TAG *
+ ************************/
+function delete_tag($id)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Delete the tag from the tags table
+    $stmt = $db->prepare("DELETE FROM `tags` WHERE id=:id;");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Delete the tag from the tags_taggees table
+    $stmt = $db->prepare("DELETE FROM `tags_taggees` WHERE tag_id=:id;");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+}
+
+/*****************************
+ * FUNCTION: DELETE ALL TAGS *
+ *****************************/
+function delete_all_tags($type)
+{
+    global $tag_types;
+    if ($type === 'all' || in_array($type, $tag_types)) {
+
+        // Open the database connection
+        $db = db_open();
+
+        if ($type === 'all') {
+            // Delete all tags
+            $stmt = $db->prepare("DELETE FROM `tags`;");
+            $stmt->execute();
+            // Delete all tags_taggees
+            $stmt = $db->prepare("DELETE FROM `tags_taggees`;");
+            $stmt->execute();
+        } else {
+            // Delete all tags with this type
+            $stmt = $db->prepare("DELETE FROM `tags` WHERE id IN (SELECT tag_id FROM tags_taggees WHERE type=:type);");
+            $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+            $stmt->execute();
+            // Delete all tags_taggees with this type
+            $stmt = $db->prepare("DELETE FROM `tags_taggees` WHERE type=:type;");
+            $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+            $stmt->execute();
+        }
+
+        // Close the database connection
+        db_close($db);
+    }
+}
+
+/**
+ * Gets the header(first row) of a spreadsheet's first sheet.
+ *
+ * THEORETICALLY can recognize/handle csv/ods files, but it's not tested
+ * Update it later if you need it be able to get the header of other sheets than the first
+ *
+ * @param string $filePath path to the file
+ * @return array the header
+ */
+function getSpreadsheetHeader($filePath) {
+    // Create the reader based on the extension of the file
+    $reader = OpenSpout\Reader\Common\Creator\ReaderFactory::createFromFile($filePath);
+    // Open the reader
+    $reader->open($filePath);
+    
+    // Iterate through the sheets
+    foreach ($reader->getSheetIterator() as $sheet) {
+        foreach ($sheet->getRowIterator() as $row) {
+            // Get the first row
+            $header = $row->toArray();
+            break;
+        }
+    }
+    $reader->close();
+    return $header;
+}
+
+/**
+ * Gets the data of a spreadsheet's first sheet.
+ *
+ * THEORETICALLY can recognize/handle csv/ods files, but it's not tested
+ * Update it later if you need it be able to get the data of other sheets than the first
+ *
+ * @param string $filePath path to the file
+ * @return array the data
+ */
+function getSpreadsheetData($filePath) {
+    // Create the reader based on the extension of the file
+    $reader = OpenSpout\Reader\Common\Creator\ReaderFactory::createFromFile($filePath);
+    // Open the reader
+    $reader->open($filePath);
+    
+    // Variable to store the data in
+    $data = [];
+    
+    // Iterate through the sheets
+    foreach ($reader->getSheetIterator() as $sheet) {
+        foreach ($sheet->getRowIterator() as $row) {
+            // Get the first row
+            $data []= $row->toArray();
+        }
+        // Make sure only the first sheet is processed 
+        break;
+    }
+    $reader->close();
+    return $data;
+}
 
 ?>

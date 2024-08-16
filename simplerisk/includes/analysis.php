@@ -82,8 +82,10 @@ function risk_distribution_analysis()
         $array = strip_no_access_open_risk_summary($veryhigh, $high, $medium, $low);
     }
 
-    echo $escaper->escapeHtml("Your risk level distribution is as follows:\n"); 
-    echo "<ul>\n";
+    echo "
+        <p><b>" . $escaper->escapeHtml("Your residual risk level distribution is as follows:") . "</b></p>
+        <ul>
+    ";
 
     // Default values to 0
     $veryhigh = 0;
@@ -93,11 +95,13 @@ function risk_distribution_analysis()
     $insignificant = 0;
 
     // List each risk level
-        foreach ($array as $row)
-        {
-        echo "<li>";
-        echo $escaper->escapeHtml($row['level']) . ":&nbsp;&nbsp;" . (int)$row['num'];
-        echo "</li>\n";
+    foreach ($array as $row)
+    {
+        echo "
+            <li>
+                <label class='m-r-10'>" . $escaper->escapeHtml($row['level']) . ":</label>" . (int)$row['num'] . "
+            </li>
+        ";
 
         // If veryhigh
         if ($row['level'] == $very_high_display_name)
@@ -122,24 +126,32 @@ function risk_distribution_analysis()
         }
     }
 
-    echo "</ul>\n";
-    echo $escaper->escapeHtml("Recommendation(s):\n");
-    echo "<ul>\n";
+    echo "
+        </ul>
+        <p><b>" . $escaper->escapeHtml("Recommendation(s):") . "</b></p>
+        <ul class='mb-0 p-l-0'>
+    ";
 
     // If we have more high or very high than everything else
     if ($veryhigh + $high > $medium + $low + $insignificant)
     {
-        echo "<li>Your VERY HIGH and HIGH level risks account for over half of your total risks.  You should consider mitigating some of them.</li>\n";
+        echo "
+            <li style='margin-left: 2rem;'><label>Your VERY HIGH and HIGH level risks account for over half of your total risks.  You should consider mitigating some of them.</label></li>
+        ";
     }
     // If veryhigh risks are more than 1/5 of the total risks
     if ($veryhigh > ($veryhigh + $high + $medium + $low + $insignificant)/5)
     {
-        echo "<li>Your VERY HIGH risks account for over &#8533; of your total risks.  You should consider mitigating some of them.</li>\n";
+        echo "
+            <li style='margin-left: 2rem;'><label>Your VERY HIGH risks account for over &#8533; of your total risks.  You should consider mitigating some of them.</label></li>
+        ";
     }
     // If high risks are more than 1/5 of the total risks
     if ($high > ($veryhigh + $high + $medium + $low + $insignificant)/5)
     {
-        echo "<li>Your HIGH risks account for over &#8533; of your total risks.  You should consider mitigating some of them.</li>\n";
+        echo "
+            <li style='margin-left: 2rem;'><label>Your HIGH risks account for over &#8533; of your total risks.  You should consider mitigating some of them.</label></li>
+        ";
     }
 
     //Store whether the Encryption extra is enabled
@@ -179,8 +191,21 @@ function risk_distribution_analysis()
     if (!empty($array))
     {
         // Suggest performing the mitigations
-        echo "<li>Mitigating these risks would provide the highest risk reduction for the lowest level of effort:</li>\n";
-        echo "<table cellpadding=\"2\" cellspacing=\"0\" style=\"border:none'\">\n";
+        echo "
+            <li style='margin-left: 2rem;'><label>Mitigating these risks would provide the highest risk reduction for the lowest level of effort:</label></li>
+            <div class='col-12'>
+                <table class='table table-bordered table-condensed sortable mb-0'>
+                    <thead>
+                        <tr>
+                            <th align='left' width='50px'>" . $escaper->escapeHtml($lang['ID']) . "</th>
+                            <th align='left'>" . $escaper->escapeHtml($lang['Subject']) . "</th>
+                            <th align='left' width='105px'>" . $escaper->escapeHtml($lang['MitigationEffort']) . "</th>
+                            <th align='left' width='30px'>" . $escaper->escapeHtml($lang['InherentRisk']) . "</th>
+                            <th align='left' width='30px'>" . $escaper->escapeHtml($lang['ResidualRisk']) . "</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        ";
 
         // Initialize the counter
         $counter = 1;
@@ -210,40 +235,58 @@ function risk_distribution_analysis()
             // Get the values
             $id = (int)$risk['id'];
             $subject = $risk['subject'];
-            $calculated_risk = round($risk['residual_risk'], 2);
+            $inherent_risk = round($risk['calculated_risk'], 2);
+            $residual_risk = round($risk['residual_risk'], 2);
             $mitigation_effort = $risk['mitigation_effort'];
-            $color = $escaper->escapeHtml(get_risk_color($calculated_risk));
+            $inherent_color = $escaper->escapeHtml(get_risk_color($inherent_risk));
+            $residual_color = $escaper->escapeHtml(get_risk_color($residual_risk));
             $risk_id = convert_id($id);
 
             // If the counter is less than or equal to 10
-            if ($counter <= 10 || ($old_calculated_risk==$calculated_risk && $old_mitigation_effort==$mitigation_effort))
+            if ($counter <= 10 || ($old_residual_risk==$residual_risk && $old_mitigation_effort==$mitigation_effort))
             {
-                $old_calculated_risk = $calculated_risk;
+                $old_residual_risk = $residual_risk;
                 $old_mitigation_effort = $mitigation_effort;
                 
                 // If team separation is disabled OR team separation is enabled and access is granted to the risk
                 if (!$team_separation_enabled || ($team_separation_enabled && extra_grant_access($_SESSION['uid'], $risk_id))) {
-                    echo "<tr>\n";
-                    echo "<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>\n";
-                    echo "<td align=\"right\">" . $counter . ")</td>\n";
-                    echo "<td><a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) . "\">" .$subject. "</a></td>\n";
-                    echo "<td>\n";
-                    echo "<table width=\"100%\" height=\"100%\" border=\"2\" style=\"background-color:white\"><tr><td valign=\"middle\" halign=\"center\"><center><font size=\"2\">" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "</font></center></td></tr></table>\n";
-                    echo "</td>\n";
-                    echo "<td>\n";
-                    echo "<table width=\"25px\" height=\"25px\" border=\"2\" style=\"border: 1px solid {$color}; background-color: {$color};\"><tr><td valign=\"middle\" halign=\"center\"><center><font size=\"2\">" . $escaper->escapeHtml($calculated_risk) . "</font></center></td></tr></table>\n";
-                    echo "</td>\n";
-                    echo "</tr>\n";
+                    echo "
+                        <tr>
+                            <td><a class='open-in-new-tab' href='../management/view.php?id=" . $escaper->escapeHtml($risk_id) . "' target='_blank'>" . $escaper->escapeHtml($risk_id) . "</a></td>
+                            <td>" . $escaper->escapeHtml($subject) . "</td>
+                            <td>
+                                <div style='height: 50px; width: 100px; border: 1px solid black; clear: both; align-content: center; text-align: center; background-color: #FFFFFF; font-weight:bold;'>
+                                    {$escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort))}
+                                </div>
+                            </td>
+                            <td>
+                                <div style='height: 50px; width: 50px; border: 1px solid black; clear: both; align-content: center; text-align: center; background-color: {$inherent_color}; font-weight:bold;'>
+                                    {$escaper->escapeHtml($inherent_risk)}
+                                </div>
+                            </td>
+                            <td>
+                                <div style='height: 50px; width: 50px; border: 1px solid black; clear: both; align-content: center; text-align: center; background-color: {$residual_color}; font-weight:bold;'>
+                                    {$escaper->escapeHtml($residual_risk)}
+                                </div>
+                            </td>
+                        </tr>
+                    ";
 
                     // Increment the counter
                     $counter = $counter + 1;
                 }
             }
         }
-        echo "</table>\n";
+        echo "
+                    </tbody>
+                </table>
+            </div>
+        ";
     }
 
-    echo "</ul>\n";
+    echo "
+        </ul>
+    ";
 
     // Close the database connection
     db_close($db);

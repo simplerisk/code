@@ -11,20 +11,10 @@ require_once(realpath(__DIR__ . '/../includes/assessments.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 // Add various security headers
-add_security_headers();
 
-// Add the session
-$permissions = array(
-        "check_access" => true,
-        "check_assessments" => true,
-);
-add_session_check($permissions);
+require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 
-// Include the language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
-require_once(language_file());
-csrf_init();
+render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'tabs:logic', 'CUSTOM:pages/assessment.js'], ['check_assessments' => true], '', $active_sidebar_menu, $active_sidebar_submenu);
 
 // If the assessments extra is enabled
 if (assessments_extra())
@@ -93,45 +83,11 @@ else
 
 <head>
   <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
-<?php
-        // Use these jQuery scripts
-        $scripts = [
-                'jquery.min.js',
-        ];
 
-        // Include the jquery javascript source
-        display_jquery_javascript($scripts);
-
-        // Use these jquery-ui scripts
-        $scripts = [
-                'jquery-ui.min.js',
-        ];
-
-        // Include the jquery-ui javascript source
-        display_jquery_ui_javascript($scripts);
-
-	display_bootstrap_javascript();
-?>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../vendor/node_modules/jquery-ui/dist/themes/base/jquery-ui.min.css?<?php echo current_version("app"); ?>">
 
-
-  <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
-
-  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
-  
-  <?php
-      setup_favicon("..");
-      setup_alert_requirements("..");
-  ?>  
 </head>
 
 <body>
@@ -144,14 +100,10 @@ else
   echo "</div>\n";
   echo "</div>\n";
 
-  // Get any alert messages
-  get_alert();
   ?>
-  <div class="container-fluid">
-    <div class="row-fluid">
-      <div class="span12">
-        <?php if ($display) display_view_assessment_questions($assessment_id); ?>
-      </div>
+  <div class="row-fluid">
+    <div class="span12">
+      <?php if ($display) display_view_assessment_questions($assessment_id); ?>
     </div>
   </div>
     <?php display_set_default_date_format_script(); ?>

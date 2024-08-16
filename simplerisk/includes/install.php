@@ -157,41 +157,60 @@ function simplerisk_installation()
  ************************************/
 function display_install_header()
 {
-    echo "
-<html ng-app=\"SimpleRisk\">
-  <head>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-      <link rel=\"stylesheet\" type=\"text/css\" href=\"css/bootstrap.min.css\" media=\"screen\" />
-      <link rel=\"stylesheet\" type=\"text/css\" href=\"css/style.css\" media=\"screen\" />
-      <link rel=\"stylesheet\" href=\"css/bootstrap.css\">
-      <link rel=\"stylesheet\" href=\"css/bootstrap-responsive.css\">
-      <link rel=\"stylesheet\" href=\"vendor/components/font-awesome/css/fontawesome.min.css\">
-      <link rel=\"stylesheet\" href=\"css/theme.css\">
-  </head>
+?>
 
-  <body ng-controller=\"MainCtrl\" class=\"login--page\">
-
-    <header class=\"l-header\">
-      <div class=\"navbar\">
-        <div class=\"navbar-inner\">
-          <div class=\"container-fluid\">
-            <a class=\"brand\" href=\"https://www.simplerisk.com/\"><img src=\"images/logo@2x.png\" alt=\"SimpleRisk Logo\" /></a>
-            <div class=\"navbar-content pull-right\">
-              <ul class=\"nav\">
-                <li>
-                  <a href=\"index.php\">Install SimpleRisk</a>
-                </li>
-              </ul>
+<!DOCTYPE html>
+<html dir="ltr" lang="en" xml:lang="en">
+	<head>
+        <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+        <!-- Favicon icon -->
+        <link rel='shortcut icon' href='favicon.ico' />
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="css/style.min.css" />
+        <!-- jQuery Javascript -->
+        <script src="vendor/node_modules/jquery/dist/jquery.min.js" id="script_jquery"></script>
+        <!-- Bootstrap tether Core JavaScript -->
+        <script src="vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js" defer></script>
+    </head>
+    <body>
+        <div class="preloader">
+            <div class="lds-ripple">
+                <div class="lds-pos"></div>
+                <div class="lds-pos"></div>
             </div>
-          </div>
         </div>
-      </div>
-    </header>
-    <div class=\"container-fluid\">
-      <div class=\"row-fluid\">
-        <div class=\"span12\">
-          <div class=\"login-wrapper clearfix\">
-    ";
+        <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="none" data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full" data-function="assessment">
+            <header class="topbar" data-navbarbg="skin5">
+                <nav class="navbar top-navbar navbar-expand-md navbar-dark">
+                    <div class="navbar-header-1">
+                        <a class="navbar-brand" href="https://www.simplerisk.com/">
+                        <span class="logo-text ms-2">
+                            <!-- dark Logo text -->
+                            <img src="images/logo@2x.png" alt="homepage" class="light-logo"/>  
+                        </span>
+                        </a>
+                    </div>
+              		<div class="navbar-collapse collapse show" id="navbarSupportedContent" data-navbarbg="skin5">
+                        <!-- Right side toggle and nav items -->
+						<ul class="navbar-nav float-end ms-auto">
+			  				<li class="nav-item dropdown">
+                				<a href="index.php" style='color: var(--sr-light)'>Install SimpleRisk</a>
+              				</li>
+            			</ul>
+          			</div>
+                </nav>
+            </header>
+            <!-- ============================================================== -->
+            <!-- Page wrapper  -->
+            <div class="page-wrapper">
+            	<div class="scroll-content">
+            		<div class="content-wrapper">
+                        <!-- container - It's the direct container of all the -->
+                        <div class="content container-fluid">
+
+<?php
 }
 
 /*************************************
@@ -199,15 +218,32 @@ function display_install_header()
  *************************************/
 function display_install_trailer()
 {
-    echo "
-              </div>
-        </div>
-      </div>
-    </div>
-  </body>
+?>
 
+                        </div>
+                        <!-- End of content -->
+                        <footer class="footer text-center">
+                  			Copyright 2024 SimpleRisk, Inc. All rights reserved.
+                		</footer>
+                	</div>
+                	<!-- End of content-wrapper -->
+        		</div>
+        		<!-- End of scroll-content -->
+          	</div>
+          <!-- End Page wrapper  -->
+        </div>
+        <!-- End Wrapper -->
+
+    	<script>
+        	$(function() {
+        		// Fading out the preloader once everything is done rendering
+        		$(".preloader").fadeOut();
+            });
+    	</script>
+    </body>
 </html>
-    ";
+
+<?php
 }
 
 /*********************************
@@ -958,14 +994,20 @@ function step_6_simplerisk_installation()
     // Check if we want to use a custom branch
     $branch = defined('DB_BRANCH') ? DB_BRANCH : "master";
 
-    // Download the database schema file to memory
-    $file_url = "https://raw.githubusercontent.com/simplerisk/database/" . $branch . "/" . $file;
-    $web_file = fopen($file_url, "r");
+    try {
+        // Download the database schema file to memory
+        $file_url = "https://raw.githubusercontent.com/simplerisk/database/" . $branch . "/" . $file;
+        $web_file = fopen($file_url, "r");
+    }
+    catch (Exception $e) {
+        echo "ERROR: Unable to obtain file from {$file_url}";
+        exit(0);
+    }
 
     // If we did not successfully open the file handle
     if ($web_file === false)
     {
-        echo "ERROR: Unable to obtain file from ${file_url}";
+        echo "ERROR: Unable to obtain file from {$file_url}";
         exit(0);
     }
 
@@ -1135,7 +1177,7 @@ function installer_health_check_good($text)
 {
     global $escaper;
 
-    echo "<img src=\"../images/check-mark-8-16.png\" />&nbsp&nbsp;" . $escaper->escapeHtml($text) . "<br />";
+    echo "<img src=\"images/check-mark-8-16.png\" />&nbsp&nbsp;" . $escaper->escapeHtml($text) . "<br />";
 }
 
 /****************************************
@@ -1145,7 +1187,7 @@ function installer_health_check_bad($text)
 {
     global $escaper;
 
-    echo "<img src=\"../images/x-mark-5-16.png\" />&nbsp;&nbsp;" . $escaper->escapeHtml($text) . "<br />";
+    echo "<img src=\"images/x-mark-5-16.png\" />&nbsp;&nbsp;" . $escaper->escapeHtml($text) . "<br />";
 }
 
 /********************************
@@ -1491,7 +1533,7 @@ function installer_get_latest_version()
     {
         $url = UPDATES_URL . '/releases.xml';
     }
-    else $url = 'https://updates.simplerisk.com/releases.xml';
+    else $url = 'https://raw.githubusercontent.com/simplerisk/updates.simplerisk.com/updates.simplerisk.com/releases.xml';
 
     // Set the default socket timeout to 5 seconds
     ini_set('default_socket_timeout', 5);
@@ -1512,7 +1554,7 @@ function installer_get_latest_version()
         {
             $version_page = file_get_contents(UPDATES_URL . '/releases.xml');
         }
-        else $version_page = file_get_contents('https://updates.simplerisk.com/releases.xml');
+        else $version_page = file_get_contents('https://raw.githubusercontent.com/simplerisk/updates.simplerisk.com/updates.simplerisk.com/releases.xml');
 
         // Convert it to be an array
         $releases_array = json_decode(json_encode(new SimpleXMLElement($version_page)), true);
@@ -1549,7 +1591,7 @@ function installer_check_app_version($current_app_version, $latest_app_version)
 function installer_check_web_connectivity()
 {
     // URLs to check
-    $urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://updates.simplerisk.com", "https://olbat.github.io", "https://github.com", "https://raw.githubusercontent.com", "https://simplerisk-downloads.s3.amazonaws.com");
+    $urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://olbat.github.io", "https://github.com", "https://raw.githubusercontent.com", "https://simplerisk-downloads.s3.amazonaws.com");
 
     // Create an empty array
     $array = array();

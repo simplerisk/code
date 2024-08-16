@@ -325,23 +325,35 @@ function recurse_copy($src, $dst) {
     return $result;
 }
 
+
+/**
+ * Just a small helper function to be able to have the exact same json response format we have everywhere else
+ * without using the rest of the logic the json_response() function have.
+ *
+ *
+ * @param int $status Status code of the response
+ * @param string $status_message Status message
+ * @param array $data Additional data
+ * @return array The response as an array in the format of ['status' => $status, 'status_message' => $status_message, 'data' => $data]
+ */
+ function create_json_response_array($status, $status_message, $data=array()) {
+     return ['status' => $status, 'status_message' => $status_message, 'data' => $data];
+ }
+
 /***************************
  * FUNCTION: JSON RESPONSE *
  ***************************/
 function json_response($status, $status_message, $data=array())
 {
 	// HTTP Header
-//    header("HTTP/1.1 $status, $status_message");
 	header("HTTP/1.1 $status");
 	header("Content-Type: application/json");
 
 	// Response
-	$response['status'] = $status;
-	$response['status_message'] = $status_message;
-	$response['data'] = $data;
+	$response = create_json_response_array($status, $status_message, $data);
 
-	// JSON Response
-	$json_response = json_encode($response);
+	// JSON Response fixing any invalid utf8 characters
+	$json_response = json_encode($response, JSON_INVALID_UTF8_SUBSTITUTE);
 
 	// Display the response
 	echo $json_response;
@@ -447,6 +459,54 @@ function call_extra_api_functionality($extra, $functionality, $target) {
     //error_log("result: " . json_encode($result));
 
     return [$result['return_code'], json_decode($result['response'], true)];
+}
+
+/******************************************
+ * FUNCTION: CALL SIMPLERISK API ENDPOINT *
+ ******************************************/
+function call_simplerisk_api_endpoint($endpoint, $method = "GET")
+{
+    // Get the simplerisk_base_url from the settings table
+    $url = get_setting("simplerisk_base_url");
+    $url .= (endsWith($url, '/') ? '' : '/') . $endpoint;
+    //error_log("URL: " . json_encode($url));
+    $http_options = [
+        'method' => $method,
+        'header' => [
+            "Cookie: " . session_name() . "=" . session_id(),
+            "Content-Type: application/json",
+            "Accept: application/json",
+        ],
+        'ignore_errors' => true,
+        'timeout' => 600,
+    ];
+
+    // If SSL certificate checks are enabled
+    if (get_setting('ssl_certificate_check_simplerisk') == 1)
+    {
+        // Verify the SSL host and peer
+        $validate_ssl = true;
+    }
+    else
+    {
+        // Do not verify the SSL host and peer
+        $validate_ssl = false;
+    }
+
+    //error_log("url: " . json_encode($url));
+    //error_log("context: " . json_encode($context));
+    $result = fetch_url_content("stream", $http_options, $validate_ssl, $url);
+    //error_log("header: " . json_encode($http_response_header));
+    //error_log("result: " . json_encode($result));
+
+    // If we got a successful result
+    if ($result['return_code'] == 200)
+    {
+        // Return the data array
+        return json_decode($result['response'], true)['data'];
+    }
+    // Otherwise return an empty array
+    else return [];
 }
 
 ?>

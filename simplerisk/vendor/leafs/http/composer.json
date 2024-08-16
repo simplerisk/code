@@ -1,0 +1,39 @@
+{
+  "name": "leafs/http",
+  "description": "Http abstraction for Leaf PHP",
+  "keywords": [
+    "http",
+    "request",
+    "response",
+    "headers",
+    "leaf",
+    "php",
+    "framework"
+  ],
+  "homepage": "https://leafphp.dev/modules/http/v/2/request.html",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Michael Darko",
+      "email": "mickdd22@gmail.com",
+      "homepage": "https://mychi.netlify.app",
+      "role": "Developer"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Leaf\\Http\\": "src"
+    },
+    "files": [
+      "src/functions.php"
+    ]
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "leafs/anchor": "*",
+    "leafs/form": "*",
+    "leafs/fs": "*"
+  }
+}

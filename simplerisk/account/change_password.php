@@ -2,13 +2,10 @@
     /* This Source Code Form is subject to the terms of the Mozilla Public
      * License, v. 2.0. If a copy of the MPL was not distributed with this
      * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-// Include required functions file
-require_once(realpath(__DIR__ . '/../includes/functions.php'));
-require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-require_once(realpath(__DIR__ . '/../includes/display.php'));
-require_once(realpath(__DIR__ . '/../includes/alerts.php'));
-require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
+$active_sidebar_menu = "Admin";
+$active_sidebar_submenu ="UserManagement";
+$title = 'SimpleRisk: Enterprise Risk Management Simplified';
+require_once(realpath(__DIR__ . '/../sidebar.php'));
 
 // Add various security headers
 add_security_headers();
@@ -20,8 +17,6 @@ add_session_check();
 include_csrf_magic();
 
 // Include the SimpleRisk language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
 // Check if a new password was submitted
@@ -93,76 +88,64 @@ if (isset($_POST['change_password']))
 }
 
 ?>
-
-<!doctype html>
-<html>
-
-<head>
-    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
-	<?php
-                // Use these jQuery scripts
-                $scripts = [
-                        'jquery.min.js',
-                ];
-
-                // Include the jquery javascript source
-                display_jquery_javascript($scripts);
-
-		display_bootstrap_javascript();
-	?>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
-    <?php
-        setup_favicon("..");
-        setup_alert_requirements("..");
-    ?>    
-</head>
-
-<body>
-
-
-    <?php
-        view_top_menu("Configure");
-
-        // Get any alert messages
-        get_alert();
-    ?>
+    <link rel="stylesheet" href="../css/theme.css?<?= $current_app_version ?>">
+    <style>
+    input[type="password"]{
+        max-width: 50% !important;
+    }
+    </style>
+    <div class="page-breadcrumb">
+      <div class="row">
+        <div class="col-12 d-flex no-block align-items-center">
+          <h4 class="page-title"><?= $escaper->escapeHtml($lang['ProfileDetails']); ?></h4>
+          <div class="ms-auto text-end">
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="../account/profile.php">Overview</a></li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="container-fluid">
-        <div class="row-fluid">
-            <div class="span4 offset4">
-                <div class="well">
-                    <?php
-                        //if (isset($_SESSION['user_type']) && $_SESSION['user_type'] != "ldap")
-                        //{
-                            echo "<div class=\"hero-unit\">\n";
-                            echo "<form name=\"change_password\" method=\"post\" action=\"\">\n";
-                            echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
-                            echo "<tr><td colspan=\"2\"><h4>" . $escaper->escapeHtml($lang['ChangePassword']) . "</h4></td><tr>\n";
-                            echo "<tr><td>" . $escaper->escapeHtml($lang['CurrentPassword']) . ":&nbsp</td><td><input maxlength=\"100\" name=\"current_pass\" id=\"current_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /></td></tr>\n";
-                            echo "<tr><td>" . $escaper->escapeHtml($lang['NewPassword']) . ":&nbsp</td><td><input maxlength=\"100\" name=\"new_pass\" id=\"new_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /></td></tr>\n";
-                            echo "<tr><td>" . $escaper->escapeHtml($lang['ConfirmPassword']) . ":&nbsp;</td><td><input maxlength=\"100\" name=\"confirm_pass\" id=\"confirm_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /></td></tr>\n";
-                            echo "</table>\n";
-                                echo "<div class=\"form-actions\">\n";
-                                    echo "<button type=\"submit\" name=\"change_password\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Submit']) . "</button>\n";
-                                    echo "<input class=\"btn\" value=\"" . $escaper->escapeHtml($lang['Reset']) . "\" type=\"reset\">\n";
-                                    echo "</div>\n";
-                                echo "</form>\n";
-                            echo "</div>\n";
-                    //    }
-                    ?>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <form class="form-horizontal" action="" method="post">
+                        <div class="card-body">
+                            <h4 class="card-title"><?= $escaper->escapeHtml($lang['ChangePassword']);?></h4>
+
+                            <div>
+                                <label><?= $escaper->escapeHtml($lang['CurrentPassword']);?></label>
+                                <input type="password" class="form-control" id="current_pass" name="current_pass"/>
+                            </div> 
+                            <div>
+                                <label><?=  $escaper->escapeHtml($lang['NewPassword']);?></label>
+                                <input type="password" class="form-control" id="new_pass" name="new_pass"/>
+                            </div>
+                            <div class="form-group">
+                                <label><?=  $escaper->escapeHtml($lang['ConfirmPassword']);?></label>
+                                <input type="password" class="form-control" id="confirm_pass" name="confirm_pass"/>
+                            </div>
+                            <div class="form-group">
+                                <div>
+                                    <button type="submit" class="btn btn-primary" name="change_password" value="submit"><?= $escaper->escapeHtml($lang['Submit']);?></button>
+
+                                    <button type="reset" class="btn"><?= $escaper->escapeHtml($lang['Reset']);?></button>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-</body>
+</div>
+<?php
+require_once(realpath(__DIR__ . '/../footer.php'));
 
-</html>
+get_alert();
+setup_alert_requirements("..");
+?> 

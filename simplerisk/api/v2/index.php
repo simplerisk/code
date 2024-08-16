@@ -7,12 +7,18 @@
 require_once(realpath(__DIR__ . '/includes/api.php'));
 require_once(realpath(__DIR__ . '/includes/simplerisk.php'));
 require_once(realpath(__DIR__ . '/includes/assets.php'));
+require_once(realpath(__DIR__ . '/includes/governance.php'));
+require_once(realpath(__DIR__ . '/includes/risks.php'));
+require_once(realpath(__DIR__ . '/includes/compliance.php'));
+require_once(realpath(__DIR__ . '/includes/reporting.php'));
 require_once(realpath(__DIR__ . '/../../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../../includes/governance.php'));
 require_once(realpath(__DIR__ . '/../../includes/compliance.php'));
+require_once(realpath(__DIR__ . '/../../includes/reporting.php'));
 require_once(realpath(__DIR__ . '/../../includes/api.php'));
 require_once(realpath(__DIR__ . '/../../vendor/autoload.php'));
+require_once(realpath(__DIR__ . '/../../includes/Components/SimpleriskApiExceptionHandler.php'));
 
 // Add various security headers except CSP
 add_security_headers(true, true, true, true, false);
@@ -25,270 +31,290 @@ require_once(language_file());
 // If access is authenticated
 if (api_v2_is_authenticated())
 {
-    // Initialize the epiphany api
-    Epi::init('api', 'route', 'session');
-
-    // Disable exceptions
-    Epi::setSetting('exceptions', true);
-
     // SimpleRisk Admin Routes
 
-    getRoute()->get('/admin/version', 'api_v2_admin_version');
-    getRoute()->get('/admin/version/app', 'api_v2_admin_version_app');
-    getRoute()->get('/admin/version/db', 'api_v2_admin_version_db');
+    app()->get('/admin/version', 'api_v2_admin_version');
+    app()->get('/admin/version/app', 'api_v2_admin_version_app');
+    app()->get('/admin/version/db', 'api_v2_admin_version_db');
+    app()->delete('/admin/tag', 'api_v2_admin_tag_delete');
+    app()->delete('/admin/tag/all', 'api_v2_admin_tag_delete_all');
 
     // SimpleRisk Assets Routes
 
-    getRoute()->get('/assets', 'api_v2_assets');
+    app()->get('/assets', 'api_v2_assets');
+    app()->get('/assets/associations', 'api_v2_assets_associations');
+    app()->get('/assets/tags', 'api_v2_assets_tags_get');
 
+    // SimpleRisk Governance Routes
+
+    app()->get('/governance/frameworks', 'api_v2_governance_frameworks');
+    app()->get('/governance/frameworks/treegrid', 'api_v2_governance_frameworks_treegrid');
+    app()->get('/governance/frameworks/associations', 'api_v2_governance_frameworks_associations');
+    app()->get('/governance/controls', 'api_v2_governance_controls');
+    app()->get('/governance/controls/associations', 'api_v2_governance_controls_associations');
+    app()->get('/governance/documents', 'api_v2_governance_documents');
+    app()->get('/governance/documents/associations', 'api_v2_governance_documents_associations');
+
+    // SimpleRisk Risk Routes
+    app()->get('/risks', 'api_v2_risks');
+    app()->get('/risks/associations', 'api_v2_risks_associations');
+    app()->get('/risks/tags', 'api_v2_risks_tags_get');
+
+    //SimpleRisk Compliance Routes
+    app()->get('/compliance/tests', 'api_v2_compliance_tests');
+    app()->get('/compliance/tests/associations', 'api_v2_compliance_tests_associations');
+    app()->get('/compliance/tests/tags', 'api_v2_compliance_tests_tags_get');
+    app()->get('/compliance/audits/tags', 'api_v2_compliance_audits_tags_get');
+
+    // SimpleRisk Reports Routes
+
+    app()->get('/reports/risk/average', 'api_v2_reports_risk_average');
+    app()->get('/reports/risk/opencount', 'api_v2_reports_risk_open_count');
 
     // RISK API from external app
     // Define the normal routes
-    //getRoute()->get('/', 'api_v2_documentation_redirect');
-    getRoute()->get('/version', 'show_version');
-    getRoute()->get('/whoami', 'whoami');
-    getRoute()->get('/management', 'show_management');
-    getRoute()->get('/management/risk/view', 'viewrisk');
-    getRoute()->post('/management/risk/add', 'addRisk');
-    getRoute()->post('/management/risk/update', 'updateRisk');
-    getRoute()->post('/management/mitigation/add', 'saveMitigation');
-    getRoute()->get('/management/mitigation/view', 'viewmitigation');
-    getRoute()->post('/management/review/add', 'saveReview');
-    getRoute()->get('/management/review/view', 'viewreview');
-    getRoute()->get('/admin', 'show_admin');
-    getRoute()->get('/admin/users/all', 'allusers');
-    getRoute()->get('/admin/users/enabled', 'enabledusers');
-    getRoute()->get('/admin/users/disabled', 'disabledusers');
-    getRoute()->post('/admin/fields/add', 'customization_addCustomField');
-    getRoute()->post('/admin/fields/delete', 'customization_deleteCustomField');
-    getRoute()->get('/admin/fields/get', 'customization_getCustomField');
-    getRoute()->get('/reports', 'show_reports');
-    getRoute()->get('/reports/dynamic', 'dynamicrisk');
-    getRoute()->get('/risk_levels', 'risk_levels');
+    //app()->get('/', 'api_v2_documentation_redirect');
+    app()->get('/whoami', 'whoami');
+    app()->get('/management', 'show_management');
+    app()->get('/management/risk/view', 'viewrisk');
+    app()->post('/management/risk/add', 'addRisk');
+    app()->post('/management/risk/update', 'updateRisk');
+    app()->post('/management/mitigation/add', 'saveMitigation');
+    app()->get('/management/mitigation/view', 'viewmitigation');
+    app()->post('/management/review/add', 'saveReview');
+    app()->get('/management/review/view', 'viewreview');
+    app()->get('/admin', 'show_admin');
+    app()->get('/admin/users/all', 'allusers');
+    app()->get('/admin/users/enabled', 'enabledusers');
+    app()->get('/admin/users/disabled', 'disabledusers');
+    app()->post('/admin/fields/add', 'customization_addCustomField');
+    app()->post('/admin/fields/delete', 'customization_deleteCustomField');
+    app()->get('/admin/fields/get', 'customization_getCustomField');
+    app()->get('/reports', 'show_reports');
+    app()->get('/reports/dynamic', 'dynamicrisk');
+    app()->get('/risk_levels', 'risk_levels');
 
     // RISK API from form
-    getRoute()->get('/reports/appetite', 'appetite_report_api');
-    getRoute()->post('/reports/high_risk', 'high_risk_report_datatable');
-    getRoute()->post('/reports/user_management_reports', 'user_management_reports_api');
-    getRoute()->get('/reports/user_management_reports_unique_column_data', 'user_management_reports_unique_column_data_api');
+    app()->get('/reports/appetite', 'appetite_report_api');
+    app()->post('/reports/high_risk', 'high_risk_report_datatable');
+    app()->post('/reports/user_management_reports', 'user_management_reports_api');
+    app()->get('/reports/user_management_reports_unique_column_data', 'user_management_reports_unique_column_data_api');
 
-    getRoute()->post('/management/risk/reopen', 'reopenForm');
-    getRoute()->get('/management/risk/overview', 'overviewForm');
+    app()->post('/management/risk/reopen', 'reopenForm');
+    app()->get('/management/risk/overview', 'overviewForm');
 
-    getRoute()->post('/reports/dynamic', 'dynamicriskForm');
-    getRoute()->post('/reports/dynamic_unique_column_data', 'dynamicriskUniqueColumnDataAPI');
-    getRoute()->post('/reports/save-dynamic-selections', 'saveDynamicSelectionsForm');
-    getRoute()->post('/reports/delete-dynamic-selection', 'deleteDynamicSelectionForm');
-    getRoute()->post('/reports/my_open_risk', 'my_open_risk_datatable');
-    getRoute()->post('/reports/recent_commented_risk', 'recent_commented_risk_datatable');
-    getRoute()->get('/reports/governance/control_gap_analysis', 'controlGapAnalysisResponse');
+    app()->post('/reports/dynamic', 'dynamicriskForm');
+    app()->post('/reports/dynamic_unique_column_data', 'dynamicriskUniqueColumnDataAPI');
+    app()->post('/reports/save-dynamic-selections', 'saveDynamicSelectionsForm');
+    app()->post('/reports/delete-dynamic-selection', 'deleteDynamicSelectionForm');
+    app()->post('/reports/my_open_risk', 'my_open_risk_datatable');
+    app()->post('/reports/recent_commented_risk', 'recent_commented_risk_datatable');
+    app()->get('/reports/governance/control_gap_analysis', 'controlGapAnalysisResponse');
 
-    getRoute()->post('/reports/save-graphical-selections', 'saveGraphicalSelectionsForm');
-    getRoute()->post('/reports/delete-graphical-selection', 'deleteGraphicalSelectionForm');
+    app()->post('/reports/save-graphical-selections', 'saveGraphicalSelectionsForm');
+    app()->post('/reports/delete-graphical-selection', 'deleteGraphicalSelectionForm');
 
-    getRoute()->get('/management/risk/viewhtml', 'viewriskHtmlForm');
+    app()->get('/management/risk/viewhtml', 'viewriskHtmlForm');
 
-    getRoute()->get('/management/risk/closerisk', 'closeriskHtmlForm');
-    getRoute()->post('/management/risk/closerisk', 'closeriskForm');
+    app()->get('/management/risk/closerisk', 'closeriskHtmlForm');
+    app()->post('/management/risk/closerisk', 'closeriskForm');
 
-    getRoute()->get('/management/risk/view_all_reviews', 'viewAllReviewsForm');
-    getRoute()->get('/management/risk/editdetails', 'editdetailsForm');
-    getRoute()->post('/management/risk/saveDetails', 'saveDetailsForm');
-    getRoute()->post('/management/risk/saveMitigation', 'saveMitigationForm');
-    getRoute()->post('/management/risk/saveReview', 'saveReviewForm');
+    app()->get('/management/risk/view_all_reviews', 'viewAllReviewsForm');
+    app()->get('/management/risk/editdetails', 'editdetailsForm');
+    app()->post('/management/risk/saveDetails', 'saveDetailsForm');
+    app()->post('/management/risk/saveMitigation', 'saveMitigationForm');
+    app()->post('/management/risk/saveReview', 'saveReviewForm');
 
-    getRoute()->get('/management/risk/changestatus', 'changestatusForm');
-    getRoute()->post('/management/risk/updateStatus', 'updateStatusForm');
+    app()->get('/management/risk/changestatus', 'changestatusForm');
+    app()->post('/management/risk/updateStatus', 'updateStatusForm');
 
-    getRoute()->get('/management/risk/mark-unmitigation', 'markUnmitigationForm');
-    getRoute()->post('/management/risk/saveMarkUnmitigation', 'saveMarkUnmitigationForm');
-    getRoute()->get('/management/risk/mark-unreview', 'markUnreviewForm');
-    getRoute()->post('/management/risk/saveMarkUnreview', 'saveMarkUnreviewForm');
+    app()->get('/management/risk/mark-unmitigation', 'markUnmitigationForm');
+    app()->post('/management/risk/saveMarkUnmitigation', 'saveMarkUnmitigationForm');
+    app()->get('/management/risk/mark-unreview', 'markUnreviewForm');
+    app()->post('/management/risk/saveMarkUnreview', 'saveMarkUnreviewForm');
 
-    getRoute()->get('/management/risk/scoreaction', 'scoreactionForm');
-    getRoute()->post('/management/risk/saveScore', 'saveScoreForm');
+    app()->get('/management/risk/scoreaction', 'scoreactionForm');
+    app()->post('/management/risk/saveScore', 'saveScoreForm');
 
-    getRoute()->post('/management/risk/saveSubject', 'saveSubjectForm');
+    app()->post('/management/risk/saveSubject', 'saveSubjectForm');
 
-    getRoute()->post('/management/risk/saveComment', 'saveCommentForm');
-    getRoute()->post('/management/risk/accept_mitigation', 'acceptMitigationForm');
-    getRoute()->post('/management/risk/fix_review_date_format', 'fixReviewDateFormat');
+    app()->post('/management/risk/saveComment', 'saveCommentForm');
+    app()->post('/management/risk/accept_mitigation', 'acceptMitigationForm');
+    app()->post('/management/risk/fix_review_date_format', 'fixReviewDateFormat');
 
-    getRoute()->post('/management/impportexport/deleteMapping', 'deleteMapping');
+    app()->post('/management/impportexport/deleteMapping', 'deleteMapping');
 
-    getRoute()->post('/assessment/update', 'updateAssessment');
+    app()->post('/assessment/update', 'updateAssessment');
 
-    getRoute()->post('/datatable/framework_controls', 'getFrameworkControlsDatatable');
-    getRoute()->get('/datatable/mitigation_controls', 'getMitigationControlsDatatable');
-    getRoute()->get('/role_responsibilities/get_responsibilities', 'getResponsibilitiesByRoleIdForm');
+    app()->post('/datatable/framework_controls', 'getFrameworkControlsDatatable');
+    app()->get('/datatable/mitigation_controls', 'getMitigationControlsDatatable');
+    app()->get('/role_responsibilities/get_responsibilities', 'getResponsibilitiesByRoleIdForm');
 
     /******************** Risk Management Datatatable API **********************/
-    getRoute()->post('/risk_management/plan_mitigation', 'getPlanMitigationsDatatableResponse');
-    getRoute()->post('/risk_management/managment_review', 'getManagementReviewsDatatableResponse');
-    getRoute()->post('/risk_management/review_risks', 'getReviewRisksDatatableResponse');
-    getRoute()->get('/risk_management/review_date_issues', 'getReviewsWithDateIssuesDatatableResponse');
+    app()->post('/risk_management/plan_mitigation', 'getPlanMitigationsDatatableResponse');
+    app()->post('/risk_management/managment_review', 'getManagementReviewsDatatableResponse');
+    app()->post('/risk_management/review_risks', 'getReviewRisksDatatableResponse');
+    app()->get('/risk_management/review_date_issues', 'getReviewsWithDateIssuesDatatableResponse');
 
     /******************** Custom Display Settings API **********************/
-    getRoute()->post('/risk_management/save_custom_plan_mitigation_display_settings', 'saveCustomPlanMitigationDisplaySettingsAPI');
-    getRoute()->post('/risk_management/save_custom_perform_reviews_display_settings', 'saveCustomPerformReviewsDisplaySettingsAPI');
-    getRoute()->post('/risk_management/save_custom_reviewregularly_display_settings', 'saveCustomReviewregularlyDisplaySettingsAPI');
+    app()->post('/risk_management/save_custom_plan_mitigation_display_settings', 'saveCustomPlanMitigationDisplaySettingsAPI');
+    app()->post('/risk_management/save_custom_perform_reviews_display_settings', 'saveCustomPerformReviewsDisplaySettingsAPI');
+    app()->post('/risk_management/save_custom_reviewregularly_display_settings', 'saveCustomReviewregularlyDisplaySettingsAPI');
 
     /******************** Governance and Compliance API **********************/
-    getRoute()->get('/governance/frameworks', 'getFrameworksResponse');
-    getRoute()->get('/governance/tabular_documents', 'getTabularDocumentsResponse');
+    //app()->get('/governance/frameworks', 'getFrameworksResponse');
+    app()->get('/governance/tabular_documents', 'getTabularDocumentsResponse');
 
-    getRoute()->post('/governance/update_framework_status', 'updateFrameworkStatusResponse');
-    getRoute()->post('/governance/update_framework_parent', 'updateFrameworkParentResponse');
-    getRoute()->get('/governance/parent_frameworks_dropdown', 'getParentFrameworksDropdownResponse');
-    getRoute()->get('/governance/selected_parent_frameworks_dropdown', 'getSelectedParentFrameworksDropdownResponse');
-    getRoute()->get('/governance/control', 'getControlResponse');
-    getRoute()->get('/governance/framework', 'getFrameworkResponse');
-    getRoute()->get('/governance/parent_documents_dropdown', 'getParentDocumentsDropdownResponse');
-    getRoute()->get('/governance/documents', 'getDocumentsResponse');
-    getRoute()->get('/governance/document', 'getDocumentResponse');
-    getRoute()->get('/governance/selected_parent_documents_dropdown', 'getSelectedParentDocumentsDropdownResponse');
-    getRoute()->get('/governance/related_controls_by_framework_ids', 'getRelatedControlsByFrameworkIdsResponse');
-    getRoute()->get('/governance/rebuild_control_filters', 'getControlFiltersByFrameworksResponse');
+    app()->post('/governance/update_framework_status', 'updateFrameworkStatusResponse');
+    app()->post('/governance/update_framework_parent', 'updateFrameworkParentResponse');
+    app()->get('/governance/parent_frameworks_dropdown', 'getParentFrameworksDropdownResponse');
+    app()->get('/governance/selected_parent_frameworks_dropdown', 'getSelectedParentFrameworksDropdownResponse');
+    app()->get('/governance/control', 'getControlResponse');
+    app()->get('/governance/framework', 'getFrameworkResponse');
+    app()->get('/governance/parent_documents_dropdown', 'getParentDocumentsDropdownResponse');
+    app()->get('/governance/documents', 'getDocumentsResponse');
+    app()->get('/governance/document', 'getDocumentResponse');
+    app()->get('/governance/selected_parent_documents_dropdown', 'getSelectedParentDocumentsDropdownResponse');
+    app()->get('/governance/related_controls_by_framework_ids', 'getRelatedControlsByFrameworkIdsResponse');
+    app()->get('/governance/rebuild_control_filters', 'getControlFiltersByFrameworksResponse');
 
-    getRoute()->post('/governance/add_control', 'addControlResponse');
-    getRoute()->post('/governance/update_control', 'updateControlResponse');
+    app()->post('/governance/add_control', 'addControlResponse');
+    app()->post('/governance/update_control', 'updateControlResponse');
 
-    getRoute()->get('/compliance/define_tests', 'getDefineTestsResponse');
-    getRoute()->get('/compliance/test', 'getTestResponse');
-    getRoute()->get('/compliance/initiate_audits', 'getInitiateTestAuditsResponse');
-    getRoute()->post('/compliance/active_audits', 'getActiveTestAuditsResponse');
-    getRoute()->post('/compliance/save_audit_comment', 'saveTestAuditCommentResponse');
-    getRoute()->post('/compliance/past_audits', 'getPastTestAuditsResponse');
-    getRoute()->post('/compliance/reopen_audit', 'reopenTestAuditResponse');
-    getRoute()->post('/compliance/audit_initiation/initiate', 'initiateFrameworkControlTestsResponse');
-    getRoute()->get('/compliance/audit_timeline', 'auditTimelineResponse');
-    getRoute()->post('/compliance/delete_audit', 'deleteTestAuditResponse');
+    app()->get('/compliance/define_tests', 'getDefineTestsResponse');
+    app()->get('/compliance/test', 'getTestResponse');
+    app()->get('/compliance/initiate_audits', 'getInitiateTestAuditsResponse');
+    app()->post('/compliance/active_audits', 'getActiveTestAuditsResponse');
+    app()->post('/compliance/save_audit_comment', 'saveTestAuditCommentResponse');
+    app()->post('/compliance/past_audits', 'getPastTestAuditsResponse');
+    app()->post('/compliance/reopen_audit', 'reopenTestAuditResponse');
+    app()->post('/compliance/audit_initiation/initiate', 'initiateFrameworkControlTestsResponse');
+    app()->get('/compliance/audit_timeline', 'auditTimelineResponse');
+    app()->post('/compliance/delete_audit', 'deleteTestAuditResponse');
     /*************************************************************************/
 
     /******************************* Audit Log API **********************************/
-    getRoute()->get('/audit_logs', 'get_audit_logs_api');
+    app()->get('/audit_logs', 'get_audit_logs_api');
     /****************************************** *************************************/
 
     /******************************* Assets API *************************************/
-    getRoute()->post('/assets/update_asset', 'assets_update_asset_API_switch');
-    getRoute()->post('/assets/view/asset_data', 'assets_for_view_API');
-    getRoute()->post('/assets/view/action', 'assets_view_action_API');
-    getRoute()->get('/assets/options', 'get_asset_options');
-    getRoute()->post('/asset-group/create', 'asset_group_create');
-    getRoute()->post('/asset-group/update', 'asset_group_update');
-    getRoute()->post('/asset-group/delete', 'asset_group_delete');
-    getRoute()->post('/asset-group/remove_asset', 'asset_group_remove_asset');
-    getRoute()->get('/asset-group/tree', 'asset_group_tree');
-    getRoute()->get('/asset-group/info', 'asset_group_info');
-    getRoute()->get('/asset-group/options', 'get_asset_group_options');
-    getRoute()->post('/assets/create', 'create_asset_api');
-    getRoute()->post('/assets/delete', 'delete_asset_api');
+    app()->post('/assets/update_asset', 'assets_update_asset_API');
+    app()->post('/assets/create_asset', 'assets_create_asset_API');
+    app()->post('/assets/view/asset_data', 'assets_for_view_API');
+    app()->post('/assets/view/action', 'assets_view_action_API');
+    app()->get('/assets/options', 'get_asset_options');
+    app()->post('/asset-group/create', 'asset_group_create');
+    app()->post('/asset-group/update', 'asset_group_update');
+    app()->post('/asset-group/delete', 'asset_group_delete');
+    app()->post('/asset-group/remove_asset', 'asset_group_remove_asset');
+    app()->get('/asset-group/tree', 'asset_group_tree');
+    app()->get('/asset-group/info', 'asset_group_info');
+    app()->get('/asset-group/options', 'get_asset_group_options');
+    app()->post('/assets/create', 'create_asset_api');
+    app()->post('/assets/delete', 'delete_asset_api');
     /********************************************************************************/
 
     /********************* RISK FORMULA API ***************************/
-    getRoute()->post('/riskformula/add_impact', 'add_impact_api');
-    getRoute()->post('/riskformula/delete_impact', 'delete_impact_api');
-    getRoute()->post('/riskformula/add_likelihood', 'add_likelihood_api');
-    getRoute()->post('/riskformula/delete_likelihood', 'delete_likelihood_api');
-    getRoute()->post('/riskformula/update_impact_or_likelihood_name', 'update_impact_or_likelihood_name_api');
-    getRoute()->post('/riskformula/update_custom_score', 'update_custom_score_api');
+    app()->post('/riskformula/add_impact', 'add_impact_api');
+    app()->post('/riskformula/delete_impact', 'delete_impact_api');
+    app()->post('/riskformula/add_likelihood', 'add_likelihood_api');
+    app()->post('/riskformula/delete_likelihood', 'delete_likelihood_api');
+    app()->post('/riskformula/update_impact_or_likelihood_name', 'update_impact_or_likelihood_name_api');
+    app()->post('/riskformula/update_custom_score', 'update_custom_score_api');
     /******************************************************************/
 
     /********************* RISK LEVEL API **************************/
-    getRoute()->post('/risklevel/update', 'update_risk_level_API');
+    app()->post('/risklevel/update', 'update_risk_level_API');
     /***************************************************************/
 
     /********************* CONTRIBUTING RISKS API ***************************/
-    getRoute()->post('/contributing_risks/add', 'add_contributing_risks_api');
-    getRoute()->post('/contributing_risks/update/likelihood', 'update_contributing_risks_likelihood_api');
-    getRoute()->post('/contributing_risks/update/impact', 'update_contributing_risks_impact_api');
-    getRoute()->post('/contributing_risks/delete/likelihood', 'delete_contributing_risks_likelihood_api');
-    getRoute()->post('/contributing_risks/delete/impact', 'delete_contributing_risks_impact_api');
-    getRoute()->post('/contributing_risks/table_list', 'contributing_risks_table_list_api');
+    app()->post('/contributing_risks/add', 'add_contributing_risks_api');
+    app()->post('/contributing_risks/update/likelihood', 'update_contributing_risks_likelihood_api');
+    app()->post('/contributing_risks/update/impact', 'update_contributing_risks_impact_api');
+    app()->post('/contributing_risks/delete/likelihood', 'delete_contributing_risks_likelihood_api');
+    app()->post('/contributing_risks/delete/impact', 'delete_contributing_risks_impact_api');
+    app()->post('/contributing_risks/table_list', 'contributing_risks_table_list_api');
     /******************************************************************/
 
     /***************** DOCUMENTS API *****************/
-    getRoute()->post('/documents/create', 'create_document_api');
-    getRoute()->post('/documents/update', 'update_document_api');
-    getRoute()->post('/documents/delete', 'delete_document_api');
+    app()->post('/documents/create', 'create_document_api');
+    app()->post('/documents/update', 'update_document_api');
+    app()->post('/documents/delete', 'delete_document_api');
     /***********************************************************/
 
     /***************** DOCUMENT EXCEPTIONS API *****************/
-    getRoute()->post('/exceptions/create', 'create_exception_api');
-    getRoute()->post('/exceptions/update', 'update_exception_api');
-    getRoute()->post('/exceptions/delete', 'delete_exception_api');
-    getRoute()->post('/exceptions/approve', 'approve_exception_api');
-    getRoute()->post('/exceptions/batch-delete', 'batch_delete_exception_api');
-    getRoute()->get('/exceptions/tree', 'get_exceptions_as_treegrid_api');
-    getRoute()->get('/exceptions/exception', 'get_exception_api');
-    getRoute()->get('/exceptions/info', 'get_exception_for_display_api');
-    getRoute()->get('/exceptions/audit_log', 'get_exceptions_audit_log_api');
+    app()->post('/exceptions/create', 'create_exception_api');
+    app()->post('/exceptions/update', 'update_exception_api');
+    app()->post('/exceptions/delete', 'delete_exception_api');
+    app()->post('/exceptions/approve', 'approve_exception_api');
+    app()->post('/exceptions/batch-delete', 'batch_delete_exception_api');
+    app()->get('/exceptions/tree', 'get_exceptions_as_treegrid_api');
+    app()->get('/exceptions/exception', 'get_exception_api');
+    app()->get('/exceptions/info', 'get_exception_for_display_api');
+    app()->get('/exceptions/audit_log', 'get_exceptions_audit_log_api');
     /***********************************************************/
 
-    getRoute()->get('/management/tag_options_of_type', 'getTagOptionsOfType');
-    getRoute()->get('/management/tag_options_of_types', 'getTagOptionsOfTypes');
+    app()->get('/management/tag_options_of_type', 'getTagOptionsOfType');
+    app()->get('/management/tag_options_of_types', 'getTagOptionsOfTypes');
 
-    getRoute()->get('/upload_encoding_issue_fix/datatable', 'getFilesWithEncodingIssuesDatatableResponse');
-    getRoute()->post('/upload_encoding_issue_fix/file_upload', 'uploadFileToFixFileEncodingIssue');
+    app()->get('/upload_encoding_issue_fix/datatable', 'getFilesWithEncodingIssuesDatatableResponse');
+    app()->post('/upload_encoding_issue_fix/file_upload', 'uploadFileToFixFileEncodingIssue');
 
     // Return scoring histories
-    getRoute()->get('/management/risk/scoring_history', 'scoringHistory');
-    getRoute()->get('/management/risk/residual_scoring_history', 'residualScoringHistory');
+    app()->get('/management/risk/scoring_history', 'scoringHistory');
+    app()->get('/management/risk/residual_scoring_history', 'residualScoringHistory');
 
     // Get manager by owner
-    getRoute()->get('/user/manager', 'getManagerByUserAPI');
+    app()->get('/user/manager', 'getManagerByUserAPI');
 
     // Interal api for ajax
-    getRoute()->post('/set_custom_display', 'setCustomDisplay');
-    getRoute()->post('/set_custom_audits_column', 'setCustomAuditsColumn');
-
-    // Define the API routes
-    getApi()->get('/version.json', 'api_version', EpiApi::external);
+    app()->post('/set_custom_display', 'setCustomDisplay');
+    app()->post('/set_custom_audits_column', 'setCustomAuditsColumn');
 
     // Get unfiltered table data
-    getRoute()->get('/admin/tables/fullData', 'getTableData');
+    app()->get('/admin/tables/fullData', 'getTableData');
 
     // Get Mitigation Control Info
-    getRoute()->get('/mitigation_controls/get_mitigation_control_info', 'get_mitigation_control_info');
+    app()->get('/mitigation_controls/get_mitigation_control_info', 'get_mitigation_control_info');
 
     // Get Tooltip Info
-    getRoute()->post('/likelihood_impact_chart/tooltip', 'get_tooltip_api');
+    app()->post('/likelihood_impact_chart/tooltip', 'get_tooltip_api');
 
-    getRoute()->post('/one_click_upgrade', 'one_click_upgrade');
+    app()->post('/one_click_upgrade', 'one_click_upgrade');
 
     /**************************** PROJECT API ******************************/
-    getRoute()->post('/management/project/add', 'add_project_api');
-    getRoute()->post('/management/project/delete', 'delete_project_api');
-    getRoute()->post('/management/project/update', 'update_project_api');
-    getRoute()->post('/management/project/edit', 'edit_project_api');
-    getRoute()->post('/management/project/update_status', 'update_project_status_api');
-    getRoute()->post('/management/project/update_order', 'update_project_order_api');
-    getRoute()->get('/management/project/detail', 'detail_project_api');
+    app()->post('/management/project/add', 'add_project_api');
+    app()->post('/management/project/delete', 'delete_project_api');
+    app()->post('/management/project/update', 'update_project_api');
+    app()->post('/management/project/edit', 'edit_project_api');
+    app()->post('/management/project/update_status', 'update_project_status_api');
+    app()->post('/management/project/update_order', 'update_project_order_api');
+    app()->get('/management/project/detail', 'detail_project_api');
 
     // Get risk catalog table data
-    getRoute()->get('/admin/risk_catalog/datatable', 'getRiskCatalogDatatableAPI');
-    getRoute()->get('/admin/risk_catalog/detail', 'getRiskCatalogAPI');
-    getRoute()->post('/admin/risk_catalog/update_order', 'updateRiskCatalogOrderAPI');
-    getRoute()->post('/admin/risk_catalog/add_risk_catalog', 'addRiskCatalogAPI');
-    getRoute()->post('/admin/risk_catalog/update_risk_catalog', 'updateRiskCatalogAPI');
-    getRoute()->post('/admin/risk_catalog/delete_risk_catalog', 'deleteRiskCatalogAPI');
-    getRoute()->post('/admin/risk_catalog/swap_groups', 'swapGroupCatalogAPI');
+    app()->get('/admin/risk_catalog/datatable', 'getRiskCatalogDatatableAPI');
+    app()->get('/admin/risk_catalog/detail', 'getRiskCatalogAPI');
+    app()->post('/admin/risk_catalog/update_order', 'updateRiskCatalogOrderAPI');
+    app()->post('/admin/risk_catalog/add_risk_catalog', 'addRiskCatalogAPI');
+    app()->post('/admin/risk_catalog/update_risk_catalog', 'updateRiskCatalogAPI');
+    app()->post('/admin/risk_catalog/delete_risk_catalog', 'deleteRiskCatalogAPI');
+    app()->post('/admin/risk_catalog/swap_groups', 'swapGroupCatalogAPI');
 
     // Get threat catalog table data
-    getRoute()->get('/admin/threat_catalog/datatable', 'getThreatCatalogDatatableAPI');
-    getRoute()->get('/admin/threat_catalog/detail', 'getThreatCatalogAPI');
-    getRoute()->post('/admin/threat_catalog/update_order', 'updateThreatCatalogOrderAPI');
-    getRoute()->post('/admin/threat_catalog/add_threat_catalog', 'addThreatCatalogAPI');
-    getRoute()->post('/admin/threat_catalog/update_threat_catalog', 'updateThreatCatalogAPI');
-    getRoute()->post('/admin/threat_catalog/delete_threat_catalog', 'deleteThreatCatalogAPI');
+    app()->get('/admin/threat_catalog/datatable', 'getThreatCatalogDatatableAPI');
+    app()->get('/admin/threat_catalog/detail', 'getThreatCatalogAPI');
+    app()->post('/admin/threat_catalog/update_order', 'updateThreatCatalogOrderAPI');
+    app()->post('/admin/threat_catalog/add_threat_catalog', 'addThreatCatalogAPI');
+    app()->post('/admin/threat_catalog/update_threat_catalog', 'updateThreatCatalogAPI');
+    app()->post('/admin/threat_catalog/delete_threat_catalog', 'deleteThreatCatalogAPI');
 
     // This status call needs to be available with ComplianceForge SCF disabled
-    getRoute()->get('/complianceforgescf/enable', 'api_complianceforgescf_enable');
-    getRoute()->get('/complianceforgescf/disable', 'api_complianceforgescf_disable');
-    getRoute()->get('/complianceforgescf/status', 'api_complianceforgescf_status');
+    app()->get('/complianceforgescf/enable', 'api_complianceforgescf_enable');
+    app()->get('/complianceforgescf/disable', 'api_complianceforgescf_disable');
+    app()->get('/complianceforgescf/status', 'api_complianceforgescf_status');
 
     // Datatable/report column selection settings API
-    getRoute()->post('/admin/column_settings/save_column_settings', 'saveColumnSelectionSettingsAPI');
+    app()->post('/admin/column_settings/save_column_settings', 'saveColumnSelectionSettingsAPI');
 
     /************************** SIMPLERISK EXTRAS APIS ************************************/
 
@@ -296,7 +322,7 @@ if (api_v2_is_authenticated())
     if (advanced_search_extra())
     {
         // Required file
-        $required_file = realpath(__DIR__ . '/../extras/advanced_search/includes/api.php');
+        $required_file = realpath(__DIR__ . '/../../extras/advanced_search/includes/api.php');
 
         // If the file exists
         if (file_exists($required_file))
@@ -313,7 +339,7 @@ if (api_v2_is_authenticated())
     if (api_extra())
     {
         // Required file
-        $required_file = realpath(__DIR__ . '/../extras/api/includes/api.php');
+        $required_file = realpath(__DIR__ . '/../../extras/api/includes/api.php');
 
         // If the file exists
         if (file_exists($required_file))
@@ -330,7 +356,7 @@ if (api_v2_is_authenticated())
     if (assessments_extra())
     {
         // Required file
-        $required_file = realpath(__DIR__ . '/../extras/assessments/includes/api.php');
+        $required_file = realpath(__DIR__ . '/../../extras/assessments/includes/api.php');
 
         // If the file exists
         if (file_exists($required_file))
@@ -347,7 +373,7 @@ if (api_v2_is_authenticated())
     if (custom_authentication_extra())
     {
         // Required file
-        $required_file = realpath(__DIR__ . '/../extras/authentication/includes/api.php');
+        $required_file = realpath(__DIR__ . '/../../extras/authentication/includes/api.php');
 
         // If the file exists
         if (file_exists($required_file))
@@ -364,7 +390,7 @@ if (api_v2_is_authenticated())
     if (complianceforge_scf_extra())
     {
         // Required file
-        $required_file = realpath(__DIR__ . '/../extras/complianceforgescf/includes/api.php');
+        $required_file = realpath(__DIR__ . '/../../extras/complianceforgescf/includes/api.php');
 
         // If the file exists
         if (file_exists($required_file))
@@ -381,7 +407,7 @@ if (api_v2_is_authenticated())
     if (customization_extra())
     {
         // Required file
-        $required_file = realpath(__DIR__ . '/../extras/customization/includes/api.php');
+        $required_file = realpath(__DIR__ . '/../../extras/customization/includes/api.php');
 
         // If the file exists
         if (file_exists($required_file))
@@ -398,7 +424,7 @@ if (api_v2_is_authenticated())
     if (encryption_extra())
     {
         // Required file
-        $required_file = realpath(__DIR__ . '/../extras/encryption/includes/api.php');
+        $required_file = realpath(__DIR__ . '/../../extras/encryption/includes/api.php');
 
         // If the file exists
         if (file_exists($required_file))
@@ -415,7 +441,7 @@ if (api_v2_is_authenticated())
     if (import_export_extra())
     {
         // Required file
-        $required_file = realpath(__DIR__ . '/../extras/import-export/includes/api.php');
+        $required_file = realpath(__DIR__ . '/../../extras/import-export/includes/api.php');
 
         // If the file exists
         if (file_exists($required_file))
@@ -432,7 +458,7 @@ if (api_v2_is_authenticated())
     if (incident_management_extra())
     {
         // Required file
-        $required_file = realpath(__DIR__ . '/../extras/incident_management/includes/api.php');
+        $required_file = realpath(__DIR__ . '/../../extras/incident_management/includes/api.php');
 
         // If the file exists
         if (file_exists($required_file))
@@ -449,7 +475,7 @@ if (api_v2_is_authenticated())
     if (jira_extra())
     {
         // Required file
-        $required_file = realpath(__DIR__ . '/../extras/jira/includes/api.php');
+        $required_file = realpath(__DIR__ . '/../../extras/jira/includes/api.php');
 
         // If the file exists
         if (file_exists($required_file))
@@ -466,7 +492,7 @@ if (api_v2_is_authenticated())
     if (notification_extra())
     {
         // Required file
-        $required_file = realpath(__DIR__ . '/../extras/notification/includes/api.php');
+        $required_file = realpath(__DIR__ . '/../../extras/notification/includes/api.php');
 
         // If the file exists
         if (file_exists($required_file))
@@ -483,7 +509,7 @@ if (api_v2_is_authenticated())
     if (organizational_hierarchy_extra())
     {
         // Required file
-        $required_file = realpath(__DIR__ . '/../extras/organizational_hierarchy/includes/api.php');
+        $required_file = realpath(__DIR__ . '/../../extras/organizational_hierarchy/includes/api.php');
 
         // If the file exists
         if (file_exists($required_file))
@@ -500,7 +526,7 @@ if (api_v2_is_authenticated())
     if (team_separation_extra())
     {
         // Required file
-        $required_file = realpath(__DIR__ . '/../extras/separation/includes/api.php');
+        $required_file = realpath(__DIR__ . '/../../extras/separation/includes/api.php');
 
         // If the file exists
         if (file_exists($required_file))
@@ -517,7 +543,7 @@ if (api_v2_is_authenticated())
     if (ucf_extra())
     {
         // Required file
-        $required_file = realpath(__DIR__ . '/../extras/ucf/includes/api.php');
+        $required_file = realpath(__DIR__ . '/../../extras/ucf/includes/api.php');
 
         // If the file exists
         if (file_exists($required_file))
@@ -534,7 +560,7 @@ if (api_v2_is_authenticated())
     if (vulnmgmt_extra())
     {
         // Required file
-        $required_file = realpath(__DIR__ . '/../extras/vulnmgmt/includes/api.php');
+        $required_file = realpath(__DIR__ . '/../../extras/vulnmgmt/includes/api.php');
 
         // If the file exists
         if (file_exists($required_file))
@@ -551,7 +577,7 @@ if (api_v2_is_authenticated())
     if (get_setting('registration_registered') != 0)
     {
         // Require file
-        $required_file = realpath(__DIR__ . '/../extras/upgrade/includes/api.php');
+        $required_file = realpath(__DIR__ . '/../../extras/upgrade/includes/api.php');
 
         // If the file exists
         if (file_exists($required_file))
@@ -566,34 +592,58 @@ if (api_v2_is_authenticated())
 
     /**************************************************************************************/
 
-    // Try the epiphany route
-    try
-    {
-        // Run epiphany
-        getRoute()->run();
-    }
-    catch (EpiException $e)
-    {
-        //echo $e->getMessage();
-        // Return a JSON response
-        return json_response(404, $escaper->escapeHtml($lang['TheRequestedAPIEndpointWasNotFound']), NULL);
-    }
+    // Set the error handling if the page is not found
+    app()->set404( function () {
+        $response['status'] = 404;
+        $response['status_message'] = "The Requested API Endpoint Was Not Found";
+        $response['data'] = null;
+        response()->json($response);
+    });
+
+    // Configure leaf logging to the error log
+    /*
+    Leaf\Config::set([
+        'log.enabled' => true,
+        'log.dir' => sys_get_temp_dir(),
+        'log.file' => 'simplerisk.log',
+    ]);
+    */
+
+    // Enable the debugging if needed. Default is false.
+    app()->config('debug', false);
+
+    // Add the custom Simplerisk API Exception Handler
+    app()->setErrorHandler(new SimpleriskApiExceptionHandler());
+
+    // Run the leaf route
+    app()->run();
+
 } elseif(check_questionnaire_get_token()) {
     // Here's a separate section for when the request is not authenticated,
     // but has a valid questionnaire token.
     // This won't create an authenticated session, but allows questionnaires to
     // serve some data to unauthenticated contacts
 
-    // Initialize the epiphany api
-    Epi::init('api', 'route', 'session');
+    app()->get('/asset-group/options', 'get_asset_group_options_noauth');
 
-    // Disable exceptions
-    Epi::setSetting('exceptions', true);
+    // Configure leaf logging to the error log
+    /*
+    Leaf\Config::set([
+        'log.enabled' => true,
+        'log.dir' => sys_get_temp_dir(),
+        'log.file' => 'simplerisk.log',
+    ]);
+    */
 
-    getRoute()->get('/asset-group/options', 'get_asset_group_options_noauth');
+    // Enable the debugging if needed. Default is false.
+    app()->config('debug', false);
 
-    // Run epiphany
-    getRoute()->run();
+    // Add the custom Simplerisk API Exception Handler
+    app()->setErrorHandler(new SimpleriskApiExceptionHandler());
+
+    // Run the leaf route
+    app()->run();
+
 }
 
 ?>

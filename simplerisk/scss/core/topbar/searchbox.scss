@@ -1,0 +1,93 @@
+.topbar {
+	.nav-item-search {
+		.search-box {
+		    display: inline-flex;
+		    align-items: center;
+		    line-height: normal;
+	
+		    .search-input {
+			    height: 30px; 
+			    width: 30px;
+			    box-sizing: border-box; /* Include padding and border in width and height */
+			    border-style: none;
+			    padding-right: 0px;
+			    outline: none;
+			    transition: all .5s ease-in-out;
+			    border-radius: 15px;
+			}
+			
+			.search-input::placeholder {
+			    letter-spacing: 2px;
+			    font-weight: 100;
+			}
+			
+			.search-button {
+			    width: 30px;
+			    height: 30px;
+			    border-style: none;
+			    border-radius: 15px;
+			    font-weight: bold;
+			    outline: none;
+			    cursor: pointer;
+			    position: absolute;
+			    color: white;
+			    background-color: var(--sr-important);
+			}
+		}
+		
+		ul.advanced-search-results, ul.no-results {
+			overflow: hidden;
+			overflow-y: auto;
+			max-height: calc(100vh - 150px);
+			--bs-dropdown-min-width: 20rem;
+			max-width: 40rem;
+			width: max-content;
+			
+			& > li {
+				padding: .5rem;
+			}
+		}
+
+		ul.advanced-search-results {
+			cursor: pointer;
+
+			.highlighted {
+				background-color: var(--sr-important);
+				color: var(--sr-light);
+				font-weight: 600;
+			}
+		}
+
+		ul.no-results { 
+			& > li {
+				cursor: default;
+
+				&:hover {
+					background-color: inherit !important;	
+				}
+			}
+		}
+
+		/**/	
+		&:not(:focus-within)[data-results='yes'] ul.no-results, &:not(:focus-within)[data-results='no'] ul.advanced-search-results {
+			display:none;
+		}
+		&:focus-within[data-results='no'] ul.no-results, &:focus-within[data-results='yes'] ul.advanced-search-results{
+			display:block;
+		}
+	}
+	
+	/*Display the search input when the focus on any of the items within the widget*/	
+	.nav-item-search:focus-within {
+		.search-box {
+			.search-button ~ .search-input {
+			    width: 200px;
+			    background-color: white;
+			    /*margin-left: 30px;*/
+			    padding-left: 35px;
+			    transition: all 500ms cubic-bezier(.58, 0, .19, 1);
+			}
+		}
+	}
+}
+

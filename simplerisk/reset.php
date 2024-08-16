@@ -22,7 +22,15 @@ if (!isset($_SESSION))
     }
 
     // Start session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+    $parameters = [
+        "lifetime" => 0,
+        "path" => "/",
+        "domain" => "",
+        "secure" => isset($_SERVER["HTTPS"]),
+        "httponly" => true,
+        "samesite" => "Strict",
+    ];
+    session_set_cookie_params($parameters);
 
     session_name('SimpleRisk');
     session_start();
@@ -40,7 +48,7 @@ if(isset($_GET['token']) && $_GET['token'] && isset($_GET['username'])){
 }
 
 // Check if a password reset email was requested
-if (isset($_POST['send_reset_email']))
+elseif (isset($_POST['send_reset_email']))
 {
     if(isset($_POST['user']) && $_POST['user'] == ""){
         $message = _lang('FieldRequired', array("field"=>"Username"));
@@ -50,32 +58,32 @@ if (isset($_POST['send_reset_email']))
         // This was added to prevent attack by tampered host header
         if(!get_setting('simplerisk_base_url') || (isset($_SERVER) && array_key_exists('SERVER_NAME', $_SERVER) && ($server_host == $_SERVER['SERVER_NAME']))){
 
-            $username = $_POST['user'];
+            $reset_email_username = $_POST['user'];
 
             // Open the database connection
             $db = db_open();
 
-	    // Get any password resets for this user in the past 10 minutes
-	    $stmt = $db->prepare("SELECT * FROM password_reset WHERE username=:username AND timestamp >= NOW() - INTERVAL 10 MINUTE;");
-	    $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
-	    $stmt->execute();
-	    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    	    // Get any password resets for this user in the past 10 minutes
+    	    $stmt = $db->prepare("SELECT * FROM password_reset WHERE username=:username AND timestamp >= NOW() - INTERVAL 10 MINUTE;");
+    	    $stmt->bindParam(":username", $reset_email_username, PDO::PARAM_STR, 200);
+    	    $stmt->execute();
+    	    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-	    // If we have password resets in the past 10 minutes
-	    if (count($results) != 0)
-	    {
+    	    // If we have password resets in the past 10 minutes
+    	    if (count($results) != 0)
+    	    {
                 set_alert(true, "bad", $lang['PasswordResetRequestsExceeded']);
-	    }
-	    else
-	    {
+    	    }
+    	    else
+    	    {
                 // Try to generate a password reset token
-                password_reset_by_username($username);
+    	        password_reset_by_username($reset_email_username);
 
                 // Display an alert
                 set_alert(true, "good", $lang['PassworResetEmailSent']);
-	    }
+    	    }
 
-	    // Close the database connection
+            // Close the database connection
             db_close($db);
         } else {
             set_alert(true, "bad", $lang['PassworResetRequestFailed']);
@@ -83,7 +91,7 @@ if (isset($_POST['send_reset_email']))
     }
 }
 // Check if a password reset was requested
-if (isset($_POST['password_reset']))
+elseif (isset($_POST['password_reset']))
 {
     $username = $_POST['user'];
     $token = $_POST['token'];
@@ -121,115 +129,156 @@ if (isset($_POST['password_reset']))
     }
 }
 
+// If we need to redirect back to the login page
+if (!empty($redirect_js))
+{
+	echo "<script>\n";
+	echo "$(document).ready(function () {\n";
+	echo "window.setTimeout(function () {\n";
+	echo "location.href = \"index.php\";\n";
+	echo "}, 5000);\n";
+	echo "});\n";
+	echo "</script>\n";
+}
+
+// Set a global variable for the current app version, so we don't have to call a function every time
+$current_app_version = current_version("app");
+
 ?>
+<!DOCTYPE html>
+<html dir="ltr" lang="en" xml:lang="en">
+  <head>
+    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <!-- Favicon icon -->
+    <?php setup_favicon();?>
 
-<!doctype html>
-<html>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="css/style.min.css?<?= $current_app_version ?>" />
 
-<head>
-    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
-	<?php
-		// Use these jQuery scripts
-		$scripts = [
-			'jquery.min.js',
-		];
+    <!-- jQuery CSS -->
+    <link rel="stylesheet" href="vendor/node_modules/jquery-ui/dist/themes/base/jquery-ui.min.css?<?= $current_app_version ?>">
 
-		// Include the jquery javascript source
-		display_jquery_javascript($scripts);
+    <!-- extra css -->
 
-		// If we need to redirect back to the login page
-		if (!empty($redirect_js))
-		{
-			echo "<script>\n";
-			echo "$(document).ready(function () {\n";
-			echo "window.setTimeout(function () {\n";
-			echo "location.href = \"index.php\";\n";
-			echo "}, 5000);\n";
-			echo "});\n";
-			echo "</script>\n";
-		}
+    <link rel="stylesheet" href="vendor/components/font-awesome/css/fontawesome.min.css?<?= $current_app_version ?>">
 
-		display_bootstrap_javascript();
-	?>
-	<title>SimpleRisk: Enterprise Risk Management Simplified</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-	<link rel="stylesheet" href="css/bootstrap.css?<?php echo current_version("app"); ?>">
-	<link rel="stylesheet" href="css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+    <!-- jQuery Javascript -->
+    <script src="../vendor/node_modules/jquery/dist/jquery.min.js?<?= $current_app_version ?>" id="script_jquery"></script>
+    <script src="../vendor/node_modules/jquery-ui/dist/jquery-ui.min.js?<?= $current_app_version ?>" id="script_jqueryui"></script>
 
-	<link rel="stylesheet" href="css/divshot-util.css?<?php echo current_version("app"); ?>">
-	<link rel="stylesheet" href="css/divshot-canvas.css?<?php echo current_version("app"); ?>">
-	<link rel="stylesheet" href="css/display.css?<?php echo current_version("app"); ?>">
+    <!-- Bootstrap tether Core JavaScript -->
+    <script src="vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js" defer></script>
 
-    <link rel="stylesheet" href="vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="css/theme.css?<?php echo current_version("app"); ?>">
-    <?php
-        setup_favicon();
-        setup_alert_requirements();
-    ?>  
+    </head>
+    <body>
+        <div class="preloader">
+            <div class="lds-ripple">
+                <div class="lds-pos"></div>
+                <div class="lds-pos"></div>
+            </div>
+        </div>
+        <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="none" data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full" data-function="reset">
+            <header class="topbar" data-navbarbg="skin5">
+                <nav class="navbar top-navbar navbar-expand-md navbar-dark">
+                    <div class="navbar-header-1">
+                        <a class="navbar-brand" href="https://www.simplerisk.com/">
+                        <span class="logo-text ms-2">
+                            <!-- dark Logo text -->
+                            <img src="images/logo@2x.png" alt="homepage" class="light-logo"/>  
+                        </span>
+                        </a>
+                    </div>
+                </nav>
+            </header>
+            <!-- ============================================================== -->
+            <!-- Page wrapper  -->
+            <div class="page-wrapper">
+            	<div class="scroll-content">
+            		<div class="content-wrapper">
+                        <!-- container - It's the direct container of all the -->
+                        <div class="content container-fluid">
+                            <div class="container reset-form">
+<?php if(!isset($token) || !$token){ ?>
 
-</head>
+                                <div class="row">
+                                	<div class="col-md-3 col-6"></div>
+                						<div class="col-md-6 col-6 offset4">
+                							<h3><?= $escaper->escapeHtml($lang['SendPasswordResetEmail']);?></h3>
+                                            <div class="card">
+                                            	<div class="card-body">
+                                            		<form name="send_reset_email" method="post" action="" class="send_reset_email">
+                                            			<div class="form-group">
+                                                            <label><?= $escaper->escapeHtml($lang['Username']);?></label>
+                                                            <input class="input-medium form-control" name="user" id="user" type="text" required />
+                                                        </div>
+                                                        <div class="form-actions float-end">
+                											<input class="btn btn-secondary text-white" value="<?= $escaper->escapeHtml($lang['Reset']); ?>" type="reset">
+                											<button type="submit" name="send_reset_email" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Send']); ?></button>
+                										</div>
+                                            		</form>
+                                            	</div>
+                							</div>
+                						</div>
 
-<body>
-
-
-	<?php
-	view_top_menu("Home");
-
-	// Get any alert messages
-	get_alert();
-	?>
-	<div class="container-fluid">
-        <?php if(!isset($token) || !$token){ ?>
-		<div class="row-fluid">
-			<div class="span4 offset4">
-				<div class="well">
-					<form name="send_reset_email" method="post" action="" class="send_reset_email">
-						<?php
-						echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
-						echo "<tr><td colspan=\"2\"><label class=\"login--label\">" . $escaper->escapeHtml($lang['SendPasswordResetEmail']) . "</label></td></tr>\n";
-						echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" /></td></tr>\n";
-						echo "</table>\n";
-						?>
-						<div class="form-actions text-right">
-							<input class="btn" value="<?php echo $escaper->escapeHtml($lang['Reset']); ?>" type="reset">
-							<button type="submit" name="send_reset_email" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Send']); ?></button>
-						</div>
-					</form>
-				</div>
-			</div>
-		</div>
-        <?php } ?>
-		<div class="row-fluid">
-			<div class="span4 offset4">
-				<div class="well">
-					<form name="password_reset" method="post" autocomplete="off" action="" class="password_reset">
-						<?php
-						    echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
-						    echo "<tr><td colspan=\"2\"><label class=\"login--label\">" . $escaper->escapeHtml($lang['PasswordReset']) . "</label></td></tr>\n";
-                            if(isset($username)){
-                                echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"user\" value=\"" . $escaper->escapeHtml($username) . "\" id=\"user\" type=\"text\" /></td></tr>\n";
-                            }else{
-                                echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" /></td></tr>\n";
-                            }
-                            if(isset($token)){
-                                echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['ResetToken']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" autocomplete=\"off\" value=\"" . $escaper->escapeHtml($token) . "\" name=\"token\" id=\"token\" type=\"text\" maxlength=\"20\" /></td></tr>\n";
-                            }else{
-                                echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['ResetToken']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" autocomplete=\"off\" name=\"token\" id=\"token\" type=\"text\" maxlength=\"20\" /></td></tr>\n";
-                            }
-						    echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['Password']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"password\" id=\"password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" /></td></tr>\n";
-						    echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['RepeatPassword']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"repeat_password\" id=\"repeat_password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" /></td></tr>\n";
-						    echo "</table>\n";
-						?>
-						<div class="form-actions text-right">
-							<input class="btn" value="<?php echo $escaper->escapeHtml($lang['Reset']); ?>" type="reset">
-							<button type="submit" name="password_reset" class="btn btn-danger <?php if (!empty($redirect_js)) echo "hide";?>"><?php echo $escaper->escapeHtml($lang['Submit']); ?></button>
-						</div>
-					</form>
-				</div>
-			</div>
-		</div>
-	</div>
-</body>
-
+                			        <div class="col-md-3 col-6"></div>
+                                </div>
+<?php } else { ?>
+                                <div class="row">
+                                	<div class="col-md-3 col-6"></div>
+                						<div class="col-md-6 col-6 offset4">
+                							<h3><?= $escaper->escapeHtml($lang['PasswordReset']);?></h3>
+                                            <div class="card">
+                                            	<div class="card-body">
+                                            		<form name="password_reset" method="post" action="" class="password_reset">
+                                            			<div class="form-group">
+                			                                <label for="user"><?= $escaper->escapeHtml($lang['Username']) ?></label>
+                			                                <input class="form-control" autocomplete="username" name="user" value="<?= isset($username) ? $escaper->escapeHtml($username) : ''?>" id="user" type="text" required <?= isset($username) ? 'readonly tabindex=-1' : ''?>/>
+                                                        </div>
+                                                        <div class="form-group">
+                                                    		<label for="token"><?= $escaper->escapeHtml($lang['ResetToken'])?></label>
+                			                                <input class="form-control" autocomplete="one-time-code" value="<?= isset($token) ? $escaper->escapeHtml($token) : '' ?>" name="token" id="token" type="text" maxlength="20" required <?= isset($token) ? 'readonly tabindex=-1' : ''?>/>
+                                                        </div>
+                                                        <div class="form-group">
+                											<label for="password"><?= $escaper->escapeHtml($lang['Password']) ?></label>
+                				                            <input class="form-control" name="password" id="password" type="password" autocomplete="current-password" required />
+                										</div>
+                                                        <div class="form-group">
+                				                            <label for="repeat_password" ><?= $escaper->escapeHtml($lang['RepeatPassword']) ?></label>
+                				                            <input class="form-control" name="repeat_password" id="repeat_password" type="password" autocomplete="new-password" required />
+                                                        </div>
+                                                        <div class="form-actions float-end">
+                											<input class="btn btn-secondary text-white" value="<?php echo $escaper->escapeHtml($lang['Reset']); ?>" type="reset">
+                											<button type="submit" name="password_reset" class="btn btn-submit <?php if (!empty($redirect_js)) echo "hide";?>"><?php echo $escaper->escapeHtml($lang['Submit']); ?></button>
+                										</div>
+                                            		</form>
+                                            	</div>
+                							</div>
+                						</div>
+                			        <div class="col-md-3 col-6"></div>
+                                </div>
+<?php } ?>
+                            </div>
+                        </div>
+                        <!-- End of content -->
+                	</div>
+                	<!-- End of content-wrapper -->
+        		</div>
+        		<!-- End of scroll-content -->
+          	</div>
+          <!-- End Page wrapper  -->
+        </div>
+        <!-- End Wrapper -->
+<?php
+    get_alert();
+    setup_alert_requirements("");
+?>
+    	<script>
+        	$(function() {
+        		// Fading out the preloader once everything is done rendering
+        		$(".preloader").fadeOut();
+            });
+    	</script>
+    </body>
 </html>

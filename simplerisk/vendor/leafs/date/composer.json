@@ -1,0 +1,46 @@
+{
+    "name": "leafs/date",
+    "description": "Leaf PHP date module",
+    "keywords": [
+        "date",
+        "time",
+        "datetime",
+        "leaf",
+        "php",
+        "framework"
+    ],
+    "homepage": "https://leafphp.netlify.app/#/",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Michael Darko",
+            "email": "mickdd22@gmail.com",
+            "homepage": "https://mychi.netlify.app",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Leaf\\": "src"
+        },
+        "files": [
+			"src/functions.php"
+		]
+    },
+    "minimum-stability": "dev",
+	"prefer-stable": true,
+    "require-dev": {
+        "leafs/alchemy": "^1.0",
+        "friendsofphp/php-cs-fixer": "^3.14"
+    },
+    "scripts": {
+        "format": "vendor/bin/php-cs-fixer fix --config=.php_cs.dist.php --allow-risky=yes",
+        "test": "vendor/bin/alchemy run"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}

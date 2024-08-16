@@ -82,4 +82,60 @@ function api_v2_admin_version_db()
     api_v2_json_result($status_code, $status_message, $data);
 }
 
+/*************************************
+ * FUNCTION: API V2 ADMIN TAG DELETE *
+ *************************************/
+function api_v2_admin_tag_delete()
+{
+    // Check that this is an admin user
+    api_v2_check_admin();
+
+    // Get the tag id and type provided
+    $id = get_param("GET", "id", null);
+
+    // Delete the tag with that id
+    delete_tag($id);
+
+    // Create the result
+    $status_code = 200;
+    $status_message = "Delete successful";
+    $data = null;
+
+    // Return the result
+    api_v2_json_result($status_code, $status_message, $data);
+}
+
+/*****************************************
+ * FUNCTION: API V2 ADMIN TAG DELETE ALL *
+ *****************************************/
+function api_v2_admin_tag_delete_all()
+{
+    // Check that this is an admin user
+    api_v2_check_admin();
+
+    // Get the type provided
+    $type = get_param("GET", "type", null);
+
+    global $tag_types;
+    if ($type === 'all' || in_array($type, $tag_types)) {
+
+        // Delete all tags for the type
+        delete_all_tags($type);
+    
+        // Create the result
+        $status_code = 200;
+        $status_message = "Delete successful";
+    
+    } else {
+        // Create the result
+        $status_code = 400;
+        $status_message = "Invalid type";
+    }
+
+    $data = null;
+
+    // Return the result
+    api_v2_json_result($status_code, $status_message, $data);
+}
+
 ?>

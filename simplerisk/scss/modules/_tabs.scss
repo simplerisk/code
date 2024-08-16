@@ -1,6 +1,41 @@
 /*--------------------------------------------------------------
  ## Tab Styles
  --------------------------------------------------------------*/
+
+.nav-tabs {
+
+	// The add button in the tab headers
+	a.btn-primary, a.btn-secondary {
+	  display: block;
+	  padding: var(--#{$prefix}nav-link-padding-y) var(--#{$prefix}nav-link-padding-x);
+	  margin-bottom: calc(-1 * var(--#{$prefix}nav-tabs-border-width)); // stylelint-disable-line function-disallowed-list
+	  margin-right: 5px;
+	  border: var(--#{$prefix}nav-tabs-border-width) solid transparent;
+	  border-radius: 0px;
+	  @include border-top-radius(var(--#{$prefix}nav-tabs-border-radius));
+	}
+
+	&>:first-child.nav-link {
+		margin-left: 5px;
+	}
+
+	.nav-link {
+		cursor: pointer;
+	
+		&:not(.active) {
+			background-color: var(--bs-default);
+		}
+	}
+}
+
+.nav-tabs .highlight {
+	border-color: var(--sr-success) !important;
+	border-width: var(--bs-border-width);
+    border-style: dashed;
+}
+
+/*Leaving the old one in place in case we need something from there*/
+/*
 .tabs,
 #tabs{
 	position: relative;;
@@ -27,4 +62,4 @@
     textarea.form-control{
         max-width:300px;
     } 
-}
+}*/

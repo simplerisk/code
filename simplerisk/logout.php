@@ -21,7 +21,15 @@
         }
 
         // Start session
-        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+        $parameters = [
+            "lifetime" => 0,
+            "path" => "/",
+            "domain" => "",
+            "secure" => isset($_SERVER["HTTPS"]),
+            "httponly" => true,
+            "samesite" => "Strict",
+        ];
+        session_set_cookie_params($parameters);
 
         session_name('SimpleRisk');
         session_start();

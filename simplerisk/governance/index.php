@@ -3,65 +3,45 @@
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// Render the header and sidebar
+require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'easyui:treegrid', 'easyui:dnd', 'tabs:logic', 'CUSTOM:pages/governance.js', 'CUSTOM:common.js'], ['check_governance' => true]);
+
 // Include required functions file
-require_once(realpath(__DIR__ . '/../includes/functions.php'));
-require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-require_once(realpath(__DIR__ . '/../includes/display.php'));
-require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 require_once(realpath(__DIR__ . '/../includes/governance.php'));
-require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-
-// Add various security headers
-add_security_headers();
-
-// Add the session
-$permissions = array(
-        "check_access" => true,
-        "check_governance" => true,
-);
-add_session_check($permissions);
-
-// Include the CSRF Magic library
-include_csrf_magic();
-
-// Include the SimpleRisk language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
-require_once(language_file());
 
 // Check if a new framework was submitted
-if (isset($_POST['add_framework']))
-{
-  $name         = get_param("POST", "framework_name", "");
-  $descripiton  = get_param("POST", "framework_description", "");
-  $parent       = get_param("POST", "parent", "");
+if (isset($_POST['add_framework'])) {
+    $name         = get_param("POST", "framework_name", "");
+    $descripiton  = get_param("POST", "framework_description", "");
+    $parent       = get_param("POST", "parent", "");
 
-  // Check if the framework name is null
-  if (isset($name) && $name == "")
-  {
-    // Display an alert
-    set_alert(true, "bad", $escaper->escapeHtml($lang["FrameworkNameCantBeEmpty."]));
-  }
-  // Otherwise
-  else
-  {
-    if(empty($_SESSION['add_new_frameworks']))
+    // Check if the framework name is null
+    if (isset($name) && $name == "")
     {
         // Display an alert
-        set_alert(true, "bad", $escaper->escapeHtml($lang['NoAddFrameworkPermission']));
+        set_alert(true, "bad", $lang["FrameworkNameCantBeEmpty."]);
     }
-    // Insert a new framework up to 100 chars
-    elseif(add_framework($name, $descripiton, $parent)){
-        // Display an alert
-        set_alert(true, "good", $escaper->escapeHtml($lang['FrameworkAdded']));
-    }else{
-        // Display an alert
-        set_alert(true, "bad", $escaper->escapeHtml($lang['FrameworkNameExist']));
+    // Otherwise
+    else
+    {
+        if(empty($_SESSION['add_new_frameworks']))
+        {
+            // Display an alert
+            set_alert(true, "bad", $lang['NoAddFrameworkPermission']);
+        }
+        // Insert a new framework up to 100 chars
+        elseif(add_framework($name, $descripiton, $parent)){
+            // Display an alert
+            set_alert(true, "good", $lang['FrameworkAdded']);
+        }else{
+            // Display an alert
+            set_alert(true, "bad", $lang['FrameworkNameExist']);
+        }
     }
 
-  }
-  refresh();
+    refresh();
 }
 
 // Check if a framework was updated
@@ -84,520 +64,428 @@ if (isset($_POST['update_framework'])) {
 }
 
 // Delete if a new framework was submitted
-if (isset($_POST['delete_framework']))
-{
-  $value = (int)$_POST['framework_id'];
+if (isset($_POST['delete_framework'])) {
+    $value = (int)$_POST['framework_id'];
 
-  // Verify value is an integer
-  if (is_int($value))
-  {
-    // If user has no permission for modify frameworks
-    if(empty($_SESSION['delete_frameworks']))
-    {
-      set_alert(true, "bad", $lang['NoDeleteFrameworkPermission']);
-    }
-    // If the framework ID is 0 (ie. Unassigned Risks)
-    elseif ($value == 0)
-    {
-      // Display an alert
-        set_alert(true, "bad", $lang['CantDeleteUnassignedFramework']);
-    }
+    // Verify value is an integer
+    if (is_int($value)) {
+        // If user has no permission for modify frameworks
+        if (empty($_SESSION['delete_frameworks'])) {
+            set_alert(true, "bad", $lang['NoDeleteFrameworkPermission']);
+        }
+        // If the framework ID is 0 (ie. Unassigned Risks)
+        elseif ($value == 0) {
+        // Display an alert
+            set_alert(true, "bad", $lang['CantDeleteUnassignedFramework']);
+        }
     
-    elseif ((complianceforge_scf_extra() ? (int)get_setting('complianceforge_scf_framework_id', 0) : 0) === $value) {
-        set_alert(true, "bad", $lang['CantDeleteComplianceForgeSCFFramework']);
+        elseif ((complianceforge_scf_extra() ? (int)get_setting('complianceforge_scf_framework_id', 0) : 0) === $value) {
+            set_alert(true, "bad", $lang['CantDeleteComplianceForgeSCFFramework']);
+        }
+        else {
+            // If the ucf extra is enabled
+            if (ucf_extra()) {
+                // Include the ucf extra
+                require_once(realpath(__DIR__ . '/../extras/ucf/index.php'));
+
+                // Disable the UCF framework
+                disable_ucf_framework($value);
+            }
+
+            // If the complianceforge_scf extra is enabled
+            if (complianceforge_scf_extra()) {
+                // Include the ucf extra
+                require_once(realpath(__DIR__ . '/../extras/complianceforgescf/index.php'));
+
+                // Disable the UCF framework
+                disable_scf_frameworks($value);
+            }
+
+            // Delete the framework
+            delete_frameworks($value);
+
+            // Display an alert
+            set_alert(true, "good", "An existing framework was deleted successfully.");
+        }
     }
-    else
-    {
-      // If the ucf extra is enabled
-      if (ucf_extra())
-      {
-          // Include the ucf extra
-          require_once(realpath(__DIR__ . '/../extras/ucf/index.php'));
-
-          // Disable the UCF framework
-          disable_ucf_framework($value);
-      }
-
-      // If the complianceforge_scf extra is enabled
-      if (complianceforge_scf_extra())
-      {
-          // Include the ucf extra
-          require_once(realpath(__DIR__ . '/../extras/complianceforgescf/index.php'));
-
-          // Disable the UCF framework
-          disable_scf_frameworks($value);
-      }
-
-      // Delete the framework
-      delete_frameworks($value);
-
-      // Display an alert
-      set_alert(true, "good", "An existing framework was deleted successfully.");
+    // We should never get here as we bound the variable as an int
+    else {
+        // Display an alert
+        set_alert(true, "bad", "The framework ID was not a valid value.  Please try again.");
     }
-  }
-  // We should never get here as we bound the variable as an int
-  else
-  {
-    // Display an alert
-    set_alert(true, "bad", "The framework ID was not a valid value.  Please try again.");
-  }
-  
-  refresh();
+
+    refresh();
 }
 
 // Delete if a delete control was submitted
-if (isset($_POST['delete_control']))
-{
-  $value = (int)$_POST['control_id'];
+if (isset($_POST['delete_control'])) {
+    $value = (int)$_POST['control_id'];
 
-  // If user has no permission for delete controls
-  if(empty($_SESSION['delete_controls']))
-  {
-      // Display an alert
-      set_alert(true, "bad", $escaper->escapeHtml($lang['NoDeleteControlPermission']));
-  }
-  // Verify value is an integer
-  elseif (is_int($value))
-  {
-      // Delete the control
-      delete_framework_control($value);
+    // If user has no permission for delete controls
+    if(empty($_SESSION['delete_controls'])) {
+        // Display an alert
+        set_alert(true, "bad", $lang['NoDeleteControlPermission']);
+    }
+    // Verify value is an integer
+    elseif (is_int($value)) {
+        // Delete the control
+        delete_framework_control($value);
 
-      // Display an alert
-      set_alert(true, "good", "An existing control was deleted successfully.");
-  }
-  // We should never get here as we bound the variable as an int
-  else
-  {
-    // Display an alert
-    set_alert(true, "bad", "The control ID was not a valid value.  Please try again.");
-  }
-  
-  // Refresh current page
-  refresh();
+        // Display an alert
+        set_alert(true, "good", "An existing control was deleted successfully.");
+    }
+    // We should never get here as we bound the variable as an int
+    else
+    {
+        // Display an alert
+        set_alert(true, "bad", "The control ID was not a valid value.  Please try again.");
+    }
+
+    // Refresh current page
+    refresh();
 }
 
 // If delete controls were submitted
-if (isset($_POST['delete_controls']))
-{
-  $control_ids = $_POST['control_ids'];
+if (isset($_POST['delete_controls'])) {
+    $control_ids = $_POST['control_ids'];
 
-  // If user has no permission for delete controls
-  if(empty($_SESSION['delete_controls']))
-  {
-      // Display an alert
-      set_alert(true, "bad", $escaper->escapeHtml($lang['NoDeleteControlPermission']));
-  }
-  // Verify control ids for deleting was submitted
-  elseif (is_array($control_ids))
-  {
-      foreach($control_ids as $control_id){
-          // Delete the control
-          delete_framework_control($control_id);
-      }
+    // If user has no permission for delete controls
+    if(empty($_SESSION['delete_controls']))
+    {
+        // Display an alert
+        set_alert(true, "bad", $lang['NoDeleteControlPermission']);
+    }
+    // Verify control ids for deleting was submitted
+    elseif (is_array($control_ids)) {
+        foreach($control_ids as $control_id) {
+            // Delete the control
+            delete_framework_control($control_id);
+        }
 
-      // Display an alert
-      set_alert(true, "good", "An selected controls were deleted successfully.");
-  }
-  // We should never get here as we bound the variable as an int
-  else
-  {
-    // Display an alert
-    set_alert(true, "bad", "Nothing controls for deleting were selected.");
-  }
-  
-  // Refresh current page
-  refresh();
+        // Display an alert
+        set_alert(true, "good", "An selected controls were deleted successfully.");
+    }
+    // We should never get here as we bound the variable as an int
+    else {
+        // Display an alert
+        set_alert(true, "bad", "Nothing controls for deleting were selected.");
+    }
+
+    // Refresh current page
+    refresh();
 }
 
+$active_framework_count = get_frameworks_count(1);
+$inactive_framework_count = get_frameworks_count(2);
+$framework_count = $active_framework_count + $inactive_framework_count;
+
 ?>
+<script>
+    // Set current mouse position
+    var mouseX, mouseY;
+    $(document).mousemove(function(e) {mouseX = e.pageX;mouseY = e.pageY;}).mouseover();
 
-<!doctype html>
-<html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
+    $(document).ready(function(){
 
-<head>
-<?php
-        // Use these jQuery scripts
-        $scripts = [
-                'jquery.min.js',
-        ];
-
-        // Include the jquery javascript source
-        display_jquery_javascript($scripts);
-?>
-  <script src="../js/jquery.easyui.min.js?<?php echo current_version("app"); ?>"></script>
-<?php
-        // Use these jquery-ui scripts
-        $scripts = [
-                'jquery-ui.min.js',
-        ];
-
-        // Include the jquery-ui javascript source
-        display_jquery_ui_javascript($scripts);
-        display_bootstrap_javascript();
-?>
-  <script src="../js/jquery.draggable.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../js/jquery.droppable.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../js/treegrid-dnd.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../vendor/simplerisk/selectize.js/dist/js/standalone/selectize.min.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../js/simplerisk/pages/governance.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../js/simplerisk/common.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../vendor/tinymce/tinymce/tinymce.min.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../js/WYSIWYG/editor.js?<?php echo current_version("app"); ?>"></script>
-
-  <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <link rel="stylesheet" href="../css/easyui.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/prioritize.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/style.css?<?php echo current_version("app"); ?>">
-
-  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/WYSIWYG/editor.css?<?php echo current_version("app"); ?>">
-
-  <?php
-      setup_favicon("..");
-      setup_alert_requirements("..");
-  ?>
-  <?php
-    // Get the frameworks
-    $frameworks = get_frameworks();
-
-    // Get the total number of frameworks
-    $count = count($frameworks);
-
-    // Initialize the counter
-    $counter = 1;
-
-  ?>
-  <style>
-    .modal {z-index: 1099 !important;}
-    .control-content [class*=span]{line-height: 33px;}
-    .control-content .top, .control-content .bottom{margin-left: 22px;}
-    .control-content .top .span8, .control-content .bottom .span8{margin-left: 13px;}
-  </style>
-    <script>
-        // Set current mouse position
-        var mouseX, mouseY;
-        $(document).mousemove(function(e) {
-            mouseX = e.pageX;
-            mouseY = e.pageY;
-        }).mouseover(); 
-
-        $(document).ready(function(){
-            var $tabs = $( "#frameworks-tab-content, #controls-tab-content" ).tabs({
-                activate: function(event, ui){
-                    fixTreeGridCollapsableColumn();
-                    $(".framework-table").treegrid('resize');
-                }
-            })
-            
-            $("#framework-add-btn").click(function(){
-                $.ajax({
-                    url: BASE_URL + '/api/governance/parent_frameworks_dropdown?status=1',
-                    type: 'GET',
-                    success : function (res){
-                        $("#framework--add .parent_frameworks_container").html(res.data.html)
-                    }
-                });
-            })
-            
-            $("body").on("click", ".framework-block--edit", function(){
-            	resetForm('#framework--update>form');
-                var framework_id = $(this).data("id");
-                $.ajax({
-                    url: BASE_URL + '/api/governance/framework?framework_id=' + framework_id,
-                    type: 'GET',
-                    success : function (res){
-                        var data = res.data;
-                        $.ajax({
-                            url: BASE_URL + '/api/governance/selected_parent_frameworks_dropdown?child_id=' + framework_id,
-                            type: 'GET',
-                            success : function (res){
-                                $("#framework--update .parent_frameworks_container").html(res.data.html)
-                            }
-                        });
-                        $("#framework--update [name=framework_id]").val(framework_id);
-                        $("#framework--update [name=framework_name]").val(data.framework.name);
-                        $("#framework--update [name=framework_description]").val(data.framework.description);
-                        tinyMCE.get("update_framework_description").setContent(data.framework.description);
-                        if(data.framework.custom_values){
-                          	var custom_values = data.framework.custom_values;
-                          	for (var i=0; i<custom_values.length; i++) {
-                            	var field_value = custom_values[i].value;
-                            	var element = $("#framework--update [name^='custom_field[" + custom_values[i].field_id + "]']");
-                                if (field_value && custom_values[i].field_type == 'multidropdown' || custom_values[i].field_type == 'user_multidropdown') {
-                                    element.multiselect('select', field_value);
-                                } else {
-                                    element.val(field_value ? field_value : '');
-                                }
-                          	}
-                        }
-                        $("#framework--update").modal();
-                    }
-                });
-            })
-            
-            var tabContentId = document.location.hash ? document.location.hash : "#frameworks-tab";
-            tabContentId += "-content";
-            $(".tab-show").removeClass("selected");
-            
-            $(".tab-show[data-content='"+ tabContentId +"']").addClass("selected");
-            $(".tab-data").addClass("hide");
-            $(tabContentId).removeClass("hide");
-            $(".framework-table").treegrid('resize');
-
-            $('.well select[multiple]').multiselect({
-                allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
-                enableFiltering: true,
-                maxHeight: 250,
-                buttonWidth: '100%',
-                includeSelectAllOption: true,
-                enableCaseInsensitiveFiltering: true,
-                onDropdownHide: function(){
-                    if(this.$select.attr('id') == 'filter_by_control_framework'){
-                        rebuild_filters();
-                    } else {
-                        controlDatatable.draw();
-                    }
-                }
-            });
-            $("body").on("click", "#active-controls .checkbox-in-div input[type=checkbox]", function(){
-                if(this.checked)
-                    $(this).closest(".control-block--header").addClass("selected-background");
-                else
-                    $(this).closest(".control-block--header").removeClass("selected-background");
-            })
-            
-            $("#controls-form").submit(function(){
-                if($("#active-controls .checkbox-in-div input[type=checkbox]:checked").length > 0){
-                    confirm("<?php echo $escaper->escapeHtml($lang["AreYouSureYouWantToDeleteControls"]); ?>", "submit_controls_form()");
-                    return false;
-                }else{
-                    alert("<?php echo $escaper->escapeHtml($lang['SelectControlsToDelete']); ?>")
-                    return false;
-                }
-            })
-
-            //Have to remove the 'fade' class for the shown event to work for modals
-            $('.modal').on('shown.bs.modal', function() {
-                $(this).find('.modal-body').scrollTop(0);
-            });
-            $("#framework--add [name=framework_description]").attr("id", "add_framework_description");
-            init_minimun_editor('#add_framework_description');
-            $("#framework--update [name=framework_description]").attr("id", "update_framework_description");
-            init_minimun_editor('#update_framework_description');
-
-            // Add tinymce editor to control modal
-            $("#control--add [name=description]").attr("id", "add_control_description");
-            init_minimun_editor('#add_control_description');
-            $("#control--add [name=supplemental_guidance]").attr("id", "add_supplemental_guidance");
-            init_minimun_editor('#add_supplemental_guidance');
-            $("#control--update [name=description]").attr("id", "update_control_description");
-            init_minimun_editor('#update_control_description');
-            $("#control--update [name=supplemental_guidance]").attr("id", "update_supplemental_guidance");
-            init_minimun_editor('#update_supplemental_guidance');
 <?php 
 if (customization_extra()) {
 ?>
-			$('.datepicker').datepicker();
-            $("select[id^='custom_field'].multiselect").multiselect({buttonWidth: '300px', enableFiltering: true, enableCaseInsensitiveFiltering: true});
+		$('.datepicker').datepicker();
+        $("select[id^='custom_field'].multiselect").multiselect({buttonWidth: '300px', enableFiltering: true, enableCaseInsensitiveFiltering: true});
 <?php 
 }
 ?>
+        $('#controls-tab-content select[multiple]').multiselect({
+            allSelectedText: '<?= $escaper->escapeHtml($lang['ALL']); ?>',
+            enableFiltering: true,
+            maxHeight: 250,
+            buttonWidth: '100%',
+            includeSelectAllOption: true,
+            enableCaseInsensitiveFiltering: true,
+            onChange: function () {
+            	// mark the dropdown value 'changed' so on dropdown hide it can redraw the datatable
+                this.$select.data('changed', true);
+            },
+            onSelectAll: function() {
+            	// mark the dropdown value 'changed' so on dropdown hide it can redraw the datatable
+                this.$select.data('changed', true);
+            },
+            onDeselectAll: function() {
+            	// mark the dropdown value 'changed' so on dropdown hide it can redraw the datatable
+                this.$select.data('changed', true);
+            },
+            onDropdownHide: function() {
+            	// If the data didn't change, we have nothing to do here
+            	if (!(this.$select.data('changed'))) {
+            		return;
+            	}
+
+            	// reset the 'changed' flag on the select
+            	this.$select.data('changed', false);
+
+                if(this.$select.attr('id') == 'filter_by_control_framework'){
+                    rebuild_filters();
+                } else {
+                    controlDatatable.draw();
+                }
+            }
         });
-        function submit_controls_form(){
-            document.controls_form.submit();
-        }
-    </script>
-</head>
 
-<body>
+        $("select[name='control_type[]'").multiselect({
+        	allSelectedText: '<?= $escaper->escapeHtml($lang['ALL']); ?>',
+            enableFiltering: true,
+            maxHeight: 250,
+            buttonWidth: '100%',
+            includeSelectAllOption: true,
+            enableCaseInsensitiveFiltering: true,
+        });
 
-       
-  <?php
-      view_top_menu("Governance");
+        $("#framework--add [name=framework_description]").attr("id", "add_framework_description");
+        init_minimun_editor('#add_framework_description');
+        $("#framework--update [name=framework_description]").attr("id", "update_framework_description");
+        init_minimun_editor('#update_framework_description');
 
-      // Get any alert messages
-      get_alert();
-  ?>
-  <div class="tabs new-tabs planning-tabs">
-    <div class="container-fluid">
+        // Add tinymce editor to control modal
+        $("#control--add [name=description]").attr("id", "add_control_description");
+        init_minimun_editor('#add_control_description');
+        $("#control--add [name=supplemental_guidance]").attr("id", "add_supplemental_guidance");
+        init_minimun_editor('#add_supplemental_guidance');
+        $("#control--update [name=description]").attr("id", "update_control_description");
+        init_minimun_editor('#update_control_description');
+        $("#control--update [name=supplemental_guidance]").attr("id", "update_supplemental_guidance");
+        init_minimun_editor('#update_supplemental_guidance');
+    });
 
-      <div class="row-fluid">
+	$(document).on('show.bs.modal', '#framework--add', function (e) {
+		$.ajax({
+            url: BASE_URL + '/api/governance/parent_frameworks_dropdown?status=1',
+            type: 'GET',
+            async: false,
+            success : function (res){
+                $("#framework--add .parent_frameworks_container").html(res.data.html)
+            }
+        });
+	});
 
-        <div class="span3"> </div>
-        <div class="span9">
+	// When yes is selected in the delete confirmation window, submit the form
+    $("body").on("click", "#confirm_delete_controls", function(){
+    	document.controls_form.submit();
+    });
+        
+    $("body").on("click", ".framework-block--edit", function(){
+    	resetForm('#framework--update form');
+        var framework_id = $(this).data("id");
+        $.ajax({
+            url: BASE_URL + '/api/governance/framework?framework_id=' + framework_id,
+            type: 'GET',
+            success : function (res){
+                var data = res.data;
+                $.ajax({
+                    url: BASE_URL + '/api/governance/selected_parent_frameworks_dropdown?child_id=' + framework_id,
+                    type: 'GET',
+                    success : function (res){
+                        $("#framework--update .parent_frameworks_container").html(res.data.html)
+                    }
+                });
+                $("#framework--update [name=framework_id]").val(framework_id);
+                $("#framework--update [name=framework_name]").val(data.framework.name);
+                $("#framework--update [name=framework_description]").val(data.framework.description);
+                tinyMCE.get("update_framework_description").setContent(data.framework.description);
+                if(data.framework.custom_values){
+                  	var custom_values = data.framework.custom_values;
+                  	for (var i=0; i<custom_values.length; i++) {
+                    	var field_value = custom_values[i].value;
+                    	var element = $("#framework--update [name^='custom_field[" + custom_values[i].field_id + "]']");
+                        if (field_value && custom_values[i].field_type == 'multidropdown' || custom_values[i].field_type == 'user_multidropdown') {
+                            element.multiselect('select', field_value);
+                        } else {
+                            element.val(field_value ? field_value : '');
+                        }
+                  	}
 
-          <div class="tab-append">
-            <div class="tab selected form-tab tab-show" data-content="#frameworks-tab-content"><div><span><?php echo $escaper->escapeHtml($lang['Frameworks']); ?></span></div></div>
-            <div class="tab form-tab tab-show controls-tab" data-content="#controls-tab-content"><div><span><?php echo $escaper->escapehtml($lang['Controls']); ?></span></div></div>
-          </div>
+                }
+            	$("#framework--update").modal("show");
+        	}
+        });
+    });
 
+    $("body").on("click", "#active-controls .checkbox-in-div input[type=checkbox]", function(){
+    	// enable/disable the delete controls button based on whether there's any controls selected
+		$('#delete-controls-btn').attr('disabled', $('#active-controls .checkbox-in-div input[type=checkbox]:checked').length == 0);
+    });
+	// Not initializing the treegrid in a static call, but rather initializing it when its tab is activated
+	// because it's not initialized properly while it's in the background
+    $(document).on('shown.bs.tab', 'nav a[data-bs-toggle=\"tab\"][data-status]', function (e) {
+        let status = $(this).data('status');
+        $('.framework-table-'+ status).initAsFrameworkTreegrid(status, <?= has_permission('modify_frameworks') ? 'true' : 'false' ?>);
+    });
+</script>
+
+<div class="row">
+    <div class="col-12 mt-2">
+        <div>
+            <nav class="nav nav-tabs">
+                <a class="nav-link active" data-bs-target="#frameworks-tab-content" data-bs-toggle="tab"><?= $escaper->escapeHtml($lang['Frameworks']); ?>(<span id="frameworks-count"><?= $framework_count ?></span>)</a>
+                <a class="nav-link" data-bs-target="#controls-tab-content" data-bs-toggle="tab"><?= $escaper->escapeHtml($lang['Controls']); ?>(<span id="controls_count"><?= get_framework_controls_count() ?></span>)</a>
+            </nav>
         </div>
-
-      </div>
-
     </div>
-  </div>
-
-  <div class="container-fluid">
-    <div class="row-fluid">
-      <div class="span3">
-        <?php view_governance_menu("DefineControlFrameworks"); ?>
-      </div>
-      <div class="span9">
-        <div class="row-fluid">
-          <div class="span12">
-            <!--  Frameworks container Begin -->
-            <div id="frameworks-tab-content" class="plan-projects tab-data hide">
-
-              <div class="status-tabs" >
-
-                <a href="#framework--add" id="framework-add-btn" role="button" data-toggle="modal" class="project--add"><i class="fa fa-plus"></i></a>
-
-                <ul class="clearfix tabs-nav">
-                  <li><a href="#active-frameworks" class="status" data-status="1"><?php echo $escaper->escapeHtml($lang['ActiveFrameworks']); ?> (<span id="active-frameworks-count"><?php echo get_frameworks_count(1) ?></span>)</a></li>
-                  <li><a href="#inactive-frameworks" class="status" data-status="2"><?php echo $escaper->escapeHtml($lang['InactiveFrameworks']); ?> (<span id="inactive-frameworks-count"><?php echo get_frameworks_count(2) ?></span>)</a></li>
-                </ul>
-
-                  <div id="active-frameworks" class="custom-treegrid-container">
-                        <?php get_framework_tabs(1) ?>
-                  </div>
-                  <div id="inactive-frameworks" class="custom-treegrid-container">
-                        <?php get_framework_tabs(2) ?>
-                  </div>
-                  <?php
-			// If there are no active frameworks
-			if (get_frameworks_count(1) === "0")
-			{
-				// URL for the frameworks
-				$url = "https://raw.githubusercontent.com/simplerisk/import-content/master/Control%20Frameworks/frameworks.xml";
-
-                // Configure the proxy server if one exists
-                $method = "GET";
-                $header = "content-type: application/json";
-                $context = set_proxy_stream_context($method, $header);
-
-				$frameworks = @file_get_contents($url, false, $context);
-				$frameworks_xml = simplexml_load_string($frameworks);
-
-				echo "<h3>No frameworks?  No problem.</h3>\n";
-				echo "<h4>Try one of the following ways to load frameworks into SimpleRisk:</h4>\n";
-				echo "<ol>\n";
-				echo "  <li>Click the plus (+) icon above to manually create a new framework.</li>\n";
-				echo "  <li><a href=\"../admin/register.php\">Register</a> your SimpleRisk instance to download the free Secure Controls Framework (SCF) Extra and <a href=\"../admin/complianceforge_scf.php\">select from over 200 different frameworks</a> that have been expertly mapped against over 1000 security and privacy controls.</li>\n";
-				echo "  <li>Use the licensed <a href=\"../admin/content.php\">Import-Export Extra</a> to instantly install any of the following frameworks or import your own:\n";
-				echo "    <ol style=\"list-style-type: disc;\">\n";
-
-				// For each framework returned from GitHub
-				foreach ($frameworks_xml as $framework_xml)
-				{
-					$name = $framework_xml->{"name"};
-					echo "<li>" . $escaper->escapeHtml($name) . "</li>\n";
-				}
-				echo "    </ol>\n";
-				echo "  </li>\n";
-				echo "</ol>\n";
-			}
-
-                  ?>
-              </div> <!-- status-tabs -->
-
+    <div class="col-12 tab-content my-2">
+        <!--  Frameworks container Begin -->
+        <div id="frameworks-tab-content" class="active tab-pane col-12">
+            <div>
+                <nav class="nav nav-tabs">
+                    <a class="btn btn-primary" data-bs-target="#framework--add" data-bs-toggle="modal"><i class="fa fa-plus"></i></a>
+                    <a class="nav-link easyui-droppable targetarea active" data-bs-target="#active-frameworks" data-bs-toggle="tab" data-status="1" data-options = "
+                            accept: '.datagrid-row.droppable.2',
+                            onDragEnter:function(e,source){
+                                $(this).toggleClass('highlight');
+                                $('span.tree-dnd-icon').removeClass('tree-dnd-no').addClass('tree-dnd-yes');
+                            },
+                            onDragLeave: function(e,source){
+                                $(this).toggleClass('highlight');
+                                $('span.tree-dnd-icon').removeClass('tree-dnd-yes').addClass('tree-dnd-no');
+                            }
+                        "><?= $escaper->escapeHtml($lang['ActiveFrameworks']); ?>(<span id="active-frameworks-count"><?= $active_framework_count ?></span>)</a>
+                    <a class="nav-link easyui-droppable targetarea" data-bs-target="#inactive-frameworks" data-bs-toggle="tab" data-status="2" data-options = "
+                            accept: '.datagrid-row.droppable.1',
+                            onDragEnter:function(e,source){
+                                $(this).toggleClass('highlight');
+                                $('span.tree-dnd-icon').removeClass('tree-dnd-no').addClass('tree-dnd-yes');  
+                            },
+                            onDragLeave: function(e,source){
+                                $(this).toggleClass('highlight');
+                                $('span.tree-dnd-icon').removeClass('tree-dnd-yes').addClass('tree-dnd-no');
+                            }
+                        "><?= $escaper->escapeHtml($lang['InactiveFrameworks']); ?>(<span id="inactive-frameworks-count"><?= $inactive_framework_count ?></span>)</a>
+                </nav>
             </div>
-            <!-- Frameworks container Ends -->
 
-            <!--  Controls container Begin -->
-            <div id="controls-tab-content" class="tab-data hide">
-                <div class="row-fluid">
-                    <div class="span4">
-                        <div class="well">
-                            <h4><?php echo $escaper->escapeHtml($lang['ControlClass']); ?>:</h4>
-                            <?php create_multiple_dropdown("filter_by_control_class", "all", null, getAvailableControlClassList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
-                        </div>
-                    </div>
-                    <div class="span4">
-                        <div class="well">
-                            <h4><?php echo $escaper->escapeHtml($lang['ControlPhase']); ?>:</h4>
-                            <?php create_multiple_dropdown("filter_by_control_phase", "all", null, getAvailableControlPhaseList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
-                        </div>
-                    </div>
-                    <div class="span4">
-                        <div class="well">
-                            <h4><?php echo $escaper->escapeHtml($lang['ControlFamily']); ?>:</h4>
-                            <?php create_multiple_dropdown("filter_by_control_family", "all", null, getAvailableControlFamilyList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
-                        </div>
-                    </div>
+            <div class="tab-content mt-2 card-body border">
+                <div id="active-frameworks" class="active tab-pane custom-treegrid-container">
+                    <?php get_framework_tabs(1) ?>
                 </div>
-                <div class="row-fluid">
-                    <div class="span4">
-                        <div class="well">
-                            <h4><?php echo $escaper->escapeHtml($lang['ControlOwner']); ?>:</h4>
-                            <?php create_multiple_dropdown("filter_by_control_owner", "all", null, getAvailableControlOwnerList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
-                        </div>
-                    </div>
-                    <div class="span4">
-                        <div class="well">
-                            <h4><?php echo $escaper->escapeHtml($lang['ControlFramework']); ?>:</h4>
-                            <?php create_multiple_dropdown("filter_by_control_framework", "all", null, getAvailableControlFrameworkList(true), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
-                        </div>
-                    </div>
-                    <div class="span4">
-                        <div class="well">
-                            <h4><?php echo $escaper->escapeHtml($lang['ControlPriority']); ?>:</h4>
-                            <?php create_multiple_dropdown("filter_by_control_priority", "all", null, getAvailableControlPriorityList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
-                        </div>
-                    </div>
-                </div>
-                <div class="row-fluid">
-                    <div class="span4">
-                        <div class="well">
-                            <h4><?php echo $escaper->escapeHtml($lang['ControlType']); ?>:</h4>
-                            <?php create_multiple_dropdown("filter_by_control_type", "all", null, get_options_from_table("control_type"), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
-                        </div>
-                    </div>
-                    <div class="span4">
-                        <div class="well">
-                            <h4><?php echo $escaper->escapeHtml($lang['ControlStatus']); ?>:</h4>
-                            <select id="filter_by_control_status" class="form-field form-control" multiple="multiple">
-                                <option selected value="1"><?php echo $escaper->escapeHtml($lang['Pass']);?></option>
-                                <option selected value="0"><?php echo $escaper->escapeHtml($lang['Fail']);?></option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="span4">
-                        <div class="well">
-                            <h4><?php echo $escaper->escapeHtml($lang['FilterByText']); ?>:</h4>
-                            <input type="text" class="form-control" id="filter_by_control_text">
-                        </div>
-                    </div>
+                <div id="inactive-frameworks" class="tab-pane custom-treegrid-container">
+                    <?php get_framework_tabs(2) ?>
                 </div>
                 
-                <form action="" name="controls_form" method="POST" id="controls-form">
-                    <div class="status-tabs" >
-                        <a href="#control--add" role="button" data-toggle="modal" class="control--add"><i class="fa fa-plus"></i></a>
-                        <ul class="clearfix tabs-nav">
-                            <li><a href="#active-controls" class="status" data-status="1"><?php echo $escaper->escapeHtml($lang['Controls']); ?> <span id="controls_count"></span></a></li>
-                        </ul>
-                        <input type="hidden" name="delete_controls" value="1">
-                        <input type="hidden" id="unassigned_label" value="<?php echo $escaper->escapeHtml($lang['Unassigned']);?>">
-                        <input type="hidden" id="existing_mappings" value="<?php echo $escaper->escapeHtml($lang["ExistingMappings"]);?>">
-                        <button type="submit" id="delete-controls-btn" class="btn"><?php echo $escaper->escapeHtml($lang['DeleteControls']) ?></button>
-                    </div> <!-- status-tabs -->
+            </div>
+<?php
+    // If there are no frameworks
+    if ($framework_count == 0) {
 
-                    <table id="active-controls" class="" width="100%">
+        // URL for the frameworks
+        $url = "https://raw.githubusercontent.com/simplerisk/import-content/master/Control%20Frameworks/frameworks.xml";
+    
+        // Configure the proxy server if one exists
+        $method = "GET";
+        $header = "content-type: application/xml";
+        $context = set_proxy_stream_context($method, $header);
+    
+        $frameworks = @file_get_contents($url, false, $context);
+        $frameworks_xml = simplexml_load_string($frameworks);
+?>
+            <div class="card-body border my-2">
+                <h3>No frameworks?  No problem.</h3>
+                <h4>Try one of the following ways to load frameworks into SimpleRisk:</h4>
+                <ol>
+                    <li>Click the plus (+) icon above to manually create a new framework.</li>
+                    <li><a href="../admin/register.php">Register</a> your SimpleRisk instance to download the free Secure Controls Framework (SCF) Extra and <a href="../admin/complianceforge_scf.php">select from over 200 different frameworks</a> that have been expertly mapped against over 1000 security and privacy controls.</li>
+                    <li>Use the licensed <a href="../admin/content.php">Import-Export Extra</a> to instantly install any of the following frameworks or import your own:
+                        <ol style="list-style-type: disc;">
+<?php
+        // For each framework returned from GitHub
+        foreach ($frameworks_xml as $framework_xml) {
+?>
+                            <li><?= $escaper->escapeHtml($framework_xml->{'name'}) ?></li>
+<?php
+        }
+?>
+                        </ol>
+                    </li>
+                </ol>
+            </div>
+<?php
+    }
+?>
+
+        </div>
+        <!-- Frameworks container Ends -->
+
+        <!--  Controls container Begin -->
+        <div id="controls-tab-content" class="tab-pane col-12">
+            <div class="row">
+                <div class="accordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" data-bs-toggle="collapse" data-bs-target="#filters">
+                                Filters
+                            </button>
+                        </h2>
+                        <div id="filters" class="accordion-collapse collapse show">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-4 form-group">
+                                        <label><?= $escaper->escapeHtml($lang['ControlClass']); ?>:</label>
+                                        <?php create_multiple_dropdown("filter_by_control_class", "all", null, getAvailableControlClassList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
+                                    </div>
+                                    <div class="col-4 form-group">
+                                        <label><?= $escaper->escapeHtml($lang['ControlPhase']); ?>:</label>
+                                        <?php create_multiple_dropdown("filter_by_control_phase", "all", null, getAvailableControlPhaseList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
+                                    </div>
+                                    <div class="col-4 form-group">
+                                        <label><?= $escaper->escapeHtml($lang['ControlFamily']); ?>:</label>
+                                        <?php create_multiple_dropdown("filter_by_control_family", "all", null, getAvailableControlFamilyList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4 form-group">
+                                        <label><?= $escaper->escapeHtml($lang['ControlOwner']); ?>:</label>
+                                        <?php create_multiple_dropdown("filter_by_control_owner", "all", null, getAvailableControlOwnerList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
+                                    </div>
+                                    <div class="col-4 form-group">
+                                        <label><?= $escaper->escapeHtml($lang['ControlFramework']); ?>:</label>
+                                        <?php create_multiple_dropdown("filter_by_control_framework", "all", null, getAvailableControlFrameworkList(true), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
+                                    </div>
+                                    <div class="col-4 form-group">
+                                        <label><?= $escaper->escapeHtml($lang['ControlPriority']); ?>:</label>
+                                        <?php create_multiple_dropdown("filter_by_control_priority", "all", null, getAvailableControlPriorityList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4 form-group">
+                                        <label><?= $escaper->escapeHtml($lang['ControlType']); ?>:</label>
+                                        <?php create_multiple_dropdown("filter_by_control_type", "all", null, get_options_from_table("control_type"), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
+                                    </div>
+                                    <div class="col-4 form-group">
+                                        <label><?= $escaper->escapeHtml($lang['ControlStatus']); ?>:</label>
+                                        <select id="filter_by_control_status" multiple="multiple">
+                                            <option selected value="1"><?= $escaper->escapeHtml($lang['Pass']);?></option>
+                                            <option selected value="0"><?= $escaper->escapeHtml($lang['Fail']);?></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-4 form-group">
+                                        <label><?= $escaper->escapeHtml($lang['FilterByText']); ?>:</label>
+                                        <input type="text" class="form-control" id="filter_by_control_text">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body border mt-2">
+                <!-- h4 class="mt-4 mb-4"><?= $escaper->escapeHtml($lang['Controls']); ?> <span id="controls_count"></span></h4-->
+                <form action="" name="controls_form" method="POST" id="controls-form">
+                    <input type="hidden" name="delete_controls" value="1">
+                    <input type="hidden" id="unassigned_label" value="<?= $escaper->escapeHtml($lang['Unassigned']);?>">
+                    <input type="hidden" id="existing_mappings" value="<?= $escaper->escapeHtml($lang["ExistingMappings"]);?>">
+            
+                    <div data-sr-role="dt-settings" data-sr-target="active-controls" class="text-end" >
+                        <button type="button" id="delete-controls-btn" class="btn btn-secondary" disabled data-bs-toggle="modal" data-bs-target="#controls--delete"><?= $escaper->escapeHtml($lang['DeleteSelectedControls']) ?></button>
+                        <a href="#control--add" role="button" data-bs-toggle="modal" data-bs-target="#control--add" class="btn btn-primary control--add"><?= $escaper->escapeHtml($lang['CreateControl']) ?></i></a>
+                    </div> <!-- status-tabs -->
+                    <table id="active-controls" style="width:100%">
                         <thead style='display:none;'>
                             <tr>
                                 <th>&nbsp;</th>
@@ -607,164 +495,195 @@ if (customization_extra()) {
                         </tbody>
                     </table>
                 </form>
-            
             </div>
-            <!-- Controls container Ends -->
-            
-          </div>
         </div>
-      </div>
+        <!-- Controls container Ends -->
     </div>
-  </div>
-    <!-- MODEL WINDOW FOR ADDING FRAMEWORK -->
-    <div id="framework--add" class="modal hide no-padding" tabindex="-1" role="dialog" aria-labelledby="framework--add" aria-hidden="true">
-        <form class="" id="framework--new" action="#" method="post" autocomplete="off">
+</div>
 
+
+<!-- MODEL WINDOW FOR ADDING FRAMEWORK -->
+<div class="modal fade" id="framework--add" tabindex="-1" aria-labelledby="framework--add" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['NewFramework']); ?></h4>
+                <h5 class="modal-title"><?= $escaper->escapeHtml($lang['NewFramework']); ?></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
             <div class="modal-body">
-                <div class="form-group">
-                    <?php display_add_framework();?>
-                </div>
+                <form id="framework-create-form" action="#" method="post" autocomplete="off">
+                    <div class="form-group">
+<?php display_add_framework();?>
+                    </div>
+                </form>
             </div>
 
             <div class="modal-footer">
-                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                <button type="submit" name="add_framework" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                <button type="submit" form="framework-create-form" name="add_framework" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Add']); ?></button>
             </div>
+        </div>
+    </div>    
+</div>
 
-        </form>
-    </div>
 
-    <!-- MODEL WINDOW FOR EDITING FRAMEWORK -->
-    <div id="framework--update" class="modal hide no-padding" tabindex="-1" role="dialog" aria-hidden="true">
-        <form class="" action="#" method="post" autocomplete="off">
-
+<!-- MODEL WINDOW FOR EDITING FRAMEWORK -->
+<div class="modal fade" id="framework--update" tabindex="-1" aria-labelledby="framework--update" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['EditFramework']); ?></h4>
+                <h4 class="modal-title"><?= $escaper->escapeHtml($lang['EditFramework']); ?></h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
             <div class="modal-body">
-                <input type="hidden" class="framework_id" name="framework_id" value=""> 
-                <div class="form-group">
-                    <?php display_add_framework();?>
-                </div>
+                <form id="framework-update-form" action="#" method="post" autocomplete="off">
+                    <input type="hidden" class="framework_id" name="framework_id" value="" /> 
+                    <div class="form-group">
+                        <?php display_add_framework();?>
+                    </div>
+                </form>
             </div>
 
             <div class="modal-footer">
-                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                <button type="submit" name="update_framework" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                <button type="submit" form="framework-update-form" name="update_framework" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Update']); ?></button>
             </div>
-
-        </form>
-    </div>
-
-    <!-- MODEL WINDOW FOR FRAMEWORK DELETE CONFIRM -->
-    <div id="framework--delete" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="framework-delete-form" aria-hidden="true">
-        <div class="modal-body">
-
-            <form class="" id="framework-delete-form" action="" method="post">
-                <div class="form-group text-center">
-                    <label for=""><?php echo $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisFramework']); ?></label>
-                    <input type="hidden" class="delete-id" name="framework_id" value="" />
-                </div>
-
-                <div class="form-group text-center project-delete-actions">
-                    <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                    <button type="submit" name="delete_framework" class="delete_project btn btn-danger"><?php echo $escaper->escapeHtml($lang['Yes']); ?></button>
-                </div>
-            </form>
-
         </div>
     </div>
+</div>
+<!-- MODEL WINDOW FOR FRAMEWORK DELETE CONFIRM -->
+<div class="modal fade" id="framework--delete" tabindex="-1" aria-labelledby="framework--delete" aria-hidden="true">
+    <form class="" id="framework-delete-form" action="" method="post">
+        <div class="modal-dialog modal-md modal-dialog-centered modal-dark">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="form-group text-center">
+                        <label for=""><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisFramework']); ?></label>
+                        <input type="hidden" class="delete-id" name="framework_id" value="" />
+                    </div>
 
-    <!-- MODEL WINDOW FOR ADDING CONTROL -->
-    <div id="control--add" class="modal hide no-padding" tabindex="-1" role="dialog" aria-labelledby="control--add" aria-hidden="true" style="width:700px;">
-        <form class="" id="add-control-form" action="#controls-tab" method="post" autocomplete="off">
-
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['NewControl']); ?></h4>
-            </div>
-
-            <div class="modal-body">
-                <div class="form-group">
-                    <?php display_add_control();?>
+                    <div class="form-group text-center project-delete-actions">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                        <button type="submit" name="delete_framework" class="delete_project btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
+                    </div>
                 </div>
             </div>
-
-            <div class="modal-footer">
-                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                <button type="submit" name="add_control" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
-            </div>
-
-        </form>
-    </div>
-
-    <!-- MODEL WINDOW FOR UPDATING CONTROL -->
-    <div id="control--update" class="modal hide no-padding" tabindex="-1" role="dialog" aria-labelledby="control--update" aria-hidden="true" style="width:700px;">
-        <form class="" id="update-control-form" action="#controls-tab" method="post" autocomplete="off">
-
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['EditControl']); ?></h4>
-            </div>
-
+        </div>
+    </form>
+</div>
+<!-- MODEL WINDOW FOR CONTROL DELETE CONFIRM -->
+<div class="modal fade" id="control--delete" tabindex="-1" aria-labelledby="control--delete" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered modal-dark">
+        <div class="modal-content">
             <div class="modal-body">
-                <input type="hidden" class="control_id" name="control_id" value=""> 
-                <div class="form-group">
-                    <?php display_add_control();?>
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                <button type="submit" name="update_control" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
-            </div>
-
-        </form>
-    </div>
-
-    <!-- MODEL WINDOW FOR CONTROL DELETE CONFIRM -->
-    <div id="control--delete" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="control--delete" aria-hidden="true">
-        <div class="modal-body">
-
-            <form class="" id="control--delete" action="" method="post">
                 <div class="form-group text-center">
-                    <label for=""><?php echo $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisControl']); ?></label>
-                    <input type="hidden" class="delete-id" name="control_id" value="" />
+                    <label for=""><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisControl']); ?></label>
+                    <form class="" id="control--delete-form" action="" method="post">
+                        <input type="hidden" class="delete-id" name="control_id" value="" />
+                    </form>
                 </div>
 
                 <div class="form-group text-center control-delete-actions">
-                    <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                    <button type="submit" name="delete_control" class="delete_control btn btn-danger"><?php echo $escaper->escapeHtml($lang['Yes']); ?></button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                    <button type="submit" name="delete_control" form="control--delete-form" class="delete_control btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
                 </div>
-            </form>
-
+            </div>
         </div>
     </div>
-    <div id="add_mapping_row" class="hide">
-      <table>
-            <tr>
-                <td><?php create_dropdown("frameworks", NULL,"map_framework_id[]", true, false, false, "required"); ?></td>
-                <td><input type="text" name="reference_name[]" value="" class="form-control" maxlength="100" required></td>
-                <td><a href="javascript:void(0);" class="control-block--delete-mapping" title="<?php echo $escaper->escapeHtml($lang["Delete"]);?>"><i class="fa fa-trash"></i></a></td>
-            </tr>
-        </table>
+</div>
+
+<div class="modal fade" id="controls--delete" tabindex="-1" aria-labelledby="controls--delete" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered modal-dark">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="form-group text-center">
+                    <label for=""><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteTheSelectedControls']); ?></label>
+                </div>
+                <div class="form-group text-center control-delete-actions">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                    <button type="button" id="confirm_delete_controls" class="delete_control btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
+                </div>
+            </div>
+        </div>
     </div>
-    <div id="add_asset_row" class="hide">
-      <table>
-            <tr>
-                <td><?php create_dropdown("control_maturity", "", "asset_maturity[]", true, false, false, "required"); ?></td>
-                <td><select class="assets-asset-groups-select" name="assets_asset_groups[]" multiple placeholder="<?php echo $escaper->escapeHtml($lang['AffectedAssetsWidgetPlaceholder']);?>" required></select></td>
-                <td><a href="javascript:void(0);" class="control-block--delete-asset" title="<?php echo $escaper->escapeHtml($lang["Delete"]);?>"><i class="fa fa-trash"></i></a></td>
-            </tr>
-        </table>
+</div>
+
+<!-- MODEL WINDOW FOR ADDING CONTROL -->
+<div class="modal fade" id="control--add" tabindex="-1" aria-labelledby="control--add" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><?= $escaper->escapeHtml($lang['NewControl']); ?></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form class="control-edit" id="add-control-form" action="#controls-tab" method="post" autocomplete="off">
+                    <div class="row">
+                        <div class="col-12">
+                            <?php display_add_control();?>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+            <button type="submit" id="add_control" form="add-control-form" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Add']); ?></button>
+            </div>
+        </div>
     </div>
-    <?php display_set_default_date_format_script(); ?>
-</body>
-</html>
+</div>
+
+<!-- MODEL WINDOW FOR UPDATING CONTROL -->
+<div class="modal fade" id="control--update" tabindex="-1" aria-labelledby="control--update" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title"><?= $escaper->escapeHtml($lang['EditControl']); ?></h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form class="control-edit" id="update-control-form" action="#controls-tab" method="post" autocomplete="off">
+                    <input type="hidden" class="control_id" name="control_id" value=""> 
+                    <div class="row">
+                        <div class="col-12">
+                            <?php display_add_control();?>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                <button type="submit" id="update_control" form="update-control-form" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Update']); ?></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="add_mapping_row" class="hide">
+<table>
+        <tr>
+            <td><?php create_dropdown("frameworks", NULL,"map_framework_id[]", true, false, false, "required"); ?></td>
+            <td><input type="text" name="reference_name[]" value="" class="form-control" maxlength="100" required></td>
+            <td class="text-center"><a href="javascript:void(0);" class="control-block--delete-mapping" title="<?= $escaper->escapeHtml($lang["Delete"]);?>"><i class="fa fa-trash"></i></a></td>
+        </tr>
+    </table>
+</div>
+<div id="add_asset_row" class="hide">
+<table>
+        <tr>
+            <td><?php create_dropdown("control_maturity", "", "asset_maturity[]", true, false, false, "required"); ?></td>
+            <td><select class="assets-asset-groups-select" name="assets_asset_groups[]" multiple placeholder="<?= $escaper->escapeHtml($lang['AffectedAssetsWidgetPlaceholder']);?>" required></select></td>
+            <td class="text-center"><a href="javascript:void(0);" class="control-block--delete-asset" title="<?= $escaper->escapeHtml($lang["Delete"]);?>"><i class="fa fa-trash"></i></a></td>
+        </tr>
+    </table>
+</div>
+<?php
+    // Render the footer of the page. Please don't put code after this part.
+    render_footer();
+?>

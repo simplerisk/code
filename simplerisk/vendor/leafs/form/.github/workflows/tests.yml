@@ -1,0 +1,35 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [v2.x]
+  pull_request:
+    branches: [v2.x]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest]
+        php: [8.3, 8.2, 8.1, 8.0, 7.4]
+
+    name: PHP ${{ matrix.php }} – ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+          coverage: xdebug
+
+      - name: Install dependencies
+        run: composer update --prefer-stable --no-interaction
+
+      - name: All tests
+        run: php vendor/bin/pest --colors=always --coverage

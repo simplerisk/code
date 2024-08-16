@@ -42,10 +42,10 @@ class IncludeNode extends Node implements NodeOutputInterface
             $template = $compiler->getVarName();
 
             $compiler
-                ->write(sprintf("$%s = null;\n", $template))
+                ->write(\sprintf("$%s = null;\n", $template))
                 ->write("try {\n")
                 ->indent()
-                ->write(sprintf('$%s = ', $template))
+                ->write(\sprintf('$%s = ', $template))
             ;
 
             $this->addGetTemplate($compiler);
@@ -58,9 +58,9 @@ class IncludeNode extends Node implements NodeOutputInterface
                 ->write("// ignore missing template\n")
                 ->outdent()
                 ->write("}\n")
-                ->write(sprintf("if ($%s) {\n", $template))
+                ->write(\sprintf("if ($%s) {\n", $template))
                 ->indent()
-                ->write(sprintf('yield from $%s->unwrap()->yield(', $template))
+                ->write(\sprintf('yield from $%s->unwrap()->yield(', $template))
             ;
 
             $this->addTemplateArguments($compiler);
@@ -97,7 +97,7 @@ class IncludeNode extends Node implements NodeOutputInterface
             $compiler->raw(false === $this->getAttribute('only') ? '$context' : '[]');
         } elseif (false === $this->getAttribute('only')) {
             $compiler
-                ->raw('CoreExtension::arrayMerge($context, ')
+                ->raw('CoreExtension::merge($context, ')
                 ->subcompile($this->getNode('variables'))
                 ->raw(')')
             ;

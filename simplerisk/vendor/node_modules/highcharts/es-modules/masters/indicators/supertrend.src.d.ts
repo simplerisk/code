@@ -1,1 +1,0 @@
-import '../../../indicators/supertrend.src';

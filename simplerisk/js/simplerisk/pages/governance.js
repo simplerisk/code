@@ -1,3 +1,220 @@
+$.fn.extend({
+	initAsFrameworkTreegrid: function(status, editable) {
+		// Can't initialize it twice
+		if (this.data('initialized')) {
+			return;
+		}
+
+		let tabs = this.parents('.tab-pane');
+		let activeTabs = this.parents('.tab-pane.active');
+
+		// Can't initialize if not all of the parent tabs(if there's any) active
+		// because the treegrid doesn't properly initialize in the background
+		if (tabs.length != activeTabs.length) {
+			return;
+		}
+
+        this.treegrid({
+            dropAccept:status == 2 ? 'nope' : '',
+            animate: true,
+            collapsible: false,
+            fitColumns: true,
+            url: BASE_URL + '/api/v2/governance/frameworks/treegrid?status=' + status,
+            method: 'get',
+            async: false,
+            idField: 'value',
+            treeField: 'name',
+            scrollbarSize: 0,
+            onLoadSuccess: function(row, data){
+				if (editable) {
+                	$(this).treegrid('enableDnd', row?row.value:null);
+                }
+    			if (status==1) {
+                    $('#active-frameworks-count').html(data.totalCount);
+                    // $('#frameworks-count').html(data.totalCount + parseInt($('#inactive-frameworks-count').html()));
+                    // Add the status as a class so the tab headers can decide whether to accept the drop or not
+                    // it's to be able to only accept drops that 'make sense' meaning no drops with the status the
+                    // framework already has
+                    $('#active-frameworks .datagrid-row.droppable').addClass(''+status);
+			    } else {
+                    $('#inactive-frameworks-count').html(data.totalCount);
+                    // $('#frameworks-count').html(data.totalCount + parseInt($('#active-frameworks-count').html()));
+                    // Add the status as a class so the tab headers can decide whether to accept the drop or not
+                    // it's to be able to only accept drops that 'make sense' meaning no drops with the status the
+                    // framework already has
+                    $('#inactive-frameworks .datagrid-row.droppable').addClass(''+status);
+		    	}
+		    	
+                //fixTreeGridCollapsableColumn();
+            },
+            onStopDrag: function(row){
+                var tag = document.elementFromPoint(mouseX - window.pageXOffset, mouseY - window.pageYOffset);
+                
+                if($(tag).hasClass('nav-link')){
+                    var data_status = $(tag).data('status');
+                    if (data_status == status) { // Don't accept dropping a framework on its current status' tab
+                        return;
+                    }
+
+                    var framework_id = row.value;
+                    $.ajax({
+                        url: BASE_URL + '/api/governance/update_framework_status',
+                        type: 'POST',
+                        data: {framework_id : framework_id, status:data_status},
+                        success : function (data){
+                            setTimeout(function(){
+                                location.reload();
+                            }, 100)
+                        },
+                        error: function(xhr,status,error){
+                            if(!retryCSRF(xhr, this))
+                            {
+                            }
+                        }
+                    });
+                }
+            },
+            onBeforeDrop: function(targetRow, sourceRow,point){
+                // Don't let it drop 'between' the rows as it's confusing
+                return point=='append';
+            },
+            onDrop: function(targetRow, sourceRow){
+                var parent = targetRow ? targetRow.value : 0;
+                var framework_id = sourceRow.value;
+                  $.ajax({
+                    url: BASE_URL + '/api/governance/update_framework_parent',
+                    type: 'POST',
+                    data: {parent : parent, framework_id:framework_id},
+                    success: function(data){
+                        if(data.status_message){
+                            showAlertsFromArray(data.status_message);
+                        }
+                        $('.framework-table-' + status).treegrid('reload');
+                    },
+                    error: function(xhr,status,error) {
+                        if(!retryCSRF(xhr, this)) {
+                            if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                showAlertsFromArray(xhr.responseJSON.status_message);
+                                setTimeout(function(){
+                                    location.reload();
+                                }, 100);
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        $(this).data('initialized', true);
+	},
+
+    initAsDocumentProgramTreegrid: function(type=false) {
+
+        // Can't initialize it twice
+        if (this.data('initialized')) {
+            this.treegrid("resize");
+            return;
+        }
+
+        let tabs = this.parents('.tab-pane');
+        let activeTabs = this.parents('.tab-pane.active');
+
+        // Can't initialize if not all of the parent tabs(if there's any) active
+        // because the treegrid doesn't properly initialize in the background
+        if (tabs.length != activeTabs.length) {
+            return;
+        }
+
+        let _this = this;
+        
+        this.treegrid({
+            iconCls: 'icon-ok',
+            animate: true,
+            collapsible: false,
+            fitColumns: true,
+            url: BASE_URL + (type === 'document-hierarchy' ? '/api/governance/documents?type=' : `/api/governance/tabular_documents?type=${type}`),
+            method: 'get',
+            idField: 'id',
+            treeField: 'document_name',
+            remoteFilter: true,
+            scrollbarSize: 0,
+            onLoadSuccess: function(row, data){
+                // Run the resize logic when the data is loaded
+                $(_this).treegrid('resize');
+            },
+            onResize: function() {
+                // After rendering the datagrid filter head row, reduce the editable filter inputs' width by 30px
+                // so that could make the datagrid table filter head row have the same width as the datagrid table body
+                $('.datagrid-htable .datagrid-filter-row .datagrid-filter', this).each((i, e) => {
+                    $(e).css('width', (parseInt($(e).css('width'))-30) + 'px');
+                });
+            }
+        }).treegrid('enableFilter', [{
+            field:'actions',
+            type:'label'
+        }]);
+
+        $(this).data('initialized', true);
+    },
+    
+    initAsExceptionTreegrid: function(type=false) {
+        // Can't initialize it twice
+        if (this.data('initialized')) {
+            this.treegrid("resize");
+            return;
+        }
+
+        let tabs = this.parents('.tab-pane');
+        let activeTabs = this.parents('.tab-pane.active');
+
+        // Can't initialize if not all of the parent tabs(if there's any) active
+        // because the treegrid doesn't properly initialize in the background
+        if (tabs.length != activeTabs.length) {
+            return;
+        }
+
+        this.treegrid({
+            iconCls: 'icon-ok',
+            animate: false,
+            fitColumns: true,
+            nowrap: true,
+            url: BASE_URL + `/api/exceptions/tree?type=${type}`,
+            method: 'get',
+            idField: 'value',
+            treeField: 'name',
+            scrollbarSize: 0,
+            loadFilter: function(data, parentId) {
+                return data.data;
+            },
+            onLoadSuccess: function(row, data){
+                fixTreeGridCollapsableColumn();
+                // Refresh exception counts in the tabs
+                var totalCount = 0;
+                if((data && data.length))
+                {
+                    for(var i = 0; i < data.length; i++)
+                    {
+                        var parent = data[i];
+                        if((parent.children && parent.children.length))
+                        {
+                            totalCount += parent.children.length;
+                        }
+                    }
+                }
+                
+                $(`#${type}-exceptions-count`).text(totalCount);
+
+                if (typeof wireActionButtons === 'function') {
+                    wireActionButtons(type);
+                }
+            }
+        });
+
+        $(this).data('initialized', true);
+    },
+});
+
+
+
 var controlDatatable;
 jQuery(document).ready(function($){
 
@@ -43,7 +260,7 @@ jQuery(document).ready(function($){
 
           $(document).on('click', '.control-block--edit', function(event) {
             event.preventDefault();
-            resetForm('#control--update>form');
+            resetForm('#control--update form');
             var control_id  = $(this).attr('data-id');
             $.ajax({
                 url: BASE_URL + '/api/governance/control?control_id=' + control_id,
@@ -112,7 +329,7 @@ jQuery(document).ready(function($){
           
           $(document).on('click', '.control-block--clone', function(event) {
             event.preventDefault();
-			resetForm('#control--add>form');
+			resetForm('#control--add form');
             var control_id  = $(this).attr('data-id');
             $.ajax({
                 url: BASE_URL + '/api/governance/control?control_id=' + control_id,
@@ -252,15 +469,7 @@ jQuery(document).ready(function($){
     var pageLength = 10;
     controlDatatable = $("#active-controls").DataTable({
         scrollX: true,
-        bFilter: false,
-        bLengthChange: false,
-        processing: true,
-        serverSide: true,
         bSort: true,
-        pagingType: "full_numbers",
-        dom : "flrtip",
-        pageLength: pageLength,
-        dom : "flrti<'#view-all.view-all'>p",
         ajax: {
             url: BASE_URL + '/api/datatable/framework_controls',
             type: "POST",
@@ -280,7 +489,7 @@ jQuery(document).ready(function($){
             },
             complete: function(response){
                 if(response.status == 200){
-                    $("#controls_count").html("("+ response.responseJSON.recordsTotal +")");
+                    $("#controls_count").html(parseInt(response.responseJSON.recordsFiltered));
                     rebuild_filter($("#filter_by_control_class"),response.responseJSON.classList);
                     rebuild_filter($("#filter_by_control_phase"),response.responseJSON.phaseList);
                     rebuild_filter($("#filter_by_control_family"),response.responseJSON.familyList);
@@ -291,38 +500,9 @@ jQuery(document).ready(function($){
         }
     });
 
-    // Add paginate options
     controlDatatable.on('draw', function(e, settings){
-        $('.paginate_button.first').html('<i class="fa fa-chevron-left"></i><i class="fa fa-chevron-left"></i>');
-        $('.paginate_button.previous').html('<i class="fa fa-chevron-left"></i>');
-
-        $('.paginate_button.last').html('<i class="fa fa-chevron-right"></i><i class="fa fa-chevron-right"></i>');
-        $('.paginate_button.next').html('<i class="fa fa-chevron-right"></i>');
+		$('#delete-controls-btn').attr('disabled', true);
     });
-
-    // Add all text to View All button on bottom
-    $('.view-all').html("All");
-
-    // View All
-    $(".view-all").click(function(){
-        var oSettings =  controlDatatable.settings();
-        oSettings[0]._iDisplayLength = -1;
-        controlDatatable.draw()
-        $(this).addClass("current");
-    })
-    
-    // Page event
-    $("body").on("click", "span > .paginate_button", function(){
-        var index = $(this).attr('aria-controls').replace("DataTables_Table_", "");
-
-        var oSettings =  controlDatatable.settings();
-        if(oSettings[0]._iDisplayLength == -1){
-            $(this).parents(".dataTables_wrapper").find('.view-all').removeClass('current');
-            oSettings[0]._iDisplayLength = pageLength;
-            controlDatatable.draw()
-        }
-        
-    })
 });
 
 function rebuild_filters()
@@ -383,43 +563,18 @@ function rebuild_filter(obj,new_options){
     return true;
 }
 
-function getProjects(){
-  return {
-
-    "active" :  [
-
-      { "id" : "1", "name" : "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nesciunt, autem!" },
-      { "id" : "2", "name" : "Lorem ipsum dolor sit amet."},
-      { "id" : "3", "name" : "Lorem ipsum dolor sit amet, consectetur adipisicing." },
-      { "id" : "4", "name" : "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Id quia illum inventore, aliquid. Ducimus, blanditiis alias, vel cumque recusandae dicta!"}
-
-    ],
-    "inactive" : [],
-    "on-hold": [{ "id" : "5", "name" : "Lorem ipsum dolor sit amet, consectetur." }],
-    "cancled":[]
-
-  };
-}
-
 // Redraw Framework Controls table
 function redrawFrameworkControl() {
     $("#active-controls").DataTable().draw();
 }    
 
 
-$(document).ready(function(){
-    $('.container-fluid').delegate('.tab-show', 'click', function(){        
-        $('.form-tab').removeClass('selected');
-        $(this).addClass('selected');
-        $('.tab-data').hide();
-        $($(this).data('content')).show();
-        $(".framework-table").treegrid('resize');
-        document.location.hash = $(this).data('content').replace("-content", "");
-    });
+$(function(){
     
     // Add control form event
-    $("#add-control-form").submit(function(){
-        var form = new FormData($(this)[0]);
+    $(document).on('submit', '#add-control-form', function(event) {
+		event.preventDefault();
+        var form = new FormData($("#add-control-form")[0]);
         $.ajax({
             type: "POST",
             url: BASE_URL + "/api/governance/add_control",
@@ -429,7 +584,6 @@ $(document).ready(function(){
             contentType: false,
             processData: false,
             success: function(result){
-                var data = result.data;
                 if(result.status_message){
                     showAlertsFromArray(result.status_message);
                 }
@@ -463,8 +617,9 @@ $(document).ready(function(){
         return false;
     });
     // Update control form event
-    $("#update-control-form").submit(function(){
-        var form = new FormData($(this)[0]);
+    $(document).on('submit', '#update-control-form', function(event) {
+		event.preventDefault();
+        var form = new FormData($("#update-control-form")[0]);
         $.ajax({
             type: "POST",
             url: BASE_URL + "/api/governance/update_control",
@@ -474,18 +629,10 @@ $(document).ready(function(){
             contentType: false,
             processData: false,
             success: function(result){
-                var data = result.data;
                 if(result.status_message){
                     showAlertsFromArray(result.status_message);
                 }
-                // var control_frameworks = $("#filter_by_control_framework").val();
-                // $("#update-control-form [name*=map_framework_id]").each(function(index){
-                //     var framework_id = $(this).val();
-                //     if(control_frameworks.indexOf(framework_id) === -1){
-                //         $("#filter_by_control_framework option[value="+framework_id+"]").prop("selected", true);
-                //     }
-                // });
-                // $("#filter_by_control_framework").multiselect("rebuild");
+
                 $('#control--update').modal('hide');
                 controlDatatable.ajax.reload(null, false);
             }
@@ -598,3 +745,9 @@ function setupAssetsAssetGroupsWidget(select_tag, control_id, control_maturity) 
         }
     });        
 }
+
+
+
+
+
+

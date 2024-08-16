@@ -7,7 +7,7 @@
 // Include required configuration files
 require_once(realpath(__DIR__ . '/config.php'));
 require_once(realpath(__DIR__ . '/functions.php'));
-require_once(realpath(__DIR__ . '/assessments.php'));
+//require_once(realpath(__DIR__ . '/assessments.php'));
 require_once(realpath(__DIR__ . '/reporting.php'));
 require_once(realpath(__DIR__ . '/assets.php'));
 require_once(realpath(__DIR__ . '/governance.php'));
@@ -173,6 +173,7 @@ $releases = array(
 	"20240315-001",
 	"20240318-001",
     "20240603-001",
+    "20240726-001",
 );
 
 /*************************
@@ -250,18 +251,30 @@ function display_login_form()
     global $lang;
     global $escaper;
 
-    echo "<h1 class=\"text-center welcome--msg\">Upgrade the SimpleRisk Database </h1>";
-        echo "<form name=\"authenticate\" method=\"post\" action=\"\" class=\"loginForm\">\n";
-    echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
-    echo "<tr><td colspan=\"2\"><label class=\"login--label\">" . $escaper->escapeHtml($lang['LogInHere']) . "</label></td></tr>\n";
-    echo "<tr><td width=\"20%\"><label for=\"\">" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</label></td><td class=\"80%\"><input class=\"form-control input-medium\" name=\"user\" id=\"user\" type=\"text\" /></td></tr>\n";
-    echo "<tr><td width=\"20%\"><label for=\"\">" . $escaper->escapeHtml($lang['Password']) . ":&nbsp;</label></td><td class=\"80%\"><input class=\"form-control input-medium\" name=\"pass\" id=\"pass\" type=\"password\" autocomplete=\"off\" /></td></tr>\n";
-    echo "</table>\n";
-    echo "<div class=\"form-actions\">\n";
-        echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary pull-right\">" . $escaper->escapeHtml($lang['Login']) . "</button>\n";
-    echo "<input class=\"btn btn-default pull-right\" value=\"" . $escaper->escapeHtml($lang['Reset']) . "\" type=\"reset\">\n";
-    echo "</div>\n";
-        echo "</form>\n";
+    echo "
+        <h3>Upgrade the SimpleRisk Database</h3>
+        <div class='card'>
+            <form class='loginForm' action='' method='post' name='authenticate'>
+                <div class='card-body'>
+                    <h4 class='card-title'>" . $escaper->escapeHtml($lang['LogInHere']) . ":</h4>
+                    <div class='form-group'>
+                        <label>" . $escaper->escapeHtml($lang['Username']) . "</label>
+                        <input type='text' class='form-control user' id='user' name='user' required/>
+                    </div>
+                    <div class='form-group'>
+                        <label>" . $escaper->escapeHtml($lang['Password']) . "</label>
+                        <input type='password' class='form-control pass' id='pass' name='pass' required/>
+                    </div>
+                    <div class='form-group justify-content-end'>
+                        <div>
+                            <button type='reset' class='btn btn-dark'>" . $escaper->escapeHtml($lang['Reset']) . "</button>
+                            <button type='submit' class='btn btn-submit' name='submit' value='submit'>" . $escaper->escapeHtml($lang['Login']) . "</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    ";
 }
 
 /**********************************
@@ -269,31 +282,33 @@ function display_login_form()
  **********************************/
 function display_upgrade_info()
 {
+
     global $escaper;
 
-    echo "<div class=\"container-fluid\">\n";
-    echo "<div class=\"row-fluid\">\n";
-        echo "<div class=\"span9\">\n";
-        echo "<div class=\"well\">\n";
+    echo "
+        <div class='card' style='margin-top: 43.8px;'>
+            <div class='card-body'>
+    ";
+
     // Get the current application version
     $app_version = current_version("app");
 
-    echo "The current application version is: " . $escaper->escapeHtml($app_version) . "<br />\n";
+    echo "
+                <p>The current application version is: " . $escaper->escapeHtml($app_version) . "</p>
+    ";
 
     // Get the current database version
     $db_version = current_version("db");
 
-    echo "The current database version is: " . $escaper->escapeHtml($db_version) . "<br />\n";
-
-    echo "This script will ugprade your database to the next version of SimpleRisk.  Please make sure you have backed up your database before proceeding.  Click &quot;CONTINUE&quot; to begin.<br />\n";
-        echo "<br />\n";
-        echo "<form name=\"upgrade_database\" method=\"post\" action=\"\">\n";
-        echo "<button type=\"submit\" name=\"upgrade_database\" class=\"btn btn-primary\">CONTINUE</button>\n";
-        echo "</form>\n";
-    echo "</div>\n";
-    echo "</div>\n";
-    echo "</div>\n";
-    echo "</div>\n";
+    echo "
+                <p>The current database version is: " . $escaper->escapeHtml($db_version) . "</p>
+                <p>This script will ugprade your database to the next version of SimpleRisk.  Please make sure you have backed up your database before proceeding.  Click &quot;CONTINUE&quot; to begin.</p>
+                <form name='upgrade_database' method='post' action=''>
+                    <button type='submit' name='upgrade_database' class='btn btn-dark float-end'>CONTINUE</button>
+                </form>
+            </div>
+        </div>
+    ";
 }
 
 /**************************************
@@ -1379,7 +1394,7 @@ function upgrade_from_20160124001($db)
     $stmt->execute();
 
     // Add the Critical Security Controls assessment
-    require_once(realpath(__DIR__ . '/assessments.php'));
+    //require_once(realpath(__DIR__ . '/assessments.php'));
     critical_security_controls_assessment();
 
     // Add PHPMailer settings
@@ -7290,6 +7305,180 @@ function upgrade_from_20240318001($db)
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/***************************************
+ * FUNCTION: UPGRADE FROM 20240603-001 *
+ ***************************************/
+function upgrade_from_20240603001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20240603-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20240726-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Get the audit log entries
+    echo "Adding new, closed and reopened risks to the risk scoring history table.<br />\n";
+    $stmt = $db->prepare("SELECT timestamp, risk_id, message FROM audit_log;");
+    $stmt->execute();
+    $audit_logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Create the patterns to match for new, closed and reopened risks
+    $new_pattern = "/^A new risk ID \"(?P<id>\d+)\" was submitted by username \"(?P<username>.*)\".*/";
+    $closed_pattern = "/^Risk ID \"(?P<id>\d+)\" was marked as closed by username \"(?P<username>.*)\".*/";
+    $reopened_pattern = "/^Risk ID \"(?P<id>\d+)\" was reopened by username \"(?P<username>.*)\".*/";
+
+    // For each audit log entry
+    foreach ($audit_logs as $log)
+    {
+        // Get the values
+        $timestamp = $log['timestamp'];
+        $risk_id = $log['risk_id'];
+        $message = try_decrypt($log['message']);
+
+        // Initialize the matches array
+        $matches = [];
+
+        // If the message is for opening a new risk
+        if (preg_match($new_pattern, $message, $matches))
+        {
+            // Get the risk ID
+            $risk_id = $matches['id'];
+            $id = $risk_id - 1000;
+
+            // Update the risk scoring history with the new risk using the oldest score in the risk scoring history table
+            $stmt = $db->prepare("INSERT INTO risk_scoring_history (`risk_id`, `calculated_risk`, `last_update`) SELECT rsh.risk_id, rsh.calculated_risk, :timestamp FROM risk_scoring_history rsh WHERE rsh.risk_id = :id ORDER BY rsh.last_update LIMIT 1;");
+            $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+            $stmt->bindParam(":timestamp", $timestamp, PDO::PARAM_STR);
+            $stmt->execute();
+
+            // If no rows were inserted we didn't have any risk scoring history
+            if ($stmt->rowCount() === 0)
+            {
+                // Update the risk scoring history for the reopened risk with the calculated risk instead
+                $stmt = $db->prepare("INSERT INTO risk_scoring_history (`risk_id`, `calculated_risk`, `last_update`) SELECT r.id, rs.calculated_risk, :timestamp FROM risks r LEFT JOIN risk_scoring rs ON r.id = rs.id WHERE r.id=:id;");
+                $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+                $stmt->bindParam(":timestamp", $timestamp, PDO::PARAM_STR);
+                $stmt->execute();
+            }
+        }
+        // If the message is for closing a risk
+        else if (preg_match($closed_pattern, $message, $matches))
+        {
+            // Get the risk ID
+            $risk_id = $matches['id'];
+            $id = $risk_id - 1000;
+
+            // Update the risk scoring history with the closed risk using 0 as the score
+            $stmt = $db->prepare("INSERT INTO risk_scoring_history (`risk_id`, `calculated_risk`, `last_update`) SELECT r.id, 0, :timestamp FROM risks r LEFT JOIN risk_scoring rs ON r.id = rs.id WHERE r.id = :id;");
+            $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+            $stmt->bindParam(":timestamp", $timestamp, PDO::PARAM_STR);
+            $stmt->execute();
+        }
+        // If the message is for reopening a risk
+        else if (preg_match($reopened_pattern, $message, $matches))
+        {
+            // Get the risk ID
+            $risk_id = $matches['id'];
+            $id = $risk_id - 1000;
+
+            // Update the risk scoring history for the reopened risk
+            $stmt = $db->prepare("INSERT INTO risk_scoring_history (`risk_id`, `calculated_risk`, `last_update`) SELECT r.id, rsh.calculated_risk, :timestamp FROM risks r LEFT JOIN risk_scoring_history rsh ON r.id=rsh.risk_id WHERE r.id=:id AND rsh.calculated_risk != 0 AND rsh.last_update < :timestamp ORDER BY rsh.last_update DESC LIMIT 1;");
+            $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+            $stmt->bindParam(":timestamp", $timestamp, PDO::PARAM_STR);
+            $stmt->execute();
+
+            // If no rows were inserted we didn't have any risk scoring history
+            if ($stmt->rowCount() === 0)
+            {
+                // Update the risk scoring history for the reopened risk with the calculated risk instead
+                $stmt = $db->prepare("INSERT INTO risk_scoring_history (`risk_id`, `calculated_risk`, `last_update`) SELECT r.id, rs.calculated_risk, :timestamp FROM risks r LEFT JOIN risk_scoring rs ON r.id = rs.id WHERE r.id=:id;");
+                $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+                $stmt->bindParam(":timestamp", $timestamp, PDO::PARAM_STR);
+                $stmt->execute();
+            }
+        }
+    }
+
+    // Remove the highcharts delivery method from the settings table
+    echo "Deleting the highcharts_delivery_method from the settings table.<br />\n";
+    delete_setting("highcharts_delivery_method");
+
+    // Remove the jquery delivery method from the settings table
+    echo "Deleting the jquery_delivery_method from the settings table.<br />\n";
+    delete_setting("jquery_delivery_method");
+
+    // Remove the bootstrap delivery method from the settings table
+    echo "Deleting the bootstrap_delivery_method from the settings table.<br />\n";
+    delete_setting("bootstrap_delivery_method");
+
+    // Remove unnecessary files
+    echo "Removing unnecessary files.<br />\n";
+    $remove_files = [
+        realpath(__DIR__ . '/includes/highcharts.php'),
+        realpath(__DIR__ . '/js/sorttable.js'),
+        realpath(__DIR__ . '/js/jquery.blockUI.min.js'),
+        realpath(__DIR__ . '/js/select2.min.js'),
+        realpath(__DIR__ . '/css/select2.min.css'),
+    ];
+
+    foreach ($remove_files as $file)
+    {
+        // If the file exists
+        if (file_exists($file))
+        {
+            // Remove the file
+            unlink($file);
+        }
+    }
+
+    // Compile the list of unnecessary directories
+    echo "Removing unnecessary directories.<br />\n";
+    $remove_directories = [
+        realpath(__DIR__ . '/bootstrap'),
+        realpath(__DIR__ . '/extras/authentication/toopher-php'),
+        realpath(__DIR__ . '/vendor/duosecurity'),
+        realpath(__DIR__ . '/vendor/eguilias'),
+        realpath(__DIR__ . '/vendor/hellogerard'),
+        realpath(__DIR__ . '/vendor/opis'),
+        realpath(__DIR__ . '/vendor/raid-software'),
+        realpath(__DIR__ . '/vendor/simplesamlphp/simplesamlphp/locales/no'),
+        realpath(__DIR__ . '/vendor/simplesamlphp/simplesamlphp/modules/admin/locales/no'),
+        realpath(__DIR__ . '/vendor/swiftmailer'),
+        realpath(__DIR__ . '/vendor/tinymce'),
+        realpath(__DIR__ . '/vendor/twbs'),
+        realpath(__DIR__ . '/vendor/symfony/polyfill-iconv'),
+        realpath(__DIR__ . '/vendor/symfony/polyfill-intl-idn'),
+        realpath(__DIR__ . '/vendor/symfony/polyfill-php72'),
+        realpath(__DIR__ . '/vendor/node_modules/highcharts'),
+        realpath(__DIR__ . '/js/themes'),
+    ];
+
+    // Remove the unnecessary directories
+    foreach ($remove_directories as $directory)
+    {
+        // If the directory exists
+        if (is_dir($directory))
+        {
+            // Remove the directory
+            delete_dir($directory);
+        }
+    }
+
+    // Copy the nb files to the no directory
+    recurse_copy(realpath(__DIR__ . '/vendor/simplesamlphp/simplesamlphp/locales/nb'), realpath(__DIR__ . '/vendor/simplesamlphp/simplesamlphp/locales/no'));
+    recurse_copy(realpath(__DIR__ . '/vendor/simplesamlphp/simplesamlphp/modules/admin/locales/nb'), realpath(__DIR__ . '/vendor/simplesamlphp/simplesamlphp/modules/admin/locales/no'));
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -7386,7 +7575,10 @@ function display_cache_clear_warning()
 	global $lang;
 	global $escaper;
 
-	echo "<image src=\"../images/exclamation_warning.png\" width=\"30\" height=\"30\" />&nbsp;&nbsp;" . $escaper->escapeHtml($lang['CacheClearWarning']);
+	echo "
+        <image class='m-r-10' src='../images/exclamation_warning.png' width='30' height='30' />
+        <span>" . $escaper->escapeHtml($lang['CacheClearWarning']) . "</span>
+    ";
 }
 
 /*******************************************************

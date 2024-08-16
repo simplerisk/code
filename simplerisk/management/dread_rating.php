@@ -10,251 +10,178 @@
     require_once(realpath(__DIR__ . '/../includes/permissions.php'));
     require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Add various security headers
-add_security_headers();
+    // Add various security headers
+    add_security_headers();
 
-// Add the session
-$permissions = array(
+    // Add the session
+    $permissions = array(
         "check_access" => true,
         "check_riskmanagement" => true,
-);
-add_session_check($permissions);
+    );
+    add_session_check($permissions);
 
-// Include the CSRF Magic library
-include_csrf_magic();
+    // Include the CSRF Magic library
+    include_csrf_magic();
 
-// Include the SimpleRisk language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
-require_once(language_file());
+    // Include the SimpleRisk language file
+    // Ignoring detections related to language files
+    // @phan-suppress-next-line SecurityCheck-PathTraversal
+    require_once(language_file());
+
+    // Set a global variable for the current app version, so we don't have to call a function every time
+    $current_app_version = current_version("app");
 
 ?>
-
 <!doctype html>
-<html>
-<head>
-<title>SimpleRisk DREAD Calculator</title>
-<link rel="stylesheet" type="text/css" href="../css/style.css?<?php echo current_version("app"); ?>">
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<link href="../css/front-style.css?<?php echo current_version("app"); ?>" rel="stylesheet" type="text/css">
-<?php
-        // Use these jQuery scripts
-        $scripts = [
-                'jquery.min.js',
-        ];
+<html dir="ltr" lang="en" xml:lang="en">
+    <head>
+        <title>SimpleRisk DREAD Calculator</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        
+        <!-- Favicon icon -->
+        <?php setup_favicon("..");?>
 
-        // Include the jquery javascript source
-        display_jquery_javascript($scripts);
-?>
-<script language="javascript" src="../js/basescript.js?<?php echo current_version("app"); ?>" type="text/javascript"></script>
-<script language="javascript" src="../js/simplerisk/dread_scoring.js?<?php echo current_version("app"); ?>" type="text/javascript"></script>
-<script type="text/javascript" language="JavaScript">
-  <!--
-  var parent_window = window.opener;
-  
-  $(document).ready(function(){
-      // Initialize values for elements
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="../css/style.min.css?<?= $current_app_version ?>" />
 
-        $("#DamagePotential").val(parent_window.$("#DREADDamage", parent_window.parentOfScores).val());
-        $("#Reproducibility").val(parent_window.$("#DREADReproducibility", parent_window.parentOfScores).val());
-        $("#Exploitability").val(parent_window.$("#DREADExploitability", parent_window.parentOfScores).val());
-        $("#AffectedUsers").val(parent_window.$("#DREADAffectedUsers", parent_window.parentOfScores).val());
-        $("#Discoverability").val(parent_window.$("#DREADDiscoverability", parent_window.parentOfScores).val());
-        updateScore();
-  })
+        <!-- jQuery CSS -->
+        <link rel="stylesheet" href="../vendor/node_modules/jquery-ui/dist/themes/base/jquery-ui.min.css?<?= $current_app_version ?>">
 
-  function dreadSubmit() {
-    if (parent_window && !parent_window.closed) {
-        parent_window.$("#DREADDamage", parent_window.parentOfScores).val( $("#DamagePotential").val() )
-        parent_window.$("#DREADReproducibility", parent_window.parentOfScores).val( $("#Reproducibility").val() )
-        parent_window.$("#DREADExploitability", parent_window.parentOfScores).val( $("#Exploitability").val() )
-        parent_window.$("#DREADAffectedUsers", parent_window.parentOfScores).val( $("#AffectedUsers").val() )
-        parent_window.$("#DREADDiscoverability", parent_window.parentOfScores).val( $("#Discoverability").val() )
-    }
-  }
+        <!-- extra css -->
 
-  function closeWindow() {
-    window.opener.closepopup();
-  }
+        <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?= $current_app_version ?>">
 
-  function submitandclose() {
-    dreadSubmit();
-    closeWindow();
-  }
+        <!-- jQuery Javascript -->
+        <script src="../vendor/node_modules/jquery/dist/jquery.min.js?<?= $current_app_version ?>" id="script_jquery"></script>
+        <script src="../vendor/node_modules/jquery-ui/dist/jquery-ui.min.js?<?= $current_app_version ?>" id="script_jqueryui"></script>
 
-  // -->
-</script>
-</head>
+        <!-- Bootstrap tether Core JavaScript -->
+        <script src="../vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js" defer></script>
+        
+        <script language="javascript" src="../js/basescript.js?<?= $current_app_version ?>" type="text/javascript" defer></script>
+        <script language="javascript" src="../js/simplerisk/dread_scoring.js?<?= $current_app_version ?>" type="text/javascript" defer></script>
+        
+        <script type="text/javascript" language="JavaScript">
 
-<body topmargin="0" bottommargin="4" leftmargin="0" rightmargin="0" ><form name="frmCalc" method="post" action="" >
-      
-<table width="672" border="0" cellpadding="1" cellspacing="0">
+            var parent_window = window.opener;
+            
+            $(document).ready(function(){
+                // Initialize values for elements
 
-<tr>
-<td align="left" valign="top"  bgcolor="#6B7782" >
-  <table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
-    <tr>
-  <td align="center" background="../images/cal-bg-head.jpg" height="35"><span class="heading">SimpleRisk DREAD Calculator</span></td>
-</tr>
+                $("#DamagePotential").val(parent_window.$("#DREADDamage", parent_window.parentOfScores).val());
+                $("#Reproducibility").val(parent_window.$("#DREADReproducibility", parent_window.parentOfScores).val());
+                $("#Exploitability").val(parent_window.$("#DREADExploitability", parent_window.parentOfScores).val());
+                $("#AffectedUsers").val(parent_window.$("#DREADAffectedUsers", parent_window.parentOfScores).val());
+                $("#Discoverability").val(parent_window.$("#DREADDiscoverability", parent_window.parentOfScores).val());
+                updateScore();
+            })
 
+            function dreadSubmit() {
+                if (parent_window && !parent_window.closed) {
+                    parent_window.$("#DREADDamage", parent_window.parentOfScores).val( $("#DamagePotential").val() )
+                    parent_window.$("#DREADReproducibility", parent_window.parentOfScores).val( $("#Reproducibility").val() )
+                    parent_window.$("#DREADExploitability", parent_window.parentOfScores).val( $("#Exploitability").val() )
+                    parent_window.$("#DREADAffectedUsers", parent_window.parentOfScores).val( $("#AffectedUsers").val() )
+                    parent_window.$("#DREADDiscoverability", parent_window.parentOfScores).val( $("#Discoverability").val() )
+                }
+            }
 
-<tr>
-  <td align="left"  height="8"></td>
-  </tr>
+            function closeWindow() {
+                window.opener.closepopup();
+            }
 
+            function submitandclose() {
+                dreadSubmit();
+                closeWindow();
+            }
 
-<tr>
-    <td align="left" style="padding-left:10px; padding-right:10px" height="35">This page provides a calculator for creating <a href="http://en.wikipedia.org/wiki/DREAD:_Risk_assessment_model" target="_blank">DREAD</a> vulnerability severity scores.  DREAD is a classification scheme for quantifying, comparing and prioritizing the amount of risk presented by each evaluated threat. The DREAD acronym is formed from the first letter of each category below.  DREAD modeling influences the thinking behind setting the risk rating, and is also used directly to sort the risks. The DREAD algorithm, shown below, is used to compute a risk value, which is an average of all five categories.</td>
-</tr>
-<tr>
-  <td align="left"  height="8"></td>
-  </tr>
-    <tr>
-      <td><table border="0" cellspacing="0" cellpadding="0">
-        <tr>
-          <td valign="top">
-          <table width="336" border="0" align="right" cellpadding="0" cellspacing="0">
+            function showHelp(divId) {
+                $("#divHelp").html($("#"+divId).html());
+            };
 
-              <tr bordercolor="#CCCCCC">
-                <td background="../images/cal-bg.jpg"><span class="style2" style="background-repeat:no-repeat">&nbsp;&nbsp;DREAD Score</span></td>
-              </tr>
-              <tr>
-                <td  style="padding-left:5px; padding-right:5px;" ><table width="100%" border="0" cellpadding="1" cellspacing="1">
-                  <tr>
-                    <td >Damage Potential</td>
-                    <td ><div id="DamagePotentialScore">10</div></td>
-                  </tr>
-                  <tr>
-                    <td>Reproducibility</td>
-                    <td ><div id="ReproducibilityScore">10</div></td>
-                  </tr>
-                  <tr>
-                    <td>Exploitability</td>
-                    <td ><div id="ExploitabilityScore">10</div></td>
-                  </tr>
-                  <tr>
-                    <td>Affected Users</td>
-                    <td ><div id="AffectedUsersScore">10</div></td>
-                  </tr>
-                  <tr>
-                    <td>Discoverability</td>
-                    <td ><div id="DiscoverabilityScore">10</div></td>
-                  </tr>
-                  <tr>
-                    <td class="style1"><strong>Overall&nbsp;DREAD&nbsp;Score</strong></td>
-                    <td ><div id="OverallScore">10</div></td>
-                  </tr>
-                </table></td>
-              </tr>
-              <tr>
-                <td height="4"></td>
-              </tr>
-              <tr bordercolor="#CCCCCC">
-                <td background="../images/cal-bg.jpg"><span class="style2" style="background-repeat:no-repeat">&nbsp;&nbsp;Help Desk</span></td>
-              </tr>
-              <tr>
-                <td  style="padding-left:5px; padding-right:5px;" >
-                  <?php view_dread_help(); ?> 
-                </td>
-              </tr>
-          </table></td>
-          <td background="../images/separetor.jpg" ><img src="../images/separetor.jpg"></td>
-          <td valign="top"><table width="100%" border="0" cellspacing="0" cellpadding="0">
-              <tr>
-                <td valign="top"><table width="336" border="0" cellpadding="0" cellspacing="0">
-                    <tr bordercolor="#CCCCCC">
-                      <td width="329" background="../images/cal-bg.jpg" bgcolor="#E6E2E1" class="style2"  style="background-repeat:no-repeat">&nbsp; Categories</td>
-                    </tr>
-                    <tr>
-                      <td style="padding-left:5px;" >
-                        <table width="100%"  border="0" cellpadding="1" cellspacing="1" >
-                        <tr>
-                          <td width="117">Damage Potential</td>
-                          <td width="119">
-                          <table border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                              <td>
-                                <?php create_numeric_dropdown("DamagePotential", 10, false) ?>
-                              </td>
-                              <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('DamagePotentialHelp');"></td>
-                            </tr>
-                          </table>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td width="117">Reproducibility</td>
-                          <td width="119">
-                          <table border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                              <td>
-                                <?php create_numeric_dropdown("Reproducibility", 10, false) ?>
-                              </td>
-                              <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('ReproducibilityHelp');"></td>
-                            </tr>
-                          </table>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td width="117">Exploitability</td>
-                          <td width="119">
-                          <table border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                              <td>
-                                <?php create_numeric_dropdown("Exploitability", 10, false) ?>
-                              </td>
-                              <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('ExploitabilityHelp');"></td>
-                            </tr>
-                          </table>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td width="117">Affected Users</td>
-                          <td width="119">
-                          <table border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                              <td>
-                                <?php create_numeric_dropdown("AffectedUsers", 10, false) ?>
-                              </td>
-                              <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('AffectedUsersHelp');"></td>
-                            </tr>
-                          </table>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td width="117">Discoverability</td>
-                          <td width="119">
-                          <table border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                              <td>
-                                <?php create_numeric_dropdown("Discoverability", 10, false) ?>
-                              </td>
-                              <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('DiscoverabilityHelp');"></td>
-                            </tr>
-                          </table>
-                          </td>
-                        </tr>
-                      </table></td>
-                    </tr>
-                    <tr>
-                      <td height="5"></td>
-                    </tr>
-                </table></td>
-              </tr>
-              <tr>
-                <td align="center">
-                  <input type="button" name="dreadSubmit" id="dreadSubmit" value="Submit" onclick="javascript: submitandclose();" />
-                </td>
-              </tr>
-              <tr>
-                <td align="center" height="5"></td>
-              </tr>
-          </table></td>
-        </tr>
-      </table></td>
-    </tr>
-  </table></td>
-</tr>
-</table>
-</form>
-</body>
+        </script>
+    </head>
+
+    <body topmargin="0" bottommargin="4" leftmargin="0" rightmargin="0" >
+        <form name="frmCalc" method="post" action="" >
+            <div class="score-method-page">
+                <div class="score-method-page-header">
+                    <h4>SimpleRisk DREAD Calculator</h4>
+                </div>
+                <div class="score-method-page-body">
+                    <div class="card-body mt-2 border">
+                        <p class="mb-0">This page provides a calculator for creating <a href="http://en.wikipedia.org/wiki/DREAD:_Risk_assessment_model" target="_blank" class="text-info">DREAD</a> vulnerability severity scores.  DREAD is a classification scheme for quantifying, comparing and prioritizing the amount of risk presented by each evaluated threat. The DREAD acronym is formed from the first letter of each category below.  DREAD modeling influences the thinking behind setting the risk rating, and is also used directly to sort the risks. The DREAD algorithm, shown below, is used to compute a risk value, which is an average of all five categories.</p>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 d-flex flex-column">
+                            <div class="card-body border my-2 flex-grow-0">
+                                <h5>DREAD Score</h5>
+                                <div class="score-item mb-2 d-flex align-items-center">
+                                    <label>Damage Potential:</label>
+                                    <div class="score-value form-control text-end" id="DamagePotentialScore">0</div>
+                                </div>
+                                <div class="score-item mb-2 d-flex align-items-center">
+                                    <label>Reproducibility:</label>
+                                    <div class="score-value form-control text-end" id="ReproducibilityScore">0</div>
+                                </div>
+                                <div class="score-item mb-2 d-flex align-items-center">
+                                    <label>Exploitability:</label>
+                                    <div class="score-value form-control text-end" id="ExploitabilityScore">0</div>
+                                </div>
+                                <div class="score-item mb-2 d-flex align-items-center">
+                                    <label>Affected Users:</label>
+                                    <div class="score-value form-control text-end" id="AffectedUsersScore">0</div>
+                                </div>
+                                <div class="score-item mb-2 d-flex align-items-center">
+                                    <label>Discoverability:</label>
+                                    <div class="score-value form-control text-end" id="DiscoverabilityScore">0</div>
+                                </div>
+                                <div class="score-item d-flex align-items-center">
+                                    <label>Overall DREAD Score:</label>
+                                    <div class="score-value form-control text-end" id="OverallScore">0</div>
+                                </div>
+                            </div>
+                            <div class="card-body border mb-2 flex-grow-1">
+                                <h5>Help Desk</h5>
+                                <?php view_dread_help(); ?>
+                            </div> 
+                        </div>
+                        <div class="col-6 d-flex flex-column">
+                            <div class="card-body border my-2 flex-grow-0">
+                                <h5>Categories</h5>
+                                <div class="score-item mb-2 d-flex align-items-center">
+                                    <label>Damage Potential:</label>
+                                    <?php create_numeric_dropdown("DamagePotential", 10, false) ?>
+                                    <img class="m-l-15" src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onclick="javascript:showHelp('DamagePotentialHelp');">
+                                </div>
+                                <div class="score-item mb-2 d-flex align-items-center">
+                                    <label>Reproducibility:</label>
+                                    <?php create_numeric_dropdown("Reproducibility", 10, false) ?>
+                                    <img class="m-l-15" src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onclick="javascript:showHelp('ReproducibilityHelp');">
+                                </div>
+                                <div class="score-item mb-2 d-flex align-items-center">
+                                    <label>Exploitability:</label>
+                                    <?php create_numeric_dropdown("Exploitability", 10, false)?>
+                                    <img class="m-l-15" src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onclick="javascript:showHelp('ExploitabilityHelp');">
+                                </div>
+                                <div class="score-item mb-2 d-flex align-items-center">
+                                    <label>Affected Users:</label>
+                                    <?php create_numeric_dropdown("AffectedUsers", 10, false) ?>
+                                    <img class="m-l-15" src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onclick="javascript:showHelp('AffectedUsersHelp');">
+                                </div>
+                                <div class="score-item d-flex align-items-center">
+                                    <label>Discoverability:</label>
+                                    <?php create_numeric_dropdown("Discoverability", 10, false) ?>
+                                    <img class="m-l-15" src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onclick="javascript:showHelp('DiscoverabilityHelp');">
+                                </div>
+                            </div>
+                            <div class="card-body border mb-2 flex-grow-1">
+                                <input class="btn btn-submit" type="button" name="dreadSubmit" id="dreadSubmit" value="Submit" onclick="javascript: submitandclose();" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </body>
 </html>

@@ -1,1 +1,0 @@
-import '../../highcharts-more.src';

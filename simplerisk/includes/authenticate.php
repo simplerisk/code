@@ -379,6 +379,9 @@ function grant_access()
     // Update the last login
     update_last_login($_SESSION['uid']);
 
+    // Since access was granted, ping the server asynchronously
+    ping_server_asynchronously();
+
     // Audit log
     $message = "Username \"" . $_SESSION['user'] . "\" logged in successfully.";
     write_log($_SESSION['uid'] + 1000, $_SESSION['uid'], $message, "user");
@@ -881,7 +884,15 @@ function add_session_check($permissions = null)
 			write_debug_log("Setting the session cookie parameters.");
 
 			// Set the session cookie parameters
-			session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+            $parameters = [
+                "lifetime" => 0,
+                "path" => "/",
+                "domain" => "",
+                "secure" => isset($_SERVER["HTTPS"]),
+                "httponly" => true,
+                "samesite" => "Strict",
+            ];
+            session_set_cookie_params($parameters);
 		}
 		else
 		{
@@ -889,19 +900,15 @@ function add_session_check($permissions = null)
 			write_debug_log("Setting the session cookie parameters.");
 
 			// Set the session cookie parameters
-			$cookie_params = array(
-				// Set the lifetime to be until the browser is closed
-				"lifetime" => 0,
-				// Set the path for all paths on the domain
-				"path" => "/",
-				// Set the domain to the host name of the server which generated the cookie
-				"domain" => "",
-				// Only send the cookie over secure connections if we are using HTTPS
-				"secure" => isset($_SERVER["HTTPS"]),
-				// Only send the httponly flag when setting the session cookie
-				"httponly" => true,
-			);
-			session_set_cookie_params($cookie_params);
+            $parameters = [
+                "lifetime" => 0,
+                "path" => "/",
+                "domain" => "",
+                "secure" => isset($_SERVER["HTTPS"]),
+                "httponly" => true,
+                "samesite" => "Strict",
+            ];
+            session_set_cookie_params($parameters);
 		}
 
 		// Set the current session name
@@ -917,12 +924,8 @@ function add_session_check($permissions = null)
 	write_debug_log("Checking for session timeout or renegotiation.");
 	session_check();
 
-	// If the check_accesspermission was not provided
-	if (!isset($permissions['check_access']))
-	{
-		// Set check_access to true by default
-		$permissions['check_access'] = true;
-	}
+	// Enforcing the access permission by default
+	enforce_permission("access");
 
 	// For each permission provided
 	foreach ($permissions as $permission => $value)
@@ -933,10 +936,6 @@ function add_session_check($permissions = null)
 			// Handle the permission
 			switch ($permission)
 			{
-				case "check_access":
-					write_debug_log("Access permission is required.");
-					enforce_permission("access");
-					break;
                 case "check_admin":
 					write_debug_log("Admin permission is required.");
 					enforce_permission("admin");
@@ -1548,18 +1547,6 @@ function login($user, $pass)
             // Set session access to mfa
             $_SESSION["access"] = "mfa_verify";
         }
-    }
-    // If Duo authentication is enabled for the user
-    else if ($multi_factor == 2)
-    {
-        // Set session access to duo
-        $_SESSION["access"] = "duo";
-    }
-    // If Toopher authentication is enabled for the user
-    else if ($multi_factor == 3)
-    {
-        // Set session access to toopher
-        $_SESSION["access"] = "toopher";
     }
 }
 

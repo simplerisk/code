@@ -134,7 +134,7 @@ function core_extra_current_version($extra)
  * Returns whether the specified extra has been activated *
  **********************************************************/
 function core_extra_activated($extra)
-{       
+{
 	// Return the extra activated
         switch ($extra) {
                 case "advanced_search":
@@ -183,43 +183,43 @@ function core_extra_activated_link($extra)
 	global $lang;
 	global $escaper;
 
-        // Return the extra activated
-        switch ($extra) {
-                case "advanced_search":
-                    return "&nbsp;&nbsp;<a href=\"advanced_search.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-                case "api":
-                    return "&nbsp;&nbsp;<a href=\"api.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-                case "assessments":
-                    return "&nbsp;&nbsp;<a href=\"assessments.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-                case "authentication":
-                    return "&nbsp;&nbsp;<a href=\"authentication.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-                case "complianceforgescf":
-                    return "&nbsp;&nbsp;<a href=\"complianceforge_scf.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-                case "customization":
-                    return "&nbsp;&nbsp;<a href=\"customization.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-                case "encryption":
-                    return "&nbsp;&nbsp;<a href=\"encryption.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-                case "import-export":
-                    return "&nbsp;&nbsp;<a href=\"importexport.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-                case "incident_management":
-                    return "&nbsp;&nbsp;<a href=\"incidentmanagement.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-                case "jira":
-                    return "&nbsp;&nbsp;<a href=\"jira.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-                case "notification":
-                    return "&nbsp;&nbsp;<a href=\"notification.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-                case "organizational_hierarchy":
-                    return "&nbsp;&nbsp;<a href=\"organizational_hierarchy.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-                case "separation":
-                    return "&nbsp;&nbsp;<a href=\"separation.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-                case "ucf":
-                    return "&nbsp;&nbsp;<a href=\"ucf.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-                case "upgrade":
-                        return "";
+    // Return the extra activated
+    switch ($extra) {
+        case "advanced_search":
+            return "<a class='text-info m-l-10' href='advanced_search.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
+        case "api":
+            return "<a class='text-info m-l-10' href='api.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
+        case "assessments":
+            return "<a class='text-info m-l-10' href='assessments.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
+        case "authentication":
+            return "<a class='text-info m-l-10' href='authentication.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
+        case "complianceforgescf":
+            return "<a class='text-info m-l-10' href='complianceforge_scf.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
+        case "customization":
+            return "<a class='text-info m-l-10' href='customization.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
+        case "encryption":
+            return "<a class='text-info m-l-10' href='encryption.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
+        case "import-export":
+            return "<a class='text-info m-l-10' href='importexport.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
+        case "incident_management":
+            return "<a class='text-info m-l-10' href='incidentmanagement.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
+        case "jira":
+            return "<a class='text-info m-l-10' href='jira.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
+        case "notification":
+            return "<a class='text-info m-l-10' href='notification.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
+        case "organizational_hierarchy":
+            return "<a class='text-info m-l-10' href='organizational_hierarchy.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
+        case "separation":
+            return "<a class='text-info m-l-10' href='separation.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
+        case "ucf":
+            return "<a class='text-info m-l-10' href='ucf.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
+        case "upgrade":
+                return "";
 		case "vulnmgmt":
-		    return "&nbsp;&nbsp;<a href=\"vulnmgmt.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-                default:
-                        return "";
-        }
+		    return "<a class='text-info m-l-10' href='vulnmgmt.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
+        default:
+            return "";
+    }
 }
 
 /*******************************************************
@@ -239,21 +239,22 @@ function core_display_upgrade_extras()
 	$available_extras = available_extras();
 
 	// Display the table header
-	echo "<p><h4>" . $escaper->escapeHtml($lang['SimpleRiskExtras']) . "</h4></p>\n";
-	echo "<table width=\"100%\" class=\"table table-bordered table-condensed\">\n";
-	echo "<thead>\n";
-	echo "<tr>\n";
-	echo "  <td width=\"115px\"><b><u>Extra Name</u></b></td>\n";
-	echo "  <td width=\"10px\"><b><u>Purchased</u></b></td>\n";
-	echo "  <td width=\"60px\"><b><u>Expires</u></b></td>\n";
-	echo "  <td width=\"10px\"><b><u>Installed</u></b></td>\n";
-	echo "  <td width=\"10px\"><b><u>Activated</u></b></td>\n";
-	echo "  <td width=\"60px\"><b><u>Version</u></b></td>\n";
-	echo "  <td width=\"60px\"><b><u>Latest Version</u></b></td>\n";
-	echo "  <td width=\"60px\"><b><u>Action</u></b></td>\n";
-	echo "</tr>\n";
-	echo "</thead>\n";
-	echo "<tbody>\n";
+	echo "
+        <p><h4>" . $escaper->escapeHtml($lang['SimpleRiskExtras']) . "</h4></p>
+        <table class='table table-striped border header'>
+            <thead>
+                <tr>
+                    <th>Extra Name</th>
+                    <th>Purchased</th>
+                    <th>Expires</th>
+                    <th>Installed</th>
+                    <th>Activated</th>
+                    <th>Version</th>
+                    <th>Latest Version</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>";
 
     // If we were able to obtain the purchases
     if ($purchases != false)
@@ -290,9 +291,9 @@ function core_display_upgrade_extras()
 					// If the expiration date has passed
 					else if ($expires < date('Y-m-d h:i:s'))
 					{
-						$expires = "<font color=\"red\"><b>Expired</b></font>";
+						$expires = "<font color='red'><b>Expired</b></font>";
 					}
-					else $expires = "<font color=\"green\"><b>" . $escaper->escapeHtml(substr($expires, 0, 10)) . "</b></font>";
+					else $expires = "<font color='green'><b>" . $escaper->escapeHtml(substr($expires, 0, 10)) . "</b></font>";
 				}
 				else $expires = "N/A";
 			}
@@ -318,29 +319,30 @@ function core_display_upgrade_extras()
 			$action_button = core_get_action_button($extra['short_name'], $purchased, $installed, $activated, $version, $latest_version);
 
 			// Display the table row
-			echo "<tr>\n";
-			echo "  <td width=\"115px\"><b>" . $escaper->escapeHtml($extra['long_name']) . "</b></td>\n";
-			echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($purchased ? " checked" : "") . " /></td>\n";
-			echo "  <td width=\"60px\">" . $expires . "</td>\n";
-			echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
-			echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($activated ? " checked" : "") . " />" . $activated_link . "</td>\n";
-			echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
-			echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
-			echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
-			echo "</tr>\n";
+			echo "
+                <tr>
+                    <td>{$escaper->escapeHtml($extra['long_name'])}</td>
+                    <td><input class='form-check-input' type='checkbox'" . ($purchased ? " checked" : "") . " /></td>
+                    <td>{$expires}</td>
+                    <td><input class='form-check-input' type='checkbox'" . ($installed ? " checked" : "") . " /></td>
+                    <td><input class='form-check-input' type='checkbox'" . ($activated ? " checked" : "") . " />{$activated_link}</td>
+                    <td><b>{$escaper->escapeHtml($version)}</b></td>
+                    <td><b>{$escaper->escapeHtml($latest_version)}</b></td>
+                    <td><b>{$action_button}</b></td>
+                </tr>";
 		}
 	}
 	// We were unable to obtain the purchases from the server
 	else
 	{
 		// Display the table row
-		echo "<tr>\n";
-		echo "  <td colspan=\"8\"><b>" . $escaper->escapeHtml($lang['UnableToCommunicateWithTheSimpleRiskServer']) . "</b></td>\n";
-		echo "</tr>\n";
+		echo "  <tr>
+                    <td colspan='8'><b>{$escaper->escapeHtml($lang['UnableToCommunicateWithTheSimpleRiskServer'])}</b></td>
+                </tr>";
 	}
 
-	echo "</tbody>\n";
-	echo "</table>\n";
+	echo "  </tbody>
+        </table>";
 }
 
 /***************************************************************
@@ -580,7 +582,10 @@ function core_get_action_button($extra_name, $purchased, $installed, $activated,
         if (!$installed)
         {
             // Make the Install action button
-            $action_button = "<form style=\"display: inline;\" name=\"install_extras\" method=\"post\" action=\"\"><button type=\"submit\" name=\"" . $button_name . "\" class=\"btn btn-primary\">". $escaper->escapeHtml($lang['Install']) ."</button></form>";
+            $action_button = "
+                <form style='display: inline;' name='install_extras' method='post' action=''>
+                    <button type='submit' name='" . $button_name . "' class='btn btn-submit'>" . $escaper->escapeHtml($lang['Install']) . "</button>
+                </form>";
         }
         // Otherwise, the Extra is installed
         else
@@ -589,14 +594,20 @@ function core_get_action_button($extra_name, $purchased, $installed, $activated,
             if (!$activated)
             {
                 // Display the Activate button
-                $action_button = "<form style=\"display: inline;\" name=\"install_extras\" method=\"post\" action=\"" . $action_link . "\"><button type=\"submit\" name=\"activate_extra\" class=\"btn btn-primary\">". $escaper->escapeHtml($lang['Activate']) ."</button></form>";
+                $action_button = "
+                <form style='display: inline;' name='install_extras' method='post' action='" . $action_link . "'>
+                    <button type='submit' name='activate_extra' class='btn btn-submit'>". $escaper->escapeHtml($lang['Activate']) ."</button>
+                </form>";
             }
         }
     }
     // Otherwise, the Extra has not been purchased
     else
     {
-        $action_button = "<form style=\"display: inline;\" action=\"https://www.simplerisk.com/extras\" target=\"_blank\" method=\"post\"><button type=\"submit\" name=\"purchase_extra\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Purchase']) . "</button></form>";
+        $action_button = "
+                <form style='display: inline;' action='https://www.simplerisk.com/extras' target='_blank' method='post'>
+                    <button type='submit' name='purchase_extra' class='btn btn-submit'>" . $escaper->escapeHtml($lang['Purchase']) . "</button>
+                </form>";
     }
 
     // Return the action button
@@ -675,7 +686,7 @@ function extra_simplerisk_version_compatible($extra)
 		{   
 			$url = UPDATES_URL . '/extra_compatibility.xml';
 		}
-		else $url = 'https://updates.simplerisk.com/extra_compatibility.xml';
+		else $url = 'https://raw.githubusercontent.com/simplerisk/updates.simplerisk.com/updates.simplerisk.com/extra_compatibility.xml';
 
 		// Get the current version of SimpleRisk
 		$simplerisk_version = current_version("app");

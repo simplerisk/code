@@ -47,9 +47,14 @@ class AttributeAnnotationFactory implements AnnotationFactoryInterface
                     $instance = $attribute->newInstance();
                     if ($instance instanceof OA\AbstractAnnotation) {
                         $annotations[] = $instance;
+                    } else {
+                        if ($context->is('other') === false) {
+                            $context->other = [];
+                        }
+                        $context->other[] = $instance;
                     }
                 } else {
-                    $context->logger->debug(sprintf('Could not instantiate attribute "%s", because class not found.', $attribute->getName()));
+                    $context->logger->debug(sprintf('Could not instantiate attribute "%s"; class not found.', $attribute->getName()));
                 }
             }
 
@@ -60,6 +65,7 @@ class AttributeAnnotationFactory implements AnnotationFactoryInterface
                         foreach ($rp->getAttributes($attributeName, \ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
                             /** @var OA\Property|OA\Parameter|OA\RequestBody $instance */
                             $instance = $attribute->newInstance();
+
                             $type = (($rnt = $rp->getType()) && $rnt instanceof \ReflectionNamedType) ? $rnt->getName() : Generator::UNDEFINED;
                             $nullable = $rnt ? $rnt->allowsNull() : true;
 
@@ -75,6 +81,9 @@ class AttributeAnnotationFactory implements AnnotationFactoryInterface
                                 $instance->nullable = $nullable ?: Generator::UNDEFINED;
 
                                 if ($rp->isPromoted()) {
+                                    // ensure each property has its own context
+                                    $instance->_context = new Context(['generated' => true, 'annotations' => [$instance]], $context);
+
                                     // promoted parameter - docblock is available via class/property
                                     if ($comment = $rp->getDeclaringClass()->getProperty($rp->getName())->getDocComment()) {
                                         $instance->_context->comment = $comment;

@@ -2,6 +2,9 @@
 function init_default_editor(selector) {
 
 	tinymce.init({
+		// Agreeing to the open source license terms
+		license_key: 'gpl',
+
 	    selector: selector,
 	    statusbar: false,
 	    // Tip! To make TinyMCE leaner, only include the plugins you actually need.
@@ -38,6 +41,9 @@ function init_default_editor(selector) {
 function init_minimun_editor(selector) {
 
     tinymce.init({
+		// Agreeing to the open source license terms
+		license_key: 'gpl',
+
         selector: selector,
         statusbar: false,
         // Tip! To make TinyMCE leaner, only include the plugins you actually need.

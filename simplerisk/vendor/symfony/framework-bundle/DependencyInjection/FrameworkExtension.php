@@ -349,7 +349,7 @@ class FrameworkExtension extends Extension
                 throw new LogicException('AssetMapper support cannot be enabled as the AssetMapper component is not installed. Try running "composer require symfony/asset-mapper".');
             }
 
-            $this->registerAssetMapperConfiguration($config['asset_mapper'], $container, $loader, $this->readConfigEnabled('assets', $container, $config['assets']));
+            $this->registerAssetMapperConfiguration($config['asset_mapper'], $container, $loader, $this->readConfigEnabled('assets', $container, $config['assets']), $this->readConfigEnabled('http_client', $container, $config['http_client']));
         } else {
             $container->removeDefinition('cache.asset_mapper');
         }
@@ -1330,12 +1330,18 @@ class FrameworkExtension extends Extension
         }
     }
 
-    private function registerAssetMapperConfiguration(array $config, ContainerBuilder $container, PhpFileLoader $loader, bool $assetEnabled): void
+    private function registerAssetMapperConfiguration(array $config, ContainerBuilder $container, PhpFileLoader $loader, bool $assetEnabled, bool $httpClientEnabled): void
     {
         $loader->load('asset_mapper.php');
 
         if (!$assetEnabled) {
             $container->removeDefinition('asset_mapper.asset_package');
+        }
+
+        if (!$httpClientEnabled) {
+            $container->register('asset_mapper.http_client', HttpClientInterface::class)
+                ->addTag('container.error')
+                ->addError('You cannot use the AssetMapper integration since the HttpClient component is not enabled. Try enabling the "framework.http_client" config option.');
         }
 
         $paths = $config['paths'];
@@ -1507,7 +1513,7 @@ class FrameworkExtension extends Extension
         $defaultDir = $container->getParameterBag()->resolveValue($config['default_path']);
         foreach ($container->getParameter('kernel.bundles_metadata') as $name => $bundle) {
             if ($container->fileExists($dir = $bundle['path'].'/Resources/translations') || $container->fileExists($dir = $bundle['path'].'/translations')) {
-                $dirs[] = $dir;
+                $dirs[] = $transPaths[] = $dir;
             } else {
                 $nonExistingDirs[] = $dir;
             }
@@ -1996,18 +2002,25 @@ class FrameworkExtension extends Extension
             $container->setParameter('serializer.default_context', $defaultContext);
         }
 
+        if (!$container->hasDefinition('serializer.normalizer.object')) {
+            return;
+        }
+
+        $arguments = $container->getDefinition('serializer.normalizer.object')->getArguments();
+        $context = $arguments[6] ?? $defaultContext;
+
         if (isset($config['circular_reference_handler']) && $config['circular_reference_handler']) {
-            $arguments = $container->getDefinition('serializer.normalizer.object')->getArguments();
-            $context = ($arguments[6] ?? $defaultContext) + ['circular_reference_handler' => new Reference($config['circular_reference_handler'])];
+            $context += ['circular_reference_handler' => new Reference($config['circular_reference_handler'])];
             $container->getDefinition('serializer.normalizer.object')->setArgument(5, null);
-            $container->getDefinition('serializer.normalizer.object')->setArgument(6, $context);
         }
 
         if ($config['max_depth_handler'] ?? false) {
-            $arguments = $container->getDefinition('serializer.normalizer.object')->getArguments();
-            $context = ($arguments[6] ?? $defaultContext) + ['max_depth_handler' => new Reference($config['max_depth_handler'])];
-            $container->getDefinition('serializer.normalizer.object')->setArgument(6, $context);
+            $context += ['max_depth_handler' => new Reference($config['max_depth_handler'])];
         }
+
+        $container->getDefinition('serializer.normalizer.object')->setArgument(6, $context);
+
+        $container->getDefinition('serializer.normalizer.property')->setArgument(5, $defaultContext);
     }
 
     private function registerPropertyInfoConfiguration(ContainerBuilder $container, PhpFileLoader $loader): void
@@ -2271,10 +2284,9 @@ class FrameworkExtension extends Extension
                 ->setFactory([new Reference('messenger.transport_factory'), 'createTransport'])
                 ->setArguments([$transport['dsn'], $transport['options'] + ['transport_name' => $name], new Reference($serializerId)])
                 ->addTag('messenger.receiver', [
-                        'alias' => $name,
-                        'is_failure_transport' => \in_array($name, $failureTransports),
-                    ]
-                )
+                    'alias' => $name,
+                    'is_failure_transport' => \in_array($name, $failureTransports),
+                ])
             ;
             $container->setDefinition($transportId = 'messenger.transport.'.$name, $transportDefinition);
             $senderAliases[$name] = $transportId;

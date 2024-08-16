@@ -48,42 +48,31 @@ else
 
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
-<?php
-        // Use these jQuery scripts
-        $scripts = [
-                'jquery.min.js',
-        ];
 
-        // Include the jquery javascript source
-        display_jquery_javascript($scripts);
+    <!-- jQuery Javascript -->
+    <script src="../vendor/node_modules/jquery/dist/jquery.min.js?<?= $current_app_version ?>" id="script_jquery"></script>
+    <script src="../vendor/node_modules/jquery-ui/dist/jquery-ui.min.js?<?= $current_app_version ?>" id="script_jqueryui"></script>
 
-        // Use these jquery-ui scripts
-        $scripts = [
-                'jquery-ui.min.js',
-        ];
+    <!-- Bootstrap tether Core JavaScript -->
+    <script src="../vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
-        // Include the jquery-ui javascript source
-        display_jquery_ui_javascript($scripts);
-
-	display_bootstrap_javascript();
-?>
-    <script src="../js/simplerisk/pages/assessment.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/simplerisk/common.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/simplerisk/pages/assessment.js?<?= $current_app_version ?>"></script>
+    <script src="../js/simplerisk/common.js?<?= $current_app_version ?>"></script>
     
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap.css?<?= $current_app_version ?>">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?= $current_app_version ?>">
+    <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?= $current_app_version ?>">
 
-    <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/divshot-util.css?<?= $current_app_version ?>">
+    <link rel="stylesheet" href="../css/divshot-canvas.css?<?= $current_app_version ?>">
+    <link rel="stylesheet" href="../css/display.css?<?= $current_app_version ?>">
+    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?= $current_app_version ?>">
+    <link rel="stylesheet" href="../css/theme.css?<?= $current_app_version ?>">
+    <link rel="stylesheet" href="../css/side-navigation.css?<?= $current_app_version ?>">
+    <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?= $current_app_version ?>">
 
     <?php
         setup_favicon("..");

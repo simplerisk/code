@@ -1,0 +1,48 @@
+/**
+* jquery datatable
+*/
+
+@import "datatable_widget.scss";
+
+.dataTables_wrapper.dt-bootstrap5 {
+
+	/*It's here so together with the $table-striped-order: even; result in the striped rows start with white colored row*/
+	--dt-row-stripe: initial;
+
+	/*Add a bottom border to the header so it's more separated from the rest of the table*/
+	div:not(.dataTables_scrollBody)>table.dataTable > thead > tr:last-child > th {
+		border-bottom: var(--bs-border-width) var(--bs-border-style) rgba(var(--bs-dark-rgb), .25) !important;
+	}
+	
+	thead > th, th {
+		font-weight: bold;
+		--bs-table-bg: var(--bs-table-striped-bg);
+	}
+	div.shows {
+	    margin: 2px 0 0 2px;
+
+		&.less {
+	  		.all {
+				display: none;
+			}
+			.less {
+				display: unset;
+			}
+		}
+		&.all {
+			.all {
+				display: unset;
+			}
+			.less {
+				display: none;
+			}
+		}
+	}
+}
+
+.download-by-group, .print-by-group {
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin-left: 10px;
+    margin-right: 5px;
+}

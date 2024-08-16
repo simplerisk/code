@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Assert;
 
-use DateTimeImmutable; // Requires ext-date
 use InvalidArgumentException;
+use League\Uri\Exceptions\SyntaxError;
+use League\Uri\UriString;
 
 use function array_map;
 use function base64_decode;
@@ -14,65 +15,29 @@ use function filter_var;
 use function implode;
 use function in_array;
 use function sprintf;
+use function substr;
 
 /**
  * @package simplesamlphp/assert
- *
- * @method static void validDuration(mixed $value, string $message = '', class-string $exception = '')
- * @method static void stringPlausibleBase64(mixed $value, string $message = '', class-string $exception = '')
- * @method static void validDateTime(mixed $value, string $message = '', class-string $exception = '')
- * @method static void validDateTimeZulu(mixed $value, string $message = '', class-string $exception = '')
- * @method static void notInArray(mixed $value, array $values, string $message = '', class-string $exception = '')
- * @method static void validURN(mixed $value, string $message = '', class-string $exception = '')
- * @method static void validURI(mixed $value, string $message = '', class-string $exception = '')
- * @method static void validURL(mixed $value, string $message = '', class-string $exception = '')
- * @method static void validNCName(mixed $value, string $message = '', class-string $exception = '')
- * @method static void validQName(mixed $value, string $message = '', class-string $exception = '')
- * @method static void nullOrValidDuration(mixed $value, string $message = '', class-string $exception = '')
- * @method static void nullOrStringPlausibleBase64(mixed $value, string $message = '', class-string $exception = '')
- * @method static void nullOrValidDateTime(mixed $value, string $message = '', class-string $exception = '')
- * @method static void nullOrValidDateTimeZulu(mixed $value, string $message = '', class-string $exception = '')
- * @method static void nullOrNotInArray(mixed $value, array $values, string $message = '', class-string $exception = '')
- * @method static void nullOrValidURN(mixed $value, string $message = '', class-string $exception = '')
- * @method static void nullOrValidURI(mixed $value, string $message = '', class-string $exception = '')
- * @method static void nullOrValidURL(mixed $value, string $message = '', class-string $exception = '')
- * @method static void nullOrValidNCName(mixed $value, string $message = '', class-string $exception = '')
- * @method static void nullOrValidQName(mixed $value, string $message = '', class-string $exception = '')
- * @method static void allValidDuration(mixed $value, string $message = '', class-string $exception = '')
- * @method static void allStringPlausibleBase64(mixed $value, string $message = '', class-string $exception = '')
- * @method static void allValidDateTime(mixed $value, string $message = '', class-string $exception = '')
- * @method static void allValidDateTimeZulu(mixed $value, string $message = '', class-string $exception = '')
- * @method static void allNotInArray(mixed $value, array $values, string $message = '', class-string $exception = '')
- * @method static void allValidURN(mixed $value, string $message = '', class-string $exception = '')
- * @method static void allValidURI(mixed $value, string $message = '', class-string $exception = '')
- * @method static void allValidURL(mixed $value, string $message = '', class-string $exception = '')
- * @method static void allValidNCName(mixed $value, string $message = '', class-string $exception = '')
- * @method static void allValidQName(mixed $value, string $message = '', class-string $exception = '')
  */
 trait CustomAssertionTrait
 {
-    /** @var non-falsy-string */
-    private static string $duration_regex = '/^(-?)P(?=.)((\d+)Y)?((\d+)M)?((\d+)D)?(T(?=.)((\d+)H)?((\d+)M)?(\d*(\.\d+)?S)?)?$/i';
+    /** @var string */
+    private static string $datetime_regex = '/-?[0-9]{4}-(((0(1|3|5|7|8)|1(0|2))-(0[1-9]|(1|2)[0-9]|3[0-1]))|((0(4|6|9)|11)-(0[1-9]|(1|2)[0-9]|30))|(02-(0[1-9]|(1|2)[0-9])))T([0-1][0-9]|2[0-4]):(0[0-9]|[1-5][0-9]):(0[0-9]|[1-5][0-9])(\.[0-999])?((\+|-)([0-1][0-9]|2[0-4]):(0[0-9]|[1-5][0-9])|Z)?/i';
 
-    /** @var non-falsy-string */
+    /** @var string */
+    private static string $duration_regex = '/^([-+]?)P(?!$)(?:(?<years>\d+(?:[\.\,]\d+)?)Y)?(?:(?<months>\d+(?:[\.\,]\d+)?)M)?(?:(?<weeks>\d+(?:[\.\,]\d+)?)W)?(?:(?<days>\d+(?:[\.\,]\d+)?)D)?(T(?=\d)(?:(?<hours>\d+(?:[\.\,]\d+)?)H)?(?:(?<minutes>\d+(?:[\.\,]\d+)?)M)?(?:(?<seconds>\d+(?:[\.\,]\d+)?)S)?)?$/';
+
+    /** @var string */
     private static string $qname_regex = '/^[a-zA-Z_][\w.-]*:[a-zA-Z_][\w.-]*$/';
 
-    /** @var non-falsy-string */
+    /** @var string */
     private static string $ncname_regex = '/^[a-zA-Z_][\w.-]*$/';
 
-    /** @var non-falsy-string */
+    /** @var string */
     private static string $base64_regex = '/^(?:[a-z0-9+\/]{4})*(?:[a-z0-9+\/]{2}==|[a-z0-9+\/]{3}=)?$/i';
 
-    /** @var non-falsy-string */
-    private static string $uri_same_document_regex = '#^(?:\#([A-Za-z][A-Za-z0-9+\-.]*:(?:\/\/(?:(?:[A-Za-z0-9\-._~!$&\'()*+,;=:]|%[0-9A-Fa-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9A-Fa-f]{1,4}:){6}|::(?:[0-9A-Fa-f]{1,4}:){5}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::)(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)|[Vv][0-9A-Fa-f]+\.[A-Za-z0-9\-._~!$&\'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-Za-z0-9\-._~!$&\'()*+,;=]|%[0-9A-Fa-f]{2})*)(?::[0-9]*)?(?:\/(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*|\/(?:(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:\/(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?|(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:\/(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*|)(?:\?(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*)?(?:\#(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*)?|(?:\/\/(?:(?:[A-Za-z0-9\-._~!$&\'()*+,;=:]|%[0-9A-Fa-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9A-Fa-f]{1,4}:){6}|::(?:[0-9A-Fa-f]{1,4}:){5}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::)(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)|[Vv][0-9A-Fa-f]+\.[A-Za-z0-9\-._~!$&\'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-Za-z0-9\-._~!$&\'()*+,;=]|%[0-9A-Fa-f]{2})*)(?::[0-9]*)?(?:\/(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*|\/(?:(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:\/(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?|(?:[A-Za-z0-9\-._~!$&\'()*+,;=@]|%[0-9A-Fa-f]{2})+(?:\/(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*|)(?:\?(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*)?(?:\#(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*)?))$#';
-
-    /** @var non-falsy-string */
-    private static string $urn_regex = '/\A(?i:urn:(?!urn:)(?<nid>[a-z0-9][a-z0-9-]{1,31}):(?<nss>(?:[-a-z0-9()+,.:=@;$_!*\'&~\/]|%[0-9a-f]{2})+)(?:\?\+(?<rcomponent>.*?))?(?:\?=(?<qcomponent>.*?))?(?:#(?<fcomponent>.*?))?)\z/';
-
-    /** @var non-falsy-string */
-    private static string $uri_regex = '#[A-Za-z][A-Za-z0-9+\-.]*:(?:\/\/(?:(?:[A-Za-z0-9\-._~!$&\'()*+,;=:]|%[0-9A-Fa-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9A-Fa-f]{1,4}:){6}|::(?:[0-9A-Fa-f]{1,4}:){5}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::)(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)|[Vv][0-9A-Fa-f]+\.[A-Za-z0-9\-._~!$&\'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-Za-z0-9\-._~!$&\'()*+,;=]|%[0-9A-Fa-f]{2})*)(?::[0-9]*)?(?:\/(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*|\/(?:(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:\/(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?|(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:\/(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*|)(?:\?(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*)?(?:\#(?:[A-Za-z0-9\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*)?#';
-
-    /** @var non-falsy-string */
+    /** @var string */
     private static string $hostname_regex = '/^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/';
 
     /***********************************************************************************
@@ -86,13 +51,14 @@ trait CustomAssertionTrait
 
     /**
      * @param string $value
+     * @param string $message
      */
     private static function validDuration(string $value, string $message = ''): void
     {
         if (filter_var($value, FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => self::$duration_regex]]) === false) {
             throw new InvalidArgumentException(sprintf(
                 $message ?: '\'%s\' is not a valid xs:duration',
-                $value
+                $value,
             ));
         }
     }
@@ -115,7 +81,7 @@ trait CustomAssertionTrait
             $result = false;
         } else {
             $decoded = base64_decode($value, true);
-            if ($decoded === false) {
+            if (empty($decoded)) { // Invalid _or_ empty string
                 $result = false;
             } elseif (base64_encode($decoded) !== $value) {
                 $result = false;
@@ -125,7 +91,7 @@ trait CustomAssertionTrait
         if ($result === false) {
             throw new InvalidArgumentException(sprintf(
                 $message ?: '\'%s\' is not a valid Base64 encoded string',
-                $value
+                $value,
             ));
         }
     }
@@ -137,37 +103,10 @@ trait CustomAssertionTrait
      */
     private static function validDateTime(string $value, string $message = ''): void
     {
-        if (
-            DateTimeImmutable::createFromFormat(DateTimeImmutable::ISO8601, $value) === false &&
-            DateTimeImmutable::createFromFormat(DateTimeImmutable::RFC3339_EXTENDED, $value) === false
-        ) {
+        if (filter_var($value, FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => self::$datetime_regex]]) === false) {
             throw new InvalidArgumentException(sprintf(
-                $message ?: '\'%s\' is not a valid DateTime',
-                $value
-            ));
-        }
-    }
-
-
-    /**
-     * @param string $value
-     * @param string $message
-     */
-    private static function validDateTimeZulu(string $value, string $message = ''): void
-    {
-        $dateTime1 = DateTimeImmutable::createFromFormat(DateTimeImmutable::ISO8601, $value);
-        $dateTime2 = DateTimeImmutable::createFromFormat(DateTimeImmutable::RFC3339_EXTENDED, $value);
-
-        $dateTime = $dateTime1 ?: $dateTime2;
-        if ($dateTime === false) {
-            throw new InvalidArgumentException(sprintf(
-                $message ?: '\'%s\' is not a valid DateTime',
-                $value
-            ));
-        } elseif ($dateTime->getTimezone()->getName() !== 'Z') {
-            throw new InvalidArgumentException(sprintf(
-                $message ?: '\'%s\' is not a DateTime expressed in the UTC timezone using the \'Z\' timezone identifier.',
-                $value
+                $message ?: '\'%s\' is not a valid xs:dateTime',
+                $value,
             ));
         }
     }
@@ -200,10 +139,22 @@ trait CustomAssertionTrait
      */
     private static function validURN(string $value, string $message = ''): void
     {
-        if (filter_var($value, FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => self::$urn_regex]]) === false) {
+        try {
+            $uri = UriString::parse($value);
+        } catch (SyntaxError $e) {
+            throw new InvalidArgumentException(sprintf(
+                $message ?: '\'%s\' is not a valid RFC3986 compliant URI',
+                $value,
+            ));
+        }
+
+        if (
+            $uri['scheme'] !== 'urn'
+            || (($uri['scheme'] !== null) && $uri['path'] !== substr($value, strlen($uri['scheme']) + 1))
+        ) {
             throw new InvalidArgumentException(sprintf(
                 $message ?: '\'%s\' is not a valid RFC8141 compliant URN',
-                $value
+                $value,
             ));
         }
     }
@@ -215,10 +166,19 @@ trait CustomAssertionTrait
      */
     private static function validURL(string $value, string $message = ''): void
     {
-        if (filter_var($value, FILTER_VALIDATE_URL) === false) {
+        try {
+            $uri = UriString::parse($value);
+        } catch (SyntaxError $e) {
+            throw new InvalidArgumentException(sprintf(
+                $message ?: '\'%s\' is not a valid RFC3986 compliant URI',
+                $value,
+            ));
+        }
+
+        if ($uri['scheme'] !== 'http' && $uri['scheme'] !== 'https') {
             throw new InvalidArgumentException(sprintf(
                 $message ?: '\'%s\' is not a valid RFC2396 compliant URL',
-                $value
+                $value,
             ));
         }
     }
@@ -230,15 +190,12 @@ trait CustomAssertionTrait
      */
     private static function validURI(string $value, string $message = ''): void
     {
-        if (
-            filter_var($value, FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => self::$uri_regex]]) === false &&
-            // We're very lenient here to accept DNS hostnames without a scheme
-            filter_var($value, FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => self::$hostname_regex]]) === false &&
-            filter_var($value, FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => self::$uri_same_document_regex]]) === false
-        ) {
+        try {
+            UriString::parse($value);
+        } catch (SyntaxError $e) {
             throw new InvalidArgumentException(sprintf(
                 $message ?: '\'%s\' is not a valid RFC3986 compliant URI',
-                $value
+                $value,
             ));
         }
     }
@@ -253,7 +210,7 @@ trait CustomAssertionTrait
         if (filter_var($value, FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => self::$ncname_regex]]) === false) {
             throw new InvalidArgumentException(sprintf(
                 $message ?: '\'%s\' is not a valid non-colonized name (NCName)',
-                $value
+                $value,
             ));
         }
     }
@@ -271,7 +228,7 @@ trait CustomAssertionTrait
         ) {
             throw new InvalidArgumentException(sprintf(
                 $message ?: '\'%s\' is not a valid qualified name (QName)',
-                $value
+                $value,
             ));
         }
     }

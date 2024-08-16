@@ -22,7 +22,15 @@
         }
 
         // Start the session
-        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+        $parameters = [
+            "lifetime" => 0,
+            "path" => "/",
+            "domain" => "",
+            "secure" => isset($_SERVER["HTTPS"]),
+            "httponly" => true,
+            "samesite" => "Strict",
+        ];
+        session_set_cookie_params($parameters);
 
         session_name('SimpleRisk');
         session_start();
@@ -51,15 +59,11 @@
     enforce_permission("riskmanagement");
 
 ?>
-
-<div class="row-fluid">
-    <div class="well">
-      <form name="unmitigation" method="post" action="">
-        <button type="submit" name="submit" class="btn btn-primary save-unmitigation-risk"><?php echo $escaper->escapeHtml($lang['ResetMitigations']); ?></button>
-      </form>
-    </div>
+<div class="card-body my-2 border">
+    <form name="unmitigation" method="post" action="">
+        <button type="submit" name="submit" class="btn btn-submit save-unmitigation-risk"><?php echo $escaper->escapeHtml($lang['ResetMitigations']); ?></button>
+    </form>
 </div>
-
 <input type="hidden" id="_token_value" value="<?php echo csrf_get_tokens(); ?>">
 <input type="hidden" id="_lang_reopen_risk" value="<?php echo $escaper->escapeHtml($lang['ReopenRisk']); ?>">
 <input type="hidden" id="_lang_close_risk" value="<?php echo $escaper->escapeHtml($lang['CloseRisk']); ?>">

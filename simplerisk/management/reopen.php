@@ -30,47 +30,47 @@ require_once(language_file());
     // Check if a risk ID was sent
     if (isset($_GET['id']) || isset($_POST['id']))
     {
-            if (isset($_GET['id']))
+        if (isset($_GET['id']))
+        {
+            // Test that the ID is a numeric value
+            $id = (is_numeric($_GET['id']) ? (int)$_GET['id'] : 0);
+        }
+        else if (isset($_POST['id']))
+        {
+            // Test that the ID is a numeric value
+            $id = (is_numeric($_POST['id']) ? (int)$_POST['id'] : 0);
+        }
+
+        // If team separation is enabled
+        if (team_separation_extra())
+        {
+            //Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+            // If the user should not have access to the risk
+            if (!extra_grant_access($_SESSION['uid'], $id))
             {
-                    // Test that the ID is a numeric value
-                    $id = (is_numeric($_GET['id']) ? (int)$_GET['id'] : 0);
+                // Redirect back to the page the workflow started on
+                header("Location: " . $_SESSION["workflow_start"]);
+                exit(0);
             }
-            else if (isset($_POST['id']))
-            {
-                    // Test that the ID is a numeric value
-                    $id = (is_numeric($_POST['id']) ? (int)$_POST['id'] : 0);
-            }
+        }
 
-            // If team separation is enabled
-            if (team_separation_extra())
-            {
-                    //Include the team separation extra
-                    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-            
-                    // If the user should not have access to the risk
-                    if (!extra_grant_access($_SESSION['uid'], $id))
-                    {
-                            // Redirect back to the page the workflow started on
-                            header("Location: " . $_SESSION["workflow_start"]);
-                            exit(0);
-                    }
-            }
+        // Reopen the risk
+        reopen_risk($id);
 
-    // Reopen the risk
-    reopen_risk($id);
+        // Display an alert
+        set_alert(true, "good", "Your risk has now been reopened.");
 
-    // Display an alert
-            set_alert(true, "good", "Your risk has now been reopened.");
+        // Check that the id is a numeric value
+        if (is_numeric($id))
+        {
+            // Create the redirection location
+            $url = "view.php?id=" . $id;
 
-            // Check that the id is a numeric value
-            if (is_numeric($id))
-            {
-                    // Create the redirection location
-        $url = "view.php?id=" . $id;
-
-                    // Redirect to view risk page
-                    header("Location: " . $url);
-            }
+            // Redirect to view risk page
+            header("Location: " . $url);
+        }
     }
-else header('Location: reports/closed.php');
+    else header('Location: reports/closed.php');
 ?>

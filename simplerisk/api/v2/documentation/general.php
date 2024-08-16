@@ -41,7 +41,7 @@ define('SIMPLERISK_API_URL', SIMPLERISK_BASE_URL.API_PATH);
 *     description="User Operations",
 *   ),
 *   @OA\Tag(
-*     name="assets",
+*     name="asset",
 *     description="Asset Operations",
 *   ),
 *   @OA\Tag(
@@ -49,12 +49,16 @@ define('SIMPLERISK_API_URL', SIMPLERISK_BASE_URL.API_PATH);
 *     description="Risk Operations",
 *   ),
 *   @OA\Tag(
-*     name="framework",
-*     description="Framework Operations",
+*     name="governance",
+*     description="Governance Operations",
 *   ),
+*  @OA\Tag(
+*      name="assessment",
+*      description="Risk Assessment Extra",
+*    ),
 *   @OA\Tag(
-*     name="control",
-*     description="Control Operations",
+*     name="need_explode_for_arrays",
+*     description="Technical tag for marking a request for the Swagger schema generating logic to add encoding/explode definitions so array parameters in the requests are sent in a format the API expects them.",
 *   ),
 * )
 */

@@ -1,0 +1,16 @@
+/*--------------------------------------------------------------
+ ## Styles for modal popups
+ --------------------------------------------------------------*/
+
+.modal {
+    .modal-header {
+    	background-color: $modal-header-bg;
+    	.modal-title {
+	    	color: $modal-title-color;
+	    	opacity: .6;
+    	}
+        .btn-close {
+			filter: var(--bs-btn-close-white-filter);
+        }
+    }
+}

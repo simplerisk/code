@@ -92,36 +92,30 @@ function addRisk($this){
   function callbackAfterRefreshTab(tabContainer, RSTabIndex){
 
         $('.collapsible', tabContainer).hide();
-        $(".risk-details", tabContainer ).tabs({
-            activate:function(event,ui){
-              if(ui.newPanel.selector== "#tabs1"){
-                $(".tab_details", tabContainer).addClass("tabList");
-                $(".tab_mitigation", tabContainer).removeClass("tabList");
-                $(".tab_review", tabContainer).removeClass("tabList");
-              } else if(ui.newPanel.selector== "#tabs2"){
-                $(".tab_mitigation", tabContainer).addClass("tabList");
-                $(".tab_review", tabContainer).removeClass("tabList");
-                $(".tab_details", tabContainer).removeClass("tabList");
-              }else{
-                $(".tab_review", tabContainer).addClass("tabList");
-                $(".tab_mitigation", tabContainer).removeClass("tabList");
-                $(".tab_details", tabContainer).removeClass("tabList");
+        switch(RSTabIndex) {
+              default:
+              case 0:
+                var tabId = '#tab_details'
+                break;
+              case 1:
+                var tabId = '#tab_mitigation'
+                break;
+              case 2:
+                var tabId = '#tab_review'
+                break;
+        }
+        var seletedTabEl = document.querySelector(tabId);
+        var riskTab = new bootstrap.Tab(seletedTabEl);
 
-              }
-
-            },
-            active: RSTabIndex
-            
-        });
+        riskTab.show();
 
         // if datepicker element exists, build datepicker.
         if($( ".datepicker" , tabContainer).length){
-            $( ".datepicker" , tabContainer).datepicker();
+            $( ".datepicker" , tabContainer).initAsDatePicker();
         }
         var tabIndex = tabContainer.index();
         var riskID = $('.risk-id', tabContainer).html();
         var subject = $('input[name="subject"]', tabContainer).val();
-        subject = subject.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         $('.tab-append .tab').eq(tabIndex).find("span").html('<b>ID:'+riskID+' </b>'+subject);
         
         // if file upload button exists, set the unique ID
@@ -332,15 +326,6 @@ function addTabContainer(){
       return false;
   }
   
-  function showScoreDetails() {
-  }
-
-  function hideScoreDetails() {
-  }
-
-  function updateScore() {
-  }
-
   	/*
   	  	Check the sum of files the user wants to upload
 		Displays an error message if it's over and returns false.
@@ -366,7 +351,14 @@ function addTabContainer(){
   		}
   		return true;
   	}
-  
+
+    function showHelp(divId) {
+        $("#divHelp").html($("#"+divId).html());
+    };
+    function hideHelp() {
+        $("#divHelp").html("");
+    }
+
 $(document).ready(function(){
     if(jQuery.ui !== undefined){
         jQuery.ui.autocomplete.prototype._resizeMenu = function () {
@@ -498,7 +490,7 @@ $(document).ready(function(){
     /*****************/
     
     
-    $('#tab-content-container').delegate('.save-risk-form', 'click', function (){
+    $('body').on('click', '.save-risk-form', function (){
         addRisk($(this));
     })
 
@@ -507,6 +499,7 @@ $(document).ready(function(){
     $('body').on('click', '.edit-subject-btn', function (e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
+        $('.edit-subject', tabContainer).removeClass('d-none');
         $('.edit-subject', tabContainer).show();
         $('.static-subject', tabContainer).hide();
     });
@@ -520,7 +513,7 @@ $(document).ready(function(){
 
     function updateSubject($this){
         var tabContainer = $this.parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         
         var getForm = $this.parents('form', tabContainer);
         var form = new FormData($(getForm)[0]);
@@ -576,14 +569,10 @@ $(document).ready(function(){
     $('body').on('click', ".add-comment-menu", function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
-        $commentsContainer = $(".comment-form", tabContainer).parents('.well');
-        $commentsContainer.find(".collapsible--toggle").next('.collapsible').slideDown('400');
-        $commentsContainer.find(".add-comments").addClass('rotate');
-        $(".comment-form", tabContainer).show();
-        $commentsContainer.find(".add-comments").parent().find('span i').removeClass('fa-caret-right');
-        $commentsContainer.find(".add-comments").parent().find('span i').addClass('fa-caret-down');
+        $commentsContainer = $(".comment-form", tabContainer).parents('.accordion-collapse');
+        $commentsContainer.slideDown('400');
         $(".comment-text", tabContainer).focus();
-    })
+    });
     
     $('body').on('click', '.show-score', function(e){
         e.preventDefault();
@@ -604,12 +593,20 @@ $(document).ready(function(){
         return false;
     })
 
-    $('body').on('click', '.updateScore', function(e){
+    $('body').on('click', '.update-score', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
         $(".scoredetails", tabContainer).hide();
         $(".updatescore", tabContainer).show();
-        $(".show", tabContainer).hide();
+
+    });
+
+    $('body').on('click', '.cancel-update', function(e){
+        e.preventDefault();
+        var tabContainer = $(this).parents('.tab-data');
+        $('#score-container-accordion-body').addClass('show');
+        $(".scoredetails", tabContainer).show();
+        $(".updatescore", tabContainer).hide();
 
     })
 
@@ -617,7 +614,7 @@ $(document).ready(function(){
     $('body').on('click', '[name=edit_details], .edit-risk', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         var $this = $(this);
         
         editDetailsRequest(risk_id, tabContainer);
@@ -644,7 +641,7 @@ $(document).ready(function(){
     $('body').on('click', '.cancel-edit-details', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         var $this = $(this);
         
         cancelEditDetailsRequest(risk_id, tabContainer);
@@ -675,7 +672,7 @@ $(document).ready(function(){
         	return false;
         }
 
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
 
         // Check valiation and stop if failed
         if(!checkAndSetValidation(tabContainer))
@@ -744,7 +741,7 @@ $(document).ready(function(){
     $('body').on('click', '[name=edit_mitigation], .edit-mitigation', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         
         $.ajax({
             type: "GET",
@@ -766,7 +763,7 @@ $(document).ready(function(){
     $('body').on('click', '.cancel-edit-mitigation', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         
         $.ajax({
             type: "GET",
@@ -794,7 +791,7 @@ $(document).ready(function(){
         	return false;
         }
 
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         
         // Check valiation and stop if failed
         if(!checkAndSetValidation(tabContainer))
@@ -856,7 +853,7 @@ $(document).ready(function(){
     $('body').on('click', '.perform-review', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         
         $.ajax({
             type: "GET",
@@ -878,7 +875,7 @@ $(document).ready(function(){
     $('body').on('click', '.cancel-edit-review ', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         
         $.ajax({
             type: "GET",
@@ -899,7 +896,7 @@ $(document).ready(function(){
     
     function updateReview($this){
         var tabContainer = $this.parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         
         // Check valiation and stop if failed
         if(!checkAndSetValidation(tabContainer))
@@ -973,7 +970,7 @@ $(document).ready(function(){
     $('body').on('click', '.view_all_reviews', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         
         $.ajax({
             type: "GET",
@@ -993,7 +990,7 @@ $(document).ready(function(){
     /*************** start close risk ******************/
     function closeRisk($this){
         var tabContainer = $this.parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
 
         tabContainer.block({
             message: 'Processing',
@@ -1039,7 +1036,7 @@ $(document).ready(function(){
     $('body').on('click', '.close-risk', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         $.ajax({
             type: "GET",
             url: BASE_URL + "/api/management/risk/closerisk?id=" + risk_id,
@@ -1059,7 +1056,7 @@ $(document).ready(function(){
     $('body').on('click', '.reopen-risk', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         $.ajax({
             type: "POST",
             url: BASE_URL + "/api/management/risk/reopen?id=" + risk_id,
@@ -1095,7 +1092,7 @@ $(document).ready(function(){
     $('body').on('click', '.change-status', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         $.ajax({
             type: "GET",
             url: BASE_URL + "/api/management/risk/changestatus?id=" + risk_id,
@@ -1111,7 +1108,7 @@ $(document).ready(function(){
     })
     function updateStatus($this){
         var tabContainer = $this.parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         var action = $this.attr('name');
         
         var getForm = $this.parents('form', tabContainer);
@@ -1153,7 +1150,7 @@ $(document).ready(function(){
     
     /*********** start socre actions *************/
     function getScoreByAction(tabContainer, scoring_method){
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         var visibleScoredetails = $('.hide-score', tabContainer).is(':visible');
         $.ajax({
             type: "GET",
@@ -1161,15 +1158,16 @@ $(document).ready(function(){
             success: function(data){
                 $('.score-overview-container', tabContainer).html(data.data);
                 if(visibleScoredetails){
+                    $('#score-container-accordion-body').addClass('show');
                     $('.scoredetails', tabContainer).show();
                     $('.show-score').hide();
                     $('.hide-score').show();
                 }else{
+                    $('#score-container-accordion-body').removeClass('show');
                     $('.scoredetails', tabContainer).hide();
                     $('.show-score').show();
                     $('.hide-score').hide();
                 }
-                
                 /* Update risk scoring method in details tab */
                 // If details tab is in Edit
                 if($('.cancel-edit-details', tabContainer).length){
@@ -1198,7 +1196,7 @@ $(document).ready(function(){
     
     function updateScore($this){
         var tabContainer = $this.parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         var action = $this.attr('name');
         
         var getForm = $this.parents('form', tabContainer);
@@ -1217,10 +1215,12 @@ $(document).ready(function(){
                 $('.score-overview-container', tabContainer).html(data.data);
 //                $('.scoredetails', tabContainer).css('display', 'block');
                 if(visibleScoredetails){
+                    $('#score-container-accordion-body').addClass('show');
                     $('.scoredetails', tabContainer).show();
                     $('.show-score').hide();
                     $('.hide-score').show();
                 }else{
+                    $('#score-container-accordion-body').removeClass('show');
                     $('.scoredetails', tabContainer).hide();
                     $('.show-score').show();
                     $('.hide-score').hide();
@@ -1290,7 +1290,7 @@ $(document).ready(function(){
             return;
         }
         
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         
         var getForm = $this.parents('form', tabContainer);
         var form = new FormData($(getForm)[0]);
@@ -1423,7 +1423,7 @@ $(document).ready(function(){
     */
     $('body').on('change', '[name=next_step]', function(){
         var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         
         var getForm = $(this).parents('form', tabContainer);
 
@@ -1444,7 +1444,7 @@ $(document).ready(function(){
     $('body').on('click', '.project-holder .set-project', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         var project_id = $("#project_name", tabContainer).val();
         if(project_id !== ""){
             $.ajax({
@@ -1514,7 +1514,7 @@ $(document).ready(function(){
     $('body').on('click', '.mark-unmitigation', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         $.ajax({
             type: "GET",
             url: BASE_URL + "/api/management/risk/mark-unmitigation?id=" + risk_id,
@@ -1531,7 +1531,7 @@ $(document).ready(function(){
     $('body').on('click', '.save-unmitigation-risk', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         var action = $(this).attr('name');
         
         var getForm = $(this).parents('form', tabContainer);
@@ -1568,7 +1568,7 @@ $(document).ready(function(){
     $('body').on('click', '.mark-unreview', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         $.ajax({
             type: "GET",
             url: BASE_URL + "/api/management/risk/mark-unreview?id=" + risk_id,
@@ -1585,7 +1585,7 @@ $(document).ready(function(){
     $('body').on('click', '.save-unreview-risk', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.large-text', tabContainer).html();
+        var risk_id = $('.risk-id', tabContainer).html();
         var action = $(this).attr('name');
         
         var getForm = $(this).parents('form', tabContainer);
@@ -1617,9 +1617,9 @@ $(document).ready(function(){
         });
     });    
     /*********** End mark as unreview ***********/
-   
+
+    // init tinyMCE WYSIWYG editor
+    init_minimun_editor("#tab-content-container [name=assessment]");
+    init_minimun_editor("#tab-content-container [name=notes]");
 })
-
-
-
-    
+   

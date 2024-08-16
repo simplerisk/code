@@ -1,0 +1,43 @@
+{
+  "name": "job-runner/job-runner",
+  "homepage": "https://github.com/job-runner/job-runner",
+  "license": "MIT",
+  "description": "",
+  "authors": [
+    {
+      "name": "Stéphane Demonchaux",
+      "email": "demonchaux.stephane@gmail.com",
+      "homepage": "https://github.com/fezfez"
+    }
+  ],
+  "require": {
+    "php": "~8.1.0 || ~8.2.0 || ~8.3.0",
+    "dragonmantank/cron-expression": "^3.3.3",
+    "symfony/clock": "^6.3 || ^7.0",
+    "symfony/lock": "^5.0 || ^6.0 || ^7.0",
+    "symfony/process": "^5.0 || ^6.0 || ^7.0"
+  },
+  "require-dev": {
+    "doctrine/coding-standard": "^12.0",
+    "phpunit/phpunit": "^10.5.20",
+    "psalm/plugin-phpunit": "^0.19.0",
+    "vimeo/psalm": "^5.24"
+  },
+  "autoload": {
+    "psr-4": {
+      "JobRunner\\JobRunner\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "JobRunner\\JobRunner\\Tests\\": "tests"
+    }
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "infection/extension-installer": true
+    }
+  }
+}

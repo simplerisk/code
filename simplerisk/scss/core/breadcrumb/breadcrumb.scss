@@ -1,0 +1,22 @@
+/*******************
+ Breadcrumb and page title
+*******************/
+
+.page-breadcrumb {
+  padding: 20px 10px;
+  .page-title {
+    margin-bottom: 0px;
+  }
+  .breadcrumb {
+    padding: 0px;
+    margin: 0px;
+    background: transparent;
+    font-size: 12px;
+    .breadcrumb-item + .breadcrumb-item::before {
+      content: "\f0142";
+      font-family: "Material Design Icons";
+      //color: $gray-400;
+      font-size: 11px;
+    }
+  }
+}

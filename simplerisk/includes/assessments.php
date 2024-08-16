@@ -9,14 +9,14 @@
  **********************************/
 function get_assessment_names($id = NULL)
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
     // If the id is not NULL
     if ($id != NULL)
     {
-            // Query the database for all assessment names
-            $stmt = $db->prepare("SELECT * FROM `assessments` WHERE id=:id");
+        // Query the database for all assessment names
+        $stmt = $db->prepare("SELECT * FROM `assessments` WHERE id=:id");
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->execute();
         $array = $stmt->fetch();
@@ -139,7 +139,7 @@ function process_assessment($redirect = true)
         session_write_close();
 
         // Redirect to the pending risks page
-        header("Location: index.php?tab=pending_risks");
+        header("Location: index.php?action=view&assessment_id=" . $assessment_id . "#pending_risks");
     }
 }
 

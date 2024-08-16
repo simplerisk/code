@@ -39,7 +39,11 @@ if (!function_exists('table_exists')) {
 
 // The list of currently existing permissions.
 // Leaving here for backwards compatibility
+global $possible_permissions;
 $possible_permissions = get_possible_permissions();
+
+global $exception_permissions;
+$exception_permissions = ['view' ,'create' ,'update' ,'delete' ,'approve'];
 
 /******************************
  * FUNCTION: CHECK PERMISSION *
@@ -104,7 +108,6 @@ function enforce_permission($permission)
 /*************************************
  * FUNCTION: CHECK PERMISSION ASSET *
  *************************************/
-$exception_permissions = ['view' ,'create' ,'update' ,'delete' ,'approve'];
 function check_permission_exception($function)
 {
     global $exception_permissions;
@@ -298,9 +301,21 @@ function get_grouped_permissions($user_id = false) {
         	`p`.`key`" . ($user_id ? ",(`p2u`.`user_id` IS NOT NULL) as selected" : "") . "
         FROM
         	`permission_groups` pg
-            INNER JOIN `permission_to_permission_group` p2pg ON `p2pg`.`permission_group_id` = `pg`.`id`
-        	INNER JOIN `permissions` p ON `p2pg`.`permission_id` = `p`.`id` " .
-        ($user_id ? "LEFT JOIN `permission_to_user` p2u ON `p`.`id` = `p2u`.`permission_id` AND `p2u`.`user_id` = :user_id" : "") . "
+        INNER JOIN 
+                `permission_to_permission_group` p2pg 
+            ON 
+                `p2pg`.`permission_group_id` = `pg`.`id`
+        INNER JOIN 
+                `permissions` p 
+            ON 
+                `p2pg`.`permission_id` = `p`.`id` " .
+        ($user_id ? "
+        LEFT JOIN 
+                `permission_to_user` p2u 
+            ON 
+                `p`.`id` = `p2u`.`permission_id` 
+            AND 
+                `p2u`.`user_id` = :user_id" : "") . "
         GROUP BY
         	`pg`.`id`, `p`.`id`
         ORDER BY

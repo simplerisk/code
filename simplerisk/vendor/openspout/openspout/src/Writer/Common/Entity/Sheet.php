@@ -7,6 +7,7 @@ namespace OpenSpout\Writer\Common\Entity;
 use OpenSpout\Writer\AutoFilter;
 use OpenSpout\Writer\Common\ColumnWidth;
 use OpenSpout\Writer\Common\Manager\SheetManager;
+use OpenSpout\Writer\Exception\InvalidSheetNameException;
 use OpenSpout\Writer\XLSX\Entity\SheetView;
 
 /**
@@ -40,6 +41,9 @@ final class Sheet
 
     /** @var ColumnWidth[] Array of min-max-width arrays */
     private array $COLUMN_WIDTHS = [];
+
+    /** @var string rows to repeat at top */
+    private ?string $printTitleRows = null;
 
     /**
      * @param 0|positive-int $sheetIndex           Index of the sheet, based on order in the workbook (zero-based)
@@ -88,7 +92,7 @@ final class Sheet
      *
      * @param string $name Name of the sheet
      *
-     * @throws \OpenSpout\Writer\Exception\InvalidSheetNameException if the sheet's name is invalid
+     * @throws InvalidSheetNameException if the sheet's name is invalid
      */
     public function setName(string $name): self
     {
@@ -204,5 +208,15 @@ final class Sheet
     public function getColumnWidths(): array
     {
         return $this->COLUMN_WIDTHS;
+    }
+
+    public function getPrintTitleRows(): ?string
+    {
+        return $this->printTitleRows;
+    }
+
+    public function setPrintTitleRows(string $printTitleRows): void
+    {
+        $this->printTitleRows = $printTitleRows;
     }
 }

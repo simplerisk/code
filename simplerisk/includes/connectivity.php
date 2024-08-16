@@ -167,6 +167,9 @@ function fetch_url_content_via_stream($http_options, $validate_ssl, $url, $param
     // Create an empty header string
     $opts['http']['header'] = "";
 
+    // Fetch the content even on failure status codes.
+    $opts['http']['ignore_errors'] = true;
+
     // If a header is sent
     if (isset($http_options['header']))
     {

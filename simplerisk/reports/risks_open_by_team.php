@@ -3,26 +3,12 @@
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// Render the header and sidebar
+require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+render_header_and_sidebar(['multiselect', 'datatables', 'blockUI', 'CUSTOM:dynamic.js','CUSTOM:common.js']);
+
 // Include required functions file
-require_once(realpath(__DIR__ . '/../includes/functions.php'));
-require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/reporting.php'));
-require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-
-// Add various security headers
-add_security_headers();
-
-// Add the session
-add_session_check();
-
-// Include the CSRF Magic library
-include_csrf_magic();
-
-// Include the SimpleRisk language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
-require_once(language_file());
 
 // Get page info
 $currentpage = isset($_GET['currentpage']) ? $_GET['currentpage'] : "1";
@@ -50,6 +36,7 @@ array_unshift($ownersManagerOptions, array(
 ));
 
 $custom_display_settings = $_SESSION['custom_display_settings'];
+
 // If customization extra is enabled
 if(customization_extra()){
     require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
@@ -63,11 +50,13 @@ if(customization_extra()){
         'project_status',
         'days_open',
     );
+
     // Names list of Mitigation columns
     $mitigation_fields = array(
         'mitigation_planned',
         'mitigation_date',
     );
+
     // Names list of Review columns
     $review_fields = array(
         'management_review',
@@ -110,6 +99,7 @@ if(customization_extra()){
     $mitigation_fields = array_merge($mitigation_fields, $mitigation_custom_fields);
     $review_fields = array_merge($review_fields, $review_custom_fields);
 } else {
+
 // Names list of Risk columns
     $risk_fields = array(
         'id',
@@ -137,6 +127,7 @@ if(customization_extra()){
         'owner',
         'manager',
     );
+
     // Names list of Mitigation columns
     $mitigation_fields = array(
         'mitigation_planned',
@@ -154,6 +145,7 @@ if(customization_extra()){
         'mitigation_controls',
         'mitigation_percent',
     );
+
     // Names list of Review columns
     $review_fields = array(
         'management_review',
@@ -164,6 +156,7 @@ if(customization_extra()){
     );
     $scoring_base_fields = "scoring_method";
 }
+
 // Names list of Risk Scoring columns
 $scoring_fields = array(
     'calculated_risk',
@@ -249,163 +242,52 @@ foreach($scoring_fields as $column){
 $selected_columns = array_merge($risk_columns, $mitigation_columns, $review_columns, $scoring_columns);
 
 ?>
-
-<!doctype html>
-<html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
-
-<head>
-<?php
-        // Use these jQuery scripts
-        $scripts = [
-                'jquery.min.js',
-        ];
-
-        // Include the jquery javascript source
-        display_jquery_javascript($scripts);
-
-        // Use these jquery-ui scripts
-        $scripts = [
-                'jquery-ui.min.js',
-        ];
-
-        // Include the jquery-ui javascript source
-        display_jquery_ui_javascript($scripts);
-
-	display_bootstrap_javascript();
-?>
-    <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/sorttable.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/obsolete.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/simplerisk/dynamic.js?<?php echo current_version("app"); ?>"></script>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
-
-    <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
-    <?php
-        setup_favicon("..");
-        setup_alert_requirements("..");
-    ?>
-    <style>
-       .dataTables_scrollHead, .dataTables_scrollBody {overflow: visible !important;}
-       .dataTables_scroll {overflow: auto !important;}
-       div.blockOverlay {z-index:100000 !important;}
-    </style>
-    <script type="text/javascript">
-        $(function(){
-            // timer identifier
-            var typingTimer;                
-            // time in ms (1 second)
-            var doneInterval = 2000;  
-            function submit_form(){
-                $("#risks_by_teams_form").submit();
-            }
-
-            function throttledFormSubmit() {
-                clearTimeout(typingTimer);
-                typingTimer = setTimeout(submit_form, doneInterval);
-            }            
-            
-            // Team dropdown
-            $("#teams").multiselect({
-                allSelectedText: '<?php echo $escaper->escapeJs($lang['AllTeams']); ?>',
-                includeSelectAllOption: true,
-                onChange: throttledFormSubmit,
-                onSelectAll: throttledFormSubmit,
-                onDeselectAll: throttledFormSubmit,
-                enableCaseInsensitiveFiltering: true,
-            });
-            
-            // Owner dropdown
-            $("#owners").multiselect({
-                allSelectedText: '<?php echo $escaper->escapeJs($lang['AllOwners']); ?>',
-                includeSelectAllOption: true,
-                onChange: throttledFormSubmit,
-                onSelectAll: throttledFormSubmit,
-                onDeselectAll: throttledFormSubmit,
-                enableCaseInsensitiveFiltering: true,
-            });
-            
-            // Owner's dropdown
-            $("#ownersmanagers").multiselect({
-                allSelectedText: "<?php echo $escaper->escapeJs($lang['AllOwnersManagers']); ?>",
-                includeSelectAllOption: true,
-                onChange: throttledFormSubmit,
-                onSelectAll: throttledFormSubmit,
-                onDeselectAll: throttledFormSubmit,
-                enableCaseInsensitiveFiltering: true,
-            });
-        });
-    </script>
-
-</head>
-
-<body>
-
-    <?php
-        view_top_menu("Reporting");
-        // Get any alert messages
-        get_alert();
-    ?>
-
-    <div class="container-fluid">
-        <div class="row-fluid">
-            <div class="span3">
-                <?php view_reporting_menu("AllOpenRisksByTeam"); ?>
-            </div>
-            <div class="span9">
-                <form id="risks_by_teams_form" name="get_risks_by" method="GET">
-                    <div class="row-fluid">
-                        <div class="span4">
-                            <u><?php echo $escaper->escapeHtml($lang['Teams']); ?></u>: &nbsp;
-                            <?php create_multiple_dropdown("teams", $teams, NULL, $teamOptions); ?>
-                        </div>
-                        <div class="span4">
-                            <u><?php echo $escaper->escapeHtml($lang['Owner']); ?></u>: &nbsp;
-                            <?php create_multiple_dropdown("owners", $owners , NULL, $ownerOptions); ?>
-                        </div>
-                        <div class="span4">
-                            <u><?php echo $escaper->escapeHtml($lang['OwnersManager']); ?></u>: &nbsp;
-                            <?php create_multiple_dropdown("ownersmanagers", $ownersmanagers, NULL, $ownersManagerOptions); ?>
-                        </div>
-                    </div>
-                    
-                    <div id="selections" class="row-fluid" style="margin-top: 14px;">
-                        <div class="well">
-                            
-                                <input type="hidden" value="<?php echo (int)$currentpage; ?>" name="currentpage" id="currentpage" >
-                                <div class="colums-select-container">
-                                    <?php echo display_risk_columns($risk_columns, $mitigation_columns, $review_columns, $scoring_columns); ?>
+<div class="row bg-white ">
+    <div class="col-12">
+        <form id="risks_by_teams_form" name="get_risks_by" method="GET">
+            <div class="accordion my-2">
+                <div class='accordion-item' id='filter-selections-container'>
+                    <h2 class='accordion-header'>
+                        <button type='button' class='accordion-button' data-bs-toggle='collapse' data-bs-target='#filter-selections-accordion-body'>
+                            <?= $escaper->escapeHtml($lang['GroupAndFilteringSelections']) ?> 
+                        </button>
+                    </h2>
+                    <div id='filter-selections-accordion-body' class='accordion-collapse collapse show'>
+                        <div class='accordion-body'>
+                            <div class='row'>
+                                <div class='col-4 form-group'>
+                                    <label><?php echo $escaper->escapeHtml($lang['Teams']); ?>:</label>
+                                    <?php create_multiple_dropdown("teams", $teams, NULL, $teamOptions); ?>
                                 </div>
-                            
-
+                                <div class="col-4 form-group">
+                                    <label><?php echo $escaper->escapeHtml($lang['Owner']); ?>:</label>
+                                    <?php create_multiple_dropdown("owners", $owners , NULL, $ownerOptions); ?>
+                                </div>
+                                <div class="col-4 form-group">
+                                    <label><?php echo $escaper->escapeHtml($lang['OwnersManager']); ?>:</label>
+                                    <?php create_multiple_dropdown("ownersmanagers", $ownersmanagers, NULL, $ownersManagerOptions); ?>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </form>
-
-                <div class="row-fluid" id="risks-open-by-team-container">
-                    <?php risk_table_open_by_team($selected_columns); ?>
                 </div>
+                <?php 
+                    display_risk_columns($risk_columns, $mitigation_columns, $review_columns, $scoring_columns); 
+                ?>
             </div>
+            <input type="hidden" value="<?php echo (int)$currentpage; ?>" name="currentpage" id="currentpage" >
+            <?php display_risks_open_by_team_dropdown_script(); ?>
+        </form>
+    </div>
+    <div class="col-12">
+        <div  id="risks-open-by-team-container">
+            <?php risk_table_open_by_team($selected_columns); ?>
         </div>
     </div>
     <input type="hidden" id="unassigned_option" value="<?php echo $escaper->escapeHtml($lang["Unassigned"]);?>">
     <input type="hidden" id="date_format" value="<?php echo $escaper->escapeHtml(get_setting("default_date_format"));?>">
-    <style type="">
-        .download-by-group, .print-by-group{
-            display: none;
-        }
-    </style>
-    <?php display_set_default_date_format_script(); ?>
-</body>
-
-</html>
+</div>
+<?php
+    // Render the footer of the page. Please don't put code after this part.
+    render_footer();
+?>

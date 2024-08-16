@@ -156,6 +156,36 @@ function asset_exists($name)
     }
 }
 
+/**
+ * Checks if an asset exists with the provided id 
+ * 
+ * @param int $id ID we want to check for
+ * @return boolean
+ */
+function asset_exists_by_id($id) {
+
+    // If the user has access to the asset id
+    if (check_access_for_asset($id))
+    {
+        // Open the database connection
+        $db = db_open();
+
+        // Check if the asset name is in the database
+        $stmt = $db->prepare("SELECT 5 FROM `assets` WHERE id=:id;");
+        $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $result = $stmt->fetchColumn();
+
+        // Close the database connection
+        db_close($db);
+
+        return !empty($result) && (int)$result === 5;
+    }
+    // Otherwise return false
+    else return false;
+}
+
 /**********************************
  * FUNCTION: ASSET EXISTS (EXACT) *
  **********************************/
@@ -432,7 +462,7 @@ function save_control_to_assets($control_id, $mapped_assets)
 /************************************
  * FUNCTION: SAVE ASSET TO CONTROLS *
  ************************************/
-function save_asset_to_controls($asset_id, $mapped_controls)
+function save_asset_to_controls($asset_id, $control_mappings)
 {
     // Open the database connection
     $db = db_open();
@@ -441,16 +471,18 @@ function save_asset_to_controls($asset_id, $mapped_controls)
     $stmt = $db->prepare("DELETE FROM `control_to_assets` WHERE asset_id=:asset_id;");
     $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
     $stmt->execute();
-    foreach($mapped_controls as $row){
-        $control_maturity = $row[0];
-        $control_id = $row[1];
-        if(!get_exist_mapping_asset_control($asset_id, $control_id, $control_maturity)){
-            $stmt = $db->prepare("INSERT INTO `control_to_assets` (asset_id, control_id, control_maturity) VALUES (:asset_id, :control_id, :control_maturity)");
-            $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
-            $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-            $stmt->bindParam(":control_maturity", $control_maturity, PDO::PARAM_INT);
-            $stmt->execute();
+    
+    foreach($control_mappings as $maturity_id => $control_ids){
+        foreach($control_ids as $control_id){
+            if(!get_exist_mapping_asset_control($asset_id, $control_id, $maturity_id)){
+                $stmt = $db->prepare("INSERT INTO `control_to_assets` (asset_id, control_id, control_maturity) VALUES (:asset_id, :control_id, :control_maturity)");
+                $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
+                $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+                $stmt->bindParam(":control_maturity", $maturity_id, PDO::PARAM_INT);
+                $stmt->execute();
+            }
         }
+
     }
     // Close the database connection
     db_close($db);
@@ -545,19 +577,93 @@ function get_control_to_assets($control_id)
 
     return $rows;
 }
-/*****************************************
- * FUNCTION: GET MAPPED CONTROLS (EXACT) *
- *****************************************/
-function asset_mapped_control_exact($asset_id, $mapped_controls=[]){
-    if(is_null($mapped_controls)) return true;
-    if(!count($mapped_controls) && get_mapping_controls_by_asset_id($asset_id)) return false;
-    foreach($mapped_controls as $row) {
-        $control_maturity = $row[0];
-        $control_id = $row[1];
-        if(!get_exist_mapping_asset_control($asset_id, $control_id, $control_maturity)) return false;
+
+
+/**
+ * Returns whether the asset has the exact same control mappings as the one provided
+ * 
+ * @param int $asset_id the id of the asset
+ * @param array $control_mapping the control mapping in a format of {maturity_id1:[control_id1, control_id2, ...], ...}
+ * @return boolean
+ */
+function asset_control_mapping_exact_match($asset_id, $control_mapping){
+    
+    $db = db_open();
+    
+    // Get the asset's control mapping
+    $stmt = $db->prepare("				
+        SELECT
+            CONCAT('{', GROUP_CONCAT(DISTINCT `cm`.`data` ORDER BY `cm`.`data` SEPARATOR ','), '}')
+        FROM
+            (SELECT
+            	`a`.`id` AS asset_id,
+            	CONCAT(
+                    '\"', `cta`.`control_maturity`, '\":', JSON_ARRAYAGG(`cta`.`control_id`)
+                ) as data
+            FROM
+            	`assets` a
+            	LEFT JOIN `control_to_assets` cta ON `cta`.`asset_id` = `a`.`id`
+            WHERE
+            	`cta`.`id` IS NOT NULL
+                and `a`.`id` = :asset_id
+            GROUP BY
+            	`a`.`id`,
+            	`cta`.`control_maturity`
+            ORDER BY
+            	`a`.`id`) cm
+        GROUP BY `cm`.`asset_id`
+    ");
+    $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $asset_control_mapping = $stmt->fetchColumn();
+    
+    // Close the database connection
+    db_close($db);
+    
+    // If we're comparing two empty lists then it's an exact match
+    if (empty($asset_control_mapping) && empty($control_mapping)) {
+        return true;
     }
-    return true;
+
+    // If one is empty, but the other isn't, then they can't be the same(obviously)
+    if (empty($asset_control_mapping) != empty($control_mapping)) {
+        return false;
+    }
+
+    // decode the string into an array
+    $asset_control_mapping = json_decode($asset_control_mapping, true);
+
+    // If the number of elements doesn't match, return false
+    if (count($asset_control_mapping) != count($control_mapping)) {
+        return false;
+    }
+
+    
+    // Flatten the mnulti-dimensional arrays so we can easily compare the composition of the two
+    // Example:  {1:[3, 5], 3:[3, 5]} => ["1:3", "1:5", "3:3", "3:5"]
+    $flat_asset_control_mapping = [];
+    $flat_control_mapping = [];
+    foreach ($control_mapping as $maturity => $control_ids) {
+        foreach ($control_ids as $control_id) {
+            $flat_control_mapping []= "{$maturity}:{$control_id}";
+        }
+    }
+    foreach ($asset_control_mapping as $maturity => $control_ids) {
+        foreach ($control_ids as $control_id) {
+            $flat_asset_control_mapping []= "{$maturity}:{$control_id}";
+        }
+    }
+
+    // If the number of elements doesn't match, return false. It's ifferent from the previous similar check, because that only checked the number
+    // of groups when it was grouped by maturity id. This one is the number of the all the controls involved.
+    if (count($flat_asset_control_mapping) != count($flat_control_mapping)) {
+        return false;
+    }
+
+    // To properly check the diff of two arrays we have to check both directions
+    return array_diff($flat_asset_control_mapping, $flat_control_mapping) == array_diff($flat_control_mapping, $flat_asset_control_mapping);
 }
+
 /*******************************
  * FUNCTION: DELETE ALL ASSETS *
  *******************************/
@@ -717,84 +823,6 @@ function verify_asset($asset_id)
     return $return;
 }
 
-/*********************************
- * FUNCTION: DISPLAY ASSET DETAIL*
- *********************************/
-function display_asset_detail($id)
-{
-    global $escaper;
-    global $lang;
-    
-    $asset = get_asset_by_id($id);
-
-    // If the IP address is not valid
-        if (!preg_match('/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/', $asset['ip']))
-        {
-            $asset['ip'] = "N/A";
-        }
-
-        // If the location is unspecified
-        if ($asset['location'] == 0)
-        {
-            $asset['location'] = "N/A";
-        }
-        else $asset['location'] = get_name_by_value("location", $asset['location']);
-
-        // If the team is unspecified
-        if (!$asset['teams'])
-        {
-            $asset['teams'] = "N/A";
-        }
-        else $asset['teams'] = get_names_by_multi_values("team", $asset['teams']);
-        
-        $display = "
-            <h4>". $escaper->escapeHtml($asset['name']) ."</h4>
-            <br>
-            <div class='row-fluid'>
-                <div class='span3'>
-                    ". $escaper->escapeHtml($lang['IPAddress']) .":
-                </div>
-                <div class='span9'>
-                    ". $escaper->escapeHtml($asset['ip']) ."
-                </div>
-            </div><br>
-            <div class='row-fluid'>
-                <div class='span3'>
-                    ". $escaper->escapeHtml($lang['AssetValuation']) .":
-                </div>
-                <div class='span9'>
-                    ". $escaper->escapeHtml(get_asset_value_by_id($asset['value'])) ."
-                </div>
-            </div><br>
-            <div class='row-fluid'>
-                <div class='span3'>
-                    ". $escaper->escapeHtml($lang['SiteLocation']) .":
-                </div>
-                <div class='span9'>
-                    ". $escaper->escapeHtml($asset['location']) ."
-                </div>
-            </div><br>
-            <div class='row-fluid'>
-                <div class='span3'>
-                    ". $escaper->escapeHtml($lang['Team']) .":
-                </div>
-                <div class='span9'>
-                    ". $escaper->escapeHtml($asset['teams']) ."
-                </div>
-            </div>
-            <div class='row-fluid'>
-                <div class='span3'>
-                    ". $escaper->escapeHtml($lang['Verified']) .":
-                </div>
-                <div class='span9'>
-                    ". $escaper->escapeHtml(localized_yes_no($asset['verified'])) ."
-                </div>
-            </div>
-        ";
-
-        echo $display;
-}
-
 /********************************
  * FUNCTION: GET ENTERED ASSETS *
  ********************************/
@@ -837,6 +865,12 @@ function get_entered_assets($verified=null)
 
     // Store the list in the assets array
     $assets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Get the name keys
+    $keys = array_column($assets, 'name');
+
+    // Sort the array by name
+    array_multisort($keys, SORT_ASC, $assets);
 
     // Close the database connection
     db_close($db);
@@ -1151,7 +1185,7 @@ function import_asset($ip, $name, $value, $location, $teams, $details, $tags, $v
     }
 
     if (asset_exists_exact($ip, $name, $value, $location, $teams, $details, $verified)
-        && areTagsEqual($asset_id, 'asset', $tags) && asset_mapped_control_exact($asset_id, $mapped_controls)) {
+        && areTagsEqual($asset_id, 'asset', $tags) && asset_control_mapping_exact_match($asset_id, $mapped_controls)) {
         //return "noop"; // To notify the caller that no operation was done
         $exact = true;
     } else $exact = false;
@@ -1322,7 +1356,7 @@ function display_asset_valuation_table()
     // Open the database connection
     $db = db_open();
 
-    echo "<table border=\"0\" cellspacing=\"5\" cellpadding=\"5\">\n";
+    echo "<table class='my-2' border=\"0\" cellspacing=\"5\" cellpadding=\"5\">\n";
 
     // Display the table header
     echo "<thead>\n";
@@ -1348,9 +1382,9 @@ function display_asset_valuation_table()
 
         echo "<tr>\n";
         echo "<td>" . $escaper->escapeHtml($value['id']) . "</td>\n";
-        echo "<td><input id=\"dollarsign\" type=\"number\" min=\"" . $escaper->escapeHtml($minimum) . "\" name=\"min_value_" . $escaper->escapeHtml($value['id']) . "\" value=\"" . $escaper->escapeHtml($value['min_value']) . "\" onFocus=\"this.oldvalue = this.value;\" onChange=\"javascript:updateMinValue('" . $escaper->escapeHtml($value['id']) . "');this.oldvalue = this.value;\" /></td>\n";
-        echo "<td><input id=\"dollarsign\" type=\"number\" min=\"" . $escaper->escapeHtml($minimum) . "\" name=\"max_value_" . $escaper->escapeHtml($value['id']) . "\" value=\"" . $escaper->escapeHtml($value['max_value']) . "\" onFocus=\"this.oldvalue = this.value;\" onChange=\"javascript:updateMaxValue('" . $escaper->escapeHtml($value['id']) . "');this.oldvalue = this.value;\" /></td>\n";
-        echo "<td><input type=\"text\" name=\"valuation_level_name_" . $escaper->escapeHtml($value['id']) . "\" value=\"" . $escaper->escapeHtml($value['valuation_level_name']) . "\" /></td>\n";
+        echo "<td><input id=\"dollarsign\" type=\"number\" min=\"" . $escaper->escapeHtml($minimum) . "\" name=\"min_value_" . $escaper->escapeHtml($value['id']) . "\" value=\"" . $escaper->escapeHtml($value['min_value']) . "\" onFocus=\"this.oldvalue = this.value;\" onChange=\"javascript:updateMinValue('" . $escaper->escapeHtml($value['id']) . "');this.oldvalue = this.value;\" class=\"form-control\"/></td>\n";
+        echo "<td><input id=\"dollarsign\" type=\"number\" min=\"" . $escaper->escapeHtml($minimum) . "\" name=\"max_value_" . $escaper->escapeHtml($value['id']) . "\" value=\"" . $escaper->escapeHtml($value['max_value']) . "\" onFocus=\"this.oldvalue = this.value;\" onChange=\"javascript:updateMaxValue('" . $escaper->escapeHtml($value['id']) . "');this.oldvalue = this.value;\"  class=\"form-control\"/></td>\n";
+        echo "<td><input type=\"text\" name=\"valuation_level_name_" . $escaper->escapeHtml($value['id']) . "\" value=\"" . $escaper->escapeHtml($value['valuation_level_name']) . "\"  class=\"form-control\"/></td>\n";
 
         echo "</tr>\n";
     }
@@ -1380,7 +1414,7 @@ function create_asset_valuation_dropdown($name, $selected = NULL, $id = NULL, $c
         $stmt->execute();
         $values = $stmt->fetchAll();
         
-    echo "<select id=\"" . $escaper->escapeHtml($id) . "\" name=\"" . $escaper->escapeHtml($name) . "\" {$customHtml} class=\"form-field\" style=\"width:auto;\" >\n";
+    echo "<select id=\"" . $escaper->escapeHtml($id) . "\" name=\"" . $escaper->escapeHtml($name) . "\" {$customHtml} class=\"form-select\"  >\n";
 
         // For each asset value
         foreach ($values as $value)
@@ -2575,7 +2609,8 @@ function get_assets_of_asset_group_for_treegrid($id){
 
         $asset['name'] = $escaper->escapeHtml(try_decrypt($asset['name']));
 
-        $asset['ip'] = try_decrypt($asset['ip']);
+        // the second parameter of preg_match() should be of type STRING. So if $asset['ip'] is NULL or UNDEFINED, then it should be converted into EMPTY STRING.
+        $asset['ip'] = try_decrypt($asset['ip']) ?? '';
         
         if (!preg_match('/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/', $asset['ip']))
         {
@@ -2713,7 +2748,7 @@ function get_assets_and_asset_groups_of_type($id = null, $type = null, $selected
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
     }
 
-    if (team_separation_extra()) {
+    if (team_separation_extra() && isset($_SESSION['uid'])) {
         require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
         $team_based_separation_where_condition = " AND " . get_user_teams_query_for_assets('', false);
     } else {
@@ -3004,7 +3039,7 @@ function get_asset_ids_from_groups($group_ids)
 
 }
 
-function get_assets_data_for_view($view, $selected_fields, $verified = null, $start = 0, $length = 10, $orderColumn = 'id', $orderDir = 'ASC', $column_filters = []) {
+function get_assets_data_for_view_v2($view, $selected_fields, $verified = null, $start = 0, $length = 10, $orderColumn = 'id', $orderDir = 'ASC', $column_filters = []) {
 
     global $field_settings_views, $field_settings, $escaper, $lang;
     $customization = customization_extra();
@@ -3195,12 +3230,17 @@ function get_assets_data_for_view($view, $selected_fields, $verified = null, $st
                             $display = $escaper->escapeHtml(localized_yes_no($value));
                             break;
                         case 'mapped_controls':
-                            $mapped_controls = get_mapping_controls_by_asset_id($asset['id']);
-                            $control_names = array();
-                            foreach ($mapped_controls as $control) {
-                                $control_names[] = $control['control_name'];
+                            if (!empty($value) && $value !== '[]') {
+                                $mapped_controls = [];
+                                foreach (json_decode($value, true) as $mapping) {
+                                    $mapped_controls = [...$mapped_controls, ...explode('|', $mapping['control_names'])];
+                                }
+                                
+                                sort($mapped_controls);
+                                $value = implode(', ', $mapped_controls);
+                            } else {
+                                $value = '';
                             }
-                            $value = $escaper->escapeHtml(implode(", ", $control_names));
                             break;
                         case 'associated_risks':
                             if (!empty($value) && $value !== '[]') {
@@ -3313,7 +3353,7 @@ function get_assets_data_for_view($view, $selected_fields, $verified = null, $st
 
 // will be used for the inline editing for the assets
 //TODO: use the update_name_order_for_asset($id, $name) function if encryption is enabled and the name is updated
-function assets_update_asset_field_API($view, $fieldName) {
+function update_asset_field_API_v2($view, $fieldName) {
     
     global $field_settings_views, $field_settings, $lang, $escaper;
     
@@ -3323,7 +3363,7 @@ function assets_update_asset_field_API($view, $fieldName) {
     // no editing for off-screen fields and it also makes sure the field is setup for the view
     if (!in_array($fieldName, $selected_fields)) {
         set_alert(true, "bad", $lang['EditFailed_NotSelected']);
-        json_response(400, get_alert(true), NULL);
+        api_v2_json_result(400, get_alert(true), NULL);
     }
     
     $view_type = $field_settings_views[$view]['view_type'];
@@ -3334,7 +3374,7 @@ function assets_update_asset_field_API($view, $fieldName) {
     // Check if the field is required and if it is, then whether it has a proper value set
     if (!empty($field_settings[$view_type][$fieldName]['required']) && $field_settings[$view_type][$fieldName]['required'] && empty($_POST['fieldValue'])) {
         set_alert(true, "bad", $lang['EditFailed_RequiredFieldEmpty']);
-        json_response(400, get_alert(true), NULL);
+        api_v2_json_result(400, get_alert(true), NULL);
     }
     
     $id = (int)$_POST['id'];
@@ -3350,11 +3390,11 @@ function assets_update_asset_field_API($view, $fieldName) {
             // Include the extra
             require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
             if (!save_custom_field_values($id, "asset", [$custom_field_id => $fieldValue])) {
-                json_response(400, get_alert(true), NULL);
+                api_v2_json_result(400, get_alert(true), NULL);
             }
         } else {
             set_alert(true, "bad", $lang['EditFailed_CustomFieldNeedsCustomization']);
-            json_response(400, get_alert(true), NULL);
+            api_v2_json_result(400, get_alert(true), NULL);
         }
     } else { // Non-custom fields
         // Tags handled differently than other fields
@@ -3366,7 +3406,7 @@ function assets_update_asset_field_API($view, $fieldName) {
                     global $lang;
                     
                     set_alert(true, "bad", $lang['MaxTagLengthWarning']);
-                    json_response(400, get_alert(true), NULL);
+                    api_v2_json_result(400, get_alert(true), NULL);
                 }
             }
             
@@ -3417,7 +3457,7 @@ function assets_update_asset_field_API($view, $fieldName) {
 }
 
 // Used to update the asset through the API call
-function assets_update_asset_API($view) {
+function update_asset_API_v2($view) {
     
     global $field_settings_views, $field_settings, $lang;
 
@@ -3429,7 +3469,7 @@ function assets_update_asset_API($view) {
     $asset_id_tmp = asset_exists($_POST['name']);
     if (!empty($_POST['name']) && $asset_id_tmp &&  $id !== $asset_id_tmp) {
         set_alert(true, "bad", _lang('EditFailed_FieldMustBeUnique', ['field' => 'name'], false));
-        json_response(400, get_alert(true), NULL);
+        api_v2_json_result(400, get_alert(true), NULL);
     }
     
     // If customization is enabled then gather information about the custom fields
@@ -3452,8 +3492,17 @@ function assets_update_asset_API($view) {
             ];
         }
     }
-    $mapped_controls = array();
     
+    
+    if ($encryption = encryption_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+    }
+    
+    if ($notification = notification_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+    }
+    
+    $mapped_controls = [];
     $update_parts = [];
     $params = [":$id_field" => $id];
     // Do the field validation(like required fields not having a value) and collect the data for the update
@@ -3468,7 +3517,7 @@ function assets_update_asset_API($view) {
         if (empty($_POST[$field_name]) && ((!empty($field_settings[$view_type][$field_name]) && $field_settings[$view_type][$field_name]['required'])
             || ($customization && !empty($mapped_custom_field_settings[$field_name]) && $mapped_custom_field_settings[$field_name]['required']))) {
             set_alert(true, "bad", _lang('EditFailed_RequiredFieldEmpty', ['field' => $field_text]));
-            json_response(400, get_alert(true), NULL);
+            api_v2_json_result(400, get_alert(true), NULL);
         }
         
         // check if the field is editable
@@ -3476,19 +3525,11 @@ function assets_update_asset_API($view) {
             // If not editable but it's sent somehow then this is an error
             if (isset($_POST[$field_name])) {
                 set_alert(true, "bad", _lang('EditFailed_FieldNotEditable', ['field' => $field_text]));
-                json_response(400, get_alert(true), NULL);
+                api_v2_json_result(400, get_alert(true), NULL);
             } else {
                 // otherwise we're just skipping the processing of this field
                 continue;
             }
-        }
-
-        if ($encryption = encryption_extra()) {
-            require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-        }
-
-        if ($notification = notification_extra()) {
-            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
         }
 
         $field_value = $_POST[$field_name] ?? null;
@@ -3506,26 +3547,22 @@ function assets_update_asset_API($view) {
             switch ($field_name) {
                 case 'tags':
                     // If it's empty, we need an empty array, rather than null that's the default behavior for missing data
-                    $tags = $field_value ?? [];
+                    $tags = $field_value ? $field_value : [];
 
                     foreach($tags as $tag){
                         if (strlen($tag) > 255) {
                             set_alert(true, "bad", $lang['MaxTagLengthWarning']);
-                            json_response(400, get_alert(true), NULL);
+                            api_v2_json_result(400, get_alert(true), NULL);
                         }
                     }
                     break;
                 case 'mapped_controls':
-                    $control_maturity   = empty($_POST['control_maturity']) ? [] : $_POST['control_maturity'];
-                    $control_id         = empty($_POST['control_id']) ? [] : $_POST['control_id'];
-                    foreach($control_maturity as $index=>$maturity){
-                        if($control_id[$index]) $mapped_controls[] = array($maturity, $control_id[$index]);
-                    }
+                    $mapped_controls = empty($_POST['mapped_controls']) ? [] : $_POST['mapped_controls'];
                     break;
                 case 'associated_risks':
                     // Storing the list of associated risks so we can update it once the asset itself is updated
                     // If it's empty, we need an empty array, rather than null that's the default behavior for missing data
-                    $associated_risks_new = $field_value ?? [];
+                    $associated_risks_new = $field_value ? $field_value : [];
 
                     if ($notification) {
                         // Also, storing the current list of associated risks so we can calculate the list of risk changes for the risk update notification
@@ -3568,7 +3605,7 @@ function assets_update_asset_API($view) {
     updateTagsOfType($id, $view_type, $tags);
 
     update_asset_risks_associations($id, $associated_risks_new);
-    
+
     if ($notification && !empty($associated_risks_need_notified)) {
         // Only send the notification about the updated risks that were changed on the asset
         foreach ($associated_risks_need_notified as $risk_id) {
@@ -3578,7 +3615,7 @@ function assets_update_asset_API($view) {
 
     if ($customization && !save_custom_field_values($id, $view_type, $custom_field_data)) {
         // It will basically never happen as we're checking values before even getting to the saving part to make sure we're not saving only half of the data
-        json_response(400, get_alert(true), NULL);
+        api_v2_json_result(400, get_alert(true), NULL);
     }
 
     //TODO only do this if the name changed
@@ -3588,6 +3625,224 @@ function assets_update_asset_API($view) {
 
     $message = _lang("UpdateSuccess_{$view_type}", ['name' => $asset_name, 'user' => $_SESSION['user']]);
     write_log($id, $_SESSION['uid'], $message, "asset");
+}
+
+
+function create_asset_API_v2($view) {
+    
+    global $field_settings_views, $field_settings, $lang;
+    
+    $view_type = $field_settings_views[$view]['view_type'];
+    
+    // If the asset name is alread taken, but not on this asset
+    if (!empty($_POST['name']) && asset_exists($_POST['name'])) {
+        set_alert(true, "bad", _lang('EditFailed_FieldMustBeUnique', ['field' => 'name'], false));
+        api_v2_json_result(400, get_alert(true), NULL);
+    }
+    
+    // If customization is enabled then gather information about the custom fields
+    if ($customization = customization_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        
+        $active_fields = get_active_fields($view_type);
+        $mapped_custom_field_settings = [];
+        $custom_field_data = [];
+        foreach ($active_fields as $active_field) {
+            // Skip this step for basic fields
+            if ($active_field['is_basic']) {
+                continue;
+            }
+            
+            $mapped_custom_field_settings["custom_field_{$active_field['id']}"] = [
+                'field_id' => $active_field['id'],
+                'required' => $active_field['required'],
+                'editable' => true, // Custom fields are always editable for now
+            ];
+        }
+    }
+    
+    if ($encryption = encryption_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+    }
+    
+    if ($notification = notification_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+    }
+    
+    $mapped_controls = [];
+    
+    $insert_parts = ["`verified` = :verified"];
+    $params = ["verified" => true];
+    // Do the field validation(like required fields not having a value) and collect the data for the update
+    foreach (field_settings_get_localization($view, false, false) as $field_name => $field_text) {
+        
+        // Skipping checks for the verified field here
+        if ($field_name === 'verified') {
+            continue;
+        }
+        
+        // Check if the field is required and if it is, then whether it has a proper value set
+        if (empty($_POST[$field_name]) && ((!empty($field_settings[$view_type][$field_name]) && $field_settings[$view_type][$field_name]['required'])
+            || ($customization && !empty($mapped_custom_field_settings[$field_name]) && $mapped_custom_field_settings[$field_name]['required']))) {
+            set_alert(true, "bad", _lang('EditFailed_RequiredFieldEmpty', ['field' => $field_text]));
+            api_v2_json_result(400, get_alert(true), NULL);
+        }
+
+        $field_value = $_POST[$field_name] ?? null;
+        // Storing values after validation to update the asset
+        if ($customization && str_starts_with($field_name, 'custom_field_')) {
+            // Storing the field's value so we can save that after the asset is updated
+            $custom_field_data[$mapped_custom_field_settings[$field_name]['field_id']] = $field_value;
+        } else {
+            // These fields are still comma selected ids, need to remove this part once they're properly converted to use junction tables
+            // and have a separate section for them like for the tags
+            if (($field_name === "location" || $field_name === "teams") && is_array($field_value)) {
+                $field_value = implode(",", $field_value);
+            }
+            
+            switch ($field_name) {
+                case 'tags':
+                    // If it's empty, we need an empty array, rather than null that's the default behavior for missing data
+                    $tags = $field_value ? $field_value : [];
+                    
+                    foreach($tags as $tag){
+                        if (strlen($tag) > 255) {
+                            set_alert(true, "bad", $lang['MaxTagLengthWarning']);
+                            api_v2_json_result(400, get_alert(true), NULL);
+                        }
+                    }
+                    break;
+                case 'mapped_controls':
+                    $mapped_controls = empty($_POST['mapped_controls']) ? [] : $_POST['mapped_controls'];
+                    
+                    /*foreach($mapped_controls as $mapped_control){
+                        if($control_id[$index]) $mapped_controls[] = array($maturity, $control_id[$index]);
+                    }*/
+                    
+                    
+                    /*$control_maturity   = empty($_POST['control_maturity']) ? [] : $_POST['control_maturity'];
+                    $control_id         = empty($_POST['control_id']) ? [] : $_POST['control_id'];
+                    foreach($control_maturity as $index=>$maturity){
+                        if($control_id[$index]) $mapped_controls[] = array($maturity, $control_id[$index]);
+                    }*/
+                    break;
+                case 'associated_risks':
+                    // Storing the list of associated risks so we can set it once the asset itself is created
+                    // If it's empty, we need an empty array, rather than null that's the default behavior for missing data                    
+                    if ($notification) {
+                        $associated_risks = $field_value ? $field_value : [];
+                    } else {
+                        $associated_risks = [];
+                    }
+                    break;
+                default:
+                    // Store the asset name for the audit log before the encryption
+                    if ($view_type === 'asset' && $field_name === 'name') {
+                        $asset_name = $field_value;
+                    }
+                    
+                    // Encrypt the field if needed
+                    if ($encryption && $field_settings[$view_type][$field_name]['encrypted']) {
+                        $field_value = try_encrypt($field_value);
+                    }
+                    
+                    // build the parts that'll be used to construct the insert
+                    $insert_parts [] = "`{$field_name}` = :{$field_name}";
+                    $params[":{$field_name}"] = $field_value;
+                    break;
+            }
+        }
+    }
+    
+    $db = db_open();
+    
+    $stmt = $db->prepare("INSERT INTO `assets` SET " . implode(',', $insert_parts) . ";");
+    $stmt->execute($params);
+
+    $id = $db->lastInsertId();
+
+    db_close($db);
+    
+    // Save control mappings
+    save_asset_to_controls($id, $mapped_controls);
+
+    // Update tags even when they didn't change as the time we'd win on not saving them is lost on the checks
+    // so if we check and then still have to save we'd basically just wasted time on checking
+    updateTagsOfType($id, $view_type, $tags);
+    
+    update_asset_risks_associations($id, $associated_risks);
+    
+    if ($notification && !empty($associated_risks)) {
+        // Only send the notification about the updated risks that were changed on the asset
+        foreach ($associated_risks as $risk_id) {
+            notify_risk_update($risk_id);
+        }
+    }
+    
+    if ($customization && !save_custom_field_values($id, $view_type, $custom_field_data)) {
+        // It will basically never happen as we're checking values before even getting to the saving part to make sure we're not saving only half of the data
+        api_v2_json_result(400, get_alert(true), NULL);
+    }
+    
+    if ($encryption) {
+        update_name_order_for_asset($id, $asset_name);
+    }
+    
+    $message = _lang("CreateSuccess_{$view_type}", ['name' => $asset_name, 'user' => $_SESSION['user']]);
+    write_log($id, $_SESSION['uid'], $message, "asset");
+}
+
+/**
+ * Processes the control mapping coming from the UI in the format of [['control_maturity' => maturity_id, 'control_id' => [control_id1, control_id2, ...]], ...]
+ *
+ * Returns it in the format of [maturity_id => [control_id1, control_id2, ...], ...]
+ *
+ * It groups by maturity id, merging the control id arrays associated to the same maturity.
+ *
+ * @param array $raw_mapped_controls
+ * @return array
+ */
+function process_asset_control_mapping($raw_mapped_controls) {
+
+    $temp_mapping = empty($raw_mapped_controls) ? [] : array_map(fn($mapped_control) => json_decode($mapped_control, true), $raw_mapped_controls);
+
+    // merging individual rows, grouped by maturity
+    $mapped_controls = [];
+    foreach ($temp_mapping as $mapped_control) {
+        $maturity_id = (int)$mapped_control['control_maturity'];
+        $control_ids = array_map(fn($control_id) => (int)$control_id, $mapped_control['control_id']);
+        if (isset($mapped_controls[$maturity_id])) {
+            $mapped_controls[$maturity_id] = array_values(array_unique([...$mapped_controls[$maturity_id], ...$control_ids]));
+        } else {
+            $mapped_controls[$maturity_id] = $control_ids;
+        }
+    }
+
+    return $mapped_controls;
+}
+
+/**
+ * Validate the asset control mapping to prevent having the same control mapped to multiple maturities
+ *
+ * It assumes that the mapping is already preprocessed and in the format of [maturity_id => [control_id1, control_id2, ...], ...]
+ *
+ * @param array $mapped_controls an array in the format of [maturity_id => [control_id1, control_id2, ...], ...]
+ * @return boolean whether the mapping is valid
+ */
+function validate_asset_control_mapping($mapped_controls) {
+    
+    if (empty($mapped_controls)) {
+        return true;
+    }
+    
+    $used_control_ids = [];
+    foreach ($mapped_controls as $_ => $control_ids) {
+        if (!empty(array_intersect($used_control_ids, $control_ids))) {
+            return false;
+        }
+        $used_control_ids = array_values(array_unique([...$used_control_ids, ...$control_ids]));
+    }
+    return true;
 }
 
 ?>

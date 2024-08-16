@@ -23,7 +23,15 @@
         }
 
         // Start the session
-        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+        $parameters = [
+            "lifetime" => 0,
+            "path" => "/",
+            "domain" => "",
+            "secure" => isset($_SERVER["HTTPS"]),
+            "httponly" => true,
+            "samesite" => "Strict",
+        ];
+        session_set_cookie_params($parameters);
 
         session_name('SimpleRisk');
         session_start();
@@ -116,21 +124,37 @@
     }
 
 ?>
-<div class="row-fluid">
-    <div class="well">
-      <form name="close_risk" method="post" action="">
-        <h4><?php echo $escaper->escapeHtml($lang['CloseRisk']); ?></h4>
-        <?php echo $escaper->escapeHtml($lang['Reason']); ?>: <?php create_dropdown("close_reason"); ?><br />
-        <label><?php echo $escaper->escapeHtml($lang['CloseOutInformation']); ?></label>
-        <textarea name="note" cols="50" rows="3" id="note"></textarea>
-        <div class="form-actions">
-          <button type="submit" name="submit" class="btn btn-primary save-close-risk"><?php echo $escaper->escapeHtml($lang['Submit']); ?></button>
-          <input class="btn" value="<?php echo $escaper->escapeHtml($lang['Reset']); ?>" type="reset">
+<div class="card-body my-2 border">
+    <form name="close_risk" method="post" action="">
+        <div class="row">
+            <div class="col-6">
+                <h4><?php echo $escaper->escapeHtml($lang['CloseRisk']); ?></h4>
+                <div class="row mb-2 align-items-center">
+                    <div class="col-4">
+                        <label><?php echo $escaper->escapeHtml($lang['Reason']); ?>:</label>
+                    </div>
+                    <div class="col-8">
+    <?php 
+                        create_dropdown("close_reason"); 
+    ?>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4">
+                        <label><?php echo $escaper->escapeHtml($lang['CloseOutInformation']); ?>:</label>
+                    </div>
+                    <div class="col-8">
+                        <textarea name="note" cols="50" rows="3" id="note" class="form-control"></textarea>
+                    </div>
+                </div>        
+                <div class="form-actions text-end">
+                    <input class="btn btn-primary" value="<?php echo $escaper->escapeHtml($lang['Reset']); ?>" type="reset">
+                    <button type="submit" name="submit" class="btn btn-submit save-close-risk"><?php echo $escaper->escapeHtml($lang['Submit']); ?></button>
+                </div>
+            </div>
         </div>
-      </form>
-    </div>
+    </form>
 </div>
-
-        <input type="hidden" id="_token_value" value="<?php echo csrf_get_tokens(); ?>">
-        <input type="hidden" id="_lang_reopen_risk" value="<?php echo $escaper->escapeHtml($lang['ReopenRisk']); ?>">
-        <input type="hidden" id="_lang_close_risk" value="<?php echo $escaper->escapeHtml($lang['CloseRisk']); ?>">
+<input type="hidden" id="_token_value" value="<?php echo csrf_get_tokens(); ?>">
+<input type="hidden" id="_lang_reopen_risk" value="<?php echo $escaper->escapeHtml($lang['ReopenRisk']); ?>">
+<input type="hidden" id="_lang_close_risk" value="<?php echo $escaper->escapeHtml($lang['CloseRisk']); ?>">

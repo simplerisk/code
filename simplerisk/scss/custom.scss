@@ -1,0 +1,1296 @@
+// In this scss you can overwrite all our scss, we suggested you to add your scss into this, so whenever the update comes it will not affect your code.
+
+/*--------------------------------------------------------------
+ ## Helper Classes
+ --------------------------------------------------------------*/
+
+.animation {
+	-webkit-transition: all .2s;
+	/* Safari */
+	transition: all .2s;
+}
+
+.reset {
+	margin: 0px;
+	padding: 0px;
+	text-decoration: none;
+	outline: none;
+	list-style: none;
+}
+
+
+div.tox.tox-tinymce {
+	border-radius: $border-radius;
+}
+
+@each $color, $value in $light-colored-buttons {
+	.btn-#{$color} {
+		@include button-variant($value,
+			$value,
+			$hover-background: shade-color($value, $btn-hover-bg-shade-amount),
+			$hover-border: shade-color($value, $btn-hover-border-shade-amount),
+			$active-background: shade-color($value, $btn-active-bg-shade-amount),
+			$active-border: shade-color($value, $btn-active-border-shade-amount));
+	}
+}
+
+@each $color, $value in $dark-colored-buttons {
+	.btn-#{$color} {
+		@include button-variant($value,
+			$value,
+			$hover-background: tint-color($value, $btn-hover-bg-tint-amount),
+			$hover-border: tint-color($value, $btn-hover-border-tint-amount),
+			$active-background: tint-color($value, $btn-active-bg-tint-amount),
+			$active-border: tint-color($value, $btn-active-border-tint-amount));
+	}
+}
+
+@each $color, $value in map-merge($light-colored-buttons, $dark-colored-buttons) {
+	.btn-outline-#{$color} {
+		@include button-outline-variant($value);
+	}
+}
+
+:root {
+	@each $color, $value in map-merge($theme-colors, map-merge($light-colored-buttons, $dark-colored-buttons)) {
+		--sr-#{$color}: #{$value};
+	}
+}
+
+//GENERATE CLASSES FOR CURSOR
+$cursor_values: auto, default, pointer, wait, text, move, help, not-allowed;
+@each $value in $cursor_values {
+	.cursor-#{$value} {
+		cursor: #{$value};
+	}
+}
+
+.collapsible--toggle {
+	.collapse-title {
+		cursor: pointer;
+	}
+}
+
+.cust-align {
+	align-items: flex-end;
+}
+
+.dataTables_wrapper {
+	.dataTables_scrollHead {
+		overflow: visible !important;
+	}
+
+	.dataTables_scrollBody {
+		overflow: visible !important;
+	}
+
+	.dataTables_scroll {
+		overflow: auto;
+
+		div.dataTables_scrollBody {
+			>table {
+				>thead {
+					>tr {
+						>th {
+							vertical-align: middle;
+						}
+
+						>td {
+							vertical-align: middle;
+						}
+					}
+				}
+
+				>tbody {
+					>tr {
+						>th {
+							vertical-align: middle;
+						}
+
+						>td {
+							vertical-align: middle;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	td {
+		.risk-cell-holder {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			flex-direction: row-reverse;
+		}
+
+		.risk-color {
+			display: inline-block;
+			width: 20px;
+			height: 20px;
+			border-radius: 2px;
+			border: 1px solid;
+			margin-left: 10px;
+			margin-right: auto;
+		}
+	}
+
+	td.risk-cell {
+		position: relative;
+	}
+}
+
+span.required {
+	color: var(--sr-important);
+}
+
+.accordion {
+	--bs-accordion-active-bg: var(--bs-default);
+	--bs-accordion-btn-bg: var(--bs-default);
+
+	.accordion-button {
+		font-weight: 600;
+		font-size: 1rem;
+	}
+}
+
+
+label {
+	font-weight: 700 !important;
+	margin-bottom: .125rem;
+}
+
+.modal-dark .modal-content {
+	color: var(--bs-body-bg);
+	background-color: var(--sr-primary);
+}
+
+/* to make the number inputs' arrows always visible*/
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+	opacity: 1;
+}
+
+/*
+.affected-asset-cell span {
+    cursor: pointer;
+    margin: 0 3px 3px 0;
+    padding: 1px 3px;
+    color: #333333;
+    border: 0 solid rgba(0, 0, 0, 0) !important;
+    border-radius: 2px;
+    display: inline-block;
+
+    &.asset {
+        background: $asset-option-color !important;
+    }
+
+    &.group {
+        background-color: $asset-group-option-color !important;
+    }
+}
+
+.assets-asset-groups-select-disabled, .assets-asset-groups-select {
+    .asset{
+        background-color: $asset-option-color !important;
+    }
+
+    .group{
+        background-color: $asset-group-option-color !important;
+    }
+}
+
+.selectize-input.locked, .selectize-input.locked * {
+    cursor: default !important
+}
+
+.affected-assets .selectize-dropdown {
+    width: 180% !important;
+}
+
+.affected-assets-instructions {
+    display: inline-block;
+    font-size: 0.8em;
+    color: red;
+    position: relative;
+    top: -5px;
+    line-height: 1.2;
+    padding-bottom: 15px;
+}*/
+
+
+.assets-asset-groups-select-disabled,
+.assets-asset-groups-select {
+
+
+	.selectize-input {
+		div.active {
+			/*border: 1px solid #0d6efd !important;*/
+			box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, .25);
+		}
+
+		a.remove {
+			padding-left: .25rem;
+		}
+	}
+
+
+	.asset {
+		background-color: var(--sr-default) !important;
+		color: var(--sr-primary) !important;
+	}
+
+	.group {
+		background-color: var(--sr-secondary) !important;
+		color: var(--bs-body-bg) !important;
+	}
+}
+
+.selectize-dropdown-content {
+
+	.optgroup {
+		&[data-group='asset'] .optgroup-header {
+			background-color: var(--sr-default);
+		}
+
+		&[data-group='group'] .optgroup-header {
+			background-color: var(--sr-secondary);
+			color: var(--bs-body-bg)
+		}
+	}
+}
+
+.import-export-space {
+	min-height: 20px !important;
+	background-color: $gray-300 !important;
+	border: none !important;
+}
+
+/*.well {
+	--bs-bg-opacity: 1;
+    background-color: rgba(var(--bs-light-rgb), var(--bs-bg-opacity)) !important;
+    border: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color) !important;
+    padding: 15px;
+    margin-bottom: 15px;
+}*/
+
+// FOR MAKING MODALS WITH THE DIRECT CHILD 'form' OF '.modal-content' SCROLLABLE AND CENTERED
+.modal-content>form {
+	position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+	
+	.modal-dialog-scrollable & {
+		max-height: 100%;
+		overflow: hidden;
+	}
+}
+
+// REPORTING / DYNAMIC RISK REPORT PAGE - selectize delete button
+.delete-option-btn {
+	color: var(--sr-secondary);
+	transition: all ease .3s;
+	margin-left: auto;
+}
+
+.delete-option-btn:hover {
+	color: var(--sr-dark);
+}
+
+// REPORTING / DYNAMIC RISK REPORT PAGE / PRINT BY GROUP PAGE
+html:has(.print-by-group-page) {
+	background-color: #e8e9eb;
+}
+
+.print-by-group-page {
+	background-color: #e8e9eb;
+	padding: 10px;
+
+	#risk-table-container {
+		table th {
+			background-color: #e8e9eb;
+		}
+	}
+}
+
+.print-by-group-page-body {
+    padding: 10px;
+    background-color: #fff;
+    width: calc(100vw - var(--sr-sidebar-width) - 18px);
+}
+
+// REPORTING / CONNECTIVITY VISUALIZER PAGE
+// SELECT2 CONTROL
+// (CHANGED ITS SEVERAL STYLES
+// SO THAT COULD MAKE IT LOOK LIKE THAT FITS WITH OTHER FORM CONTROLS.)
+.select2-container--default {
+	.select2-selection--single {
+		background-color: var(--bs-body-bg) !important;
+		border: var(--bs-border-width) solid #e9ecef !important;
+		border-radius: var(--bs-border-radius) !important;
+		height: calc(1.5em + .75rem + 2px) !important;
+
+		&[aria-expanded=true] {
+			border-color: rgba(0, 0, 0, .25);
+			outline: 0;
+			box-shadow: 0 0 0 .25rem rgba(0, 0, 0, .25);
+		}
+
+		.select2-selection__rendered {
+			line-height: calc(1.5em + .75rem + 2px) !important;
+		}
+
+		.select2-selection__arrow {
+			height: calc(1.5em + .75rem) !important;
+		}
+	}
+
+	.select2-results__option--highlighted.select2-results__option--selectable {
+		background-color: var(--bs-dark-bg-subtle) !important;
+	}
+}
+
+// CONFIGURE / CONTENT PAGE -- button style and font size
+#frameworks,
+#assessments {
+	a {
+		color: var(--bs-cyan);
+	}
+
+	a:hover {
+		color: var(--bs-purple);
+	}
+}
+
+
+// CONFIGURE / RISK AND THREAT PAGE -- datatable rowgroup, rowreorder
+.risk_thread_catalog table.dataTable tbody {
+	tr.data-row td span.grippy {
+		content: "....";
+		width: 1.5em;
+		height: 2em;
+		display: inline-block;
+		overflow: hidden;
+		line-height: 5px;
+		padding: 3px 4px;
+		cursor: move;
+		vertical-align: middle;
+		margin-top: -0.7em;
+		margin-right: 0.3em;
+		font-size: 12px;
+		font-family: sans-serif;
+		letter-spacing: 2px;
+		text-shadow: 1px 0 1px black;
+
+		&::after {
+			content: ".. .. .. .. .. .. ..";
+		}
+	}
+
+	tr.dtrg-group.dtrg-start td {
+		background-color: var(--sr-default) !important;
+
+		// get rid of striped color effect
+		box-shadow: none;
+	}
+}
+
+// CONFIGURE / RISK FORMULA PAGE -- editable input
+span.editable {
+	cursor: pointer;
+
+
+	&:after {
+		margin-left: 5px;
+		content: "\f303";
+		font-family: var(--fa-style-family-classic);
+		font-weight: 900;
+	}
+}
+
+input.editable {
+	min-width: 50px !important;
+	max-width: 99.99% !important;
+	transition: width 0.25s;
+	text-align: center;
+	font-family: monospace;
+	max-height: 1.2em;
+	padding: 10px 5px;
+}
+
+input.editable:focus {
+	color: var(--bs-body-color);
+	background-color: var(--bs-body-bg);
+	border-color: rgba(0, 0, 0, .25);
+	outline: 0;
+	border: var(--bs-border-width) solid var(--sr-default);
+	border-radius: var(--bs-border-radius);
+}
+
+// CONFIGURE / RISK FORMULA PAGE -- risk level table
+.risk-level-table {
+	td {
+		padding: 2px 10px;
+	}
+
+	[class*='risk-table'] {
+		width: 10px;
+		height: 10px;
+		border: 1px solid #000;
+	}
+}
+
+// CONFIGURE / RISK FORMULA PAGE -- risk formula table
+.risk-formula-table {
+	#impact-label {
+		text-orientation: upright;
+		writing-mode: vertical-lr;
+		width: 25px;
+	}
+}
+
+// CONFIGURE / RISK FORMULA PAGE -- contributing risks likelihood table, contributing risk table, contributing risks impact table
+#contributing-risks-likelihood-table,
+#contributing-risk-table,
+#contributing-risks-impact-table {
+	i.fa-trash {
+		cursor: pointer;
+	}
+}
+
+.likelihood-btn-container {
+	margin-left: -75px;
+}
+
+#add-impact,
+#delete-impact,
+#add-likelihood,
+#delete-likelihood {
+	i {
+		width: 25px;
+		height: 25px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		border: 2px solid var(--sr-dark);
+		border-radius: 50%;
+		box-shadow: var(--bs-box-shadow);
+	}
+
+	i:active {
+		box-shadow: none;
+	}
+}
+
+#add-impact,
+#add-likelihood {
+	i {
+		color: var(--sr-success);
+		border-color: var(--sr-success);
+	}
+}
+
+#delete-impact,
+#delete-likelihood {
+	i {
+		color: var(--sr-warning);
+		border-color: var(--sr-warning);
+	}
+}
+
+// CONFIGURE / ASSET VALUATION PAGE -- dollar sign input
+input#dollarsign {
+	background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjx0ZXh0IHg9IjVweCIgeT0iMjBweCIgZm9udC1zaXplPSIxNSIgc3Ryb2tlPSJncmVlbiIgZmlsbD0iZ3JlZW4iPiQ8L3RleHQ+PC9zdmc+);
+	background-repeat: no-repeat;
+	background-color: white;
+	background-position: left;
+	padding-left: 35px;
+}
+
+// CONFIGURE / AUDIT TRAIL PAGE -- download btn
+.download-btn {
+	width: 40px;
+	height: 40px;
+	display: inline-block;
+	border: 2px solid var(--sr-secondary);
+	border-radius: 100px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-left: auto;
+	transition: all ease .3s;
+	cursor: pointer;
+	box-shadow: var(--bs-box-shadow);
+}
+
+.download-btn>i {
+	font-size: 20px;
+	color: var(--sr-secondary);
+	transition: all ease .3s;
+}
+
+.download-btn:hover {
+	border-color: var(--sr-primary);
+}
+
+.download-btn:hover>i {
+	color: var(--sr-primary);
+}
+
+.download-btn:active {
+	box-shadow: none;
+}
+
+// CONFIGURE / EXTRAS PAGE -- email <a> tag
+.extras-page {
+	a {
+		color: var(--bs-cyan);
+	}
+
+	a:hover {
+		color: var(--bs-purple);
+	}
+}
+
+// CONFIGURE / EXTRAS PAGE / CUSTOM AUTHENTICATION PAG 
+.ldap-tab-pane-item {
+	display: flex;
+	align-items: center;
+
+	label:not(:only-child) {
+		width: 200px;
+		min-width: 200px;
+	}
+}
+
+// CONFIGURE / EXTRAS PAGE / CUSTOMIZATION EXTRA PAGE
+.field-group {
+	display: flex;
+	align-items: center;
+
+	label {
+		width: 100px;
+		min-width: 100px;
+	}
+
+	select {
+		width: 200px;
+		min-width: 200px;
+	}
+}
+
+.field-create-form-item {
+	display: flex;
+	align-items: center;
+
+	label {
+		width: 150px;
+		min-width: 150px;
+	}
+}
+
+.field-delete-form-item {
+	display: flex;
+	align-items: center;
+
+	label {
+		width: 150px;
+		min-width: 150px;
+	}
+
+	#option_name {
+		margin-left: 150px;
+	}
+}
+
+#templates {
+	.templates-group-container {
+		display: flex;
+		align-items: flex-end;
+
+		.templates-btn-group {
+			width: 200px;
+			min-width: 200px;
+		}
+	}
+
+	#tabs {
+		border: none;
+	}
+
+	.top-panel,
+	.left-panel,
+	.right-panel,
+	.bottom-panel {
+		padding: 10px;
+		border: 1px solid var(--bs-default);
+		margin: 5px;
+		background-color: white;
+		font-weight: normal;
+		line-height: var(--bs-body-line-height);
+
+		.field-holder {
+			width: 100%;
+			padding: 5px 10px;
+			display: flex;
+			justify-content: space-between;
+			border: 1px solid var(--bs-secondary);
+
+			&:not(:first-child) {
+				margin-top: 5px;
+			}
+		}
+	}
+}
+
+// CONFIGURE / USER MANAGEMENT PAGE
+.permissions-widget {
+	ul {
+		list-style: none;
+	}
+}
+
+// CONFIGURE / EXTRAS PAGE / NOTIFICATION EXTRA PAGE
+.specified_time_holder {
+	display: none;
+}
+
+.schedule-form-group {
+	margin-bottom: 10px;
+	display: flex;
+	align-items: center;
+
+	label {
+		min-width: 100px;
+		width: 100px;
+	}
+
+}
+
+#actions {
+	.accordion-header {
+		position: relative;
+
+		.hidden-checkbox {
+			position: absolute;
+			margin: 0;
+			top: 50%;
+			left: 10px;
+			transform: translateY(-50%);
+			z-index: 20;
+		}
+
+		.accordion-button {
+			padding-left: 35px;
+		}
+	}
+}
+
+// CONFIGURE / EXTRAS PAGE / ORGANIZATIONAL HIERARCHY EXTRA PAGE
+.organizational-hierarchy-page {
+	.datagrid-header {
+		table.datagrid-htable {
+			tr.datagrid-header-row {
+				background-color: var(--bs-table-bg);
+			}
+		}
+	}
+}
+
+.select-list-wrapper {
+	display: flex;
+	justify-content: space-between;
+
+	.select-list-available,
+	.select-list-selected {
+		width: 40%;
+		display: flex;
+		flex-direction: column;
+
+		select[multiple=multiple] {
+			flex-grow: 1;
+		}
+	}
+
+	.select-list-arrows {
+		width: 10%;
+		margin-top: 20px;
+
+		input {
+			padding: 3px;
+			width: 30px;
+			margin: 2px;
+		}
+	}
+}
+
+.sidebar-item {
+	ul.first-level.in {
+		li.sidebar-item {
+			background-color: #424242; //var(--sr-dark)
+		}
+	}
+}
+
+input[readonly].form-control,
+select[readonly].form-control {
+	cursor: default;
+	pointer-events: none;
+	background-color: var(--bs-gray-400);
+	border-width: inherit;
+}
+
+
+div#main-wrapper[data-function="login"],
+div#main-wrapper[data-function="reset"] {
+
+	.page-wrapper {
+		background-color: var(--sr-dark);
+
+		.content {
+
+			background-color: inherit;
+
+			.container.login-form,
+			.container.reset-form {
+
+				--bs-heading-color: var(--sr-light);
+
+				h3 {
+					font-size: 24px;
+					text-align: center;
+					margin: 0 0 15px;
+					font-weight: 800;
+				}
+
+				.card {
+					background-color: var(--sr-primary);
+					border-radius: 2px;
+					padding: 10px;
+					color: var(--sr-light);
+
+					.card-title {
+						font-size: 20px;
+						padding-bottom: 4px;
+					}
+
+					.form-group label {
+						font-weight: 400 !important;
+					}
+
+					.btn-secondary,
+					.btn-secondary:hover {
+						background: transparent;
+						border-color: var(--sr-light);
+					}
+
+					.form-group:last-child {
+						text-align: revert;
+						display: flex;
+						justify-content: space-between;
+					}
+
+					a {
+						color: inherit;
+						margin-top: 6px;
+						display: inline-block;
+						text-decoration: underline;
+					}
+				}
+			}
+		}
+	}
+}
+
+// CONFIGURE / EXTRAS / SECURE CONTROLS FRAMEWORK(SCF) PAGE 
+#complianceforge_scf_controls_disabled,
+#complianceforge_scf_controls_enabled {
+	height: 200px;
+}
+
+// CONFIGURE / REGISTER PAGE
+.registration-table-edit,
+.registration-table {
+	.form-group {
+		display: flex;
+		align-items: center;
+
+		label {
+			width: 150px;
+			min-width: 150px;
+		}
+	}
+}
+
+// VULNERABILITY MANAGEMENT / CONFIGURE PAGE
+.configure-log-table {
+	td {
+		padding: 5px 0;
+	}
+}
+
+// INCIDENT MANAGEMENT / INCIDENT PAGE
+.single-btn {
+	width: 40px;
+	height: 40px;
+	border-radius: 100px;
+	border: 1px solid var(--bs-default);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: var(--bs-secondary);
+	box-shadow: var(--bs-box-shadow);
+}
+
+.single-btn:hover {
+	color: var(--bs-dark);
+}
+
+.single-btn:active {
+	box-shadow: none;
+}
+
+#incident_response_identification_view,
+#incident_response_identification_edit {
+	.form-group {
+		label {
+			width: 200px;
+			min-width: 200px;
+		}
+	}
+}
+
+#template-tabs {
+	.btn.remove-tab {
+		--bs-btn-padding-y: 0px;
+		--bs-btn-padding-x: 0px;
+		vertical-align: baseline;
+	}
+
+	.remove-question {
+		margin-left: 5px;
+	}
+	
+	input.editable:invalid {
+		background-color: ivory;
+	  	border: none;
+	  	outline: 1px solid var(--sr-important);
+	  	border-radius: 1px;
+	}
+}
+
+.audit-log-wrapper {
+	.accordion-header {
+		position: relative;
+		.refresh-audit-trail {
+			position: absolute;
+			top: 50%;
+			transform: translateY(-50%);
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			right: 60px;
+			z-index: 100;
+		}
+	}
+}
+
+/* Styles for JQuery sortable/dragable */
+table tr.ui-sortable-helper {
+	display: table !important;
+	opacity: 0.8;
+}
+
+.sortable-placeholder > td {
+	background-color: var(--sr-default);
+}
+
+.draghandle:hover {
+	cursor: move;
+}
+/* End of styles for JQuery sortable/dragable */
+
+// CONFIGURE / SETTINGS PAGE
+.slider-progress-values {
+    display: flex;
+    justify-content: space-between;
+	span.risk-color {
+		width: 20px;
+		height: 20px;
+		border-radius: 2px;
+		border: 1px solid;
+	}
+}
+
+#slider {
+    height: 0.8em;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    position: relative;
+}
+
+// RISK MANAGEMENT / RISK DETAILS
+.risk-details {
+	label {
+		white-space: nowrap;
+	}
+}
+
+[name=update_cvss] {
+	table {
+		tr:last-of-type {
+			.cal-text {
+				padding-bottom: .5rem;
+				border-bottom: 1px solid #d1d3d4;
+			}
+		}
+	}
+}
+
+#score-container-accordion-body {
+	table {
+		td, th {
+			padding: 5px;
+		}
+	}
+}
+
+.tabs--action {
+	margin-top: 1.25rem;
+	margin-right: 1.25rem;
+}
+
+// RISK MANAGEMENT / SUBMIT RISK PAGE / CVSS
+html:has(.score-method-page) {
+	background-color: #e8e9eb;
+}
+
+.score-method-page {
+	background-color: #e8e9eb;
+	padding: 10px;
+}
+
+.score-method-page-header {
+	padding: 20px 10px;
+}
+
+.score-method-page-body {
+    padding: 10px;
+    background-color: #fff;
+    width: calc(100vw - var(--sr-sidebar-width) - 18px);
+
+	.score-item {
+		label {
+			width: 200px;
+			min-width: 200px;
+		}
+
+		.score-value  {
+			background-color: var(--bs-secondary-bg);
+		}
+	}
+}
+
+.affected-assets-instructions, .tag-max-length-warning {
+    font-weight: normal;
+    font-size: .75rem;
+    color: var(--sr-danger);
+}
+
+// ASSESSMENTS / QUESTIONNAIRE QUESTIONS PAGE
+#questionnaire-questions-container table td,
+#questionnaire-questions-container table th,
+#questionnaire-answers-container table td,
+#questionnaire-answers-container table th {
+	padding-left: 0;
+	padding-right: 0; 
+}
+
+// CHECK THIS LATER(LEFT THIS YET SINCE IT IS USED IN SEVERAL PARTS WITH JS LOGIC)
+#questionnaire-answers-container {
+	.risk-assessment-table, 
+	.compliance-assessment-table, 
+	.maturity-assessment-table {
+		th, td {
+			padding-left: 20px;
+			padding-right: 20px;
+		}
+
+		.risk-scoring-container {
+			padding: 0;
+			
+			.row {
+				flex-wrap: nowrap;
+				align-items: center;
+				padding-bottom: 16px;
+				padding-top: 16px;
+
+				.col-2 {
+					font-weight: bold;
+					min-width: 200px;
+					max-width: 200px;
+				    margin-bottom: 0 !important;
+				}
+
+				.col-9 {
+					width: 100%;
+					flex-shrink: 1;
+
+					p {
+						margin-bottom: 0;
+					}
+				}
+			}
+		}
+	}
+
+	.add-delete-icon {
+		width: 30px;
+		height: 30px;
+	}
+}
+
+
+// ASSESSMENTS / QUESTIONNAIRE RESULTS PAGE
+#closed-risk-container {
+	.questionnaire-closed-risk-form {
+		th {
+			font-weight: bold;
+			width: 200px; 
+			min-width: 200px;
+		}
+	
+		td.risk_value {
+			font-weight: normal;
+		}
+	}
+}
+
+#active-risk-container {
+	.questionnaire-active-risk-form {
+		th {
+			font-weight: bold;
+			width: 200px; 
+			min-width: 200px;
+		}
+	
+		td.risk_value {
+			font-weight: normal;
+		}
+	}
+}
+
+.comments--wrapper {
+	.accordion-header {
+		position: relative;
+		.add-comments {
+			position: absolute;
+			top: 50%;
+			transform: translateY(-50%);
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			right: 60px;
+			z-index: 100;
+		}
+	}
+}
+
+.files--wrapper {
+	.accordion-header {
+		position: relative;
+		.add-files {
+			position: absolute;
+			top: 50%;
+			transform: translateY(-50%);
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			right: 60px;
+			z-index: 100;
+		}
+	}
+}
+
+.hidden-file-upload {
+	visibility: hidden;
+	display: none;
+}
+
+.file-uploader .file-count {
+  margin-left: 10px;
+  font-size: 13px; }
+.file-uploader .file-list, .file-uploader .exist-files {
+  margin-top: 10px;
+  list-style: none;
+  margin-left: 0px;
+  color: #187bd0;
+  font-size: 14px; }
+  .file-uploader .file-list > li, .file-uploader .exist-files > li {
+    margin-bottom: 10px; }
+    .file-uploader .file-list > li .file-name, .file-uploader .exist-files > li .file-name {
+      float: left;
+      width: calc(100% - 30px);
+      word-wrap: break-word; }
+    .file-uploader .file-list > li .remove-file, .file-uploader .exist-files > li .remove-file {
+      float: right;
+      font-size: 20px; }
+    .file-uploader .file-list > li:after, .file-uploader .exist-files > li:after {
+      content: "";
+      clear: both;
+      display: table; 
+}
+
+.differency {
+	background-color: var(--bs-highlight-bg);
+}
+
+// PROFILE PAGE
+.profile-info-container {
+	.form-group {
+		display: flex;
+		align-items: center;
+
+		label {
+			width: 150px;
+			min-width: 150px;
+		}
+	}
+	
+	.teams-group {
+		width: 100%;
+		padding: .375rem .75rem;
+		border: var(--bs-border-width) solid #e9ecef;
+    	border-radius: var(--bs-border-radius);
+	}
+
+	.form-control:disabled {
+		background-color: white;
+	}
+}
+
+
+a.open-in-new-tab {
+    color: rgba(var(--bs-info-rgb), 1);
+
+    &:after {
+        margin-left: .25rem;
+        content: "\f35d";
+        color: var(--bs-body-color);
+        font: normal normal 600 8px/1 var(--fa-style-family-classic);
+        vertical-align: super;
+    }
+}
+
+
+.blockMsg {
+    color: var(--sr-light);
+    background-color: var(--sr-dark);
+}
+
+// SELECTIZE CONTROL
+// (REMOVED ITS BLUE BOX SHADOW WHEN FOCUSED AND BORDER RADIUS, 
+// GAVE THE SAME BOX SHADOW AS '.form-select' 
+// SO THAT COULD MAKE IT LOOK LIKE THAT FITS WITH OTHER FORM CONTROLS.)
+.selectize-input {
+	border: var(--bs-border-width) solid #e9ecef !important;
+    border-radius: var(--bs-border-radius) !important;
+
+	&.focus {
+		border-color: rgba(0, 0, 0, .25) !important;
+		outline: 0 !important;
+		box-shadow: 0 0 0 .25rem rgba(0, 0, 0, .25) !important;
+	}
+
+	// SELECTED ITEM
+	&>div {
+		border-radius: var(--bs-border-radius) !important;
+	}
+}
+
+.selectize-dropdown {
+	border: var(--bs-border-width) solid #e9ecef !important;
+    border-radius: var(--bs-border-radius) !important;
+}
+
+// COMPLIANCE / PAST AUDITS PAGE
+.red-background {
+	background-color: lightcoral !important;
+}
+
+.green-background {
+	background-color: lightgreen !important;
+}
+
+.progress-wrapper {
+    background-color: var(--sr-primary);
+    border-radius: 2px;
+    box-shadow: none;
+    border: none;
+    padding: 5px 0px;
+    margin-top: 5px;
+
+    .progress-window {
+        height: 220px;
+        max-height: 220px;
+        padding: 15px;
+        overflow-y: auto;
+        color: var(--sr-light);
+
+        .error_message{
+            color: var(--sr-important);
+        }
+    }
+}
+
+
+// a#risk_detail {
+//     width: 200px;
+//     white-space: nowrap;
+//     overflow: hidden;
+//     text-overflow: ellipsis;
+// }
+
+@import "modules/treegrid";
+@import "modules/plan-projects";
+@import "modules/colorpicker";
+@import "modules/governance";
+@import "modules/tabs";
+@import "modules/questionnaire";
+
+//@import "modules/_tabs";
+
+
+
+
+
+
+// @import "modules/assessment";
+// @import "modules/asset_management";
+// @import "modules/buttons";
+
+// @import "modules/comments";
+// @import "modules/compliance";
+// @import "modules/custom";
+// @import "modules/customization";
+// @import "modules/datatable_widget";
+// @import "modules/datepicker";
+// @import "modules/dsp";
+
+// @import "modules/login";
+// @import "modules/modals";
+// @import "modules/model";
+// @import "modules/multiselect";
+// @import "modules/navs";
+// @import "modules/notification";
+// @import "modules/pagination";
+// @import "modules/permissions_widget";
+// @import "modules/plan-projects";
+// @import "modules/profile";
+// @import "modules/reporting";
+// @import "modules/risks";
+// @import "modules/scoring";
+// @import "modules/selectlist";
+
+// @import "modules/widgets";

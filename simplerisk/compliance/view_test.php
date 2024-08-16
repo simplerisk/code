@@ -3,33 +3,15 @@
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// Render the header and sidebar
+require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+$breadcrumb_title_key = "ViewTest";
+$active_sidebar_submenu = "PastAudits";
+$active_sidebar_menu = "Compliance";
+render_header_and_sidebar(['blockUI', 'selectize', 'WYSIWYG', 'multiselect', 'CUSTOM:pages/risk.js', 'CUSTOM:pages/compliance.js'], ['check_compliance' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
 // Include required functions file
-require_once(realpath(__DIR__ . '/../includes/functions.php'));
-require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-require_once(realpath(__DIR__ . '/../includes/display.php'));
-require_once(realpath(__DIR__ . '/../includes/alerts.php'));
-require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 require_once(realpath(__DIR__ . '/../includes/governance.php'));
 require_once(realpath(__DIR__ . '/../includes/compliance.php'));
-require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-
-// Add various security headers
-add_security_headers();
-
-// Add the session
-$permissions = array(
-        "check_access" => true,
-        "check_compliance" => true,
-);
-add_session_check($permissions);
-
-// Include the CSRF Magic library
-include_csrf_magic();
-
-// Include the SimpleRisk language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
-require_once(language_file());
 
 $test_audit_id  = (int)$_GET['id'];
 
@@ -60,132 +42,66 @@ if (isset($_POST['update_associated_risks']))
 
 $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
 
+
 ?>
-<!doctype html>
-<html>
 
-<head>
-    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
-<?php
-        // Use these jQuery scripts
-        $scripts = [
-                'jquery.min.js',
-        ];
-
-        // Include the jquery javascript source
-        display_jquery_javascript($scripts);
-?>
-    <script src="../js/jquery.easyui.min.js?<?php echo current_version("app"); ?>"></script>
-<?php
-        // Use these jquery-ui scripts
-        $scripts = [
-                'jquery-ui.min.js',
-        ];
-
-        // Include the jquery-ui javascript source
-        display_jquery_ui_javascript($scripts);
-
-	display_bootstrap_javascript();
-?>
-    <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/simplerisk/common.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/simplerisk/pages/risk.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
-
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-
-    <link rel="stylesheet" href="../css/easyui.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
+<div class="row bg-white m-2">
+    <div class="col-12">
+        <?php display_detail_test(); ?>
+    </div>
+    </div>
+</div>
     
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
-    <script src="../vendor/simplerisk/selectize.js/dist/js/standalone/selectize.min.js?<?php echo current_version("app"); ?>"></script>
-    <?php
-        setup_favicon("..");
-        setup_alert_requirements("..");
-    ?>    
-    
-</head>
-
-<body>
-
-    <?php
-        view_top_menu("Compliance");
-
-        // Get any alert messages
-        get_alert();
-    ?>
-    <div class="container-fluid">
-        <div class="row-fluid">
-            <div class="span3">
-                <?php view_compliance_menu("PastAudits"); ?>
-            </div>
-            <div class="span9 compliance-content-container content-margin-height">
-                <div class="row-fluid">
-                    <div class="span12">
-                        <?php display_detail_test(); ?>
+    <!-- MODEL WINDOW FOR SUBMIT RISK -->
+    <div id="modal-new-risk" class="modal hide fade in" tabindex="-1" role="dialog" aria-labelledby="modal-new-risk" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['NewRisk']); ?></h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="tab-content-container" class="tab-data" style="background-color:#fff;padding-top:20px;padding-right:20px;margin-bottom:15px">
+                        <?php add_risk_details();?>
                     </div>
                 </div>
-                <br>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODEL WINDOW FOR SUBMIT RISK -->
-    <div id="modal-new-risk" class="modal hide fade no-padding in" tabindex="-1" role="dialog" aria-labelledby="associate-risk" aria-hidden="true" style="width: 1000px;margin-left:-500px;">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['NewRisk']); ?></h4>
-        </div>
-        <div class="modal-body">
-            <div id="tab-content-container"  style="background-color:#fff;padding-top:20px;padding-right:20px;margin-bottom:15px">
-            <?php add_risk_details();?>
             </div>
         </div>
     </div>
 
     <!-- MODEL WINDOW FOR SELECT EXISTING RISK -->
-    <div id="modal-existing-risk" class="modal hide fade no-padding in" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['ExistingRisk']); ?></h4>
-        </div>
-        <div class="modal-body" style="padding-bottom:250px">
-            <div class="form-group">
-                <label for=""><?php echo $escaper->escapeHtml($lang['AvailableRisks']); ?></label>
-                <?php 
-                    $risks = get_risks();
-                    $risk_options = [];
-                    foreach ($risks as $risk) {
-                        $risk_options[] = array("value" => $risk["id"], "name" => $risk["subject"]);
-                    }
-                    $risk_ids = get_test_result_to_risk_ids($test_audit["result_id"]);
-                    create_multiple_dropdown("existing_risks", $risk_ids, null, $risk_options);
-                ?>
-            </div>
-            <?php
-            ?>
+    <div id="modal-existing-risk" class="modal hide fade in" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['ExistingRisk']); ?></h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding-bottom:250px">
+                    <div class="form-group">
+                        <label for=""><?php echo $escaper->escapeHtml($lang['AvailableRisks']); ?></label>
+                        <?php 
+                            $risks = get_risks();
+                            $risk_options = [];
+                            foreach ($risks as $risk) {
+                                $risk_options[] = array("value" => $risk["id"], "name" => $risk["subject"]);
+                            }
+                            $risk_ids = get_test_result_to_risk_ids($test_audit["result_id"]);
+                            create_multiple_dropdown("existing_risks", $risk_ids, null, $risk_options);
+                        ?>
+                    </div>
+                    <?php
+                    ?>
 
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-            <button id="add_existing_risks" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Select']); ?></button>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
+                    <button id="add_existing_risks" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Select']); ?></button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <style>
-        #modal-new-risk .span8{width:80%;}
-        #modal-new-risk .span10{width:100%;}
-        span5.left-panel {width:50%;}
-    </style>
-
-    <?php display_set_default_date_format_script(); ?>
     </body>
     <script>
         $(document).ready(function(){
@@ -218,11 +134,11 @@ $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
                 $('#edit-test').submit();
             });
             $(document).on("click", ".associate_new_risk", function(){
-                $("#modal-new-risk").modal();
+                $("#modal-new-risk").modal("show");
                 $("#associate-risk").modal("hide");
             });
             $(document).on("click", ".associate_existing_risk", function(){
-                $("#modal-existing-risk").modal();
+                $("#modal-existing-risk").modal("show");
                 $("#associate-risk").modal("hide");
             });
             $(document).on("click", "#add_existing_risks", function(){
@@ -246,7 +162,12 @@ $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
                 $('form#edit-test').submit();
             });
 
-
+            // Add WYSIWYG editor to risk detail
+            init_minimun_editor("#risk-submit-form [name=assessment]");
+            init_minimun_editor("#risk-submit-form [name=notes]");
         });
     </script>
-</html>
+<?php  
+// Render the footer of the page. Please don't put code after this part.
+render_footer();
+?>

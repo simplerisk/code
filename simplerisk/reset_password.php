@@ -22,7 +22,15 @@ if (!isset($_SESSION))
     }
 
     // Start session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+    $parameters = [
+        "lifetime" => 0,
+        "path" => "/",
+        "domain" => "",
+        "secure" => isset($_SERVER["HTTPS"]),
+        "httponly" => true,
+        "samesite" => "Strict",
+    ];
+    session_set_cookie_params($parameters);
 
     session_name('SimpleRisk');
     session_start();
@@ -63,29 +71,25 @@ if (isset($_POST['password_reset']))
 
 <head>
 	<meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
-	<?php
-		// Use these jQuery scripts
-		$scripts = [
-			'jquery.min.js',
-		];
 
-		// Include the jquery javascript source
-		display_jquery_javascript($scripts);
+    <!-- jQuery Javascript -->
+    <script src="../vendor/node_modules/jquery/dist/jquery.min.js?<?= $current_app_version ?>" id="script_jquery"></script>
 
-		display_bootstrap_javascript();
-	?>
+    <!-- Bootstrap tether Core JavaScript -->
+    <script src="../vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
 	<title>SimpleRisk: Enterprise Risk Management Simplified</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-	<link rel="stylesheet" href="css/bootstrap.css?<?php echo current_version("app"); ?>">
-	<link rel="stylesheet" href="css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+	<link rel="stylesheet" href="css/bootstrap.css?<?= $current_app_version ?>">
+	<link rel="stylesheet" href="css/bootstrap-responsive.css?<?= $current_app_version ?>">
 
-	<link rel="stylesheet" href="css/divshot-util.css?<?php echo current_version("app"); ?>">
-	<link rel="stylesheet" href="css/divshot-canvas.css?<?php echo current_version("app"); ?>">
-	<link rel="stylesheet" href="css/display.css?<?php echo current_version("app"); ?>">
+	<link rel="stylesheet" href="css/divshot-util.css?<?= $current_app_version ?>">
+	<link rel="stylesheet" href="css/divshot-canvas.css?<?= $current_app_version ?>">
+	<link rel="stylesheet" href="css/display.css?<?= $current_app_version ?>">
 
-    <link rel="stylesheet" href="vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="css/theme.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="vendor/components/font-awesome/css/fontawesome.min.css?<?= $current_app_version ?>">
+    <link rel="stylesheet" href="css/theme.css?<?= $current_app_version ?>">
     <?php
         setup_favicon();
         setup_alert_requirements();

@@ -1,0 +1,41 @@
+{
+    "name": "leafs/router",
+    "description": "Leaf router module for Leaf PHP.",
+    "keywords": [
+        "rest",
+        "router",
+        "leaf",
+        "php",
+        "framework"
+    ],
+    "homepage": "https://leafphp.netlify.app/#/modules/router",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Michael Darko",
+            "email": "mickdd22@gmail.com",
+            "homepage": "https://mychi.netlify.app",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Leaf\\": "src"
+        }
+    },
+    "minimum-stability": "dev",
+	"prefer-stable": true,
+    "require": {
+        "leafs/http": "*",
+        "leafs/anchor": "*"
+    },
+    "require-dev": {
+        "pestphp/pest": "^1.21"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}

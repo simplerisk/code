@@ -1,0 +1,7 @@
+.accordion-item {
+
+  // Only set a border-radius on the last item if the accordion is collapsed
+  &:not(:last-of-type) {
+	  border-bottom: var(--bs-border-width) var(--bs-border-style) rgba(var(--bs-dark-rgb), .25) !important;
+  }
+}

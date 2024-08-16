@@ -131,29 +131,37 @@ function setup_alert_requirements($path_to_root = "")
         $path_to_root = $escaper->escapeHtml($path_to_root);
     }
 
-    echo "<script src='{$path_to_root}js/alerts/toastr.min.js?" . current_version("app") . "'></script>\n";
-    echo "<script src='{$path_to_root}js/alerts/alert-helper.js?" . current_version("app") . "'></script>\n";
+    echo "
+        <script src='{$path_to_root}js/alerts/toastr.min.js?" . current_version("app") . "' defer id='script_toastr'></script>
+        <script src='{$path_to_root}js/alerts/alert-helper.js?" . current_version("app") . "'defer></script>
+    ";
     $timeOut = get_setting("alert_timeout");
     if ($timeOut || $timeOut === "0") {
         $timeOut = (int)$timeOut;
-        echo "<script>\n";
-        echo "    toastr.options.timeOut = " . ($timeOut * 1000) . ";\n";
+        echo "
+            <script>
+                $('#script_toastr').on('load', function () {
+                    toastr.options.timeOut = " . ($timeOut * 1000) . ";";
         if ($timeOut === 0) { //otherwise we're using the default 2 seconds
-            echo "    toastr.options.extendedTimeOut = 0;\n";
+            echo "
+                    toastr.options.extendedTimeOut = 0;";
         }
-        echo "</script>\n";
+        echo "
+                });
+            </script>";
     }
 
-    echo "<link rel='stylesheet' href='{$path_to_root}css/toastr.min.css?" . current_version("app") . "' />\n";
-    echo "<style>\n";
-    echo "    .toast-top-right {\n";
-    echo "        top: 75px;\n";
-    echo "        right: 12px;\n";
-    echo "    }\n";
-    echo "    #toast-container > div {\n";
-    echo "        opacity:1;\n";
-    echo "    }\n";
-    echo "</style>\n";
+    echo "
+        <link rel='stylesheet' href='{$path_to_root}css/toastr.min.css?" . current_version("app") . "' />
+        <style>
+            .toast-top-right {
+                top: 75px;
+                right: 12px;
+            }
+            #toast-container > div {
+                opacity:1;
+            }
+        </style>";
 }
 
 ?>

@@ -87,7 +87,7 @@ function cron_schedule($cron_schedule)
             case "weekly":
 				$schedule = '0 0 * * 0';
 				break;
-            case "monhtly":
+            case "monthly":
 				$schedule = '0 0 1 * *';
 				break;
             default:

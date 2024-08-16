@@ -24,9 +24,6 @@ include_csrf_magic();
 // @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
-// Record the page the workflow started from as a session variable
-$_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
-
 $user_info = get_user_by_id($_SESSION['uid']);
 $tag_ids = explode(',', (string)$user_info['custom_risks_and_issues_settings']);
 
@@ -41,37 +38,27 @@ setting_risks_and_issues_tags($risk_tags);
 <html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
 
 <head>
-<?php
-        // Use these jQuery scripts
-        $scripts = [
-                'jquery.min.js',
-        ];
 
-        // Include the jquery javascript source
-        display_jquery_javascript($scripts);
-        // Use these jquery-ui scripts
-        $scripts = [
-                'jquery-ui.min.js',
-        ];
+  <!-- jQuery Javascript -->
+  <script src="../vendor/node_modules/jquery/dist/jquery.min.js?<?= $current_app_version ?>" id="script_jquery"></script>
+  <script src="../vendor/node_modules/jquery-ui/dist/jquery-ui.min.js?<?= $current_app_version ?>" id="script_jqueryui"></script>
 
-        // Include the jquery-ui javascript source
-        display_jquery_ui_javascript($scripts);
+  <!-- Bootstrap tether Core JavaScript -->
+  <script src="../vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
-	display_bootstrap_javascript();
-?>
-  <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../js/sorttable.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../js/obsolete.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../js/simplerisk/dynamic.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/bootstrap-multiselect.js?<?= $current_app_version ?>"></script>
+  <script src="../js/sorttable.js?<?= $current_app_version ?>"></script>
+  <script src="../js/obsolete.js?<?= $current_app_version ?>"></script>
+  <script src="../js/simplerisk/dynamic.js?<?= $current_app_version ?>"></script>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/bootstrap.css?<?= $current_app_version ?>">
+  <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?= $current_app_version ?>">
 
-  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?= $current_app_version ?>">
+  <link rel="stylesheet" href="../css/theme.css?<?= $current_app_version ?>">
+  <link rel="stylesheet" href="../css/side-navigation.css?<?= $current_app_version ?>">
   <?php
     setup_favicon("..");
     setup_alert_requirements("..");

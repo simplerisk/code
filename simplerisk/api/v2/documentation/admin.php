@@ -11,7 +11,7 @@ use OpenApi\Annotations as OA;
 *     path="/admin/version",
 *     summary="List SimpleRisk version information",
 *     operationId="version",
-*     tags={"admin"},
+*     tags={"Administrator Operations"},
 *     security={{"ApiKeyAuth":{}}},
 *     @OA\Response(
 *       response=200,
@@ -31,7 +31,7 @@ class OpenApiAdminVersion {}
  *     path="/admin/version/app",
  *     summary="List SimpleRisk application version information",
  *     operationId="appVersion",
- *     tags={"admin"},
+ *     tags={"Administrator Operations"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\Response(
  *       response=200,
@@ -51,7 +51,7 @@ class OpenApiAdminVersionApp {}
  *     path="/admin/version/db",
  *     summary="List SimpleRisk database version information",
  *     operationId="dbVersion",
- *     tags={"admin"},
+ *     tags={"Administrator Operations"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\Response(
  *       response=200,
@@ -66,5 +66,67 @@ class OpenApiAdminVersionApp {}
 
 class OpenApiAdminVersionDB {}
 
+/**
+ * @OA\Delete(
+ *     path="/admin/tag",
+ *     summary="Delete tag",
+ *     operationId="tagDelete",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *        parameter="id",
+ *        in="query",
+ *        name="id",
+ *        description="The id of the tag you would like to delete.",
+ *        required=true,
+ *        @OA\Schema(
+ *          type="integer",
+ *        ),
+ *     ),
+ *     @OA\Response(
+ *       response=200,
+ *       description="SimpleRisk tag deleted",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The user does not have the required permission to perform this action.",
+ *     ),
+ * )
+ */
+class OpenApiAdminTagsDelete {}
+
+/**
+ * @OA\Delete(
+ *     path="/admin/tag/all",
+ *     summary="Delete all tags",
+ *     operationId="allTagDelete",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *        parameter="type",
+ *        in="query",
+ *        name="type",
+ *        description="The type of tag you would like to delete.",
+ *        required=true,
+ *        @OA\Schema(
+ *          type="string",
+ *          enum={"risk", "asset", "test", "test_audit", "incident_management_destination", "incident_management_source", "questionnaire_pending_risk", "questionnaire_risk", "questionnaire_answer", "all"},
+ *        ),
+ *     ),
+ *     @OA\Response(
+ *       response=200,
+ *       description="SimpleRisk tags deleted",
+ *     ),
+ *     @OA\Response(
+ *       response=400,
+ *       description="Invalid type",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The user does not have the required permission to perform this action.",
+ *     ),
+ * )
+ */
+class OpenApiAdminAllTagsDelete {}
 
 ?>

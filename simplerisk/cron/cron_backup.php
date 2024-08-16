@@ -95,23 +95,10 @@ function do_backup($force=false) {
     
     // Get the path to the database backup file
     $db_backup_file = $timestamp_path . '/simplerisk-db-backup-' . $timestamp . '.sql';
-
-    // Get the mysqldump command
-    $cmd = get_mysqldump_command();
-
-    // Add the output redirect to the mysqldump command
-    $db_backup_cmd = $cmd . ' > ' . escapeshellarg($db_backup_file);
-
-    // Backup the database
-    $mysqldump = system($db_backup_cmd);
-    
-    // Compress the database backup
-    $db_zip_file_name = $timestamp_path . '/simplerisk-db-backup-' . $timestamp . '.zip';
     create_zip_file($db_backup_file, $db_zip_file_name);
     
     // Remove the uncompressed database backup
     unlink($db_backup_file);
-    
     // Create a zip file containing the current SimpleRisk files
     $simplerisk_directory =  realpath(__DIR__) . '/../';
     $app_zip_file_name = $timestamp_path . '/simplerisk-app-backup-' . $timestamp . '.zip';

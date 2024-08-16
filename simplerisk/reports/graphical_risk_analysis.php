@@ -3,137 +3,48 @@
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// Render the header and sidebar
+require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+render_header_and_sidebar(['chart.js', 'CUSTOM:common.js']);
+
 // Include required functions file
-require_once(realpath(__DIR__ . '/../includes/functions.php'));
-require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/graphical.php'));
 require_once(realpath(__DIR__ . '/../includes/reporting.php'));
-require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Add various security headers
-add_security_headers();
-
-// Add the session
-add_session_check();
-
-// Include the CSRF Magic library
-include_csrf_magic();
-
-// Include the SimpleRisk language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
-require_once(language_file());
-
-// Record the page the workflow started from as a session variable
-$_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
-
-?>
-
-<!doctype html>
-<html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>"
-      xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
-
-<head>
-<?php
-    // Use these jQuery scripts
-    $scripts = [
-        'jquery.min.js',
-    ];
-
-    // Include the jquery javascript source
-    display_jquery_javascript($scripts);
-
-    display_bootstrap_javascript();
-
-    // Use these HighCharts scripts
-    $scripts = [
-        'highcharts.js',
-        'highcharts-more.js',
-        'modules/exporting.js',
-        'modules/export-data.js',
-        'modules/accessibility.js',
-    ];
-
-    // Display the highcharts javascript source
-    display_highcharts_javascript($scripts);
-
-?>
-    <script src="../js/obsolete.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/simplerisk/common.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet"
-          href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
-
-    <script src="../vendor/simplerisk/selectize.js/dist/js/standalone/selectize.min.js?<?php echo current_version("app"); ?>"></script>
-    <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
-
-    <?php
-    setup_favicon("..");
-    setup_alert_requirements("..");
-
-    $settings = [];
-    $selection_id = get_param("GET", "selection", "");
-    if($selection_id) {
-        $selection = get_graphical_saved_selection($selection_id);
-        if($selection['type'] == 'private' && $selection['user_id'] != $_SESSION['uid'] && !is_admin())
-        {
-            set_alert(true, "bad", $lang['NoPermissionForThisSelection']);
-        } else {
-            $settings = json_decode($selection['graphical_display_settings'], true);
-        }
+$settings = [];
+$selection_id = get_param("GET", "selection", "");
+if($selection_id) {
+    $selection = get_graphical_saved_selection($selection_id);
+    if($selection['type'] == 'private' && $selection['user_id'] != $_SESSION['uid'] && !is_admin())
+    {
+        set_alert(true, "bad", $lang['NoPermissionForThisSelection']);
+    } else {
+        $settings = json_decode($selection['graphical_display_settings'], true);
     }
-    ?>
-</head>
-<body>
-<?php view_top_menu("Reporting"); ?>
-
-<div class="container-fluid">
-    <div class="row-fluid">
-        <div class="span3">
-            <?php view_reporting_menu("GraphicalRiskAnalysis"); ?>
-        </div>
-        <div class="span9">
-            <?php get_alert(); ?>
-            <div class="row-fluid">
-                <div id="selections" class="span12">
-                    <div class="well">
-                        <form id="graphical_risk_analysis" name="graphical_risk_analysis" action="" method="POST">
-                            <div class="row-fluid">
-                                <?php display_graphic_type_dropdown($settings); ?>
-                            </div>
-                            <div class="row-fluid">
-                                <?php display_y_axis($settings); ?>
-                            </div>
-                            <div class="row-fluid">
-                                <?php display_x_axis($settings); ?>
-                            </div>
-                            <div class="row-fluid">
-                                <?php display_save_graphic_selection(); ?>
-                            </div>
-                            <div class="row-fluid">
-                                <input type="submit" name="generate_report" value="<?php echo $escaper->escapeHtml($lang['GenerateReport']);?>" />
-                            </div>
-                        </form>
+}
+?>
+<div class="row">
+    <div class="col-12" id="selections">
+        <div class="well card-body my-2 border">
+            <form id="graphical_risk_analysis" name="graphical_risk_analysis" action="" method="POST">
+                    <?php display_graphic_type_dropdown($settings); ?>
+                    <?php display_y_axis($settings); ?>
+                    <?php display_x_axis($settings); ?>
+                    <?php display_save_graphic_selection(); ?>
+                <div class="row">
+                    <div class="col-6">
+                    <input type="submit" name="generate_report" value="Generate Report" class="btn btn-submit"/>
                     </div>
                 </div>
-            </div>
-            <div class="row-fluid bottom-offset-10"></div>
-            <div class="row-fluid">
-                <div class="span12">
-                    <?php display_graphical_risk_analysis(); ?>
-                </div>
-            </div>
+            </form>
         </div>
     </div>
+    <div class="col-12 mt-4">
+        <?php display_graphical_risk_analysis(); ?>
+    </div>
 </div>
-</body>
-</html>
+
+<?php
+    // Render the footer of the page. Please don't put code after this part.
+    render_footer();
+?>

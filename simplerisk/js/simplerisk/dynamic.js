@@ -1,8 +1,3 @@
-function closeSearchBox()
-{
-    document.getElementById("selections").style.display = "none";
-}
-
 /**
 * Make filter dropdown options html
 * 
@@ -49,13 +44,13 @@ function makeFitlerOptionHTML(options, columnName, select, hidden_location_filte
 */
 function makeFilterNonDropdownHTML(index, columnName, fieldType)
 {
-    var HTML = '<div style="min-width: 150px; text-align: center">';
+    var HTML = '<div class="d-flex justify-content-center" style="min-width: 150px; text-align: center">';
     var date_format = $("#date_format").val();
     if(typeof(date_format) == "undefined") date_format = "YYYY-MM-DD";
 
     if(fieldType == "date" || columnName == "submission_date" || columnName == "review_date" || columnName == "planning_date" || columnName == "closure_date" || columnName == "mitigation_date")
     {
-        HTML += '<input type="text" data-index="'+ index +'" class="dynamic-column-filter dynamic-column-text-filter" placeholder="'+date_format+'" data-name="'+columnName+'">'
+        HTML += '<input type="text" data-index="'+ index +'" class="dynamic-column-filter dynamic-column-text-filter form-control" placeholder="'+date_format+'" data-name="'+columnName+'">'
     }
     else if(columnName.indexOf("calculated_risk") !== -1 || columnName.indexOf("residual_risk") !== -1 || columnName.indexOf("contributing_likelihood") !== -1 || columnName.indexOf("contributing_impact") !== -1 || columnName == "classic_likelihood" || columnName == "classic_impact" || columnName == "days_open")
     {
@@ -66,11 +61,11 @@ function makeFilterNonDropdownHTML(index, columnName, fieldType)
         * <= : 3
         * <  : 4
         */
-        HTML += '<SELECT class="sub-filter-box-1 dynamic-column-filter dynamic-column-operator-filter" data-index="'+ index +'" data-name="'+ columnName + "_operator" +'"><option value="0">></option><option value="1">>=</option><option value="2">=</option><option value="3"><=</option><option value="4"><</option></SELECT>&nbsp;&nbsp;<input type="text" data-index="'+ index +'" class="sub-filter-box-2 dynamic-column-filter dynamic-column-text-filter" data-name="'+columnName+'">';
+        HTML += '<SELECT style="max-width: 50px;" class="sub-filter-box-1 dynamic-column-filter dynamic-column-operator-filter form-control" data-index="'+ index +'" data-name="'+ columnName + "_operator" +'"><option value="0">></option><option value="1">>=</option><option value="2">=</option><option value="3"><=</option><option value="4"><</option></SELECT>&nbsp;&nbsp;<input style="max-width: 100px;" type="text" data-index="'+ index +'" class="sub-filter-box-2 dynamic-column-filter dynamic-column-text-filter form-control" data-name="'+columnName+'">';
     }
     else
     {
-        HTML += '<input type="text" data-index="'+ index +'" class="dynamic-column-filter dynamic-column-text-filter" data-name="'+columnName+'">';
+        HTML += '<input type="text" data-index="'+ index +'" class="dynamic-column-filter dynamic-column-text-filter form-control" data-name="'+columnName+'">';
     }
     
     HTML += '</div>';
@@ -199,18 +194,13 @@ $(document).ready(function(){
 
             var riskDatatable = $this.DataTable({
                 scrollX: true,
-                bFilter: false,
-                bLengthChange: false,
-                processing: true,
-                serverSide: true,
                 bSort: true,
                 orderCellsTop: true,
                 deferLoading: initial_load ? null : 0, // if initial load is false, prevent initial load by setting deferloadding to 0
 //                ordering: false,
-                pagingType: "full_numbers",
-                dom : "flrti<'.download-by-group'><'.print-by-group'><'#view-all-"+ index +".view-all'>p",
+				dom: "<'row'<'col-sm-12 col-md-2'l><'col-sm-12 col-md-10 settings'>><'row dt-row'<'col-sm-12'tr>><'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 paginate'<'download-by-group float-end'><'print-by-group float-end'><'btn btn-primary shows float-end'>p>>",
                 ajax: {
-                    url: BASE_URL + '/api/reports/dynamic',
+                    url:  BASE_URL + '/api/reports/dynamic',
                     type: "post",
                     data: function(d) {
                         d.status        = $("#status").val();
@@ -298,7 +288,7 @@ $(document).ready(function(){
                                     $(makeFilterNonDropdownHTML(index, columnName, options.field_type)).appendTo( column );
                                 }
                                 else{
-                                    var select = $('<select class="dynamic-column-dropdown-filter dynamic-column-filter" data-index="'+ index +'" data-name="'+columnName+'" multiple><option value="_empty">'+unassigned_option+'</option></select>').appendTo( column );
+                                    var select = $('<select class="dynamic-column-dropdown-filter dynamic-column-filter form-control" data-index="'+ index +'" data-name="'+columnName+'" multiple><option value="_empty">'+unassigned_option+'</option></select>').appendTo( column );
                                     makeFitlerOptionHTML(options, columnName, select, hidden_location_filters);
 
                                 }
@@ -322,7 +312,7 @@ $(document).ready(function(){
                                         $hiddenContainerObj.html(makeFilterNonDropdownHTML(index, columnName, options.field_type));
                                     }
                                     else{
-                                        $hiddenContainerObj.html('<select class="dynamic-column-filter dynamic-column-dropdown-filter" data-index="'+ index +'" data-name="'+columnName+'" multiple></select>');
+                                        $hiddenContainerObj.html('<select class="dynamic-column-filter dynamic-column-dropdown-filter form-control" data-index="'+ index +'" data-name="'+columnName+'" multiple></select>');
                                         makeFitlerOptionHTML(options, columnName, $("select", $hiddenContainerObj), hidden_location_filters);
                                     }
                                 }
@@ -347,20 +337,11 @@ $(document).ready(function(){
                             }
                         }
                     });
-                    
+                    $('.download-by-group').html("<i class='fa fa-download' aria-hidden='true'></i>");
+        			$('.print-by-group').html("<i class='fa fa-print' aria-hidden='true'></i>");
                 }
             });
 
-            riskDatatable.on('draw', function(e, settings){
-                if(settings._iDisplayLength == -1){
-                    $("#" + settings.sTableId + "_wrapper").find(".paginate_button.current").removeClass("current");
-                }
-                $('.paginate_button.first').html('<i class="fa fa-chevron-left"></i><i class="fa fa-chevron-left"></i>');
-                $('.paginate_button.previous').html('<i class="fa fa-chevron-left"></i>');
-
-                $('.paginate_button.last').html('<i class="fa fa-chevron-right"></i><i class="fa fa-chevron-right"></i>');
-                $('.paginate_button.next').html('<i class="fa fa-chevron-right"></i>');
-            })
             riskDataTables.push(riskDatatable);
             riskDatatable.on( 'xhr', function () {
                 columnFilters = riskDatatable.ajax.params().columnFilters;
@@ -370,24 +351,10 @@ $(document).ready(function(){
             });
         });
 
-        $('.view-all').html("All");
-        $('.download-by-group').html("<i class=\"fa fa-download\" aria-hidden=\"true\"></i>");
-        $('.print-by-group').html("<i class=\"fa fa-print\" aria-hidden=\"true\"></i>");
-        
         $(".expand-all").click(function(e){
             e.preventDefault();
             $(".view-all").click();
-
-        })
-        
-        $(".view-all").click(function(){
-            var $this = $(this);
-            var index = $(this).attr('id').replace("view-all-", "");
-            var oSettings =  riskDataTables[index].settings();
-            oSettings[0]._iDisplayLength = -1;
-            riskDataTables[index].draw();
-            $this.addClass("current");
-        })
+        });
         
         // Event by text column filter
         $("body").on("change", '.dynamic-column-text-filter', function(){
@@ -402,21 +369,6 @@ $(document).ready(function(){
             {
                 var tableIndex = $(this).data("index");
                 riskDataTables[tableIndex].draw();
-            }
-        })
-
-        $("body").on("click", "span > .paginate_button", function(){
-            var index = $(this).attr('aria-controls').replace("DataTables_Table_", "");
-
-            riskDataTables[index] || (index = 0);
-            
-            if(riskDataTables[index]){
-                var oSettings =  riskDataTables[index].settings();
-                if(oSettings[0]._iDisplayLength == -1){
-                    $(this).parents(".dataTables_wrapper").find('.view-all').removeClass('current');
-                    oSettings[0]._iDisplayLength = 10;
-                    riskDataTables[index].draw()
-                }
             }
         })
             

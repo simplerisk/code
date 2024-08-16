@@ -4,30 +4,16 @@
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required functions file
-require_once(realpath(__DIR__ . '/../includes/functions.php'));
-require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-require_once(realpath(__DIR__ . '/../includes/display.php'));
+
 require_once(realpath(__DIR__ . '/../includes/assessments.php'));
-require_once(realpath(__DIR__ . '/../includes/alerts.php'));
-require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Add various security headers
-add_security_headers();
+// Render the header and sidebar
+require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 
-// Add the session
-$permissions = array(
-        "check_access" => true,
-        "check_assessments" => true,
-);
-add_session_check($permissions);
+// Set the breadcrumb title key to one of the keys for create/edit question or nothing if we're not on a sub-page
+$breadcrumb_title_key = isset($_GET['action']) ? ['edit_template' => 'EditQuestionnaireTemplate', 'add_template' => 'NewQuestionnaireTemplate', 'add_template_from_scf' => 'NewQuestionnaireTemplate'][$_GET['action']] : '';
 
-// Include the CSRF Magic library
-include_csrf_magic();
-
-// Include the SimpleRisk language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
-require_once(language_file());
+render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'datatables:rowreorder', 'WYSIWYG', 'WYSIWYG:Assessments', 'tabs:logic', 'multiselect', 'CUSTOM:common.js', 'cve_lookup', 'CUSTOM:pages/assessment.js', 'EXTRA:JS:assessments:questionnaire_templates.js', 'editable', 'JSLocalization'], ["check_assessments" => true], $breadcrumb_title_key, required_localization_keys: ['SearchForControl', 'SearchForFramework']);
 
 // Check if assessment extra is enabled
 if(assessments_extra())
@@ -45,117 +31,66 @@ else
 if(process_assessment_questionnaire_templates()){
     refresh();
 }
+
 ?>
 
-<!doctype html>
-<html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
-
-<head>
-    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
-<?php
-        // Use these jQuery scripts
-        $scripts = [
-                'jquery.min.js',
-        ];
-
-        // Include the jquery javascript source
-        display_jquery_javascript($scripts);
-
-        // Use these jquery-ui scripts
-        $scripts = [
-                'jquery-ui.min.js',
-        ];
-
-        // Include the jquery-ui javascript source
-        display_jquery_ui_javascript($scripts);
-?>
-    <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
-    <?php display_bootstrap_javascript(); ?>
-    <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/simplerisk/pages/assessment.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/dataTables.rowReorder.min.js?<?php echo current_version("app"); ?>"></script>
-
-    
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <meta name="google" content="notranslate" />
-    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/rowReorder.dataTables.min.css?<?php echo current_version("app"); ?>">
-
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/prioritize.css?<?php echo current_version("app"); ?>">
-
-    <?php
-        setup_favicon("..");
-        setup_alert_requirements("..");
+<div class="row bg-white">
+    <div class="col-12">
+    <?php 
+        if(!isset($_GET['action']) || $_GET['action']=="template_list") { 
     ?>
-</head>
-
-<body>
-
+        <div class="card-body my-2 border">
     <?php
-        view_top_menu("Assessments");
-
-        // Get any alerts
-        get_alert();
+            if(has_permission("assessment_add_template")) {
     ?>
-    <div class="container-fluid">
-        <div class="row-fluid">
-            <div class="span3">
-                <?php view_assessments_menu("QuestionnaireTemplates"); ?>
+            <button type="button" class="btn btn-primary float-end" data-sr-role='dt-settings' data-sr-target='assessment-questionnaire-templates-table' data-bs-toggle="modal" data-bs-target="#assessment-questionnaire-template--add"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
+    <?php
+            }
+    ?>
+            <div class="row">
+                <div class="col-12">
+                    <?php display_questionnaire_templates(); ?>
+                </div>
             </div>
-            <div class="span9">
-                <?php if(isset($_GET['action']) && $_GET['action']=="template_list"){ ?>
-                    <?php if(has_permission("assessment_add_template")){ ?>
-                    <div class="row-fluid text-right">
-                        <a class="btn" href="#aseessment-questionnaire-template--add" role="button" data-toggle="modal"><?php echo $escaper->escapeHtml($lang['Add']); ?></a>
-                    </div>
-                    <?php }?>
-                    <div class="row-fluid">
-                        <?php display_questionnaire_templates(); ?>
-                    </div>
-                <?php }elseif(isset($_GET['action']) && $_GET['action']=="add_template"){ ?>
-                    <div class="hero-unit">
-                        <?php display_questionnaire_template_add(); ?>
-                    </div>
-                <?php }elseif(isset($_GET['action']) && $_GET['action']=="add_template_from_scf"){ ?>
-                    <div class="hero-unit">
-                        <?php display_questionnaire_template_add_from_scf(); ?>
-                    </div>
-                <?php }elseif(isset($_GET['action']) && $_GET['action']=="edit_template"){ ?>
-                    <div class="hero-unit">
-                        <?php display_questionnaire_template_edit($_GET['id']); ?>
-                    </div>
-                <?php } ?>
-
-
+        </div>
+    <?php
+        } elseif(isset($_GET['action']) && $_GET['action']=="add_template") {
+    ?>
+        <div class="hero-unit card-body my-2 border">
+            <?php display_questionnaire_template_add(); ?>
+        </div>
+    <?php
+        } elseif(isset($_GET['action']) && $_GET['action']=="add_template_from_scf") {
+    ?>
+        <div class="hero-unit card-body my-2 border">
+            <?php display_questionnaire_template_add_from_scf(); ?>
+        </div>
+    <?php
+        } elseif(isset($_GET['action']) && $_GET['action']=="edit_template") {
+    ?>
+        <div class="hero-unit card-body my-2 border">
+            <?php display_questionnaire_template_edit($_GET['id']); ?>
+        </div>
+    <?php
+        }
+    ?>
+    </div>
+</div>
+<div class="modal fade" id="assessment-questionnaire-template--add" tabindex="-1" aria-labelledby="assessment-questionnaire-template--add" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered modal-dark">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="form-group text-center">
+                    <label for=""><?= $escaper->escapeHtml($lang['WouldYouLikeSimpleRiskToAutomaticallyGenerate']); ?></label>
+                </div>
+                <div class="form-group text-center project-delete-actions">
+                    <a class="btn btn-submit" href="questionnaire_templates.php?action=add_template_from_scf"><?php echo $escaper->escapeHtml($lang['Yes']);?></a>
+                    <a class="btn btn-secondary" href="questionnaire_templates.php?action=add_template"><?php echo $escaper->escapeHtml($lang['No']);?></a>
+                </div>
             </div>
         </div>
     </div>
-    <div id="aseessment-questionnaire-template--add" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
-      <div class="modal-body">
-
-        <form class="" action="" method="post">
-          <div class="form-group text-center">
-            <label for=""><?php echo $escaper->escapeHtml($lang['WouldYouLikeSimpleRiskToAutomaticallyGenerate']);?></label>
-          </div>
-          <input type="hidden" name="template_id" value="" />
-          <div class="form-group text-center ">
-            <a class="delete_control btn btn-danger" href="questionnaire_templates.php?action=add_template_from_scf"><?php echo $escaper->escapeHtml($lang['Yes']);?></a>
-            <a class="btn btn-default" href="questionnaire_templates.php?action=add_template"><?php echo $escaper->escapeHtml($lang['No']);?></a>
-          </div>
-        </form>
-      </div>
-    </div>
-
-</body>
-
-</html>
-
+</div>
+<?php
+render_footer ();
+?>

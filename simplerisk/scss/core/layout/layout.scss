@@ -1,0 +1,122 @@
+// App
+
+/*============================================================== 
+ For all pages 
+ ============================================================== */
+
+.left-sidebar {
+	width: var(--sr-sidebar-width);
+}
+
+.page-wrapper {
+	margin-left: var(--sr-sidebar-width);
+	
+	background: $page-wrapper-bg;
+	//scrollbar-gutter: stable; // We could've used it here if safari supported it...
+	position:fixed;
+	top: $topbar-height;
+	left:0;
+	right:0;
+	bottom:0;
+  	overflow:auto;
+
+	.scroll-content {
+		position: relative;
+		height: 100%;
+
+		.content-wrapper {
+			overflow-y: scroll;
+			overflow-x: hidden;
+
+			// It's for the footer to stay at the bottom
+			min-height: calc(100vh - $topbar-height);
+			display: flex;
+			flex-direction: column;
+
+			.content {
+				margin: 10px;
+				padding: 10px;
+				background-color: $body-bg;
+				width: calc(100vw - var(--sr-sidebar-width) - 18px);
+			}
+		}
+	}
+
+	&>.container-fluid {
+		padding: 20px;
+		min-height: calc(100vh - 180px);
+	}
+}
+
+/*******************
+ Footer
+*******************/
+.footer {
+	padding: 15px 20px;
+	margin-top: auto;
+}
+
+/*******************
+ Vertical layout
+*******************/
+
+#main-wrapper {
+  	width: 100%;
+  	overflow: hidden;
+
+  	/*sidebar type*/
+	&[data-sidebartype="full"] {
+		--sr-sidebar-width: #{$sidebar-width-full};
+	}
+
+	&[data-sidebartype="no-sidebar"] {
+		--sr-sidebar-width: #{$sidebar-width-none};
+	}
+}
+
+/*******************
+ Vertical responsive layout
+*******************/
+@include media-breakpoint-up(md) {
+  	#main-wrapper[data-layout="vertical"] {
+    	/*Vertical*/
+    	&[data-sidebartype="full"] {
+			--sr-sidebar-width: #{$sidebar-width-full};
+    	}
+    	/*Sidebar position*/
+    	&[data-sidebar-position="fixed"][data-sidebartype="full"] {
+			--sr-sidebar-width: #{$sidebar-width-full};
+    	}
+
+		&[data-sidebartype="no-sidebar"] {
+			--sr-sidebar-width: #{$sidebar-width-none};
+		}
+	}
+}
+
+@media (max-width: 767px) {
+  #main-wrapper {
+    &.show-sidebar {
+      .left-sidebar {
+        left: 0;
+      }
+    }
+    &[data-layout="vertical"][data-sidebar-position="fixed"] {
+      .topbar .top-navbar {
+        .navbar-collapse {
+          position: relative;
+          top: $topbar-height;
+        }
+      }
+    }
+    /*Header position*/
+    &[data-layout="vertical"][data-header-position="fixed"][data-sidebar-position="fixed"] {
+      .topbar .top-navbar {
+        .navbar-collapse {
+          position: relative;
+          top: $topbar-height;
+        }
+      }
+    }
+  }
+}

@@ -465,10 +465,10 @@ function create_mfa_secret_for_uid($uid = null)
     }
 }
 
-/*********************************
- * FUNCTION: GET MFA QR CODE URL *
- *********************************/
-function get_mfa_qr_code_url($uid)
+/***********************************
+ * FUNCTION: GET MFA QR CODE IMAGE *
+ ***********************************/
+function get_mfa_qr_code_image($uid)
 {
     // Get the username for this uid
     $user = get_user_by_id($uid);
@@ -491,13 +491,10 @@ function get_mfa_qr_code_url($uid)
     $totp_parameters = http_build_query($parameters, '', '&');
 
     // Construct the TOTP URI
-    $totp_uri = "otpauth://totp/SimpleRisk:" . $username . "?" . $totp_parameters;
+    $data = "otpauth://totp/SimpleRisk:" . $username . "?" . $totp_parameters;
 
-    // Use the Google Chart API to generate the QR code
-    $image_url = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data='.urlencode($totp_uri);
-
-    // Return the image URL
-    return $image_url;
+    // Generate the QR code
+    echo '<img src="'.(new \chillerlan\QRCode\QRCode)->render($data).'" alt="QR Code" width="300px" height="300px" />';
 }
 
 /********************************
@@ -698,54 +695,54 @@ function check_mfa_attempts($uid)
  *******************************************/
 function display_mfa_verification_page($uid = null)
 {
+
     global $escaper, $lang;
 
     // If the uid is null
-    if ($uid === null )
-    {
+    if ($uid === null ) {
         // Set it to the session uid
         $uid = $_SESSION['uid'];
     }
 
-    echo "<div class='hero-unit'>\n";
-    echo "<table name='verify' border='0'>\n";
+    echo "
+        <h4 class='m-b-30'>" . $escaper->escapeHtml($lang['ProtectYourSimpleRiskAccount']) . "</h4>
+    ";
 
     // Get the multi_factor value for this uid
     $multi_factor = get_multi_factor_for_uid($uid);
 
-    echo "<tr>\n";
-    echo "<td><h3>" . $escaper->escapeHtml($lang['ProtectYourSimpleRiskAccount']) . "</h3></td>\n";
-    echo "</tr>\n";
-
     // If the user has Duo or Toopher for MFA
-    if ($multi_factor == 2 || $multi_factor == 3)
-    {
+    if ($multi_factor == 2 || $multi_factor == 3) {
         // Display a message about them being removed
-        echo "<tr>\n";
-        echo "<td><h4>" . $escaper->escapeHtml($lang['DuoToopherRemoved']) . "</h4></td>\n";
-        echo "</tr>\n";
+        echo "
+        <h5 class='m-b-20'>" . $escaper->escapeHtml($lang['DuoToopherRemoved']) . "</h5>
+        ";
     }
 
-    echo "<tr>\n";
-    echo "<td><h4>" . $escaper->escapeHtml($lang['2FADescription']) . "</h4></td>\n";
-    echo "</tr>\n";
-    echo "</table>\n";
-    echo "</div>\n";
+    echo "
+        <h5 class='m-b-20'>" . $escaper->escapeHtml($lang['2FADescription']) . "</h5>
 
-    echo "<div class='hero-unit'>\n";
-    echo "<table name='verify' border='0' cellspacing='5'>\n";
-    echo "<tr>\n";
-    echo "<td><h4>" . $escaper->escapeHtml($lang['2FAStep1']) . "</h4></td>\n";
-    echo "<td><h4>" . $escaper->escapeHtml($lang['2FAStep2']) . "</h4></td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td><img src=\"" . get_mfa_qr_code_url($uid) . "\" /></td>\n";
-    echo "<td valign='top'><input name='mfa_secret' type='number' minlength='6' maxlength='6' autofocus='autofocus' />&nbsp;&nbsp;<input type='submit' name='verify' value='" . $escaper->escapeHtml($lang['Verify']) . "' /></td>\n";
-    echo "</tr>\n";
-
-    echo "</table>\n";
-    echo "</div>\n";
+        <div class='row align-items-center m-b-20'>
+            <div class='col-6'>
+                <h5>" . $escaper->escapeHtml($lang['2FAStep1']) . "</h5>
+            </div>
+            <div class='col-6'>
+                <h5>" . $escaper->escapeHtml($lang['2FAStep2']) . "</h5>
+            </div>
+        </div>
+        
+        <div class='row'>
+            <div class='col-6'>
+                " . get_mfa_qr_code_image($uid) . "
+            </div>
+            <div class='col-6'>
+                <div class='d-flex'>
+                    <input class='form-control m-r-10' name='mfa_secret' type='number' minlength='6' maxlength='6' autofocus='autofocus' />
+                    <input class='btn btn-submit' type='submit' name='verify' value='" . $escaper->escapeHtml($lang['Verify']) . "' />
+                </div>
+            </div>
+        </div>
+    ";
 }
 
 /************************************
@@ -753,43 +750,35 @@ function display_mfa_verification_page($uid = null)
  ************************************/
 function display_mfa_reset_page()
 {
+
     global $lang, $escaper;
 
-    echo "<div class='hero-unit'>\n";
-    echo "<table name='protected' border='0'>\n";
-    echo "<tr>\n";
-    echo "<td><h3>" . $escaper->escapeHtml($lang['YourSimpleRiskAccountIsProtected']) . "</h3></td>\n";
-    echo "</tr>\n";
-    echo "</table>\n";
-    echo "</div>\n";
+    echo "
+        <h4 class='m-b-30'>" . $escaper->escapeHtml($lang['YourSimpleRiskAccountIsProtected']) . "</h4>
+    ";
 
     // If we do not require MFA for all users
     if (!get_setting("mfa_required")) {
+    
         // Allow MFA to be disabled
-        echo "<div class='hero-unit'>\n";
-        echo "<table name='disable' border='0'>\n";
-        echo "<tr>\n";
-        echo "<td><h4>" . $escaper->escapeHtml($lang['ToDisableMFA']) . "</h4></td>\n";
-        echo "</tr>\n";
-        echo "<tr>\n";
-        echo "<td><h4>" . $escaper->escapeHtml($lang['MFAToken']) . ":&nbsp;&nbsp;<input name='mfa_token' type='number' minlength='6' maxlength='6' /></h4></td>\n";
-        echo "</tr>\n";
-        echo "<tr>\n";
-        echo "<td><input type='submit' name='disable' value='" . $escaper->escapeHtml($lang['Disable']) . "' /></h4></td>\n";
-        echo "</tr>\n";
-        echo "</table>\n";
-        echo "</div>\n";
-    }
-    // Otherwise display a message that disabling MFA is not availabl
-    else
-    {
-        echo "<div class='hero-unit'>\n";
-        echo "<table name='disable' border='0'>\n";
-        echo "<tr>\n";
-        echo "<td><h4>" . $escaper->escapeHtml($lang['MFARequiredForAllusers']) . "</h4></td>\n";
-        echo "</tr>\n";
-        echo "</table>\n";
-        echo "</div>\n";
+        echo "
+        <h5 class='m-b-20'>" . $escaper->escapeHtml($lang['ToDisableMFA']) . "</h5>
+        <div class='row m-b-20'>
+            <div class='col-6 d-flex align-items-center'>
+                <label style='width: 100px; min-width: 100px;'>" . $escaper->escapeHtml($lang['MFAToken']) . ":</label>
+                <input name='mfa_token' type='number' minlength='6' maxlength='6' class='form-control m-r-20'/>
+                <input type='submit' class='btn btn-dark' name='disable' value='" . $escaper->escapeHtml($lang['Disable']) . "' />
+            </div>
+        </div>
+        ";
+
+    // Otherwise display a message that disabling MFA is not available
+    } else {
+
+        echo "
+        <h5 class='m-b-20'>" . $escaper->escapeHtml($lang['MFARequiredForAllusers']) . "</h5>
+        ";
+
     }
 }
 
@@ -798,29 +787,22 @@ function display_mfa_reset_page()
  *********************************************/
 function display_mfa_authentication_page()
 {
+
     global $lang, $escaper;
 
-    echo "<div class='hero-unit'>\n";
-    echo "<table name='protected' border='0'>\n";
-    echo "<tr>\n";
-    echo "<td><h3>" . $escaper->escapeHtml($lang['YourSimpleRiskAccountIsProtected']) . "</h3></td>\n";
-    echo "</tr>\n";
-    echo "</table>\n";
-    echo "</div>\n";
-
-    echo "<div class='hero-unit'>\n";
-    echo "<table name='disable' border='0'>\n";
-    echo "<tr>\n";
-    echo "<td><h4>" . $escaper->escapeHtml($lang['VerifyItsYou']) . "</h4></td>\n";
-    echo "</tr>\n";
-    echo "<tr>\n";
-    echo "<td><h4>" . $escaper->escapeHtml($lang['MFAToken']) . ":&nbsp;&nbsp;<input name='mfa_token' type='number' minlength='6' maxlength='6' autofocus='autofocus' /></h4></td>\n";
-    echo "</tr>\n";
-    echo "<tr>\n";
-    echo "<td><input type='submit' name='authenticate' value='" . $escaper->escapeHtml($lang['Verify']) . "' /></h4></td>\n";
-    echo "</tr>\n";
-    echo "</table>\n";
-    echo "</div>\n";
+    echo "
+        <div class='card' style='margin-top: 43.8px;'>
+            <div class='card-body'>
+                <h4 class='m-b-30'>" . $escaper->escapeHtml($lang['YourSimpleRiskAccountIsProtected']) . "</h4>
+                <h5 class='m-b-20'>" . $escaper->escapeHtml($lang['VerifyItsYou']) . "</h5>
+                <div class='d-flex align-items-center m-b-20'>
+                    <label style='width: 100px; min-width: 100px;'>" . $escaper->escapeHtml($lang['MFAToken']) . ":</label>
+                    <input name='mfa_token' type='number' minlength='6' maxlength='6' autofocus='autofocus' class='form-control m-r-20'/>
+                    <input type='submit' class='btn btn-submit' name='authenticate' value='" . $escaper->escapeHtml($lang['Verify']) . "' />
+                </div>
+            </div>
+        </div>
+    ";
 }
 
 ?>

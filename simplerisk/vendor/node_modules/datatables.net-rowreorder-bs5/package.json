@@ -1,0 +1,52 @@
+{
+    "name": "datatables.net-rowreorder-bs5",
+    "description": "RowReorder for DataTables with styling for [Bootstrap5](https://getbootstrap.com/)",
+    "main": "js/rowReorder.bootstrap5.js",
+    "module": "js/rowReorder.bootstrap5.mjs",
+    "style": "css/rowReorder.bootstrap5.css",
+    "types": "./types/rowReorder.bootstrap5.d.ts",
+    "version": "1.5.0",
+    "files": [
+        "css/**/*.css",
+        "js/**/*.js",
+        "js/**/*.mjs",
+        "types/**/*.d.ts"
+    ],
+    "keywords": [
+        "RowReorder",
+        "Row Reordering",
+        "Bootstrap",
+        "Bootstrap5",
+        "Datatables",
+        "jQuery",
+        "table",
+        "filter",
+        "sort"
+    ],
+    "dependencies": {
+        "datatables.net-rowreorder": "1.5.0",
+        "datatables.net-bs5": ">=1.11.0",
+        "jquery": ">=1.7"
+    },
+    "moduleType": [
+        "globals",
+        "amd",
+        "node"
+    ],
+    "ignore": [
+        "composer.json",
+        "datatables.json",
+        "package.json"
+    ],
+    "author": {
+        "name": "SpryMedia Ltd",
+        "url": "http://datatables.net"
+    },
+    "homepage": "https://datatables.net",
+    "bugs": "https://datatables.net/forums",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DataTables/Dist-DataTables-RowReorder-Bootstrap5.git"
+    }
+}

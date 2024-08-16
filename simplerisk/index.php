@@ -4,29 +4,30 @@
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include the SimpleRisk configuration file
-require_once(realpath(__DIR__ . '/includes/config.php'));
+require_once realpath(__DIR__ . "/includes/config.php");
 
 // If the database hasn't been installed yet
-if (defined('SIMPLERISK_INSTALLED') && SIMPLERISK_INSTALLED == "false")
-{
+if (defined("SIMPLERISK_INSTALLED") && SIMPLERISK_INSTALLED == "false") {
     // Include the required installation file
-    require_once(realpath(__DIR__ . '/includes/install.php'));
+    require_once realpath(__DIR__ . "/includes/install.php");
 
     // Call the SimpleRisk installation process
     simplerisk_installation();
 }
 // The SimpleRisk database has been installed
-else
-{
-    // Include required functions file
-    require_once(realpath(__DIR__ . '/includes/functions.php'));
-    require_once(realpath(__DIR__ . '/includes/authenticate.php'));
-    require_once(realpath(__DIR__ . '/includes/display.php'));
-    require_once(realpath(__DIR__ . '/includes/alerts.php'));
-    require_once(realpath(__DIR__ . '/includes/extras.php'));
-    require_once(realpath(__DIR__ . '/includes/install.php'));
-    require_once(realpath(__DIR__ . '/vendor/autoload.php'));
+else {
 
+    // Include required functions file
+    require_once realpath(__DIR__ . "/includes/functions.php");
+    require_once realpath(__DIR__ . "/includes/authenticate.php");
+    require_once realpath(__DIR__ . "/includes/display.php");
+    require_once realpath(__DIR__ . "/includes/alerts.php");
+    require_once realpath(__DIR__ . "/includes/extras.php");
+    require_once realpath(__DIR__ . "/includes/install.php");
+    require_once realpath(__DIR__ . "/vendor/autoload.php");
+
+    // Include Laminas Escaper for HTML Output Encoding
+    $escaper = new Laminas\Escaper\Escaper("utf-8");
     // Add various security headers
     add_security_headers();
 
@@ -35,19 +36,25 @@ else
     $stmt = $db->prepare("SELECT count(value) as count FROM `user`;");
     $stmt->execute();
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    $count = $result['count'];
+    $count = $result["count"];
     db_close($db);
 
-    if (!isset($_SESSION))
-    {
+    if (!isset($_SESSION)) {
         // Session handler is database
-        if (USE_DATABASE_FOR_SESSIONS == "true")
-        {
+        if (USE_DATABASE_FOR_SESSIONS == "true") {
             session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
         }
 
         // Start session
-        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+        $parameters = [
+            "lifetime" => 0,
+            "path" => "/",
+            "domain" => "",
+            "secure" => isset($_SERVER["HTTPS"]),
+            "httponly" => true,
+            "samesite" => "Strict",
+        ];
+        session_set_cookie_params($parameters);
 
         sess_gc(1440);
         session_name('SimpleRisk');
@@ -60,8 +67,7 @@ else
     require_once(language_file());
 
     // If the database has been installed but there are no users
-    if ($count == 0)
-    {
+    if ($count == 0) {
         // Create the default admin account
         create_default_admin_account();
 
@@ -69,34 +75,32 @@ else
         exit();
     }
     // Otherwise go about the standard login process
-    else
-    {
+    else {
         // Checking for the SAML logout status
-        if (custom_authentication_extra() && isset($_REQUEST['LogoutState'])) {
+        if (custom_authentication_extra() && isset($_REQUEST["LogoutState"])) {
             global $lang;
             // Parse the logout state
-            $state = \SimpleSAML\Auth\State::loadState((string)$_REQUEST['LogoutState'], 'MyLogoutState');
-            $ls = $state['saml:sp:LogoutStatus']; /* Only works for SAML SP */
-            if ($ls['Code'] === 'urn:oasis:names:tc:SAML:2.0:status:Success' && !isset($ls['SubCode'])) {
+            $state = \SimpleSAML\Auth\State::loadState((string) $_REQUEST["LogoutState"], "MyLogoutState");
+            $ls = $state["saml:sp:LogoutStatus"]; /* Only works for SAML SP */
+            if ($ls["Code"] === "urn:oasis:names:tc:SAML:2.0:status:Success" && !isset($ls["SubCode"])) {
                 /* Successful logout. */
-                set_alert(true, "good", $lang['SAMLLogoutSuccessful']);
+                set_alert(true, "good", $lang["SAMLLogoutSuccessful"]);
             } else {
                 /* Logout failed. Tell the user to close the browser. */
-                set_alert(true, "bad", $lang['SAMLLogoutFailed']);
+                set_alert(true, "bad", $lang["SAMLLogoutFailed"]);
             }
         }
         // If the login form was posted
-        if (isset($_POST['submit']))
-        {
-            $user = $_POST['user'];
-            $pass = $_POST['pass'];
+        $user='';
+        if (isset($_POST["submit"])) {
+            $user = $_POST["user"];
+            $pass = $_POST["pass"];
 
             // Check for expired lockouts
             check_expired_lockouts();
 
             // If the user is valid
-            if (is_valid_user($user, $pass))
-            {
+            if (is_valid_user($user, $pass)) {
                 $uid = get_id_by_user($user);
                 $array = get_user_by_id($uid);
                 $_SESSION['user'] = $array['username'];
@@ -106,20 +110,21 @@ else
                 {
                     $_SESSION['first_login_uid'] = $uid;
 
-                    if (encryption_extra())
-                    {
+                    if (encryption_extra()) {
                         // Load the extra
-                        require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
+                        require_once realpath(
+                            __DIR__ . "/extras/encryption/index.php"
+                        );
 
                         // Get the current password encrypted with the temp key
                         check_user_enc($user, $pass);
                     }
 
                     // Put the posted password in the session before redirecting them to the reset page
-                    $_SESSION['first_login_pass'] = $pass;
+                    $_SESSION["first_login_pass"] = $pass;
 
                     header("location: reset_password.php");
-                    exit;
+                    exit();
                 }
 
                 // Create the SimpleRisk instance ID if it doesn't already exist
@@ -128,14 +133,11 @@ else
                 // Set the user permissions
                 set_user_permissions($user);
 
-                // Ping the server
-                ping_server();
-
                 // Do a license check
                 simplerisk_license_check();
 
                 // Get base url
-                $_SESSION['base_url'] = get_base_url();
+                $_SESSION["base_url"] = get_base_url();
 
                 // Set login status
                 login($user, $pass);
@@ -248,180 +250,177 @@ else
                 }
             }
         }
+    }
 
-        // If the user has already authorized and we are authorizing with duo
-        if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
-        {
-            // If a response has been posted
-            if (isset($_POST['sig_response']))
-            {
-                // Get the username and password and then unset the session values
-                $user = $_SESSION['user'];
-                $pass = $_SESSION['pass'];
-                unset($_SESSION['user']);
-                unset($_SESSION['pass']);
+    // Set a global variable for the current app version, so we don't have to call a function every time
+    $current_app_version = current_version("app");
 
-                // Include the custom authentication extra
-                require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
+    ?>
+<!DOCTYPE html>
+<html dir="ltr" lang="en" xml:lang="en">
+    <head>
+        <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+        
+        <!-- Favicon icon -->
+        <?php setup_favicon();?>
+        
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="css/style.min.css?<?= $current_app_version ?>" />
 
-                // Get the authentication settings
-                $configs = get_authentication_settings();
+        <!-- jQuery CSS -->
+        <link rel="stylesheet" href="vendor/node_modules/jquery-ui/dist/themes/base/jquery-ui.min.css?<?= $current_app_version ?>">
 
-                // For each configuration
-                foreach ($configs as $config)
-                {
-                    // Set the name value pair as a variable
-                    ${$config['name']} = $config['value'];
-                }
+        <!-- extra css -->
 
-                // Get the response back from Duo
-                $resp = Duo\Web::verifyResponse($IKEY, $SKEY, get_duo_akey(), $_POST['sig_response']);
+        <link rel="stylesheet" href="vendor/components/font-awesome/css/fontawesome.min.css?<?= $current_app_version ?>">
 
-                // If the response is not null
-                if ($resp != NULL)
-                {
-                    // Create the MFA secret for the uid
-                    create_mfa_secret_for_uid();
+        <!-- jQuery Javascript -->
+        <script src="vendor/node_modules/jquery/dist/jquery.min.js?<?= $current_app_version ?>" id="script_jquery"></script>
+        <script src="vendor/node_modules/jquery-ui/dist/jquery-ui.min.js?<?= $current_app_version ?>" id="script_jqueryui"></script>
 
-                    // Set the session to indicate that the Duo auth was successful, but we need to verify the new MFA
-                    $_SESSION["access"] = "mfa_verify";
-                }
+        <!-- Bootstrap tether Core JavaScript -->
+        <script src="vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js" defer></script>
+
+    </head>
+    <body>
+        <div class="preloader">
+            <div class="lds-ripple">
+                <div class="lds-pos"></div>
+                <div class="lds-pos"></div>
+            </div>
+        </div>
+        <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="none" data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full" data-function="login">
+            <header class="topbar" data-navbarbg="skin5">
+                <nav class="navbar top-navbar navbar-expand-md navbar-dark">
+                    <div class="navbar-header-1">
+                        <a class="navbar-brand" href="https://www.simplerisk.com/">
+                            <span class="logo-text ms-2">
+                                <!-- dark Logo text -->
+                                <img src="images/logo@2x.png" alt="homepage" class="light-logo"/>  
+                            </span>
+                        </a>
+                    </div>
+                </nav>
+            </header>
+            <!-- ============================================================== -->
+            <!-- Page wrapper  -->
+            <div class="page-wrapper">
+            	<div class="scroll-content">
+            		<div class="content-wrapper">
+                        <!-- container - It's the direct container of all the -->
+                        <div class="content container-fluid">
+<?php 
+    // If the user has authenticated and now we need to authenticate with mfa
+    if (isset($_SESSION["access"]) && $_SESSION["access"] == "mfa") {
+?>
+                            <div class="container login-form">
+                                <div class="row">
+                                    <div class="col-md-3"></div>
+                                    <div class="col-md-6">
+                                	    <form name='mfa' method='post' action=''>
+<?php
+                                            display_mfa_authentication_page();
+?>
+                                	    </form> 
+                                    </div>
+                                    <div class="col-md-3"></div>
+                                </div>
+                            </div>
+<?php
+    // If the user needs to verify the new MFA
+    } else if(isset($_SESSION["access"]) && $_SESSION["access"] == "mfa_verify") {
+?>
+                            <div class="container login-form">
+                                <div class="row">
+                                    <div class="col-md-12">
+                            		    <form name='mfa' method='post' action=''>
+                                            <div class='card' style='margin-top: 43.8px;'>
+                                                <div class='card-body'>
+<?php
+                                                    // Display the MFA verification page
+                                                    display_mfa_verification_page();
+?>
+                            		            </div>
+                                            </div>
+                                        </form> 
+                                    </div>
+                                </div>
+                            </div>
+<?php
+    // If the user has not authenticated
+    } else if (!isset($_SESSION["access"]) || $_SESSION["access"] != "1") {
+?>
+                            <div class="container login-form">
+                                <div class="row">
+                                    <div class="col-md-3"></div>
+                                    <div class="col-md-6">
+                                        <h3>Enterprise Risk Management Simplified...</h3>
+                                        <div class="card">
+                                            <form class="loginForm" action="" method="post" name="authenticate">
+                                                <div class="card-body">
+                                                    <h4 class="card-title"><?= $escaper->escapeHtml($lang['LogInHere']);?>:</h4>
+                                                    <div class="form-group">
+                                                        <label><?= $escaper->escapeHtml($lang['Username']);?></label>
+                                                        <input type="text" class="form-control user" id="user" name="user" required/>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label><?= $escaper->escapeHtml($lang['Password']);?></label>
+                                                        <input type="password" class="form-control pass" id="pass" name="pass" required/>
+                                                    </div>
+<?php
+        // If the custom authentication extra is enabled
+        if (custom_authentication_extra()) {
+            // If SSO Login is enabled or not set yet
+            if (get_setting("GO_TO_SSO_LOGIN") === false || get_setting("GO_TO_SSO_LOGIN") === "1") {
+                                                    // Display the SSO login link
+?>                                                
+													<p><a href="extras/authentication/login.php"><?= $escaper->escapeHtml($lang["GoToSSOLoginPage"]);?></a></p>
+<?php
             }
         }
+?>
+                                                    <div class="form-group">
+                                                        <p class='m-b-0'><a class='text-decoration-none' href="reset.php"><?= $escaper->escapeHtml($lang['ForgotYourPassword']);?></a></p>
+                                                        <div>
+                                                            <button type="reset" class="btn btn-dark"><?= $escaper->escapeHtml($lang['Reset']);?></button>
+                                                            <button type="submit" class="btn btn-submit" name="submit" value="submit"><?= $escaper->escapeHtml($lang['Login']);?></button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3"></div>
+                                </div>
+                            </div>
+
+<?php
     }
-	?>
-	<!doctype html>
-	<html ng-app="SimpleRisk">
-	<head>
-	  <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
-	  <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-	  <!-- build:css vendor/vendor.min.css -->
-	  <!-- endbuild -->
-	  <!-- build:css style.min.css -->
-	  <link rel="stylesheet" type="text/css" href="css/style.css?<?php echo current_version("app"); ?>" media="screen" />
-	  <!-- endbuild -->
-
-	  <link rel="stylesheet" href="css/bootstrap.css?<?php echo current_version("app"); ?>">
-	  <link rel="stylesheet" href="css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-
-	  <link rel="stylesheet" href="vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
-	  <link rel="stylesheet" href="css/theme.css?<?php echo current_version("app"); ?>">
-  
-	  <?php
-		  // Use these jQuery scripts
-		  $scripts = [
-			'jquery.min.js',
-		  ];
-
-		  // Include the jquery javascript source
-		  display_jquery_javascript($scripts);
-
-		  display_bootstrap_javascript();
-
-		  setup_favicon();
-		  setup_alert_requirements();
-	  ?>  
-	</head>
-	<body ng-controller="MainCtrl" class="login--page">
-	  <?php view_top_menu("Home"); ?>
-
-	  <?php
-      // If the user has authenticated and now we need to authenticate with mfa
-      if (isset($_SESSION["access"]) && $_SESSION["access"] == "mfa")
-      {
-          echo "<div class=\"row-fluid\">\n";
-          echo "<div class=\"span9\">\n";
-          echo "<form name='mfa' method='post' action=''>\n";
-
-          // Perform a duo authentication request for the user
-          display_mfa_authentication_page();
-
-          echo "</form>\n";
-          echo "</div>\n";
-          echo "</div>\n";
-      }
-      // If the user needs to verify the new MFA
-      else if(isset($_SESSION["access"]) && $_SESSION["access"] == "mfa_verify")
-      {
-          echo "<div class=\"row-fluid\">\n";
-          echo "<div class=\"span9\">\n";
-          echo "<form name='mfa' method='post' action=''>\n";
-
-          // Display the MFA verification page
-          display_mfa_verification_page();
-
-          echo "</form>\n";
-          echo "</div>\n";
-          echo "</div>\n";
-      }
-	  // If the user has authenticated and now we need to authenticate with duo
-	  else if (isset($_SESSION["access"]) && $_SESSION["access"] == "duo")
-	  {
-		echo "<div class=\"row-fluid\">\n";
-		echo "<div class=\"span9\">\n";
-		// echo "<div class=\"well\">\n";
-
-		// Include the custom authentication extra
-		require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
-
-		// Store the user and password temporarily in the session
-		$_SESSION['user'] = $_POST['user'];
-		$_SESSION['pass'] = $_POST['pass'];
-
-		// Perform a duo authentication request for the user
-		duo_authentication($_SESSION["user"]);
-
-		// echo "</div>\n";
-		echo "</div>\n";
-		echo "</div>\n";
-	  }
-	  // If the user has not authenticated
-	  else if (!isset($_SESSION["access"]) || $_SESSION["access"] != "1")
-	  {
-		echo "<div class=\"row-fluid\">\n";
-		echo "<div class=\"span12\">\n";
-		// echo "<div class=\"well\">\n";
-
-		// Get any alert messages
-		get_alert();
-
-		echo "<div class=\"login-wrapper clearfix\">";
-		echo "<h1 class=\"text-center welcome--msg\"> Enterprise Risk Management Simplified... </h1>";
-
-		echo "<form name=\"authenticate\" method=\"post\" action=\"\" class=\"loginForm\">\n";
-		echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
-		echo "<tr><td colspan=\"2\"><label class=\"login--label\">" . $escaper->escapeHtml($lang['LogInHere']) . "</label></td></tr>\n";
-		echo "<tr><td width=\"20%\"><label for=\"\">" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</label></td><td class=\"80%\"><input class=\"form-control input-medium\" name=\"user\" id=\"user\" type=\"text\" /></td></tr>\n";
-		echo "<tr><td width=\"20%\"><label for=\"\">" . $escaper->escapeHtml($lang['Password']) . ":&nbsp;</label></td><td class=\"80%\"><input class=\"form-control input-medium\" name=\"pass\" id=\"pass\" type=\"password\" autocomplete=\"off\" /></td></tr>\n";
-		echo "</table>\n";
-		echo "<div class=\"form-actions\">\n";
-
-		// If the custom authentication extra is enabled
-		if (custom_authentication_extra())
-		{
-			// If SSO Login is enabled or not set yet
-		    if(get_setting("GO_TO_SSO_LOGIN") === false || get_setting("GO_TO_SSO_LOGIN") === '1')
-			{
-				// Display the SSO login link
-				echo "<tr><td colspan=\"2\"><label><a href=\"extras/authentication/login.php\">" . $escaper->escapeHtml($lang['GoToSSOLoginPage']) . "</a></label></td></tr>\n";
-			}
-		}
-
-		echo "<a href=\"reset.php\">" . $escaper->escapeHtml($lang['ForgotYourPassword']) . "</a>";
-		echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary pull-right\">" . $escaper->escapeHtml($lang['Login']) . "</button>\n";
-		echo "<input class=\"btn btn-default pull-right\" value=\"" . $escaper->escapeHtml($lang['Reset']) . "\" type=\"reset\">\n";
-		echo "</div>\n";
-		echo "</form>\n";
-		echo "</div>";
-
-
-		// echo "</div>\n";
-		echo "</div>\n";
-		echo "</div>\n";
-	  }
-  }
-
-  ?>
-
-</body>
+?>
+                        </div>
+                        <!-- End of content -->
+                	</div>
+                	<!-- End of content-wrapper -->
+        		</div>
+        		<!-- End of scroll-content -->
+          	</div>
+          <!-- End Page wrapper  -->
+        </div>
+        <!-- End Wrapper -->
+<?php
+    get_alert();
+    setup_alert_requirements("");
+?>
+    	<script>
+        	$(function() {
+        		// Fading out the preloader once everything is done rendering
+        		$(".preloader").fadeOut();
+            });
+    	</script>
+    </body>
 </html>
+<?php
+}
+?>

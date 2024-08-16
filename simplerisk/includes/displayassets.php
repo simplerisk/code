@@ -82,13 +82,10 @@ function display_asset_name_edit($display = true)
     global $lang, $escaper;
 
     $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
-
-    echo "<div class=\"row-fluid\"{$displayString}>";
-        echo "<div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['AssetName']).":</div>";
-        echo "<div class=\"span10\">";
-            echo "<input type=\"text\" id=\"asset_name\" name=\"asset_name\" maxlength=\"200\" size=\"20\" />";
-        echo "</div>";
-    echo "</div>";
+    echo'<div class="form-group" '.$displayString.'>
+            <label>'.$escaper->escapeHtml($lang['AssetName']).'</label>
+            <input type="text" class="form-control" id="asset_name" name="asset_name" maxlength="200" size="20" >
+        </div>';
 }
 
 /*************************************
@@ -99,13 +96,10 @@ function display_asset_ip_address_edit($display = true)
     global $lang, $escaper;
 
     $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
-
-    echo "<div class=\"row-fluid\"{$displayString}>";
-        echo "<div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['IPAddress']).":</div>";
-        echo "<div class=\"span10\">";
-            echo "<input type=\"text\" name=\"ip\" maxlength=\"15\" size=\"20\" />";
-        echo "</div>";
-    echo "</div>";
+     echo'<div class="form-group" '.$displayString.'>
+            <label>'.$escaper->escapeHtml($lang['IPAddress']).'</label>
+            <input type="text" class="form-control" name="ip" maxlength="15" size="20" >
+        </div>';    
 }
 
 /************************************
@@ -119,13 +113,10 @@ function display_asset_valuation_edit($display = true)
 
     // Get the default asset valuation
     $default = get_default_asset_valuation();
-
-    echo "<div class=\"row-fluid\"{$displayString}>";
-        echo "<div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['AssetValuation']).":</div>";
-        echo "<div class=\"span10\">";
+    echo'<div class="form-group" '.$displayString.'>
+            <label>'.$escaper->escapeHtml($lang['AssetValuation']).'</label>';
             create_asset_valuation_dropdown("value", $default);
-        echo "</div>";
-    echo "</div>";
+    echo'</div>';  
 }
 
 /****************************************
@@ -136,17 +127,16 @@ function display_asset_site_location_edit($display = true)
     global $lang, $escaper;
 
     echo "
-        <div class='row-fluid'" . ($display ? '' : " style='display: none;'" ) . ">
-            <div class='wrap-text span2 text-right'>{$escaper->escapeHtml($lang['SiteLocation'])}:</div>
-            <div class='span10'>";
+        <div class='form-group'" . ($display ? '' : " style='display: none;'" ) . ">
+            <label>{$escaper->escapeHtml($lang['SiteLocation'])}:</label>
+           ";
     create_multiple_dropdown("location", NULL, NULL, NULL, false, "", "", true, " class='multiselect' ");
     echo "
             <script>
                 $(function() {
-                    $('#add-asset-container #location.multiselect').multiselect({buttonWidth: '300px', enableFiltering: true, enableCaseInsensitiveFiltering: true,});
+                    $('#add-asset-container #location.multiselect').multiselect({buttonWidth: '100%', enableFiltering: true, enableCaseInsensitiveFiltering: true,});
                 });
             </script>
-            </div>
         </div>";
 }
 
@@ -156,19 +146,17 @@ function display_asset_site_location_edit($display = true)
 function display_asset_team_edit($display = true)
 {
     global $lang, $escaper;
-
     echo "
-        <div class='row-fluid'" . ($display ? '' : " style='display: none;'" ) . ">
-            <div class='wrap-text span2 text-right'>{$escaper->escapeHtml($lang['Team'])}:</div>
-            <div class='span10'>";
+        <div class='form-group'" . ($display ? '' : " style='display: none;'" ) . ">
+            <label>{$escaper->escapeHtml($lang['Team'])}:</label>
+            ";
     create_multiple_dropdown("team", NULL, NULL, NULL, false, "", "", true, " class='multiselect' ");
     echo "
             <script>
                 $(function() {
-                    $('#add-asset-container #team.multiselect').multiselect({buttonWidth: '300px', enableFiltering: true, enableCaseInsensitiveFiltering: true,});
+                    $('#add-asset-container #team.multiselect').multiselect({buttonWidth: '100%', enableFiltering: true, enableCaseInsensitiveFiltering: true,});
                 });
             </script>
-            </div>
         </div>";
 }
 
@@ -180,12 +168,9 @@ function display_asset_details_edit($display = true)
     global $lang, $escaper;
 
     $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
-
-    echo "<div class=\"row-fluid\"{$displayString}>";
-        echo "<div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['AssetDetails']).":</div>";
-        echo "<div class=\"span10\">";
+    echo "<div class=\"form-group\"{$displayString}>";
+        echo "<label>".$escaper->escapeHtml($lang['AssetDetails']).":</label>";
             echo "<textarea name=\"details\" id=\"details\" cols=\"\" rows=\"\" style=\"width: 100%;\"></textarea>";
-        echo "</div>";
     echo "</div>";
 }
 
@@ -199,23 +184,23 @@ function display_asset_tags_add($display = true)
 
     $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
 
-    echo "  <div class=\"row-fluid\"{$displayString}>";
-    echo "      <div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['Tags']).":</div>";
-    echo "      <div class=\"span10\">";
+    echo "  <div class=\"form-group\"{$displayString}>";
+    echo "      <label>".$escaper->escapeHtml($lang['Tags']).":</label>";
     echo "          <select class=\"selectize-marker\" readonly id=\"tags\" name=\"tags[]\" multiple placeholder='{$tags_placeholder}'></select>
-                    <div class='tag-max-length-warning'>" . $escaper->escapeHtml($lang['MaxTagLengthWarning']) . "</div>\n
+                    <div class='text-danger'>" . $escaper->escapeHtml($lang['MaxTagLengthWarning']) . "</div>\n
                     <script>
-                        $('#tags').selectize({
-                            plugins: ['remove_button', 'restore_on_backspace'],
-                            delimiter: '|',
-                            create: true,
-                            valueField: 'label',
-                            labelField: 'label',
-                            searchField: 'label',
-                            sortField: [{ field: 'label', direction: 'asc' }]
+                        $(function() {
+                            $('#tags').selectize({
+                                plugins: ['remove_button', 'restore_on_backspace'],
+                                delimiter: '|',
+                                create: true,
+                                valueField: 'label',
+                                labelField: 'label',
+                                searchField: 'label',
+                                sortField: [{ field: 'label', direction: 'asc' }]
+                            });
                         });
                     </script>";
-    echo "      </div>";
     echo "  </div>";
 }
 
@@ -228,9 +213,9 @@ function display_asset_mapping_controls_edit($display = true)
 
     $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
 
-    echo "<div class=\"row-fluid\"{$displayString}>";
-        echo "<div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['MappedControls']).":</div>";
-        echo "<div class=\"span10\">";
+    echo "<div class=\"form-group\"{$displayString}>";
+        echo "<label>".$escaper->escapeHtml($lang['MappedControls']).":</label>";
+        echo "<div class=\"col-12\">";
             echo "<table width=\"100%\" class=\"table table-bordered mapping_control_table\">
                     <thead>
                         <tr>
@@ -242,9 +227,9 @@ function display_asset_mapping_controls_edit($display = true)
                     <tbody>
                     </tbody>
                 </table>
-                <div class=\"row-fluid\">
+                <div class=\"row\">
                     <div class=\"pull-right control-group\">
-                        <button type=\"button\" name=\"add_control\" class=\"btn btn-primary add-control\">".$escaper->escapeHtml($lang['AddControl'])."</button>
+                        <button type=\"button\" name=\"add_control\" class=\"btn btn-dark add-control\">".$escaper->escapeHtml($lang['AddControl'])."</button>
                     </div>
                 </div>
 ";
@@ -256,9 +241,8 @@ function display_asset_associated_risks_add($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='row-fluid'" . ($display ? '' : " style='display: none;'" ) . ">
-            <div class='wrap-text span2 text-right'>{$escaper->escapeHtml($lang['AssociatedRisks'])}:</div>
-            <div class='span10'>";
+        <div class='form-group'" . ($display ? '' : " style='display: none;'" ) . ">
+            <label>{$escaper->escapeHtml($lang['AssociatedRisks'])}:</label>";
     create_multiple_dropdown("risks_with_id", NULL, "associated_risks", NULL, false, "", "", true, " class='multiselect' ");
     echo "
             <script>
@@ -266,7 +250,6 @@ function display_asset_associated_risks_add($display = true) {
                     $('#add-asset-container #associated_risks.multiselect').multiselect({buttonWidth: '100%', enableFiltering: true, enableCaseInsensitiveFiltering: true,});
                 });
             </script>
-            </div>
         </div>";
 }
 
@@ -679,7 +662,7 @@ function display_main_detail_asset_fields_treegrid_th($fields)
                 // Include the extra
                 require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
-                echo "<th data-options=\"field:'{$escaper->escapeHtml($field['id'])}'\" width='10%'>{$escaper->escapeHtml($field['name'])}</th>";
+                echo "<th data-options=\"field:'" . $escaper->escapeHtml($field['id']) . "'\" width='10%'>" . $escaper->escapeHtml($field['name']) . "</th>";
             }
         }
     }
@@ -694,7 +677,7 @@ function display_asset_name_treegrid_th()
 {
     global $lang, $escaper;
 
-    echo "<th data-options=\"field:'name'\" width='20%'>".$escaper->escapeHtml($lang["Name"])."</th>";
+    echo "<th data-options=\"field:'name'\" width='20%'>" . $escaper->escapeHtml($lang["Name"]) . "</th>";
 }
 
 /**********************************
@@ -704,7 +687,7 @@ function display_asset_ip_address_treegrid_th()
 {
     global $lang, $escaper;
 
-    echo "<th data-options=\"field:'ip'\" width='10%'>".$escaper->escapeHtml($lang['IPAddress'])."</th>";
+    echo "<th data-options=\"field:'ip'\" width='10%'>" . $escaper->escapeHtml($lang['IPAddress']) . "</th>";
 }
 
 /***************************************
@@ -714,7 +697,7 @@ function display_asset_valuation_treegrid_th()
 {
     global $lang, $escaper;
 
-    echo "<th data-options=\"field:'value'\" width='10%'>".$escaper->escapeHtml($lang['AssetValuation'])."</th>";
+    echo "<th data-options=\"field:'value'\" width='10%'>" . $escaper->escapeHtml($lang['AssetValuation']) . "</th>";
 }
 
 /*******************************************
@@ -724,7 +707,7 @@ function display_asset_site_location_treegrid_th()
 {
     global $lang, $escaper;
 
-    echo "<th data-options=\"field:'location'\" width='10%'>".$escaper->escapeHtml($lang['SiteLocation'])."</th>";
+    echo "<th data-options=\"field:'location'\" width='10%'>" . $escaper->escapeHtml($lang['SiteLocation']) . "</th>";
 }
 
 /**********************************
@@ -734,7 +717,7 @@ function display_asset_team_treegrid_th()
 {
     global $lang, $escaper;
 
-    echo "<th data-options=\"field:'team'\" width='10%'>".$escaper->escapeHtml($lang['Team'])."</th>";
+    echo "<th data-options=\"field:'team'\" width='10%'>" . $escaper->escapeHtml($lang['Team']) . "</th>";
 }
 
 /*************************************
@@ -744,7 +727,7 @@ function display_asset_details_treegrid_th()
 {
     global $lang, $escaper;
 
-    echo "<th data-options=\"field:'details'\" width='15%'>".$escaper->escapeHtml($lang['AssetDetails'])."</th>";
+    echo "<th data-options=\"field:'details'\" width='15%'>" . $escaper->escapeHtml($lang['AssetDetails']) . "</th>";
 }
 
 /*************************************
@@ -754,7 +737,7 @@ function display_asset_tags_treegrid_th()
 {
     global $lang, $escaper;
 
-    echo "<th data-options=\"field:'tags'\" width='10%'>".$escaper->escapeHtml($lang['Tags'])."</th>";
+    echo "<th data-options=\"field:'tags'\" width='10%'>" . $escaper->escapeHtml($lang['Tags']) . "</th>";
 }
 
 /*************************************

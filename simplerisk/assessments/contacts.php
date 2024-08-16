@@ -4,30 +4,11 @@
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required functions file
-require_once(realpath(__DIR__ . '/../includes/functions.php'));
-require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-require_once(realpath(__DIR__ . '/../includes/display.php'));
+
+require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 require_once(realpath(__DIR__ . '/../includes/assessments.php'));
-require_once(realpath(__DIR__ . '/../includes/alerts.php'));
-require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Add various security headers
-add_security_headers();
-
-// Add the session
-$permissions = array(
-        "check_access" => true,
-        "check_assessments" => true,
-);
-add_session_check($permissions);
-
-// Include the CSRF Magic library
-include_csrf_magic();
-
-// Include the SimpleRisk language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
-require_once(language_file());
+render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'tabs:logic', 'CUSTOM:common.js', 'CUSTOM:pages/assessment.js'], ['check_assessments' => true], '');
 
 // Check if assessment extra is enabled
 if(assessments_extra())
@@ -47,89 +28,283 @@ if(process_assessment_contact()){
 }
 
 ?>
-
-<!doctype html>
-<html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
-
-<head>
-    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
-<?php
-        // Use these jQuery scripts
-        $scripts = [
-                'jquery.min.js',
-        ];
-
-        // Include the jquery javascript source
-        display_jquery_javascript($scripts);
-
-        // Use these jquery-ui scripts
-        $scripts = [
-                'jquery-ui.min.js',
-        ];
-
-        // Include the jquery-ui javascript source
-        display_jquery_ui_javascript($scripts);
-
-	display_bootstrap_javascript();
-?>
-    <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
-    <script src="../js/simplerisk/pages/assessment.js?<?php echo current_version("app"); ?>"></script>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
-
-    <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
-    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
-    <?php
-        setup_favicon("..");
-        setup_alert_requirements("..");
+<div class="row bg-white">
+    <div class="col-12">
+        <div class="card-body my-2 border">
+    <?php 
+        if(isset($_GET['action']) && $_GET['action']=="add") { 
     ?>
-</head>
-
-<body>
-
-    <?php
-        view_top_menu("Assessments");
-
-        // Get any alerts
-        get_alert();
-    ?>
-    <div class="container-fluid">
-        <div class="row-fluid">
-            <div class="span3">
-                <?php view_assessments_menu("AssessmentContacts"); ?>
-            </div>
-            <div class="span9">
-                <?php if(isset($_GET['action']) && $_GET['action']=="add"){ ?>
-                    <div class="hero-unit">
+            <div class="hero-unit bg-white">
+                <div class="row">
+                    <div class="col-6">
                         <?php display_assessment_contacts_add(); ?>
                     </div>
-                <?php }elseif(isset($_GET['action']) && $_GET['action']=="edit" && $_GET['id']){ ?>
-                    <div class="hero-unit">
+                </div>
+            </div>
+    <?php
+        } elseif(isset($_GET['action']) && $_GET['action']=="edit" && $_GET['id']) { 
+    ?>
+            <div class="hero-unit bg-white">
+                <div class="row">
+                    <div class="col-6">
                         <?php display_assessment_contacts_edit($_GET['id']); ?>
                     </div>
-                <?php }else{ ?>
-                    <div class="row-fluid text-right">
-                        <input type="text" class="pull-left" placeholder="Filter by text" id="filter_by_text">
-                        <?php if(has_permission("assessment_add_contact")){ ?>
-                            <a class="btn" href="contacts.php?action=add"><?php echo $escaper->escapeHtml($lang['Add']); ?></a>
-                        <?php }?>
-                    </div>
-                    <div class="row-fluid">
-                        <?php display_assessment_contacts(); ?>
-                    </div>
-                <?php } ?>
+                </div>
             </div>
+    <?php
+        } else { 
+    ?>
+            <div class="row">
+                <div class="col-6">
+                    <input type="text" class="form-control" placeholder="Filter by text" id="filter_by_text">
+                </div>
+            </div>
+            <div data-sr-role='dt-settings' data-sr-target='assessment-contacts-table' class='float-end'>
+    <?php
+            if(has_permission("assessment_add_contact")) {
+    ?>
+                <a id="aseessment-contact--add-btn" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Add']); ?></a>
+    <?php
+            }
+    ?>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <?php display_assessment_contacts(); ?>
+                </div>
+            </div>
+    <?php
+        }
+    ?>
         </div>
     </div>
-    <?php display_set_default_date_format_script(); ?>
-</body>
+</div>
 
-</html>
+<!-- MODAL FOR ADDING A NEW CONTACT -->
+<div id="aseessment-contact--add" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="aseessment-contact--add" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" action="">
+                <div class="modal-header">
+                    <h4 class="modal-title"><?= $escaper->escapeHtml($lang['AddNewAssessmentContact']); ?></h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row form-group">
+                        <div class="col-3 d-flex align-items-center">
+                            <label>Company:</label>
+                        </div>
+                        <div class = "col-9">
+                            <input required class = "form-control" name="company" maxlength="255" size="100" value="" type="text">
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-3 d-flex align-items-center">
+                            <label><?= $escaper->escapeHtml($lang['Name']);?>:</label>
+                        </div>
+                        <div class = "col-9">
+                            <input required class = "form-control" name="name" maxlength="255" size="100" value="" type="text">
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-3 d-flex align-items-center">
+                            <label><?= $escaper->escapeHtml($lang['EmailAddress']);?>:</label>
+                        </div>
+                        <div class = "col-9">
+                            <input required class = "form-control" name="email" maxlength="200" size="100" value="" type="email">
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-3 d-flex align-items-center">
+                            <label><?= $escaper->escapeHtml($lang['Phone']);?>:</label>
+                        </div>
+                        <div class = "col-9">
+                            <input required class = "form-control" name="phone" maxlength="200" size="100" value="" type="text">
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-3 d-flex align-items-center">
+                            <label><?= $escaper->escapeHtml($lang['ContactManager']);?>:</label>
+                        </div>
+                        <div class = "col-9">
+                            <?= create_dropdown("enabled_users", NULL, "manager", true, false, true, "", $escaper->escapeHtml($lang['Unassigned']));?>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-3">
+                            <label><?= $escaper->escapeHtml($lang['Details']);?>:</label>
+                        </div>
+                        <div class = "col-9">
+                            <textarea class = "form-control" name='details' class='full-width'></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                    <button type="submit" class="btn btn-submit" name="add_contact"><?= $escaper->escapeHtml($lang['Save']); ?></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL FOR EDITING A CONTACT -->
+<div id="aseessment-contact--edit" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="aseessment-contact--edit" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" action="">
+                <input type='hidden' name='id' value=''/>
+                <div class="modal-header">
+                    <h4 class="modal-title"><?= $escaper->escapeHtml($lang['UpdateAssessmentContact']); ?></h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row form-group">
+                        <div class="col-3 d-flex align-items-center">
+                            <label>Company:</label>
+                        </div>
+                        <div class = "col-9">
+                            <input required class = "form-control" name="company" maxlength="255" size="100" value="" type="text">
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-3 d-flex align-items-center">
+                            <label><?= $escaper->escapeHtml($lang['Name']);?>:</label>
+                        </div>
+                        <div class = "col-9">
+                            <input required class = "form-control" name="name" maxlength="255" size="100" type="text" value="">
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-3 d-flex align-items-center">
+                            <label><?= $escaper->escapeHtml($lang['EmailAddress']);?>:</label>
+                        </div>
+                        <div class = "col-9">
+                            <input required class = "form-control" name="email" maxlength="200" size="100" type="email" value="">
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-3 d-flex align-items-center">
+                            <label><?= $escaper->escapeHtml($lang['Phone']);?>:</label>
+                        </div>
+                        <div class = "col-9">
+                            <input name="phone" class = "form-control" maxlength="200" value="" size="100" type="text" required>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-3 d-flex align-items-center">
+                            <label><?= $escaper->escapeHtml($lang['ContactManager']);?>:</label>
+                        </div>
+                        <div class = "col-9">
+                            <?= create_dropdown("enabled_users", null, "manager", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) ?>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-3 d-flex align-items-center">
+                            <label><?= $escaper->escapeHtml($lang['Details']);?>:</label>
+                        </div>
+                        <div class = "col-9">
+                            <textarea name='details' class='form-control'></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                    <button type="submit" class="btn btn-submit" name="update_contact"><?= $escaper->escapeHtml($lang['Update']); ?></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL FOR DELETING A CONTACT -->
+<div id='aseessment-contact--delete' class='modal fade' aria-labelledby='aseessment-contact--delete' tabindex='-1' aria-hidden='true'>
+    <div class='modal-dialog modal-md modal-dialog-scrollable modal-dialog-centered'>
+        <div class='modal-content'>
+            <form class='' action="" method='post'>
+                <input type='hidden' name='contact_id' value=''/>
+                <div class='modal-body'>
+                    <div class='form-group text-center'>
+                        <label for=''><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisContact']) ?></label>
+                    </div>
+                    <div class='text-center control-delete-actions'>
+                        <button type="button" class='btn btn-secondary' data-bs-dismiss='modal'><?= $escaper->escapeHtml($lang['Cancel']) ?></button>
+                        <button type='submit' class='btn btn-submit' name='delete_contact'><?= $escaper->escapeHtml($lang['Yes']) ?></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+        
+<script>
+    
+    let assessment_add_contact_permission = <?= has_permission("assessment_add_contact") ?>;
+    let assessment_edit_contact_permission = <?= has_permission("assessment_edit_contact") ?>;
+
+    $(function() {
+
+        // Open a modal for adding a contact
+        $('body').on("click", "#aseessment-contact--add-btn", function() {
+
+            if (!assessment_add_contact_permission) {
+                return toastr.error("<?= $escaper->escapeHtml($lang['NoPermissionForAddAssessmentContacts']) ?>");
+            }
+
+            $("#aseessment-contact--add").modal("show");
+
+        });
+        
+        // Open a modal for editing a contact
+        $('body').on("click", ".aseessment-contact--edit-btn", function() {
+
+            if (!assessment_edit_contact_permission) {
+                return toastr.error("<?= $escaper->escapeHtml($lang['NoPermissionForThisAction']) ?>");
+            }
+            
+            let contact_id = $(this).data("id");
+            $("#aseessment-contact--edit [name=id]").val(contact_id);
+
+            $.ajax({
+                url: BASE_URL + '/api/assessment/contacts/edit',
+                type: 'POST',
+                data: {id: contact_id},
+                success : function (result){
+                    if(result.status_message){
+                        showAlertsFromArray(result.status_message);
+                    }
+
+                    $("#aseessment-contact--edit [name='company']").val(result.data.company || '');
+                    $("#aseessment-contact--edit [name='name']").val(result.data.name || '');
+                    $("#aseessment-contact--edit [name='email']").val(result.data.email || '');
+                    $("#aseessment-contact--edit [name='phone']").val(result.data.phone || '');
+                    $("#aseessment-contact--edit [name='manager']").val(result.data.manager || '');
+                    $("#aseessment-contact--edit [name='details']").val(result.data.details || '');
+
+                    $("#aseessment-contact--edit").modal("show");
+
+                },
+                error: function(xhr,status,error){
+                    if(xhr.responseJSON && xhr.responseJSON.status_message){
+                        showAlertsFromArray(xhr.responseJSON.status_message);
+                    }
+                }
+            });
+            
+        });
+        
+        // Open a modal for deleting a contact
+        $('body').on("click", ".aseessment-contact--delete-btn", function() {
+
+            $("#aseessment-contact--delete [name=contact_id]").val($(this).data("id"));
+
+            $("#aseessment-contact--delete").modal("show");
+            
+        });
+
+    });
+
+</script>
+<?php
+render_footer ();
+?>

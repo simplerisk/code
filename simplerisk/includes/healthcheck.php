@@ -18,7 +18,7 @@ require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
  *************************************/
 function simplerisk_health_check()
 {
-	global $escaper;
+	global $escaper, $lang;
 
 	// Set the time limit on the health check to 5 minutes
 	set_time_limit(300);
@@ -122,6 +122,9 @@ function simplerisk_health_check()
 		}
 	}
 
+    // Check the mysql version
+    $check_mysql_version = check_mysql_version();
+
 	// Check the current database size and free space
 	$check_mysql_size = check_mysql_size();
 
@@ -164,168 +167,184 @@ function simplerisk_health_check()
 	// Check the simplerisk directory permissions
 	$check_simplerisk_directory_permissions = check_simplerisk_directory_permissions();
 
-	// Search for any bad directory permissions
-	$check_simplerisk_directory_permissions_result = 1;
-	foreach ($check_simplerisk_directory_permissions as $permission)
-	{
-		// If the permission result is 0
-		if ($permission['result'] === 0)
-		{
-			// Set the overall result to 0
-			$check_simplerisk_directory_permissions_result = 0;
-		}
-	}
+    // Search for any bad directory permissions
+    $check_simplerisk_directory_permissions_result = 1;
+    foreach ($check_simplerisk_directory_permissions as $permission)
+    {
+        // If the permission result is 0
+        if ($permission['result'] === 0)
+        {
+            // Set the overall result to 0
+            $check_simplerisk_directory_permissions_result = 0;
+        }
+    }
 
-	echo "<div class=\"wrap\">\n";
-	echo "  <ul class=\"tabs group\">\n";
-	echo "    <li><a class=\"active\" href=\"#/summary\">Summary</a></li>\n";
-	echo "    <li><a href=\"#/simplerisk\">SimpleRisk Core</a></li>\n";
-	echo "    <li><a href=\"#/extras\">Extras</a></li>\n";
-	echo "    <li><a href=\"#/connectivity\">Connectivity</a></li>\n";
-	echo "    <li><a href=\"#/php\">PHP</a></li>\n";
-	echo "    <li><a href=\"#/mysql\">MySQL</a></li>\n";
-	echo "    <li><a href=\"#/permissions\">Permissions</a></li>\n";
-	echo "  </ul>\n";
-	echo "  <div id=\"content\">\n";
+    echo "
+        <div class='mt-2'>
+            <nav class='nav nav-tabs'>
+                <a class='nav-link active' data-bs-target='#summary' data-bs-toggle='tab'>{$escaper->escapeHtml($lang['Summary'])}</a>
+                <a class='nav-link' data-bs-target='#simplerisk' data-bs-toggle='tab'>Simplerisk</a>
+                <a class='nav-link' data-bs-target='#extras' data-bs-toggle='tab'>{$escaper->escapeHtml($lang['Extras'])}</a>
+                <a class='nav-link' data-bs-target='#connectivity' data-bs-toggle='tab'>{$escaper->escapeHtml($lang['Connectivity'])}</a>
+                <a class='nav-link' data-bs-target='#php' data-bs-toggle='tab'>PHP</a>
+                <a class='nav-link' data-bs-target='#mysql' data-bs-toggle='tab'>MySQL</a>
+                <a class='nav-link' data-bs-target='#permissions' data-bs-toggle='tab'>{$escaper->escapeHtml($lang['Permissions'])}</a>
+            </nav>
+        </div>        
+        <div class='tab-content'>
+			<div class='tab-pane active col-12' id='summary' tabindex='0'>
+				<div class='card-body my-2 border font-16'>
+                <h4>{$escaper->escapeHtml($lang['HealthCheckSummary'])}</h4>
+    ";
 
-	// Summary Tab
-	echo "    <div id=\"summary\" class=\"settings_tab\">\n";
-	echo "      <b><u>Health Check Summary</u></b><br />";
+    // Versions Summary
+    if ($check_app_version['result'] === 1 && $check_db_version['result'] === 1 && $check_same_app_and_db['result'] === 1 && $check_use_database_for_session['result'] === 1 && $cron_configured['result'] === 1)
+    {
+        health_check_good($lang['SimpleRiskCore']);
+    }
+    else health_check_bad($lang['SimpleRiskCore']);
+    
+    // Extras Summary
+    if ($check_extra_versions_result === 1)
+    {
+        health_check_good($lang['Extras']);
+    }
+    else health_check_bad($lang['Extras']);
+    
+    // Connectivity Summary
+    if ($check_simplerisk_base_url['result'] === 1 && $check_simplerisk_base_url_dns['result'] ===1 && $check_database_connectivity['result'] === 1 && $check_api_connectivity['result'] === 1 && $check_web_connectivity_result === 1)
+    {
+        health_check_good($lang['Connectivity']);
+    }
+    else health_check_bad($lang['Connectivity']);
+    
+    // PHP Summary
+    if ($check_php_version['result'] === 1 && $check_php_memory_limit['result'] === 1 && $check_php_max_input_vars['result'] === 1 && $check_php_extensions_result === 1)
+    {
+    	health_check_good("PHP");
+    }
+    else health_check_bad("PHP");
+    
+    // MySQL Summary
+    if ($check_mysql_version['result'] === 1 && $check_no_zero_date['result'] === 1 && $check_only_full_group_by['result'] === 1 && $check_mysql_permission_select['result'] === 1 && $check_mysql_permission_insert['result'] === 1 && $check_mysql_permission_update['result'] === 1 && $check_mysql_permission_delete['result'] === 1 && $check_mysql_permission_create['result'] === 1 && $check_mysql_permission_drop['result'] === 1 && $check_mysql_permission_references['result'] === 1 && $check_mysql_permission_index['result'] === 1 && $check_mysql_permission_alter['result'] === 1)
+    {
+    	health_check_good("MySQL");
+    }
+    else health_check_bad("MySQL");
+    
+    // Permissions Summary
+    if ($check_simplerisk_directory_permissions_result === 1)
+    {
+        health_check_good($lang['Permissions']);
+    }
+    else health_check_bad($lang['Permissions']);
 
-	// Versions Summary
-	if ($check_app_version['result'] === 1 && $check_db_version['result'] === 1 && $check_same_app_and_db['result'] === 1 && $check_use_database_for_session['result'] === 1 && $cron_configured['result'] === 1)
-	{
-		health_check_good("SimpleRisk Core");
-	}
-	else health_check_bad("SimpleRisk Core");
+    echo "
+        <div class='row'>&nbsp;</div>
+        <div class='row'>
+            <div class='col-md-12'><h4>" . $escaper->escapeHtml($lang['InstanceDetails']) . "</h4></div>
+        </div>
+        <div class='row'>  
+            <div class='col-md-2'><h5>OS Version:</h5></div>
+            <div class='col-md-10'>" . $escaper->escapeHtml($os_version['pretty_name']) . "</div>
+        </div>
+        <div class='row'>  
+            <div class='col-md-2'><h5>PHP Version:</h5></div>
+            <div class='col-md-10'>" . $escaper->escapeHtml(phpversion()) . "</div>
+        </div>
+        <div class='row'>  
+            <div class='col-md-2'><h5>Database Version:</h5></div>
+            <div class='col-md-10'>" . $escaper->escapeHtml($db_version) . "</div>
+        </div>
+        <div class='row'>  
+            <div class='col-md-2'><h5>SimpleRisk Version:</h5></div>
+            <div class='col-md-10'>" . $escaper->escapeHtml($current_app_version) . "</div>
+        </div>
+        <div class='row'>  
+            <div class='col-md-2'><h5>Default Language:</h5></div>
+            <div class='col-md-10'>" . $escaper->escapeHtml(get_setting("default_language")) . "</div>
+        </div>
+        <div class='row'>  
+            <div class='col-md-2'><h5>Session Language:</h5></div>
+            <div class='col-md-10'>" . $escaper->escapeHtml($_SESSION['lang']) . "</div>
+        </div>
+        <div class='row'>  
+            <div class='col-md-2'><h5>SimpleRisk Instance ID:</h5></div>
+            <div class='col-md-10'>" . $escaper->escapeHtml($instance_id) . "</div>
+        </div>
+        <div class='row'>  
+            <div class='col-md-2'><h5>Public IP Address:</h5></div>
+            <div class='col-md-10'>" . $escaper->escapeHtml(get_public_ip()) . "</div>
+        </div>
+    ";
 
-	// Extras Summary
-	if ($check_extra_versions_result === 1)
-	{
-		health_check_good("Extras");
-	}
-	else health_check_bad("Extras");
-
-	// Connectivity Summary
-	if ($check_simplerisk_base_url['result'] === 1 && $check_simplerisk_base_url_dns['result'] ===1 && $check_database_connectivity['result'] === 1 && $check_api_connectivity['result'] === 1 && $check_web_connectivity_result === 1)
-	{
-		health_check_good("Connectivity");
-	}
-	else health_check_bad("Connectivity");
-
-	// PHP Summary
-	if ($check_php_version['result'] === 1 && $check_php_memory_limit['result'] === 1 && $check_php_max_input_vars['result'] === 1 && $check_php_extensions_result === 1)
-	{
-		health_check_good("PHP");
-	}
-	else health_check_bad("PHP");
-
-	// MySQL Summary
-	if ($check_no_zero_date['result'] === 1 && $check_only_full_group_by['result'] === 1 && $check_mysql_permission_select['result'] === 1 && $check_mysql_permission_insert['result'] === 1 && $check_mysql_permission_update['result'] === 1 && $check_mysql_permission_delete['result'] === 1 && $check_mysql_permission_create['result'] === 1 && $check_mysql_permission_drop['result'] === 1 && $check_mysql_permission_references['result'] === 1 && $check_mysql_permission_index['result'] === 1 && $check_mysql_permission_alter['result'] === 1)
-	{
-		health_check_good("MySQL");
-	}
-	else health_check_bad("MySQL");
-
-	// Permissions Summary
-	if ($check_simplerisk_directory_permissions_result === 1)
-	{
-		health_check_good("Permissions");
-	}
-	else health_check_bad("Permissions");
-
-	echo "      <br /><b><u>Instance Details</u></b><br />\n";
-	echo "      <table style='border: 0px;'>\n";
-	echo "        <tr>\n";
-	echo "          <td style='padding-right:25px;'><b>OS Version:</b></td>\n";
-	echo "          <td>" . $escaper->escapeHtml($os_version['pretty_name']) . "</td>\n";
-	echo "        </tr>\n";
-	echo "        <tr>\n";
-	echo "          <td style='padding-right:25px;'><b>PHP Version:</b></td>\n";
-	echo "          <td>" . $escaper->escapeHtml(phpversion()) . "</td>\n";
-	echo "        </tr>\n";
-	echo "        <tr>\n";
-	echo "          <td style='padding-right:25px;'><b>Database Version:</b></td>\n";
-	echo "          <td>" . $escaper->escapeHtml($db_version) . "</td>\n";
-	echo "        </tr>\n";
-	echo "        <tr>\n";
-	echo "          <td style='padding-right:25px;'><b>SimpleRisk Version:</b></td>\n";
-	echo "          <td>" . $escaper->escapeHtml($current_app_version) . "</td>\n";
-	echo "        </tr>\n";
-	echo "        <tr>\n";
-	echo "          <td style='padding-right:25px;'><b>SimpleRisk Instance ID:</b></td>\n";
-	echo "          <td>" . $escaper->escapeHtml($instance_id) . "</td>\n";
-	echo "        </tr>\n";
-	echo "        <tr>\n";
-	echo "          <td style='padding-right:25px;'><b>Public IP Address:</b></td>\n";
-	echo "          <td>" . $escaper->escapeHtml(get_public_ip()) . "</td>\n";
-	echo "        </tr>\n";
-	echo "      </table>\n";
-
-	echo "    </div>\n";
-
-	// SimpleRisk Tab
-	echo "    <div id=\"simplerisk\" style=\"display: none;\" class=\"settings_tab\">\n";
-	echo "      <b><u>SimpleRisk Version</u></b><br />\n";
-	display_health_check_results($check_app_version);
+    echo "
+        </div></div>
+        <div class='tab-pane col-12' id='simplerisk' tabindex='0'>
+		<div class='card-body my-2 border font-16'>
+            <h4>{$escaper->escapeHtml($lang['SimpleRiskVersion'])}</h4>";
+    display_health_check_results($check_app_version);
 	display_health_check_results($check_db_version);
 	display_health_check_results($check_same_app_and_db);
-	echo "      <br /><b><u>Configurations</u></b><br />\n";
-	display_health_check_results($check_use_database_for_session);
+    echo "
+          <h4 class='mt-2'>{$escaper->escapeHtml($lang['Configurations'])}</h4>";
+    display_health_check_results($check_use_database_for_session);
 	display_health_check_results($cron_configured);
-	echo "    </div>\n";
-
-	// SimpleRisk Extras Tab
-	echo "    <div id=\"extras\" style=\"display: none;\" class=\"settings_tab\">\n";
-	echo "      <b><u>SimpleRisk Extras</u></b><br />";
-	display_health_check_array_results($check_extra_versions);
-	echo "    </div>\n";
-
-	// SimpleRisk Connectivity Tab
-	echo "    <div id=\"connectivity\" style=\"display: none;\" class=\"settings_tab\">\n";
-	echo "<b><u>Connectivity</u></b><br />";
-	display_health_check_results($check_simplerisk_base_url);
+    echo "
+        </div></div>
+        <div class='tab-pane col-12' id='extras' tabindex='0'>
+		<div class='card-body my-2 border font-16'>
+            <h4>{$escaper->escapeHtml($lang['SimpleRiskExtras'])}</h4>";
+    display_health_check_array_results($check_extra_versions);
+    echo "
+        </div></div>
+        <div class='tab-pane col-12' id='connectivity' tabindex='0'>
+		<div class='card-body my-2 border font-16'>
+            <h4>{$escaper->escapeHtml($lang['Connectivity'])}</h4>";
+    display_health_check_results($check_simplerisk_base_url);
     display_health_check_results($check_simplerisk_base_url_dns);
-	display_health_check_results($check_database_connectivity);
-	display_health_check_results($check_api_connectivity);
-	display_health_check_array_results($check_web_connectivity);
-	echo "    </div>\n";
-
-	// SimpleRisk PHP Tab
-	echo "    <div id=\"php\" style=\"display: none;\" class=\"settings_tab\">\n";
-	echo "<b><u>PHP</u></b><br />";
-	display_health_check_results($check_php_version);
-	display_health_check_results($check_php_memory_limit);
-	display_health_check_results($check_php_max_input_vars);
-	display_health_check_array_results($check_php_extensions);
-	echo "    </div>\n";
-
-	// SimpleRisk MySQL Tab
-	echo "    <div id=\"mysql\" style=\"display: none;\" class=\"settings_tab\">\n";
-	echo "<b><u>MySQL</u></b><br />";
-	display_health_check_results($check_mysql_size);
-	display_health_check_results($check_strict_sql_mode);
-	display_health_check_results($check_no_zero_date);
-	display_health_check_results($check_only_full_group_by);
-	display_health_check_results($check_mysql_permission_select);
-	display_health_check_results($check_mysql_permission_insert);
-	display_health_check_results($check_mysql_permission_update);
-	display_health_check_results($check_mysql_permission_delete);
-	display_health_check_results($check_mysql_permission_create);
-	display_health_check_results($check_mysql_permission_drop);
-	display_health_check_results($check_mysql_permission_references);
-	display_health_check_results($check_mysql_permission_index);
-	display_health_check_results($check_mysql_permission_alter);
-	echo "    </div>\n";
-
-	// SimpleRisk Permissions Tab
-	echo "    <div id=\"permissions\" style=\"display: none;\" class=\"settings_tab\">\n";
-	echo "<b><u>File and Directory Permissions</u></b><br />";
-	display_health_check_array_results($check_simplerisk_directory_permissions);
-	echo "    </div>\n";
-
-	echo "  </div>\n";
-	echo "</div>\n";
+    display_health_check_results($check_database_connectivity);
+    display_health_check_results($check_api_connectivity);
+    display_health_check_array_results($check_web_connectivity);
+    echo "
+        </div></div>
+        <div class='tab-pane col-12' id='php' tabindex='0'>
+		<div class='card-body my-2 border font-16'>
+            <h4>PHP</h4>";
+    display_health_check_results($check_php_version);
+    display_health_check_results($check_php_memory_limit);
+    display_health_check_results($check_php_max_input_vars);
+    display_health_check_array_results($check_php_extensions);
+    echo "
+        </div></div>
+        <div class='tab-pane col-12' id='mysql' tabindex='0'>
+		<div class='card-body my-2 border font-16'>
+   	        <h4>MySQL</h4>";
+    display_health_check_results($check_mysql_version);
+    display_health_check_results($check_mysql_size);
+    display_health_check_results($check_strict_sql_mode);
+    display_health_check_results($check_no_zero_date);
+    display_health_check_results($check_only_full_group_by);
+    display_health_check_results($check_mysql_permission_select);
+    display_health_check_results($check_mysql_permission_insert);
+    display_health_check_results($check_mysql_permission_update);
+    display_health_check_results($check_mysql_permission_delete);
+    display_health_check_results($check_mysql_permission_create);
+    display_health_check_results($check_mysql_permission_drop);
+    display_health_check_results($check_mysql_permission_references);
+    display_health_check_results($check_mysql_permission_index);
+    display_health_check_results($check_mysql_permission_alter);
+    echo "
+        </div></div>
+        <div class='tab-pane col-12' id='permissions' tabindex='0'>
+		<div class='card-body my-2 border font-16'>
+          <h4>{$escaper->escapeHtml($lang['FileAndDirectoryPermissions'])}</h4>";
+    display_health_check_array_results($check_simplerisk_directory_permissions);
+    echo "
+        </div>
+      </div>
+	  </div>
+    ";
 }
 
 /******************************************
@@ -380,15 +399,21 @@ function health_check_bad($text)
  *******************************/
 function check_app_version($current_app_version, $latest_app_version)
 {
-	// If the current and latest versions are the same
-        if ($current_app_version === $latest_app_version)
-        {
-		return array("result" => 1, "text" => "Running the current version (" . $current_app_version . ") of the SimpleRisk application.");
-        }
-        else
-        {
-		return array("result" => 0, "text" => "Running an outdated version (" . $current_app_version . ") of the SimpleRisk application.");
-        }
+    // If the current and latest versions are the same
+    if ($current_app_version === $latest_app_version)
+    {
+        return array("result" => 1, "text" => "Running the current version (" . $current_app_version . ") of the SimpleRisk application.");
+    }
+    // If the current version is less than the latest version
+    else if ($current_app_version < $latest_app_version)
+    {
+        return array("result" => 0, "text" => "Running an outdated version (" . $current_app_version . ") of the SimpleRisk application.  The latest application version is {$latest_app_version}.");
+    }
+    // If the current version is greater than the latest version
+    else if ($current_app_version > $latest_app_version)
+    {
+        return array("result" => 1, "text" => "Running version (" . $current_app_version . ") of the SimpleRisk application.  The latest application version is {$latest_app_version}.  You must be from the future.");
+    }
 }
 
 /******************************
@@ -396,15 +421,21 @@ function check_app_version($current_app_version, $latest_app_version)
  ******************************/
 function check_db_version($current_db_version, $latest_db_version)
 {
-	// If the current and latest versions are the same
-        if ($current_db_version === $latest_db_version)
-        {
-		return array("result" => 1, "text" => "Running the current version (" . $current_db_version . ") of the SimpleRisk database schema.");
-        }
-        else
-        {
-		return array("result" => 0, "text" => "Running an outdated version (" . $current_db_version . ") of the SimpleRisk database schema.");
-        }
+    // If the current and latest versions are the same
+    if ($current_db_version === $latest_db_version)
+    {
+        return array("result" => 1, "text" => "Running the current version (" . $current_db_version . ") of the SimpleRisk database.");
+    }
+    // If the current version is less than the latest version
+    else if ($current_db_version < $latest_db_version)
+    {
+        return array("result" => 0, "text" => "Running an outdated version (" . $current_db_version . ") of the SimpleRisk database.  The latest database version is {$latest_db_version}.");
+    }
+    // If the current version is greater than the latest version
+    else if ($current_db_version > $latest_db_version)
+    {
+        return array("result" => 1, "text" => "Running version (" . $current_db_version . ") of the SimpleRisk database.  The latest database version is {$latest_db_version}.  You must be from the future.");
+    }
 }
 
 /***********************************
@@ -483,7 +514,7 @@ function check_web_connectivity()
 	set_proxy_stream_context($method, $header);
 
 	// URLs to check
-	$urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://updates.simplerisk.com", "https://olbat.github.io", "https://github.com", "https://raw.githubusercontent.com", "https://simplerisk-downloads.s3.amazonaws.com");
+	$urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://scf.simplerisk.com", "https://olbat.github.io", "https://github.com", "https://raw.githubusercontent.com", "https://simplerisk-downloads.s3.amazonaws.com");
 
 	// Create an empty array
 	$array = array();
@@ -511,48 +542,94 @@ function check_web_connectivity()
 	return $array;
 }
 
+/*********************************
+ * FUNCTION: CHECK MYSQL VERSION *
+ *********************************/
+function check_mysql_version()
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Get the database version information
+    $stmt = $db->prepare("SELECT VERSION() as version;");
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $version = $row['version'];
+
+    // MariaDB version looks like "10.5.12-MariaDB-log"
+    // MySQL version looks like "8.0.23"
+
+    // If the database is MariaDB
+    if (preg_match('/MariaDB/', $version))
+    {
+        // The instance is running MariaDB and the check should fail
+        $array = array("result" => 0, "text" => "Your SimpleRisk instance is running on MariaDB, which is no longer a supported configuration.  Please migrate to MySQL as soon as possible.");
+    }
+    // Otherwise this is MySQL
+    else
+    {
+        // Split the version by the decimals
+        $version_array = explode('.', $version);
+        $major_version = $version_array[0];
+
+        // If the version is MySQL 8 or higher
+        if ($major_version >= 8)
+        {
+            $array = array("result" => 1, "text" => "Your SimpleRisk instance is running on MySQL version {$version}.");
+        }
+        // If this is an older version of MySQL and the check should fail
+        else
+        {
+            $array = array("result" => 0, "text" => "Your SimpleRisk instance is running a MySQL version older than 8.0, which is no longer a supported configuration.  Please migrate to a newer version of MySQL as soon as possible.");
+        }
+    }
+
+    // Return the array
+    return $array;
+}
+
 /************************************
  * FUNCTION: CHECK MYSQL PERMISSION *
  ************************************/
 function check_mysql_permission($permission)
-{       
-        global $escaper;
-        
-        // Open a database connection
-        $db = db_open();
-        
-        // Query for the permission
-        //$stmt = $db->prepare("SELECT " . $permission . " FROM mysql.db WHERE user='" . DB_USERNAME . "';");
-        $stmt = $db->prepare("SHOW GRANTS FOR CURRENT_USER;");
-        $stmt->execute();
-        $array = $stmt->fetchAll();
+{
+    global $escaper;
 
-        // Close the database connection
-        db_close($db);
-        
-        // Set permission found to false
-        $permission_found = false;
-        
-        foreach ($array as $row)
-        {       
-                // If the row contains the permission
-                if (preg_match("/" . $permission . "/", $row[0]))
-                {       
-			// The health check passed
-			$array = array("result" => 1, "text" => "The '" . $escaper->escapeHtml($permission) . "' permssion has been set for the '" . $escaper->escapeHtml(DB_USERNAME) . "' user.");
-                        
-                        // Set the permission found to true
-                        $permission_found = true;
-                }
-        }
-        
-        // If we did not find the permission
-        if ($permission_found == false)
-        {       
-		$array = array("result" => 0, "text" => "The '" . $escaper->escapeHtml($permission) . "' permssion is not set for the '" . $escaper->escapeHtml(DB_USERNAME) . "' user.");
-        }
+    // Open a database connection
+    $db = db_open();
 
-	return $array;
+    // Query for the permission
+    //$stmt = $db->prepare("SELECT " . $permission . " FROM mysql.db WHERE user='" . DB_USERNAME . "';");
+    $stmt = $db->prepare("SHOW GRANTS FOR CURRENT_USER;");
+    $stmt->execute();
+    $array = $stmt->fetchAll();
+
+    // Close the database connection
+    db_close($db);
+
+    // Set permission found to false
+    $permission_found = false;
+
+    foreach ($array as $row)
+    {
+        // If the row contains the permission
+        if (preg_match("/" . $permission . "/", $row[0]))
+        {
+            // The health check passed
+            $array = array("result" => 1, "text" => "The '" . $escaper->escapeHtml($permission) . "' permssion has been set for the '" . $escaper->escapeHtml(DB_USERNAME) . "' user.");
+
+            // Set the permission found to true
+            $permission_found = true;
+        }
+    }
+
+    // If we did not find the permission
+    if ($permission_found == false)
+    {
+        $array = array("result" => 0, "text" => "The '" . $escaper->escapeHtml($permission) . "' permssion is not set for the '" . $escaper->escapeHtml(DB_USERNAME) . "' user.");
+    }
+
+    return $array;
 }
 
 /**********************************
@@ -935,11 +1012,16 @@ function check_extra_versions($current_app_version)
 						{
 							$array[] = array("result" => 1, "text" => "You are running the most recent version of the " . $escaper->escapeHtml($extra['long_name']) . ".");
 						}
-						// We do not have the current version of the Extra
-						else
+						// We have an older version of the Extra
+						else if (core_extra_current_version($extra['short_name']) < latest_version($extra['short_name']))
 						{
 							$array[] = array("result" => 0, "text" => "A newer version of the " . $escaper->escapeHtml($extra['long_name']) . " is available.");
 						}
+                        // If we have a newer version of the Extra
+                        else if (core_extra_current_version($extra['short_name']) > latest_version($extra['short_name']))
+                        {
+                            $array[] = array("result" => 1, "text" => "You are running version " . core_extra_current_version($extra['short_name']) . " of the " . $escaper->escapeHtml($extra['long_name']) . ".  The current version is " . latest_version($extra['short_name']) . ".  You must be from the future.");
+                        }
 					}
 					// The extra is not installed
 					else
@@ -1156,56 +1238,92 @@ function check_simplerisk_base_url_dns()
  *************************************************/
 function unable_to_communicate_with_database()
 {
-	echo "
-<html ng-app=\"SimpleRisk\">
-  <head>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-      <link rel=\"stylesheet\" type=\"text/css\" href=\"css/bootstrap.min.css\" media=\"screen\" />
-      <link rel=\"stylesheet\" type=\"text/css\" href=\"css/style.css\" media=\"screen\" />
-      <link rel=\"stylesheet\" href=\"css/bootstrap.css\">
-      <link rel=\"stylesheet\" href=\"css/bootstrap-responsive.css\">
-      <link rel=\"stylesheet\" href=\"vendor/components/font-awesome/css/fontawesome.min.css\">
-      <link rel=\"stylesheet\" href=\"css/theme.css\">
-  </head>
+    $nocache_token = generate_token(5);
+?>
 
-  <body ng-controller=\"MainCtrl\" class=\"login--page\">
-
-    <header class=\"l-header\">
-      <div class=\"navbar\">
-        <div class=\"navbar-inner\">
-          <div class=\"container-fluid\">
-            <a class=\"brand\" href=\"https://www.simplerisk.com/\"><img src=\"images/logo@2x.png\" alt=\"SimpleRisk Logo\" /></a>
-            <div class=\"navbar-content pull-right\">
-              <ul class=\"nav\">
-                <li>
-                  <a href=\"index.php\">Database Installation Script</a>
-                </li>
-              </ul>
+<!DOCTYPE html>
+<html dir="ltr" lang="en" xml:lang="en">
+	<head>
+        <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+        <!-- Favicon icon -->
+        <link rel='shortcut icon' href='../favicon.ico' />
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="../css/style.min.css?<?= $nocache_token ?>" />
+        <!-- jQuery Javascript -->
+        <script src="../vendor/node_modules/jquery/dist/jquery.min.js?<?= $nocache_token ?>" id="script_jquery"></script>
+        <!-- Bootstrap tether Core JavaScript -->
+        <script src="../vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js?<?= $nocache_token ?>" defer></script>
+    </head>
+    <body>
+        <div class="preloader">
+            <div class="lds-ripple">
+                <div class="lds-pos"></div>
+                <div class="lds-pos"></div>
             </div>
-          </div>
         </div>
-      </div>
-    </header>
-    <div class=\"container-fluid\">
-      <div class=\"row-fluid\">
-        <div class=\"span12\">
-          <div class=\"login-wrapper clearfix\">
-    ";
+        <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="none" data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full" data-function="assessment">
+            <header class="topbar" data-navbarbg="skin5">
+                <nav class="navbar top-navbar navbar-expand-md navbar-dark">
+                    <div class="navbar-header-1">
+                        <a class="navbar-brand" href="https://www.simplerisk.com/">
+                        <span class="logo-text ms-2">
+                            <!-- dark Logo text -->
+                            <img src="../images/logo@2x.png" alt="homepage" class="light-logo"/>  
+                        </span>
+                        </a>
+                    </div>
+              		<div class="navbar-collapse collapse show" id="navbarSupportedContent" data-navbarbg="skin5">
+                        <!-- Right side toggle and nav items -->
+						<ul class="navbar-nav float-end ms-auto">
+			  				<li class="nav-item dropdown">
+                				<a href="index.php" style='color: var(--sr-light)'>Database Installation Script</a>
+              				</li>
+            			</ul>
+          			</div>
+                </nav>
+            </header>
+            <!-- ============================================================== -->
+            <!-- Page wrapper  -->
+            <div class="page-wrapper">
+            	<div class="scroll-content">
+            		<div class="content-wrapper">
+                        <!-- container - It's the direct container of all the -->
+                        <div class="content container-fluid">
+							<h1 class="text-center welcome--msg">Unable to Communicate with the Database</h1>
+							<br />
+							<div>
+								<p>SimpleRisk is unable to communicate with the database.  If SimpleRisk was already installed, try the following troubleshooting steps:</p>
+								<ul>
+									<li>Double-check your database credentials in the config.php file</li>
+									<li>Try manually connecting to the database using the command '<i>mysql -h &lt;hostname&gt; -u &lt;username&gt; -p</i>' and specifying the password when prompted</li>
+									<li>Contact support and provide a copy of any relevant messages from your web server's error log</li>
+								</ul>
+							</div>
 
-	// Display the Unable to Communicate with the Database page
-	echo "<h1 class=\"text-center welcome--msg\">Unable to Communicate with the Database</h1>\n";
-	echo "<br />\n";
-	echo "<div style='color: #FFFFFF;'><p>SimpleRisk is unable to communicate with the database.  If SimpleRisk was already installed, try the following troubleshooting steps:</p><ul><li>Double-check your database credentials in the config.php file</li><li>Try manually connecting to the database using the command '<i>mysql -h &lt;hostname&gt; -u &lt;username&gt; -p</i>' and specifying the password when prompted</li><li>Contact support and provide a copy of any relevant messages from your web server's error log</li></div>\n";
-
-	echo "
-              </div>
+                        </div>
+                        <!-- End of content -->
+                        <footer class="footer text-center">
+                  			Copyright 2024 SimpleRisk, Inc. All rights reserved.
+                		</footer>
+                	</div>
+                	<!-- End of content-wrapper -->
+        		</div>
+        		<!-- End of scroll-content -->
+          	</div>
+          <!-- End Page wrapper  -->
         </div>
-      </div>
-    </div>
-  </body>
+        <!-- End Wrapper -->
 
+    	<script>
+        	$(function() {
+        		// Fading out the preloader once everything is done rendering
+        		$(".preloader").fadeOut();
+            });
+    	</script>
+    </body>
 </html>
-    ";
+<?php
 }
-
 ?>

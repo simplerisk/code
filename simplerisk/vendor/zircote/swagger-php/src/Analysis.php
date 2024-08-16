@@ -76,6 +76,8 @@ class Analysis
             return;
         }
 
+        $context->ensureRoot($this->context);
+
         if ($annotation instanceof OA\OpenApi) {
             $this->openapi = $this->openapi ?: $annotation;
         } else {
@@ -362,15 +364,14 @@ class Analysis
             return $annotation->_context;
         }
         if ($this->annotations->contains($annotation) === false) {
-            throw new \Exception('Annotation not found');
+            throw new OpenApiException('Annotation not found');
         }
         $context = $this->annotations[$annotation];
         if ($context instanceof Context) {
             return $context;
         }
 
-        // Weird, did you use the addAnnotation/addAnnotations methods?
-        throw new \Exception('Annotation has no context');
+        throw new OpenApiException('Annotation has no context - did you use addAnnotation()/addAnnotations()');
     }
 
     /**
@@ -379,7 +380,7 @@ class Analysis
     public function merged(): Analysis
     {
         if ($this->openapi === null) {
-            throw new \Exception('No openapi target set. Run the MergeIntoOpenApi processor');
+            throw new OpenApiException('No openapi target set. Run the MergeIntoOpenApi processor');
         }
         $unmerged = $this->openapi->_unmerged;
         $this->openapi->_unmerged = [];

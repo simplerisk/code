@@ -1,7 +1,7 @@
 /******************************************************************
 ****************Renderers for the datatable widget*****************
 *******************************************************************/
-$.fn.dataTable.render.tags = function (tag_type) {
+DataTable.render.tags = function (tag_type) {
     return function (data, type, row) {
         // console.log(data, type, row);
         if (type === 'edit') {
@@ -57,7 +57,7 @@ $.fn.dataTable.render.tags = function (tag_type) {
     };
 };
 
-$.fn.dataTable.render.short_text = function (name) {
+DataTable.render.short_text = function (name) {
     return function (data, type, row) {
         //console.log(data, type, row);
         if (type === 'edit') {
@@ -70,7 +70,7 @@ $.fn.dataTable.render.short_text = function (name) {
     };
 };
 
-$.fn.dataTable.render.long_text = function (name) {
+DataTable.render.long_text = function (name) {
     return function (data, type, row) {
         //console.log(data, type, row);
         if (type === 'edit') {

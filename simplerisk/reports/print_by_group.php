@@ -24,8 +24,8 @@ include_csrf_magic();
 // @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
-// Record the page the workflow started from as a session variable
-$_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
+// Set a global variable for the current app version, so we don't have to call a function every time
+$current_app_version = current_version("app");
 
 $custom_display_settings = $_SESSION['custom_display_settings'];
 if(!is_array($custom_display_settings)){
@@ -47,57 +47,64 @@ $order_column = isset($_GET["order_column"])?$_GET["order_column"]:null;
 $order_dir = isset($_GET["order_dir"])?$_GET["order_dir"]:"asc";
 $column_filters = isset($_GET["column_filters"])?$_GET["column_filters"]:[];
 
-// Once it has been activated
-if (import_export_extra()){
 ?>
 <!doctype html>
 <html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
+    <head>
+        <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
 
-<head>
-<?php
-        // Use these jQuery scripts
-        $scripts = [
-                'jquery.min.js',
-        ];
+        <!-- Favicon icon  -->
+        <?php setup_favicon(".."); ?>
+        
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="../css/style.min.css?<?= $current_app_version ?>" />
 
-        // Include the jquery javascript source
-        display_jquery_javascript($scripts);
+        <!-- jQuery CSS -->
+        <link rel="stylesheet" href="../vendor/node_modules/jquery-ui/dist/themes/base/jquery-ui.min.css?<?= $current_app_version ?>">
 
-	display_bootstrap_javascript();
-?>
-  <script src="../js/obsolete.js?<?php echo current_version("app"); ?>"></script>
-  <script src="../js/simplerisk/common.js?<?php echo current_version("app"); ?>"></script>
-  <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-  
-  <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
-  <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+        <!-- extra css -->
 
-  <?php
-      setup_favicon("..");
-      setup_alert_requirements("..");
-  ?>  
-</head>
-<body>
-<style>
-    #risk-table-container{overflow: auto;}
-</style>
-    <div class="container-fluid">
-        <div class="row-fluid top-offset-15">
-            <div class="span12">
-                <div id="risk-table-container">
-                    <?php get_risks_by_group($status, $group, $sort, $group_value, $custom_display_settings, $column_filters, $order_column, $order_dir); ?>
+        <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?= $current_app_version ?>">
+
+        <!-- jQuery Javascript -->
+        <script src="../vendor/node_modules/jquery/dist/jquery.min.js?<?= $current_app_version ?>" id="script_jquery"></script>
+        <script src="../vendor/node_modules/jquery-ui/dist/jquery-ui.min.js?<?= $current_app_version ?>" id="script_jqueryui"></script>
+
+        <!-- Bootstrap tether Core JavaScript -->
+        <script src="../vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js" defer></script>
+
+        <script src="../js/simplerisk/common.js?<?= $current_app_version ?>"></script>
+
+        <?php setup_alert_requirements(".."); ?>  
+
+    </head>
+    <body>
+        <style>
+            #risk-table-container{overflow: auto;}
+        </style>
+        <div class="print-by-group-page">
+            <div class="print-by-group-page-body">
+
+    <!-- Once it has been activated -->
+    <?php if (import_export_extra()) { ?>
+
+                <div class="card-body border my-2">
+                    <div id="risk-table-container">
+                        <?php get_risks_by_group($status, $group, $sort, $group_value, $custom_display_settings, $column_filters, $order_column, $order_dir); ?>
+                    </div>
                 </div>
+
+    <?php } else { ?>
+
+                <div class="card-body border my-2">
+                    <?= $escaper->escapeHtml($lang['ImportExportIsDeactivated']) ?>
+                </div>
+
+    <?php } ?>
+    
             </div>
         </div>
-    </div>
-</body>
+    </body>
 </html>
-<?php } else {
-    echo $escaper->escapeHtml($lang['ImportExportIsDeactivated']);
-}?>

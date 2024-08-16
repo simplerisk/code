@@ -22,7 +22,15 @@
         }
 
         // Start the session
-        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+        $parameters = [
+            "lifetime" => 0,
+            "path" => "/",
+            "domain" => "",
+            "secure" => isset($_SERVER["HTTPS"]),
+            "httponly" => true,
+            "samesite" => "Strict",
+        ];
+        session_set_cookie_params($parameters);
 
         session_name('SimpleRisk');
         session_start();
@@ -130,33 +138,48 @@ require_once(language_file());
         }
     }
 ?>
+<div class="card-body my-2 border">
+    <form name="add_comment" method="post" action="">
+        <div class="row">
+            <div class="col-6">
+    <?php
+        echo "
+                <div class='row align-items-center'>
+                    <div class='col-4'>
+                        <label>" . $escaper->escapeHtml($lang['SetRiskStatusTo']) . ":</label>
+                    </div>
+        ";
 
-<div class="row-fluid">
-    <div class="well">
-      <form name="add_comment" method="post" action="">
-        <?php
-            echo $escaper->escapeHtml($lang['SetRiskStatusTo']);
-            echo "&nbsp;&nbsp;";
+        $options = get_options_from_table('status');
+        array_unshift($options, ['value'=>'', 'name'=>'--']);
 
-            $options = get_options_from_table('status');
-            array_unshift($options, ['value'=>'', 'name'=>'--']);
+        echo "
+                    <div class='col-8'>
+                        <select id='status' name='status' class='form-field form-select'>
+        ";
 
-            echo "<select id='status' name='status' class='form-field' style='width:auto;'>\n";
-            foreach ($options as $key => $option)
-            {
-                if (!(isset($_SESSION["close_risks"]) && $_SESSION["close_risks"] == 1) && $option['name'] === "Closed")
-                    continue;
+        foreach ($options as $key => $option)
+        {
+            if (!(isset($_SESSION["close_risks"]) && $_SESSION["close_risks"] == 1) && $option['name'] === "Closed") continue;
 
-                echo "<option value='" . $escaper->escapeHtml($option['value']) . "'>" . $escaper->escapeHtml($option['name']) . "</option>\n";
-            }
-            echo "</select>";
+            echo "
+                            <option value='" . $escaper->escapeHtml($option['value']) . "'>" . $escaper->escapeHtml($option['name']) . "</option>
+            ";
+        }
 
-            echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Update']) . "\" name=\"update_status\" />\n";
-        ?>
-      </form>
-    </div>
+        echo "
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class='col-6'>
+                <input type='submit' class='btn btn-submit' value='" . $escaper->escapeHtml($lang['Update']) . "' name='update_status' />
+            </div>
+        ";
+    ?>
+        </div>
+    </form>
 </div>
-
 <input type="hidden" id="_token_value" value="<?php echo csrf_get_tokens(); ?>">
 <input type="hidden" id="_lang_reopen_risk" value="<?php echo $escaper->escapeHtml($lang['ReopenRisk']); ?>">
 <input type="hidden" id="_lang_close_risk" value="<?php echo $escaper->escapeHtml($lang['CloseRisk']); ?>">

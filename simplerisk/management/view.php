@@ -3,31 +3,13 @@
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Include required functions file
-require_once(realpath(__DIR__ . '/../includes/functions.php'));
-require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-require_once(realpath(__DIR__ . '/../includes/display.php'));
-require_once(realpath(__DIR__ . '/../includes/alerts.php'));
-require_once(realpath(__DIR__ . '/../includes/permissions.php'));
-require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
+// Render the header and sidebar
+require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 
-// Add various security headers
-add_security_headers();
-
-// Add the session
-$permissions = array(
-        "check_access" => true,
-        "check_riskmanagement" => true,
-);
-add_session_check($permissions);
-
-// Include the CSRF Magic library
-include_csrf_magic();
-
-// Include the SimpleRisk language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
-require_once(language_file());
+$breadcrumb_title_key = "RiskDetails";
+$active_sidebar_menu ="RiskManagement";
+$active_sidebar_submenu = isset($_GET['active']) ? $_GET['active'] : "ReviewRisksRegularly";
+render_header_and_sidebar(['blockUI', 'tabs:logic', 'selectize', 'datatables', 'chart.js', 'WYSIWYG', 'multiselect', 'CUSTOM:common.js', 'CUSTOM:pages/risk.js', 'CUSTOM:cve_lookup.js', 'datetimerangepicker'], ['check_riskmanagement' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
 
 // Check if a risk ID was sent
 if (isset($_GET['id']))
@@ -237,310 +219,163 @@ else
     $display_risk = false;
 }
 
-	// Record the page the workflow started from as a session variable
-	$_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
+switch($active_sidebar_submenu){
+    default:
+    case "ReviewRisksRegularly":
+        $list_href = "review_risks.php";
+        break;
+    case "PerformManagementReviews":
+        $list_href = "management_review.php";
+        break;
+    case "PlanYourMitigations":
+        $list_href = "plan_mitigations.php";
+        break;
+}
 ?>
-
-<!doctype html>
-<html>
-
-    <head>
-        <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-
-<?php
-        // Use these jQuery scripts
-        $scripts = [
-                'jquery.min.js',
-        ];
-
-        // Include the jquery javascript source
-        display_jquery_javascript($scripts);
-
-        // Use these jquery-ui scripts
-        $scripts = [
-                'jquery-ui.min.js',
-        ];
-
-        // Include the jquery-ui javascript source
-        display_jquery_ui_javascript($scripts);
-
-	display_bootstrap_javascript();
-?>
-        <script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?php echo current_version("app"); ?>"></script>
-        <script src="../js/simplerisk/cve_lookup.js?<?php echo current_version("app"); ?>"></script>
-        <script src="../js/basescript.js?<?php echo current_version("app"); ?>"></script>
-
+<div class="row bg-white">
+    <div class="col-12">
+        <div class='tab-data hide'></div>
+        <div class='tab-data'>
     <?php
-        // Use these HighCharts scripts
-        $scripts = [
-                'highcharts.js',
-        ];
 
-        // Display the highcharts javascript source
-        display_highcharts_javascript($scripts);
+        $action = isset($_GET['action']) ? $_GET['action'] : "";
 
-    ?>
-
-        <script src="../vendor/moment/moment/min/moment.min.js?<?php echo current_version("app"); ?>"></script>
-        <script src="../js/simplerisk/common.js?<?php echo current_version("app"); ?>"></script>
-        <script src="../js/simplerisk/pages/risk.js?<?php echo current_version("app"); ?>"></script>
-        <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
-        <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
-
-        <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
-        <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-        <link rel="stylesheet" href="../vendor/node_modules/datatables.net-dt/css/jquery.dataTables.min.css?<?php echo current_version("app"); ?>">
-        <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
-        <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
-        <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
-        <link rel="stylesheet" href="../css/style.css?<?php echo current_version("app"); ?>">
-        <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
-        <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
-        <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
-
-        <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
-        <script src="../vendor/simplerisk/selectize.js/dist/js/standalone/selectize.min.js?<?php echo current_version("app"); ?>"></script>
-        <script src="../vendor/tinymce/tinymce/tinymce.min.js?<?php echo current_version("app"); ?>"></script>
-        <script src="../js/WYSIWYG/editor.js?<?php echo current_version("app"); ?>"></script>
-
-        <script type="text/javascript">
-            function showScoreDetails() {
-                document.getElementById("scoredetails").style.display = "";
-                document.getElementById("hide").style.display = "block";
-                document.getElementById("show").style.display = "none";
-            }
-
-            function hideScoreDetails() {
-                document.getElementById("scoredetails").style.display = "none";
-                document.getElementById("updatescore").style.display = "none";
-                document.getElementById("hide").style.display = "none";
-                document.getElementById("show").style.display = "";
-            }
-
-            function updateScore() {
-                document.getElementById("scoredetails").style.display = "none";
-                document.getElementById("updatescore").style.display = "";
-                document.getElementById("show").style.display = "none";
-            }
-          
-        </script>
-        <style>
-            .risk-details .row-fluid{max-width: 1400px;}
-            .top-panel .span2, .bottom-panel .span2{max-width: 210px;line-height: 33px;}
-            .top-panel .span8, .bottom-panel .span8{margin-left:15px;line-height: 33px;}
-            .row-fluid .span7{line-height: 33px;}
-            .row-fluid .span7 input[type="text"]:disabled {padding-left:0px;}
-            @media only screen and (min-width: 768px) {
-                .top-panel .span2.text-right, .bottom-panel .span2.text-right{margin-left:10px;}
-            }
-            @media only screen and (min-width: 1400px) {
-                .top-panel .span2.text-right, .bottom-panel .span2.text-right{margin-left:22px;}
-            }
-        </style>
-        
-      <?php
-          setup_favicon("..");
-          setup_alert_requirements("..");
-      ?>    
-    </head>
-
-    <body>
-
-      <?php
-        view_top_menu("RiskManagement");
-        // Get any alert messages
-        get_alert();
-        $active = isset($_GET['active']) ? $_GET['active'] : "ReviewRisksRegularly";
-        switch($active){
-            default:
-            case "ReviewRisksRegularly":
-                $list_href = "review_risks.php";
-                break;
-            case "PerformManagementReviews":
-                $list_href = "management_review.php";
-                break;
-            case "PlanYourMitigations":
-                $list_href = "plan_mitigations.php";
-                break;
+        if($display_risk == true)  {
+            include(realpath(__DIR__ . '/partials/viewhtml.php'));
+        } else {
+            echo "
+            <div class='card-body my-2 border'><strong>" . $lang["RiskIdDoesNotExist"] . "</strong></div>
+            ";
         }
-      ?>
-      <div class="tabs new-tabs">
-        <div class="container-fluid">
-          <div class="row-fluid">
-            <div class="span3"> </div>
-            <div class="span9">
-              <div class="tab-append">
-                <div class="tab form-tab" id="risk_list"><div><span><a href="<?php echo $list_href;?>">Risk list</a></span></div>
-                </div>
-                <div class="tab selected form-tab" id="risk_detail"><div><span><strong>ID: <?php echo $id.'</strong>  '.$escaper->escapeHtml(try_decrypt($subject)); ?></span></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
+        
+    ?>
         </div>
-      </div>
-      <div class="container-fluid">
-        <div class="row-fluid">
-          <div class="span3">
-            <?php 
-                view_risk_management_menu($active); 
-            ?>
-          </div>
-          <div class="span9">
+    </div>
+</div>
+<input type="hidden" id="enable_popup" value="<?php echo $escaper->escapeHtml(get_setting('enable_popup')); ?>">     
+<script>
+    /*
+    * Function to add the css class for textarea title and make it popup.
+    * Example usage:
+    * focus_add_css_class("#foo", "#bar");
+    */
+    function showScoreDetails() {
+        document.getElementById("scoredetails").style.display = "";
+        document.getElementById("hide").style.display = "block";
+        document.getElementById("show").style.display = "none";
+    }
 
-            <div class="row-fluid" id="tab-content-container">
-                <div class='tab-data hide'></div>
-                <div class='tab-data'>
-                    <?php
-                        
-                        $action = isset($_GET['action']) ? $_GET['action'] : "";
-                        if($display_risk == true) include(realpath(__DIR__ . '/partials/viewhtml.php'));
-                        else echo $lang["RiskIdDoesNotExist"];
-                    ?>
-                </div>
-            </div>
-            
-          </div>
-        </div>
-      </div>
-        <input type="hidden" id="enable_popup" value="<?php echo $escaper->escapeHtml(get_setting('enable_popup')); ?>">
-          <script>
-            /*
-            * Function to add the css class for textarea title and make it popup.
-            * Example usage:
-            * focus_add_css_class("#foo", "#bar");
-            */
-            function focus_add_css_class(id_of_text_head, text_area_id){
-                // If enable_popup setting is false, disable popup
-                if($("#enable_popup").val() != 1){
-                    $("textarea").removeClass("enable-popup");
-                    return;
-                }else{
-                    $("textarea").addClass("enable-popup");
-                }
-                
-                look_for = "textarea" + text_area_id;
-                if( !$(look_for).length ){
-                    text_area_id = text_area_id.replace('#','');
-                    look_for = "textarea[name=" + text_area_id;
-                }
-                $(look_for).focusin(function() {
-                    $(id_of_text_head).addClass("affected-assets-title");
-                    $('.ui-autocomplete').addClass("popup-ui-complete")
-                });
-                $(look_for).focusout(function() {
-                    $(id_of_text_head).removeClass("affected-assets-title");
-                    $('.ui-autocomplete').removeClass("popup-ui-complete")
-                });
-            }
-            $(document).ready(function() {
-                focus_add_css_class("#RiskAssessmentTitle", "#assessment");
-                focus_add_css_class("#NotesTitle", "#notes");
-                focus_add_css_class("#SecurityRequirementsTitle", "#security_requirements");
-                focus_add_css_class("#CurrentSolutionTitle", "#current_solution");
-                focus_add_css_class("#SecurityRecommendationsTitle", "#security_recommendations");
-                
-                setupAssetsAssetGroupsViewWidget($('select.assets-asset-groups-select-disabled'));
-                
-                /**
-                * Change Event of Risk Scoring Method
-                * 
-                */
-                $('body').on('change', '[name=scoring_method]', function(e){
-                    e.preventDefault();
-                    var formContainer = $(this).parents('form');
-                    handleSelection($(this).val(), formContainer);
-                })
-                
-                /**
-                * events in clicking soring button of edit details page, muti tabs case
-                */
-                $('body').on('click', '[name=cvssSubmit]', function(e){
-                    e.preventDefault();
-                    var form = $(this).parents('form');
-                    popupcvss(form);
-                })
-                
-            });
-        </script>
-    </body>
+    function hideScoreDetails() {
+        document.getElementById("scoredetails").style.display = "none";
+        document.getElementById("updatescore").style.display = "none";
+        document.getElementById("hide").style.display = "none";
+        document.getElementById("show").style.display = "";
+    }
 
-    <script type="text/javascript">
+    function updateScore() {
+        document.getElementById("scoredetails").style.display = "none";
+        document.getElementById("updatescore").style.display = "";
+        document.getElementById("show").style.display = "none";
+    }
+    function focus_add_css_class(id_of_text_head, text_area_id){
+        // If enable_popup setting is false, disable popup
+        if($("#enable_popup").val() != 1){
+            $("textarea").removeClass("enable-popup");
+            return;
+        }else{
+            $("textarea").addClass("enable-popup");
+        }
+        
+        look_for = "textarea" + text_area_id;
+        if( !$(look_for).length ){
+            text_area_id = text_area_id.replace('#','');
+            look_for = "textarea[name=" + text_area_id;
+        }
+        $(look_for).focusin(function() {
+            $(id_of_text_head).addClass("affected-assets-title");
+            $('.ui-autocomplete').addClass("popup-ui-complete")
+        });
+        $(look_for).focusout(function() {
+            $(id_of_text_head).removeClass("affected-assets-title");
+            $('.ui-autocomplete').removeClass("popup-ui-complete")
+        });
+    }
+    $(document).ready(function() {
+        focus_add_css_class("#RiskAssessmentTitle", "#assessment");
+        focus_add_css_class("#NotesTitle", "#notes");
+        focus_add_css_class("#SecurityRequirementsTitle", "#security_requirements");
+        focus_add_css_class("#CurrentSolutionTitle", "#current_solution");
+        focus_add_css_class("#SecurityRecommendationsTitle", "#security_recommendations");
+        
+        setupAssetsAssetGroupsViewWidget($('select.assets-asset-groups-select-disabled'));
+        
+        /**
+        * Change Event of Risk Scoring Method
+        * 
+        */
+        $('body').on('change', '[name=scoring_method]', function(e){
+            e.preventDefault();
+            var formContainer = $(this).parents('form');
+            handleSelection($(this).val(), formContainer);
+        })
+        
+        /**
+        * events in clicking soring button of edit details page, muti tabs case
+        */
+        $('body').on('click', '[name=cvssSubmit]', function(e){
+            e.preventDefault();
+            var form = $(this).parents('form');
+            popupcvss(form);
+        })
+        
+    });
+    
+    $(document).click(function (event) {
+        var $target = $(event.target);
+        if (!$target.closest('.multiselect-native-select').find('.btn-group').length && $('.multiselect-native-select').find('.btn-group').hasClass("open")) {
+              $('.multiselect-native-select').find('.btn-group').removeClass('open');
+        }
+    });
+    $( function() {
+       
+        $("#comment-submit").attr('disabled','disabled');
+        $("#cancel_disable").attr('disabled','disabled');
+        $("#rest-btn").attr('disabled','disabled');
 
-        $( function() {
-           
-            $("#comment-submit").attr('disabled','disabled');
-            $("#cancel_disable").attr('disabled','disabled');
-            $("#rest-btn").attr('disabled','disabled');
-            $("#comment-text").click(function(){
-                $("#comment-submit").removeAttr('disabled');
-                $("#rest-btn").removeAttr('disabled');
-            });
-
-            $("#comment-submit").click(function(){
-                var submitbutton = document.getElementById("comment-text").value;
-                if(submitbutton == ''){
-                    $("#comment-submit").attr('disabled','disabled');
-                    $("#rest-btn").attr('disabled','disabled');
-                }
-            });
-            $("#rest-btn").click(function(){
-                $("#comment-submit").attr('disabled','disabled');
-            });
-           
-            $(".active-textfield").click(function(){
-                $("#cancel_disable").removeAttr('disabled');
-            });
-                
-           $("select").change(function changeOption(){
-                $("#cancel_disable").removeAttr('disabled');
-           });
-                 
-
-            $("#tabs").tabs({ active: 0});
-            <?php if (isset($_POST['edit_mitigation'])): ?>
-            $("#tabs").tabs({ active: 1});
-
-            <?php elseif (!isset($_POST['tab_type']) && (isset($_POST['edit_details']) ||(isset($_GET['type']) && $_GET['type']) =='0')): ?>
-            // $("#tabs").tabs({ active: 0});
-
-            <?php elseif ((isset($_POST['tab_type']) || isset($_GET['tab_type'])) || isset($_GET['type']) && $_GET['type']=='1'): ?>
-            $("#tabs").tabs({ active: 1});
-
-            <?php else: ?>
-            $("#tabs").tabs({ active: 2});
-            <?php endif; ?>
-
-            $('.collapsible').hide();
-
-
-            $("#tabs" ).tabs({
-                activate:function(event,ui){
-                    if(ui.newPanel.selector== "#tabs1"){
-                        $("#tab_details").addClass("tabList");
-                        $("#tab_mitigation").removeClass("tabList");
-                        $("#tab_review").removeClass("tabList");
-                    } else if(ui.newPanel.selector== "#tabs2"){
-                        $("#tab_mitigation").addClass("tabList");
-                        $("#tab_review").removeClass("tabList");
-                        $("#tab_details").removeClass("tabList");
-                    }else{
-                        $("#tab_review").addClass("tabList");
-                        $("#tab_mitigation").removeClass("tabList");
-                        $("#tab_details").removeClass("tabList");
-
-                    }
-
-                }
-            });
-    //      $("#tabs" ).removeClass('ui-tabs')
-
+        $("#comment-text").click(function(){
+            $("#comment-submit").removeAttr('disabled');
+            $("#rest-btn").removeAttr('disabled');
         });
 
+        $("#comment-submit").click(function(){
+            var submitbutton = document.getElementById("comment-text").value;
+            if(submitbutton == ''){
+                $("#comment-submit").attr('disabled','disabled');
+                $("#rest-btn").attr('disabled','disabled');
+            }
+        });
 
-    </script>
-    <?php display_set_default_date_format_script(); ?>
-</html>
+        $("#rest-btn").click(function(){
+            $("#comment-submit").attr('disabled','disabled');
+        });
+       
+        $(".active-textfield").click(function(){
+            $("#cancel_disable").removeAttr('disabled');
+        });
+        
+        $("select").change(function changeOption(){
+            $("#cancel_disable").removeAttr('disabled');
+        });
+
+        $(".datepicker").initAsDatePicker();
+
+        //render multiselects which are not rendered yet after the page is loaded.
+        //multiselects which were already rendered contain 'button.multiselect'.
+        $(".multiselect:not(button)").multiselect({enableFiltering: true, buttonWidth: '100%', enableCaseInsensitiveFiltering: true,});
+
+    });
+</script>
+<?php  
+// Render the footer of the page. Please don't put code after this part.
+render_footer();
+?>

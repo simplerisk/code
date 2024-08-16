@@ -7,7 +7,7 @@ import { getExtensions, fromJSOrdered, stringify } from "core/utils"
 import { getKnownSyntaxHighlighterLanguage } from "core/utils/jsonParse"
 
 
-const getExampleComponent = ( sampleResponse, HighlightCode, getConfigs ) => {
+const getExampleComponent = ( sampleResponse, HighlightCode ) => {
   if (sampleResponse == null) return null
 
   const testValueForJson = getKnownSyntaxHighlighterLanguage(sampleResponse)
@@ -15,7 +15,7 @@ const getExampleComponent = ( sampleResponse, HighlightCode, getConfigs ) => {
 
   return (
     <div>
-      <HighlightCode className="example" getConfigs={ getConfigs } language={ language } value={ stringify(sampleResponse) } />
+      <HighlightCode className="example" language={language}>{stringify(sampleResponse)}</HighlightCode>
     </div>
   )
 }
@@ -98,7 +98,7 @@ export default class Response extends React.Component {
     let links = response.get("links")
     const ResponseExtension = getComponent("ResponseExtension")
     const Headers = getComponent("headers")
-    const HighlightCode = getComponent("highlightCode")
+    const HighlightCode = getComponent("HighlightCode", true)
     const ModelExample = getComponent("modelExample")
     const Markdown = getComponent("Markdown", true)
     const OperationLink = getComponent("operationLink")
@@ -134,7 +134,7 @@ export default class Response extends React.Component {
     // Goal: find an example value for `sampleResponse`
     if(isOAS3) {
       sampleSchema = activeMediaType.get("schema")?.toJS()
-      if(examplesForMediaType) {
+      if(Map.isMap(examplesForMediaType) && !examplesForMediaType.isEmpty()) {
         const targetExamplesKey = this.getTargetExamplesKey()
         const targetExample = examplesForMediaType
           .get(targetExamplesKey, Map({}))
@@ -167,7 +167,7 @@ export default class Response extends React.Component {
       shouldOverrideSchemaExample ? mediaTypeExample : undefined
     )
 
-    const example = getExampleComponent( sampleResponse, HighlightCode, getConfigs )
+    const example = getExampleComponent( sampleResponse, HighlightCode )
 
     return (
       <tr className={ "response " + ( className || "") } data-code={code}>
@@ -208,7 +208,7 @@ export default class Response extends React.Component {
                   </small>
                 ) : null}
               </div>
-              {examplesForMediaType ? (
+              {Map.isMap(examplesForMediaType) && !examplesForMediaType.isEmpty() ? (
                 <div className="response-control-examples">
                   <small className="response-control-examples__title">
                     Examples

@@ -4,41 +4,41 @@
 * @param $parent
 * @param currentButtonId: button ID for input[type=file].active
 */
-function refreshFilelist($parent, currentButtonId){
+function refreshFilelist($parent, currentButtonId) {
     var files = $("input[type=file]", $parent);
 
     var filesHtml = "";
     var filesLength = 0;
-    $(files).each(function() {
-        if(!$(this)[0].files.length){
+    $(files).each(function () {
+        if (!$(this)[0].files.length) {
             return;
         }
-        $(this).attr("id", "file-upload-"+filesLength)
+        $(this).attr("id", "file-upload-" + filesLength)
         var name = escapeHtml($(this)[0].files[0].name);
-        
+
         filesHtml += "<li >\
-            <div class='file-name'>"+name+"</div>\
-            <a href='#' class='remove-file' data-id='file-upload-"+filesLength+"'><i class='fa fa-times'></i></a>\
+            <div class='file-name float-start me-2'>"+ name + "</div>\
+            <a href='#' class='remove-file float-start' data-id='file-upload-"+ filesLength + "'><i class='fa fa-times'></i></a>\
         </li>";
         filesLength++;
     });
     $parent.find('.file-list').html(filesHtml);
     var totalFilesLength = $('.exist-files > li', $parent).length + filesLength;
-    if(totalFilesLength > 1){
-        $msg = "<span class='file-count'>" + totalFilesLength + "</span> Files Added"; 
-    }else{ 
-        $msg = "<span class='file-count'>" + totalFilesLength + "</span> File Added"; 
+    if (totalFilesLength > 1) {
+        $msg = "<span class='file-count'>" + totalFilesLength + "</span> Files Added";
+    } else {
+        $msg = "<span class='file-count'>" + totalFilesLength + "</span> File Added";
     }
     $parent.find('.file-count-html').html($msg);
 
     var name = $parent.find('.file_name').data('file');
-    if(!name)
+    if (!name)
         name = "file";
 
-    if(currentButtonId){
-        $parent.prepend($('<input id="'+currentButtonId+'" name="'+name+'[]" class="hidden-file-upload active" type="file">'))
+    if (currentButtonId) {
+        $parent.prepend($('<input id="' + currentButtonId + '" name="' + name + '[]" class="d-none hidden-file-upload active" type="file">'))
     }
-    
+
 }
 /**
 * HTMLSPECIALCHARS
@@ -46,296 +46,115 @@ function refreshFilelist($parent, currentButtonId){
 * @param text
 */
 function escapeHtml(text) {
-  var map = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;'
-  };
+    var map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
 
-  return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    return text.replace(/[&<>"']/g, function (m) { return map[m]; });
 }
 /**
 * popup when click "Score Using CVSS"
 * 
 * @param parent
 */
-function popupcvss(parent)
-{
+function popupcvss(parent) {
     parentOfScores = parent;
-    
+
     var cve_id = $("#reference_id", parent).val();
     var pattern = /cve\-\d{4}-\d{4}/i;
 
     // If the field is a CVE ID
-    if (cve_id !== undefined && cve_id.match(pattern))
-    {
-        my_window = window.open(BASE_URL + '/management/cvss_rating.php?cve_id='+ cve_id ,'popupwindow','width=850,height=680,menu=0,status=0');
+    if (cve_id !== undefined && cve_id.match(pattern)) {
+        my_window = window.open(BASE_URL + '/management/cvss_rating.php?cve_id=' + cve_id, 'popupwindow', 'width=850,height=680,menu=0,status=0');
     }
-    else my_window = window.open(BASE_URL + '/management/cvss_rating.php','popupwindow','width=850,height=680,menu=0,status=0');
-    
+    else my_window = window.open(BASE_URL + '/management/cvss_rating.php', 'popupwindow', 'width=850,height=680,menu=0,status=0');
+
 }
 
 /**
 * popup when click "Score Using DREAD"
 * 
 */
-function popupdread(parent)
-{
+function popupdread(parent) {
     parentOfScores = parent;
-    my_window = window.open(BASE_URL + '/management/dread_rating.php','popupwindow','width=660,height=500,menu=0,status=0');
+    my_window = window.open(BASE_URL + '/management/dread_rating.php', 'popupwindow', 'width=850,height=500,menu=0,status=0');
 }
 
 /**
 * popup when click "Score Using OWASP"
 * 
 */
-function popupowasp(parent)
-{
+function popupowasp(parent) {
     parentOfScores = parent;
-    my_window = window.open(BASE_URL + '/management/owasp_rating.php','popupwindow','width=665,height=570,menu=0,status=0');
+    my_window = window.open(BASE_URL + '/management/owasp_rating.php', 'popupwindow', 'width=850,height=570,menu=0,status=0');
 }
 
 /**
 * popup when click "Score Using Contributing Risk"
 * 
 */
-function popupcontributingrisk(parent)
-{
+function popupcontributingrisk(parent) {
     parentOfScores = parent;
-    my_window = window.open(BASE_URL + '/management/contributingrisk_rating.php','popupwindow','width=665,height=570,menu=0,status=0');
+    my_window = window.open(BASE_URL + '/management/contributingrisk_rating.php', 'popupwindow', 'width=850,height=570,menu=0,status=0');
 }
 
-function closepopup()
-    {
-    if(false == my_window.closed)
-    {
-        my_window.close ();
+function closepopup() {
+    if (false == my_window.closed) {
+        my_window.close();
     }
-    else
-    {
+    else {
         alert('Window already closed!');
     }
 }
 
-/**
-* Create and Update the risk scoring chart
-* 
-* @param risk_id
-*/
-function riskScoringChart(renderTo, risk_id, risk_levels){
-    var backgroundColor = "#f5f5f5";
-    // Creates stops array
-    var stops = [
-        [0, backgroundColor],
-    ];
-    
-    risk_levels.sort(function(a, b){
-        if(Number(a.value) > Number(b.value) ){
-            return -1;
-        }
-        if(Number(a.value) < Number(b.value) ){
-            return 1;
-        }
-    })
-    risk_levels.push({value: 0, color: "#fff"});
-    
-    var to = 10;
-    var plotBands = [];
-    for(var i=0; i<risk_levels.length; i++){
-        var risk_level = risk_levels[i];
-        plotBands.push({
-            color: risk_level.color,
-            to: to,
-            from: Number(risk_level.value),
-        })
-        to = Number(risk_level.value);
-    }
-    // For all plots, change Date axis to local timezone
-    Highcharts.setOptions({                                            
-        global : {
-            useUTC : false
-        }
-    });
-    var chartObj = new Highcharts.Chart( {
-        chart: {
-            renderTo: renderTo,
-            type: 'spline',
-        },
-        title: {
-            text: $('#_RiskScoringHistory').length ? $("#_RiskScoringHistory").val() : 'Risk Scoring History'
-        },
-        yAxis: [{
-            title: {
-                text: $('#_RiskScore').length ? $('#_RiskScore').val() : "Risk Score"
-            },
-            min: 0, 
-            max: 10,
-            gridLineWidth: 0, 
-            plotBands: plotBands,
-        }],
-        xAxis: [{
-            type: 'datetime',
-            dateTimeLabelFormats: { // don't display the dummy year
-                millisecond: '%Y-%m-%d<br/>%H:%M:%S',
-                second: '%Y-%m-%d<br/>%H:%M:%S',
-                minute: '%Y-%m-%d<br/>%H:%M',
-                hour: '%Y-%m-%d<br/>%H:%M',
-                day: '%Y-%m-%d<br/>%H:%M',
-                month: '%Y-%m-%d<br/>%H:%M',
-                year: '%Y-%m-%d<br/>%H:%M'
-            },
-            title: {
-                text: $("#_DateAndTime").val() ? $("#_DateAndTime").val() : "Date and time"
-            }
-        }],
-        legend: {
-            layout: 'vertical',
-            align: 'right',
-            verticalAlign: 'middle'
-        },
-        plotOptions: {
-            spline: {
-                marker: {
-                    enabled: true
-                }
-            }                    
-        },
-        series: [
-            {name: $('#_RiskScore').length ? $('#_RiskScore').val() : "Inherent Risk" },
-            {name: $('#_ResidualRiskScore').length ? $('#_ResidualRiskScore').val() : "ResidualRisk Score" },
-        ]
-
-    });
-    
-
-    chartObj.showLoading('<img src="../images/progress.gif">');
-    $.ajax({
-        type: "GET",
-        url: BASE_URL + "/api/management/risk/residual_scoring_history?id=" + risk_id,
-        dataType: 'json',
-        success: function(data){
-            var residual_histories = data.data;
-            var residualChartData = [];
-            for(var i=0; i<residual_histories.length; i++){
-                // var date = new Date(histories[i].last_update.replace(/\s/, 'T'));
-                // Added the three lines below to make the timestamp work properly with Safari
-                var parts = residual_histories[i].last_update.split(/[ \/:-]/g);
-                var dateFormatted = parts[1] + "/" + parts[2] + "/" + parts[0] + " " + parts[3] + ":" + parts[4] + ":" + parts[5];
-                var date = new Date(dateFormatted);
-                residualChartData.push([date.getTime(), Number(residual_histories[i].residual_risk)]);
-            }
-            
-            chartObj.series[1].setData(residualChartData)
-            chartObj.hideLoading();
-            
-        },
-        error: function(xhr,status,error){
-            if(xhr.responseJSON && xhr.responseJSON.status_message){
-                showAlertsFromArray(xhr.responseJSON.status_message);
-            }
-        }
-    })
-    $.ajax({
-        type: "GET",
-        url: BASE_URL + "/api/management/risk/scoring_history?id=" + risk_id,
-        dataType: 'json',
-        success: function(data){
-            var histories = data.data;
-            var chartData = [];
-            for(var i=0; i<histories.length; i++){
-                // var date = new Date(histories[i].last_update.replace(/\s/, 'T'));
-                // Added the three lines below to make the timestamp work properly with Safari
-                var parts = histories[i].last_update.split(/[ \/:-]/g);
-                var dateFormatted = parts[1] + "/" + parts[2] + "/" + parts[0] + " " + parts[3] + ":" + parts[4] + ":" + parts[5];
-                var date = new Date(dateFormatted);
-                chartData.push([date.getTime(), Number(histories[i].calculated_risk)]);
-            }
-            
-            chartObj.series[0].setData(chartData)
-
-            chartObj.hideLoading();
-            
-        },
-        error: function(xhr,status,error){
-            if(xhr.responseJSON && xhr.responseJSON.status_message){
-                showAlertsFromArray(xhr.responseJSON.status_message);
-            }
-        }
-    })
-}
-
-function alert(message){
+function alert(message) {
     var modal_container_id = "alert-modal";
-    if(!$("#" + modal_container_id).length){
-        var modal_html = '';
-        modal_html += '<div id="' + modal_container_id + '" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">';
-            modal_html += '<div class="modal-body">';
-
-              modal_html += '<div class="form-group text-center message-container">';
-                modal_html += '<label class="message">'+message+'</label>'
-              modal_html += '</div>';
-
-              modal_html += '<div class="form-group text-center">';
-                modal_html += '<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">OK</button>';
-              modal_html += '</div>';
-            modal_html += '</div>';
-        modal_html += '</div>';
+    if (!$("#" + modal_container_id).length) {
+        var modal_html = `
+            <div class="modal fade" id="${modal_container_id}" tabindex="-1" aria-labelledby="setting_modallable" aria-hidden="true">
+                <div class="modal-dialog modal-md modal-dialog-scrollable modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <div class="form-group text-center message-container">
+                                <label class="message">${message}</label>
+                            </div>
+                            <div class="form-group text-center">
+                                <button class="btn btn-submit ok" data-bs-dismiss="modal" aria-hidden="true">OK</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
         $("body").append(modal_html);
     }
-    
-    $("#" + modal_container_id+" .message").html(message);
-    
+
+    //$("#" + modal_container_id+" .message").html(message);
+
     $("#" + modal_container_id).modal('show');
 }
 
-function confirm(message, callback){
-    var modal_container_id = "confirm-modal";
-    if(!$("#" + modal_container_id).length){
-        var modal_html = '';
-        modal_html += '<div id="' + modal_container_id + '" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">';
-            modal_html += '<div class="modal-body">';
-
-              modal_html += '<div class="form-group text-center message-container">';
-                modal_html += '<label class="message">'+message+'</label>'
-              modal_html += '</div>';
-
-              modal_html += '<div class="form-group text-center">';
-                modal_html += '<button class="btn btn-default " data-dismiss="modal" aria-hidden="true" >Cancel</button>';
-                modal_html += '&nbsp;&nbsp;&nbsp;';
-                modal_html += '<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true" onclick="'+ callback +'">Yes</button>';
-              modal_html += '</div>';
-            modal_html += '</div>';
-        modal_html += '</div>';
-        $("body").append(modal_html);
-    }
-    
-    $("#" + modal_container_id+" .message").html(message);
-    
-    $("#" + modal_container_id).modal('show');
-}
-
-function checkAndSetValidation(container)
-{
+function checkAndSetValidation(container) {
     var issue_els = [];
-    $("input, select, textarea", container).each(function(){
-        if($(this).prop('required') && (!$.trim($(this).val()) || (Array.isArray($(this).val()) && $(this).val().length==0) ) ){
+    $("input, select, textarea", container).each(function () {
+        if ($(this).prop('required') && (!$.trim($(this).val()) || (Array.isArray($(this).val()) && $(this).val().length == 0))) {
             issue_els.push($(this));
         }
     })
     // If issue elements exist, stop progress
-    if(issue_els.length > 0)
-    {
+    if (issue_els.length > 0) {
         var error_messages = [];
         issue_els.reverse();
-        for(var key in issue_els){
+        for (var key in issue_els) {
             var issue_el = issue_els[key];
-            
-            if(issue_el.parent().hasClass("multiselect-native-select")){
+
+            if (issue_el.parent().hasClass("multiselect-native-select")) {
                 issue_el.parent().find("button.multiselect").addClass("error")
                 issue_el.parent().find("button.multiselect").focus()
-            }else{
+            } else {
                 issue_el.addClass("error");
                 issue_el.focus()
             }
@@ -348,114 +167,139 @@ function checkAndSetValidation(container)
         }
         return false;
     }
-    else
-    {
+    else {
         return true;
     }
 }
 
-var loading={
-    show:function(el)
-    {
-        this.getID(el).style.display='';
+var loading = {
+    show: function (el) {
+        this.getID(el).style.display = 'block';
     },
-    hide:function(el)
-    {
-        this.getID(el).style.display='none';
+    hide: function (el) {
+        this.getID(el).style.display = 'none';
     },
-    getID:function(el)
-    {
+    getID: function (el) {
         return document.getElementById(el);
     }
-}
+};
 
-$(document).ready(function(){
-    if(jQuery.ui !== undefined){
+$(document).ready(function () {
+    if (jQuery.ui !== undefined) {
         jQuery.ui.autocomplete.prototype._resizeMenu = function () {
             var ul = this.menu.element;
             ul.outerWidth(this.element.outerWidth());
-        }                
+        }
     }
 
-    $(document).on('click', '.exist-files .remove-file', function(event) {
+    $(document).on('click', '.exist-files .remove-file', function (event) {
         event.preventDefault();
         var $parent = $(this).parents('.file-uploader');
         var fileCount = Number($parent.find('.file-count').html()) - 1
         $parent.find('.file-count').html(fileCount)
         $(this).parent().remove();
     })
-    
-    $(document).on('click', '.file-list .remove-file', function(event) {
+
+    $(document).on('click', '.file-list .remove-file', function (event) {
         event.preventDefault();
         var id = $(this).data('id');
         var $parent = $(this).parents('.file-uploader');
-        $("#"+id, $parent).remove();
+        $("#" + id, $parent).remove();
         refreshFilelist($parent)
     })
-    
-    $(document).on('change', '.hidden-file-upload.active', function(event) {
+
+    $(document).on('change', '.hidden-file-upload.active', function (event) {
         var $parent = $(this).parents('.file-uploader');
         $(this).removeClass("active")
         var currentButtonId = $(this).attr('id');
-        
+
         refreshFilelist($parent, currentButtonId)
 
     });
-    
-    $('body').on('click', '.show-score-overtime', function(e){
+
+    $('body').on('click', '.show-score-overtime', function (e) {
         e.preventDefault();
         var tabContainer = $(this).parents('.risk-session');
-            
-        $.ajax({
-            type: "GET",
-            url: BASE_URL + "/api/risk_levels",
-            dataType: 'json',
-            success: function(result){
-                var risk_id = $('.large-text', tabContainer).html();
-                $('.score-overtime-container', tabContainer).show();
-
-                var risk_levels = result.data.risk_levels;
-                riskScoringChart($('.score-overtime-chart', tabContainer)[0], risk_id, risk_levels);
-
-                $('.hide-score-overtime', tabContainer).show();
-                $('.show-score-overtime', tabContainer).hide();
-            },
-            error: function(xhr,status,error){
-                if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    showAlertsFromArray(xhr.responseJSON.status_message);
-                }
-            }
-        })
-        
-        return false;
+        $('.score-overtime-container', tabContainer).show();
+        $('.hide-score-overtime', tabContainer).show();
+        $('.show-score-overtime', tabContainer).hide();
     })
 
-    $('body').on('click', '.hide-score-overtime', function(e){
+    $('body').on('click', '.hide-score-overtime', function (e) {
         e.preventDefault();
-
         var tabContainer = $(this).parents('.risk-session');
-        var risk_id = $('.large-text', tabContainer).html();
-
         $('.score-overtime-container', tabContainer).hide();
         $('.hide-score-overtime', tabContainer).hide();
         $('.show-score-overtime', tabContainer).show();
-
-        return false;
     })
+    /* Shouldn't use blanket initializers
     if($('#tab-content-container .datepicker').length){
         $('#tab-content-container .datepicker').datepicker();
     }
     
     if($("#tab-content-container .multiselect").length){
         $("#tab-content-container .multiselect").multiselect({enableFiltering: true, buttonWidth: '100%'});
-    }
-    
+    }*/
+
 })
 
 // A function to properly reset a form.
 // Add logic for new widgets when needed
 function resetForm(formEL) {
-	let $form = $(formEL);
-	$form[0].reset();
-	$form.find('select.multiselect').multiselect('refresh');
+    let $form = $(formEL);
+    $form[0].reset();
+    $form.find('select.multiselect').multiselect('refresh');
+}
+
+/**
+* Helper function to show a confirm window and runs the callback function when the user clicks on the
+* You can call it like this if you want to have the original click's context in the confirm popup's callback function
+*	$(document).on('click', '#template-tabs button.remove-tab', function(e) {e.stopPropagation(); confirm(_lang['ConfirmDisableTabbedExperience'], () => {
+*		console.log("The original click's context", this);
+*	})});
+*
+* It works like this, because the arrow function doesn't have its own context, so the outer function's context will be used
+*
+* If you don't need the original click's context then you can use this form
+*	$(document).on('click', '#disable-tabbed-experience', () => confirm(_lang['ConfirmDisableTabbedExperience'], () => {
+*  		// do stuff that needs no context
+*	}));
+*
+* @param String message The message to be displayed in the confirm window
+* @param Function callback The function called when the user chooses to confirm the action
+*/
+function confirm(message, callback) {
+
+	// Create the modal window
+	let myModal = new bootstrap.Modal(
+		$(`
+			<div class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+		        <div class="modal-dialog modal-md modal-dialog-centered modal-dark">
+		            <div class="modal-content">
+		                <div class="modal-body">
+		                    <div class="form-group text-center message-container">
+		                        <label class="message">${message}</label>
+		                    </div>
+		                    <div class="form-group text-center">
+		                        <button class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true">${_lang['Cancel']}</button>
+		                        <button class="btn btn-submit" data-bs-dismiss="modal" aria-hidden="true">${_lang['Yes']}</button>
+		                    </div>
+		                </div>
+		            </div>
+		        </div>
+		    </div>`
+		),
+		{/* Could add configuration here to change how the modal popup behaves. For more information check https://getbootstrap.com/docs/5.3/components/modal/ */}
+	);
+
+	// Add the callback
+	$(myModal._element).find(`.btn-submit`).on('click', callback);
+
+	// Add the logic to clean up the popup once it's hidden	
+	$(myModal._element).on('hidden.bs.modal', function() { 
+		$(this).remove();
+	}); 
+
+	// Show it
+	myModal.show();
 }

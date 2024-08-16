@@ -108,28 +108,28 @@ require_once(language_file());
     // Check if a risk closure was submitted and the user has permissions to close risks
     if ((isset($_POST['submit'])) && $close_risks)
     {
-            $status = "Closed";
-            $close_reason = $_POST['close_reason'];
-            $note = $_POST['note'];
+        $status = "Closed";
+        $close_reason = $_POST['close_reason'];
+        $note = $_POST['note'];
 
-    // Submit a review
-    submit_management_review($id, $status, "", "", $_SESSION['uid'], $note, "0000-00-00", true);
+        // Submit a review
+        submit_management_review($id, $status, "", "", $_SESSION['uid'], $note, "0000-00-00", true);
 
-            // Close the risk
-            close_risk($id, $_SESSION['uid'], $status, $close_reason, $note);
+        // Close the risk
+        close_risk($id, $_SESSION['uid'], $status, $close_reason, $note);
 
-    // Display an alert
-            set_alert(true, "good", "Your risk has now been marked as closed.");
+        // Display an alert
+        set_alert(true, "good", "Your risk has now been marked as closed.");
 
-            // Check that the id is a numeric value
-            if (is_numeric($id))
-            {
-                    // Create the redirection location
-        $url = "view.php?id=" . $id;
+        // Check that the id is a numeric value
+        if (is_numeric($id))
+        {
+            // Create the redirection location
+            $url = "view.php?id=" . $id;
 
-                    // Redirect to plan mitigations page
-                    header("Location: " . $url);
-            }
+            // Redirect to plan mitigations page
+            header("Location: " . $url);
+        }
     }
 ?>
 
@@ -137,37 +137,33 @@ require_once(language_file());
 <html>
 
 <head>
-<?php
-        // Use these jQuery scripts
-        $scripts = [
-                'jquery.min.js',
-        ];
 
-        // Include the jquery javascript source
-        display_jquery_javascript($scripts);
+<!-- jQuery Javascript -->
+<script src="../vendor/node_modules/jquery/dist/jquery.min.js?<?= $current_app_version ?>" id="script_jquery"></script>
 
-	display_bootstrap_javascript();
-?>
+<!-- Bootstrap tether Core JavaScript -->
+<script src="../vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
 <title>SimpleRisk: Enterprise Risk Management Simplified</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-<link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
-<link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+<link rel="stylesheet" href="../css/bootstrap.css?<?= $current_app_version ?>">
+<link rel="stylesheet" href="../css/bootstrap-responsive.css?<?= $current_app_version ?>">
 </head>
 
 <body>
 <title>SimpleRisk: Enterprise Risk Management Simplified</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-<link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
-<link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
-<link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
-<link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
-<link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
+<link rel="stylesheet" href="../css/bootstrap.css?<?= $current_app_version ?>">
+<link rel="stylesheet" href="../css/bootstrap-responsive.css?<?= $current_app_version ?>">
+<link rel="stylesheet" href="../css/divshot-util.css?<?= $current_app_version ?>">
+<link rel="stylesheet" href="../css/divshot-canvas.css?<?= $current_app_version ?>">
+<link rel="stylesheet" href="../css/display.css?<?= $current_app_version ?>">
 
-<link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
-<link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
-<link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+<link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?= $current_app_version ?>">
+<link rel="stylesheet" href="../css/theme.css?<?= $current_app_version ?>">
+<link rel="stylesheet" href="../css/side-navigation.css?<?= $current_app_version ?>">
 
 <?php
 view_top_menu("RiskManagement");

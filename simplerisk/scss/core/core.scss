@@ -1,0 +1,34 @@
+@import "layout/layout";
+
+@import "scafholdings/scafholding";
+// Header
+@import "loader/spinner";
+// Header
+@import "topbar/header";
+
+//table pages
+@import "tables/table-pages";
+@import "datatables/datatables.scss";
+// breadcrumb
+@import "breadcrumb/breadcrumb";
+
+// sidebar
+@import "sidebar/sidebar";
+
+//wave effects
+@import "wave-effects/wave-effects";
+
+//wave effects
+@import "buttons/buttons";
+
+//Animation effects
+@import "animation/animation";
+
+//Scrollbar
+@import "scrollbar/scrollbar";
+
+//extra
+@import "extra/extra";
+
+// Modals
+@import "modals/modals";

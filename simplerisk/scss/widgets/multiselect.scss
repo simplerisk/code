@@ -1,0 +1,27 @@
+div.multiselect-container.dropdown-menu {
+
+	width: 100%;
+
+	.multiselect-filter input[type=search] {
+			filter: grayscale(1);
+	}
+
+	.dropdown-item {
+		padding: 0.125rem 0.125rem 0rem 0.75rem;
+
+		&.active {
+			background-color: var(--sr-secondary);
+			color: var(--bs-body-bg);
+		}
+
+		.form-check-input {
+			cursor: pointer;
+		}
+
+		.form-check-label {
+			font-weight: unset !important;
+			margin-top: 0.125rem;
+			margin-bottom: unset;
+		}
+	}
+}

@@ -1,0 +1,10 @@
+test
+Experimental
+vendor
+composer.lock
+composer
+.phpunit.result.cache
+.php-cs-fixer.cache
+
+#phpstorm
+.idea

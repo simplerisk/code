@@ -37,6 +37,7 @@ use Psr\Log\LoggerInterface;
  *                                                     the serializer
  * @property OA\AbstractAnnotation|null   $nested
  * @property OA\AbstractAnnotation[]|null $annotations
+ * @property OA\AbstractAnnotation[]|null $other       Annotations not related to OpenApi
  * @property LoggerInterface|null         $logger      Guaranteed to be set when using the `Generator`
  * @property array|null                   $scanned     Details of file scanner when using ReflectionAnalyser
  * @property string|null                  $version     The OpenAPI version in use
@@ -51,6 +52,9 @@ class Context
      */
     private $parent;
 
+    /**
+     * @deprecated
+     */
     public function clone()
     {
         return new Context(get_object_vars($this), $this->parent);
@@ -64,6 +68,29 @@ class Context
         $this->parent = $parent;
 
         $this->logger = $this->logger ?: new DefaultLogger();
+
+        if (!$this->version) {
+            $this->root()->version = OA\OpenApi::DEFAULT_VERSION;
+        }
+    }
+
+    /**
+     * Ensure this context is part of the context tree.
+     */
+    public function ensureRoot(?Context $rootContext): void
+    {
+        if ($rootContext === $this) {
+            return;
+        }
+
+        if (!$this->parent) {
+            // use root fallback for these...
+            foreach (['logger', 'version'] as $property) {
+                unset($this->{$property});
+            }
+
+            $this->parent = $rootContext;
+        }
     }
 
     /**
@@ -120,10 +147,6 @@ class Context
      */
     public function isVersion($versions): bool
     {
-        if (!$this->version) {
-            throw new \RuntimeException('Version is only available reliably for validation and serialization');
-        }
-
         $versions = (array) $versions;
         $currentVersion = $this->version ?: OA\OpenApi::DEFAULT_VERSION;
 
@@ -188,14 +211,12 @@ class Context
     }
 
     /**
-     * Create a Context based on the debug_backtrace.
+     * Create a Context based on `debug_backtrace`.
      *
      * @deprecated
      */
     public static function detect(int $index = 0): Context
     {
-        // trigger_deprecation('zircote/swagger-php', '4.0', 'Context detecting is deprecated');
-
         $context = new Context();
         $backtrace = debug_backtrace();
         $position = $backtrace[$index];
