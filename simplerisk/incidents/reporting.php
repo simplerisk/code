@@ -5,7 +5,46 @@
 
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['datatables', 'tabs:logic', 'multiselect', 'chart.js'], ['check_im_reporting' => true]);
+
+$breadcrumb_title_key="";
+$active_sidebar_menu ="";
+$active_sidebar_submenu ="";
+
+// If a menu was provided
+if (isset($_GET['menu']))
+{
+    $active_sidebar_menu = "IncidentManagement";
+
+    // If the pages in the third level was displayed, assigned the value for its parent page, reporting page to $active_sidebar_submenu
+    $active_sidebar_submenu = "Reporting";
+
+    // If the page for the menu was displayed
+    switch ($_GET['menu'])
+    {
+        // If the overview page was displayed
+        case "overview":
+            $breadcrumb_title_key = 'Overview';
+            break;
+        // If the incident trend page was displayed
+        case "incident_trend":
+            $breadcrumb_title_key = 'IncidentTrend';
+            break;
+        // If the lessons learned page was displayed
+        case "lessons_learned":
+            $breadcrumb_title_key = 'LessonsLearned';
+            break;
+        // IF the overview page was displayed by default
+        default:
+            $breadcrumb_title_key = 'Overview';
+            break;
+    }
+}
+// If no menu was provided
+else
+{
+    $breadcrumb_title_key = "Reporting";
+}
+render_header_and_sidebar(['datatables', 'tabs:logic', 'multiselect', 'chart.js'], ['check_im_reporting' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
 
 // Include required functions file
 require_once(realpath(__DIR__ . '/../includes/permissions.php'));

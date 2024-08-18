@@ -4685,15 +4685,17 @@ function getFrameworkResponse()
         $id = $_GET['framework_id'];
         $framework = get_framework($id);
 
-        foreach ($framework['custom_values'] as &$custom_value) {
-            switch ($custom_value['field_type']) {
-                case 'date':
-                    $custom_value['value'] = $custom_value['value'] ? format_date($custom_value['value']) : '';
-                    break;
-                case 'multidropdown':
-                case 'user_multidropdown':
-                    $custom_value['value'] = $custom_value['value'] ? explode(',', $custom_value['value']) : '';
-                    break;
+        if (isset($framework['custom_values'])) {
+            foreach ($framework['custom_values'] as &$custom_value) {
+                switch ($custom_value['field_type']) {
+                    case 'date':
+                        $custom_value['value'] = $custom_value['value'] ? format_date($custom_value['value']) : '';
+                        break;
+                    case 'multidropdown':
+                    case 'user_multidropdown':
+                        $custom_value['value'] = $custom_value['value'] ? explode(',', $custom_value['value']) : '';
+                        break;
+                }
             }
         }
 

@@ -137,17 +137,25 @@ $.fn.extend({
             treeField: 'document_name',
             remoteFilter: true,
             scrollbarSize: 0,
-            onLoadSuccess: function(row, data){
-                // Run the resize logic when the data is loaded
-                $(_this).treegrid('resize');
-            },
             onResize: function() {
                 // After rendering the datagrid filter head row, reduce the editable filter inputs' width by 30px
                 // so that could make the datagrid table filter head row have the same width as the datagrid table body
                 $('.datagrid-htable .datagrid-filter-row .datagrid-filter', this).each((i, e) => {
                     $(e).css('width', (parseInt($(e).css('width'))-30) + 'px');
                 });
-            }
+            },
+            onLoadSuccess: function(){
+                // Run the resize logic when the data is loaded
+                $(_this).treegrid('resize');
+            },
+            onCollapse: function() {
+                // Run the resize logic when the data is loaded
+                $(_this).treegrid('resize');
+            },
+            onExpand: function() {
+                // Run the resize logic when the data is loaded
+                $(_this).treegrid('resize');
+            },
         }).treegrid('enableFilter', [{
             field:'actions',
             type:'label'

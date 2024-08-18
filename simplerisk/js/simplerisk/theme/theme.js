@@ -82,6 +82,23 @@ $(function () {
   };
   $(window).ready(setsidebartype);
   $(window).on("resize", setsidebartype);*/
+
+
+  // The logic that should be executed when the size of the content is changing
+  $(document).on('simplerisk.content.resize', function () {
+    // Readjust the datatable column headers when the sidebar's size was changed
+    if ($.fn.dataTable) {
+        $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+    }
+
+    // Readjust the treegrids when the sidebar's size was changed
+    // Had to add he setTimeout() because if there're more than one treegrids on the page
+    // then there needs to be a little delay between those calls
+    if ($.fn.treegrid) {
+        $('table.datagrid-f').each(function() {setTimeout(() => {$(this).treegrid("resize");}, 1);});
+    }
+  });
+
   //****************************
   /* This is for sidebartoggler*/
   //****************************
@@ -96,16 +113,11 @@ $(function () {
       $("#main-wrapper").attr("data-sidebartype", "full");
     }
 
-    // Readjust the datatable column headers when the sidebar's size was changed
-    if ($.fn.dataTable) {
-		$.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
-	}
-
-    // Readjust the treegrids when the sidebar's size was changed
-    // Had to add he setTimeout() because if there're more than one treegrids on the page
-    // then there needs to be a little delay between those calls
-    if ($.fn.treegrid) {
-        $('table.datagrid-f').each(function() {setTimeout(() => {$(this).treegrid("resize");}, 1);});
-    }
+    // Trigger Simplerisk's own logic related to the resize of the content part of the page
+    $(document).trigger('simplerisk.content.resize');
   });
+
+  // Trigger Simplerisk's own logic related to the resize of the content part of the page
+  $(window).on("resize", () => $(document).trigger('simplerisk.content.resize'));
+
 });

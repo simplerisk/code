@@ -6,7 +6,63 @@
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 
-render_header_and_sidebar(['tabs:logic', 'datatables', 'multiselect', 'selectize', 'blockUI', 'datetimerangepicker'], ['check_im' => true]);
+$breadcrumb_title_key="";
+$active_sidebar_menu ="";
+$active_sidebar_submenu ="";
+
+// If incident detail page was displayed
+if (isset($_GET['incident_id'])) {
+    $breadcrumb_title_key = "IncidentDetails";
+    $active_sidebar_menu ="IncidentManagement";
+
+    // If incident detail page which is the page in the forth level was displayed, assigned the value for its parent page, response page to $active_sidebar_submenu
+    // this value is used to determine if the incident detail page is displayed in sidebar.php
+    $active_sidebar_submenu ="Response";
+} else {
+    // If a menu was provided
+    if (isset($_GET['menu']))
+    {
+        $active_sidebar_menu = "IncidentManagement";
+
+        // If the pages in the third level was displayed, assigned the value for its parent page, incidents page to $active_sidebar_submenu
+        $active_sidebar_submenu = "Incidents";
+
+        // If the page for the menu was displayed
+        switch ($_GET['menu'])
+        {
+            // If the preparation page was displayed
+            case "preparation":
+                $breadcrumb_title_key = 'Preparation';
+                break;
+            // If the identification page was displayed
+            case "identification":
+                $breadcrumb_title_key = 'Identification';
+                break;
+            // If the response page was displayed
+            case "response":
+                $breadcrumb_title_key = 'Response';
+                break;
+            // If the lessons learned page was displayed
+            case "lessonslearned":
+                $breadcrumb_title_key = 'LessonsLearned';
+                break;
+            // If the closed page was displayed
+            case "closed":
+                $breadcrumb_title_key = 'Closed';
+                break;
+            // IF the preparation page was displayed by default
+            default:
+                $breadcrumb_title_key = 'Preparation';
+                break;
+        }
+    }
+    // If no menu was provided
+    else
+    {
+        $breadcrumb_title_key = "Incidents";
+    }
+}
+render_header_and_sidebar(['tabs:logic', 'datatables', 'multiselect', 'selectize', 'blockUI', 'datetimerangepicker'], ['check_im' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
 
 // Include required functions file
 require_once(realpath(__DIR__ . '/../includes/permissions.php'));

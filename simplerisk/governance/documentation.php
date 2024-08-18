@@ -556,13 +556,10 @@ checkUploadedFileSizeErrors();
                         var tree = $('#document-hierachy-content #document-hierarchy-table');
                         tree.treegrid('options').animate = false;
                         tree.treegrid('reload');
-                        resizeFilterControls('#document-hierachy-content');
 
                         var tree = $('#' + data.data.type + '-table');
                         tree.treegrid('options').animate = false;
                         tree.treegrid('reload');
-                        resizeFilterControls('#' + data.data.type + '-content');
-
                     },
                     error: function(xhr,status,error){
                         if(!retryCSRF(xhr, this))
@@ -607,13 +604,10 @@ checkUploadedFileSizeErrors();
                         var tree = $('#document-hierachy-content #document-hierarchy-table');
                         tree.treegrid('options').animate = false;
                         tree.treegrid('reload');
-                        resizeFilterControls('#document-hierachy-content');
 
                         var tree = $('#' + data.data.type + '-table');
                         tree.treegrid('options').animate = false;
                         tree.treegrid('reload');
-                        resizeFilterControls('#' + data.data.type + '-content');
-
                     },
                     error: function(xhr,status,error){
                         if(!retryCSRF(xhr, this))
@@ -647,13 +641,10 @@ checkUploadedFileSizeErrors();
                         var tree = $('#document-hierachy-content #document-hierarchy-table');
                         tree.treegrid('options').animate = false;
                         tree.treegrid('reload');
-                        resizeFilterControls('#document-hierachy-content');
 
                         var tree = $('#' + data.data.type + '-table');
                         tree.treegrid('options').animate = false;
                         tree.treegrid('reload');
-                        resizeFilterControls('#' + data.data.type + '-content');
-
                     },
                     error: function(xhr,status,error){
                         if(!retryCSRF(xhr, this))

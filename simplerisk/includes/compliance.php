@@ -598,36 +598,20 @@ function display_initiate_audits()
                     clearTimeout(typingTimer);
                     typingTimer = setTimeout(redraw, doneTypingInterval);
                 });
+
+                $('#initiate_audit_treegrid').initAsInitiateAuditTreegrid();
             });
 
         </script>
     ";
-    echo "<table id=\"initiate_audit_treegrid\" class='easyui-treegrid' 
-            data-options=\"
-                iconCls: 'icon-ok',
-                animate: true,
-                collapsible: false,
-                fitColumns: true,
-                url: '".$_SESSION['base_url']."/api/compliance/initiate_audits',
-                onBeforeLoad: function(row, param){
-                    param.filter_by_text = $('#filter_by_text').val();
-                    param.filter_by_status = $('#filter_by_status').val();
-                    param.filter_by_frequency = $('#filter_by_frequency').val();
-                    param.filter_by_framework = $('#filter_by_framework').val();
-                    param.filter_by_control = $('#filter_by_control').val();
-                },
-                method: 'get',
-                idField: 'id',
-                treeField: 'name',
-                scrollbarSize: 0
-            \">";
+    echo "<table id=\"initiate_audit_treegrid\">";
     echo "<thead>";
-    echo "<th data-options=\"field:'name'\" style='width: 220px'>".$escaper->escapeHtml($lang['Name'])."</th>";
-    echo "<th data-options=\"field:'test_frequency'\" >".$escaper->escapeHtml($lang['TestFrequency'])."</th>";
-    echo "<th data-options=\"field:'last_audit_date'\" >".$escaper->escapeHtml($lang['LastAuditDate'])."</th>";
-    echo "<th data-options=\"field:'next_audit_date'\" >".$escaper->escapeHtml($lang['NextAuditDate'])."</th>";
-    echo "<th data-options=\"field:'status'\" >".$escaper->escapeHtml($lang['Status'])."</th>";
-    echo "<th data-options=\"field:'action'\" >&nbsp;</th>";
+    echo "<th data-options=\"field:'name'\" width='57%'>".$escaper->escapeHtml($lang['Name'])."</th>";
+    echo "<th data-options=\"field:'test_frequency'\"  width='8%'>".$escaper->escapeHtml($lang['TestFrequency'])."</th>";
+    echo "<th data-options=\"field:'last_audit_date'\"  width='10%'>".$escaper->escapeHtml($lang['LastAuditDate'])."</th>";
+    echo "<th data-options=\"field:'next_audit_date'\"  width='10%'>".$escaper->escapeHtml($lang['NextAuditDate'])."</th>";
+    echo "<th data-options=\"field:'status'\"  width='5%'>".$escaper->escapeHtml($lang['Status'])."</th>";
+    echo "<th data-options=\"field:'action'\" width='10%'>&nbsp;</th>";
     echo "</thead>\n";
     echo "</table>";
     

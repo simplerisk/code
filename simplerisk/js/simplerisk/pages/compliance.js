@@ -1,3 +1,27 @@
+$.fn.extend({
+    initAsInitiateAuditTreegrid: function() {
+        this.treegrid({
+            iconCls: 'icon-ok',
+            animate: true,
+            fitColumns: true,
+            nowrap: true,
+            collapsible: false,
+            url: BASE_URL + '/api/compliance/initiate_audits',
+            method: 'get',
+            idField: 'id',
+            treeField: 'name',
+            scrollbarSize: 0,
+            onBeforeLoad: function(row, param){
+                param.filter_by_text = $('#filter_by_text').val();
+                param.filter_by_status = $('#filter_by_status').val();
+                param.filter_by_frequency = $('#filter_by_frequency').val();
+                param.filter_by_framework = $('#filter_by_framework').val();
+                param.filter_by_control = $('#filter_by_control').val();
+            },
+        });
+    },
+});
+
 function createTagsInstance(tag, tag_type, options) {
     if (typeof tag_type === 'undefined') tag_type = 'test';
 	var selectize_setup = {

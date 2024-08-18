@@ -128,11 +128,6 @@ if(isset($_GET['initiate']) ){
 </div>
     <script>
         $(document).ready(function(){
-            $( window ).resize(function() {
-                $('#initiate_audit_treegrid').datagrid('resize',{
-                  width: $("#initiate-audits").width()
-                });
-            });
             $("body").on("click", ".framework-name", function(e){
                 e.preventDefault();
                 var framework_id = $(this).data("id")

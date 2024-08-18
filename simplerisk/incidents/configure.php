@@ -5,7 +5,46 @@
 
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['tabs:logic', 'multiselect'], ['check_im_configure' => true]);
+
+$breadcrumb_title_key="";
+$active_sidebar_menu ="";
+$active_sidebar_submenu ="";
+
+// If a menu was provided
+if (isset($_GET['menu']))
+{
+    $active_sidebar_menu = "IncidentManagement";
+
+    // If the pages in the third level was displayed, assigned the value for its parent page, configure page to $active_sidebar_submenu
+    $active_sidebar_submenu = "IM_Configure";
+
+    // If the page for the menu was displayed
+    switch ($_GET['menu'])
+    {
+        // If the setting page was displayed
+        case "settings":
+            $breadcrumb_title_key = 'Settings';
+            break;
+        // If the add and remove values page was displayed
+        case "add_remove_values":
+            $breadcrumb_title_key = 'AddAndRemoveValues';
+            break;
+        // If the playbook page was displayed
+        case "playbooks":
+            $breadcrumb_title_key = 'Playbooks';
+            break;
+        // IF the setting page was displayed by default
+        default:
+            $breadcrumb_title_key = 'Settings';
+            break;
+    }
+}
+// If no menu was provided
+else
+{
+    $breadcrumb_title_key = "Configure";
+}
+render_header_and_sidebar(['tabs:logic', 'multiselect'], ['check_im_configure' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
 
 // Include required functions file
 require_once(realpath(__DIR__ . '/../includes/permissions.php'));
