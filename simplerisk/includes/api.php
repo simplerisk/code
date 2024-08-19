@@ -4633,18 +4633,19 @@ function getControlResponse()
         $control = get_framework_control($id);
         $control['description'] = utf8ize($control['description']);
 
-        foreach ($control['custom_values'] as &$custom_value) {
-            switch ($custom_value['field_type']) {
-                case 'date':
-                    $custom_value['value'] = $custom_value['value'] ? format_date($custom_value['value']) : '';
-                    break;
-                case 'multidropdown':
-                case 'user_multidropdown':
-                    $custom_value['value'] = $custom_value['value'] ? explode(',', $custom_value['value']) : '';
-                    break;
+        if (!empty($control['custom_values'])) {
+            foreach ($control['custom_values'] as &$custom_value) {
+                switch ($custom_value['field_type']) {
+                    case 'date':
+                        $custom_value['value'] = $custom_value['value'] ? format_date($custom_value['value']) : '';
+                        break;
+                    case 'multidropdown':
+                    case 'user_multidropdown':
+                        $custom_value['value'] = $custom_value['value'] ? explode(',', $custom_value['value']) : '';
+                        break;
+                }
             }
         }
-
         $mapped_frameworks = get_mapping_control_frameworks($id);
         $frameworks_html = "";
         foreach ($mapped_frameworks as $framework){
@@ -4685,7 +4686,7 @@ function getFrameworkResponse()
         $id = $_GET['framework_id'];
         $framework = get_framework($id);
 
-        if (isset($framework['custom_values'])) {
+        if (!empty($framework['custom_values'])) {
             foreach ($framework['custom_values'] as &$custom_value) {
                 switch ($custom_value['field_type']) {
                     case 'date':
@@ -9706,15 +9707,17 @@ function detail_project_api(){
         $result['name'] = try_decrypt($result['name']);
         $result['due_date'] = format_date($result['due_date']);
 
-        foreach ($result['custom_values'] as &$custom_value) {
-            switch ($custom_value['field_type']) {
-                case 'date':
-                    $custom_value['value'] = $custom_value['value'] ? format_date($custom_value['value']) : '';
-                    break;
-                case 'multidropdown':
-                case 'user_multidropdown':
-                    $custom_value['value'] = $custom_value['value'] ? explode(',', $custom_value['value']) : '';
-                    break;
+        if (!empty($result['custom_values'])) {
+            foreach ($result['custom_values'] as &$custom_value) {
+                switch ($custom_value['field_type']) {
+                    case 'date':
+                        $custom_value['value'] = $custom_value['value'] ? format_date($custom_value['value']) : '';
+                        break;
+                    case 'multidropdown':
+                    case 'user_multidropdown':
+                        $custom_value['value'] = $custom_value['value'] ? explode(',', $custom_value['value']) : '';
+                        break;
+                }
             }
         }
 

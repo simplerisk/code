@@ -556,6 +556,9 @@ function check_mysql_version()
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     $version = $row['version'];
 
+    // Close the database connection
+    db_close($db);
+
     // MariaDB version looks like "10.5.12-MariaDB-log"
     // MySQL version looks like "8.0.23"
 
