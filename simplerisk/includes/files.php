@@ -19,7 +19,7 @@ function upload_tmp_file($file, $unique_name = null, $file_type = null)
         case "spreadsheet":
             // Should we import the first line or does it contain a header and should not be imported
             $first_line = isset($_POST['import_first']) ? true : false;
-            return upload_tmp_spreadsheet($file, $unique_name, $first_line);
+            return upload_tmp_spreadsheet($file, $first_line, $unique_name);
             break;
         default:
             break;
@@ -29,7 +29,7 @@ function upload_tmp_file($file, $unique_name = null, $file_type = null)
 /************************************
  * FUNCTION: UPLOAD TMP SPREADSHEET *
  ************************************/
-function upload_tmp_spreadsheet($file, $unique_name = null, $first_line)
+function upload_tmp_spreadsheet($file, $first_line, $unique_name = null)
 {
     global $escaper, $lang;
 
