@@ -21,6 +21,7 @@
 
 div.tox.tox-tinymce {
 	border-radius: $border-radius;
+	border: 1px solid $input-border-color;
 }
 
 @each $color, $value in $light-colored-buttons {
@@ -75,71 +76,6 @@ $cursor_values: auto, default, pointer, wait, text, move, help, not-allowed;
 	align-items: flex-end;
 }
 
-.dataTables_wrapper {
-	.dataTables_scrollHead {
-		overflow: visible !important;
-	}
-
-	.dataTables_scrollBody {
-		overflow: visible !important;
-	}
-
-	.dataTables_scroll {
-		overflow: auto;
-
-		div.dataTables_scrollBody {
-			>table {
-				>thead {
-					>tr {
-						>th {
-							vertical-align: middle;
-						}
-
-						>td {
-							vertical-align: middle;
-						}
-					}
-				}
-
-				>tbody {
-					>tr {
-						>th {
-							vertical-align: middle;
-						}
-
-						>td {
-							vertical-align: middle;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	td {
-		.risk-cell-holder {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			flex-direction: row-reverse;
-		}
-
-		.risk-color {
-			display: inline-block;
-			width: 20px;
-			height: 20px;
-			border-radius: 2px;
-			border: 1px solid;
-			margin-left: 10px;
-			margin-right: auto;
-		}
-	}
-
-	td.risk-cell {
-		position: relative;
-	}
-}
-
 span.required {
 	color: var(--sr-important);
 }
@@ -170,54 +106,6 @@ input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
 	opacity: 1;
 }
-
-/*
-.affected-asset-cell span {
-    cursor: pointer;
-    margin: 0 3px 3px 0;
-    padding: 1px 3px;
-    color: #333333;
-    border: 0 solid rgba(0, 0, 0, 0) !important;
-    border-radius: 2px;
-    display: inline-block;
-
-    &.asset {
-        background: $asset-option-color !important;
-    }
-
-    &.group {
-        background-color: $asset-group-option-color !important;
-    }
-}
-
-.assets-asset-groups-select-disabled, .assets-asset-groups-select {
-    .asset{
-        background-color: $asset-option-color !important;
-    }
-
-    .group{
-        background-color: $asset-group-option-color !important;
-    }
-}
-
-.selectize-input.locked, .selectize-input.locked * {
-    cursor: default !important
-}
-
-.affected-assets .selectize-dropdown {
-    width: 180% !important;
-}
-
-.affected-assets-instructions {
-    display: inline-block;
-    font-size: 0.8em;
-    color: red;
-    position: relative;
-    top: -5px;
-    line-height: 1.2;
-    padding-bottom: 15px;
-}*/
-
 
 .assets-asset-groups-select-disabled,
 .assets-asset-groups-select {
@@ -327,7 +215,7 @@ html:has(.print-by-group-page) {
 .select2-container--default {
 	.select2-selection--single {
 		background-color: var(--bs-body-bg) !important;
-		border: var(--bs-border-width) solid #e9ecef !important;
+		border: var(--bs-border-width) solid $input-border-color !important;
 		border-radius: var(--bs-border-radius) !important;
 		height: calc(1.5em + .75rem + 2px) !important;
 
@@ -400,7 +288,6 @@ html:has(.print-by-group-page) {
 span.editable {
 	cursor: pointer;
 
-
 	&:after {
 		margin-left: 5px;
 		content: "\f303";
@@ -426,6 +313,12 @@ input.editable:focus {
 	outline: 0;
 	border: var(--bs-border-width) solid var(--sr-default);
 	border-radius: var(--bs-border-radius);
+}
+
+.color-picker {
+	width: 35px;
+	height: 35px;
+	padding: 4px;
 }
 
 // CONFIGURE / RISK FORMULA PAGE -- risk level table
@@ -510,36 +403,32 @@ input#dollarsign {
 
 // CONFIGURE / AUDIT TRAIL PAGE -- download btn
 .download-btn {
-	width: 40px;
-	height: 40px;
-	display: inline-block;
-	border: 2px solid var(--sr-secondary);
-	border-radius: 100px;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	margin-left: auto;
-	transition: all ease .3s;
-	cursor: pointer;
-	box-shadow: var(--bs-box-shadow);
-}
+    width: 40px;
+    height: 40px;
+    display: inline-block;
+    border: 2px solid $excel-green;
+    border-radius: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: auto;
+    transition: all ease .3s;
+    cursor: pointer;
+    box-shadow: var(--bs-box-shadow);
 
-.download-btn>i {
-	font-size: 20px;
-	color: var(--sr-secondary);
-	transition: all ease .3s;
-}
+    &>i {
+        font-size: 20px;
+        color: $excel-green;
+        transition: all ease .3s;
+    }
 
-.download-btn:hover {
-	border-color: var(--sr-primary);
-}
+    &:hover {
+        filter: brightness(135%);
+    }
 
-.download-btn:hover>i {
-	color: var(--sr-primary);
-}
-
-.download-btn:active {
-	box-shadow: none;
+    &:active {
+        box-shadow: none;
+    }
 }
 
 // CONFIGURE / EXTRAS PAGE -- email <a> tag
@@ -644,13 +533,6 @@ input#dollarsign {
 	}
 }
 
-// CONFIGURE / USER MANAGEMENT PAGE
-.permissions-widget {
-	ul {
-		list-style: none;
-	}
-}
-
 // CONFIGURE / EXTRAS PAGE / NOTIFICATION EXTRA PAGE
 .specified_time_holder {
 	display: none;
@@ -741,9 +623,10 @@ select[readonly].form-control {
 	border-width: inherit;
 }
 
-
+// LOGIN, RESET, RESET_PASSWORD PAGE
 div#main-wrapper[data-function="login"],
-div#main-wrapper[data-function="reset"] {
+div#main-wrapper[data-function="reset"],
+div#main-wrapper[data-function="reset_password"] {
 
 	.page-wrapper {
 		background-color: var(--sr-dark);
@@ -753,7 +636,8 @@ div#main-wrapper[data-function="reset"] {
 			background-color: inherit;
 
 			.container.login-form,
-			.container.reset-form {
+			.container.reset-form,
+			.container.reset-password-form {
 
 				--bs-heading-color: var(--sr-light);
 
@@ -961,6 +845,18 @@ table tr.ui-sortable-helper {
 	margin-right: 1.25rem;
 }
 
+// RISK MANAGEMENT / SUBMIT RISK
+#tab-content-container {
+	.left-panel, 
+	.right-panel, 
+	.top-panel, 
+	.bottom-panel {
+		label {
+			white-space: nowrap;
+		}
+	}
+}
+
 // RISK MANAGEMENT / SUBMIT RISK PAGE / CVSS
 html:has(.score-method-page) {
 	background-color: #e8e9eb;
@@ -996,6 +892,31 @@ html:has(.score-method-page) {
     font-weight: normal;
     font-size: .75rem;
     color: var(--sr-danger);
+}
+
+// RISK MANAGEMENT / PLAN PROJECT PAGE
+.project-block {
+	.project-block--header {
+		div {
+			word-break: break-all;
+		}
+	}
+}
+
+// RISK MANAGEMENT / PRINT VIEW PAGE
+.risk-details-container, 
+.mitigation-details-container,
+.mitigation-controls-container,
+.review-details-container {
+	&>div:last-child {
+		margin-bottom: 0 !important;
+	}
+}
+.comments-container, 
+.audit-trail-container {
+	&>p:last-child {
+		margin-bottom: 0 !important;
+	}
 }
 
 // ASSESSMENTS / QUESTIONNAIRE QUESTIONS PAGE
@@ -1194,11 +1115,11 @@ a.open-in-new-tab {
 // GAVE THE SAME BOX SHADOW AS '.form-select' 
 // SO THAT COULD MAKE IT LOOK LIKE THAT FITS WITH OTHER FORM CONTROLS.)
 .selectize-input {
-	border: var(--bs-border-width) solid #e9ecef !important;
+	border: var(--bs-border-width) solid $input-border-color !important;
     border-radius: var(--bs-border-radius) !important;
 
 	&.focus {
-		border-color: rgba(0, 0, 0, .25) !important;
+		border-color: $input-focus-border-color !important;
 		outline: 0 !important;
 		box-shadow: 0 0 0 .25rem rgba(0, 0, 0, .25) !important;
 	}
@@ -1210,8 +1131,21 @@ a.open-in-new-tab {
 }
 
 .selectize-dropdown {
-	border: var(--bs-border-width) solid #e9ecef !important;
+	border: var(--bs-border-width) solid $input-border-color !important;
     border-radius: var(--bs-border-radius) !important;
+}
+
+// COMPLIANCE / PAST AUDITS PAGE
+#framework-controls {
+	td.sorting_1 {
+		//remove the black unnecessary border-bottom, border-left, border-right
+		border: none;
+
+		//add border-top since it was none
+		td {
+			border-top: 1px solid var(--bs-table-border-color);
+		}
+	}
 }
 
 // COMPLIANCE / PAST AUDITS PAGE
@@ -1244,6 +1178,9 @@ a.open-in-new-tab {
     }
 }
 
+.text-left {
+    text-align: left !important;
+}
 
 // a#risk_detail {
 //     width: 200px;

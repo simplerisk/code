@@ -161,7 +161,7 @@ function checkAndSetValidation(container) {
 
             // We have to make sure that no html gets through to toastr as it's displaying what it gets 'as is';
             var escaped = $("<div/>").text(issue_el.attr("title")).html();
-            var message = field_required_lang.replace("_XXX_", escaped);
+            var message = _lang['FieldIsRequired'].replace("_XXX_", escaped);
 
             showAlertFromMessage(message, false)
         }
@@ -232,15 +232,6 @@ $(document).ready(function () {
         $('.hide-score-overtime', tabContainer).hide();
         $('.show-score-overtime', tabContainer).show();
     })
-    /* Shouldn't use blanket initializers
-    if($('#tab-content-container .datepicker').length){
-        $('#tab-content-container .datepicker').datepicker();
-    }
-    
-    if($("#tab-content-container .multiselect").length){
-        $("#tab-content-container .multiselect").multiselect({enableFiltering: true, buttonWidth: '100%'});
-    }*/
-
 })
 
 // A function to properly reset a form.

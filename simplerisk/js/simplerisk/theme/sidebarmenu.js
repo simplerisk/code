@@ -54,10 +54,11 @@ $(function () {
 
     // the scrollIntoViewIfNeeded function isn't implemented in some browsers
     if (element.length) {
-        if (functionExists(element[0].scrollIntoViewIfNeeded)) {
-            element[0].scrollIntoViewIfNeeded({behavior:"smooth"});  
+        // element.length - 1 is used to target the last element in the list
+        if (functionExists(element[element.length - 1].scrollIntoViewIfNeeded)) {
+            element[element.length - 1].scrollIntoViewIfNeeded({behavior:"smooth"});
         } else {
-            element[0].scrollIntoView({behavior:"smooth"});
+            element[element.length - 1].scrollIntoView({behavior:"smooth"});
         }
     }
 

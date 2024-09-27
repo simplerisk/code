@@ -245,10 +245,12 @@ class Form
     public static function getDotNotatedValue($array, $key)
     {
         $keys = explode('.', $key);
+
         foreach ($keys as $k) {
             if (!isset($array[$k])) {
                 return null;
             }
+
             $array = $array[$k];
         }
 

@@ -302,6 +302,23 @@
             }
         }
 
+        // If the Artificial Intelligence Extra is enabled
+        if (artificial_intelligence_extra())
+        {
+            // Required file
+            $required_file = realpath(__DIR__ . '/../extras/artificial_intelligence/includes/api.php');
+
+            // If the file exists
+            if (file_exists($required_file))
+            {
+                // Include the required file
+                require_once($required_file);
+
+                // Get the api routes
+                get_artificial_intelligence_routes();
+            }
+        }
+
         // If the Assessments Extra is enabled
         if (assessments_extra())
         {

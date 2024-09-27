@@ -468,14 +468,14 @@ if (isset($_POST['password_policy_update']))
         }
     ?>
                                 </div>
-                                <div class="form-group">
-                                    <input style="display:none" type="checkbox" name="admin" id="admin">
+                                <div class="form-group admin-button">
                                     <button id="admin_button" type="button" class="btn btn-dark" data-grant="<?php echo $escaper->escapeHtml($lang['GrantAdmin']); ?>" data-remove="<?php echo $escaper->escapeHtml($lang['RemoveAdmin']); ?>" title="<?php echo $escaper->escapeHtml($lang['AdminRoleDescription']);?>"><?php echo $escaper->escapeHtml($lang['GrantAdmin']);?></button>
+                                    <input type="checkbox" name="admin" id="admin">
+									<div class="mt-2 col-12 form-group alert alert-danger admin-alert" role="alert">
+                            			<?= $escaper->escapeHtml($lang['UserResponsibilitiesAndTeamsCannotBeEditedWhenTheUserIsGoingToBeAnAdmin']); ?>
+                        			</div>
                                 </div>
                                 <h4><?= $escaper->escapeHtml($lang['UserResponsibilities']); ?>:</h4>
-                                <div class="form-group">
-                                    <label class="text-danger"><?= $escaper->escapeHtml($lang['UserResponsibilitiesCannotBeEditedWhenUserIsGoingToBeAnAdmin']); ?></label>
-                                </div>
                                 <div class="form-check">
                                     <div class="permissions-widget">
                                         <ul>
@@ -843,7 +843,7 @@ if (isset($_POST['password_policy_update']))
 
             // Move the Report Displayed to the top right of the CORRECT datatable
             $("[data-sr-role='dt-settings']").attr("data-sr-target", datatableId);
-            $("[data-sr-role='dt-settings']").appendTo($('#' + datatableId).closest('div.dataTables_wrapper').find('div.settings'));
+            $("[data-sr-role='dt-settings']").appendTo($('#' + datatableId).closest('div.dt-container').find('div.settings'));
 
         });
 
@@ -929,16 +929,17 @@ if (isset($_POST['password_policy_update']))
                 "targets" : [-1],
                 "orderable": false
             }],
-            deferLoading:true, // We only load the data when everything has been setup properly
             ajax: {
                 url: BASE_URL + "/api/reports/user_management_reports",
                 type: "POST",
                 data: function(d) {
                     d.type = type;
                     d.columnFilters = {};
-                    $("select.column-filter-dropdown", reportDatatables[id].table().header()).each(function(){
-                        d.columnFilters[$(this).data("name")] = $(this).val();
-                    });
+                    if(typeof(reportDatatables[id]?.table()?.header()) !== 'undefined') {
+                        $("select.column-filter-dropdown", reportDatatables[id].table().header()).each(function(){
+                            d.columnFilters[$(this).data("name")] = $(this).val();
+                        });
+                    }
                 },
                 error: function(xhr, status, error){
                     if(!retryCSRF(xhr, this)) {}

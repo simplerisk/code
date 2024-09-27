@@ -89,7 +89,6 @@ if ($mass_fixed) {
             <?php display_review_date_issues(); ?>
         </div>
     </div>
-    <?php display_set_default_date_format_script(); ?>
 </div>
 <?php
     // Render the footer of the page. Please don't put code after this part.

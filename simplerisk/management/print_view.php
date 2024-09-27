@@ -10,42 +10,42 @@
     require_once(realpath(__DIR__ . '/../includes/permissions.php'));
     require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Add various security headers
-add_security_headers();
+	// Add various security headers
+	add_security_headers();
 
-// Add the session
-$permissions = array(
-        "check_access" => true,
-        "check_riskmanagement" => true,
-);
-add_session_check($permissions);
+	// Add the session
+	$permissions = array(
+			"check_access" => true,
+			"check_riskmanagement" => true,
+	);
+	add_session_check($permissions);
 
-// Include the CSRF Magic library
-include_csrf_magic();
+	// Include the CSRF Magic library
+	include_csrf_magic();
 
-// Include the SimpleRisk language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
-require_once(language_file());
+	// Include the SimpleRisk language file
+	// Ignoring detections related to language files
+	// @phan-suppress-next-line SecurityCheck-PathTraversal
+	require_once(language_file());
 
-// Set a global variable for the current app version, so we don't have to call a function every time
-$current_app_version = current_version("app");
+	// Set a global variable for the current app version, so we don't have to call a function every time
+	$current_app_version = current_version("app");
 
     // Check if a risk ID was sent
-    if (isset($_GET['id']))
-    {
+    if (isset($_GET['id'])) {
+
         // Test that the ID is a numeric value
         $id = (is_numeric($_GET['id']) ? (int)$_GET['id'] : 0);
 
         // If team separation is enabled
-        if (team_separation_extra())
-        {
+        if (team_separation_extra()) {
+
             //Include the team separation extra
             require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
             // If the user should not have access to the risk
-            if (!extra_grant_access($_SESSION['uid'], $id))
-            {
+            if (!extra_grant_access($_SESSION['uid'], $id)) {
+
                 // Redirect back to the page the workflow started on
                 header("Location: " . $_SESSION["workflow_start"]);
                 exit(0);
@@ -56,8 +56,8 @@ $current_app_version = current_version("app");
         $risk = get_risk_by_id($id);
 
         // If the risk was found use the values for the risk
-        if (count($risk) != 0)
-        {
+        if (count($risk) != 0) {
+
             $submitted_by = $risk[0]['submitted_by'];
             $status = $risk[0]['status'];
             $subject = $risk[0]['subject'];
@@ -127,18 +127,22 @@ $current_app_version = current_version("app");
             $risk_catalog_mapping = $risk[0]['risk_catalog_mapping'];
             $threat_catalog_mapping = $risk[0]['threat_catalog_mapping'];
             $template_group_id  = $risk[0]['template_group_id'];
-        }
-        // If the risk was not found use null values
-        else
-        {
+		
+		// If the risk was not found use null values
+        } else {
+
             $submitted_by = "";
+
             // If Risk ID exists.
-            if(check_risk_by_id($id)){
+            if(check_risk_by_id($id)) {
+
                 $status = $lang["RiskDisplayPermission"];
-            }
-            // If Risk ID does not exist.
-            else{
+			
+			// If Risk ID does not exist.
+            } else {
+
                 $status = $lang["RiskIdDoesNotExist"];
+
             }
 
             $subject = "N/A";
@@ -215,18 +219,18 @@ $current_app_version = current_version("app");
         }
 
 
-        if ($submission_date == "")
-        {
+        if ($submission_date == "") {
             $submission_date = "N/A";
-        }
-        else $submission_date = date(get_default_datetime_format("g:i A T"), strtotime($submission_date));
+        } else {
+			$submission_date = date(get_default_datetime_format("g:i A T"), strtotime($submission_date));
+		}
 
         // Get the mitigation for the risk
         $mitigation = get_mitigation_by_id($id);
 
         // If no mitigation exists for this risk
-        if ($mitigation == false)
-        {
+        if ($mitigation == false) {
+
             // Set the values to empty
             $mitigation_date = "N/A";
             $mitigation_date = "";
@@ -241,10 +245,10 @@ $current_app_version = current_version("app");
             $security_recommendations = "";
             $planning_date = "";
             $mitigation_percent = "";
-        }
-        // If a mitigation exists
-        else
-        {
+		
+		// If a mitigation exists
+        } else {
+
             // Set the mitigation values
             $mitigation_date = $mitigation[0]['submission_date'];
             $mitigation_date = date(get_default_datetime_format("g:i A T"), strtotime($mitigation_date));
@@ -264,8 +268,8 @@ $current_app_version = current_version("app");
         $mgmt_reviews = get_review_by_id($id);
 
         // If no mitigation exists for this risk
-        if ($mgmt_reviews == false)
-        {
+        if ($mgmt_reviews == false) {
+
             // Set the values to empty
             $review_date = "N/A";
             $review = "";
@@ -273,10 +277,10 @@ $current_app_version = current_version("app");
             $next_step = "";
             $reviewer = "";
             $comments = "";
-        }
-        // If a mitigation exists
-        else
-        {
+			
+		// If a mitigation exists
+        } else {
+
             // Set the mitigation values
             $review_date = $mgmt_reviews[0]['submission_date'];
             $review_date = date(get_default_datetime_format("g:i A T"), strtotime($review_date));
@@ -285,15 +289,16 @@ $current_app_version = current_version("app");
             $next_step = $mgmt_reviews[0]['next_step'];
 
             // If next_review_date_uses setting is Residual Risk.
-            if(get_setting('next_review_date_uses') == "ResidualRisk")
-            {
+            if(get_setting('next_review_date_uses') == "ResidualRisk") {
+
                 $next_review = next_review($residual_risk_level, $id-1000, $next_review, false);
-            }
-            // If next_review_date_uses setting is Inherent Risk.
-            else
-            {
+			
+			// If next_review_date_uses setting is Inherent Risk.
+            } else {
+
                 $next_review = next_review($risk_level, $id-1000, $next_review, false);
-            }
+            
+			}
             
             $reviewer = $mgmt_reviews[0]['reviewer'];
             $comments = $mgmt_reviews[0]['comments'];
@@ -303,75 +308,102 @@ $current_app_version = current_version("app");
 
 <!doctype html>
 <html>
+	<head>
+		<title>SimpleRisk: Enterprise Risk Management Simplified</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+		
+		<!-- Favicon icon -->
+		<?php setup_favicon("..");?>
+        
+		<!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="../css/style.min.css?<?= $current_app_version ?>" />
+        
+		<!-- extra css -->
+		<link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?= $current_app_version ?>">
 
-  <head>
+		<!-- jQuery Javascript -->
+		<script src="../vendor/node_modules/jquery/dist/jquery.min.js?<?= $current_app_version ?>" id="script_jquery"></script>
 
-    <!-- jQuery Javascript -->
-    <script src="../vendor/node_modules/jquery/dist/jquery.min.js?<?= $current_app_version ?>" id="script_jquery"></script>
+		<!-- Bootstrap tether Core JavaScript -->
+		<script src="../vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js" defer></script>
 
-    <!-- Bootstrap tether Core JavaScript -->
-    <script src="../vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script language="javascript" src="../js/basescript.js?<?= $current_app_version ?>" type="text/javascript"></script>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css?<?= $current_app_version ?>">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?= $current_app_version ?>">
-    <link rel="stylesheet" href="../css/divshot-util.css?<?= $current_app_version ?>">
-    <link rel="stylesheet" href="../css/divshot-canvas.css?<?= $current_app_version ?>">
-    <link rel="stylesheet" href="../css/display.css?<?= $current_app_version ?>">
-
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?= $current_app_version ?>">
-    <link rel="stylesheet" href="../css/theme.css?<?= $current_app_version ?>">
-    <link rel="stylesheet" href="../css/side-navigation.css?<?= $current_app_version ?>">
-  </head>
-
-  <body>
-    <div class="container-fluid">
-      <div class="row-fluid">
-        <div class="span12">
-          <div class="row-fluid">
-            <br />
-            <div class="well">
-              <?php view_print_top_table($id, $calculated_risk, $subject, $status, true); ?>
+		<script language="javascript" src="../js/basescript.js?<?= $current_app_version ?>" type="text/javascript" defer></script>
+	</head>
+	<body>
+		<div class="preloader">
+            <div class="lds-ripple">
+                <div class="lds-pos"></div>
+                <div class="lds-pos"></div>
             </div>
-          </div>
-          <div class="row-fluid">
-            <div class="well">
-              <?php view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $additional_stakeholders, $owner, $manager, $assessment, $notes, $tags, $submitted_by, $source, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $risk_catalog_mapping, $threat_catalog_mapping, $template_group_id); ?>
-            </div>
-          </div>
-          <div class="row-fluid">
-            <div class="well">
-              <?php view_print_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_percent, $template_group_id); ?>
-            </div>
-          </div>
-          <div class="row-fluid">
-            <div class="well">
-              <?php view_print_mitigation_controls($mitigation); ?>
-            </div>
-          </div>
-          <div class="row-fluid">
-            <div class="well">
-              <?php view_print_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comments, $template_group_id); ?>
-            </div>
-          </div>
-          <div class="row-fluid">
-            <div class="well">
-              <h4><?php echo $lang['Comments']; ?></h4>
-              <?php get_comments($id); ?>
-            </div>
-          </div>
-          <div class="row-fluid">
-            <div class="well">
-              <h4><?php echo $lang['AuditTrail']; ?></h4>
-              <?php get_audit_trail_html($id,36500,'risk'); ?>
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
-  </body>
-
+		<div id="main-wrapper">
+            <!-- Page wrapper  -->
+            <div class="page-wrapper" style="top: 0px;">
+            	<div class="scroll-content">
+            		<div class="content-wrapper">
+						<div class='page-breadcrumb'>
+							<div class='row'>
+								<div class='col-12 d-flex no-block align-items-center'>
+									<h4 class='page-title'>
+										<?= $escaper->escapeHtml($lang['RiskDetails']) ?>
+									</h4>
+								</div>
+							</div>
+						</div>
+						<!-- container - It's the direct container of all the -->
+						<div class='content container-fluid'>
+							<div class='row'>
+								<div class='col-12'>
+									<div class='card-body border my-2'>
+	<?php 
+										view_print_top_table($id, $calculated_risk, $subject, $status, true); 
+	?>
+									</div>
+									<div class='card-body border my-2'>
+	<?php 
+										view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $additional_stakeholders, $owner, $manager, $assessment, $notes, $tags, $submitted_by, $source, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $risk_catalog_mapping, $threat_catalog_mapping, $template_group_id); 
+	?>
+									</div>
+									<div class='card-body border my-2'>
+	<?php 
+										view_print_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_percent, $template_group_id); 
+	?>
+									</div>
+									<div class='mitigation-controls-container card-body border my-2'>
+	<?php 
+										view_print_mitigation_controls($mitigation); 
+	?>
+									</div>
+									<div class='card-body border my-2'>
+	<?php 
+										view_print_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comments, $template_group_id); 
+	?>
+									</div>
+									<div class='comments-container card-body border my-2'>
+										<h4><?= $lang['Comments']; ?></h4>
+										<?php get_comments($id); ?>
+									</div>
+									<div class='audit-trail-container card-body border my-2'>
+										<h4><?= $lang['AuditTrail']; ?></h4>
+										<?php get_audit_trail_html($id,36500,'risk'); ?>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+                	<!-- End of content-wrapper -->
+        		</div>
+        		<!-- End of scroll-content -->
+          	</div>
+          <!-- End Page wrapper  -->
+        </div>
+        <!-- End Wrapper -->
+		<script>
+			$(function() {
+				// Fading out the preloader once everything is done rendering
+				$(".preloader").fadeOut();
+			});
+		</script>
+	</body>
 </html>

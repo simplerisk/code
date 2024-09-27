@@ -8,7 +8,7 @@ require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 $breadcrumb_title_key = "ViewTest";
 $active_sidebar_submenu = "ActiveAudits";
 $active_sidebar_menu = "Compliance";
-render_header_and_sidebar(['blockUI', 'selectize', 'WYSIWYG', 'multiselect', 'CUSTOM:common.js', 'CUSTOM:pages/risk.js', 'CUSTOM:pages/compliance.js'], ['check_compliance' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
+render_header_and_sidebar(['blockUI', 'selectize', 'WYSIWYG', 'multiselect', 'datetimerangepicker', 'CUSTOM:common.js', 'CUSTOM:pages/risk.js', 'CUSTOM:pages/compliance.js'], ['check_compliance' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
 // Include required functions file
 require_once(realpath(__DIR__ . '/../includes/governance.php'));
 require_once(realpath(__DIR__ . '/../includes/compliance.php'));
@@ -54,12 +54,11 @@ $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
     <div class="col-12">
         <?php display_testing(); ?>
     </div>
-    </div>
 </div>
 <script>
     $(document).ready(function(){
         $("[name='team[]']").multiselect({enableFiltering: true, buttonWidth: '100%'});
-        $(".datepicker").datepicker();
+        $(".datepicker").initAsDatePicker();
         $('#tab-content-container select.assets-asset-groups-select').each(function() {
             setupAssetsAssetGroupsWidget($(this));
         });
@@ -72,6 +71,10 @@ $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
             enableCaseInsensitiveFiltering: true,
         });
 
+        //render multiselects which are not rendered yet after the page is loaded.
+        //multiselects which were already rendered contain 'button.multiselect'.
+        $(".multiselect:not(button)").multiselect({enableFiltering: true, buttonWidth: '100%', enableCaseInsensitiveFiltering: true,});
+        
         $(document).on("click", "#submit_test_result", function(){
             var test_result = $("#test_result").val();
             if(test_result == "Fail") {

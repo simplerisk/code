@@ -118,8 +118,34 @@ test('route should return url by route name', function () {
     expect($routeUrl)->toBe('/route/url');
 });
 
+test('route should return url with replaced named params using params as array', function () {
+    $router = new Router;
+    $router->match('GET', '/movies/{movieId}/photos/{photoId}', ['handler', 'name' => 'route-name']);
+
+    $routeUrl = $router->route('route-name', ['movieId' => 'my-movie', 'photoId' => 'my-photo']);
+
+    expect($routeUrl)->toBe('/movies/my-movie/photos/my-photo');
+});
+
+test('route should return url with replaced named params using params as string', function () {
+    $router = new Router;
+    $router->match('GET', '/movies/{movieId}/edit', ['handler', 'name' => 'route-name']);
+
+    $routeUrl = $router->route('route-name', 'my-movie');
+
+    expect($routeUrl)->toBe('/movies/my-movie/edit');
+});
+
 test('route should throw exception if no route found for name', function () {
     $router = new Router;
 
     expect(fn() => $router->route('non-existent-route-name'))->toThrow(Exception::class);
+});
+
+test('route should throw error if no named param found for params array', function () {
+    $router = new Router;
+    $router->match('GET', '/movies/{movieId}/photos/{photoId}', ['handler', 'name' => 'route-name']);
+
+    expect(fn() => $router->route('route-name', ['movieId' => 'my-movie', 'otherId' => 'my-photo', 'someOtherId' => 'my-music']))
+        ->toThrow(Exception::class, 'Param "otherId" not found in route "/movies/{movieId}/photos/{photoId}"');
 });

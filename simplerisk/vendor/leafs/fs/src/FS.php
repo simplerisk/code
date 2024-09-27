@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Leaf;
 
@@ -89,15 +89,15 @@ class FS
 	}
 
 
-    /**
-     * List all files and folders in a directory
-     *
-     * @param string $dirname the name of the directory to list
-     * @param null $pattern
-     * @return array
-     */
-	public static function listDir(string $dirname, $pattern = null): array
-    {
+	/**
+	 * List all files and folders in a directory
+	 *
+	 * @param string $dirname the name of the directory to list
+	 * @param string|null $pattern
+	 * @return array
+	 */
+	public static function listDir(string $dirname, string $pattern = null): array
+	{
 		$files = glob($dirname . "/*$pattern*");
 		$filenames = [];
 
@@ -123,7 +123,7 @@ class FS
 	 * @return array
 	 */
 	public static function listFolders(string $directory): array
-    {
+	{
 		$directories = [];
 
 		foreach (Finder::create()->in($directory)->directories()->depth(0)->sortByName() as $dir) {
@@ -139,7 +139,7 @@ class FS
 	 * @param string $filename the name of the file to create
 	 *
 	 * @return bool|void
-     */
+	 */
 	public static function createFile(string $filename)
 	{
 		if (!is_dir(dirname($filename))) {
@@ -162,7 +162,7 @@ class FS
 	 * @param bool $lock Lock file?
 	 *
 	 * @return false|int
-     */
+	 */
 	public static function writeFile(string $filename, $content, bool $lock = false)
 	{
 		if (!file_exists($filename)) {
@@ -198,7 +198,7 @@ class FS
 	 * @return bool
 	 */
 	public static function renameFile(string $filename, string $newfilename): bool
-    {
+	{
 		if (!file_exists($filename)) {
 			self::$errorsArray[$filename] = "$filename not found in " . dirname($filename);
 			return false;
@@ -212,7 +212,7 @@ class FS
 	 *
 	 * @param string $dirname: the name of the file to delete
 	 *
-	 * @return void
+	 * @return bool
 	 */
 	public static function deleteFile($filename)
 	{
@@ -221,7 +221,7 @@ class FS
 			return false;
 		}
 
-		unlink($filename);
+		return unlink($filename);
 	}
 
 	/**
@@ -231,7 +231,7 @@ class FS
 	 * @param string $to: the directory to copy file to
 	 * @param bool $rename: rename the file if another file exists with the same name
 	 *
-	 * @return void
+	 * @return string|false
 	 */
 	public static function copyFile($filename, $to, $rename = true)
 	{
@@ -243,14 +243,14 @@ class FS
 		$newfilename = $filename;
 
 		if (file_exists($filename) && $rename == true) {
-			$newfilename = "(" . time() . ")" . $filename;
+			$newfilename = '(' . time() . ')' . $filename;
 		}
 
 		try {
-			copy($filename, $to . "/" . $newfilename);
+			copy($filename, $to . '/' . $newfilename);
 			return $newfilename;
 		} catch (\Throwable $err) {
-			self::$errorsArray[$filename] = "Unable to copy file";
+			self::$errorsArray[$filename] = 'Unable to copy file';
 			return false;
 		}
 	}
@@ -314,7 +314,7 @@ class FS
 			}
 
 			// Deep copy directories
-			if ($sourceHash != static::hashDirectory($source . "/" . $entry)) {
+			if ($sourceHash != static::hashDirectory($source . '/' . $entry)) {
 				static::superCopy("$source/$entry", "$dest/$entry", $permissions);
 			}
 		}
@@ -366,72 +366,77 @@ class FS
 	public static function uploadFile($file, $path, $config = [])
 	{
 		if (!is_dir($path)) {
-			if (isset($config["verify_dir"]) && $config["verify_dir"] == true) {
-				self::$errorsArray["upload"] = "Specified path '$path' does not exist";
+			if (isset($config['verify_dir']) && $config['verify_dir'] == true) {
+				self::$errorsArray['upload'] = "Specified path '$path' does not exist";
 				return false;
 			} else {
 				mkdir($path, 0777, true);
 			}
 		}
 
-		if (isset($config["unique"]) && $config["unique"] == true) {
-			$name = strtolower(strtotime(date("Y-m-d H:i:s")) . '_' . str_replace(" ", "_", $file["name"]));
-		} elseif (isset($config["rename"]) && $config["rename"] == true) {			
-			$name = $config["name"] ?? str_replace(" ", "_", $file["name"]);
+		if (isset($config['unique']) && $config['unique'] == true) {
+			$name = strtolower(strtotime(date('Y-m-d H:i:s')) . '_' . str_replace(' ', '_', $file['name']));
+		} elseif (isset($config['rename']) && $config['rename'] == true) {
+			$name = $config['name'] ?? str_replace(' ', '_', $file['name']);
 
-			if($name != $file["name"])
-				$name = $name . "." . pathinfo($file["name"], PATHINFO_EXTENSION);
+			if ($name != $file['name'])
+				$name = $name . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
 		} else {
-			$name = str_replace(" ", "_", $file["name"]);
+			$name = str_replace(' ', '_', $file['name']);
 		}
 
-		$temp = $file["tmp_name"];
-		$size = $file["size"];
 		$target_dir = $path;
+		$size = $file['size'];
+		$temp = $file['tmp_name'];
 		$target_file = $target_dir . basename($name);
 
-		if (file_exists($target_file) && (isset($config["verify_file"]) && $config["verify_file"] == true)) {
-			self::$errorsArray["upload"] = "$target_file already exists";
+		if (file_exists($target_file) && (isset($config['verify_file']) && $config['verify_file'] == true)) {
+			self::$errorsArray['upload'] = "$target_file already exists";
 			return false;
 		}
 
+		$maximum_file_size = $config['max_file_size'] ?? 10000000;
 		$file_type = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-		$maximum_file_size = $config["max_file_size"] ?? 10000000;
-		$file_category = $config["file_type"] ?? self::getCategory($file_type);
+		$file_category = $config['file_type'] ?? self::getCategory($file_type);
 
 		if ($size > $maximum_file_size) {
-			self::$errorsArray["upload"] = "maximum file exceeded, please choose a file smaller than 10mb";
+			self::$errorsArray['upload'] = 'maximum file exceeded, please choose a file smaller than 10mb';
 			return false;
 		}
 
-		if (isset($config["validate"]) && $config["validate"] == true) {
+		if (isset($config['validate']) && $config['validate'] == true) {
 			foreach (self::$extensions as $category => $exts) {
 				if ($file_category == $category) $extensions = $exts;
 			}
 
 			if (!in_array($file_type, $extensions)) {
-				self::$errorsArray["upload"] = $file['name'] . " format not acceptable for $file_category";
+				self::$errorsArray['upload'] = $file['name'] . " format not acceptable for $file_category";
 				return false;
 			}
 		}
 
 		self::$uploadInfo[$name] = [
-			"name" => $name,
-			"size" => $size,
-			"type" => $file_type,
-			"category" => $file_category,
-			"path" => $target_file,
-			"parent_directory" => basename(dirname($target_file)),
-			"parent_directory_path" => $target_dir,
-			"public_path" => self::publicPath($target_file),
-			"url" => self::url($target_file)
+			'name' => $name,
+			'size' => $size,
+			'type' => $file_type,
+			'path' => $target_file,
+			'category' => $file_category,
+			'parent_directory' => basename(dirname($target_file)),
+			'parent_directory_path' => $target_dir,
+			// 'public_path' => self::publicPath($target_file), => rework this. This is only available in Leaf MVC
+			// 'url' => self::url($target_file) => rework this. StoragePath only available in Leaf MVC
 		];
 
-		if (move_uploaded_file($temp, $target_file)) {
-			self::$uploadInfo[$name]["status"] = true;
-			return $name;
-		} else {
-			self::$errorsArray["upload"] = "Wasn't able to upload $file_category";
+		try {
+			if (move_uploaded_file($temp, $target_file)) {
+				self::$uploadInfo[$name]['status'] = true;
+				return $name;
+			} else {
+				self::$errorsArray['upload'] = "Unable able to upload $file_category";
+				return false;
+			}
+		} catch (\Throwable $th) {
+			self::$errorsArray['upload'] = $th->getMessage();
 			return false;
 		}
 	}
@@ -527,7 +532,7 @@ class FS
 	 * @param string $filename: the name of the file to write to
 	 * @param string $content: the file content
 	 *
-	 * @return void
+	 * @return false|int
 	 */
 	public static function prepend($filename, $content)
 	{
@@ -539,7 +544,7 @@ class FS
 		$fileContent = self::readFile($filename);
 		$data = $content . "\n" . $fileContent;
 
-		self::writeFile($filename, $data);
+		return self::writeFile($filename, $data);
 	}
 
 	/**
@@ -548,7 +553,7 @@ class FS
 	 * @param string $filename: the name of the file to write to
 	 * @param string $content: the file content
 	 *
-	 * @return void
+	 * @return int|false
 	 */
 	public static function append($filename, $content)
 	{
@@ -557,7 +562,7 @@ class FS
 			return false;
 		}
 
-		file_put_contents($filename, $content, FILE_APPEND);
+		return file_put_contents($filename, $content, FILE_APPEND);
 	}
 
 	/**
@@ -581,7 +586,7 @@ class FS
 	 *
 	 * @param  string  $target
 	 * @param  string  $link
-	 * @return void
+	 * @return string|bool
 	 */
 	public static function link($target, $link)
 	{
@@ -591,7 +596,7 @@ class FS
 
 		$mode = is_dir($target) ? 'J' : 'H';
 
-		exec("mklink /{$mode} " . escapeshellarg($link) . ' ' . escapeshellarg($target));
+		return exec("mklink /{$mode} " . escapeshellarg($link) . ' ' . escapeshellarg($target));
 	}
 
 	/**
@@ -668,29 +673,5 @@ class FS
 	public static function errors(): array
 	{
 		return self::$errorsArray;
-	}
-
-	/**
-	 * Public path
-	 * Returns a public accessible path for application uploaded files
-  	*
-	 * @param string $path
-	 * @return string
-	 */
-	public static function publicPath($path = "")
-	{
-		return str_replace("storage/app/", "", $path);
-	}
-
-	/**
-	 * Get a file url
-	 * 
-	 * @param string $path
-	 * @return string
-	 */
-	public static function url($path)
-	{
-		$publicPath = StoragePath(self::publicPath($path));
-		return getenv("APP_URL") . $publicPath;
 	}
 }

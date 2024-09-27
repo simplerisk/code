@@ -16,7 +16,7 @@ if (php_sapi_name() == "cli")
 	if (assessments_extra())
 	{
 	    $message = "Looking for email assessments to send.";
-	    write_debug_log($message);
+	    write_debug_log_cli($message);
 	    //write_log(0, 0, $message, 'notification');
 
 	    // Load the Email Notification Extra

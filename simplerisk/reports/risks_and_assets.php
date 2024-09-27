@@ -3,33 +3,53 @@
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Render the header and sidebar
-require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['multiselect','CUSTOM:dynamic.js']);
-
 // Include required functions file
+require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/reporting.php'));
 
 // If the select_report form was posted
 if (isset($_REQUEST['report']))
 {
-  $report = (int)$_REQUEST['report'];
+    $report = (int)$_REQUEST['report'];
 }
 else $report = 0;
 
 $sort_by = isset($_REQUEST['sort_by']) ? (int)$_REQUEST['sort_by'] : 0;
 $asset_tags = isset($_REQUEST['asset_tags']) ? $_REQUEST['asset_tags'] : [];
+
+if (!is_array($asset_tags)) {
+    $asset_tags = json_decode($asset_tags, true);
+}
+
 if(!isset($_REQUEST['report'])) $asset_tags = "all";
 $projects = isset($_REQUEST['projects']) ? $_REQUEST['projects'] : [];
 
-if (import_export_extra()){
-    // Include the Import-Export Extra
-    require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
+if (!import_export_extra() || !(isset($_GET['option']) && $_GET['option'] == "download")){
 
-    // if download request, download all risks
-    if (isset($_GET['option']) && $_GET['option'] == "download")
-    {
-        download_risks_and_assets_report($report, $sort_by, $asset_tags, $projects);
+    // Render the header and sidebar
+    require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+    render_header_and_sidebar(['multiselect','CUSTOM:dynamic.js'], required_localization_keys: ['All']);
+} else {
+    global $escaper, $lang;
+    // Include Laminas Escaper for HTML Output Encoding
+    $escaper = new simpleriskEscaper();
+
+    // Add various security headers
+    add_security_headers();
+
+    add_session_check();
+
+    // Include the SimpleRisk language file
+    require_once(language_file());
+
+    if (import_export_extra()){
+        // Include the Import-Export Extra
+        require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
+
+        // if download request, download all risks
+        if (isset($_GET['option']) && $_GET['option'] == "download") {
+            download_risks_and_assets_report($report, $sort_by, $asset_tags, $projects);
+        }
     }
 }
 

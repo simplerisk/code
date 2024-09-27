@@ -8,60 +8,67 @@
 *******************/
 
 .topbar {
-  position: fixed;
-  top: 0;
-  z-index: 50;
-  width: 100%;
+    position: fixed;
+    top: 0;
+    z-index: 50;
+    width: 100%;
 
-  // box-shadow: 1px 0px 7px rgba(0, 0, 0, 0.05);
-  background: $topbar;
-  height: $topbar-height;
-  .navbar-collapse {
-    padding: 0px 10px 0 0;
-  }
-  .top-navbar {
-    min-height: $topbar-height;
-    padding: 0px;
-    .dropdown-toggle::after {
-      display: none;
+    // box-shadow: 1px 0px 7px rgba(0, 0, 0, 0.05);
+    background: $topbar;
+    height: $topbar-height;
+    .navbar-collapse {
+        padding: 0px 10px 0 0;
     }
-    .navbar-header {
-      line-height: $topbar-navlink-height;
-      .navbar-brand {
-        width: 250px;
-        display: flex;
-        align-items: center;
-        margin: 0px;
-        padding: $topbar-navbrand-padding;
-        .dark-logo {
-          display: none;
+
+    .top-navbar {
+        min-height: $topbar-height;
+        padding: 0px;
+
+        .dropdown-toggle::after {
+            display: none;
         }
-        .logo-icon {
-          margin-right: 5px;
+
+        .navbar-header {
+            line-height: $topbar-navlink-height;
+            .navbar-brand {
+                width: $sidebar-width-full;
+                display: flex;
+                align-items: center;
+                margin: 0px;
+                padding: $topbar-navbrand-padding;
+
+                img.logo {
+                    max-width: $sidebar-width-full;
+                    max-height: $topbar-height;
+                    padding-left: 10px;
+                }
+
+                .dark-logo {
+                    display: none;
+                }
+            }
         }
-      }
+
+        .navbar-nav > .nav-item > .nav-link {
+            padding: $topbar-navlink-padding;
+            font-size: $topbar-navlink-font-size;
+            line-height: $topbar-navlink-height;
+            height: $topbar-navlink-height;
+        }
+
+        .navbar-nav > .nav-item {
+            &:hover {
+                background: $transparent-dark-bg;
+            }
+        }
     }
-    .navbar-nav > .nav-item > .nav-link {
-      padding: $topbar-navlink-padding;
-      font-size: $topbar-navlink-font-size;
-      line-height: $topbar-navlink-height;
-      height: $topbar-navlink-height;
+    .user-dd, .mailbox {
+        min-width: 280px;
     }
-    .navbar-nav > .nav-item {
-      &:hover {
-        background: $transparent-dark-bg;
-      }
+    .nav-toggler, .topbartoggler {
+        color: $sr-sidebar-text;
+        padding: 0 15px;
     }
-  }
-  .user-dd,
-  .mailbox {
-    min-width: 280px;
-  }
-  .nav-toggler,
-  .topbartoggler {
-    color: $sr-sidebar-text;
-    padding: 0 15px;
-  }
 }
 
 /*******************

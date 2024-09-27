@@ -859,7 +859,7 @@ function expire_reset_token_for_username($username)
 /*******************************
  * FUNCTION: ADD SESSION CHECK *
  *******************************/
-function add_session_check($permissions = null)
+function add_session_check($permissions = [])
 {
 	write_debug_log("SCRIPT NAME: " . $_SERVER['SCRIPT_NAME']);
 
@@ -980,6 +980,10 @@ function add_session_check($permissions = null)
 				    write_debug_log("Vulnerability Management 'Configure' permission is required.");
 				    enforce_permission("vm_configure");
 				    break;
+                case "check_ai":
+                    write_debug_log("Artificial Intelligence permission is required.");
+                    enforce_permission("ai_access");
+                    break;
 			}
 		}
 	}

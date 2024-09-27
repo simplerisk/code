@@ -18,7 +18,7 @@ if (php_sapi_name() == "cli")
 	require_once(realpath(__DIR__ . '/../includes/cron.php'));
     require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-	write_debug_log("Beginning Cron Run");
+	write_debug_log_cli("Beginning Cron Run");
 
 	// Create a new instance of Job-Runner
 	$jobList = new JobList();

@@ -214,6 +214,17 @@ EOT;
     }
 
     /**
+     * Output some data and break the application
+     * 
+     * @param mixed $data The data to output
+     * @param int $code The Http status code
+     */
+    public function die($data, int $code = 500)
+    {
+        $this->exit($data, $code);
+    }
+
+    /**
      * Redirect
      *
      * This method prepares this response to return an HTTP Redirect response
@@ -227,6 +238,10 @@ EOT;
         if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
             \Leaf\Config::set('response.redirect', [$url, $status]);
             return;
+        }
+
+        if (class_exists('Leaf\App')) {
+            $url = str_replace('//', '/', app()->getBasePath() . $url);
         }
 
         Headers::status($status);

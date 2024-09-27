@@ -16,7 +16,7 @@ if (php_sapi_name() == "cli")
 	if (get_setting('backup_auto') == "true") {
 
 	    $message = "Automatic backup requested.";
-	    write_debug_log($message);
+	    write_debug_log_cli($message);
 	    write_log(0, 0, $message, 'backup');
 
 	    do_backup();
@@ -48,7 +48,7 @@ function do_backup($force=false) {
             
             // Write a message to the error log
             $message = "Unable to create a backup directory under " . $backup_path . ".";
-            write_debug_log($message);
+            write_debug_log_cli($message);
 
             // If the backup was requested from the UI
             if ($force) {
@@ -71,7 +71,7 @@ function do_backup($force=false) {
             
             // Write a message to the error log
             $message = "Unable to create a backup directory under " . $timestamp_path . ".";
-            write_debug_log($message);
+            write_debug_log_cli($message);
 
             // If the backup was requested from the UI
             if ($force) {
@@ -82,7 +82,7 @@ function do_backup($force=false) {
     
     if ($error) {
         $message = "Backup failed.";
-        write_debug_log($message);
+        write_debug_log_cli($message);
         write_log(0, 0, $message, 'backup');
 
         // If the backup was requested from the UI
@@ -148,14 +148,14 @@ function do_backup($force=false) {
                 rmdir($directory);
                 
                 $message = "Removed backup older than {$backup_remove} days: {$directory}.";
-                write_debug_log($message);
+                write_debug_log_cli($message);
                 write_log(0, 0, $message, 'backup');
             }
         }
     }
     
     $message = "Backup successfully completed.";
-    write_debug_log($message);
+    write_debug_log_cli($message);
     write_log(0, 0, $message, 'backup');
     
     // If the backup was requested from the UI

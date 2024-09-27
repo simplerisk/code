@@ -27,6 +27,7 @@ $sr-default: #E8E9EB;
 $sr-important: #ed3139;
 $sr-dark: #252525;
 $sr-body: #ffffff;
+$excel-green: #10793F;
 
 $sr-theme-colors: (
   "primary": $sr-primary,
@@ -301,10 +302,10 @@ $badge-pill-padding-y: 1em !default;
 
 // Forms
 $input-group-addon-bg: $gray-100;
-$input-border-color: $gray-200;
+$input-border-color: $gray-400;
 $input-group-addon-border-color: $gray-200;
 $input-btn-focus-color: rgba(0, 0, 0, 0.25) !default;
-$input-focus-border-color: rgba(0, 0, 0, 0.25) !default;
+$input-focus-border-color: rgba(0, 0, 0, 0.35) !default;
 $custom-control-indicator-active-bg: rgba(0, 0, 0, 35%) !default;
 $custom-select-indicator: url(../../assets/images/custom-select.png) !default;
 $input-btn-focus-box-shadow: transparent !default;

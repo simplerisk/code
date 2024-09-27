@@ -11,14 +11,13 @@ if (!function_exists('request')) {
     function request()
     {
         if (class_exists('\Leaf\Config')) {
-            $request = Leaf\Config::get("request")["instance"] ?? null;
-
-            if (!$request) {
-                $request = new \Leaf\Http\Request;
-                Leaf\Config::set("request", ["instance" => $request]);
+            if (!\Leaf\Config::getStatic('request')) {
+                \Leaf\Config::singleton('request', function () {
+                    return new \Leaf\Http\Request;
+                });
             }
 
-            return $request;
+            return \Leaf\Config::get('request');
         }
 
         return new \Leaf\Http\Request();
@@ -36,14 +35,13 @@ if (!function_exists('response')) {
     function response()
     {
         if (class_exists('\Leaf\Config')) {
-            $response = Leaf\Config::get("response")["instance"] ?? null;
-
-            if (!$response) {
-                $response = new \Leaf\Http\Response;
-                Leaf\Config::set("response", ["instance" => $response]);
+            if (!\Leaf\Config::getStatic('response')) {
+                \Leaf\Config::singleton('response', function () {
+                    return new \Leaf\Http\Response;
+                });
             }
 
-            return $response;
+            return \Leaf\Config::get('response');
         }
 
         return new \Leaf\Http\Response();

@@ -216,63 +216,47 @@ function view_top_table($risk_id, $calculated_risk, $subject, $status, $show_det
 /**********************************
 * FUNCTION: VIEW PRINT TOP TABLE *
 **********************************/
-function view_print_top_table($id, $calculated_risk, $subject, $status)
-{
+function view_print_top_table($id, $calculated_risk, $subject, $status) {
+
     global $lang;
     global $escaper;
 
     // Decrypt fields
     $subject = try_decrypt($subject);
 
-    echo "<table width=\"100%\" cellpadding=\"10\" cellspacing=\"0\" style=\"border:none;\">\n";
-    echo "<tr>\n";
-    echo "<td width=\"100\" valign=\"middle\" halign=\"center\">\n";
-
-        echo "<table width=\"100\" height=\"100\" cellpadding=\"0\" cellspacing=\"0\" border=\"1\" class=\"" . $escaper->escapeHtml(get_risk_color($calculated_risk)) . "\">\n";
-        echo "<tr>\n";
-            echo "<td valign=\"middle\" halign=\"center\">\n";
-                echo "<center style=\"padding-top: 10px; padding-bottom: 10px; height: 120px; width: 120px; background-color: ". $escaper->escapeHtml(get_risk_color($calculated_risk)) ."\">".$escaper->escapeHtml($lang['InherentRisk'])."<br />\n";
-                echo "<font size=\"6\">" . $escaper->escapeHtml($calculated_risk) . "</font><br />\n";
-                echo "(". $escaper->escapeHtml(get_risk_level_name($calculated_risk)) . ")\n";
-                echo "</center>\n";
-            echo "</td>\n";
-        echo "</tr>\n";
-        echo "</table>\n";
-    echo "</td>\n";
+    echo "
+        <div class='d-flex align-items-center'>
+            <div class='flex-shrink-0 d-flex flex-column align-items-center justify-content-center py-2 border' style='height: 120px; width: 120px; background-color: " . $escaper->escapeHtml(get_risk_color($calculated_risk)) . "'>
+                <span>" . $escaper->escapeHtml($lang['InherentRisk']) . "</span>
+                <span style='font-size: 30px;'>" . $escaper->escapeHtml($calculated_risk) . "</span>
+                <span>(". $escaper->escapeHtml(get_risk_level_name($calculated_risk)) . ")</span>
+            </div>
+    ";
 
     $residual_risk = get_residual_risk($id);
-    echo "<td width=\"100\" valign=\"middle\" halign=\"center\">\n";
-        echo "<table width=\"100\" height=\"100\" cellpadding=\"0\" cellspacing=\"0\" border=\"1\" class=\"" . $escaper->escapeHtml(get_risk_color($calculated_risk)) . "\">\n";
-        echo "<tr>\n";
-            echo "<td valign=\"middle\" halign=\"center\">\n";
-                echo "<center style=\"padding-top: 10px; padding-bottom: 10px; height: 120px; width: 120px; background-color: ". $escaper->escapeHtml(get_risk_color($residual_risk)) ."\">\n".$escaper->escapeHtml($lang['ResidualRisk'])."<br />\n";
-                echo "<font size=\"6\">" . $escaper->escapeHtml($residual_risk) . "</font><br />\n";
-                echo "(". $escaper->escapeHtml(get_risk_level_name($residual_risk)) . ")\n";
-                echo "</center>\n";
-            echo "</td>\n";
-        echo "</tr>\n";
-        echo "</table>\n";
-    echo "</td>\n";
 
-    echo "<td valign=\"left\" halign=\"center\">\n";
-
-    echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
-    echo "<tr>\n";
-    echo "<td width=\"100\"><h4>". $escaper->escapeHtml($lang['RiskId']) .":</h4></td>\n";
-    echo "<td><h4>" . $escaper->escapeHtml($id) . "</h4></td>\n";
-    echo "</tr>\n";
-    echo "<tr>\n";
-    echo "<td width=\"100\"><h4>". $escaper->escapeHtml($lang['Subject']) .":</h4></td>\n";
-    echo "<td><h4>" . $escaper->escapeHtml($subject) . "</h4></td>\n";
-    echo "</tr>\n";
-    echo "<tr>\n";
-    echo "<td width=\"100\"><h4>". $escaper->escapeHtml($lang['Status']) .":</h4></td>\n";
-    echo "<td><h4>" . $escaper->escapeHtml($status) . "</h4></td>\n";
-    echo "</tr>\n";
-    echo "</table>\n";
-
-    echo "</td>\n";
-    echo "</table>\n";
+    echo "
+            <div class='flex-shrink-0 d-flex flex-column align-items-center justify-content-center py-2 ms-3 border' style='height: 120px; width: 120px; background-color: " . $escaper->escapeHtml(get_risk_color($residual_risk)) . "'>
+                <span>" . $escaper->escapeHtml($lang['ResidualRisk']) . "</span>
+                <span style='font-size: 30px;'>" . $escaper->escapeHtml($residual_risk) . "</span>
+                <span>(". $escaper->escapeHtml(get_risk_level_name($residual_risk)) . ")</span>
+            </div>
+            <div class='ms-5 font-18'>
+                <div class='d-flex align-items-center mb-2'>
+                    <label class='mb-0' style='min-width: 100px;'>" . $escaper->escapeHtml($lang['RiskId']) . ":</label>
+                    <p class='mb-0'>" . $escaper->escapeHtml($id) . "</p>
+                </div>
+                <div class='d-flex align-items-center mb-2'>
+                    <label class='mb-0' style='min-width: 100px;'>" . $escaper->escapeHtml($lang['Subject']) . ":</label>
+                    <p class='mb-0'>" . $escaper->escapeHtml($subject) . "</p>
+                </div>
+                <div class='d-flex align-items-center'>
+                    <label class='mb-0' style='min-width: 100px;'>" . $escaper->escapeHtml($lang['Status']) . ":</label>
+                    <p class='mb-0'>" . $escaper->escapeHtml($status) . "</p>
+                </div>
+            </div>
+        </div>
+    ";
 }
 
 /*****************************
@@ -630,8 +614,8 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
 /*************************************
 * FUNCTION: VIEW PRINT RISK DETAILS *
 *************************************/
-function view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $additional_stakeholders, $owner, $manager, $assessment, $notes, $tags, $submitted_by, $source, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $risk_catalog_mapping, $threat_catalog_mapping, $template_group_id="")
-{
+function view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $additional_stakeholders, $owner, $manager, $assessment, $notes, $tags, $submitted_by, $source, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $risk_catalog_mapping, $threat_catalog_mapping, $template_group_id="") {
+
     global $lang;
     global $escaper;
 
@@ -640,11 +624,14 @@ function view_print_risk_details($id, $submission_date, $subject, $reference_id,
     $assessment = try_decrypt($assessment);
     $notes = try_decrypt($notes);
 
-    echo "<h4>" . $escaper->escapeHtml($lang['Details']) . "</h4>\n";
-    echo "<table border=\"1\" width=\"100%\" cellspacing=\"10\" cellpadding=\"10\">\n";
+    echo "
+        <h4>" . $escaper->escapeHtml($lang['Details']) . "</h4>
+        <div class='risk-details-container card-body border mt-2'>
+    ";
+
     // If customization extra is enabled
-    if(customization_extra())
-    {
+    if(customization_extra()) {
+
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
         
@@ -655,165 +642,214 @@ function view_print_risk_details($id, $submission_date, $subject, $reference_id,
             $group = get_default_template_group("risk");
             $template_group_id = $group["id"];
         }
+
         $active_fields = get_active_fields("risk", $template_group_id);
-        foreach($active_fields as $field){
-             // Check if this field is custom field and details
-            if($field['tab_index'] == 1)
-            {
-                if($field['is_basic'] == 1){
-                    switch($field['name']){
+        foreach($active_fields as $field) {
+
+            // Check if this field is custom field and details
+            if($field['tab_index'] == 1) {
+
+                if($field['is_basic'] == 1) {
+
+                    switch($field['name']) {
+
                         case 'SubmissionDate':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SubmissionDate']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($submission_date) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SubmissionDate']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($submission_date) . "</p>
+            </div>
+                            ";
+                            break;
+
                         case 'Category':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Category']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("category", $category)) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
-                        
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Category']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("category", $category)) . "</p>
+            </div>
+                            ";
+                            break;
+
                         case 'SiteLocation':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SiteLocation']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($location) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SiteLocation']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($location) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'ExternalReferenceId':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ExternalReferenceId']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($reference_id) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ExternalReferenceId']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($reference_id) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'ControlRegulation':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ControlRegulation']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("frameworks", $regulation)) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlRegulation']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("frameworks", $regulation)) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'ControlNumber':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ControlNumber']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($control_number) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlNumber']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($control_number) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'AffectedAssets':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AffectedAssets']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml(implode(',', array_map(function($item) use ($escaper) {
-                                    return $item['class'] === 'group' ? "[{$item['name']}]" : $item['name'];
-                                }, get_assets_and_asset_groups_of_type($id, 'risk', true)))) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['AffectedAssets']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(implode(',', array_map(function($item) use ($escaper) {
+                    return $item['class'] === 'group' ? "[{$item['name']}]" : $item['name'];
+                }, get_assets_and_asset_groups_of_type($id, 'risk', true)))) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'Technology':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Technology']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($technology) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Technology']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($technology) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'Team':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Team']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($team) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Team']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($team) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'AdditionalStakeholders':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AdditionalStakeholders']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($additional_stakeholders) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['AdditionalStakeholders']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($additional_stakeholders) . "</p>
+            </div>
+                            ";
+                            break;
                         
                         case 'Owner':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Owner']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $owner)) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Owner']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $owner)) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'OwnersManager':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['OwnersManager']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $manager)) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['OwnersManager']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $manager)) . "</p>
+            </div>
+                            ";
+                            break;
                         
                         case 'SubmittedBy':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SubmittedBy']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $submitted_by)) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SubmittedBy']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $submitted_by)) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'RiskSource':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['RiskSource']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("source", $source)) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['RiskSource']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("source", $source)) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'RiskScoringMethod':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['RiskScoringMethod']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("scoring_methods", $scoring_method)) . "</td>\n";
-                            echo "</tr>\n";
-                            if($scoring_method == "1"){
-                                echo "<tr>\n";
-                                echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['CurrentLikelihood']) . ":</td>\n";
-                                echo "<td>" . $escaper->escapeHtml(get_name_by_value("likelihood", $CLASSIC_likelihood)) . "</td>\n";
-                                echo "</tr>\n";
-                                echo "<tr>\n";
-                                echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['CurrentImpact']) . ":</td>\n";
-                                echo "<td>" . $escaper->escapeHtml(get_name_by_value("impact", $CLASSIC_impact)) . "</td>\n";
-                                echo "</tr>\n";
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['RiskScoringMethod']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("scoring_methods", $scoring_method)) . "</p>
+            </div>
+                            ";
+                            
+                            if($scoring_method == "1") {
+                                echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['CurrentLikelihood']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("likelihood", $CLASSIC_likelihood)) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['CurrentImpact']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("impact", $CLASSIC_impact)) . "</p>
+            </div>
+                                ";
                             }
-                        break;
+
+                            break;
                         
                         case 'RiskAssessment':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['RiskAssessment']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($assessment) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['RiskAssessment']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($assessment) . "</p>
+            </div>
+                            ";
+                            break;
 
                         case 'AdditionalNotes':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AdditionalNotes']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($notes) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['AdditionalNotes']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($notes) . "</p>
+            </div>
+                            ";
+                            break;
 
                         case 'Tags':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Tags']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($tags) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Tags']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($tags) . "</p>
+            </div>
+                            ";
+                            break;
 
                         case 'RiskMapping':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['RiskMapping']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml(get_names_by_multi_values("risk_catalog", $risk_catalog_mapping, false, ", ", true)) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['RiskMapping']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_names_by_multi_values("risk_catalog", $risk_catalog_mapping, false, ", ", true)) . "</p>
+            </div>
+                            ";
+                            break;
 
                         case 'ThreatMapping':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ThreatMapping']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml(get_names_by_multi_values("threat_catalog", $threat_catalog_mapping, false, ", ", true)) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
-                    }
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ThreatMapping']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_names_by_multi_values("threat_catalog", $threat_catalog_mapping, false, ", ", true)) . "</p>
+            </div>
+                            ";
+                            break;
 
+                    }
                 } else {
                     display_custom_field_print($field, $custom_values);
                 }
@@ -821,90 +857,79 @@ function view_print_risk_details($id, $submission_date, $subject, $reference_id,
             
         }
     } else {
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SubmissionDate']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($submission_date) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Subject']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($subject) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ExternalReferenceId']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($reference_id) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ControlRegulation']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml(get_name_by_value("frameworks", $regulation)) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ControlNumber']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($control_number) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SiteLocation']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($location) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Category']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml(get_name_by_value("category", $category)) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Team']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($team) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Technology']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($technology) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AdditionalStakeholders']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($additional_stakeholders) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Owner']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $owner)) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['OwnersManager']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $manager)) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['RiskAssessment']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($assessment) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AdditionalNotes']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($notes) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AffectedAssets']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml(implode(',', array_map(function($item) use ($escaper) {
+        echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SubmissionDate']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($submission_date) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Subject']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($subject) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ExternalReferenceId']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($reference_id) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlRegulation']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("frameworks", $regulation)) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlNumber']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($control_number) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SiteLocation']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($location) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Category']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("category", $category)) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Team']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($team) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Technology']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($technology) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['AdditionalStakeholders']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($additional_stakeholders) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Owner']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $owner)) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['OwnersManager']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $manager)) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['RiskAssessment']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($assessment) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['AdditionalNotes']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($notes) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['AffectedAssets']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(implode(',', array_map(function($item) use ($escaper) {
                     return $item['class'] === 'group' ? "[{$item['name']}]" : $item['name'];
-                }, get_assets_and_asset_groups_of_type($id, 'risk')))) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Tags']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($tags) . "</td>\n";
-        echo "</tr>\n";
+                }, get_assets_and_asset_groups_of_type($id, 'risk')))) . "</p>
+            </div>
+            <div class='d-flex align-items-center'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Tags']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($tags) . "</p>
+            </div>
+        ";
     }
 
-    echo "</table>\n";
+    echo "
+        </div>
+    ";
 }
 
 /****************************************
@@ -1337,8 +1362,8 @@ function view_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $pl
 /*******************************************
 * FUNCTION: VIEW PRINT MITIGATION DETAILS *
 *******************************************/
-function view_print_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_percent, $template_group_id)
-{
+function view_print_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_percent, $template_group_id) {
+
     global $lang;
     global $escaper;
 
@@ -1347,11 +1372,14 @@ function view_print_mitigation_details($id, $mitigation_date, $planning_strategy
     $security_requirements = try_decrypt($security_requirements);
     $security_recommendations = try_decrypt($security_recommendations);
 
-    echo "<h4>". $escaper->escapeHtml($lang['Mitigation']) ."</h4>\n";
-    echo "<table border=\"1\" width=\"100%\" cellspacing=\"10\" cellpadding=\"10\">\n";
+    echo "
+        <h4>". $escaper->escapeHtml($lang['Mitigation']) ."</h4>
+        <div class='mitigation-details-container card-body border mt-2'>
+    ";
+
     // If customization extra is enabled
-    if(customization_extra())
-    {
+    if(customization_extra()) {
+
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
         
@@ -1362,99 +1390,127 @@ function view_print_mitigation_details($id, $mitigation_date, $planning_strategy
             $group = get_default_template_group("risk");
             $template_group_id = $group["id"];
         }
+
         $active_fields = get_active_fields("risk", $template_group_id);
-        foreach($active_fields as $field){
-             // Check if this field is custom field and details
-            if($field['tab_index'] == 2)
-            {
-                if($field['is_basic'] == 1){
-                    switch($field['name']){
+        foreach($active_fields as $field) {
+
+            // Check if this field is custom field and details
+            if($field['tab_index'] == 2) {
+
+                if($field['is_basic'] == 1) {
+
+                    switch($field['name']) {
+
                         case 'MitigationDate':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationDate']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($mitigation_date) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationDate']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($mitigation_date) . "</p>
+            </div>
+                            ";
+                            break;
                         
                         case 'MitigationPlanning':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationPlanning']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($planning_date) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationPlanning']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($planning_date) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'PlanningStrategy':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['PlanningStrategy']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("planning_strategy", $planning_strategy)) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['PlanningStrategy']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("planning_strategy", $planning_strategy)) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'MitigationEffort':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationEffort']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationEffort']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'MitigationCost':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationCost']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml(get_asset_value_by_id($mitigation_cost)) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationCost']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_asset_value_by_id($mitigation_cost)) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'MitigationOwner':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationOwner']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $mitigation_owner)) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationOwner']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $mitigation_owner)) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'MitigationTeam':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationTeam']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml(get_names_by_multi_values("team", $mitigation_team)) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationTeam']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_names_by_multi_values("team", $mitigation_team)) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'MitigationPercent':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationPercent']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($mitigation_percent) . " %</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationPercent']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($mitigation_percent) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'AcceptMitigation':
                             $message = view_accepted_mitigations($id);
-                            if($message){
-                                echo "<tr>\n";
-                                echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AcceptMitigation']) . ":</td>\n";
-                                echo "<td>" . $message . "</td>\n";
-                                echo "</tr>\n";
+                            if($message) {
+                                echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['AcceptMitigation']) . ":</label>
+                <p class='mb-0'>" . $message . "</p>
+            </div>
+                                ";
                             }
-                        break;
+                            break;
                             
                         case 'CurrentSolution':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['CurrentSolution']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($current_solution) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['CurrentSolution']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($current_solution) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'SecurityRequirements':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SecurityRequirements']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($security_requirements) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SecurityRequirements']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($security_requirements) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'SecurityRecommendations':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SecurityRecommendations']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($security_recommendations) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SecurityRecommendations']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($security_recommendations) . "</p>
+            </div>
+                            ";
+                            break;
                     }
                 } else {
                    display_custom_field_print($field, $custom_values);
@@ -1462,172 +1518,201 @@ function view_print_mitigation_details($id, $mitigation_date, $planning_strategy
             }
         }
     } else {
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationDate']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($mitigation_date) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['PlanningStrategy']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml(get_name_by_value("planning_strategy", $planning_strategy)) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationEffort']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationCost']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml(get_asset_value_by_id($mitigation_cost)) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationOwner']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $mitigation_owner)) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationTeam']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml(get_names_by_multi_values("team", $mitigation_team)) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationPercent']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($mitigation_percent) . " %</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['CurrentSolution']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($current_solution) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SecurityRequirements']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($security_requirements) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SecurityRecommendations']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($security_recommendations) . "</td>\n";
-        echo "</tr>\n";
+        echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationDate']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($mitigation_date) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['PlanningStrategy']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("planning_strategy", $planning_strategy)) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationEffort']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationCost']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_asset_value_by_id($mitigation_cost)) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationOwner']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $mitigation_owner)) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationTeam']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_names_by_multi_values("team", $mitigation_team)) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationPercent']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($mitigation_percent) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['CurrentSolution']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($current_solution) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SecurityRequirements']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($security_requirements) . "</p>
+            </div>
+            <div class='d-flex align-items-center'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SecurityRecommendations']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($security_recommendations) . "</p>
+            </div>
+        ";
     }
-    echo "</table>\n";
+    echo "
+        </div>
+    ";
 }
 
 /*******************************************
 * FUNCTION: VIEW PRINT MITIGATION CONTROLS *
 *******************************************/
-function view_print_mitigation_controls($mitigation)
-{
+function view_print_mitigation_controls($mitigation) {
+    
     global $lang;
     global $escaper;
 
     $control_ids = empty($mitigation[0]['mitigation_controls']) ? "" : $mitigation[0]['mitigation_controls'];
     $controls = get_framework_controls($control_ids);
     $html = "";
-    foreach ($controls as $key=>$control)
-    {
-        $html .= "<div class='control-block item-block clearfix'>\n";
-            $html .= "<div class='control-block--header clearfix' data-project=''>\n";
 
-                $html .= "<br>\n";
-                $html .= "<div class='control-block--row'>\n";
-                $html .= "</div>\n";
-            $html .= "</div>\n";
-        $html .= "</div>\n";
+    echo "
+        <h4>" . $escaper->escapeHtml($lang['MitigationControls']) . "</h4>
+    ";
+
+    foreach ($controls as $key=>$control) {
+        echo "
+        <div class='card-body border my-2'>
+            <div class='row'>
+                <div class='col-12'>
+                    <div class='d-flex align-items-center mb-2'>
+                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlLongName']) . ":</label>
+                        <p class='mb-0'>" . $escaper->escapeHtml($control['long_name']) . "</p>
+                    </div>
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-8'>
+                    <div class='d-flex align-items-center mb-2'>
+                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlShortName']) . ":</label>
+                        <p class='mb-0'>" . $escaper->escapeHtml($control['short_name']) . "</p>
+                    </div>
+                </div>
+                <div class='col-4'>
+                    <div class='d-flex align-items-center mb-2'>
+                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlOwner']) . ":</label>
+                        <p class='mb-0'>" . $escaper->escapeHtml($control['control_owner_name']) . "</p>
+                    </div>
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-4'>
+                    <div class='d-flex align-items-center mb-2'>
+                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlClass']) . ":</label>
+                        <p class='mb-0'>" . $escaper->escapeHtml($control['control_class_name']) . "</p>
+                    </div>
+                </div>
+                <div class='col-4'>
+                    <div class='d-flex align-items-center mb-2'>
+                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlPhase']) . ":</label>
+                        <p class='mb-0'>" . $escaper->escapeHtml($control['control_phase_name']) . "</p>
+                    </div>
+                </div>
+                <div class='col-4'>
+                    <div class='d-flex align-items-center mb-2'>
+                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlNumber']) . ":</label>
+                        <p class='mb-0'>" . $escaper->escapeHtml($control['control_number']) . "</p>
+                    </div>
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-4'>
+                    <div class='d-flex align-items-center mb-2'>
+                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlPriority']) . ":</label>
+                        <p class='mb-0'>" . $escaper->escapeHtml($control['control_priority_name']) . "</p>
+                    </div>
+                </div>
+                <div class='col-4'>
+                    <div class='d-flex align-items-center mb-2'>
+                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlFamily']) . ":</label>
+                        <p class='mb-0'>" . $escaper->escapeHtml($control['family_short_name']) . "</p>
+                    </div>
+                </div>
+                <div class='col-4'>
+                    <div class='d-flex align-items-center mb-2'>
+                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationPercent']) . ":</label>
+                        <p class='mb-0'>" . $escaper->escapeHtml($control['mitigation_percent']) . "</p>
+                    </div>
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-12'>
+                    <div class='d-flex align-items-center mb-2'>
+                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Description']) . ":</label>
+                        <p class='mb-0'>" . $escaper->escapeHtml($control['description']) . "</p>
+                    </div>
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-12'>
+                    <div class='d-flex align-items-center mb-2'>
+                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SupplementalGuidance']) . ":</label>
+                        <p class='mb-0'>" . $escaper->escapeHtml($control['supplemental_guidance']) . "</p>
+                    </div>
+                </div>
+            </div>
+        ";
+
+        $mapped_frameworks = get_mapping_control_frameworks($control['id']);
+
+        echo "
+            <h5 class='mt-2'>" . $escaper->escapeHtml($lang['MappedControlFrameworks']) . "</h5>
+            <table width='100%' class='table table-bordered mb-0'>
+                <tr>
+                    <th width='50%'>" . $escaper->escapeHtml($lang['Framework']) . "</th>
+                    <th width='35%'>" . $escaper->escapeHtml($lang['Control']) . "</th>
+                </tr>
+        ";
+
+        foreach ($mapped_frameworks as $framework) {
+            echo "
+                <tr>
+                    <td>" . $escaper->escapeHtml($framework['framework_name']) . "</td>
+                    <td>" . $escaper->escapeHtml($framework['reference_name']) . "</td>
+                </tr>
+            ";
+        }
+
+        echo "
+            </table>
+        ";
+
+        $validation = get_mitigation_to_controls($mitigation[0]['mitigation_id'],$control['id']);
+        $validation_mitigation_percent = ($validation["validation_mitigation_percent"] >= 0 && $validation["validation_mitigation_percent"] <= 100) ? $validation["validation_mitigation_percent"] : 0;
+
+        if($validation["validation_details"] || $validation["validation_owner"] || $validation_mitigation_percent) {
+            echo "
+            <h5 class='mt-2'>" . $escaper->escapeHtml($lang['ControlValidation']) . "</h5>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Details']) . ":</label>
+                <p class='mb-0'>" . nl2br($escaper->escapeHtml($validation["validation_details"])) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Owner']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $validation["validation_owner"])) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationPercent']) . ":</label>
+                <p class='mb-0'>" . $validation_mitigation_percent . " %</p>
+            </div>
+            ";
+        }
+        echo "
+        </div>
+        ";
     }
-
-    echo "<h4>". $escaper->escapeHtml($lang['MitigationControls']) ."</h4>\n";
-    echo "<table border=\"1\" width=\"100%\" cellspacing=\"10\" cellpadding=\"10\">\n";
-
-    foreach ($controls as $key=>$control)
-    {
-        echo "<tr>\n";
-            echo "<td>\n";
-                    $html = "<table width='100%'>\n";
-                        $html .= "<tr>\n";
-                            $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlLongName'])."</strong>: </td>\n";
-                            $html .= "<td colspan='5'>".$escaper->escapeHtml($control['long_name'])."</td>\n";
-                        $html .= "</tr>\n";
-                        $html .= "<tr>\n";
-                            $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlShortName'])."</strong>: </td>\n";
-                            $html .= "<td width='57%' colspan='3'>".$escaper->escapeHtml($control['short_name'])."</td>\n";
-                            $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlOwner'])."</strong>: </td>\n";
-                            $html .= "<td width='17%'>".$escaper->escapeHtml($control['control_owner_name'])."</td>\n";
-                        $html .= "</tr>\n";
-                        $html .= "<tr>\n";
-                            $html .= "<td  align='right'><strong>".$escaper->escapeHtml($lang['ControlClass'])."</strong>: </td>\n";
-                            $html .= "<td>".$escaper->escapeHtml($control['control_class_name'])."</td>\n";
-                            $html .= "<td  align='right'><strong>".$escaper->escapeHtml($lang['ControlPhase'])."</strong>: </td>\n";
-                            $html .= "<td>".$escaper->escapeHtml($control['control_phase_name'])."</td>\n";
-                            $html .= "<td  align='right'><strong>".$escaper->escapeHtml($lang['ControlNumber'])."</strong>: </td>\n";
-                            $html .= "<td>".$escaper->escapeHtml($control['control_number'])."</td>\n";
-                        $html .= "</tr>\n";
-                        $html .= "<tr>\n";
-                            $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['ControlPriority'])."</strong>: </td>\n";
-                            $html .= "<td>".$escaper->escapeHtml($control['control_priority_name'])."</td>\n";
-                            $html .= "<td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['ControlFamily'])."</strong>: </td>\n";
-                            $html .= "<td>".$escaper->escapeHtml($control['family_short_name'])."</td>\n";
-                            $html .= "<td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['MitigationPercent'])."</strong>: </td>\n";
-                            $html .= "<td>".$escaper->escapeHtml($control['mitigation_percent'])."%</td>\n";
-                        $html .= "</tr>\n";
-                        $html .= "<tr>\n";
-                            $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['Description'])."</strong>: </td>\n";
-                            $html .= "<td colspan='5'>".$escaper->escapeHtml($control['description'])."</td>\n";
-                        $html .= "</tr>\n";
-                        $html .= "<tr>\n";
-                            $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['SupplementalGuidance'])."</strong>: </td>\n";
-                            $html .= "<td colspan='5'>".$escaper->escapeHtml($control['supplemental_guidance'])."</td>\n";
-                        $html .= "</tr>\n";
-                    $html .= "</table>\n";
-                    $mapped_frameworks = get_mapping_control_frameworks($control['id']);
-                    $html .= "<div class='well'>";
-                        $html .= "<h5><span>".$escaper->escapeHtml($lang['MappedControlFrameworks'])."</span></h5>";
-                        $html .= "<table width='100%' class='table table-bordered'>\n";
-                            $html .= "<tr>\n";
-                                $html .= "<th width='50%'>".$escaper->escapeHtml($lang['Framework'])."</th>\n";
-                                $html .= "<th width='35%'>".$escaper->escapeHtml($lang['Control'])."</th>\n";
-                            $html .= "</tr>\n";
-                            foreach ($mapped_frameworks as $framework){
-                                $html .= "<tr>\n";
-                                    $html .= "<td>".$escaper->escapeHtml($framework['framework_name'])."</td>\n";
-                                    $html .= "<td>".$escaper->escapeHtml($framework['reference_name'])."</td>\n";
-                                $html .= "</tr>\n";
-                            }
-                        $html .= "</table>\n";
-                    $html .= "</div>\n";
-                    $validation = get_mitigation_to_controls($mitigation[0]['mitigation_id'],$control['id']);
-                    $validation_mitigation_percent = ($validation["validation_mitigation_percent"] >= 0 && $validation["validation_mitigation_percent"] <= 100) ? $validation["validation_mitigation_percent"] : 0;
-                    if($validation["validation_details"]|| $validation["validation_owner"] || $validation_mitigation_percent){
-                        $html .= "<div class='well'>";
-                            $html .= "<h5><span>".$escaper->escapeHtml($lang['ControlValidation'])."</span></h5>";
-                            $html .= "<div class='row-fluid'>";
-                                $html .= "<div class='span4'>
-                                    ".$escaper->escapeHtml($lang['Details']).":<br>
-                                    ".nl2br($escaper->escapeHtml($validation["validation_details"]))."
-                                </div>";
-                            $html .= "</div>";
-                            $html .= "<div class='row-fluid'>";
-                                $html .= "<div class='span4'>
-                                    ".$escaper->escapeHtml($lang['Owner']).":<br>
-                                    ".$escaper->escapeHtml(get_name_by_value("user", $validation["validation_owner"]))."
-                                </div>";
-                            $html .= "</div>";
-                                $html .= "<div class='row-fluid'>";
-                                $html .= "<div class='span4'>
-                                    ".$escaper->escapeHtml($lang['MitigationPercent']).":<br>
-                                    ".$validation_mitigation_percent." %
-                                </div>";
-                            $html .= "</div>\n";
-                        $html .= "</div>\n";
-                    }
-                echo $html;
-            echo "</td>\n";
-        echo "</tr>\n";
-    }
-
-    echo "</table>\n";
 }
 
 /*************************************
@@ -1792,20 +1877,24 @@ function mitigation_controls_dropdown($selected_control_ids_string = "", $elemen
             echo "
             <script>
                 $(document).ready(function(){
-                    $('#" . $eID . "').multiselect({
-                        enableFiltering: true,
-                        enableCaseInsensitiveFiltering: true,
-                        buttonWidth: '100%',
-                        maxHeight: 250,
-                        dropUp: true,
-                        filterPlaceholder: '" . $escaper->escapeHtml($lang["SelectForMitigationControls"]) . "'" . ($datatable_redraw ? ",
-                        onDropdownHide: function(){
-                            var form = $('#{$eID}').parents('form');
-                            var tableId = $('.mitigation-controls-table-container', form).data('tableid');
-                            $('#' + tableId).DataTable().draw();
-                        }" : "") . "
-                    });
-                })
+                    // Because it is initialized separately from the other multiselects it needs to move to the end of the call stack
+                    // so the multiple initialization calls won't interfere with each-other's DOM manipulations  
+                    setTimeout(() => {
+                        $('#" . $eID . "').multiselect({
+                            enableFiltering: true,
+                            enableCaseInsensitiveFiltering: true,
+                            buttonWidth: '100%',
+                            maxHeight: 250,
+                            dropUp: true,
+                            filterPlaceholder: '" . $escaper->escapeHtml($lang["SelectForMitigationControls"]) . "'" . ($datatable_redraw ? ",
+                            onDropdownHide: function(){
+                                var form = $('#{$eID}').parents('form');
+                                var tableId = $('.mitigation-controls-table-container', form).data('tableid');
+                                $('#' + tableId).DataTable().draw();
+                            }" : "") . "
+                        });
+                    }, 0);
+                });
             </script>
             ";
         }
@@ -2049,20 +2138,22 @@ function view_review_details($id, $review_id, $review_date, $reviewer, $review, 
 /***************************************
 * FUNCTION: VIEW PRINT REVIEW DETAILS *
 ***************************************/
-function view_print_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comments, $template_group_id)
-{
+function view_print_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comments, $template_group_id) {
+
     global $lang;
     global $escaper;
 
     // Decrypt fields
     $comments = try_decrypt($comments);
 
-    echo "<h4>". $escaper->escapeHtml($lang['LastReview']) ."</h4>\n";
-    echo "<table border=\"1\" width=\"100%\" cellspacing=\"10\" cellpadding=\"10\">\n";
+    echo "
+        <h4>" . $escaper->escapeHtml($lang['LastReview']) . "</h4>
+        <div class='review-details-container card-body border mt-2'>
+    ";
 
     // If customization extra is enabled
-    if(customization_extra())
-    {
+    if(customization_extra()) {
+
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
         
@@ -2073,94 +2164,108 @@ function view_print_review_details($id, $review_id, $review_date, $reviewer, $re
             $group = get_default_template_group("risk");
             $template_group_id = $group["id"];
         }
+
         $active_fields = get_active_fields("risk", $template_group_id);
-        foreach($active_fields as $field){
-             // Check if this field is custom field and review
-            if($field['tab_index'] == 3)
-            {
-                if($field['is_basic'] == 1){
-                    switch($field['name']){
+        foreach($active_fields as $field) {
+
+            // Check if this field is custom field and review
+            if($field['tab_index'] == 3) {
+
+                if($field['is_basic'] == 1) {
+
+                    switch($field['name']) {
+
                         case 'ReviewDate':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ReviewDate']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($review_date) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ReviewDate']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($review_date) . "</p>
+            </div>
+                            ";
+                            break;
                         
                         case 'Reviewer':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Reviewer']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $reviewer)) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Reviewer']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $reviewer)) . "</p>
+            </div>
+                            ";
+                            break;
 
                         case 'Review':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Review']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("review", $review)) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Review']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("review", $review)) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'NextStep':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['NextStep']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml(get_name_by_value("next_step", $next_step)) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['NextStep']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("next_step", $next_step)) . "</p>
+            </div>
+                            ";
+                            break;
                             
                         case 'NextReviewDate':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['NextReviewDate']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($next_review) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['NextReviewDate']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($next_review) . "</p>
+            </div>
+                            ";
+                            break;
 
                         case 'Comment':
-                            echo "<tr>\n";
-                            echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Comments']) . ":</td>\n";
-                            echo "<td>" . $escaper->escapeHtml($comments) . "</td>\n";
-                            echo "</tr>\n";
-                        break;
+                            echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Comments']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($comments) . "</p>
+            </div>
+                            ";
+                            break;
                     }
                 } else {
                     display_custom_field_print($field, $custom_values, $review_id);
                 }
             }
-            
         }
     } else {
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ReviewDate']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($review_date) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Reviewer']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $reviewer)) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Review']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml(get_name_by_value("review", $review)) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['NextStep']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml(get_name_by_value("next_step", $next_step)) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['NextReviewDate']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($next_review) . "</td>\n";
-        echo "</tr>\n";
-
-        echo "<tr>\n";
-        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Comments']) . ":</td>\n";
-        echo "<td>" . $escaper->escapeHtml($comments) . "</td>\n";
-        echo "</tr>\n";
+        echo "
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ReviewDate']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($review_date) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Reviewer']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $reviewer)) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Review']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("review", $review)) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['NextStep']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("next_step", $next_step)) . "</p>
+            </div>
+            <div class='d-flex align-items-center mb-2'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['NextReviewDate']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($next_review) . "</p>
+            </div>
+            <div class='d-flex align-items-center'>
+                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Comments']) . ":</label>
+                <p class='mb-0'>" . $escaper->escapeHtml($comments) . "</p>
+            </div>
+        ";        
     }
 
-    echo "</table>\n";
+    echo "
+        </div>
+    ";
 }
 
 /************************************
@@ -4391,7 +4496,6 @@ function view_top_menu($active)
 
     echo "<script>\n";
     echo "var BASE_URL = '". (isset($_SESSION['base_url']) ? $escaper->escapeHtml($_SESSION['base_url']) : "") ."'; \n";
-    echo "var field_required_lang = '". $escaper->escapeHtml($lang['FieldIsRequired']) ."'; \n";
     echo "</script>\n";
 
     echo "<div id=\"load\" style=\"display:none;\">".$escaper->escapeHtml($lang['SendingRequestPleaseWait'])."</div>";
@@ -5158,17 +5262,36 @@ function view_risks_and_assets_selections($report, $sort_by, $asset_tags, $proje
             </form>";
 
     echo   "<script>
+
+                function submitFilterForm() {
+                    $('form[name=select_report]').submit();
+                }
+
                 $(function() {
                     $('#asset_tags, #projects').multiselect({
-                        allSelectedText: '" . $escaper->escapeHtml($lang['ALL']) . "',
+                        allSelectedText: _lang['All'],
                         enableFiltering: true,
                         maxHeight: 250,
                         buttonWidth: '100%',
                         includeSelectAllOption: true,
                         enableCaseInsensitiveFiltering: true,
-                        onChange: function(){
-                            $('form[name=select_report]').submit();
-                        }
+                        onChange: submitFilterForm,
+                        onSelectAll: submitFilterForm,
+                        onDeselectAll: submitFilterForm
+                    });
+
+                    // Multiselects' selected options are sent to the server as separate parameters making large sets of selected options
+                    // go over the server's maximum allowed number of variables. To solve this we're sending the list of ids as a single JSON string
+                    $('form[name=select_report]').on('submit', function() {
+                        // Create a hidden input with the list of selected ids in a JSON array as the value
+                        $('<input>').attr({
+                            type: 'hidden',
+                            name: 'asset_tags',
+                            value: JSON.stringify($('#asset_tags').val())
+                        }).appendTo($(this));
+
+                        // disable the original multiselect to make sure it's not submitted to the server
+                        $('#asset_tags').attr('disabled','disabled');
                     });
                 });
             </script>";
@@ -5179,34 +5302,46 @@ function view_risks_and_assets_selections($report, $sort_by, $asset_tags, $proje
 **********************************************/
 function view_risks_and_issues_selections($risk_tags, $start_date="", $end_date="")
 {
+
     global $lang, $escaper;
+
     $start_date  = $start_date ? $start_date : format_date(date('Y-m-d', strtotime('-30 days')));
     $end_date  = $end_date ? $end_date : format_date(date('Y-m-d'));
 
-    echo "<form name=\"issues_report\" method=\"POST\" action=\"\">\n";
-    echo "<div class=\"row-fluid\">\n";
-
-    echo "<div class=\"span3\">";
-    echo $escaper->escapeHtml($lang['RiskTags']).": ";
-    create_multiple_dropdown("risk_tags", $risk_tags, NULL, NULL, true, $lang['Unassigned'], "-1");
-    echo "</div>\n";
-
-    echo "<div class=\"span3\">";
-    echo $escaper->escapeHtml($lang['StartDate']).": ";
-    echo "<input type=\"text\" name=\"start_date\" value=\"".$start_date."\" class=\"form-control datepicker\">";
-    echo "</div>\n";
-
-    echo "<div class=\"span3\">";
-    echo $escaper->escapeHtml($lang['EndDate']).": ";
-    echo "<input type=\"text\" name=\"end_date\" value=\"".$end_date."\" class=\"form-control datepicker\">";
-    echo "</div>\n";
-
-    echo "</div>\n";
-    echo "</form>\n";
-    echo "<script>
-            $(document).ready(function(){
+    echo "
+        <form name='issues_report' method='POST' action=''>
+            <div class='accordion'>
+                <div class='accordion-item' id='filter-selections-container'>
+                    <h2 class='accordion-header'>
+                        <button type='button' class='accordion-button' data-bs-toggle='collapse' data-bs-target='#filter-selections-accordion-body'>" . $escaper->escapeHtml($lang['GroupAndFilteringSelections']) . "</button>
+                    </h2>
+                    <div id='filter-selections-accordion-body' class='accordion-collapse collapse show'>
+                        <div class='accordion-body card-body'>
+                            <div class='row'>
+                                <div class='col-4'>
+                                    <label>" . $escaper->escapeHtml($lang['RiskTags']) . ":</label>
+    ";
+                                    create_multiple_dropdown("risk_tags", $risk_tags, NULL, NULL, true, $lang['Unassigned'], "-1");
+    echo "
+                                </div>
+                                <div class='col-4'>
+                                    <label>" . $escaper->escapeHtml($lang['StartDate']) . ":</label>
+                                    <input type='text' name='start_date' value='" . $start_date . "' class='form-control datepicker'>
+                                </div>
+                                <div class='col-4'>
+                                    <label>" . $escaper->escapeHtml($lang['EndDate']) . ":</label>
+                                    <input type='text' name='end_date' value='" . $end_date . "' class='form-control datepicker'>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <script>
+            $(function() {
                 $('#risk_tags').multiselect({
-                    allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
+                    allSelectedText: '" . $escaper->escapeHtml($lang['ALL']) . "',
                     enableFiltering: true,
                     maxHeight: 250,
                     buttonWidth: '100%',
@@ -5216,12 +5351,13 @@ function view_risks_and_issues_selections($risk_tags, $start_date="", $end_date=
                         $('form[name=issues_report]').submit();
                     }
                 });
-                $('.datepicker').datepicker();
+                $('.datepicker').initAsDatePicker();
                 $('.datepicker').change(function(){
                     $('form[name=issues_report]').submit();
                 });
             });
-        </script>";
+        </script>
+    ";
 }
 
 /******************************************
@@ -8721,28 +8857,29 @@ function display_review_date_issues()
 /**********************************
  * FUNCTION: GET AUDIT TRAIL HTML *
  **********************************/
-function get_audit_trail_html($id = NULL, $days = 7, $log_type=NULL)
-{
+function get_audit_trail_html($id = NULL, $days = 7, $log_type=NULL) {
+
     global $escaper;
 
     // If the ID is greater than 1000 or NULL
-    if ($id > 1000 || $id === NULL)
-    {
+    if ($id > 1000 || $id === NULL) {
+
         $logs = get_audit_trail($id, $days, $log_type);
 
-        foreach ($logs as $log)
-        {
+        foreach ($logs as $log) {
+
             $date = date(get_default_datetime_format("g:i A T"), strtotime($log['timestamp']));
 
-            echo "<p class='font-16'>" . $escaper->escapeHtml($date) . " > " . $escaper->escapeHtml($log['message']) . "</p>\n";
+            echo "
+                <p>" . $escaper->escapeHtml($date) . " > " . $escaper->escapeHtml($log['message']) . "</p>
+            ";
         }
 
         // Return true
         return true;
-    }
+
     // Otherwise this is not a valid ID
-    else
-    {
+    } else {
         // Return false
         return false;
     }
@@ -9255,77 +9392,112 @@ function display_license_check()
 /******************************************
  * FUNCTION: DISPLAY CONTROL GAP ANALYSIS *
  ******************************************/
-function display_control_gap_analysis()
-{
+function display_control_gap_analysis() {
+
     global $lang, $escaper;
 
     // If User has permission for governance menu, shows Control Gap Analysis report
-    if(!empty($_SESSION['governance']))
-    {
-        // Begin the framework filter form
-        echo "<form class='w-50' id=\"framework_form\" name=\"framework_form\" method=\"post\" action=\"\">\n";
+    if(!empty($_SESSION['governance'])) {
 
-	// Add the filter
-	echo $escaper->escapeHtml($lang['ControlFramework']) . ":&nbsp;&nbsp;";
+        // Begin the framework filter form
+        echo "
+            <form class='w-50' id='framework_form' name='framework_form' method='post' action=''>
+        ";
+
+        // Add the filter
+        echo "
+                <label>{$escaper->escapeHtml($lang['ControlFramework'])}:</label>
+        ";
 
         // If no framework was posted
-        if (!isset($_POST['framework']))
-        {
-                // Set the filter option to None Selected
-                $framework = null;
+        if (!isset($_POST['framework'])) {
+
+            // Set the filter option to None Selected
+            $framework = null;
+
+        } else {
+
+            $framework = (int)$_POST['framework'];
+
         }
-        else $framework = (int)$_POST['framework'];
 
-        // Create the dropdown
-        create_dropdown("frameworks", $framework, "framework");
+                // Create the dropdown
+                create_dropdown("frameworks", $framework, "framework");
 
-        echo "</form>\n";
         echo "
+            </form>
             <script>
                 $(function () {
                     var frameworks = document.getElementById('framework');
                     frameworks.addEventListener('change', function() {
-                    document.getElementById('framework_form').submit();
+                        document.getElementById('framework_form').submit();
                     });
                 });
             </script>
         ";
+
         // If a framework id was posted
-        if ($framework != null)
-        {
+        if ($framework != null) {
 
             // Display the control maturity spider chart
             display_control_maturity_spider_chart($framework);
 
             echo "
-                <div class=\"row\">
-                    <div class=\"col-12\">
-                        <div>
-                            <nav class=\"nav nav-tabs\">
-                                <a class=\"nav-link active\" data-bs-target=\"#below_maturity\" data-bs-toggle=\"tab\">" . $escaper->escapeHtml($lang['BelowMaturity']) . "</a>
-                                <a class=\"nav-link\" data-bs-target=\"#at_maturity\" data-bs-toggle=\"tab\">" . $escaper->escapeHtml($lang['AtMaturity']) . "</a>
-                                <a class=\"nav-link\" data-bs-target=\"#above_maturity\" data-bs-toggle=\"tab\">" . $escaper->escapeHtml($lang['AboveMaturity']) . "</a>
-                            </nav>
+            <div class='row'>
+                <div class='col-12'>
+                    <div>
+                        <nav class='nav nav-tabs'>
+                            <a class='nav-link active' data-bs-target='#below_maturity' data-bs-toggle='tab'>" . $escaper->escapeHtml($lang['BelowMaturity']) . "</a>
+                            <a class='nav-link' data-bs-target='#at_maturity' data-bs-toggle='tab'>" . $escaper->escapeHtml($lang['AtMaturity']) . "</a>
+                            <a class='nav-link' data-bs-target='#above_maturity' data-bs-toggle='tab'>" . $escaper->escapeHtml($lang['AboveMaturity']) . "</a>
+                        </nav>
+                    </div>
+                    <div class='tab-content mt-2'>
+                        <div id='below_maturity' class='tab-pane active' tabindex='0'>
+            ";
+                            display_gap_analysis_table($framework, "below_maturity");
+            echo "
                         </div>
-
-                        <div class=\"tab-content mt-2\">
-                            <div id=\"below_maturity\" class=\"tab-pane active\" tabindex=\"0\">";
-                                display_gap_analysis_table($framework, "below_maturity");
-
+                        <div id='at_maturity' class='tab-pane' tabindex='0'>
+            ";
+                            display_gap_analysis_table($framework, "at_maturity");
             echo "
-                            </div>
-                            <div id=\"at_maturity\" class=\"tab-pane\" tabindex=\"0\">";
-                                display_gap_analysis_table($framework, "at_maturity");
-
+                        </div>
+                        <div id='above_maturity' class='tab-pane' tabindex='0'>
+            ";
+                            display_gap_analysis_table($framework, "above_maturity");
             echo "
-                            </div>
-                            <div id=\"above_maturity\" class=\"tab-pane\" tabindex=\"0\">";
-                                display_gap_analysis_table($framework, "above_maturity");
-            echo "
-                            </div>
                         </div>
                     </div>
-                </div>";
+                </div>
+            </div>
+            <script>
+                $(function() {
+
+                    // Scroll to the top of the page when loading the page.
+                    $('.content-wrapper')[0].scrollIntoView();
+
+                    // As a default, when clicking the tab, we set the page to scroll to the top so it doesn't jump to the tab's content
+                    // by calling $('.content-wrapper')[0].scrollIntoView() in the 'click' and 'shown.bs.tab' event handler.
+                    // To prevent the page from scrolling to the top of it, we should remove those event handlers.
+                    $(document).off('shown.bs.tab', 'nav a[data-bs-toggle=\"tab\"]');
+                    $(document).off('click', 'nav a[data-bs-toggle=\"tab\"]');
+                    
+                    // We should change the hash and scroll to the tab when the tab is clicked.
+                    $(document).on('click', 'nav a[data-bs-toggle=\"tab\"]', function (e) {
+                        
+                        // change the hash
+                        let hash = $(this).data('bs-target');
+                        window.location.hash = hash.replace('#', '');
+
+                        // If we don't set the following, it jumps to the tab's content when clicking the tab.
+                        $(this).parent().parent().parent()[0].scrollIntoView();
+
+                    });
+
+                });
+            </script>
+            ";
         }
     }
 }
@@ -9333,48 +9505,47 @@ function display_control_gap_analysis()
 /****************************************
  * FUNCTION: DISPLAY GAP ANALYSIS TABLE *
  ****************************************/
-function display_gap_analysis_table($framework, $maturity)
-{
+function display_gap_analysis_table($framework, $maturity) {
+
 	global $lang, $escaper;
 
 	$tableID = "control-gap-analysis-" . $maturity;
 
 	echo "
-            <table id=\"{$tableID}\" width=\"100%\" class=\"risk-datatable table table-bordered table-striped table-condensed\">
-                <thead >
-                    <tr >
-                        <th data-name='control_number' align=\"left\" width=\"50px\" valign=\"top\">".$escaper->escapeHtml($lang['ControlNumber'])."</th>
-                        <th data-name='control_short_name' align=\"left\" width=\"200px\" valign=\"top\">".$escaper->escapeHtml($lang['ControlShortName'])."</th>
-                        <th data-name='control_phase' align=\"left\" width=\"50px\" valign=\"top\">".$escaper->escapeHtml($lang['ControlPhase'])."</th>
-                        <th data-name='control_family' align=\"left\" width=\"50px\" valign=\"top\">".$escaper->escapeHtml($lang['ControlFamily'])."</th>
-                        <th data-name='control_current_maturity' align=\"left\" width=\"50px\" valign=\"top\">".$escaper->escapeHtml($lang['CurrentControlMaturity'])."</th>
-                        <th data-name='control_desired_maturity' align=\"center\" width=\"50px\" valign=\"top\">".$escaper->escapeHtml($lang['DesiredControlMaturity'])."</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-            <br>
-            <script>
-                $(function() {
-                    var form = $('#{$tableID}').parents('form');
-                    var datatableInstance_{$maturity} = $('#{$tableID}').DataTable({
-                        createdRow: function(row, data, index){
-                            var background = $('.background-class', $(row)).data('background');
-                            $(row).find('td').addClass(background)
+        <table id='{$tableID}' width='100%' class='risk-datatable table table-bordered table-striped table-condensed'>
+            <thead >
+                <tr >
+                    <th data-name='control_number' align='left' width='50px' valign='top'>{$escaper->escapeHtml($lang['ControlNumber'])}</th>
+                    <th data-name='control_short_name' align='left' width='200px' valign='top'>{$escaper->escapeHtml($lang['ControlShortName'])}</th>
+                    <th data-name='control_phase' align='left' width='50px' valign='top'>{$escaper->escapeHtml($lang['ControlPhase'])}</th>
+                    <th data-name='control_family' align='left' width='50px' valign='top'>{$escaper->escapeHtml($lang['ControlFamily'])}</th>
+                    <th data-name='control_current_maturity' align='left' width='50px' valign='top'>{$escaper->escapeHtml($lang['CurrentControlMaturity'])}</th>
+                    <th data-name='control_desired_maturity' align='center' width='50px' valign='top'>{$escaper->escapeHtml($lang['DesiredControlMaturity'])}</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <script>
+            $(function() {
+                var form = $('#{$tableID}').parents('form');
+                var datatableInstance_{$maturity} = $('#{$tableID}').DataTable({
+                    createdRow: function(row, data, index){
+                        var background = $('.background-class', $(row)).data('background');
+                        $(row).find('td').addClass(background)
+                    },
+                    order: [[1, 'asc']],
+                    ajax: {
+                        url: BASE_URL + '/api/reports/governance/control_gap_analysis?framework_id={$escaper->escapeHtml($framework)}&maturity={$escaper->escapeHtml($maturity)}',
+                        data: function(d){
                         },
-                        order: [[1, 'asc']],
-                        ajax: {
-                            url: BASE_URL + '/api/reports/governance/control_gap_analysis?framework_id=" . $escaper->escapeHtml($framework) . "&maturity=" . $escaper->escapeHtml($maturity) . "',
-                            data: function(d){
-                            },
-                            complete: function(response){
-                            }
+                        complete: function(response){
                         }
-                    });
+                    }
                 });
-            </script>
-        ";
+            });
+        </script>
+    ";
 }
 
 /*************************************************************
@@ -9825,7 +9996,7 @@ function render_column_selection_widget($view) {
             });
         </script>
 
-        <a class='btn float-end' title='{$escaper->escapeHtml($lang['Settings'])}' data-sr-role='dt-settings' data-sr-target='{$view}_datatable' data-bs-toggle='modal' data-bs-target='#setting_modal-{$view}'><i class='fa fa-cog'></i></a>
+        <a class='btn btn-primary float-end' title='{$escaper->escapeHtml($lang['Settings'])}' data-sr-role='dt-settings' data-sr-target='{$view}_datatable' data-bs-toggle='modal' data-bs-target='#setting_modal-{$view}'><i class='fa fa-cog'></i></a>
         <div id='setting_modal-{$view}' class='modal fade hide' tabindex='-1' role='dialog' aria-labelledby='setting_modal-{$view}' aria-hidden='true'>
             <div class='modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered'>
                 <div class='modal-content'>
@@ -10904,4 +11075,105 @@ function render_view_table($view) {
         </script>
     ";
 }
+
+/*****************************************
+ * FUNCTION: DISPLAY GENERIC MULTISELECT *
+ *****************************************/
+function display_generic_multiselect($select_name, $select_array = [], $selected_array = [])
+{
+    global $escaper;
+
+    // Add the select to the text
+    $text = "<select class='form-select multiselect' multiple='multiple' id='" . $escaper->escapeHtml($select_name) . "' name='" . $escaper->escapeHtml($select_name) . "[]' >\n";
+
+    // For each group in the array
+    foreach ($select_array as $key => $group)
+    {
+        // Begin the option group
+        $text .= "  <optgroup label='" . $escaper->escapeHtml($key) . "'>\n";
+
+        // For each item in the group
+        foreach ($group as $value)
+        {
+            // Check if the value is selected
+            $selected = (in_array($value, $selected_array) ? " selected" : "");
+
+            // Display the value as an option
+            $text .= "  <option value='"  . $escaper->escapeHtml($value) . "'{$selected}>" . $escaper->escapeHtml($value) . "</option>\n";
+        }
+
+        // End the option group
+        $text .= "  </optgroup>\n";
+    }
+
+    $text .= "</select>";
+
+    // Output the text
+    echo $text;
+}
+
+/******************************************
+ * FUNCTION: DISPLAY GENERIC RADIO SELECT *
+ ******************************************/
+function display_generic_radio_select($select_name, $select_array = [], $selected_value = null)
+{
+    global $escaper;
+
+    // Create the default text
+    $text = "";
+
+    // For each of the values in the array
+    foreach ($select_array as $value)
+    {
+        // Get the value text and html
+        $value_text = $value['text'];
+        $value_html = $value['html'];
+
+        // Check if the value is selected
+        $selected = ($selected_value == $value_text ? " checked='checked'" : "");
+
+        // Add the value as an option
+        // NOTE: The value is not HTML encoded as we don't want to strip out HTML in this function, but make sure you HTML encode
+        // any user supplied data from the select_array first.
+        $text .= "
+            <div class='row'>
+                <div class='col-sm-1'>
+                    <input type='radio' name='" . $escaper->escapeHtml($select_name) . "' value='" . $escaper->escapeHtml($value_text) . "' {$selected}/>
+                </div>
+                <div class='col'>{$value_html}</div>
+            </div>";
+    }
+
+    // Output the text
+    echo $text;
+}
+
+/**************************************
+ * FUNCTION: DISPLAY GENERIC DROPDOWN *
+ **************************************/
+function display_generic_dropdown($select_name, $select_array = [], $selected_value = null)
+{
+    global $escaper;
+
+    // Create the default text
+    $text = "<select name='" . $escaper->escapeHtml($select_name) . "' class='form-select'>\n";
+
+    // For each of the values in the array
+    foreach ($select_array as $value)
+    {
+        // Check if the value is selected
+        $selected = ($selected_value == $value ? " selected" : "");
+
+        // Add the value as an option
+        // NOTE: The value is not HTML encoded as we don't want to strip out HTML in this function, but make sure you HTML encode
+        // any user supplied data from the select_array first.
+        $text .= "<option value='" . $escaper->escapeHtml($value) . "'{$selected}>" . $escaper->escapeHtml($value) . "</option>\n";
+    }
+
+    $text .= "</select>";
+
+    // Output the text
+    echo $text;
+}
+
 ?>

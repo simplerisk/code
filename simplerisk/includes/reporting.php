@@ -3204,36 +3204,48 @@ function risks_and_issues_table($risk_tags, $start_date, $end_date)
     global $lang;
     global $escaper;
 
+    echo "
+        <div>
+            <div class='d-flex align-items-center mb-3'>
+                <label class='mb-0' style='width: 100px;'>" . $escaper->escapeHtml($lang['Trend']) . ":</label>
+                <span>" . $escaper->escapeHtml($lang['Increasing']) . "</span><span class='m-r-20 m-l-10'>&#8593;</span>
+                <span>" . $escaper->escapeHtml($lang['Decreasing']) . "</span><span class='m-r-20 m-l-10'>&#8595;</span>
+                <span>" . $escaper->escapeHtml($lang['NoChange']) . "</span><span class='m-r-20 m-l-10'>&#8596;</span>
+            </div>
+            <div class='d-flex align-items-center mb-3'>
+                <label class='mb-0' style='width: 100px;'>" . $escaper->escapeHtml($lang['Status']) . ":</label>
+    ";
+
     $risk_levels = get_risk_levels();
-    echo "<table class=\"\" style='table-layout:fixed;'>\n";
-    echo "<tr>\n";
-    echo "<td style='width:100px; font-weight:bold;'>".$escaper->escapeHtml($lang['Trend'])." : </td>";
-    $trend_lavel = $escaper->escapeHtml($lang['Increasing'])." &#8593; ; ";
-    $trend_lavel .= $escaper->escapeHtml($lang['Decreasing'])." &#8595; ; ";
-    $trend_lavel .= $escaper->escapeHtml($lang['NoChange'])." &#8596; ; ";
-    echo "<td >".$trend_lavel."</td>";
-    echo "<tr>\n";
-    echo "<td style='width:100px; font-weight:bold;'>".$escaper->escapeHtml($lang['Status'])." : </td>";
-    $status_lavel = "";
+
     foreach (array_reverse($risk_levels) as $level) {
-        $status_lavel .= "<span class='risk-color1' style='width:20px; height: 20px; position: relative; display:block; float:left; border: 1px solid; background-color:".$level['color']."'></span>";
-        $status_lavel .= "<span style='position: static; display:block; float:left; margin: 0 20px 0 10px'>(".$escaper->escapeHtml($level['display_name']). ");</span>";
+        echo "
+                <span class='risk-color1' style='width:20px; height: 20px; position: relative; display:block; float:left; border: 1px solid; background-color:" . $level['color'] . "'></span>
+                <span class='m-r-20 m-l-10'>(" . $escaper->escapeHtml($level['display_name']) . ")</span>
+        ";
     }
-    $status_lavel .= "<span class='risk-color1' style='width:20px; height: 20px; position: relative; display:block; float:left; border: 1px solid; background-color: white'></span>";
-    $status_lavel .= "<span style='position: static; display:block; float:left; margin: 0 20px 0 10px'>(".$escaper->escapeHtml($lang['Insignificant']). ");</span>";
-    echo "<td >".$status_lavel."</td>";
-    echo "<tr>\n";
-    echo "</table>\n";
+    echo "
+                <span class='risk-color1' style='width:20px; height: 20px; position: relative; display:block; float:left; border: 1px solid; background-color: white'></span>
+                <span class='m-r-20 m-l-10'>(" . $escaper->escapeHtml($lang['Insignificant']) . ")</span>
+            </div>
+        </div>
+    ";
 
     $rows = get_risks_and_issues_rows($risk_tags, $start_date, $end_date);
-    echo "<table class=\"table table-bordered table-condensed\" style='table-layout:fixed;'>\n";
-    echo "<thead>\n";
-    echo "<tr>\n";
-    echo "<th width='10%'>".$escaper->escapeHtml($lang['Category'])."</th>";
-    echo "<th width='8%'>".$escaper->escapeHtml($lang['Status'])."</th>";
-    echo "<th width='8%'>".$escaper->escapeHtml($lang['Trend'])."</th>";
-    echo "<th width='74%'>".$escaper->escapeHtml($lang['Details'])."</th>";
-    echo "</thead>\n";
+
+    echo "
+        <table class='table table-bordered table-condensed mb-0' style='table-layout:fixed;'>
+            <thead>
+                <tr>
+                    <th width='10%'>" . $escaper->escapeHtml($lang['Category']) . "</th>
+                    <th width='8%'>" . $escaper->escapeHtml($lang['Status']) . "</th>
+                    <th width='8%'>" . $escaper->escapeHtml($lang['Trend']) . "</th>
+                    <th width='74%'>" . $escaper->escapeHtml($lang['Details']) . "</th>
+                </tr>
+            </thead>
+            <tbody>
+    ";
+
     $categories = [];
     foreach($rows as $risk) {
         $categories[$risk['category']][] = $risk;
@@ -3241,40 +3253,59 @@ function risks_and_issues_table($risk_tags, $start_date, $end_date)
     foreach($rows as $index => $risk) {
         $color = get_risk_color($risk['residual_risk']);
         $risk_id = $risk['id'] + 1000;
-        $trend = $risk['residual_risk_start'] . " == " . $risk['residual_risk_end'];
-        if($risk['residual_risk_start'] == $risk['residual_risk_end']) $trend = "&#8596;";
-        else if($risk['residual_risk_start'] < $risk['residual_risk_end']) $trend = "&#8593;";
-        else $trend = "&#8595;";
-        $details = "";
-        $title = "<h3>". $risk_id . " : " . $escaper->escapeHtml(try_decrypt($risk['subject'])) . "</h3>";
-        $title = "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) . "\" target=\"_blank\">".$title."</a>";
-        $details = $title;
-        $details .= "<ul>";
+        $trend = "";
+        if($risk['residual_risk_start'] == $risk['residual_risk_end']) {
+            $trend = "&#8596;";
+        } else if($risk['residual_risk_start'] < $risk['residual_risk_end']) {
+            $trend = "&#8593;";
+        } else {
+            $trend = "&#8595;";
+        }
+        $details = "
+                        <a class='open-in-new-tab font-22' href='../management/view.php?id=" . $escaper->escapeHtml($risk_id) . "' target='_blank'>" . $risk_id . " : " . $escaper->escapeHtml(try_decrypt($risk['subject'])) . "</a>
+                        <ul>
+        ";
         if($risk['assessment']) {
-            $details .= "<li>".$escaper->purifyHtml(try_decrypt($risk['assessment']))."</li>";
+            $details .= "
+                            <li>" . $escaper->purifyHtml(try_decrypt($risk['assessment'])) . "</li>
+            ";
         }
         if($risk['notes']) {
-            $details .= "<li>".$escaper->purifyHtml(try_decrypt($risk['notes']))."</li>";
+            $details .= "
+                            <li>" . $escaper->purifyHtml(try_decrypt($risk['notes'])) . "</li>
+            ";
         }
+
         $comments = get_comments($risk_id, false);
-        if(count($comments) > 0){
+        if(count($comments) > 0) {
             foreach ($comments as $comment) {
-                $details .= "<li>".format_date($comment['date'])." [ ".$comment['name']." ] : ".$escaper->purifyHtml(try_decrypt($comment['comment']))."</li>";
+                $details .= "
+                            <li>" . format_date($comment['date']) . " [ " . $comment['name'] . " ] : " . $escaper->purifyHtml(try_decrypt($comment['comment'])) . "</li>
+                ";
             }
         }
-        $details .= "</ul>";
-        echo "<tr>\n";
-        if($index == 0 || $rows[$index-1]['category'] != $risk['category']){
-            echo "<td rowspan='".count($categories[$risk['category']])."'>".$escaper->escapeHtml($risk['category_name'])."</td>";
+        $details .= "
+                        </ul>
+        ";
+        echo "
+                <tr>
+        ";
+        if($index == 0 || $rows[$index-1]['category'] != $risk['category']) {
+            echo "
+                    <td rowspan='" . count($categories[$risk['category']]) . "'>" . $escaper->escapeHtml($risk['category_name']) . "</td>
+            ";
         } 
-        echo "<td style='background-color:" .$escaper->escapeHtml($color). "'></td>";
-        echo "<td style='text-align:center; font-weight:bold; font-size: 30px;'>".$trend."</td>";
-        echo "<td style='word-wrap: break-word;'>".$details."</td>";
-        echo "</tr>\n";
+        echo "
+                    <td style='background-color:" . $escaper->escapeHtml($color) . "'></td>
+                    <td style='text-align:center; font-weight:bold; font-size: 30px;'>" . $trend . "</td>
+                    <td style='word-wrap: break-word;'>" . $details . "</td>
+                </tr>
+        ";
     }
-    echo "</tr>\n";
-    echo "</table>\n";
-    exit;
+    echo "
+            </tbody>
+        </table>
+    ";
 }
 /************************************************
  * FUNCTION: RETURN RISKS AND ISSUES REPORT SQL *
@@ -3320,7 +3351,7 @@ function get_risks_and_issues_rows($risk_tags_in_array, $start_date, $end_date)
     $sql = "
         SELECT 
             a.*, b.calculated_risk, c.name category_name,
-            ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2) AS residual_risk,
+            ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) AS residual_risk,
             IFNULL(rsh_s.residual_risk, rsh_e.residual_risk) residual_risk_start,
             rsh_e.residual_risk residual_risk_end
         FROM risks a
@@ -3339,7 +3370,7 @@ function get_risks_and_issues_rows($risk_tags_in_array, $start_date, $end_date)
         {$where_in_string}
         GROUP BY
             a.id
-        ORDER By a.category, ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2) DESC, a.submission_date
+        ORDER By a.category, ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) DESC, a.submission_date
     ";
     $stmt = $db->prepare($sql);
     foreach($bind_params as $key => $value){
@@ -3679,19 +3710,13 @@ function get_risks_by_table($status, $sort=0, $group=0, $table_columns=[])
 //                        }
 
                         $displayed_group_names[] = $group_value;
+
+                        $length = count($table_columns);
                         
                         // Display the table header
                         echo "
                             <table data-group='" . $escaper->escapeHtml($group_value_from_db) . "' class='table risk-datatable table-bordered table-striped table-condensed  table-margin-top' style='width: 100%'>
-                                <thead>
-                                    <tr>
-                        ";
-                        
-                        $length = count($table_columns);
-
-                        echo "
-                                        <th bgcolor='#0088CC' colspan='{$length}'><center>" . $escaper->escapeHtml($group_value) . "</center></th>
-                                    </tr>
+                                <thead data-group-header-title='{$escaper->escapeHtml($group_value)}' data-group-header-colspan='{$length}'>
                                     <tr class='main'>
                         ";
                                         // Header columns go here
@@ -4202,7 +4227,7 @@ function risks_query_select($column_filters=[])
         b.OWASP_PrivacyViolation, 
         b.Custom, 
         p.mitigation_percent,
-        ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2) AS residual_risk,
+        ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) AS residual_risk,
 
        CASE 
             WHEN DATEDIFF(NOW(), `a`.`submission_date`) < 30 THEN '--'
@@ -4227,18 +4252,18 @@ function risks_query_select($column_filters=[])
             WHEN NOT(ISNULL(`rrsh_lua_30`.`residual_risk`)) THEN `rrsh_lua_30`.`residual_risk`
             WHEN NOT(ISNULL(`rrsh_lua_60`.`residual_risk`)) THEN `rrsh_lua_60`.`residual_risk`
             WHEN NOT(ISNULL(`rrsh_lua_90`.`residual_risk`)) THEN `rrsh_lua_90`.`residual_risk`
-            ELSE ROUND((`b`.`calculated_risk` - (`b`.`calculated_risk` * GREATEST(IFNULL(`p`.`mitigation_percent`, 0), IFNULL(MAX(`fc`.`mitigation_percent`), 0))  / 100)), 2)
+            ELSE ROUND((`b`.`calculated_risk` - (`b`.`calculated_risk` * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2)
         END AS residual_risk_30,
         CASE 
             WHEN DATEDIFF(NOW(), `a`.`submission_date`) < 60 THEN '--'
             WHEN NOT(ISNULL(`rrsh_lua_60`.`residual_risk`)) THEN `rrsh_lua_60`.`residual_risk`
             WHEN NOT(ISNULL(`rrsh_lua_90`.`residual_risk`)) THEN `rrsh_lua_90`.`residual_risk`
-            ELSE ROUND((`b`.`calculated_risk` - (`b`.`calculated_risk` * GREATEST(IFNULL(`p`.`mitigation_percent`, 0), IFNULL(MAX(`fc`.`mitigation_percent`), 0))  / 100)), 2)
+            ELSE ROUND((`b`.`calculated_risk` - (`b`.`calculated_risk` * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2)
         END AS residual_risk_60,
         CASE 
             WHEN DATEDIFF(NOW(), `a`.`submission_date`) < 90 THEN '--'
             WHEN NOT(ISNULL(`rrsh_lua_90`.`residual_risk`)) THEN `rrsh_lua_90`.`residual_risk`
-            ELSE ROUND((`b`.`calculated_risk` - (`b`.`calculated_risk` * GREATEST(IFNULL(`p`.`mitigation_percent`, 0), IFNULL(MAX(`fc`.`mitigation_percent`), 0))  / 100)), 2)
+            ELSE ROUND((`b`.`calculated_risk` - (`b`.`calculated_risk` * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2)
         END AS residual_risk_90,
 
         `associated_rc_entries`.`risk_mapping_risk_event` AS risk_mapping,
@@ -7161,7 +7186,7 @@ function get_risks_by_appetite($type, $start, $length, $orderColumn, $orderDir, 
             a.id,
             a.subject,
             b.calculated_risk,
-            ROUND(b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100), 2) as residual_risk
+            ROUND(b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
         FROM
             risks a
             LEFT JOIN risk_scoring b ON a.id = b.id
@@ -8404,20 +8429,6 @@ function connectivity_visualizer_associations_control($id)
         $risk_associations = $associations['risks'];
     }
 
-    // For each control association
-    foreach ($control_associations as $value)
-    {
-        // Get the control id
-        $control_id = $value['control_id'];
-
-        // Get the associations for the control
-        $endpoint = "/api/v2/governance/controls/associations?id={$control_id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        $test_associations = array_merge((array)$test_associations, (array)$associations['tests']);
-        $document_associations = array_merge((array)$document_associations, (array)$associations['documents']);
-        $risk_associations = array_merge((array)$risk_associations, (array)$associations['risks']);
-    }
-
     // For each test association
     foreach ($test_associations as $value)
     {
@@ -9196,8 +9207,8 @@ function get_results_connectivity_for_test($test_id)
 /***************************************************
  * FUNCTION: DISPLAY CONTROL MATURITY SPIDER CHART *
  ***************************************************/
-function display_control_maturity_spider_chart($framework_id)
-{
+function display_control_maturity_spider_chart($framework_id) {
+    
 	global $escaper, $lang;
 
 	// Get the control gap information for this framework
@@ -9225,8 +9236,8 @@ function display_control_maturity_spider_chart($framework_id)
 	    $value['family_short_name'] = str_replace("'", "\'", $value['family_short_name']);
 
 		// If this is not the current category
-		if ($value['family_short_name'] != $current_category)
-		{
+		if ($value['family_short_name'] != $current_category) {
+
 			// Add the family to the category array
 			$categories[] = $value['family_short_name'];
 
@@ -9241,10 +9252,10 @@ function display_control_maturity_spider_chart($framework_id)
 
 			// Set the new current category
 			$current_category = $value['family_short_name'];
-		}
-		// If the category hasn't changed
-		else
-		{
+
+        // If the category hasn't changed
+		} else {
+
 			// Increment the count
 			$categories_count[$value['family_short_name']] = $categories_count[$value['family_short_name']] + 1;
 
@@ -9253,7 +9264,9 @@ function display_control_maturity_spider_chart($framework_id)
 
 			// Increment the desired maturity sum
 			$categories_desired_maturity_sum[$value['family_short_name']] = $categories_desired_maturity_sum[$value['family_short_name']] + $value['desired_maturity'];
+
 		}
+
 	}
 
 	// Create the empty data arrays
@@ -9261,13 +9274,14 @@ function display_control_maturity_spider_chart($framework_id)
 	$categories_desired_maturity_average = [];
 
 	// For each category
-	foreach ($categories as $key => $value)
-	{
+	foreach ($categories as $key => $value) {
+
 		// Average = sum / value
 		$current_maturity_average = $categories_current_maturity_sum[$value] / $categories_count[$value];
 		$desired_maturity_average = $categories_desired_maturity_sum[$value] / $categories_count[$value];
 		$categories_current_maturity_average[] = round($current_maturity_average, 1);
 		$categories_desired_maturity_average[] = round($desired_maturity_average, 1);
+
 	}
 
 	// Create the Current Maturity dataset

@@ -107,7 +107,6 @@ if($result = process_assessment_questionnaires()){
 </div>
 <input type="hidden" id="_lang_SimpleriskUsers" value="<?php echo $escaper->escapeHtml($lang['SimpleriskUsers']) ?>">
 <input type="hidden" id="_lang_AssessmentContacts" value="<?php echo $escaper->escapeHtml($lang['AssessmentContacts']) ?>">
-<?php display_set_default_date_format_script(); ?>
 <script>
     $(function() {
         $('#setting_modal_btn').on('click', function(e) {

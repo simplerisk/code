@@ -11,6 +11,7 @@ namespace Leaf;
  *
  * @author Michael Darko <mickdd22@gmail.com>
  * @since v2.4.4
+ * @deprecated All functionality is now available through the Config class
  */
 class View
 {
@@ -21,11 +22,14 @@ class View
      *
      * @param mixed $className The class to attach
      * @param string|null $name The key to save view engine with
+     * @deprecated use Config::attachView instead
      */
     public static function attach($className, $name = null)
     {
         $class = new $className();
+
         static::$engines[$name ?? static::getDiIndex($class)] = $class;
+
         Config::set('views.engine', $name ?? static::getDiIndex($class));
     }
 

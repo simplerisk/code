@@ -276,7 +276,7 @@ else
                         </div>
                     </div>
                     <div class="row">
-                        <div class="form-group col-8">
+                        <div class="form-group col-8 admin-button">
     <?php
         if ($admin_editing_itself) {
             echo "
@@ -285,16 +285,16 @@ else
         }
     ?>
                             <br>
-                            <input style="display:none" type="checkbox" name="admin" id="admin" <?php if ($admin) echo "checked='checked'";?> <?php if ($role_id == 1) echo "readonly='readonly'";?>><br>
                             <button id="admin_button" type="button" class="btn btn-dark" data-grant="<?php echo $escaper->escapeHtml($lang['GrantAdmin']); ?>" data-remove="<?php echo $escaper->escapeHtml($lang['RemoveAdmin']); ?>" title="<?php echo $escaper->escapeHtml($lang['AdminRoleDescription']);?>"><?php echo $admin ? $escaper->escapeHtml($lang['RemoveAdmin']) : $escaper->escapeHtml($lang['GrantAdmin']);?></button>
+							<input type="checkbox" name="admin" id="admin" <?php if ($admin) echo "checked='checked'";?> <?php if ($role_id == 1) echo "readonly='readonly'";?>><br>
+                            <div class="mt-2 col-6 form-group alert alert-danger admin-alert" role="alert">
+                            	<?= $escaper->escapeHtml($lang['UserResponsibilitiesAndTeamsCannotBeEditedWhenTheUserIsAnAdmin']); ?>
+                        	</div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="form-group col-8">
                             <label><?php echo $escaper->escapeHtml($lang['UserResponsibilities']); ?></label>
-                            <div class="form-group">
-                                <label class="text-danger">User responsibilities cannot be edited when user is an admin.</label>
-                            </div>
                             <div class="permissions-widget">
                                 <ul>
                                     <li>

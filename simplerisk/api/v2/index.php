@@ -10,6 +10,7 @@ require_once(realpath(__DIR__ . '/includes/assets.php'));
 require_once(realpath(__DIR__ . '/includes/governance.php'));
 require_once(realpath(__DIR__ . '/includes/risks.php'));
 require_once(realpath(__DIR__ . '/includes/compliance.php'));
+require_once(realpath(__DIR__ . '/includes/artificial_intelligence.php'));
 require_once(realpath(__DIR__ . '/includes/reporting.php'));
 require_once(realpath(__DIR__ . '/../../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../../includes/authenticate.php'));
@@ -17,6 +18,7 @@ require_once(realpath(__DIR__ . '/../../includes/governance.php'));
 require_once(realpath(__DIR__ . '/../../includes/compliance.php'));
 require_once(realpath(__DIR__ . '/../../includes/reporting.php'));
 require_once(realpath(__DIR__ . '/../../includes/api.php'));
+require_once(realpath(__DIR__ . '/../../includes/services.php'));
 require_once(realpath(__DIR__ . '/../../vendor/autoload.php'));
 require_once(realpath(__DIR__ . '/../../includes/Components/SimpleriskApiExceptionHandler.php'));
 
@@ -32,15 +34,14 @@ require_once(language_file());
 if (api_v2_is_authenticated())
 {
     // SimpleRisk Admin Routes
-
     app()->get('/admin/version', 'api_v2_admin_version');
     app()->get('/admin/version/app', 'api_v2_admin_version_app');
     app()->get('/admin/version/db', 'api_v2_admin_version_db');
+    app()->get('/admin/write_debug_log', 'api_v2_admin_write_debug_log');
     app()->delete('/admin/tag', 'api_v2_admin_tag_delete');
     app()->delete('/admin/tag/all', 'api_v2_admin_tag_delete_all');
 
     // SimpleRisk Assets Routes
-
     app()->get('/assets', 'api_v2_assets');
     app()->get('/assets/associations', 'api_v2_assets_associations');
     app()->get('/assets/tags', 'api_v2_assets_tags_get');
@@ -66,8 +67,10 @@ if (api_v2_is_authenticated())
     app()->get('/compliance/tests/tags', 'api_v2_compliance_tests_tags_get');
     app()->get('/compliance/audits/tags', 'api_v2_compliance_audits_tags_get');
 
-    // SimpleRisk Reports Routes
+    // SimpleRisk Artificial Intelligence Routes
+    app()->get('/ai/recommendations', 'api_v2_ai_recommendations');
 
+    // SimpleRisk Reports Routes
     app()->get('/reports/risk/average', 'api_v2_reports_risk_average');
     app()->get('/reports/risk/opencount', 'api_v2_reports_risk_open_count');
 
@@ -315,6 +318,9 @@ if (api_v2_is_authenticated())
 
     // Datatable/report column selection settings API
     app()->post('/admin/column_settings/save_column_settings', 'saveColumnSelectionSettingsAPI');
+
+    // Enable / disable the Incident Management Extra
+    app()->post('/admin/incidentmanagement', 'incidentManagementAPI');
 
     /************************** SIMPLERISK EXTRAS APIS ************************************/
 
@@ -593,7 +599,8 @@ if (api_v2_is_authenticated())
     /**************************************************************************************/
 
     // Set the error handling if the page is not found
-    app()->set404( function () {
+    app()->set404(function ()
+    {
         $response['status'] = 404;
         $response['status_message'] = "The Requested API Endpoint Was Not Found";
         $response['data'] = null;
@@ -618,7 +625,9 @@ if (api_v2_is_authenticated())
     // Run the leaf route
     app()->run();
 
-} elseif(check_questionnaire_get_token()) {
+}
+// If this request uses the risk assessment questionnaire token
+elseif(check_questionnaire_get_token()) {
     // Here's a separate section for when the request is not authenticated,
     // but has a valid questionnaire token.
     // This won't create an authenticated session, but allows questionnaires to

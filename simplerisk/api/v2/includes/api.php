@@ -87,6 +87,12 @@ function api_v2_is_authenticated()
         // Return true
         return true;
     }
+    // If we are not authenticated with a key but have a system token
+    else if (check_system_token())
+    {
+        // Return true
+        return true;
+    }
     else if(check_questionnaire_get_token()) {
         return false;
     }

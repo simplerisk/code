@@ -3,9 +3,7 @@
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Render the header and sidebar
-require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(permissions: ['check_admin' => true]);
+require_once(realpath(__DIR__ . '/../includes/functions.php'));
 
 // If the days value is post
 if (isset($_GET['days']))
@@ -17,6 +15,18 @@ else $days = 7;
 
 if(isset($_POST['download_audit_log']))
 {
+    global $escaper, $lang;
+    // Include Laminas Escaper for HTML Output Encoding
+    $escaper = new simpleriskEscaper();
+
+    // Add various security headers
+    add_security_headers();
+
+    add_session_check(['check_admin' => true]);
+
+    // Include the SimpleRisk language file
+    require_once(language_file());
+
     if(is_admin())
     {
         // If extra is activated, download audit logs
@@ -37,6 +47,10 @@ if(isset($_POST['download_audit_log']))
         refresh();
     }
 }
+
+// Render the header and sidebar
+require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+render_header_and_sidebar(permissions: ['check_admin' => true]);
 
 /*********************
  * FUNCTION: DISPLAY *

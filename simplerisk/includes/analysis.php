@@ -52,7 +52,7 @@ function risk_distribution_analysis()
     {
         // Query the database
         $stmt = $db->prepare("select COUNT(*) AS num, CASE WHEN residual_risk >= :veryhigh THEN :very_high_display_name WHEN residual_risk < :veryhigh AND residual_risk >= :high THEN :high_display_name WHEN residual_risk < :high AND residual_risk >= :medium THEN :medium_display_name WHEN residual_risk < :medium AND residual_risk >= :low THEN :low_display_name WHEN residual_risk < :low AND residual_risk >= 0 THEN :insignificant_display_name END AS level from (
-            SELECT a.calculated_risk, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(c.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk 
+            SELECT a.calculated_risk, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(c.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk 
             FROM `risk_scoring` a 
                 JOIN `risks` b ON a.id = b.id 
                 LEFT JOIN mitigations c ON b.id = c.risk_id 
@@ -165,7 +165,7 @@ function risk_distribution_analysis()
             c.calculated_risk,
             b.mitigation_effort,
             b.mitigation_percent,
-            (c.calculated_risk - (c.calculated_risk * GREATEST(IFNULL(b.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0) ) / 100)) as residual_risk 
+            (c.calculated_risk - (c.calculated_risk * GREATEST(IFNULL(b.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)) as residual_risk 
         FROM risks a 
             JOIN mitigations b ON a.id = b.risk_id 
             LEFT JOIN mitigation_to_controls mtc ON b.id = mtc.mitigation_id

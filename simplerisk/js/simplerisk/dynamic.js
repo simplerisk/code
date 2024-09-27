@@ -196,9 +196,7 @@ $(document).ready(function(){
                 scrollX: true,
                 bSort: true,
                 orderCellsTop: true,
-                deferLoading: initial_load ? null : 0, // if initial load is false, prevent initial load by setting deferloadding to 0
-//                ordering: false,
-				dom: "<'row'<'col-sm-12 col-md-2'l><'col-sm-12 col-md-10 settings'>><'row dt-row'<'col-sm-12'tr>><'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 paginate'<'download-by-group float-end'><'print-by-group float-end'><'btn btn-primary shows float-end'>p>>",
+                deferRender: false,
                 ajax: {
                     url:  BASE_URL + '/api/reports/dynamic',
                     type: "post",
@@ -329,6 +327,20 @@ $(document).ready(function(){
                             
                             if(!initial_load){
                                 self.api().draw();
+                            } else {
+                                // Have to create the group header here because the previous solution (create the html and then let the datatable figure out what to use as the column headers)
+                                // stopped working as the 2.0 version improved its handling of complex headers, but I couldn't find a way to make the datatable logic ignore the group header  
+
+                                let $header = $(self.api().table().header());
+                                let header_title = $header.attr('data-group-header-title');
+
+                                // The data is only here if it's a grouped datatable
+                                if (typeof header_title !== 'undefined' && header_title !== false) {
+                                    let header_colspan = $header.attr('data-group-header-colspan');
+
+                                    // Adding the group header row
+                                    $header.prepend($('<tr>').append($('<th>', {colspan: header_colspan}).append($('<div>', {class:'d-flex justify-content-center cursor-default', text: header_title}))));
+                                }
                             }
                         },
                         error: function(xhr,status,error){
@@ -378,7 +390,7 @@ $(document).ready(function(){
                 column_filters : columnFilters
             }
             var filter_uri = $.param( filter_params);
-            var group_value = encodeURIComponent($(this).closest('.dataTables_wrapper').find(".risk-datatable").data('group'));
+            var group_value = encodeURIComponent($(this).closest('.dt-container').find(".risk-datatable").data('group'));
             document.get_risks_by.action += "?option=download-by-group&group_value=" + group_value + "&order_column=" + orderColumnName + "&order_dir=" + orderDir + "&" + filter_uri;
             document.get_risks_by.submit();
             document.get_risks_by.action = "";
@@ -386,7 +398,7 @@ $(document).ready(function(){
         })
         $("body").on("click", '.print-by-group', function(){
             // $("#get_risks_by").attr('target', '_blank');
-            var group_value = encodeURIComponent($(this).closest('.dataTables_wrapper').find(".risk-datatable").data('group'));
+            var group_value = encodeURIComponent($(this).closest('.dt-container').find(".risk-datatable").data('group'));
             var status = $("#status").val();
             var group = $("#group").val();
             var sort = $("#sort").val();

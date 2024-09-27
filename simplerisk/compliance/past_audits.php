@@ -5,25 +5,18 @@
 
 // Include required functions file
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'CUSTOM:pages/compliance.js'], ['check_compliance' => true]);
+render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'datetimerangepicker', 'CUSTOM:pages/compliance.js'], ['check_compliance' => true]);
 
 // Include required functions file
 require_once(realpath(__DIR__ . '/../includes/governance.php'));
 require_once(realpath(__DIR__ . '/../includes/compliance.php'));
 
 ?>
-<div class="row bg-white compliance-content-container content-margin-height">
-    <div class="col-md-12">
-        <div class="card-body border my-2">
-            <?php display_past_audits(); ?>
-        </div>
+<div class="row bg-white compliance-content-container">
+    <div class="col-12">
+        <?php display_past_audits(); ?>
     </div>
 </div>
-<script type="text/javascript">
-    $(function(){
-        $(".hasDatepicker").datepicker();
-    });
-</script>
 <?php
 	// Render the footer of the page. Please don't put code after this part.
     render_footer();

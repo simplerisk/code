@@ -165,8 +165,8 @@ $current_app_version = current_version("app");
     <link rel="stylesheet" href="vendor/components/font-awesome/css/fontawesome.min.css?<?= $current_app_version ?>">
 
     <!-- jQuery Javascript -->
-    <script src="../vendor/node_modules/jquery/dist/jquery.min.js?<?= $current_app_version ?>" id="script_jquery"></script>
-    <script src="../vendor/node_modules/jquery-ui/dist/jquery-ui.min.js?<?= $current_app_version ?>" id="script_jqueryui"></script>
+    <script src="vendor/node_modules/jquery/dist/jquery.min.js?<?= $current_app_version ?>" id="script_jquery"></script>
+    <script src="vendor/node_modules/jquery-ui/dist/jquery-ui.min.js?<?= $current_app_version ?>" id="script_jqueryui"></script>
 
     <!-- Bootstrap tether Core JavaScript -->
     <script src="vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js" defer></script>
@@ -182,12 +182,9 @@ $current_app_version = current_version("app");
         <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="none" data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full" data-function="reset">
             <header class="topbar" data-navbarbg="skin5">
                 <nav class="navbar top-navbar navbar-expand-md navbar-dark">
-                    <div class="navbar-header-1">
-                        <a class="navbar-brand" href="https://www.simplerisk.com/">
-                        <span class="logo-text ms-2">
-                            <!-- dark Logo text -->
-                            <img src="images/logo@2x.png" alt="homepage" class="light-logo"/>  
-                        </span>
+                    <div class="navbar-header">
+                        <a class="navbar-brand" href="https://www.simplerisk.com">
+                            <img src="images/logo@2x.png" alt="homepage" class="logo"/>
                         </a>
                     </div>
                 </nav>

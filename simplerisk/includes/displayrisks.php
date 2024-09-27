@@ -1775,7 +1775,7 @@ function display_accept_mitigation_view($risk_id, $panel_name = "")
                 $('body').on('click', '.accept_mitigation', function(e){
                     e.preventDefault();
                     var tabContainer = $(this).parents('.tab-data');
-                    var risk_id = $('.large-text', tabContainer).html();
+                    var risk_id = $('span.risk-id', tabContainer).text();
                     var self = $(this);
                     self.prop('disabled', true);
                     self.html($('#_lang_accepting').val());
@@ -2041,29 +2041,27 @@ function display_main_mitigation_fields_by_panel_view($panel_name, $fields, $ris
 /***************************************
 * FUNCTION: DISPLAY CUSTOM FIELD PRINT *
 ****************************************/
-function display_custom_field_print($field, $custom_values, $review_id=0)
-{
+function display_custom_field_print($field, $custom_values, $review_id=0) {
+
     global $lang, $escaper;
 
     $value = "";
     
     // Get value of custom filed
-    foreach($custom_values as $custom_value)
-    {
-        if($custom_value['field_id'] == $field['id'] && $custom_value['review_id'] == $review_id){
+    foreach($custom_values as $custom_value) {
+
+        if($custom_value['field_id'] == $field['id'] && $custom_value['review_id'] == $review_id) {
             $value = $custom_value['value'];
             break;
         }
     }
     
-    echo "<tr>\n";
-        echo "<td >\n";
-            echo "<b>". $escaper->escapeHtml($field['name']) .":</td>\n";
-        echo "<td>\n";
-            echo get_custom_field_name_by_value($field['id'], $field['type'], $field['encryption'], $value);
-        echo "</td>\n";
-    echo "</tr>";
-    
+    echo "
+        <div class='d-flex align-items-center mb-2'>
+            <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($field['name']) . ":</label>
+            <p class='mb-0'>" . get_custom_field_name_by_value($field['id'], $field['type'], $field['encryption'], $value) . "</p>
+        </div>
+    ";
 }
 
 /****************************************************
@@ -2108,6 +2106,11 @@ function display_mitigation_planning_date_edit($planning_date, $panel_name = "")
         $span2 = "col-8";
     }
     
+    // if planning_date is empty, current date is shown
+    if (!$planning_date) {
+        $planning_date = format_date(date('Y-m-d'));
+    }
+
     echo "
         <div class='row mb-2'>
             <div class='{$span1} d-flex align-items-center justify-content-end'>

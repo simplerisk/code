@@ -1,0 +1,35 @@
+/*--------------------------------------------------------------
+ ## Styles for the permissions widget
+ --------------------------------------------------------------*/
+.permissions-widget { 
+	ul { 
+	    list-style: none;
+	}
+	
+	li {
+	    input[readonly].form-check-input:focus {
+            box-shadow: none;
+        }
+	}
+}
+
+.admin-button {
+
+    input[type=checkbox] {
+      display: none;
+    }
+
+    input[type=checkbox]:checked ~ .remove-check {
+      display: none;
+    }
+
+    input[type=checkbox]:checked ~ div.admin-alert {
+      display: block;
+    }
+
+    div.admin-alert {
+      display: none;
+    }
+}
+/*-------------------------------------------------------------*/
+

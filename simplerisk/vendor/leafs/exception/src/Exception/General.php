@@ -66,7 +66,7 @@ class General extends \Exception
         try {
             throw new \ErrorException($errstr, $errno, 0, $errfile, $errline);
         } catch (\Throwable $th) {
-            $app = \Leaf\Config::get('app')['instance'];
+            $app = \Leaf\Config::get('app');
 
             if ($app && $app->config('log.enabled')) {
                 $app->logger()->error($th);
@@ -200,9 +200,12 @@ class General extends \Exception
      */
     public static function default404()
     {
-        echo static::errorMarkup(
-            '404',
-            '<p>The page you are looking for could not be found.</p>'
+        (new \Leaf\Http\Response())->exit(
+            static::errorMarkup(
+                '404',
+                '<p>The page you are looking for could not be found.</p>'
+            ),
+            404
         );
     }
 
@@ -211,9 +214,12 @@ class General extends \Exception
      */
     public static function csrf($error = null)
     {
-        echo static::errorMarkup(
-            'Invalid request',
-            "<p>$error</p>" ?? '<p>The page you are looking for has expired.</p>'
+        (new \Leaf\Http\Response())->exit(
+            static::errorMarkup(
+                'Invalid request',
+                "<p>$error</p>" ?? '<p>The page you are looking for has expired.</p>'
+            ),
+            400
         );
     }
 
@@ -223,9 +229,9 @@ class General extends \Exception
     public static function defaultError($e = null)
     {
         if ($e) {
-            $app = \Leaf\Config::get("app")["instance"];
+            $app = \Leaf\Config::get('app');
 
-            if ($app && $app->config("log.enabled")) {
+            if ($app && $app->config('log.enabled')) {
                 $app->logger()->error($e);
             }
         }

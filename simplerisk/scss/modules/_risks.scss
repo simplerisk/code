@@ -407,7 +407,7 @@ div.doc-link {
 
 #risk-table-container, #risks-open-by-team-container{
     padding-bottom: 50px;
-    .dataTables_wrapper.no-footer .dataTables_scrollBody{
+    .dt-container.no-footer .dt-scroll-body{
         border-bottom: 0px;
         td{
             

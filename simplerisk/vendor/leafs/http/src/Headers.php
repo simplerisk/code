@@ -46,7 +46,7 @@ class Headers
     public static function all(bool $safeOutput = false): array
     {
         if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
-            return \Leaf\Config::get('request.headers');
+            return \Leaf\Config::getStatic('request.headers');
         }
 
         return ($safeOutput === false) ?

@@ -5,7 +5,7 @@
 
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['easyui:treegrid', 'easyui:filter', 'multiselect', 'tabs:logic', 'CUSTOM:common.js', 'CUSTOM:pages/governance.js', 'datatables'], ['check_governance' => true]);
+render_header_and_sidebar(['datetimerangepicker', 'easyui:treegrid', 'easyui:filter', 'multiselect', 'tabs:logic', 'CUSTOM:common.js', 'CUSTOM:pages/governance.js', 'datatables'], ['check_governance' => true]);
 
 // Include required functions file
 require_once(realpath(__DIR__ . '/../includes/permissions.php'));
@@ -65,7 +65,6 @@ checkUploadedFileSizeErrors();
         <!-- Documents container Ends -->
     </div>
 </div>
-<?php display_set_default_date_format_script(); ?>
 
 <!-- MODEL WINDOW FOR ADDING DOCUMENT -->
 <div id="document-program--add" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="document-program--add" aria-hidden="true">
@@ -160,7 +159,7 @@ checkUploadedFileSizeErrors();
                                     <label for="file-upload" class="btn btn-submit m-r-10"><?php echo $escaper->escapeHtml($lang['ChooseFile']) ?></label>
                                     <label class="align-self-center">Max <?php echo $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)); ?> Mb</label>
                                 </div>
-                                <input required type="file" id="file-upload" name="file[]" class="d-none" />
+                                <input type="file" id="file-upload" name="file[]" class="d-none" />
                                 <label id="file-size" for="" class="d-none"></label>
                             </div>
                         </div>
@@ -413,7 +412,7 @@ checkUploadedFileSizeErrors();
         });
 
 
-        $(".datepicker").datepicker({ dateFormat: '<?= get_default_date_format_for_datepicker() ?>' });
+        $(".datepicker").initAsDatePicker();
 
         $("[name='framework_ids[]'], [name='control_ids[]'], [name='additional_stakeholders[]']").multiselect({buttonWidth: '100%'});
 

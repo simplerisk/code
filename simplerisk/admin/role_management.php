@@ -106,15 +106,15 @@ elseif(isset($_POST['delete_role']))
                             &nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['DefaultUserRole']);?></label>
                         </div>
                     </div>
-                    <div class="col-12 form-group">
-                        <input style="display:none" type="checkbox" name="admin" id="admin">
+                    <div class="col-12 form-group admin-button">
                         <button id="admin_button" type="button" class="btn btn-dark" data-grant="<?php echo $escaper->escapeHtml($lang['GrantAdmin']); ?>" data-remove="<?php echo $escaper->escapeHtml($lang['RemoveAdmin']); ?>" title="<?php echo $escaper->escapeHtml($lang['AdminRoleDescription']);?>"><?php echo $escaper->escapeHtml($lang['GrantAdmin']);?></button>
+                        <input type="checkbox" name="admin" id="admin">
+                        <div class="mt-2 col-4 form-group alert alert-danger admin-alert" role="alert">
+                            <?= $escaper->escapeHtml($lang['UserResponsibilitiesCannotBeEditedWhenUserIsAnAdmin']); ?>
+                        </div>
                     </div>
                     <div class="col-12 form-group">
                         <h4><?php echo $escaper->escapeHtml($lang['UserResponsibilities']); ?></h4>
-                        <div class="form-group">
-                                <label class="text-danger"><?= $escaper->escapeHtml($lang['UserResponsibilitiesCannotBeEditedWhenUserIsAnAdmin']); ?></label>
-                            </div>
                         <div class="permissions-widget">
                             <ul>
                                 <li>

@@ -10,18 +10,13 @@ namespace Leaf;
  * The easiest way to build simple but powerful apps and APIs quickly.
  *
  * @author Michael Darko <mickdd22@gmail.com>
- * @copyright 2019-2022 Michael Darko
+ * @copyright 2019-2024 Michael Darko
  * @link https://leafphp.dev
  * @license MIT
  * @package Leaf
  */
 class App extends Router
 {
-    /**
-     * Leaf container instance
-     */
-    protected Helpers\Container $container;
-
     /**
      * Callable to be invoked on application error
      */
@@ -38,12 +33,13 @@ class App extends Router
     public function __construct(array $userSettings = [])
     {
         $this->setupErrorHandler();
-        $this->container = new Helpers\Container();
         $this->loadConfig($userSettings);
 
-        if (!empty($this->config('scripts'))) {
-            foreach ($this->config('scripts') as $script) {
-                \call_user_func($script, $this, Config::get());
+        $scripts = Config::getStatic('scripts');
+
+        if (!empty($scripts)) {
+            foreach ($scripts as $script) {
+                \call_user_func($script, $this);
             }
 
             $this->loadConfig();
@@ -72,7 +68,7 @@ class App extends Router
      */
     public function setErrorHandler($handler)
     {
-        if (Anchor::toBool($this->config('debug')) === false) {
+        if (Anchor::toBool(Config::getStatic('debug')) === false) {
             if ($this->errorHandler instanceof Exception\Run) {
                 $this->errorHandler->unregister();
             }
@@ -91,7 +87,7 @@ class App extends Router
      */
     public function register($name, $value)
     {
-        $this->container->singleton($name, $value);
+        Config::singleton($name, $value);
     }
 
     /**
@@ -103,7 +99,7 @@ class App extends Router
 
         if (!empty($views)) {
             foreach ($views as $key => $value) {
-                $this->container->singleton($key, function () use ($value) {
+                Config::singleton($key, function () use ($value) {
                     return $value;
                 });
             }
@@ -112,41 +108,43 @@ class App extends Router
 
     private function setupDefaultContainer()
     {
-        $this->container->singleton('request', function () {
+        Config::singleton('request', function () {
             return new Http\Request();
         });
 
-        $this->container->singleton('response', function () {
+        Config::singleton('response', function () {
             return new Http\Response();
         });
 
-        $this->container->singleton('headers', function () {
+        Config::singleton('headers', function () {
             return new Http\Headers();
         });
 
-        Config::set('mode', _env('APP_ENV', $this->config('mode')));
-        Config::set('app.instance', $this);
-        Config::set('app.container', $this->container);
+        Config::singleton('app', function () {
+            return $this;
+        });
+
+        Config::set('mode', _env('APP_ENV', Config::getStatic('mode')));
     }
 
     public function __get($name)
     {
-        return $this->container->get($name);
+        return Config::get($name);
     }
 
     public function __set($name, $value)
     {
-        $this->container->set($name, $value);
+        Config::set($name, $value);
     }
 
     public function __isset($name)
     {
-        return $this->container->has($name);
+        return Config::has($name);
     }
 
     public function __unset($name)
     {
-        $this->container->remove($name);
+        Config::remove($name);
     }
 
     /**
@@ -191,32 +189,6 @@ class App extends Router
     }
 
     /**
-     * Swap out Leaf request instance
-     *
-     * @param mixed $class The new request class to attach
-     * @deprecated
-     */
-    public function setRequestClass($class)
-    {
-        $this->container->singleton('request', function () use ($class) {
-            return new $class();
-        });
-    }
-
-    /**
-     * Swap out Leaf response instance
-     *
-     * @param mixed $class The new response class to attach
-     * @deprecated
-     */
-    public function setResponseClass($class)
-    {
-        $this->container->singleton('response', function () use ($class) {
-            return new $class();
-        });
-    }
-
-    /**
      * Evade CORS errors
      *
      * @param $options Config for cors
@@ -241,7 +213,7 @@ class App extends Router
     public function ws(string $name, callable $callback)
     {
         Config::set('eien.events', \array_merge(
-            Config::get('eien.events') ?? [],
+            Config::getStatic('eien.events') ?? [],
             [$name => $callback]
         ));
     }
@@ -344,7 +316,7 @@ class App extends Router
     public static function script($mode, $callback)
     {
         static::hook('router.before', function () use ($mode, $callback) {
-            $appMode = Config::get('mode') ?? 'development';
+            $appMode = Config::getStatic('mode') ?? 'development';
 
             if ($mode === $appMode) {
                 return $callback();
@@ -360,7 +332,7 @@ class App extends Router
      */
     public static function environment($mode, $callback)
     {
-        $appMode = Config::get('mode') ?? 'development';
+        $appMode = Config::getStatic('mode') ?? 'development';
 
         if ($mode === $appMode) {
             return $callback();
@@ -372,7 +344,7 @@ class App extends Router
      */
     public static function run(?callable $callback = null)
     {
-        if (\class_exists('Leaf\Eien\Server') && Config::get('eien.enabled')) {
+        if (\class_exists('Leaf\Eien\Server') && Config::getStatic('eien.enabled')) {
             server()
                 ->wrap(function () use ($callback) {
                     parent::run($callback);

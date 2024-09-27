@@ -32,6 +32,11 @@ render_header_and_sidebar(permissions: ['check_admin' => true]);
 					<td>Enables an API for integration of SimpleRisk with other tools and automation tasks.</td>
 					<td width="60px"><?php echo (api_extra() ? '<a href="api.php">Yes</a>' : '<a href="api.php">No</a>'); ?></td>
 				</tr>
+                <tr>
+                    <th>Artificial Intelligence</th>
+                    <td>Enables artificial intelligence assistance using Anthropic's Claude LLM.</td>
+                    <td width="60px"><?php echo (artificial_intelligence_extra() ? '<a href="artificial_intelligence.php">Yes</a>' : '<a href="artificial_intelligence.php">No</a>'); ?></td>
+                </tr>
 				<!--<tr>
 					<th>ComplianceForge DSP</th>
 					<td>Adds the controls from the <a href="https://www.complianceforge.com/digital-security-program-dsp/" target="_blank">ComplianceForge Digital Security Program (DSP)</a> into SimpleRisk for use with our Governance functionality.</td>

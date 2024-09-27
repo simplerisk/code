@@ -1,6 +1,6 @@
 # Assert
 
-![Build Status](https://github.com/simplesamlphp/assert/workflows/CI/badge.svg?branch=master)
+![Build Status](https://github.com/simplesamlphp/assert/actions/workflows/php.yml/badge.svg)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/simplesamlphp/assert/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/simplesamlphp/assert/?branch=master)
 [![Coverage Status](https://codecov.io/gh/simplesamlphp/assert/branch/master/graph/badge.svg)](https://codecov.io/gh/simplesamlphp/assert)
 [![PHPStan Enabled](https://img.shields.io/badge/PHPStan-enabled-brightgreen.svg?style=flat)](https://github.com/simplesamlphp/assert)
@@ -44,7 +44,6 @@ Method                                         | Description
 -----------------------------------------------|-----------------------------------------------------------------------------
 `stringPlausibleBase64($value, $message = '')` | Check that a value is plausibly base64  
 `validDateTime($value, $message = '')`         | Check that a value is a valid ISO8601 compliant DateTime
-`validDateTimeZulu($value, $message = '')`     | Check that a value is a valid ISO8601 compliant DateTime in the UTC timezone
 `notInArray($value, $values, $message = '')`   | Check that a value is _NOT_ one of a list of values
 `validURI($value, $message = '')`              | Check that a value is a valid RFC3986 URI
 `validURL($value, $message = '')`              | Check that a value is a valid RFC2396 URL

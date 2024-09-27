@@ -3,9 +3,7 @@
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Render the header and sidebar
-require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['multiselect']);
+
 
 // Include required functions file
 require_once(realpath(__DIR__ . '/../includes/reporting.php'));
@@ -24,6 +22,19 @@ if (import_export_extra()){
     // if download request, download all risks
     if (isset($_GET['option']) && $_GET['option'] == "download")
     {
+
+        global $escaper, $lang;
+        // Include Laminas Escaper for HTML Output Encoding
+        $escaper = new simpleriskEscaper();
+
+        // Add various security headers
+        add_security_headers();
+
+        add_session_check();
+
+        // Include the SimpleRisk language file
+        require_once(language_file());
+
         $control_framework = isset($_POST['control_framework']) ? $_POST['control_framework'] : [];
         $control_family = isset($_POST['control_family']) ? $_POST['control_family'] : [];
         $control_class = isset($_POST['control_class']) ? $_POST['control_class'] : [];
@@ -41,6 +52,10 @@ if (import_export_extra()){
         download_risks_and_controls_report($report, $sort_by, $projects, $status, $filters);
     }
 }
+
+// Render the header and sidebar
+require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+render_header_and_sidebar(['multiselect','CUSTOM:dynamic.js']);
 
 ?>
 <div class="row bg-white">
@@ -74,10 +89,10 @@ if (import_export_extra()){
             // And the Extra is activated
             if (import_export_extra())
             {
-            // Include the Import-Export Extra
-            require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
-            // Display the download link
-            display_download_link("risks-and-assets-report");
+	            // Include the Import-Export Extra
+	            require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
+	            // Display the download link
+            	display_download_link("risks-and-controls-report");
             }
         }
     ?>

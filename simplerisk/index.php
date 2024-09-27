@@ -273,7 +273,6 @@ else {
         <link rel="stylesheet" href="vendor/node_modules/jquery-ui/dist/themes/base/jquery-ui.min.css?<?= $current_app_version ?>">
 
         <!-- extra css -->
-
         <link rel="stylesheet" href="vendor/components/font-awesome/css/fontawesome.min.css?<?= $current_app_version ?>">
 
         <!-- jQuery Javascript -->
@@ -294,12 +293,9 @@ else {
         <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="none" data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full" data-function="login">
             <header class="topbar" data-navbarbg="skin5">
                 <nav class="navbar top-navbar navbar-expand-md navbar-dark">
-                    <div class="navbar-header-1">
-                        <a class="navbar-brand" href="https://www.simplerisk.com/">
-                            <span class="logo-text ms-2">
-                                <!-- dark Logo text -->
-                                <img src="images/logo@2x.png" alt="homepage" class="light-logo"/>  
-                            </span>
+                    <div class="navbar-header">
+                        <a class="navbar-brand" href="https://www.simplerisk.com">
+                            <img src="images/logo@2x.png" alt="homepage" class="logo"/>
                         </a>
                     </div>
                 </nav>
@@ -382,7 +378,7 @@ else {
         }
 ?>
                                                     <div class="form-group">
-                                                        <p class='m-b-0'><a class='text-decoration-none' href="reset.php"><?= $escaper->escapeHtml($lang['ForgotYourPassword']);?></a></p>
+                                                        <p class='m-b-0'><a href="reset.php"><?= $escaper->escapeHtml($lang['ForgotYourPassword']);?></a></p>
                                                         <div>
                                                             <button type="reset" class="btn btn-dark"><?= $escaper->escapeHtml($lang['Reset']);?></button>
                                                             <button type="submit" class="btn btn-submit" name="submit" value="submit"><?= $escaper->escapeHtml($lang['Login']);?></button>

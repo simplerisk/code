@@ -13,6 +13,7 @@ $cron_jobs = array(
 	'cron_vulnmgmt',
 	'cron_notification',
 	'cron_assessments',
+    'cron_ai',
 );
 
 /***************************
@@ -24,12 +25,12 @@ function get_cron_jobs()
 	global $cron_jobs;
 
 	// Create an empty array of all cron job info
-	$all_cron_job_info = array();
+	$all_cron_job_info = [];
 
 	// For each cron job
 	foreach ($cron_jobs as $cron_job)
 	{
-		write_debug_log("Cron Job: {$cron_job}");
+		write_debug_log_cli("Cron Job: {$cron_job}");
 
 		// Get the script name for the cron job
 		$script_name = $cron_job . '.php';
@@ -40,7 +41,7 @@ function get_cron_jobs()
 		// Create the command to run the script via PHP
 		$command = PHP_BINARY . ' -f ' . $cron_script;
 
-		write_debug_log("Cron Command: {$command}");
+		write_debug_log_cli("Cron Command: {$command}");
 
 		// If both a function and script exist for that cron job
 		if (function_exists($cron_job) && is_file($cron_script))
@@ -48,15 +49,15 @@ function get_cron_jobs()
 			// Call the script to get the schedule
 			$schedule = call_user_func($cron_job);
 
-			write_debug_log("Cron Schedule: {$schedule}");
+			write_debug_log_cli("Cron Schedule: {$schedule}");
 
 			// Create an array with the cron job info
-			$cron_job_info = array(
-				$cron_job => array(
+			$cron_job_info = [
+				$cron_job => [
 					'command' => $command,
 					'schedule' => $schedule,
-				)
-			);
+				],
+			];
 
 			// Merge the cron job info into the all cron job info array
 			$all_cron_job_info = array_merge($all_cron_job_info, $cron_job_info);
@@ -144,6 +145,18 @@ function cron_assessments()
 
 	// Return the schedule
 	return $schedule;
+}
+
+/*********************
+ * FUNCTION: CRON AI *
+ *********************/
+function cron_ai()
+{
+    // Get the backup schedule
+    $schedule = cron_schedule("minutely");
+
+    // Return the schedule
+    return $schedule;
 }
 
 ?>

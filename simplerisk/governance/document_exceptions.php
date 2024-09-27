@@ -5,7 +5,7 @@
 
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['easyui:treegrid', 'WYSIWYG', 'multiselect', 'datatables', 'CUSTOM:common.js', 'CUSTOM:pages/governance.js', 'tabs:logic'], ['check_governance' => true]);
+render_header_and_sidebar(['easyui:treegrid', 'WYSIWYG', 'multiselect', 'datatables', 'datetimerangepicker', 'CUSTOM:common.js', 'CUSTOM:pages/governance.js', 'tabs:logic'], ['check_governance' => true]);
 
 // Include required functions file
 require_once(realpath(__DIR__ . '/../includes/permissions.php'));
@@ -651,9 +651,9 @@ function display($display = "")
             maxHeight: '400',
         });
 
-        $("[name='approval_date']").datepicker({maxDate: new Date(), dateFormat: '<?= get_default_date_format_for_datepicker() ?>'});
-        $("[name='creation_date']").datepicker({maxDate: new Date(), dateFormat: '<?= get_default_date_format_for_datepicker() ?>'});
-        $("[name='next_review_date']").datepicker({minDate: new Date(), dateFormat: '<?= get_default_date_format_for_datepicker() ?>'});
+        $("[name='approval_date']").initAsDatePicker({maxDate: new Date()});
+        $("[name='creation_date']").initAsDatePicker({maxDate: new Date()});
+        $("[name='next_review_date']").initAsDatePicker({minDate: new Date()});
 
         $("#exception-add-btn").click(function () {
             $("#exception--add .file-uploader input").val("");
@@ -1095,7 +1095,6 @@ function display($display = "")
     </div>
 </div>
 <?php } ?>
-<?php display_set_default_date_format_script(); ?>
 <?php
     // Render the footer of the page. Please don't put code after this part.
     render_footer();

@@ -29,7 +29,7 @@ function addRisk($this){
     if(!checkAndSetValidation(tabContainer)) {
         return false;
     }
-    loading.show('load');
+    $.blockUI({message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>', baseZ:'10001'});
     $.ajax({
         type: "POST",
         url: BASE_URL + "/management/index.php",
@@ -69,7 +69,7 @@ function addRisk($this){
             $this.prop('disabled', true);
         },
         complete: function(){
-            loading.hide('load');
+            $.unblockUI();
         }
     })
     .fail(function(xhr, textStatus){
@@ -782,7 +782,7 @@ $(document).ready(function(){
         })
     })
 
-    function updateMitigation($this){
+    function updateMitigation($this) {
         var tabContainer = $this.parents('.tab-data');
 
         // Check the sum of files the user wants to upload and
@@ -830,6 +830,12 @@ $(document).ready(function(){
                 if(result.status_message){
                     showAlertsFromArray(result.status_message);
                 }
+                
+                //Need the status of the risk to be displayed properly after mitigation update.
+                //Page reloading after mitigation update is also good way in the 'Risk Details' page but it doesn't fit the 'Submit Risk' page.
+                //Also, it's enough to update only the text of status, not reloading the page since it was already updated in datebase after mitigation update.
+                $(".details--wrapper .status-text").text(_lang["MitigationPlanned"]);
+                
             }
         })
         .fail(function(xhr, textStatus){

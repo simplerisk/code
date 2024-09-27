@@ -280,6 +280,22 @@ require_once(realpath(__DIR__ .'/header.php'));
                 </li>
     <?php
         }
+        if (check_permission("ai_access")) {
+    ?>
+                <li class="sidebar-item <?= ($active_sidebar_menu =="ArtificialIntelligence")?'selected':''; ?>">
+                    <a class="sidebar-link has-arrow waves-effect waves-dark <?= ($active_sidebar_menu =='ArtificialIntelligence')?'active':''; ?>" href="javascript:void(0)" aria-expanded="false">
+                        <span class="hide-menu"><?= $escaper->escapeHtml($lang['ArtificialIntelligence']);?></span>
+                    </a>
+                    <ul aria-expanded="false" class="collapse first-level <?= ($active_sidebar_menu =='Recommendations')?'in':''; ?>">
+                        <li class="sidebar-item <?= ($active_sidebar_submenu =='Recommendations')?'active':''; ?>">
+                            <a href="../artificial_intelligence/index.php" class="sidebar-link">
+                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Recommendations']);?></span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+    <?php
+        }
     ?>
                 <li class="sidebar-item <?= ($active_sidebar_menu =="Assessments")?'selected':''; ?>">
     <?php
@@ -410,6 +426,11 @@ require_once(realpath(__DIR__ .'/header.php'));
                         <li class="sidebar-item">
                             <a href="../reports/risks_and_controls.php" class="sidebar-link">
                                 <span class="hide-menu"><?= $escaper->escapeHtml($lang['RisksAndControls']);?></span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="../reports/risks_and_issues.php" class="sidebar-link">
+                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['RisksAndIssues']);?></span>
                             </a>
                         </li>
                         <li class="sidebar-item">
@@ -603,6 +624,11 @@ require_once(realpath(__DIR__ .'/header.php'));
     <?php
         }
     ?>
+                        <li class="sidebar-item  <?= ($active_sidebar_submenu == 'ArtificialIntelligence')?'active':''; ?>">
+                            <a href="../admin/artificial_intelligence.php" class="sidebar-link">
+                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['ArtificialIntelligence']);?></span>
+                            </a>
+                        </li>
                         <li class="sidebar-item  <?= ($active_sidebar_submenu == 'Extras')?'active':''; ?>">
                             <a href="../admin/extras.php" class="sidebar-link">
                                 <span class="hide-menu"><?= $escaper->escapeHtml($lang['Extras']);?></span>

@@ -172,10 +172,12 @@ $releases = array(
 	"20240205-001",
 	"20240315-001",
 	"20240318-001",
-    "20240603-001",
-    "20240726-001",
-    "20240818-001",
-    "20240819-001",
+	"20240603-001",
+	"20240726-001",
+	"20240818-001",
+	"20240819-001",
+	"20240909-001",
+	"20240923-001",
 );
 
 /*************************
@@ -2443,10 +2445,6 @@ function upgrade_from_20180104001($db){
     // Set the debug logging
     echo "Creating a database setting for debug logging.<br />\n";
     set_debug_logging();
-
-    // Set the debug log file
-    echo "Creating a database setting for the debug log file.<br />\n";
-    set_debug_log_file();
 
     // Set the default language
     echo "Creating a database setting for the default language.<br />\n";
@@ -7515,6 +7513,264 @@ function upgrade_from_20240818001($db)
     $version_upgrading_to = '20240819-001';
 
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20240819-001 *
+ ***************************************/
+function upgrade_from_20240819001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20240819-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20240909-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Remove unnecessary files
+    echo "Removing unnecessary files.<br />\n";
+    $remove_files = [
+        realpath(__DIR__ . '/js/colorpicker.js'),
+    ];
+
+    foreach ($remove_files as $file)
+    {
+        // If the file exists
+        if (file_exists($file))
+        {
+            // Remove the file
+            unlink($file);
+        }
+    }
+
+    // Compile the list of unnecessary directories
+    echo "Removing unnecessary directories.<br />\n";
+    $remove_directories = [
+        realpath(__DIR__ . '/vendor/components/underscore'),
+        realpath(__DIR__ . '/vendor/composer/installers'),
+        realpath(__DIR__ . '/vendor/moment'),
+        realpath(__DIR__ . '/vendor/oomphinc'),
+        realpath(__DIR__ . '/vendor/simplerisk/selectize.js'),
+        realpath(__DIR__ . '/js/alerts'),
+    ];
+
+    // Remove the unnecessary directories
+    foreach ($remove_directories as $directory)
+    {
+        // If the directory exists
+        if (is_dir($directory))
+        {
+            // Remove the directory
+            delete_dir($directory);
+        }
+    }
+
+    // Delete the debug log file setting as we now send everything to the error log
+    echo "Deleting the debug_log_file setting as it is no longer necessary.<br />\n";
+    delete_setting("debug_log_file");
+
+    // Create a new permission for Artificial Intelligence
+    echo "Adding a new permission for Artificial Intelligence.<br />\n";
+    $permission_groups_and_permissions = [
+        'artificial_intelligence' => [
+            'name' => 'Artificial Intelligence',
+            'description' => 'Permissions for Artificial Intelligence',
+            'order' => 7,
+            'permissions' => [
+                'ai_access' => [
+                    'name' => 'Allow Access to "Artificial Intelligence" Menu',
+                    'description' => 'This permission will allow the user to see the "Artificial Intelligence" menu in SimpleRisk.  Artificial Intelligence must be configured by an Administrator user under the "Configure" menu and actions taken under this menu must still have the appropriate permissions to do so.',
+                    'order' => 1,
+                ],
+            ],
+        ],
+    ];
+    add_new_permissions($permission_groups_and_permissions);
+
+    // Create a debug_log table
+    echo "Creating a debug_log table.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `debug_log` (
+            `id` INT(11) NOT NULL AUTO_INCREMENT,
+            `message` TEXT,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `id` (`id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+    ");
+    $stmt->execute();
+
+    // Create a system token table
+    echo "Creating a system_tokens table.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `system_tokens` (
+            `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            `token` varchar(100),
+            PRIMARY KEY (`token`),
+            UNIQUE KEY `id` (`token`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ");
+    $stmt->execute();
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20240909-001 *
+ ***************************************/
+function upgrade_from_20240909001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20240909-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20240923-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Create a temporary files table
+    echo "Creating a temporary files table.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `tmp_files` (
+            `unique_name` VARCHAR(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+            `name` VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+            `type` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+            `extension` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+            `size` int NOT NULL,
+            `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            `user` int NOT NULL,
+            `content` longblob NOT NULL,
+            `header_json` longblob DEFAULT NULL,
+            `content_json` longblob DEFAULT NULL,
+            PRIMARY KEY (`unique_name`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    ");
+    $stmt->execute();
+
+    // Remove unnecessary files
+    echo "Removing unnecessary files.<br />\n";
+    $remove_files = [
+        realpath(__DIR__ . '/management/print_view - Copy.php'),
+        realpath(__DIR__ . '/management/close.php'),
+        realpath(__DIR__ . '/assessments/questionnaire_audit.php'),
+        realpath(__DIR__ . '/vendor/simplesamlphp/simplesamlphp/lib/_autoload.php'),
+        realpath(__DIR__ . '/vendor/simplesamlphp/simplesamlphp/templates/status.twig')
+    ];
+
+    foreach ($remove_files as $file)
+    {
+        // If the file exists
+        if (file_exists($file))
+        {
+            // Remove the file
+            unlink($file);
+        }
+    }
+
+    // Compile the list of unnecessary directories
+    echo "Removing unnecessary directories.<br />\n";
+    $remove_directories = [
+        realpath(__DIR__ . '/js/easyui'),
+    ];
+
+    // Remove the unnecessary directories
+    foreach ($remove_directories as $directory)
+    {
+        // If the directory exists
+        if (is_dir($directory))
+        {
+            // Remove the directory
+            delete_dir($directory);
+        }
+    }
+
+    echo "Replacing symlinked simplesamlphp files.<br />\n";
+    $from_file = realpath(__DIR__ . '/vendor/simplesamlphp/simplesamlphp/src/_autoload.php');
+    $to_file = realpath(__DIR__ . '/vendor/simplesamlphp/simplesamlphp/lib/_autoload.php');
+    if (file_exists($from_file) && !file_exists($to_file))
+    {
+        copy($from_file, $to_file);
+    }
+    $from_file = realpath(__DIR__ . '/vendor/simplesamlphp/simplesamlphp/templates/auth_status.twig');
+    $to_file = realpath(__DIR__ . '/vendor/simplesamlphp/simplesamlphp/templates/status.twig');
+    if (file_exists($from_file) && !file_exists($to_file))
+    {
+        copy($from_file, $to_file);
+    }
+
+    // Gathering the data that will be displayed unescaped and need to be sanitized
+    $stmt = $db->prepare("SELECT `value`, `description`, `justification` FROM `document_exceptions` WHERE (`description` IS NOT NULL AND `description` <> '') OR (`justification` IS NOT NULL AND `justification` <> '');");
+    $stmt->execute();
+    $data_to_sanitize = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (!empty($data_to_sanitize)) {
+
+        echo "Sanitizing document exception `description` and `justification` fields.<br />\n";
+        foreach ($data_to_sanitize as $data) {
+
+            $sql_parts = [];
+            $values = [];
+
+            if (!empty($data['description'])) {
+                $purified_description = purify_html($data['description']);
+                if ($purified_description !== $data['description']) {
+                    $sql_parts []= "`description` = :description";
+                    $values[':description'] = $purified_description;
+
+                    // Log the data needed to be cleaned up
+                    // Please note that it's removing unnecessary spaces and replaces certain entities with their UTF-8 counterparts
+                    // so it's possible it's flagging strings that's not malicious
+                    error_log("[Simplerisk Upgrade] Document exception description needs to be purified: " . json_encode($data['description']));
+                }
+            }
+
+            if (!empty($data['justification'])) {
+                $purified_justification = purify_html($data['justification']);
+                if ($purified_justification !== $data['justification']) {
+                    $sql_parts []= "`justification` = :justification";
+                    $values[':justification'] = $purified_justification;
+
+                    // Log the data needed to be cleaned up
+                    // Please note that it's removing unnecessary spaces and replaces certain entities with their UTF-8 counterparts
+                    // so it's possible it's flagging strings that's not malicious
+                    error_log("[Simplerisk Upgrade] Document exception justification needs to be purified: " . json_encode($data['justification']));
+                }
+            }
+
+            if (empty($sql_parts)) {
+                continue;
+            }
+
+            // Save the sanitized data back to where it came from
+            $stmt = $db->prepare("
+                UPDATE
+                    `document_exceptions`
+                SET
+                    " . implode(', ', $sql_parts) . "
+                WHERE
+                    `value` = :value;
+            ");
+
+            $values[":value"] = $data['value'];
+
+            $stmt->execute($values);
+        }
+        echo "Sanitizing document exception data is done!<br />\n";
+    }
 
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic

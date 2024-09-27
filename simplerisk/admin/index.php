@@ -611,24 +611,6 @@ if (isset($_POST['update_debug_settings']))
         update_setting("debug_logging", $debug_logging);
     }
 
-    // Update the debug log file
-    $debug_log_file = $_POST['debug_log_file'];
-    $root_path = str_replace('/', '\\', $_SERVER["DOCUMENT_ROOT"]);
-    $log_path = str_replace('/', '\\', realpath(dirname($debug_log_file)));
-    if(strpos($log_path, $root_path) === false && $log_path != "") {
-        $current_debug_log_file = get_setting("debug_log_file");
-        if ($debug_log_file != $current_debug_log_file)
-        {
-            update_setting("debug_log_file", $debug_log_file);
-        }
-    } elseif($log_path == "") {
-        $error = true;
-        set_alert(true, "bad", "No such directory.");
-    } else {
-        $error = true;
-        set_alert(true, "bad", "Cannot be write log file to the web root directory.");
-    }
-
     // If all setting values were saved successfully
     if (!$error)
     {
@@ -1422,10 +1404,7 @@ $simplerisk_max_upload_size = get_setting('max_upload_size');
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-6 form-group">
-                                <label><?= $escaper->escapeHtml($lang['DebugLogFile']); ?>:</label>
-                                <input type="text" name="debug_log_file" id="debug_log_file" value="<?= $escaper->escapeHtml(get_setting("debug_log_file")); ?>" class="form-control"/>
-                            </div>
+                            <p><strong>Note: </strong>We no longer configure a debug log file location and all debug logs will go into the error log with a "[SIMPLERISK:DEBUG]" value appended to the message.</p>
                         </div>
                         <div class="row">
                             <div class="col-6">

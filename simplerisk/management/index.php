@@ -5,7 +5,7 @@
 
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['blockUI', 'tabs:logic', 'selectize', 'datatables', 'chart.js', 'WYSIWYG', 'multiselect', 'CUSTOM:common.js', 'CUSTOM:pages/risk.js', 'CUSTOM:cve_lookup.js', 'datetimerangepicker'], ['check_riskmanagement' => true]);
+render_header_and_sidebar(['blockUI', 'tabs:logic', 'selectize', 'datatables', 'chart.js', 'WYSIWYG', 'multiselect', 'CUSTOM:common.js', 'CUSTOM:pages/risk.js', 'CUSTOM:cve_lookup.js', 'datetimerangepicker', 'JSLocalization'], ['check_riskmanagement' => true], required_localization_keys: ['MitigationPlanned']);
 
 // Check if the user has access to submit risks
 if (!isset($_SESSION["submit_risks"]) || $_SESSION["submit_risks"] != 1) {
@@ -254,7 +254,6 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         
         exit;
     }
-
 }
 
 ?>
@@ -339,7 +338,8 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
 <script>
     $(document).ready(function() {
-        
+        $(".datepicker").initAsDatePicker();
+
         $('.multiselect').multiselect({buttonWidth: '100%'});
 
         $('#tab-content-container select.assets-asset-groups-select').each(function() {
@@ -397,7 +397,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
             
             // Add DatePicker
             if($('.datepicker', "#tab-container"+num_tabs).length){
-                $('.datepicker', "#tab-container"+num_tabs).datepicker();
+                $('.datepicker', "#tab-container"+num_tabs).initAsDatePicker();
             }
             tinymce.remove()
             init_minimun_editor("#tab-content-container [name=assessment]");

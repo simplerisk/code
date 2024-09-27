@@ -114,7 +114,6 @@ $(function(){
 		<?php display(); ?>
 	</div>
 </div>
-<?php display_set_default_date_format_script(); ?>
 <?php
 	// Render the footer of the page. Please don't put code after this part.
 	render_footer();

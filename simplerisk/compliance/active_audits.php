@@ -6,18 +6,19 @@
 // Include required functions file
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'CUSTOM:pages/compliance.js'], ['check_compliance' => true]);
+
 // Include required functions file
 require_once(realpath(__DIR__ . '/../includes/governance.php'));
 require_once(realpath(__DIR__ . '/../includes/compliance.php'));
 
 ?>
-
-<div class="row bg-white m-2 compliance-content-container content-margin-height">
-    <div class="col-md-12" >
-         <?php display_active_audits(); ?>
+<div class="row bg-white">
+    <div class="col-12">
+        <div class="compliance-content-container">
+            <?php display_active_audits(); ?>
+        </div>
     </div>
 </div>
-
 <?php  
 // Render the footer of the page. Please don't put code after this part.
 render_footer();

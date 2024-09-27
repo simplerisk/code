@@ -10,7 +10,7 @@ use Leaf\Router\Core;
  * Leaf Router
  * ---------------
  * Super simple and powerful routing with Leaf
- * 
+ *
  * @author Michael Darko
  * @since 1.2.0
  * @version 3.0
@@ -83,7 +83,7 @@ class Router extends Core
 
     /**
      * Alias for mount
-     * 
+     *
      * @param string $path The route sub pattern/path to mount the callbacks on
      * @param callable|array $handler The callback method
      */
@@ -96,7 +96,7 @@ class Router extends Core
 
     /**
      * Store a route and it's handler
-     * 
+     *
      * @param string $methods Allowed HTTP methods (separated by `|`)
      * @param string $pattern The route pattern/path to match
      * @param string|array|callable $handler The handler for route when matched
@@ -156,7 +156,7 @@ class Router extends Core
 
     /**
      * Add a route with all available HTTP methods
-     * 
+     *
      * @param string $pattern The route pattern/path to match
      * @param string|array|callable The handler for route when matched
      */
@@ -171,7 +171,7 @@ class Router extends Core
 
     /**
      * Add a route with GET method
-     * 
+     *
      * @param string $pattern The route pattern/path to match
      * @param string|array|callable The handler for route when matched
      */
@@ -182,7 +182,7 @@ class Router extends Core
 
     /**
      * Add a route with POST method
-     * 
+     *
      * @param string $pattern The route pattern/path to match
      * @param string|array|callable The handler for route when matched
      */
@@ -193,7 +193,7 @@ class Router extends Core
 
     /**
      * Add a route with PUT method
-     * 
+     *
      * @param string $pattern The route pattern/path to match
      * @param string|array|callable The handler for route when matched
      */
@@ -204,7 +204,7 @@ class Router extends Core
 
     /**
      * Add a route with PATCH method
-     * 
+     *
      * @param string $pattern The route pattern/path to match
      * @param string|array|callable The handler for route when matched
      */
@@ -215,7 +215,7 @@ class Router extends Core
 
     /**
      * Add a route with OPTIONS method
-     * 
+     *
      * @param string $pattern The route pattern/path to match
      * @param string|array|callable The handler for route when matched
      */
@@ -226,7 +226,7 @@ class Router extends Core
 
     /**
      * Add a route with DELETE method
-     * 
+     *
      * @param string $pattern The route pattern/path to match
      * @param string|array|callable The handler for route when matched
      */
@@ -254,7 +254,7 @@ class Router extends Core
 
     /**
      * Create a resource route for using controllers.
-     * 
+     *
      * This creates a routes that implement CRUD functionality in a controller
      * `/posts` creates:
      * - `/posts` - GET | HEAD - Controller@index
@@ -264,7 +264,7 @@ class Router extends Core
      * - `/posts/{id}/edit` - GET | HEAD - Controller@edit
      * - `/posts/{id}/edit` - POST | PUT | PATCH - Controller@update
      * - `/posts/{id}/delete` - POST | DELETE - Controller@destroy
-     * 
+     *
      * @param string $pattern The base route to use eg: /post
      * @param string $controller to handle route eg: PostController
      */
@@ -281,7 +281,7 @@ class Router extends Core
 
     /**
      * Create a resource route for using controllers without the create and edit actions.
-     * 
+     *
      * This creates a routes that implement CRUD functionality in a controller
      * `/posts` creates:
      * - `/posts` - GET | HEAD - Controller@index
@@ -289,7 +289,7 @@ class Router extends Core
      * - `/posts/{id}` - GET | HEAD - Controller@show
      * - `/posts/{id}/edit` - POST | PUT | PATCH - Controller@update
      * - `/posts/{id}/delete` - POST | DELETE - Controller@destroy
-     * 
+     *
      * @param string $pattern The base route to use eg: /post
      * @param string $controller to handle route eg: PostController
      */
@@ -304,7 +304,7 @@ class Router extends Core
 
     /**
      * Redirect to another route
-     * 
+     *
      * @param string|array $route The route to redirect to
      * @param array|null $data Data to pass to the next route
      */
@@ -335,15 +335,31 @@ class Router extends Core
      * Get route url by defined route name
      *
      * @param string $routeName
+     * @param array|string|null $params
      *
      * @return string
      */
-    public static function route(string $routeName): string
+    public static function route(string $routeName, $params = null): string
     {
         if (!isset(static::$namedRoutes[$routeName])) {
             trigger_error('Route named ' . $routeName . ' not found');
         }
 
-        return static::$namedRoutes[$routeName];
+        $routePath = static::$namedRoutes[$routeName];
+        if ($params) {
+            if (is_array($params)) {
+                foreach ($params as $key => $value) {
+                    if (!preg_match('/{('. $key .')}/', $routePath)) {
+                        trigger_error('Param "' . $key . '" not found in route "' . static::$namedRoutes[$routeName] . '"');
+                    }
+                    $routePath = str_replace('{' . $key . '}', $value, $routePath);
+                }
+            }
+            if (is_string($params)) {
+                $routePath = preg_replace('/{(.*?)}/', $params, $routePath);
+            }
+        }
+
+        return $routePath;
     }
 }

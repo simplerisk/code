@@ -464,8 +464,21 @@ function call_extra_api_functionality($extra, $functionality, $target) {
 /******************************************
  * FUNCTION: CALL SIMPLERISK API ENDPOINT *
  ******************************************/
-function call_simplerisk_api_endpoint($endpoint, $method = "GET")
+function call_simplerisk_api_endpoint($endpoint, $method = "GET", $system_token = false)
 {
+    // If no system token was provided
+    if (!$system_token)
+    {
+        // Try to use a cookie for authentication
+        $authentication = "Cookie: " . session_name() . "=" . session_id();
+    }
+    // If a system token was provided
+    else
+    {
+        // Send the token for authentication
+        $authentication = "X-SYSTEM-TOKEN: {$system_token}";
+    }
+
     // Get the simplerisk_base_url from the settings table
     $url = get_setting("simplerisk_base_url");
     $url .= (endsWith($url, '/') ? '' : '/') . $endpoint;
@@ -473,7 +486,7 @@ function call_simplerisk_api_endpoint($endpoint, $method = "GET")
     $http_options = [
         'method' => $method,
         'header' => [
-            "Cookie: " . session_name() . "=" . session_id(),
+            $authentication,
             "Content-Type: application/json",
             "Accept: application/json",
         ],
@@ -507,6 +520,76 @@ function call_simplerisk_api_endpoint($endpoint, $method = "GET")
     }
     // Otherwise return an empty array
     else return [];
+}
+
+/******************************
+ * FUNCTION: GET SYSTEM TOKEN *
+ ******************************/
+function get_system_token()
+{
+    // Generate a 100 character system token
+    $token = generate_token(100);
+
+    // Open a database connection
+    $db = db_open();
+
+    // Insert the token into the system_tokens table
+    $stmt = $db->prepare("INSERT IGNORE INTO `system_tokens` (`token`) VALUES (:token);");
+    $stmt->bindParam(":token", $token, PDO::PARAM_STR);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+
+    // Return the token
+    return $token;
+}
+
+/********************************
+ * FUNCTION: CHECK SYSTEM TOKEN *
+ ********************************/
+function check_system_token()
+{
+    // Get the HTTP Headers for the request
+    $headers = getallheaders();
+
+    // If a system token was provided
+    if (isset($headers['X-SYSTEM-TOKEN']))
+    {
+        // Open a database connection
+        $db = db_open();
+
+        // Delete system tokens over a minute old
+        $stmt = $db->prepare("DELETE FROM `system_tokens` WHERE timestamp < (NOW() - INTERVAL 1 MINUTE);");
+        $stmt->execute();
+
+        // Check if the token matches one in our database
+        $stmt = $db->prepare("SELECT * FROM `system_tokens` WHERE token=:token;");
+        $stmt->bindParam(":token", $headers['X-SYSTEM-TOKEN'], PDO::PARAM_STR);
+        $stmt->execute();
+        $count = $stmt->rowCount();
+
+        // If we have a match
+        if ($count > 0)
+        {
+            // Delete the matching token
+            $stmt = $db->prepare("DELETE FROM `system_tokens` WHERE token=:token;");
+            $stmt->bindParam(":token", $headers['X-SYSTEM-TOKEN'], PDO::PARAM_STR);
+            $stmt->execute();
+
+            // Close the database connection
+            db_close($db);
+
+            // Return true
+            return true;
+        }
+
+        // Close the database connection
+        db_close($db);
+    }
+
+    // If we get back to this point, return false
+    return false;
 }
 
 ?>

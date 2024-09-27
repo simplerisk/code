@@ -11,22 +11,26 @@ namespace Leaf;
  */
 class Config
 {
-    protected static $settings = [
-        'app' => ['down' => false, 'instance' => null],
+    /**
+     * Leaf application context
+     * @var array
+     */
+    protected static $context = [
+        'app' => null,
+        'app.down' => false,
         'debug' => true,
-        'eien' => ['enabled' => true],
-        'http' => ['version' => '1.1'],
-        'log' => [
-            'writer' => null,
-            'level' => null,
-            'enabled' => false,
-            'dir' => __DIR__ . '/../../../../storage/logs/',
-            'file' => 'log.txt',
-            'open' => true,
-        ],
+        'eien.enabled' => true,
+        'http.version' => '1.1',
+        'log.writer' => null,
+        'log.level' => null,
+        'log.enabled' => false,
+        'log.dir' => __DIR__ . '/../../../../storage/logs/',
+        'log.file' => 'log.txt',
+        'log.open' => true,
         'mode' => 'development',
         'scripts' => [],
-        'views' => ['path' => null, 'cachePath' => null],
+        'views.path' => null,
+        'views.cachePath' => null,
     ];
 
     /**
@@ -38,56 +42,107 @@ class Config
     public static function set($item, $value = null)
     {
         if (\is_string($item)) {
-            if (!\strpos($item, '.')) {
-                static::$settings[$item] = $value;
-            } else {
-                static::$settings = \array_merge(
-                    static::$settings,
-                    static::mapConfig($item, $value)
-                );
-            }
+            static::$context[$item] = $value;
         } else {
-            foreach ($item as $k => $v) {
-                static::set($k, $v);
-            }
+            static::$context = \array_merge(static::$context, $item);
         }
     }
 
     /**
-     * Map nested config to their parents recursively
+     * Attach view engine to Leaf view
+     *
+     * @param mixed $className The class to attach
+     * @param string|null $name The key to save view engine with
      */
-    protected static function mapConfig(string $item, $value = null)
+    public static function attachView($className, $name = null)
     {
-        $config = \explode('.', $item);
+        $class = new $className();
+        $diIndex = $name ?? static::getDiIndex($class);
 
-        if (\count($config) > 2) {
-            \trigger_error('Nested config can\'t be more than 1 level deep');
-        }
-
-        return [$config[0] => \array_merge(
-            static::$settings[$config[0]] ?? [],
-            [$config[1] => $value]
-        )];
+        static::set("views.$diIndex", $class);
     }
 
     /**
-     * Get configuration
+     * Return an attached view engine
+     */
+    public static function view($className)
+    {
+        return static::getStatic("views.$className");
+    }
+
+    /**
+     * Grab context
      *
      * @param string|null $item The config to get. Returns all items if nothing is specified.
      */
     public static function get($item = null)
     {
-        if ($item) {
-            $items = \explode('.', $item);
-
-            if (\count($items) > 1) {
-                return static::$settings[$items[0]][$items[1]] ?? null;
-            }
-
-            return static::$settings[$item] ?? null;
+        if (!$item) {
+            return static::$context;
         }
 
-        return static::$settings;
+        $value = static::$context[$item] ?? null;
+
+        return static::isInvokable($value) ? $value(static::$context) : $value;
+    }
+
+    /**
+     * Static getter
+     * @param  string $item The item to get
+     */
+    public static function getStatic($item = null)
+    {
+        return static::$context[$item] ?? null;
+    }
+
+    /**
+     * Get data value with key
+     * @param  string $value   The item to check
+     */
+    public static function isInvokable($value)
+    {
+        return is_object($value) && method_exists($value, '__invoke');
+    }
+
+    /**
+     * IteratorAggregate
+     */
+    public static function getIterator()
+    {
+        return new \ArrayIterator(static::$context);
+    }
+
+    /**
+     * Ensure a value or object will remain globally unique
+     *
+     * @param  string   $key   The value or object name
+     * @param  \Closure $value The closure that defines the object
+     *
+     * @return mixed
+     */
+    public static function singleton($key, $value)
+    {
+        static::set($key, function ($c) use ($value) {
+            static $object;
+
+            if (null === $object) {
+                $object = $value($c);
+            }
+
+            return $object;
+        });
+    }
+
+    /**
+     * Protect closure from being directly invoked
+     * @param  \Closure $callable A closure to keep from being invoked and evaluated
+     * @return \Closure
+     */
+    public static function protect(\Closure $callable)
+    {
+        return function () use ($callable) {
+            return $callable;
+        };
     }
 
     /**
@@ -96,6 +151,83 @@ class Config
      */
     public static function addScript(callable $script)
     {
-        static::$settings['scripts'][] = $script;
+        static::$context['scripts'][] = $script;
+    }
+
+    /**
+     * Fetch set data keys
+     * @return array This set's key-value data array keys
+     */
+    public static function keys()
+    {
+        return array_keys(static::$context);
+    }
+
+    /**
+     * Does this set contain a key?
+     * @param  string  $key The data key
+     * @return bool
+     */
+    public static function has($key)
+    {
+        return array_key_exists($key, static::$context);
+    }
+
+    /**
+     * Remove value with key from this set
+     * @param  string $key The data key
+     */
+    public static function remove($key)
+    {
+        unset(static::$context[$key]);
+    }
+
+    /**
+     * Countable
+     */
+    public static function count()
+    {
+        return count(static::$context);
+    }
+
+    /**
+     * Clear all values
+     */
+    public static function reset()
+    {
+        static::$context = [
+            'app' => static::$context['app'],
+            'app.down' => static::$context['app.down'],
+            'debug' => static::$context['debug'],
+            'eien.enabled' => static::$context['eien.enabled'],
+            'http.version' => static::$context['http.version'],
+            'log.writer' => static::$context['log.writer'],
+            'log.level' => static::$context['log.level'],
+            'log.enabled' => static::$context['log.enabled'],
+            'log.dir' => static::$context['log.dir'],
+            'log.file' => static::$context['log.file'],
+            'log.open' => static::$context['log.open'],
+            'mode' => static::$context['mode'],
+            'scripts' => [],
+            'views.path' => static::$context['views.path'],
+            'views.cachePath' => static::$context['views.cachePath'],
+        ];
+    }
+
+    protected static function getDiIndex($class)
+    {
+        $fullName = \explode("\\", \strtolower(\get_class($class)));
+        $className = $fullName[\count($fullName) - 1];
+
+        return $className;
+    }
+
+    /**
+     * Property Overloading
+     */
+
+    public static function __callstatic($key, $arguments)
+    {
+        return static::get($key);
     }
 }

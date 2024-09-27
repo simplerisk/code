@@ -106,9 +106,6 @@ if (incident_management_extra()){
 	var fileSizeLabel = "<?php echo $escaper->escapeJs($lang['FileSize']);?>"; 
 
 	$(function () {
-		// Load the datepicker
-		$(".datepicker").datepicker({ dateFormat: '<?= get_default_date_format_for_datepicker() ?>' });
-
 		// Load the datetimepicker
 		$(".datetimepicker").initAsDateTimePicker();
 	});
@@ -164,7 +161,6 @@ if (incident_management_extra()){
 		</div>
 	</div>
 </div>
-<?php display_set_default_date_format_script(); ?>
 <?php
     // Render the footer of the page. Please don't put code after this part.
     render_footer();

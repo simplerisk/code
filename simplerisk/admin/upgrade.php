@@ -133,12 +133,9 @@
         <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="none" data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full" data-function="login">
             <header class="topbar" data-navbarbg="skin5">
                 <nav class="navbar top-navbar navbar-expand-md navbar-dark justify-content-between">
-                    <div class="navbar-header-1">
-                        <a class="navbar-brand" href="https://www.simplerisk.com/">
-                            <span class="logo-text ms-2">
-                                <!-- dark Logo text -->
-                                <img src="../images/logo@2x.png" alt="homepage" class="light-logo"/>  
-                            </span>
+                    <div class="navbar-header">
+                        <a class="navbar-brand" href="https://www.simplerisk.com">
+                            <img src="../images/logo@2x.png" alt="homepage" class="logo"/>
                         </a>
                     </div>
                     <div class="navbar-content">

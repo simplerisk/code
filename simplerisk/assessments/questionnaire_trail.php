@@ -3,11 +3,8 @@
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Render the header and sidebar
-require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG:Assessments', 'multiselect', 'CUSTOM:common.js', 'cve_lookup', 'CUSTOM:pages/assessment.js'], ["check_assessments" => true]);
-
 // Include required functions file
+require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/assessments.php'));
 
 // Check if assessment extra is enabled
@@ -24,6 +21,19 @@ else
 
 if(isset($_POST['download_audit_log']))
 {
+    
+    global $escaper, $lang;
+    // Include Laminas Escaper for HTML Output Encoding
+    $escaper = new simpleriskEscaper();
+    
+    // Add various security headers
+    add_security_headers();
+    
+    add_session_check();
+    
+    // Include the SimpleRisk language file
+    require_once(language_file());
+    
     if(is_admin())
     {
         // If extra is activated, download audit logs
@@ -46,6 +56,10 @@ if(isset($_POST['download_audit_log']))
         refresh();
     }
 }
+
+// Render the header and sidebar
+require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG:Assessments', 'multiselect', 'CUSTOM:common.js', 'cve_lookup', 'CUSTOM:pages/assessment.js'], ["check_assessments" => true]);
 
 ?>
 <div class="row">

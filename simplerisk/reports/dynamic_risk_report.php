@@ -405,7 +405,7 @@ if (import_export_extra()){
 		<div class="modal-content">
 			<div class="modal-body">
 				<div class="form-group text-center message-container">
-					<label class="message">Are you sure you want to delete the selction?</label>
+					<label class="message"><?= $escaper->escapeHtml($lang["AreYouSureYouWantToDeleteSelction"]) ?></label>
 				</div>
 				<div class="form-group text-center">
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>&nbsp;&nbsp;&nbsp;

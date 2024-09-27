@@ -3,28 +3,41 @@
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-
-$breadcrumb_title_key = '';
-$active_sidebar_menu = '';
-$active_sidebar_submenu = '';
-if (isset($_GET['action']) && $_GET['action'] == 'full_view') {
-    $active_sidebar_menu = 'Assessments';
-    $active_sidebar_submenu = 'QuestionnaireResults';
-    $breadcrumb_title_key = 'Questionnaire Detail';
-}
-
-render_header_and_sidebar(['chart.js', 'blockUI', 'selectize', 'datatables', 'WYSIWYG:Assessments', 'multiselect', 'CUSTOM:common.js', 'datetimerangepicker', 'cve_lookup', 'CUSTOM:pages/assessment.js', 'EXTRA:JS:assessments:questionnaire-result_share.js'], ["check_assessments" => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu, required_localization_keys: ['ConfirmDeletePendingRisk']);
-
 // Include required functions file
+require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/assessments.php'));
+
+// Check if assessment extra is enabled
+if(assessments_extra())
+{
+    // Include the assessments extra
+    require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
+}
+else
+{
+    header("Location: ../index.php");
+    exit(0);
+}
 
 if(isset($_POST['download_audit_log']))
 {
+    global $escaper, $lang;
+    // Include Laminas Escaper for HTML Output Encoding
+    $escaper = new simpleriskEscaper();
+
+    // Add various security headers
+    add_security_headers(["check_assessments" => true]);
+
+    add_session_check();
+
+    // Include the SimpleRisk language file
+    require_once(language_file());
+
     if(is_admin())
     {
         // If extra is activated, download audit logs
         if (import_export_extra()) {
+            
             $tracking_id = (int)$_POST['tracking_id'];
             require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
             download_audit_logs(get_param('post', 'days', 7), 'questionnaire_tracking', $escaper->escapeHtml($lang['QuestionnaireResultAuditTrailReport']), $tracking_id + 1000);
@@ -41,17 +54,35 @@ if(isset($_POST['download_audit_log']))
     }
 }
 
-// Check if assessment extra is enabled
-if(assessments_extra())
-{
-    // Include the assessments extra
-    require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
+if(isset($_GET['token']) && isset($_GET['action']) && $_GET['action'] === "download") {
+    global $escaper, $lang;
+    // Include Laminas Escaper for HTML Output Encoding
+    $escaper = new simpleriskEscaper();
+
+    // Add various security headers
+    add_security_headers();
+
+    add_session_check(["check_assessments" => true]);
+
+    // Include the SimpleRisk language file
+    require_once(language_file());
+
+    download_questionnaire_result($_GET['token']);
+    exit;
 }
-else
-{ 
-    header("Location: ../index.php");
-    exit(0);
+
+require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+
+$breadcrumb_title_key = '';
+$active_sidebar_menu = '';
+$active_sidebar_submenu = '';
+if (isset($_GET['action']) && $_GET['action'] == 'full_view') {
+    $active_sidebar_menu = 'Assessments';
+    $active_sidebar_submenu = 'QuestionnaireResults';
+    $breadcrumb_title_key = 'Questionnaire Detail';
 }
+
+render_header_and_sidebar(['chart.js', 'blockUI', 'selectize', 'datatables', 'WYSIWYG:Assessments', 'multiselect', 'CUSTOM:common.js', 'datetimerangepicker', 'cve_lookup', 'CUSTOM:pages/assessment.js', 'EXTRA:JS:assessments:questionnaire-result_share.js'], ["check_assessments" => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu, required_localization_keys: ['ConfirmDeletePendingRisk']);
 
 // Process actions on questionnaire pages
 if(process_questionnaire_pending_risks()){

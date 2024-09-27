@@ -5,7 +5,7 @@
 
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['blockUI', 'tabs:logic', 'datatables', 'multiselect', 'CUSTOM:common.js', 'CUSTOM:pages/plan-project.js'], ['check_riskmanagement' => true]);
+render_header_and_sidebar(['blockUI', 'tabs:logic', 'multiselect', 'datetimerangepicker', 'CUSTOM:common.js', 'CUSTOM:pages/plan-project.js'], ['check_riskmanagement' => true]);
     
 ?>
 <div class="row bg-white">
@@ -46,7 +46,7 @@ render_header_and_sidebar(['blockUI', 'tabs:logic', 'datatables', 'multiselect',
 	var is_draggable = <?= boolean_to_string(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1) ?>;
 
 	$(function() {
-		$(".datepicker").datepicker();
+		$(".datepicker").initAsDatePicker();
 	<?php 
 		if (customization_extra()) {
 	?>

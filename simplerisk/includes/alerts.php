@@ -132,8 +132,8 @@ function setup_alert_requirements($path_to_root = "")
     }
 
     echo "
-        <script src='{$path_to_root}js/alerts/toastr.min.js?" . current_version("app") . "' defer id='script_toastr'></script>
-        <script src='{$path_to_root}js/alerts/alert-helper.js?" . current_version("app") . "'defer></script>
+        <script src='{$path_to_root}vendor/node_modules/toastr/build/toastr.min.js?" . current_version("app") . "' defer id='script_toastr'></script>
+        <script src='{$path_to_root}js/simplerisk/alert-helper.js?" . current_version("app") . "' defer></script>
     ";
     $timeOut = get_setting("alert_timeout");
     if ($timeOut || $timeOut === "0") {
@@ -152,7 +152,7 @@ function setup_alert_requirements($path_to_root = "")
     }
 
     echo "
-        <link rel='stylesheet' href='{$path_to_root}css/toastr.min.css?" . current_version("app") . "' />
+        <link rel='stylesheet' href='{$path_to_root}vendor/node_modules/toastr/build/toastr.min.css?" . current_version("app") . "' />
         <style>
             .toast-top-right {
                 top: 75px;

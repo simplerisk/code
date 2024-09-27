@@ -65,6 +65,11 @@ function autoloader(string $name)
         require_once realpath(__DIR__ . '/compliance.php');
     }
 
+    if (file_exists(realpath(__DIR__ . '/artificial_intelligence.php')))
+    {
+        require_once realpath(__DIR__ . '/artificial_intelligence.php');
+    }
+
     if (file_exists(realpath(__DIR__ . '/reporting.php')))
     {
         require_once realpath(__DIR__ . '/reporting.php');
@@ -82,6 +87,7 @@ $scan_directories = [
     realpath(__DIR__ . '/governance.php'),
     realpath(__DIR__ . '/risks.php'),
     realpath(__DIR__ . '/compliance.php'),
+    realpath(__DIR__ . '/artificial_intelligence.php'),
     realpath(__DIR__ . '/reporting.php'),
 ];
 
@@ -286,6 +292,5 @@ function create_asset_base_schema(&$openapi, $view) {
     
     
 }
-
 
 ?>

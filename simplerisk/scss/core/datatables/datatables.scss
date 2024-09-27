@@ -1,48 +1,104 @@
 /**
-* jquery datatable
+* Datatables
 */
 
 @import "datatable_widget.scss";
 
-.dataTables_wrapper.dt-bootstrap5 {
+.dt-container.dt-bootstrap5 {
 
-	/*It's here so together with the $table-striped-order: even; result in the striped rows start with white colored row*/
-	--dt-row-stripe: initial;
+    /*It's here so together with the $table-striped-order: even; result in the striped rows start with white colored row*/
+    --dt-row-stripe: initial;
 
-	/*Add a bottom border to the header so it's more separated from the rest of the table*/
-	div:not(.dataTables_scrollBody)>table.dataTable > thead > tr:last-child > th {
-		border-bottom: var(--bs-border-width) var(--bs-border-style) rgba(var(--bs-dark-rgb), .25) !important;
-	}
-	
-	thead > th, th {
-		font-weight: bold;
-		--bs-table-bg: var(--bs-table-striped-bg);
-	}
-	div.shows {
-	    margin: 2px 0 0 2px;
+    table {
+        th, td {
+            vertical-align: middle;
+        }
+    }
 
-		&.less {
-	  		.all {
-				display: none;
-			}
-			.less {
-				display: unset;
-			}
-		}
-		&.all {
-			.all {
-				display: unset;
-			}
-			.less {
-				display: none;
-			}
-		}
-	}
-}
+    div:not(.dt-scroll-body) > table.dataTable > thead { 
 
-.download-by-group, .print-by-group {
-    font-size: 1.5rem;
-    cursor: pointer;
-    margin-left: 10px;
-    margin-right: 5px;
+        > tr:last-child > th {
+            /*Add a bottom border to the header so it's more separated from the rest of the table*/
+            border-bottom: var(--bs-border-width) var(--bs-border-style) rgba(var(--bs-dark-rgb), .25) !important;
+        }
+
+        th {
+            font-weight: bold;
+            --bs-table-bg: var(--bs-table-striped-bg);
+        }
+    }
+
+    div:not(.dt-scroll-head) > table.dataTable {
+        > tbody {
+            td {
+                .risk-cell {
+                    position: relative;
+                }
+                    
+                .risk-cell-holder {
+                    display: flex;
+                    align-items: center;
+                    float: right !important;
+            
+                    .risk-color {
+                        display: inline-block;
+                        width: 20px;
+                        height: 20px;
+                        border-radius: 2px;
+                        border: 1px solid;
+                        margin-left: 10px;
+                        margin-right: auto;
+                    }
+                }
+            }
+        }
+    }
+
+    .dt-scroll {
+
+        overflow: auto;
+
+        .dt-scroll-head {
+            /*It's here so the multiselects' dropdown is displayed over the datatable body instead of being hidden 'behind' it*/
+            overflow: visible !important;
+        }
+
+        .dt-scroll-body {
+            overflow: visible !important;
+        }
+    }
+
+    div.paginate {
+
+        margin-right: .5rem !important;
+
+        & > *:not(:first-child) {
+            margin-left: .5rem !important;
+        }
+
+        div.shows {
+            &.less {
+                .all {
+                    display: none;
+                }
+                .less {
+                    display: unset;
+                }
+            }
+            &.all {
+                .all {
+                    display: unset;
+                }
+                .less {
+                    display: none;
+                }
+            }
+        }
+
+        .download-by-group, .print-by-group {
+            font-size: 1.5rem;
+            cursor: pointer;
+        }       
+    }
+    
 }

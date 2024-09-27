@@ -5,7 +5,7 @@
 
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['tabs:logic', 'colorpicker', 'editable'], ['check_admin' => true]);
+render_header_and_sidebar(['tabs:logic', 'editable'], ['check_admin' => true]);
 
 // Check if the risk formula update was submitted
 if (isset($_POST['update_risk_formula']))
@@ -93,18 +93,32 @@ function display_editable_line_for($localizationKey, $risk_levels, $level) {
 
     global $escaper;
 
-    $risk_name = "<span data-level='{$level}'><span class='editable'>{$escaper->escapeHtml($risk_levels[$level]['display_name'])}</span>
-                    <input type='text' data-field='display_name' class='editable' value='{$escaper->escapeHtml($risk_levels[$level]['display_name'])}' style='display: none;'></span>";
+    $risk_name = "
+        <span data-level='{$level}'>
+            <span class='editable'>{$escaper->escapeHtml($risk_levels[$level]['display_name'])}</span>
+            <input type='text' data-field='display_name' class='editable' value='{$escaper->escapeHtml($risk_levels[$level]['display_name'])}' style='display: none;'>
+        </span>
+    ";
 
-    $risk_value = "<span data-level='{$level}'><span class='editable'>{$escaper->escapeHtml($risk_levels[$level]['value'])}</span>
-                    <input type='text' data-field='value' class='editable' value='{$escaper->escapeHtml($risk_levels[$level]['value'])}' style='display: none;'></span>";
+    $risk_value = "
+        <span data-level='{$level}'>
+            <span class='editable'>{$escaper->escapeHtml($risk_levels[$level]['value'])}</span>
+            <input type='text' data-field='value' class='editable' value='{$escaper->escapeHtml($risk_levels[$level]['value'])}' style='display: none;'>
+        </span>
+    ";
 
-    $color_select = "<span data-level='{$level}'><input data-field='color' class='level-colorpicker level-color editable' type='hidden' value='{$escaper->escapeHtml($risk_levels[$level]['color'])}'>
-                    <div class='colorSelector'><div style='background-color:{$escaper->escapeHtml($risk_levels[$level]['color'])}'></div></div></span>";
+    $color_select = "
+        <span data-level='{$level}'>
+            <input data-field='color' class='level-colorpicker level-color editable' type='hidden' value='{$escaper->escapeHtml($risk_levels[$level]['color'])}'>
+            <input type='color' class='form-control-color my-1 color-picker'/>
+        </span>
+    ";
 
-    echo "<div>";
-    echo _lang($localizationKey, array('risk_name' => $risk_name, 'risk_value' => $risk_value, 'color_select' => $color_select), false);
-    echo "</div>";
+    echo "
+        <div>" . 
+            _lang($localizationKey, array('risk_name' => $risk_name, 'risk_value' => $risk_value, 'color_select' => $color_select), false) . "
+        </div>
+    ";
 }
 
 ?>
@@ -224,28 +238,27 @@ function display_editable_line_for($localizationKey, $risk_levels, $level) {
             });
         });
 
-        $(".colorSelector").each(function(){
-            var inp = $(this).parent().find(".level-colorpicker");
-            var color = colourNameToHex(inp.val());
+        //The color values are stored in '.level-colorpicker' when the page is rendered.
+        //Display those colors in color pickers using the values stored in '.level-colorpicker'.
+        $(".color-picker").each(function() {
 
-            $(this).ColorPicker({
-                color: color,
-                onShow: function (colpkr) {
-                    $(colpkr).fadeIn(500);
-                    inp.data("original", inp.val());
-                    return false;
-                },
-                onHide: function (colpkr) {
-                    $(colpkr).fadeOut(500);
-                    if (inp.data("original") != inp.val())
-                        inp.trigger("change");
-                    return false;
-                },
-                onChange: function (hsb, hex, rgb, el) {
-                    $("div", el).css("backgroundColor", "#" + hex);
-                    $(el).parent().find(".level-color").val("#" + hex);
-                }
-            });
+            //Get the color values.
+            let inp = $(this).parent().find(".level-colorpicker");
+
+            //Get the Hex color values since the values assigned to HTML5 colorpicker must be HEX
+            let color = colourNameToHex(inp.val());
+
+            //Display colors.
+            $(this).val(color);
+        });
+
+        $(".color-picker").change(function() {
+            //Store the color values in '.level-colorpicker'
+            let inp = $(this).parent().find(".level-colorpicker");
+            inp.val($(this).val());
+
+            //Update color values
+            inp.trigger("change");
         });
     });
 </script>

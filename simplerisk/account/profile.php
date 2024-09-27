@@ -281,14 +281,14 @@ if(isset($_POST['reset_custom_display_settings'])) {
         if (isset($_SESSION['user_type']) && $_SESSION['user_type'] != "ldap") {
 
             $html = "
-        <div class='card-body border m-t-5 flex-grow-1'>
-            <div>
+        <div class='card-body border flex-grow-1'>
             ";
 
             $resetRequestMessages = getPasswordReqeustMessages();
             if(count($resetRequestMessages)) {
 
-                $html .= "
+                $html .= "    
+            <div>
                 <h4>" . $escaper->escapeHtml($lang['PasswordRequirements']) . "</h4>
                 <ul>
                 ";
@@ -303,17 +303,15 @@ if(isset($_POST['reset_custom_display_settings'])) {
 
                 $html .= "
                 </ul>
+            </div>
                 ";
 
             }
 
-            $html .= "
-            </div>
-            ";
             echo $html;
 
     ?>
-            <div class="m-t-30">
+            <div>
                 <form class="form-horizontal" action="" method="post">
                     <h4><?= $escaper->escapeHtml($lang['ChangePassword']);?></h4>
                     <div class="form-group">

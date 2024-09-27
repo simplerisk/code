@@ -1619,6 +1619,7 @@ function getTabHtml($id, $template){
     }
 //    $default_next_review = get_next_review_default($risk_id);
 
+    global $isAjax;
     $isAjax = true;
 
     $action = isset($_GET['action']) ? $_GET['action'] : "";
@@ -3624,7 +3625,8 @@ function getTableData()
 /*******************************************************
  * FUNCTION: GET DATA FOR FRAMEWORK CONTROLS DATATABLE *
  *******************************************************/
-function getFrameworkControlsDatatable(){
+function getFrameworkControlsDatatable() {
+
     global $lang;
     global $escaper;
 
@@ -3676,71 +3678,70 @@ function getFrameworkControlsDatatable(){
             $delete = "<a href='' class='control-block--delete' title='{$escaper->escapeHtml($lang['Delete'])}' data-id='{$escaper->escapeHtml($control['id'])}'><i class='fa fa-trash'></i></a>";
             $html = "
                 <div class='control-block item-block clearfix'>
-                    <div class='control-block--header clearfix' data-project=''>
+                    <div class='control-block--header clearfix' data-project='' style='padding: 1.25rem;'>
                         <div class='row mb-2'>
                             <div class='col-sm-12 col-md-8 checkbox-in-div'>
                                 <input type='checkbox' name='control_ids[]' value='{$escaper->escapeHtml($control['id'])}' class='form-check-input'>
                                 <span>This control is marked for deletion</span>
-                            </div>
-                        
+                            </div> 
                             <div class='col-sm-12 col-md-4 text-end control-block--row'>
                                 {$delete}{$clone}{$edit}
                             </div>
                         </div>
-                        <div class='control-block--row control-content'>
+                        <div class='control-block--row control-content pb-0'>
             ";
             if (customization_extra()) {
                 $html .= "
                             <div class='row'>
-                                <div class='col-12 top-panel'>
-                                    " . display_detail_control_fields_view('top', $active_fields, $control) . "
+                                <div class='col-12 top-panel'>" . 
+                                    display_detail_control_fields_view('top', $active_fields, $control) . "
                                 </div>
                             </div>
                             <div class='row'>
-                                <div class='col-6 left-panel'>
-                                    " . display_detail_control_fields_view('left', $active_fields, $control) . "
+                                <div class='col-6 left-panel'>" . 
+                                    display_detail_control_fields_view('left', $active_fields, $control) . "
                                 </div>
-                                <div class='col-6 right-panel'>
-                                    " . display_detail_control_fields_view('right', $active_fields, $control) . "
+                                <div class='col-6 right-panel'>" . 
+                                    display_detail_control_fields_view('right', $active_fields, $control) . "
                                 </div>
                             </div>
                             <div class='row'>
-                                <div class='col-12 bottom-panel'>
-                                    " . display_detail_control_fields_view('bottom', $active_fields, $control) . "
+                                <div class='col-12 bottom-panel'>" . 
+                                    display_detail_control_fields_view('bottom', $active_fields, $control) . "
                                 </div>
                             </div>
                 ";
             } else {
                 $html .= "
                             <div class='row'>
-                                <div class='col-12 top-panel'>
-                                    " . display_control_name_view($control['short_name'], 'top') . "
-                                    " . display_control_longname_view($control['long_name'], 'top') . "
-                                    " . display_control_number_view2($control['control_number'], 'top') . "
+                                <div class='col-12 top-panel'>" . 
+                                    display_control_name_view($control['short_name'], 'top') . 
+                                    display_control_longname_view($control['long_name'], 'top') . 
+                                    display_control_number_view2($control['control_number'], 'top') . "
                                 </div>
                             </div>
                             <div class='row'>
-                                <div class='col-6 left-panel'>
-                                    " . display_control_owner_view($control['control_owner_name'], 'left') . "
-                                    " . display_control_priority_view($control['control_priority_name'], 'left') . "
-                                    " . display_current_maturity_view($control['control_maturity_name'], 'left') . "
-                                    " . display_desired_maturity_view($control['desired_maturity_name'], 'left') . "
-                                    " . display_control_class_view($control['control_class_name'], 'left') . "
+                                <div class='col-6 left-panel'>" . 
+                                    display_control_owner_view($control['control_owner_name'], 'left') . 
+                                    display_control_priority_view($control['control_priority_name'], 'left') . 
+                                    display_current_maturity_view($control['control_maturity_name'], 'left') . 
+                                    display_desired_maturity_view($control['desired_maturity_name'], 'left') . 
+                                    display_control_class_view($control['control_class_name'], 'left') . "
                                 </div>
-                                <div class='col-6 right-panel'>
-                                    " . display_control_phase_view($control['control_phase_name'], 'right') . "
-                                    " . display_control_family_view($control['family_short_name'], 'right') . "
-                                    " . display_control_mitigation_percent_view($control['mitigation_percent'], 'right') . "
-                                    " . display_control_type_view($control['control_type_ids'], 'right') . "
-                                    " . display_control_status_view($control['control_status'], 'right') . "
+                                <div class='col-6 right-panel'>" . 
+                                    display_control_phase_view($control['control_phase_name'], 'right') . 
+                                    display_control_family_view($control['family_short_name'], 'right') . 
+                                    display_control_mitigation_percent_view($control['mitigation_percent'], 'right') . 
+                                    display_control_type_view($control['control_type_ids'], 'right') . 
+                                    display_control_status_view($control['control_status'], 'right') . "
                                 </div>
                             </div>
                             <div class='row'>
-                                <div class='col-12 bottom-panel'>
-                                    " . display_control_description_view($control['description'], 'bottom') . "
-                                    " . display_supplemental_guidance_view($control['supplemental_guidance'], 'bottom') . "
-                                    " . display_mapping_framework_view($control['id'], 'bottom') . "
-                                    " . display_mapping_asset_view($control['id'], 'bottom') . "
+                                <div class='col-12 bottom-panel'>" . 
+                                    display_control_description_view($control['description'], 'bottom') . 
+                                    display_supplemental_guidance_view($control['supplemental_guidance'], 'bottom') . 
+                                    display_mapping_framework_view($control['id'], 'bottom') . 
+                                    display_mapping_asset_view($control['id'], 'bottom') . "
                                 </div>
                             </div>
                 ";
@@ -7673,8 +7674,7 @@ function get_exception_for_display_api()
         $exception['approval_date'] = date(get_default_date_format());
         $exception['approver'] = $escaper->escapeHtml($_SESSION['name'] ? $_SESSION['name'] : $_SESSION['user']);
     }
-    $exception['description'] = $exception['description'];
-    $exception['justification'] = $exception['justification'];
+
     if($exception['unique_name'])
         $exception['file_download'] = "<a class='text-info' href=\"".$_SESSION['base_url']."/governance/download.php?id=".$exception['unique_name']."\" >".$escaper->escapeHtml($exception['file_name']). " (".$exception['file_version'].")" ."</a>";
     else $exception['file_download'] = "";
@@ -7868,8 +7868,8 @@ function create_exception_api() {
     $additional_stakeholders = empty($_POST['additional_stakeholders']) ? "" : implode(",", $_POST['additional_stakeholders']);
     $associated_risks = empty($_POST['associated_risks']) ? "" : implode(",", $_POST['associated_risks']);
     $review_frequency = !empty($_POST['review_frequency']) ? $_POST['review_frequency'] : 0;
-    $description = $_POST['description'];
-    $justification = $_POST['justification'];
+    $description = purify_html($_POST['description']);
+    $justification = purify_html($_POST['justification']);
 
     ##Checking if non-required parameters have valid values##
     #########################################################
@@ -8009,8 +8009,8 @@ function update_exception_api() {
     $additional_stakeholders = empty($_POST['additional_stakeholders']) ? "" : implode(",", $_POST['additional_stakeholders']);
     $associated_risks = empty($_POST['associated_risks']) ? "" : implode(",", $_POST['associated_risks']);
     $review_frequency = !empty($_POST['review_frequency']) ? $_POST['review_frequency'] : 0;
-    $description = $_POST['description'];
-    $justification = $_POST['justification'];
+    $description = purify_html($_POST['description']);
+    $justification = purify_html($_POST['justification']);
 
     ##Checking if non-required parameters have valid values##
     #########################################################
@@ -10691,7 +10691,7 @@ function my_open_risk_datatable() {
     {
         // Query the database
         $sql = "
-            SELECT SQL_CALC_FOUND_ROWS a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
+            SELECT SQL_CALC_FOUND_ROWS a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
             FROM risk_scoring a
                 LEFT JOIN risks b ON a.id = b.id
                 LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
@@ -10715,7 +10715,7 @@ function my_open_risk_datatable() {
 
         // Query the database
         $sql = "
-            SELECT SQL_CALC_FOUND_ROWS a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
+            SELECT SQL_CALC_FOUND_ROWS a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
             FROM risk_scoring a
                 LEFT JOIN risks b ON a.id = b.id
                 LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
@@ -10984,7 +10984,7 @@ function recent_commented_risk_datatable() {
     }
     // Query the database
     $sql = "
-        SELECT SQL_CALC_FOUND_ROWS a.calculated_risk, b.*, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
+        SELECT SQL_CALC_FOUND_ROWS a.calculated_risk, b.*, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
         FROM risk_scoring a
             LEFT JOIN (
                 SELECT *,
@@ -11614,6 +11614,7 @@ function api_complianceforgescf_disable()
         return json_response(403, "Forbidden", null);
     }
 }
+
 /**********************************************
  * FUNCTION: CREATE A ASSET FROM EXTERNAL APP *
  **********************************************/
@@ -11695,4 +11696,44 @@ function delete_asset_api(){
     }
 }
 
+/*************************************************************
+ * FUNCTION: ENABLE OR DISABLE INCIDENT MANAGEMENT EXTRA APP *
+ *************************************************************/
+function incidentManagementAPI() {
+    global $lang;
+
+    $status = null;
+    $status_message = null;
+    
+    // If the extra directory exists
+    if (is_dir(realpath(__DIR__ . '/../extras/incident_management'))) {
+
+        // Include the Incident Management Extra
+        require_once(realpath(__DIR__ . '/../extras/incident_management/index.php'));
+
+        // If the user wants to activate the extra
+        if (isset($_POST['activate'])) {
+
+            // Enable the Incident Management Extra
+            enable_incident_management_extra();
+            
+            $status = 200;
+            $status_message = 'Activated The Incident Management Extra';
+            set_alert(true, "good", $status_message);
+        }
+
+        // If the user wants to deactivate the extra
+        if (isset($_POST['deactivate'])) {
+            
+            // Disable the Incident Management Extra
+            disable_incident_management_extra();
+
+            $status = 200;
+            $status_message = 'Deactivated The Incident Management Extra';
+            set_alert(true, "bad", $status_message);
+        }
+    }
+
+    return json_response($status, $status_message);
+}
 ?>

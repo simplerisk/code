@@ -106,7 +106,6 @@ else
       <?php if ($display) display_view_assessment_questions($assessment_id); ?>
     </div>
   </div>
-    <?php display_set_default_date_format_script(); ?>
 </body>
 
 </html>

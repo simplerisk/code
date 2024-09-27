@@ -457,9 +457,9 @@ final class Run implements RunInterface
             // XXX we pass $level for the "code" param only for BC reasons.
             // see https://github.com/filp/whoops/issues/267
             $exception = new ErrorException($message, /*code*/ $level, /*severity*/ $level, $file, $line);
-            $app = \Leaf\Config::get("app")["instance"];
+            $app = \Leaf\Config::get('app');
 
-            if ($app && $app->config("log.enabled")) {
+            if ($app && $app->config('log.enabled')) {
                 $app->logger()->error($exception);
             }
 

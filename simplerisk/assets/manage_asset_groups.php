@@ -1,26 +1,26 @@
 <?php
-/* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this
-* file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+    /* This Source Code Form is subject to the terms of the Mozilla Public
+    * License, v. 2.0. If a copy of the MPL was not distributed with this
+    * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Render the header and sidebar
-require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['easyui', 'easyui:treegrid', 'CUSTOM:selectlist.js'], ['check_assets' => true]);
+    // Render the header and sidebar
+    require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+    render_header_and_sidebar(['easyui', 'easyui:treegrid', 'CUSTOM:selectlist.js'], ['check_assets' => true]);
 
-// Include required functions file
-require_once(realpath(__DIR__ . '/../includes/assets.php'));
+    // Include required functions file
+    require_once(realpath(__DIR__ . '/../includes/assets.php'));
 
 ?>
 <div class="row bg-white">
-    <div class="col-12 mt-2">
+    <div class="col-12 my-2">
         <div>
             <nav class="nav nav-tabs">
                 <a class="btn btn-primary" id="asset-group-create-btn"><i class="fa fa-plus"></i></a>
                 <a class="nav-link active" id="asset-groups-tab" data-bs-target="#tb-asset-groups" data-bs-toggle="tab"><?php echo $escaper->escapeHtml($lang['AssetGroups']); ?> (<span id="asset-groups-count">0</span>)</a>
             </nav>
         </div>
-        <div class="tab-content cust-tab-content my-2" id="myTabContent" >
-            <div class="tab-pane fade show active" id="tb-asset-groups" role="tabpanel" aria-labelledby="asset-groups-tab">
+        <div class="tab-content">
+            <div class="tab-pane active card-body border mt-2" id="tb-asset-groups" role="tabpanel" aria-labelledby="asset-groups-tab">
                 <div class="row">
                     <div id="asset-groups" class="col-12 custom-treegrid-container">
                          <?php get_asset_groups_table(); ?>

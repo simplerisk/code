@@ -54,10 +54,33 @@ enforce_permission("riskmanagement");
     <?php
         // If the user has selected to edit the mitigation and they have permission to edit the mitigation
         if ((isset($_POST['edit_mitigation']) || (isset($action) && $action == 'editmitigation')) && has_permission("plan_mitigations")) {
-                edit_mitigation_details($id, $mitigation_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $template_group_id);
-        // Otherwise we are just viewing the mitigation
+            edit_mitigation_details($id, $mitigation_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $template_group_id);
+
+            // If it's not being included through an AJAX call we have to run the below logic to initialize the controls on the page
+            // Conveniently the '$isAjax' variable isset in the API call before including this page
+            // so we can track if it's loaded through the API or it's a regular page load
+            if (!isset($isAjax) || !$isAjax) {
+                ?>
+                <script>
+					// To be able to only run this for the active tab we have to get a reference of THIS script tag
+					// which is why we're using this structure below
+                    (function(scriptTag){
+
+                    	// do whatever you want after the DOM is loaded here...
+                    	$(function(){
+                        	// Get the containing parent of this script tag
+                            var tabContainer = $(scriptTag).parents('.tab-data');
+                            // Run the logic that's initializing the elements of the included part
+                            callbackAfterRefreshTab(tabContainer, 1);
+                        });
+                     })(document.currentScript);
+                </script>
+<?php
+            }
+
+            // Otherwise we are just viewing the mitigation
         } else {
-                view_mitigation_details($id, $mitigation_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $template_group_id);
+            view_mitigation_details($id, $mitigation_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $template_group_id);
         }
     ?>
 
@@ -74,6 +97,28 @@ enforce_permission("riskmanagement");
         if (isset($action) && $action == 'editreview' && $edit) {
             $default_next_review = get_next_review_default($id-1000);
             edit_review_submission($id, $review_id, $review, $next_step, $next_review, $comments, $default_next_review, $template_group_id);
+
+            // If it's not being included through an AJAX call we have to run the below logic to initialize the controls on the page
+            // Conveniently the '$isAjax' variable isset in the API call before including this page
+            // so we can track if it's loaded through the API or it's a regular page load 
+            if (!isset($isAjax) || !$isAjax) {
+?>
+                <script>
+					// To be able to only run this for the active tab we have to get a reference of THIS script tag
+					// which is why we're using this structure below
+                    (function(scriptTag){
+
+                    	// do whatever you want after the DOM is loaded here...
+                    	$(function(){
+                        	// Get the containing parent of this script tag
+                            var tabContainer = $(scriptTag).parents('.tab-data');
+                            // Run the logic that's initializing the elements of the included part
+                            callbackAfterRefreshTab(tabContainer, 2);
+                        });
+                     })(document.currentScript);
+                </script>
+<?php
+            }
         } else {
             view_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comments, $template_group_id);
         }

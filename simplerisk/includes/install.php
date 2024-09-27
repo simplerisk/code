@@ -184,12 +184,9 @@ function display_install_header()
         <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="none" data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full" data-function="assessment">
             <header class="topbar" data-navbarbg="skin5">
                 <nav class="navbar top-navbar navbar-expand-md navbar-dark">
-                    <div class="navbar-header-1">
-                        <a class="navbar-brand" href="https://www.simplerisk.com/">
-                        <span class="logo-text ms-2">
-                            <!-- dark Logo text -->
-                            <img src="images/logo@2x.png" alt="homepage" class="light-logo"/>  
-                        </span>
+                    <div class="navbar-header">
+                        <a class="navbar-brand" href="https://www.simplerisk.com">
+                            <img src="images/logo@2x.png" alt="homepage" class="logo"/>
                         </a>
                     </div>
               		<div class="navbar-collapse collapse show" id="navbarSupportedContent" data-navbarbg="skin5">
@@ -962,35 +959,6 @@ function step_6_simplerisk_installation()
             break;
     }
 
-    /*
-    // If the database file already exists
-    $tmp_dir = sys_get_temp_dir();
-    $tmp_file_path = $tmp_dir . '/' . $file;
-
-    if (file_exists($tmp_file_path))
-    {
-        // Delete it to prevent someone from pre-loading the file
-        unlink($tmp_file_path);
-    }
-
-    // Check if we want to use a custom branch
-    $branch = defined('DB_BRANCH') ? DB_BRANCH : "master";
-
-    // Download the database schema file to the tmp directory
-    $file_url = "https://raw.githubusercontent.com/simplerisk/database/" . $branch . "/" . $file;
-    file_put_contents($tmp_file_path, file_get_contents($file_url));
-
-    // If the database schema file exists
-    if (file_exists($tmp_file_path))
-    {
-        // Load the database file
-        load_file($db_host, $db_port, $db_user, $db_pass, $sr_db, $tmp_file_path);
-
-        // Remove the database file from tmp
-        unlink($tmp_file_path);
-    }
-    */
-
     // Check if we want to use a custom branch
     $branch = defined('DB_BRANCH') ? DB_BRANCH : "master";
 
@@ -1039,6 +1007,19 @@ function step_6_simplerisk_installation()
 
     // Close the memory file
     fclose($memory_file);
+
+    // Get any existing users
+    $stmt = $db->prepare("SELECT count(*) FROM `user`;");
+    $stmt->execute();
+    $number_of_users = (int)$stmt->fetchColumn();
+
+    // If there are no users
+    if ($number_of_users == 0)
+    {
+        // Ensure that the AUTO_INCREMENT value is set to 1 for the first user
+        $stmt = $db->prepare("ALTER TABLE `user` AUTO_INCREMENT=1;");
+        $stmt->execute();
+    }
 
     // Add the default admin user
     installer_add_admin_user($username, $email, $full_name, $password);

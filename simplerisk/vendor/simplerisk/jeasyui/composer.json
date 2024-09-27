@@ -1,0 +1,7 @@
+{
+    "name": "simplerisk/jeasyui",
+    "description": "Licensed jQuery EasyUI package",
+    "type": "library",
+    "license": "proprietary",
+    "require": {}
+}

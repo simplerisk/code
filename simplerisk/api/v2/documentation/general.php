@@ -52,6 +52,10 @@ define('SIMPLERISK_API_URL', SIMPLERISK_BASE_URL.API_PATH);
 *     name="governance",
 *     description="Governance Operations",
 *   ),
+*   @OA\Tag(
+*     name="Artificial Intelligence",
+*     description="Artificial Intelligence Operations",
+*  ),
 *  @OA\Tag(
 *      name="assessment",
 *      description="Risk Assessment Extra",

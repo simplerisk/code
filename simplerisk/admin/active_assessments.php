@@ -37,9 +37,8 @@ if (isset($_POST['delete_active_assessments']))
 ?>
 <div class="row bg-white">
     <div class="col-12">
-        <div class="card-body my-2 border d-flex align-items-center">
-            <label class="text-danger">Warning:</label>
-            <div class="text-danger m-l-20">* Deleted Assessments Cannot Be Recovered</div>
+        <div class="card-body my-2 border d-flex align-items-center alert alert-danger" role="alert">
+            Deleted Assessments Cannot Be Recovered
         </div>
         <div class='card-body my-2 border'>
             <?php display_active_assessments(); ?>
@@ -60,6 +59,8 @@ if (isset($_POST['delete_active_assessments']))
     $(function () {
         $('#questionaires_table').DataTable({
             serverSide: false,
+			order: [[1, 'asc']],
+			columnDefs: [{'targets': 0, 'orderable': false}],
         });
         $('.btn-delete').on('click', function () {
             confirm(_lang['GenericDeleteItemConfirmation'], () => $('#delete_active_assessments').trigger('submit'));

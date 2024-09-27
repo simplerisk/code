@@ -32,9 +32,8 @@ if (isset($_POST['delete_risks']) && isset($_POST['risks']))
 <div class="row bg-white">
 	<div class="col-12">
 		<div>
-			<div class="card-body my-2 border d-flex align-items-center">
-				<label class="text-danger">Warning:</label>
-				<div class="text-danger m-l-20">* <?php echo $escaper->escapeHtml($lang['DeletedRisksCannotBeRecovered']); ?></div>
+			<div class="card-body my-2 border d-flex align-items-center alert alert-danger" role="alert">
+				 <?php echo $escaper->escapeHtml($lang['DeletedRisksCannotBeRecovered']); ?>
 			</div>
 			<form id="delete_risks" method="post" action="" class='card-body my-2 border'>
 				<input type="hidden" name="delete_risks"/>
@@ -55,10 +54,11 @@ if (isset($_POST['delete_risks']) && isset($_POST['risks']))
 	}
 	$(function() {
 		$('#zero_config').DataTable({
-			'searching':   true,
-			'lengthMenu': [[25, 50,100, -1], [25, 50,100, 'All']],
-			'serverSide': false
+			serverSide: false,
+			order: [[1, 'asc']],
+			columnDefs: [{'targets': 0, 'orderable': false}],
 		});
+
 		$('.btn-delete').on('click', function () {
 			confirm(_lang['GenericDeleteItemConfirmation'], () => $('#delete_risks').trigger('submit'));
 		});

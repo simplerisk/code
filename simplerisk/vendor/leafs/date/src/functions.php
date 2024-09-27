@@ -14,12 +14,13 @@ if (!function_exists('tick')) {
             return (new Leaf\Date())->tick($userDate, $userTimeZone);
         }
 
-        $date = Leaf\Config::get('date')['instance'] ?? null;
-
-        if (!$date) {
-            $date = new Leaf\Date();
-            Leaf\Config::set('date', ['instance' => $date]);
+        if (!(\Leaf\Config::getStatic('date'))) {
+            \Leaf\Config::singleton('date', function () {
+                return new \Leaf\Date();
+            });
         }
+
+        $date = \Leaf\Config::get('date');
 
         if ($userDate) {
             $date->tick($userDate, $userTimeZone);

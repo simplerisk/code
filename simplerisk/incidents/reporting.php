@@ -44,7 +44,7 @@ else
 {
     $breadcrumb_title_key = "Reporting";
 }
-render_header_and_sidebar(['datatables', 'tabs:logic', 'multiselect', 'chart.js'], ['check_im_reporting' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
+render_header_and_sidebar(['datatables', 'tabs:logic', 'multiselect', 'datetimerangepicker', 'chart.js'], ['check_im_reporting' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
 
 // Include required functions file
 require_once(realpath(__DIR__ . '/../includes/permissions.php'));
@@ -73,7 +73,7 @@ if (incident_management_extra()){
 ?>
 <script>
 	$(function () {
-		$(".datepicker").datepicker({dateFormat: '<?= get_default_date_format_for_datepicker() ?>'});
+        $(".datepicker").initAsDateRangePicker();
 	});
 </script>
 <div class="row bg-white">
@@ -119,7 +119,6 @@ if (incident_management_extra()){
 		</div>
 	</div>
 </div>
-<?php display_set_default_date_format_script();  ?>
 <?php
     // Render the footer of the page. Please don't put code after this part.
     render_footer();

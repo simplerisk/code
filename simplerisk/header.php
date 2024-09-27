@@ -3,9 +3,10 @@ require_once(realpath(__DIR__ .'/head.php'));
 
 // Define the localization keys required by certain scripts and if there's a match in the requested scripts then the required localizations will be made available for the script to use
 $localization_required_by_scripts = [
-    'CUSTOM:common.js' => ['Yes', 'Cancel'],
+    'CUSTOM:common.js' => ['Yes', 'Cancel', 'FieldIsRequired'],
     'EXTRA:JS:assessments:questionnaire_templates.js' => ['SelectedOnAnotherTab', 'ID', 'SelectedQuestions', 'SearchForQuestion', 'ConfirmDisableTabbedExperience', 'ConfirmDeleteTab', 'NewTab', 'Default'],
     'CUSTOM:pages/plan-project.js' => ['AreYouSureYouWantToDeleteThisProject'],
+    'datatables' => ['All', 'datatables_ShowAll', 'datatables_ShowLess', 'First', 'Previous', 'Next', 'Last']
 ];
 
 ?>
@@ -30,7 +31,6 @@ $localization_required_by_scripts = [
 
   	<script type="text/javascript">
         var BASE_URL = '<?= $escaper->escapeHtml($_SESSION['base_url'] ?? get_setting("simplerisk_base_url"))?>';
-        var field_required_lang = '<?= $escaper->escapeHtml($lang['FieldIsRequired'])?>';
   	</script>
 
     <!-- All Jquery -->
@@ -62,7 +62,7 @@ if (!empty($required_scripts_or_css)) {
     $scripts_with_localization_needs = array_intersect(array_keys($localization_required_by_scripts), $required_scripts_or_css);
 
     // If there is
-    if (count($scripts_with_localization_needs) > 0) {
+    if (count($scripts_with_localization_needs) > 0 || !empty($required_localization_keys)) {
 
         // then make sure that the 'JSLocalization' is in the list of requested features
         if (!in_array('JSLocalization', $required_scripts_or_css)) {
@@ -78,6 +78,28 @@ if (!empty($required_scripts_or_css)) {
         foreach ($scripts_with_localization_needs as $script_with_localization_needs) {
             $required_localization_keys = array_merge_unique($required_localization_keys, $localization_required_by_scripts[$script_with_localization_needs]);
         }
+
+        // Render the script tag with the localized strings
+?>
+		<script type="text/javascript">
+<?php
+            if (!empty($required_localization_keys)) {
+?>
+    		var _lang = {
+<?php
+                foreach ($required_localization_keys as $localization_key) {
+                    // Escaped as html so it won't cause issues when inserted in the html using JS
+?>
+        		'<?= $localization_key ?>': '<?= $escaper->escapeHtml($lang[$localization_key]) ?>',
+<?php
+                }
+?>
+			};
+<?php
+            }
+?>
+		</script>
+<?php
     }
 }
 
@@ -107,8 +129,8 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
             break;
         case 'selectize':
 ?>
-    <script src="../vendor/simplerisk/selectize.js/dist/js/standalone/selectize.min.js?<?= $current_app_version ?>" id="script_selectize" defer></script>
-    <link rel="stylesheet" href="../vendor/simplerisk/selectize.js/dist/css/selectize.bootstrap5.css?<?= $current_app_version ?>">
+    <script src="../vendor/node_modules/@selectize/selectize/dist/js/selectize.min.js?<?= $current_app_version ?>" id="script_selectize" defer></script>
+    <link rel="stylesheet" href="../vendor/node_modules/@selectize/selectize/dist/css/selectize.bootstrap5.css?<?= $current_app_version ?>">
 <?php 
             break;
         case "sorttable":
@@ -118,7 +140,7 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
             break;
         case 'datatables':
 ?>
-	<script src="../vendor/node_modules/datatables.net/js/jquery.dataTables.min.js?<?= $current_app_version ?>" defer></script>
+	<script src="../vendor/node_modules/datatables.net/js/dataTables.min.js?<?= $current_app_version ?>" defer></script>
 	<script src="../vendor/node_modules/datatables.net-bs5/js/dataTables.bootstrap5.min.js?<?= $current_app_version ?>" id="script_datatables" defer></script>
 	<script src="../js/simplerisk/dataTables.renderers.js?<?= $current_app_version ?>" id="script_datatables_renderers" defer></script>
 	<link rel="stylesheet" href="../vendor/node_modules/datatables.net-bs5/css/dataTables.bootstrap5.min.css?<?= $current_app_version ?>">
@@ -133,24 +155,47 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
 			});
 
 			Object.assign(DataTable.defaults, {
-                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, '<?= $escaper->escapeHtml($lang['All'])?>']],
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, _lang['All']]],
                 lengthChange: true,
                 filter: true,
                 processing: true,
         		serverSide: true,
-        		pagingType: 'full_numbers',
-        		stripeClasses: [  ],
-                dom: "<'row'<'col-sm-12 col-md-2'l><'col-sm-12 col-md-10 settings'>><'row dt-row'<'col-sm-12'tr>><'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 paginate'<'btn btn-primary shows float-end'>p>>",
+                layout: {
+                	topStart: 'pageLength',
 <?php // Using PHP comments so it's not rendered into the page
-                /* Can add localization or other changes to the paginate buttons like this
-                language: {
-                	paginate: {
-                		first: '<<',
-                		previous: '<',
-                	}
-                }*/
+                    // This is another way it could've been done. Leaving it here so you don't have to research it
+                    //topEnd: () => $('<div>', {class: 'col-sm-12 col-md-12 settings'}),
 ?>
+                    topEnd: {div: {className: 'col-sm-12 col-md-12 settings'}},
+                    bottomStart: 'info',
+                    bottomEnd: {
+                    	className: 'd-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto paginate',
+                    	features: [
+                    		'paging',
+                    		{div: {className: 'btn btn-primary shows'}},
+<?php
+            // Add the specification for the two extra required button for the Dynamic Risk Report
+            if (in_array('CUSTOM:dynamic.js', $required_scripts_or_css)) {
+?>
+							{div: {className: 'print-by-group'}},
+							{div: {className: 'download-by-group'}},
+<?php
+            }
+?>
+                		]
+            		},
+				},
+				language: {
+                	paginate: {
+                		first: _lang['First'],
+                		previous: _lang['Previous'],
+                		next: _lang['Next'],
+                		last: _lang['Last'],
+                		
+                	}
+                }
             });
+
        		$(document).on('preInit.dt', function(e, settings) {
                 var table = new $.fn.dataTable.Api(settings).table();
 
@@ -158,26 +203,26 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
              	var datatable_uuid = $(table.node()).uniqueId().attr('id');
              	
              	// Get the show all/less button
-             	var button = $(table.node()).closest('div.dataTables_wrapper').find('div.paginate > div.btn.shows');
+             	var button = $(table.node()).closest('div.dt-container').find('div.paginate > div.btn.shows');
              	
              	// Save the datatable's id on it, so it doesn't have to search for it in the onClick logic
              	button.data('td-id', datatable_uuid);
              	
              	// Create the localized Show All/Less divs that'll be shown based on the currently displayed result numbers
-             	$('<span>').addClass('all').text('<?= $escaper->escapeHtml($lang['datatables_ShowAll'])?>').prependTo(button);
-             	$('<span>').addClass('less').text('<?= $escaper->escapeHtml($lang['datatables_ShowLess'])?>').prependTo(button);
+             	$('<span>').addClass('all').text(_lang['datatables_ShowAll']).prependTo(button);
+             	$('<span>').addClass('less').text(_lang['datatables_ShowLess']).prependTo(button);
              	
              	// If there's a settings button for the datatable tagged with the "data-sr-role='dt-settings'" attribute 
              	// and has the [data-sr-target] attribute set then move the settings button to its designated place inside the
              	// datatable wrapper to make it look more like it's part of the datatable
              	$("[data-sr-role='dt-settings'][data-sr-target]").each(function() {
-                    $(this).appendTo($('#' + $(this).data('sr-target')).closest('div.dataTables_wrapper').find('div.settings'));
+                    $(this).appendTo($('#' + $(this).data('sr-target')).closest('div.dt-container').find('div.settings'));
              	});
             });
                 
 			$(document).on('draw.dt', function (e, settings) {
                 var api = new $.fn.dataTable.Api(settings);
-             	var button = $(api.table().node()).closest('div.dataTables_wrapper').find('div.paginate > div.btn.shows');
+             	var button = $(api.table().node()).closest('div.dt-container').find('div.paginate > div.btn.shows');
              	var info = api.page.info();
 
 				// Toggle the 'all' class on when we're NOT displaying every results so we're showing the "Show All" button 
@@ -196,7 +241,7 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
             });
 
 			// Switch between the default page size and the show all option on click            
-            $('body').on('click', 'div.dataTables_wrapper div.paginate > div.btn.shows', function(e) {
+            $('body').on('click', 'div.dt-container div.paginate > div.btn.shows', function(e) {
             	e.preventDefault();
             	var table = $('#' + $(this).data('td-id')).DataTable();
             	table.page.len(table.page.info().length === -1 ? DataTable.defaults.lengthMenu[0][0] : -1).draw();
@@ -282,22 +327,22 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
             break;
         case 'easyui':
 ?>
-    <script src="../js/easyui/jquery.easyui.min.js?<?= $current_app_version ?>" id="script_easyui" defer></script>
-    <link rel="stylesheet" href="../css/easyui/themes/default/easyui.css?<?= $current_app_version ?>">
+    <script src="../vendor/simplerisk/jeasyui/jquery.easyui.min.js?<?= $current_app_version ?>" id="script_easyui" defer></script>
+    <link rel="stylesheet" href="../vendor/simplerisk/jeasyui/themes/default/easyui.css?<?= $current_app_version ?>">
 <?php 
             break;
         case 'easyui:treegrid':
     ?>
-    <script src="../js/easyui/jquery.easyui.min.js?<?= $current_app_version ?>" id="script_easyui" defer></script>
-    <link rel="stylesheet" href="../css/easyui/themes/default/datagrid.css?<?= $current_app_version ?>">
-    <link rel="stylesheet" href="../css/easyui/themes/default/tree.css?<?= $current_app_version ?>">
+    <script src="../vendor/simplerisk/jeasyui/jquery.easyui.min.js?<?= $current_app_version ?>" id="script_easyui" defer></script>
+    <link rel="stylesheet" href="../vendor/simplerisk/jeasyui/themes/default/datagrid.css?<?= $current_app_version ?>">
+    <link rel="stylesheet" href="../vendor/simplerisk/jeasyui/themes/default/tree.css?<?= $current_app_version ?>">
 <?php 
             break;
         case 'easyui:dnd':
 ?>
-	<script src="../js/easyui/plugins/treegrid-dnd.js?<?= $current_app_version ?>" defer></script>
-    <script src="../js/easyui/plugins/jquery.draggable.js?<?= $current_app_version ?>" defer></script>
-	<script src="../js/easyui/plugins/jquery.droppable.js?<?= $current_app_version ?>" defer></script>
+	<script src="../vendor/simplerisk/jeasyui/plugins/treegrid-dnd.js?<?= $current_app_version ?>" defer></script>
+    <script src="../vendor/simplerisk/jeasyui/plugins/jquery.draggable.js?<?= $current_app_version ?>" defer></script>
+	<script src="../vendor/simplerisk/jeasyui/plugins/jquery.droppable.js?<?= $current_app_version ?>" defer></script>
 
 	<!-- Adding this empty style tag here to prevent easyui to create the rules for the treegrid drag&drop -->
 	<style id="treegrid-dnd-style"></style>
@@ -305,7 +350,7 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
             break;
         case 'easyui:filter':
 ?>
-	<script src="../js/easyui/plugins/datagrid-filter.js?<?= $current_app_version ?>" defer></script>
+	<script src="../vendor/simplerisk/jeasyui/plugins/datagrid-filter.js?<?= $current_app_version ?>" defer></script>
 <?php 
             break;
         case 'datetimerangepicker':
@@ -328,7 +373,14 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
                 "cancelClass": "btn-secondary",
             	locale: {
                 	"separator": " - ", // added between the two dates in a daterange
+                    // cancel button is used to clear the value so the button label should be changed into 'Clear'.
+                    "cancelLabel": 'Clear'
                 },
+                // indicates whether the date range picker should automatically update the value of the <input> element it's attached to at initialization and when the selected dates change.
+                // if this value is true, the datepicker initially shows the current date value and if false, the datepicker initially shows empty.
+                // if we set this value to false, we should use 'apply.daterangepicker', 'cancel.daterangepicker' event to update the value of the datepicker and trigger 'change' event.
+                "autoUpdateInput": false,
+
             }
 
             $.fn.extend({
@@ -342,26 +394,65 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
             	*/
             	initAsDatePicker: function(options = {}) {
             		this.daterangepicker(Object.assign({locale:{"format": default_date_format}}, options, {"timePicker": false, "singleDatePicker": true}));
+                    //When the Apply and Clear buttons are clicked, set the value of the date picker input.
+                    attachApplyAndCancelEventHandler($(this), 'date', false);
             	},
             	initAsDateTimePicker: function(options = {}) {
             		this.daterangepicker(Object.assign({locale:{"format": default_datetime_format}}, options, {"timePicker": true, "singleDatePicker": true}));
+                    //When the Apply and Clear buttons are clicked, set the value of the date picker input.
+                    attachApplyAndCancelEventHandler($(this), 'time', false);
             	},
             	initAsDateRangePicker: function(options = {}) {
             		this.daterangepicker(Object.assign({locale:{"format": default_date_format}}, options, {"timePicker": false, "singleDatePicker": false}));
+                    //When the Apply and Clear buttons are clicked, set the value of the date picker input.
+                    attachApplyAndCancelEventHandler($(this), 'date', true);
+
             	},
             	initAsDateTimeRangePicker: function(options = {}) {
             		this.daterangepicker(Object.assign({locale:{"format": default_datetime_format}}, options, {"timePicker": true, "singleDatePicker": false}));
+                    //When the Apply and Clear buttons are clicked, set the value of the date picker input.
+                    attachApplyAndCancelEventHandler($(this), 'time', true);
             	}
             });
         });
+
+        // attach event handlers for clicking the Apply and Cancel buttons to the element
+        // element: datepicker element
+        // type = 'date' or 'time' => datepicker or datetimepicker
+        // range = true or false => rangepicker true or false
+        function attachApplyAndCancelEventHandler(element, type = 'date', range = false) {
+
+            let default_input_format = '';
+            if (type == 'date') {
+                default_input_format = default_date_format;
+            } else if (type == 'time') {
+                default_input_format = default_datetime_format;
+            }
+
+            // trigerred when the apply button is clicked.
+            $(element).on("apply.daterangepicker", function(ev, picker) {
+
+                if (!range) {
+                    $(this).val(picker.startDate.format(default_input_format));
+                } else {
+                    $(this).val(picker.startDate.format(default_input_format) + ' - ' + picker.endDate.format(default_input_format));
+                }
+
+                // if 'autoUpdateInput' is false, the 'change' event is not triggerred automatically even if the value of the datepicker is changed through 'apply.daterangepicker'.
+                $(this).trigger('change');
+
+            });
+
+            // trigerred when the cancel button is clicked.
+            $(element).on('cancel.daterangepicker', function(ev, picker) {
+                $(this).val('');
+
+                // if 'autoUpdateInput' is false, the 'change' event is not triggerred automatically even if the value of the datepicker is changed through 'cancel.daterangepicker'.
+                $(this).trigger('change');
+            });
+        }
 	</script>
 <?php 
-            break;
-        case 'colorpicker':
-?>
-    <script src="../js/colorpicker.js?<?= $current_app_version ?>" defer></script>
-    <link rel="stylesheet" href="../css/colorpicker.css?<?= $current_app_version ?>">
-<?php
             break;
         case 'chart.js':
 ?>
@@ -501,30 +592,6 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
 <?php
             break;
             
-        case 'JSLocalization':
-?>
-		<script type="text/javascript">
-<?php
-            if (!empty($required_localization_keys)) {
-?>
-    		var _lang = {
-<?php
-                foreach ($required_localization_keys as $localization_key) {
-                    // Escaped as html so it won't cause issues when inserted in the html using JS
-?>
-        		'<?= $localization_key ?>': '<?= $escaper->escapeHtml($lang[$localization_key]) ?>',
-<?php
-                }
-?>
-			};
-<?php
-            }
-?>
-		</script>
-<?php
-            break;
-            
-            
         default:
             // Custom scripts
             if (preg_match("/^CUSTOM:((?:[\w,\s-]+\/)*[\w,\s-]+\.js)$/", $required_script_or_css, $matches)) {
@@ -571,18 +638,7 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
             <!-- Logo -->
             <!-- ============================================================== -->
             <a class="navbar-brand" href="https://www.simplerisk.com">
-              <!-- Logo icon -->
-              <b class="logo-icon ps-2">
-                <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
-                <!-- Dark Logo icon -->
-                <img src="../css/images/logo.png" alt="homepage" class="light-logo" width="45"/>  
-              </b>
-              <!--End Logo icon -->
-              <!-- Logo text -->
-              <span class="logo-text ms-2">
-                <!-- dark Logo text -->
-                <img src="../css/images/logo2.png" alt="homepage" class="light-logo"/>
-              </span>
+                <img src="../images/logo@2x.png" alt="homepage" class="logo"/>
             </a>
            
             <a class="nav-toggler waves-effect waves-light d-block d-md-none" href="javascript:void(0)"

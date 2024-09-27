@@ -138,4 +138,45 @@ function api_v2_admin_tag_delete_all()
     api_v2_json_result($status_code, $status_message, $data);
 }
 
+/******************************************
+ * FUNCTION: API V2 ADMIN WRITE DEBUG LOG *
+ ******************************************/
+function api_v2_admin_write_debug_log()
+{
+    // Open the database connection
+    $db = db_open();
+
+    try {
+        // Start a transaction
+        $db->beginTransaction();
+
+        // Get the list of all debug_log messages
+        $stmt = $db->prepare("SELECT id, message FROM `debug_log` FOR UPDATE;");
+        $stmt->execute();
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // For each of the results
+        foreach ($results as $result)
+        {
+            // Write the message to the Apache debug log
+            write_debug_log($result['message']);
+
+            // Delete the message
+            $stmt = $db->prepare("DELETE FROM `debug_log` WHERE id=:id");
+            $stmt->bindParam(":id", $result['id'], PDO::PARAM_INT);
+            $stmt->execute();
+        }
+
+        // Commit the transaction
+        $db->commit();
+    } catch (Exception $e) {
+        // If an error occurs, rollback the transaction
+        $db->rollBack();
+        write_debug_log("Error in api_v2_admin_write_debug_log: " . $e->getMessage());
+    } finally {
+        // Close the database connection
+        db_close($db);
+    }
+}
+
 ?>

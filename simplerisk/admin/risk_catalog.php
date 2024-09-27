@@ -404,6 +404,7 @@ render_header_and_sidebar(['tabs:logic', 'easyui', 'datatables' ,'datatables:row
         risk_table.on('draw', function () {
             $('#riskcatalog tr.dtrg-group.dtrg-start:first button.move-group-up').remove();
             $('#riskcatalog tr.dtrg-group.dtrg-start:last button.move-group-down').remove();
+            $('#riskcatalog div.paginate div.btn.shows').remove();
         });
 
         $(document).on('click', '#riskcatalog .move-group-up', function(event) {
@@ -514,6 +515,7 @@ render_header_and_sidebar(['tabs:logic', 'easyui', 'datatables' ,'datatables:row
         threat_table.on('draw', function () {
             $('#threatcatalog tr.dtrg-group.dtrg-start:first button.move-group-up').remove();
             $('#threatcatalog tr.dtrg-group.dtrg-start:last button.move-group-down').remove();
+            $('#threatcatalog div.paginate div.btn.shows').remove();
         });
 
         $(document).on('click', '#threatcatalog .move-group-up', function(event) {

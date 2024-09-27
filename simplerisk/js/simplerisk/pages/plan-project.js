@@ -131,7 +131,9 @@ var planProject = {
                 // Dropping it on the project it's currently in makes no sense
                 return source_project_id !== target_project_id && e[0].nodeName.toUpperCase() === 'DIV' && e.hasClass('risk');
             },
-            hoverClass: "highlight",
+            classes: {
+                "ui-droppable-hover": "highlight",
+            },
             tolerance: 'pointer',
             drop: function(event, ui){
                 let $this = $(this);
@@ -180,7 +182,9 @@ var planProject = {
                 // The currently active tab doesn't accept drops and even then, only 'div' tags with the correct class
                 return !$(this).hasClass('active') && e[0].nodeName.toUpperCase() === 'DIV' && e.hasClass('project-block');
             },
-            hoverClass: "highlight",
+            classes: {
+                "ui-droppable-hover": "highlight",
+            },
             tolerance: 'pointer',
             drop: function(event, ui){
 
@@ -411,16 +415,18 @@ function init_projects_datatable(table_el) {
 }
 function init_project_tabs() {
     $("div.plan-projects a.nav-link").droppable({
-        hoverClass: "highlight",
+        classes: {
+            "ui-droppable-hover": "highlight",
+        },
         tolerance: "pointer",
         accept: function(e) {
-            console.log(e, );
+            // console.log(e, );
         
             // The currently active tab doesn't accept drops and even then, only 'tbody' tags
             return !$(this).hasClass('active') && e[0].nodeName.toUpperCase() === 'TBODY';
         },
         drop: function (e, ui) {
-            console.log('asdasdasd');
+            // console.log('asdasdasd');
         }
     });
 

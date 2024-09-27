@@ -347,8 +347,7 @@ if (isset($_POST['add_remove_values_input']) && ($_POST['add_remove_values_input
                 <input type="hidden" value="" name="id"/>
                 <input type="hidden" value="" name="name"/>
                 <div class="row" >
-                    <div class="col-md-6 form-group">
-                        <h4><?= $escaper->escapeHtml($lang['Select']); ?></h4>
+                    <div class="col-md-3 form-group pb-4">
                         <select id="table-sections" class="form-select" name="table-sections">
     <?php
         foreach($tableConfig as $table => $config){
@@ -386,42 +385,42 @@ if (isset($_POST['add_remove_values_input']) && ($_POST['add_remove_values_input
                     $display = "display: none;";
                 }
             }
-            echo'
+            echo '
                         <div class="row">
                             <div class="hero-unit" data-table_name="' . $table . '" style="' . $display . '">
                                 <h4>' . $escaper->escapeHtml($lang[$config['headerKey']]) . '</h4>
                                 <div class="row" style="align-items:flex-end">
-                                    <div class="col-md-4 form-group">
+                                    <div class="col-md-6 form-group">
                                         <label>' . $text_addItem . ':</label>
                                         <input id="' . $table . '_new" type="text" maxlength="' . $config['lengthLimit'] .'" size="20" class="form-control"/>
                                     </div>
-                                    <div class="col-md-2 form-group">
+                                    <div class="col-md-1 form-group">
                                         <input type="submit" value="' .  $text_add . ' " data-action="add" class="btn btn-submit form-control"/>
                                     </div>
                                 </div>
                                 <div class="row" style="align-items:flex-end">
-                                    <div class="col-md-2 form-group">
+                                    <div class="col-md-3 form-group">
                                         <label>' . $text_change . ':</label>
             ';
                                         create_dropdown($table, NULL, $table . "_update_from");
             echo'
                                     </div>
-                                    <div class="col-md-2 form-group">
+                                    <div class="col-md-3 form-group">
                                         <label>' . $text_to . ':</label>
                                         <input id="' . $table . '_update_to" type="text" maxlength="' . $config['lengthLimit'] . '" size="20"  class="form-control"/>
                                     </div>
-                                    <div class="col-md-2 form-group">
+                                    <div class="col-md-1 form-group">
                                         <input type="submit" value="' . $text_update . '" data-action="update"  class="btn btn-submit form-control"/>
                                     </div>
                                 </div>
                                 <div class="row" style="align-items:flex-end">
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <label>' . $text_deleteItem . ':</label>
             ';
                                         create_dropdown($table, NULL, $table . "_delete");
             echo '
                                     </div>
-                                    <div class="col-md-2">
+                                    <div class="col-md-1">
                                         <input type="submit" value="' . $text_delete . '" data-action="delete" class="btn btn-submit form-control"/>
                                     </div>
                                 </div>
