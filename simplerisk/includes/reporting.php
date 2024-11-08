@@ -18,8 +18,8 @@ $escaper = new simpleriskEscaper();
 /***********************************
  * FUNCTION SUGGESTED COLORS ARRAY *
  ***********************************/
-function suggested_colors_array()
-{
+function suggested_colors_array() {
+
     // Create an array of suggested colors to use
     $suggested_colors_array = [
         '#4572A7',
@@ -35,6 +35,7 @@ function suggested_colors_array()
 
     // Return the array
     return $suggested_colors_array;
+    
 }
 
 /********************************************************************************
@@ -49,33 +50,34 @@ function suggested_colors_array()
  * $width - The width of the created canvas                                     *
  * $height - The height of the created canvas                                   *
  ********************************************************************************/
-function create_chartjs_pie_code($title = "", $element_id = "", $array = [], $width = null, $height = null)
-{
+function create_chartjs_pie_code($title = "", $element_id = "", $array = [], $width = null, $height = null) {
+
     // Escape the title for javascript display
     $title = str_replace("'", "\'", $title);
 
     // If the array is empty
-    if (empty($array))
-    {
+    if (empty($array)) {
+
         $labels = [];
         $data = [];
-    }
+
     // Otherwise
-    else
-    {
+    } else {
+
         // Create the individual arrays
-        foreach ($array as $row)
-        {
+        foreach ($array as $row) {
+
             // Replace any single quote characters in the label
             $label = str_replace("'", "\'", $row['label']);
             $labels[] = $label;
             $data[] = js_string_escape($row['data']);
+
         }
     }
 
     // If the labels and data are not empty
-    if (!empty($labels) && !empty($data))
-    {
+    if (!empty($labels) && !empty($data)) {
+
         // Convert the values to CSV strings
         $labels = "'" . implode("','", $labels) . "'";
         $data = "'" . implode("','", $data) . "'";
@@ -87,18 +89,18 @@ function create_chartjs_pie_code($title = "", $element_id = "", $array = [], $wi
         $url_switch_code = get_url_switch_code($array);
 
         // Set the width
-        if (is_null($width))
-        {
+        if (is_null($width)) {
             $width = "";
+        } else {
+            $width = "width: {$width};";
         }
-        else $width = "width: {$width};";
 
         // Set the height
-        if (is_null($height))
-        {
+        if (is_null($height)) {
             $height = "";
+        } else {
+            $height = "height: {$height};";
         }
-        else $height = "height: {$height};";
 
         echo "
             <div style='{$width}{$height}'>
@@ -152,9 +154,7 @@ function create_chartjs_pie_code($title = "", $element_id = "", $array = [], $wi
                 });
             </script>
         ";
-    }
-    else
-    {
+    } else {
         echo "
             <div style='align-items: center; display: flex; flex-flow: row; height: 100%; justify-content: center; flex-flow:wrap;'>
                 {$title}
@@ -344,27 +344,27 @@ function create_chartjs_multi_series_pie_code($title = "", $element_id = "", $da
  * $width - The width of the created canvas                                     *
  * $height - The height of the created canvas                                   *
  ********************************************************************************/
-function create_chartjs_line_code($title = "", $element_id = "", $labels = [], $datasets = [], $tooltip = "", $x_axis_title = null, $y_axis_title = null, $y_axis_max = null, $width = null, $height = null)
-{
+function create_chartjs_line_code($title = "", $element_id = "", $labels = [], $datasets = [], $tooltip = "", $x_axis_title = null, $y_axis_title = null, $y_axis_max = null, $width = null, $height = null) {
+
     // Escape the title for javascript display
     $title = str_replace("'", "\'", $title);
 
     // If the labels and datasets are not empty
-    if (!empty($labels) && !empty($datasets))
-    {
+    if (!empty($labels) && !empty($datasets)) {
+
         // Set the width
-        if (is_null($width))
-        {
+        if (is_null($width)) {
             $width = "";
+        } else {
+            $width = "width: {$width};";
         }
-        else $width = "width: {$width};";
 
         // Set the height
-        if (is_null($height))
-        {
+        if (is_null($height)) {
             $height = "";
+        } else {
+            $height = "height: {$height};";
         }
-        else $height = "height: {$height};";
 
         echo "
             <div style='{$width}{$height}'>
@@ -386,8 +386,8 @@ function create_chartjs_line_code($title = "", $element_id = "", $labels = [], $
         ";
 
         // For each of the datasets provided
-        foreach ($datasets as $dataset)
-        {
+        foreach ($datasets as $dataset) {
+
             // Get the values for the dataset
             $label = (isset($dataset['label']) ? "label: '{$dataset['label']}'," : "");
             $data = implode(",", $dataset['data']);
@@ -471,10 +471,8 @@ function create_chartjs_line_code($title = "", $element_id = "", $labels = [], $
                     });
                 });
             </script>
-    ";
-    }
-    else
-    {
+        ";
+    } else {
         echo "
             <div style='align-items: center; display: flex; flex-flow: row; height: 100%; justify-content: center; flex-flow:wrap;'>
                 {$title}
@@ -1094,26 +1092,21 @@ function get_y_axis_code($y_axis_title = null, $y_axis_max = null)
  * This function takes in an array used for chart.js and generates *
  * a switch statement so each pie slice can have a unique URL.     *
  *******************************************************************/
-function get_url_switch_code($array)
-{
+function get_url_switch_code($array) {
+
     // If the array is empty
-    if (empty($array))
-    {
+    if (empty($array)) {
         // Return an empty string
         return "";
-    }
     // Otherwise create the url switch code
-    else
-    {
+    } else {
         // Begin the URL switch code
         $url_switch_code = "switch(label){\n";
 
         // For each element in the array
-        foreach ($array as $row)
-        {
+        foreach ($array as $row) {
             // If we have a label and url
-            if (isset($row['label']) && isset($row['url']))
-            {
+            if (isset($row['label']) && isset($row['url'])) {
                 // Get the label and url
                 $label = str_replace("'", "\'", $row['label']);
                 $url = $row['url'];
@@ -1142,14 +1135,13 @@ function get_url_switch_code($array)
  *  This function takes in an array used for chart.js and generates *
  *  the backgroundColor parameter if colors were provided.          *
  ********************************************************************/
-function get_background_colors($array)
-{
+function get_background_colors($array) {
+
     // If the array contains colors
-    if (isset($array[0]['color']))
-    {
+    if (isset($array[0]['color'])) {
+
         // For each item in the array
-        foreach ($array as $row)
-        {
+        foreach ($array as $row) {
             // Add the item to the colors array
             $colors[] = $row['color'];
         }
@@ -1159,9 +1151,11 @@ function get_background_colors($array)
 
         // Return the backgroundColor value
         return "backgroundColor: [{$colors}],";
-    }
+
     // If no colors were set return an empty string
-    else return "";
+    } else {
+        return "";
+    }
 }
 
 /****************************
@@ -1368,8 +1362,8 @@ function get_risk_count_of_risk_level($risk_level, $scoring='inherent') {
 /****************************
  * FUNCTION: GET RISK TREND *
  ****************************/
-function get_risk_trend($title = null, $labels = [], $datasets = [])
-{
+function get_risk_trend($title = null, $labels = [], $datasets = []) {
+
     global $lang, $escaper;
 
     // Get the opened risks array by month
@@ -1384,9 +1378,14 @@ function get_risk_trend($title = null, $labels = [], $datasets = [])
     $close_dates = empty($closed_risks[0]) ? [] : $closed_risks[0];
     $close_counts = empty($closed_risks[1]) ? [] : $closed_risks[1];
 
+    // The following variables need to be initialized as an error occurs when they aren't.
+    $open_risks_dataset = [];
+    $closed_risks_dataset = [];
+    $trend_dataset = [];
+
     // If the opened risks array is not empty
-    if (!empty($opened_risks[0]))
-    {
+    if (!empty($opened_risks[0])) {
+
         // Setting a minimum date so we don't display data that's older
         // but we still use open/close numbers from those dates
         $min_date = strtotime("1970-01-01");
@@ -1402,8 +1401,11 @@ function get_risk_trend($title = null, $labels = [], $datasets = [])
         // but keep track of the opened/closed risks before so the numbers are properly accounted for
         // even if those dates aren't displayed on the chart
         if ($date < $min_date) {
+
             foreach ($open_dates as $position => $open_date) {
+
                 $date = strtotime($open_date);
+
                 if ($date < $min_date) {
                     $opened_sum += $open_counts[$position];
                 } else {
@@ -1431,20 +1433,22 @@ function get_risk_trend($title = null, $labels = [], $datasets = [])
             $opened_search = array_search(date("Y-m-d", $date), $open_dates);
 
             // If the current date is in the opened array
-            if ($opened_search !== false)
-            {
+            if ($opened_search !== false) {
+
                 $count = $open_counts[$opened_search];
                 $opened_sum += $count;
+
             }
 
             // Search the closed array for the value
             $closed_search = array_search(date("Y-m-d", $date), $close_dates);
 
             // If the current date is in the closed array
-            if ($closed_search !== false)
-            {
+            if ($closed_search !== false) {
+
                 $count = $close_counts[$closed_search];
                 $closed_sum += $count;
+
             }
 
             // Create the data arrays
@@ -1454,6 +1458,7 @@ function get_risk_trend($title = null, $labels = [], $datasets = [])
 
             // Increment the date one day
             $date = strtotime("+1 day", $date);
+
         }
 
         // Create the open risks dataset
@@ -1485,6 +1490,7 @@ function get_risk_trend($title = null, $labels = [], $datasets = [])
             "borderWidth" => "1",
             "tension" => "0.1"
         ];
+
     }
 
     // Create an array of the combined datasets
@@ -1499,6 +1505,7 @@ function get_risk_trend($title = null, $labels = [], $datasets = [])
     $x_axis_title = $escaper->escapeHtml($lang['Date']);
     $y_axis_title = $escaper->escapeHtml($lang['Count']);
     create_chartjs_line_code($title, $element_id, $labels, $datasets, "", $x_axis_title, $y_axis_title);
+
 }
 
 /******************************
@@ -1670,11 +1677,14 @@ function open_risk_level_pie($title = null, $element_id = "open_risk_level_pie",
 /**********************************
  * FUNCTION: OPEN RISK STATUS PIE *
  **********************************/
-function open_risk_status_pie($array, $title = null, $teams = false)
-{
+function open_risk_status_pie($array, $title = null, $teams = false) {
+
+    // $data needs to be initialized as an error occurs when it isn't.
+    $data = [];
+
     // If the array is not empty
-    if (!empty($array))
-    {
+    if (!empty($array)) {
+
         // Set the sort value
         $sort = "status";
 
@@ -1685,88 +1695,120 @@ function open_risk_status_pie($array, $title = null, $teams = false)
         $data = count_array_values($array, $sort);
 
         $data = encode_data_before_display($data);
+
     }
 
     // For each row in the array
-    foreach ($data as $index=>$row)
-    {
+    foreach ($data as $index=>$row) {
+
         // Add the properly formatted data
         $data[$index]['label'] = $row[0];
         $data[$index]['data'] = $row[1];
         $data[$index]['url'] = 'dynamic_risk_report.php?status=0&group=2&sort=0';
+
     }
 
     // Create the Chart.js pie chart
     $element_id = "open_risk_status_pie";
     create_chartjs_pie_code($title, $element_id, $data);
+
 }
 
 /************************************
  * FUNCTION: CLOSED RISK REASON PIE *
  ************************************/
-function closed_risk_reason_pie($title = null, $teams = false)
-{
+function closed_risk_reason_pie($title = null, $teams = false) {
+
     $teams_query = generate_teams_query($teams, "rtt.team_id");
 
     // Open the database connection
     $db = db_open();
 
     // If the team separation extra is not enabled
-    if (!team_separation_extra())
-    {
+    if (!team_separation_extra()) {
+
         // Query the database
-        $stmt = $db->prepare(" SELECT name, COUNT(*) as num FROM (SELECT a.close_reason, b.name, MAX(closure_date) FROM `risks` c JOIN `closures` a ON c.close_id = a.id  JOIN `close_reason` b ON a.close_reason = b.value LEFT JOIN risk_to_team rtt ON c.id=rtt.risk_id WHERE c.status = \"Closed\" AND {$teams_query} GROUP BY a.risk_id ORDER BY b.name DESC) AS close GROUP BY name ORDER BY COUNT(*) DESC; ");
+        $stmt = $db->prepare("
+            SELECT 
+                name, COUNT(*) as num 
+            FROM 
+                (
+                    SELECT 
+                        a.close_reason, b.name, MAX(closure_date) 
+                    FROM 
+                        `risks` c 
+                        JOIN `closures` a ON c.close_id = a.id 
+                        JOIN `close_reason` b ON a.close_reason = b.value 
+                        LEFT JOIN risk_to_team rtt ON c.id = rtt.risk_id 
+                    WHERE 
+                        c.status = \"Closed\" AND {$teams_query} 
+                    GROUP BY 
+                        a.risk_id 
+                    ORDER BY 
+                        b.name DESC
+                ) AS close 
+            GROUP BY 
+                name 
+            ORDER BY 
+                COUNT(*) DESC;
+        ");
         $stmt->execute();
 
         // Store the list in the array
         $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-    else
-    {
+
+    } else {
+
         //Include the team separation extra
         require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
         // Query the database
         $array = strip_no_access_risk_pie('close_reason', $teams);
+
     }
 
     // Close the database connection
     db_close($db);
 
     // If the array is not empty
-    if (!empty($array))
-    {
+    if (!empty($array)) {
+
         // Create the data array
-        foreach ($array as $row)
-        {
+        foreach ($array as $row) {
             $data[] = array($row['name'], (int)$row['num']);
         }
+
     }
 
     // For each row in the array
-    foreach ($data as $index=>$row)
-    {
+    foreach ($data as $index=>$row) {
+
         // Add the properly formatted data
         $data[$index]['label'] = $row[0];
         $data[$index]['data'] = $row[1];
         $data[$index]['url'] = 'dynamic_risk_report.php?status=1&group=0&sort=0';
+
     }
 
     // Create the Chart.js pie chart
     $element_id = "closed_risk_reason_pie";
     create_chartjs_pie_code($title, $element_id, $data);
+    
 }
 
 /************************************
  * FUNCTION: OPEN RISK LOCATION PIE *
  ************************************/
-function open_risk_location_pie($array, $title = null)
-{
+function open_risk_location_pie($array, $title = null) {
+
     global $escaper, $lang;
 
+    // $data needs to be initialized as an error occurs when it isn't.
+    $data = [];
+
     // If the array is empty
-    if (!empty($array))
-    {
+    if (!empty($array)) {
+
         // Set the sort value
         $sort = "location";
 
@@ -1775,30 +1817,36 @@ function open_risk_location_pie($array, $title = null)
 
         // Count the array by status
         $data = count_array_values($array, $sort);
+
     }
 
     // For each row in the array
-    foreach ($data as $index=>$row)
-    {
+    foreach ($data as $index=>$row) {
+
         // Add the properly formatted data
         $data[$index]['label'] = $row[0];
         $data[$index]['data'] = $row[1];
         $data[$index]['url'] = 'dynamic_risk_report.php?status=0&sort=0';
+
     }
 
     // Create the Chart.js pie chart
     $element_id = "open_risk_location_pie";
     create_chartjs_pie_code($title, $element_id, $data);
+
 }
 
 /**********************************
  * FUNCTION: OPEN RISK SOURCE PIE *
  **********************************/
-function open_risk_source_pie($array, $title = null)
-{
+function open_risk_source_pie($array, $title = null) {
+
+    // $data needs to be initialized as an error occurs when it isn't.
+    $data = [];
+
     // If the array is not empty
-    if (!empty($array))
-    {
+    if (!empty($array)) {
+
         // Set the sort value
         $sort = "source";
 
@@ -1809,30 +1857,36 @@ function open_risk_source_pie($array, $title = null)
         $data = count_array_values($array, $sort);
 
         $data = encode_data_before_display($data);
+
     }
 
     // For each row in the array
-    foreach ($data as $index=>$row)
-    {
+    foreach ($data as $index=>$row) {
+
         // Add the properly formatted data
         $data[$index]['label'] = $row[0];
         $data[$index]['data'] = $row[1];
         $data[$index]['url'] = 'dynamic_risk_report.php?status=0&group=4&sort=0';
+
     }
 
     // Create the Chart.js pie chart
     $element_id = "open_risk_source_pie";
     create_chartjs_pie_code($title, $element_id, $data);
+
 }
 
 /************************************
  * FUNCTION: OPEN RISK CATEGORY PIE *
  ************************************/
-function open_risk_category_pie($array, $title = null)
-{
+function open_risk_category_pie($array, $title = null) {
+
+    // $data needs to be initialized as an error occurs when it isn't.
+    $data = [];
+
     // If the array is not empty
-    if (!empty($array))
-    {
+    if (!empty($array)) {
+
         // Set the sort value
         $sort = "category";
 
@@ -1843,30 +1897,36 @@ function open_risk_category_pie($array, $title = null)
         $data = count_array_values($array, $sort);
 
         $data = encode_data_before_display($data);
+
     }
 
     // For each row in the array
-    foreach ($data as $index=>$row)
-    {
+    foreach ($data as $index=>$row) {
+
         // Add the properly formatted data
         $data[$index]['label'] = $row[0];
         $data[$index]['data'] = $row[1];
         $data[$index]['url'] = 'dynamic_risk_report.php?status=0&group=5&sort=0';
+
     }
 
     // Create the Chart.js pie chart
     $element_id = "open_risk_category_pie";
     create_chartjs_pie_code($title, $element_id, $data);
+
 }
 
 /********************************
  * FUNCTION: OPEN RISK TEAM PIE *
  ********************************/
-function open_risk_team_pie($array, $title = null)
-{
+function open_risk_team_pie($array, $title = null) {
+
+    // $data needs to be initialized as an error occurs when it isn't.
+    $data = [];
+
     // If the array is not empty
-    if (!empty($array))
-    {
+    if (!empty($array)) {
+
         // Set the sort value
         $sort = "team";
 
@@ -1877,30 +1937,36 @@ function open_risk_team_pie($array, $title = null)
         $data = count_array_values($array, $sort);
 
         $data = encode_data_before_display($data);
+
     }
 
     // For each row in the array
-    foreach ($data as $index=>$row)
-    {
+    foreach ($data as $index=>$row) {
+        
         // Add the properly formatted data
         $data[$index]['label'] = $row[0];
         $data[$index]['data'] = $row[1];
         $data[$index]['url'] = 'dynamic_risk_report.php?status=0&group=6&sort=0';
+
     }
 
     // Create the Chart.js pie chart
     $element_id = "open_risk_team_pie";
     create_chartjs_pie_code($title, $element_id, $data);
+
 }
 
 /**************************************
  * FUNCTION: OPEN RISK TECHNOLOGY PIE *
  **************************************/
-function open_risk_technology_pie($array, $title = null)
-{
+function open_risk_technology_pie($array, $title = null) {
+
+    // $data needs to be initialized as an error occurs when it isn't.
+    $data = [];
+
     // If the array is not empty
-    if (!empty($array))
-    {
+    if (!empty($array)) {
+
         // Set the sort value
         $sort = "technology";
 
@@ -1911,30 +1977,36 @@ function open_risk_technology_pie($array, $title = null)
         $data = count_array_values($array, $sort);
 
         $data = encode_data_before_display($data);
+
     }
 
     // For each row in the array
-    foreach ($data as $index=>$row)
-    {
+    foreach ($data as $index=>$row) {
+
         // Add the properly formatted data
         $data[$index]['label'] = $row[0];
         $data[$index]['data'] = $row[1];
         $data[$index]['url'] = 'dynamic_risk_report.php?status=0&group=7&sort=0';
+
     }
 
     // Create the Chart.js pie chart
     $element_id = "open_risk_technology_pie";
     create_chartjs_pie_code($title, $element_id, $data);
+
 }
 
 /**************************************
  * FUNCTION: OPEN RISK OWNER PIE *
  **************************************/
-function open_risk_owner_pie($array, $title = null)
-{
+function open_risk_owner_pie($array, $title = null) {
+
+    // $data needs to be initialized as an error occurs when it isn't.
+    $data = [];
+
     // If the array is not empty
-    if (!empty($array))
-    {
+    if (!empty($array)) {
+
         // Set the sort value
         $sort = "owner";
 
@@ -1945,30 +2017,36 @@ function open_risk_owner_pie($array, $title = null)
         $data = count_array_values($array, $sort);
 
         $data = encode_data_before_display($data);
+
     }
 
     // For each row in the array
-    foreach ($data as $index=>$row)
-    {
+    foreach ($data as $index=>$row) {
+
         // Add the properly formatted data
         $data[$index]['label'] = $row[0];
         $data[$index]['data'] = $row[1];
         $data[$index]['url'] = 'dynamic_risk_report.php?status=0&group=8&sort=0';
+
     }
 
     // Create the Chart.js pie chart
     $element_id = "open_risk_owner_pie";
     create_chartjs_pie_code($title, $element_id, $data);
+
 }
 
 /******************************************
  * FUNCTION: OPEN RISK OWNERS MANAGER PIE *
  ******************************************/
-function open_risk_owners_manager_pie($array, $title = null)
-{
+function open_risk_owners_manager_pie($array, $title = null) {
+
+    // $data needs to be initialized as an error occurs when it isn't.
+    $data = [];
+
     // If the array is not empty
-    if (!empty($array))
-    {
+    if (!empty($array)) {
+
         // Set the sort value
         $sort = "manager";
 
@@ -1979,30 +2057,36 @@ function open_risk_owners_manager_pie($array, $title = null)
         $data = count_array_values($array, $sort);
 
         $data = encode_data_before_display($data);
+
     }
 
     // For each row in the array
-    foreach ($data as $index=>$row)
-    {
+    foreach ($data as $index=>$row) {
+
         // Add the properly formatted data
         $data[$index]['label'] = $row[0];
         $data[$index]['data'] = $row[1];
         $data[$index]['url'] = 'dynamic_risk_report.php?status=0&group=9&sort=0';
+        
     }
 
     // Create the Chart.js pie chart
     $element_id = "open_risk_owners_manager_pie";
     create_chartjs_pie_code($title, $element_id, $data);
+
 }
 
 /******************************************
  * FUNCTION: OPEN RISK SCORING METHOD PIE *
  ******************************************/
-function open_risk_scoring_method_pie($array, $title = null)
-{
+function open_risk_scoring_method_pie($array, $title = null) {
+
+    // $data needs to be initialized as an error occurs when it isn't.
+    $data = [];
+    
     // If the array is not empty
-    if (!empty($array))
-    {
+    if (!empty($array)) {
+
         // Set the sort value
         $sort = "scoring_method";
 
@@ -2013,20 +2097,23 @@ function open_risk_scoring_method_pie($array, $title = null)
         $data = count_array_values($array, $sort);
 
         $data = encode_data_before_display($data);
+
     }
 
     // For each row in the array
-    foreach ($data as $index=>$row)
-    {
+    foreach ($data as $index=>$row) {
+
         // Add the properly formatted data
         $data[$index]['label'] = $row[0];
         $data[$index]['data'] = $row[1];
         $data[$index]['url'] = 'dynamic_risk_report.php?status=0&group=10&sort=0';
+
     }
 
     // Create the Chart.js pie chart
     $element_id = "open_risk_scoring_method_pie";
     create_chartjs_pie_code($title, $element_id, $data);
+
 }
 
 /*********************************
@@ -2373,8 +2460,8 @@ function get_my_open_table()
 /*************************************
  * FUNCTION: GET REVIEW NEEDED TABLE *
  *************************************/
-function get_review_needed_table()
-{
+function get_review_needed_table() {
+
     global $lang;
     global $escaper;
 
@@ -2387,7 +2474,8 @@ function get_review_needed_table()
     // Start with an empty review status;
     $review_status = "";
 
-    foreach ($risks as $key => $risk){
+    foreach ($risks as $key => $risk) {
+
         $risk_id = $risk['id'];
         $subject = $risk['subject'];
         $status = $risk['status'];
@@ -2398,28 +2486,29 @@ function get_review_needed_table()
         $dayssince = $risk['days_open'];
 
         // If next_review_date_uses setting is Residual Risk.
-        if(get_setting('next_review_date_uses') == "ResidualRisk")
-        {
+        if (get_setting('next_review_date_uses') == "ResidualRisk") {
+           
             $next_review = next_review($residual_risk_level, $risk_id, $risk['next_review'], false);
             $next_review_html = next_review($residual_risk_level, $risk_id, $risk['next_review']);
-        }
+        
         // If next_review_date_uses setting is Inherent Risk.
-        else
-        {
+        } else {
+
             $next_review = next_review($risk_level, $risk_id, $risk['next_review'], false);
             $next_review_html = next_review($risk_level, $risk_id, $risk['next_review']);
+
         }
+
         // If we have a new review status and its not a date
-        if (($review_status != $next_review) && (!preg_match('/\d{4}/', $review_status)))
-        {
+        if (($next_review != $review_status) && (!preg_match('/\d{4}/', $next_review))) {
+
             // If its not the first risk
-            if ($review_status != "")
-            {
+            if ($review_status != "") {
+
                 // End the previous table
                 echo "
                         </tbody>
                     </table>
-                    <br />
                 ";
 
             }
@@ -2427,64 +2516,67 @@ function get_review_needed_table()
             // Set the new review status
             $review_status = $next_review;
 
-            // If the review status is not a date
-            if (!preg_match('/\d{4}/', $review_status))
-            {
-                // Start the new table
-                echo "
-                    <table class='table table-bordered table-condensed sortable risk-table table-striped'>
-                        <thead>
-                            <tr>
-                                <th bgcolor='#0088CC' colspan='6'><center>" . $escaper->escapeHtml($review_status) . "</center></th>
-                            </tr>
-                            <tr>
-                                <th align='left' width='50px'>" . $escaper->escapeHtml($lang['ID']) . "</th>
-                                <th align='left' width='150px'>" . $escaper->escapeHtml($lang['Status']) . "</th>
-                                <th align='left' width='300px'>" . $escaper->escapeHtml($lang['Subject']) . "</th>
-                                <th align='center' width='100px'>" . $escaper->escapeHtml($lang['Risk']) . "</th>
-                                <th align='center' width='100px'>" . $escaper->escapeHtml($lang['DaysOpen']) . "</th>
-                                <th align='center' width='150px'>" . $escaper->escapeHtml($lang['NextReviewDate']) . "</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                ";
-            }
+            // Start the new table
+            echo "
+                <table class='table table-bordered table-condensed sortable risk-table table-striped'>
+                    <thead>
+                        <tr>
+                            <th bgcolor='#0088CC' colspan='6'><center>{$escaper->escapeHtml($review_status)}</center></th>
+                        </tr>
+                        <tr>
+                            <th align='left' width='50px'>{$escaper->escapeHtml($lang['ID'])}</th>
+                            <th align='left' width='150px'>{$escaper->escapeHtml($lang['Status'])}</th>
+                            <th align='left' width='300px'>{$escaper->escapeHtml($lang['Subject'])}</th>
+                            <th align='center' width='100px'>{$escaper->escapeHtml($lang['Risk'])}</th>
+                            <th align='center' width='100px'>{$escaper->escapeHtml($lang['DaysOpen'])}</th>
+                            <th align='center' width='150px'>{$escaper->escapeHtml($lang['NextReviewDate'])}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            ";
         }
 
         // If the review status is not a date
-        if (!preg_match('/\d{4}/', $review_status)){
+        if (!preg_match('/\d{4}/', $next_review)) {
             echo "
-                            <tr>
-                                <td align='left' width='50px'><a class='open-in-new-tab' href='../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "'>" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>
-                                <td align='left' width='150px'>" . $escaper->escapeHtml($status) . "</td>
-                                <td align='left' width='300px'>" . $escaper->escapeHtml($subject) . "</td>
-                                <td align='center' class='risk-cell' bgcolor='" . $escaper->escapeHtml($color) . "' width='100px'>
-                                    <div class='risk-cell-holder'>" . 
-                                        $escaper->escapeHtml($calculated_risk) . "<span class='risk-color' style='background-color:{$color}'></span>
-                                    </div>
-                                </td>
-                                <td align='center' width='100px'>" . $escaper->escapeHtml($dayssince) . "</td>
-                                <td align='center' width='150px'>" . $next_review_html . "</td>
-                            </tr>
+                        <tr>
+                            <td align='left' width='50px'><a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml(convert_id($risk_id))}'>{$escaper->escapeHtml(convert_id($risk_id))}</a></td>
+                            <td align='left' width='150px'>{$escaper->escapeHtml($status)}</td>
+                            <td align='left' width='300px'>{$escaper->escapeHtml($subject)}</td>
+                            <td align='center' class='risk-cell' bgcolor='{$escaper->escapeHtml($color)}' width='100px'>
+                                <div class='risk-cell-holder'>{$escaper->escapeHtml($calculated_risk)}<span class='risk-color' style='background-color:{$color}'></span></div>
+                            </td>
+                            <td align='center' width='100px'>{$escaper->escapeHtml($dayssince)}</td>
+                            <td align='center' width='150px'>{$next_review_html}</td>
+                        </tr>
+            ";
+        }
+
+        // We need to close the table that is open after listing all the risks
+        if ($review_status != "" && $key == count($risks) - 1) {
+            // End the previous table
+            echo "
+                        </tbody>
+                    </table>
             ";
         }
     }
     echo "
                     <script>
-                        $(document).ready(function(){
-                            $('.risk-table').each(function(i){
+                        $(document).ready(function() {
+                            $('.risk-table').each(function(i) {
                                 $(this).find('thead tr:eq(1)').clone(true).appendTo($(this).find('thead'));
-                                $(this).find('thead tr:eq(2) th').each( function (i) {
+                                $(this).find('thead tr:eq(2) th').each(function(i) {
                                     var title = $(this).text();
                                     $(this).html(''); // To clear the title out of the header cell
                                     $('<input type=\"text\">').addClass('form-control').attr('name', title).attr('placeholder', title).appendTo($(this));
-                                    $( 'input, select', this ).on( 'keyup change', function () {
+                                    $( 'input, select', this ).on('keyup change', function() {
                                         if ( riskTable.column(i).search() !== this.value ) {
                                             riskTable.column(i).search( this.value ).draw();
                                         }
                                     });
                                 });
-                                var riskTable = $(this).DataTable( {
+                                var riskTable = $(this).DataTable({
                                     paging: false,
                                     orderCellsTop: true,
                                     fixedHeader: true,
@@ -7186,7 +7278,7 @@ function get_risks_by_appetite($type, $start, $length, $orderColumn, $orderDir, 
             a.id,
             a.subject,
             b.calculated_risk,
-            ROUND(b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+            ROUND(b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100), 2) as residual_risk
         FROM
             risks a
             LEFT JOIN risk_scoring b ON a.id = b.id

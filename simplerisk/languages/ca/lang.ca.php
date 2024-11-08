@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'La càrrega del fitxer ha fallat: no s\'ha enviat cap fitxer',
     'FileUploadExceededFileSize' => 'La càrrega del fitxer ha fallat: s\'ha superat el límit de mida del fitxer',
     'FileUploadUnknownErrors' => 'La càrrega del fitxer ha fallat: errors desconeguts',
+    'DynamicIncidentReport' => 'Informe d\'incidències dinàmiques',
+    'FilteringSelections' => 'Seleccions de filtratge',
 
     '' => '',
 );

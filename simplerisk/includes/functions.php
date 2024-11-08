@@ -272,6 +272,7 @@ $junction_config = array(
 //      -add localization for tag types(example: 'TagType_risk' => 'Risk')
 //      -add it to the $junction_config
 //      -update the documentation definition's enum in /api/v2/documentation/admin.php for the OpenApiAdminAllTagsDelete() function
+//      -update/add permission checks if necessary
 global $tag_types;
 $tag_types = ['risk', 'asset', 'questionnaire_risk', 'questionnaire_answer', 'questionnaire_pending_risk', 'incident_management_source', 'incident_management_destination', 'test', 'test_audit'];
 
@@ -862,6 +863,606 @@ $field_settings = [
             'orderable' => true,
         ],
     ],
+    //all the fields in 'incident' need to be set as technical fields
+    //since they must be displayed regardless of whether customiztion extra is true or not.
+    //if it's possible to customize incident fields, we can unset some from being technical fields but for now it's best to keep them as technical fields.
+    'incident_management_incident' => [
+        'actions' => [
+            'customization_field_name' => '',
+            'localization_key' => 'Actions',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:80px;',
+            'searchable' => false,
+            'orderable' => false,
+            'editable' => false,
+            'select_parts' => [],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        'id' => [
+            'customization_field_name' => 'ID',
+            'localization_key' => 'ID',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "a.id",
+            'editable' => false,
+            'select_parts' => ["
+                a.id
+            "],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        'status' => [
+            'customization_field_name' => 'Status',
+            'localization_key' => 'Status',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "status_display",
+            'editable' => false,
+            'select_parts' => ["
+                a.status, 
+                IF (
+                    im_is.value IS NOT NULL,
+                    CONCAT(im_is.status, ': ', im_is.substatus),
+                    ''
+                ) AS status_display
+            "],
+            'has_display_field' => true,
+            'join_parts' => ["
+                LEFT JOIN incident_management_incident_status im_is ON im_is.value = a.status
+            "],
+        ],
+        'playbook' => [
+            'customization_field_name' => 'Playbook',
+            'localization_key' => 'Playbook',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "playbook_display",
+            'editable' => false,
+            'select_parts' => ["
+                a.playbook, 
+                IF (
+                    im_pb.value IS NOT NULL,
+                    im_pb.name,
+                    ''
+                ) AS playbook_display
+            "],
+            'has_display_field' => true,
+            'join_parts' => ["
+                LEFT JOIN incident_management_playbooks im_pb on im_pb.value = a.playbook
+            "],
+        ],
+        'summary' => [
+            'customization_field_name' => 'Summary',
+            'localization_key' => 'Summary',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "a.summary",
+            'editable' => false,
+            'select_parts' => ['
+                a.summary
+            '],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        'details' => [
+            'customization_field_name' => 'Details',
+            'localization_key' => 'Details',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "a.details",
+            'editable' => false,
+            'select_parts' => ['
+                a.details
+            '],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        'occurrence_type' => [
+            'customization_field_name' => 'OccurrenceType',
+            'localization_key' => 'OccurrenceType',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "occurrence_type_display",
+            'editable' => false,
+            'select_parts' => ["
+                a.occurrence_type,
+                IF (
+                    imot.value IS NOT NULL,
+                    imot.name,
+                    ''
+                ) AS occurrence_type_display 
+            "],
+            'has_display_field' => true,
+            'join_parts' => ["
+                LEFT JOIN incident_management_occurrence_type imot on imot.value = a.occurrence_type
+            "],
+        ],
+        'direction' => [
+            'customization_field_name' => 'Direction',
+            'localization_key' => 'Direction',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "direction_display",
+            'editable' => false,
+            'select_parts' => ["
+                a.direction,
+                IF (
+                    imid.value IS NOT NULL,
+                    imid.name,
+                    ''
+                ) AS direction_display 
+            "],
+            'has_display_field' => true,
+            'join_parts' => ["
+                LEFT JOIN incident_management_incident_direction imid on imid.value = a.direction
+            "],
+        ],
+        'attack_vector' => [
+            'customization_field_name' => 'AttackVector',
+            'localization_key' => 'AttackVector',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "attack_vector_display",
+            'editable' => false,
+            'select_parts' => ["
+                a.attack_vector,
+                IF (
+                    imav.value IS NOT NULL,
+                    imav.name,
+                    ''
+                ) AS attack_vector_display 
+            "],
+            'has_display_field' => true,
+            'join_parts' => ["
+                LEFT JOIN incident_management_attack_vectors imav on imav.value = a.attack_vector
+            "],
+        ],
+        'detected_by' => [
+            'customization_field_name' => 'DetectedBy',
+            'localization_key' => 'DetectedBy',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "detected_by_display",
+            'editable' => false,
+            'select_parts' => ["
+                a.source AS detected_by,
+                IF (
+                    ims.value IS NOT NULL,
+                    ims.name,
+                    ''
+                ) AS detected_by_display 
+            "],
+            'has_display_field' => true,
+            'join_parts' => ["
+                LEFT JOIN incident_management_sources ims on ims.value = a.source
+            "],
+        ],
+        'start_date' => [
+            'customization_field_name' => 'StartDate',
+            'localization_key' => 'StartDate',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "a.start_date",
+            'editable' => false,
+            'select_parts' => ['
+                a.start_date
+            '],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        'detection_date' => [
+            'customization_field_name' => 'DetectionDate',
+            'localization_key' => 'DetectionDate',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "a.detection_date",
+            'editable' => false,
+            'select_parts' => ['
+                a.detection_date
+            '],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        'reporter' => [
+            'customization_field_name' => 'Reporter',
+            'localization_key' => 'Reporter',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "reporter_display",
+            'editable' => false,
+            'select_parts' => ["
+                a.reporter,
+                IF (
+                    u_reporter.value IS NOT NULL,
+                    u_reporter.name,
+                    ''
+                ) AS reporter_display 
+            "],
+            'has_display_field' => true,
+            'join_parts' => ["
+                LEFT JOIN user u_reporter ON u_reporter.value = a.reporter
+            "],
+        ],
+        'owner' => [
+            'customization_field_name' => 'Owner',
+            'localization_key' => 'Owner',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "owner_display",
+            'editable' => false,
+            'select_parts' => ["
+                a.owner,
+                IF (
+                    u_owner.value IS NOT NULL,
+                    u_owner.name,
+                    ''
+                ) AS owner_display 
+            "],
+            'has_display_field' => true,
+            'join_parts' => ["
+                LEFT JOIN user u_owner on u_owner.value = a.owner
+            "],
+        ],
+        'team' => [
+            'customization_field_name' => 'Team',
+            'localization_key' => 'Team',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => false,
+            'order_column' => "team_display",
+            'editable' => false,
+            'select_parts' => ["
+                GROUP_CONCAT(
+                    DISTINCT
+                    imits.value
+                    SEPARATOR ', '
+                ) AS team,
+                GROUP_CONCAT(
+                    DISTINCT
+                    imits.name
+                    SEPARATOR ', '
+                ) AS team_display 
+            "],
+            'has_display_field' => true,
+            'join_parts' => ["
+                LEFT JOIN (
+                    SELECT * FROM incident_management_incident_to_team imi2t INNER JOIN team t on imi2t.team_id = t.value
+                ) imits ON imits.incident_id = a.id
+            "],
+        ],
+        'additional_stakeholders' => [
+            'customization_field_name' => 'AdditionalStakeholders',
+            'localization_key' => 'AdditionalStakeholders',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => false,
+            'order_column' => "additional_stakeholders_display",
+            'editable' => false,
+            'select_parts' => ["
+                GROUP_CONCAT(
+                    DISTINCT
+                    imiass.value
+                    SEPARATOR ', '
+                ) AS additional_stakeholders,
+                GROUP_CONCAT(
+                    DISTINCT
+                    imiass.name
+                    SEPARATOR ', '
+                ) AS additional_stakeholders_display 
+            "],
+            'has_display_field' => true,
+            'join_parts' => ["
+                LEFT JOIN (
+                    SELECT * FROM incident_management_incident_to_additional_stakeholder imi2as INNER JOIN user u ON imi2as.user_id = u.value
+                ) imiass ON imiass.incident_id = a.id
+            "],
+        ],
+        'function_impact' => [
+            'customization_field_name' => 'FunctionalImpact',
+            'localization_key' => 'FunctionalImpact',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "functional_impact_display",
+            'editable' => false,
+            'select_parts' => ["
+                a.functional_impact,
+                imfi.name AS functional_impact_display
+            "],
+            'has_display_field' => true,
+            'join_parts' => ["
+                LEFT JOIN incident_management_functional_impact imfi ON imfi.value = a.functional_impact
+            "],
+        ],
+        'information_impact' => [
+            'customization_field_name' => 'InformationImpact',
+            'localization_key' => 'InformationImpact',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "information_impact_display",
+            'editable' => false,
+            'select_parts' => ["
+                a.information_impact,
+                imii.name AS information_impact_display
+            "],
+            'has_display_field' => true,
+            'join_parts' => ["
+                LEFT JOIN incident_management_information_impact imii ON imii.value = a.information_impact
+            "],
+        ],
+        'recovery' => [
+            'customization_field_name' => 'Recovery',
+            'localization_key' => 'Recovery',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "recovery_display",
+            'editable' => false,
+            'select_parts' => ["
+                a.recovery,
+                imr.name AS recovery_display
+            "],
+            'has_display_field' => true,
+            'join_parts' => ["
+                LEFT JOIN incident_management_recovery imr ON imr.value = a.recovery
+            "],
+        ],
+        'score' => [
+            'customization_field_name' => 'Priority',
+            'localization_key' => 'Priority',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "a.score",
+            'editable' => false,
+            'select_parts' => ["
+                a.score
+            "],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        'incident_region' => [
+            'customization_field_name' => 'Regions',
+            'localization_key' => 'Regions',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => false,
+            'order_column' => "incident_region_display",
+            'editable' => false,
+            'select_parts' => ["
+                GROUP_CONCAT(
+                    DISTINCT
+                    imirs.value
+                    SEPARATOR ', '
+                ) AS incident_region,
+                GROUP_CONCAT(
+                    DISTINCT
+                    imirs.name
+                    SEPARATOR ', '
+                ) AS incident_region_display
+            "],
+            'has_display_field' => true,
+            'join_parts' => ["
+                LEFT JOIN (
+                    SELECT * FROM incident_management_incident_to_region imi2r INNER JOIN incident_management_incident_region imir ON imi2r.region_id = imir.value
+                ) imirs ON imirs.incident_id = a.id
+            "],
+        ],
+        'incident_country' => [
+            'customization_field_name' => 'Countries',
+            'localization_key' => 'Countries',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => false,
+            'order_column' => "incident_country_display",
+            'editable' => false,
+            'select_parts' => ["
+                GROUP_CONCAT(
+                    DISTINCT
+                    imicountries.value
+                    SEPARATOR ', '
+                ) AS incident_country,
+                GROUP_CONCAT(
+                    DISTINCT
+                    imicountries.name
+                    SEPARATOR ', '
+                ) AS incident_country_display
+            "],
+            'has_display_field' => true,
+            'join_parts' => ["
+                LEFT JOIN (
+                    SELECT * FROM incident_management_incident_to_country imi2c INNER JOIN incident_management_country imc ON imi2c.country_id = imc.value
+                ) imicountries ON imicountries.incident_id = a.id
+            "],
+        ],
+        'incident_city' => [
+            'customization_field_name' => 'Cities',
+            'localization_key' => 'Cities',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => false,
+            'order_column' => "incident_city_display",
+            'editable' => false,
+            'select_parts' => ["
+                GROUP_CONCAT(
+                    DISTINCT
+                    imicities.value
+                    SEPARATOR ', '
+                ) AS incident_city,
+                GROUP_CONCAT(
+                    DISTINCT
+                    imicities.name
+                    SEPARATOR ', '
+                ) AS incident_city_display
+            "],
+            'has_display_field' => true,
+            'join_parts' => ["
+                LEFT JOIN (
+                    SELECT * FROM incident_management_incident_to_city imi2c INNER JOIN incident_management_city imc ON imi2c.city_id = imc.value
+                ) imicities ON imicities.incident_id = a.id
+            "],
+        ],
+        'related_incidents' => [
+            'customization_field_name' => 'RelatedIncidents',
+            'localization_key' => 'RelatedIncidents',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => false,
+            'editable' => false,
+            'select_parts' => ["
+                CONCAT(
+                    '[',
+                    IF(
+                        im_incidents.id IS NOT NULL,
+                        GROUP_CONCAT(
+                            DISTINCT
+                            JSON_OBJECT(
+                                'value', im_incidents.id,
+                                'name', CAST(im_incidents.summary AS CHAR)
+                            )
+                            SEPARATOR ','
+                        ),
+                        ''
+                    ),
+                    ']'
+                ) AS related_incidents
+            "],
+            'has_display_field' => false,
+            'join_parts' => ["
+                LEFT JOIN incident_management_incident_to_incident im_i2incident ON im_i2incident.incident_id = a.id
+                LEFT JOIN incident_management_incidents im_incidents ON im_i2incident.related_incident_id = im_incidents.id
+            "],
+        ],
+        'related_risks' => [
+            'customization_field_name' => 'RelatedRisks',
+            'localization_key' => 'RelatedRisks',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => false,
+            'editable' => false,
+            'select_parts' => ["
+                CONCAT(
+                    '[',
+                    IF(
+                        r.id IS NOT NULL,
+                        GROUP_CONCAT(
+                            DISTINCT
+                            JSON_OBJECT(
+                                'value', r.id,
+                                'name', CAST(r.subject AS CHAR)
+                            )
+                            SEPARATOR ','
+                        ),
+                        ''
+                    ),
+                    ']'
+                ) AS related_risks
+            "],
+            'has_display_field' => false,
+            'join_parts' => ["
+                LEFT JOIN incident_management_incident_to_risks im_i2risks ON im_i2risks.incident_id = a.id
+                LEFT JOIN risks r ON im_i2risks.risk_id = r.id
+            "],
+        ],
+        'source_tags' => [
+            'customization_field_name' => 'IncidentTags_source',
+            'localization_key' => 'IncidentTags_source',
+            'renderer' => "DataTable.render.tags('incident_management_source')",
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => false,
+            'editable' => false,
+            'select_parts' => ["
+                GROUP_CONCAT(
+                    DISTINCT 
+                    tg_source.tag 
+                    ORDER BY tg_source.tag ASC 
+                    SEPARATOR '|'
+                ) as source_tags
+            "],
+            'has_display_field' => false,
+            'join_parts' => ["
+                LEFT JOIN tags_taggees tt_source ON tt_source.taggee_id = a.id AND tt_source.type = 'incident_management_source'
+                LEFT JOIN tags tg_source ON tg_source.id = tt_source.tag_id
+            "],
+        ],
+        'destination_tags' => [
+            'customization_field_name' => 'IncidentTags_destination',
+            'localization_key' => 'IncidentTags_destination',
+            'renderer' => "DataTable.render.tags('incident_management_destination')",
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => false,
+            'editable' => false,
+            'select_parts' => ["
+                GROUP_CONCAT(
+                    DISTINCT 
+                    tg_destination.tag 
+                    ORDER BY tg_destination.tag ASC 
+                    SEPARATOR '|'
+                ) as destination_tags
+            "],
+            'has_display_field' => false,
+            'join_parts' => ["
+                LEFT JOIN tags_taggees tt_destination ON tt_destination.taggee_id = a.id AND tt_destination.type = 'incident_management_destination'
+                LEFT JOIN tags tg_destination ON tg_destination.id = tt_destination.tag_id
+            "],
+        ],
+        'lessons_learned' => [
+            'customization_field_name' => '',
+            'localization_key' => '',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => false,
+            'orderable' => false,
+            'editable' => false,
+            'select_parts' => ["
+                a.lessons_learned
+            "],
+            'has_display_field' => false
+        ],
+    ],
 ];
 
 global $field_settings_display_groups;
@@ -950,6 +1551,101 @@ $field_settings_display_groups = [
             'next_review_date',
             'next_step',
             'comments',
+        ],
+    ],
+    'incident_detection' => [
+        'header_key' => 'Detection',
+        'field_type' => 'incident_management_incident',
+        'fields' => [
+            'id',
+            'status',
+            'summary',
+            'playbook',
+            'details',
+            'occurrence_type',
+            'direction',
+            'attack_vector',
+            'detected_by',
+            'start_date',
+            'detection_date',
+        ],
+    ],
+    'incident_assignment' => [
+        'header_key' => 'Assignment',
+        'field_type' => 'incident_management_incident',
+        'fields' => [
+            'reporter',
+            'owner',
+            'team',
+            'additional_stakeholders',
+        ],
+    ],
+    'incident_prioritization' => [
+        'header_key' => 'Prioritization',
+        'field_type' => 'incident_management_incident',
+        'fields' => [
+            'function_impact',
+            'information_impact',
+            'recovery',
+            'score'
+        ],
+    ],
+    'incident_location' => [
+        'header_key' => 'Location',
+        'field_type' => 'incident_management_incident',
+        'fields' => [
+            'incident_region',
+            'incident_country',
+            'incident_city'
+        ],
+    ],
+    'incident_associations' => [
+        'header_key' => 'Associations',
+        'field_type' => 'incident_management_incident',
+        'fields' => [
+            'related_incidents',
+            'related_risks',
+            'source_tags',
+            'destination_tags',
+        ],
+    ],
+    'incident_management_response' => [
+        'header_key' => '',
+        'field_type' => 'incident_management_incident',
+        'fields' => [
+            'id',
+            'occurrence_type',
+            'status',
+            'score',
+            'summary',
+            'start_date',
+            'detection_date'
+        ],
+    ],
+    'incident_management_lessons_learned' => [
+        'header_key' => '',
+        'field_type' => 'incident_management_incident',
+        'fields' => [
+            'id',
+            'occurrence_type',
+            'status',
+            'score',
+            'summary',
+            'start_date',
+            'detection_date'
+        ],
+    ],
+    'incident_management_closed' => [
+        'header_key' => '',
+        'field_type' => 'incident_management_incident',
+        'fields' => [
+            'id',
+            'occurrence_type',
+            'status',
+            'score',
+            'summary',
+            'start_date',
+            'detection_date'
         ],
     ],
 ];
@@ -1081,17 +1777,101 @@ $field_settings_views = [
             'next_review_date',
         ],
     ],
-    
+    'dynamic_incident_report' => [
+        'view_type' => 'incident_management_incident',
+        'id_field' => 'id',
+        'datatable_ajax_uri' => '/api/v2/im/incident/get/incident/datatable?view=dynamic_incident_report',
+        'datatable_data_type' => 'associative',
+        'datatable_filter_submit_delay' => 600,
+        'groups' => [
+            'incident_detection',
+            'incident_assignment',
+            'incident_prioritization',
+            'incident_location',
+            'incident_associations',
+        ],
+        'default_enabled_columns' => [
+            'id',
+            'status',
+            'summary',
+            'playbook',
+            'details',
+        ],
+    ],
+    'incident_management_response' => [
+        'view_type' => 'incident_management_incident',
+        'id_field' => 'id',
+        'datatable_ajax_uri' => '/api/v2/im/incident/get/incident/datatable?view=incident_management_response',
+        'datatable_data_type' => 'associative',
+        'datatable_filter_submit_delay' => 600,
+        'groups' => [
+            'incident_management_response'
+        ],
+        'default_enabled_columns' => [
+            'id',
+            'occurrence_type',
+            'status',
+            'score',
+            'summary',
+            'start_date',
+            'detection_date'
+        ],
+    ],
+    'incident_management_lessons_learned' => [
+        'view_type' => 'incident_management_incident',
+        'id_field' => 'id',
+        'datatable_ajax_uri' => '/api/v2/im/incident/get/incident/datatable?view=incident_management_lessons_learned',
+        'datatable_data_type' => 'associative',
+        'datatable_filter_submit_delay' => 600,
+        'groups' => [
+            'incident_management_lessons_learned'
+        ],
+        'default_enabled_columns' => [
+            'id',
+            'occurrence_type',
+            'status',
+            'score',
+            'summary',
+            'start_date',
+            'detection_date'
+        ],
+        'actions_column' => [
+            'field_name' => 'actions',
+            'position' => 'first'
+        ],
+    ],
+    'incident_management_closed' => [
+        'view_type' => 'incident_management_incident',
+        'id_field' => 'id',
+        'datatable_ajax_uri' => '/api/v2/im/incident/get/incident/datatable?view=incident_management_closed',
+        'datatable_data_type' => 'associative',
+        'datatable_filter_submit_delay' => 600,
+        'groups' => [
+            'incident_management_closed'
+        ],
+        'default_enabled_columns' => [
+            'id',
+            'occurrence_type',
+            'status',
+            'score',
+            'summary',
+            'start_date',
+            'detection_date'
+        ],
+    ],
 ];
 
 /******************************
  * FUNCTION: DATABASE CONNECT *
  ******************************/
-function db_open()
-{
-    if(isset($GLOBALS['db_global']) && $GLOBALS['db_global']){
+function db_open() {
+
+    if (isset($GLOBALS['db_global']) && $GLOBALS['db_global']) {
+
         return $GLOBALS['db_global'];
+
     }
+
     // Connect to the database
     try {
 
@@ -1117,10 +1897,17 @@ function db_open()
         }
 
         // Create the PDO object
-        $GLOBALS['db_global'] = new PDO("mysql:charset=UTF8;dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, $options);
+        $GLOBALS['db_global'] = new PDO("mysql:charset=UTF8;dbname=" . DB_DATABASE . ";host=" . DB_HOSTNAME . ";port=" . DB_PORT, DB_USERNAME, DB_PASSWORD, $options);
 
         // Get the value set for the timezone in the database
-        $stmt = $GLOBALS['db_global']->prepare("SELECT `value` FROM `settings` WHERE `name` = 'default_timezone';");
+        $stmt = $GLOBALS['db_global']->prepare("
+            SELECT 
+                `value` 
+            FROM 
+                `settings` 
+            WHERE 
+                `name` = 'default_timezone';
+        ");
         $stmt->execute();
 
         // Store the list in the array
@@ -1149,27 +1936,28 @@ function db_open()
     	*/
 
         return $GLOBALS['db_global'];
-    }
-    catch (PDOException $e)
-    {
+
+    } catch (PDOException $e) {
+
         //die("Database Connection Failed: " . $e->getMessage());
 
         // We were unable to connect to the SimpleRisk database
         require_once(realpath(__DIR__ . '/healthcheck.php'));
         unable_to_communicate_with_database();
+
     }
 
     return null;
+
 }
 
 /*********************************
  * FUNCTION: DATABASE DISCONNECT *
  *********************************/
-function db_close($db)
-{
-        // Close the DB connection
-        $db = null;
-        // $GLOBALS['db_global'] = null;
+function db_close($db) {
+    // Close the DB connection
+    $db = null;
+    // $GLOBALS['db_global'] = null;
 }
 
 /*****************************
@@ -1190,28 +1978,60 @@ function statement_debug($stmt)
 /***************************************
  * FUNCTION: GET DATABASE TABLE VALUES *
  ***************************************/
-function get_table($name)
-{
+function get_table($name) {
+
     // Open the database connection
     $db = db_open();
 
     // If this is the team table
-    if (in_array($name, ["team", "dynamic_saved_selections", "assets", "asset_groups"])){
+    if (in_array($name, ["team", "dynamic_saved_selections", "assets", "asset_groups"])) {
+
         // Order by name
-        $stmt = $db->prepare("SELECT * FROM `{$name}` ORDER BY name");
-    }
-    elseif ($name == "framework_controls"){
-        $stmt = $db->prepare("SELECT *, short_name name FROM `{$name}` ORDER BY name");
-    }
+        $stmt = $db->prepare("
+            SELECT 
+                * 
+            FROM 
+                `{$name}` 
+            ORDER BY 
+                name
+        ");
+
+    } else if ($name == "framework_controls") {
+
+        $stmt = $db->prepare("
+            SELECT 
+                *, short_name name 
+            FROM 
+                `{$name}` 
+            ORDER BY 
+                name
+        ");
+
     // If this is ldap_group_and_teams table
-    elseif ($name == "ldap_group_and_teams")
-    {
-        $stmt = $db->prepare("SELECT t1.*, t2.name as team_name FROM `{$name}` t1 LEFT JOIN `team` t2 ON t1.team_id=t2.value ORDER BY t1.value");
-    }    
+    } else if ($name == "ldap_group_and_teams") {
+
+        $stmt = $db->prepare("
+            SELECT 
+                t1.*, t2.name as team_name 
+            FROM 
+                `{$name}` t1 
+                LEFT JOIN `team` t2 ON t1.team_id=t2.value 
+            ORDER BY 
+                t1.value
+        ");
+
     // Otherwise, order by value
-    else 
-    {
-        $stmt = $db->prepare("SELECT * FROM `{$name}` ORDER BY value");
+    } else {
+
+        $stmt = $db->prepare("
+            SELECT 
+                * 
+            FROM 
+                `{$name}` 
+            ORDER BY 
+                value
+        ");
+
     }
 
     $stmt->execute();
@@ -1219,20 +2039,16 @@ function get_table($name)
     // Store the list in the array
     $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    if($name == "assets")
-    {
-        foreach($array as &$row)
-        {
+    if ($name == "assets") {
+        foreach($array as &$row) {
             $row['ip'] = try_decrypt($row['ip']);
             $row['name'] = try_decrypt($row['name']);
             $row['details'] = try_decrypt($row['details']);
         }
     }
 
-    if($name == "frameworks")
-    {
-        foreach($array as &$row)
-        {
+    if ($name == "frameworks") {
+        foreach($array as &$row) {
             $row['name'] = try_decrypt($row['name']);
             $row['description'] = try_decrypt($row['description']);
         }
@@ -1242,6 +2058,7 @@ function get_table($name)
     db_close($db);
 
     return $array;
+
 }
 
 /****************************************************************
@@ -1466,13 +2283,20 @@ function get_teams_by_login_user(){
 /***************************************
  * FUNCTION: GET TABLE ORDERED BY NAME *
  ***************************************/
-function get_table_ordered_by_name($table_name)
-{
+function get_table_ordered_by_name($table_name) {
+
     // Open the database connection
     $db = db_open();
 
     // Create the query statement
-    $stmt = $db->prepare("SELECT * FROM `{$table_name}` ORDER BY name");
+    $stmt = $db->prepare("
+        SELECT
+            * 
+        FROM 
+            `{$table_name}` 
+        ORDER BY 
+            name
+    ");
 
     // Execute the database query
     $stmt->execute();
@@ -1484,20 +2308,24 @@ function get_table_ordered_by_name($table_name)
     db_close($db);
 
     // Try decrypt if encrypted fields
-    if ($table_name == "frameworks" || $table_name == "parent_frameworks" || $table_name == "projects")
-    {
+    if ($table_name == "frameworks" || $table_name == "parent_frameworks" || $table_name == "projects") {
+
         // For each option
-        foreach ($array as &$option)
-        {
+        foreach ($array as &$option) {
+
             // Try to decrypt it
             $option['name'] = try_decrypt($option['name']);
+
         }
-        usort($array, function($a, $b){
-            return strcmp( strtolower(trim($a['name'])), strtolower(trim($b['name'])));
+
+        usort($array, function($a, $b) {
+            return strcmp(strtolower(trim($a['name'])), strtolower(trim($b['name'])));
         });
+
     }
     
     return $array;
+
 }
 
 /******************************
@@ -1509,8 +2337,8 @@ function get_table_ordered_by_name($table_name)
  * "enabled/disabled_users_all": Will return the enabled/disabled users, ignoring the selected business unit. Use it ONLY inside of admin-only area
  * 
  ******************************/
-function get_custom_table($type)
-{
+function get_custom_table($type) {
+
     // Open the database connection
     $db = db_open();
 
@@ -1525,6 +2353,7 @@ function get_custom_table($type)
     if ($type == "user") {
 
         if (!is_admin() && organizational_hierarchy_extra()) {
+
             $stmt = $db->prepare("
                 SELECT
                     `u`.*
@@ -1552,10 +2381,12 @@ function get_custom_table($type)
         } else {
             $stmt = $db->prepare("SELECT * FROM `user` ORDER BY `name`;");
         }
-    }
+      
     // If we want enabled/disabled users or want the enabled users without caring for business units
-    else if (in_array($type, ["enabled_users", "disabled_users", "enabled_users_all", "disabled_users_all"])) { // $type == "enabled_users" || $type == "disabled_users" || $type == "enabled_users_all") {
+    } else if (in_array($type, ["enabled_users", "disabled_users", "enabled_users_all", "disabled_users_all"])) { // $type == "enabled_users" || $type == "disabled_users" || $type == "enabled_users_all") {
+        
         if (in_array($type, ["enabled_users", "disabled_users"]) && organizational_hierarchy_extra()) {
+
             $stmt = $db->prepare("
                 SELECT
                     `u`.*, GROUP_CONCAT(DISTINCT `t`.`value`) as teams
@@ -1599,53 +2430,116 @@ function get_custom_table($type)
                     `u`.`name`;
             ");
         }
+
         $enabled = in_array($type, ["enabled_users", "enabled_users_all"]) ? 1 : 0;
         $stmt->bindParam(":enabled", $enabled, PDO::PARAM_INT);
-    }
+
     // If we want a languages table
-    else if ($type == "languages")
-    {
-        $stmt = $db->prepare("SELECT value, full as name FROM languages ORDER BY name");
-    }
+    } else if ($type == "languages") {
+
+        $stmt = $db->prepare("
+            SELECT 
+                value, full as name 
+            FROM 
+                languages 
+            ORDER BY 
+                name
+        ");
+        
     // If we want a CVSS scoring table
-    else if (in_array($type, $allowed_cvss_values))
-    {
-        $stmt = $db->prepare("SELECT * FROM CVSS_scoring WHERE metric_name = :type ORDER BY id");
+    } else if (in_array($type, $allowed_cvss_values)) {
+
+        $stmt = $db->prepare("
+            SELECT 
+                * 
+            FROM 
+                CVSS_scoring 
+            WHERE 
+                metric_name = :type 
+            ORDER BY 
+                id
+        ");
         $stmt->bindParam(":type", $type, PDO::PARAM_STR, 30);
-    }
+
     // If we want a family table
-    else if ($type == "family")
-    {
-        $stmt = $db->prepare("SELECT value, name as name FROM family ORDER BY name");
-    }
+    } else if ($type == "family") {
+
+        $stmt = $db->prepare("
+            SELECT 
+                value, name as name 
+            FROM 
+                family 
+            ORDER BY 
+                name
+        ");
+
     // If we want a frameworks table
-    else if ($type == "frameworks")
-    {
-        $stmt = $db->prepare("SELECT value, name FROM frameworks WHERE status=1 ORDER BY `order`");
-    }
+    } else if ($type == "frameworks") {
+        
+        $stmt = $db->prepare("
+            SELECT 
+                value, name 
+            FROM 
+                frameworks 
+            WHERE 
+                status=1 
+            ORDER BY 
+                `order`
+        ");
+
     // If we want a date_formats table
-    else if ($type == "date_formats")
-    {
-        $stmt = $db->prepare("SELECT value, value as name FROM date_formats;");
-    }
+    } else if ($type == "date_formats") {
+
+        $stmt = $db->prepare("
+            SELECT 
+                value, value as name 
+            FROM 
+                date_formats;
+        ");
+
     // If we want a parent frameworks from frameworks table
-    else if ($type == "parent_frameworks")
-    {
-        $stmt = $db->prepare("SELECT value, name FROM frameworks WHERE parent=0 ORDER BY name");
-    }
+    } else if ($type == "parent_frameworks") {
+
+        $stmt = $db->prepare("
+            SELECT 
+                value, name 
+            FROM 
+                frameworks 
+            WHERE 
+                parent=0 
+            ORDER BY 
+                name
+        ");
+
     // If we want the framework controls
-    else if ($type == "framework_controls")
-    {
-        $stmt = $db->prepare("SELECT `id` as value, `short_name` as name FROM `framework_controls` WHERE `deleted`=0 ORDER BY `short_name`;");
-    }
+    } else if ($type == "framework_controls") {
+
+        $stmt = $db->prepare("
+            SELECT 
+                `id` as value, `short_name` as name 
+            FROM 
+                `framework_controls` 
+            WHERE 
+                `deleted`=0 
+            ORDER BY 
+                `short_name`;
+        ");
+
     // If we want the framework controls
-    else if ($type == "framework_control_tests")
-    {
-        $stmt = $db->prepare("SELECT `id` as value, `name` FROM `framework_control_tests` ORDER BY `name`;");
-    }
+    } else if ($type == "framework_control_tests") {
+
+        $stmt = $db->prepare("
+            SELECT 
+                `id` as value, `name` 
+            FROM 
+                `framework_control_tests` 
+            ORDER BY 
+                `name`;
+        ");
+
     // If we want the tags used on risks
-    else if ($type == "risk_tags")
-    {
+    } else if ($type == "risk_tags") {
+
         $stmt = $db->prepare("
             SELECT
                 `t`.`id` as value, `t`.`tag` as name
@@ -1654,13 +2548,16 @@ function get_custom_table($type)
                 INNER JOIN `tags_taggees` `tt` ON `t`.`id`=`tt`.`tag_id`
             WHERE
                 `tt`.`type`='risk'
-            GROUP BY `t`.`tag`
-            ORDER BY `t`.`tag`;
+            GROUP BY 
+                `t`.`tag`
+            ORDER BY 
+                `t`.`tag`;
         ");
-    }
+
+        
     // If we want the tags used on assets
-    else if ($type == "asset_tags")
-    {
+    } else if ($type == "asset_tags") {
+
         $stmt = $db->prepare("
             SELECT
                 `t`.`id` as value, `t`.`tag` as name
@@ -1669,25 +2566,52 @@ function get_custom_table($type)
                 INNER JOIN `tags_taggees` `tt` ON `t`.`id`=`tt`.`tag_id`
             WHERE
                 `tt`.`type`='asset'
-            GROUP BY `t`.`tag`
-            ORDER BY `t`.`tag`;
+            GROUP BY 
+                `t`.`tag`
+            ORDER BY 
+                `t`.`tag`;
         ");
-    }
+
     // If we want the test results(used for setting the test result)
-    else if ($type == "test_results")
-    {
-        $stmt = $db->prepare("SELECT name as value, name FROM test_results ORDER BY name");
-    }
+    } else if ($type == "test_results") {
+
+        $stmt = $db->prepare("
+            SELECT 
+                name as value, name 
+            FROM 
+                test_results 
+            ORDER BY 
+                name
+        ");
+
     // If we want the test results(used for filtering on the test result)
-    else if ($type == "test_results_filter")
-    {
-        $stmt = $db->prepare("SELECT value, name FROM test_results ORDER BY name");
-    }
-    else if ($type == "policies")
-    {
-        $stmt = $db->prepare("SELECT id as value, document_name as name FROM documents where document_type = 'policies' ORDER BY document_name");
-    } elseif ($type == "team") {
+    } else if ($type == "test_results_filter") {
+
+        $stmt = $db->prepare("
+            SELECT 
+                value, name 
+            FROM 
+                test_results 
+            ORDER BY 
+                name
+        ");
+
+    } else if ($type == "policies") {
+
+        $stmt = $db->prepare("
+            SELECT 
+                id as value, document_name as name 
+            FROM 
+                documents 
+            where 
+                document_type = 'policies' 
+            ORDER BY 
+                document_name
+            ");
+
+    } else if ($type == "team") {
         if (!is_admin() && organizational_hierarchy_extra()) {
+
             // If the Organizational Hierarchy is activated the function only returns the teams the
             // user's selected business unit allows. Unless it's an admin user as admins can see everything.
             $stmt = $db->prepare("
@@ -1702,21 +2626,47 @@ function get_custom_table($type)
                 ORDER BY
                     `t`.`name`;
             ");
+
             $uid = (int)$_SESSION['uid'];
             $stmt->bindParam(":user_id", $uid, PDO::PARAM_INT);
+
         } else {
-            $stmt = $db->prepare("SELECT * FROM `team` ORDER BY name");
+
+            $stmt = $db->prepare("
+                SELECT 
+                    * 
+                FROM 
+                    `team` 
+                ORDER BY 
+                    name
+            ");
+
         }
-    }
-    else if ($type == "risk_catalog")
-    {
-        $stmt = $db->prepare("SELECT id as value, CONCAT(`number`, ' - ', `name`) AS name FROM `risk_catalog` ORDER BY `grouping`,`order`;");
-    }
-    else if ($type == "threat_catalog")
-    {
-        $stmt = $db->prepare("SELECT id as value, CONCAT (`number`, ' - ', `name`) AS name FROM `threat_catalog` ORDER BY `grouping`, `order`;");
-    }
-    else if (in_array($type, ["remote_team-SAML", "remote_role-SAML", "remote_team-LDAP"]) && custom_authentication_extra()) {
+
+    } else if ($type == "risk_catalog") {
+
+        $stmt = $db->prepare("
+            SELECT 
+                id as value, CONCAT(`number`, ' - ', `name`) AS name 
+            FROM 
+                `risk_catalog` 
+            ORDER BY 
+                `grouping`,`order`;
+        ");
+
+    } else if ($type == "threat_catalog") {
+        
+        $stmt = $db->prepare("
+            SELECT 
+                id as value, CONCAT (`number`, ' - ', `name`) AS name 
+            FROM 
+                `threat_catalog` 
+            ORDER BY 
+                `grouping`, `order`;
+        ");
+
+    } else if (in_array($type, ["remote_team-SAML", "remote_role-SAML", "remote_team-LDAP"]) && custom_authentication_extra()) {
+
         list($table, $remote_type) = explode('-', $type);
         $stmt = $db->prepare("
             SELECT
@@ -1728,11 +2678,20 @@ function get_custom_table($type)
             ORDER BY
                 `name`;
         ");
-    }
-    else if ($type == "data_classification")
-    {
-        $stmt = $db->prepare("SELECT id as value, name FROM `data_classification` ORDER BY `order`");
+
+    } else if ($type == "data_classification") {
+
+        $stmt = $db->prepare("
+            SELECT 
+                id as value, name 
+            FROM 
+                `data_classification` 
+            ORDER BY 
+                `order`
+        ");
+
     } else if (in_array($type, ['risk_catalog_grouped', 'threat_catalog_grouped'])) {
+        
         $catalog_type = $type === 'risk_catalog_grouped' ? 'risk' : 'threat';
         $grouped = true;
         $stmt = $db->prepare("
@@ -1747,10 +2706,29 @@ function get_custom_table($type)
                 `g`.`order`,
                 `c`.`order`;
         ");
-    } elseif ($type == "asset_valuation") {
-        $stmt = $db->prepare("SELECT * FROM `asset_values` ORDER BY `min_value` ASC;");
-    } elseif ($type == "risks" || $type == "risks_with_id") {
-        $stmt = $db->prepare("SELECT `id` AS value , `subject` AS name FROM `risks` ORDER BY `" . ($encryption ? 'order_by_subject' : 'subject') . "` ASC;");
+
+    } else if ($type == "asset_valuation") {
+
+        $stmt = $db->prepare("
+            SELECT 
+                * 
+            FROM 
+                `asset_values` 
+            ORDER BY 
+                `min_value` ASC;
+        ");
+
+    } else if ($type == "risks" || $type == "risks_with_id") {
+
+        $stmt = $db->prepare("
+            SELECT 
+                `id` AS value , `subject` AS name 
+            FROM 
+                `risks` 
+            ORDER BY 
+                `" . ($encryption ? 'order_by_subject' : 'subject') . "` ASC;
+        ");
+
     }
 
     // Execute the database query
@@ -1763,26 +2741,29 @@ function get_custom_table($type)
     db_close($db);
 
     // Try decrypt if encrypted fields
-    if ($type == "frameworks" || $type == "parent_frameworks" || $type == "projects")
-    {
+    if ($type == "frameworks" || $type == "parent_frameworks" || $type == "projects") {
+
         // For each option
-        foreach ($array as &$option)
-        {
+        foreach ($array as &$option) {
             // Try to decrypt it
             $option['name'] = try_decrypt($option['name']);
         }
+
         usort($array, function($a, $b){
             return strcmp( strtolower(trim($a['name'])), strtolower(trim($b['name'])));
         });
+        
     }
 
     if ($type == "risks" || $type == "risks_with_id") {
+
         if ($encryption) {
             // Decrypt the subjects
             foreach ($array as &$option) {
                 $option['name'] = try_decrypt($option['name']);
             }
         }
+
         if ($type == "risks_with_id") {
             foreach ($array as &$option) {
                 $risk_id = (int)$option['value'] + 1000;
@@ -1791,11 +2772,13 @@ function get_custom_table($type)
         }
     }
     
-    if($type == "asset_valuation") {
+    if ($type == "asset_valuation") {
+
         global $escaper;
         $currency_sign = $escaper->escapeHtml(get_setting("currency"));
         $result = [];
         foreach ($array as $asset_value) {
+
             $valuation_level_name = !empty($asset_value['valuation_level_name']) ? " ({$escaper->escapeHtml($asset_value['valuation_level_name'])})" : '';
 
             if ($asset_value['min_value'] === $asset_value['max_value']) {
@@ -1803,25 +2786,27 @@ function get_custom_table($type)
             } else {
                 $asset_value_name = "{$currency_sign}{$escaper->escapeHtml(number_format($asset_value['min_value']))} to {$currency_sign}{$escaper->escapeHtml(number_format($asset_value['max_value']))}{$valuation_level_name}";
             }
+
             $result []= ['value' => $asset_value['id'], 'name' => $asset_value_name];
         }
 
         return $result;
+
     }
 
     // Localize test results names
-    if ($type == "test_results" || $type == "test_results_filter")
-    {
+    if ($type == "test_results" || $type == "test_results_filter") {
+
         global $lang;
         // For each option
-        foreach ($array as &$option)
-        {
+        foreach ($array as &$option) {
             // Try to localize it
             $option['name'] = $lang[$option['name']];
         }
     }
 
     return $array;
+
 }
 
 /************************************
@@ -1831,8 +2816,8 @@ function get_custom_table($type)
  * "enabled/disabled_users": Will return the enabled/disabled users of the selected business unit(EVEN FOR ADMINS). Use it outside of admin-only area
  * "enabled/disabled_users_all": Will return the enabled/disabled users, ignoring the selected business unit. Use it ONLY inside of admin-only area
  ************************************/
-function get_options_from_table($name)
-{
+function get_options_from_table($name) {
+
     global $lang, $escaper;
 
     // If we want a table that should be ordered by name instead of value
@@ -1841,13 +2826,16 @@ function get_options_from_table($name)
         "planning_strategy", "close_reason", "status", "source", "import_export_mappings", "test_status"))) {
 
         $options = get_table_ordered_by_name($name);
-    }
-    elseif (in_array($name, array("user", "team", "enabled_users", "disabled_users", "enabled_users_all", "disabled_users_all", "languages", "family", "date_formats",
+
+    } else if (in_array($name, array("user", "team", "enabled_users", "disabled_users", "enabled_users_all", "disabled_users_all", "languages", "family", "date_formats",
             "parent_frameworks", "frameworks", "framework_controls", "risk_tags", "asset_tags", "test_results", "test_results_filter",
             "policies", "framework_control_tests", "risk_catalog", "threat_catalog", "risk_catalog_grouped", "threat_catalog_grouped", "remote_team-SAML",
             "remote_role-SAML", "remote_team-LDAP", "data_classification", "asset_valuation", "risks", "risks_with_id"))) {
+
         $options = get_custom_table($name);
-    }elseif ($name === "yes_no") {
+
+    } else if ($name === "yes_no") {
+
         $options = [
             [
                 'value' => 0,
@@ -1858,23 +2846,25 @@ function get_options_from_table($name)
                 'name' => $lang['Yes']
             ]
         ];
-    }
+        
     // Otherwise
-    else
-    {
+    } else {
+
         // Get the list of options
         $options = get_table($name);
+
     }
 
     // Sort options array
-    if($name == "parent_frameworks" || $name == "projects"){
-        uasort($options, function($a, $b){
-            if($a['name'] == $b['name']) return 0;
+    if ($name == "parent_frameworks" || $name == "projects") {
+        uasort($options, function($a, $b) {
+            if ($a['name'] == $b['name']) return 0;
             return ($a['name'] < $b['name']) ? -1 : 1;
         });
     }
 
     return $options;
+    
 }
 
 
@@ -2308,65 +3298,82 @@ function create_multiusers_dropdown($name, $selected = "", $custom_html = "", $r
  * "enabled/disabled_users": Will return the enabled/disabled users of the selected business unit(EVEN FOR ADMINS). Use it outside of admin-only area
  * "enabled/disabled_users_all": Will return the enabled/disabled users, ignoring the selected business unit. Use it ONLY inside of admin-only area
  *****************************/
-function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true, $help = false, $returnHtml=false, $customHtml="", $blankText="--", $blankValue="", $useValue=true, $alphabetical_order = 0, $options = null)
-{
+function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true, $help = false, $returnHtml=false, $customHtml="", $blankText="--", $blankValue="", $useValue=true, $alphabetical_order = 0, $options = null) {
 
     global $escaper;
-    $str = "";
-    // If we want to update the helper when selected
-    if ($help == true)
-    {
-        $helper = "  onClick=\"javascript:showHelp('" . $escaper->escapeHtml($rename) . "Help');updateScore();\"";
-    }
-    else $helper = "";
 
-    if ($rename != NULL)
-    {
-        $str .= "<select {$customHtml} id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "\" class=\"form-select form-control\" " . $helper . ">\n";
+    $str = "";
+
+    // If we want to update the helper when selected
+    if ($help == true) {
+        $helper = " onClick=\"javascript:showHelp('{$escaper->escapeHtml($rename)}Help');updateScore();\"";
+    } else {
+        $helper = "";
     }
-    else $str .= "<select {$customHtml} id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-select\" " . $helper . ">\n";
+
+    if ($rename != NULL) {
+        $str .= "
+            <select {$customHtml} id='{$escaper->escapeHtml($rename)}' name='{$escaper->escapeHtml($rename)}' class='form-select' {$helper}>
+        ";
+    } else {
+        $str .= "
+            <select {$customHtml} id='{$escaper->escapeHtml($name)}' name='{$escaper->escapeHtml($name)}' class='form-select' {$helper}>
+        ";
+    }
 
     // Get the list of options
-    if($options === NULL){
+    if ($options === NULL) {
+
         $options = get_options_from_table($name);
-        if($alphabetical_order == 1) usort($options, function($a, $b){return strcmp($a["name"], $b["name"]);});
+
+        if ($alphabetical_order == 1) {
+            usort($options, function($a, $b) {
+                return strcmp($a["name"], $b["name"]);
+            });
+        }
+
     }
 
     // If the blank is true
-    if ($blank == true)
-    {
+    if ($blank == true) {
         array_unshift($options, ["value"=>$blankValue, "name"=>$blankText]);
     }
 
-    foreach ($options as $key => $option)
-    {
+    foreach ($options as $key => $option) {
+
         if ($selected == $option['value']) {
-            $text = " selected";
+            $text = "selected";
         } else {
             $text = "";
         }
 
         // If ID is used for option's value
-        if($useValue)
-        {
-            $str .= "    <option value=\"" . $escaper->escapeHtml($option['value']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
-        }
+        if($useValue) {
+            $str .= "
+                <option value='{$escaper->escapeHtml($option['value'])}' {$text}>{$escaper->escapeHtml($option['name'])}</option>
+            ";
+            
         // If name is used for option's value
-        else
-        {
-            if($blank == true && $key == 0){
-                $str .= "    <option value=\"" . $escaper->escapeHtml($blankValue) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
-            }else{
-                $str .= "    <option value=\"" . $escaper->escapeHtml($option['name']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
+        } else {
+            if ($blank == true && $key == 0) {
+                $str .= "
+                <option value='{$escaper->escapeHtml($blankValue)}' {$text}>{$escaper->escapeHtml($option['name'])}</option>
+                ";
+            } else {
+                $str .= "
+                <option value='{$escaper->escapeHtml($option['name'])}' {$text}>{$escaper->escapeHtml($option['name'])}</option>
+                ";
             }
         }
     }
 
-    $str .= "  </select>\n";
+    $str .= "
+            </select>
+    ";
 
-    if($returnHtml){
+    if ($returnHtml) {
         return $str;
-    }else{
+    } else {
         echo $str;
     }
 }
@@ -2378,66 +3385,75 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
  * "enabled/disabled_users": Will return the enabled/disabled users of the selected business unit(EVEN FOR ADMINS). Use it outside of admin-only area
  * "enabled/disabled_users_all": Will return the enabled/disabled users, ignoring the selected business unit. Use it ONLY inside of admin-only area
  **************************************/
-function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $options = NULL, $blank = false, $blankText="--", $blankValue="", $useValue=true, $customHtml="",$alphabetical_order=0, $returnHtml=false, $additionalClasses = '')
-{
+function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $options = NULL, $blank = false, $blankText="--", $blankValue="", $useValue=true, $customHtml="",$alphabetical_order=0, $returnHtml=false, $additionalClasses = '') {
+
     global $escaper;
     $str = "";
 
-    if ($rename != NULL)
-    {
-        $str .= "<select class='form-select multiselect {$additionalClasses}' {$customHtml} multiple=\"multiple\" id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "[]\">\n";
-    }
-    else {
-        $str .= "<select class='form-select multiselect {$additionalClasses}' {$customHtml} multiple=\"multiple\" id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "[]\">\n";
+    if ($rename != NULL) {
+        $str .= "
+            <select class='form-select multiselect {$additionalClasses}' {$customHtml} multiple='multiple' id='{$escaper->escapeHtml($rename)}' name='{$escaper->escapeHtml($rename)}[]'>
+        ";
+    } else {
+        $str .= "
+            <select class='form-select multiselect {$additionalClasses}' {$customHtml} multiple='multiple' id='{$escaper->escapeHtml($name)}' name='{$escaper->escapeHtml($name)}[]'>
+        ";
     }
 
     // Get the list of options
-    if($options === NULL){
+    if($options === NULL) {
         $options = get_options_from_table($name);
-        if($alphabetical_order == 1) usort($options, function($a, $b){return strcmp($a["name"], $b["name"]);});
+        if($alphabetical_order == 1) {
+            usort($options, function($a, $b) {
+                return strcmp($a["name"], $b["name"]);
+            });
+        }
     }
 
     // If the blank is true
-    if ($blank == true)
-    {
+    if ($blank == true) {
         array_unshift($options, ["value"=>$blankValue, "name"=>$blankText]);
     }
 
     $is_selected_array = is_array($selected);
 
     // For each option
-    foreach ($options as $option)
-    {
+    foreach ($options as $option) {
+        
         // Pattern is a team id surrounded by colons
-        $regex_pattern = "/:" . $option['value'] .":/";
+        $regex_pattern = "/:{$option['value']}:/";
 
         // If the user belongs to the team or all was selected
         if ($selected == "all" ||
            ($is_selected_array && in_array($option['value'], $selected)) ||
            ($selected === null && !$option['value']) ||
-           (!$is_selected_array && !is_null($selected) && preg_match($regex_pattern, $selected, $matches)))
-        {
-            $text = " selected";
+           (!$is_selected_array && !is_null($selected) && preg_match($regex_pattern, $selected, $matches))) {
+            $text = "selected";
+        } else {
+            $text = "";
         }
-        else $text = "";
 
         // If ID is used for option's value
-        if($useValue)
-        {
-            $str .= "    <option value=\"" . $escaper->escapeHtml($option['value']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
-        }
+        if ($useValue) {
+            $str .= "
+                <option value='{$escaper->escapeHtml($option['value'])}' {$text}>{$escaper->escapeHtml($option['name'])}</option>
+            ";
+            
         // If name is used for option's value
-        else
-        {
-            $str .= "    <option value=\"" . $escaper->escapeHtml($option['name']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
+        } else {
+            $str .= "
+                <option value='{$escaper->escapeHtml($option['name'])}' {$text}>{$escaper->escapeHtml($option['name'])}</option>
+            ";
         }
-
     }
 
-    $str .= "  </select>\n";
-    if($returnHtml){
+    $str .= "
+            </select>
+    ";
+
+    if ($returnHtml) {
         return $str;
-    }else{
+    } else {
         echo $str;
     }
 }
@@ -2879,13 +3895,22 @@ function update_table_by_id($table, $name, $id, $length=50)
 /*************************
  * FUNCTION: ADD SETTING *
  *************************/
-function add_setting($name, $value)
-{
+function add_setting($name, $value) {
 
     // Open the database connection
     $db = db_open();
 
-    $stmt = $db->prepare("INSERT IGNORE INTO settings (`name`,`value`) VALUES (:name, :value);");
+    $stmt = $db->prepare("
+        INSERT IGNORE INTO 
+            settings 
+        (
+            `name`,`value`
+        ) 
+        VALUES 
+        (
+            :name, :value
+        );
+    ");
     $stmt->bindParam(":name", $name, PDO::PARAM_STR);
     $stmt->bindParam(":value", $value, PDO::PARAM_STR);
     $stmt->execute();
@@ -2895,6 +3920,7 @@ function add_setting($name, $value)
 
     $key = 'setting_'.$name;
     $GLOBALS[$key] = $value;
+
 }
 
 /***************************************
@@ -3003,13 +4029,12 @@ function delete_setting($name)
 /*************************
  * FUNCTION: GET SETTING *
  *************************/
-function get_setting($setting, $default=false, $cached=true)
-{
+function get_setting($setting, $default=false, $cached=true) {
+
     // If we want to cache the setting
-    if ($cached)
-    {
-        $key = 'setting_'.$setting;
-        if(isset($GLOBALS[$key])){
+    if ($cached) {
+        $key = 'setting_' . $setting;
+        if (isset($GLOBALS[$key])) {
             return $GLOBALS[$key];
         }
     }
@@ -3018,7 +4043,14 @@ function get_setting($setting, $default=false, $cached=true)
     $db = db_open();
 
     // Get the setting
-    $stmt = $db->prepare("SELECT * FROM settings where name=:setting");
+    $stmt = $db->prepare("
+        SELECT 
+            * 
+        FROM 
+            settings 
+        where 
+            name=:setting
+    ");
     $stmt->bindParam(":setting", $setting, PDO::PARAM_STR, 100);
     $stmt->execute();
 
@@ -3029,31 +4061,40 @@ function get_setting($setting, $default=false, $cached=true)
     db_close($db);
 
     // If the array isn't empty
-    if ($array)
-    {
+    if ($array) {
+
         // Set the value to the array value
         $value = trim($array[0]['value']);
-    }
-    else $value = false;
 
-    if($value === false)
-    {
-        $result = $default;
+    } else {
+
+        $value = false;
+
     }
-    else
-    {
+
+    if($value === false) {
+
+        $result = $default;
+
+    } else {
+
         $result = $value;
+
     }
 
     // If we want to cache the setting
-    if ($cached)
-    {
+    if ($cached) {
+
         // Put the setting in the global variable and then return it
         $GLOBALS[$key] = $result;
         return $GLOBALS[$key];
-    }
+
     // Otherwise just return the result
-    else return $result;
+    } else {
+
+        return $result;
+
+    }
 }
 
 /************************************************************
@@ -3115,13 +4156,15 @@ function get_settings($settings) {
 /*******************************************************
  * FUNCTION: CONVERT DEFAULT DATE FORMAT TO PHP FORMAT *
  *******************************************************/
-function get_default_date_format()
-{
+function get_default_date_format() {
+
     $default_date_format = get_setting("default_date_format");
     $php_date_format = str_ireplace("YYYY", "Y", $default_date_format);
     $php_date_format = str_ireplace("MM", "m", $php_date_format);
     $php_date_format = str_ireplace("DD", "d", $php_date_format);
+
     return $php_date_format;
+
 }
 
 /*******************************************************
@@ -3149,11 +4192,12 @@ function get_default_datetime_format_for_js() {
 /************************************************************
  * FUNCTION: CONVERT DEFAULT DATE TIME FORMAT TO PHP FORMAT *
  ************************************************************/
-function get_default_datetime_format($time_format="H:i:s")
-{
+function get_default_datetime_format($time_format = "H:i:s") {
+
     $format = get_default_date_format();
 
-    return $format." ".$time_format;
+    return "{$format} {$time_format}";
+
 }
 
 /*********************************************************************************
@@ -3175,15 +4219,16 @@ function format_date($date, $default = "")
     }
     else return $default;
 }
-function format_datetime($date, $default = "", $timeformat = "H:i:s")
-{
+
+function format_datetime($date, $default = "", $timeformat = "H:i:s") {
+
     // If the date is not 0000-00-00
-    if ($date && $date != "0000-00-00" && $date != "0000-00-00 00:00:00")
-    {
+    if ($date && $date != "0000-00-00" && $date != "0000-00-00 00:00:00") {
         // Set it to the proper format
         return strtotime($date) ? date(get_default_datetime_format($timeformat), strtotime($date)) : "";
+    } else {
+        return $default;
     }
-    else return $default;
 }
 
 /******************************************************
@@ -3522,6 +4567,93 @@ function get_test_status_ids(){
     return $array;
 }
 
+/*****************************
+ * FUNCTION: NORMALIZE EMAIL *
+ *****************************/
+function normalize_email($email) {
+
+    // We need to consider the following 3 issues when comparing emails.
+
+    // 1. admin+info1@test.com and admin+info2@test.com are treated the same as admin@test.com
+    // 2. in gmail, admin.info@gmail.com is treated the same as admininfo@gmail.com
+    // 3. ADMINInfo@GMAIL.COM is treated the same as admininfo@gmail.com
+
+    // Split the email into local part and domain part
+    list($local, $domain) = explode('@', $email, 2);
+    
+    // Consider the first issue.
+    if (strpos($local, '+') !== false) {
+        $local = substr($local, 0, strpos($local, '+'));
+    }
+
+    // Consider the second issue.
+    if (strtolower($domain) === 'gmail.com' || strtolower($domain) === 'googlemail.com') {
+        $local = str_replace('.', '', $local);
+    }
+
+    // Consider the third issue.
+    $local = strtolower($local);
+    $domain = strtolower($domain);
+
+    // Recombine the normalized local part with the domain part
+    return $local . '@' . $domain;
+
+}
+
+/*************************
+ * FUNCTION: EMAIL EXIST *
+ *************************/
+function email_exist($email) {
+ 
+    // We need to normalize the entered email to compare emails in table
+    $normalized_email = normalize_email($email);
+
+    // Open the database connection
+    $db = db_open();
+ 
+    // Find the user
+    $stmt = $db->prepare("
+        SELECT 
+            normalized_domain_part,
+            IF(
+                (normalized_domain_part = 'gmail.com' OR normalized_domain_part = 'googlemail.com'), 
+                LOWER(REPLACE(local_part, '.', '')), 
+                LOWER(local_part)
+            ) AS normalized_local_part,
+            CONCAT(
+                IF(
+                    (normalized_domain_part = 'gmail.com' OR normalized_domain_part = 'googlemail.com'), 
+                    LOWER(REPLACE(local_part, '.', '')), 
+                    LOWER(local_part)
+                ), 
+                '@', 
+                normalized_domain_part
+            ) AS normalized_email
+        FROM 
+            (
+                SELECT 
+                    LOWER(SUBSTRING_INDEX(email, '@', -1)) AS normalized_domain_part,
+                    SUBSTRING_INDEX(email, '@', 1) as local_part
+                FROM 
+                    `user`
+            ) user_email_parts
+        HAVING 
+            normalized_email = :email;
+    ");
+    $stmt->bindParam(":email", $normalized_email, PDO::PARAM_STR, 200);
+
+    $stmt->execute();
+
+    // Fetch the array
+    $array = $stmt->fetchAll();
+    
+    // Close the database connection
+    db_close($db);
+    
+    return !empty($array);
+
+}
+
 /*************************
  * FUNCTION: ENABLE USER *
  *************************/
@@ -3573,13 +4705,20 @@ function disable_user($value)
 /************************
  * FUNCTION: USER EXIST *
  ************************/
-function user_exist($user)
-{
+function user_exist($user) {
+
     // Open the database connection
     $db = db_open();
 
     // Find the user
-    $stmt = $db->prepare("SELECT * FROM `user` WHERE `username`=:user");
+    $stmt = $db->prepare("
+        SELECT 
+            * 
+        FROM 
+            `user` 
+        WHERE 
+            `username`=:user
+    ");
     $stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
 
     $stmt->execute();
@@ -3591,6 +4730,7 @@ function user_exist($user)
     db_close($db);
     
     return !empty($array);
+
 }
 
 /****************************
@@ -4009,13 +5149,6 @@ function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id,
         $multi_factor = 1;
     }
 
-    // If mfa is not currently enabled for the user
-    if (!mfa_enabled_for_uid($user_id))
-    {
-        // Delete the MFA for the user so they can start fresh if enabled
-        mfa_delete_userid($user_id);
-    }
-
     // Open the database connection
     $db = db_open();
 
@@ -4064,6 +5197,12 @@ function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id,
     
     // Close the database connection
     db_close($db);
+
+    // If mfa is not currently enabled for the user
+    if (!mfa_enabled_for_uid($user_id)) {
+        // Delete the MFA for the user so they can start fresh if enabled
+        mfa_delete_userid($user_id);
+    }
 
     if ($user_got_locked) {
         kill_sessions_of_user($user_id);
@@ -6443,12 +7582,13 @@ function update_risk_subject($risk_id, $subject)
 /************************
  * FUNCTION: CONVERT ID *
  ************************/
-function convert_id($id)
-{
+function convert_id($id) {
+
     // Add 1000 to any id to make it at least 4 digits
     $id = (int)$id + 1000;
 
     return $id;
+
 }
 
 /****************************************
@@ -10323,7 +11463,7 @@ function get_name_by_value($table, $value, $default = "", $use_id = false) {
 /***************************************
  * FUNCTION: GET NAMEs BY MULTI VALUES *
  ***************************************/
-function get_names_by_multi_values($table, $values, $return_array=false, $impolode_separator=", ", $use_id=false) {
+function get_names_by_multi_values($table, $values, $return_array=false, $implode_separator=", ", $use_id=false) {
 
     if (is_array($values)) {
 
@@ -10362,7 +11502,7 @@ function get_names_by_multi_values($table, $values, $return_array=false, $impolo
         }
 
         // Return that value
-        return $return_array ? $array : implode($impolode_separator, $array);
+        return $return_array ? $array : implode($implode_separator, $array);
     
     // Otherwise, return an empty string/array
     } else {
@@ -11705,28 +12845,30 @@ function language_file($force_default=false)
 /*****************************************
  * FUNCTION: CUSTOM AUTHENTICATION EXTRA *
  *****************************************/
-function custom_authentication_extra()
-{
-    if(isset($GLOBALS['authentication_extra'])){
+function custom_authentication_extra() {
+
+    if (isset($GLOBALS['authentication_extra'])) {
         return $GLOBALS['authentication_extra'];
     }
 
     $setting = get_setting('custom_auth');
 
     // If the setting is not empty
-    if (!empty($setting))
-    {
+    if (!empty($setting)) {
+
         // If the setting is true or "true" or 1
-        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
-        {
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1") {
             // The extra is enabled
             $GLOBALS['authentication_extra'] = true;
+        } else {
+            $GLOBALS['authentication_extra'] = false;
         }
-        else $GLOBALS['authentication_extra'] = false;
+    } else {
+        $GLOBALS['authentication_extra'] = false;
     }
-    else $GLOBALS['authentication_extra'] = false;
 
     return $GLOBALS['authentication_extra'];
+
 }
 
 /*********************************
@@ -11759,28 +12901,31 @@ function customization_extra()
 /***********************************
  * FUNCTION: TEAM SEPARATION EXTRA *
  ***********************************/
-function team_separation_extra()
-{
-    if(isset($GLOBALS['separation_extra'])){
+function team_separation_extra() {
+
+    if (isset($GLOBALS['separation_extra'])) {
         return $GLOBALS['separation_extra'];
     }
 
     $setting = get_setting('team_separation');
 
     // If the setting is not empty
-    if (!empty($setting))
-    {
+    if (!empty($setting)) {
+
         // If the setting is true or "true" or 1
-        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
-        {
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1") {
             // The extra is enabled
             $GLOBALS['separation_extra'] = true;
+        } else {
+            $GLOBALS['separation_extra'] = false;
         }
-        else $GLOBALS['separation_extra'] = false;
+
+    } else {
+        $GLOBALS['separation_extra'] = false;
     }
-    else $GLOBALS['separation_extra'] = false;
 
     return $GLOBALS['separation_extra'];
+
 }
 
 /********************************
@@ -12057,26 +13202,30 @@ function advanced_search_extra() {
  * FUNCTION: JIRA EXTRA *
  ************************/
 function jira_extra() {
-    if(isset($GLOBALS['jira_extra'])){
+
+    if (isset($GLOBALS['jira_extra'])) {
         return $GLOBALS['jira_extra'];
     }
 
     $setting = get_setting('jira');
 
     // If the setting is not empty
-    if (!empty($setting))
-    {
+    if (!empty($setting)) {
+
         // If the setting is true or "true" or 1
-        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
-        {
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1") {
             // The extra is enabled
             $GLOBALS['jira_extra'] = true;
+        } else {
+            $GLOBALS['jira_extra'] = false;
         }
-        else $GLOBALS['jira_extra'] = false;
+
+    } else {
+        $GLOBALS['jira_extra'] = false;
     }
-    else $GLOBALS['jira_extra'] = false;
 
     return $GLOBALS['jira_extra'];
+
 }
 
 /***********************
@@ -12109,26 +13258,28 @@ function ucf_extra() {
  * FUNCTION: ORGANIZATIONAL HIERARCHY EXTRA *
  ********************************************/
 function organizational_hierarchy_extra() {
-    if(isset($GLOBALS['organizational_hierarchy_extra'])){
+
+    if (isset($GLOBALS['organizational_hierarchy_extra'])) {
         return $GLOBALS['organizational_hierarchy_extra'];
     }
 
     $setting = get_setting('organizational_hierarchy');
 
     // If the setting is not empty
-    if (!empty($setting))
-    {
+    if (!empty($setting)) {
         // If the setting is true or "true" or 1
-        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
-        {
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1") {
             // The extra is enabled
             $GLOBALS['organizational_hierarchy_extra'] = true;
+        } else {
+            $GLOBALS['organizational_hierarchy_extra'] = false;
         }
-        else $GLOBALS['organizational_hierarchy_extra'] = false;
+    } else {
+        $GLOBALS['organizational_hierarchy_extra'] = false;
     }
-    else $GLOBALS['organizational_hierarchy_extra'] = false;
 
     return $GLOBALS['organizational_hierarchy_extra'];
+
 }
 
 /****************************
@@ -12174,28 +13325,31 @@ function installed_openssl(){
 /******************************
  * FUNCTION: ENCRYPTION EXTRA *
  ******************************/
-function encryption_extra()
-{
-    if(isset($GLOBALS['encryption_extra'])){
+function encryption_extra() {
+
+    if (isset($GLOBALS['encryption_extra'])) {
         return $GLOBALS['encryption_extra'];
     }
     
     $setting = get_setting('encryption');
 
     // If the setting is not empty
-    if (!empty($setting))
-    {
+    if (!empty($setting)) {
+
         // If the setting is true or "true" or 1
-        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
-        {
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1") {
             // The extra is enabled
             $GLOBALS['encryption_extra'] = true;
+        } else {
+            $GLOBALS['encryption_extra'] = false;
         }
-        else $GLOBALS['encryption_extra'] = false;
+
+    } else {
+        $GLOBALS['encryption_extra'] = false;
     }
-    else $GLOBALS['encryption_extra'] = false;
 
     return $GLOBALS['encryption_extra'];
+
 }
 
 /*************************
@@ -12755,55 +13909,58 @@ function incomplete_project($project_id)
 /*****************************
  * FUNCTION: WRITE DEBUG LOG *
  *****************************/
-function write_debug_log($value)
-{
+function write_debug_log($value) {
+
     // If a global variable for debug logging is not already set
-    if (!isset($GLOBALS['debug_logging']))
-    {
+    if (!isset($GLOBALS['debug_logging'])) {
+
         // Get the current debug setting from the database
         $GLOBALS['debug_logging'] = get_setting("debug_logging");
+
     }
 
     // Set debug logging to the global variable
     $debug_logging = $GLOBALS['debug_logging'];
 
     // If DEBUG is enabled
-    if ($debug_logging == 1)
-    {
+    if ($debug_logging == 1) {
+
         // If the value is not an array
-        if (!is_array($value))
-        {
-                // Write to the error log
-                $return = error_log("[SIMPLERISK:DEBUG] ".$value);
-        }
+        if (!is_array($value)) {
+
+            // Write to the error log
+            $return = error_log("[SIMPLERISK:DEBUG] ".$value);
+            
         // If the value is an array
-        else
-        {
+        } else {
+
             // For each key value pair in the array
-            foreach ($value as $key => $newvalue)
-            {
+            foreach ($value as $key => $newvalue) {
+
                 // If the newvalue is an array
-                if (is_array($newvalue))
-                {
+                if (is_array($newvalue)) {
+
                     write_debug_log("Array key: " . $key);
 
                     // Recursively call the write_debug_log function on it
                     write_debug_log($newvalue);
-                }
+
                 // If the newvalue is not an array
-                else
-                {
+                } else {
+
                     // Call the write_debug_log function on the key value pair
                     write_debug_log($key . " => " . $newvalue);
+
                 }
             }
         }
-    }
+        
     // DEBUG is disabled
-    else
-    {
+    } else {
+
         // Set a global variable for debug_logging
         $GLOBALS['debug_logging'] = false;
+
     }
 }
 
@@ -13234,25 +14391,28 @@ function update_risk_status($risk_id, $status)
 /*************************
  * FUNCTION: TRY DECRYPT *
  *************************/
-function try_decrypt($value)
-{
+function try_decrypt($value) {
+
     // If the value is empty string
-    if(!$value)
-    {
+    if (!$value) {
+
         return $value;
-    }
+
     // If the encryption extra is enabled
-    elseif (encryption_extra())
-    {
+    } else if (encryption_extra()) {
+
         // Only load it once as the realpath function call takes too much time if called a lot in a request
         // and it's totally unnecessary as the extra will only be loaded once anyway
         if (!isset($GLOBALS['encryption_extra_loaded'])) {
+
             // Load encryption extra
             require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
             $GLOBALS['encryption_extra_loaded'] = true;
+
         }
 
-        if(!isset($_SESSION['encrypted_pass']) || !$_SESSION['encrypted_pass']){
+        if (!isset($_SESSION['encrypted_pass']) || !$_SESSION['encrypted_pass']) {
+
             // If there's no session, try to get the password from the init.php
             $password = fetch_key();
 
@@ -13338,26 +14498,26 @@ function get_current_url()
 /**************************
  * FUNCTION: GET BASE URL *
  **************************/
-function get_base_url()
-{
+function get_base_url() {
+
     // Get the simplerisk_base_url from the settings table
     $simplerisk_base_url = get_setting("simplerisk_base_url");
 
     // If the simplerisk_base_url is not set
-    if (!$simplerisk_base_url)
-    {
+    if (!$simplerisk_base_url) {
+
         // If the base_url is set in the session
-        if (isset($_SESSION) && array_key_exists('base_url', $_SESSION))
-        {
+        if (isset($_SESSION) && array_key_exists('base_url', $_SESSION)) {
+
             // Use the value set in the session
             $base_url = $_SESSION['base_url'];
 
             // Add the simplerisk_base_url to the settings table
             add_setting("simplerisk_base_url", $base_url);
-        }
+
         // Otherwise try to create a base url based on the current url
-        else
-        {
+        } else {
+
             // Check if we are using the HTTPS protocol
             $isHTTPS = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on");
 
@@ -13389,16 +14549,17 @@ function get_base_url()
 
             // Add the simplerisk_base_url to the settings table
             add_setting("simplerisk_base_url", $base_url);
+
         }
-    }
+        
     // Otherwise
-    else
-    {
+    } else {
         $base_url = $simplerisk_base_url;
     }
 
     // Return the base_url value
     return $base_url;
+    
 }
 
 /*****************************
@@ -13841,12 +15002,13 @@ function _lang($__key, $__params=array(), $__escape=true){
 /****************************************
  * FUNCTION: GET PASSWORD REQUEST MESSAGES *
  ****************************************/
-function getPasswordReqeustMessages($user_id = false){
+function getPasswordReqeustMessages($user_id = false) {
+
     global $lang;
 
     $messages = array();
 
-    if (get_setting('pass_policy_enabled') == 1){
+    if (get_setting('pass_policy_enabled') == 1) {
         // Get condition for min chars
         $min_chars = get_setting('pass_policy_min_chars');
         $params = array(
@@ -13855,33 +15017,33 @@ function getPasswordReqeustMessages($user_id = false){
         $messages[] = _lang('ConditionMessageForMinChar', $params);
 
         // Get condition for alpa string
-        if (get_setting('pass_policy_alpha_required') == 1){
+        if (get_setting('pass_policy_alpha_required') == 1) {
             $messages[] = _lang('ConditionMessageForAlpha');
         }
 
         // Get condition for uppercase
-        if (get_setting('pass_policy_upper_required') == 1){
+        if (get_setting('pass_policy_upper_required') == 1) {
             $messages[] = _lang('ConditionMessageForUppercase');
         }
 
         // Get condition for lowercase
-        if (get_setting('pass_policy_lower_required') == 1){
+        if (get_setting('pass_policy_lower_required') == 1) {
             $messages[] = _lang('ConditionMessageForLowercase');
         }
 
         // Get condition for digits
-        if (get_setting('pass_policy_digits_required') == 1){
+        if (get_setting('pass_policy_digits_required') == 1) {
             $messages[] = _lang('ConditionMessageForDigit');
         }
 
         // Get condition for special chars
-        if (get_setting('pass_policy_special_required') == 1){
+        if (get_setting('pass_policy_special_required') == 1) {
             $messages[] = _lang('ConditionMessageForSpecialchar');
         }
 
         // Get condition for password age
         $min_password_age = get_setting("pass_policy_min_age");
-        if ($min_password_age != 0){
+        if ($min_password_age != 0) {
             $params = array(
                 'min_password_age' => $min_password_age
             );
@@ -14286,24 +15448,32 @@ function get_risks_score_averages($time = "day")
     return $risk_scores;
 }
 
-/***********************************
+/*****************************************
  * FUNCTION: SET CUSTOM DISPLAY SETTINGS *
- ***********************************/
-function save_custom_display_settings()
-{
+ *****************************************/
+function save_custom_display_settings() {
+
     $custom_display_settings = json_encode($_SESSION['custom_display_settings']);
 
     // Open the database connection
     $db = db_open();
 
     // Update user
-    $stmt = $db->prepare("UPDATE user SET custom_display_settings=:custom_display_settings WHERE value=:value");
+    $stmt = $db->prepare("
+        UPDATE 
+            user 
+        SET 
+            custom_display_settings=:custom_display_settings 
+        WHERE 
+            value=:value
+    ");
     $stmt->bindParam(":custom_display_settings", $custom_display_settings, PDO::PARAM_STR, 1000);
     $stmt->bindParam(":value", $_SESSION['uid'], PDO::PARAM_INT);
     $stmt->execute();
 
     // Close the database connection
     db_close($db);
+
 }
 
 /***********************************
@@ -15811,17 +16981,20 @@ function delete_likelihood()
  * @param boolean $id [Optional] If no user id provided then the function will return whether the current user is an admin user.
  * @return boolean admin status of the user(current or the one with the specified id)
  */
-function is_admin($id = false)
-{
+function is_admin($id = false) {
+
     // If there's no user id provided OR we're checking the logged in user then it will work the way it did before
     if ($id === false || (isset($_SESSION['uid']) && (int)$id === (int)$_SESSION['uid'])) {
+
         // If the user is not logged in as an administrator
-        if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
-        {
+        if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1") {
             return false;
+        } else {
+            return true;
         }
-        else return true;
+
     } else {
+
         $db = db_open();
 
         $stmt = $db->prepare("
@@ -15840,6 +17013,7 @@ function is_admin($id = false)
         db_close($db);
         
         return $admin !== null && $admin === '1';
+
     }
 }
 
@@ -16117,7 +17291,6 @@ function upload_exception_files($test_audit_id, $ref_type, $files, $version=1)
  ****************************/
 function get_user_teams($user_id) {
 
-
     // Query the database
     if (!is_admin($user_id) && organizational_hierarchy_extra()) {
         // If the Organizational Hierarchy is activated only those teams should be returned that the user is assigned to
@@ -16152,6 +17325,7 @@ function get_user_teams($user_id) {
     db_close($db);
 
     return $teams;
+
 }
 
 /***************************
@@ -16381,9 +17555,10 @@ function get_all_teams() {
 /************************************************
  * FUNCTION: GENERATE QUERY FOR TEAMS CONDITION *
  ************************************************/
-function generate_teams_query($teams, $field_name, $check_unassign=true) {
-    if($teams !== false) {
-        if(!$teams) {
+function generate_teams_query($teams, $field_name, $check_unassign = true) {
+
+    if ($teams !== false) {
+        if (!$teams) {
             $teams_query = " 0 ";
         } else {
             if (is_array($teams)) {
@@ -16405,6 +17580,7 @@ function generate_teams_query($teams, $field_name, $check_unassign=true) {
     }
 
     return $teams_query;
+
 }
 
 /***********************************
@@ -22381,9 +23557,11 @@ function object2array($object)
  * @return string[] the list of enabled field names. Example: ['id', 'name', 'value', ..., etc]
  */
 function field_settings_get_display_defaults($view) {
+
     global $field_settings_views;
 
     return $field_settings_views[$view]['default_enabled_columns'];
+
 }
 
 /**
@@ -22405,12 +23583,15 @@ function field_settings_get_localization($view, $grouped = true, $escaped = true
 
     $localizations = [];
     foreach ($field_settings_views[$view]['groups'] as $group) {
+
         $field_names_by_customization_field_names = [];
+
         if ($grouped) {
             $localizations[$group] = [];
         }
 
         foreach ($field_settings_display_groups[$group]['fields'] as $field_name) {
+
             $field = $field_settings[$type][$field_name];
             
             // Skip fields that are not set up to be displayed
@@ -22440,6 +23621,7 @@ function field_settings_get_localization($view, $grouped = true, $escaped = true
         }
 
         if ($customization) {
+
             // Get the active fields for only the required tab(if there's any set up)
             $active_fields = get_active_fields($type, null, !empty($field_settings_display_groups[$group]['customization_tab_index']) ? $field_settings_display_groups[$group]['customization_tab_index'] : null);
 
@@ -22488,6 +23670,7 @@ function field_settings_get_localization($view, $grouped = true, $escaped = true
 
     // escape if needed
     if ($escaped) {
+
         // need different approach if the array is grouped
         if ($grouped) {
             foreach (array_keys($localizations) as $group_name) {
@@ -22500,6 +23683,7 @@ function field_settings_get_localization($view, $grouped = true, $escaped = true
                 $value = $escape_html ? $escaper->escapeHtml($value) : $escaper->escapeJs($value);
             }
         }
+
     }
 
     return $localizations;
@@ -22549,6 +23733,12 @@ function field_settings_get_join_parts($view, $selected_fields = [], $technical_
         }
         
         $field = $field_settings[$type][$selected_field_name];
+        
+        // skip if it is technical field since it is already considered above.
+        if (!empty($field['technical_field']) && $field['technical_field']) {
+            continue;
+        }
+        
         if (!empty($field['select_parts'])) {
             $select_parts = array_merge($select_parts, $field['select_parts']);
         }
@@ -22650,6 +23840,7 @@ function display_settings_get_saved_selection($view, $user_id = null) {
     }
 
     return  [];
+    
 }
 
 // For when the type+user_id is unique(there're no multiple settings for a user for a type)
@@ -23241,4 +24432,16 @@ function retrieve_settings_values($parameter_array, $settings_prefix)
     return $parameter_array;
 }
 
+/**
+ * Helper function to sleep for milliseconds instead of seconds sleep() does
+ * 
+ * @param int $millisecond
+ */
+function wait(int $millisecond = 0) {
+    if (0 !== $millisecond) {
+        $seconds = (int) ($millisecond / 1000);
+        $nanoSeconds = ($millisecond % 1000) * 1000000;
+        time_nanosleep($seconds, $nanoSeconds);
+    }
+}
 ?>

@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'Загрузка файла не удалась: файл не отправлен',
     'FileUploadExceededFileSize' => 'Ошибка загрузки файла: превышен лимит размера файла',
     'FileUploadUnknownErrors' => 'Ошибка загрузки файла: неизвестные ошибки',
+    'DynamicIncidentReport' => 'Динамический отчет об инциденте',
+    'FilteringSelections' => 'Фильтрация выбора',
 
     '' => '',
 );

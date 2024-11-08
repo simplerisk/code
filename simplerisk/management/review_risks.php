@@ -34,8 +34,6 @@ if (isset($_GET['reviewed']))
                     <div class="row">
                         <div class="col-12">
                             <?php display_review_risks(); ?>
-                            <input type="hidden" id="_delete_tab_alert" value="<?php echo $escaper->escapeHtml($lang['Are you sure you want to close the risk? All changes will be lost!']); ?>">
-                            <input type="hidden" id="enable_popup" value="<?php echo $escaper->escapeHtml(get_setting('enable_popup')); ?>">
                         </div>
                     </div>
                 </div>

@@ -82,11 +82,17 @@ function process_nvd_cve_info(cve_info_json, parent)
     if (subject) {
         $("[name=subject]", parent).val(subject);
     }
-    if (assessment) {
-        $("[name=assessment]", parent).val(assessment);
+
+	// If there're templates then have to add the template group id
+	// so the logic is targeting the right editor instance
+    let template_group_id_suffix = $("#template_group_id").length > 0 ? '_' + parent.find('#template_group_id').val() : '';
+
+    if (assessment && $("[name=assessment]", parent).length) {
+        tinymce.get(`assessment${template_group_id_suffix}`).setContent(assessment);
     }
-    if (notes) {
-        $("[name=notes]", parent).val(notes);
+
+    if (notes && $("[name=notes]", parent).length) {
+        tinymce.get(`notes${template_group_id_suffix}`).setContent(notes);
     }
 
     $("[name=AccessVector]", parent).val(AV);

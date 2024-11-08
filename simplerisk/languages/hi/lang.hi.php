@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'फ़ाइल अपलोड विफल: कोई फ़ाइल नहीं भेजी गई',
     'FileUploadExceededFileSize' => 'फ़ाइल अपलोड विफल: फ़ाइल आकार सीमा पार हो गई',
     'FileUploadUnknownErrors' => 'फ़ाइल अपलोड विफल: अज्ञात त्रुटियाँ',
+    'DynamicIncidentReport' => 'गतिशील घटना रिपोर्ट',
+    'FilteringSelections' => 'चयन फ़िल्टर करना',
 
     '' => '',
 );

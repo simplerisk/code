@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'Încărcarea fișierului a eșuat: niciun fișier nu a fost trimis',
     'FileUploadExceededFileSize' => 'Încărcarea fișierului a eșuat: Limita de dimensiune a fișierului a fost depășită',
     'FileUploadUnknownErrors' => 'Încărcarea fișierului a eșuat: erori necunoscute',
+    'DynamicIncidentReport' => 'Raport dinamic de incident',
+    'FilteringSelections' => 'Filtrarea selecțiilor',
 
     '' => '',
 );

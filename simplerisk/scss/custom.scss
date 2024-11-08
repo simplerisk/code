@@ -4,6 +4,60 @@
  ## Helper Classes
  --------------------------------------------------------------*/
 
+ @media print {
+
+    :root {
+        --bs-gutter-x: 0px;
+    }
+
+    * { overflow: visible !important; } 
+
+    .page-wrapper {
+        position:unset;
+        top: 0px;
+        margin-left: 0px;
+
+        .content{
+            margin: 10px 0px !important;
+            padding: 10px 0px !important;
+            width: 100% !important;
+        }
+    }
+
+    .left-sidebar, .topbar, footer, .page-breadcrumb {
+        display: none;
+    }
+
+    div.questionnaire-results {
+
+        nav.nav.nav-tabs, div.navigation, h2.accordion-header, div#questionnaire_responses > div.btn-toolbar {
+            display: none !important;
+        }
+        
+        .accordion {
+            --bs-accordion-border-width: 0px !important;
+        }
+        
+        &.border {
+            --bs-border-width: 0px;
+        }
+        
+        &.card-body, .card-body {
+            padding: 10px 0px !important;
+        }
+        
+        div.tab-content{
+            .tab-pane{
+            border-top: 1px solid var(--bs-border-color);
+        
+                &:not(.active) {
+                    display: block !important;
+                }
+            }
+        }
+    }
+}
+
 .animation {
 	-webkit-transition: all .2s;
 	/* Safari */
@@ -148,19 +202,13 @@ input[type=number]::-webkit-outer-spin-button {
 	}
 }
 
-.import-export-space {
-	min-height: 20px !important;
-	background-color: $gray-300 !important;
-	border: none !important;
+//************************ ALERT MODAL AND CONFIRM MODAL BEGIN ************************//
+.message-container {
+	.message {
+		font-size: 20px;
+	}
 }
-
-/*.well {
-	--bs-bg-opacity: 1;
-    background-color: rgba(var(--bs-light-rgb), var(--bs-bg-opacity)) !important;
-    border: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color) !important;
-    padding: 15px;
-    margin-bottom: 15px;
-}*/
+//************************* ALERT MODAL AND CONFIRM MODAL END *************************//
 
 // FOR MAKING MODALS WITH THE DIRECT CHILD 'form' OF '.modal-content' SCROLLABLE AND CENTERED
 .modal-content>form {
@@ -690,7 +738,12 @@ div#main-wrapper[data-function="reset_password"] {
 // CONFIGURE / EXTRAS / SECURE CONTROLS FRAMEWORK(SCF) PAGE 
 #complianceforge_scf_controls_disabled,
 #complianceforge_scf_controls_enabled {
-	height: 200px;
+	height: 20rem;
+    padding: .25rem 0px;
+
+    option {
+        padding-left: .5rem;
+    }
 }
 
 // CONFIGURE / REGISTER PAGE
@@ -761,22 +814,6 @@ div#main-wrapper[data-function="reset_password"] {
 	  	border: none;
 	  	outline: 1px solid var(--sr-important);
 	  	border-radius: 1px;
-	}
-}
-
-.audit-log-wrapper {
-	.accordion-header {
-		position: relative;
-		.refresh-audit-trail {
-			position: absolute;
-			top: 50%;
-			transform: translateY(-50%);
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			right: 60px;
-			z-index: 100;
-		}
 	}
 }
 
@@ -912,66 +949,19 @@ html:has(.score-method-page) {
 		margin-bottom: 0 !important;
 	}
 }
-.comments-container, 
-.audit-trail-container {
+.comments-container, .audit-trail-container {
 	&>p:last-child {
 		margin-bottom: 0 !important;
 	}
 }
 
-// ASSESSMENTS / QUESTIONNAIRE QUESTIONS PAGE
-#questionnaire-questions-container table td,
-#questionnaire-questions-container table th,
-#questionnaire-answers-container table td,
-#questionnaire-answers-container table th {
-	padding-left: 0;
-	padding-right: 0; 
+// INCIDENT MANAGEMENT / INCIDENTS / IDENTIFICATION PAGE,
+// INCIDENT MANAGEMENT / INCIDENT DETAILS PAGE
+.asset-assetgroup-instructions {
+	font-weight: normal;
+    font-size: .75rem;
+    color: var(--sr-danger);
 }
-
-// CHECK THIS LATER(LEFT THIS YET SINCE IT IS USED IN SEVERAL PARTS WITH JS LOGIC)
-#questionnaire-answers-container {
-	.risk-assessment-table, 
-	.compliance-assessment-table, 
-	.maturity-assessment-table {
-		th, td {
-			padding-left: 20px;
-			padding-right: 20px;
-		}
-
-		.risk-scoring-container {
-			padding: 0;
-			
-			.row {
-				flex-wrap: nowrap;
-				align-items: center;
-				padding-bottom: 16px;
-				padding-top: 16px;
-
-				.col-2 {
-					font-weight: bold;
-					min-width: 200px;
-					max-width: 200px;
-				    margin-bottom: 0 !important;
-				}
-
-				.col-9 {
-					width: 100%;
-					flex-shrink: 1;
-
-					p {
-						margin-bottom: 0;
-					}
-				}
-			}
-		}
-	}
-
-	.add-delete-icon {
-		width: 30px;
-		height: 30px;
-	}
-}
-
 
 // ASSESSMENTS / QUESTIONNAIRE RESULTS PAGE
 #closed-risk-container {
@@ -1002,65 +992,43 @@ html:has(.score-method-page) {
 	}
 }
 
-.comments--wrapper {
-	.accordion-header {
-		position: relative;
-		.add-comments {
-			position: absolute;
-			top: 50%;
-			transform: translateY(-50%);
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			right: 60px;
-			z-index: 100;
-		}
-	}
-}
-
-.files--wrapper {
-	.accordion-header {
-		position: relative;
-		.add-files {
-			position: absolute;
-			top: 50%;
-			transform: translateY(-50%);
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			right: 60px;
-			z-index: 100;
-		}
-	}
-}
-
 .hidden-file-upload {
 	visibility: hidden;
 	display: none;
 }
 
 .file-uploader .file-count {
-  margin-left: 10px;
-  font-size: 13px; }
+    margin-left: 10px;
+    font-size: 13px; 
+}
+
 .file-uploader .file-list, .file-uploader .exist-files {
-  margin-top: 10px;
-  list-style: none;
-  margin-left: 0px;
-  color: #187bd0;
-  font-size: 14px; }
-  .file-uploader .file-list > li, .file-uploader .exist-files > li {
-    margin-bottom: 10px; }
-    .file-uploader .file-list > li .file-name, .file-uploader .exist-files > li .file-name {
-      float: left;
-      width: calc(100% - 30px);
-      word-wrap: break-word; }
-    .file-uploader .file-list > li .remove-file, .file-uploader .exist-files > li .remove-file {
-      float: right;
-      font-size: 20px; }
-    .file-uploader .file-list > li:after, .file-uploader .exist-files > li:after {
-      content: "";
-      clear: both;
-      display: table; 
+    margin-top: 10px;
+    list-style: none;
+    margin-left: 0px;
+    color: #187bd0;
+    font-size: 14px;
+}
+
+.file-uploader .file-list > li, .file-uploader .exist-files > li {
+    margin-bottom: 10px;
+}
+    
+.file-uploader .file-list > li .file-name, .file-uploader .exist-files > li .file-name {
+    float: left;
+    width: calc(100% - 30px);
+    word-wrap: break-word;
+}
+      
+.file-uploader .file-list > li .remove-file, .file-uploader .exist-files > li .remove-file {
+    float: right;
+    font-size: 20px;
+}
+      
+.file-uploader .file-list > li:after, .file-uploader .exist-files > li:after {
+    content: "";
+    clear: both;
+    display: table; 
 }
 
 .differency {
@@ -1078,7 +1046,7 @@ html:has(.score-method-page) {
 			min-width: 150px;
 		}
 	}
-	
+
 	.teams-group {
 		width: 100%;
 		padding: .375rem .75rem;
@@ -1149,14 +1117,6 @@ a.open-in-new-tab {
 }
 
 // COMPLIANCE / PAST AUDITS PAGE
-.red-background {
-	background-color: lightcoral !important;
-}
-
-.green-background {
-	background-color: lightgreen !important;
-}
-
 .progress-wrapper {
     background-color: var(--sr-primary);
     border-radius: 2px;
@@ -1182,6 +1142,8 @@ a.open-in-new-tab {
     text-align: left !important;
 }
 
+.modal .selectize-dropdown { z-index: 9999 !important; }
+
 // a#risk_detail {
 //     width: 200px;
 //     white-space: nowrap;
@@ -1190,12 +1152,14 @@ a.open-in-new-tab {
 // }
 
 @import "modules/treegrid";
-@import "modules/plan-projects";
 @import "modules/colorpicker";
-@import "modules/governance";
 @import "modules/tabs";
-@import "modules/questionnaire";
 
+@import "modules/governance";
+@import "modules/plan-projects";
+@import "modules/compliance";
+@import "modules/assessment";
+@import "modules/questionnaire";
 //@import "modules/_tabs";
 
 
@@ -1203,12 +1167,11 @@ a.open-in-new-tab {
 
 
 
-// @import "modules/assessment";
+
 // @import "modules/asset_management";
 // @import "modules/buttons";
 
 // @import "modules/comments";
-// @import "modules/compliance";
 // @import "modules/custom";
 // @import "modules/customization";
 // @import "modules/datatable_widget";

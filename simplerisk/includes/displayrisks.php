@@ -1209,7 +1209,7 @@ function display_risk_assessment_title_edit($assessment, $panel_name="")
                 <label id='RiskAssessmentTitle'>" . $escaper->escapeHtml($lang['RiskAssessment']) . ": </label>
             </div>
             <div class='{$span2}'>
-                <textarea class='form-control' name='assessment' cols='50' rows='5' id=assessment'>" . $escaper->escapeHtml($assessment) . "</textarea>
+                <textarea class='form-control' name='assessment' cols='50' rows='5' id='assessment'>" . $escaper->escapeHtml($assessment) . "</textarea>
             </div>
         </div>
     ";
@@ -3373,6 +3373,77 @@ function display_main_detail_fields_by_panel_add($panel_name, $fields, $template
             }
         }
     }
+}
+
+
+/**
+ * Render the html for the whole section where the customer can select between risk templates(if customization is enabled)
+ * and the templates themselves for adding a new risk. 
+ */
+function display_add_risk() {
+    global $escaper;
+
+    if(customization_extra()) {
+        ?>
+        <div class="mt-2">
+            <nav class="nav nav-tabs">
+
+<?php
+            $tab_str = "";
+            if(organizational_hierarchy_extra()) {
+                require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
+                $template_groups = get_assigned_template_group_by_user_id($_SESSION['uid'], "risk");
+            } else {
+                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+                $template_groups = get_custom_template_groups('risk');
+            }
+            foreach($template_groups as $index=>$template_group){
+                $active = $index == 0 ? "active" : ""; 
+                echo "
+                <a class='nav-link {$active}' data-bs-target='#template_group_{$template_group['id']}' data-bs-toggle='tab'>{$escaper->escapeHtml($template_group['name'])}</a>
+                ";
+            }
+?>
+            </nav>
+        </div>
+<?php
+        }
+?>
+        <div class="tab-content card-body my-2 border" id="tab-content-container">
+<?php
+        if(customization_extra()) {
+            if(organizational_hierarchy_extra()) {
+                require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
+                $template_groups = get_assigned_template_group_by_user_id($_SESSION['uid'], "risk");
+            } else {
+                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+                $template_groups = get_custom_template_groups('risk');
+            }
+            foreach ($template_groups as $index=>$template_group) {
+                $active = $index == 0 ? "show active" : ""; 
+                $template_group_id = $template_group["id"];
+                echo "
+            <div class='tab-pane tab-data fade col-12 mt-2 {$active}' id='template_group_{$template_group_id}'>
+                ";
+                include(realpath(__DIR__ . '/../management/partials/add.php'));
+                echo "
+            </div>
+                ";
+            }
+        } else {
+            $template_group_id = "";
+            echo "
+            <div class='tab-data' id='tab-container'>
+                ";
+                include(realpath(__DIR__ . '/../management/partials/add.php'));
+            echo "
+            </div>
+                ";
+        }
+?>
+        </div>
+<?php 
+    
 }
 
 

@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'Неуспешно качване на файл: Няма изпратен файл',
     'FileUploadExceededFileSize' => 'Неуспешно качване на файл: надвишено ограничение за размер на файла',
     'FileUploadUnknownErrors' => 'Неуспешно качване на файл: Неизвестни грешки',
+    'DynamicIncidentReport' => 'Динамичен доклад за инциденти',
+    'FilteringSelections' => 'Филтриране на селекции',
 
     '' => '',
 );

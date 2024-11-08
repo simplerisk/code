@@ -91,7 +91,7 @@ if(isset($_POST['update_test'])) {
         }
         
         $today_dt = strtotime(date('Ymd'));
-        $tester = (int)$_POST['tester'];
+        $tester = isset($_POST['tester']) ? (int)$_POST['tester'] : null;
         $teams = isset($_POST['team']) ? array_filter($_POST['team'], 'ctype_digit') : [];
         $additional_stakeholders = empty($_POST['additional_stakeholders_edit']) ? "" : implode(",", $_POST['additional_stakeholders_edit']);
         $test_frequency = (int)$_POST['test_frequency'];
@@ -191,7 +191,7 @@ if(isset($_POST['delete_test'])) {
         <div class="card-body my-2 border">
             <div class="row">
                 <div class="col-md-4">
-                    <h4><?php echo $escaper->escapeHtml($lang['ControlFramework']);?>:</h4>
+                    <h4><?= $escaper->escapeHtml($lang['ControlFramework']);?>:</h4>
                     <select id="filter_by_control_framework" class="form-select" multiple="multiple">
     <?php 
         $filter_by_control = array();
@@ -227,7 +227,7 @@ if(isset($_POST['delete_test'])) {
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <h4><?php echo $escaper->escapeHtml($lang['ControlFamily']); ?>:</h4>
+                    <h4><?= $escaper->escapeHtml($lang['ControlFamily']); ?>:</h4>
                     <select id="filter_by_control_family" class="form-select" multiple="multiple">
     <?php 
         $filter_by_control_family = array();
@@ -264,11 +264,11 @@ if(isset($_POST['delete_test'])) {
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <h4><?php echo $escaper->escapeHtml($lang['ControlName']); ?>:</h4>
+                    <h4><?= $escaper->escapeHtml($lang['ControlName']); ?>:</h4>
     <?php 
         $filter_by_control_text = isset($_POST['filter_by_control_text']) ? $_POST['filter_by_control_text'] : ""; 
     ?>
-                    <input type="text" class="form-control" id="filter_by_control_text" value="<?php echo $escaper->escapeHtml($filter_by_control_text);?>">
+                    <input type="text" class="form-control" id="filter_by_control_text" value="<?= $escaper->escapeHtml($filter_by_control_text);?>">
                 </div>
             </div>
         </div>
@@ -281,9 +281,15 @@ if(isset($_POST['delete_test'])) {
 </div>
 <script>
     $( document ).ready(function() {
-        $("#additional_stakeholders_add").multiselect();
-        $("#additional_stakeholders_edit").multiselect();
-        $("[name='team[]']").multiselect();
+        $("#additional_stakeholders_add").multiselect({
+            buttonWidth: '100%'
+        });
+        $("#additional_stakeholders_edit").multiselect({
+            buttonWidth: '100%'
+        });
+        $("[name='team[]']").multiselect({
+            buttonWidth: '100%'
+        });
 
         //Have to remove the 'fade' class for the shown event to work for modals
         $('#test--add, #test--edit').on('shown.bs.modal', function() {
@@ -334,171 +340,199 @@ if(isset($_POST['delete_test'])) {
 
 <!-- MODEL WINDOW FOR ADDING TEST -->
 <div id="test--add" class="modal fade" tabindex="-1" aria-labelledby="risk-catalog--add" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><?php echo $escaper->escapeHtml($lang['TestAddHeader']); ?></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form class="" id="test-new-form" method="post" autocomplete="off">
-                    <div class="row">
-                        <div class="col-12 col-md-6">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['TestName']); ?></label>
+            <form class="" id="test-new-form" method="post" autocomplete="off">
+                <input type="hidden" name="framework_control_id" value="">
+                <input type="hidden" name="filter_by_control" value="">
+                <input type="hidden" name="filter_by_control_family" value="">
+                <input type="hidden" name="filter_by_control_text" value="">
+                <input type="hidden" name="add_test" value="true">
+                <div class="modal-header">
+                    <h5 class="modal-title"><?= $escaper->escapeHtml($lang['TestAddHeader']); ?></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row form-group">
+                        <div class="col-6">
+                            <label for=""><?= $escaper->escapeHtml($lang['TestName']); ?> :</label>
                             <input type="text" name="name" required="" value="" class="form-control" maxlength="1000">
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['Tester']); ?></label>
+                        <div class="col-6">
+                            <label for=""><?= $escaper->escapeHtml($lang['Tester']); ?> :</label>
                             <?php create_dropdown("enabled_users", NULL, "tester", false, false, false); ?>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label for="" style="width:100%"><?php echo $escaper->escapeHtml($lang['AdditionalStakeholders']); ?></label>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-6">
+                            <label for="" style="width:100%"><?= $escaper->escapeHtml($lang['AdditionalStakeholders']); ?> :</label>
                             <?php create_multiple_dropdown("enabled_users", NULL, "additional_stakeholders_add"); ?>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label for="" style="width:100%"> <?php echo $escaper->escapeHtml($lang['Teams']); ?></label>
+                        <div class="col-6">
+                            <label for="" style="width:100%"> <?= $escaper->escapeHtml($lang['Teams']); ?> :</label>
                             <?php create_multiple_dropdown("team"); ?>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['TestFrequency']); ?> <small class="text-dark">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</small></label>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-6">
+                            <label for=""><?= $escaper->escapeHtml($lang['TestFrequency']); ?><small class="text-dark ms-1">(<?= $escaper->escapeHtml($lang['days']); ?>)</small> :</label>
                             <input type="number" min="0" max="2147483647" name="test_frequency" value="" class="form-control">
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['LastTestDate']); ?></label>
+                        <div class="col-6">
+                            <label for=""><?= $escaper->escapeHtml($lang['LastTestDate']); ?> :</label>
                             <input type="text" name="last_date" value="" class="form-control datepicker">
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['Objective']); ?></label>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-6">
+                            <label for=""><?= $escaper->escapeHtml($lang['Objective']); ?> :</label>
                             <textarea name="objective" id="add_objective" class="form-control" rows="3" style="max-width:100%;height:auto;"></textarea>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['TestSteps']); ?></label>
+                        <div class="col-6">
+                            <label for=""><?= $escaper->escapeHtml($lang['TestSteps']); ?> :</label>
                             <textarea name="test_steps" id="add_test_steps" class="form-control" rows="3" style="max-width:100%;height:auto;"></textarea>
                         </div>
+                    </div>
+                    <div class="row form-group">
                         <div class="col-12">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['ApproximateTime']); ?> <small class="text-dark">(<?php echo $escaper->escapeHtml($lang['minutes']); ?>)</small></label>
+                            <label for=""><?= $escaper->escapeHtml($lang['ApproximateTime']); ?><small class="text-dark ms-1">(<?= $escaper->escapeHtml($lang['minutes']); ?>)</small> :</label>
                             <input type="number" min="0" max="2147483647" name="approximate_time" value="" class="form-control"> 
                         </div>
+                    </div>
+                    <div class="row form-group">
                         <div class="col-12">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['ExpectedResults']); ?></label>
+                            <label for=""><?= $escaper->escapeHtml($lang['ExpectedResults']); ?> :</label>
                             <textarea name="expected_results" id="add_expected_results" class="form-control" rows="4" style="max-width:100%;height:auto;"></textarea>
                         </div>
+                    </div>
+                    <div class="row form-group mb-0">
                         <div class="col-12">
-                            <label for="" style="width:100%"><?php echo $escaper->escapeHtml($lang['Tags']); ?></label>
-                            <select class="test_tags" readonly name="tags[]" multiple placeholder="<?php echo $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);?>"></select>
-                            <div class="text-danger"><?php echo $escaper->escapeHtml($lang['MaxTagLengthWarning']);?></div>
-                            <input type="hidden" name="framework_control_id" value="">
-                            <input type="hidden" name="filter_by_control" value="">
-                            <input type="hidden" name="filter_by_control_family" value="">
-                            <input type="hidden" name="filter_by_control_text" value="">
-                            <input type="hidden" name="add_test" value="true">
+                            <label for=""><?= $escaper->escapeHtml($lang['Tags']); ?> :</label>
+                            <select class="test_tags" readonly name="tags[]" multiple placeholder="<?= $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);?>"></select>
+                            <div class="text-danger"><?= $escaper->escapeHtml($lang['MaxTagLengthWarning']);?></div>
                         </div>
                     </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                <button type="button" id="add_test" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                    <button type="button" id="add_test" class="btn btn-danger"><?= $escaper->escapeHtml($lang['Add']); ?></button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
     
 <!-- MODEL WINDOW FOR EDITING TEST -->
 <div id="test--edit" class="modal fade" tabindex="-1" aria-labelledby="risk-catalog--add" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><?php echo $escaper->escapeHtml($lang['TestEditHeader']); ?></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form class="" id="test-edit-form" method="post" autocomplete="off">
-                    <div class="row">
-                        <div class="col-12 col-md-6">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['TestName']); ?></label>
+            <form class="" id="test-edit-form" method="post" autocomplete="off">
+                <input type="hidden" name="test_id" value="">
+                <input type="hidden" name="filter_by_control" value="">
+                <input type="hidden" name="filter_by_control_family" value="">
+                <input type="hidden" name="filter_by_control_text" value="">
+                <input type="hidden" name="update_test" value="true">    
+                <div class="modal-header">
+                    <h5 class="modal-title"><?= $escaper->escapeHtml($lang['TestEditHeader']); ?></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row form-group">
+                        <div class="col-6">
+                            <label for=""><?= $escaper->escapeHtml($lang['TestName']); ?> :</label>
                             <input type="text" name="name" required="" value="" class="form-control" maxlength="1000">
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['Tester']); ?></label>
+                        <div class="col-6">
+                            <label for=""><?= $escaper->escapeHtml($lang['Tester']); ?> :</label>
                             <?php create_dropdown("enabled_users", NULL, "tester", false, false, false); ?>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['AdditionalStakeholders']); ?></label>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-6">
+                            <label for=""><?= $escaper->escapeHtml($lang['AdditionalStakeholders']); ?> :</label>
                             <?php create_multiple_dropdown("enabled_users", NULL, "additional_stakeholders_edit"); ?>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['Teams']); ?></label>
+                        <div class="col-6">
+                            <label for=""><?= $escaper->escapeHtml($lang['Teams']); ?> :</label>
                             <?php create_multiple_dropdown("team"); ?>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['TestFrequency']); ?> <small class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</small></label>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-6">
+                            <label for=""><?= $escaper->escapeHtml($lang['TestFrequency']); ?><small class="white-labels ms-1">(<?= $escaper->escapeHtml($lang['days']); ?>)</small> :</label>
                             <input type="number" min="0" max="2147483647" name="test_frequency" value="" class="form-control"> 
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['LastTestDate']); ?></label>
+                        <div class="col-6">
+                            <label for=""><?= $escaper->escapeHtml($lang['LastTestDate']); ?> :</label>
                             <input type="text" name="last_date" value="" class="form-control datepicker"> 
                         </div>
+                    </div>
+                    <div class="row form-group">
                         <div class="col-12">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['NextTestDate']); ?></label>
+                            <label for=""><?= $escaper->escapeHtml($lang['NextTestDate']); ?> :</label>
                             <input type="text" name="next_date" value="" class="form-control datepicker"> 
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['Objective']); ?></label>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-6">
+                            <label for=""><?= $escaper->escapeHtml($lang['Objective']); ?> :</label>
                             <textarea name="objective" id="edit_objective" class="form-control" rows="3" style="max-width:100%;height: auto;"></textarea>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['TestSteps']); ?></label>
+                        <div class="col-6">
+                            <label for=""><?= $escaper->escapeHtml($lang['TestSteps']); ?> :</label>
                             <textarea name="test_steps" id="edit_test_steps" class="form-control" rows="3" style="max-width:100%;height:auto;"></textarea>
                         </div>
+                    </div>
+                    <div class="row form-group">
                         <div class="col-12">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['ApproximateTime']); ?> <small class="text-dark">(<?php echo $escaper->escapeHtml($lang['minutes']); ?>)</small></label>
+                            <label for=""><?= $escaper->escapeHtml($lang['ApproximateTime']); ?><small class="text-dark ms-1">(<?= $escaper->escapeHtml($lang['minutes']); ?>)</small> :</label>
                             <input type="number" min="0" max="2147483647" name="approximate_time" value="" class="form-control"> 
                         </div>
+                    </div>
+                    <div class="row form-group">
                         <div class="col-12">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['ExpectedResults']); ?></label>
+                            <label for=""><?= $escaper->escapeHtml($lang['ExpectedResults']); ?> :</label>
                             <textarea name="expected_results" id="edit_expected_results" class="form-control" rows="3" style="max-width:100%;height: auto;"></textarea>
                         </div>
-                        <div class="col-12">
-                            <label for=""><?php echo $escaper->escapeHtml($lang['Tags']); ?></label>
-                            <select class="test_tags" readonly name="tags[]" multiple placeholder="<?php echo $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);?>"></select>
-                            <div class="text-danger" ><?php echo $escaper->escapeHtml($lang['MaxTagLengthWarning']);?></div>
-                        </div>
-                        <input type="hidden" name="test_id" value="">
-                        <input type="hidden" name="filter_by_control" value="">
-                        <input type="hidden" name="filter_by_control_family" value="">
-                        <input type="hidden" name="filter_by_control_text" value="">
-                        <input type="hidden" name="update_test" value="true">
                     </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                <button type="button" id="update_test" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
-            </div>
+                    <div class="row form-group mb-0">
+                        <div class="col-12">
+                            <label for=""><?= $escaper->escapeHtml($lang['Tags']); ?> :</label>
+                            <select class="test_tags" readonly name="tags[]" multiple placeholder="<?= $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);?>"></select>
+                            <div class="text-danger" ><?= $escaper->escapeHtml($lang['MaxTagLengthWarning']);?></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                    <button type="button" id="update_test" class="btn btn-danger"><?= $escaper->escapeHtml($lang['Update']); ?></button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
     
 <!-- MODEL WINDOW FOR PROJECT DELETE CONFIRM -->
 <div id="test--delete" class="modal fade" tabindex="-1" aria-labelledby="test--delete" aria-hidden="true">
-    <form class="" action="" method="post">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="form-group text-center">
-                    <label for=""><?php echo $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisTest']); ?></label>
-                    <input type="hidden" name="test_id" value="" />
-                    <input type="hidden" name="filter_by_control" value="">
-                    <input type="hidden" name="filter_by_control_family" value="">
-                    <input type="hidden" name="filter_by_control_text" value="">
+    <div class="modal-dialog modal-md modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <form class="" action="" method="post">
+                <input type="hidden" name="test_id" value="" />
+                <input type="hidden" name="filter_by_control" value="">
+                <input type="hidden" name="filter_by_control_family" value="">
+                <input type="hidden" name="filter_by_control_text" value="">
+                <div class="modal-body">
+                    <div class="form-group text-center">
+                        <h4 class="modal-title"><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisTest']); ?></h4>
+                    </div>
+                    <div class="text-center project-delete-actions">
+                        <button type="button" class="btn btn-dark" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                        <button type="submit" name="delete_test" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
+                    </div>
                 </div>
-                <div class="form-group text-center project-delete-actions">
-                    <button type="button" class="btn btn-dark" data-bs-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                    <button type="submit" name="delete_test" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Yes']); ?></button>
-                </div>
-            </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 <?php
 // Render the footer of the page. Please don't put code after this part.

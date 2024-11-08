@@ -52,20 +52,9 @@ function addRisk($this){
                 return;
             }
 
-            $.ajax({
-                type: "GET",
-                url: BASE_URL + "/api/management/risk/viewhtml?id=" + risk_id,
-                success: function(data){
-                    tabContainer.html(data.data);
+            window.onbeforeunload = null;
+            window.location.href = BASE_URL + '/management/view.php?id=' + risk_id;
 
-                    callbackAfterRefreshTab(tabContainer)
-                },
-                error: function(xhr,status,error){
-                    if(xhr.responseJSON && xhr.responseJSON.status_message){
-                        showAlertsFromArray(xhr.responseJSON.status_message);
-                    }
-                }
-            });
             $this.prop('disabled', true);
         },
         complete: function(){
@@ -128,15 +117,6 @@ function addRisk($this){
         setupAssetsAssetGroupsViewWidget($('select.assets-asset-groups-select-disabled', tabContainer));
 
         /**
-        * Set background on focus of textarea
-        */
-        focus_add_css_class("#RiskAssessmentTitle", "#assessment", tabContainer);
-        focus_add_css_class("#NotesTitle", "#notes", tabContainer);
-        focus_add_css_class("#SecurityRequirementsTitle", "#security_requirements", tabContainer);
-        focus_add_css_class("#CurrentSolutionTitle", "#current_solution", tabContainer);
-        focus_add_css_class("#SecurityRecommendationsTitle", "#security_recommendations", tabContainer);
-  
-        /**
         * Set Risk Scoring Method dropdown and show/hide the sub views
         */
         handleSelection($("[name=scoring_method]", tabContainer).val(), tabContainer);
@@ -147,13 +127,57 @@ function addRisk($this){
         $(".multiselect", tabContainer).multiselect({enableFiltering: true, buttonWidth: '100%', enableCaseInsensitiveFiltering: true,});
 
         // init tinyMCE WYSIWYG editor
-        tinymce.remove()
-        init_minimun_editor('#assessment');
-        init_minimun_editor('#notes');
-        init_minimun_editor('#current_solution');
-        init_minimun_editor('#security_requirements');
-        init_minimun_editor('#security_recommendations');
-        init_minimun_editor('#comments');
+        tinymce.remove();
+
+        // If there're template tabs we have to separately initialize the WYSIWYG editors
+        if ($("#template_group_id").length > 0) {
+            // Since tinymce stores the editor instances indexed by the textarea's id we have to make sure it's unique(which it is NOT by default)
+            // so we're appending the template's id to the textarea's ID to make it unique 
+    
+            $("[name='assessment']").each(function() {
+                let template_group_id = $(this).closest('form').find('#template_group_id').val();
+                $(this).attr('id', 'assessment_' + template_group_id);
+                init_minimun_editor("#assessment_" + template_group_id);
+            });
+    
+            $("[name='notes']").each(function() {
+                let template_group_id = $(this).closest('form').find('#template_group_id').val();
+                $(this).attr('id', 'notes_' + template_group_id);
+                init_minimun_editor("#notes_" + template_group_id);
+            });
+
+            $("[name='current_solution']").each(function() {
+                let template_group_id = $(this).closest('form').find('#template_group_id').val();
+                $(this).attr('id', 'current_solution_' + template_group_id);
+                init_minimun_editor("#current_solution_" + template_group_id);
+            });
+
+            $("[name='security_requirements']").each(function() {
+                let template_group_id = $(this).closest('form').find('#template_group_id').val();
+                $(this).attr('id', 'security_requirements_' + template_group_id);
+                init_minimun_editor("#security_requirements_" + template_group_id);
+            });
+
+            $("[name='security_recommendations']").each(function() {
+                let template_group_id = $(this).closest('form').find('#template_group_id').val();
+                $(this).attr('id', 'security_recommendations_' + template_group_id);
+                init_minimun_editor("#security_recommendations_" + template_group_id);
+            });
+
+            $("[name='comments']").each(function() {
+                let template_group_id = $(this).closest('form').find('#template_group_id').val();
+                $(this).attr('id', 'comments_' + template_group_id);
+                init_minimun_editor("#comments_" + template_group_id);
+            });
+        } else {
+            // init tinyMCE WYSIWYG editor
+            init_minimun_editor("#assessment");
+            init_minimun_editor("#notes");
+            init_minimun_editor('#current_solution');
+            init_minimun_editor('#security_requirements');
+            init_minimun_editor('#security_recommendations');
+            init_minimun_editor('#comments');
+        }
     }
     
     
@@ -250,82 +274,6 @@ function addRisk($this){
         select[0].selectize.disable();
         select_tag.parent().find('.selectize-control div').removeClass('disabled');
     }    
-    
-    
-    /*
-    * Function to add the css class for textarea title and make it popup.
-    * Example usage:
-    * focus_add_css_class("#foo", "#bar");
-    */
-    function focus_add_css_class(id_of_text_head, text_area_id, parent){
-        // If enable_popup setting is false, disable popup
-        if($("#enable_popup").val() != 1){
-            $("textarea").removeClass("enable-popup");
-            return;
-        }else{
-            $("textarea").addClass("enable-popup");
-        }
-        
-        var look_for = "textarea" + text_area_id;
-        if( !$(look_for, parent).length ){
-            text_area_id = text_area_id.replace('#','');
-            look_for = "textarea[name=" + text_area_id + "]";
-        }
-        $(look_for, parent).focusin(function() {
-            $(id_of_text_head, parent).addClass("affected-assets-title");
-            $('.ui-autocomplete').addClass("popup-ui-complete")
-        });
-        $(look_for, parent).focusout(function() {
-            $(id_of_text_head, parent).removeClass("affected-assets-title");
-            $('.ui-autocomplete').removeClass("popup-ui-complete")
-        });
-    }
-
-  
-/**
-* Add empty container
-* 
-*/
-function addTabContainer(){
-    $('.tab-show button').show();
-    var num_tabs = $("div.container-fluid div.new").length + 1;
-
-    $('.tab-show').removeClass('selected');
-    $("div.tab-append").append(
-        "<div class='tab new tab-show form-tab selected' id='tab"+num_tabs+"'><div><span>New Risk ("+num_tabs+")</span></div>"
-        +"<button class='close tab-close' aria-label='Close' data-id='"+num_tabs+"'>"
-        +"<i class='fa fa-times'></i>"
-        +"</button>"
-        +"</div>"
-    );
-    $('.tab-data').css({'display':'none'});
-    var tabContainerID = 'tab-container' + num_tabs;
-    $("#tab-content-container").append(
-        "<div class='tab-data' id='tab-container"+num_tabs+"'>&nbsp;</div>"
-    );
-
-    return tabContainerID;
-
-}
-
-  /**
-  * Check edit status
-  * 
-  */
-  
-  function checkEditable(tabContainer){
-      if($("[name=control_number]:enabled", tabContainer).length){
-          return true;
-      }
-      if($("[name=planning_date]:enabled", tabContainer).length){
-          return true;
-      }
-      if($("[name=review]:enabled", tabContainer).length){
-          return true;
-      }
-      return false;
-  }
-  
   	/*
   	  	Check the sum of files the user wants to upload
 		Displays an error message if it's over and returns false.
@@ -360,136 +308,7 @@ function addTabContainer(){
     }
 
 $(document).ready(function(){
-    if(jQuery.ui !== undefined){
-        jQuery.ui.autocomplete.prototype._resizeMenu = function () {
-            var ul = this.menu.element;
-            ul.outerWidth(this.element.outerWidth());
-        }                
-    }
 
-    if($.blockUI !== undefined){
-        $.blockUI.defaults.css = {
-            padding: 0,
-            margin: 0,
-            width: '30%',
-            top: '40%',
-            left: '35%',
-            textAlign: 'center',
-            cursor: 'wait'
-        };
-    }
-    $('body').on("click", ".error", function(e){
-        $(this).removeClass("error")
-    });
-
-    /**
-    * Open new risk
-    * 
-    */
-    $('body').on("click", "td.open-risk a", function(e){
-        e.preventDefault();
-        var riskID = $(this).parents('tr').data('id');
-        if(!riskID){
-            riskID = $(this).parent().data('id');
-        }
-        var tabContainerID = addTabContainer();
-        var tabContainer = $("#" + tabContainerID);
-
-        $.ajax({
-            type: "GET",
-            url: BASE_URL + "/api/management/risk/viewhtml?id=" + riskID,
-            success: function(data){
-                tabContainer.html(data.data);
-                
-                callbackAfterRefreshTab(tabContainer, 0);
-            },
-            error: function(xhr,status,error){
-                if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    showAlertsFromArray(xhr.responseJSON.status_message);
-                }
-            }
-        })
-    })
-    $('body').on("click", "td.open-mitigation a", function(e){
-        e.preventDefault();
-        var riskID = $(this).parents('tr').data('id');
-        if(!riskID){
-            riskID = $(this).parent().data('id');
-        }
-        var tabContainerID = addTabContainer();
-        var tabContainer = $("#" + tabContainerID);
-        var value = $(this).html().toLowerCase();
-        
-        $.ajax({
-            type: "GET",
-            url: value=="yes" ? (BASE_URL + "/api/management/risk/viewhtml?id=" + riskID) : (BASE_URL + "/api/management/risk/viewhtml?action=editmitigation&id=" + riskID),
-            success: function(data){
-                tabContainer.html(data.data);
-                callbackAfterRefreshTab(tabContainer, 1);
-            },
-            error: function(xhr,status,error){
-                if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    showAlertsFromArray(xhr.responseJSON.status_message);
-                }
-            }
-        })
-    })
-    $('body').on("click", "td.open-review a", function(e){
-        e.preventDefault();
-        var riskID = $(this).parents('tr').data('id');
-        if(!riskID){
-            riskID = $(this).parent().data('id');
-        }
-        var tabContainerID = addTabContainer();
-        var tabContainer = $("#" + tabContainerID);
-        var value = $(this).html().toLowerCase();
-
-        $.ajax({
-            type: "GET",
-            url: value=="yes" ? (BASE_URL + "/api/management/risk/viewhtml?id=" + riskID) : (BASE_URL + "/api/management/risk/viewhtml?action=editreview&id=" + riskID),
-            success: function(data){
-                tabContainer.html(data.data);
-                callbackAfterRefreshTab(tabContainer, 2);
-            },
-            error: function(xhr,status,error){
-                if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    showAlertsFromArray(xhr.responseJSON.status_message);
-                }
-            }
-        })
-    })
-    
-    /**
-    * RST tab evemts
-    * 
-    */
-    $('.container-fluid').delegate('.tab-show', 'click', function(){        
-        $('.form-tab').removeClass('selected');
-        $(this).addClass('selected');
-        var index = $('.tab-close', this).attr('data-id');
-        index || (index = "");
-        $('.tab-data').hide();
-        $('#tab-container'+index+'').show();
-    });
-
-    $('.container-fluid').delegate('.tab-close', 'click', function(){
-        current_tab_close_object = $(this);
-        
-        var index = $(this).attr('data-id');
-        var tabContainer = $("#tab-container" + index);
-        if ($('div.container-fluid div.new').length > 1)
-        {
-            if (!checkEditable(tabContainer) || confirm($("#_delete_tab_alert").val(), "close_current_tab('"+index+"')") ){
-                close_current_tab(index)
-            }
-            return false;
-        }
-    });
-    
-    
-    /*****************/
-    
-    
     $('body').on('click', '.save-risk-form', function (){
         addRisk($(this));
     })
@@ -1624,8 +1443,27 @@ $(document).ready(function(){
     });    
     /*********** End mark as unreview ***********/
 
-    // init tinyMCE WYSIWYG editor
-    init_minimun_editor("#tab-content-container [name=assessment]");
-    init_minimun_editor("#tab-content-container [name=notes]");
+    // If there're template tabs we have to separately initialize the WYSIWYG editors
+    if ($("#template_group_id").length > 0) {
+        // Since tinymce stores the editor instances indexed by the textarea's id we have to make sure it's unique(which it is NOT by default)
+        // so we're appending the template's id to the textarea's ID to make it unique 
+
+        $("[name='assessment']").each(function() {
+            let template_group_id = $(this).closest('form').find('#template_group_id').val();
+            $(this).attr('id', 'assessment_' + template_group_id);
+            init_minimun_editor("#assessment_" + template_group_id);
+        });
+
+        $("[name='notes']").each(function() {
+            let template_group_id = $(this).closest('form').find('#template_group_id').val();
+            $(this).attr('id', 'notes_' + template_group_id);
+            init_minimun_editor("#notes_" + template_group_id);
+        });
+
+    } else {
+        // init tinyMCE WYSIWYG editor
+        init_minimun_editor("#tab-content-container [name=assessment]");
+        init_minimun_editor("#tab-content-container [name=notes]");
+    }
 })
    

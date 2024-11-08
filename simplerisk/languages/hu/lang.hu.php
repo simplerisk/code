@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'A fájl feltöltés sikertelen: nincs fájl elküldve',
     'FileUploadExceededFileSize' => 'Sikertelen fájlfeltöltés: túllépte a fájlméret-korlátot',
     'FileUploadUnknownErrors' => 'A fájl feltöltés sikertelen: Ismeretlen hibák',
+    'DynamicIncidentReport' => 'Dinamikus eseményjelentés',
+    'FilteringSelections' => 'Kijelölések szűrése',
 
     '' => '',
 );

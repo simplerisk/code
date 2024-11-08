@@ -1337,7 +1337,11 @@ function delete_framework_control($control_id){
 
     $user = isset($_SESSION['user'])?$_SESSION['user']:"";
     $uid = isset($_SESSION['uid'])?$_SESSION['uid']:"";
-    $message = "A control named \"{$control['short_name']}\" was deleted by username \"" . $user . "\".";
+    if (empty($control)) {
+        $message = "A missing control (ID:{$control_id}) was cleaned up by user '{$user}'.";
+    } else {
+        $message = "A control named '{$control['short_name']}' was deleted by user '{$user}'.";
+    }
     write_log((int)$control_id + 1000, $uid, $message, "control");
 
     // Add residual risk scoring history
@@ -1369,13 +1373,16 @@ function get_framework_control($id){
     
     $control = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // If customization extra is enabled
-    if(customization_extra())
-    {
-        // Include the extra
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        $custom_values = get_custom_value_by_row_id($id, "control");
-        $control['custom_values'] = $custom_values;
+    if ($control) {
+        // If customization extra is enabled
+        if(customization_extra()) {
+            // Include the extra
+            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+            $custom_values = get_custom_value_by_row_id($id, "control");
+            $control['custom_values'] = $custom_values;
+        }
+    } else {
+        $control = [];
     }
     // Close the database connection
     db_close($db);
@@ -1808,23 +1815,32 @@ function getAvailableControlTypeList($control_framework=""){
 /**************************************************
  * FUNCTION: GET DOCUMENT VERSIONS BY DOCUMENT ID *
  **************************************************/
-function get_document_versions_by_id($id)
-{
+function get_document_versions_by_id($id) {
+
     // Open the database connection
     $db = db_open();
-    if(team_separation_extra()){
+    if (team_separation_extra()) {
+
         require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
         $where = get_user_teams_query_for_documents("t1" , false);
-    } else $where = " 1";
+
+    } else {
+        
+        $where = " 1";
+
+    }
 
     $sql = "
-        SELECT t1.*, t2.version file_version, t2.unique_name, t3.value as status
-        FROM `documents` t1 
+        SELECT
+            t1.*, t2.version file_version, t2.unique_name, t2.timestamp file_upload_time, t3.value as status
+        FROM 
+            `documents` t1 
             INNER JOIN `compliance_files` t2 ON t1.id=t2.ref_id AND t2.ref_type='documents'
             LEFT JOIN `document_status` t3 ON t1.document_status=t3.value
-        WHERE t1.id=:id AND {$where}
-        ORDER BY t2.version
-        ;
+        WHERE 
+            t1.id=:id AND {$where}
+        ORDER BY 
+            t2.version;
     ";
     $stmt = $db->prepare($sql);
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
@@ -1835,6 +1851,7 @@ function get_document_versions_by_id($id)
     db_close($db);
 
     return $results;
+
 }
 
 /*****************************************
@@ -2244,13 +2261,13 @@ function get_document_hierarchy_tabs($type="")
     echo "
         <table class='document-table' id='document-hierarchy-table'>
             <thead >
-                <th data-options=\"field:'document_name'\" width='25%'>" . $escaper->escapeHtml($lang['DocumentName']) . "</th>
-                <th data-options=\"field:'document_type'\" width='10%'>" . $escaper->escapeHtml($lang['DocumentType']) . "</th>
-                <th data-options=\"field:'framework_names'\" width='20%'>" . $escaper->escapeHtml($lang['ControlFrameworks']) . "</th>
-                <th data-options=\"field:'control_names'\" width='20%'>" . $escaper->escapeHtml($lang['Controls']) . "</th>
-                <th data-options=\"field:'creation_date'\" width='9%'>" . $escaper->escapeHtml($lang['CreationDate']) . "</th>
-                <th data-options=\"field:'approval_date'\" width='9%'>" . $escaper->escapeHtml($lang['ApprovalDate']) . "</th>
-                <th data-options=\"field:'status'\" width='7%'>" . $escaper->escapeHtml($lang['Status']) . "</th>
+                <th data-options=\"field:'document_name'\" width='25%'>{$escaper->escapeHtml($lang['DocumentName'])}</th>
+                <th data-options=\"field:'document_type'\" width='10%'>{$escaper->escapeHtml($lang['DocumentType'])}</th>
+                <th data-options=\"field:'framework_names'\" width='20%'>{$escaper->escapeHtml($lang['ControlFrameworks'])}</th>
+                <th data-options=\"field:'control_names'\" width='20%'>{$escaper->escapeHtml($lang['Controls'])}</th>
+                <th data-options=\"field:'creation_date'\" width='9%'>{$escaper->escapeHtml($lang['CreationDate'])}</th>
+                <th data-options=\"field:'approval_date'\" width='9%'>{$escaper->escapeHtml($lang['ApprovalDate'])}</th>
+                <th data-options=\"field:'status'\" width='7%'>{$escaper->escapeHtml($lang['Status'])}</th>
             </thead>
         </table>
     ";
@@ -2267,14 +2284,14 @@ function get_document_tabular_tabs($type, $document_id=0)
     echo "
         <table class='document-table' id='{$type}-table'>
             <thead>
-                <th data-options=\"field:'document_name'\" width='23%'>" . $escaper->escapeHtml($lang['DocumentName']) . "</th>
-                <th data-options=\"field:'document_type'\" width='10%'>" . $escaper->escapeHtml($lang['DocumentType']) . "</th>
-                <th data-options=\"field:'framework_names'\" width='18%'>" . $escaper->escapeHtml($lang['ControlFrameworks']) . "</th>
-                <th data-options=\"field:'control_names'\" width='18%'>" . $escaper->escapeHtml($lang['Controls']) . "</th>
-                <th data-options=\"field:'creation_date'\" width='9%'>" . $escaper->escapeHtml($lang['CreationDate']) . "</th>
-                <th data-options=\"field:'approval_date'\" width='9%'>" . $escaper->escapeHtml($lang['ApprovalDate']) . "</th>
-                <th data-options=\"field:'status'\" width='6%'>" . $escaper->escapeHtml($lang['Status']) . "</th>
-                <th data-options=\"field:'actions'\" width='7%'>" . $escaper->escapeHtml($lang['Actions']) . "</th>
+                <th data-options=\"field:'document_name'\" width='23%'>{$escaper->escapeHtml($lang['DocumentName'])}</th>
+                <th data-options=\"field:'document_type'\" width='10%'>{$escaper->escapeHtml($lang['DocumentType'])}</th>
+                <th data-options=\"field:'framework_names'\" width='18%'>{$escaper->escapeHtml($lang['ControlFrameworks'])}</th>
+                <th data-options=\"field:'control_names'\" width='18%'>{$escaper->escapeHtml($lang['Controls'])}</th>
+                <th data-options=\"field:'creation_date'\" width='9%'>{$escaper->escapeHtml($lang['CreationDate'])}</th>
+                <th data-options=\"field:'approval_date'\" width='9%'>{$escaper->escapeHtml($lang['ApprovalDate'])}</th>
+                <th data-options=\"field:'status'\" width='6%'>{$escaper->escapeHtml($lang['Status'])}</th>
+                <th data-options=\"field:'actions'\" width='7%'>{$escaper->escapeHtml($lang['Actions'])}</th>
             </thead>
         </table>
     ";

@@ -849,29 +849,31 @@ function display_active_audits() {
 				});
 				
 				$('body').on('click', '.delete-btn', function(){
-					var id = $(this).data('id')
-
-					$.ajax({
-						type: 'POST',
-						url: BASE_URL + '/api/compliance/delete_audit',
-						data : {
-							id: id
-						},
-						success: function(data){
-							if(data.status_message){
-								showAlertsFromArray(data.status_message);
-							}
-							datatableInstance.ajax.reload(null, false);
-						},
-						error: function(xhr,status,error){
-							if(xhr.responseJSON && xhr.responseJSON.status_message){
-								showAlertsFromArray(xhr.responseJSON.status_message);
-							}
-							if(!retryCSRF(xhr, this))
-							{
-							}
-						}
-					});
+                    confirm('{$escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisTest'])}', () => {
+                        var id = $(this).data('id')
+    
+                        $.ajax({
+                            type: 'POST',
+                            url: BASE_URL + '/api/compliance/delete_audit',
+                            data : {
+                                id: id
+                            },
+                            success: function(data){
+                                if(data.status_message){
+                                    showAlertsFromArray(data.status_message);
+                                }
+                                datatableInstance.ajax.reload(null, false);
+                            },
+                            error: function(xhr,status,error){
+                                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
+                                if(!retryCSRF(xhr, this))
+                                {
+                                }
+                            }
+                        });
+                    });
 				})
 
 				// Redraw Past Audit table
@@ -1545,170 +1547,170 @@ size, t1.timestamp, t1.user, t1.version FROM `compliance_files` t1 WHERE t1.`ref
 /*******************************************
  * FUNCTION: DISPLAY TESTING IN COMPLIANCE *
  *******************************************/
-function display_testing()
-{
+function display_testing() {
+
     global $lang, $escaper;
     
     $test_audit_id = (int)$_GET['id'];
     
     $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
-    if(!$test_audit['id']){
-        echo $escaper->escapeHtml($lang['TestAuditDoesNotExist']);
+    if (!$test_audit['id']) {
+        echo "
+            <div class='card-body border my-2'>
+                <strong>{$escaper->escapeHtml($lang['TestAuditDoesNotExist'])}</strong>
+            </div>
+        ";
         return;
     }
 
     // If test date is not set, set today as default
     $test_audit['test_date'] = format_date($test_audit['test_date'], date(get_default_date_format()));
-    if(isset($_SESSION["modify_audits"]) && $_SESSION["modify_audits"] == 1){
-        $submit_button = "<button name='submit_test_result'  id='submit_test_result' type='button' class='btn btn-primary'>".$escaper->escapeHtml($lang['Submit'])."</button>";
-    } else $submit_button = "";
+
+    if (isset($_SESSION["modify_audits"]) && $_SESSION["modify_audits"] == 1) {
+        $submit_button = "
+            <button name='submit_test_result' id='submit_test_result' type='button' class='btn btn-submit'>{$escaper->escapeHtml($lang['Submit'])}</button>
+        ";
+    } else {
+        $submit_button = "";
+    }
+
     $risk_ids = get_test_result_to_risk_ids($test_audit["result_id"]);
-    $close_risks = isset($_SESSION["close_risks"])?$_SESSION["close_risks"]:0;
+    $close_risks = isset($_SESSION["close_risks"]) ? $_SESSION["close_risks"] : 0;
 
     $tags_view = "";
     if ($test_audit['tags']) {
-        foreach(explode(",", $test_audit['tags']) as $tag) {
-            $tags_view .= "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin-right:2px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
+        foreach (explode(",", $test_audit['tags']) as $tag) {
+            $tags_view .= "
+                <button class='btn btn-secondary btn-sm' style='pointer-events: none;margin-right:2px;padding: 4px 12px;' role='button' aria-disabled='true'>{$escaper->escapeHtml($tag)}</button>
+            ";
         }
     } else {
         $tags_view .= "--";
     }
   
     echo "
-        <form id='edit-test' class='' method='POST' enctype='multipart/form-data'>
-            <h4>".$escaper->escapeHtml($test_audit['name'])."</h4>
-            <input name='origin_test_results' id='origin_test_results' value='".$test_audit['test_result']."' type='hidden' data-permission='".$close_risks."'>
-            <input name='remove_associated_risk' id='remove_associated_risk' value='0' type='hidden'>
-            <input name='associate_new_risk_id' id='associate_new_risk_id' value='' type='hidden'>
-            <input name='associate_exist_risk_ids' id='associate_exist_risk_ids' value='".implode(",", $risk_ids)."' type='hidden'>
-            <table width='100%' class='mb-2'>
-                <tr>
-                    <td width='50%' valign='top'>
-                        <table width='100%'>
-                            <tr>
-                                <td valign='top'>".$escaper->escapeHtml($lang['AuditStatus']).":&nbsp;&nbsp;</td>
-                                <td>";
-                                    create_dropdown("test_status", $test_audit['status'], "status", true, false, false, "", "--");
-                                    
-                                echo "
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top'>".$escaper->escapeHtml($lang['TestResult']).":&nbsp;&nbsp;</td>
-                                <td>";
-                                    create_dropdown("test_results", $test_audit['test_result'], "test_result", true, false, false, "", "--");
-                                echo "
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top'>".$escaper->escapeHtml($lang['Tester']).":&nbsp;&nbsp;</td>
-                                <td>";
-                                    create_dropdown("enabled_users", $test_audit['tester'], "tester", false, false, false);
-                                echo "
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top'>".$escaper->escapeHtml($lang['TestDate']).":&nbsp;&nbsp;</td>
-                                <td>
-                                    <input name='test_date' value='{$test_audit['test_date']}' required class='datepicker form-control' type='text'>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top'>".$escaper->escapeHtml($lang['Teams']).":&nbsp;&nbsp;</td>
-                                <td>";
-                                    create_multiple_dropdown("team", $test_audit['teams']);
-                                echo "
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top'>".$escaper->escapeHtml($lang['Objective']).":&nbsp;&nbsp;</td>
-                                <td align='left'>".$escaper->purifyHtml($test_audit['objective'] ? $test_audit['objective'] : "--")."</td>
-                            </tr>
-                            <tr>
-                                <td valign='top'>".$escaper->escapeHtml($lang['TestSteps']).":&nbsp;&nbsp;</td>
-                                <td align='left'>".$escaper->purifyHtml($test_audit['test_steps'] ? $test_audit['test_steps'] : "--")."</td>
-                            </tr>
-                            <tr>
-                                <td valign='top'>".$escaper->escapeHtml($lang['Tags']).":&nbsp;&nbsp;</td>
-                                <td align='left'>
-                                    <select style='width:300px' class=\"test_audit_tags\" readonly id=\"tags\" name=\"tags[]\" multiple placeholder=".$escaper->escapeHtml($lang['TagsWidgetPlaceholder']).">";
-                                    if ($test_audit['tags']) {
-                                        foreach(explode(",", $test_audit['tags']) as $tag) {
-                                            $tag = $escaper->escapeHtml($tag);
-                                            echo "<option selected value='{$tag}'>{$tag}</option>";
-                                        }
-                                    }
-                                    echo "
-                                    </select>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td valign='top'>
-                        <table width='100%'>
-                            <tr>
-                                <td valign='top'>".$escaper->escapeHtml($lang['Summary']).":&nbsp;&nbsp;</td>
-                                <td>
-                                    <textarea name='summary' class='form-control' style='width:100%'>".$escaper->escapeHtml($test_audit['summary'])."</textarea>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top'>".$escaper->escapeHtml($lang['Attachment']).":&nbsp;&nbsp;</td>
-                                <td>
-                                    <div class=\"file-uploader\">
-                                        <label for=\"audit-file-upload\" class=\"btn btn-primary\">".$escaper->escapeHtml($lang['ChooseFile'])."</label>
-                                        <span class=\"file-count-html\"> <span class=\"file-count\">".count(get_compliance_files($test_audit_id, "test_audit"))."</span> ".$escaper->escapeHtml($lang['FileAdded'])."</span>
-                                        <p><font size=\"2\"><strong>Max ". round(get_setting('max_upload_size')/1024/1024) ." Mb</strong></font></p>
-                                        <ul class=\"exist-files\">
-                                            ";
-                                            display_compliance_files($test_audit_id, "test_audit");
-                                        echo "
-                                        </ul>
-                                        <ul class=\"file-list\">
-                                            
-                                        </ul>
-                                        <input type=\"file\" id=\"audit-file-upload\" name=\"file[]\" class=\"d-none\" />
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top'>".$escaper->escapeHtml($lang['AdditionalStakeholders']).":&nbsp;&nbsp;</td>
-                                <td align='left'>".$escaper->escapeHtml($test_audit['additional_stakeholders'] ? get_stakeholder_names($test_audit['additional_stakeholders']) : "--")."</td>
-                            </tr>
-                            <tr>
-                                <td valign='top'>".$escaper->escapeHtml($lang['ControlOwner']).":&nbsp;&nbsp;</td>
-                                <td align='left'>".$escaper->escapeHtml($test_audit['control_owner'] ? get_name_by_value("user", $test_audit['control_owner']) : "--")."</td>
-                            </tr>
-                            <tr>
-                                <td valign='top'>".$escaper->escapeHtml($lang['ExpectedResults']).":&nbsp;&nbsp;</td>
-                                <td align='left'>".$escaper->purifyHtml($test_audit['expected_results'] ? $test_audit['expected_results'] : "--")."</td>
-                            </tr>
-                            <tr>
-                                <td valign='top'>".$escaper->escapeHtml($lang['ApproximateTime']).":&nbsp;&nbsp;</td>
-                                <td align='left'>".(int)$test_audit['approximate_time']. " " .$escaper->escapeHtml($test_audit['approximate_time'] > 1 ? $lang['minutes'] : $lang['minute'])."</td>
-                            </tr>
-                        </table>                    
-                    </td>
-                </tr>
-                <tr>
-                    <td align='right' colspan='2'>".$submit_button."</td>
-                </tr>
-            </table>
-
-        </form>
+        <div class='card-body border my-2'>
+            <form id='edit-test' class='' method='POST' enctype='multipart/form-data'>
+                <input type='hidden' name='origin_test_results' id='origin_test_results' value='{$test_audit['test_result']}' data-permission='{$close_risks}'>
+                <input type='hidden' name='remove_associated_risk' id='remove_associated_risk' value='0'>
+                <input type='hidden' name='associate_new_risk_id' id='associate_new_risk_id' value=''>
+                <input type='hidden' name='associate_exist_risk_ids' id='associate_exist_risk_ids' value='" . implode(",", $risk_ids) . "'>
+                <h4>{$escaper->escapeHtml($test_audit['name'])}</h4>
+                <div class='row'>
+                    <div class='col-6'>
+                        <div class='form-group'>
+                            <label>{$escaper->escapeHtml($lang['AuditStatus'])} :</label>
     ";
-
-    // Display the Control Details
-    display_test_audit_framework_control($test_audit['framework_control_id']);
-
-    // Display associated risks
-    display_associated_risks($risk_ids);
-
-    // Display test audit comment
-    display_test_audit_comment($test_audit_id);
-    
-    // Display test audit trail
-    display_test_audit_trail($test_audit_id);
+                            create_dropdown("test_status", $test_audit['status'], "status", true, false, false, "", "--");
+    echo "
+                        </div>
+                        <div class='form-group'>
+                            <label>{$escaper->escapeHtml($lang['TestResult'])} :</label>
+    ";
+                            create_dropdown("test_results", $test_audit['test_result'], "test_result", true, false, false, "", "--");
+    echo "
+                        </div>
+                        <div class='form-group'>
+                            <label>{$escaper->escapeHtml($lang['Tester'])} :</label>
+    ";
+                            create_dropdown("enabled_users", $test_audit['tester'], "tester", true, false, false);
+    echo "
+                        </div>
+                        <div class='form-group'>
+                            <label>{$escaper->escapeHtml($lang['TestDate'])} :</label>
+                            <input name='test_date' value='{$test_audit['test_date']}' required class='datepicker form-control' type='text'>
+                        </div>
+                        <div class='form-group'>
+                            <label>{$escaper->escapeHtml($lang['Teams'])} :</label>
+                            <div class='w-100'>
+    ";
+                                create_multiple_dropdown("team", $test_audit['teams']);
+    echo "
+                            </div>
+                        </div>
+                        <div class='form-group'>
+                            <label>{$escaper->escapeHtml($lang['Objective'])} :</label>
+                            {$escaper->purifyHtml($test_audit['objective'] ? $test_audit['objective'] : "--")}
+                        </div>
+                        <div class='form-group'>
+                            <label>{$escaper->escapeHtml($lang['TestSteps'])} :</label>
+                            {$escaper->purifyHtml($test_audit['test_steps'] ? $test_audit['test_steps'] : "--")}
+                        </div>
+                        <div class='form-group'>
+                            <label>{$escaper->escapeHtml($lang['Tags'])} :</label>
+                            <select class='test_audit_tags form-select' readonly id='tags' name='tags[]' multiple placeholder={$escaper->escapeHtml($lang['TagsWidgetPlaceholder'])}>
+    ";
+    if ($test_audit['tags']) {
+        foreach (explode(",", $test_audit['tags']) as $tag) {
+            $tag = $escaper->escapeHtml($tag);
+            echo "
+                                <option selected value='{$tag}'>{$tag}</option>
+            ";
+        }
+    }
+    echo "
+                            </select>
+                        </div>
+                    </div>
+                    <div class='col-6'>
+                        <div class='form-group'>
+                            <label>{$escaper->escapeHtml($lang['Summary'])} :</label>
+                            <textarea name='summary' class='form-control' style='width:100%'>{$escaper->escapeHtml($test_audit['summary'])}</textarea>
+                        </div>
+                        <div class='form-group'>
+                            <label>{$escaper->escapeHtml($lang['Attachment'])} :</label>
+                            <div class='file-uploader'>
+                                <label for='audit-file-upload' class='btn btn-primary'>{$escaper->escapeHtml($lang['ChooseFile'])}</label>
+                                <span class='file-count-html'> <span class='file-count'>" . count(get_compliance_files($test_audit_id, "test_audit")) . "</span> {$escaper->escapeHtml($lang['FileAdded'])}</span>
+                                <p><font size='2'><strong>Max " . round(get_setting('max_upload_size')/1024/1024) . " Mb</strong></font></p>
+                                <ul class='exist-files'>
+    ";
+                                    display_compliance_files($test_audit_id, "test_audit");
+    echo "
+                                </ul>
+                                <ul class='file-list'></ul>
+                                <input type='file' id='audit-file-upload' name='file[]' class='d-none hidden-file-upload active' />
+                            </div>
+                        </div>
+                        <div class='form-group'>
+                            <label>{$escaper->escapeHtml($lang['AdditionalStakeholders'])} :</label>
+                            {$escaper->escapeHtml($test_audit['additional_stakeholders'] ? get_stakeholder_names($test_audit['additional_stakeholders']) : "--")}
+                        </div>
+                        <div class='form-group'>
+                            <label>{$escaper->escapeHtml($lang['ControlOwner'])} :</label>
+                            {$escaper->escapeHtml($test_audit['control_owner'] ? get_name_by_value("user", $test_audit['control_owner']) : "--")}
+                        </div>
+                        <div class='form-group'>
+                            <label>{$escaper->escapeHtml($lang['ExpectedResults'])} :</label>
+                            {$escaper->purifyHtml($test_audit['expected_results'] ? $test_audit['expected_results'] : "--")}
+                        </div>
+                        <div class='form-group'>
+                            <label>{$escaper->escapeHtml($lang['ApproximateTime'])} :</label>" . 
+                            (int)$test_audit['approximate_time'] . " {$escaper->escapeHtml($test_audit['approximate_time'] > 1 ? $lang['minutes'] : $lang['minute'])}
+                        </div>
+                    </div>
+                </div>
+                <div class='text-end'>
+                    {$submit_button}
+                </div>
+            </form>
+        </div>
+        <div class='accordion my-2'>
+    ";
+            // Display the Control Details
+            display_test_audit_framework_control($test_audit['framework_control_id']);
+        
+            // Display associated risks
+            display_associated_risks($risk_ids);
+        
+            // Display test audit comment
+            display_test_audit_comment($test_audit_id);
+            
+            // Display test audit trail
+            display_test_audit_trail($test_audit_id);
+    echo "
+        </div>
+    ";
 }
 
 /**************************************
@@ -1739,19 +1741,21 @@ function display_compliance_files($ref_id, $ref_type){
 /**************************************
  * FUNCTION: DISPLAY TEST AUDIT TRAIL *
  **************************************/
-function display_test_audit_trail($test_audit_id)
-{
+function display_test_audit_trail($test_audit_id) {
+
     global $escaper, $lang;
     
     echo "
-        <div class=\"comments--wrapper\" >
-            <div class=\"bg-light border mb-2 p-2\" >
-                <h4 class=\"collapsible--toggle\"><span role='button'><i class=\"fa fa-caret-right p-2\"></i>".$escaper->escapeHtml($lang['AuditTrail'])."</span></h4>
-                <div class=\"collapsible\" style='display:none'>
-                    <div class=\"row\">
-                        <div class=\"col-12 audit-trail\">";
-                            get_audit_trail_html($test_audit_id+1000, 36500, 'test_audit');
-                        echo "</div>
+        <div class='accordion-item audit-trail--wrapper'>
+            <h2 class='accordion-header comments-accordion-header'>
+                <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#audit-trail-accordion-body'>{$escaper->escapeHtml($lang['AuditTrail'])}</button>
+            </h2>
+            <div id='audit-trail-accordion-body' class='accordion-collapse collapse'>
+                <div class='accordion-body card-body'>
+                    <div class='audit-trail'>
+    ";
+                        get_audit_trail_html($test_audit_id+1000, 36500, 'test_audit');
+    echo "
                     </div>
                 </div>
             </div>
@@ -1760,127 +1764,167 @@ function display_test_audit_trail($test_audit_id)
 }
 
 function display_test_audit_framework_control($framework_control_id) {
+
     if ($framework_control_id) {
+
         global $escaper, $lang;
+
         $control = get_framework_controls($framework_control_id);
-        if(count($control)){
+
+        if (count($control)) {
+
             $control = $control[0];
+
             echo "
-            <div class='framework-control-wrapper'>
-                <div class='bg-light border mb-2 p-2'>
-                    <h4 class='collapsible--toggle'><span role='button'><i class='fa fa-caret-down p-2'></i>".$escaper->escapeHtml($lang['ControlDetails'])."</span></h4>
-                    <div class='framework-control collapsible'>
-                        <table width='100%'>
-                            <tr>
-                                <td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlLongName'])."</strong>: </td>
-                                <td colspan='5'>".$escaper->escapeHtml($control['long_name'])."</td>
-                            </tr>
-                            <tr>
-                                <td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlShortName'])."</strong>: </td>
-                                <td width='57%' colspan='3'>".$escaper->escapeHtml($control['short_name'])."</td>
-                                <td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlOwner'])."</strong>: </td>
-                                <td width='17%'>".$escaper->escapeHtml($control['control_owner_name'])."</td>
-                            </tr>
-                            <tr>
-                                <td  align='right'><strong>".$escaper->escapeHtml($lang['ControlClass'])."</strong>: </td>
-                                <td>".$escaper->escapeHtml($control['control_class_name'])."</td>
-                                <td  align='right'><strong>".$escaper->escapeHtml($lang['ControlPhase'])."</strong>: </td>
-                                <td>".$escaper->escapeHtml($control['control_phase_name'])."</td>
-                                <td  align='right'><strong>".$escaper->escapeHtml($lang['ControlNumber'])."</strong>: </td>
-                                <td>".$escaper->escapeHtml($control['control_number'])."</td>
-                            </tr>
-                            <tr>
-                                <td align='right'><strong>".$escaper->escapeHtml($lang['ControlPriority'])."</strong>: </td>
-                                <td>".$escaper->escapeHtml($control['control_priority_name'])."</td>
-                                <td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['ControlFamily'])."</strong>: </td>
-                                <td>".$escaper->escapeHtml($control['family_short_name'])."</td>
-                                <td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['MitigationPercent'])."</strong>: </td>
-                                <td>".$escaper->escapeHtml($control['mitigation_percent'])."%</td>
-                            </tr>
-                            <tr>
-                                <td align='right'><strong>".$escaper->escapeHtml($lang['Description'])."</strong>: </td>
-                                <td colspan='5'>".$escaper->purifyHtml($control['description'])."</td>
-                            </tr>
-                            <tr>
-                                <td align='right'><strong>".$escaper->escapeHtml($lang['SupplementalGuidance'])."</strong>: </td>
-                                <td colspan='5'>".$escaper->purifyHtml($control['supplemental_guidance'])."</td>
-                            </tr>
-                        </table>\n";
-        
-                $mapped_frameworks = get_mapping_control_frameworks($control['id']);
-                echo "
-                            <div class='container-fluid'>
-                                <div class='well'>
-                                    <h5><span>".$escaper->escapeHtml($lang['MappedControlFrameworks'])."</span></h5>
-                                    <table width='100%' class='table table-bordered'>
+                <div class='accordion-item framework-control-wrapper'>
+                    <h2 class='accordion-header'>
+                        <button type='button' class='accordion-button' data-bs-toggle='collapse' data-bs-target='#framework-control-accordion-body'>{$escaper->escapeHtml($lang['ControlDetails'])}</button>
+                    </h2>
+                    <div id='framework-control-accordion-body' class='accordion-collapse collapse show'>
+                        <div class='accordion-body card-body'>
+                            <div class='row'>
+                                <div class='col-12'>
+                                    <div class='form-group'>
+                                        <label>{$escaper->escapeHtml($lang['ControlLongName'])} :</label>
+                                        {$escaper->escapeHtml($control['long_name'])}
+                                    </div>
+                                    <div class='form-group'>
+                                        <label>{$escaper->escapeHtml($lang['ControlShortName'])} :</label>
+                                        {$escaper->escapeHtml($control['short_name'])}
+                                    </div>
+                                    <div class='form-group'>
+                                        <label>{$escaper->escapeHtml($lang['ControlNumber'])} :</label>
+                                        {$escaper->escapeHtml($control['control_number'])}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-6'>
+                                    <div class='form-group'>
+                                        <label>{$escaper->escapeHtml($lang['ControlOwner'])} :</label>
+                                        {$escaper->escapeHtml($control['control_owner_name'])}
+                                    </div>
+                                    <div class='form-group'>
+                                        <label>{$escaper->escapeHtml($lang['ControlClass'])} :</label>
+                                        {$escaper->escapeHtml($control['control_class_name'])}
+                                    </div>
+                                    <div class='form-group'>
+                                        <label>{$escaper->escapeHtml($lang['ControlPhase'])} :</label>
+                                        {$escaper->escapeHtml($control['control_phase_name'])}
+                                    </div>
+                                </div>
+                                <div class='col-6'>
+                                    <div class='form-group'>
+                                        <label>{$escaper->escapeHtml($lang['ControlPriority'])} :</label>
+                                        {$escaper->escapeHtml($control['control_priority_name'])}
+                                    </div>
+                                    <div class='form-group'>
+                                        <label>{$escaper->escapeHtml($lang['ControlFamily'])} :</label>
+                                        {$escaper->escapeHtml($control['family_short_name'])}
+                                    </div>
+                                    <div class='form-group'>
+                                        <label>{$escaper->escapeHtml($lang['MitigationPercent'])} :</label>
+                                        {$escaper->escapeHtml($control['mitigation_percent'])}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-12'>
+                                    <div class='form-group'>
+                                        <label>{$escaper->escapeHtml($lang['Description'])} :</label>
+                                        {$escaper->purifyHtml($control['description'])}
+                                    </div>
+                                    <div class='form-group'>
+                                        <label>{$escaper->escapeHtml($lang['SupplementalGuidance'])} :</label>
+                                        {$escaper->purifyHtml($control['supplemental_guidance'])}
+                                    </div>
+                                </div>
+                            </div>
+            ";
+            
+            $mapped_frameworks = get_mapping_control_frameworks($control['id']);
+            echo "
+                            <div>
+                                <label>{$escaper->escapeHtml($lang['MappedControlFrameworks'])} :</label>
+                                <div class='bg-light p-3 border'>
+                                    <table width='100%' class='table table-bordered mb-0'>
                                         <tr>
-                                            <th width='50%'>".$escaper->escapeHtml($lang['Framework'])."</th>
-                                            <th width='35%'>".$escaper->escapeHtml($lang['Control'])."</th>
-                                        </tr>";
-                foreach ($mapped_frameworks as $framework){
-                    echo "
-                                        <tr>
-                                            <td>".$escaper->escapeHtml($framework['framework_name'])."</td>
-                                            <td>".$escaper->escapeHtml($framework['reference_name'])."</td>
-                                        </tr>";
-                }
+                                            <th width='50%'>{$escaper->escapeHtml($lang['Framework'])}</th>
+                                            <th width='35%'>{$escaper->escapeHtml($lang['Control'])}</th>
+                                        </tr>
+            ";
+            foreach ($mapped_frameworks as $framework) {
                 echo "
+                                        <tr>
+                                            <td>{$escaper->escapeHtml($framework['framework_name'])}</td>
+                                            <td>{$escaper->escapeHtml($framework['reference_name'])}</td>
+                                        </tr>
+                ";
+            }
+            echo "
                                     </table>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>";
-            }
+                </div>
+            ";
         }
+    }
 }
 
 /**************************************
  * FUNCTION: DISPLAY ASSOCIATED RISKS *
  **************************************/
-function display_associated_risks($risk_ids){
+function display_associated_risks($risk_ids) {
+
     global $escaper, $lang;
 
     echo "
-        <div class=\"comments--wrapper\" >
-            <div class='bg-light border mb-2 p-2' >
-                <h4 class=\"collapsible--toggle\">
-                    <span role='button'><i class=\"fa fa-caret-right p-2\"></i>".$escaper->escapeHtml($lang['Risks'])."</span>
-                </h4>
-                <div class=\"collapsible\" style='display:none'>
-                    <div class=\"row mb-2\">
-                        <div class=\"col-12\">
-                            <div class='float-end'>
-                                <button class=\"btn btn-primary associate_new_risk\">".$escaper->escapeHtml($lang['NewRisk'])."</button>
-                                <button class=\"btn btn-primary associate_existing_risk\">".$escaper->escapeHtml($lang['ExistingRisk'])."</button>
-                            </div>
-                        </div>
+        <div class='accordion-item risks--wrapper'>
+            <h2 class='accordion-header'>
+                <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#risks-accordion-body'>{$escaper->escapeHtml($lang['Risks'])}</button>
+            </h2>
+            <div id='risks-accordion-body' class='accordion-collapse collapse'>
+                <div class='accordion-body card-body'>
+                    <div class='form-group text-end'>
+                        <button class='btn btn-submit associate_new_risk'>{$escaper->escapeHtml($lang['NewRisk'])}</button>
+                        <button class='btn btn-primary associate_existing_risk'>{$escaper->escapeHtml($lang['ExistingRisk'])}</button>
                     </div>
-                    <div class=\"row\">
-                        <div class=\"col-12 audit-trail\">
-                            <table width='100%' class='table table-bordered mapping_framework_table'>
-                                <thead>
-                                    <tr>
-                                        <th width='5%'>".$escaper->escapeHtml($lang['ID'])."</th>
-                                        <th width='90%'>".$escaper->escapeHtml($lang['Subject'])."</th>
-                                        <th>".$escaper->escapeHtml($lang["Actions"])."</th>
-                                    </tr>
-                                </thead>
-                                <tbody>";
-                            foreach ($risk_ids as $key => $risk_id) {
-                                $risk = get_risk_by_id($risk_id + 1000);
-                                $no = $key + 1;
-                                $subject = try_decrypt($risk[0]['subject']);
-                                echo "<tr>
-                                    <td style='text-align:center'><a class='open-in-new-tab' target='_blank' href='../management/view.php?id=".($risk_id + 1000)."'>".($risk_id + 1000)."</a></td>
-                                    <td>".$escaper->escapeHtml($subject)."</td>
-                                    <td style='text-align:center'><a href='javascript:void(0);' class='delete-risk' data-risk-id='".$risk_id."' data-risk-id='".$risk_id."' title='".$escaper->escapeHtml($lang["Delete"])."'><i class='fa fa-trash'></i></a></td>
-                                </tr>";
-                            }
+                    <div class='bg-light border p-3'>
+                        <table width='100%' class='table table-bordered mb-0 mapping_framework_table'>
+                            <thead>
+                                <tr>
+                                    <th width='5%'>{$escaper->escapeHtml($lang['ID'])}</th>
+                                    <th width='90%'>{$escaper->escapeHtml($lang['Subject'])}</th>
+                                    <th>{$escaper->escapeHtml($lang["Actions"])}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+    ";
 
-                        echo " </tbody>
-                            </table>
-                        </div>
+    foreach ($risk_ids as $key => $risk_id) {
+
+        $risk = get_risk_by_id($risk_id + 1000);
+        $no = $key + 1;
+        $subject = try_decrypt($risk[0]['subject']);
+
+        echo "
+                                <tr>
+                                    <td style='text-align:center'>
+                                        <a class='open-in-new-tab' target='_blank' href='../management/view.php?id=" . ($risk_id + 1000) . "'>" . ($risk_id + 1000) . "</a>
+                                    </td>
+                                    <td>{$escaper->escapeHtml($subject)}</td>
+                                    <td style='text-align:center'>
+                                        <a href='javascript:void(0);' class='delete-risk' data-risk-id='{$risk_id}' data-risk-id='{$risk_id}' title='{$escaper->escapeHtml($lang["Delete"])}'><i class='fa fa-trash'></i></a>
+                                    </td>
+                                </tr>
+        ";
+    }
+
+    echo "
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -1891,83 +1935,46 @@ function display_associated_risks($risk_ids){
 /****************************************
  * FUNCTION: DISPLAY TEST AUDIT COMMENT *
  ****************************************/
-function display_test_audit_comment($test_audit_id)
-{
+function display_test_audit_comment($test_audit_id) {
+
     global $escaper, $lang;
     
     $test_audit_id = (int)$test_audit_id;
     
     echo "
-        <div class=\"comments--wrapper\">
-
-            <div class=\"bg-light border mb-2 p-2\">
-                <h4 class=\"collapsible--toggle clearfix\">
-                    <span role='button'><i class=\"fa fa-caret-right p-2\"></i>".$escaper->escapeHtml($lang['Comments'])."</span>
-                    <a href=\"#\" class=\"add-comments pull-right float-end\"><i class=\"fa fa-plus\"></i></a>
-                </h4>
-
-                <div class=\"collapsible\" style='display:none'>
-                    <div class=\"row\">
-                        <div class=\"col-12\">
-
-                            <form id=\"comment\" class=\"comment-form\" name=\"add_comment\" method=\"post\">
-                                <input type='hidden' name='id' value='{$test_audit_id}'>
-                                <textarea name=\"comment\" cols=\"50\" rows=\"3\" id=\"comment-text\" class=\"form-control comment-text\"></textarea>
-                                <div class=\"form-actions float-end mt-2\" id=\"comment-div\">
-                                    <input class=\"btn btn-secondary\" id=\"rest-btn\" value=\"".$escaper->escapeHtml($lang['Reset'])."\" type=\"reset\" />
-                                    <button id=\"comment-submit\" type=\"submit\" name=\"submit\" class=\"comment-submit btn btn-primary\" >".$escaper->escapeHtml($lang['Submit'])."</button>
-                                </div>
-                            </form>
+        <div class='accordion-item comments--wrapper'>
+            <h2 class='accordion-header comments-accordion-header'>
+                <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#comments-accordion-body'>{$escaper->escapeHtml($lang['Comments'])}</button>
+                <a href='#' class='add-comments pull-right float-end'><i class='fa fa-plus'></i></a>
+            </h2>
+            <div id='comments-accordion-body' class='accordion-collapse collapse'>
+                <div class='accordion-body card-body'>
+                    <form id='comment' class='comment-form' name='add_comment' method='post'>
+                        <input type='hidden' name='id' value='{$test_audit_id}'>
+                        <textarea name='comment' cols='50' rows='3' id='comment-text' class='form-control comment-text'></textarea>
+                        <div class='form-actions mt-2 text-end' id='comment-div'>
+                            <input class='btn btn-secondary' id='rest-btn' value='{$escaper->escapeHtml($lang['Reset'])}' type='reset' />
+                            <button id='comment-submit' type='submit' name='submit' class='comment-submit btn btn-submit' >{$escaper->escapeHtml($lang['Submit'])}</button>
                         </div>
-                    </div>
-
-                    <div class=\"row\">
-                        <div class=\"col-12\">
-                            <div class=\"comments--list clearfix\">
-                                ".get_testing_comment_list($test_audit_id)."
-                            </div>
-                        </div>
+                    </form>
+                    <div class='comments--list'>" . 
+                        get_testing_comment_list($test_audit_id) . "
                     </div>
                 </div>
             </div>
         </div>
-    ";
-    
-    echo "
-        <script>
-
-            \$('body').on('click', '.collapsible--toggle span', function(event) {
-                event.preventDefault();
-                var container = \$(this).parents('.comments--wrapper');
-                \$(this).parents('.collapsible--toggle').next('.collapsible').slideToggle('400');
-                \$(this).find('i').toggleClass('fa-caret-right fa-caret-down');
-                if($('.collapsible', container).is(':visible') && $('.add-comments', container).hasClass('rotate')){
-                    $('.add-comments', container).click()
-                }
-            });
-
-            $('body').on('click', '.add-comments', function(event) {
-                event.preventDefault();
-                var container = \$(this).parents('.comments--wrapper');
-                if(!$('.collapsible', container).is(':visible')){
-                    $(this).parents('.collapsible--toggle').next('.collapsible').slideDown('400');
-                    $(this).parent().find('span i').removeClass('fa-caret-right');
-                    $(this).parent().find('span i').addClass('fa-caret-down');
-                }
-                $(this).toggleClass('rotate');
-                $('.comment-form', container).fadeToggle('100');
-            });
-            
-            $('body').on('click', '.comment-submit', function(e){
+       
+        <script>            
+            $('body').on('click', '.comment-submit', function(e) {
                 e.preventDefault();
                 var container = $('.comments--wrapper');
                 
-                if(!$('.comment-text', container).val()){
+                if (!$('.comment-text', container).val()) {
                     $('.comment-text', container).focus();
                     return;
                 }
                 
-                var getForm = \$(this).parents('form', container);
+                var getForm = $(this).parents('form', container);
                 var form = new FormData($(getForm)[0]);
 
                 $.ajax({
@@ -1976,23 +1983,21 @@ function display_test_audit_comment($test_audit_id)
                     data: form,
                     contentType: false,
                     processData: false,
-                    success: function(data){
+                    success: function(data) {
                         $('.comments--list', container).html(data.data);
                         $('.comment-text', container).val('');
                         $('.comment-text', container).focus();
                         showAlertsFromArray(data.status_message);
                     },
-                    error: function(xhr,status,error){
-                        if(xhr.responseJSON && xhr.responseJSON.status_message){
+                    error: function(xhr,status,error) {
+                        if (xhr.responseJSON && xhr.responseJSON.status_message) {
                             showAlertsFromArray(xhr.responseJSON.status_message);
                         }
-                        if(!retryCSRF(xhr, this))
-                        {
+                        if (!retryCSRF(xhr, this)) {
                         }
                     }
-                })
-            })
-        
+                });
+            });
         </script>
     ";
       
@@ -2002,15 +2007,25 @@ function display_test_audit_comment($test_audit_id)
 /******************************************
  * FUNCTION: DISPLAY TESTING COMMENT LIST *
  ******************************************/
-function get_testing_comment_list($test_audit_id)
-{
+function get_testing_comment_list($test_audit_id) {
+
     global $escaper;
 
     // Open the database connection
     $db = db_open();
 
     // Get the comments
-    $stmt = $db->prepare("SELECT a.date, a.comment, b.name FROM framework_control_test_comments a LEFT JOIN user b ON a.user = b.value WHERE a.test_audit_id=:test_audit_id ORDER BY a.date DESC");
+    $stmt = $db->prepare("
+        SELECT 
+            a.date, a.comment, b.name 
+        FROM 
+            framework_control_test_comments a 
+            LEFT JOIN user b ON a.user = b.value 
+        WHERE 
+            a.test_audit_id=:test_audit_id 
+        ORDER BY 
+            a.date DESC
+    ");
 
     $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
 
@@ -2023,18 +2038,19 @@ function get_testing_comment_list($test_audit_id)
     db_close($db);
 
     $returnHTML = "";
-    foreach ($comments as $comment)
-    {
+    foreach ($comments as $comment) {
+
 //        $text = try_decrypt($comment['comment']);
         $text = $comment['comment'];
         $date = date(get_default_datetime_format("g:i A T"), strtotime($comment['date']));
         $user = $comment['name'];
         
-        if($text != null){
-            $returnHTML .= "<p class=\"comment-block\">\n";
-            $returnHTML .= "<b>" . $escaper->escapeHtml($date) ." by ". $escaper->escapeHtml($user) ."</b><br />\n";
-            $returnHTML .= $escaper->escapeHtml(try_decrypt($text));
-            $returnHTML .= "</p>\n";
+        if ($text != null) {
+            $returnHTML .= "
+                <p class='comment-block'>
+                    <strong>{$escaper->escapeHtml($date)} by {$escaper->escapeHtml($user)}</strong><br />{$escaper->escapeHtml(try_decrypt($text))}
+                </p>
+            ";
         }
     }
 
@@ -2592,8 +2608,8 @@ function display_past_audits()
 /************************************
  * FUNCTION: DISPLAY TEST IN DETAIL *
  ************************************/
-function display_detail_test()
-{
+function display_detail_test() {
+
     global $lang, $escaper;
     
     $test_audit_id = (int)$_GET['id'];
@@ -2607,185 +2623,139 @@ function display_detail_test()
     // Get associated risk ids
     $risk_ids = get_test_result_to_risk_ids($test_audit["result_id"]);
     $tags_view = "";
+
     if ($test_audit['tags']) {
-        foreach(explode(",", $test_audit['tags']) as $tag) {
-            $tags_view .= "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin-right:2px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
+        foreach (explode(",", $test_audit['tags']) as $tag) {
+            $tags_view .= "
+                <button class='btn btn-secondary btn-sm' style='pointer-events: none;margin-right:2px;padding: 4px 12px;' role='button' aria-disabled='true'>{$escaper->escapeHtml($tag)}</button>
+            ";
         }
     } else {
         $tags_view .= "--";
     }
 
     echo "
-        <div class='well' >
-            <table width='100%' id='test_detail_information'>
-                <tr>
-                    <td width='50%' valign='top'>
-                        <table width='100%'>
-                            <tr>
-                                <td valign='top' class='text-right' width='200px'><strong>".$escaper->escapeHtml($lang['TestName']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".$escaper->escapeHtml($test_audit['name'])."
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['Tester']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".$escaper->escapeHtml($test_audit['tester_name'])."
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['TestFrequency']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".(int)$test_audit['test_frequency']. " " .$escaper->escapeHtml($test_audit['test_frequency'] > 1 ? $lang['days'] : $lang['Day'])."
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['Objective']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".$escaper->purifyHtml($test_audit['objective'] ? $test_audit['objective'] : "--")."
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['TestSteps']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".$escaper->purifyHtml($test_audit['test_steps'] ? $test_audit['test_steps'] : "--")."
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['ApproximateTime']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".(int)$test_audit['approximate_time']. " " .$escaper->escapeHtml($test_audit['approximate_time'] > 1 ? $lang['minutes'] : $lang['minute'])."
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['Teams']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".($test_audit['teams'] ? $escaper->escapeHtml(get_names_by_multi_values('team', $test_audit['teams'])) : "--")."
-                                </td>
-                            </tr>
-                        </table>                    
-                    </td>
-                    <td valign='top'>
-                        <table width='100%'>
-                            <tr>
-                                <td valign='top' class='text-right' width='200px'><strong>".$escaper->escapeHtml($lang['ExpectedResults']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".$escaper->purifyHtml($test_audit['expected_results'] ? $test_audit['expected_results'] : "--")."
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['FrameworkName']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".$escaper->escapeHtml($test_audit['framework_name'])."
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['ControlName']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".$escaper->escapeHtml($test_audit['control_name'])."
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['ControlOwner']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".$escaper->escapeHtml(get_name_by_value("user", $test_audit['control_owner']))."
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['CreatedDate']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".$escaper->escapeHtml(format_date($test_audit['created_at'], "--"))."
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['AdditionalStakeholders']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".$escaper->escapeHtml(get_stakeholder_names($test_audit['additional_stakeholders']))."
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['Tags']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".$tags_view."
-                                </td>
-                            </tr>
-                        </table>                    
-                    </td>
-                </tr>
-            </table>
-            <!-- Test Result -->
-            <table width='100%' id='test_result_information' style='margin-top: 15px'>
-                <tr>
-                    <td width='50%' valign='top'>
-                        <table width='100%'>
-                            <tr>
-                                <td valign='top' class='text-right' width='200px'><strong>".$escaper->escapeHtml($lang['TestResult']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".$escaper->escapeHtml($test_audit['test_result'] ? $test_audit['test_result'] : "--")."
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['TestDate']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".$escaper->escapeHtml(format_date($test_audit['last_date'], "--"))."
-                                </td>
-                            </tr>
-
-                        </table>                    
-                    </td>
-                    <td valign='top'>
-                        <table width='100%'>
-                            <tr>
-                                <td valign='top' class='text-right' width='200px'><strong>".$escaper->escapeHtml($lang['Summary']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                                    ".$escaper->escapeHtml($test_audit['summary'] ? $test_audit['summary'] : "--")."
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign='top' class='text-right' width='200px'><strong>".$escaper->escapeHtml($lang['AttachmentFiles']).":&nbsp;&nbsp;</strong></td>
-                                <td>
-                            ";
-                                if($files){
-                                    foreach($files as $file){
-                                        echo  "
-                                            <p>            
-                                                <a href=\"".$_SESSION['base_url']."/compliance/download.php?id=".$file['unique_name']."\" >".$escaper->escapeHtml($file['name'])."</a>
-                                            </p>
-                                        ";
-                                    }
-                                }
-                                else
-                                {
-                                    echo "<p>No files</p>";
-                                }
-                            echo "
-                                </td>
-                            </tr>
-                        </table>                    
-                    </td>
-                </tr>
-            </table>
-
+        <div class='card-body border my-2'>
+            <div class='row' id='test_detail_information'>
+                <div class='col-6'>
+                    <div class='form-group'>
+                        <label>{$escaper->escapeHtml($lang['TestName'])} :</label>
+                        {$escaper->escapeHtml($test_audit['name'])}
+                    </div>
+                    <div class='form-group'>
+                        <label>{$escaper->escapeHtml($lang['Tester'])} :</label>
+                        {$escaper->escapeHtml($test_audit['tester_name'])}
+                    </div>
+                    <div class='form-group'>
+                        <label>{$escaper->escapeHtml($lang['TestFrequency'])} :</label>" . 
+                        (int)$test_audit['test_frequency'] . " {$escaper->escapeHtml($test_audit['test_frequency'] > 1 ? $lang['days'] : $lang['Day'])}
+                    </div>
+                    <div class='form-group'>
+                        <label>{$escaper->escapeHtml($lang['Objective'])} :</label>
+                        {$escaper->purifyHtml($test_audit['objective'] ? $test_audit['objective'] : "--")}
+                    </div>
+                    <div class='form-group'>
+                        <label>{$escaper->escapeHtml($lang['TestSteps'])} :</label>
+                        {$escaper->purifyHtml($test_audit['test_steps'] ? $test_audit['test_steps'] : "--")}
+                    </div>
+                    <div class='form-group'>
+                        <label>{$escaper->escapeHtml($lang['ApproximateTime'])} :</label>" . 
+                        (int)$test_audit['approximate_time'] . " {$escaper->escapeHtml($test_audit['approximate_time'] > 1 ? $lang['minutes'] : $lang['minute'])}
+                    </div>
+                    <div class='form-group'>
+                        <label>{$escaper->escapeHtml($lang['Teams'])} :</label>" . 
+                        ($test_audit['teams'] ? $escaper->escapeHtml(get_names_by_multi_values('team', $test_audit['teams'])) : "--") . "
+                    </div>
+                </div>
+                <div class='col-6'>
+                    <div class='form-group'>
+                        <label>{$escaper->escapeHtml($lang['ExpectedResults'])} :</label>" . 
+                        $escaper->purifyHtml($test_audit['expected_results'] ? $test_audit['expected_results'] : "--") . "
+                    </div>
+                    <div class='form-group'>
+                        <label>{$escaper->escapeHtml($lang['FrameworkName'])} :</label>
+                        {$escaper->escapeHtml($test_audit['framework_name'])}
+                    </div>
+                    <div class='form-group'>
+                        <label>{$escaper->escapeHtml($lang['ControlName'])} :</label>
+                        {$escaper->escapeHtml($test_audit['control_name'])}
+                    </div>
+                    <div class='form-group'>
+                        <label>{$escaper->escapeHtml($lang['ControlOwner'])} :</label>" . 
+                        $escaper->escapeHtml(get_name_by_value("user", $test_audit['control_owner'])) . "
+                    </div>
+                    <div class='form-group'>
+                        <label>{$escaper->escapeHtml($lang['CreatedDate'])} :</label>" . 
+                        $escaper->escapeHtml(format_date($test_audit['created_at'], "--")) . "
+                    </div>
+                    <div class='form-group'>
+                        <label>{$escaper->escapeHtml($lang['AdditionalStakeholders'])} :</label>" . 
+                        $escaper->escapeHtml(get_stakeholder_names($test_audit['additional_stakeholders'])) . "
+                    </div>
+                    <div class='form-group'>
+                        <label>{$escaper->escapeHtml($lang['Tags'])} :</label>
+                        {$tags_view}
+                    </div>
+                </div>
+            </div>
+            <div class='row' id='test_result_information'>
+                <div class='col-6'>
+                    <div class='form-group'>
+                        <label>{$escaper->escapeHtml($lang['TestResult'])} :</label>
+                        {$escaper->escapeHtml($test_audit['test_result'] ? $test_audit['test_result'] : "--")}
+                    </div>
+                    <div class='form-group mb-0'>
+                        <label>{$escaper->escapeHtml($lang['TestDate'])} :</label>
+                        {$escaper->escapeHtml(format_date($test_audit['last_date'], "--"))}
+                    </div>
+                </div>
+                <div class='col-6'>
+                    <div class='form-group'>
+                        <label>{$escaper->escapeHtml($lang['Summary'])} :</label>
+                        {$escaper->escapeHtml($test_audit['summary'] ? $test_audit['summary'] : "--")}
+                    </div>
+                    <div class='form-group attachment-files-container mb-0'>
+                        <label>{$escaper->escapeHtml($lang['AttachmentFiles'])} :</label>
+    ";
+    if ($files) {
+        foreach ($files as $file) {
+            echo  "
+                        <p>            
+                            <a href='{$_SESSION['base_url']}/compliance/download.php?id={$file['unique_name']}' >{$escaper->escapeHtml($file['name'])}</a>
+                        </p>
+            ";
+        }
+    } else {
+        echo "
+                        <p>No files</p>
+        ";
+    }
+    echo "
+                    </div>
+                </div>
+            </div>
         </div>
         <form id='edit-test' method='POST'>
-            <input name='update_associated_risks' value='1' type='hidden'/>
-            <input name='associate_new_risk_id' id='associate_new_risk_id' value='' type='hidden'>
-            <input name='associate_exist_risk_ids' id='associate_exist_risk_ids' value='".implode(",", $risk_ids)."' type='hidden'>
+            <input type='hidden' name='update_associated_risks' value='1'/>
+            <input type='hidden' name='associate_new_risk_id' id='associate_new_risk_id' value=''>
+            <input type='hidden' name='associate_exist_risk_ids' id='associate_exist_risk_ids' value='" . implode(",", $risk_ids) . "'>
         </form>
-
+        <div class='accordion my-2'>
     ";
+            // Display the Control Details
+            display_test_audit_framework_control($test_audit['framework_control_id']);
+            
+            // Display associated risks
+            display_associated_risks($risk_ids);
 
-    // Display the Control Details
-    display_test_audit_framework_control($test_audit['framework_control_id']);
-    
-    // Display associated risks
-    display_associated_risks($risk_ids);
-
-    // Display test audit comment
-    display_test_audit_comment($test_audit_id);
-    
-    // Display test audit trail
-    display_test_audit_trail($test_audit_id);
+            // Display test audit comment
+            display_test_audit_comment($test_audit_id);
+            
+            // Display test audit trail
+            display_test_audit_trail($test_audit_id);
+    echo "
+        </div>
+    ";
 }
 
 /*******************************
@@ -2816,7 +2786,7 @@ function delete_test_audit($test_audit_id) {
     updateTeamsOfItem($test_audit_id, 'audit', []);
 
     // Remove tags of test audit
-    updateTagsOfType($test_id, 'test_audit', []);
+    updateTagsOfType($test_audit_id, 'test_audit', []);
 
     // Close the database connection
     db_close($db);

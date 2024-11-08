@@ -1,376 +1,422 @@
 <?php
-/* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this
-* file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+    /* This Source Code Form is subject to the terms of the Mozilla Public
+    * License, v. 2.0. If a copy of the MPL was not distributed with this
+    * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Render the header and sidebar
-require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['tabs:logic', 'multiselect', 'datatables', 'CUSTOM:permissions-widget.js'], ['check_admin' => true]);
+    // Render the header and sidebar
+    require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+    render_header_and_sidebar(['tabs:logic', 'multiselect', 'datatables', 'CUSTOM:permissions-widget.js'], ['check_admin' => true]);
 
-// Include required functions file
-require_once(realpath(__DIR__ . '/../includes/messages.php'));
-require_once(realpath(__DIR__ . '/../includes/reporting.php'));
+    // Include required functions file
+    require_once(realpath(__DIR__ . '/../includes/messages.php'));
+    require_once(realpath(__DIR__ . '/../includes/reporting.php'));
 
-$default_role_id = get_default_role_id();
+    $default_role_id = get_default_role_id();
 
-$separation = team_separation_extra();
-if ($separation) {
-    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-}
-
-// Check if a new user was submitted
-if (isset($_POST['add_user']))
-{
-    $type = $_POST['type'];
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $user = $_POST['new_user'];
-    $pass = $_POST['password'];
-    $manager = (int)$_POST['manager'];
-
-    $repeat_pass = $_POST['repeat_password'];
-    $teams = isset($_POST['team']) ? array_filter($_POST['team'], 'ctype_digit') : [];
-    $role_id = (int)$_POST['role'];
-    
-    $admin = isset($_POST['admin']) ? '1' : '0';
-
-    $multi_factor = isset($_POST['multi_factor']) ? 1 : 0;
-    $change_password = (int)(isset($_POST['change_password']) ? $_POST['change_password'] : 0);
-
-    $permissions = isset($_POST['permissions']) ? array_filter($_POST['permissions'], 'ctype_digit') : [];
-
-    // If the type is 1
-    if ($type == "1")
-    {
-        // This is a local SimpleRisk user account
-        $type = "simplerisk";
-
-        // Check the password
-        $error_code = valid_password($pass, $repeat_pass);
-    }
-    // If the type is 2
-    else if ($type == "2")
-    {
-        // This is an LDAP user account
-        $type = "ldap";
-
-        // No password check required
-        $error_code = 1;
-    }
-    // If the type is 3
-    else if ($type == "3")
-    {
-        // This is a SAML user account
-        $type = "saml";
-
-        // No password check required
-        $error_code = 1;
-    }
-    else
-    {
-        // This is an invalid type
-        $type = "INVALID";
-
-        // Return an error
-        $error_code = 0;
+    $separation = team_separation_extra();
+    if ($separation) {
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
     }
 
-    // If the password is valid
-    if ($error_code == 1)
-    {
-    // Verify that the email address is properly formatted
-    if (filter_var($email, FILTER_VALIDATE_EMAIL))
-    {
-        // Verify that the user does not exist
-        if (!user_exist($user))
-        {
-            // Verify that it is a valid username format
-            if (valid_username($user))
-            {
-                // Create a unique salt for the user
-                $salt = generate_token(20);
+    // Check if a new user was submitted
+    if (isset($_POST['add_user'])) {
+        $type = $_POST['type'];
+        $name = $_POST['name'];
+        $email = $_POST['email'];
+        $user = $_POST['new_user'];
+        $pass = $_POST['password'];
+        $manager = (int)$_POST['manager'];
 
-                // Hash the salt
-                $salt_hash = '$2a$15$' . md5($salt);
+        $repeat_pass = $_POST['repeat_password'];
+        $teams = isset($_POST['team']) ? array_filter($_POST['team'], 'ctype_digit') : [];
+        $role_id = (int)$_POST['role'];
+        
+        $admin = isset($_POST['admin']) ? '1' : '0';
 
-                // Generate the password hash
-                $hash = generateHash($salt_hash, $pass);
+        $multi_factor = isset($_POST['multi_factor']) ? 1 : 0;
+        $change_password = (int)(isset($_POST['change_password']) ? $_POST['change_password'] : 0);
 
-                // Insert a new user
-                $user_id = add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $admin, $multi_factor, $change_password, $manager, $permissions);
+        $permissions = isset($_POST['permissions']) ? array_filter($_POST['permissions'], 'ctype_digit') : [];
+
+        // If the type is 1
+        if ($type == "1") {
+
+            // This is a local SimpleRisk user account
+            $type = "simplerisk";
+
+            // Check the password
+            $error_code = valid_password($pass, $repeat_pass);
+        
+            // If the type is 2
+        } else if ($type == "2") {
+
+            // This is an LDAP user account
+            $type = "ldap";
+
+            // No password check required
+            $error_code = 1;
+            
+        // If the type is 3
+        } else if ($type == "3") {
+
+            // This is a SAML user account
+            $type = "saml";
+
+            // No password check required
+            $error_code = 1;
+
+        } else {
+
+            // This is an invalid type
+            $type = "INVALID";
+
+            // Return an error
+            $error_code = 0;
+
+        }
+
+        // If the password is valid
+        if ($error_code == 1) {
+
+            // Verify that the email address is properly formatted
+            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+
+                // Verify that the email does not exist
+                if (!email_exist($email)) {
+
+                    // Verify that the user does not exist
+                    if (!user_exist($user)) {
+
+                        // Verify that it is a valid username format
+                        if (valid_username($user)) {
+
+                            // Create a unique salt for the user
+                            $salt = generate_token(20);
+
+                            // Hash the salt
+                            $salt_hash = '$2a$15$' . md5($salt);
+
+                            // Generate the password hash
+                            $hash = generateHash($salt_hash, $pass);
+
+                            // Insert a new user
+                            $user_id = add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $admin, $multi_factor, $change_password, $manager, $permissions);
+
+                            // If the encryption extra is enabled
+                            if (encryption_extra()) {
+
+                                // Load the extra
+                                require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+
+                                // If the encryption method is mcrypt
+                                if (isset($_SESSION['encryption_method']) && $_SESSION['encryption_method'] == "mcrypt") {
+
+                                    // Add the new encrypted user
+                                    add_user_enc($pass, $salt, $user);
+
+                                }
+                            }
+
+                            // If ths customization extra is enabled, add new user to custom field as user multi dropdown
+                            if(customization_extra()) {
+
+                                // Include the extra
+                                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+                                add_user_to_custom_fields($user_id);
+
+                            }
+
+                            // Clear values
+                            $name = "";
+                            $email = "";
+                            $user = "";
+                            $change_password = 0;
+
+                            // Display an alert
+                            set_alert(true, "good", "The new user was added successfully.");
+
+                        // Otherwise, an invalid username was specified
+                        } else {
+
+                            // Display an alert
+                            set_alert(true, "bad", "An invalid username was specified.  Please try again with a different username.");
+
+                        }
+                        
+                    // Otherwise, the user already exists
+                    } else {
+
+                        // Display an alert
+                        set_alert(true, "bad", "The username already exists.  Please try again with a different username.");
+
+                    }
+                    
+                // Otherwise, the email already exists
+                } else {
+                    
+                    // Display an alert
+                    set_alert(true, "bad", "The email already exists.  Please try again with a different email.");
+
+                }
+                
+            // Otherwise, the email address is invalid
+            } else {
+
+                // Display an alert
+                set_alert(true, "bad", "An invalid email address was specified.  Please try again with a different email address.");
+
+            }
+            
+        // Otherewise, an invalid password was specified
+        } else {
+            // Display an alert
+            //set_alert(true, "bad", password_error_message($error_code));
+        }
+    }
+
+    // Check if a user was enabled
+    if (isset($_POST['enable_user'])) {
+
+        $value = (int)$_POST['disabled_users_all'];
+
+        // Verify value is an integer
+        if (is_int($value) && $value > 0) {
+
+            enable_user($value);
+
+            // Display an alert
+            set_alert(true, "good", "The user was enabled successfully.");
+
+        } else {
+
+            set_alert(true, "bad", $lang['PleaseSelectUser']);
+
+        }
+    }
+
+    // Check if a user was disabled
+    if (isset($_POST['disable_user'])) {
+
+        $value = (int)$_POST['enabled_users_all'];
+
+        if ($_SESSION['admin'] && $value === (int)$_SESSION['uid']) {
+
+            set_alert(true, "bad", $lang['AdminCantDisableItself']);
+
+        } else {
+
+            if ($value > 0) {
+
+                // Disabling user
+                disable_user($value);
+                // Killing its active sessions
+                kill_sessions_of_user($value);
+                // Display an alert
+                set_alert(true, "good", "The user was disabled successfully.");
+
+            } else {
+
+                set_alert(true, "bad", $lang['PleaseSelectUser']);
+
+            }
+        }
+    }
+
+    // Check if a user was deleted
+    if (isset($_POST['delete_user'])) {
+
+        $value = (int)$_POST['user'];
+
+        // An admin user can't delete itself
+        if ($_SESSION['admin'] && $value === (int)$_SESSION['uid']) {
+
+            set_alert(true, "bad", $lang['AdminCantDeleteItself']);
+
+        } else {
+
+            if ($value > 0) {
+
+                // Delete the user
+                delete_value("user", $value);
+
+                // Remove the leftover associations in the related junction tables
+                cleanup_after_delete("user");
+
+                // Delete the user from the user_mfa table
+                mfa_delete_userid($value);
 
                 // If the encryption extra is enabled
-                if (encryption_extra())
-                {
+                if (encryption_extra()) {
+
                     // Load the extra
                     require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
                     // If the encryption method is mcrypt
-                    if (isset($_SESSION['encryption_method']) && $_SESSION['encryption_method'] == "mcrypt")
-                    {
-                        // Add the new encrypted user
-                        add_user_enc($pass, $salt, $user);
+                    if (isset($_SESSION['encryption_method']) && $_SESSION['encryption_method'] == "mcrypt") {
+
+                        // Delete the value from the user_enc table
+                        delete_user_enc($value);
+
+                        // Check to see if all users have now been activated
+                        check_all_activated();
+
                     }
                 }
 
-                // If ths customization extra is enabled, add new user to custom field as user multi dropdown
-                if(customization_extra())
-                {
-                    // Include the extra
-                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-                    add_user_to_custom_fields($user_id);
-                }
+                // Killing its active sessions
+                kill_sessions_of_user($value);
+                
+                // Display an alert
+                set_alert(true, "good", "The existing user was deleted successfully.");
 
-                // Clear values
-                $name = "";
-                $email = "";
-                $user = "";
-                $change_password = 0;
+            } else {
+
+                set_alert(true, "bad", $lang['PleaseSelectUser']);
+
+            }
+        }
+    }
+
+    // Check if a password reset was requested
+    if (isset($_POST['password_reset'])) {
+
+        // Get the POSTed user ID
+        $value = (int)$_POST['user'];
+
+        // Verify value is an integer
+        if (is_int($value) && $value > 0) {
+
+            // Open the database connection
+            $db = db_open();
+
+            // Get any password resets for this user in the past 10 minutes
+            $stmt = $db->prepare("
+                SELECT 
+                    * 
+                FROM 
+                    password_reset pw 
+                    LEFT JOIN user u ON pw.username = u.username 
+                WHERE 
+                    pw.timestamp >= NOW() - INTERVAL 10 MINUTE AND u.value=:value;
+            ");
+            $stmt->bindParam(":value", $value, PDO::PARAM_INT);
+            $stmt->execute();
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Close the database connection
+            db_close($db);
+
+            // If we have password resets in the past 10 minutes
+            if (count($results) != 0) {
+
+                set_alert(true, "bad", $lang['PasswordResetRequestsExceeded']);
+
+            } else {
+
+                password_reset_by_userid($value);
 
                 // Display an alert
-                set_alert(true, "good", "The new user was added successfully.");
+                set_alert(true, "good", "A password reset email was sent to the user.");
+
             }
-            // Otherwise, an invalid username was specified
-            else
-            {
-                // Display an alert
-                set_alert(true, "bad", "An invalid username was specified.  Please try again with a different username.");
-            }
-        }
-        // Otherwise, the user already exists
-        else
-        {
-            // Display an alert
-            set_alert(true, "bad", "The username already exists.  Please try again with a different username.");
-        }
-    }
-        // Otherwise, the email address is invalid
-    else
-    {
-            // Display an alert
-        set_alert(true, "bad", "An invalid email address was specified.  Please try again with a different email address.");
-    }
-    }
-    // Otherewise, an invalid password was specified
-    else
-    {
-        // Display an alert
-        //set_alert(true, "bad", password_error_message($error_code));
-    }
-}
 
-// Check if a user was enabled
-if (isset($_POST['enable_user']))
-{
-    $value = (int)$_POST['disabled_users_all'];
-
-    // Verify value is an integer
-    if (is_int($value) && $value > 0)
-    {
-        enable_user($value);
-
-        // Display an alert
-        set_alert(true, "good", "The user was enabled successfully.");
-    } else {
-        set_alert(true, "bad", $lang['PleaseSelectUser']);
-    }
-}
-
-// Check if a user was disabled
-if (isset($_POST['disable_user']))
-{
-    $value = (int)$_POST['enabled_users_all'];
-
-    if ($_SESSION['admin'] && $value === (int)$_SESSION['uid']) {
-        set_alert(true, "bad", $lang['AdminCantDisableItself']);
-    } else {
-        if ($value > 0) {
-            // Disabling user
-            disable_user($value);
-            // Killing its active sessions
-            kill_sessions_of_user($value);
-            // Display an alert
-            set_alert(true, "good", "The user was disabled successfully.");
         } else {
+
             set_alert(true, "bad", $lang['PleaseSelectUser']);
+
         }
     }
-}
 
-// Check if a user was deleted
-if (isset($_POST['delete_user']))
-{
-    $value = (int)$_POST['user'];
+    // Check if a MFA reset was requested
+    if (isset($_POST['mfa_reset'])) {
 
-    // An admin user can't delete itself
-    if ($_SESSION['admin'] && $value === (int)$_SESSION['uid']) {
-        set_alert(true, "bad", $lang['AdminCantDeleteItself']);
-    } else {
+        // Get the user to reset MFA for
+        $user_id = isset($_POST['user']) ? $_POST['user'] : null;
 
-        if ($value > 0) {
+        // Set reset_mfa to false
+        $reset_mfa = false;
 
-            // Delete the user
-            delete_value("user", $value);
+        // If the user has MFA enabled
+        if (mfa_enabled_for_uid($_SESSION['uid'])) {
 
-            // Remove the leftover associations in the related junction tables
-            cleanup_after_delete("user");
+            // If the user's MFA token is valid
+            if (does_mfa_token_match()) {
 
-            // Delete the user from the user_mfa table
-            mfa_delete_userid($value);
+                // If MFA is enabled for the selected user
+                if (mfa_enabled_for_uid($user_id)) {
 
-            // If the encryption extra is enabled
-            if (encryption_extra())
-            {
-                // Load the extra
-                require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+                    // We should reset the MFA
+                    $reset_mfa = true;
 
-                // If the encryption method is mcrypt
-                if (isset($_SESSION['encryption_method']) && $_SESSION['encryption_method'] == "mcrypt")
-                {
-                    // Delete the value from the user_enc table
-                    delete_user_enc($value);
+                // MFA is not enabled for the selected user
+                } else {
 
-                    // Check to see if all users have now been activated
-                    check_all_activated();
+                    // Display an alert
+                    set_alert(true, "bad", $lang['MFANotEnabledForUser']);
+
                 }
+                
+            // An invalid MFA token was provided
+            } else {
+
+                // Display an alert
+                set_alert(true, "bad", $lang['MFAVerificationFailed']);
+
             }
-
-            // Killing its active sessions
-            kill_sessions_of_user($value);
-            
-            // Display an alert
-            set_alert(true, "good", "The existing user was deleted successfully.");
+        
+        // The user does not have MFA enabled so just reset it
         } else {
-            set_alert(true, "bad", $lang['PleaseSelectUser']);
-        }
-    }
-}
 
-// Check if a password reset was requested
-if (isset($_POST['password_reset']))
-{
-    // Get the POSTed user ID
-    $value = (int)$_POST['user'];
-
-    // Verify value is an integer
-    if (is_int($value) && $value > 0)
-    {
-        // Open the database connection
-        $db = db_open();
-
-        // Get any password resets for this user in the past 10 minutes
-        $stmt = $db->prepare("SELECT * FROM password_reset pw LEFT JOIN user u ON pw.username = u.username WHERE pw.timestamp >= NOW() - INTERVAL 10 MINUTE AND u.value=:value;");
-        $stmt->bindParam(":value", $value, PDO::PARAM_INT);
-        $stmt->execute();
-        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Close the database connection
-        db_close($db);
-
-        // If we have password resets in the past 10 minutes
-        if (count($results) != 0)
-        {
-            set_alert(true, "bad", $lang['PasswordResetRequestsExceeded']);
-        }
-        else
-        {
-            password_reset_by_userid($value);
-
-            // Display an alert
-            set_alert(true, "good", "A password reset email was sent to the user.");
-        }
-    } else {
-        set_alert(true, "bad", $lang['PleaseSelectUser']);
-    }
-}
-
-// Check if a MFA reset was requested
-if (isset($_POST['mfa_reset']))
-{
-    // Get the user to reset MFA for
-    $user_id = isset($_POST['user']) ? $_POST['user'] : null;
-
-    // Set reset_mfa to false
-    $reset_mfa = false;
-
-    // If the user has MFA enabled
-    if (mfa_enabled_for_uid($_SESSION['uid']))
-    {
-        // If the user's MFA token is valid
-        if (does_mfa_token_match())
-        {
             // If MFA is enabled for the selected user
-            if (mfa_enabled_for_uid($user_id))
-            {
+            if (mfa_enabled_for_uid($user_id)) {
+
                 // We should reset the MFA
                 $reset_mfa = true;
-            }
+
             // MFA is not enabled for the selected user
-            else
-            {
+            } else {
+
                 // Display an alert
                 set_alert(true, "bad", $lang['MFANotEnabledForUser']);
+
             }
         }
-        // An invalid MFA token was provided
-        else
-        {
+
+        // If we passed the reset MFA check
+        if ($reset_mfa) {
+
+            // Reset the MFA for the user
+            mfa_delete_userid($user_id);
+
             // Display an alert
-            set_alert(true, "bad", $lang['MFAVerificationFailed']);
-        }
-    }
-    // The user does not have MFA enabled so just reset it
-    else
-    {
-        // If MFA is enabled for the selected user
-        if (mfa_enabled_for_uid($user_id))
-        {
-            // We should reset the MFA
-            $reset_mfa = true;
-        }
-        // MFA is not enabled for the selected user
-        else
-        {
-            // Display an alert
-            set_alert(true, "bad", $lang['MFANotEnabledForUser']);
+            set_alert(true, "good", $lang['MFAResetSuccessful']);
+
         }
     }
 
-    // If we passed the reset MFA check
-    if ($reset_mfa)
-    {
-        // Reset the MFA for the user
-        mfa_delete_userid($user_id);
+    // Check if a password policy update was requested
+    if (isset($_POST['password_policy_update'])) {
+        $strict_user_validation = (isset($_POST['strict_user_validation'])) ? 1 : 0;
+        $mfa_required = (isset($_POST['mfa_required'])) ? 1 : 0;
+        $pass_policy_enabled = (isset($_POST['pass_policy_enabled'])) ? 1 : 0;
+        $min_characters = (int)$_POST['min_characters'];
+        $alpha_required = (isset($_POST['alpha_required'])) ? 1 : 0;
+        $upper_required = (isset($_POST['upper_required'])) ? 1 : 0;
+        $lower_required = (isset($_POST['lower_required'])) ? 1 : 0;
+        $digits_required = (isset($_POST['digits_required'])) ? 1 : 0;
+        $special_required = (isset($_POST['special_required'])) ? 1 : 0;
+
+        $pass_policy_attempt_lockout =(int)$_POST['pass_policy_attempt_lockout'];
+        $pass_policy_attempt_lockout_time = (int)$_POST['pass_policy_attempt_lockout_time'];
+        $pass_policy_min_age = (int)$_POST['pass_policy_min_age'];
+        $pass_policy_max_age = (int)$_POST['pass_policy_max_age'];
+        $pass_policy_reuse_limit = (int)$_POST['pass_policy_reuse_limit'];
+
+        update_password_policy($strict_user_validation, $mfa_required, $pass_policy_enabled, $min_characters, $alpha_required, $upper_required, $lower_required, $digits_required, $special_required, $pass_policy_attempt_lockout, $pass_policy_attempt_lockout_time, $pass_policy_min_age, $pass_policy_max_age, $pass_policy_reuse_limit);
 
         // Display an alert
-        set_alert(true, "good", $lang['MFAResetSuccessful']);
+        set_alert(true, "good", "The settings were updated successfully.");
     }
-}
-
-// Check if a password policy update was requested
-if (isset($_POST['password_policy_update']))
-{
-    $strict_user_validation = (isset($_POST['strict_user_validation'])) ? 1 : 0;
-    $mfa_required = (isset($_POST['mfa_required'])) ? 1 : 0;
-    $pass_policy_enabled = (isset($_POST['pass_policy_enabled'])) ? 1 : 0;
-    $min_characters = (int)$_POST['min_characters'];
-    $alpha_required = (isset($_POST['alpha_required'])) ? 1 : 0;
-    $upper_required = (isset($_POST['upper_required'])) ? 1 : 0;
-    $lower_required = (isset($_POST['lower_required'])) ? 1 : 0;
-    $digits_required = (isset($_POST['digits_required'])) ? 1 : 0;
-    $special_required = (isset($_POST['special_required'])) ? 1 : 0;
-
-    $pass_policy_attempt_lockout =(int)$_POST['pass_policy_attempt_lockout'];
-    $pass_policy_attempt_lockout_time = (int)$_POST['pass_policy_attempt_lockout_time'];
-    $pass_policy_min_age = (int)$_POST['pass_policy_min_age'];
-    $pass_policy_max_age = (int)$_POST['pass_policy_max_age'];
-    $pass_policy_reuse_limit = (int)$_POST['pass_policy_reuse_limit'];
-
-    update_password_policy($strict_user_validation, $mfa_required, $pass_policy_enabled, $min_characters, $alpha_required, $upper_required, $lower_required, $digits_required, $special_required, $pass_policy_attempt_lockout, $pass_policy_attempt_lockout_time, $pass_policy_min_age, $pass_policy_max_age, $pass_policy_reuse_limit);
-
-    // Display an alert
-    set_alert(true, "good", "The settings were updated successfully.");
-}
 
 ?>
 <div class="row bg-white">

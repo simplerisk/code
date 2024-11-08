@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'Datei-Upload fehlgeschlagen: Keine Datei gesendet',
     'FileUploadExceededFileSize' => 'Datei-Upload fehlgeschlagen: Dateigrößenlimit überschritten',
     'FileUploadUnknownErrors' => 'Datei-Upload fehlgeschlagen: Unbekannte Fehler',
+    'DynamicIncidentReport' => 'Dynamischer Vorfallbericht',
+    'FilteringSelections' => 'Auswahl filtern',
 
     '' => '',
 );

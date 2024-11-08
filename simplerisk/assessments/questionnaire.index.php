@@ -84,6 +84,7 @@
                 
                 // Set the alert message
                 set_alert(true, "bad", $escaper->escapeHtml($lang['InvalidTokenForQuestionnaire']));
+
             }
 
         } else {
@@ -93,7 +94,9 @@
             
             // Set the alert message
             set_alert(true, "bad", $escaper->escapeHtml($lang['RequiredTokenForQuestionnaire']));
+
         }
+
     } else {
 
         // Set the alert message
@@ -102,6 +105,7 @@
         set_unauthenticated_redirect();
         header("Location: ../index.php");
         exit(0);
+        
     }
 
     // Set a global variable for the current app version, so we don't have to call a function every time

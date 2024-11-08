@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'Отпремање датотеке није успело: није послата датотека',
     'FileUploadExceededFileSize' => 'Отпремање датотеке није успело: прекорачено је ограничење величине датотеке',
     'FileUploadUnknownErrors' => 'Отпремање датотеке није успело: непознате грешке',
+    'DynamicIncidentReport' => 'Динамички извештај о инциденту',
+    'FilteringSelections' => 'Филтрирање избора',
 
     '' => '',
 );

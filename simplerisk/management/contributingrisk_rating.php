@@ -84,7 +84,7 @@
                 if (parent_window && !parent_window.closed) {
                     parent_window.$("#contributing_likelihood", parent_window.parentOfScores).val( $("#contributing_likelihood").val() );
                     
-                    $(".contributing-risk-table td > select").each(function(){
+                    $("div.contributing-risk-table select").each(function(){
                         parent_window.$("#"+$(this).attr("id"), parent_window.parentOfScores).val( $(this).val() )
                     })
                 }
@@ -127,7 +127,7 @@
                                 <h5><?= $escaper->escapeHtml($lang['Likelihood']) ?></h5>
                                 <?php create_dropdown("contributing_risks_likelihood", NULL, "contributing_likelihood", false); ?>
                             </div>
-                            <div class="card-body border my-2 flex-grow-0">
+                            <div class="card-body border my-2 flex-grow-0 contributing-risk-table">
                                 <h5><?= $escaper->escapeHtml($lang["ContributingRisk"]) ?></h5>
                                 <?php display_contributing_risk_from_calculator(); ?>
                             </div>

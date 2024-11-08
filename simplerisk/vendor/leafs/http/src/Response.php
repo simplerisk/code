@@ -55,6 +55,21 @@ class Response
     }
 
     /**
+     * Output any text
+     * 
+     * @param string $data The data to output
+     * @param int $code The response status code
+     */
+    public function echo(string $data, int $code = 200)
+    {
+        $this->status = $code;
+        $this->headers['Content-Type'] ??= 'text/plain';
+        $this->content = $data;
+
+        $this->send();
+    }
+
+    /**
      * Output plain text
      *
      * @param mixed $data The data to output
@@ -79,6 +94,21 @@ class Response
     {
         $this->status = $code;
         $this->headers['Content-Type'] = 'application/xml';
+        $this->content = $data;
+
+        $this->send();
+    }
+    
+    /**
+     * Output js script
+     * 
+     * @param string $data The data to output
+     * @param int $code The response status code
+     */
+    public function js(string $data, int $code = 200)
+    {
+        $this->status = $code;
+        $this->headers['Content-Type'] = 'text/javascript';
         $this->content = $data;
 
         $this->send();
@@ -246,6 +276,16 @@ EOT;
 
         Headers::status($status);
         Headers::set('Location', $url, true, $status);
+    }
+
+    /**
+     * Pass data to the route handler
+     * 
+     * @param mixed $data The data to pass
+     */
+    public function next($data)
+    {
+        \Leaf\Config::set('middleware.data', $data);
     }
 
     /**

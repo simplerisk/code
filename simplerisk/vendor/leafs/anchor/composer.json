@@ -18,6 +18,9 @@
             "role": "Developer"
         }
     ],
+    "scripts": {
+        "test": "vendor/bin/pest"
+    },
     "autoload": {
         "psr-4": {
             "Leaf\\": "src"

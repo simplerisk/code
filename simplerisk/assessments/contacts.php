@@ -1,53 +1,58 @@
 <?php
-/* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this
-* file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+    /* This Source Code Form is subject to the terms of the Mozilla Public
+    * License, v. 2.0. If a copy of the MPL was not distributed with this
+    * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Include required functions file
+    // Include required functions file
 
-require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-require_once(realpath(__DIR__ . '/../includes/assessments.php'));
+    require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+    require_once(realpath(__DIR__ . '/../includes/assessments.php'));
 
-render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'tabs:logic', 'CUSTOM:common.js', 'CUSTOM:pages/assessment.js'], ['check_assessments' => true], '');
+    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'tabs:logic', 'CUSTOM:common.js', 'CUSTOM:pages/assessment.js'], ['check_assessments' => true], '');
 
-// Check if assessment extra is enabled
-if(assessments_extra())
-{
-    // Include the assessments extra
-    require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
-}
-else
-{
-    header("Location: ../index.php");
-    exit(0);
-}
+    // Check if assessment extra is enabled
+    if (assessments_extra()) {
 
-// Process actions on contact pages
-if(process_assessment_contact()){
-    refresh();
-}
+        // Include the assessments extra
+        require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
+
+    } else {
+
+        header("Location: ../index.php");
+        exit(0);
+
+    }
+
+    // Process actions on contact pages
+    if (process_assessment_contact()) {
+        refresh();
+    }
 
 ?>
 <div class="row bg-white">
     <div class="col-12">
         <div class="card-body my-2 border">
     <?php 
-        if(isset($_GET['action']) && $_GET['action']=="add") { 
+        if (isset($_GET['action']) && $_GET['action']=="add") { 
     ?>
             <div class="hero-unit bg-white">
                 <div class="row">
                     <div class="col-6">
-                        <?php display_assessment_contacts_add(); ?>
+    <?php 
+                        display_assessment_contacts_add(); 
+    ?>
                     </div>
                 </div>
             </div>
     <?php
-        } elseif(isset($_GET['action']) && $_GET['action']=="edit" && $_GET['id']) { 
+        } elseif (isset($_GET['action']) && $_GET['action']=="edit" && $_GET['id']) { 
     ?>
             <div class="hero-unit bg-white">
                 <div class="row">
                     <div class="col-6">
-                        <?php display_assessment_contacts_edit($_GET['id']); ?>
+    <?php 
+                        display_assessment_contacts_edit($_GET['id']); 
+    ?>
                     </div>
                 </div>
             </div>
@@ -61,16 +66,18 @@ if(process_assessment_contact()){
             </div>
             <div data-sr-role='dt-settings' data-sr-target='assessment-contacts-table' class='float-end'>
     <?php
-            if(has_permission("assessment_add_contact")) {
+            if (has_permission("assessment_add_contact")) {
     ?>
-                <a id="aseessment-contact--add-btn" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Add']); ?></a>
+                <a id="aseessment-contact--add-btn" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Add']); ?></a>
     <?php
             }
     ?>
             </div>
-            <div class="row mt-3">
+            <div class="row">
                 <div class="col-12">
-                    <?php display_assessment_contacts(); ?>
+    <?php 
+                    display_assessment_contacts(); 
+    ?>
                 </div>
             </div>
     <?php
@@ -90,53 +97,31 @@ if(process_assessment_contact()){
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row form-group">
-                        <div class="col-3 d-flex align-items-center">
-                            <label>Company:</label>
-                        </div>
-                        <div class = "col-9">
-                            <input required class = "form-control" name="company" maxlength="255" size="100" value="" type="text">
-                        </div>
+                    <div class="form-group">
+                        <label><?= $escaper->escapeHtml($lang['Company']);?> :</label>
+                        <input required class = "form-control" name="company" maxlength="255" size="100" value="" type="text">
                     </div>
-                    <div class="row form-group">
-                        <div class="col-3 d-flex align-items-center">
-                            <label><?= $escaper->escapeHtml($lang['Name']);?>:</label>
-                        </div>
-                        <div class = "col-9">
-                            <input required class = "form-control" name="name" maxlength="255" size="100" value="" type="text">
-                        </div>
+                    <div class="form-group">
+                        <label><?= $escaper->escapeHtml($lang['Name']);?> :</label>
+                        <input required class = "form-control" name="name" maxlength="255" size="100" value="" type="text">
                     </div>
-                    <div class="row form-group">
-                        <div class="col-3 d-flex align-items-center">
-                            <label><?= $escaper->escapeHtml($lang['EmailAddress']);?>:</label>
-                        </div>
-                        <div class = "col-9">
-                            <input required class = "form-control" name="email" maxlength="200" size="100" value="" type="email">
-                        </div>
+                    <div class="form-group">
+                        <label><?= $escaper->escapeHtml($lang['EmailAddress']);?> :</label>
+                        <input required class = "form-control" name="email" maxlength="200" size="100" value="" type="email">
                     </div>
-                    <div class="row form-group">
-                        <div class="col-3 d-flex align-items-center">
-                            <label><?= $escaper->escapeHtml($lang['Phone']);?>:</label>
-                        </div>
-                        <div class = "col-9">
-                            <input required class = "form-control" name="phone" maxlength="200" size="100" value="" type="text">
-                        </div>
+                    <div class="form-group">
+                        <label><?= $escaper->escapeHtml($lang['Phone']);?> :</label>
+                        <input required class = "form-control" name="phone" maxlength="200" size="100" value="" type="text">
                     </div>
-                    <div class="row form-group">
-                        <div class="col-3 d-flex align-items-center">
-                            <label><?= $escaper->escapeHtml($lang['ContactManager']);?>:</label>
-                        </div>
-                        <div class = "col-9">
-                            <?= create_dropdown("enabled_users", NULL, "manager", true, false, true, "", $escaper->escapeHtml($lang['Unassigned']));?>
-                        </div>
+                    <div class="form-group">
+                        <label><?= $escaper->escapeHtml($lang['ContactManager']);?> :</label>
+    <?php
+                        create_dropdown("enabled_users", NULL, "manager", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']));
+    ?>
                     </div>
-                    <div class="row form-group">
-                        <div class="col-3">
-                            <label><?= $escaper->escapeHtml($lang['Details']);?>:</label>
-                        </div>
-                        <div class = "col-9">
-                            <textarea class = "form-control" name='details' class='full-width'></textarea>
-                        </div>
+                    <div>
+                        <label><?= $escaper->escapeHtml($lang['Details']);?> :</label>
+                        <textarea class = "form-control" name='details' class='full-width'></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -159,53 +144,31 @@ if(process_assessment_contact()){
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row form-group">
-                        <div class="col-3 d-flex align-items-center">
-                            <label>Company:</label>
-                        </div>
-                        <div class = "col-9">
-                            <input required class = "form-control" name="company" maxlength="255" size="100" value="" type="text">
-                        </div>
+                    <div class="form-group">
+                        <label><?= $escaper->escapeHtml($lang['Company']);?> :</label>
+                        <input required class = "form-control" name="company" maxlength="255" size="100" value="" type="text">
                     </div>
-                    <div class="row form-group">
-                        <div class="col-3 d-flex align-items-center">
-                            <label><?= $escaper->escapeHtml($lang['Name']);?>:</label>
-                        </div>
-                        <div class = "col-9">
-                            <input required class = "form-control" name="name" maxlength="255" size="100" type="text" value="">
-                        </div>
+                    <div class="form-group">
+                        <label><?= $escaper->escapeHtml($lang['Name']);?> :</label>
+                        <input required class = "form-control" name="name" maxlength="255" size="100" type="text" value="">
                     </div>
-                    <div class="row form-group">
-                        <div class="col-3 d-flex align-items-center">
-                            <label><?= $escaper->escapeHtml($lang['EmailAddress']);?>:</label>
-                        </div>
-                        <div class = "col-9">
-                            <input required class = "form-control" name="email" maxlength="200" size="100" type="email" value="">
-                        </div>
+                    <div class="form-group">
+                        <label><?= $escaper->escapeHtml($lang['EmailAddress']);?> :</label>
+                        <input required class = "form-control" name="email" maxlength="200" size="100" type="email" value="">
                     </div>
-                    <div class="row form-group">
-                        <div class="col-3 d-flex align-items-center">
-                            <label><?= $escaper->escapeHtml($lang['Phone']);?>:</label>
-                        </div>
-                        <div class = "col-9">
-                            <input name="phone" class = "form-control" maxlength="200" value="" size="100" type="text" required>
-                        </div>
+                    <div class="form-group">
+                        <label><?= $escaper->escapeHtml($lang['Phone']);?> :</label>
+                        <input name="phone" class = "form-control" maxlength="200" value="" size="100" type="text" required>
                     </div>
-                    <div class="row form-group">
-                        <div class="col-3 d-flex align-items-center">
-                            <label><?= $escaper->escapeHtml($lang['ContactManager']);?>:</label>
-                        </div>
-                        <div class = "col-9">
-                            <?= create_dropdown("enabled_users", null, "manager", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) ?>
-                        </div>
+                    <div class="form-group">
+                        <label><?= $escaper->escapeHtml($lang['ContactManager']);?> :</label>
+    <?php 
+                        create_dropdown("enabled_users", null, "manager", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])) 
+    ?>
                     </div>
-                    <div class="row form-group">
-                        <div class="col-3 d-flex align-items-center">
-                            <label><?= $escaper->escapeHtml($lang['Details']);?>:</label>
-                        </div>
-                        <div class = "col-9">
-                            <textarea name='details' class='form-control'></textarea>
-                        </div>
+                    <div>
+                        <label><?= $escaper->escapeHtml($lang['Details']);?> :</label>
+                        <textarea name='details' class='form-control'></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -306,5 +269,6 @@ if(process_assessment_contact()){
 
 </script>
 <?php
-render_footer ();
+    // Render the footer of the page. Please don't put code after this part.
+    render_footer();
 ?>

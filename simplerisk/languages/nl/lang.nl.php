@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'Bestandsupload mislukt: geen bestand verzonden',
     'FileUploadExceededFileSize' => 'Bestandsupload mislukt: bestandsgroottelimiet overschreden',
     'FileUploadUnknownErrors' => 'Bestandsupload mislukt: onbekende fouten',
+    'DynamicIncidentReport' => 'Dynamisch incidentrapport',
+    'FilteringSelections' => 'Selecties filteren',
 
     '' => '',
 );

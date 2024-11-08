@@ -41,6 +41,13 @@ function api_v2_assets()
             $status_code = 200;
             $status_message = "SUCCESS";
 
+            // Decrypt encrypted fields
+            if (encryption_extra()) {
+                $asset['ip'] = try_decrypt($asset['ip']);
+                $asset['name'] = try_decrypt($asset['name']);
+                $asset['details'] = try_decrypt($asset['details']);
+            }
+
             // Create the data array
             $data = [
                 "asset" => $asset,
@@ -67,6 +74,15 @@ function api_v2_assets()
             default:
                 $assets = get_entered_assets();
                 break;
+        }
+
+        // Decrypt encrypted fields
+        if (encryption_extra()) {
+            foreach ($assets as &$asset) {
+                $asset['ip'] = try_decrypt($asset['ip']);
+                $asset['name'] = try_decrypt($asset['name']);
+                $asset['details'] = try_decrypt($asset['details']);
+            }
         }
 
         // Create the data array

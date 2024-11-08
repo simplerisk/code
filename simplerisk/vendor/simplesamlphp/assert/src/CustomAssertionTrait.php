@@ -23,6 +23,12 @@ use function substr;
 trait CustomAssertionTrait
 {
     /** @var string */
+    private static string $nmtoken_regex = '/^[\w.:-]+$/u';
+
+    /** @var string */
+    private static string $nmtokens_regex = '/^([\w.:-]+)([\s][\w.:-]+)*$/u';
+
+    /** @var string */
     private static string $datetime_regex = '/-?[0-9]{4}-(((0(1|3|5|7|8)|1(0|2))-(0[1-9]|(1|2)[0-9]|3[0-1]))|((0(4|6|9)|11)-(0[1-9]|(1|2)[0-9]|30))|(02-(0[1-9]|(1|2)[0-9])))T([0-1][0-9]|2[0-4]):(0[0-9]|[1-5][0-9]):(0[0-9]|[1-5][0-9])(\.[0-999])?((\+|-)([0-1][0-9]|2[0-4]):(0[0-9]|[1-5][0-9])|Z)?/i';
 
     /** @var string */
@@ -47,6 +53,36 @@ trait CustomAssertionTrait
      *         Assertions marked `public` are called directly and will                 *
      *          not handle any custom exception passed to it.                          *
      ***********************************************************************************/
+
+
+    /**
+     * @param string $value
+     * @param string $message
+     */
+    private static function validNMToken(string $value, string $message = ''): void
+    {
+        if (filter_var($value, FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => self::$nmtoken_regex]]) === false) {
+            throw new InvalidArgumentException(sprintf(
+                $message ?: '\'%s\' is not a valid xs:NMTOKEN',
+                $value,
+            ));
+        }
+    }
+
+
+    /**
+     * @param string $value
+     * @param string $message
+     */
+    private static function validNMTokens(string $value, string $message = ''): void
+    {
+        if (filter_var($value, FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => self::$nmtokens_regex]]) === false) {
+            throw new InvalidArgumentException(sprintf(
+                $message ?: '\'%s\' is not a valid xs:NMTOKENS',
+                $value,
+            ));
+        }
+    }
 
 
     /**

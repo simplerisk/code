@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'Nahrání souboru se nezdařilo: Nebyl odeslán žádný soubor',
     'FileUploadExceededFileSize' => 'Odeslání souboru se nezdařilo: Překročen limit velikosti souboru',
     'FileUploadUnknownErrors' => 'Nahrání souboru se nezdařilo: Neznámé chyby',
+    'DynamicIncidentReport' => 'Dynamická zpráva o incidentu',
+    'FilteringSelections' => 'Filtrování výběrů',
 
     '' => '',
 );

@@ -178,7 +178,9 @@ $releases = array(
 	"20240819-001",
 	"20240909-001",
 	"20240923-001",
-    "20240927-001",
+	"20240927-001",
+	"20240930-001",
+    "20241106-001",
 );
 
 /*************************
@@ -7783,7 +7785,7 @@ function upgrade_from_20240909001($db)
 }
 
 /***************************************
- * FUNCTION: UPGRADE FROM 20240909-001 *
+ * FUNCTION: UPGRADE FROM 20240923-001 *
  ***************************************/
 function upgrade_from_20240923001($db)
 {
@@ -7795,11 +7797,172 @@ function upgrade_from_20240923001($db)
 
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
+    // Compile the list of unnecessary directories
+    echo "Removing unnecessary directories.<br />\n";
+    $remove_directories = [
+        realpath(__DIR__ . '/includes/Component_ZendEscaper'),
+    ];
+
+    // Remove the unnecessary directories
+    foreach ($remove_directories as $directory)
+    {
+        // If the directory exists
+        if (is_dir($directory))
+        {
+            // Remove the directory
+            delete_dir($directory);
+        }
+    }
 
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic
     $_SESSION['latest_version_app'] = latest_version('app');
 
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20240927-001 *
+ ***************************************/
+function upgrade_from_20240927001($db)
+{                       
+    // Database version to upgrade
+    $version_to_upgrade = '20240927-001'; 
+                        
+    // Database version upgrading to
+    $version_upgrading_to = '20240930-001';
+                
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+            
+        
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+            
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20240930-001 *
+ ***************************************/
+function upgrade_from_20240930001($db)
+{                       
+    // Database version to upgrade
+    $version_to_upgrade = '20240930-001'; 
+                        
+    // Database version upgrading to
+    $version_upgrading_to = '20241106-001';
+                
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+    
+    // Change the custom_display_settings field in the user table to a TEXT type.
+    if (field_exists_in_table('custom_display_settings', 'user')) {
+        echo "Changing the custom_display_settings field in the user table to a TEXT type.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE 
+                user 
+            MODIFY 
+                custom_display_settings TEXT;
+        ");
+        $stmt->execute();
+    }
+
+    // Change the custom_plan_mitigation_display_settings field in the user table to a TEXT type.
+    if (field_exists_in_table('custom_plan_mitigation_display_settings', 'user')) {
+        echo "Changing the custom_plan_mitigation_display_settings field in the user table to a TEXT type.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE 
+                user 
+            MODIFY 
+                custom_plan_mitigation_display_settings TEXT;
+        ");
+        $stmt->execute();
+    }
+
+    // Change the custom_perform_reviews_display_settings field in the user table to a TEXT type.
+    if (field_exists_in_table('custom_perform_reviews_display_settings', 'user')) {
+        echo "Changing the custom_perform_reviews_display_settings field in the user table to a TEXT type.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE 
+                user 
+            MODIFY 
+                custom_perform_reviews_display_settings TEXT;
+        ");
+        $stmt->execute();
+    }
+
+    // Change the custom_reviewregularly_display_settings field in the user table to a TEXT type.
+    if (field_exists_in_table('custom_reviewregularly_display_settings', 'user')) {
+        echo "Changing the custom_reviewregularly_display_settings field in the user table to a TEXT type.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE 
+                user 
+            MODIFY 
+                custom_reviewregularly_display_settings TEXT;
+        ");
+        $stmt->execute();
+    }
+
+    // Change the custom_risks_and_issues_settings field in the user table to a TEXT type.
+    if (field_exists_in_table('custom_risks_and_issues_settings', 'user')) {
+        echo "Changing the custom_risks_and_issues_settings field in the user table to a TEXT type.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE 
+                user 
+            MODIFY 
+                custom_risks_and_issues_settings TEXT;
+        ");
+        $stmt->execute();
+    }
+
+    // Change the custom_questionnaire_results_display_settings field in the user table to a TEXT type.
+    if (field_exists_in_table('custom_questionnaire_results_display_settings', 'user')) {
+        echo "Changing the custom_questionnaire_results_display_settings field in the user table to a TEXT type.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE 
+                user 
+            MODIFY 
+                custom_questionnaire_results_display_settings TEXT;
+        ");
+        $stmt->execute();
+    }
+
+    // Change the graphical_display_settings field in the graphical_saved_selections table to a TEXT type.
+    if (field_exists_in_table('graphical_display_settings', 'graphical_saved_selections')) {
+        echo "Changing the graphical_display_settings field in the graphical_saved_selections table to a TEXT type.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE 
+                graphical_saved_selections 
+            MODIFY 
+                graphical_display_settings TEXT;
+        ");
+        $stmt->execute();
+    }
+    
+    // Remove unnecessary files
+    echo "Removing unnecessary files.<br />\n";
+    $remove_files = [
+        realpath(__DIR__ . '/images/question-mark.png'),
+    ];
+
+    foreach ($remove_files as $file)
+    {
+        // If the file exists
+        if (file_exists($file))
+        {
+            // Remove the file
+            unlink($file);
+        }
+    }
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+            
     // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";

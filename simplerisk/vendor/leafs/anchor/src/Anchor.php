@@ -16,10 +16,16 @@ namespace Leaf;
 class Anchor
 {
     protected static $config = [
-        'SECRET_KEY' => '_token',
-        'SECRET' => '@nkor_leaf$0Secret!',
-        'EXCEPT' => [],
-        'METHODS' => ['POST', 'PUT', 'PATCH', 'DELETE'],
+        'secret' => '@nkor_leaf$0Secret!!',
+        'secretKey' => 'X-Leaf-CSRF-Token',
+
+        'except' => [],
+        'methods' => ['POST', 'PUT', 'PATCH', 'DELETE'],
+
+        'messages.tokenNotFound' => 'Token not found.',
+        'messages.tokenInvalid' => 'Invalid token.',
+
+        'onError' => null,
     ];
 
     protected static $errors = [];
@@ -30,7 +36,7 @@ class Anchor
      * @param array|null $config The config to set
      */
     public static function config($config = null)
-    {
+    {        
         if ($config === null) {
             return static::$config;
         }
@@ -204,7 +210,7 @@ class Anchor
      */
     public static function generateToken(int $strength = 16): string
     {
-        return bin2hex(static::$config['SECRET'] . '.' . random_bytes($strength));
+        return bin2hex(static::$config['secret'] . '.' . random_bytes($strength));
     }
 
     public static function errors(): array

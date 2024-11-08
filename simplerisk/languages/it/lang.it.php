@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'Caricamento file non riuscito: nessun file inviato',
     'FileUploadExceededFileSize' => 'Caricamento file non riuscito: limite dimensione file superato',
     'FileUploadUnknownErrors' => 'Caricamento file non riuscito: errori sconosciuti',
+    'DynamicIncidentReport' => 'Rapporto dinamico sugli incidenti',
+    'FilteringSelections' => 'Filtraggio delle selezioni',
 
     '' => '',
 );

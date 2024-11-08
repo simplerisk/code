@@ -1841,8 +1841,7 @@ function edit_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $pl
 * datatable_redraw: A boolean that tells the rendering logic whether the mitigation control details                             *
                     datatable is present on the page and needs logic to refresh it when the selection of the dropdown changed.  *
 *********************************************************************************************************************************/
-function mitigation_controls_dropdown($selected_control_ids_string = "", $element_name = "mitigation_controls[]", $initialize = true, $datatable_redraw = false)
-{
+function mitigation_controls_dropdown($selected_control_ids_string = "", $element_name = "mitigation_controls[]", $initialize = true, $datatable_redraw = false) {
 
     global $lang, $escaper;
 
@@ -1851,20 +1850,20 @@ function mitigation_controls_dropdown($selected_control_ids_string = "", $elemen
 
     if ($controls && !empty($controls)) {
         $selected_control_ids = empty($selected_control_ids_string) ? [] : explode(",", $selected_control_ids_string);
-        $eID = "mitigation_controls_".generate_token(10);
+        $eID = "mitigation_controls_" . generate_token(10);
 
         echo  "
-            <select id='" . $eID . "' name='" . $element_name . "' title='" . $escaper->escapeHtml($lang['MitigationControls']) . "' class='mitigation_controls' multiple='multiple'>
+            <select id='{$eID}' name='{$element_name}' title='{$escaper->escapeHtml($lang['MitigationControls'])}' class='mitigation_controls' multiple='multiple'>
         ";
 
-        foreach($controls as $control) {
-            if(in_array($control['id'], $selected_control_ids)) {
+        foreach ($controls as $control) {
+            if (in_array($control['id'], $selected_control_ids)) {
                 echo "
-                <option value='" . $control['id'] . "' selected title='" . $escaper->escapeHtml($control['long_name']) . "'>" . $escaper->escapeHtml($control['short_name']) . "</option>
+                <option value='{$control['id']}' selected title='{$escaper->escapeHtml($control['long_name'])}'>{$escaper->escapeHtml($control['short_name'])}</option>
                 ";
             } else {
                 echo "
-                <option value='" . $control['id'] . "' title='" . $escaper->escapeHtml($control['long_name']) . "'>" . $escaper->escapeHtml($control['short_name']) . "</option>
+                <option value='{$control['id']}' title='{$escaper->escapeHtml($control['long_name'])}'>{$escaper->escapeHtml($control['short_name'])}</option>
                 ";
             }
         }
@@ -1880,14 +1879,14 @@ function mitigation_controls_dropdown($selected_control_ids_string = "", $elemen
                     // Because it is initialized separately from the other multiselects it needs to move to the end of the call stack
                     // so the multiple initialization calls won't interfere with each-other's DOM manipulations  
                     setTimeout(() => {
-                        $('#" . $eID . "').multiselect({
+                        $('#{$eID}').multiselect({
                             enableFiltering: true,
                             enableCaseInsensitiveFiltering: true,
                             buttonWidth: '100%',
                             maxHeight: 250,
                             dropUp: true,
-                            filterPlaceholder: '" . $escaper->escapeHtml($lang["SelectForMitigationControls"]) . "'" . ($datatable_redraw ? ",
-                            onDropdownHide: function(){
+                            filterPlaceholder: '{$escaper->escapeHtml($lang["SelectForMitigationControls"])}'" . ($datatable_redraw ? ",
+                            onDropdownHide: function() {
                                 var form = $('#{$eID}').parents('form');
                                 var tableId = $('.mitigation-controls-table-container', form).data('tableid');
                                 $('#' + tableId).DataTable().draw();
@@ -1901,10 +1900,9 @@ function mitigation_controls_dropdown($selected_control_ids_string = "", $elemen
     
     } else {
         echo "
-            <span style='vertical-align: middle;'><b>{$escaper->escapeHtml($lang['NoControlsAvailable'])}</b></span>
+            <span style='vertical-align: middle;'><strong>{$escaper->escapeHtml($lang['NoControlsAvailable'])}</strong></span>
         ";
     }
-
 }
 
 /**********************************************
@@ -5232,7 +5230,7 @@ function view_risks_and_assets_selections($report, $sort_by, $asset_tags, $proje
                                 <div class='row'>
                                     <div class='col-3 form-group'>
                                         <label>" . $escaper->escapeHtml($lang['Report']) . ":</label>
-                                        <select id='report' name='report' class='form-select' onchange='javascript: submit()'>
+                                        <select id='report' name='report' class='form-select' onchange='javascript: submitFilterForm()'>
                                             <option value='0'" . ($report == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RisksByAsset']) . "</option>
                                             <option value='1'" . ($report == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetsByRisk']) . "</option>
                                         </select>
@@ -5248,7 +5246,7 @@ function view_risks_and_assets_selections($report, $sort_by, $asset_tags, $proje
     if($report == 0){
         echo                       "<div class='col-3 form-group'>
                                         <label>" . $escaper->escapeHtml($lang['SortBy']) . ":</label>
-                                        <select id='sort_by' name='sort_by' class='form-select' onchange='javascript: submit()'>
+                                        <select id='sort_by' name='sort_by' class='form-select' onchange='javascript: submitFilterForm()'>
                                             <option value='0'" . ($sort_by == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetName']) . "</option>
                                             <option value='1'" . ($sort_by == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetRisk']) . "</option>
                                         </select>
@@ -6313,47 +6311,56 @@ function display_upgrade()
 /*************************************
 * FUNCTION: DISPLAY SELF ASSESSMENTS *
 **************************************/
-function display_self_assessments()
-{
+function display_self_assessments() {
+
     global $lang;
     global $escaper;
 
     echo "
         <div class='mt-2'>
             <nav class='nav nav-tabs'>
-                <a class='nav-link active' data-bs-target='#self_assessments' data-bs-toggle='tab'>" . $escaper->escapeHtml($lang['Assessments']) . "</a>
-                <a class='nav-link' data-bs-target='#pending_risks' data-bs-toggle='tab'>" . $escaper->escapeHtml($lang['PendingRisks']) . "</a>
+                <a class='nav-link active' data-bs-target='#self_assessments' data-bs-toggle='tab'>{$escaper->escapeHtml($lang['Assessments'])}</a>
+                <a class='nav-link' data-bs-target='#pending_risks' data-bs-toggle='tab'>{$escaper->escapeHtml($lang['PendingRisks'])}</a>
             </nav>
         </div>
         <div class='tab-content'>
-            <div id='self_assessments' class='tab-pane active card-body my-2 border'>";
+            <div id='self_assessments' class='tab-pane active card-body my-2 border'>
+    ";
 
     // Start the list
-    echo "      <ul class='nav nav-pills nav-stacked flex-column'>";
+    echo "
+                <ul class='nav nav-pills nav-stacked flex-column'>
+    ";
 
     // Get the assessments
     $assessments = get_assessment_names();
 
     // For each entry in the assessments array
-    foreach ($assessments as $assessment)
-    {
+    foreach ($assessments as $assessment) {
+
         // Get the assessment values
         $assessment_name = $assessment['name'];
         $assessment_id = (int)$assessment['id'];
 
         // Display the assessment
-        echo "      <li style='text-align:center'>
-                        <a class='nav-link text-info' href='index.php?action=view&assessment_id=" . $escaper->escapeHtml($assessment_id) . "'>" . $escaper->escapeHTML($assessment_name) . "</a>
-                    </li>";
+        echo "
+                    <li style='text-align:center'>
+                        <a class='nav-link text-info' href='index.php?action=view&assessment_id={$escaper->escapeHtml($assessment_id)}'>{$escaper->escapeHTML($assessment_name)}</a>
+                    </li>
+        ";
     }
 
     // End the list
-    echo "      </ul>
+    echo "
+                </ul>
             </div>
-            <div id='pending_risks' class='tab-pane card-body my-2 border'>";
+            <div id='pending_risks' class='tab-pane card-body my-2 border'>
+    ";
                 display_pending_risks();
-    echo "  </div>
-        </div>";
+    echo "
+            </div>
+        </div>
+    ";
 
 }
 
@@ -6404,74 +6411,76 @@ function display_add_delete_row_script()
 /***********************************************
 * FUNCTION: DISPLAY VIEW ASSESSMENT QUESTIONS *
 ***********************************************/
-function display_view_assessment_questions($assessment_id = NULL)
-{
+function display_view_assessment_questions($assessment_id = NULL) {
+
     global $escaper;
     global $lang;
 
     echo "
         <div class='mt-2'>
             <nav class='nav nav-tabs'>
-                <a class='nav-link active' data-bs-target='#self_assessments' data-bs-toggle='tab'>" . $escaper->escapeHtml($lang['Assessments']) . "</a>
-                <a class='nav-link' data-bs-target='#pending_risks' data-bs-toggle='tab'>" . $escaper->escapeHtml($lang['PendingRisks']) . "</a>
+                <a class='nav-link active' data-bs-target='#self_assessments' data-bs-toggle='tab'>{$escaper->escapeHtml($lang['Assessments'])}</a>
+                <a class='nav-link' data-bs-target='#pending_risks' data-bs-toggle='tab'>{$escaper->escapeHtml($lang['PendingRisks'])}</a>
             </nav>
         </div>
         <div class='tab-content'>
             <div id='self_assessments' class='tab-pane active card-body my-2 border'>
                 <div class='hero-unit'>
-                    <form name='submit_assessment' class='form-horizontal' method='POST' action=''>";
+                    <form name='submit_assessment' class='form-horizontal' method='POST' action=''>
+    ";
     
     // If the assessment id was sent by get
-    if (isset($_GET['assessment_id']))
-    {
+    if (isset($_GET['assessment_id'])) {
+
         // Set the assessment id
         $assessment_id = $_GET['assessment_id'];
-    }
+        
     // If the assessment id was sent by post
-    else if (isset($_POST['assessment_id']))
-    {
+    } else if (isset($_POST['assessment_id'])) {
+
         // Set the assessment id
         $assessment_id = $_POST['assessment_id'];
+
     }
 
     // Add a hidden value for the assessment id
-    echo "              <input type='hidden' name='assessment_id' value='" . $escaper->escapeHtml($assessment_id) . "' />";
+    echo "
+                        <input type='hidden' name='assessment_id' value='{$escaper->escapeHtml($assessment_id)}' />
+    ";
 
     // Add a hidden value for the action
-    echo "              <input type='hidden' name='action' value='submit' />";
+    echo "
+                        <input type='hidden' name='action' value='submit' />
+    ";
 
     // Get the assessment name
     $assessment = get_assessment_names($assessment_id);
     $assessment_name = $assessment['name'];
 
     $show_autocomplete = get_setting("ASSESSMENT_ASSET_SHOW_AVAILABLE");
-    if ($show_autocomplete) 
-    {
+    if ($show_autocomplete) {
         $AffectedAssetsWidgetPlaceholder = $escaper->escapeHtml($lang['AffectedAssetsWidgetPlaceholder']);
-    }
-    else 
-    {
+    } else {
         $AffectedAssetsWidgetPlaceholder = $escaper->escapeHtml($lang['AffectedAssetsWidgetNoDropdownPlaceholder']);
     }
 
-    echo "              <h3 class = 'text-center mt-4'>" . $escaper->escapeHtml($assessment_name) . "</h3>";
-    echo "              <div class = 'form-group d-flex align-items-center'>
-                            <label style='width: 200px; min-width: 200px;'>". $escaper->escapeHtml($lang['AssetName']) . ":</label>
-                            <div class='flex-grow-1'>
-                                <select class='assets-asset-groups-select' name='assets_asset_groups[]' multiple placeholder='$AffectedAssetsWidgetPlaceholder'>
-                                </select>
-                            </div>
+    echo "
+                        <h3 class = 'text-center'>{$escaper->escapeHtml($assessment_name)}</h3>
+                        <div class = 'form-group'>
+                            <label>{$escaper->escapeHtml($lang['AssetName'])} :</label>
+                            <select class='assets-asset-groups-select' name='assets_asset_groups[]' multiple placeholder='$AffectedAssetsWidgetPlaceholder'>
+                            </select>
                         </div>
 
-    
                         <script>
                             var assets_and_asset_groups = [];
 
-                            $(document).ready(function(){";
-    if ($show_autocomplete)
-    {
+                            $(document).ready(function() {
+    ";
+    if ($show_autocomplete) {
 
-        echo "                  $.ajax({
+        echo "
+                                $.ajax({
                                     url: BASE_URL + '/api/asset-group/options',
                                     type: 'GET',
                                     dataType: 'json',
@@ -6486,18 +6495,25 @@ function display_view_assessment_questions($assessment_id = NULL)
                                                 item.id = item.name;
                                             
                                             assets_and_asset_groups.push(item);
-                                        }";
+                                        }
+        ";
+
     }
 
-    echo "                      selectize_pending_risk_affected_assets_widget($('select.assets-asset-groups-select'), assets_and_asset_groups);";
+    echo "
+                                selectize_pending_risk_affected_assets_widget($('select.assets-asset-groups-select'), assets_and_asset_groups);
+    ";
 
-    if ($show_autocomplete)
-    {
-        echo "                      }
-                                });";
+    if ($show_autocomplete) {
+        echo "
+                                    }
+                                });
+        ";
     }
-    echo "                  });
-                        </script>";
+    echo "
+                            });
+                        </script>
+    ";
     
     // Get the assessment
     $assessment = get_assessment($assessment_id);
@@ -6507,10 +6523,9 @@ function display_view_assessment_questions($assessment_id = NULL)
 
 
     $rows = array();
-    foreach ($assessment as $row)
-    {
+    foreach ($assessment as $row) {
         $question_id = (int)$row['question_id'];
-        if(!isset($rows[$question_id])){
+        if (!isset($rows[$question_id])) {
             $question = $row['question'];
             $rows[$question_id] = array(
                 'question' => $question,
@@ -6524,46 +6539,57 @@ function display_view_assessment_questions($assessment_id = NULL)
     }
 
     // For each row in the array
-    foreach ($rows as $question_id => $row){
+    foreach ($rows as $question_id => $row) {
 
         // Display the question
-        echo "          <div class='form-group'>
-                            <label>" . $escaper->escapeHtml($row['question']) . "</label>";
+        echo "
+                        <div class='form-group'>
+                            <p class='mb-2'><strong>{$escaper->escapeHtml($row['question'])}</strong></p>
+                            <div class='mb-2 d-flex align-items-center'>
+        ";
 
         // Display the answers
-        foreach($row['answers'] as $answer){
-
-            echo "          <div class='form-check'>
-                                <input class='form-check-input' id='" . $escaper->escapeHtml($answer['id']) . "' type='radio' name='" . $escaper->escapeHtml($question_id) . "' value='" . $escaper->escapeHtml($answer['id']) . "' />
-                                <label class = 'form-check-label mb-0' for='" . $escaper->escapeHtml($answer['id']) . "'>" . $escaper->escapeHtml($answer['answer']) . "</label>
-                            </div>";
+        foreach ($row['answers'] as $answer) {
+            echo "
+                                <div class='form-check mx-4'>
+                                    <input class='form-check-input' id='{$escaper->escapeHtml($answer['id'])}' type='radio' name='{$escaper->escapeHtml($question_id)}' value='{$escaper->escapeHtml($answer['id'])}' />
+                                    <label class = 'form-check-label mb-0' for='{$escaper->escapeHtml($answer['id'])}'>{$escaper->escapeHtml($answer['answer'])}</label>
+                                </div>
+            ";
         }
         
-        echo "              <div class='d-flex'>
-                                <label style='width: 200px; min-width: 200px;'>Comment:</label>
-                                <textarea class='form-control assessment-comment' name='comment[" . $question_id . "]'></textarea>
+        echo "
                             </div>
-                        </div>";
+                            <div>
+                                <label>Comment :</label>
+                                <textarea class='form-control assessment-comment' name='comment[{$question_id}]'></textarea>
+                            </div>
+                        </div>
+        ";
     }
 
-    echo "              <div>
-                            <input class='btn btn-submit' type='submit' name='submit_assessment' value='" . $escaper->escapeHtml($lang['Submit']) . "'/>
+    echo "
+                        <div>
+                            <input class='btn btn-submit' type='submit' name='submit_assessment' value='{$escaper->escapeHtml($lang['Submit'])}'/>
                         </div>
                     </form>
                 </div>
             </div>
             
-            <div id='pending_risks' class='tab-pane card-body my-2 border'>";
+            <div id='pending_risks' class='tab-pane card-body my-2 border'>
+    ";
                 display_pending_risks($assessment_id);
-    echo "  </div>
-        </div>";
+    echo "  
+            </div>
+        </div>
+    ";
 }
 
 /***********************************
 * FUNCTION: DISPLAY PENDING RISKS *
 ***********************************/
-function display_pending_risks($assessment_id = null)
-{  
+function display_pending_risks($assessment_id = null) {
+
     global $escaper;
     global $lang;
 
@@ -6588,34 +6614,38 @@ function display_pending_risks($assessment_id = null)
         $submission_date = format_datetime($risk['submission_date'], '', 'H:i:s');
 
         echo "
-            <form name='submit_risk' method='post' action='' enctype='multipart/form-data'>
-                <input type='hidden' name='assessment_id' value='" . $escaper->escapeHtml($risk['assessment_id']) . "' />
-                <input type='hidden' name='pending_risk_id' value='" . $escaper->escapeHtml($risk['id']) . "' />
+            <form name='submit_risk' method='post' action='' enctype='multipart/form-data' class='pending-risk-form card-body border my-2'>
+                <input type='hidden' name='assessment_id' value='{$escaper->escapeHtml($risk['assessment_id'])}' />
+                <input type='hidden' name='pending_risk_id' value='{$escaper->escapeHtml($risk['id'])}' />
                 <div class='form-group'>
-                    <label for='submission_date' class='form-label'>" . $lang['SubmissionDate'] . ":</label>
-                    <input type='text' class='form-control' name='submission_date' value='" . $escaper->escapeHtml($submission_date) . "' />
+                    <label for='submission_date'>{$lang['SubmissionDate']} :</label>
+                    <input type='text' class='form-control' name='submission_date' value='{$escaper->escapeHtml($submission_date)}' />
                 </div>
                 <div class='form-group'>
-                    <label for='subject' class='form-label'>" . $lang['Subject'] . ":</label>
-                    <input maxlength='{$maxlength}' type='text' class='form-control' name='subject' value='" . $escaper->escapeHtml($risk['subject']) . "' />
-                </div>";
+                    <label for='subject'>{$lang['Subject']} :</label>
+                    <input maxlength='{$maxlength}' type='text' class='form-control' name='subject' value='{$escaper->escapeHtml($risk['subject'])}' />
+                </div>
+        ";
 
-        if ($risk['scoring_method'])
+        if ($risk['scoring_method']) {
+
                 display_score_html_from_pending_risk($risk['scoring_method'], $risk['Custom'], $risk['CLASSIC_likelihood'], $risk['CLASSIC_impact'], $risk['CVSS_AccessVector'], $risk['CVSS_AccessComplexity'], $risk['CVSS_Authentication'], $risk['CVSS_ConfImpact'], $risk['CVSS_IntegImpact'], $risk['CVSS_AvailImpact'], $risk['CVSS_Exploitability'], $risk['CVSS_RemediationLevel'], $risk['CVSS_ReportConfidence'], $risk['CVSS_CollateralDamagePotential'], $risk['CVSS_TargetDistribution'], $risk['CVSS_ConfidentialityRequirement'], $risk['CVSS_IntegrityRequirement'], $risk['CVSS_AvailabilityRequirement'], $risk['DREAD_DamagePotential'], $risk['DREAD_Reproducibility'], $risk['DREAD_Exploitability'], $risk['DREAD_AffectedUsers'], $risk['DREAD_Discoverability'], $risk['OWASP_SkillLevel'], $risk['OWASP_Motive'], $risk['OWASP_Opportunity'], $risk['OWASP_Size'], $risk['OWASP_EaseOfDiscovery'], $risk['OWASP_EaseOfExploit'], $risk['OWASP_Awareness'], $risk['OWASP_IntrusionDetection'], $risk['OWASP_LossOfConfidentiality'], $risk['OWASP_LossOfIntegrity'], $risk['OWASP_LossOfAvailability'], $risk['OWASP_LossOfAccountability'], $risk['OWASP_FinancialDamage'], $risk['OWASP_ReputationDamage'], $risk['OWASP_NonCompliance'], $risk['OWASP_PrivacyViolation']);
-        else {
+
+        } else {
                 display_score_html_from_pending_risk(5, $risk['Custom']);
         }
 
-        echo "  <div class='form-group'>
-                    <label for='owner' class='form-label'>" . $lang['Owner'] . ":</label>
-                    <div>";
-                        create_dropdown("enabled_users", $risk['owner'], "owner");
-        echo "      </div>
+        echo "
+                <div class='form-group'>
+                    <label for='owner'>{$lang['Owner']} :</label>
+        ";
+                    create_dropdown("enabled_users", $risk['owner'], "owner");
+        echo "
                 </div>
                 <div class='form-group'>
-                    <label for='assets_asset_groups' class='form-label'>" . $lang['AffectedAssets'] . ":</label>
-                    <div>
-                        <select class='assets-asset-groups-select' name='assets_asset_groups[]' multiple placeholder='$affected_assets_placeholder'>";
+                    <label for='assets_asset_groups'>{$lang['AffectedAssets']} :</label>
+                    <select class='assets-asset-groups-select' name='assets_asset_groups[]' multiple placeholder='{$affected_assets_placeholder}'>
+        ";
 
         if ($risk['affected_assets']) {
             foreach (explode(',', $risk['affected_assets']) as $value) {
@@ -6625,34 +6655,43 @@ function display_pending_risks($assessment_id = null)
                 if (preg_match('/^\[(.+)\]$/', $name, $matches)) {
                     $name = trim($matches[1]);
                     $type = 'group';
-                } else $type = 'asset';
+                } else {
+                    $type = 'asset';
+                }
 
-                echo "      <option value='" . $escaper->escapeHtml($value) . "' selected data-class='$type'>" . $escaper->escapeHtml($name) . "</option>";
+                echo "
+                        <option value='{$escaper->escapeHtml($value)}' selected data-class='{$type}'>{$escaper->escapeHtml($name)}</option>
+                ";
             }
         }
 
-        echo "          </select>
-                    </div>
+        echo "
+                    </select>
                 </div>
                 <div class='form-group'>
-                    <label for='note' class='form-label'>" . $lang['AdditionalNotes'] . ":</label>
-                    <textarea class='form-control' name='note' cols='50' rows='3' id='note'>Risk created using the &quot;" . $escaper->escapeHtml($assessment['name']) . "&quot; assessment.\n" . $escaper->escapeHtml($risk['comment']) . "</textarea>
+                    <label for='note'>{$lang['AdditionalNotes']} :</label>
+                    <textarea class='form-control' name='note' cols='50' rows='3' id='note'>Risk created using the &quot;{$escaper->escapeHtml($assessment['name'])}&quot; assessment.\n{$escaper->escapeHtml($risk['comment'])}</textarea>
                 </div>
-                <div class='form-actions'>";
+                <div class='form-actions'>
+        ";
 
         if (isset($_SESSION["submit_risks"]) && $_SESSION["submit_risks"] == 1) {
-            echo " `<button type='submit' name='add' class='btn btn-submit'>" . $escaper->escapeHtml($lang['Add']) . "</button>
-                    <button type='submit' name='delete' class='btn btn-dark'>" . $escaper->escapehtml($lang['Delete']) . "</button>";
+            echo "
+                    <button type='submit' name='add' class='btn btn-submit'>{$escaper->escapeHtml($lang['Add'])}</button>
+                    <button type='submit' name='delete' class='btn btn-dark'>{$escaper->escapehtml($lang['Delete'])}</button>
+            ";
         }
+
         echo "  </div>
-                <br>
-            </form>";
+            </form>
+        ";
+
     }
 
     echo "
             <script>
                 var assets_and_asset_groups = [];
-                $(document).ready(function(){
+                $(document).ready(function() {
                     $.ajax({
                         url: BASE_URL + '/api/asset-group/options',
                         type: 'GET',
@@ -6696,7 +6735,8 @@ function display_pending_risks($assessment_id = null)
                     });
                     $('input[name=\"submission_date\"]').initAsDateTimePicker();
                 });
-            </script>";
+            </script>
+    ";
 }
 
 /******************************************
@@ -7148,7 +7188,8 @@ function get_data_risk_level( $risk_level , $y , $x , $f){
 /********************************************************
 * FUNCTION: VIEW PRINT RISK SCORE FORMS IN PENDING RISK *
 *********************************************************/
-function display_score_html_from_pending_risk($scoring_method="5", $custom=false, $CLASSIC_likelihood="", $CLASSIC_impact="", $AccessVector="N", $AccessComplexity="L", $Authentication="N", $ConfImpact="C", $IntegImpact="C", $AvailImpact="C", $Exploitability="ND", $RemediationLevel="ND", $ReportConfidence="ND", $CollateralDamagePotential="ND", $TargetDistribution="ND", $ConfidentialityRequirement="ND", $IntegrityRequirement="ND", $AvailabilityRequirement="ND", $DREADDamagePotential="10", $DREADReproducibility="10", $DREADExploitability="10", $DREADAffectedUsers="10", $DREADDiscoverability="10", $OWASPSkillLevel="10", $OWASPMotive="10", $OWASPOpportunity="10", $OWASPSize="10", $OWASPEaseOfDiscovery="10", $OWASPEaseOfExploit="10", $OWASPAwareness="10", $OWASPIntrusionDetection="10", $OWASPLossOfConfidentiality="10", $OWASPLossOfIntegrity="10", $OWASPLossOfAvailability="10", $OWASPLossOfAccountability="10", $OWASPFinancialDamage="10", $OWASPReputationDamage="10", $OWASPNonCompliance="10", $OWASPPrivacyViolation="10", $ContributingLikelihood="", $ContributingImpacts=[], $display_type = 1){
+function display_score_html_from_pending_risk($scoring_method="5", $custom=false, $CLASSIC_likelihood="", $CLASSIC_impact="", $AccessVector="N", $AccessComplexity="L", $Authentication="N", $ConfImpact="C", $IntegImpact="C", $AvailImpact="C", $Exploitability="ND", $RemediationLevel="ND", $ReportConfidence="ND", $CollateralDamagePotential="ND", $TargetDistribution="ND", $ConfidentialityRequirement="ND", $IntegrityRequirement="ND", $AvailabilityRequirement="ND", $DREADDamagePotential="10", $DREADReproducibility="10", $DREADExploitability="10", $DREADAffectedUsers="10", $DREADDiscoverability="10", $OWASPSkillLevel="10", $OWASPMotive="10", $OWASPOpportunity="10", $OWASPSize="10", $OWASPEaseOfDiscovery="10", $OWASPEaseOfExploit="10", $OWASPAwareness="10", $OWASPIntrusionDetection="10", $OWASPLossOfConfidentiality="10", $OWASPLossOfIntegrity="10", $OWASPLossOfAvailability="10", $OWASPLossOfAccountability="10", $OWASPFinancialDamage="10", $OWASPReputationDamage="10", $OWASPNonCompliance="10", $OWASPPrivacyViolation="10", $ContributingLikelihood="", $ContributingImpacts=[], $display_type = 1) {
+
     global $escaper;
     global $lang;
 
@@ -7162,60 +7203,56 @@ function display_score_html_from_pending_risk($scoring_method="5", $custom=false
 
     if ($display_type === 2) {
         $html = "
-                <div class='risk-scoring-container'>
-
-                     <div class='row mb-2'>
+            <div class='risk-scoring-container'>
+                <div class='row mb-2'>
+                    <div class='col-2 d-flex align-items-center justify-content-start'>
+                        <label>{$escaper->escapeHtml($lang['RiskScoringMethod'])} :</label>
+                    </div>
+                    <div class='col-10'>" . 
+                        create_dropdown("scoring_methods", $scoring_method, "scoring_method[]", false, false, true, 'form-select') . "
+                    </div>
+                </div>
+                <div id='classic' class='classic-holder' style='display:" . ($scoring_method == 1 ? "block" : "none") . "'>
+                    <div class='row mb-2'>
                         <div class='col-2 d-flex align-items-center justify-content-start'>
-                            <label class='form-label'>{$escaper->escapeHtml($lang['RiskScoringMethod'])}</label>
+                            <label>{$escaper->escapeHtml($lang['CurrentLikelihood'])} :</label>
                         </div>
-                        <div class='col-10'>
-                            ".create_dropdown("scoring_methods", $scoring_method, "scoring_method[]", false, false, true, 'form-select')."
-                        </div>
-                    </div>
-
-                    <div id='classic' class='classic-holder' style='display:". ($scoring_method == 1 ? "block" : "none") ."'>
-                        <div class='row mb-2'>
-                            <div class='col-2 d-flex align-items-center justify-content-start'>
-                                <label class='form-label'>{$escaper->escapeHtml($lang['CurrentLikelihood'])}</label>
-                            </div>
-                            <div class='col-10'>
-                                ". create_dropdown('likelihood', $CLASSIC_likelihood, 'likelihood[]', true, false, true, 'form-select') ."
-                            </div>
-                        </div>
-                        <div class='row mb-2'>
-                            <div class='col-2 d-flex align-items-center justify-content-start'>
-                                <label class='form-label'>{$escaper->escapeHtml($lang['CurrentImpact'])}</label>
-                            </div>
-                            <div class='col-10'>
-                                ". create_dropdown('impact', $CLASSIC_impact, 'impact[]', true, false, true, 'form-select') ."
-                            </div>
+                        <div class='col-10'>" . 
+                            create_dropdown('likelihood', $CLASSIC_likelihood, 'likelihood[]', true, false, true, 'form-select') . "
                         </div>
                     </div>
+                    <div class='row mb-2'>
+                        <div class='col-2 d-flex align-items-center justify-content-start'>
+                            <label>{$escaper->escapeHtml($lang['CurrentImpact'])} :</label>
+                        </div>
+                        <div class='col-10'>" . 
+                            create_dropdown('impact', $CLASSIC_impact, 'impact[]', true, false, true, 'form-select') . "
+                        </div>
+                    </div>
+                </div>
         ";
     } else {
         $html = "
-                <div class='risk-scoring-container'>
+            <div class='risk-scoring-container'>
+                <div class='mb-3'>
+                    <label>{$escaper->escapeHtml($lang['RiskScoringMethod'])} :</label>" . 
+                    create_dropdown("scoring_methods", $scoring_method, "scoring_method[]", false, false, true, 'form-select') . "
+                </div>
+                <div id='classic' class='classic-holder' style='display:" . ($scoring_method == 1 ? "block" : "none") . "'>
                     <div class='mb-3'>
-                        <label class='form-label'>". $escaper->escapeHtml($lang['RiskScoringMethod']) .":</label>
-                        ".create_dropdown("scoring_methods", $scoring_method, "scoring_method[]", false, false, true, 'form-select')."
+                        <label>{$escaper->escapeHtml($lang['CurrentLikelihood'])} :</label>" . 
+                        create_dropdown('likelihood', $CLASSIC_likelihood, 'likelihood[]', true, false, true, 'form-select') . "
                     </div>
-                            
-                    <div id='classic' class='classic-holder' style='display:". ($scoring_method == 1 ? "block" : "none") ."'>
-                        <div class='mb-3'>
-                            <label class='form-label'>". $escaper->escapeHtml($lang['CurrentLikelihood']) .":</label>
-                            ". create_dropdown('likelihood', $CLASSIC_likelihood, 'likelihood[]', true, false, true, 'form-select') ."
-                        </div>
-                        <div class='mb-3'>
-                            <label class='form-label'>". $escaper->escapeHtml($lang['CurrentImpact']) .":</label>
-                            ". create_dropdown('impact', $CLASSIC_impact, 'impact[]', true, false, true, 'form-select') ."
-                        </div>
+                    <div class='mb-3'>
+                        <label>{$escaper->escapeHtml($lang['CurrentImpact'])} :</label>" . 
+                        create_dropdown('impact', $CLASSIC_impact, 'impact[]', true, false, true, 'form-select') . "
                     </div>
+                </div>
         ";
     }
 
-    $html .= 
-                "
-                <div id='cvss' style='display: ". ($scoring_method == 2 ? "block" : "none") .";' class='cvss-holder'>
+    $html .= "
+                <div id='cvss' style='display: " . ($scoring_method == 2 ? "block" : "none") . ";' class='cvss-holder'>
                     <div class='mb-3'>
                         <p><input type='button' class='btn btn-primary' name='cvssSubmit' id='cvssSubmit' value='Score Using CVSS' /></p>
                         <!-- Additional hidden inputs for CVSS -->
@@ -7235,8 +7272,7 @@ function display_score_html_from_pending_risk($scoring_method="5", $custom=false
                         <input type='hidden' name='AvailabilityRequirement[]' id='AvailabilityRequirement' value='{$AvailabilityRequirement}' />
                     </div>
                 </div>
-                
-                <div id='dread' style='display: ". ($scoring_method == 3 ? "block" : "none") .";' class='dread-holder'>
+                <div id='dread' style='display: " . ($scoring_method == 3 ? "block" : "none") . ";' class='dread-holder'>
                     <div class='mb-3'>
                         <p><input type='button' class = 'btn btn-primary' name='dreadSubmit' id='dreadSubmit' value='Score Using DREAD' onclick='javascript: popupdread();' /></p>
                         <!-- Additional hidden inputs for DREAD -->
@@ -7247,8 +7283,7 @@ function display_score_html_from_pending_risk($scoring_method="5", $custom=false
                         <input type='hidden' name='DREADDiscoverability[]' id='DREADDiscoverability' value='{$DREADDiscoverability}' />
                     </div>
                 </div>
-                
-                <div id='owasp' style='display: ". ($scoring_method == 4 ? "block" : "none") .";' class='owasp-holder'>
+                <div id='owasp' style='display: " . ($scoring_method == 4 ? "block" : "none") . ";' class='owasp-holder'>
                     <div class='mb-3'>
                         <p><input type='button' class = 'btn btn-primary' name='owaspSubmit' id='owaspSubmit' value='Score Using OWASP'  /></p>
                         <!-- Additional hidden inputs for OWASP -->
@@ -7274,24 +7309,24 @@ function display_score_html_from_pending_risk($scoring_method="5", $custom=false
     
     if ($display_type === 2) {
         $html .= "
-                    <div id='custom' style='display: ". ($scoring_method == 5 ? "block" : "none") .";' class='custom-holder'>
-                        <div class='row mb-2'>
-                            <div class='col-2 d-flex align-items-center justify-content-start'>
-                                <label class='form-label'>{$escaper->escapeHtml($lang['CustomValue'])}</label>
-                            </div>
-                            <div class='col-10 d-flex align-items-center'>
-                                <input type='number' min='0' step='0.1' max='10' name='Custom[]' id='Custom' value='{$custom}' class='form-control m-r-10' style='width: 70px;'/>
-                                <small class='form-text text-muted'>(Must be a numeric value between 0 and 10)</small>
-                            </div>
+                <div id='custom' style='display: " . ($scoring_method == 5 ? "block" : "none") . ";' class='custom-holder'>
+                    <div class='row mb-2'>
+                        <div class='col-2 d-flex align-items-center justify-content-start'>
+                            <label>{$escaper->escapeHtml($lang['CustomValue'])} :</label>
                         </div>
-                    </div>          
+                        <div class='col-10 d-flex align-items-center'>
+                            <input type='number' min='0' step='0.1' max='10' name='Custom[]' id='Custom' value='{$custom}' class='form-control m-r-10' style='width: 70px;'/>
+                            <small class='form-text text-muted'>(Must be a numeric value between 0 and 10)</small>
+                        </div>
+                    </div>
+                </div>          
                                     
         ";
     } else {
         $html .= "
-                <div id='custom' style='display: ". ($scoring_method == 5 ? "block" : "none") .";' class='custom-holder'>
+                <div id='custom' style='display: " . ($scoring_method == 5 ? "block" : "none") . ";' class='custom-holder'>
                     <div class='mb-3'>
-                        <label class='form-label'>". $escaper->escapeHtml($lang['CustomValue']) .":</label>
+                        <label>{$escaper->escapeHtml($lang['CustomValue'])} :</label>
                         <input type='number' min='0' step='0.1' max='10' name='Custom[]' id='Custom' value='{$custom}' class='form-control' />
                         <small class='form-text text-muted'>(Must be a numeric value between 0 and 10)</small>
                     </div>
@@ -7300,17 +7335,19 @@ function display_score_html_from_pending_risk($scoring_method="5", $custom=false
     }
                             
     $html .= "
-                <div id='contributing-risk' style='display: ". ($scoring_method == 6 ? "block" : "none") .";' class='contributing-risk-holder'>
+                <div id='contributing-risk' style='display: " . ($scoring_method == 6 ? "block" : "none") . ";' class='contributing-risk-holder'>
                     <div class='mb-3'>
-                        <p><input type='button' class = 'btn btn-primary' name='contributingRiskSubmit' id='contributingRiskSubmit' value='". $escaper->escapeHtml($lang["ScoreUsingContributingRisk"]) ."' /></p>
-
-                        <input type='hidden' name='ContributingLikelihood[]' id='contributing_likelihood' value='".($ContributingLikelihood ? $ContributingLikelihood : count(get_table("likelihood")))."' />";
-                        $max_impact_value = count(get_table("impact"));
-                        $contributing_risks = get_contributing_risks();
-                        foreach($contributing_risks as $contributing_risk){
-                            $html .= "<input type='hidden' class='contributing-impact' name='ContributingImpacts[{$contributing_risk['id']}][]' id='contributing_impact_". $escaper->escapeHtml($contributing_risk['id']) ."' value='". $escaper->escapeHtml(empty($ContributingImpacts[ $contributing_risk['id'] ]) ? $max_impact_value : $ContributingImpacts[ $contributing_risk['id'] ]) ."' />";
-                        }
-                    $html .= "
+                        <p><input type='button' class = 'btn btn-primary' name='contributingRiskSubmit' id='contributingRiskSubmit' value='{$escaper->escapeHtml($lang["ScoreUsingContributingRisk"])}' /></p>
+                        <input type='hidden' name='ContributingLikelihood[]' id='contributing_likelihood' value='" . ($ContributingLikelihood ? $ContributingLikelihood : count(get_table("likelihood"))) . "' />
+    ";
+    $max_impact_value = count(get_table("impact"));
+    $contributing_risks = get_contributing_risks();
+    foreach ($contributing_risks as $contributing_risk) {
+        $html .= "
+                        <input type='hidden' class='contributing-impact' name='ContributingImpacts[{$contributing_risk['id']}][]' id='contributing_impact_{$escaper->escapeHtml($contributing_risk['id'])}' value='{$escaper->escapeHtml(empty($ContributingImpacts[ $contributing_risk['id'] ]) ? $max_impact_value : $ContributingImpacts[ $contributing_risk['id'] ])}' />
+        ";
+    }
+    $html .= "
                     </div>
                 </div>
             </div>
@@ -7318,7 +7355,6 @@ function display_score_html_from_pending_risk($scoring_method="5", $custom=false
 
     echo $html;
 }
-
 
 /***************************************************
 * FUNCTION: DISPLAY SET DEFAULT DATE FORMAT SCRIPT *
@@ -8871,7 +8907,7 @@ function get_audit_trail_html($id = NULL, $days = 7, $log_type=NULL) {
             $date = date(get_default_datetime_format("g:i A T"), strtotime($log['timestamp']));
 
             echo "
-                <p>" . $escaper->escapeHtml($date) . " > " . $escaper->escapeHtml($log['message']) . "</p>
+                <p>{$escaper->escapeHtml($date)} > {$escaper->escapeHtml($log['message'])}</p>
             ";
         }
 
@@ -9934,6 +9970,7 @@ function display_project_table_header($template_group_id = "") {
  * and the javascripts required for saving the selections
  */
 function render_column_selection_widget($view) {
+
     global $field_settings_display_groups, $escaper, $lang;
     
     // The function returns the whole settings including the 'display_settings' field that contains the list of names of selected columns
@@ -9941,19 +9978,25 @@ function render_column_selection_widget($view) {
     
     // If there're no saved settings for this view yet
     if (empty($settings)) {
+
         // then we load the list of default selected fields
         $settings = field_settings_get_display_defaults($view);
+
     } else {
+
         // For this we only need the list of names in the 'display_settings' field
         $settings = $settings['display_settings'];
+
     }
     
     $groups = [];
     foreach (field_settings_get_localization($view) as $group_name => $group) {
+
         $groups[$group_name] = [
             'header' => empty($field_settings_display_groups[$group_name]['header_key']) ? false : $escaper->escapeHtml($lang[$field_settings_display_groups[$group_name]['header_key']]),
             'fields' =>  $group
         ];
+
     }
     
     echo "
@@ -10006,65 +10049,82 @@ function render_column_selection_widget($view) {
                     </div>
                     <div class='modal-body column-selections-container'>
                         <form id='custom_display_settings-{$view}' name='custom_display_settings-{$view}' method='post'>
-                            <input type='hidden' name='display_settings_view' value='{$view}'>";
-   
-                    foreach ($groups as $group_name => $group) {
-                        // If the group has a header setup, then render it
-                        if ($group['header']) {
-                            echo "
+                            <input type='hidden' name='display_settings_view' value='{$view}'>
+    ";
+
+    foreach ($groups as $group_name => $group) {
+
+        // If the group has a header setup, then render it
+        if ($group['header']) {
+
+            echo "
                             <div class='row'>
                                 <h4 class='collapsible--toggle clearfix'>
                                     <span class='collapse-title'><i class='fa fa-caret-down'></i>{$group['header']}</span>
                                 </h4>
                                 <div class='collapsible'>
+            ";
 
-                            ";
-                        }
-                        echo "
+        }
+
+        echo "
                             <div class='row'>
                                 <div class='col-6 form-check'>
-                                    <ul class='pt-2'>";                                // Within a section the options are split into two columns.
-                                $counter = 1;
-                                $halfpoint = count($group['fields']) / 2;
-                                foreach ($group['fields'] as $field_name => $text) {
-                                echo "
+                                    <ul class='pt-2'>
+        ";
+
+        // Within a section the options are split into two columns.
+        $counter = 1;
+        $halfpoint = count($group['fields']) / 2;
+
+        foreach ($group['fields'] as $field_name => $text) {
+
+            echo "
                                         <li>
                                             <input class='form-check-input' type='checkbox' name='{$field_name}' id='checkbox_{$field_name}-{$view}-{$group_name}' " . (in_array($field_name, $settings) ? "checked" : "") . "/>
                                             <label class='form-check-label mb-0' for='checkbox_{$field_name}-{$view}-{$group_name}'>{$text}</label>
                                         </li>
-                                ";
+            ";
                                 
-                                // Add the closing of the left column and the start of the right column
-                                if ($counter !== false) {
-                                    if ($counter >= $halfpoint) {
-                                        echo "
+            // Add the closing of the left column and the start of the right column
+            if ($counter !== false) {
+
+                if ($counter >= $halfpoint) {
+
+                    echo "
                                     </ul>
                                 </div>
                                 <div class='col-6 form-check'>
                                     <ul class='pt-2'>
-                                        ";
-                                        // disable the counting, we're over the halfway point
-                                        $counter = false;
-                                    } else {
-                                        $counter += 1;
-                                    }
-                                }
-                            }
-                            echo "
+                    ";
+
+                    // disable the counting, we're over the halfway point
+                    $counter = false;
+
+                } else {
+                    $counter += 1;
+                }
+            }
+        }
+
+        echo "
                                     </ul>
                                 </div>
                             </div>
-                            ";
-                        // Only have to add these if the section had a header
-                        if ($group['header']) {
-                            echo "
+        ";
+
+        // Only have to add these if the section had a header
+        if ($group['header']) {
+
+            echo "
                                 </div>
                             </div>
-                            ";
-                        }
-                    }
-    
-                    echo "
+            ";
+
+        }
+    }
+
+    echo "
                         </form>
                     </div>
                     <div class='modal-footer'>
@@ -10075,6 +10135,7 @@ function render_column_selection_widget($view) {
             </div>
         </div> <!-- modal -->
     ";
+
 }
 
 
@@ -10720,7 +10781,7 @@ function render_view_table($view) {
     $view_edit_type = $view_editable ? $field_settings_views[$view]['edit']['type'] : false;
     $view_edit_type_inline = $view_edit_type && $view_edit_type === 'inline';
     $view_edit_type_popup = $view_edit_type && $view_edit_type === 'popup';
-    $view_edit_ajax_uri = $field_settings_views[$view]['edit']['edit_ajax_uri'];
+    $view_edit_ajax_uri = $view_editable ? $field_settings_views[$view]['edit']['edit_ajax_uri'] : false;
     
     $settings = display_settings_get_display_settings_for_view($view);
     $localizations = field_settings_get_localization($view, false);
@@ -10775,17 +10836,34 @@ function render_view_table($view) {
             $filter_field = "";
             switch($field_name) {
                 case 'mitigation_planned':
-                    $filter_field = "<select name='mitigation_planned'><option value=''>--</option><option value='{$escaper->escapeHtml($lang['Yes'])}'>{$escaper->escapeHtml($lang['Yes'])}</option><option value='{$escaper->escapeHtml($lang['No'])}'>{$escaper->escapeHtml($lang['No'])}</option></select>";
+                    $filter_field = "
+                        <select name='mitigation_planned'>
+                            <option value=''>--</option>
+                            <option value='{$escaper->escapeHtml($lang['Yes'])}'>{$escaper->escapeHtml($lang['Yes'])}</option>
+                            <option value='{$escaper->escapeHtml($lang['No'])}'>{$escaper->escapeHtml($lang['No'])}</option>
+                        </select>
+                    ";
                     break;
                 case 'management_review':
-                    $filter_field = "<select name='management_review'><option value=''>--</option><option value='{$escaper->escapeHtml($lang['Yes'])}'>{$escaper->escapeHtml($lang['Yes'])}</option><option value='{$escaper->escapeHtml($lang['No'])}'>{$escaper->escapeHtml($lang['No'])}</option><option value='{$escaper->escapeHtml($lang['PASTDUE'])}'>{$escaper->escapeHtml($lang['PASTDUE'])}</option></select>";
+                    $filter_field = "
+                        <select name='management_review'>
+                            <option value=''>--</option>
+                            <option value='{$escaper->escapeHtml($lang['Yes'])}'>{$escaper->escapeHtml($lang['Yes'])}</option>
+                            <option value='{$escaper->escapeHtml($lang['No'])}'>{$escaper->escapeHtml($lang['No'])}</option>
+                            <option value='{$escaper->escapeHtml($lang['PASTDUE'])}'>{$escaper->escapeHtml($lang['PASTDUE'])}</option>
+                        </select>
+                    ";
                     break;
                 default:
-                    $filter_field = "<input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control' style='max-width: unset;'>";
+                    $filter_field = "
+                        <input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control' style='max-width: unset;'>
+                    ";
                     break;
             }
             
-            $filter_header_row .= "<th data-column-number='{$field_idx}' data-name='{$field_name}' align='left' style='{$style}'>{$filter_field}</th>";
+            $filter_header_row .= "
+                <th data-column-number='{$field_idx}' data-name='{$field_name}' align='left' style='{$style}'>{$filter_field}</th>
+            ";
         } else {
             // add an empty header cell if the field isn't searchable
             $filter_header_row .= "<th></th>";
@@ -10823,8 +10901,11 @@ function render_view_table($view) {
                     orderCellsTop: true,
                     scrollX: true,
     " .
-    ($order_index !== false ? "order: [[{$order_index}, '{$order_dir}']],
-    " : "ordering: false,") .
+    ($order_index !== false ? "
+                    order: [[{$order_index}, '{$order_dir}']],
+    " : "
+                    ordering: false,
+    ") .
                     "ajax: {
                         url: BASE_URL + '{$field_settings_views[$view]['datatable_ajax_uri']}',
                         type: 'post',
@@ -10840,7 +10921,6 @@ function render_view_table($view) {
                     },
                     columns: [
     ";
-
     
     $actions_column_info = !empty($field_settings_views[$view]['actions_column']) ? $field_settings_views[$view]['actions_column'] : false;
 
@@ -10878,11 +10958,24 @@ function render_view_table($view) {
         // If the data coming from the server side as an associative array we need to add the configuration a bit differently
         if ($datatable_data_type_associative) {
             echo "
-                        {'data': '{$field_name}{$display_post_fix}', 'searchable': {$searchable}, 'orderable': {$orderable}" . ($class_name ? ", 'className': '{$class_name}'" : "") . ($renderer ? ", 'render': {$renderer}" : "") . ", 'defaultContent': ''},
+                        {
+                            'data': '{$field_name}{$display_post_fix}', 'searchable': {$searchable}, 
+                            'orderable': {$orderable}" . 
+                            ($class_name ? ", 
+                            'className': '{$class_name}'" : "") . ($renderer ? ", 
+                            'render': {$renderer}" : "") . ", 'defaultContent': ''
+                        },
             ";
         } else {
             echo "
-                        {'target': '{$field_idx}', 'searchable': {$searchable}, 'orderable': {$orderable}" . ($class_name ? ", 'className': '{$class_name}'" : "") . ($renderer ? ", 'render': {$renderer}" : "") . ", 'defaultContent': ''},
+                        {
+                            'target': '{$field_idx}', 
+                            'searchable': {$searchable}, 
+                            'orderable': {$orderable}" . 
+                            ($class_name ? ", 
+                            'className': '{$class_name}'" : "") . ($renderer ? ", 
+                            'render': {$renderer}" : "") . ", 'defaultContent': ''
+                        },
             ";
         }
         

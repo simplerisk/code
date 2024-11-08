@@ -4,7 +4,6 @@ namespace includes\Widgets;
 
 class AssetAssetGroupDropdown {
     
-
     /**
      * Randomly generated unique id for the widget. Can be modified before rendering.
      * Type: string
@@ -245,7 +244,7 @@ class AssetAssetGroupDropdown {
 
 		// Load the data from the API endpoint if it's a lazy initialization
 		if ($this->lazyInit) {
-		  $html .= "
+		    $html .= "
                         onInitialize: function() {
                             $('#{$this->id}').parent().find('.selectize-control div').block({message:'<i class=\"fa fa-spinner fa-spin\" style=\"font-size:24px\"></i>'});
                         },
@@ -285,7 +284,8 @@ class AssetAssetGroupDropdown {
                                     $('#{$this->id}').parent().find('.selectize-control div').unblock({message:null});
                                 }
                             });
-                        },";
+                        },
+            ";
 		} else { // In case we want to render the whole thing into the initialization code
 		    
 		    // load all the items(selected items are marked if there's any)
@@ -293,20 +293,32 @@ class AssetAssetGroupDropdown {
 		    if ($items) {
 		        
 		        $selected_item_ids = [];
-		        $html .= "options: [";
+		        $html .= "
+                        options: [
+                ";
+
 		        // render the options...
 		        foreach($items as $item) {
 		            $id = "{$item['id']}_{$item['class']}";
-		            $html .= "{id: '{$id}', name: '{$escaper->escapeJs($item['name'])}', class: '{$item['class']}'},";
+		            $html .= "
+                            {id: '{$id}', name: '{$escaper->escapeJs($item['name'])}', class: '{$item['class']}'},
+                    ";
+
 		            // ...gather the ids of selected items...
 		            if ($item['selected']) {
 		                $selected_item_ids []= $id;
 		            }
 		        }
-		        $html .= "],";
+
+		        $html .= "
+                        ],
+                ";
+
 		        // ...and if there's any selected item render the initialization code to mark them as selected
 		        if (!empty($selected_item_ids)) {
-		            $html .= "items: ['" . implode("', '", $selected_item_ids) . "'],";
+		            $html .= "
+                        items: ['" . implode("', '", $selected_item_ids) . "'],
+                    ";
 		        }
 		    }
 		}
@@ -318,7 +330,7 @@ class AssetAssetGroupDropdown {
         ";
 
 		return $html;
+        
 	}
-
 }
 ?>

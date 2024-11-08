@@ -1239,8 +1239,8 @@ function check_simplerisk_base_url_dns()
 /*************************************************
  * FUNCTION: UNABLE TO COMMUNICATE WITH DATABASE *
  *************************************************/
-function unable_to_communicate_with_database()
-{
+function unable_to_communicate_with_database() {
+	
     $nocache_token = generate_token(5);
 ?>
 

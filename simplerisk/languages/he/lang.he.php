@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'העלאת קובץ נכשלה: לא נשלח קובץ',
     'FileUploadExceededFileSize' => 'העלאת קובץ נכשלה: חרג ממגבלת גודל הקובץ',
     'FileUploadUnknownErrors' => 'העלאת הקובץ נכשלה: שגיאות לא ידועות',
+    'DynamicIncidentReport' => 'דוח אירועים דינמי',
+    'FilteringSelections' => 'בחירות סינון',
 
     '' => '',
 );

@@ -3,10 +3,10 @@
 use Leaf\Anchor;
 
 test('set config', function () {
-    Anchor::config(['SECRET' => 'item']);
+    Anchor::config(['secret' => 'item']);
     $config = Anchor::config();
 
-    expect($config['SECRET'])->toBe('item');
+    expect($config['secret'])->toBe('item');
 });
 
 test('sanitize', function () {
@@ -36,7 +36,7 @@ test('generate token', function () {
 
 test('secret in token', function () {
     $anchorSecret = 'SOMETHING';
-    Anchor::config(['SECRET' => $anchorSecret]);
+    Anchor::config(['secret' => $anchorSecret]);
 
     expect(strpos(hex2bin(Anchor::generateToken()), $anchorSecret))->toBe(0);
 });

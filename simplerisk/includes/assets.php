@@ -2675,6 +2675,7 @@ function get_assets_of_asset_group_for_treegrid($id){
  * @return array The list of all verified assets and asset groups. If the id and type are provided then sets the selected state for those that are selected for that item
  */
 function get_assets_and_asset_groups_of_type($id = null, $type = null, $selected_only = false) {
+
     // Having this variable here so the code is easier to read later
     $has_id = $id !== null;
     
@@ -2807,7 +2808,7 @@ function get_assets_and_asset_groups_of_type($id = null, $type = null, $selected
     db_close($db);
 
     if ($encryption) {
-        foreach($data as &$item) {
+        foreach ($data as &$item) {
             if ($item['class'] === 'asset') {
                 $item['name'] = try_decrypt($item['name']);
             }
@@ -2815,7 +2816,9 @@ function get_assets_and_asset_groups_of_type($id = null, $type = null, $selected
     }
 
     return $data;
+
 }
+
 function get_assets_and_asset_groups_by_control_for_dropdown($control_id = false, $control_maturity = false) {
 
     $db = db_open();
@@ -3164,13 +3167,14 @@ function get_assets_data_for_view_v2($view, $selected_fields, $verified = null, 
         if ($customization && !empty($asset['field_data']) && $asset['field_data'] !== '[]') {
             // extract it as normal fields
             foreach (json_decode($asset['field_data'], true) as $field_data) {
-                // select/multi-select fields are already on the asset, returned by the sql
+                
                 if (empty($asset["custom_field_{$field_data['field_id']}_display"])) {
                     // only the rest needs formatting and only those fields that are selected. In this case they're escaped as well
                     if (in_array("custom_field_{$field_data['field_id']}", $selected_fields)) {
                         $asset["custom_field_{$field_data['field_id']}"] = get_custom_field_name_by_value($field_data['field_id'], $field_data['type'], $field_data['encryption'], $field_data['value']);
                     }
                 } else {
+                    // select/multi-select fields are already on the asset, returned by the sql
                     // so the custom fields already in the data needs to be escaped
                     $asset["custom_field_{$field_data['field_id']}_display"] = $escaper->escapeHtml($asset["custom_field_{$field_data['field_id']}_display"]);
                     $asset["custom_field_{$field_data['field_id']}"] = explode(',', (string)$field_data['value']);

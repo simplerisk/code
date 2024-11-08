@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'Dosya Yükleme Başarısız: Dosya Gönderilemedi',
     'FileUploadExceededFileSize' => 'Dosya Yükleme Başarısız: Dosya Boyutu Sınırı Aşıldı',
     'FileUploadUnknownErrors' => 'Dosya Yükleme Başarısız: Bilinmeyen Hatalar',
+    'DynamicIncidentReport' => 'Dinamik Olay Raporu',
+    'FilteringSelections' => 'Seçimleri Filtreleme',
 
     '' => '',
 );

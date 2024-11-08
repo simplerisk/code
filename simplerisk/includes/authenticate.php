@@ -470,39 +470,55 @@ function is_valid_simplerisk_user($user, $pass)
 /********************************
  * FUNCTION: IS SIMPLERISK USER *
  ********************************/
-function is_simplerisk_user($username)
-{
-        // Open the database connection
-        $db = db_open();
+function is_simplerisk_user($username) {
 
-        // If strict user validation is disabled
-        if (get_setting('strict_user_validation') == 0)
-        {
+    // Open the database connection
+    $db = db_open();
+
+    // If strict user validation is disabled
+    if (get_setting('strict_user_validation') == 0) {
+
         // Query the DB for a matching user and hash
-        $stmt = $db->prepare("SELECT value FROM user WHERE type = 'simplerisk' AND LOWER(convert(`username` using utf8)) = LOWER(:username)");
-        }
-        else
-        {
+        $stmt = $db->prepare("
+            SELECT 
+                value 
+            FROM 
+                user 
+            WHERE 
+                type = 'simplerisk' AND LOWER(convert(`username` using utf8)) = LOWER(:username)
+        ");
+    } else {
+
         // Query the DB for a matching user and hash
-        $stmt = $db->prepare("SELECT value FROM user WHERE type = 'simplerisk' AND username = :username");
-        }
+        $stmt = $db->prepare("
+            SELECT 
+                value 
+            FROM 
+                user 
+            WHERE 
+                type = 'simplerisk' AND username = :username
+        ");
 
-        $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
-        $stmt->execute();
+    }
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+    $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
+    $stmt->execute();
+
+    // Store the list in the array
+    $array = $stmt->fetchAll();
 
     // Close the database connection
-        db_close($db);
+    db_close($db);
 
     // If the user does not exist return 0
-    if (empty($array))
-    {
+    if (empty($array)) {
+
         return 0;
-    }
+
     // Otherwise, return the user id value
-    else return $array[0]['value'];
+    } else {
+        return $array[0]['value'];
+    }
 }
 
 /****************************
@@ -531,25 +547,28 @@ function generate_token($size)
 /****************************************
  * FUNCTION: PASSWORD RESET BY USERNAME *
  ****************************************/
-function password_reset_by_username($username)
-{               
-        $userid = is_simplerisk_user($username);
-        
-        // Check if the username exists
-        if ($userid != 0)
-        {       
-            password_reset_by_userid($userid);
+function password_reset_by_username($username) {               
+
+    $userid = is_simplerisk_user($username);
     
-            return true;
-        }
-        else return false;
+    // Check if the username exists
+    if ($userid != 0) {    
+        password_reset_by_userid($userid);
+
+        // Adding a random wait to increase noise in response time to make it harder for timing attacks on the password reset 
+        wait(rand(0, 2000));
+        return true;
+    } else {
+        // Adding a random wait to increase noise in response time to make it harder for timing attacks on the password reset
+        wait(rand(1000, 3000));
+        return false;
+    }
 }
 
 /**************************************
  * FUNCTION: PASSWORD RESET BY USERID *
  **************************************/
-function password_reset_by_userid($userid)
-{
+function password_reset_by_userid($userid) {
         
     // Generate a 20 character reset token
     $token = generate_token(20);
@@ -558,7 +577,14 @@ function password_reset_by_userid($userid)
     $db = db_open();
 
     // Get the users e-mail address
-    $stmt = $db->prepare("SELECT username, name, email, salt FROM user WHERE value=:userid");
+    $stmt = $db->prepare("
+        SELECT 
+            username, name, email, salt 
+        FROM 
+            user 
+        WHERE 
+            value=:userid
+    ");
     $stmt->bindParam(":userid", $userid, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -570,12 +596,27 @@ function password_reset_by_userid($userid)
     $email = $array[0]['email'];
 
     // Delete previous tokens for this user
-    $stmt = $db->prepare("DELETE FROM password_reset WHERE username=:username");
+    $stmt = $db->prepare("
+        DELETE FROM 
+            password_reset 
+        WHERE 
+            username=:username
+    ");
     $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
     $stmt->execute();
 
     // Insert into the password reset table
-    $stmt = $db->prepare("INSERT INTO password_reset (`username`, `token`) VALUES (:username, :token)");
+    $stmt = $db->prepare("
+        INSERT INTO 
+            password_reset 
+        (
+            `username`, `token`
+        ) 
+        VALUES 
+        (
+            :username, :token
+        )
+    ");
 
     $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
     $stmt->bindParam(":token", $token, PDO::PARAM_STR, 20);
@@ -589,28 +630,30 @@ function password_reset_by_userid($userid)
     send_reset_email($username, $name, $email, $token);
 
     // If this was submitted by an unauthenticated user
-    if (!isset($_SESSION['uid']))
-    {
+    if (!isset($_SESSION['uid'])) {
+
         $user = "Unauthenticated";
         $uid = 0;
-    }
+
     // Otherwise, set the user and uid
-    else
-    {
+    } else {
+
         $user = $_SESSION['user'];
         $uid = $_SESSION['uid'];
+
     }
 
     // Audit log
-    $message = "A password reset request was submitted for user \"" . $username . "\" by the \"" . $user . "\" user.";
+    $message = "A password reset request was submitted for user '{$username}' by the '{$user}' user.";
     write_log($userid + 1000, $uid, $message, "user");
+
 }
 
 /******************************
  * FUNCTION: SEND RESET EMAIL *
  ******************************/
-function send_reset_email($username, $name, $email, $token)
-{
+function send_reset_email($username, $name, $email, $token) {
+
     global $escaper;
 
     $to = $email;
@@ -645,11 +688,11 @@ function send_reset_email($username, $name, $email, $token)
     //$pattern[1] = "/\/admin\/(\w)*\.php$/";
     //$base_url = preg_replace($pattern, "/reset.php", $base_url);
     
-    $body .= "<b>Username:</b>&nbsp;&nbsp;".$username."<br/>\n";
+    $body .= "<b>Username:</b>&nbsp;&nbsp;{$escaper->escapeHtml($username)}<br/>\n";
     $body .= "<b>Reset Token:</b>&nbsp;&nbsp;".$token."<br/>\n";
     if(get_setting('simplerisk_base_url') != false) {
         $base_url = get_base_url() . "/reset.php";
-        $base_url = $base_url . "?token=".$token."&username=".$username;
+        $base_url = $base_url . "?token=".$token."&username={$escaper->escapeHtml($username)}";
         $body .= "<p>You may now use the \"<a href='{$base_url}'>Forgot your password</a>\" link on the SimpleRisk log in page to reset your password.</p>";
     } else {
         $body .= "<p>Please visit the SimpleRisk log in page to reset your password.</p>";

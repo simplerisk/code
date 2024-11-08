@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'Файл байршуулж чадсангүй: Файл илгээгээгүй',
     'FileUploadExceededFileSize' => 'Файл байршуулах амжилтгүй: Файлын хэмжээ хязгаараас хэтэрсэн',
     'FileUploadUnknownErrors' => 'Файл байршуулж чадсангүй: Үл мэдэгдэх алдаа',
+    'DynamicIncidentReport' => 'Динамик ослын тайлан',
+    'FilteringSelections' => 'Сонголтуудыг шүүж байна',
 
     '' => '',
 );

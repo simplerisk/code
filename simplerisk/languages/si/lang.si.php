@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'ගොනු උඩුගත කිරීම අසාර්ථක විය: ගොනුවක් යවා නැත',
     'FileUploadExceededFileSize' => 'ගොනු උඩුගත කිරීම අසාර්ථක විය: ගොනු ප්‍රමාණය සීමාව ඉක්මවා ඇත',
     'FileUploadUnknownErrors' => 'ගොනු උඩුගත කිරීම අසාර්ථක විය: නොදන්නා දෝෂ',
+    'DynamicIncidentReport' => 'ගතික සිදුවීම් වාර්තාව',
+    'FilteringSelections' => 'පෙරහන් තේරීම්',
 
     '' => '',
 );

@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'Tải tệp lên không thành công: Không có tệp nào được gửi',
     'FileUploadExceededFileSize' => 'Tải tệp lên không thành công: Vượt quá giới hạn kích thước tệp',
     'FileUploadUnknownErrors' => 'Tải tệp lên không thành công: Lỗi không xác định',
+    'DynamicIncidentReport' => 'Báo cáo sự cố động',
+    'FilteringSelections' => 'Lọc Lựa chọn',
 
     '' => '',
 );

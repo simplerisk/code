@@ -236,6 +236,17 @@ class Router extends Core
     }
 
     /**
+     * Add a route with HEAD method
+     *
+     * @param string $pattern The route pattern/path to match
+     * @param string|array|callable The handler for route when matched
+     */
+    public static function head(string $pattern, $handler)
+    {
+        static::match('HEAD', $pattern, $handler);
+    }
+
+    /**
      * Add a route that sends an HTTP redirect
      *
      * @param string $from The url to redirect from

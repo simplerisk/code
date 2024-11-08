@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'فشل تحميل الملف: لم يتم إرسال أي ملف',
     'FileUploadExceededFileSize' => 'فشل تحميل الملف: تم تجاوز الحد الأقصى لحجم الملف',
     'FileUploadUnknownErrors' => 'فشل تحميل الملف: أخطاء غير معروفة',
+    'DynamicIncidentReport' => 'تقرير الحوادث الديناميكي',
+    'FilteringSelections' => 'تصفية الاختيارات',
 
     '' => '',
 );

@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'Odovzdanie súboru zlyhalo: Nebol odoslaný žiadny súbor',
     'FileUploadExceededFileSize' => 'Odovzdanie súboru zlyhalo: Prekročený limit veľkosti súboru',
     'FileUploadUnknownErrors' => 'Odovzdanie súboru zlyhalo: Neznáme chyby',
+    'DynamicIncidentReport' => 'Dynamická správa o incidente',
+    'FilteringSelections' => 'Filtrovanie výberov',
 
     '' => '',
 );

@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'ファイルのアップロードに失敗しました: ファイルが送信されませんでした',
     'FileUploadExceededFileSize' => 'ファイルのアップロードに失敗しました: ファイルサイズの制限を超えました',
     'FileUploadUnknownErrors' => 'ファイルのアップロードに失敗しました: 不明なエラー',
+    'DynamicIncidentReport' => '動的インシデントレポート',
+    'FilteringSelections' => '選択のフィルタリング',
 
     '' => '',
 );

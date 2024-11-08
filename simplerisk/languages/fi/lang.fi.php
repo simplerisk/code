@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'Tiedoston lataus epäonnistui: Tiedostoa ei lähetetty',
     'FileUploadExceededFileSize' => 'Tiedoston lataus epäonnistui: Tiedoston kokorajoitus ylitetty',
     'FileUploadUnknownErrors' => 'Tiedoston lataus epäonnistui: Tuntemattomia virheitä',
+    'DynamicIncidentReport' => 'Dynaaminen tapausraportti',
+    'FilteringSelections' => 'Valintojen suodatus',
 
     '' => '',
 );

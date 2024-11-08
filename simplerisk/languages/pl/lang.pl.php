@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'Nie udało się przesłać pliku: Nie wysłano pliku',
     'FileUploadExceededFileSize' => 'Nie udało się przesłać pliku: przekroczono limit rozmiaru pliku',
     'FileUploadUnknownErrors' => 'Nie udało się przesłać pliku: nieznane błędy',
+    'DynamicIncidentReport' => 'Dynamiczny raport incydentów',
+    'FilteringSelections' => 'Filtrowanie wyborów',
 
     '' => '',
 );

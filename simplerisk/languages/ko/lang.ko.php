@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => '파일 업로드 실패: 파일이 전송되지 않았습니다.',
     'FileUploadExceededFileSize' => '파일 업로드 실패: 파일 크기 제한 초과',
     'FileUploadUnknownErrors' => '파일 업로드 실패: 알 수 없는 오류',
+    'DynamicIncidentReport' => '동적 사고 보고서',
+    'FilteringSelections' => '선택 필터링',
 
     '' => '',
 );

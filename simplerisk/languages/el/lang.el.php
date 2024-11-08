@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'Η μεταφόρτωση αρχείου απέτυχε: Δεν εστάλη αρχείο',
     'FileUploadExceededFileSize' => 'Η μεταφόρτωση αρχείου απέτυχε: Υπέρβαση του ορίου μεγέθους αρχείου',
     'FileUploadUnknownErrors' => 'Η μεταφόρτωση αρχείου απέτυχε: Άγνωστα σφάλματα',
+    'DynamicIncidentReport' => 'Δυναμική Αναφορά Συμβάντος',
+    'FilteringSelections' => 'Φιλτράρισμα επιλογών',
 
     '' => '',
 );

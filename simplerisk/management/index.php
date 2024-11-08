@@ -250,7 +250,11 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         // Display an alert   
         ob_end_clean();
         set_alert(true, "good", _lang("RiskSubmitSuccess", ["subject" => $subject], false));
-        json_response(200, get_alert(true), array("risk_id" => $risk_id, "associate_test" => $associate_test));
+        
+        // Only return the alert messages in this response if it will be processed on the Compliance > Active/Past Audits pages
+        // because when normally creating a risk we're redirecting to the view risk page and we want the messages to stay in the session
+        // so they can be displayed there
+        json_response(200, $associate_test ? get_alert(true) : null, array("risk_id" => $risk_id, "associate_test" => $associate_test));
         
         exit;
     }
@@ -265,75 +269,10 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 </script>
 <div class="row bg-white">
     <div class="col-12">
-        <div class="mt-2">
-            <nav class="nav nav-tabs">
-    <?php 
-        if(customization_extra()) {
-            $tab_str = "";
-            if(organizational_hierarchy_extra()) {
-                require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
-                $template_groups = get_assigned_template_group_by_user_id($_SESSION['uid'], "risk");
-            } else {
-                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-                $template_groups = get_custom_template_groups('risk');
-            }
-            foreach($template_groups as $index=>$template_group){
-                $active = $index == 0 ? "active" : ""; 
-                echo "
-                <a class='nav-link " . $active . "' data-bs-target='#template_group_" . $template_group["id"] . "' data-bs-toggle='tab'> " . $escaper->escapeHtml($template_group["name"]) . "</a>
-                ";
-            }
-        } else { 
-    ?>
-                <a class="btn btn-primary" id='add-tab'><i class="fa fa-plus"></i></a>
-                <a class="nav-link active" data-bs-target="#tab-container" data-bs-toggle="tab"><?php echo $escaper->escapeHtml($lang['NewRisk']); ?> (1)</a>
-    <?php 
-        }
-    ?>
-            </nav>
-        </div>
-        <div class="tab-content card-body my-2 border" id="tab-content-container">
-    <?php
-        if(customization_extra()) {
-            if(organizational_hierarchy_extra()) {
-                require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
-                $template_groups = get_assigned_template_group_by_user_id($_SESSION['uid'], "risk");
-            } else {
-                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-                $template_groups = get_custom_template_groups('risk');
-            }
-            foreach ($template_groups as $index=>$template_group) {
-                $active = $index == 0 ? "show active" : ""; 
-                $template_group_id = $template_group["id"];
-                echo "
-            <div class='tab-pane tab-data fade col-12 mt-2 {$active}' id='template_group_".$template_group["id"]."'>
-                ";
-                include(realpath(__DIR__ . '/partials/add.php'));
-                echo "
-            </div>
-                ";
-            }
-        } else {
-            $template_group_id = "";
-            echo "
-            <div class='tab-pane tab-data fade col-12 mt-2 show active' id='tab-container'>
-                ";
-                include(realpath(__DIR__ . '/partials/add.php'));
-            echo "
-            </div>
-                ";
-        }
-    ?>
-        </div>
+<?php
+    display_add_risk();    
+?>
     </div>
-</div>
-<input type="hidden" id="_delete_tab_alert" value="<?php echo $escaper->escapeHtml($lang['Are you sure you want to close the risk? All changes will be lost!']); ?>">
-<input type="hidden" id="enable_popup" value="<?php echo $escaper->escapeHtml(get_setting('enable_popup')); ?>">
- <!-- sample form to add as a new form -->
-<div class="row" id="tab-append-div" style="display:none;">
-    <?php
-    include(realpath(__DIR__ . '/partials/add.php'));
-    ?>
 </div>
 
 <script>
@@ -352,72 +291,9 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
             }
         }
         
-        var length = $('.tab-close').length;
-        if (length == 1){
-            $('.tab-show button').hide();
-        }
-
-        $("div#tabs").tabs();
-    
-        $("div#add-tab").click(function() {
-            $('.tab-show button').show();
-            var num_tabs = $("div.container-fluid div.new").length + 1;
-            var form = $('#tab-append-div').html();
-
-            $('.tab-show').removeClass('selected');
-            $("div.tab-append").append(
-                "<div class='tab new tab-show form-tab selected' id='tab"+num_tabs+"'><div><span><?php echo $escaper->escapeHtml($lang['NewRisk']); ?> ("+num_tabs+")</span></div>"
-                +"<button class='close tab-close' aria-label='Close' data-id='"+num_tabs+"'>"
-                +"<i class='fa fa-times'></i>"
-                +"</button>"
-                +"</div>"
-            );
-            $('.tab-data').css({'display':'none'});
-            $("#tab-content-container").append(
-                "<div class='tab-data' id='tab-container"+num_tabs+"'>"+form+"</div>"
-            );
-
-            setupAssetsAssetGroupsWidget($('#tab-container'+num_tabs+' select.assets-asset-groups-select'));
-            
-            focus_add_css_class("#RiskAssessmentTitle", "#assessment", $("#tab-container" + num_tabs));
-            focus_add_css_class("#NotesTitle", "#notes", $("#tab-container" + num_tabs));
-
-
-            $("#tab-container"+num_tabs)
-                .find('.file-uploader label').attr('for', 'file_upload'+num_tabs);
-
-            $("#tab-container"+num_tabs)
-                .find('.hidden-file-upload')
-                .attr('id', 'file_upload'+num_tabs)
-                .prev('label').attr('for', 'file_upload'+num_tabs);
-            
-                
-            // Add multiple selects
-            $('.multiselect', "#tab-container"+num_tabs).multiselect({buttonWidth: '100%'});
-            
-            // Add DatePicker
-            if($('.datepicker', "#tab-container"+num_tabs).length){
-                $('.datepicker', "#tab-container"+num_tabs).initAsDatePicker();
-            }
-            tinymce.remove()
-            init_minimun_editor("#tab-content-container [name=assessment]");
-            init_minimun_editor("#tab-content-container [name=notes]");
-        });
-
-        focus_add_css_class("#RiskAssessmentTitle", "#assessment", $("#tab-container"));
-        focus_add_css_class("#NotesTitle", "#notes", $("#tab-container"));
-
         if(typeof max_upload_size == "undefined") max_upload_size = 0;
         if(typeof fileTooBigMessage == "undefined") fileTooBigMessage = "";
 
-        $(".tempate_tab").click(function(){
-            $(".tempate_tab").removeClass("selected");
-            $(this).addClass("selected");
-            $("#tab-content-container .tab-data").hide();
-            var tabContentId = $(this).data('content');
-            $(tabContentId).removeClass("hide").show();
-            return true;
-        });
     });
 </script>
 <?php  

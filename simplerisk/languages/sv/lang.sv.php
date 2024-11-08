@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'Filuppladdning misslyckades: Ingen fil har skickats',
     'FileUploadExceededFileSize' => 'Filuppladdning misslyckades: Filstorleksgränsen har överskridits',
     'FileUploadUnknownErrors' => 'Filuppladdning misslyckades: okända fel',
+    'DynamicIncidentReport' => 'Dynamisk incidentrapport',
+    'FilteringSelections' => 'Filtrera val',
 
     '' => '',
 );

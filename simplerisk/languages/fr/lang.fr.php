@@ -2433,6 +2433,8 @@ $lang = array(
     'FileUploadNoFileSent' => 'Échec du téléchargement du fichier : aucun fichier envoyé',
     'FileUploadExceededFileSize' => 'Échec du téléchargement du fichier : limite de taille de fichier dépassée',
     'FileUploadUnknownErrors' => 'Échec du téléchargement du fichier : erreurs inconnues',
+    'DynamicIncidentReport' => 'Rapport d\'incident dynamique',
+    'FilteringSelections' => 'Filtrage des sélections',
 
     '' => '',
 );

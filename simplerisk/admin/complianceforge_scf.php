@@ -56,9 +56,11 @@ display_license_check();
         <?php prevent_form_double_submit_script(); ?>
     </script>
     <?php
-    require_once(realpath(__DIR__ . '/../extras/complianceforgescf/index.php'));
+    if (is_dir(realpath(__DIR__ . '/../extras/complianceforgescf'))) {
+        require_once(realpath(__DIR__ . '/../extras/complianceforgescf/index.php'));
 
-    display_complianceforge_scf_script(); 
+        display_complianceforge_scf_script();
+    }
     ?>
 </div>
 <?php

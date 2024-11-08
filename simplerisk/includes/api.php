@@ -1009,7 +1009,9 @@ function dynamicriskForm()
             $data_row['risk'] = utf8ize($row);
             $datas[] = $data_row;
         }
-        if(($pos = stripos($orderColumnName, "custom_field_")) !== false){
+
+        //passing null to the first parameter of type string in stripos() in late versions of PHP
+        if(($pos = stripos($orderColumnName ?? '', "custom_field_")) !== false){
             // For identical custom fields we're sorting on the id, so the results' order is not changing
             usort($datas, function($a, $b) use ($orderDir, $orderColumnName){
                 return $orderDir == "asc" ? [$a['risk'][$orderColumnName], (int)$a['risk']['id']] <=> [$b['risk'][$orderColumnName], (int)$b['risk']['id']] : [$b['risk'][$orderColumnName], (int)$b['risk']['id']] <=> [$a['risk'][$orderColumnName], (int)$a['risk']['id']];
@@ -4737,9 +4739,13 @@ function getDefineTestsResponse()
             // or everyone has access to the tests/audits.
             // It means we can treat Team Separation like it is disabled        
             $separation_enabled = !should_skip_test_and_audit_permission_check();
-        } else
+        } else {
             $separation_enabled = false;
-        
+        }
+
+        // Remove those controls from the results that have no frameworks mapped
+        $controls = array_filter($controls, fn($c) => !empty($c['framework_ids'])); 
+
         $data = array();
         foreach ($controls as $key=>$control)
         {
@@ -5718,19 +5724,19 @@ function getDocumentResponse()
 /******************************************************
  * FUNCTION: GET DATA FOR TABULAR DOCUMENTS DATATABLE *
  ******************************************************/
-function getTabularDocumentsResponse()
-{
+function getTabularDocumentsResponse() {
+     
     global $escaper, $lang;
     
     // If the user has governance permissions
-    if (check_permission("governance"))
-    {
+    if (check_permission("governance")) {
+
         $type = $_GET['type'];
         $document_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
         // If this is request to view all versions of selected document.
-        if($document_id)
-        {
+        if ($document_id) {
+
             // Get current document
             $current_document = get_document_by_id($document_id);
             $version = $current_document['file_version'];
@@ -5738,78 +5744,96 @@ function getTabularDocumentsResponse()
             // Get documents with versions
             $documents = get_document_versions_by_id($document_id);
             
-            foreach($documents as &$document){
-                $document['id'] = $document['id']."_".$document['file_version'];
+            foreach ($documents as $index => &$document) {
+
+                $document['id'] = $document['id'] . "_" . $document['file_version'];
                 $document['state'] = "open";
                 $document['document_type'] = $escaper->escapeHtml($document['document_type']);
-                $document['document_name'] = "<a class='text-info' href='".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."' >".$escaper->escapeHtml($document['document_name']). " (".$document['file_version'].")" ."</a>";
+                $document['document_name'] = "<a class='text-info' href='{$_SESSION['base_url']}/governance/download.php?id={$document['unique_name']}' >{$escaper->escapeHtml($document['document_name'])} ({$document['file_version']})</a>";
                 $document['status'] = $escaper->escapeHtml(get_name_by_value('document_status', $document['status']));
-                $document['creation_date'] = format_date($document['creation_date']);
-                $document['approval_date'] = format_date($document['approval_date']);
-                $document['actions'] = "<div class='text-center nowrap'>";
-                if(!empty($_SESSION['delete_documentation']) && $version != $document['file_version'])
-                {
-                    $document['actions'] .= "<a class='document--delete mx-1' data-version='".$document['file_version']."' data-id='".((int)$document['id'])."' data-bs-toggle='modal' data-bs-target=
-                    '#document-delete-modal' id='document-delete-modal-btn' ><i class='fa fa-trash'></i></a>";
+                
+                // if the version is the original version, the creation_date should be the date that the document is created.
+                if ($index == 0) {
+
+                    $document['creation_date'] = format_date($document['creation_date']);
+
+                // if the version is the late version, the creation_date should be the date that the file is uploaded.
+                } else {
+
+                    $document['creation_date'] = format_date($document['file_upload_time']);
+                    
                 }
-                $document['actions'] .= "</div>";
+
+                $document['approval_date'] = format_date($document['approval_date']);
+                $document['actions'] = "
+                    <div class='text-center nowrap'>
+                ";
+
+                if (!empty($_SESSION['delete_documentation']) && $version != $document['file_version']) {
+                    $document['actions'] .= "
+                        <a class='document--delete mx-1' data-version='{$document['file_version']}' data-id='" . ((int)$document['id']) . "' data-bs-toggle='modal' data-bs-target= '#document-delete-modal' id='document-delete-modal-btn' ><i class='fa fa-trash'></i></a>
+                    ";
+                }
+                $document['actions'] .= "
+                    </div>
+                ";
             }
-        }
+            
         // If this is request to view document list.
-        else
-        {
-            $filterRules = isset($_GET["filterRules"])?json_decode($_GET["filterRules"],true):array();
+        } else {
+
+            $filterRules = isset($_GET["filterRules"]) ? json_decode($_GET["filterRules"],true) : array();
             $filtered_documents = array();
             $documents = get_documents($type);
-            foreach($documents as &$document){
+            foreach ($documents as &$document) {
                 $frameworks = get_frameworks_by_ids($document["framework_ids"]);
-                $framework_names = implode(", ", array_map(function($framework){
+                $framework_names = implode(", ", array_map(function($framework) {
                     return $framework['name'];
                 }, $frameworks));
 
                 $control_ids = explode(",", $document["control_ids"]);
                 $controls = get_framework_controls_by_filter("all", "all", "all", "all", "all", "all", "all", "all", "", $control_ids);
-                $control_names = implode(", ", array_map(function($control){
+                $control_names = implode(", ", array_map(function($control) {
                     return $control['short_name'];
                 }, $controls));
 
                 // document filtering
-                if(count($filterRules)>0) {
-                    foreach($filterRules as $filter){
+                if (count($filterRules)>0) {
+                    foreach ($filterRules as $filter) {
                         $value = $filter['value'];
-                        switch($filter['field']){
+                        switch ($filter['field']) {
                             case "document_name":
-                                if( stripos($document['document_name'], $value) === false ){
+                                if (stripos($document['document_name'], $value) === false) {
                                     continue 3;
                                 }
                                 break;
                             case "document_type":
-                                if( stripos($document['document_type'], $value) === false ){
+                                if (stripos($document['document_type'], $value) === false) {
                                     continue 3;
                                 }
                                 break;
                             case "framework_names":
-                                if( stripos($framework_names, $value) === false ){
+                                if (stripos($framework_names, $value) === false) {
                                     continue 3;
                                 }
                                 break;
                             case "control_names":
-                                if( stripos($control_names, $value) === false ){
+                                if (stripos($control_names, $value) === false) {
                                     continue 3;
                                 }
                                 break;
                             case "creation_date":
-                                if( stripos(format_date($document['creation_date']), $value) === false ){
+                                if(stripos(format_date($document['creation_date']), $value) === false) {
                                     continue 3;
                                 }
                                 break;
                             case "approval_date":
-                                if( stripos(format_date($document['approval_date']), $value) === false ){
+                                if (stripos(format_date($document['approval_date']), $value) === false) {
                                     continue 3;
                                 }
                                 break;
                             case "status":
-                                if( stripos(get_name_by_value('document_status', $document['status']), $value) === false ){
+                                if (stripos(get_name_by_value('document_status', $document['status']), $value) === false) {
                                     continue 3;
                                 }
                                 break;
@@ -5819,22 +5843,28 @@ function getTabularDocumentsResponse()
 
                 $document['state'] = "closed";
                 $document['document_type'] = $escaper->escapeHtml($document['document_type']);
-                $document['document_name'] = "<a class='text-info' href='".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."' >".$escaper->escapeHtml($document['document_name'])."</a>";
+                $document['document_name'] = "<a class='text-info' href='{$_SESSION['base_url']}/governance/download.php?id={$document['unique_name']}' >{$escaper->escapeHtml($document['document_name'])}</a>";
                 $document['status'] = $escaper->escapeHtml(get_name_by_value('document_status', $document['status']));
                 $document['framework_names'] = $escaper->escapeHtml($framework_names);
                 $document['control_names'] = $escaper->escapeHtml($control_names);
                 $document['creation_date'] = format_date($document['creation_date']);
                 $document['approval_date'] = format_date($document['approval_date']);
-                $document['actions'] = "<div class='text-center nowrap'>";
-                if(!empty($_SESSION['modify_documentation']))
-                {
-                    $document['actions'] .= "<a class='document--edit mx-1' data-id='".((int)$document['id'])."'><i class='fa fa-edit'></i></a>";
+                $document['actions'] = "
+                    <div class='text-center nowrap'>
+                ";
+                if (!empty($_SESSION['modify_documentation'])) {
+                    $document['actions'] .= "
+                        <a class='document--edit mx-1' data-id='" . ((int)$document['id']) . "'><i class='fa fa-edit'></i></a>
+                    ";
                 }
-                if(!empty($_SESSION['delete_documentation']))
-                {
-                    $document['actions'] .= "<a class='document--delete mx-1' data-id='".((int)$document['id'])."' data-type='".$document['document_type']."'><i class='fa fa-trash'></i></a>";
+                if (!empty($_SESSION['delete_documentation'])) {
+                    $document['actions'] .= "
+                        <a class='document--delete mx-1' data-id='" . ((int)$document['id']) . "' data-type='{$document['document_type']}'><i class='fa fa-trash'></i></a>
+                    ";
                 }
-                $document['actions'] .= "</div>";
+                $document['actions'] .= "
+                    </div>
+                ";
                 $filtered_documents[] = $document;
             }
             $documents = $filtered_documents;
@@ -5842,10 +5872,10 @@ function getTabularDocumentsResponse()
         
         echo json_encode($documents);
         exit;
-    }
-    else
-    {
+    } else {
+
         json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
+
     }
 }
 
@@ -7452,6 +7482,10 @@ function getTagOptionsOfTypes() {
             return;
         } elseif((in_array('questionnaire_answer', $types) || in_array('questionnaire_pending_risk', $types)) && (!check_permission("assessments") || !assessments_extra())) {
             set_alert(true, "bad", $lang['NoPermissionForAssessments']);
+            json_response(400, get_alert(true), NULL);
+            return;
+        } elseif((in_array('test', $types) || in_array('test_audit', $types)) && !check_permission("compliance")) {
+            set_alert(true, "bad", $lang['NoPermissionForCompliance']);
             json_response(400, get_alert(true), NULL);
             return;
         }

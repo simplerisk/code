@@ -252,60 +252,15 @@ switch($active_sidebar_submenu){
         </div>
     </div>
 </div>
-<input type="hidden" id="enable_popup" value="<?php echo $escaper->escapeHtml(get_setting('enable_popup')); ?>">     
 <script>
-    /*
-    * Function to add the css class for textarea title and make it popup.
-    * Example usage:
-    * focus_add_css_class("#foo", "#bar");
-    */
-    function showScoreDetails() {
-        document.getElementById("scoredetails").style.display = "";
-        document.getElementById("hide").style.display = "block";
-        document.getElementById("show").style.display = "none";
-    }
-
-    function hideScoreDetails() {
-        document.getElementById("scoredetails").style.display = "none";
-        document.getElementById("updatescore").style.display = "none";
-        document.getElementById("hide").style.display = "none";
-        document.getElementById("show").style.display = "";
-    }
 
     function updateScore() {
         document.getElementById("scoredetails").style.display = "none";
         document.getElementById("updatescore").style.display = "";
         document.getElementById("show").style.display = "none";
     }
-    function focus_add_css_class(id_of_text_head, text_area_id){
-        // If enable_popup setting is false, disable popup
-        if($("#enable_popup").val() != 1){
-            $("textarea").removeClass("enable-popup");
-            return;
-        }else{
-            $("textarea").addClass("enable-popup");
-        }
-        
-        look_for = "textarea" + text_area_id;
-        if( !$(look_for).length ){
-            text_area_id = text_area_id.replace('#','');
-            look_for = "textarea[name=" + text_area_id;
-        }
-        $(look_for).focusin(function() {
-            $(id_of_text_head).addClass("affected-assets-title");
-            $('.ui-autocomplete').addClass("popup-ui-complete")
-        });
-        $(look_for).focusout(function() {
-            $(id_of_text_head).removeClass("affected-assets-title");
-            $('.ui-autocomplete').removeClass("popup-ui-complete")
-        });
-    }
+
     $(document).ready(function() {
-        focus_add_css_class("#RiskAssessmentTitle", "#assessment");
-        focus_add_css_class("#NotesTitle", "#notes");
-        focus_add_css_class("#SecurityRequirementsTitle", "#security_requirements");
-        focus_add_css_class("#CurrentSolutionTitle", "#current_solution");
-        focus_add_css_class("#SecurityRecommendationsTitle", "#security_recommendations");
         
         setupAssetsAssetGroupsViewWidget($('select.assets-asset-groups-select-disabled'));
         

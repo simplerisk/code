@@ -356,10 +356,17 @@ $(document).ready(function(){
 
             riskDataTables.push(riskDatatable);
             riskDatatable.on( 'xhr', function () {
-                columnFilters = riskDatatable.ajax.params().columnFilters;
-                var orderColumnIndex = riskDatatable.ajax.params().order[0].column;
-                orderColumnName = riskDatatable.ajax.params().columns[orderColumnIndex].name;
-                orderDir = riskDatatable.ajax.params().order[0].dir;
+                let riskDatatableParams = riskDatatable.ajax.params();
+
+                if (riskDatatableParams.columnFilters) {
+                    columnFilters = riskDatatableParams.columnFilters;
+
+                    if (riskDatatableParams.order && riskDatatableParams.order.length > 0) {
+                        var orderColumnIndex = riskDatatableParams.order[0].column;
+                        orderColumnName = riskDatatableParams.columns[orderColumnIndex].name;
+                        orderDir = riskDatatableParams.order[0].dir;
+                    }
+                } 
             });
         });
 

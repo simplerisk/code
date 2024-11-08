@@ -2432,6 +2432,8 @@ $lang = array(
     'FileUploadNoFileSent' => '文件上传失败：未发送文件',
     'FileUploadExceededFileSize' => '文件上传失败：超出文件大小限制',
     'FileUploadUnknownErrors' => '文件上传失败：未知错误',
+    'DynamicIncidentReport' => '动态事件报告',
+    'FilteringSelections' => '过滤选择',
 
     '' => '',
 );

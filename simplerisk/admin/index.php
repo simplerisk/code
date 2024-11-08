@@ -16,14 +16,6 @@ if (isset($_POST['update_general_settings']))
     // Set the error to false
     $error = false;
 
-    // Update the setting to enable pop-up windows for text boxes
-    $enable_popup = (isset($_POST['enable_popup'])) ? 1 : 0;
-    $current_enable_popup = get_setting("enable_popup");
-    if ($enable_popup != $current_enable_popup)
-    {
-        update_setting("enable_popup", $enable_popup);
-    }
-
     // Update the 'Automatically verify new assets' setting
     $auto_verify_new_assets = (isset($_POST['auto_verify_new_assets'])) ? 1 : 0;
     $current_auto_verify_new_assets = get_setting("auto_verify_new_assets");
@@ -654,12 +646,6 @@ $simplerisk_max_upload_size = get_setting('max_upload_size');
                         <h4 class="page-title"><?= $escaper->escapeHtml($lang['UserInterface']);?></h4>
                         <div class="row form-group">
                             <div class="col-md-12">
-                                <!-- <div class="form-check mr-sm-2">
-                                    <input <?php //if($escaper->escapeHtml(get_setting('enable_popup')) == 1){ echo "checked"; } ?> name="enable_popup" type="checkbox" class="form-check-input" size="2" value="90" id="enable_popup">
-                                    <label class="form-check-label mb-0" for="enable_popup">
-                                        &nbsp;&nbsp; <?php //echo $escaper->escapeHtml($lang['EnablePopupWindowsForTextBoxes']); ?>   
-                                    </label>
-                                </div> -->
                                 <div class="form-check mr-sm-2">
                                         <input <?php if($escaper->escapeHtml(get_setting('plan_projects_show_all')) == 1){ echo "checked"; } ?> name="plan_projects_show_all" class="form-check-input" size="2" value="90" id="plan_projects_show_all" type="checkbox">
                                         <label class="form-check-label mb-0" for="plan_projects_show_all"  >

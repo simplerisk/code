@@ -48,11 +48,17 @@ require_once(realpath(__DIR__ .'/header.php'));
         }
     ?>  
                     <ul aria-expanded="false" class="collapse first-level <?= ($active_sidebar_menu =='RiskManagement')?'in':''; ?>">
+    <?php
+        if (check_permission("riskmanagement") && check_permission("submit_risks")) {
+    ?>
                         <li class="sidebar-item <?= ($active_sidebar_submenu == 'SubmitYourRisks')?'active':''; ?>">
                             <a href="../management/index.php" class="sidebar-link">
                                 <span class="hide-menu"><?= $escaper->escapeHtml($lang['SubmitYourRisks']);?></span>
                             </a>
                         </li>
+    <?php
+        }
+    ?>
                         <li class="sidebar-item <?= ($active_sidebar_submenu == 'PlanYourMitigations')?'active':''; ?>">
                             <a href="../management/plan_mitigations.php" class="sidebar-link">
                                 <span class="hide-menu"><?= $escaper->escapeHtml($lang['PlanYourMitigations']);?></span>
@@ -236,6 +242,11 @@ require_once(realpath(__DIR__ .'/header.php'));
                         <li class="sidebar-item <?= ($active_sidebar_submenu =='IncidentTrend')?'active':''; ?>">
                             <a href="../incidents/reporting.php?menu=incident_trend" class="sidebar-link">
                                 <span class="hide-menu p-l-30"><?= $escaper->escapeHtml($lang['IncidentTrend']);?></span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item <?= ($active_sidebar_submenu =='DynamicIncidentReport')?'active':''; ?>">
+                            <a href="../incidents/reporting.php?menu=dynamic_incident_report" class="sidebar-link">
+                                <span class="hide-menu p-l-30"><?= $escaper->escapeHtml($lang['DynamicIncidentReport']);?></span>
                             </a>
                         </li>
                         <li class="sidebar-item <?= ($active_sidebar_submenu =='IM_Reporting_LessonsLearned')?'active':''; ?>">

@@ -48,25 +48,30 @@ $exception_permissions = ['view' ,'create' ,'update' ,'delete' ,'approve'];
 /******************************
  * FUNCTION: CHECK PERMISSION *
  ******************************/
-function check_permission($permission)
-{
+function check_permission($permission) {
+
 	// If we have a valid session
-	if (isset($_SESSION['user']) && $_SESSION['user'] != "")
-	{
-		$message = "The currently authenticated session for username \"" . $_SESSION['user'] . "\"";
-	}
-	else $message = "The currently unauthenticated session";
+	if (isset($_SESSION['user']) && $_SESSION['user'] != "") {
+
+		$message = "The currently authenticated session for username '{$_SESSION['user']}'";
+
+	} else {
+
+        $message = "The currently unauthenticated session";
+
+    }
 
 	// Check if the permission is authorized
-	if (!isset($_SESSION[$permission]) || $_SESSION[$permission] != 1)
-	{
-		write_debug_log($message . " does not have the \"" . $permission . "\" permission.");
+	if (!isset($_SESSION[$permission]) || $_SESSION[$permission] != 1) {
+
+		write_debug_log("{$message} does not have the '{$permission}' permission.");
 		return false;
-	}
-	else
-	{
-		write_debug_log($message . " has the \"" . $permission . "\" permission.");
+
+	} else {
+
+		write_debug_log("{$message} has the '{$permission}' permission.");
 		return true;
+
 	}
 }	
 
