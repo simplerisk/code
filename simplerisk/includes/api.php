@@ -3670,14 +3670,14 @@ function getFrameworkControlsDatatable() {
                     break;
                 }
             }
-            $edit = "<a href='#' class='control-block--edit' title='{$escaper->escapeHtml($lang['Edit'])}' data-id='{$escaper->escapeHtml($control['id'])}'><i class='fa fa-edit'></i></a>";
+            $edit = "<a href='#' class='btn btn-success ms-1 control-block--edit' title='{$escaper->escapeHtml($lang['Edit'])}' data-id='{$escaper->escapeHtml($control['id'])}'><i class='fa fa-edit'></i></a>";
             // Remove clone button if user has no permission for add new controls
             if(empty($_SESSION['add_new_controls'])) {
                 $clone = "";
             } else { // Add clone button if user has the permission
-                $clone = "<a href='#' class='control-block--clone' title='{$escaper->escapeHtml($lang['Clone'])}' data-id='{$escaper->escapeHtml($control['id'])}'><i class='fa fa-clone'></i></a>";
+                $clone = "<a href='#' class='btn btn-submit ms-1 control-block--clone' title='{$escaper->escapeHtml($lang['Clone'])}' data-id='{$escaper->escapeHtml($control['id'])}'><i class='fa fa-clone'></i></a>";
             }
-            $delete = "<a href='' class='control-block--delete' title='{$escaper->escapeHtml($lang['Delete'])}' data-id='{$escaper->escapeHtml($control['id'])}'><i class='fa fa-trash'></i></a>";
+            $delete = "<a href='' class='btn btn-primary control-block--delete' title='{$escaper->escapeHtml($lang['Delete'])}' data-id='{$escaper->escapeHtml($control['id'])}'><i class='fa fa-trash'></i></a>";
             $html = "
                 <div class='control-block item-block clearfix'>
                     <div class='control-block--header clearfix' data-project='' style='padding: 1.25rem;'>

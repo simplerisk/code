@@ -1463,6 +1463,172 @@ $field_settings = [
             'has_display_field' => false
         ],
     ],
+    'incident_management_incident_to_lessons_learned' => [
+        'id' => [
+            'customization_field_name' => 'ID',
+            'localization_key' => '',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => false,
+            'orderable' => true,
+            'order_column' => "a.id",
+            'editable' => false,
+            'select_parts' => ["
+                a.id
+            "],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        'lessons' => [
+            'customization_field_name' => 'Lesson',
+            'localization_key' => 'Lesson',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "lessons",
+            'editable' => false,
+            'select_parts' => [
+                "imll.name as lessons"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN incident_management_lessons_learned imll ON a.lesson_learned_id = imll.value", 
+			    "LEFT JOIN incident_management_incidents imi ON a.incident_id = imi.id"
+            ],
+            'custom_column_style' => 'min-width: 300px;'
+        ],
+        'number_of_incidents' => [
+            'customization_field_name' => 'NumberOfIncidents',
+            'localization_key' => 'NumberOfIncidents',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "number_of_incidents",
+            'editable' => false,
+            'select_parts' => [
+                "COUNT(a.incident_id) as number_of_incidents"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN incident_management_lessons_learned imll ON a.lesson_learned_id = imll.value", 
+			    "LEFT JOIN incident_management_incidents imi ON a.incident_id = imi.id"
+            ],
+        ],
+        'incidents' => [
+            'customization_field_name' => 'Incidents',
+            'localization_key' => 'Incidents',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => false,
+            'editable' => false,
+            'select_parts' => [
+                "CONCAT(
+                    '[',
+                    IF(
+                        imi.id IS NOT NULL,
+                        GROUP_CONCAT(
+                            DISTINCT
+                            JSON_OBJECT(
+                                'id', imi.id,
+                                'incident_id', imi.id + 1000,
+                                'status', imis.status,
+                                'substatus', imis.substatus,
+                                'summary', imi.summary
+                            )
+                            SEPARATOR ','
+                        ),
+                        ''
+                    ),
+                    ']'
+                ) AS incidents"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN incident_management_lessons_learned imll ON a.lesson_learned_id = imll.value", 
+			    "LEFT JOIN incident_management_incidents imi ON a.incident_id = imi.id",
+                "LEFT JOIN incident_management_incident_status imis ON imi.status = imis.value"
+            ],
+            'custom_column_style' => 'min-width: 250px;'
+        ],
+        'priority_average' => [
+            'customization_field_name' => 'PriorityAverage',
+            'localization_key' => 'PriorityAverage',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "priority_average",
+            'editable' => false,
+            'select_parts' => [
+                "ROUND(AVG(imi.score), 1) as priority_average"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN incident_management_lessons_learned imll ON a.lesson_learned_id = imll.value", 
+			    "LEFT JOIN incident_management_incidents imi ON a.incident_id = imi.id"
+            ],
+        ],
+        'functional_average' => [
+            'customization_field_name' => 'FunctionalAverage',
+            'localization_key' => 'FunctionalAverage',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "functional_average",
+            'editable' => false,
+            'select_parts' => [
+                "ROUND(AVG(imfi.score), 1) as functional_average"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN incident_management_lessons_learned imll ON a.lesson_learned_id = imll.value", 
+			    "LEFT JOIN incident_management_incidents imi ON a.incident_id = imi.id",
+                "LEFT JOIN incident_management_functional_impact imfi ON imi.functional_impact = imfi.value"
+            ],
+        ],
+        'information_average' => [
+            'customization_field_name' => 'InformationAverage',
+            'localization_key' => 'InformationAverage',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "information_average",
+            'editable' => false,
+            'select_parts' => [
+                "ROUND(AVG(imii.score), 1) as information_average"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN incident_management_lessons_learned imll ON a.lesson_learned_id = imll.value", 
+			    "LEFT JOIN incident_management_incidents imi ON a.incident_id = imi.id",
+                "LEFT JOIN incident_management_information_impact imii ON imi.information_impact = imii.value"
+            ],
+        ],
+        'recovery_average' => [
+            'customization_field_name' => 'RecoveryAverage',
+            'localization_key' => 'RecoveryAverage',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "recovery_average",
+            'editable' => false,
+            'select_parts' => [
+                "ROUND(AVG(imr.score), 1) as recovery_average"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN incident_management_lessons_learned imll ON a.lesson_learned_id = imll.value", 
+			    "LEFT JOIN incident_management_incidents imi ON a.incident_id = imi.id",
+                "LEFT JOIN incident_management_recovery imr ON imi.recovery = imr.value"
+            ],
+        ]
+    ],
 ];
 
 global $field_settings_display_groups;
@@ -1646,6 +1812,19 @@ $field_settings_display_groups = [
             'summary',
             'start_date',
             'detection_date'
+        ],
+    ],
+    'incident_management_reporting_lessons_learned' => [
+        'header_key' => '',
+        'field_type' => 'incident_management_incident_to_lessons_learned',
+        'fields' => [
+            'lessons',
+            'number_of_incidents',
+            'incidents',
+            'priority_average',
+            'functional_average',
+            'information_average',
+            'recovery_average'
         ],
     ],
 ];
@@ -1857,6 +2036,27 @@ $field_settings_views = [
             'summary',
             'start_date',
             'detection_date'
+        ],
+    ],
+    'incident_management_reporting_lessons_learned' => [
+        'view_type' => 'incident_management_incident_to_lessons_learned',
+        'base_table' => 'incident_management_incident_to_lessons_learned',
+        'groupby' => 'a.lesson_learned_id',
+        'id_field' => 'id',
+        'datatable_ajax_uri' => '/api/v2/im/incident/get/incident/datatable?view=incident_management_reporting_lessons_learned',
+        'datatable_data_type' => 'associative',
+        'datatable_filter_submit_delay' => 600,
+        'groups' => [
+            'incident_management_reporting_lessons_learned'
+        ],
+        'default_enabled_columns' => [
+            'lessons',
+            'number_of_incidents',
+            'incidents',
+            'priority_average',
+            'functional_average',
+            'information_average',
+            'recovery_average'
         ],
     ],
 ];
@@ -23715,10 +23915,12 @@ function field_settings_get_join_parts($view, $selected_fields = [], $technical_
         foreach ($field_settings[$type] as $_ => $field) {
             if (!empty($field['technical_field']) && $field['technical_field']) {
                 if (!empty($field['select_parts'])) {
-                    $select_parts = array_merge($select_parts, $field['select_parts']);
+                    // Remove the duplicated values
+                    $select_parts = array_unique(array_merge($select_parts, $field['select_parts']));
                 }
                 if (!empty($field['join_parts'])) {
-                    $join_parts = array_merge($join_parts, $field['join_parts']);
+                    // Remove the duplicated values
+                    $join_parts = array_unique(array_merge($join_parts, $field['join_parts']));
                 }
             }
         }
@@ -23740,18 +23942,24 @@ function field_settings_get_join_parts($view, $selected_fields = [], $technical_
         }
         
         if (!empty($field['select_parts'])) {
-            $select_parts = array_merge($select_parts, $field['select_parts']);
+            // Remove the duplicated values
+            $select_parts = array_unique(array_merge($select_parts, $field['select_parts']));
         }
         if (!empty($field['join_parts'])) {
-            $join_parts = array_merge($join_parts, $field['join_parts']);
+            // Remove the duplicated values
+            $join_parts = array_unique(array_merge($join_parts, $field['join_parts']));
         }
     }
 
     if ($customization && !empty($selected_custom_fields)) {
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        list($select_part, $join_part) = get_custom_value_join_parts($type, $selected_custom_fields);
-        $select_parts []= $select_part;
-        $join_parts []= $join_part;
+        list($select_parts_custom, $join_parts_custom) = get_custom_value_join_parts($type, $selected_custom_fields);
+
+        // Remove the duplicated values
+        $select_parts = array_unique(array_merge($select_parts, $select_parts_custom));
+
+        // Remove the duplicated values
+        $join_parts = array_unique(array_merge($join_parts, $join_parts_custom));
     }
 
     return [$select_parts, $join_parts];

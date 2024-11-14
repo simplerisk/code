@@ -313,10 +313,29 @@ function get_tmp_spreadsheet_content($unique_name)
 }
 
 
+/******************************************
+ * FUNCTION: GET DATA FROM UPLOADED FILE *
+ ******************************************/
+function get_data_from_tmp_spreadsheet($unique_name, $header = false)
+{
+    // If we want the header
+    if ($header)
+    {
+        // Get the header from the tmp spreadsheet
+        return get_tmp_spreadsheet_header($unique_name);
+    }
+    // If we want the content
+    else
+    {
+        // Get the content from the tmp spreadsheet
+        return get_tmp_spreadsheet_content($unique_name);
+    }
+}
+
 /********************************
  * FUNCTION: UPLOAD IMPORT FILE *
  ********************************/
-function upload_import_file($file, $unique_name = null)
+function upload_tmp_import_file($file, $unique_name = null)
 {
     global $escaper, $lang;
     
@@ -388,25 +407,4 @@ function upload_import_file($file, $unique_name = null)
         return false;
     }
 }
-
-/******************************************
- * FUNCTION: GET DATA FROM UPLOADED FILE *
- ******************************************/
-function get_data_from_uploaded_file($unique_name, $header = false)
-{
-    // If we want the header
-    if ($header)
-    {
-        // Get the header from the tmp spreadsheet
-        return get_tmp_spreadsheet_header($unique_name);
-    }
-    // If we want the content
-    else
-    {
-        // Get the content from the tmp spreadsheet
-        return get_tmp_spreadsheet_content($unique_name);
-    }
-}
-
-
 ?>

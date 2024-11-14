@@ -9027,43 +9027,48 @@ function display_side_navigation($active)
 	echo "}\n";
 	echo "</script>\n";
 }
+
 /****************************************
 * FUNCTION: DISPLAY CUSTOM RISK COLUMNS *
 ****************************************/
-function display_custom_risk_columns($custom_setting_field = "custom_plan_mitigation_display_settings"){
+function display_custom_risk_columns($custom_setting_field = "custom_plan_mitigation_display_settings") {
+
     global $escaper, $lang;
     $user = get_user_by_id($_SESSION['uid']);
     $settings = json_decode($user[$custom_setting_field], true);
 
     $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
     $risk_setting = [];
-    foreach($risk_colums_setting as $column){
+    foreach ($risk_colums_setting as $column) {
         $risk_setting[$column[0]] = $column[1];
     }
 
     $mitigation_colums_setting = isset($settings["mitigation_colums"])?$settings["mitigation_colums"]:[];
     $mitigation_setting = [];
-    foreach($mitigation_colums_setting as $column){
+    foreach ($mitigation_colums_setting as $column) {
         $mitigation_setting[$column[0]] = $column[1];
     }
 
     $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
     $review_setting = [];
-    foreach($review_colums_setting as $column){
+    foreach ($review_colums_setting as $column) {
         $review_setting[$column[0]] = $column[1];
     }
 
     $columns_setting = array_merge($risk_colums_setting, $mitigation_colums_setting, $review_colums_setting);
     $columns = [];
-    foreach($columns_setting as $column){
-        if(stripos($column[0], "custom_field_") !== false){
-            if(customization_extra() && $column[1] == 1) $columns[] = $column[0];
-        } else if($column[1] == 1) $columns[] = $column[0];
+    foreach ($columns_setting as $column) {
+        if (stripos($column[0], "custom_field_") !== false) {
+            if (customization_extra() && $column[1] == 1) {
+                $columns[] = $column[0];
+            }
+        } else if ($column[1] == 1) {
+            $columns[] = $column[0];
+        }
     }
-    if(!count($columns))
-    {
-        if ($custom_setting_field == "custom_reviewregularly_display_settings")
-        {
+
+    if (!count($columns)) {
+        if ($custom_setting_field == "custom_reviewregularly_display_settings") {
             $risk_setting = array("id" => 1, "risk_status" => 1, "subject" => 1, "calculated_risk" => 1, "days_open" => 1);
             $mitigation_setting = array();
             $review_setting = array("management_review" => 0, "review_date" => 0, "next_step" => 0, "next_review_date" => 1);
@@ -9080,15 +9085,12 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
             ul.sortable{list-style:none;margin:0;}
             ul.sortable li{border: 1px dotted #cccccc;margin:2px 0;padding:5px;}
         </style>
-        <div class=\"well\" id='column-selections-container'>
-            <h4 class=\"collapsible--toggle clearfix\">
-                <span>".$escaper->escapeHtml($lang['ColumnSelections'])."</span>
-            </h4>\n";
-
+        <div class='well accordion' id='column-selections-container'>
+    ";
     
     // If customization extra is enabled
-    if(customization_extra())
-    {
+    if(customization_extra()) {
+
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
         $active_fields = get_active_fields();
@@ -9107,23 +9109,31 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
             'mitigation_planned' => $escaper->escapeHtml($lang['MitigationPlanned']),
         );
         $review_columns = array("management_review"=>$escaper->escapeHtml($lang['ManagementReview']));
-        foreach($active_fields as $active_field)
-        {
+
+        foreach ($active_fields as $active_field) {
+
             $field = $label = "";
             // If this is main field
-            if($active_field['is_basic'] == 1) {
+            if ($active_field['is_basic'] == 1) {
+
                 $dynamic_field_info = get_dynamic_names_by_main_field_name($active_field['name']);
-                if($dynamic_field_info) {
+                if ($dynamic_field_info) {
                     $field = $dynamic_field_info['name'];
                     $label = $dynamic_field_info['text'];
-                } else continue;
+                } else {
+                    continue;
+                }
+
             } else {
+
                 $field = "custom_field_{$active_field['id']}";
                 $label = $escaper->escapeHtml($active_field['name']);
+
             }
+
             $active_field["field"] = $field;
             $active_field["label"] = $label;
-            switch($active_field['tab_index']){
+            switch ($active_field['tab_index']) {
                 case 1:
                     $risk_columns[$field] = $label;
                 break;
@@ -9135,7 +9145,9 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
                 break;
             }
         }
+
     } else {
+
         // Names list of Risk columns
         $risk_columns = array(
             'id' => $escaper->escapeHtml($lang['ID']),
@@ -9167,6 +9179,7 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
             'risk_mapping' => $escaper->escapeHtml($lang['RiskMapping']),
             'threat_mapping' => $escaper->escapeHtml($lang['ThreatMapping']),
         );
+
         $mitigation_columns = array(
             'mitigation_planned' => $escaper->escapeHtml($lang['MitigationPlanned']),
             'planning_strategy' => $escaper->escapeHtml($lang['PlanningStrategy']),
@@ -9182,6 +9195,7 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
             'security_recommendations' => $escaper->escapeHtml($lang['SecurityRecommendations']),
             'security_requirements' => $escaper->escapeHtml($lang['SecurityRequirements']),
         );
+
         $review_columns = array(
             'management_review' => $escaper->escapeHtml($lang['ManagementReview']),
             'review_date' => $escaper->escapeHtml($lang['ReviewDate']),
@@ -9189,105 +9203,219 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
             'next_step' => $escaper->escapeHtml($lang['NextStep']),
             'comments' => $escaper->escapeHtml($lang['Comments']),
         );
+
     }
+
     $risk_columns_keys = array_values(array_unique(array_merge(array_keys($risk_setting),array_keys($risk_columns))));
     $mitigation_columns_keys = array_values(array_unique(array_merge(array_keys($mitigation_setting),array_keys($mitigation_columns))));
     $review_columns_keys = array_values(array_unique(array_merge(array_keys($review_setting),array_keys($review_columns))));
+    
     // risk columns
     $str .= "
-        <div class=\"border bg-light p-3 m-2\">\n
-            <h4 class=\"collapsible--toggle clearfix\">
-                <span><i class=\"fa fa-caret-down p-2\"></i>" . $escaper->escapeHtml($lang['RiskColumns']) . ":</span>
-            </h4>\n
-            <div class=\"collapsible\">
-                <div class=\"row\">\n
-                    <div class=\"col-6\">\n
-                        <ul class=\"sortable sortable-risk\">";
-                        $half_num = ceil(count($risk_columns_keys)/2);
-                        for($i=0;$i<$half_num;$i++){
-                            $field = $risk_columns_keys[$i];
-                            $elem_id = "checkbox_".$field;
-                            $check_val = isset($risk_setting[$field])?$risk_setting[$field]:0;
-                            $checked = $check_val?"checked='yes'":"";
-                            if(isset($risk_columns[$field])){
-                                $str .= "<li>
-                                        <input class='hidden-checkbox form-check-input' type='checkbox' name='".$field."' id='".$elem_id."' ".$checked."/>
-                                        <label for='".$elem_id."'>".$risk_columns[$field]."</label>
-                                    </li>";
-                            }
-                        }
-                        $str .= "</ul>
-                    </div>\n
-                    <div class=\"col-6\">\n
-                        <ul class=\"sortable sortable-risk\">";
-                        for($i;$i<count($risk_columns_keys);$i++){
-                            $field = $risk_columns_keys[$i];
-                            $elem_id = "checkbox_".$field;
-                            $check_val = isset($risk_setting[$field])?$risk_setting[$field]:0;
-                            $checked = $check_val?"checked='yes'":"";
-                            if(isset($risk_columns[$field])){
-                                $str .= "<li>
-                                        <input class='hidden-checkbox form-check-input' type='checkbox' name='".$field."' id='".$elem_id."' ".$checked."/>
-                                        <label for='".$elem_id."'>".$risk_columns[$field]."</label>
-                                    </li>";
-                            }
-                        }
-                        $str .= "</ul>
-                    </div>\n
-                </div>\n
-            </div>\n
-        </div>\n";
-    $str .= "<div class=\"row\">
-        <div class=\"col-6\">\n";
-        // mitigation columns
-        $str .= "<div class=\"border bg-light p-3 m-2\">\n
-                <h4 class=\"collapsible--toggle clearfix\">
-                    <span><i class=\"fa fa-caret-down p-2\"></i>" . $escaper->escapeHtml($lang['MitigationColumns']) . ":</span>
-                </h4>\n
-                <div class=\"collapsible\">
-                    <ul class=\"sortable sortable-mitigation\">";
-                    foreach($mitigation_columns_keys as $field){
-                        $check_val = isset($mitigation_setting[$field])?$mitigation_setting[$field]:0;
-                        $elem_id = "checkbox_".$field;
-                        $checked = $check_val?"checked='yes'":"";
-                        if(isset($mitigation_columns[$field])){
-                            $str .= "<li>
-                                    <input class='hidden-checkbox form-check-input' type='checkbox' name='".$field."' id='".$elem_id."' ".$checked."/>
-                                    <label for='".$elem_id."'>".$mitigation_columns[$field]."</label>
-                                </li>";
-                        }
-                    }
-                    $str .= "</ul>
-                </div>\n
-            </div>\n
-        </div>\n";
-        // review columns
-        $str .= "<div class=\"col-6\">\n
-            <div class=\"border bg-light p-3 m-2\">\n
-                <h4 class=\"collapsible--toggle clearfix\">
-                    <span><i class=\"fa fa-caret-down p-2\"></i>" . $escaper->escapeHtml($lang['ReviewColumns']) . ":</span>
-                </h4>\n
-                <div class=\"collapsible\">
-                    <ul class=\"sortable sortable-review\">";
-                    foreach($review_columns_keys as $field){
-                        $check_val = isset($review_setting[$field])?$review_setting[$field]:0;
-                        $elem_id = "checkbox_".$field;
-                        $checked = $check_val?"checked='yes'":"";
-                        if(isset($review_columns[$field])){
-                            $str .= "<li>
-                                    <input class='hidden-checkbox form-check-input' type='checkbox' name='".$field."' id='".$elem_id."' ".$checked."/>
-                                    <label for='".$elem_id."'>".$review_columns[$field]."</label>
-                                </li>";
-                        }
-                    }
-                    $str .= "</ul>
-                </div>\n
-            </div>\n
-        </div>\n
-    </div>\n";
-    $str .= "</div>\n";
+            <div class='accordion-item'>
+                <h2 class='accordion-header'>
+                    <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#RiskColumns_container'>{$escaper->escapeHtml($lang['RiskColumns'])}</button>
+                </h2>
+                <div id='RiskColumns_container' class='accordion-collapse collapse'>
+                    <div class='accordion-body card-body'>
+                        <div class='row'>
+                            <div class='col-6'>
+                                <div class='p-3 h-100 border'>
+                                    <ul class='sortable sortable-risk mb-0 ps-0'>
+    ";
+
+    $half_num = ceil(count($risk_columns_keys)/2);
+    for ($i = 0; $i < $half_num ; $i++) {
+
+        $field = $risk_columns_keys[$i];
+        $elem_id = "checkbox_" . $field;
+        $check_val = isset($risk_setting[$field]) ? $risk_setting[$field] : 0;
+        $checked = $check_val ? "checked='yes'" : "";
+
+        if (isset($risk_columns[$field])) {
+            $str .= "
+                                        <li>
+                                            <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
+                                            <label class='ms-2' for='{$elem_id}'>{$risk_columns[$field]}</label>
+                                        </li>
+            ";
+        }
+    }
+    
+    $str .= "
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class='col-6'>
+                                <div class='p-3 h-100 border'>
+                                    <ul class='sortable sortable-risk mb-0 ps-0'>
+    ";
+
+    for ($i ; $i < count($risk_columns_keys) ; $i++) {
+
+        $field = $risk_columns_keys[$i];
+        $elem_id = "checkbox_" . $field;
+        $check_val = isset($risk_setting[$field]) ? $risk_setting[$field] : 0;
+        $checked = $check_val ? "checked='yes'" : "";
+
+        if (isset($risk_columns[$field])) {
+            $str .= "
+                                        <li>
+                                            <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
+                                            <label for='{$elem_id}'>{$risk_columns[$field]}</label>
+                                        </li>
+            ";
+        }
+    }
+
+    $str .= "
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    ";
+
+    // mitigation columns
+    $str .= "
+            <div class='accordion-item'>
+                <h2 class='accordion-header'>
+                    <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#MitigationColumns_container'>{$escaper->escapeHtml($lang['MitigationColumns'])}</button>
+                </h2>
+                <div id='MitigationColumns_container' class='accordion-collapse collapse'>
+                    <div class='accordion-body card-body'>
+                        <div class='row'>
+                            <div class='col-6'>
+                                <div class='p-3 h-100 border'>
+                                    <ul class='sortable sortable-mitigation mb-0 ps-0'>
+    ";
+
+    $half_num = ceil(count($mitigation_columns_keys)/2);
+    for ($i = 0; $i < $half_num ; $i++) {
+
+        $field = $mitigation_columns_keys[$i];
+        $check_val = isset($mitigation_setting[$field]) ? $mitigation_setting[$field] : 0;
+        $elem_id = "checkbox_" . $field;
+        $checked = $check_val ? "checked='yes'" : "";
+
+        if (isset($mitigation_columns[$field])) {
+            $str .= "
+                                        <li>
+                                            <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
+                                            <label class='ms-2' for='{$elem_id}'>{$mitigation_columns[$field]}</label>
+                                        </li>
+            ";
+        }
+    }
+
+    $str .= "
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class='col-6'>
+                                <div class='p-3 h-100 border'>
+                                    <ul class='sortable sortable-mitigation mb-0 ps-0'>
+    ";
+
+    for ($i ; $i < count($mitigation_columns_keys) ; $i++) {
+
+        $field = $mitigation_columns_keys[$i];
+        $elem_id = "checkbox_" . $field;
+        $check_val = isset($mitigation_setting[$field]) ? $mitigation_setting[$field] : 0;
+        $checked = $check_val ? "checked='yes'" : "";
+
+        if (isset($mitigation_columns[$field])) {
+            $str .= "
+                                        <li>
+                                            <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
+                                            <label for='{$elem_id}'>{$mitigation_columns[$field]}</label>
+                                        </li>
+            ";
+        }
+    }
+
+    $str .= "
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    ";
+
+    // review columns
+    $str .= "
+            <div class='accordion-item'>
+                <h2 class='accordion-header'>
+                    <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#ReviewColumns_container'>{$escaper->escapeHtml($lang['ReviewColumns'])}</button>
+                </h2>
+                <div id='ReviewColumns_container' class='accordion-collapse collapse'>
+                    <div class='accordion-body card-body'>
+                        <div class='row'>
+                            <div class='col-6'>
+                                <div class='p-3 h-100 border'>
+                                    <ul class='sortable sortable-review mb-0 ps-0'>
+    ";
+
+    $half_num = ceil(count($review_columns_keys)/2);
+    for ($i = 0; $i < $half_num ; $i++) {
+
+        $field = $review_columns_keys[$i];
+        $check_val = isset($review_setting[$field]) ? $review_setting[$field] : 0;
+        $elem_id = "checkbox_" . $field;
+        $checked = $check_val ? "checked='yes'" : "";
+
+        if (isset($review_columns[$field])) {
+            $str .= "
+                                        <li>
+                                            <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
+                                            <label class='ms-2' for='{$elem_id}'>{$review_columns[$field]}</label>
+                                        </li>
+            ";
+        }
+    }
+    $str .= "
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class='col-6'>
+                                <div class='p-3 h-100 border'>
+                                    <ul class='sortable sortable-review mb-0 ps-0'>
+    ";
+
+    for ($i ; $i < count($review_columns_keys) ; $i++) {
+
+        $field = $review_columns_keys[$i];
+        $elem_id = "checkbox_" . $field;
+        $check_val = isset($review_setting[$field]) ? $review_setting[$field] : 0;
+        $checked = $check_val ? "checked='yes'" : "";
+
+        if (isset($review_columns[$field])) {
+            $str .= "
+                                        <li>
+                                            <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
+                                            <label for='{$elem_id}'>{$review_columns[$field]}</label>
+                                        </li>
+            ";
+        }
+    }
+
+    $str .= "
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    ";
     echo $str;
 }
+
 function get_label_by_risk_field_name($field){
     global $lang, $escaper;
 	// Names list of Risk columns
@@ -10050,6 +10178,7 @@ function render_column_selection_widget($view) {
                     <div class='modal-body column-selections-container'>
                         <form id='custom_display_settings-{$view}' name='custom_display_settings-{$view}' method='post'>
                             <input type='hidden' name='display_settings_view' value='{$view}'>
+                            <div class='accordion'>
     ";
 
     foreach ($groups as $group_name => $group) {
@@ -10058,19 +10187,20 @@ function render_column_selection_widget($view) {
         if ($group['header']) {
 
             echo "
-                            <div class='row'>
-                                <h4 class='collapsible--toggle clearfix'>
-                                    <span class='collapse-title'><i class='fa fa-caret-down'></i>{$group['header']}</span>
-                                </h4>
-                                <div class='collapsible'>
+                                <div class='accordion-item'>
+                                    <h2 class='accordion-header'>
+                                        <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#{$group['header']}_container'>{$group['header']}</button>
+                                    </h2>
+                                    <div id='{$group['header']}_container' class='accordion-collapse collapse'>
+                                        <div class='accordion-body card-body'>
             ";
 
         }
 
         echo "
-                            <div class='row'>
-                                <div class='col-6 form-check'>
-                                    <ul class='pt-2'>
+                                <div class='row'>
+                                    <div class='col-6'>
+                                        <div class='p-3 h-100 border'>
         ";
 
         // Within a section the options are split into two columns.
@@ -10080,10 +10210,10 @@ function render_column_selection_widget($view) {
         foreach ($group['fields'] as $field_name => $text) {
 
             echo "
-                                        <li>
-                                            <input class='form-check-input' type='checkbox' name='{$field_name}' id='checkbox_{$field_name}-{$view}-{$group_name}' " . (in_array($field_name, $settings) ? "checked" : "") . "/>
-                                            <label class='form-check-label mb-0' for='checkbox_{$field_name}-{$view}-{$group_name}'>{$text}</label>
-                                        </li>
+                                            <div class='mb-1'>
+                                                <input class='form-check-input' type='checkbox' name='{$field_name}' id='checkbox_{$field_name}-{$view}-{$group_name}' " . (in_array($field_name, $settings) ? "checked" : "") . "/>
+                                                <label class='form-check-label mb-0 ms-2' for='checkbox_{$field_name}-{$view}-{$group_name}'>{$text}</label>
+                                            </div>
             ";
                                 
             // Add the closing of the left column and the start of the right column
@@ -10092,10 +10222,10 @@ function render_column_selection_widget($view) {
                 if ($counter >= $halfpoint) {
 
                     echo "
-                                    </ul>
-                                </div>
-                                <div class='col-6 form-check'>
-                                    <ul class='pt-2'>
+                                        </div>
+                                    </div>
+                                    <div class='col-6'>
+                                        <div class='p-3 h-100 border'>
                     ";
 
                     // disable the counting, we're over the halfway point
@@ -10108,23 +10238,25 @@ function render_column_selection_widget($view) {
         }
 
         echo "
-                                    </ul>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
         ";
 
         // Only have to add these if the section had a header
         if ($group['header']) {
 
             echo "
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
             ";
 
         }
     }
 
     echo "
+                            </div>
                         </form>
                     </div>
                     <div class='modal-footer'>
