@@ -15,8 +15,8 @@ require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 /*******************************************
  * FUNCTION: DISPLAY GRAPHIC TYPE DROPDOWN *
  *******************************************/
-function display_graphic_type_dropdown($settings=[])
-{
+function display_graphic_type_dropdown($settings=[]) {
+
     global $escaper, $lang;
 
     $type = $escaper->escapeHtml(get_param("POST", "type", $settings?$settings["type"]:""));
@@ -24,41 +24,32 @@ function display_graphic_type_dropdown($settings=[])
     // Set the chart title
     $chart_title = $escaper->escapeHtml(get_param("POST", "chart_title", $settings?$settings["chart_title"]:""));
 
-    echo "<div class='row'>\n";
-    echo "    <div class='col-12'><h4>Visualization</h4></div>\n";
-    echo "</div>\n";
+    echo "
+        <h4><u>Visualization</u></h4>
+        <div class='row'>
+            <div class='col-6'>
+                <label>Type :</label>
+                <select id='type' name='type' class='form-select'>
+                    <option value='area'" . (!$type || $type === 'area' ? " selected='selected'" : "") . ">Area Range</option>
+                    <option value='line'" . ($type === 'line' ? " selected='selected'" : "") . ">Line</option>
+                    <option value='column'" . ($type === 'column' ? " selected='selected'" : "") . ">Bar</option>
+                </select>
+            </div>
+            <div class='col-6'>
+                <label>Title :</label>
+                <input type='text' name='chart_title' value='{$chart_title}' class='form-control'/>
+            </div>
+        </div>
+    ";
 
-    echo "<div class='row'>\n";
-    echo "<div class='col-12'>\n";
-    echo "<div class='row'>\n";
-    echo "    <div class='col-6'>\n";
-    echo"        <div class='form-group'>";
-    echo "          <label>Type:</label>\n";
-    echo "          <select id='type' name='type' class='form-select'>\n";
-    echo "            <option value='area'" . (!$type || $type === 'area' ? " selected='selected'" : "") . ">Area Range</option>\n";
-    echo "            <option value='line'" . ($type === 'line' ? " selected='selected'" : "") . ">Line</option>\n";
-    echo "            <option value='column'" . ($type === 'column' ? " selected='selected'" : "") . ">Bar</option>\n";
-    echo "        </select>\n";
-    echo "      </div>\n";
-    echo "   </div>\n";
-
-    echo "    <div class='col-6'>\n";
-    echo"        <div class='form-group'>";
-    echo "          <label>Title:</label>\n";
-    echo "          <input type='text' name='chart_title' value='{$chart_title}' class='form-control'/>\n";
-    echo "       </div>\n";
-    echo "    </div>\n";
-    echo "</div>\n";
-    echo "</div>\n";
-    echo "</div>\n";
 }
 
 
 /****************************
  * FUNCTION: DISPLAY Y AXIS *
  ****************************/
-function display_y_axis($settings=[])
-{
+function display_y_axis($settings=[]) {
+
     global $escaper, $lang;
 
     // set the Y axis
@@ -78,70 +69,72 @@ function display_y_axis($settings=[])
     //$default_severity = array('very_high' => 1, 'high' => 1, 'medium' => 1, 'low' => 1, 'insignificant' => 1);
     $risk_severity = get_param("POST", "risk_severity", $default_severity);
 
-    echo "<div class='row'>\n";
-        echo "<div class='col-12'><h4>Y-Axis</h4></div>\n";
-    echo "</div>\n";
+    echo "
+        <h4 class='mt-3'><u>Y-Axis</u></h4>
+        <div class='row form-group'>
+            <div class='col-6'>
+                <label>Aggregation :</label>
+                <select id='y_axis_aggregation' name='y_axis_aggregation' class='form-select'>
+                    <option value='average'" . (!$y_axis_aggregation || $y_axis_aggregation === 'average' ? " selected='selected'" : "") . ">Average</option>
+                    <option value='count'" . ($y_axis_aggregation === 'count' ? " selected='selected'" : "") . ">Count</option>
+                    <option value='total'" . ($y_axis_aggregation === 'total' ? " selected='selected'" : "") . ">Count Total</option>
+                    <option value='max'" . ($y_axis_aggregation === 'max' ? " selected='selected'" : "") . ">Max</option>
+                    <option value='min'" . ($y_axis_aggregation === 'min' ? " selected='selected'" : "") . ">Min</option>
+                </select>
+            </div>
+            <div class='col-6'>
+                <label>Custom Label :</label>
+                <input type='text' name='y_axis_custom_label' value='{$y_axis_custom_label}' class='form-control'/>
+            </div>
+        </div>
+        <div class='row'>
+            <div class='col-6'>
+                <label>Y-Axis Value :</label>
+                <select id='y_axis' name='y_axis' class='form-select'>
+                    <option value='inherent_risk'" . ($y_axis === false || $y_axis === 'inherent_risk' ? " selected='selected'" : "") . ">Inherent Risk</option>
+                    <option value='residual_risk'" . ($y_axis === false || $y_axis === 'residual_risk' ? " selected='selected'" : "") . ">Residual Risk</option>
+                </select>
+            </div>
+        </div>
+        <div class='mt-3'>
+            <h4><u>Status</u></h4>
+            <div class='form-check'>
+                <input type='radio' name='risk_status' id='risk_status1' class='form-check-input me-2' value='all'" . (!$risk_status || $risk_status === 'all' ? " checked='checked'" : "") . "><label for='risk_status1'>All</label>
+            </div>
+            <div class='form-check'>
+                <input type='radio' name='risk_status' id='risk_status2' class='form-check-input me-2' value='open'" . ($risk_status === 'open' ? " checked='checked'" : "") . "><label for='risk_status2'>Open</label>
+            </div>
+            <div class='form-check'>
+                <input type='radio' name='risk_status' id='risk_status3' class='form-check-input me-2' value='closed'" . ($risk_status === 'closed' ? " checked='checked'" : "") . "><label for='risk_status3'>Closed</label>
+            </div>
+        </div>
+        <div class='mt-3'>
+            <h4><u>Severity</u></h4>
+            <div class='form-check'>
+                <input type='checkbox' id='very_high' class='form-check-input me-2' name='risk_severity[very_high]'" . (isset($risk_severity['very_high']) ? " checked='checked'" : "") . "><label for='very_high'>Very High</label>
+            </div>
+            <div class='form-check'>
+                <input type='checkbox' id='high' class='form-check-input me-2' name='risk_severity[high]'" . (isset($risk_severity['high']) ? " checked='checked'" : "") . "><label for='high'>High</label>
+            </div>
+            <div class='form-check'>
+                <input type='checkbox' id='medium' class='form-check-input me-2' name='risk_severity[medium]'" . (isset($risk_severity['medium']) ? " checked='checked'" : "") . "><label for='medium'>Medium</label>
+            </div>
+            <div class='form-check'>
+                <input type='checkbox' id='low' class='form-check-input me-2' name='risk_severity[low]'" . (isset($risk_severity['low']) ? " checked='checked'" : "") . "><label for='low'>Low</label>
+            </div>
+            <div class='form-check'>
+                <input type='checkbox' id='insignificant' class='form-check-input me-2' name='risk_severity[insignificant]'" . (isset($risk_severity['insignificant']) ? " checked='checked'" : "") . "><label for='insignificant'>Insignificant</label>
+            </div>
+        </div>
+    ";
 
-    echo "<div class='row'>\n";
-        echo"<div class='form-group col-6'>";
-            echo"<label>Aggregation:</label>\n";
-            echo"<select id='y_axis_aggregation' name='y_axis_aggregation' class='form-select'>\n";
-                echo"<option value='average'" . (!$y_axis_aggregation || $y_axis_aggregation === 'average' ? " selected='selected'" : "") . ">Average</option>\n";
-                echo"<option value='count'" . ($y_axis_aggregation === 'count' ? " selected='selected'" : "") . ">Count</option>\n";
-                echo"<option value='total'" . ($y_axis_aggregation === 'total' ? " selected='selected'" : "") . ">Count Total</option>\n";
-                echo"<option value='max'" . ($y_axis_aggregation === 'max' ? " selected='selected'" : "") . ">Max</option>\n";
-                echo"<option value='min'" . ($y_axis_aggregation === 'min' ? " selected='selected'" : "") . ">Min</option>\n";
-            echo"</select>\n";
-        echo"</div>\n";
-        echo"<div class='form-group col-6'>";
-            echo"<label>Custom Label:</label>\n";
-            echo"<input type='text' name='y_axis_custom_label' value='{$y_axis_custom_label}' class='form-control'/>\n";
-        echo"</div>\n";
-        echo"<div class='form-group col-6'>";
-            echo"<label>Y-Axis Value:</label>\n";
-            echo"<select id='y_axis' name='y_axis' class='form-select'>\n";
-            echo"<option value='inherent_risk'" . ($y_axis === false || $y_axis === 'inherent_risk' ? " selected='selected'" : "") . ">Inherent Risk</option>\n";
-            echo"<option value='residual_risk'" . ($y_axis === false || $y_axis === 'residual_risk' ? " selected='selected'" : "") . ">Residual Risk</option>\n";
-            echo"</select>\n";
-        echo"</div>\n";
-        echo"<div class='form-group col-12'>\n";
-            echo"<label>Status:</label>\n";
-            echo"<div class='form-check'>\n";
-                echo"<input type='radio' name='risk_status' id='risk_status1' class='form-check-input' value='all'" . (!$risk_status || $risk_status === 'all' ? " checked='checked'" : "") . "><label for='risk_status1'>&nbsp;All</label>\n";
-            echo"</div>\n";
-            echo"<div class='form-check'>\n";
-            echo"<input type='radio' name='risk_status'  id='risk_status2' class='form-check-input' value='open'" . ($risk_status === 'open' ? " checked='checked'" : "") . "><label  for='risk_status2'>&nbsp;Open</label>\n";
-            echo"</div>\n";
-            echo"<div class='form-check'>\n";
-            echo"<input type='radio' name='risk_status'  id='risk_status3' class='form-check-input' value='closed'" . ($risk_status === 'closed' ? " checked='checked'" : "") . "><label  for='risk_status3'>&nbsp;Closed</label>\n";
-            echo"</div>\n";
-        echo"</div>\n";
-        echo"<div class='form-group col-12'>\n";
-            echo"<label>Severity:</label>\n";
-            echo"<div class='form-check'>\n";
-                echo"<input type='checkbox' id='very_high' class='form-check-input' name='risk_severity[very_high]'" . (isset($risk_severity['very_high']) ? " checked='checked'" : "") . "><label for='very_high'>&nbsp;Very High</label>\n";
-            echo"</div>\n";
-            echo"<div class='form-check'>\n";
-                echo"<input type='checkbox' id='high' class='form-check-input' name='risk_severity[high]'" . (isset($risk_severity['high']) ? " checked='checked'" : "") . "><label for='high'>&nbsp;High</label>\n";
-            echo"</div>\n";
-            echo"<div class='form-check'>\n";
-                echo"<input type='checkbox' id='medium' class='form-check-input' name='risk_severity[medium]'" . (isset($risk_severity['medium']) ? " checked='checked'" : "") . "><label for='medium'>&nbsp;Medium</label>\n";
-            echo"</div>\n";
-            echo"<div class='form-check'>\n";
-                echo"<input type='checkbox' id='low' class='form-check-input' name='risk_severity[low]'" . (isset($risk_severity['low']) ? " checked='checked'" : "") . "><label for='low'>&nbsp;Low</label>\n";
-            echo"</div>\n";
-            echo"<div class='form-check'>\n";
-                echo"<input type='checkbox' id='insignificant' class='form-check-input' name='risk_severity[insignificant]'" . (isset($risk_severity['insignificant']) ? " checked='checked'" : "") . "><label for='insignificant'>&nbsp;Insignificant</label>\n";
-            echo"</div>\n";
-        echo"</div>\n";
-    echo "</div>\n";
 }
 
 /****************************
  * FUNCTION: DISPLAY X AXIS *
  ****************************/
-function display_x_axis($settings=[])
-{
+function display_x_axis($settings=[]) {
+
     global $escaper, $lang;
 
     // Set the x_axis_aggregation
@@ -153,169 +146,127 @@ function display_x_axis($settings=[])
     // Set the x_axis_custom_label
     $x_axis_custom_label = $escaper->escapeHtml(get_param("POST", "x_axis_custom_label", $settings?$settings["x_axis_custom_label"]:""));
 
-    echo "<div class='row'>\n";
-    echo "    <div class='col-12'><h4>X-Axis</h4></div>\n";
-    echo "</div>\n";
+    echo "
+        <h4 class='mt-3'><u>X-Axis</u></h4>
+        <div class='row form-group'>
+            <div class='col-6'>
+                <label>Aggregation :</label>
+                <select id='x_axis_aggregation' name='x_axis_aggregation' class='form-select'>
+                    <option value='date'" . ($x_axis_aggregation === false || $x_axis_aggregation === 'date' ? " selected='selected'" : "") . ">Date</option>
+                </select>
+            </div>
+            <div class='col-6'>
+                <label>Custom Label :</label>
+                <input type='text' name='x_axis_custom_label' value='{$x_axis_custom_label}' class='form-control'/>
+            </div>
+        </div>
+        <div class='row'>
+            <div class='col-6'>
+                <label>X-Axis Value :</label>
+                <select id='x_axis' name='x_axis' class='form-select'>
+                    <option value='day'" . ($x_axis === 'day' ? " selected='selected'" : "") . ">Time (Days)</option>
+                    <option value='week'" . ($x_axis === 'week' ? " selected='selected'" : "") . ">Time (Weeks)</option>
+                    <option value='month'" . ($x_axis === 'month' ? " selected='selected'" : "") . ">Time (Months)</option>
+                    <option value='year'" . ($x_axis === 'year' ? " selected='selected'" : "") . ">Time (Years)</option>
+                </select>
+            </div>
+        </div>
+    ";
 
-    echo "<div class='row'>\n";
-    echo "<div <div class='col-12'>\n";
-    echo "<div class='row'>\n";
-    echo "    <div class='col-6'>\n";
-    echo"        <div class='form-group'>";
-    echo "          <label>Aggregation:</label>\n";
-    echo "          <select id='x_axis_aggregation' name='x_axis_aggregation' class='form-select'>\n";
-    echo "          <option value='date'" . ($x_axis_aggregation === false || $x_axis_aggregation === 'date' ? " selected='selected'" : "") . ">Date</option>\n";
-    echo "        </select>\n";
-    echo "      </div>\n";
-    echo "    </div>\n";
-
-    echo "<div class='col-6'>\n";
-    echo"        <div class='form-group'>";
-    echo "          <label>Custom Label:</label>\n";
-    echo "          <input type='text' name='x_axis_custom_label' value='{$x_axis_custom_label}' class='form-control'/>\n";
-    echo "    </div>\n";
-    echo "    </div>\n";
-
-    echo "<div class='col-12'>\n";
-    echo"        <div class='form-group'>";
-    echo "    <label>X-Axis Value:</label>\n";
-    echo "        <select id='x_axis' name='x_axis' class='form-select'>\n";
-    echo "          <option value='day'" . ($x_axis === 'day' ? " selected='selected'" : "") . ">Time (Days)</option>\n";
-    echo "          <option value='week'" . ($x_axis === 'week' ? " selected='selected'" : "") . ">Time (Weeks)</option>\n";
-    echo "          <option value='month'" . ($x_axis === 'month' ? " selected='selected'" : "") . ">Time (Months)</option>\n";
-    echo "          <option value='year'" . ($x_axis === 'year' ? " selected='selected'" : "") . ">Time (Years)</option>\n";
-    echo "        </select>\n";
-    echo "    </div>\n";
-    echo "    </div>\n";
-    echo "    </div>\n";
-    echo "</div>\n";
-    echo "</div>\n";
 }
 /**********************************************
  * FUNCTION: DISPLAY SAVE GRAPHICAL SELECTION *
  **********************************************/
-function display_save_graphic_selection()
-{
+function display_save_graphic_selection() {
+
     global $escaper, $lang;
+
     $selection_id = get_param("GET", "selection", "");
     $options = get_graphical_saved_selections($_SESSION['uid']);
     $private = $escaper->escapeHtml($lang['Private']);
     $public = $escaper->escapeHtml($lang['Public']);
+
     // Delete button
-    if(!$selection_id || !$_SESSION['admin']){
+    if (!$selection_id || !$_SESSION['admin']) {
         $style = "display: none;";
-    }else{
+    } else {
         $style = "";
     }
+
     echo "
-    <div class='row'>
-        <div class='col-12'><h4>".$escaper->escapeHtml($lang['SaveSelections'])."</h4></div>
-    </div>
-    <div class='row cust-align'>
-        <div class='col-4'>
-            <div class='form-group'>
-                <label>".$escaper->escapeHtml($lang['SavedSelections']).":</label>
+        <h4 class='mt-3'><u>{$escaper->escapeHtml($lang['SaveSelections'])}</u></h4>
+        <div class='row align-items-end form-group'>
+            <div class='col-4'>
+                <label>{$escaper->escapeHtml($lang['SavedSelections'])} :</label>
                 <select id='saved_selections' name='saved_selections' class='form-select'>
-                    <option value=''>--</option>";
-                foreach($options as $option)
-                {
-                    $selected = ($selection_id == $option['value'])?"selected":"";
-                    echo "<option value='".$option['value']."' {$selected}>".$escaper->escapeHtml($option['name'])."</option>";
-                }
-                echo"
-                </select>
-            </div>
-        </div>
-        <div class='col-2'>
-             <div class='form-group'>
-                <button class='btn btn-dark' id='delete_saved_selection' style='{$style}'>".$escaper->escapeHtml($lang['Delete'])."</button>
-            </div>
-        </div>
-    </div>
-    <div class='row cust-align'>
-        <div class='col-4'>
-            <div class='form-group'>
-            <label>".$escaper->escapeHtml($lang['Type']).":</label>
-                <select name='selection_type' title='". $escaper->escapeHtml($lang['PleaseSelectTypeForSaving']) ."' class='form-select'>
                     <option value=''>--</option>
-                    <option value='public'>".$escaper->escapeHtml($lang['Public'])."</option>
-                    <option value='private'>".$escaper->escapeHtml($lang['Private'])."</option>
+    ";
+    foreach ($options as $option) {
+        $selected = ($selection_id == $option['value']) ? "selected" : "";
+        echo "
+                    <option value='{$option['value']}' {$selected}>{$escaper->escapeHtml($option['name'])}</option>
+        ";
+    }
+    echo "
                 </select>
             </div>
-        </div>
-        <div class='col-4'>
-            <div class='form-group'>
-                <label>".$escaper->escapeHtml($lang['Name']).":</label>
-                <input name='selection_name' type='text' placeholder='".$escaper->escapeHtml($lang['Name'])."' title='".$escaper->escapeHtml($lang['Name'])."' style='max-width: unset;' class='form-control'>
+            <div class='col-2'>
+                <button class='btn btn-primary' id='delete_saved_selection' style='{$style}'>{$escaper->escapeHtml($lang['Delete'])}</button>
             </div>
         </div>
-        <div class='col-4'>
-          <div class='form-group'>
-            <button class='btn btn-dark' id='save_selection'>{$escaper->escapeHtml($lang['Save'])}</button>
-          </div>
+        <div class='row align-items-end form-group'>
+            <div class='col-4'>
+                <label>{$escaper->escapeHtml($lang['Type'])} :</label>
+                <select name='selection_type' title='{$escaper->escapeHtml($lang['PleaseSelectTypeForSaving'])}' class='form-select'>
+                    <option value=''>--</option>
+                    <option value='public'>{$escaper->escapeHtml($lang['Public'])}</option>
+                    <option value='private'>{$escaper->escapeHtml($lang['Private'])}</option>
+                </select>
+            </div>
+            <div class='col-4'>
+                <label>{$escaper->escapeHtml($lang['Name'])} :</label>
+                <input name='selection_name' type='text' placeholder='{$escaper->escapeHtml($lang['Name'])}' title='{$escaper->escapeHtml($lang['Name'])}' style='max-width: unset;' class='form-control'>
+            </div>
+            <div class='col-4'>
+                <button class='btn btn-submit' id='save_selection'>{$escaper->escapeHtml($lang['Save'])}</button>
+            </div>
         </div>
-    </div>
-    <script>
-        function setCookie(cname, cvalue, exdays) {
-          const d = new Date();
-          d.setTime(d.getTime() + (exdays*24*60*60*1000));
-          let expires = 'expires='+ d.toUTCString();
-          document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/';
-        }
-        function deleteCookie(cname) {
-          document.cookie = cname + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        }
-        function getCookie(cname) {
-          let name = cname + '=';
-          let decodedCookie = decodeURIComponent(document.cookie);
-          let ca = decodedCookie.split(';');
-          for(let i = 0; i <ca.length; i++) {
-            let c = ca[i];
-            while (c.charAt(0) == ' ') {
-              c = c.substring(1);
+
+        <script>
+            function setCookie(cname, cvalue, exdays) {
+                const d = new Date();
+                d.setTime(d.getTime() + (exdays*24*60*60*1000));
+                let expires = 'expires='+ d.toUTCString();
+                document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/';
             }
-            if (c.indexOf(name) == 0) {
-              return c.substring(name.length, c.length);
+            function deleteCookie(cname) {
+                document.cookie = cname + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
             }
-          }
-          return '';
-        }
-        function delete_saved_selection()
-        {
-            var id = $('#saved_selections').val();
-            $.ajax({
-                type: 'POST',
-                url: BASE_URL + '/api/reports/delete-graphical-selection',
-                data:{
-                    id: id,
-                },
-                success: function(res){
-                    document.location.href = BASE_URL + '/reports/graphical_risk_analysis.php';
-                },
-                error: function(xhr,status,error){
-                    if(!retryCSRF(xhr, this)){
-                        if(xhr.responseJSON && xhr.responseJSON.status_message) {
-                            showAlertsFromArray(xhr.responseJSON.status_message);
-                        }
+            function getCookie(cname) {
+                let name = cname + '=';
+                let decodedCookie = decodeURIComponent(document.cookie);
+                let ca = decodedCookie.split(';');
+                for(let i = 0; i <ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                    }
+                    if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
                     }
                 }
-            });
-        }
-        $(document).ready(function(){
-            $('#delete_saved_selection').click(function(e){
-                e.preventDefault();
-                confirm('{$escaper->escapeHtml($lang["AreYouSureYouWantToDeleteSelction"])}', delete_saved_selection);
-            });
-            $('#save_selection').click(function(){
-                var graphic_form_data = $('#graphical_risk_analysis').serialize();
+                return '';
+            }
+            function delete_saved_selection() {
+                var id = $('#saved_selections').val();
                 $.ajax({
                     type: 'POST',
-                    url: BASE_URL + '/api/reports/save-graphical-selections',
-                    data: graphic_form_data,
+                    url: BASE_URL + '/api/reports/delete-graphical-selection',
+                    data:{
+                        id: id,
+                    },
                     success: function(res){
-                        $('#saved_selections').append(new Option(res.data.name, res.data.value));
-                        $('#saved_selections').val(res.data.value)
-                        showAlertsFromArray(res.status_message);
+                        document.location.href = BASE_URL + '/reports/graphical_risk_analysis.php';
                     },
                     error: function(xhr,status,error){
                         if(!retryCSRF(xhr, this)){
@@ -325,47 +276,75 @@ function display_save_graphic_selection()
                         }
                     }
                 });
-                return false;
-            })
-            $('#saved_selections').change(function(){
-                var selection = $(this).val();
-                deleteCookie('load_selection');
-                if(selection){
-                    document.location.href = BASE_URL + '/reports/graphical_risk_analysis.php?selection=' + selection;
-                } else {
-                    document.location.href = BASE_URL + '/reports/graphical_risk_analysis.php';
-                }
-                return true;
-            });
-            if(!getCookie('load_selection') && $('#saved_selections').val()){
-                setCookie('load_selection', 'loaded', 1);
-                setTimeout(function(){
-                    $('#graphical_risk_analysis').submit();
-                }, 10);
             }
-        });
-    </script>";
+            $(document).ready(function(){
+                $('#delete_saved_selection').click(function(e){
+                    e.preventDefault();
+                    confirm('{$escaper->escapeHtml($lang["AreYouSureYouWantToDeleteSelction"])}', delete_saved_selection);
+                });
+                $('#save_selection').click(function(){
+                    var graphic_form_data = $('#graphical_risk_analysis').serialize();
+                    $.ajax({
+                        type: 'POST',
+                        url: BASE_URL + '/api/reports/save-graphical-selections',
+                        data: graphic_form_data,
+                        success: function(res){
+                            $('#saved_selections').append(new Option(res.data.name, res.data.value));
+                            $('#saved_selections').val(res.data.value)
+                            showAlertsFromArray(res.status_message);
+                        },
+                        error: function(xhr,status,error){
+                            if(!retryCSRF(xhr, this)){
+                                if(xhr.responseJSON && xhr.responseJSON.status_message) {
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
+                            }
+                        }
+                    });
+                    return false;
+                })
+                $('#saved_selections').change(function(){
+                    var selection = $(this).val();
+                    deleteCookie('load_selection');
+                    if(selection){
+                        document.location.href = BASE_URL + '/reports/graphical_risk_analysis.php?selection=' + selection;
+                    } else {
+                        document.location.href = BASE_URL + '/reports/graphical_risk_analysis.php';
+                    }
+                    return true;
+                });
+                if(!getCookie('load_selection') && $('#saved_selections').val()){
+                    setCookie('load_selection', 'loaded', 1);
+                    setTimeout(function(){
+                        $('#graphical_risk_analysis').submit();
+                    }, 10);
+                }
+            });
+        </script>
+    ";
+
 }
 
 /*********************************************
  * FUNCTION: DISPLAY GRAPHICAL RISK ANALYSIS *
  *********************************************/
-function display_graphical_risk_analysis()
-{
+function display_graphical_risk_analysis() {
+
     // If the values were posted
-    if (isset($_POST['type']) && isset($_POST['x_axis']) && isset($_POST['y_axis']))
-    {
+    if (isset($_POST['type']) && isset($_POST['x_axis']) && isset($_POST['y_axis'])) {
+
         $type = $_POST['type'];
         $x_axis = $_POST['x_axis'];
         $y_axis = $_POST['y_axis'];
 
         // If we have valid values
-        if (valid_graphical_risk_analysis($type, $x_axis, $y_axis))
-        {
+        if (valid_graphical_risk_analysis($type, $x_axis, $y_axis)) {
             // Display the chart
             display_graphical_risk_analysis_chart($type, $x_axis, $y_axis);
         } else {
-            echo "invalid";
+            echo "
+                <strong>invalid</strong>
+            ";
         }
     }
 }
@@ -373,8 +352,8 @@ function display_graphical_risk_analysis()
 /****************************************************
  *  FUNCTION: DISPLAY GRAPHICAL RISK ANALYSIS CHART *
  ****************************************************/
-function display_graphical_risk_analysis_chart()
-{
+function display_graphical_risk_analysis_chart() {
+
     global $lang, $escaper;
 
     // Get the values that were POSTed
@@ -409,8 +388,8 @@ function display_graphical_risk_analysis_chart()
 /***********************************************
  *  FUNCTION: GET GRAPHICAL RISK ANALYSIS DATA *
  ***********************************************/
-function get_graphical_risk_analysis_data()
-{
+function get_graphical_risk_analysis_data() {
+
     // Create an empty array for the datasets
     $datasets = [];
 
@@ -420,8 +399,7 @@ function get_graphical_risk_analysis_data()
     $x_axis = isset($_POST['x_axis']) ? $_POST['x_axis'] : "";
 
     // Set the timeframe based on the x_axis value provided
-    switch($x_axis)
-    {
+    switch($x_axis) {
         case "day":
             $timeframe = "day";
             break;
@@ -440,17 +418,16 @@ function get_graphical_risk_analysis_data()
     }
 
     // If the type is area
-    if ($type == "area")
-    {
+    if ($type == "area") {
         // Set the fill to true
         $fill = "true";
-    }
     // Otherwise do not fill
-    else $fill = "false";
+    } else {
+        $fill = "false";
+    }
 
     // Switch on the y-axis values
-    switch ($risk_status)
-    {
+    switch ($risk_status) {
         case "open":
             // Get the opened risks dataset
             $opened_risks = get_risks_array_for_graphical($timeframe, "open");
@@ -502,11 +479,9 @@ function get_graphical_risk_analysis_data()
             $closed_dates = $closed_risks['dates'];
 
             // Iterate through the dates
-            foreach ($opened_dates as $opened_date)
-            {
+            foreach ($opened_dates as $opened_date) {
                 // If the label is not in the closed label array
-                if (!in_array($opened_date, $closed_dates))
-                {
+                if (!in_array($opened_date, $closed_dates)) {
                     // Append a 0 to the front of the closed risk data
                     array_unshift($data, "0");
                 }
@@ -830,6 +805,11 @@ function get_risks_array_for_graphical($timeframe, $risk_status)
     $high = $risk_levels[2]["value"];
     $very_high = $risk_levels[3]["value"];
 
+    // initializing data for a returned dataset
+    $dataset_label = "";
+    $labels = [];
+    $data = [];
+
     // Get the scoring field to use based on the y_axis value
     switch ($y_axis)
     {
@@ -1005,6 +985,8 @@ function get_risks_array_for_graphical($timeframe, $risk_status)
                     $sum[$index] = $array[$key][$scoring_field];
                     $min[$index] = $array[$key][$scoring_field];
                     $max[$index] = $array[$key][$scoring_field];
+                    $average[$index] = $sum[$index] / $count[$index];
+
                 }
                 // If this risk is filtered
                 else
@@ -1020,6 +1002,7 @@ function get_risks_array_for_graphical($timeframe, $risk_status)
                     $sum[$index] = 0;
                     $min[$index] = 0;
                     $max[$index] = 0;
+                    $average[$index] = 0;
                 }
 
                 // Add the date to the dates array at the index

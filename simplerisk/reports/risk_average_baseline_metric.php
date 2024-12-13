@@ -1,34 +1,38 @@
 <?php
-/* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this
-* file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+    /* This Source Code Form is subject to the terms of the Mozilla Public
+    * License, v. 2.0. If a copy of the MPL was not distributed with this
+    * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Render the header and sidebar
-require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['chart.js']);
+    // Render the header and sidebar
+    require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+    render_header_and_sidebar(['chart.js']);
 
-// Include required functions file
-require_once(realpath(__DIR__ . '/../includes/reporting.php'));
+    // Include required functions file
+    require_once(realpath(__DIR__ . '/../includes/reporting.php'));
 
-$time = isset($_GET['time']) ? $_GET['time'] : "day";
+    $time = isset($_GET['time']) ? $_GET['time'] : "day";
 
 ?>
 <div class="row">
     <div class="col-12">
-        <div class="card-body">
-            <form method="GET" style="margin-bottom: 0px;">
-                <div class="form-group col-4">
-                	<label>By &nbsp;</label>
-                    <select name="time" onchange="submit()" class="form-select">
-                        <option <?= $time == 'day' ? 'selected ' : '' ?>value="day"><?= $escaper->escapeHtml($lang['Day']) ?></option>
-                        <option <?= $time == 'month' ? 'selected ' : '' ?>value="month"><?= $escaper->escapeHtml($lang['Month']) ?></option>
-                        <option <?= $time == 'year' ? 'selected ' : '' ?>value="year"><?= $escaper->escapeHtml($lang['Year']) ?></option>
-                    </select>
+        <div class="card-body border my-2">
+            <form method="GET">
+                <div class="row">
+                    <div class="col-4 d-flex align-items-center">
+                        <label style="width: 50px; min-width: 50px;">By :</label>
+                        <select name="time" onchange="submit()" class="form-select">
+                            <option <?= $time == 'day' ? 'selected ' : '' ?>value="day"><?= $escaper->escapeHtml($lang['Day']) ?></option>
+                            <option <?= $time == 'month' ? 'selected ' : '' ?>value="month"><?= $escaper->escapeHtml($lang['Month']) ?></option>
+                            <option <?= $time == 'year' ? 'selected ' : '' ?>value="year"><?= $escaper->escapeHtml($lang['Year']) ?></option>
+                        </select>
+                    </div>
                 </div>
             </form>
         </div>
-        <div>
-            <?php risk_average_baseline_metric($time); ?>
+        <div class="card-body border my-2">
+    <?php 
+            risk_average_baseline_metric($time); 
+    ?>
         </div>
     </div>
 </div>

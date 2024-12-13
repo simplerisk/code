@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'Η μεταφόρτωση αρχείου απέτυχε: Άγνωστα σφάλματα',
     'DynamicIncidentReport' => 'Δυναμική Αναφορά Συμβάντος',
     'FilteringSelections' => 'Φιλτράρισμα επιλογών',
+    'ProcessingPleaseWait' => 'Επεξεργασία. Παρακαλώ περιμένετε!',
+    'PleaseEnterAValidPhoneNumber' => 'Εισαγάγετε έναν έγκυρο αριθμό τηλεφώνου',
 
     '' => '',
 );

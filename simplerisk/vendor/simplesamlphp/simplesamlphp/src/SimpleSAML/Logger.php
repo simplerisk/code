@@ -207,6 +207,15 @@ class Logger
         self::log(self::WARNING, $string);
     }
 
+    /**
+     * Log a warning about deprecated code.
+     *
+     * @param string $string The message to log.
+     */
+    public static function deprecated(string $string): void
+    {
+        self::log(self::WARNING, 'DEPRECATION WARNING: ' . $string);
+    }
 
     /**
      * We reserve the notice level for statistics, so do not use this level for other kind of log messages.
@@ -454,7 +463,7 @@ class Logger
         if (is_null($handler)) {
             $handler = $config->getOptionalString(
                 'logging.handler',
-                php_sapi_name() === 'cli' || defined('STDIN') ? 'stderr' : 'syslog'
+                php_sapi_name() === 'cli' || defined('STDIN') ? 'stderr' : 'syslog',
             );
         }
 
@@ -466,7 +475,7 @@ class Logger
             $handler = strtolower($handler);
             if (!array_key_exists($handler, $known_handlers)) {
                 throw new Exception(
-                    "Invalid value for the 'logging.handler' configuration option. Unknown handler '" . $handler . "'."
+                    "Invalid value for the 'logging.handler' configuration option. Unknown handler '" . $handler . "'.",
                 );
             }
             $handler = $known_handlers[$handler];

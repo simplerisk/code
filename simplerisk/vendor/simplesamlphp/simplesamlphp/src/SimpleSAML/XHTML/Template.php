@@ -42,7 +42,6 @@ use function is_null;
 use function key;
 use function ksort;
 use function strripos;
-use function strtolower;
 use function strval;
 use function substr;
 
@@ -130,7 +129,7 @@ class Template extends Response
      */
     public function __construct(
         private Configuration $configuration,
-        private string $template
+        private string $template,
     ) {
         // TODO: do not remove the slash from the beginning, change the templates instead!
         $this->data['baseurlpath'] = ltrim($configuration->getBasePath(), '/');
@@ -140,7 +139,7 @@ class Template extends Response
 
         // parse config to find theme and module theme is in, if any
         list($this->theme['module'], $this->theme['name']) = $this->findModuleAndTemplateName(
-            $this->configuration->getOptionalString('theme.use', 'default')
+            $this->configuration->getOptionalString('theme.use', 'default'),
         );
 
         // initialize internationalization system
@@ -159,7 +158,7 @@ class Template extends Response
             } else {
                 throw new Error\ConfigurationError(
                     'Invalid controller was configured in `theme.controller`. ' .
-                    ' Make sure the class exists and implements the TemplateControllerInterface.'
+                    ' Make sure the class exists and implements the TemplateControllerInterface.',
                 );
             }
         }
@@ -177,9 +176,10 @@ class Template extends Response
      * the original file.
      * @param string $asset
      * @param string|null $module
+     * @param bool $tag
      * @return string
      */
-    public function asset(string $asset, string $module = null): string
+    public function asset(string $asset, string $module = null, bool $tag = true): string
     {
         $baseDir = $this->configuration->getBaseDir();
         $basePath = $this->configuration->getBasePath();
@@ -198,6 +198,12 @@ class Template extends Response
             // don't be too harsh if an asset is missing, just pretend it's there...
             return $path;
         }
+
+        if ($tag === false) {
+            // The asset is requested without a tag
+            return $path;
+        }
+
         $file = new File($file);
 
         $tag = $this->configuration->getVersion();
@@ -260,7 +266,7 @@ class Template extends Response
         if ($this->theme['module']) {
             try {
                 $templateDirs[] = [
-                    $this->theme['module'] => TemplateLoader::getModuleTemplateDir($this->theme['module'])
+                    $this->theme['module'] => TemplateLoader::getModuleTemplateDir($this->theme['module']),
                 ];
             } catch (InvalidArgumentException $e) {
                 // either the module is not enabled or it has no "templates" directory, ignore
@@ -271,7 +277,7 @@ class Template extends Response
 
         // default, themeless templates are checked last
         $templateDirs[] = [
-            FilesystemLoader::MAIN_NAMESPACE => $this->configuration->resolvePath('templates')
+            FilesystemLoader::MAIN_NAMESPACE => $this->configuration->resolvePath('templates'),
         ];
         foreach ($templateDirs as $entry) {
             $loader->addPath($entry[key($entry)], key($entry));
@@ -301,9 +307,11 @@ class Template extends Response
         // load extra i18n domains
         if ($this->module) {
             $this->localization->addModuleDomain($this->module);
+            $this->localization->defaultDomain($this->module);
         }
         if ($this->theme['module'] !== null && $this->theme['module'] !== $this->module) {
             $this->localization->addModuleDomain($this->theme['module']);
+            $this->localization->defaultDomain($this->theme['module']);
         }
 
         // set up translation
@@ -342,15 +350,15 @@ class Template extends Response
             new TwigFilter(
                 'translateFromArray',
                 [Translate::class, 'translateFromArray'],
-                ['needs_context' => true]
-            )
+                ['needs_context' => true],
+            ),
         );
         // add a filter for preferred entity name
         $twig->addFilter(
             new TwigFilter(
                 'entityDisplayName',
                 [$this, 'getEntityDisplayName'],
-            )
+            ),
         );
 
         // add an asset() function
@@ -463,14 +471,13 @@ class Template extends Response
             $parameterName = $this->getTranslator()->getLanguage()->getLanguageParameterName();
             $langmap = [];
             foreach ($languages as $lang => $current) {
-                $lang = strtolower($lang);
                 $langname = $this->translator->getLanguage()->getLanguageLocalizedName($lang);
                 $url = false;
                 if (!$current) {
                     $httpUtils = new Utils\HTTP();
                     $url = $httpUtils->addURLParameters(
                         '',
-                        [$parameterName => $lang]
+                        [$parameterName => $lang],
                     );
                 }
                 $langmap[$lang] = [

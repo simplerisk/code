@@ -102,7 +102,7 @@ class Module
      */
     public static array $core_modules = [
         'core' => true,
-        'saml' => true
+        'saml' => true,
     ];
 
     /**
@@ -217,7 +217,7 @@ class Module
             $request->files->all(),
             function ($val) {
                 return !is_null($val);
-            }
+            },
         );
         $request->initialize(
             $request->query->all(),
@@ -226,7 +226,7 @@ class Module
             $request->cookies->all(),
             $request_files,
             $request->server->all(),
-            $request->getContent()
+            $request->getContent(),
         );
 
         try {
@@ -335,7 +335,7 @@ class Module
             // "public" allows response caching even if the request was authenticated,
             // which is exactly what we want for static resources
             'public' => true,
-            'max_age' => strval($cacheConfig->getOptionalInteger('max_age', 86400))
+            'max_age' => strval($cacheConfig->getOptionalInteger('max_age', 86400)),
         ]);
         $response->setAutoLastModified();
         if ($cacheConfig->getOptionalBoolean('etag', false)) {
@@ -455,16 +455,49 @@ class Module
             $className = 'SimpleSAML\\Module\\' . $tmp[0] . $type . $tmp[1];
         }
 
+        // Check if the class exists to give a more informative error
+        // for cases where modules might have been moved or renamed.
+        // Otherwise a not subclass of error would be thrown for a class
+        // that does not exist.
+        if (!class_exists($className, true)) {
+            throw new Exception(
+                'Could not resolve \'' . $id . '\': The class \'' . $className
+                . '\' does not exist.',
+            );
+        }
+
         if ($subclass !== null && !is_subclass_of($className, $subclass)) {
             throw new Exception(
                 'Could not resolve \'' . $id . '\': The class \'' . $className
-                . '\' isn\'t a subclass of \'' . $subclass . '\'.'
+                . '\' isn\'t a subclass of \'' . $subclass . '\'.',
             );
         }
 
         return $className;
     }
 
+
+    /**
+     * Create an object of a class returned by resolveNonModuleClass() or resolveClass().
+     *
+     * @param string The classname.
+     * @param string|null $subclass The class should be a subclass of this class. Optional.
+     *
+     * @return the new object
+     */
+    public static function createObject(string $className, ?string $subclass = null): object
+    {
+        $obj = new $className();
+        if ($subclass) {
+            if (!is_subclass_of($obj, $subclass, false)) {
+                throw new Exception(
+                    'Could not instantiate \'' . $className . '\': The class \'' . $className
+                    . '\' isn\'t a subclass of \'' . $subclass . '\'.',
+                );
+            }
+        }
+        return $obj;
+    }
 
     /**
      * Get absolute URL to a specified module resource.

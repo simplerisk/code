@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'Tải tệp lên không thành công: Lỗi không xác định',
     'DynamicIncidentReport' => 'Báo cáo sự cố động',
     'FilteringSelections' => 'Lọc Lựa chọn',
+    'ProcessingPleaseWait' => 'Đang xử lý. Vui lòng đợi!',
+    'PleaseEnterAValidPhoneNumber' => 'Vui lòng nhập số điện thoại hợp lệ',
 
     '' => '',
 );

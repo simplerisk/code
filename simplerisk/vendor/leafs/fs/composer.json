@@ -23,19 +23,30 @@
     "autoload": {
         "psr-4": {
             "Leaf\\": "src"
-        }
+        },
+        "files": [
+            "src/functions.php"
+        ]
     },
     "minimum-stability": "dev",
-	"prefer-stable": true,
+    "prefer-stable": true,
     "require": {
         "symfony/finder": "^5.3|^6.0"
     },
     "require-dev": {
-        "pestphp/pest": "^1.21"
+        "pestphp/pest": "^1.21",
+        "leafs/alchemy": "^2.1",
+        "friendsofphp/php-cs-fixer": "^3.64"
     },
     "config": {
         "allow-plugins": {
             "pestphp/pest-plugin": true
         }
+    },
+    "scripts": {
+        "alchemy": "./vendor/bin/alchemy setup",
+        "test": "./vendor/bin/alchemy setup --test",
+        "lint": "./vendor/bin/alchemy setup --lint",
+        "actions": "./vendor/bin/alchemy setup --actions"
     }
 }

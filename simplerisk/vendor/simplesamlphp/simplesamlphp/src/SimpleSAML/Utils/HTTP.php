@@ -10,6 +10,9 @@ use SimpleSAML\Logger;
 use SimpleSAML\Module;
 use SimpleSAML\Session;
 use SimpleSAML\XHTML\Template;
+use SimpleSAML\XMLSecurity\Alg\Encryption\AES;
+use SimpleSAML\XMLSecurity\Constants as C;
+use SimpleSAML\XMLSecurity\Key\SymmetricKey;
 
 /**
  * HTTP-related utility methods.
@@ -87,8 +90,9 @@ class HTTP
         $session_id = $session->getSessionId();
 
         // encrypt the session ID and the random ID
-        $cryptoUtils = new Crypto();
-        $info = base64_encode($cryptoUtils->aesEncrypt($session_id . ':' . $id));
+        $symmetricKey = new SymmetricKey((new Config())->getSecretSalt());
+        $encryptor = new AES($symmetricKey, C::BLOCK_ENC_AES256_GCM);
+        $info = base64_encode($encryptor->encrypt($session_id . ':' . $id));
 
         $url = Module::getModuleURL('core/postredirect', ['RedirInfo' => $info]);
         return preg_replace('#^https:#', 'http:', $url);
@@ -375,7 +379,7 @@ class HTTP
 
         // get the white list of domains
         if ($trustedSites === null) {
-            $trustedSites = Configuration::getInstance()->getOptionalArray('trusted.url.domains', []);
+            $trustedSites = Configuration::getInstance()->getOptionalArray('trusted.url.domains', null);
         }
 
         // validates the URL's host is among those allowed
@@ -669,7 +673,7 @@ class HTTP
                 'Invalid value for \'baseurlpath\' in config.php. Valid format is in the form: ' .
                 '[(http|https)://(hostname|fqdn)[:port]]/[path/to/simplesaml/]. It must end with a \'/\'.',
                 null,
-                $c
+                $c,
             );
         }
     }
@@ -1100,7 +1104,7 @@ class HTTP
             if ($throw) {
                 throw new Error\CannotSetCookie(
                     'Setting secure cookie on plain HTTP is not allowed.',
-                    Error\CannotSetCookie::SECURE_COOKIE
+                    Error\CannotSetCookie::SECURE_COOKIE,
                 );
             }
             Logger::warning('Error setting cookie: setting secure cookie on plain HTTP is not allowed.');
@@ -1130,7 +1134,7 @@ class HTTP
                     'secure' => $params['secure'],
                     'httponly' => $params['httponly'],
                     'samesite' => $params['samesite'],
-                ]
+                ],
             );
         } else {
             /** @psalm-suppress InvalidArgument */
@@ -1144,7 +1148,7 @@ class HTTP
                     'secure' => $params['secure'],
                     'httponly' => $params['httponly'],
                     'samesite' => $params['samesite'],
-                ]
+                ],
             );
         }
 
@@ -1152,7 +1156,7 @@ class HTTP
             if ($throw) {
                 throw new Error\CannotSetCookie(
                     'Headers already sent.',
-                    Error\CannotSetCookie::HEADERS_SENT
+                    Error\CannotSetCookie::HEADERS_SENT,
                 );
             }
             Logger::warning('Error setting cookie: headers already sent.');

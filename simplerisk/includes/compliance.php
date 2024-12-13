@@ -44,6 +44,7 @@ function display_framework_controls_in_compliance()
                     orderCellsTop: true,
                     scrollX: true,
                     ajax: {
+                        type: 'post',
                         url: '".$_SESSION['base_url']."/api/compliance/define_tests',
                         data: function(d){
                             d.control_framework = $('#filter_by_control_framework').val();
@@ -635,220 +636,37 @@ function display_active_audits() {
 
     global $lang, $escaper;
     
-    $tableID = "active-audits-table";
-
-    $column_settings = isset($_SESSION['custom_audits_columns']) ? $_SESSION['custom_audits_columns'] : array();
-    if(count($column_settings) == 0) {
-		$column_settings = array("test_name", "test_frequency", "tester", "additional_stakeholders", "objective", "control_name", "framework_name", "tags", "status", "last_date", "next_date");
-	}
-
-    $tags = [];
-    foreach(getTagsOfType("test_audit") as $tag) {
-        $tags[] = array('name' => $escaper->escapeHtml($tag['tag']), 'value' => (int)$tag['id']);
-    }
-
-    echo "
-        <div id='filter-container'>
-			<div class='card-body border my-2'>
-				<div class='row'>
-					<div class='col-4 form-group multiselect-content-container'>
-						<label>" . $escaper->escapeHtml($lang['Framework']) . ":&nbsp;&nbsp;&nbsp;</label>
-						<select id='filter_by_framework' multiple=''>
-							<option selected value='-1'>" . $escaper->escapeHtml($lang['Unassigned']) . "</option>
-	";
-
-	$options = getHasBeenAuditFrameworkList();
-	is_array($options) || $options = array();
-	foreach($options as $option){
-		echo "
-							<option selected value='" . $escaper->escapeHtml($option['value']) . "'>" . $escaper->escapeHtml($option['name']) . "</option>
-		";
-	}
 	echo "
-						</select>
-					</div>
-					<div class='col-4 form-group multiselect-content-container'>
-						<label>" . $escaper->escapeHtml($lang['Status']) . ":&nbsp;&nbsp;&nbsp;</label>
+		<div class='card-body border my-2'>
+			<div class='row'>
+				<div class='col-10'></div>
+				<div class='col-2'>
+					<div style='float: right;'>
 	";
-						create_multiple_dropdown("test_status", "all", "filter_by_status", NULL, true, $escaper->escapeHtml($lang['Unassigned']), "0");
+						render_column_selection_widget('active_audits');
 	echo "
-					</div>
-					<div class='col-4 form-group multiselect-content-container'>
-						<label>" . $escaper->escapeHtml($lang['Tags']) . ":&nbsp;&nbsp;&nbsp;</label>
-	";
-						create_multiple_dropdown("tags", "all", "filter_by_tags", $tags, true, $escaper->escapeHtml($lang['Unassigned']), "-1");
-	echo "
-					</div>
-				</div>
-				<div class='row'>
-					<div class='col-4 multiselect-content-container'>
-						<label>" . $escaper->escapeHtml($lang['Tester']) . ":&nbsp;&nbsp;&nbsp;</label>
-	";
-						create_multiple_dropdown("enabled_users", "all", "filter_by_tester");
-	echo "
-					</div>
-					<div class='col-4 multiselect-content-container'>
-						<label>" . $escaper->escapeHtml($lang['TestName']) . ":</label>
-	";
-
-	$selected = isset($_GET['test_id']) ? array($_GET['test_id']) : 'all';
-						create_multiple_dropdown("framework_control_tests", $selected, "filter_by_testname");
-	echo "
-					</div>
-					<div class='col-4'>
-						<label>" . $escaper->escapeHtml($lang['FilterByText']) . ":&nbsp;&nbsp;&nbsp;</label>
-						<input type='text' id='filter_by_text' class='form-control'>
 					</div>
 				</div>
 			</div>
-            <div class='bg-light border p-2' id='column-selections-container'>
-                <h4 class='collapsible--toggle clearfix'>
-                    <span role='button'><i class='fa fa-caret-right p-2'></i>".$escaper->escapeHtml($lang['ColumnSelections'])."</span>
-                </h4>
-                <div class='collapsible' style='display: none;'>
-                    <div class='row'>
-                        <div class='col-4'>
-                            <div class=\"form-check mr-sm-2\">
-                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"test_name\" id=\"checkbox_test_name\" ".(in_array("test_name",$column_settings)?"checked":"")."/>
-                            <label for=\"checkbox_test_name\"> ". $escaper->escapeHtml($lang['TestName']) ."</label>
-                            </div>
-                            <div class=\"form-check mr-sm-2\">
-                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"test_frequency\" id=\"checkbox_test_frequency\" ".(in_array("test_frequency",$column_settings)?"checked":"")."/>
-                            <label for=\"checkbox_test_frequency\"> ". $escaper->escapeHtml($lang['TestFrequency']) ."</label>
-                            </div>
-                             <div class=\"form-check mr-sm-2\">
-                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"tester\" id=\"checkbox_tester\" ".(in_array("tester",$column_settings)?"checked":"")."/> 
-                            <label for=\"checkbox_tester\"> ". $escaper->escapeHtml($lang['Tester']) ."</label>
-                            </div>
-                             <div class=\"form-check mr-sm-2\">
-                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"additional_stakeholders\" id=\"checkbox_additional_stakeholders\" ".(in_array("additional_stakeholders",$column_settings)?"checked":"")."/>
-                            <label for=\"checkbox_additional_stakeholders\"> ". $escaper->escapeHtml($lang['AdditionalStakeholders']) ."</label>
-                            </div>
-                            
-                        </div>
-                        <div class='col-4'>
-                            <div class=\"form-check mr-sm-2\">
-                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"objective\" id=\"checkbox_objective\" ".(in_array("objective",$column_settings)?"checked":"")."/>
-                            <label for=\"checkbox_objective\"> ". $escaper->escapeHtml($lang['Objective']) ."</label>
-                            </div>
-                            <div class=\"form-check mr-sm-2\">
-                                <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"control_name\" id=\"checkbox_control_name\" ".(in_array("control_name",$column_settings)?"checked":"")."/>
-                                <label for=\"checkbox_control_name\"> ". $escaper->escapeHtml($lang['ControlName']) ."</label>
-                            </div>
-                            <div class=\"form-check mr-sm-2\">
-                                <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"framework_name\" id=\"checkbox_framework_name\" ".(in_array("framework_name",$column_settings)?"checked":"")."/>
-                                <label for=\"checkbox_framework_name\"> ". $escaper->escapeHtml($lang['FrameworkName']) ."</label>
-                            </div>
-                            <div class=\"form-check mr-sm-2\">
-                                <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"tags\" id=\"checkbox_tags\" ".(in_array("tags", $column_settings)?"checked":"")."/>
-                                <label for=\"checkbox_tags\"> ". $escaper->escapeHtml($lang['Tags']) ."</label>
-                            </div>
-                        </div>
-                        <div class='col-4'>
-                            <div class=\"form-check mr-sm-2\">
-                                <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"status\" id=\"checkbox_status\" ".(in_array("status",$column_settings)?"checked":"")."/> 
-                                <label for=\"checkbox_status\"> ". $escaper->escapeHtml($lang['Status']) ."</label>
-                            </div>
-                            <div class=\"form-check mr-sm-2\">
-                                <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"last_date\" id=\"checkbox_last_date\" ".(in_array("last_date",$column_settings)?"checked":"")."/>
-                                <label for=\"checkbox_last_date\"> ". $escaper->escapeHtml($lang['LastAuditDate']) ."</label>
-                            </div>
-                            <div class=\"form-check mr-sm-2\">
-                                <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"next_date\" id=\"checkbox_next_date\" ".(in_array("next_date",$column_settings)?"checked":"")."/>
-                                <label for=\"checkbox_next_date\"> ". $escaper->escapeHtml($lang['NextAuditDate']) ."</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-		<div class='card-body border my-2'>
-			<table id='{$tableID}' width='100%' class='risk-datatable table table-bordered table-striped table-condensed'>
-				<thead>
-					<tr>
-						<th data-name='test_name' valign='top'>" . $escaper->escapeHtml($lang['TestName']) . "</th>
-						<th data-name='test_frequency' valign='top'>" . $escaper->escapeHtml($lang['TestFrequency']) . "</th>
-						<th data-name='tester' valign='top'>" . $escaper->escapeHtml($lang['Tester']) . "</th>
-						<th data-name='additional_stakeholders' valign='top'>" . $escaper->escapeHtml($lang['AdditionalStakeholders']) . "</th>
-						<th data-name='objective' valign='top'>" . $escaper->escapeHtml($lang['Objective']) . "</th>
-						<th data-name='control_name' valign='top'>" . $escaper->escapeHtml($lang['ControlName']) . "</th>
-						<th data-name='framework_name' valign='top'>" . $escaper->escapeHtml($lang['FrameworkName']) . "</th>
-						<th data-name='tags' valign='top'>" . $escaper->escapeHtml($lang['Tags']) . "</th>
-						<th data-name='status' valign='top'>" . $escaper->escapeHtml($lang['Status']) . "</th>
-						<th data-name='test_date' valign='top'>" . $escaper->escapeHtml($lang['TestDate']) . "</th>
-						<th data-name='last_date' valign='top'>" . $escaper->escapeHtml($lang['LastAuditDate']) . "</th>
-						<th data-name='next_date' valign='top'>" . $escaper->escapeHtml($lang['NextAuditDate']) . "</th>
-						<th data-name='actions' valign='top'></th>
-					</tr>
-				</thead>
-				<tbody>
-				</tbody>
-			</table>
+			<div class='row'>
+				<div class='col-12'>
+	";
+					render_view_table('active_audits');
+	echo "
+				</div>
+			</div>
 		</div>
-		<script>
-			$(document).ready(function(){
-				var form = $('#{$tableID}').parents('form');
-				var columnOptions = [];
-				$('#filter-container input.hidden-checkbox').each(function(index){
-					if(!$(this).is(':checked')) columnOptions.push(index);
+
+        <script>
+            $(function () {
+                $('.header_filter .multiselect').multiselect({
+					allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
+					includeSelectAllOption: true,
+					buttonWidth: '100%',
+					enableCaseInsensitiveFiltering: true,
 				});
-				$('#{$tableID} thead tr').clone(true).appendTo( '#{$tableID} thead');
-				$('#{$tableID} thead tr:eq(1) th').each( function (i) {
-					var title = $(this).text();
-					var data_name = $(this).attr('data-name');
-					if(data_name != 'actions') {
-						if(data_name == 'test_frequency') {
-							$(this).html(''); // To clear the title out of the header cell
-							$('<input type=\"number\" class=\"form-control\">').attr('name', title).attr('placeholder', title).appendTo($(this));
-						} else {
-							$(this).html(''); // To clear the title out of the header cell
-							$('<input type=\"text\" class=\"form-control\">').attr('name', title).attr('placeholder', title).appendTo($(this));
-						}
-					}
-				
-					$( 'input, select', this ).on( 'change', function () {
-						if ( datatableInstance.column(i).search() !== this.value ) {
-							datatableInstance.column(i).search( this.value ).draw();
-						}
-					});
-				});
-				var datatableInstance = $('#{$tableID}').DataTable({
-					bFilter: true,
-					bSort: true,
-					orderCellsTop: true,
-					scrollX: true,
-					columnDefs : [
-						{
-							'targets' : columnOptions,
-							'visible' : false
-						},
-						{
-							'targets' : [-1],
-							'orderable': false,
-							'className' : 'vcenter'
-						}
-					],
-					createdRow: function(row, data, index){
-						var background = $('.background-class', $(row)).data('background');
-						$(row).find('td').addClass(background)
-					},
-					ajax: {
-						url: BASE_URL + '/api/compliance/active_audits',
-						type: 'POST',
-						data: function(d){
-							d.filter_text = $('#filter_by_text').val();
-							d.filter_framework  = $('#filter_by_framework').val();
-							d.filter_status  = $('#filter_by_status').val();
-							d.filter_tester  = $('#filter_by_tester').val();
-							d.filter_testname  = $('#filter_by_testname').val();
-							d.filter_tags  = $('#filter_by_tags').val();
-						},
-						complete: function(response){
-						}
-					}
-				});
-				
-				$('body').on('click', '.delete-btn', function(){
+
+                $('body').on('click', '.delete-btn', function() {
                     confirm('{$escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisTest'])}', () => {
                         var id = $(this).data('id')
     
@@ -862,7 +680,7 @@ function display_active_audits() {
                                 if(data.status_message){
                                     showAlertsFromArray(data.status_message);
                                 }
-                                datatableInstance.ajax.reload(null, false);
+                                datatableInstances['active_audits'].ajax.reload(null, false);
                             },
                             error: function(xhr,status,error){
                                 if(xhr.responseJSON && xhr.responseJSON.status_message){
@@ -874,82 +692,11 @@ function display_active_audits() {
                             }
                         });
                     });
-				})
-
-				// Redraw Past Audit table
-				function redrawActiveAudits(){
-					$('#{$tableID}').DataTable().draw();
-				} 
-				
-				// timer identifier
-				var typingTimer;                
-				// time in ms (1 second)
-				var doneTypingInterval = 1000;  
-				$('.multiselect-content-container select').multiselect({
-					allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
-					includeSelectAllOption: true,
-					buttonWidth: '100%',
-					enableCaseInsensitiveFiltering: true,
 				});
+            });
+        </script>
+	";
 
-				// Search filter event
-				$('#filter_by_text').keyup(function(){
-					clearTimeout(typingTimer);
-					typingTimer = setTimeout(redrawActiveAudits, doneTypingInterval);
-				});
-
-				$('.multiselect-content-container select').change(function(){
-					redrawActiveAudits();
-				});
-
-				$('#column-selections-container').on('click', '.collapsible--toggle span', function(event) {
-					event.preventDefault();
-					$(this).parents('.collapsible--toggle').next('.collapsible').slideToggle('400');
-					$(this).find('i').toggleClass('fa-caret-right fa-caret-down');
-				});
-				$('#filter-container .hidden-checkbox').click(function(e){
-					
-					var column = datatableInstance.column(\"th[data-name='\"+ $(this).attr('name') +\"']\");
-					if($(this).is(':checked')){
-						column.visible(true);
-						// The TH element to show filter html
-						var targetTH = $(\"tr.filter th[data-name='\"+ $(this).attr('name') +\"']\", datatableInstance.table().header());
-
-						// If this element was hidden on loading, add filter content to the TH element and create multi dropdown
-						if($('.hidden-container', column.header()).length > 0)
-						{
-							targetTH.html($('.hidden-container', column.header()).html());
-							//createMultiSelectColumnFilter(datatableInstance, targetTH);
-							$('.hidden-container', column.header()).remove();
-						}
-					}else{
-						column.visible(false);
-					}
-					
-					var checkBoxes = $('#filter-container .hidden-checkbox');
-					var viewColumns = [];
-					checkBoxes.each(function(){
-						if($(this).is(':checked'))
-							viewColumns.push($(this).attr('name'));
-					})
-					$.ajax({
-						type: 'POST',
-						url: BASE_URL + '/api/set_custom_audits_column',
-						data: {
-							columns: viewColumns,
-						},
-						success: function(data){
-						},
-						error: function(xhr,status,error){
-							if(!retryCSRF(xhr, this))
-							{
-							}
-						}
-					});
-				})
-			});
-		</script>
-    ";
 }
 
 /************************************
@@ -1945,7 +1692,6 @@ function display_test_audit_comment($test_audit_id) {
         <div class='accordion-item comments--wrapper'>
             <h2 class='accordion-header comments-accordion-header'>
                 <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#comments-accordion-body'>{$escaper->escapeHtml($lang['Comments'])}</button>
-                <a href='#' class='add-comments pull-right float-end'><i class='fa fa-plus'></i></a>
             </h2>
             <div id='comments-accordion-body' class='accordion-collapse collapse'>
                 <div class='accordion-body card-body'>
@@ -2375,181 +2121,42 @@ function download_compliance_file($unique_name)
 /*********************************
  * FUNCTION: DISPLAY PAST AUDITS *
  *********************************/
-function display_past_audits()
-{
+function display_past_audits() {
 
     global $lang, $escaper;
 
-    $tableID = "past-audits";
-    $tags = [];
-    foreach(getTagsOfType("test_audit") as $tag) {
-        $tags[] = array('name' => $escaper->escapeHtml($tag['tag']), 'value' => (int)$tag['id']);
-    }
-
     echo "
-        <div id='filter-container' class='card-body border my-2'>
+        <div class='card-body border my-2'>
             <div class='row'>
-                <div class='col-12'>
-                    <a href='javascript:;' onclick=\"javascript: $('#filter-container').remove();\"><img src='../images/X-100.png' width='10' height='10' align='right' /></a>
+                <div class='col-10'></div>
+                <div class='col-2'>
+                    <div style='float: right;'>
+    ";
+                        render_column_selection_widget('past_audits');
+    echo "
+                    </div>
                 </div>
             </div>
             <div class='row'>
-                <div class='col-md-6 col-lg-4 mb-2'>
-                    <label>" . $escaper->escapeHtml($lang['TestResult']) . ":</label>
+                <div class='col-12'>
     ";
-                    create_multiple_dropdown("test_results_filter", "all", "filter_by_test_result", null, true, "--");
+                    render_view_table('past_audits');
     echo "
-                </div>
-                <div class='col-md-6 col-lg-4 mb-2'>
-                    <label>" . $escaper->escapeHtml($lang['Control']) . ":</label>
-    ";
-
-    $options = getHasBeenAuditFrameworkControlList();
-
-                    create_multiple_dropdown("framework_controls", "all", "filter_by_control", $options);
-    echo " 
-                </div>
-                <div class='col-md-6 col-lg-4 mb-2 multiselect-content-container'>
-                    <label>" . $escaper->escapeHtml($lang['TestName']) . ":</label>
-    ";
-
-    $selected = isset($_GET['test_id']) ? array($_GET['test_id']) : 'all';
-
-					create_multiple_dropdown("framework_control_tests", $selected, "filter_by_testname");
-    echo "     
-                </div>
-                <div class='col-md-6 col-lg-4 mb-2 multiselect-content-container'>
-                    <label>" . $escaper->escapeHtml($lang['Framework']) . ":</label>
-					<select id='filter_by_framework' class='' multiple='multiple'>
-						<option selected value='-1'>" . $escaper->escapeHtml($lang['Unassigned']) . "</option>
-    ";
-
-    $options = getHasBeenAuditFrameworkList();
-    is_array($options) || $options = array();
-    foreach($options as $option) {
-        echo "
-						<option selected value='" . $escaper->escapeHtml($option['value']) . "'>" . $escaper->escapeHtml($option['name']) . "</option>
-        ";
-    }
-
-    echo "
-					</select>
-                </div>
-                <div class='col-md-6 col-lg-4 mb-2'>
-                    <label>" . $escaper->escapeHtml($lang['FilterByText']) . ":</label>
-                    <input type='text' id='filter_by_text' class='form-control'>
-                </div>
-                <div class='col-md-6 col-lg-4 mb-2'>
-                    <label>" . $escaper->escapeHtml($lang['Tags']) . ":</label>
-    ";
-                    create_multiple_dropdown("tags", "all", "filter_by_tags", $tags, true, $escaper->escapeHtml($lang['Unassigned']), "-1");
-    echo "
-                </div>
-                <div class='col-6'>
-                    <label>Audit " . $escaper->escapeHtml($lang['StartDate']) . ":</label>
-                    <input type='text' id='start_audit_date' class='form-control' placeholder='" . $escaper->escapeHtml($lang['StartDate']) . "'>
-                </div>
-                <div class='col-6'>
-                    <label>Audit " . $escaper->escapeHtml($lang['EndDate']) . ":</label>
-                    <input type='text' id='end_audit_date' class='form-control' placeholder='" . $escaper->escapeHtml($lang['EndDate']) . "'>
                 </div>
             </div>
         </div>
-		<div class='card-body border my-2'>
-			<table id='{$tableID}' width='100%' class='risk-datatable table table-bordered table-striped table-condensed'>
-				<thead >
-					<tr >
-						<th data-name='test_name' valign='top'>" . $escaper->escapeHtml($lang['TestName']) . "</th>
-						<th data-name='last_date' valign='top'>" . $escaper->escapeHtml($lang['AuditDate']) . "</th>
-						<th data-name='control_name' valign='top'>" . $escaper->escapeHtml($lang['ControlName']) . "</th>
-						<th data-name='framework_name' valign='top'>" . $escaper->escapeHtml($lang['FrameworkName']) . "</th>
-						<th data-name='tags' valign='top'>" . $escaper->escapeHtml($lang['Tags']) . "</th>
-						<th data-name='status' valign='top'>" . $escaper->escapeHtml($lang['Status']) . "</th>
-						<th data-name='test_result' valign='top'>" . $escaper->escapeHtml($lang['TestResult']) . "</th>
-						<th data-name='actions' valign='top'></th>
-					</tr>
-				</thead>
-				<tbody>
-				</tbody>
-			</table>
-		</div>
+
         <script>
-            $(document).ready(function(){
-                $('#filter_by_framework, #filter_by_testname').multiselect({
-                    allSelectedText: '" . $escaper->escapeHtml($lang['ALL']) . "',
-                    maxHeight: 250,
-                    buttonWidth: '100%',
+            $(function () {
+                $('.header_filter .multiselect').multiselect({
+                    allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
                     includeSelectAllOption: true,
+                    buttonWidth: '100%',
                     enableCaseInsensitiveFiltering: true,
                 });
 
-                $('#filter_by_control').multiselect({
-                    enableFiltering: true,
-                    enableCaseInsensitiveFiltering: true,
-                    filterPlaceholder: '" . $escaper->escapeHtml($lang["SelectForControls"]) . "',
-                    allSelectedText: '" . $escaper->escapeHtml($lang['ALL']) . "',
-                    maxHeight: 250,
-                    buttonWidth: '100%',
-                    includeSelectAllOption: true
-                });
+                $('.datepicker').initAsDateRangePicker();
 
-                $('#filter_by_test_result, #filter_by_tags').multiselect({
-                    allSelectedText: '" . $escaper->escapeHtml($lang['ALL']) . "',
-                    maxHeight: 250,
-                    buttonWidth: '100%',
-                    includeSelectAllOption: true
-                });
-
-                var form = $('#{$tableID}').parents('form');
-                $('#{$tableID} thead tr').clone(true).appendTo( '#{$tableID} thead');
-                $('#{$tableID} thead tr:eq(1) th').each( function (i) {
-                    var title = $(this).text();
-                    var data_name = $(this).attr('data-name');
-                    if(data_name != 'actions') {
-                        $(this).html(''); // To clear the title out of the header cell
-                        $('<input type=\"text\" class=\"form-control\">').attr('name', title).attr('placeholder', title).appendTo($(this));
-                    }
-             
-                    $( 'input, select', this ).on( 'change', function () {
-                        if ( datatableInstance.column(i).search() !== this.value ) {
-                            datatableInstance.column(i).search( this.value ).draw();
-                        }
-                    });
-                });
-                var datatableInstance = $('#{$tableID}').DataTable({
-                    bFilter: true,
-                    bSort: true,
-                    orderCellsTop: true,
-                    scrollX: true,
-                    createdRow: function(row, data, index){
-                        var background = $('.background-class', $(row)).data('background');
-                        $(row).find('td').addClass(background)
-                    },
-                    columnDefs : [
-                        {
-                            'targets' : [-1],
-                            'orderable': false,
-                            'className' : 'vcenter'
-                        }
-                    ],
-                    ajax: {
-                        url: BASE_URL + '/api/compliance/past_audits',
-                        type: 'POST',
-                        data: function(d){
-                            d.filter_text = $('#filter_by_text').val();
-                            d.filter_control    = $('#filter_by_control').val();
-                            d.filter_test_result = $('#filter_by_test_result').val();
-                            d.filter_framework  = $('#filter_by_framework').val();
-                            d.filter_start_audit_date   = $('#start_audit_date').val();
-                            d.filter_end_audit_date     = $('#end_audit_date').val();
-                            d.filter_testname = $('#filter_by_testname').val();
-                            d.filter_tags = $('#filter_by_tags').val();
-                        },
-                        complete: function(response){
-                        }
-                    }
-                });
-                
                 $('body').on('click', '.reopen', function(){
                     var id = $(this).data('id');
                     $.ajax({
@@ -2559,7 +2166,10 @@ function display_past_audits()
                             id: id
                         },
                         success: function(result){
-                            $('#{$tableID}').DataTable().draw();
+                            if (result.status_message) {
+                                showAlertsFromArray(result.status_message);
+                            }
+                            $('#past_audits_datatable').DataTable().draw();
                         },
                         error: function(xhr,status,error){
                             if(xhr.responseJSON && xhr.responseJSON.status_message){
@@ -2570,39 +2180,11 @@ function display_past_audits()
                             }
                         }
                     })
-                })
-                
-                // Redraw Past Audit table
-                function redrawPastAudits(){
-                    $('#{$tableID}').DataTable().draw();
-                } 
-                
-                // timer identifier
-                var typingTimer;
-                // time in ms (1 second)
-                var doneTypingInterval = 1000;
-
-                $('#start_audit_date, #end_audit_date').initAsDatePicker();
-                $('select[multiple=multiple]').change(function(){
-                    redrawPastAudits();
                 });
-                // Search filter event
-                $('#filter_by_text').keyup(function(){
-                    clearTimeout(typingTimer);
-                    typingTimer = setTimeout(redrawPastAudits, doneTypingInterval);
-                });
-                $('#start_audit_date').change(function(){
-                    clearTimeout(typingTimer);
-                    typingTimer = setTimeout(redrawPastAudits, doneTypingInterval);
-                });
-                $('#end_audit_date').change(function(){
-                    clearTimeout(typingTimer);
-                    typingTimer = setTimeout(redrawPastAudits, doneTypingInterval);
-                });
-
             });
         </script>
     ";
+
 }
 
 /************************************

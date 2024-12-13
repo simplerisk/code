@@ -6,8 +6,16 @@ namespace SimpleSAML\Module\saml\Auth\Process;
 
 use SAML2\Constants;
 use SAML2\Exception\ProtocolViolationException;
+use SimpleSAML\{Auth, Logger, Utils};
 use SimpleSAML\Assert\Assert;
-use SimpleSAML\{Auth, Logger};
+
+use function array_key_exists;
+use function explode;
+use function hash_hmac;
+use function preg_match;
+use function strpos;
+use function strtolower;
+use function sprintf;
 
 /**
  * Filter to generate the subject ID attribute.
@@ -77,6 +85,18 @@ class SubjectID extends Auth\ProcessingFilter
     protected string $scopeAttribute;
 
     /**
+     * Whether the unique part of the subject id must be hashed
+     *
+     * @var bool
+     */
+    private bool $hashed = false;
+
+    /**
+     * @var \SimpleSAML\Utils\Config
+     */
+    protected Utils\Config $configUtils;
+
+    /**
      * @var \SimpleSAML\Logger|string
      * @psalm-var \SimpleSAML\Logger|class-string
      */
@@ -100,6 +120,13 @@ class SubjectID extends Auth\ProcessingFilter
 
         $this->identifyingAttribute = $config['identifyingAttribute'];
         $this->scopeAttribute = $config['scopeAttribute'];
+
+        if (array_key_exists('hashed', $config)) {
+            Assert::boolean($config['hashed']);
+            $this->hashed = $config['hashed'];
+        }
+
+        $this->configUtils = new Utils\Config();
     }
 
 
@@ -118,7 +145,12 @@ class SubjectID extends Auth\ProcessingFilter
             return;
         }
 
-        $value = strtolower($userID . '@' . $scope);
+        if ($this->hashed === true) {
+            $value = strtolower($this->calculateHash($userID) . '@' . $scope);
+        } else {
+            $value = strtolower($userID . '@' . $scope);
+        }
+
         $this->validateGeneratedIdentifier($value);
 
         $state['Attributes'][Constants::ATTR_SUBJECT_ID] = [$value];
@@ -138,12 +170,10 @@ class SubjectID extends Auth\ProcessingFilter
             !array_key_exists('Attributes', $state)
             || !array_key_exists($this->identifyingAttribute, $state['Attributes'])
         ) {
-            $this->logger::warning(
-                sprintf(
-                    "saml:" . static::NAME . ": Missing attribute '%s', which is needed to generate the ID.",
-                    $this->identifyingAttribute
-                )
-            );
+            $this->logger::warning(sprintf(
+                "saml:" . static::NAME . ": Missing attribute '%s', which is needed to generate the ID.",
+                $this->identifyingAttribute,
+            ));
 
             return null;
         }
@@ -151,7 +181,7 @@ class SubjectID extends Auth\ProcessingFilter
         $userID = $state['Attributes'][$this->identifyingAttribute][0];
         Assert::stringNotEmpty(
             $userID,
-            'saml:' . static::NAME . ': \'identifyingAttribute\' cannot be an empty string.'
+            'saml:' . static::NAME . ': \'identifyingAttribute\' cannot be an empty string.',
         );
 
         return $userID;
@@ -169,12 +199,10 @@ class SubjectID extends Auth\ProcessingFilter
     protected function getScopeAttribute(array $state): ?string
     {
         if (!array_key_exists('Attributes', $state) || !array_key_exists($this->scopeAttribute, $state['Attributes'])) {
-            $this->logger::warning(
-                sprintf(
-                    "saml:" . static::NAME . ": Missing attribute '%s', which is needed to generate the ID.",
-                    $this->scopeAttribute
-                )
-            );
+            $this->logger::warning(sprintf(
+                "saml:" . static::NAME . ": Missing attribute '%s', which is needed to generate the ID.",
+                $this->scopeAttribute,
+            ));
 
             return null;
         }
@@ -192,7 +220,7 @@ class SubjectID extends Auth\ProcessingFilter
             $scope,
             self::SCOPE_PATTERN,
             'saml:' . static::NAME . ': \'scopeAttribute\' contains illegal characters.',
-            ProtocolViolationException::class
+            ProtocolViolationException::class,
         );
         return $scope;
     }
@@ -212,14 +240,24 @@ class SubjectID extends Auth\ProcessingFilter
             $value,
             self::SPEC_PATTERN,
             'saml:' . static::NAME . ': Generated ID \'' . $value . '\' contains illegal characters.',
-            ProtocolViolationException::class
+            ProtocolViolationException::class,
         );
 
         if (preg_match(self::WARN_PATTERN, $value) === 0) {
             $this->logger::warning(
-                'saml:' . static::NAME . ': Generated ID \'' . $value . '\' can hardly be considered globally unique.'
+                'saml:' . static::NAME . ': Generated ID \'' . $value . '\' can hardly be considered globally unique.',
             );
         }
+    }
+
+
+    /**
+     * Calculate the hash for the unique part of the identifier.
+     */
+    protected function calculateHash(string $input): string
+    {
+        $salt = $this->configUtils->getSecretSalt();
+        return hash_hmac('sha256', $input, $salt, false);
     }
 
 
@@ -231,5 +269,16 @@ class SubjectID extends Auth\ProcessingFilter
     public function setLogger(Logger $logger): void
     {
         $this->logger = $logger;
+    }
+
+
+    /**
+     * Inject the \SimpleSAML\Utils\Config dependency.
+     *
+     * @param \SimpleSAML\Utils\Config $configUtils
+     */
+    public function setConfigUtils(Utils\Config $configUtils): void
+    {
+        $this->configUtils = $configUtils;
     }
 }

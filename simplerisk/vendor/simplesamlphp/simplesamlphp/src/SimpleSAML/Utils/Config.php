@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SimpleSAML\Utils;
 
 use SimpleSAML\Configuration;
+use SimpleSAML\Error;
 
 /**
  * Utility class for SimpleSAMLphp configuration management and manipulation.
@@ -49,7 +50,14 @@ class Config
     {
         $secretSalt = Configuration::getInstance()->getString('secretsalt');
         if ($secretSalt === 'defaultsecretsalt') {
-            throw new \InvalidArgumentException('The "secretsalt" configuration option must be set to a secret value.');
+            throw new Error\CriticalConfigurationError(
+                'The "secretsalt" configuration option must be set to a secret value.',
+                'config.php',
+            );
+        } elseif (str_contains($secretSalt, '%')) {
+            throw new Error\CriticalConfigurationError(
+                'The "secretsalt" configuration option may not contain a `%` sign.',
+            );
         }
 
         return $secretSalt;
@@ -78,8 +86,8 @@ class Config
                     sprintf(
                         'Config directory specified by environment variable SIMPLESAMLPHP_CONFIG_DIR is not a ' .
                         'directory.  Given: "%s"',
-                        $configDirEnv
-                    )
+                        $configDirEnv,
+                    ),
                 );
             }
             $configDir = $configDirEnv;

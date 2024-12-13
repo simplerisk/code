@@ -1,6 +1,8 @@
 //**************************************** COMMON PART BEGIN **************************************//
 #active-audits-table, 
-#past-audits {
+#past-audits,
+#active_audits_datatable,
+#past_audits_datatable {
     .red-background {
         background-color: pink;
     }

@@ -6,7 +6,9 @@ namespace SimpleSAML;
 
 use Exception;
 use ParseError;
+use SAML2\Binding;
 use SAML2\Constants;
+use SAML2\Exception\Protocol\UnsupportedBindingException;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Error;
 use SimpleSAML\Utils;
@@ -16,7 +18,6 @@ use function array_key_exists;
 use function array_keys;
 use function dirname;
 use function file_exists;
-use function interface_exists;
 use function is_array;
 use function is_int;
 use function is_null;
@@ -40,7 +41,7 @@ class Configuration implements Utils\ClearableState
     /**
      * The release version of this package
      */
-    public const VERSION = '2.2.0';
+    public const VERSION = '2.3.5';
 
     /**
      * A default value which means that the given option is required.
@@ -61,6 +62,7 @@ class Configuration implements Utils\ClearableState
             "style-src 'self'; " .
             "font-src 'self'; " .
             "connect-src 'self'; " .
+            "media-src data:; " .
             "img-src 'self' data:; " .
             "base-uri 'none'",
         'X-Frame-Options' => 'SAMEORIGIN',
@@ -151,26 +153,27 @@ class Configuration implements Utils\ClearableState
             $config = 'UNINITIALIZED';
 
             // the file initializes a variable named '$config'
-            ob_start();
-            if (interface_exists('Throwable', false)) {
-                try {
-                    require($filename);
-                } catch (ParseError $e) {
-                    self::$loadedConfigs[$filename] = self::loadFromArray([], '[ARRAY]', 'simplesaml');
-                    throw new Error\ConfigurationError($e->getMessage(), $filename, []);
-                }
-            } else {
-                require($filename);
+            try {
+                ob_start();
+                $returnedConfig = require($filename);
+                $spurious_output = ob_get_length() > 0;
+            } catch (ParseError $e) {
+                self::$loadedConfigs[$filename] = self::loadFromArray([], '[ARRAY]', 'simplesaml');
+                throw new Error\ConfigurationError($e->getMessage(), $filename, []);
+            } finally {
+                ob_end_clean();
             }
 
-            $spurious_output = ob_get_length() > 0;
-            ob_end_clean();
+            // Check if the config file actually returned an array instead of defining $config variable.
+            if (is_array($returnedConfig)) {
+                $config = $returnedConfig;
+            }
 
             // check that $config exists
             if (!isset($config)) {
                 throw new Error\ConfigurationError(
                     '$config is not defined in the configuration file.',
-                    $filename
+                    $filename,
                 );
             }
 
@@ -178,7 +181,7 @@ class Configuration implements Utils\ClearableState
             if (!is_array($config)) {
                 throw new Error\ConfigurationError(
                     '$config is not an array.',
-                    $filename
+                    $filename,
                 );
             }
 
@@ -186,7 +189,7 @@ class Configuration implements Utils\ClearableState
             if (empty($config)) {
                 throw new Error\ConfigurationError(
                     '$config is empty.',
-                    $filename
+                    $filename,
                 );
             }
         } elseif ($required) {
@@ -206,7 +209,7 @@ class Configuration implements Utils\ClearableState
 
         if ($spurious_output) {
             Logger::warning(
-                "The configuration file '$filename' generates output. Please review your configuration."
+                "The configuration file '$filename' generates output. Please review your configuration.",
             );
         }
 
@@ -240,7 +243,7 @@ class Configuration implements Utils\ClearableState
     public static function setPreLoadedConfig(
         Configuration $config,
         string $filename = 'config.php',
-        string $configSet = 'simplesaml'
+        string $configSet = 'simplesaml',
     ): void {
         if (!array_key_exists($configSet, self::$configDirs)) {
             if ($configSet !== 'simplesaml') {
@@ -268,7 +271,7 @@ class Configuration implements Utils\ClearableState
      */
     public static function getConfig(
         string $filename = 'config.php',
-        string $configSet = 'simplesaml'
+        string $configSet = 'simplesaml',
     ): Configuration {
         if (!array_key_exists($configSet, self::$configDirs)) {
             if ($configSet !== 'simplesaml') {
@@ -298,7 +301,7 @@ class Configuration implements Utils\ClearableState
      */
     public static function getOptionalConfig(
         string $filename = 'config.php',
-        string $configSet = 'simplesaml'
+        string $configSet = 'simplesaml',
     ): Configuration {
         if (!array_key_exists($configSet, self::$configDirs)) {
             if ($configSet !== 'simplesaml') {
@@ -329,7 +332,7 @@ class Configuration implements Utils\ClearableState
     public static function loadFromArray(
         array $config,
         string $location = '[ARRAY]',
-        ?string $instance = null
+        ?string $instance = null,
     ): Configuration {
         $c = new Configuration($config, $location);
         if ($instance !== null) {
@@ -370,7 +373,7 @@ class Configuration implements Utils\ClearableState
         }
 
         throw new Error\CriticalConfigurationError(
-            'Configuration with name ' . $instancename . ' is not initialized.'
+            'Configuration with name ' . $instancename . ' is not initialized.',
         );
     }
 
@@ -503,7 +506,7 @@ class Configuration implements Utils\ClearableState
             $this->getOptionalString('baseurlpath', 'simplesaml/') . '". Valid format is in the form' .
             ' [(http|https)://(hostname|fqdn)[:port]]/[path/to/simplesaml/].',
             $this->filename,
-            $c
+            $c,
         );
     }
 
@@ -667,7 +670,7 @@ class Configuration implements Utils\ClearableState
             sprintf(
                 '%s: The option %s is not a valid boolean value or null.',
                 $this->location,
-                var_export($name, true)
+                var_export($name, true),
             ),
         );
 
@@ -721,7 +724,7 @@ class Configuration implements Utils\ClearableState
             sprintf(
                 '%s: The option %s is not a valid string value or null.',
                 $this->location,
-                var_export($name, true)
+                var_export($name, true),
             ),
         );
 
@@ -775,7 +778,7 @@ class Configuration implements Utils\ClearableState
             sprintf(
                 '%s: The option %s is not a valid integer value or null.',
                 $this->location,
-                var_export($name, true)
+                var_export($name, true),
             ),
         );
 
@@ -1179,12 +1182,12 @@ class Configuration implements Utils\ClearableState
             case 'saml20-sp-remote:AssertionConsumerService':
                 return Constants::BINDING_HTTP_POST;
             case 'saml20-idp-remote:ArtifactResolutionService':
+            case 'attributeauthority-remote:AttributeService':
                 return Constants::BINDING_SOAP;
             default:
                 throw new Exception('Missing default binding for ' . $endpointType . ' in ' . $set);
         }
     }
-
 
     /**
      * Helper function for dealing with metadata endpoints.
@@ -1204,30 +1207,21 @@ class Configuration implements Utils\ClearableState
             return [];
         }
 
-
         $eps = $this->configuration[$endpointType];
-        if (is_string($eps)) {
-            // for backwards-compatibility
-            $eps = [$eps];
-        } elseif (!is_array($eps)) {
-            throw new Exception($loc . ': Expected array or string.');
+        if (!is_array($eps)) {
+            $filename = explode('/', $loc)[0];
+            throw new Error\CriticalConfigurationError(
+                "Endpoint of type $endpointType is not an array in $loc.",
+                $filename,
+            );
         }
 
+        $eps_count = count($eps);
 
         foreach ($eps as $i => &$ep) {
             $iloc = $loc . '[' . var_export($i, true) . ']';
 
-            if (is_string($ep)) {
-                // for backwards-compatibility
-                $ep = [
-                    'Location' => $ep,
-                    'Binding'  => $this->getDefaultBinding($endpointType),
-                ];
-                $responseLocation = $this->getOptionalString($endpointType . 'Response', null);
-                if ($responseLocation !== null) {
-                    $ep['ResponseLocation'] = $responseLocation;
-                }
-            } elseif (!is_array($ep)) {
+            if (!is_array($ep)) {
                 throw new Exception($iloc . ': Expected a string or an array.');
             }
 
@@ -1239,12 +1233,24 @@ class Configuration implements Utils\ClearableState
             }
 
             if (!array_key_exists('Binding', $ep)) {
-                throw new Exception($iloc . ': Missing Binding.');
+                $ep['Binding'] = $this->getDefaultBinding($endpointType);
             }
             if (!is_string($ep['Binding'])) {
                 throw new Exception($iloc . ': Binding must be a string.');
             }
 
+            if ($eps_count <= 1) {
+                $isDefault = false;
+                if (array_key_exists('isDefault', $ep) && $ep['isDefault']) {
+                    $isDefault = true;
+                } else {
+                    try {
+                        Binding::getBinding($ep['Binding']);
+                    } catch (UnsupportedBindingException $e) {
+                        $ep['Binding'] = $this->getDefaultBinding($endpointType);
+                    }
+                }
+            }
             if (array_key_exists('ResponseLocation', $ep)) {
                 if (!is_string($ep['ResponseLocation'])) {
                     throw new Exception($iloc . ': ResponseLocation must be a string.');
@@ -1439,7 +1445,7 @@ class Configuration implements Utils\ClearableState
 
             if ($data === null) {
                 throw new Exception(
-                    $this->location . ': Unable to load certificate/public key from location "' . $location . '".'
+                    $this->location . ': Unable to load certificate/public key from location "' . $location . '".',
                 );
             }
 
@@ -1447,7 +1453,7 @@ class Configuration implements Utils\ClearableState
             $pattern = '/^-----BEGIN CERTIFICATE-----([^-]*)^-----END CERTIFICATE-----/m';
             if (!preg_match($pattern, $data, $matches)) {
                 throw new Error\Exception(
-                    $this->location . ': Could not find PEM encoded certificate in "' . $location . '".'
+                    $this->location . ': Could not find PEM encoded certificate in "' . $location . '".',
                 );
             }
             $certData = preg_replace('/\s+/', '', $matches[1]);

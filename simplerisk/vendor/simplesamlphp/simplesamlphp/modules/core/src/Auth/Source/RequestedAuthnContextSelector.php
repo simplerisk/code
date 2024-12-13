@@ -113,7 +113,7 @@ class RequestedAuthnContextSelector extends AbstractSourceSelector
             || $requestedContexts['AuthnContextClassRef'] === null
         ) {
             Logger::info(
-                "core:RequestedAuthnContextSelector:  no RequestedAuthnContext provided; selecting default authsource"
+                "core:RequestedAuthnContextSelector:  no RequestedAuthnContext provided; selecting default authsource",
             );
 
             if (array_key_exists('default', $this->contexts)) {
@@ -141,7 +141,7 @@ class RequestedAuthnContextSelector extends AbstractSourceSelector
                             return $context['source'];
                         }
                     }
-                    break 2;
+                    break 1;
                 case 'minimum':
                 case 'maximum':
                 case 'better':

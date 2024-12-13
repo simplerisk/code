@@ -18,6 +18,7 @@ use Twig\Node\Expression\ConstantExpression;
 use Twig\Node\Expression\FilterExpression;
 use Twig\Node\Expression\FunctionExpression;
 use Twig\Node\Expression\GetAttrExpression;
+use Twig\Node\Expression\MacroReferenceExpression;
 use Twig\Node\Expression\MethodCallExpression;
 use Twig\Node\Expression\NameExpression;
 use Twig\Node\Expression\ParentExpression;
@@ -36,11 +37,14 @@ final class SafeAnalysisNodeVisitor implements NodeVisitorInterface
         $this->safeVars = $safeVars;
     }
 
+    /**
+     * @return array
+     */
     public function getSafe(Node $node)
     {
         $hash = spl_object_hash($node);
         if (!isset($this->data[$hash])) {
-            return;
+            return [];
         }
 
         foreach ($this->data[$hash] as $bucket) {
@@ -54,6 +58,8 @@ final class SafeAnalysisNodeVisitor implements NodeVisitorInterface
 
             return $bucket['value'];
         }
+
+        return [];
     }
 
     private function setSafe(Node $node, array $safe): void
@@ -106,11 +112,14 @@ final class SafeAnalysisNodeVisitor implements NodeVisitorInterface
             if ($filter) {
                 $safe = $filter->getSafe($node->getNode('arguments'));
                 if (null === $safe) {
+                    trigger_deprecation('twig/twig', '3.16', 'The "%s::getSafe()" method should not return "null" anymore, return "[]" instead.', $filter::class);
+                    $safe = [];
+                }
+
+                if (!$safe) {
                     $safe = $this->intersectSafe($this->getSafe($node->getNode('node')), $filter->getPreservesSafety());
                 }
                 $this->setSafe($node, $safe);
-            } else {
-                $this->setSafe($node, []);
             }
         } elseif ($node instanceof FunctionExpression) {
             // function expression is safe when the function is safe
@@ -122,33 +131,29 @@ final class SafeAnalysisNodeVisitor implements NodeVisitorInterface
             }
 
             if ($function) {
-                $this->setSafe($node, $function->getSafe($node->getNode('arguments')));
-            } else {
-                $this->setSafe($node, []);
+                $safe = $function->getSafe($node->getNode('arguments'));
+                if (null === $safe) {
+                    trigger_deprecation('twig/twig', '3.16', 'The "%s::getSafe()" method should not return "null" anymore, return "[]" instead.', $function::class);
+                    $safe = [];
+                }
+                $this->setSafe($node, $safe);
             }
-        } elseif ($node instanceof MethodCallExpression) {
-            if ($node->getAttribute('safe')) {
-                $this->setSafe($node, ['all']);
-            } else {
-                $this->setSafe($node, []);
-            }
+        } elseif ($node instanceof MethodCallExpression || $node instanceof MacroReferenceExpression) {
+            // all macro calls are safe
+            $this->setSafe($node, ['all']);
         } elseif ($node instanceof GetAttrExpression && $node->getNode('node') instanceof NameExpression) {
             $name = $node->getNode('node')->getAttribute('name');
             if (\in_array($name, $this->safeVars)) {
                 $this->setSafe($node, ['all']);
-            } else {
-                $this->setSafe($node, []);
             }
-        } else {
-            $this->setSafe($node, []);
         }
 
         return $node;
     }
 
-    private function intersectSafe(?array $a = null, ?array $b = null): array
+    private function intersectSafe(array $a, array $b): array
     {
-        if (null === $a || null === $b) {
+        if (!$a || !$b) {
             return [];
         }
 

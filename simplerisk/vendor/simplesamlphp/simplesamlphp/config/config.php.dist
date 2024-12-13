@@ -196,6 +196,10 @@ $config = [
      * This password will give access to the installation page of SimpleSAMLphp with
      * metadata listing and diagnostics pages.
      * You can also put a hash here; run "bin/pwgen.php" to generate one.
+     *
+     * If you are using Ansible you might like to use
+     * ansible.builtin.password_hash(hashtype='blowfish', ident='2y', rounds=13)
+     * to generate this hashed value.
      */
     'auth.adminpassword' => '123',
 
@@ -451,7 +455,7 @@ $config = [
      * Proxy to use for retrieving URLs.
      *
      * Example:
-     *   'proxy' => 'tcp://proxy.example.com:5100'
+     *   'proxy' => 'http://proxy.example.com:5100'
      */
     'proxy' => null,
 
@@ -821,8 +825,8 @@ $config = [
      */
     'language.available' => [
         'en', 'no', 'nn', 'se', 'da', 'de', 'sv', 'fi', 'es', 'ca', 'fr', 'it', 'nl', 'lb',
-        'cs', 'sk', 'sl', 'lt', 'hr', 'hu', 'pl', 'pt', 'pt-br', 'tr', 'ja', 'zh', 'zh-tw',
-        'ru', 'et', 'he', 'id', 'sr', 'lv', 'ro', 'eu', 'el', 'af', 'zu', 'xh', 'st',
+        'cs', 'sk', 'sl', 'lt', 'hr', 'hu', 'pl', 'pt', 'pt_BR', 'tr', 'ja', 'zh', 'zh_TW',
+        'ru', 'et', 'he', 'id', 'sr', 'lv', 'ro', 'eu', 'el', 'af', 'zu', 'xh', 'st'
     ],
     'language.rtl' => ['ar', 'dv', 'fa', 'ur', 'he'],
     'language.default' => 'en',
@@ -992,12 +996,6 @@ $config = [
 
         // Adopts language from attribute to use in UI
         30 => 'core:LanguageAdaptor',
-
-        45 => [
-            'class'         => 'core:StatisticsWithAttribute',
-            'attributename' => 'realm',
-            'type'          => 'saml20-idp-SSO',
-        ],
 
         /* When called without parameters, it will fallback to filter attributes 'the old way'
          * by checking the 'attributes' parameter in metadata on IdP hosted and SP remote.

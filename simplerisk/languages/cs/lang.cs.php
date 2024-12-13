@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'Nahrání souboru se nezdařilo: Neznámé chyby',
     'DynamicIncidentReport' => 'Dynamická zpráva o incidentu',
     'FilteringSelections' => 'Filtrování výběrů',
+    'ProcessingPleaseWait' => 'Zpracování. Počkejte prosím!',
+    'PleaseEnterAValidPhoneNumber' => 'Zadejte prosím platné telefonní číslo',
 
     '' => '',
 );

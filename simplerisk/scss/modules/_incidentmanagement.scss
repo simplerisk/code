@@ -1,0 +1,31 @@
+//************************* INCIDENT DETAILS BEGIN ************************//
+.incident-session {
+    .incident-score--wrapper {
+        flex-shrink: 0;
+    }
+    
+    #response_summary_view {
+        word-break: break-all;
+    }
+}
+
+.incident-details-tab-content {
+    word-break: break-all;
+
+    #incident_response_identification_view {
+        #details_view_details {
+            word-break: break-all;
+        }
+    }
+
+    #containment,
+    #eradication,
+    #recovery,
+    #evidence {
+        div.form-group {
+            display: flex;
+        }
+    }
+}
+
+//************************** INCIDENT DETAILS END *************************//

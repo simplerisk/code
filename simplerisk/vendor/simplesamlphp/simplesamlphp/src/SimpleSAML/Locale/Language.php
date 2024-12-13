@@ -10,9 +10,8 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Locale;
 
-use SimpleSAML\Configuration;
-use SimpleSAML\Logger;
-use SimpleSAML\Utils;
+use SimpleSAML\{Configuration, Logger, Utils};
+use Symfony\Component\Intl\Locales;
 
 class Language
 {
@@ -77,6 +76,7 @@ class Language
      * with some charming SimpleSAML-specific variants...
      * that must remain before 2.0 due to backwards compatibility
      *
+     * @deprecated Use Symfony Intl Languages::getNames() instead
      * @var array<string, string>
      */
     public static array $language_names = [
@@ -143,7 +143,7 @@ class Language
      * @param \SimpleSAML\Configuration $configuration Configuration object
      */
     public function __construct(
-        private Configuration $configuration
+        private Configuration $configuration,
     ) {
         $this->availableLanguages = $this->getInstalledLanguages();
         $this->defaultLanguage = $configuration->getOptionalString('language.default', self::FALLBACKLANGUAGE);
@@ -153,7 +153,7 @@ class Language
         if (isset($_GET[$this->languageParameterName])) {
             $this->setLanguage(
                 $_GET[$this->languageParameterName],
-                $configuration->getOptionalBoolean('language.parameter.setcookie', true)
+                $configuration->getOptionalBoolean('language.parameter.setcookie', true),
             );
         }
     }
@@ -162,22 +162,42 @@ class Language
     /**
      * Filter configured (available) languages against installed languages.
      *
-     * @return string[] The set of languages both in 'language.available' and self::$language_names.
+     * @return string[] The set of languages both in 'language.available' and  Locales::getNames().
      */
     private function getInstalledLanguages(): array
     {
         $configuredAvailableLanguages = $this->configuration->getOptionalArray(
             'language.available',
-            [self::FALLBACKLANGUAGE]
+            [self::FALLBACKLANGUAGE],
         );
-        $availableLanguages = [];
-        foreach ($configuredAvailableLanguages as $code) {
-            if (array_key_exists($code, self::$language_names) && isset(self::$language_names[$code])) {
-                $availableLanguages[] = $code;
-            } else {
-                Logger::error("Language \"$code\" not installed. Check config.");
+
+        // @deprecated - remove entire if-block in a new major release
+        if (array_intersect(['pt-br', 'zh-tw'], $configuredAvailableLanguages)) {
+            Logger::warning(
+                "Deprecated locales found in `language.available`. "
+                . "Please replace 'pt-br' with 'pt_BR',"
+                . " and 'zh-tw' with 'zh_TW'.",
+            );
+
+            if (($i = array_search('pt-br', $configuredAvailableLanguages)) !== false) {
+                $configuredAvailableLanguages[$i] = 'pt_BR';
+            }
+
+            if (($i = array_search('zh-tw', $configuredAvailableLanguages)) !== false) {
+                $configuredAvailableLanguages[$i] = 'zh_TW';
             }
         }
+
+        $availableLanguages = [];
+        foreach ($configuredAvailableLanguages as $code) {
+            if (Locales::exists($code)) {
+                $availableLanguages[] = $code;
+            } else {
+                /* The configured language code can't be found in Symfony's list of known locales */
+                Logger::error("Locale \"$code\" is not known to the translation system. Check language settings in your config.");
+            }
+        }
+
         return $availableLanguages;
     }
 
@@ -206,7 +226,6 @@ class Language
      */
     public function setLanguage(string $language, bool $setLanguageCookie = true): void
     {
-        $language = strtolower($language);
         if (in_array($language, $this->availableLanguages, true)) {
             $this->language = $language;
             if ($setLanguageCookie === true) {
@@ -266,8 +285,8 @@ class Language
      */
     public function getLanguageLocalizedName(string $code): ?string
     {
-        if (array_key_exists($code, self::$language_names) && isset(self::$language_names[$code])) {
-            return self::$language_names[$code];
+        if (Locales::exists($code)) {
+            return Locales::getName($code, $code);
         }
         Logger::error("Name for language \"$code\" not found. Check config.");
         return null;
@@ -403,7 +422,7 @@ class Language
         $name = $config->getOptionalString('language.cookie.name', 'language');
 
         if (isset($_COOKIE[$name])) {
-            $language = strtolower($_COOKIE[$name]);
+            $language = $_COOKIE[$name];
             if (in_array($language, $availableLanguages, true)) {
                 return $language;
             }
@@ -420,7 +439,6 @@ class Language
      */
     public static function setLanguageCookie(string $language): void
     {
-        $language = strtolower($language);
         $config = Configuration::getInstance();
         $availableLanguages = $config->getOptionalArray('language.available', [self::FALLBACKLANGUAGE]);
 

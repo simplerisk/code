@@ -25,7 +25,7 @@ class LogWriter
     {
         if (!file_exists($file)) {
             if ($createFile) {
-                FS::createFile($file);
+                FS\File::create($file);
             } else {
                 trigger_error(basename($file) . " not found in " . dirname($file), E_USER_ERROR);
             }
@@ -60,17 +60,21 @@ class LogWriter
 
     protected function writeAsLeaf($message, $level)
     {
-        FS::prepend(
+        FS\File::write(
             $this->logFile,
-            (string) "[" . (new \Leaf\Date())->tick()->now() . "]\n" . $level . "$message\n"
+            function ($content) use ($message, $level) {
+                return "[" . (new \Leaf\Date())->tick()->now() . "]\n" . $level . "$message\n\n" . $content;
+            },
         );
     }
 
     protected function writeAsLinux($message, $level)
     {
-        FS::append(
+        FS\File::write(
             $this->logFile,
-            (string) "[" . (new \Leaf\Date())->tick()->now() . "] " . $level . "$message\n"
+            function ($content) use ($message, $level) {
+                return "[" . (new \Leaf\Date())->tick()->now() . "] " . $level . "$message\n\n" . $content;
+            },
         );
     }
 }

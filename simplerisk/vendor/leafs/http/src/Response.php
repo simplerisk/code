@@ -56,7 +56,7 @@ class Response
 
     /**
      * Output any text
-     * 
+     *
      * @param string $data The data to output
      * @param int $code The response status code
      */
@@ -98,10 +98,10 @@ class Response
 
         $this->send();
     }
-    
+
     /**
      * Output js script
-     * 
+     *
      * @param string $data The data to output
      * @param int $code The response status code
      */
@@ -245,7 +245,7 @@ EOT;
 
     /**
      * Output some data and break the application
-     * 
+     *
      * @param mixed $data The data to output
      * @param int $code The Http status code
      */
@@ -260,27 +260,35 @@ EOT;
      * This method prepares this response to return an HTTP Redirect response
      * to the HTTP client.
      *
-     * @param string $url The redirect destination
+     * @param string|array $url The redirect destination
      * @param int $status The redirect HTTP status code
      */
-    public function redirect(string $url, int $status = 302)
+    public function redirect($url, int $status = 302, bool $exit = true)
     {
-        if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
-            \Leaf\Config::set('response.redirect', [$url, $status]);
-            return;
+        if (is_array($url)) {
+            $url = app()->route($url[0]);
         }
 
         if (class_exists('Leaf\App')) {
             $url = str_replace('//', '/', app()->getBasePath() . $url);
         }
 
+        if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
+            \Leaf\Config::set('response.redirect', [$url, $status]);
+            return;
+        }
+
         Headers::status($status);
         Headers::set('Location', $url, true, $status);
+
+        if ($exit) {
+            exit($status);
+        }
     }
 
     /**
      * Pass data to the route handler
-     * 
+     *
      * @param mixed $data The data to pass
      */
     public function next($data)
@@ -379,9 +387,11 @@ EOT;
      * Flash a piece of data to the session.
      *
      * @param string|array key The key of the item to set
-     * @param string $value The value of flash item
+     * @param mixed $value The value of flash item
+     *
+     * @return Response
      */
-    public function withFlash($key, string $value): Response
+    public function withFlash($key, $value = null): Response
     {
         if (!class_exists('Leaf\Http\Session')) {
             Headers::contentHtml();
@@ -394,7 +404,7 @@ EOT;
             }
         }
 
-        \Leaf\Flash::set($key, $value);
+        \Leaf\Flash::set($value, $key);
 
         return $this;
     }

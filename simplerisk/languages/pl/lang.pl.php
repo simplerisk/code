@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'Nie udało się przesłać pliku: nieznane błędy',
     'DynamicIncidentReport' => 'Dynamiczny raport incydentów',
     'FilteringSelections' => 'Filtrowanie wyborów',
+    'ProcessingPleaseWait' => 'Przetwarzanie. Proszę czekać!',
+    'PleaseEnterAValidPhoneNumber' => 'Proszę wpisać prawidłowy numer telefonu',
 
     '' => '',
 );

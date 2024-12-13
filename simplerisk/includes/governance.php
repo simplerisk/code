@@ -581,7 +581,7 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
     else{
         $sql .= " AND 0 ";
     }
-    
+
     // If control family ID is requested.
     if($control_family && is_array($control_family)){
         $where = [0];
@@ -601,7 +601,11 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
                 }
             }
         }
-        $where[] = "FIND_IN_SET(t5.value, '".implode(",", $where_ids)."')";
+
+        if (!empty($where_ids)) {
+            $where[] = "t5.value IN (".implode(",", $where_ids).")";
+        }
+
         $sql .= " AND (". implode(" OR ", $where) . ")";
     }
     elseif($control_family == "all"){
@@ -630,8 +634,11 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
                 }
             }
         }
-        $where[] = "FIND_IN_SET(t6.value, '".implode(",", $where_or_ids)."')";
-        
+
+        if (!empty($where_ids)) {
+            $where[] = "FIND_IN_SET(t6.value, '".implode(",", $where_or_ids)."')";
+        }
+
         $sql .= " AND (". implode(" OR ", $where) . ")";
     }
     elseif($control_owner == "all"){
@@ -660,7 +667,7 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
                 }
             }
         }
-        $where[] = "FIND_IN_SET(m_1.framework, '".implode(",", $where_or_ids)."')";
+        $where[] = "m_1.framework IN (".implode(",", $where_or_ids).")";
         
         $sql .= " AND (". implode(" OR ", $where) . ")";
 
@@ -2377,6 +2384,16 @@ function get_documents_as_treegrid($type){
                 <a class='framework-block--delete mx-1' data-id='".((int)$document['id'])."'><i class='fa fa-trash'></i></a></div>";
         $filtered_documents[] = $document;
     }
+
+    // If there're documents filtered out
+    if(count($filterRules) > 0 && count($filtered_documents) != count($documents)) {
+        // remove the parents to make every element a 'root' element to make sure they're properly displayed
+        $filtered_documents = array_map(function($n) {
+            $n['parent'] = 0;
+            return $n;
+        }, $filtered_documents);
+    }
+
     $results = array();
     $count = 0;
     makeTree($filtered_documents, 0, $results, $count);

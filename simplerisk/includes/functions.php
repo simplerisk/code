@@ -313,6 +313,7 @@ $temp_tables = [
 
 // Use this in case there's an order column for the field, so when encryption is on the logic can still order the results in the sql
 // 'encrypted_order_column' => "`a`.`order_by_name`",
+// The '_filter' in select parts is used for multi-select filtering.
 global $field_settings;
 $field_settings = [
     'asset' => [
@@ -862,6 +863,309 @@ $field_settings = [
             'searchable' => true,
             'orderable' => true,
         ],
+    ],
+    //all the fields in the 'framework_control_test_audit' need to be set as technical fields
+    //since they must be displayed regardless of whether customiztion extra is true or not.
+    //if it's possible to customize framework_control_test_audit fields, we can unset some from being technical fields but for now it's best to keep them as technical fields.
+    "framework_control_test_audit" => [
+        'actions' => [
+            'customization_field_name' => '',
+            'localization_key' => 'Actions',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:80px;',
+            'searchable' => false,
+            'orderable' => false,
+            'editable' => false,
+            'select_parts' => [],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        'id' => [
+            'customization_field_name' => 'ID',
+            'localization_key' => '',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "a.id",
+            'editable' => false,
+            'select_parts' => ["
+                a.id
+            "],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],     
+        'test_name' => [
+            'customization_field_name' => 'TestName',
+            'localization_key' => 'TestName',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "test_name",
+            'editable' => false,
+            'select_parts' => [
+                "a.name as test_name",
+                "fct.id as test_name_filter"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ], 
+        "test_frequency" => [
+            'customization_field_name' => 'TestFrequency',
+            'localization_key' => 'TestFrequency',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "test_frequency",
+            'editable' => false,
+            'select_parts' => [
+                "a.test_frequency"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "tester" => [
+            'customization_field_name' => 'Tester',
+            'localization_key' => 'Tester',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "test_frequency",
+            'editable' => false,
+            'select_parts' => [
+                "a.tester",
+                "u.name tester_display"
+            ],
+            'has_display_field' => true,
+            'join_parts' => [
+                "INNER JOIN `user` u ON a.tester = u.value"
+            ],
+        ],
+        "additional_stakeholders" => [
+            'customization_field_name' => 'AdditionalStakeholders',
+            'localization_key' => 'AdditionalStakeholders',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "additional_stakeholders_display",
+            'editable' => false,
+            'select_parts' => [
+                "fct.additional_stakeholders", 
+                "GROUP_CONCAT(DISTINCT uu.name ORDER BY uu.name SEPARATOR ', ') additional_stakeholders_display"
+            ],
+            'has_display_field' => true,
+            'join_parts' => [
+                "LEFT JOIN `user` uu ON FIND_IN_SET(uu.value, fct.additional_stakeholders)"
+            ],
+        ],
+        "objective" => [
+            'customization_field_name' => 'Objective',
+            'localization_key' => 'Objective',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "objective",
+            'editable' => false,
+            'select_parts' => [
+                "a.objective", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "control_name" => [
+            'customization_field_name' => 'ControlName',
+            'localization_key' => 'ControlName',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "control_name",
+            'editable' => false,
+            'select_parts' => [
+                "fc.short_name control_name", 
+                "fc.id control_name_filter"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "framework_name" => [
+            'customization_field_name' => 'FrameworkName',
+            'localization_key' => 'FrameworkName',
+            'technical_field' => true,
+            'encrypted' => true,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "framework_name",
+            'editable' => false,
+            'select_parts' => [
+                "IFNULL(GROUP_CONCAT(DISTINCT f.name ORDER BY f.name ASC), '') framework_name",
+                "IFNULL(GROUP_CONCAT(DISTINCT f.value ORDER BY f.name ASC), '') framework_name_filter"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN `framework_control_mappings` fcm ON fc.id=fcm.control_id",
+                "LEFT JOIN `frameworks` f ON fcm.framework=f.value AND f.status=1"
+            ],
+        ],
+        "tags" => [
+            'customization_field_name' => 'Tags',
+            'localization_key' => 'Tags',
+            'technical_field' => true,
+            'renderer' => "DataTable.render.tags('test_audit')",
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "tags",
+            'editable' => false,
+            'select_parts' => [
+                "GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag ASC SEPARATOR '|') as tags", 
+                "IFNULL(GROUP_CONCAT(DISTINCT tg.id ORDER BY tg.tag ASC SEPARATOR '|'), '') as tags_filter"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN `tags_taggees` tt ON tt.taggee_id = a.id AND tt.type = 'test_audit'", 
+                "LEFT JOIN `tags` tg on tg.id = tt.tag_id"
+            ],
+        ],
+        "status" => [
+            'customization_field_name' => 'Status',
+            'localization_key' => 'Status',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "status",
+            'editable' => false,
+            'select_parts' => [
+                "a.status", 
+                "IFNULL(ts.name, '--') status_display", 
+                "ts.value status_filter"
+            ],
+            'has_display_field' => true,
+            'join_parts' => [
+                "LEFT JOIN `test_status` ts ON a.status=ts.value"
+            ],
+        ],
+        "test_date" => [
+            'customization_field_name' => 'TestDate',
+            'localization_key' => 'TestDate',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "test_date",
+            'editable' => false,
+            'select_parts' => [
+                "fctr.test_date", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN `framework_control_test_results` fctr ON a.id=fctr.test_audit_id", 
+                "LEFT JOIN `test_results` tr ON tr.name=fctr.test_result"
+            ],
+        ],
+        "last_date" => [
+            'customization_field_name' => 'LastAuditDate',
+            'localization_key' => 'LastAuditDate',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "last_date",
+            'editable' => false,
+            'select_parts' => [
+                "fct.last_date", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "audit_date" => [
+            'customization_field_name' => 'AuditDate',
+            'localization_key' => 'AuditDate',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "audit_date",
+            'editable' => false,
+            'select_parts' => [
+                "fct.last_date as audit_date", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "next_date" => [
+            'customization_field_name' => 'NextAuditDate',
+            'localization_key' => 'NextAuditDate',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "next_date",
+            'editable' => false,
+            'select_parts' => [
+                "fct.next_date", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "teams" => [
+            'customization_field_name' => 'NextAuditDate',
+            'localization_key' => '',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => false,
+            'orderable' => false,
+            'order_column' => "teams",
+            'editable' => false,
+            'select_parts' => [
+                "GROUP_CONCAT(DISTINCT `i2t`.`team_id`) teams", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "test_result" => [
+            'customization_field_name' => 'TestResult',
+            'localization_key' => 'TestResult',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "teams",
+            'editable' => false,
+            'select_parts' => [
+                "fctr.test_result", 
+                "tr.value test_result_filter"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN `framework_control_test_results` fctr ON a.id=fctr.test_audit_id", 
+                "LEFT JOIN `test_results` tr ON tr.name=fctr.test_result"
+            ],
+        ],
+        "test_result_background_class" => [
+            'customization_field_name' => '',
+            'localization_key' => '',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => false,
+            'orderable' => false,
+            'editable' => false,
+            'select_parts' => [
+                "tr.background_class test_result_background_class", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN `framework_control_test_results` fctr ON a.id=fctr.test_audit_id", 
+                "LEFT JOIN `test_results` tr ON tr.name=fctr.test_result"
+            ],
+        ], 
     ],
     //all the fields in 'incident' need to be set as technical fields
     //since they must be displayed regardless of whether customiztion extra is true or not.
@@ -1719,6 +2023,39 @@ $field_settings_display_groups = [
             'comments',
         ],
     ],
+    'active_audits' => [
+        'header_key' => '',
+        'field_type' => 'framework_control_test_audit',
+        'fields' => [
+            "test_name",
+            "test_frequency",
+            "tester",
+            "additional_stakeholders",
+            "objective",
+            "control_name",
+            "framework_name",
+            "tags",
+            "status",
+            "test_date",
+            "last_date",
+            "next_date",
+            "teams"
+        ],
+    ],
+    'past_audits' => [
+        'header_key' => '',
+        'field_type' => 'framework_control_test_audit',
+        'fields' => [
+            "test_name",
+            "audit_date",
+            "control_name",
+            "framework_name",
+            "tags",
+            "status",
+            "test_result",
+            "test_result_background_class"
+        ],
+    ],
     'incident_detection' => [
         'header_key' => 'Detection',
         'field_type' => 'incident_management_incident',
@@ -1955,6 +2292,79 @@ $field_settings_views = [
             'next_step',
             'next_review_date',
         ],
+    ],
+    'active_audits' => [
+        'view_type' => 'framework_control_test_audit',
+        'join_parts' => [
+            "LEFT JOIN `framework_controls` fc ON a.framework_control_id = fc.id",
+            "INNER JOIN `framework_control_tests` fct ON fct.id=a.test_id",
+            "LEFT JOIN `items_to_teams` i2t ON i2t.`item_id` = `a`.`id` and i2t.`type` = 'audit'"
+        ],
+        'id_field' => 'id',
+        'datatable_ajax_uri' => '/api/v2/get/datatable?view=active_audits',
+        'datatable_data_type' => 'associative',
+        'datatable_filter_submit_delay' => 600,
+        'groups' => [
+            'active_audits'
+        ],
+        'default_enabled_columns' => [
+            "test_name",
+            "test_frequency",
+            "tester",
+            "additional_stakeholders",
+            "objective",
+            "control_name",
+            "framework_name",
+            "tags",
+            "status",
+            "test_date",
+            "last_date",
+            "next_date"
+        ],
+        'actions_column' => [
+            'field_name' => 'actions',
+            'position' => 'last'
+        ],
+        'datatable_options' => '
+            createdRow: function(row, data, index){
+                var background = $(\'.background-class\', $(row)).data(\'background\');
+                $(row).find(\'td\').addClass(background)
+            },
+        ',
+    ],
+    'past_audits' => [
+        'view_type' => 'framework_control_test_audit',
+        'join_parts' => [
+            "LEFT JOIN `framework_controls` fc ON a.framework_control_id = fc.id",
+            "INNER JOIN `framework_control_tests` fct ON fct.id=a.test_id",
+            "LEFT JOIN `items_to_teams` i2t ON i2t.`item_id` = `a`.`id` and i2t.`type` = 'audit'"
+        ],
+        'id_field' => 'id',
+        'datatable_ajax_uri' => '/api/v2/get/datatable?view=past_audits',
+        'datatable_data_type' => 'associative',
+        'datatable_filter_submit_delay' => 600,
+        'groups' => [
+            'past_audits'
+        ],
+        'default_enabled_columns' => [
+            "test_name",
+            "audit_date",
+            "control_name",
+            "framework_name",
+            "tags",
+            "status",
+            "test_result"
+        ],
+        'actions_column' => [
+            'field_name' => 'actions',
+            'position' => 'last'
+        ],
+        'datatable_options' => '
+            createdRow: function(row, data, index){
+                var background = $(\'.background-class\', $(row)).data(\'background\');
+                $(row).find(\'td\').addClass(background)
+            },
+        ',
     ],
     'dynamic_incident_report' => [
         'view_type' => 'incident_management_incident',
@@ -8563,6 +8973,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     p.current_solution,
                     p.security_recommendations,
                     p.security_requirements,
+                    p.mitigation_percent,
                     m.name AS next_step,
                     l.comments,
                     n.name AS reviewer
@@ -8706,6 +9117,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     p.current_solution,
                     p.security_recommendations,
                     p.security_requirements,
+                    p.mitigation_percent,
                     m.name AS next_step,
                     l.comments,
                     n.name AS reviewer
@@ -8859,6 +9271,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     p.current_solution,
                     p.security_recommendations,
                     p.security_requirements,
+                    p.mitigation_percent,
                     m.name AS next_step,
                     l.comments,
                     n.name AS reviewer
@@ -9003,6 +9416,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     p.current_solution,
                     p.security_recommendations,
                     p.security_requirements,
+                    p.mitigation_percent,
                     m.name AS next_step,
                     l.comments,
                     n.name AS reviewer
@@ -9165,6 +9579,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                 p.current_solution,
                 p.security_recommendations,
                 p.security_requirements,
+                p.mitigation_percent,
                 m.name AS next_step,
                 l.comments,
                 n.name AS reviewer
@@ -10134,48 +10549,59 @@ function get_risk_table($sort_order=0, $activecol="")
 /***************************************
  * FUNCTION: GET SUBMITTED RISKS TABLE *
  ***************************************/
-function get_submitted_risks_table()
-{
+function get_submitted_risks_table() {
+
     global $lang;
     global $escaper;
 
-        // Get risks
-        $risks = get_risks(11);
+    // Get risks
+    $risks = get_risks(11);
 
-        echo "<table id=\"submitted_risk\" class=\"table table-bordered table-condensed sortable\">\n";
-        echo "<thead>\n";
-        echo "<tr>\n";
-        echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
-        echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
-        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['SubmissionDate']) ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['CalculatedRisk']) ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
-        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['Team']) ."</th>\n";
-        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['SubmittedBy']) ."</th>\n";
-        echo "</tr>\n";
-        echo "</thead>\n";
-        echo "<tbody>\n";
+    echo "
+        <table id='submitted_risk' class='table table-bordered table-condensed sortable'>
+            <thead>
+                <tr>
+                    <th align='left' width='50px'>{$escaper->escapeHtml($lang['ID'])}</th>
+                    <th align='left' width='300px'>{$escaper->escapeHtml($lang['Subject'])}</th>
+                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['SubmissionDate'])}</th>
+                    <th align='left' width='150px'>{$escaper->escapeHtml($lang['CalculatedRisk'])}</th>
+                    <th align='left' width='150px'>{$escaper->escapeHtml($lang['Status'])}</th>
+                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['Team'])}</th>
+                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['SubmittedBy'])}</th>
+                </tr>
+            </thead>
+            <tbody>
+    ";
 
-        // For each risk
-        foreach ($risks as $risk)
-        {
-            // Get the risk color
-            $color = get_risk_color($risk['calculated_risk']);
+    // For each risk
+    foreach ($risks as $risk) {
 
-            echo "<tr>\n";
-            echo "<td align=\"left\" width=\"50px\"><a class='open-in-new-tab' href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
-            echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
-            echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
-            echo "<td class=\"risk-cell\" align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"150px\"><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . " \"></span> </div></td>\n";
-            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['status']) . "</td>\n";
-            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['team']) . "</td>\n";
-            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['name']) . "</td>\n";
-            echo "</tr>\n";
-        }
+        // Get the risk color
+        $color = get_risk_color($risk['calculated_risk']);
 
-        echo "</tbody>\n";
-        echo "</table>\n";
         echo "
+                <tr>
+                    <td align='left' width='50px'>
+                        <a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml(convert_id($risk['id']))}'>{$escaper->escapeHtml(convert_id($risk['id']))}</a>
+                    </td>
+                    <td align='left' width='300px'>{$escaper->escapeHtml($risk['subject'])}</td>
+                    <td align='center' width='150px' sorttable_customkey='{$escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date'])))}'>{$escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date'])))}</td>
+                    <td class='risk-cell' align='center' bgcolor='{$escaper->escapeHtml($color)}' width='150px'>
+                        <div class='risk-cell-holder'>
+                            {$escaper->escapeHtml($risk['calculated_risk'])} <span class='risk-color' style='background-color:{$escaper->escapeHtml($color)} '></span>
+                        </div>
+                    </td>
+                    <td align='center' width='150px'>{$escaper->escapeHtml($risk['status'])}</td>
+                    <td align='center' width='150px'>{$escaper->escapeHtml($risk['team'])}</td>
+                    <td align='center' width='150px'>{$escaper->escapeHtml($risk['name'])}</td>
+                </tr>
+        ";
+    }
+
+    echo "
+            </tbody>
+        </table>
+        
         <script>
             $(document).ready(function(){
                 $('#submitted_risk thead tr:eq(0)').clone(true).appendTo($('#submitted_risk thead'));
@@ -10198,57 +10624,66 @@ function get_submitted_risks_table()
                 });
              });
         </script>
-        ";
+    ";
 
-        return true;
+    return true;
+    
 }
 
 /***********************************
  * FUNCTION: GET MITIGATIONS TABLE *
  ***********************************/
-function get_mitigations_table()
-{
+function get_mitigations_table() {
+
     global $lang;
     global $escaper;
 
-        // Get risks
-        $risks = get_risks(13);
+    // Get risks
+    $risks = get_risks(13);
 
-        echo "<table id=\"mitigations_risk\" class=\"table table-bordered table-condensed sortable\">\n";
-        echo "<thead>\n";
-        echo "<tr>\n";
-        echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
-        echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationDate']) ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['PlanningStrategy']) ."</th>\n";
-        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationEffort']) ."</th>\n";
-        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationCost']) ."</th>\n";
-        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationOwner']) ."</th>\n";
-        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationTeam']) ."</th>\n";
-        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['SubmittedBy']) ."</th>\n";
-        echo "</tr>\n";
-        echo "</thead>\n";
-        echo "<tbody>\n";
+    echo "
+        <table id='mitigations_risk' class='table table-bordered table-condensed sortable'>
+            <thead>
+                <tr>
+                    <th align='left' width='50px'>{$escaper->escapeHtml($lang['ID'])}</th>
+                    <th align='left' width='300px'>{$escaper->escapeHtml($lang['Subject'])}</th>
+                    <th align='left' width='150px'>{$escaper->escapeHtml($lang['MitigationDate'])}</th>
+                    <th align='left' width='150px'>{$escaper->escapeHtml($lang['PlanningStrategy'])}</th>
+                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['MitigationEffort'])}</th>
+                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['MitigationCost'])}</th>
+                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['MitigationOwner'])}</th>
+                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['MitigationTeam'])}</th>
+                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['SubmittedBy'])}</th>
+                </tr>
+            </thead>
+            <tbody>
+    ";
 
-        // For each risk
-        foreach ($risks as $risk)
-        {
-            echo "<tr>\n";
-            echo "<td align=\"left\" width=\"50px\"><a class='open-in-new-tab' href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
-            echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
-            echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
-            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['planning_strategy']) . "</td>\n";
-            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['mitigation_effort']) . "</td>\n";
-            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(get_asset_value_by_id($risk['mitigation_cost'])) . "</td>\n";
-            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['mitigation_owner']) . "</td>\n";
-            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['mitigation_team']) . "</td>\n";
-            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['name']) . "</td>\n";
-            echo "</tr>\n";
-        }
+    // For each risk
+    foreach ($risks as $risk) {
 
-        echo "</tbody>\n";
-        echo "</table>\n";
         echo "
+                <tr>
+                    <td align='left' width='50px'>
+                        <a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml(convert_id($risk['id']))}'>{$escaper->escapeHtml(convert_id($risk['id']))}</a>
+                    </td>
+                    <td align='left' width='300px'>{$escaper->escapeHtml($risk['subject'])}</td>
+                    <td align='center' width='150px' sorttable_customkey='{$escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date'])))}'>{$escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date'])))}</td>
+                    <td align='center' width='150px'>{$escaper->escapeHtml($risk['planning_strategy'])}</td>
+                    <td align='center' width='150px'>{$escaper->escapeHtml($risk['mitigation_effort'])}</td>
+                    <td align='center' width='150px'>{$escaper->escapeHtml(get_asset_value_by_id($risk['mitigation_cost']))}</td>
+                    <td align='center' width='150px'>{$escaper->escapeHtml($risk['mitigation_owner'])}</td>
+                    <td align='center' width='150px'>{$escaper->escapeHtml($risk['mitigation_team'])}</td>
+                    <td align='center' width='150px'>{$escaper->escapeHtml($risk['name'])}</td>
+                </tr>
+        ";
+
+    }
+
+    echo "
+            </tbody>
+        </table>
+        
         <script>
             $(document).ready(function(){
                 $('#mitigations_risk thead tr:eq(0)').clone(true).appendTo($('#mitigations_risk thead'));
@@ -10271,51 +10706,58 @@ function get_mitigations_table()
                 });
              });
         </script>
-        ";
+    ";
 
-        return true;
+    return true;
+
 }
 
 /*************************************
  * FUNCTION: GET REVIEWED RISK TABLE *
  *************************************/
-function get_reviewed_risk_table($sort_order=12)
-{
+function get_reviewed_risk_table($sort_order=12) {
+
     global $lang;
     global $escaper;
 
-        // Get risks
-        $risks = get_risks($sort_order);
+    // Get risks
+    $risks = get_risks($sort_order);
 
-        echo "<table id=\"reviewed_risk\" class=\"table table-bordered table-condensed sortable\">\n";
-        echo "<thead>\n";
-        echo "<tr>\n";
-        echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
-        echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['ReviewDate']) ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Review']) ."</th>\n";
-        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['NextStep']) ."</th>\n";
-        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['Reviewer']) ."</th>\n";
-        echo "</tr>\n";
-        echo "</thead>\n";
-        echo "<tbody>\n";
+    echo "
+        <table id='reviewed_risk' class='table table-bordered table-condensed sortable'>
+            <thead>
+                <tr>
+                    <th align='left' width='50px'>{$escaper->escapeHtml($lang['ID'])}</th>
+                    <th align='left' width='300px'>{$escaper->escapeHtml($lang['Subject'])}</th>
+                    <th align='left' width='150px'>{$escaper->escapeHtml($lang['ReviewDate'])}</th>
+                    <th align='left' width='150px'>{$escaper->escapeHtml($lang['Review'])}</th>
+                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['NextStep'])}</th>
+                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['Reviewer'])}</th>
+                </tr>
+            </thead>
+            <tbody>
+    ";
 
         // For each risk
-        foreach ($risks as $risk)
-        {
-            echo "<tr>\n";
-            echo "<td align=\"left\" width=\"50px\"><a class='open-in-new-tab' href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
-            echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
-            echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
-            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['review']) . "</td>\n";
-            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['next_step']) . "</td>\n";
-            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['name']) . "</td>\n";
-            echo "</tr>\n";
-        }
-
-        echo "</tbody>\n";
-        echo "</table>\n";
+    foreach ($risks as $risk) {
         echo "
+                <tr>
+                    <td align='left' width='50px'>
+                        <a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml(convert_id($risk['id']))}'>{$escaper->escapeHtml(convert_id($risk['id']))}</a>
+                    </td>
+                    <td align='left' width='300px'>{$escaper->escapeHtml($risk['subject'])}</td>
+                    <td align='center' width='150px' sorttable_customkey='{$escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date'])))}'>{$escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date'])))}</td>
+                    <td align='center' width='150px'>{$escaper->escapeHtml($risk['review'])}</td>
+                    <td align='center' width='150px'>{$escaper->escapeHtml($risk['next_step'])}</td>
+                    <td align='center' width='150px'>{$escaper->escapeHtml($risk['name'])}</td>
+                </tr>
+        ";
+    }
+
+    echo "
+            </tbody>
+        </table>
+        
         <script>
             $(document).ready(function(){
                 $('#reviewed_risk thead tr:eq(0)').clone(true).appendTo($('#reviewed_risk thead'));
@@ -10338,57 +10780,71 @@ function get_reviewed_risk_table($sort_order=12)
                 });
              });
         </script>
-        ";
+    ";
 
-        return true;
+    return true;
+
 }
 
 /***************************************
  * FUNCTION: GET CLOSED RISKS TABLE *
  ***************************************/
-function get_closed_risks_table($sort_order=17)
-{
+function get_closed_risks_table($sort_order=17) {
+
     global $lang;
     global $escaper;
 
     // Get risks
     $risks = get_risks($sort_order);
 
-    echo "<table id=\"closeded_risk\" class=\"table table-bordered table-condensed sortable\">\n";
-    echo "<thead>\n";
-    echo "<tr>\n";
-    echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
-    echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
-    echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['CalculatedRisk']) ."</th>\n";
-    echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['Team']) ."</th>\n";
-    echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['DateClosed']) ."</th>\n";
-    echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['ClosedBy']) ."</th>\n";
-    echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['CloseReason']) ."</th>\n";
-    echo "</tr>\n";
-    echo "</thead>\n";
-    echo "<tbody>\n";
+    echo "
+        <table id='closeded_risk' class='table table-bordered table-condensed sortable'>
+            <thead>
+                <tr>
+                    <th align='left' width='50px'>{$escaper->escapeHtml($lang['ID'])}</th>
+                    <th align='left' width='300px'>{$escaper->escapeHtml($lang['Subject'])}</th>
+                    <th align='left' width='150px'>{$escaper->escapeHtml($lang['CalculatedRisk'])}</th>
+                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['Team'])}</th>
+                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['DateClosed'])}</th>
+                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['ClosedBy'])}</th>
+                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['CloseReason'])}</th>
+                </tr>
+            </thead>
+            <tbody>
+    ";
 
     // For each risk
-    foreach ($risks as $risk)
-    {
+    foreach ($risks as $risk) {
+
         // Get the risk color
         $color = get_risk_color($risk['calculated_risk']);
         
-        echo "<tr>\n";
-        echo "<td align=\"left\" width=\"50px\"><a class='open-in-new-tab' href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
-        echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
-        echo "<td class=\"risk-cell\" align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"150px\"><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . " \"></span></div></td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['team']) . "</td>\n";
-        echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . (!$risk['closure_date'] ? "" : $escaper->escapeHtml(date("YmdHis", strtotime($risk['closure_date'])))) . "\">"
-            . ( !$risk['closure_date'] ? $lang["Unknown"] : $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['closure_date']))) ) . "</td>\n";
-        echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['user']) . "</td>\n";
-        echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['close_reason']) . "</td>\n";
-        echo "</tr>\n";
+        echo "
+                <tr>
+                    <td align='left' width='50px'>
+                        <a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml(convert_id($risk['id']))}'>{$escaper->escapeHtml(convert_id($risk['id']))}</a>
+                    </td>
+                    <td align='left' width='300px'>{$escaper->escapeHtml($risk['subject'])}</td>
+                    <td class='risk-cell' align='center' bgcolor='{$escaper->escapeHtml($color)}' width='150px'>
+                        <div class='risk-cell-holder'>
+                            {$escaper->escapeHtml($risk['calculated_risk'])} <span class='risk-color' style='background-color:{$escaper->escapeHtml($color)} '></span>
+                        </div>
+                    </td>
+                    <td align='center' width='150px'>{$escaper->escapeHtml($risk['team'])}</td>
+                    <td align='center' width='150px' sorttable_customkey='" . (!$risk['closure_date'] ? "" : $escaper->escapeHtml(date("YmdHis", strtotime($risk['closure_date'])))) . "'>" . 
+                        ( !$risk['closure_date'] ? $lang["Unknown"] : $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['closure_date']))) ) . "
+                    </td>
+                    <td align='center' width='150px'>{$escaper->escapeHtml($risk['user'])}</td>
+                    <td align='center' width='150px'>{$escaper->escapeHtml($risk['close_reason'])}</td>
+                </tr>
+        ";
+
     }
 
-    echo "</tbody>\n";
-    echo "</table>\n";
     echo "
+            </tbody>
+        </table>
+        
         <script>
             $(document).ready(function(){
                 $('#closeded_risk thead tr:eq(0)').clone(true).appendTo($('#closeded_risk thead'));
@@ -10411,9 +10867,10 @@ function get_closed_risks_table($sort_order=17)
                 });
              });
         </script>
-        ";
+    ";
 
     return true;
+
 }
 
 /**********************************
@@ -21812,26 +22269,27 @@ function create_zip_file($source, $destination)
             $file = str_replace('\\', '/', $file);
 
             // Ignore "." and ".." folders
-            if( in_array(substr($file, strrpos($file, '/')+1), array('.', '..')) )
+            if( in_array(substr($file, strrpos($file, '/') + 1), ['.', '..'])) {
                 continue;
+            }
 
             $file = realpath($file);
 
             if (is_dir($file) === true)
             {
-		// Add the directory to the zip
+                // Add the directory to the zip
                 $zip->addEmptyDir(str_replace($source . '/', '', $file . '/'));
             }
             else if (is_file($file) === true)
             {
-		// Add the file to the zip
-                $zip->addFromString(str_replace($source . '/', '', $file), file_get_contents($file));
+                // Add the file to the zip
+                $zip->addFile($file, str_replace($source . '/', '', str_replace('\\', '/', $file)));
             }
         }
     }
     else if (is_file($source) === true)
     {
-        $zip->addFromString(basename($source), file_get_contents($source));
+        $zip->addFile($source, basename($source));
     }
 
     return $zip->close();
@@ -23085,13 +23543,22 @@ function get_graphical_saved_selections($user_id)
 /**************************************************
  * FUNCTION: GET GRAPHICAL SAVED SELECTION BY VALUE *
  **************************************************/
-function get_graphical_saved_selection($value)
-{
+function get_graphical_saved_selection($value) {
+
     // Open the database connection
     $db = db_open();
 
-    $stmt = $db->prepare("SELECT user_id, name, type, graphical_display_settings FROM `graphical_saved_selections` WHERE `value`=:value;");
+    $stmt = $db->prepare("
+        SELECT 
+            user_id, name, type, graphical_display_settings 
+        FROM 
+            `graphical_saved_selections` 
+        WHERE 
+            `value`=:value;
+    ");
+    
     $stmt->bindParam(":value", $value, PDO::PARAM_INT);
+
     $stmt->execute();
 
     // Get dynamic saved selections
@@ -23101,6 +23568,7 @@ function get_graphical_saved_selection($value)
     db_close($db);
 
     return $row;
+
 }
 
 /******************************************
@@ -23906,6 +24374,10 @@ function field_settings_get_join_parts($view, $selected_fields = [], $technical_
     $select_parts = [];
     $join_parts = [];
 
+    if (!empty($field_settings_views[$view]['join_parts']) && $field_settings_views[$view]['join_parts']) {
+        $join_parts = $field_settings_views[$view]['join_parts'];
+    }
+
     if (empty($selected_fields)) {
         $selected_fields = display_settings_get_display_settings_for_view($view);
     }
@@ -24126,6 +24598,862 @@ function display_settings_get_display_settings_for_view($view) {
     }
     
     return $settings;
+}
+
+function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 10, $orderColumn = 'id', $orderDir = 'ASC', $column_filters = []) {
+    
+    global $field_settings_views, $field_settings, $escaper, $lang;
+
+    $view_type = $field_settings_views[$view]['view_type'];
+    $base_table = isset($field_settings_views[$view]['base_table']) ? $field_settings_views[$view]['base_table'] : "{$view_type}s";
+    $groupby = isset($field_settings_views[$view]['groupby']) ? $field_settings_views[$view]['groupby'] : "a.id";
+
+    $customization = customization_extra();
+    
+    // If there's an edit section setup in the view settings then the view is editable
+    $view_editable = !empty($field_settings_views[$view]['edit']);
+    $view_edit_type_popup = $view_editable && $field_settings_views[$view]['edit']['type'] === 'popup';
+    
+    // Open the database connection
+    $db = db_open();
+    
+    $params = [];
+    $encryption = encryption_extra();
+    
+    $actions_column_info = !empty($field_settings_views[$view]['actions_column']) ? $field_settings_views[$view]['actions_column'] : false;
+    if ($actions_column_info) {
+        // Create an array of escaped localized strings so it doesn't have to be done for every assets
+        $actions_tooltips = [
+            'edit' => $escaper->escapeHtml($lang['Edit']),
+            'verify' => $escaper->escapeHtml($lang['Verify']),
+            'discard' => $escaper->escapeHtml($lang['Discard']),
+            'delete' => $escaper->escapeHtml($lang['Delete']),
+            'add' => $escaper->escapeHtml($lang['Add']),
+            'dismiss' => $escaper->escapeHtml($lang['Dismiss']),
+        ];
+    }
+    
+    if (str_starts_with($orderColumn, 'custom_field_')) {
+        $sql_orderable = false;
+    } else {
+        // Can only order fields in the sql if they're not a custom field and encryption isn't enabled or they're not encrypted or if it's specifically stated that it's sql orderable
+        $sql_orderable =
+        (!$encryption || !$field_settings[$view_type][$orderColumn]['encrypted']) &&
+        (!array_key_exists('force_php_ordering', $field_settings[$view_type][$orderColumn]) || !$field_settings[$view_type][$orderColumn]['force_php_ordering']);
+
+        if ($sql_orderable) {
+            $sql_order_column = $field_settings[$view_type][$orderColumn]['order_column'];
+        } else {
+
+            // If encryption is turned on and there's an encrypted order column specified then use that column for ordering and mark it as sql orderable
+            if ($encryption && $field_settings[$view_type][$orderColumn]['encrypted'] && !empty($field_settings[$view_type][$orderColumn]['encrypted_order_column'])) {
+
+                $sql_order_column = $field_settings[$view_type][$orderColumn]['encrypted_order_column'];
+                $sql_orderable = true;
+
+            } else if (array_key_exists('force_php_ordering', $field_settings[$view_type][$orderColumn]) && $field_settings[$view_type][$orderColumn]['force_php_ordering']) {
+
+                // technically it would be possible to order in sql, but the result would be wrong, have to order in PHP by the display string
+                $orderColumn = $field_settings[$view_type][$orderColumn]['order_column'];
+
+            }
+        }
+    }
+
+    // get where queries for views
+    $where = get_wheres_for_view($view);
+
+    if (team_separation_extra()) {
+
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+        if (in_array($view, ['active_audits', 'past_audits'])) {
+            $where .= get_user_teams_query_for_tests_and_audits("a", false, true);
+        }
+    }
+    
+    // At this point it's safe to add the column directly into the sql as it was validated
+    $order_by = $sql_orderable ?  "ORDER BY {$sql_order_column} {$orderDir}, `a`.`id` ASC" : "";
+    
+    // We can do the paging through sql if there's no filtering and we can do the ordering through sql as well
+    $sql_paging = empty($column_filters) && $sql_orderable;
+    if ($sql_paging) {
+        // When requesting every results the $length is -1 so we only limit the results if $length is greater than 0
+        if ($length > 0) {
+            $paging = "LIMIT {$start}, {$length}";
+        } else {
+            // In this case the $sql_paging = true to not try doing the paging using php code
+            // but we're not limiting the number of returned results as we want all of them
+            $paging = '';
+        }
+    } else {
+        // paging will be done using php code
+        $paging = '';
+    }
+
+    list($select_parts, $join_parts) = field_settings_get_join_parts($view, $selected_fields);
+
+    $sql = "
+        SELECT SQL_CALC_FOUND_ROWS t1.*
+        FROM (
+            SELECT
+                " . implode(',', $select_parts) . "
+            FROM
+                {$base_table} a
+                " . implode(' ', $join_parts) . "
+            {$where}
+            GROUP BY
+            {$groupby}
+            {$order_by}
+        ) t1
+        {$paging};
+    ";
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    $items = $stmt->fetchAll();
+    // error_log("ASSETS: " . json_encode($assets));
+    $stmt = $db->prepare("SELECT FOUND_ROWS();");
+    $stmt->execute();
+    $recordsTotal = $stmt->fetch()[0];
+
+    // Close the database connection
+    db_close($db);
+
+    $columns_with_filters = array_keys($column_filters);
+
+    // Get and store the currency here and not every time in the loop
+    // also, only do it if the value column is selected
+    if (in_array('value', $selected_fields)) {
+        $currency_sign = get_setting("currency");
+    }
+
+    $rows = [];
+    $filtered = false;
+    foreach($items as &$item) {
+
+        $drop_row = false;
+        // If customization data for the item is present
+        if ($customization && !empty($item['field_data']) && $item['field_data'] !== '[]') {
+            // extract it as normal fields
+            foreach (json_decode($item['field_data'], true) as $field_data) {
+                
+                if (empty($item["custom_field_{$field_data['field_id']}_display"])) {
+                    // only the rest needs formatting and only those fields that are selected. In this case they're escaped as well
+                    if (in_array("custom_field_{$field_data['field_id']}", $selected_fields)) {
+                        $item["custom_field_{$field_data['field_id']}"] = get_custom_field_name_by_value($field_data['field_id'], $field_data['type'], $field_data['encryption'], $field_data['value']);
+                    }
+                } else {
+                    // select/multi-select fields are already on the item, returned by the sql
+                    // so the custom fields already in the data needs to be escaped
+                    $item["custom_field_{$field_data['field_id']}_display"] = $escaper->escapeHtml($item["custom_field_{$field_data['field_id']}_display"]);
+                    $item["custom_field_{$field_data['field_id']}"] = explode(',', (string)$field_data['value']);
+                }
+            }
+
+            // Custom fields are ordered by their display strings
+            if (!$sql_orderable && str_starts_with($orderColumn, 'custom_field_') && array_key_exists("{$orderColumn}_display", $item)) {
+                $orderColumn = "{$orderColumn}_display";
+            }
+        }
+
+        $row = ['id' => $item['id']];
+
+        foreach ($selected_fields as $selected_field_name) {
+
+            $field_setting = !empty($field_settings[$view_type][$selected_field_name]) ? $field_settings[$view_type][$selected_field_name] : false;
+            $value = '';
+            $display = false;
+
+            if (!empty($item[$selected_field_name])) {
+                // if it's not defined in the settings it's probably a custom field
+                if ($customization && empty($field_settings[$view_type][$selected_field_name]) && str_starts_with($selected_field_name, 'custom_field_')) {
+                    // as of now with how the custom field's actual values' getting goes they're already encrypted and escaped at this point
+                    $value = !empty($item[$selected_field_name]) ? $item[$selected_field_name] : '';
+                    $display = isset($item["{$selected_field_name}_display"]) ? $item["{$selected_field_name}_display"] : false;
+                } else {
+                    $value = $item[$selected_field_name];
+                    $display = isset($item["{$selected_field_name}_display"]) ? $item["{$selected_field_name}_display"] : false;
+                    if ($value && $encryption && !empty($field_setting['encrypted']) && $field_setting['encrypted']) {
+                        $value = try_decrypt($value);
+                    }
+
+                    // Get custom formatting
+                    list($value, $display) = get_custom_formatting_data($view, $selected_field_name, $value, $display, $item);
+
+                }
+
+            } else if (array_key_exists("{$selected_field_name}_display", $item)) {
+
+                // To make sure that even empty values are properly sent back
+                $display = '';
+
+            }
+
+            $row[$selected_field_name] = $value;
+            if ($display !== false) {
+                $row["{$selected_field_name}_display"] = $display;
+            }
+
+            // Do the filtering.
+            // stripos(is_array($value) ? implode('|', $value) : $value, $column_filters[$selected_field_name]) === false
+            // The above line is used to be able to filter within both arrays and primitive values by making the array a single string separated by something that's not likely to be searched on
+            if (!empty($columns_with_filters) && in_array($selected_field_name, $columns_with_filters)) {
+                $filter_value = $display !== false ? $display : $value;
+
+                $filter_result = process_selected_field_filter_for_views($view, $selected_field_name, $filter_value, $column_filters, $item);
+                if ($filter_result) {
+                    $drop_row = true;
+                    $filtered = true;
+                    // If the row is getting filtered out we can stop processing it
+                    break;
+                }
+            }
+        }
+
+        // Add the row only if it's not filtered out
+        if (!$drop_row) {
+
+            // Only if the action column info is set for the view
+            if ($actions_column_info) {
+
+                // Only show the edit button if the view's edit type is popup, no need for the button for inline editing
+                $item_actions = $view_edit_type_popup ? ["<button type='button' class='btn btn-secondary btn-sm asset-row-action' style='margin:1px; padding: 4px 12px;' role='button' data-action='edit' title='{$actions_tooltips['edit']}'><i class='fa fa-edit'></i></button>"] : [];
+
+                // Merge custom item actions
+                $item_actions = array_merge($item_actions, get_custom_item_actions($view, $actions_tooltips, $item));
+
+                $row[$actions_column_info['field_name']] = "<span data-id='{$item['id']}'>" . implode('', $item_actions) . "</span>";
+
+            }
+            $rows []= $row;
+        }
+    }
+
+    $recordsFiltered = $filtered ? count($rows) : $recordsTotal;
+
+    if (!$sql_orderable) {
+        usort($rows, function($a, $b) use ($orderDir, $orderColumn){
+            // For identical custom fields we're sorting on the id, so the results' order is not changing randomly
+            if ($a[$orderColumn] === $b[$orderColumn]) {
+                return (int)$a['id'] - (int)$b['id'];
+            }
+            
+            return strcasecmp($a[$orderColumn], $b[$orderColumn]) * ($orderDir === "ASC" ? 1 : -1);
+        });
+    }
+
+    if (!$sql_paging) {
+        // Requesting all results is marked by $length's value being -1. In that case we're not applying the below logic
+        // only when $length is greater than 0
+        if($length > 0) {
+            $page_rows = [];
+            $row_count = count($rows);
+            for($i = $start; $i < $row_count && $i < $start + $length; $i++){
+                $page_rows[] = $rows[$i];
+            }
+            $rows = $page_rows;
+        }
+    }
+
+    $data = [
+        'rows' => $rows,
+        'recordsTotal' => $recordsTotal,
+        'recordsFiltered' => $recordsFiltered,
+    ];
+
+    return $data;
+
+}
+
+function get_wheres_for_view($view) {
+
+    if ($view == "active_audits") {
+
+        $closed_audit_status = get_setting("closed_audit_status");
+
+        $where = "where fc.deleted = 0 AND a.status <> '{$closed_audit_status}' ";
+
+    } else if ($view == "past_audits") {
+
+        $closed_audit_status = get_setting("closed_audit_status");
+
+        $where = "where fc.deleted = 0 AND a.status = '{$closed_audit_status}' ";
+        
+    } else {
+        $where = "where 1";
+    }
+
+    return $where;
+
+}
+
+/****************************************
+ * FUNCTION: GET CUSTOM FORMATTING DATA *
+ ****************************************/
+function get_custom_formatting_data($view, $selected_field_name, $value = '', $display = '', $item = []) {
+
+    if ($view == 'active_audits') {
+        $result = get_custom_formatting_data_for_active_audits($selected_field_name, $value, $display, $item);
+    } else if ($view == 'past_audits') {
+        $result = get_custom_formatting_data_for_past_audits($selected_field_name, $value, $display, $item);
+    } else {
+        $result = [$value, $display];
+    }
+
+    return $result;
+
+}
+
+/**********************************************************
+ * FUNCTION: GET CUSTOM FORMATTING DATA FOR ACTIVE AUDITS *
+ **********************************************************/
+function get_custom_formatting_data_for_active_audits($selected_field_name, $value, $display, $item) {
+
+    global $lang, $escaper;
+
+    // For fields that need custom formatting
+    switch($selected_field_name) {
+        case "test_name":
+             $value = "<a href='{$_SESSION['base_url']}/compliance/testing.php?id={$item['id']}' class='text-left'>{$escaper->escapeHtml($value)}</a>";
+            break;
+        case 'test_frequency':
+            $value = (int)$value . " " .$escaper->escapeHtml($value > 1 ? $lang['days'] : $lang['Day']);
+            break;
+        case 'objective': 
+            $value = $escaper->purifyHtml($value);
+            break;
+        case 'tags':
+            if ($value) {
+                $tags = [];
+                foreach(explode("|", $value) as $tag) {
+                    $tags []= $escaper->escapeHtml($tag);
+                }
+                $value = $tags;
+            }
+            break;
+        case 'test_date':
+        case 'last_date':
+        case 'next_date':
+            $value = $escaper->escapeHtml(format_date($value));
+            break;
+        default:
+            // Only have to escape non-custom fields as those are already escaped
+            $value = $escaper->escapeHtml($value);
+    }
+
+    return [$value, $display];
+
+}
+
+/**********************************************************
+ * FUNCTION: GET CUSTOM FORMATTING DATA FOR PAST AUDITS *
+ **********************************************************/
+function get_custom_formatting_data_for_past_audits($selected_field_name, $value, $display, $item) {
+
+    global $lang, $escaper;
+
+    // For fields that need custom formatting
+    switch($selected_field_name) {
+        case "test_name":
+             $value = "<a href='{$_SESSION['base_url']}/compliance/view_test.php?id={$item['id']}' class='text-left'>{$escaper->escapeHtml($value)}</a>";
+            break;
+        case 'tags':
+            if ($value) {
+                $tags = [];
+                foreach(explode("|", $value) as $tag) {
+                    $tags []= $escaper->escapeHtml($tag);
+                }
+                $value = $tags;
+            }
+            break;
+        case 'audit_date':
+            $value = $escaper->escapeHtml(format_date($value));
+            break;
+        case 'test_result':
+            $value = $escaper->escapeHtml($value ? $value : "--");
+            break;
+        default:
+            // Only have to escape non-custom fields as those are already escaped
+            $value = $escaper->escapeHtml($value);
+    }
+
+    return [$value, $display];
+
+}
+
+/*****************************************************
+ * FUNCTION: PROCESS SELECTED FIELD FILTER FOR VIEWS *
+ *****************************************************/
+function process_selected_field_filter_for_views($view, $selected_field_name, $filter_value, $column_filters, $item) {
+    if ($view == 'active_audits') {
+        $filter_result = process_selected_field_filter_for_active_audits($selected_field_name, $filter_value, $column_filters, $item);
+    } else if ($view == 'past_audits') {
+        $filter_result = process_selected_field_filter_for_past_audits($selected_field_name, $filter_value, $column_filters, $item);
+    } else {
+        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
+            $filter_result = true;
+        } else {
+            $filter_result = false;
+        }
+    }
+
+    return $filter_result;
+
+}
+
+/*************************************************************
+ * FUNCTION: PROCESS SELECTED FIELD FILTER FOR ACTIVE AUDITS *
+ *************************************************************/
+function process_selected_field_filter_for_active_audits($selected_field_name, $filter_value, $column_filters, $item) {
+    if ($selected_field_name == 'test_name') {
+        $item_filter_value = $item['test_name_filter'];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                $filter_result = true;
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'tester') {
+        $item_filter_value = $item['tester'];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                $filter_result = true;
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'framework_name') {
+        $item_filter_value = $item['framework_name_filter'];
+        $item_filter_value_array = explode(",", $item_filter_value);
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (array_intersect($item_filter_value_array, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(-1, $search_value)) {
+                    if (empty($item_filter_value_array)) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'tags') {
+        $item_filter_value = $item['tags_filter'];
+
+        if ($item_filter_value) {
+            $item_filter_value_array = explode("|", $item_filter_value);
+        } else {
+            $item_filter_value_array = [];
+        }
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (array_intersect($item_filter_value_array, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(-1, $search_value)) {
+                    if (empty($item_filter_value_array)) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'status') {
+        $item_filter_value = $item['status_filter'];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(0, $search_value)) {
+                    if (!$item_filter_value) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else {
+        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
+            $filter_result = true;
+        } else {
+            $filter_result = false;
+        }
+    }
+
+    return $filter_result;
+
+}
+
+/***********************************************************
+ * FUNCTION: PROCESS SELECTED FIELD FILTER FOR PAST AUDITS *
+ ***********************************************************/
+function process_selected_field_filter_for_past_audits($selected_field_name, $filter_value, $column_filters, $item) {
+    if ($selected_field_name == 'test_name') {
+        $item_filter_value = $item['test_name_filter'];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                $filter_result = true;
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'audit_date') {
+        $item_filter_value = $item['audit_date'];
+
+        // Get the start and end audit date
+        $search_value = $column_filters[$selected_field_name];
+        $search_value_array = explode(' - ', $search_value);
+        if (count($search_value_array) > 1) {
+			$audit_date_start = $search_value_array[0];
+			$audit_date_end = $search_value_array[1];
+		} else {
+			$audit_date_start = '';
+			$audit_date_end = '';
+		}
+
+        // Convert the start and end audit date into Y-m-d format
+        if (!empty($audit_date_start) && DateTime::createFromFormat(get_default_date_format(), $audit_date_start)) {
+            $audit_date_start = DateTime::createFromFormat(get_default_date_format(), $audit_date_start)->format('Y-m-d');
+        } else {
+            $audit_date_start = '';
+        }
+    
+        if (!empty($audit_date_end) && DateTime::createFromFormat(get_default_date_format(), $audit_date_end)) {
+            $audit_date_end = DateTime::createFromFormat(get_default_date_format(), $audit_date_end)->format('Y-m-d');
+        } else {
+            $audit_date_end = '';
+        }
+
+        $filter_result = false;
+        if (!empty($audit_date_start)) {
+            if ($item_filter_value < $audit_date_start) {
+                $filter_result = true;
+            }
+        }
+        if (!empty($audit_date_end)) {
+            if ($item_filter_value > $audit_date_end) {
+                $filter_result = true;
+            }
+        }
+    } else if ($selected_field_name == 'control_name') {
+        $item_filter_value = $item['control_name_filter'];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                $filter_result = true;
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'framework_name') {
+        $item_filter_value = $item['framework_name_filter'];
+        $item_filter_value_array = explode(",", $item_filter_value);
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (array_intersect($item_filter_value_array, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(-1, $search_value)) {
+                    if (empty($item_filter_value_array)) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'tags') {
+        $item_filter_value = $item['tags_filter'];
+
+        if ($item_filter_value) {
+            $item_filter_value_array = explode("|", $item_filter_value);
+        } else {
+            $item_filter_value_array = [];
+        }
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (array_intersect($item_filter_value_array, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(-1, $search_value)) {
+                    if (empty($item_filter_value_array)) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'test_result') {
+        $item_filter_value = $item['test_result_filter'];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(0, $search_value)) {
+                    if (!$item_filter_value) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            // unselect all
+            $filter_result = true;
+        }
+    } else {
+        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
+            $filter_result = true;
+        } else {
+            $filter_result = false;
+        }
+    }
+
+    return $filter_result;
+
+}
+
+/*************************************
+ * FUNCTION: GET CUSTOM ITEM ACTIONS *
+ *************************************/
+function get_custom_item_actions($view, $actions_tooltips, $item) {
+
+    if ($view == 'active_audits') {
+        $result = get_custom_item_actions_for_active_audits($view, $actions_tooltips, $item);
+    } else if ($view == 'past_audits') {
+        $result = get_custom_item_actions_for_past_audits($view, $actions_tooltips, $item);
+    } else {
+        $result = [];
+    }
+
+    return $result;
+}
+
+/*******************************************************
+ * FUNCTION: GET CUSTOM ITEM ACTIONS FOR ACTIVE AUDITS *
+ *******************************************************/
+function get_custom_item_actions_for_active_audits($view, $actions_tooltips, $item) {
+
+    global $lang, $escaper;
+
+    if(date("Y-m-d") <= $item['next_date']){
+        $next_date_background_class = "green-background";
+    }else{
+        $next_date_background_class = "red-background";
+    }
+
+    if(isset($_SESSION["delete_audits"]) && $_SESSION["delete_audits"] == 1) {
+        
+        $delete_button = "<button class='btn btn-primary delete-btn' data-id='{$item['id']}' >{$escaper->escapeHtml($lang['Delete'])}</button><input type='hidden' class='background-class' data-background='{$next_date_background_class}'>";
+
+    } else {
+        $delete_button = "<input type='hidden' class='background-class' data-background='{$next_date_background_class}'>";
+    }
+
+    $item_actions = [$delete_button];
+
+    return $item_actions;
+
+}
+
+/*****************************************************
+ * FUNCTION: GET CUSTOM ITEM ACTIONS FOR PAST AUDITS *
+ *****************************************************/
+function get_custom_item_actions_for_past_audits($view, $actions_tooltips, $item) {
+
+    global $lang, $escaper;
+
+    $background_class = $escaper->escapeHtml($item['test_result_background_class']);
+
+    if(isset($_SESSION["modify_audits"]) && $_SESSION["modify_audits"] == 1) {
+        
+        $delete_button = "<button class='reopen btn btn-submit' data-id='{$item['id']}'>{$escaper->escapeHtml($lang['Reopen'])}</button><input type='hidden' class='background-class' data-background='{$background_class}'>";
+
+    } else {
+        $delete_button = "<input type='hidden' class='background-class' data-background='{$background_class}'>";
+    }
+
+    $item_actions = [$delete_button];
+
+    return $item_actions;
+
+}
+
+/****************************************
+ * FUNCTION: GET FILTER FIELD FOR VIEWS *
+ ****************************************/
+function get_filter_field_for_views($view, $field_name, $localizations) {
+    if ($view == 'active_audits') {
+        $filter_field = get_filter_field_for_active_audits($field_name, $localizations);
+    } else if ($view == 'past_audits') {
+        $filter_field = get_filter_field_for_past_audits($field_name, $localizations);
+    } else {
+        $filter_field = "
+            <input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control' style='max-width: unset;'>
+        ";
+    }
+
+    return $filter_field;
+
+}
+
+/************************************************
+ * FUNCTION: GET FILTER FIELD FOR ACTIVE AUDITS *
+ ************************************************/
+function get_filter_field_for_active_audits($field_name, $localizations) {
+
+    global $lang, $escaper;
+
+    if ($field_name == 'test_name') {
+
+        $filter_field = create_multiple_dropdown("framework_control_tests", "all", "test_name", null, false, "--", "", true, "", 0, true, "");
+
+    } else if ($field_name == 'tester') {
+
+        $filter_field = create_multiple_dropdown("enabled_users", "all", "tester", null, false, "--", "", true, "", 0, true, "");
+
+    } else if ($field_name == 'framework_name') {
+        $filter_field = "
+            <select name='framework_name[]' id='framework_name' class='multiselect' multiple=''>
+                <option selected value='-1'>{$escaper->escapeHtml($lang['Unassigned'])}</option>
+        ";
+
+        $options = getHasBeenAuditFrameworkList();
+        is_array($options) || $options = array();
+        foreach ($options as $option) {
+            $filter_field .= "
+                <option selected value='{$escaper->escapeHtml($option['value'])}'>{$escaper->escapeHtml($option['name'])}</option>
+            ";
+        }
+
+        $filter_field .= "
+            </select>
+        ";
+
+    } else if ($field_name == 'tags') {
+        
+        $tags = [];
+        foreach (getTagsOfType("test_audit") as $tag) {
+            $tags[] = array('name' => $escaper->escapeHtml($tag['tag']), 'value' => (int)$tag['id']);
+        }
+        $filter_field = create_multiple_dropdown("tags", "all", "tags", $tags, true, $escaper->escapeHtml($lang['Unassigned']), "-1", true, "", 0, true, "");
+        
+    } else if ($field_name == 'status') {
+
+        $filter_field = create_multiple_dropdown("test_status", "all", "status", null, true, $escaper->escapeHtml($lang['Unassigned']), "0", true, "", 0, true, "");
+        
+    } else {
+        $filter_field = "
+            <input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control' style='max-width: unset;'>
+        ";
+    }
+
+    return $filter_field;
+
+}
+
+/**********************************************
+ * FUNCTION: GET FILTER FIELD FOR PAST AUDITS *
+ **********************************************/
+function get_filter_field_for_past_audits($field_name, $localizations) {
+
+    global $lang, $escaper;
+
+    if ($field_name == 'test_name') {
+
+        $filter_field = create_multiple_dropdown("framework_control_tests", "all", "test_name", null, false, "--", "", true, "", 0, true, "");
+
+    } else if ($field_name == 'control_name') {
+
+        $options = getHasBeenAuditFrameworkControlList();
+
+        $filter_field = create_multiple_dropdown("framework_controls", "all", "control_name", $options, false, "--", "", true, "", 0, true, "");
+
+    } else if ($field_name == 'framework_name') {
+        $filter_field = "
+            <select name='framework_name[]' id='framework_name' class='multiselect' multiple=''>
+                <option selected value='-1'>{$escaper->escapeHtml($lang['Unassigned'])}</option>
+        ";
+
+        $options = getHasBeenAuditFrameworkList();
+        is_array($options) || $options = array();
+        foreach ($options as $option) {
+            $filter_field .= "
+                <option selected value='{$escaper->escapeHtml($option['value'])}'>{$escaper->escapeHtml($option['name'])}</option>
+            ";
+        }
+
+        $filter_field .= "
+            </select>
+        ";
+
+    } else if ($field_name == 'tags') {
+        
+        $tags = [];
+        foreach (getTagsOfType("test_audit") as $tag) {
+            $tags[] = array('name' => $escaper->escapeHtml($tag['tag']), 'value' => (int)$tag['id']);
+        }
+        $filter_field = create_multiple_dropdown("tags", "all", "tags", $tags, true, $escaper->escapeHtml($lang['Unassigned']), "-1", true, "", 0, true, "");
+        
+    } else if ($field_name == 'test_result') {
+        
+        $filter_field = create_multiple_dropdown("test_results_filter", "all", "test_result", null, true, $escaper->escapeHtml($lang['Unassigned']), "0", true, "", 0, true, "");
+        
+    } else if ($field_name == 'audit_date') {
+        
+        $filter_field = "
+            <input type='text' name='audit_date' placeholder='{$localizations[$field_name]}' autocomplete='off' class='datepicker form-control cursor-pointer' style='max-width: unset;'/>
+        ";
+        
+    } else {
+        $filter_field = "
+            <input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control' style='max-width: unset;'>
+        ";
+    }
+
+    return $filter_field;
+
 }
 
 /**

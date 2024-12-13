@@ -1,10 +1,11 @@
 !/css/.gitkeep
 !/fonts/.gitkeep
 !/js/.gitkeep
-super-linter.log
+/super-linter-output/
 /js/postSubmit.js
 /js/stylesheet.js
 /js/postSubmit.js.map
 /js/stylesheet.js.map
 /node_modules/
+/super-linter-output/
 /vendor/

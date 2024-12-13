@@ -1,4 +1,6 @@
 .github export-ignore
+.npmrc export-ignore
+.ncurc.js export-ignore
 package.json export-ignore
 package-lock.json export-ignore
 /css/.gitkeep export-ignore

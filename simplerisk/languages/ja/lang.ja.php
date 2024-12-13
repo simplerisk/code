@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'ファイルのアップロードに失敗しました: 不明なエラー',
     'DynamicIncidentReport' => '動的インシデントレポート',
     'FilteringSelections' => '選択のフィルタリング',
+    'ProcessingPleaseWait' => '処理中です。お待ちください。',
+    'PleaseEnterAValidPhoneNumber' => '有効な電話番号を入力してください',
 
     '' => '',
 );

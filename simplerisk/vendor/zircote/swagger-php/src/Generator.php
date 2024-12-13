@@ -354,16 +354,7 @@ class Generator
         if (!$before) {
             $processors->add($processor);
         } else {
-            $matcher = function (array $pipes) use ($before) {
-                foreach ($pipes as $ii => $current) {
-                    if ($current instanceof $before) {
-                        return $ii;
-                    }
-                }
-
-                return null;
-            };
-            $processors->insert($processor, $matcher);
+            $processors->insert($processor, $before);
         }
 
         $this->processorPipeline = $processors;
@@ -444,7 +435,7 @@ class Generator
             ];
 
         $processorPipeline = $config['processor'] ??
-            $config['processors'] ? new Pipeline($config['processors']) : null;
+            ($config['processors'] ? new Pipeline($config['processors']) : null);
 
         return (new Generator($config['logger']))
             ->setVersion($config['version'])

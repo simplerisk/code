@@ -83,13 +83,15 @@ In this setup, this file should contain a single entry:
 $config = [
     'example-userpass' => [
         'exampleauth:UserPass',
-        'student:studentpass' => [
-            'uid' => ['student'],
-            'eduPersonAffiliation' => ['member', 'student'],
-        ],
-        'employee:employeepass' => [
-            'uid' => ['employee'],
-            'eduPersonAffiliation' => ['member', 'employee'],
+        'users' => [
+            'student:studentpass' => [
+                'uid' => ['student'],
+                'eduPersonAffiliation' => ['member', 'student'],
+            ],
+            'employee:employeepass' => [
+                'uid' => ['employee'],
+                'eduPersonAffiliation' => ['member', 'employee'],
+            ],
         ],
     ],
 ];
@@ -182,8 +184,18 @@ This is a minimal example of a `metadata/saml20-sp-remote.php` metadata file for
 <?php
 
 $metadata['https://sp.example.org/simplesaml/module.php/saml/sp/metadata.php/default-sp'] = [
-    'AssertionConsumerService' => 'https://sp.example.org/simplesaml/module.php/saml/sp/saml2-acs.php/default-sp',
-    'SingleLogoutService' => 'https://sp.example.org/simplesaml/module.php/saml/sp/saml2-logout.php/default-sp',
+    'AssertionConsumerService' => [
+        [
+            'Location' => 'https://sp.example.org/simplesaml/module.php/saml/sp/saml2-acs.php/default-sp',
+            'Binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
+        ],
+    ],
+    'SingleLogoutService' => [
+        [
+            'Location' => 'https://sp.example.org/simplesaml/module.php/saml/sp/saml2-logout.php/default-sp',
+            'Binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+        ],
+    ],
 ];
 ```
 

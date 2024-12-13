@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'A fájl feltöltés sikertelen: Ismeretlen hibák',
     'DynamicIncidentReport' => 'Dinamikus eseményjelentés',
     'FilteringSelections' => 'Kijelölések szűrése',
+    'ProcessingPleaseWait' => 'Feldolgozás. Kérjük, várjon!',
+    'PleaseEnterAValidPhoneNumber' => 'Kérjük, adjon meg egy érvényes telefonszámot',
 
     '' => '',
 );

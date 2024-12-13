@@ -17,12 +17,13 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         'ffecb95d45175fd40f75be8a23b34f90' => __DIR__ . '/..' . '/twig/twig/src/Resources/debug.php',
         'c7baa00073ee9c61edf148c51917cfb4' => __DIR__ . '/..' . '/twig/twig/src/Resources/escaper.php',
         'f844ccf1d25df8663951193c3fc307c8' => __DIR__ . '/..' . '/twig/twig/src/Resources/string_loader.php',
-        'f7a40c1f1f5eb11aee5f7554cb0c8ea7' => __DIR__ . '/..' . '/leafs/form/src/functions.php',
-        'cfb7c780793bfa1138356bbe97dc66da' => __DIR__ . '/..' . '/leafs/http/src/functions.php',
+        '025bf6db9cb3aca2ec53130f65ac52ae' => __DIR__ . '/..' . '/leafs/fs/src/functions.php',
         '8825ede83f2f289127722d4e842cf7e8' => __DIR__ . '/..' . '/symfony/polyfill-intl-grapheme/bootstrap.php',
         'e69f7f6ee287b969198c3c9d6777bd38' => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer/bootstrap.php',
+        'f7a40c1f1f5eb11aee5f7554cb0c8ea7' => __DIR__ . '/..' . '/leafs/form/src/functions.php',
         'b6b991a57620e2fb6b2f66f03fe9ddc2' => __DIR__ . '/..' . '/symfony/string/Resources/functions.php',
         'ac4c448857898c6b48907995b1d9e666' => __DIR__ . '/..' . '/leafs/date/src/functions.php',
+        'cfb7c780793bfa1138356bbe97dc66da' => __DIR__ . '/..' . '/leafs/http/src/functions.php',
         '2203a247e6fda86070a5e4e07aed533a' => __DIR__ . '/..' . '/symfony/clock/Resources/now.php',
         '6a47392539ca2329373e0d33e1dba053' => __DIR__ . '/..' . '/symfony/polyfill-intl-icu/bootstrap.php',
         '2cffec82183ee1cea088009cef9a6fc3' => __DIR__ . '/..' . '/ezyang/htmlpurifier/library/HTMLPurifier.composer.php',
@@ -72,6 +73,7 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
             'Symfony\\Component\\String\\' => 25,
             'Symfony\\Component\\Routing\\' => 26,
             'Symfony\\Component\\Process\\' => 26,
+            'Symfony\\Component\\PasswordHasher\\' => 33,
             'Symfony\\Component\\Lock\\' => 23,
             'Symfony\\Component\\Intl\\' => 23,
             'Symfony\\Component\\HttpKernel\\' => 29,
@@ -88,12 +90,15 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
             'Symfony\\Bundle\\FrameworkBundle\\' => 31,
             'Symfony\\Bridge\\Twig\\' => 20,
             'Spatie\\Async\\' => 13,
+            'SimpleSAML\\XML\\' => 15,
+            'SimpleSAML\\XMLSecurity\\' => 23,
             'SimpleSAML\\Module\\saml\\' => 23,
             'SimpleSAML\\Module\\multiauth\\' => 28,
             'SimpleSAML\\Module\\exampleauth\\' => 30,
             'SimpleSAML\\Module\\cron\\' => 23,
             'SimpleSAML\\Module\\core\\' => 23,
             'SimpleSAML\\Module\\admin\\' => 24,
+            'SimpleSAML\\Composer\\XMLProvider\\' => 32,
             'SimpleSAML\\Composer\\' => 20,
             'SimpleSAML\\Assert\\' => 18,
             'SimpleSAML\\' => 11,
@@ -254,6 +259,10 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         array (
             0 => __DIR__ . '/..' . '/symfony/process',
         ),
+        'Symfony\\Component\\PasswordHasher\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/password-hasher',
+        ),
         'Symfony\\Component\\Lock\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/lock',
@@ -318,6 +327,14 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         array (
             0 => __DIR__ . '/..' . '/spatie/async/src',
         ),
+        'SimpleSAML\\XML\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/simplesamlphp/xml-common/src',
+        ),
+        'SimpleSAML\\XMLSecurity\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/simplesamlphp/xml-security/src',
+        ),
         'SimpleSAML\\Module\\saml\\' => 
         array (
             0 => __DIR__ . '/..' . '/simplesamlphp/simplesamlphp/modules/saml/src',
@@ -341,6 +358,10 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         'SimpleSAML\\Module\\admin\\' => 
         array (
             0 => __DIR__ . '/..' . '/simplesamlphp/simplesamlphp/modules/admin/src',
+        ),
+        'SimpleSAML\\Composer\\XMLProvider\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/simplesamlphp/composer-xmlprovider-installer/src',
         ),
         'SimpleSAML\\Composer\\' => 
         array (
@@ -438,9 +459,8 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
             2 => __DIR__ . '/..' . '/leafs/exception/src',
             3 => __DIR__ . '/..' . '/leafs/form/src',
             4 => __DIR__ . '/..' . '/leafs/fs/src',
-            5 => __DIR__ . '/..' . '/leafs/leaf/src',
-            6 => __DIR__ . '/..' . '/leafs/logger/src',
-            7 => __DIR__ . '/..' . '/leafs/router/src',
+            5 => __DIR__ . '/..' . '/leafs/logger/src',
+            6 => __DIR__ . '/..' . '/leafs/leaf/src',
         ),
         'Laravel\\SerializableClosure\\' => 
         array (

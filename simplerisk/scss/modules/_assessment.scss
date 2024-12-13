@@ -8,6 +8,16 @@
 //************************** ASSESSMENT > SELF ASSESSMENTS END *************************//
 
 //********************** ASSESSMENT > QUESTIONNAIRE QUESTIONS BEGIN ********************//
+.answers-table {
+    .btn-group {
+        button.multiselect {
+            span.multiselect-selected-text {
+                white-space: break-spaces;
+                line-height: 24px;
+            }
+        }
+    }
+}
 // CHECK THIS LATER(LEFT THIS YET SINCE IT IS USED IN SEVERAL PARTS WITH JS LOGIC)
 #questionnaire-questions-container, 
 #questionnaire-answers-container {
@@ -81,6 +91,33 @@
 }
 //*********************** ASSESSMENT > QUESTIONNAIRE QUESTIONS END *********************//
 
+//********************** ASSESSMENT > QUESTIONNAIRE TEMPLATES BEGIN ********************//
+.questionnaire_template_form {
+    #template-tabs {
+        .nav-link {
+            display: flex;
+            align-items: center;
+
+            span.tabname {
+                max-width: 200px;
+                white-space: nowrap;
+                display: block;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+    
+            input.editable {
+                max-width: 200px !important;
+            }
+
+            .remove-tab {
+                margin-left: 5px;
+            }
+        }
+    }
+}
+//********************** ASSESSMENT > QUESTIONNAIRE TEMPLATES END **********************//
+
 //*********************** ASSESSMENT > QUESTIONNAIRE RESULTS BEGIN *********************//
 .files--wrapper-accordion-header {
     position: relative;
@@ -137,3 +174,107 @@
     }
 }
 //************************ ASSESSMENT > QUESTIONNAIRE RESULTS END **********************//
+
+
+/* Automatic numbering for the questionnaire questions on the questionnaire, questionnaire results and the questionnaire result compare*/
+.questionnaire-result-container {
+
+    h4.template-name {
+        counter-reset: parentQuestionCounter;
+    }
+
+    .parent.questionnaire-question:before {
+        content: counter(parentQuestionCounter) ") ";
+        counter-increment: parentQuestionCounter;
+        float: left;
+        margin-left: 0px;
+        margin-right: 10px;
+        font-weight: bold;
+    }
+
+    .questionnaire-questions-container-by-answer {
+        counter-reset: subQuestionCounter;
+
+        &.sub {
+            padding-left: 1.5rem !important;
+        }
+
+        .sub.questionnaire-question:before {
+            content: counter(parentQuestionCounter)"-"counter(subQuestionCounter) ") ";
+            counter-increment: subQuestionCounter;
+            float: left;
+            margin-left: 0px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+    }
+}
+
+.questionnaire-compare-result-container {
+
+    .questionnaire-compare-template-name {
+        counter-reset: parentQuestionCounter1 parentQuestionCounter2;
+    }
+
+    .parent.questionnaire-question {
+
+        &:before {
+            float: left;
+            margin-left: 0px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        &.left:before {
+            content: counter(parentQuestionCounter1) ") ";
+            counter-increment: parentQuestionCounter1;
+        }
+
+        &.right:before {
+            content: counter(parentQuestionCounter2) ") ";
+            counter-increment: parentQuestionCounter2;
+        }
+    }
+
+    .questionnaire-questions-container-by-answer {
+        counter-reset: subQuestionCounter1 subQuestionCounter2;
+
+        &.sub {
+            .col-6.left, .col-6.right {
+                padding-left: 1.5rem !important;
+            }
+        }
+
+        .sub {
+            &.questionnaire-question {
+
+                &:before {
+                    float: left;
+                    margin-left: 0px;
+                    margin-right: 10px;
+                    font-weight: bold;
+                }
+
+                &.left:before {
+                    content: counter(parentQuestionCounter1)"-"counter(subQuestionCounter1) ") ";
+                    counter-increment: subQuestionCounter1;
+                }
+
+                &.right:before {
+                    content: counter(parentQuestionCounter2)"-"counter(subQuestionCounter2) ") ";
+                    counter-increment: subQuestionCounter2;
+                }
+            }
+        }
+    }
+}
+
+
+
+//********************* ASSESSMENT > QUESTIONNAIRE AUDIT TRAIL BEGIN *******************//
+.questionnaire-audit-trail-container {
+    p {
+        word-break: break-word;
+    }
+}
+//*********************** ASSESSMENT > QUESTIONNAIRE AUDIT TRAL END ********************//

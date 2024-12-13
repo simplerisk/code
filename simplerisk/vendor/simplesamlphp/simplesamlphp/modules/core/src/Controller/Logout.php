@@ -47,7 +47,7 @@ class Logout
      * @param \SimpleSAML\Configuration $config The configuration to use by the controllers.
      */
     public function __construct(
-        protected Configuration $config
+        protected Configuration $config,
     ) {
     }
 
@@ -79,7 +79,7 @@ class Logout
         $returnTo = $this->getReturnPath($request);
         return new RunnableResponse(
             [$auth, 'logout'],
-            [$returnTo]
+            [$returnTo],
         );
     }
 

@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'Ошибка загрузки файла: неизвестные ошибки',
     'DynamicIncidentReport' => 'Динамический отчет об инциденте',
     'FilteringSelections' => 'Фильтрация выбора',
+    'ProcessingPleaseWait' => 'Обработка. Пожалуйста, подождите!',
+    'PleaseEnterAValidPhoneNumber' => 'Пожалуйста, введите действительный номер телефона.',
 
     '' => '',
 );

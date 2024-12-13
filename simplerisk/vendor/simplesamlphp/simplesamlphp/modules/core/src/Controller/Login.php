@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Module\core\Controller;
 
-use Exception as BuiltinException;
 use SimpleSAML\{Auth, Configuration, Error, Module, Utils};
 use SimpleSAML\Module\core\Auth\{UserPassBase, UserPassOrgBase};
 use SimpleSAML\XHTML\Template;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use SimpleSAML\Error\ErrorCodes;
 
 use function array_key_exists;
 use function substr;
@@ -38,6 +38,12 @@ class Login
      */
     protected $authState = Auth\State::class;
 
+    /**
+     * These are all the subclass instances of ErrorCodes which have been created
+     */
+    protected static array $registeredErrorCodeClasses = [];
+
+
 
     /**
      * Controller constructor.
@@ -49,7 +55,7 @@ class Login
      * @throws \Exception
      */
     public function __construct(
-        protected Configuration $config
+        protected Configuration $config,
     ) {
     }
 
@@ -106,14 +112,29 @@ class Login
         /** @var \SimpleSAML\Module\core\Auth\UserPassBase|null $source */
         $source = $this->authSource::getById($state[UserPassBase::AUTHID]);
         if ($source === null) {
-            throw new BuiltinException(
-                'Could not find authentication source with id ' . $state[UserPassBase::AUTHID]
+            throw new Error\Exception(
+                'Could not find authentication source with id ' . $state[UserPassBase::AUTHID],
             );
         }
 
         return $this->handleLogin($request, $source, $state);
     }
 
+
+    /**
+     * Called by the constructor in ErrorCode to register subclasses with us
+     * so we can track which subclasses are valid names in order to limit
+     * which classes we might recreate
+     *
+     * @para object ecc an instance of an ErrorCode or subclass
+     */
+    public static function registerErrorCodeClass(ErrorCodes $ecc): void
+    {
+        if (is_subclass_of($ecc, ErrorCodes::class, false)) {
+            $className = get_class($ecc);
+            self::$registeredErrorCodeClasses[] = $className;
+        }
+    }
 
     /**
      * This method handles the generic part for both loginuserpass and loginuserpassorg
@@ -138,10 +159,12 @@ class Login
 
         $errorCode = null;
         $errorParams = null;
+        $codeClass = '';
 
         if (isset($state['error'])) {
             $errorCode = $state['error']['code'];
             $errorParams = $state['error']['params'];
+            $codeClass = $state['error']['codeclass'];
         }
 
         $cookies = [];
@@ -218,9 +241,12 @@ class Login
                     // Login failed. Extract error code and parameters, to display the error
                     $errorCode = $e->getErrorCode();
                     $errorParams = $e->getParameters();
+                    $codeClass = get_class($e->getErrorCodes());
+
                     $state['error'] = [
                         'code' => $errorCode,
-                        'params' => $errorParams
+                        'params' => $errorParams,
+                        'codeclass' => $codeClass,
                     ];
                     $authStateId = Auth\State::saveState($state, $source::STAGEID);
                 }
@@ -232,10 +258,9 @@ class Login
         }
 
         $t = new Template($this->config, 'core:loginuserpass.twig');
-        $t->data['AuthState'] = $authStateId;
 
         if ($source instanceof UserPassOrgBase) {
-            $t->data['username'] = $username;
+            $t->data['username'] = $state['core:username'] ?? '';
             $t->data['forceUsername'] = false;
             $t->data['rememberUsernameEnabled'] = $source->getRememberUsernameEnabled();
             $t->data['rememberUsernameChecked'] = $source->getRememberUsernameChecked();
@@ -249,7 +274,7 @@ class Login
             $t->data['rememberMeEnabled'] = $source->isRememberMeEnabled();
             $t->data['rememberMeChecked'] = $source->isRememberMeChecked();
         } else {
-            $t->data['username'] = $username;
+            $t->data['username'] = $state['core:username'] ?? '';
             $t->data['forceUsername'] = false;
             $t->data['rememberUsernameEnabled'] = $source->getRememberUsernameEnabled();
             $t->data['rememberUsernameChecked'] = $source->getRememberUsernameChecked();
@@ -262,6 +287,7 @@ class Login
         }
 
         if ($source instanceof UserPassOrgBase) {
+            $t->data['formURL'] = Module::getModuleURL('core/loginuserpassorg', ['AuthState' => $authStateId]);
             if ($request->request->has($source->getAuthId() . '-username')) {
                 $t->data['rememberUsernameChecked'] = true;
             }
@@ -278,12 +304,38 @@ class Login
                 $t->data['organizations'] = $organizations;
             }
         } else {
+            $t->data['formURL'] = Module::getModuleURL('core/loginuserpass', ['AuthState' => $authStateId]);
             $t->data['loginpage_links'] = $source->getLoginLinks();
         }
 
         $t->data['errorcode'] = $errorCode;
-        $t->data['errorcodes'] = Error\ErrorCodes::getAllErrorCodeMessages();
+        $t->data['errorcodes'] = ErrorCodes::getAllErrorCodeMessages();
         $t->data['errorparams'] = $errorParams;
+
+        $className = $codeClass;
+        if ($className) {
+            if (in_array($className, self::$registeredErrorCodeClasses)) {
+                if (!class_exists($className)) {
+                    throw new Error\Exception("Could not resolve error class. no class named '$className'.");
+                }
+
+                if (!is_subclass_of($className, ErrorCodes::class)) {
+                    throw new Error\Exception(
+                        'Could not resolve error class: The class \'' . $className
+                        . '\' isn\'t a subclass of \'' . ErrorCodes::class . '\'.',
+                    );
+                }
+
+                $obj = Module::createObject($className, ErrorCodes::class);
+                $t->data['errorcodes'] = $obj->getAllErrorCodeMessages();
+            } else {
+                if ($className != ErrorCodes::class) {
+                    throw new Error\Exception(
+                        'The desired error code class is not found or of the wrong type ' . $className,
+                    );
+                }
+            }
+        }
 
         if (isset($state['SPMetadata'])) {
             $t->data['SPMetadata'] = $state['SPMetadata'];
@@ -320,8 +372,8 @@ class Login
         /** @var \SimpleSAML\Module\core\Auth\UserPassOrgBase $source */
         $source = $this->authSource::getById($state[UserPassOrgBase::AUTHID]);
         if ($source === null) {
-            throw new BuiltinException(
-                'Could not find authentication source with id ' . $state[UserPassOrgBase::AUTHID]
+            throw new Error\Exception(
+                'Could not find authentication source with id ' . $state[UserPassOrgBase::AUTHID],
             );
         }
 
@@ -350,7 +402,7 @@ class Login
         ?bool $secure = null,
         bool $httponly = true,
         bool $raw = false,
-        ?string $sameSite = 'none'
+        ?string $sameSite = 'none',
     ): Cookie {
         return new Cookie($name, $value, $expire, $path, $domain, $secure, $httponly, $raw, $sameSite);
     }
@@ -375,8 +427,6 @@ class Login
             && $request->cookies->has($source->getAuthId() . '-username')
         ) {
             $username = $request->cookies->get($source->getAuthId() . '-username');
-        } elseif (isset($state['core:username'])) {
-            $username = strval($state['core:username']);
         }
 
         return $username;

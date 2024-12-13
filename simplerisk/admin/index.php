@@ -1121,7 +1121,7 @@ $simplerisk_max_upload_size = get_setting('max_upload_size');
                         </div>
                     </div>
                 </div>
-                <form name="backups_settings" method="post" action="">
+                <form name="backups_settings" method="post" action="" class="block-on-submit">
                     <div class="card-body my-2 border">
                         <div class="row">
                             <div class="col-md-12">

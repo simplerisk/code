@@ -8,8 +8,7 @@ require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 /*****************************
  * FUNCTION: GET RISK ADVICE *
  *****************************/
-function get_risk_advice()
-{
+function get_risk_advice() {
     // Risk distribution analysis
     risk_distribution_analysis();
 }
@@ -17,8 +16,8 @@ function get_risk_advice()
 /****************************************
  * FUNCTION: RISK DISTRIBUTION ANALYSIS *
  ****************************************/
-function risk_distribution_analysis()
-{
+function risk_distribution_analysis() {
+
     global $lang;
     global $escaper;
 
@@ -26,14 +25,22 @@ function risk_distribution_analysis()
         //Include the team separation extra
         require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
         $team_separation_enabled = true;
-    } else
+    } else {
         $team_separation_enabled = false;
+    }
 
     // Open the database connection
     $db = db_open();
 
     // Get the risk levels
-    $stmt = $db->prepare("SELECT * from `risk_levels` ORDER BY value DESC");
+    $stmt = $db->prepare("
+        SELECT 
+            * 
+        from 
+            `risk_levels` 
+        ORDER BY 
+            value DESC
+    ");
     $stmt->execute();
     $array = $stmt->fetchAll();
     $veryhigh = $array[0]["value"];
@@ -48,20 +55,38 @@ function risk_distribution_analysis()
     $insignificant_display_name = get_risk_level_display_name('Insignificant');
 
     // If the team separation extra is not enabled
-    if (!$team_separation_enabled)
-    {
+    if (!$team_separation_enabled) {
+
         // Query the database
-        $stmt = $db->prepare("select COUNT(*) AS num, CASE WHEN residual_risk >= :veryhigh THEN :very_high_display_name WHEN residual_risk < :veryhigh AND residual_risk >= :high THEN :high_display_name WHEN residual_risk < :high AND residual_risk >= :medium THEN :medium_display_name WHEN residual_risk < :medium AND residual_risk >= :low THEN :low_display_name WHEN residual_risk < :low AND residual_risk >= 0 THEN :insignificant_display_name END AS level from (
-            SELECT a.calculated_risk, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(c.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk 
-            FROM `risk_scoring` a 
-                JOIN `risks` b ON a.id = b.id 
-                LEFT JOIN mitigations c ON b.id = c.risk_id 
-                LEFT JOIN mitigation_to_controls mtc ON c.id = mtc.mitigation_id
-                LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-            WHERE b.status != \"Closed\"
-            GROUP BY
-                b.id
-        ) as a GROUP BY level ORDER BY a.residual_risk DESC");
+        $stmt = $db->prepare("
+            select 
+                COUNT(*) AS num, 
+                CASE 
+                    WHEN residual_risk >= :veryhigh THEN :very_high_display_name 
+                    WHEN residual_risk < :veryhigh AND residual_risk >= :high THEN :high_display_name 
+                    WHEN residual_risk < :high AND residual_risk >= :medium THEN :medium_display_name 
+                    WHEN residual_risk < :medium AND residual_risk >= :low THEN :low_display_name 
+                    WHEN residual_risk < :low AND residual_risk >= 0 THEN :insignificant_display_name 
+                END AS level 
+            from (
+                SELECT 
+                    a.calculated_risk, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(c.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk 
+                FROM 
+                    `risk_scoring` a 
+                    JOIN `risks` b ON a.id = b.id 
+                    LEFT JOIN mitigations c ON b.id = c.risk_id 
+                    LEFT JOIN mitigation_to_controls mtc ON c.id = mtc.mitigation_id
+                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                WHERE 
+                    b.status != \"Closed\"
+                GROUP BY
+                    b.id
+            ) as a 
+            GROUP BY 
+                level 
+            ORDER BY 
+                a.residual_risk DESC
+        ");
         $stmt->bindParam(":veryhigh", $veryhigh, PDO::PARAM_STR, 4);
         $stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
         $stmt->bindParam(":medium", $medium, PDO::PARAM_STR, 4);
@@ -75,9 +100,8 @@ function risk_distribution_analysis()
 
         // Store the list in the array
         $array = $stmt->fetchAll();
-    }
-    else
-    {
+    
+    } else {
         // Query the database
         $array = strip_no_access_open_risk_summary($veryhigh, $high, $medium, $low);
     }
@@ -95,33 +119,24 @@ function risk_distribution_analysis()
     $insignificant = 0;
 
     // List each risk level
-    foreach ($array as $row)
-    {
+    foreach ($array as $row) {
+
         echo "
             <li>
-                <label class='m-r-10'>" . $escaper->escapeHtml($row['level']) . ":</label>" . (int)$row['num'] . "
+                <label class='m-r-10'>" . $escaper->escapeHtml($row['level']) . " :</label>" . (int)$row['num'] . "
             </li>
         ";
 
         // If veryhigh
-        if ($row['level'] == $very_high_display_name)
-        {
+        if ($row['level'] == $very_high_display_name) {
             $veryhigh = (int)$row['num'];
-        }
-        else if ($row['level'] == $high_display_name)
-        {
+        } else if ($row['level'] == $high_display_name) {
             $high = (int)$row['num'];
-        }
-        else if ($row['level'] == $medium_display_name)
-        {
+        } else if ($row['level'] == $medium_display_name) {
             $medium = (int)$row['num'];
-        }
-        else if ($row['level'] == $low_display_name)
-        {
+        } else if ($row['level'] == $low_display_name) {
             $low = (int)$row['num'];
-        }
-        else if ($row['level'] == $insignificant_display_name)
-        {
+        } else if ($row['level'] == $insignificant_display_name) {
             $insignificant = (int)$row['num'];
         }
     }
@@ -133,22 +148,19 @@ function risk_distribution_analysis()
     ";
 
     // If we have more high or very high than everything else
-    if ($veryhigh + $high > $medium + $low + $insignificant)
-    {
+    if ($veryhigh + $high > $medium + $low + $insignificant) {
         echo "
             <li style='margin-left: 2rem;'><label>Your VERY HIGH and HIGH level risks account for over half of your total risks.  You should consider mitigating some of them.</label></li>
         ";
     }
     // If veryhigh risks are more than 1/5 of the total risks
-    if ($veryhigh > ($veryhigh + $high + $medium + $low + $insignificant)/5)
-    {
+    if ($veryhigh > ($veryhigh + $high + $medium + $low + $insignificant)/5) {
         echo "
             <li style='margin-left: 2rem;'><label>Your VERY HIGH risks account for over &#8533; of your total risks.  You should consider mitigating some of them.</label></li>
         ";
     }
     // If high risks are more than 1/5 of the total risks
-    if ($high > ($veryhigh + $high + $medium + $low + $insignificant)/5)
-    {
+    if ($high > ($veryhigh + $high + $medium + $low + $insignificant)/5) {
         echo "
             <li style='margin-left: 2rem;'><label>Your HIGH risks account for over &#8533; of your total risks.  You should consider mitigating some of them.</label></li>
         ";
@@ -166,7 +178,8 @@ function risk_distribution_analysis()
             b.mitigation_effort,
             b.mitigation_percent,
             (c.calculated_risk - (c.calculated_risk * GREATEST(IFNULL(b.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)) as residual_risk 
-        FROM risks a 
+        FROM 
+            risks a 
             JOIN mitigations b ON a.id = b.risk_id 
             LEFT JOIN mitigation_to_controls mtc ON b.id = mtc.mitigation_id
             LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
@@ -188,11 +201,11 @@ function risk_distribution_analysis()
     $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // If there are risks to be mitigated
-    if (!empty($array))
-    {
+    if (!empty($array)) {
+
         // Suggest performing the mitigations
         echo "
-            <li style='margin-left: 2rem;'><label>Mitigating these risks would provide the highest risk reduction for the lowest level of effort:</label></li>
+            <li style='margin-left: 2rem;'><label>Mitigating these risks would provide the highest risk reduction for the lowest level of effort :</label></li>
             <div class='col-12'>
                 <table class='table table-bordered table-condensed sortable mb-0'>
                     <thead>
@@ -219,8 +232,7 @@ function risk_distribution_analysis()
                 return $a;
             }, $array);
             
-            foreach($array as $key => $risk)
-            {
+            foreach ($array as $key => $risk) {
                 $efforts[$key] = $risk['mitigation_effort'];
                 $residual_risks[$key] = $risk['residual_risk'];
                 $subjects[$key] = $risk['subject'];
@@ -230,8 +242,7 @@ function risk_distribution_analysis()
         }
 
         // For each result
-        foreach ($array as $risk)
-        {
+        foreach ($array as $risk) {
             // Get the values
             $id = (int)$risk['id'];
             $subject = $risk['subject'];
@@ -243,8 +254,7 @@ function risk_distribution_analysis()
             $risk_id = convert_id($id);
 
             // If the counter is less than or equal to 10
-            if ($counter <= 10 || ($old_residual_risk==$residual_risk && $old_mitigation_effort==$mitigation_effort))
-            {
+            if ($counter <= 10 || ($old_residual_risk==$residual_risk && $old_mitigation_effort==$mitigation_effort)) {
                 $old_residual_risk = $residual_risk;
                 $old_mitigation_effort = $mitigation_effort;
                 

@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'ගොනු උඩුගත කිරීම අසාර්ථක විය: නොදන්නා දෝෂ',
     'DynamicIncidentReport' => 'ගතික සිදුවීම් වාර්තාව',
     'FilteringSelections' => 'පෙරහන් තේරීම්',
+    'ProcessingPleaseWait' => 'සැකසීම. කරුණාකර රැඳී සිටින්න!',
+    'PleaseEnterAValidPhoneNumber' => 'කරුණාකර වලංගු දුරකථන අංකයක් ඇතුළු කරන්න',
 
     '' => '',
 );

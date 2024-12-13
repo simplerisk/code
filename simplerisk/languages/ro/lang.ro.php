@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'Încărcarea fișierului a eșuat: erori necunoscute',
     'DynamicIncidentReport' => 'Raport dinamic de incident',
     'FilteringSelections' => 'Filtrarea selecțiilor',
+    'ProcessingPleaseWait' => 'Prelucrare. Va rugam asteptati!',
+    'PleaseEnterAValidPhoneNumber' => 'Vă rugăm să introduceți un număr de telefon valid',
 
     '' => '',
 );

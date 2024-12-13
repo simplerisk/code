@@ -2,27 +2,26 @@
 
 declare(strict_types=1);
 
-use Leaf\Form;
 
 test('can perform inline validation', function () {
     $value = '';
-    expect(Form::test('required', $value))->toBe(false);
+    expect(validator()->validateRule('string', $value))->toBe(false);
 });
 
 test('can validate array', function () {
     $itemsToValidate = ['test' => ''];
-    expect(Form::validate($itemsToValidate, ['test' => 'required']))->toBe(false);
+    expect(validator()->validate($itemsToValidate, ['test' => 'string']))->toBe(false);
 });
 
 test('can validate array with multiple rules', function () {
     $itemsToValidate = ['test' => ''];
-    expect(Form::validate($itemsToValidate, ['test' => 'required|email']))->toBe(false);
+    expect(validator()->validate($itemsToValidate, ['test' => 'email']))->toBe(false);
 });
 
 test('array validation returns validated items on success', function () {
     $itemsToValidate = ['test' => 'mail@example.com'];
 
-    $validatedData = Form::validate($itemsToValidate, ['test' => 'required|email']);
+    $validatedData = validator()->validate($itemsToValidate, ['test' => 'email']);
 
     expect($validatedData)->toBe($itemsToValidate);
 });
@@ -30,7 +29,7 @@ test('array validation returns validated items on success', function () {
 test('array validation returns false on failure', function () {
     $itemsToValidate = ['test2' => 'wrong'];
 
-    $validatedData = Form::validate($itemsToValidate, ['test2' => 'required|email']);
+    $validatedData = validator()->validate($itemsToValidate, ['test2' => 'email']);
 
     expect($validatedData)->toBe(false);
 });
@@ -38,34 +37,35 @@ test('array validation returns false on failure', function () {
 test('errors are collected on failure', function () {
     $itemsToValidate = ['test3' => 'wrong'];
 
-    Form::validate($itemsToValidate, ['test3' => 'required|email']);
+    validator()->validate($itemsToValidate, ['test3' => 'email']);
 
-    expect(Form::errors())->toHaveKey('test3');
+    expect(validator()->errors())->toHaveKey('test3');
 });
 
 test('fields can be marked as optional', function () {
     $itemsToValidate = [];
 
-    $validatedData = Form::validate($itemsToValidate, ['test4' => 'optional|email']);
+    $validatedData = validator()->validate($itemsToValidate, ['test4' => 'optional|email']);
 
     expect($validatedData)->toBe($itemsToValidate);
-    expect(Form::errors())->not->toHaveKey('test4');
+    expect(validator()->errors())->not->toHaveKey('test4');
 });
 
 test('optional fields are validated correctly if provided', function () {
-    $itemsToValidate = ['test5' => ''];
+    $itemsToValidate = ['test5' => 'sss'];
 
-    $validatedData = Form::validate($itemsToValidate, ['test5' => 'optional|email']);
+    $validatedData = validator()->validate($itemsToValidate, ['test5' => 'optional|email', 'test6' => 'optional|email']);
 
     expect($validatedData)->toBe(false);
-    expect(Form::errors())->toHaveKey('test5');
+    expect(validator()->errors())->toHaveKey('test5');
+    expect(validator()->errors())->not->toHaveKey('test6');
 });
 
 test('optional rule works correctly no matter it\'s position', function () {
     $itemsToValidate = [];
 
-    $validatedData = Form::validate($itemsToValidate, ['test6' => 'text|email|optional']);
+    $validatedData = validator()->validate($itemsToValidate, ['test6' => 'text|email|optional']);
 
     expect($validatedData)->toBe($itemsToValidate);
-    expect(Form::errors())->not()->toHaveKey('test6');
+    expect(validator()->errors())->not()->toHaveKey('test6');
 });

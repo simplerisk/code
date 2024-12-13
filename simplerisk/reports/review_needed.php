@@ -14,8 +14,10 @@
 <div class="row bg-white">
     <div class="col-12">
         <div class="card-body border my-2">
-            <p><strong><?= $escaper->escapeHtml($lang['ReportReviewNeededHelp']); ?>.</strong></p>
-            <?php get_review_needed_table(); ?>
+            <strong><?= $escaper->escapeHtml($lang['ReportReviewNeededHelp']); ?>.</strong>
+    <?php 
+            get_review_needed_table(); 
+    ?>
         </div>
     </div>
 </div>

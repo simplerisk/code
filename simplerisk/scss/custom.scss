@@ -210,6 +210,29 @@ input[type=number]::-webkit-outer-spin-button {
 }
 //************************* ALERT MODAL AND CONFIRM MODAL END *************************//
 
+//**************** MAKE THE LONG TEXT WITHOUT SPACES WRAPPED IN THE TABLE *************//
+td {
+	word-break: break-all;
+}
+
+.datagrid-body {
+	table.datagrid-btable {
+		tr.datagrid-row {
+			td {
+				&>div.datagrid-cell {
+					display: flex;
+
+					.tree-indent, 
+					.tree-hit {
+						flex-shrink: 0;
+					}
+				}
+			}
+		}
+	}
+}
+//**************** MAKE THE LONG TEXT WITHOUT SPACES WRAPPED IN THE TABLE *************//
+
 // FOR MAKING MODALS WITH THE DIRECT CHILD 'form' OF '.modal-content' SCROLLABLE AND CENTERED
 .modal-content>form {
 	position: relative;
@@ -1158,8 +1181,10 @@ a.open-in-new-tab {
 @import "modules/governance";
 @import "modules/plan-projects";
 @import "modules/compliance";
+@import "modules/incidentmanagement";
 @import "modules/assessment";
 @import "modules/questionnaire";
+@import "modules/reporting";
 //@import "modules/_tabs";
 
 
@@ -1188,7 +1213,7 @@ a.open-in-new-tab {
 // @import "modules/permissions_widget";
 // @import "modules/plan-projects";
 // @import "modules/profile";
-// @import "modules/reporting";
+
 // @import "modules/risks";
 // @import "modules/scoring";
 // @import "modules/selectlist";

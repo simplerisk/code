@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'Dosya Yükleme Başarısız: Bilinmeyen Hatalar',
     'DynamicIncidentReport' => 'Dinamik Olay Raporu',
     'FilteringSelections' => 'Seçimleri Filtreleme',
+    'ProcessingPleaseWait' => 'İşleniyor. Lütfen bekleyin!',
+    'PleaseEnterAValidPhoneNumber' => 'Lütfen geçerli bir telefon numarası girin',
 
     '' => '',
 );

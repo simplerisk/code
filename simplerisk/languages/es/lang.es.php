@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'Error al cargar el archivo: errores desconocidos',
     'DynamicIncidentReport' => 'Informe dinámico de incidentes',
     'FilteringSelections' => 'Filtrado de selecciones',
+    'ProcessingPleaseWait' => 'Procesando. Por favor espere!',
+    'PleaseEnterAValidPhoneNumber' => 'Por favor, introduzca un número de teléfono válido',
 
     '' => '',
 );

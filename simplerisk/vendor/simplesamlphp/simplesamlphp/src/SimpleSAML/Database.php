@@ -94,20 +94,20 @@ class Database
             $config->getString('database.dsn'),
             $config->getOptionalString('database.username', null),
             $config->getOptionalString('database.password', null),
-            $driverOptions
+            $driverOptions,
         );
 
         // TODO: deprecated: the "database.slave" terminology is preserved here for backwards compatibility.
         if ($config->getOptionalArray('database.slaves', null) !== null) {
             Logger::warning(
                 'The "database.slaves" config option is deprecated. ' .
-                'Please update your configuration to use "database.secondaries".'
+                'Please update your configuration to use "database.secondaries".',
             );
         }
         // connect to any configured secondaries, preserving legacy config option
         $secondaries = $config->getOptionalArray(
             'database.secondaries',
-            $config->getOptionalArray('database.slaves', [])
+            $config->getOptionalArray('database.slaves', []),
         );
         foreach ($secondaries as $secondary) {
             array_push(
@@ -116,8 +116,8 @@ class Database
                     $secondary['dsn'],
                     $secondary['username'],
                     $secondary['password'],
-                    $driverOptions
-                )
+                    $driverOptions,
+                ),
             );
         }
         $this->tablePrefix = $config->getOptionalString('database.prefix', '');
@@ -145,7 +145,7 @@ class Database
             // TODO: deprecated: the "database.slave" terminology is preserved here for backwards compatibility.
             'secondaries' => $config->getOptionalArray(
                 'database.secondaries',
-                $config->getOptionalArray('database.slaves', [])
+                $config->getOptionalArray('database.slaves', []),
             ),
         ];
 

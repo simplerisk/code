@@ -50,7 +50,7 @@
 
     }
 
-    render_header_and_sidebar(['tabs:logic', 'multiselect'], ['check_im_configure' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
+    render_header_and_sidebar(['tabs:logic', 'multiselect', 'CUSTOM:common.js'], ['check_im_configure' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/permissions.php'));

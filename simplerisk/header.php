@@ -6,7 +6,8 @@ $localization_required_by_scripts = [
     'CUSTOM:common.js' => ['Yes', 'Cancel', 'FieldIsRequired'],
     'EXTRA:JS:assessments:questionnaire_templates.js' => ['SelectedOnAnotherTab', 'ID', 'SelectedQuestions', 'SearchForQuestion', 'ConfirmDisableTabbedExperience', 'ConfirmDeleteTab', 'NewTab', 'Default'],
     'CUSTOM:pages/plan-project.js' => ['AreYouSureYouWantToDeleteThisProject'],
-    'datatables' => ['All', 'datatables_ShowAll', 'datatables_ShowLess', 'First', 'Previous', 'Next', 'Last']
+    'datatables' => ['All', 'datatables_ShowAll', 'datatables_ShowLess', 'First', 'Previous', 'Next', 'Last'],
+    'blockUI' => ['ProcessingPleaseWait'],
 ];
 
 ?>
@@ -116,13 +117,44 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
 			$.blockUI.defaults.css = {
 				padding: 0,
                 margin: 0,
-                width: '30%',
+                width: '20%',
                 top: '40%',
-                left: '35%',
+                left: '40%',
                 textAlign: 'center',
                 cursor: 'wait',
-				blockMsgClass: 'blockMsg'
+                color: 'var(--sr-light)',
+				backgroundColor: 'rgba(0, 0, 0, 0)', // hide the background, so only the spinner is visible
 			};
+
+            $.blockUI.defaults.overlayCSS = { 
+                backgroundColor: 'var(--sr-dark)', 
+                opacity: 0.6, 
+                cursor: 'wait' 
+        	}
+
+			$.blockUI.defaults.message = "<i class='fa fa-spinner fa-spin' style='font-size:24px;'></i>";
+
+			// Store the original blockUI object, so we can still call it as a function and reassign its properties to the new implementation
+		    var _original_blockui = $.blockUI;
+
+			// Redefine the blockUI function call, so we can have different 'defaults' for it than for the block() function
+            $.blockUI = function(arguments){
+				_original_blockui({
+					css: {
+    					padding: 5,
+    					border: '3px solid var(--sr-default)',
+    					backgroundColor: 'var(--sr-dark)',
+    				},
+    				message: "<i class='fa fa-spinner fa-spin' style='font-size:24px; padding-right: 10px;'></i>" + _lang['ProcessingPleaseWait'],
+    			});
+            };
+
+            // Assign the properties of the original to the new implementation
+            Object.assign($.blockUI, _original_blockui);
+		});
+
+		$(document).on('submit', 'form.block-on-submit', function (e) {
+			$.blockUI();
 		});
 	</script>
 <?php 
@@ -585,6 +617,7 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
                 var label = $(this).parent().find("span.editable");
                 $(this).hide();
                 label.text($(this).val());
+                label.attr("title", $(this).val());
                 label.show();
             });
         });

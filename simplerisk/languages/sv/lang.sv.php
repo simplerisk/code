@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'Filuppladdning misslyckades: okända fel',
     'DynamicIncidentReport' => 'Dynamisk incidentrapport',
     'FilteringSelections' => 'Filtrera val',
+    'ProcessingPleaseWait' => 'Bearbetning. Vänligen vänta!',
+    'PleaseEnterAValidPhoneNumber' => 'Ange ett giltigt telefonnummer',
 
     '' => '',
 );

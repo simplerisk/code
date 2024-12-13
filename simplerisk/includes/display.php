@@ -1951,6 +1951,7 @@ function print_mitigation_controls_table($control_ids, $mitigation_id, $flag="vi
                     bSort: true,
                     ajax: {
                         url: BASE_URL + '/api/datatable/mitigation_controls',
+                        type: 'POST',
                         data: function(d){
                             var form = $('#{$tableID}').parents('form');
                             d.flag = '{$flag}';
@@ -5215,84 +5216,94 @@ function view_configure_menu($active)
 /**********************************************
 * FUNCTION: VIEW RISKS AND ASSETS SELECTIONS *
 **********************************************/
-function view_risks_and_assets_selections($report, $sort_by, $asset_tags, $projects)
-{
+function view_risks_and_assets_selections($report, $sort_by, $asset_tags, $projects) {
+
     global $lang, $escaper;
 
-    echo   "<form name='select_report' method='POST' action=''>
-                <div class='accordion'>
-                    <div class='accordion-item' id='filter-selections-container'>
-                        <h2 class='accordion-header'>
-                            <button type='button' class='accordion-button' data-bs-toggle='collapse' data-bs-target='#filter-selections-accordion-body'>" . $escaper->escapeHtml($lang['GroupAndFilteringSelections']) . "</button>
-                        </h2>
-                        <div id='filter-selections-accordion-body' class='accordion-collapse collapse show'>
-                            <div class='accordion-body'>
-                                <div class='row'>
-                                    <div class='col-3 form-group'>
-                                        <label>" . $escaper->escapeHtml($lang['Report']) . ":</label>
-                                        <select id='report' name='report' class='form-select' onchange='javascript: submitFilterForm()'>
-                                            <option value='0'" . ($report == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RisksByAsset']) . "</option>
-                                            <option value='1'" . ($report == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetsByRisk']) . "</option>
-                                        </select>
-                                    </div>
-                                    <div class='col-3 form-group'>
-                                        <label>" . $escaper->escapeHtml($lang['AssetTags']) . ":</label>";
-                                        create_multiple_dropdown("asset_tags", $asset_tags, NULL, NULL, true, $lang['Unassigned'], "-1");
-    echo                           "</div>
-                                    <div class='col-3 form-group'>
-                                        <label>" . $escaper->escapeHtml($lang['Project']) . ":</label>";
-                                        create_multiple_dropdown("projects", $projects, NULL, NULL, true, $lang['Unassigned'], "-1");
-    echo                           "</div>";
-    if($report == 0){
-        echo                       "<div class='col-3 form-group'>
-                                        <label>" . $escaper->escapeHtml($lang['SortBy']) . ":</label>
-                                        <select id='sort_by' name='sort_by' class='form-select' onchange='javascript: submitFilterForm()'>
-                                            <option value='0'" . ($sort_by == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetName']) . "</option>
-                                            <option value='1'" . ($sort_by == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetRisk']) . "</option>
-                                        </select>
-                                    </div>";
+    echo "
+        <form name='select_report' method='POST' action=''>
+            <div class='accordion'>
+                <div class='accordion-item' id='filter-selections-container'>
+                    <h2 class='accordion-header'>
+                        <button type='button' class='accordion-button' data-bs-toggle='collapse' data-bs-target='#filter-selections-accordion-body'>" . $escaper->escapeHtml($lang['GroupAndFilteringSelections']) . "</button>
+                    </h2>
+                    <div id='filter-selections-accordion-body' class='accordion-collapse collapse show'>
+                        <div class='accordion-body card-body'>
+                            <div class='row'>
+                                <div class='col-3'>
+                                    <label>" . $escaper->escapeHtml($lang['Report']) . " :</label>
+                                    <select id='report' name='report' class='form-select' onchange='javascript: submitFilterForm()'>
+                                        <option value='0'" . ($report == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RisksByAsset']) . "</option>
+                                        <option value='1'" . ($report == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetsByRisk']) . "</option>
+                                    </select>
+                                </div>
+                                <div class='col-3'>
+                                    <label>" . $escaper->escapeHtml($lang['AssetTags']) . " :</label>
+    ";
+                                    create_multiple_dropdown("asset_tags", $asset_tags, NULL, NULL, true, $lang['Unassigned'], "-1");
+    echo "
+                                </div>
+                                <div class='col-3'>
+                                    <label>" . $escaper->escapeHtml($lang['Project']) . " :</label>
+    ";
+                                    create_multiple_dropdown("projects", $projects, NULL, NULL, true, $lang['Unassigned'], "-1");
+    echo "
+                                </div>
+    ";
+    if ($report == 0) {
+        echo "
+                                <div class='col-3'>
+                                    <label>" . $escaper->escapeHtml($lang['SortBy']) . " :</label>
+                                    <select id='sort_by' name='sort_by' class='form-select' onchange='javascript: submitFilterForm()'>
+                                        <option value='0'" . ($sort_by == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetName']) . "</option>
+                                        <option value='1'" . ($sort_by == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetRisk']) . "</option>
+                                    </select>
+                                </div>
+        ";
     }
-    echo                       "</div>
+    echo "
                             </div>
                         </div>
                     </div>
                 </div>
-            </form>";
+            </div>
+        </form>
+        
+        <script>
+            function submitFilterForm() {
+                $('form[name=select_report]').submit();
+            }
 
-    echo   "<script>
-
-                function submitFilterForm() {
-                    $('form[name=select_report]').submit();
-                }
-
-                $(function() {
-                    $('#asset_tags, #projects').multiselect({
-                        allSelectedText: _lang['All'],
-                        enableFiltering: true,
-                        maxHeight: 250,
-                        buttonWidth: '100%',
-                        includeSelectAllOption: true,
-                        enableCaseInsensitiveFiltering: true,
-                        onChange: submitFilterForm,
-                        onSelectAll: submitFilterForm,
-                        onDeselectAll: submitFilterForm
-                    });
-
-                    // Multiselects' selected options are sent to the server as separate parameters making large sets of selected options
-                    // go over the server's maximum allowed number of variables. To solve this we're sending the list of ids as a single JSON string
-                    $('form[name=select_report]').on('submit', function() {
-                        // Create a hidden input with the list of selected ids in a JSON array as the value
-                        $('<input>').attr({
-                            type: 'hidden',
-                            name: 'asset_tags',
-                            value: JSON.stringify($('#asset_tags').val())
-                        }).appendTo($(this));
-
-                        // disable the original multiselect to make sure it's not submitted to the server
-                        $('#asset_tags').attr('disabled','disabled');
-                    });
+            $(function() {
+                $('#asset_tags, #projects').multiselect({
+                    allSelectedText: _lang['All'],
+                    enableFiltering: true,
+                    maxHeight: 250,
+                    buttonWidth: '100%',
+                    includeSelectAllOption: true,
+                    enableCaseInsensitiveFiltering: true,
+                    onChange: submitFilterForm,
+                    onSelectAll: submitFilterForm,
+                    onDeselectAll: submitFilterForm
                 });
-            </script>";
+
+                // Multiselects' selected options are sent to the server as separate parameters making large sets of selected options
+                // go over the server's maximum allowed number of variables. To solve this we're sending the list of ids as a single JSON string
+                $('form[name=select_report]').on('submit', function() {
+                    // Create a hidden input with the list of selected ids in a JSON array as the value
+                    $('<input>').attr({
+                        type: 'hidden',
+                        name: 'asset_tags',
+                        value: JSON.stringify($('#asset_tags').val())
+                    }).appendTo($(this));
+
+                    // disable the original multiselect to make sure it's not submitted to the server
+                    $('#asset_tags').attr('disabled','disabled');
+                });
+            });
+        </script>
+    ";
+
 }
 
 /*********************************************
@@ -5311,24 +5322,24 @@ function view_risks_and_issues_selections($risk_tags, $start_date="", $end_date=
             <div class='accordion'>
                 <div class='accordion-item' id='filter-selections-container'>
                     <h2 class='accordion-header'>
-                        <button type='button' class='accordion-button' data-bs-toggle='collapse' data-bs-target='#filter-selections-accordion-body'>" . $escaper->escapeHtml($lang['GroupAndFilteringSelections']) . "</button>
+                        <button type='button' class='accordion-button' data-bs-toggle='collapse' data-bs-target='#filter-selections-accordion-body'>{$escaper->escapeHtml($lang['GroupAndFilteringSelections'])}</button>
                     </h2>
                     <div id='filter-selections-accordion-body' class='accordion-collapse collapse show'>
                         <div class='accordion-body card-body'>
                             <div class='row'>
                                 <div class='col-4'>
-                                    <label>" . $escaper->escapeHtml($lang['RiskTags']) . ":</label>
+                                    <label>{$escaper->escapeHtml($lang['RiskTags'])} :</label>
     ";
                                     create_multiple_dropdown("risk_tags", $risk_tags, NULL, NULL, true, $lang['Unassigned'], "-1");
     echo "
                                 </div>
                                 <div class='col-4'>
-                                    <label>" . $escaper->escapeHtml($lang['StartDate']) . ":</label>
-                                    <input type='text' name='start_date' value='" . $start_date . "' class='form-control datepicker'>
+                                    <label>{$escaper->escapeHtml($lang['StartDate'])} :</label>
+                                    <input type='text' name='start_date' value='{$start_date}' class='form-control datepicker'>
                                 </div>
                                 <div class='col-4'>
-                                    <label>" . $escaper->escapeHtml($lang['EndDate']) . ":</label>
-                                    <input type='text' name='end_date' value='" . $end_date . "' class='form-control datepicker'>
+                                    <label>{$escaper->escapeHtml($lang['EndDate'])} :</label>
+                                    <input type='text' name='end_date' value='{$end_date}' class='form-control datepicker'>
                                 </div>
                             </div>
                         </div>
@@ -5339,7 +5350,7 @@ function view_risks_and_issues_selections($risk_tags, $start_date="", $end_date=
         <script>
             $(function() {
                 $('#risk_tags').multiselect({
-                    allSelectedText: '" . $escaper->escapeHtml($lang['ALL']) . "',
+                    allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
                     enableFiltering: true,
                     maxHeight: 250,
                     buttonWidth: '100%',
@@ -5361,76 +5372,76 @@ function view_risks_and_issues_selections($risk_tags, $start_date="", $end_date=
 /******************************************
 * FUNCTION: VIEW GET RISKS BY SELECTIONS *
 ******************************************/
-function view_get_risks_by_selections($status=0, $group=0, $sort=0, $risk_columns=[], $mitigation_columns=[], $review_columns=[], $scoring_columns=[], $unassigned_columns=[], $risk_mapping_columns=[])
-{
+function view_get_risks_by_selections($status=0, $group=0, $sort=0, $risk_columns=[], $mitigation_columns=[], $review_columns=[], $scoring_columns=[], $unassigned_columns=[], $risk_mapping_columns=[]) {
+
     global $lang, $escaper;
     
     $encoded_request_uri = get_encoded_request_uri();
     
     echo   "
-                <div class='accordion-item' id='group-selections-container'>
-                    <h2 class='accordion-header'>
-                        <button type='button' class='accordion-button' data-bs-toggle='collapse' data-bs-target='#group-selections-accordion-body'>" . $escaper->escapeHtml($lang['GroupAndFilteringSelections']) . "</button>
-                    </h2>
-                    <div id='group-selections-accordion-body' class='accordion-collapse collapse show'>
-                        <div class='accordion-body'>
-                            <form id='get_risks_by' name='get_risks_by' method='post' action='" . $_SESSION['base_url'].$encoded_request_uri . "'>
-                                <div class='row'>
-
-                                    <!-- Risk Status Selection -->
-                                    <div class='col-4 form-group'>
-                                        <label>" . $escaper->escapeHtml($lang['Status']) . ":</label>
-                                        <select id='status' name='status' onchange='javascript: submit()' class='form-select'>
-                                            <option value='0'" . ($status == 0 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['OpenRisks']) . "</option>
-                                            <option value='1'" . ($status == 1 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['ClosedRisks']) . "</option>
-                                            <option value='2'" . ($status == 2 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['AllRisks']) . "</option>
-                                        </select>
-                                    </div>
-                                    <!-- Group By Selection -->    
-                                    <div class='col-4 form-group'>
-                                        <label>" . $escaper->escapeHtml($lang['GroupBy']) . ":</label>
-                                        <select id='group' name='group' onchange='javascript: submit()' class='form-select'>
-                                            <option value='0'" . ($group == 0 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['None']) . "</option>
-                                            <option value='5'" . ($group == 5 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['Category']) . "</option>
-                                            <option value='11'" . ($group == 11 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['ControlRegulation']) . "</option>
-                                            <option value='14'" . ($group == 14 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['MonthSubmitted']) . "</option>
-                                            <option value='13'" . ($group == 13 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['NextStep']) . "</option>
-                                            <option value='8'" . ($group == 8 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['Owner']) . "</option>
-                                            <option value='9'" . ($group == 9 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['OwnersManager']) . "</option>
-                                            <option value='12'" . ($group == 12 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['Project']) . "</option>
-                                            <option value='1'" . ($group == 1 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['RiskLevel']) . "</option>
-                                            <option value='10'" . ($group == 10 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['RiskScoringMethod']) . "</option>
-                                            <option value='4'" . ($group == 4 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['RiskSource']) . "</option>
-                                            <option value='2'" . ($group == 2 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['Status']) . "</option>
-                                            <option value='6'" . ($group == 6 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['Team']) . "</option>
-                                            <option value='7'" . ($group == 7 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['Technology']) . "</option>
-                                        </select>
-                                    </div>
-                                    <!-- Sort By Selection -->
-                                    <div class='col-4 form-group'>
-                                        <label>" . $escaper->escapeHtml($lang['SortBy']) . ":</label>
-                                        <select id='sort' name='sort' onchange='javascript: submit()' class='form-select'>
-                                            <option value='0'" . ($sort == 0 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['InherentRisk']) . "</option>
-                                            <option value='1'" . ($sort == 1 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['ID']) . "</option>
-                                            <option value='2'" . ($sort == 2 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['Subject']) . "</option>
-                                            <option value='3'" . ($sort == 3 ? ' selected' : '') . '>' . $escaper->escapeHtml($lang['ResidualRisk']) . "</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </form>
+        <div class='accordion-item' id='group-selections-container'>
+            <h2 class='accordion-header'>
+                <button type='button' class='accordion-button' data-bs-toggle='collapse' data-bs-target='#group-selections-accordion-body'>{$escaper->escapeHtml($lang['GroupAndFilteringSelections'])}</button>
+            </h2>
+            <div id='group-selections-accordion-body' class='accordion-collapse collapse show'>
+                <div class='accordion-body card-body'>
+                    <form id='get_risks_by' name='get_risks_by' method='post' action='{$_SESSION['base_url']}{$encoded_request_uri}'>
+                        <div class='row'>
+                            <!-- Risk Status Selection -->
+                            <div class='col-4'>
+                                <label>{$escaper->escapeHtml($lang['Status'])} :</label>
+                                <select id='status' name='status' onchange='javascript: submit()' class='form-select'>
+                                    <option value='0'" . ($status == 0 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['OpenRisks'])}</option>
+                                    <option value='1'" . ($status == 1 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['ClosedRisks'])}</option>
+                                    <option value='2'" . ($status == 2 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['AllRisks'])}</option>
+                                </select>
+                            </div>
+                            <!-- Group By Selection -->    
+                            <div class='col-4'>
+                                <label>{$escaper->escapeHtml($lang['GroupBy'])} :</label>
+                                <select id='group' name='group' onchange='javascript: submit()' class='form-select'>
+                                    <option value='0'" . ($group == 0 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['None'])}</option>
+                                    <option value='5'" . ($group == 5 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['Category'])}</option>
+                                    <option value='11'" . ($group == 11 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['ControlRegulation'])}</option>
+                                    <option value='14'" . ($group == 14 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['MonthSubmitted'])}</option>
+                                    <option value='13'" . ($group == 13 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['NextStep'])}</option>
+                                    <option value='8'" . ($group == 8 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['Owner'])}</option>
+                                    <option value='9'" . ($group == 9 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['OwnersManager'])}</option>
+                                    <option value='12'" . ($group == 12 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['Project'])}</option>
+                                    <option value='1'" . ($group == 1 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['RiskLevel'])}</option>
+                                    <option value='10'" . ($group == 10 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['RiskScoringMethod'])}</option>
+                                    <option value='4'" . ($group == 4 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['RiskSource'])}</option>
+                                    <option value='2'" . ($group == 2 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['Status'])}</option>
+                                    <option value='6'" . ($group == 6 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['Team'])}</option>
+                                    <option value='7'" . ($group == 7 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['Technology'])}</option>
+                                </select>
+                            </div>
+                            <!-- Sort By Selection -->
+                            <div class='col-4'>
+                                <label>{$escaper->escapeHtml($lang['SortBy'])} :</label>
+                                <select id='sort' name='sort' onchange='javascript: submit()' class='form-select'>
+                                    <option value='0'" . ($sort == 0 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['InherentRisk'])}</option>
+                                    <option value='1'" . ($sort == 1 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['ID'])}</option>
+                                    <option value='2'" . ($sort == 2 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['Subject'])}</option>
+                                    <option value='3'" . ($sort == 3 ? ' selected' : '') . ">{$escaper->escapeHtml($lang['ResidualRisk'])}</option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                </div>";
+                    </form>
+                </div>
+            </div>
+        </div>
+    ";
 
     // Risk columns
-    echo        display_risk_columns($risk_columns, $mitigation_columns, $review_columns, $scoring_columns, $unassigned_columns, $risk_mapping_columns);
+        display_risk_columns($risk_columns, $mitigation_columns, $review_columns, $scoring_columns, $unassigned_columns, $risk_mapping_columns);
 }
 
 /*************************************************
 * FUNCTION: DISPLAY SAVE DYNAMIC RISK SELECTIONS *
 **************************************************/
-function display_save_dynamic_risk_selections()
-{
+function display_save_dynamic_risk_selections() {
+
     global $lang, $escaper;
     
     $selection_id = !empty($_GET['selection']) ? (int)$_GET['selection'] : '';
@@ -5440,210 +5451,226 @@ function display_save_dynamic_risk_selections()
     $private = $escaper->escapeHtml($lang['Private']);
     $public = $escaper->escapeHtml($lang['Public']);
     
-    echo   "<div class='accordion-item' id='save-selections-container'>
-                <h2 class='accordion-header'>
-                    <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#save-selections-accordion-body'>" . $escaper->escapeHtml($lang['SaveSelections']) . "</button>
-                </h2>
-                <div id='save-selections-accordion-body' class='accordion-collapse collapse'>
-                    <div class='accordion-body'>
-                        <form method='post' >
-                            <div class='row align-items-end'>
-                                <div class='col-8 form-group dynamic-save-selections'>
-                                    <label>" . $escaper->escapeHtml($lang['SavedSelections']) . ":</label>
+    echo "
+        <div class='accordion-item' id='save-selections-container'>
+            <h2 class='accordion-header'>
+                <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#save-selections-accordion-body'>{$escaper->escapeHtml($lang['SaveSelections'])}</button>
+            </h2>
+            <div id='save-selections-accordion-body' class='accordion-collapse collapse'>
+                <div class='accordion-body card-body'>
+                    <form method='post' >
+                        <div class='row align-items-end'>
+                            <div class='col-8 form-group dynamic-save-selections'>
+                                <label>{$escaper->escapeHtml($lang['SavedSelections'])} :</label>
 
-                                    <script>
-                                        $(document).ready(function(){
-                                            $('#saved_selections').selectize({
-                                                options: [";
+                                <script>
+                                    $(document).ready(function(){
+                                        $('#saved_selections').selectize({
+                                            options: [
+    ";
+
     $selection = false;
-    foreach($options as $option)
-    {
+    foreach ($options as $option) {
         if ($selection_id == $option['value']) {
             $selection = $option;
         }
-        echo                                       "{class: '{$option['type']}', value: '{$option['value']}', name: '{$escaper->escapeHtml($option['name'])}'},";
+        echo "
+                                                {
+                                                    class: '{$option['type']}', 
+                                                    value: '{$option['value']}', 
+                                                    name: '{$escaper->escapeHtml($option['name'])}'
+                                                },
+        ";
     }
             
-    echo                                       "],
-                                                optgroups:
-                                                    [
-                                                        {value: 'private', label: '{$private}'},
-                                                        {value: 'public', label: '{$public}'},
-                                                    ]
-                                                ,
-                                                plugins: ['optgroup_columns'],
-                                                optgroupField: 'class',
-                                                labelField: 'name',
-                                                searchField: ['name', 'class'],
-                                                maxItems:1,";
-    if($selection_id) {
-        echo                                   "items: [{$selection_id}],";
+    echo "
+                                            ],
+                                            optgroups:
+                                                [
+                                                    {value: 'private', label: '{$private}'},
+                                                    {value: 'public', label: '{$public}'},
+                                                ]
+                                            ,
+                                            plugins: ['optgroup_columns'],
+                                            optgroupField: 'class',
+                                            labelField: 'name',
+                                            searchField: ['name', 'class'],
+                                            maxItems:1,
+    ";
+
+    if ($selection_id) {
+        echo "
+                                            items: [{$selection_id}],
+        ";
     }
                 
-    echo                                       "render: {
-                                                    optgroup_header: function (data) {
-                                                        return $('<div>', {class: 'optgroup-header'}).text(data.label);
-                                                    },
-                                                    option: function (data) {
-                                                        if (data.value) {
-                                                            return $('<div>', {class: 'option d-flex'}).html(data.name + '<i class=\'fa fa-trash font-10 rounded-5 p-1 delete-option-btn\'></i>');
-                                                        } else {
-                                                            return $('<div>', {class: 'option'}).html(data.name);
-                                                        }
-                                                    },
-                                                    item: function (data) {
-                                                        if (data.value) {
-                                                            return $('<div>', {class: 'item'}).html('[' + (data.class == 'private' ? '$private' : '$public') + '] ' + data.name); 
-                                                        } else {
-                                                            return $('<div>', {class: 'item'}).html('');
-                                                        }
+    echo "
+                                            render: {
+                                                optgroup_header: function (data) {
+                                                    return $('<div>', {class: 'optgroup-header'}).text(data.label);
+                                                },
+                                                option: function (data) {
+                                                    if (data.value) {
+                                                        return $('<div>', {class: 'option d-flex'}).html(data.name + '<i class=\'fa fa-trash font-10 rounded-5 p-1 delete-option-btn\'></i>');
+                                                    } else {
+                                                        return $('<div>', {class: 'option'}).html(data.name);
+                                                    }
+                                                },
+                                                item: function (data) {
+                                                    if (data.value) {
+                                                        return $('<div>', {class: 'item'}).html('[' + (data.class == 'private' ? '$private' : '$public') + '] ' + data.name); 
+                                                    } else {
+                                                        return $('<div>', {class: 'item'}).html('');
                                                     }
                                                 }
-                                            });
-
-                                            //stop option changing and open delete confirm modal.
-                                            $('.dynamic-save-selections .selectize-dropdown').on('mousedown', '.delete-option-btn', function(e) {
-                                                
-                                                //stop bubbling mousedown event
-                                                e.stopPropagation();
-
-                                                let id = $(e.target).parents('.option').first().data('value');
-                                                confirm('{$escaper->escapeHtml($lang["AreYouSureYouWantToDeleteSelction"])}', () => delete_saved_selection(id));
-                                            });            
+                                            }
                                         });
+
+                                        //stop option changing and open delete confirm modal.
+                                        $('.dynamic-save-selections .selectize-dropdown').on('mousedown', '.delete-option-btn', function(e) {
+                                            
+                                            //stop bubbling mousedown event
+                                            e.stopPropagation();
+
+                                            let id = $(e.target).parents('.option').first().data('value');
+                                            confirm('{$escaper->escapeHtml($lang["AreYouSureYouWantToDeleteSelction"])}', () => delete_saved_selection(id));
+                                        });            
+                                    });
             
-                                        function delete_saved_selection(id)
-                                        {
-                                            $.ajax({
-                                                type: 'POST',
-                                                url: BASE_URL + '/api/reports/delete-dynamic-selection',
-                                                data:{
-                                                    id: id,
-                                                },
-                                                success: function(res){
-                                                    document.location.href = BASE_URL + '/reports/dynamic_risk_report.php';
-                                                },
-                                                error: function(xhr,status,error){
-                                                    if(!retryCSRF(xhr, this)){
-                                                        if(xhr.responseJSON && xhr.responseJSON.status_message) {
-                                                            showAlertsFromArray(xhr.responseJSON.status_message);
-                                                        }
+                                    function delete_saved_selection(id)
+                                    {
+                                        $.ajax({
+                                            type: 'POST',
+                                            url: BASE_URL + '/api/reports/delete-dynamic-selection',
+                                            data:{
+                                                id: id,
+                                            },
+                                            success: function(res){
+                                                document.location.href = BASE_URL + '/reports/dynamic_risk_report.php';
+                                            },
+                                            error: function(xhr,status,error){
+                                                if(!retryCSRF(xhr, this)){
+                                                    if(xhr.responseJSON && xhr.responseJSON.status_message) {
+                                                        showAlertsFromArray(xhr.responseJSON.status_message);
                                                     }
                                                 }
-                                            });
-                                        }
-                                    </script>";
-
-    echo                           "<select required id='saved_selections'></select>
-                                </div>
-                            </div>
-                        </form>
-                        <form method='post' id='save-selections-form'>
-                            <div class='row align-items-end'>
-                                <div class='col-4 form-group'>
-                                    <label>" . $escaper->escapeHtml($lang['Type']) . ":</label>
-                                    <select required id='saved-selection-type' name='type' title='" . $escaper->escapeHtml($lang['PleaseSelectTypeForSaving']) . "' class='form-select'>
-                                        <option value=''>--</option>
-                                        <option value='public'>{$public}</option>
-                                        <option value='private'>{$private}</option>
-                                    </select>
-                                </div>
-                                <div class='col-4 form-group'>
-                                    <label>" . $escaper->escapeHtml($lang['Name']) . ":</label>
-                                    <input name='name' required type='text' placeholder='" . $escaper->escapeHtml($lang['Name']) . "' title='" . $escaper->escapeHtml($lang['Name']) . "' style='max-width: unset;' class='form-control'>
-                                </div>
-                                <div class='col-4 form-group'>
-                                    <button class='btn btn-primary'>" . $escaper->escapeHtml($lang['Save']) . "</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>";
-
-    echo   "<script>
-                $(document).ready(function(){
-                    
-                    $('#save-selections-form').submit(function(){
-                        var self = $(this);
-                        var type = $('#saved-selection-type', self).val();
-                        var name = $('input[name=name]', self).val();
-                        
-                        var viewColumns = [];
-                        var risk_columns = $('#risk_columns').val();
-                        var mitigation_columns = $('#mitigation_columns').val();
-                        var review_columns = $('#review_columns').val();
-                        var scoring_columns = $('#scoring_columns').val();
-                        var risk_mapping_columns = $('#risk_mapping_columns').val();
-                        var selected_columns = risk_columns.concat(mitigation_columns, review_columns, scoring_columns, risk_mapping_columns);
-                        var columnFilters = [];
-                        $('.risk-datatable:first .dynamic-column-filter').each(function(i){
-                            if($(this).val().length > 0){
-                                var data_name = $(this).attr('data-name');
-                                columnFilters.push([data_name,$(this).val()]);
-                            }
-                        });
-                        var selectFilters = {status:0,group:0,sort:0};
-                        selectFilters.status = $('#status').val();
-                        selectFilters.group = $('#group').val();
-                        selectFilters.sort = $('#sort').val();
-
-                        var test = $.ajax({
-                            type: 'POST',
-                            url: BASE_URL + '/api/reports/save-dynamic-selections',
-                            data:{
-                                type: type,
-                                name: name,
-                                columns: selected_columns,
-                                selects: selectFilters,
-                                columnFilters: columnFilters,
-                            },
-                            success: function(res){
-                                var value = res.data.value;
-                                if(value) {
-                                    var stz = $('#saved_selections')[0].selectize;
-                                    
-                                    var data = {
-                                        'class':res.data.type,
-                                        'value':value,
-                                        'name':name 
-                                    };
-                                    stz.addOption(data);
-                                    stz.refreshOptions();
-
-                                    self[0].reset();
-                                }
-                                showAlertsFromArray(res.status_message);
-                            },
-                            error: function(xhr,status,error){
-                                if(!retryCSRF(xhr, this)){
-                                    if(xhr.responseJSON && xhr.responseJSON.status_message) {
-                                        showAlertsFromArray(xhr.responseJSON.status_message);
+                                            }
+                                        });
                                     }
+                                </script>
+
+                                <select required id='saved_selections'></select>
+                            </div>
+                        </div>
+                    </form>
+                    <form method='post' id='save-selections-form'>
+                        <div class='row align-items-end'>
+                            <div class='col-4'>
+                                <label>{$escaper->escapeHtml($lang['Type'])} :</label>
+                                <select required id='saved-selection-type' name='type' title='{$escaper->escapeHtml($lang['PleaseSelectTypeForSaving'])}' class='form-select'>
+                                    <option value=''>--</option>
+                                    <option value='public'>{$public}</option>
+                                    <option value='private'>{$private}</option>
+                                </select>
+                            </div>
+                            <div class='col-4'>
+                                <label>{$escaper->escapeHtml($lang['Name'])} :</label>
+                                <input name='name' required type='text' placeholder='{$escaper->escapeHtml($lang['Name'])}' title='{$escaper->escapeHtml($lang['Name'])}' style='max-width: unset;' class='form-control'>
+                            </div>
+                            <div class='col-4'>
+                                <button class='btn btn-submit'>{$escaper->escapeHtml($lang['Save'])}</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+            
+        <script>
+            $(document).ready(function(){
+                
+                $('#save-selections-form').submit(function(){
+                    var self = $(this);
+                    var type = $('#saved-selection-type', self).val();
+                    var name = $('input[name=name]', self).val();
+                    
+                    var viewColumns = [];
+                    var risk_columns = $('#risk_columns').val();
+                    var mitigation_columns = $('#mitigation_columns').val();
+                    var review_columns = $('#review_columns').val();
+                    var scoring_columns = $('#scoring_columns').val();
+                    var risk_mapping_columns = $('#risk_mapping_columns').val();
+                    var selected_columns = risk_columns.concat(mitigation_columns, review_columns, scoring_columns, risk_mapping_columns);
+                    var columnFilters = [];
+                    $('.risk-datatable:first .dynamic-column-filter').each(function(i){
+                        if($(this).val().length > 0){
+                            var data_name = $(this).attr('data-name');
+                            columnFilters.push([data_name,$(this).val()]);
+                        }
+                    });
+                    var selectFilters = {status:0,group:0,sort:0};
+                    selectFilters.status = $('#status').val();
+                    selectFilters.group = $('#group').val();
+                    selectFilters.sort = $('#sort').val();
+
+                    var test = $.ajax({
+                        type: 'POST',
+                        url: BASE_URL + '/api/reports/save-dynamic-selections',
+                        data:{
+                            type: type,
+                            name: name,
+                            columns: selected_columns,
+                            selects: selectFilters,
+                            columnFilters: columnFilters,
+                        },
+                        success: function(res){
+                            var value = res.data.value;
+                            if(value) {
+                                var stz = $('#saved_selections')[0].selectize;
+                                
+                                var data = {
+                                    'class':res.data.type,
+                                    'value':value,
+                                    'name':name 
+                                };
+                                stz.addOption(data);
+                                stz.refreshOptions();
+
+                                self[0].reset();
+                            }
+                            showAlertsFromArray(res.status_message);
+                        },
+                        error: function(xhr,status,error){
+                            if(!retryCSRF(xhr, this)){
+                                if(xhr.responseJSON && xhr.responseJSON.status_message) {
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
                                 }
                             }
-                        });
-                        
-                        return false;
-                    })
-                    
-                    $('#saved_selections').change(function(){
-                        var selection = $(this).val();
-                        if(selection){
-                            document.location.href = BASE_URL + '/reports/dynamic_risk_report.php?selection=' + selection;
-                        } else {
-                            document.location.href = BASE_URL + '/reports/dynamic_risk_report.php';
                         }
-                        return true;
-                    })
+                    });
+                    
+                    return false;
                 })
-            </script>";
+                
+                $('#saved_selections').change(function(){
+                    var selection = $(this).val();
+                    if(selection){
+                        document.location.href = BASE_URL + '/reports/dynamic_risk_report.php?selection=' + selection;
+                    } else {
+                        document.location.href = BASE_URL + '/reports/dynamic_risk_report.php';
+                    }
+                    return true;
+                })
+            })
+        </script>
+    ";
 }
 
 /*********************************
 * FUNCTION: DISPLAY RISK COLUMNS *
 **********************************/
-function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_columns=[], $scoring_columns=[], $unassigned_columns=[], $risk_mapping_columns=[]){
+function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_columns=[], $scoring_columns=[], $unassigned_columns=[], $risk_mapping_columns=[]) {
+
     global $escaper, $lang;
 
     $risk_columns_option = [];
@@ -5660,144 +5687,207 @@ function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_
     $risk_mapping_columns_selected = [];
 
     // If customization extra is enabled
-    if(customization_extra())
-    {
+    if(customization_extra()) {
+
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        foreach($risk_columns as $column=>$value){
-            if(stripos($column, "custom_field_") !== false){
+
+        foreach ($risk_columns as $column=>$value) {
+
+            if (stripos($column, "custom_field_") !== false) {
                 $field_id = str_replace("custom_field_", "", $column);
                 $custom_field = get_field_by_id($field_id);
                 $name = $custom_field['name'];
             } else {
                 $name = get_label_by_risk_field_name($column);
             }
+
             $risk_columns_option[] = array('value'=>$column, 'name'=>$name);
-            if($value == true) $risk_columns_selected[] = $column;
+
+            if ($value == true) {
+                $risk_columns_selected[] = $column;
+            }
         }
-        foreach($mitigation_columns as $column=>$value){
-            if(stripos($column, "custom_field_") !== false){
+
+        foreach ($mitigation_columns as $column=>$value) {
+
+            if (stripos($column, "custom_field_") !== false) {
                 $field_id = str_replace("custom_field_", "", $column);
                 $custom_field = get_field_by_id($field_id);
                 $name = $custom_field['name'];
             } else {
                 $name = get_label_by_risk_field_name($column);
             }
+
             $mitigation_columns_option[] = array('value'=>$column, 'name'=>$name);
-            if($value == true) $mitigation_columns_selected[] = $column;
+
+            if ($value == true) {
+                $mitigation_columns_selected[] = $column;
+            }
         }
-        foreach($review_columns as $column=>$value){
-            if(stripos($column, "custom_field_") !== false){
+
+        foreach ($review_columns as $column=>$value) {
+
+            if (stripos($column, "custom_field_") !== false) {
                 $field_id = str_replace("custom_field_", "", $column);
                 $custom_field = get_field_by_id($field_id);
                 $name = $custom_field['name'];
             } else {
                 $name = get_label_by_risk_field_name($column);
             }
+
             $review_columns_option[] = array('value'=>$column, 'name'=>$name);
-            if($value == true) $review_columns_selected[] = $column;
+
+            if ($value == true) {
+                $review_columns_selected[] = $column;
+            }
         }
-        foreach($scoring_columns as $column=>$value){
+
+        foreach ($scoring_columns as $column=>$value) {
             $name = get_label_by_risk_field_name($column);
             $scoring_columns_option[] = array('value'=>$column, 'name'=>$name);
-            if($value == true) $scoring_columns_selected[] = $column;
+            if ($value == true) {
+                $scoring_columns_selected[] = $column;
+            }
         }
-        foreach($unassigned_columns as $column=>$value){
-            if(stripos($column, "custom_field_") !== false){
+
+        foreach ($unassigned_columns as $column=>$value) {
+
+            if (stripos($column, "custom_field_") !== false) {
                 $field_id = str_replace("custom_field_", "", $column);
                 $custom_field = get_field_by_id($field_id);
                 $name = $custom_field['name'];
             } else {
                 $name = get_label_by_risk_field_name($column);
             }
+
             $unassigned_columns_option[] = array('value'=>$column, 'name'=>$name);
-            if($value == true) $unassigned_columns_selected[] = $column;
+
+            if ($value == true) {
+                $unassigned_columns_selected[] = $column;
+            }
         }
     } else {
-        foreach($risk_columns as $column=>$value){
+
+        foreach ($risk_columns as $column=>$value) {
             $name = get_label_by_risk_field_name($column);
             $risk_columns_option[] = array('value'=>$column, 'name'=>$name);
-            if($value == true) $risk_columns_selected[] = $column;
+            if ($value == true) {
+                $risk_columns_selected[] = $column;
+            }
         }
-        foreach($mitigation_columns as $column=>$value){
+
+        foreach ($mitigation_columns as $column=>$value) {
             $name = get_label_by_risk_field_name($column);
             $mitigation_columns_option[] = array('value'=>$column, 'name'=>$name);
-            if($value == true) $mitigation_columns_selected[] = $column;
+            if ($value == true) {
+                $mitigation_columns_selected[] = $column;
+            }
         }
-        foreach($review_columns as $column=>$value){
+
+        foreach ($review_columns as $column=>$value) {
             $name = get_label_by_risk_field_name($column);
             $review_columns_option[] = array('value'=>$column, 'name'=>$name);
-            if($value == true) $review_columns_selected[] = $column;
+            if ($value == true) {
+                $review_columns_selected[] = $column;
+            }
         }
-        foreach($scoring_columns as $column=>$value){
+
+        foreach ($scoring_columns as $column=>$value) {
             $name = get_label_by_risk_field_name($column);
             $scoring_columns_option[] = array('value'=>$column, 'name'=>$name);
-            if($value == true) $scoring_columns_selected[] = $column;
+            if ($value == true) {
+                $scoring_columns_selected[] = $column;
+            }
         }
     }
-    foreach($risk_mapping_columns as $column=>$value){
+
+    foreach ($risk_mapping_columns as $column=>$value) {
         $name = get_label_by_risk_field_name($column);
         $risk_mapping_columns_option[] = array('value'=>$column, 'name'=>$name);
-        if($value == true) $risk_mapping_columns_selected[] = $column;
+        if ($value == true) {
+            $risk_mapping_columns_selected[] = $column;
+        }
     }
 
     echo "
         <div class='accordion-item' id='column-selections-container'>
             <h2 class='accordion-header'>
-                <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#column-selection-accordion-body'>" . $escaper->escapeHtml($lang['ColumnSelections']) . "</button>
+                <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#column-selection-accordion-body'>{$escaper->escapeHtml($lang['ColumnSelections'])}</button>
             </h2>
             <div id='column-selection-accordion-body' class='accordion-collapse collapse'>
-                <div class='accordion-body'>
+                <div class='accordion-body card-body'>
                     <div class='row'>
                         <div class='col-4 form-group'>
-                            <label>" . $escaper->escapeHtml($lang['RiskColumns']) . ":</label>";
+                            <label>{$escaper->escapeHtml($lang['RiskColumns'])} :</label>
+    ";
                             create_multiple_dropdown("", $risk_columns_selected, "risk_columns", $risk_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
-    echo               "</div>
+    echo "
+                        </div>
                         <div class='col-4 form-group'>
-                            <label>" . $escaper->escapeHtml($lang['MitigationColumns']) . ":</label>";
+                            <label>{$escaper->escapeHtml($lang['MitigationColumns'])} :</label>
+    ";
                             create_multiple_dropdown("", $mitigation_columns_selected, "mitigation_columns", $mitigation_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
-    echo               "</div>
+    echo "
+                        </div>
                         <div class='col-4 form-group'>
-                            <label>" . $escaper->escapeHtml($lang['ReviewColumns']) . ":</label>";
+                            <label>{$escaper->escapeHtml($lang['ReviewColumns'])} :</label>
+    ";
                             create_multiple_dropdown("", $review_columns_selected, "review_columns", $review_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
-    echo               "</div>
+    echo "
+                        </div>
                     </div>
                     <div class='row'>
-                        <div class='col-4 form-group'>
-                            <label>" . $escaper->escapeHtml($lang['RiskScoringColumns']) . ":</label>";
+                        <div class='col-4'>
+                            <label>{$escaper->escapeHtml($lang['RiskScoringColumns'])} :</label>
+    ";
                             create_multiple_dropdown("", $scoring_columns_selected, "scoring_columns", $scoring_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
-    echo               "</div>"; 
-    if(count($unassigned_columns_option)){
-        echo           "<div class='col-4 form-group'>
-                            <label>" . $escaper->escapeHtml($lang['UnassignedColumns']) . ":</label>";
+    echo "
+                        </div>
+    ";
+
+    if (count($unassigned_columns_option)) {
+        echo "
+                        <div class='col-4'>
+                            <label>{$escaper->escapeHtml($lang['UnassignedColumns'])} :</label>
+        ";
                             create_multiple_dropdown("", $unassigned_columns_selected, "unassigned_columns", $unassigned_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
-        echo           "</div>"; 
+        echo "
+                        </div>
+        "; 
     }
-    echo               "<div class='col-4 form-group'>
-                            <label>" . $escaper->escapeHtml($lang['RiskMappingColumns']) . ":</label>";
+
+    echo "
+                        <div class='col-4'>
+                            <label>{$escaper->escapeHtml($lang['RiskMappingColumns'])} :</label>
+    ";
                             create_multiple_dropdown("", $risk_mapping_columns_selected, "risk_mapping_columns", $risk_mapping_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
-    echo               "</div>
+    echo "
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>";
+        </div>
+    ";
+
 }
 
 /********************************************************
 * FUNCTION: DISPLAY RISKS OPEN BY TEAM DROPDOWN SCRIPT  *
 *********************************************************/
 function display_risks_open_by_team_dropdown_script() {
+
     global $escaper, $lang;
 
     echo "
-        <script type=\"text/javascript\">
+        <script type='text/javascript'>
             $(function(){
                 // timer identifier
                 var typingTimer;                
                 // time in ms (1 second)
                 var doneInterval = 2000;  
                 function submit_form(){
-                    $(\"#risks_by_teams_form\").submit();
+                    $('#risks_by_teams_form').submit();
                 }
 
                 function throttledFormSubmit() {
@@ -5806,8 +5896,8 @@ function display_risks_open_by_team_dropdown_script() {
                 }            
                 
                 // Team dropdown
-                $(\"#teams\").multiselect({
-                    allSelectedText: '" . $escaper->escapeJs($lang['AllTeams']) . "',
+                $('#teams').multiselect({
+                    allSelectedText: '{$escaper->escapeJs($lang['AllTeams'])}',
                     includeSelectAllOption: true,
                     onChange: throttledFormSubmit,
                     onSelectAll: throttledFormSubmit,
@@ -5817,8 +5907,8 @@ function display_risks_open_by_team_dropdown_script() {
                 });
                 
                 // Owner dropdown
-                $(\"#owners\").multiselect({
-                    allSelectedText: '" . $escaper->escapeJs($lang['AllOwners']) . "',
+                $('#owners').multiselect({
+                    allSelectedText: '{$escaper->escapeJs($lang['AllOwners'])}',
                     includeSelectAllOption: true,
                     onChange: throttledFormSubmit,
                     onSelectAll: throttledFormSubmit,
@@ -5828,8 +5918,8 @@ function display_risks_open_by_team_dropdown_script() {
                 });
                 
                 // Owner's dropdown
-                $(\"#ownersmanagers\").multiselect({
-                    allSelectedText: '" . $escaper->escapeJs($lang['AllOwnersManagers']) . "',
+                $('#ownersmanagers').multiselect({
+                    allSelectedText: '{$escaper->escapeJs($lang['AllOwnersManagers'])}',
                     includeSelectAllOption: true,
                     onChange: throttledFormSubmit,
                     onSelectAll: throttledFormSubmit,
@@ -6742,8 +6832,8 @@ function display_pending_risks($assessment_id = null) {
 /******************************************
  * FUNCTION: RISK AVERAGE BASELINE METRIC *
  *****************************************/
-function risk_average_baseline_metric($time = "day", $title = "")
-{
+function risk_average_baseline_metric($time = "day", $title = "") {
+    
     global $escaper, $lang;
 
     // Get the inherent risk average values by day
@@ -6941,7 +7031,8 @@ function score_over_time($time = "day")
 /********************************************
  * FUNCTION: RISK FOR LIKELIHOOD AND IMPACT *
  ********************************************/
-function report_likelihood_impact(){
+function report_likelihood_impact() {
+
     global $lang;
     global $escaper;
 
@@ -6956,22 +7047,21 @@ function report_likelihood_impact(){
     $max_y = get_impacts_count();
 
     // For each x value from the max to zero
-    for ($x=$max_x; $x>=0; $x--)
-    {
+    for ($x=$max_x; $x>=0; $x--) {
+
         // For each y value from the max to zero
-        for ($y=$max_y; $y>=0; $y--)
-        {
+        for ($y=$max_y; $y>=0; $y--) {
+
             // Create the default values
             $risk_ids = [];
             $risk_subjects = [];
             $count = 0;
 
             // Search the $risks array for the likelihood and impact values
-            foreach ($risks as $risk)
-            {
+            foreach ($risks as $risk) {
+
                 // If we have a matching likelihood and impact
-                if ($x == $risk['CLASSIC_likelihood'] && $y == $risk['CLASSIC_impact'])
-                {
+                if ($x == $risk['CLASSIC_likelihood'] && $y == $risk['CLASSIC_impact']) {
                     // Get the risk information
                     $risk_id = $risk['id'] + 1000;
                     $risk_ids[] = $risk_id;
@@ -6994,8 +7084,8 @@ function report_likelihood_impact(){
             }
 
             // If we have at least one risk in the dataset
-            if ($count > 0)
-            {
+            if ($count > 0) {
+
                 // Scale the r value based on the count but no more than 50
                 $r = ($count * 3 < 50 ? $count * 3 : 50);
 
@@ -7708,68 +7798,76 @@ function create_risk_formula_table()
 /**********************************************
 * FUNCTION: VIEW RISKS AND CONTROLS SELECTIONS *
 **********************************************/
-function view_risks_and_controls_selections($report, $sort_by, $projects, $status)
-{
+function view_risks_and_controls_selections($report, $sort_by, $projects, $status) {
+
     global $lang;
     global $escaper;
 
-    echo   "<div class='row'>
-                <div class='col-3 form-group'>
-                    <label>" . $escaper->escapeHtml($lang['Report']) . ":</label>
-                    <select class='form-select' id='report' name='report' onchange='javascript: submit()'>
-                        <option value='0'" . ($report == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RisksByControl']) . "</option>
-                        <option value='1'" . ($report == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['ControlsByRisk']) . "</option>
-                    </select>
-                </div>
-                <div class='col-3 form-group'>
-                    <label>" . $escaper->escapeHtml($lang['Project']) . ":</label>"; 
-                    create_multiple_dropdown("projects", $projects, NULL, NULL, true, $lang['Unassigned'], "-1");
-    echo       "</div>";
-    if($report == 0){
-        echo   "<div class='col-3 form-group'>
-                    <label>" . $escaper->escapeHtml($lang['SortBy']) . ":</label>
-                    <select class='form-select' id='sortby' name='sort_by' onchange='javascript: submit()'>
-                        <option value='0'" . ($sort_by == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['ControlName']) . "</option>
-                        <option value='1'" . ($sort_by == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['ControlRisk']) . "</option>
-                    </select>
-                </div>";
+    echo "
+        <div class='row form-group'>
+            <div class='col-3'>
+                <label>{$escaper->escapeHtml($lang['Report'])} :</label>
+                <select class='form-select' id='report' name='report' onchange='javascript: submit()'>
+                    <option value='0'" . ($report == 0 ? " selected" : "") . ">{$escaper->escapeHtml($lang['RisksByControl'])}</option>
+                    <option value='1'" . ($report == 1 ? " selected" : "") . ">{$escaper->escapeHtml($lang['ControlsByRisk'])}</option>
+                </select>
+            </div>
+            <div class='col-3'>
+                <label>{$escaper->escapeHtml($lang['Project'])} :</label>
+    "; 
+                create_multiple_dropdown("projects", $projects, NULL, NULL, true, $lang['Unassigned'], "-1");
+    echo "
+            </div>
+    ";
+    if ($report == 0) {
+        echo "
+            <div class='col-3'>
+                <label>{$escaper->escapeHtml($lang['SortBy'])} :</label>
+                <select class='form-select' id='sortby' name='sort_by' onchange='javascript: submit()'>
+                    <option value='0'" . ($sort_by == 0 ? " selected" : "") . ">{$escaper->escapeHtml($lang['ControlName'])}</option>
+                    <option value='1'" . ($sort_by == 1 ? " selected" : "") . ">{$escaper->escapeHtml($lang['ControlRisk'])}</option>
+                </select>
+            </div>
+        ";
     }
-    echo       "<div class='col-3 form-group'>
-                    <label>" . $escaper->escapeHtml($lang['Status']) . ":</label>
-                    <select class='form-select' id='status' name='status' onchange='javascript: submit();'>
-                        <option value='0'" . ($status == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['OpenRisks']) . "</option>
-                        <option value='1'" . ($status == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['ClosedRisks']) . "</option>
-                        <option value='2'" . ($status == 2 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AllRisks']) . "</option>
-                    </select>
-                </div>
-            </div>";
-
-    echo   "<script>
-                $(function() {
-                    $('#projects').multiselect({
-                        allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
-                        enableFiltering: true,
-                        buttonWidth: '100%',
-                        maxHeight: 250,
-                        includeSelectAllOption: true,
-                        enableCaseInsensitiveFiltering: true,
-                        onChange: function(){
-                            $('form[name=select_report]').submit();
-                        }
-                    });
+    echo "
+            <div class='col-3'>
+                <label>{$escaper->escapeHtml($lang['Status'])} :</label>
+                <select class='form-select' id='status' name='status' onchange='javascript: submit();'>
+                    <option value='0'" . ($status == 0 ? " selected" : "") . ">{$escaper->escapeHtml($lang['OpenRisks'])}</option>
+                    <option value='1'" . ($status == 1 ? " selected" : "") . ">{$escaper->escapeHtml($lang['ClosedRisks'])}</option>
+                    <option value='2'" . ($status == 2 ? " selected" : "") . ">{$escaper->escapeHtml($lang['AllRisks'])}</option>
+                </select>
+            </div>
+        </div>
+            
+        <script>
+            $(function() {
+                $('#projects').multiselect({
+                    allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
+                    enableFiltering: true,
+                    buttonWidth: '100%',
+                    maxHeight: 250,
+                    includeSelectAllOption: true,
+                    enableCaseInsensitiveFiltering: true,
+                    onChange: function(){
+                        $('form[name=select_report]').submit();
+                    }
                 });
-            </script>";
+            });
+        </script>
+    ";
 }
 
 /********************************************
 * FUNCTION: VIEW CONTROLS FILTER SELECTIONS *
 *********************************************/
-function view_controls_filter_selections()
-{
+function view_controls_filter_selections() {
+
     global $lang;
     global $escaper;
 
-    if(count($_POST) > 3) {
+    if (count($_POST) > 3) {
         $control_framework = isset($_POST['control_framework']) ? $_POST['control_framework'] : [];
         $control_family = isset($_POST['control_family']) ? $_POST['control_family'] : [];
         $control_class = isset($_POST['control_class']) ? $_POST['control_class'] : [];
@@ -7785,48 +7883,64 @@ function view_controls_filter_selections()
         $control_owner = "all";
     }
 
-    echo   "<div class='row'>
-                <div class='col-4 form-group'>
-                    <label>" . $escaper->escapeHtml($lang['ControlFrameworks']) . ":</label>";
-                    create_multiple_dropdown("control_framework", $control_framework, null, getAvailableControlFrameworkList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
-    echo       "</div>
-                <div class='col-4 form-group'>
-                    <label>" . $escaper->escapeHtml($lang['ControlFamily']) . ":</label>";
-                    create_multiple_dropdown("control_family", $control_family, null, getAvailableControlFamilyList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
-    echo       "</div>
-                <div class='col-4 form-group'>
-                    <label>" . $escaper->escapeHtml($lang['ControlClass']) . ":</label>";
-                    create_multiple_dropdown("control_class", $control_class, null, getAvailableControlClassList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
-    echo       "</div>
-                <div class='col-4 form-group'>
-                    <label>" . $escaper->escapeHtml($lang['ControlPhase']) . ":</label>";
-                    create_multiple_dropdown("control_phase", $control_phase, null, getAvailableControlPhaseList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
-    echo       "</div>
-                <div class='col-4 form-group'>
-                    <label>" . $escaper->escapeHtml($lang['ControlPriority']) . ":</label>";
-                    create_multiple_dropdown("control_priority", $control_priority, null, getAvailableControlPriorityList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
-    echo       "</div>
-                <div class='col-4 form-group'>
-                    <label>" . $escaper->escapeHtml($lang['ControlOwner']) . ":</label>";
-                    create_multiple_dropdown("control_owner", $control_owner, null, getAvailableControlOwnerList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
-    echo       "</div>
-            </div>";
-
-    echo   "<script>
-                $(document).ready( function(){
-                    $('select[multiple]').multiselect({
-                        allSelectedText: '". $escaper->escapeHtml($lang['ALL']) . "',
-                        enableFiltering: true,
-                        maxHeight: 250,
-                        buttonWidth: '100%',
-                        includeSelectAllOption: true,
-                        enableCaseInsensitiveFiltering: true,
-                        onChange: function(){
-                            $('form[name=select_report]').submit();
-                        }
-                    });
+    echo   "
+        <div class='row form-group'>
+            <div class='col-4'>
+                <label>{$escaper->escapeHtml($lang['ControlFrameworks'])} :</label>
+    ";
+                create_multiple_dropdown("control_framework", $control_framework, null, getAvailableControlFrameworkList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
+    echo "
+            </div>
+            <div class='col-4'>
+                <label>{$escaper->escapeHtml($lang['ControlFamily'])} :</label>
+    ";
+                create_multiple_dropdown("control_family", $control_family, null, getAvailableControlFamilyList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
+    echo "
+            </div>
+            <div class='col-4'>
+                <label>{$escaper->escapeHtml($lang['ControlClass'])} :</label>
+    ";
+                create_multiple_dropdown("control_class", $control_class, null, getAvailableControlClassList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
+    echo "
+            </div>
+        </div>
+        <div class='row form-group'>
+            <div class='col-4'>
+                <label>{$escaper->escapeHtml($lang['ControlPhase'])} :</label>
+    ";
+                create_multiple_dropdown("control_phase", $control_phase, null, getAvailableControlPhaseList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
+    echo "
+            </div>
+            <div class='col-4'>
+                <label>{$escaper->escapeHtml($lang['ControlPriority'])} :</label>
+    ";
+                create_multiple_dropdown("control_priority", $control_priority, null, getAvailableControlPriorityList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
+    echo "
+            </div>
+            <div class='col-4'>
+                <label>{$escaper->escapeHtml($lang['ControlOwner'])} :</label>
+    ";
+                create_multiple_dropdown("control_owner", $control_owner, null, getAvailableControlOwnerList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
+    echo "
+            </div>
+        </div>
+        
+        <script>
+            $(document).ready( function(){
+                $('select[multiple]').multiselect({
+                    allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
+                    enableFiltering: true,
+                    maxHeight: 250,
+                    buttonWidth: '100%',
+                    includeSelectAllOption: true,
+                    enableCaseInsensitiveFiltering: true,
+                    onChange: function(){
+                        $('form[name=select_report]').submit();
+                    }
                 });
-            </script>";
+            });
+        </script>
+    ";
 
 }
 
@@ -8693,31 +8807,31 @@ function display_review_risks()
 /*****************************************
 * FUNCTION: DISPLAY AUDIT TIMELINE TABLE *
 ******************************************/
-function display_audit_timeline()
-{
+function display_audit_timeline() {
+
     global $lang, $escaper;
     
     // If User has permission for complicance menu, shows Audit Timeline report
-    if(!empty($_SESSION['compliance']))
-    {
+    if(!empty($_SESSION['compliance'])) {
+
         $tableID = "audit-timeline";
         
         echo "
-            <table id=\"{$tableID}\" width=\"100%\" class=\"risk-datatable table table-bordered table-striped table-condensed\">
+            <table id='{$tableID}' width='100%' class='risk-datatable table table-bordered table-striped table-condensed'>
                 <thead >
                     <tr >
-                        <th data-name='actions' align=\"left\" width=\"200px\" valign=\"top\">".$escaper->escapeHtml($lang['Actions'])."</th>
-                        <th data-name='test_name' align=\"left\" width=\"200px\" valign=\"top\">".$escaper->escapeHtml($lang['TestName'])."</th>
-                        <th data-name='associated_frameworks' align=\"left\" valign=\"top\">".$escaper->escapeHtml($lang['AssociatedFrameworks'])."</th>
-                        <th data-name='last_test_date' align=\"left\" width=\"150px\" valign=\"top\">".$escaper->escapeHtml($lang['LastTestDate'])."</th>
-                        <th data-name='last_test_result' align=\"left\" width=\"150px\" valign=\"top\">".$escaper->escapeHtml($lang['LastTestResult'])."</th>
-                        <th data-name='next_test_date' align=\"center\" width=\"150px\" valign=\"top\">".$escaper->escapeHtml($lang['NextTestDate'])."</th>
+                        <th data-name='actions' align='left' width='200px' valign='top'>{$escaper->escapeHtml($lang['Actions'])}</th>
+                        <th data-name='test_name' align='left' width='200px' valign='top'>{$escaper->escapeHtml($lang['TestName'])}</th>
+                        <th data-name='associated_frameworks' align='left' valign='top'>{$escaper->escapeHtml($lang['AssociatedFrameworks'])}</th>
+                        <th data-name='last_test_date' align='left' width='150px' valign='top'>{$escaper->escapeHtml($lang['LastTestDate'])}</th>
+                        <th data-name='last_test_result' align='left' width='150px' valign='top'>{$escaper->escapeHtml($lang['LastTestResult'])}</th>
+                        <th data-name='next_test_date' align='center' width='150px' valign='top'>{$escaper->escapeHtml($lang['NextTestDate'])}</th>
                     </tr>
                 </thead>
                 <tbody>
                 </tbody>
             </table>
-            <br>
+            
             <script>
                 $(function () {
                     var form = $('#{$tableID}').parents('form');
@@ -9561,16 +9675,17 @@ function display_control_gap_analysis() {
     global $lang, $escaper;
 
     // If User has permission for governance menu, shows Control Gap Analysis report
-    if(!empty($_SESSION['governance'])) {
+    if (!empty($_SESSION['governance'])) {
 
         // Begin the framework filter form
         echo "
-            <form class='w-50' id='framework_form' name='framework_form' method='post' action=''>
+            <div class='card-body border my-2'>
+                <form class='w-50' id='framework_form' name='framework_form' method='post' action=''>
         ";
 
         // Add the filter
         echo "
-                <label>{$escaper->escapeHtml($lang['ControlFramework'])}:</label>
+                    <label>{$escaper->escapeHtml($lang['ControlFramework'])} :</label>
         ";
 
         // If no framework was posted
@@ -9585,11 +9700,13 @@ function display_control_gap_analysis() {
 
         }
 
-                // Create the dropdown
-                create_dropdown("frameworks", $framework, "framework");
+                    // Create the dropdown
+                    create_dropdown("frameworks", $framework, "framework");
 
         echo "
-            </form>
+                </form>
+            </div>
+
             <script>
                 $(function () {
                     var frameworks = document.getElementById('framework');
@@ -9603,20 +9720,26 @@ function display_control_gap_analysis() {
         // If a framework id was posted
         if ($framework != null) {
 
-            // Display the control maturity spider chart
-            display_control_maturity_spider_chart($framework);
+            echo "
+            <div class='card-body border'>
+            ";
+                // Display the control maturity spider chart
+                display_control_maturity_spider_chart($framework);
+            echo " 
+            </div>
+            ";
 
             echo "
-            <div class='row'>
+            <div class='row my-2'>
                 <div class='col-12'>
                     <div>
                         <nav class='nav nav-tabs'>
-                            <a class='nav-link active' data-bs-target='#below_maturity' data-bs-toggle='tab'>" . $escaper->escapeHtml($lang['BelowMaturity']) . "</a>
-                            <a class='nav-link' data-bs-target='#at_maturity' data-bs-toggle='tab'>" . $escaper->escapeHtml($lang['AtMaturity']) . "</a>
-                            <a class='nav-link' data-bs-target='#above_maturity' data-bs-toggle='tab'>" . $escaper->escapeHtml($lang['AboveMaturity']) . "</a>
+                            <a class='nav-link active' data-bs-target='#below_maturity' data-bs-toggle='tab'>{$escaper->escapeHtml($lang['BelowMaturity'])}</a>
+                            <a class='nav-link' data-bs-target='#at_maturity' data-bs-toggle='tab'>{$escaper->escapeHtml($lang['AtMaturity'])}</a>
+                            <a class='nav-link' data-bs-target='#above_maturity' data-bs-toggle='tab'>{$escaper->escapeHtml($lang['AboveMaturity'])}</a>
                         </nav>
                     </div>
-                    <div class='tab-content mt-2'>
+                    <div class='tab-content card-body border mt-2'>
                         <div id='below_maturity' class='tab-pane active' tabindex='0'>
             ";
                             display_gap_analysis_table($framework, "below_maturity");
@@ -9635,6 +9758,7 @@ function display_control_gap_analysis() {
                     </div>
                 </div>
             </div>
+
             <script>
                 $(function() {
 
@@ -10130,12 +10254,6 @@ function render_column_selection_widget($view) {
     echo "
         <script>
             $(function() {
-                // .off() is there to make sure there's no multiple click handlers on it in case multiple of this widget is rendered on the same page
-                $('body').off('click', '#setting_modal-{$view} .collapsible--toggle span.collapse-title').on('click', '#setting_modal-{$view} .collapsible--toggle span.collapse-title', function(event) {
-                    event.preventDefault();
-                    $(this).closest('.collapsible--toggle').next('.collapsible').slideToggle('400');
-                    $(this).find('i').toggleClass('fa-caret-right fa-caret-down');
-                });
                 $('form#custom_display_settings-{$view}').submit(function() {
                     event.preventDefault();
                     var form = new FormData($(this)[0]);
@@ -10150,6 +10268,9 @@ function render_column_selection_widget($view) {
                         processData: false,
                         success: function(data){
                             $('#setting_modal-{$view}').modal('hide');
+                            if(data.status_message){
+                                showAlertsFromArray(data.status_message);
+                            }
                             document.location.reload(true);
                         },
                         error: function(xhr,status,error){
@@ -10964,35 +11085,11 @@ function render_view_table($view) {
         // Only render the search field if in the configuration it's set as searchable or it's a custom field which as of now always searchable
         if ((!empty($field_settings[$view_type][$field_name]['searchable']) && $field_settings[$view_type][$field_name]['searchable']) || str_starts_with($field_name, 'custom_field_')) {
 
-            // render-related logic
+            // render-related logic for views
             $filter_field = "";
-            switch($field_name) {
-                case 'mitigation_planned':
-                    $filter_field = "
-                        <select name='mitigation_planned'>
-                            <option value=''>--</option>
-                            <option value='{$escaper->escapeHtml($lang['Yes'])}'>{$escaper->escapeHtml($lang['Yes'])}</option>
-                            <option value='{$escaper->escapeHtml($lang['No'])}'>{$escaper->escapeHtml($lang['No'])}</option>
-                        </select>
-                    ";
-                    break;
-                case 'management_review':
-                    $filter_field = "
-                        <select name='management_review'>
-                            <option value=''>--</option>
-                            <option value='{$escaper->escapeHtml($lang['Yes'])}'>{$escaper->escapeHtml($lang['Yes'])}</option>
-                            <option value='{$escaper->escapeHtml($lang['No'])}'>{$escaper->escapeHtml($lang['No'])}</option>
-                            <option value='{$escaper->escapeHtml($lang['PASTDUE'])}'>{$escaper->escapeHtml($lang['PASTDUE'])}</option>
-                        </select>
-                    ";
-                    break;
-                default:
-                    $filter_field = "
-                        <input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control' style='max-width: unset;'>
-                    ";
-                    break;
-            }
             
+            $filter_field = get_filter_field_for_views($view, $field_name, $localizations);
+
             $filter_header_row .= "
                 <th data-column-number='{$field_idx}' data-name='{$field_name}' align='left' style='{$style}'>{$filter_field}</th>
             ";
@@ -11038,7 +11135,9 @@ function render_view_table($view) {
     " : "
                     ordering: false,
     ") .
-                    "ajax: {
+    ((!empty($field_settings_views[$view]['datatable_options']) && $field_settings_views[$view]['datatable_options']) ? 
+                    $field_settings_views[$view]['datatable_options'] : "") . "
+                    ajax: {
                         url: BASE_URL + '{$field_settings_views[$view]['datatable_ajax_uri']}',
                         type: 'post',
                         data: function(d){ },
@@ -11091,11 +11190,14 @@ function render_view_table($view) {
         if ($datatable_data_type_associative) {
             echo "
                         {
-                            'data': '{$field_name}{$display_post_fix}', 'searchable': {$searchable}, 
+                            'data': '{$field_name}{$display_post_fix}', 
+                            'searchable': {$searchable}, 
                             'orderable': {$orderable}" . 
                             ($class_name ? ", 
-                            'className': '{$class_name}'" : "") . ($renderer ? ", 
-                            'render': {$renderer}" : "") . ", 'defaultContent': ''
+                            'className': '{$class_name}'" : "") . 
+                            ($renderer ? ", 
+                            'render': {$renderer}" : "") . ", 
+                            'defaultContent': ''
                         },
             ";
         } else {
@@ -11105,8 +11207,10 @@ function render_view_table($view) {
                             'searchable': {$searchable}, 
                             'orderable': {$orderable}" . 
                             ($class_name ? ", 
-                            'className': '{$class_name}'" : "") . ($renderer ? ", 
-                            'render': {$renderer}" : "") . ", 'defaultContent': ''
+                            'className': '{$class_name}'" : "") . 
+                            ($renderer ? ", 
+                            'render': {$renderer}" : "") . ", 
+                            'defaultContent': ''
                         },
             ";
         }
@@ -11174,13 +11278,23 @@ function render_view_table($view) {
                 });
 
                 var filter_submit_timer;
-                $('body').on('change input', '#{$datatable_id}_wrapper tr.header_filter input, #{$datatable_id}_wrapper tr.header_filter select', function () {
+                // we should attach this event handler to the only elements in the filter part of the table header not a dropdown menu.
+                $('body').on('change input', '#{$datatable_id}_wrapper tr.header_filter input:not(.multiselect-container.dropdown-menu *), #{$datatable_id}_wrapper tr.header_filter select:not(.multiselect-container.dropdown-menu *)', function () {
                     clearTimeout(filter_submit_timer);
-                    var val = this.value;
+
+                    // Retrieve all selected values for multi-select
+                    var _val;
+                    if ($(this).is('select[multiple]')) {
+                        // Get all selected options
+                        _val = $(this).val();
+                    } else {
+                        // For single inputs or non-multi-selects
+                        _val = this.value;
+                    }
                     var column_number = $(this).closest('th').attr('data-column-number');
-                    if (datatableInstances['{$view}'].column(column_number).search() !== this.value) {
+                    if (datatableInstances['{$view}'].column(column_number).search() !== _val) {
                         filter_submit_timer = setTimeout(function() {
-                          datatableInstances['{$view}'].column(column_number).search(val).draw();
+                          datatableInstances['{$view}'].column(column_number).search(_val).draw();
                         }, {$datatable_filter_submit_delay});
                     }
                 });

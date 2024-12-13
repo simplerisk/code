@@ -25,7 +25,7 @@ class Config
         'log.level' => null,
         'log.enabled' => false,
         'log.dir' => __DIR__ . '/../../../../storage/logs/',
-        'log.file' => 'log.txt',
+        'log.file' => 'app.log',
         'log.open' => true,
         'mode' => 'development',
         'scripts' => [],
@@ -216,7 +216,7 @@ class Config
 
     protected static function getDiIndex($class)
     {
-        $fullName = \explode("\\", \strtolower(\get_class($class)));
+        $fullName = \explode('\\', \strtolower(\get_class($class)));
         $className = $fullName[\count($fullName) - 1];
 
         return $className;

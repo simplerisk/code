@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'Lêeroplaai het misluk: Onbekende foute',
     'DynamicIncidentReport' => 'Dinamiese voorvalverslag',
     'FilteringSelections' => 'Filterkeuses',
+    'ProcessingPleaseWait' => 'Verwerking. Wag asseblief!',
+    'PleaseEnterAValidPhoneNumber' => 'Voer asseblief \'n geldige telefoonnommer in',
 
     '' => '',
 );

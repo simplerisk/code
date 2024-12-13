@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'La càrrega del fitxer ha fallat: errors desconeguts',
     'DynamicIncidentReport' => 'Informe d\'incidències dinàmiques',
     'FilteringSelections' => 'Seleccions de filtratge',
+    'ProcessingPleaseWait' => 'Tramitació. Si us plau, espereu!',
+    'PleaseEnterAValidPhoneNumber' => 'Introduïu un número de telèfon vàlid',
 
     '' => '',
 );

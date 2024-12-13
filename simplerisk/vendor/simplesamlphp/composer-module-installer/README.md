@@ -1,4 +1,4 @@
-# SimpleSAMLphpSimpleSAMLphp Composer module installer
+# SimpleSAMLphp Composer module installer
 
 ![Build Status](https://github.com/simplesamlphp/composer-module-installer/workflows/CI/badge.svg?branch=master)
 [![Coverage Status](https://codecov.io/gh/simplesamlphp/composer-module-installer/branch/master/graph/badge.svg)](https://codecov.io/gh/simplesamlphp/composer-module-installer)

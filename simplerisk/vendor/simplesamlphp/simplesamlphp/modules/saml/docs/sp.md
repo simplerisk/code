@@ -97,11 +97,13 @@ The following attributes are available:
 :   Note that this option can be overridden for a specific IdP in saml20-idp-remote.
 
 `AssertionConsumerService`
-:   List of Assertion Consumer Services in the generated metadata. Specified in the array of
-    arrays format as seen in the [Metadata endpoints](./simplesamlphp-metadata-endpoints)
-    documentation. Note that this list is taken at face value, so it's not useful to list
-    anything here that the SP auth source does not actually support (unless the URLs point
-    externally).
+
+:   List of Assertion Consumer Services in the generated metadata.
+    Specified in the format detailed in the
+    [Metadata endpoints](./simplesamlphp-metadata-endpoints) documentation.
+    Note that this list is taken at face value, so it's not useful to
+    list anything here that the SP auth source does not actually
+    support (unless the URLs point externally).
 
 `AssertionConsumerServiceIndex`
 :   The Assertion Consumer Service Index to be used in the AuthnRequest in place of the Assertion
@@ -327,6 +329,10 @@ The following attributes are available:
 
 `RelayState`
 :   The page the user should be redirected to after an IdP initiated SSO.
+
+`RequestInitiation`
+:   Enable the [Service Provider Request Initiation Protocol](https://wiki.oasis-open.org/security/RequestInitProtProf).
+    To validate the `target` the `trusted.url.domains` configuration option has to be used.
 
 `saml.SOAPClient.certificate`
 :   A file with a certificate *and* private key that should be used when issuing SOAP requests from this SP.

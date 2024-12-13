@@ -9,6 +9,7 @@ namespace Leaf;
  * ----
  * Leaf's form validation library
  *
+ * @version 3.0.0
  * @since 1.0.0
  */
 class Form
@@ -16,13 +17,13 @@ class Form
     /**
      * Validation errors
      */
-    protected static $errors = [];
+    protected $errors = [];
 
     /**
      * Validation rules
      */
-    protected static $rules = [
-        'required' => '/.+/',
+    protected $rules = [
+        'optional' => '/^.*$/',
         'email' => '/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/',
         'alpha' => '/^[a-zA-Z\s]+$/',
         'text' => '/^[a-zA-Z\s]+$/',
@@ -39,7 +40,7 @@ class Form
         'match' => '/^%s$/',
         'contains' => '/%s/',
         'boolean' => '/^(true|false|1|0)$/',
-        'in' => '/^(%s)$/',
+        'truefalse' => '/^(true|false)$/',
         'ip' => '/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/',
         'ipv4' => '/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/',
         'ipv6' => '/^([a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}$/',
@@ -54,33 +55,31 @@ class Form
     ];
 
     /**
-     * Special validation rules
-     */
-    protected static $specialRules = [
-        'array',
-    ];
-
-    /**
      * Validation error messages
      */
-    protected static $messages = [
+    protected $messages = [
         'required' => '{Field} is required',
         'email' => '{Field} must be a valid email address',
         'alpha' => '{Field} must contain only alphabets and spaces',
         'text' => '{Field} must contain only alphabets and spaces',
+        'string' => '{Field} must contain only alphabets and spaces',
         'textonly' => '{Field} must contain only alphabets',
         'alphanum' => '{Field} must contain only alphabets and numbers',
         'alphadash' => '{Field} must contain only alphabets, numbers, dashes and underscores',
         'username' => '{Field} must contain only alphabets, numbers and underscores',
         'number' => '{Field} must contain only numbers',
-        'float' => '{Field} must contain only numbers',
+        'numeric' => '{Field} must be numeric',
+        'float' => '{Field} must contain only floating point numbers',
+        'hardfloat' => '{Field} must contain only floating point numbers',
         'date' => '{Field} must be a valid date',
         'min' => '{Field} must be at least %s characters long',
         'max' => '{Field} must not exceed %s characters',
         'between' => '{Field} must be between %s and %s characters long',
         'match' => '{Field} must match the %s field',
+        'matchesvalueof' => '{Field} must match the value of %s',
         'contains' => '{Field} must contain %s',
         'boolean' => '{Field} must be a boolean',
+        'truefalse' => '{Field} must be a boolean',
         'in' => '{Field} must be one of the following: %s',
         'notin' => '{Field} must not be one of the following: %s',
         'ip' => '{Field} must be a valid IP address',
@@ -97,164 +96,254 @@ class Form
         'array' => '{field} must be an array',
     ];
 
-    /**
-     * Validate a single rule
-     *
-     * @param string $rule The rule to validate against
-     * @param mixed $value The value to validate
-     * @param mixed $param The rule parameter
-     *
-     * @return bool
-     */
-    public static function test(string $rule, $value, $param = null, $field = null): bool
+    public function __construct()
     {
-        $rule = strtolower($rule);
+        $this->rules['array'] = function ($value, $internalRules = null, $fieldName = null) {
+            $isArray = is_array($value);
 
-        if (strpos($rule, '(') !== false) {
-            $ruleData = explode('(', $rule);
-            $rule = $ruleData[0];
-
-            if (in_array($rule, static::$specialRules)) {
-                $params = array_filter(explode('|', str_replace(['(', ')'], '', $ruleData[1])));
-
-                if ($rule === 'array') {
-                    if (!is_array($value)) {
-                        return false;
-                    }
-
-                    $isValid = true;
-
-                    if (count($params) > 0) {
-                        foreach ($params as $paramValue) {
-                            foreach ($value as $valueArrayItem) {
-                                if (!static::test($paramValue, $valueArrayItem)) {
-                                    $isValid = false;
-                                }
-                            }
+            if ($isArray) {
+                foreach ($value as $valueItem) {
+                    if ($internalRules) {
+                        if (!$this->test($internalRules, $valueItem, $fieldName)) {
+                            // we're tricking leaf into not adding the second error message by returning true here
+                            // this is because we're already adding the error message in the test method
+                            return true;
                         }
                     }
+                }
+            }
 
-                    return $isValid;
+            return $isArray;
+        };
+
+        $this->rules['string'] = function ($value) {
+            return is_string($value);
+        };
+
+        $this->rules['hardfloat'] = function ($value) {
+            return is_float($value);
+        };
+
+        $this->rules['numeric'] = function ($value) {
+            return is_numeric($value);
+        };
+
+        $this->rules['in'] = function ($value, $param) {
+            return in_array($value, $param);
+        };
+
+        $this->rules['matchesvalueof'] = function ($value, $param) {
+            return \Leaf\Http\Request::get($param) === $value;
+        };
+    }
+
+    protected function test($rule, $valueToTest, $fieldName = 'item'): bool
+    {
+        $expandedErrors = false;
+
+        if (is_string($rule)) {
+            $rule = preg_match_all('/[^|<>]+(?:<[^>]+>)?/', $rule, $matches);
+            $rule = $matches[0];
+        }
+
+        if (in_array('optional', $rule) && empty($valueToTest)) {
+            return true;
+        }
+
+        if (in_array('expanded', $rule)) {
+            $expandedErrors = true;
+        }
+
+        foreach ($rule as $currentRule) {
+            $param = [];
+
+            $currentRule = strtolower($currentRule);
+
+            if ($currentRule === 'optional') {
+                continue;
+            }
+
+            if ($currentRule === 'expanded') {
+                continue;
+            }
+
+            if (preg_match('/^[a-zA-Z]+<(.*(\|.*)*)>$/', $currentRule)) {
+                $ruleParts = explode('<', $currentRule);
+                $ruleParams = str_replace('>', '', $ruleParts[1]);
+
+                $currentRule = $ruleParts[0];
+                $param = $ruleParams;
+            }
+
+
+            if (strpos($currentRule, ':') !== false && strpos($currentRule, '|') === false) {
+                $ruleParts = explode(':', $currentRule);
+
+                $currentRule = trim($ruleParts[0]);
+                $param = $ruleParts[1] ? trim($ruleParts[1]) : null;
+            }
+
+            if (is_string($param) && preg_match('/\[(.*)\]/', $param, $matches) && strpos($param, '|') === false) {
+                $param = explode(',', $matches[1]);
+            }
+
+            if (!isset($this->rules[$currentRule])) {
+                throw new \Exception("Rule $currentRule does not exist");
+            }
+
+            if (!$valueToTest) {
+                if ($expandedErrors) {
+                    $this->addError($fieldName, str_replace(
+                        ['{field}', '{Field}', '{value}'],
+                        [$fieldName, ucfirst($fieldName), is_array($valueToTest) ? json_encode($valueToTest) : $valueToTest],
+                        $this->messages['required'] ?? '{Field} is invalid!'
+                    ));
+                } else {
+                    $this->errors[$fieldName] = str_replace(
+                        ['{field}', '{Field}', '{value}'],
+                        [$fieldName, ucfirst($fieldName), is_array($valueToTest) ? json_encode($valueToTest) : $valueToTest],
+                        $this->messages['required'] ?? '{Field} is invalid!'
+                    );
+                }
+
+                return false;
+            }
+
+            if (is_callable($this->rules[$currentRule])) {
+                if (!call_user_func($this->rules[$currentRule], $valueToTest, $param, $fieldName)) {
+                    if (empty($param)) {
+                        $param = ['Item'];
+                    }
+
+                    if (!is_array($param)) {
+                        $param = [$param];
+                    }
+
+                    if ($expandedErrors) {
+                        $this->addError($fieldName, sprintf(
+                            str_replace(
+                                ['{field}', '{Field}', '{value}'],
+                                [$fieldName, ucfirst($fieldName), is_array($valueToTest) ? json_encode($valueToTest) : $valueToTest],
+                                $this->messages[$currentRule] ?? '{Field} is invalid!'
+                            ),
+                            ...$param,
+                        ));
+                    } else {
+                        $this->errors[$fieldName] = sprintf(
+                            str_replace(
+                                ['{field}', '{Field}', '{value}'],
+                                [$fieldName, ucfirst($fieldName), is_array($valueToTest) ? json_encode($valueToTest) : $valueToTest],
+                                $this->messages[$currentRule] ?? '{Field} is invalid!'
+                            ),
+                            ...$param,
+                        );
+                    }
+                }
+
+                continue;
+            }
+
+            if (!is_array($param)) {
+                $param = [$param];
+            }
+
+            if (is_float($valueToTest)) {
+                $valueToTest = json_encode($valueToTest, JSON_PRESERVE_ZERO_FRACTION);
+            }
+
+            if (
+                !filter_var(
+                    preg_match(sprintf($this->rules[$currentRule], ...$param), (string) $valueToTest),
+                    FILTER_VALIDATE_BOOLEAN
+                )
+            ) {
+                if ($expandedErrors) {
+                    $this->addError($fieldName, sprintf(
+                        str_replace(
+                            ['{field}', '{Field}', '{value}'],
+                            [$fieldName, ucfirst($fieldName), is_array($valueToTest) ? json_encode($valueToTest) : $valueToTest],
+                            $this->messages[$currentRule] ?? '{Field} is invalid!'
+                        ),
+                        ...$param,
+                    ));
+                } else {
+                    $this->errors[$fieldName] = sprintf(
+                        str_replace(
+                            ['{field}', '{Field}', '{value}'],
+                            [$fieldName, ucfirst($fieldName), is_array($valueToTest) ? json_encode($valueToTest) : $valueToTest],
+                            $this->messages[$currentRule] ?? '{Field} is invalid!'
+                        ),
+                        ...$param,
+                    );
                 }
             }
         }
 
-        if (!isset(static::$rules[$rule])) {
-            throw new \Exception("Rule $rule does not exist");
-        }
+        return empty($this->errors);
+    }
 
-        $param = is_string($param) ? trim($param, '()') : $param;
-        $param = eval("return $param;");
+    /**
+     * Validate a single rule
+     *
+     * @param string|array $rule The rule(s) to validate against
+     * @param mixed $valueToTest The value to validate
+     * @param mixed $fieldName The rule parameter
+     *
+     * @return bool
+     */
+    public function validateRule($rule, $valueToTest, $fieldName = 'item'): bool
+    {
+        $this->errors = [];
 
-        if (is_callable(static::$rules[$rule])) {
-            return call_user_func(static::$rules[$rule], $value, $param, $field);
-        }
-
-        if (!is_array($param)) {
-            $param = [$param];
-        }
-
-        return filter_var(
-            preg_match(sprintf(static::$rules[$rule], ...$param), "$value"),
-            FILTER_VALIDATE_BOOLEAN
-        );
+        return $this->test($rule, $valueToTest, $fieldName);
     }
 
     /**
      * Validate form data
      *
-     * @param array $data The data to validate
-     * @param array $rules The rules to validate against
+     * @param array $dataSource The data to validate
+     * @param array $validationSet The rules to validate against
      *
      * @return false|array Returns false if validation fails, otherwise returns the validated data
      */
-    public static function validate(array $data, array $rules)
+    public function validate(array $dataSource, array $validationSet)
     {
-        $output = $data;
+        // clear previous errors
+        $this->errors = [];
 
-        foreach ($rules as $field => $userRules) {
-            if (is_string($userRules)) {
-                if (strpos($userRules, '(') !== false) {
-                    $pattern = '/(array\([^)]+\))\|(\w+)/';
+        $output = [];
 
-                    if (preg_match($pattern, $userRules, $matches)) {
-                        $userRules = [$matches[1], ...explode('|', strtolower($matches[2]))];
-                    } else {
-                        $userRules = explode('|', strtolower($userRules));
-                    }
-                } else {
-                    $userRules = explode('|', strtolower($userRules));
-                }
+        foreach ($validationSet as $itemToValidate => $userRules) {
+            if (empty($userRules)) {
+                $output[$itemToValidate] = Anchor::deepGetDot($dataSource, $itemToValidate);
+
+                continue;
             }
 
-            if (in_array('optional', $userRules)) {
-                $userRules = array_filter($userRules, function ($rule) {
-                    return $rule !== 'optional';
-                });
+            $endsWithWildcard = substr($itemToValidate, -1) === '*';
+            $itemToValidate = $endsWithWildcard ? substr($itemToValidate, 0, -1) : $itemToValidate;
 
-                if (!isset($data[$field])) {
-                    continue;
-                }
-            }
+            $value = Anchor::deepGetDot($dataSource, $itemToValidate);
 
-            foreach ($userRules as $rule) {
-                if (empty($rule)) {
-                    continue;
-                }
-
-                $rule = explode(':', $rule);
-                $rule[0] = trim($rule[0]);
-
-                if (count($rule) > 1) {
-                    $rule[1] = trim($rule[1]);
-                }
-
-                $value = Form::getDotNotatedValue($data, $field);
-
-                if (!static::test($rule[0], $value, $rule[1] ?? null, $field)) {
-                    $params = is_string($rule[1] ?? null) ? trim($rule[1], '()') : ($rule[1] ?? null);
-                    $params = eval("return $params;");
-
-                    if (!is_array($params)) {
-                        $params = [$params];
+            if (!$this->test($userRules, $value, $itemToValidate)) {
+                $output = false;
+            } elseif ($output !== false && !$endsWithWildcard) {
+                if (
+                    (is_array($userRules) && in_array('optional', $userRules))
+                    || (is_string($userRules) && strpos($userRules, 'optional') !== false)
+                ) {
+                    if (Anchor::deepGetDot($dataSource, $itemToValidate) !== null) {
+                        $output = Anchor::deepSetDot($output, $itemToValidate, $value);
                     }
 
-                    $errorMessage = str_replace(
-                        ['{field}', '{Field}', '{value}'],
-                        [$field, ucfirst($field), is_array($value) ? json_encode($value) : $value],
-                        static::$messages[$rule[0]] ?? static::$messages[explode('(', $rule[0])[0] ?? 'any'] ?? '{Field} is invalid!'
-                    );
-
-                    static::addError($field, sprintf($errorMessage, ...$params));
-
-                    $output = false;
+                    continue;
                 }
+
+                $output = Anchor::deepSetDot($output, $itemToValidate, $value);
             }
         }
 
         return $output;
-    }
-
-    /**
-     * Get the value from a nested array by key.
-     *
-     * @param array $array The array to search in.
-     * @param string $key The key to search for.
-     * @return mixed|null The value if found, null otherwise.
-     */
-    public static function getDotNotatedValue($array, $key)
-    {
-        $keys = explode('.', $key);
-
-        foreach ($keys as $k) {
-            if (!isset($array[$k])) {
-                return null;
-            }
-
-            $array = $array[$k];
-        }
-
-        return $array;
     }
 
     /**
@@ -263,10 +352,10 @@ class Form
      * @param string|callable $handler The rule handler
      * @param string|null $message The error message
      */
-    public static function addRule(string $name, $handler, ?string $message = null)
+    public function addRule(string $name, $handler, ?string $message = null)
     {
-        static::$rules[strtolower($name)] = $handler;
-        static::$messages[strtolower($name)] = $message ?? "%s is invalid!";
+        $this->rules[strtolower($name)] = $handler;
+        $this->messages[strtolower($name)] = $message ?? '%s is invalid!';
     }
 
     /**
@@ -275,9 +364,9 @@ class Form
      * @param string|callable $handler The rule handler
      * @param string|null $message The error message
      */
-    public static function rule(string $name, $handler, ?string $message = null)
+    public function rule(string $name, $handler, ?string $message = null)
     {
-        static::addRule($name, $handler, $message);
+        $this->addRule($name, $handler, $message);
     }
 
     /**
@@ -285,11 +374,21 @@ class Form
      * @param string|array $field The field to add the message to
      * @param string|null $message The error message if $field is a string
      */
-    public static function addMessage($field, ?string $message = null)
+    public function addErrorMessage($field, ?string $message = null)
+    {
+        return $this->addMessage($field, $message);
+    }
+
+    /**
+     * Add validation error message
+     * @param string|array $field The field to add the message to
+     * @param string|null $message The error message if $field is a string
+     */
+    public function addMessage($field, ?string $message = null)
     {
         if (is_array($field)) {
             foreach ($field as $key => $value) {
-                static::$messages[$key] = $value;
+                $this->messages[$key] = $value;
             }
 
             return;
@@ -299,18 +398,18 @@ class Form
             throw new \Exception('Message cannot be empty');
         }
 
-        static::$messages[$field] = $message;
+        $this->messages[$field] = $message;
     }
 
     /**
      * Directly 'submit' a form without having to work with any mark-up
      */
-    public static function submit(string $method, string $action, array $fields)
+    public function submit(string $method, string $action, array $fields)
     {
         $form_fields = '';
 
         foreach ($fields as $key => $value) {
-            $form_fields = $form_fields . "<input type=\"hidden\" name=\"$key\" value=" . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . ">";
+            $form_fields = $form_fields . "<input type=\"hidden\" name=\"$key\" value=" . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . '>';
         }
 
         echo "
@@ -319,7 +418,7 @@ class Form
 		";
     }
 
-    public static function isEmail($value): bool
+    public function isEmail($value): bool
     {
         return !!filter_var($value, 274);
     }
@@ -329,9 +428,9 @@ class Form
      * @param string|array $field The field to add the message to
      * @param string|null $message The error message if $field is a string
      */
-    public static function message($field, ?string $message = null)
+    public function message($field, ?string $message = null)
     {
-        static::addMessage($field, $message);
+        $this->addMessage($field, $message);
     }
 
     /**
@@ -339,30 +438,30 @@ class Form
      * @param string $field The field that has an error
      * @param string $error The error message
      */
-    public static function addError(string $field, string $error)
+    public function addError(string $field, string $error)
     {
-        if (!isset(static::$errors[$field])) {
-            static::$errors[$field] = [];
+        if (!isset($this->errors[$field])) {
+            $this->errors[$field] = [];
         }
 
-        array_push(static::$errors[$field], $error);
+        array_push($this->errors[$field], $error);
     }
 
     /**
      * Get a list of all supported rules.
      * @return array
      */
-    public static function supportedRules(): array
+    public function supportedRules(): array
     {
-        return array_keys(static::$rules);
+        return array_keys($this->rules);
     }
 
     /**
      * Get validation errors
      * @return array
      */
-    public static function errors(): array
+    public function errors(): array
     {
-        return static::$errors;
+        return $this->errors;
     }
 }

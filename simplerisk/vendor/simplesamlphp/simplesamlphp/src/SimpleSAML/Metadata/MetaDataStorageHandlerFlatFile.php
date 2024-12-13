@@ -31,6 +31,13 @@ class MetaDataStorageHandlerFlatFile extends MetaDataStorageSource
 
 
     /**
+     * Optional explicit file path to load metadata from
+     *
+     * @var string
+     */
+    private ?string $file = null;
+
+    /**
      * This is an associative array which stores the different metadata sets we have loaded.
      *
      * @var array
@@ -44,6 +51,7 @@ class MetaDataStorageHandlerFlatFile extends MetaDataStorageSource
      * possible elements:
      * - 'directory': The directory we should load metadata from. The default directory is
      *                set in the 'metadatadir' configuration option in 'config.php'.
+     * - 'file': full path to load metadata from. This is used by the MetaDataStorageHandlerDirectory class.
      *
      * @param array $config An associative array with the configuration for this handler.
      */
@@ -59,6 +67,10 @@ class MetaDataStorageHandlerFlatFile extends MetaDataStorageSource
             $this->directory = $config['directory'] ?: 'metadata/';
         } else {
             $this->directory = $globalConfig->getOptionalString('metadatadir', 'metadata/');
+        }
+
+        if (array_key_exists('file', $config)) {
+            $this->file = $globalConfig->resolvePath($config['file']);
         }
 
         /* Resolve this directory relative to the SimpleSAMLphp directory (unless it is
@@ -84,6 +96,9 @@ class MetaDataStorageHandlerFlatFile extends MetaDataStorageSource
     private function load(string $set): ?array
     {
         $metadatasetfile = $this->directory . $set . '.php';
+        if ($this->file) {
+            $metadatasetfile = $this->file;
+        }
 
         if (!$this->fileSystem->exists($metadatasetfile)) {
             return null;

@@ -95,18 +95,20 @@ abstract class MetaDataStorageSource
                 return new Sources\MDQ($sourceConfig);
             case 'pdo':
                 return new MetaDataStorageHandlerPdo($sourceConfig);
+            case 'directory':
+                return new MetaDataStorageHandlerDirectory($sourceConfig);
             default:
                 // metadata store from module
                 try {
                     $className = Module::resolveClass(
                         $type,
                         'MetadataStore',
-                        '\SimpleSAML\Metadata\MetaDataStorageSource'
+                        '\SimpleSAML\Metadata\MetaDataStorageSource',
                     );
                 } catch (\Exception $e) {
                     throw new Error\CriticalConfigurationError(
                         "Invalid 'type' for metadata source. Cannot find store '$type'.",
-                        null
+                        null,
                     );
                 }
 

@@ -1,34 +1,27 @@
-#audit-timeline_wrapper{
-    .links{
-        margin-top: 10px;
-        font-size: 16px;
-        text-transform: none;
+//************************* REPORTING > RISKS AND ASSETS BEGIN ************************//
+#risks_and_assets_table_container {
+    table {
+        &:last-of-type {
+            margin-bottom: 0 !important;
+        }
+    }
+}
+//************************** REPORTING > RISKS AND ASSETS END *************************//
+
+//************************ REPORTING > RISKS AND CONTROLS BEGIN ***********************//
+#risks_and_controls_selections_container {
+    div.row {
+        &:last-of-type {
+            margin-bottom: 0;
+        }
     }
 }
 
-.high-risk-report-score-warning {
-    font-size: 0.9em;
-    color: red;
-}
-
-.sub-filter-box-1{
-    width: 55px !important;
-}
-
-.sub-filter-box-2{
-    width: calc(100% - 65px) !important;
-}
-
-
 .risks-and-controls-report {
-	.control-block--header {
-		padding: 10px;
-	}
-	.control-block--row {
-		padding-bottom: 0px;
-
-		.table.table-bordered {
-			margin-bottom: 0px;
-		}
-	}
+    table {
+        &:last-of-type {
+            margin-bottom: 0 !important;
+        }
+    }
 }
+//************************* REPORTING > RISKS AND CONTROLS END ************************//

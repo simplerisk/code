@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => '文件上傳失敗：未知錯誤',
     'DynamicIncidentReport' => '動態事件報告',
     'FilteringSelections' => '過濾選擇',
+    'ProcessingPleaseWait' => '加工。請稍等！',
+    'PleaseEnterAValidPhoneNumber' => '請輸入有效的電話號碼',
 
     '' => '',
 );

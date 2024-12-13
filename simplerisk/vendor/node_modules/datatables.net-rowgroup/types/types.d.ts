@@ -7,9 +7,11 @@
 
 /// <reference types="jquery" />
 
-import DataTables, {Api} from 'datatables.net';
+import DataTables, {Api, ApiRowMethods} from 'datatables.net';
 
 export default DataTables;
+
+type DataSrc = string | number | Array<number | string>;
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -69,7 +71,7 @@ interface ConfigRowGroup {
 	/**
 	 * Set the data point to use as the grouping data source
 	 */
-	dataSrc?: number|string;
+	dataSrc?: DataSrc;
 
 	/**
 	 * Text to show for rows which have `null`, `undefined` or empty string group data
@@ -91,7 +93,7 @@ interface ConfigRowGroup {
 	/**
 	 * Provide a function that can be used to control the data shown in the end grouping row
 	 */
-	endRender?: (rows: Api<any>, group: string) => string|HTMLElement|JQuery;
+	endRender?: (rows: ApiRowMethods<any>, group: string, level: number) => string|HTMLElement|JQuery;
 
 	/**
 	 * Set the class name to be used for the start grouping rows
@@ -101,7 +103,7 @@ interface ConfigRowGroup {
 	/**
 	 * Provide a function that can be used to control the data shown in the start grouping row
 	 */
-	startRender?: (rows: Api<any>, group: string) => string|HTMLElement|JQuery;
+	startRender?: (rows: ApiRowMethods<any>, group: string, level: number) => string|HTMLElement|JQuery;
 }
 
 
@@ -111,7 +113,7 @@ interface ApiRowGroup<T> extends Api<T> {
 	 * 
 	 * @returns Data source property
 	 */
-	dataSrc(): number | string;
+	dataSrc(): DataSrc;
 
 	/**
 	 * Set the data source for the row grouping
@@ -119,7 +121,7 @@ interface ApiRowGroup<T> extends Api<T> {
 	 * @param prop Data source property
 	 * @returns DataTables Api instance
 	 */
-	dataSrc(prop: number|string): Api<T>;
+	dataSrc(prop: DataSrc): Api<T>;
 
 	/**
 	 * Disable RowGroup's interaction with the table

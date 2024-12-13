@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => '파일 업로드 실패: 알 수 없는 오류',
     'DynamicIncidentReport' => '동적 사고 보고서',
     'FilteringSelections' => '선택 필터링',
+    'ProcessingPleaseWait' => '처리 중입니다. 잠시만 기다려 주세요!',
+    'PleaseEnterAValidPhoneNumber' => '유효한 전화번호를 입력하세요.',
 
     '' => '',
 );

@@ -150,7 +150,7 @@ if (api_v2_is_authenticated())
     app()->post('/assessment/update', 'updateAssessment');
 
     app()->post('/datatable/framework_controls', 'getFrameworkControlsDatatable');
-    app()->get('/datatable/mitigation_controls', 'getMitigationControlsDatatable');
+    app()->post('/datatable/mitigation_controls', 'getMitigationControlsDatatable');
     app()->get('/role_responsibilities/get_responsibilities', 'getResponsibilitiesByRoleIdForm');
 
     /******************** Risk Management Datatatable API **********************/
@@ -184,7 +184,7 @@ if (api_v2_is_authenticated())
     app()->post('/governance/add_control', 'addControlResponse');
     app()->post('/governance/update_control', 'updateControlResponse');
 
-    app()->get('/compliance/define_tests', 'getDefineTestsResponse');
+    app()->post('/compliance/define_tests', 'getDefineTestsResponse');
     app()->get('/compliance/test', 'getTestResponse');
     app()->get('/compliance/initiate_audits', 'getInitiateTestAuditsResponse');
     app()->post('/compliance/active_audits', 'getActiveTestAuditsResponse');
@@ -321,6 +321,10 @@ if (api_v2_is_authenticated())
 
     // Enable / disable the Incident Management Extra
     app()->post('/admin/incidentmanagement', 'incidentManagementAPI');
+
+    /************************** DATATABLE API BEGIN *******************************/
+    app()->post('/get/datatable', 'getDatatableAPI');
+    /*************************** DATATABLE API END ********************************/
 
     /************************** SIMPLERISK EXTRAS APIS ************************************/
 

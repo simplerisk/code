@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'Tiedoston lataus epäonnistui: Tuntemattomia virheitä',
     'DynamicIncidentReport' => 'Dynaaminen tapausraportti',
     'FilteringSelections' => 'Valintojen suodatus',
+    'ProcessingPleaseWait' => 'Käsittely. Odota!',
+    'PleaseEnterAValidPhoneNumber' => 'Anna kelvollinen puhelinnumero',
 
     '' => '',
 );

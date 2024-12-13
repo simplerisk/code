@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'फ़ाइल अपलोड विफल: अज्ञात त्रुटियाँ',
     'DynamicIncidentReport' => 'गतिशील घटना रिपोर्ट',
     'FilteringSelections' => 'चयन फ़िल्टर करना',
+    'ProcessingPleaseWait' => 'प्रसंस्करण जारी है। कृपया प्रतीक्षा करें!',
+    'PleaseEnterAValidPhoneNumber' => 'एक मान्य दूरभाष क्रमांक दर्ज करे',
 
     '' => '',
 );

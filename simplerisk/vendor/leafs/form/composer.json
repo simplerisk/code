@@ -1,48 +1,53 @@
 {
-  "name": "leafs/form",
-  "description": "Simple straightup data validation",
-  "keywords": [
-    "form",
-    "validation",
-    "leaf",
-    "php",
-    "framework"
-  ],
-  "homepage": "https://leafphp.dev/modules/forms/",
-  "type": "library",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Michael Darko",
-      "email": "mickdd22@gmail.com",
-      "homepage": "https://mychi.netlify.app",
-      "role": "Developer"
-    }
-  ],
-  "autoload": {
-    "psr-4": {
-      "Leaf\\": "src"
+    "name": "leafs/form",
+    "description": "Simple straightup data validation",
+    "keywords": [
+        "form",
+        "validation",
+        "leaf",
+        "php",
+        "framework"
+    ],
+    "homepage": "https://leafphp.dev/modules/forms/",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Michael Darko",
+            "email": "mickdd22@gmail.com",
+            "homepage": "https://mychi.netlify.app",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Leaf\\": "src"
+        },
+        "files": [
+            "src/functions.php"
+        ]
     },
-    "files": [
-      "src/functions.php"
-    ]
-  },
-  "minimum-stability": "dev",
-  "prefer-stable": true,
-  "require": {
-    "ext-json": "*"
-  },
-  "require-dev": {
-    "pestphp/pest": "^1.22",
-    "friendsofphp/php-cs-fixer": "^3.0"
-  },
-  "scripts": {
-    "format": "vendor/bin/php-cs-fixer fix --config=.php_cs.dist.php --allow-risky=yes",
-    "test": "vendor/bin/pest"
-  },
-  "config": {
-    "allow-plugins": {
-      "pestphp/pest-plugin": true
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "ext-json": "*",
+        "leafs/anchor": "*"
+    },
+    "require-dev": {
+        "pestphp/pest": "^1.22",
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "leafs/alchemy": "^2.1"
+    },
+    "scripts": {
+        "format": "vendor/bin/php-cs-fixer fix --config=.php_cs.dist.php --allow-risky=yes",
+        "test": "./vendor/bin/alchemy setup --test",
+        "alchemy": "./vendor/bin/alchemy setup",
+        "lint": "./vendor/bin/alchemy setup --lint",
+        "actions": "./vendor/bin/alchemy setup --actions"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
     }
-  }
 }

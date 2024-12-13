@@ -2,43 +2,34 @@
 
 declare(strict_types=1);
 
-use Leaf\Form;
-
-test('special validation rules don\'t throw errors when used', function () {
-    $itemsToValidate = ['specialItem' => ['wrong', 'wrong2', 'right@example.com']];
-
-    Form::validate($itemsToValidate, ['specialItem' => 'array(email)']);
-
-    expect(Form::errors())->toHaveKey('specialItem');
-});
-
-test('array() can be used to validate arrays', function () {
+test('array<> can be used to validate arrays', function () {
     $itemsToValidate = ['specialItem2' => 'wrong', 'specialItem3' => ['item here']];
 
-    Form::validate($itemsToValidate, ['specialItem2' => 'array()']);
+    $success = validator()->validate($itemsToValidate, ['specialItem2' => 'array']);
 
-    expect(Form::errors())->toHaveKey('specialItem2');
-    expect(Form::errors())->not()->toHaveKey('specialItem3');
+    expect($success)->toBe(false);
+    expect(validator()->errors())->toHaveKey('specialItem2');
+    expect(validator()->errors())->not()->toHaveKey('specialItem3');
 });
 
-test('array() can be used to validate array content', function () {
+test('array<> can be used to validate array content', function () {
     $itemsToValidate = ['specialItem3' => ['wrong'], 'specialItem4' => ['mail@example.com']];
 
-    Form::validate($itemsToValidate, [
-        'specialItem3' => 'array(email)',
-        'specialItem4' => 'array(email)',
+    validator()->validate($itemsToValidate, [
+        'specialItem3' => 'array<email>',
+        'specialItem4' => 'array<email>',
     ]);
 
-    expect(Form::errors())->toHaveKey('specialItem3');
-    expect(Form::errors())->not()->toHaveKey('specialItem4');
+    expect(validator()->errors())->toHaveKey('specialItem3');
+    expect(validator()->errors())->not()->toHaveKey('specialItem4');
 });
 
-test('array() can be used to check if an associative array is an array', function () {
+test('array<> can be used to check if an associative array is an array', function () {
     $itemsToValidate = ['specialItem5' => ['key' => 'value']];
 
-    Form::validate($itemsToValidate, ['specialItem5' => 'array()']);
+    validator()->validate($itemsToValidate, ['specialItem5' => 'array<>']);
 
-    expect(Form::errors())->not()->toHaveKey('specialItem5');
+    expect(validator()->errors())->not()->toHaveKey('specialItem5');
 });
 
 test('associative arrays can be validated using dot notation', function () {
@@ -49,9 +40,25 @@ test('associative arrays can be validated using dot notation', function () {
         ],
     ];
 
-    Form::validate($itemsToValidate, ['specialItem6.key' => 'required']);
-    Form::validate($itemsToValidate, ['specialItem6.key2' => 'email']);
+    validator()->validate($itemsToValidate, ['specialItem6.key' => 'string']);
+    validator()->validate($itemsToValidate, ['specialItem6.key2' => 'email']);
 
-    expect(Form::errors())->not()->toHaveKey('specialItem6');
-    expect(Form::errors())->toHaveKey('specialItem6.key2');
+    expect(validator()->errors())->toHaveKey('specialItem6.key2');
+    expect(validator()->errors())->not()->toHaveKey('specialItem6');
+});
+
+test('array can validate associative array', function () {
+    $array = ['name' => ['first' => 'Max']];
+    $validator = [
+        'name' => 'array',
+        'name.first' => 'string',
+    ];
+
+    $data = validator()->validate($array, $validator);
+
+    if (!$data) {
+        $this->fail(json_encode(validator()->errors()));
+    }
+
+    expect($data)->toBeArray();
 });

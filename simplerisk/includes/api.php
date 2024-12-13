@@ -3787,10 +3787,10 @@ function getMitigationControlsDatatable(){
     global $escaper;
 
     if (check_permission("riskmanagement")) {
-        $draw = $escaper->escapeHtml($_GET['draw']);
-        $flag = $escaper->escapeHtml($_GET['flag']);
-        $mitigation_id = $escaper->escapeHtml($_GET['mitigation_id']);
-        $control_ids = $_GET['control_ids'];
+        $draw = $escaper->escapeHtml($_POST['draw']);
+        $flag = $escaper->escapeHtml($_POST['flag']);
+        $mitigation_id = $escaper->escapeHtml($_POST['mitigation_id']);
+        $control_ids = $_POST['control_ids'];
         $control_id_array = str_getcsv($control_ids);
     
         $controls = get_framework_controls($control_ids);
@@ -3801,11 +3801,11 @@ function getMitigationControlsDatatable(){
     
         foreach ($controls as $key=>$control) {
             // If it is not requested to view all.
-            if($_GET['length'] != -1) {
-                if($key < $_GET['start']) {
+            if($_POST['length'] != -1) {
+                if($key < $_POST['start']) {
                     continue;
                 }
-                if($key >= ($_GET['start'] + $_GET['length'])) {
+                if($key >= ($_POST['start'] + $_POST['length'])) {
                     break;
                 }
             }
@@ -4722,10 +4722,10 @@ function getDefineTestsResponse()
     // If the user has compliance permissions
     if (check_permission("compliance"))
     {
-        $draw = $escaper->escapeHtml($_GET['draw']);
-        $control_framework = empty($_GET['control_framework']) ? [] : $_GET['control_framework'];
-        $control_family = isset($_GET['control_family']) ? $_GET['control_family'] : [];
-        $control_name = isset($_GET['control_name']) ? $_GET['control_name'] : "";
+        $draw = $escaper->escapeHtml($_POST['draw']);
+        $control_framework = empty($_POST['control_framework']) ? [] : $_POST['control_framework'];
+        $control_family = isset($_POST['control_family']) ? $_POST['control_family'] : [];
+        $control_name = isset($_POST['control_name']) ? $_POST['control_name'] : "";
 
         $controls = get_framework_controls_by_filter("all", "all", "all", $control_family, $control_framework, "all", "all", "all", $control_name);
         $recordsTotal = count($controls);
@@ -4750,11 +4750,11 @@ function getDefineTestsResponse()
         foreach ($controls as $key=>$control)
         {
             // If it is not requested to view all
-            if($_GET['length'] != -1){
-                if($key < $_GET['start']){
+            if($_POST['length'] != -1){
+                if($key < $_POST['start']){
                     continue;
                 }
-                if($key >= ($_GET['start'] + $_GET['length'])){
+                if($key >= ($_POST['start'] + $_POST['length'])){
                     break;
                 }
             }
@@ -4812,16 +4812,16 @@ function getDefineTestsResponse()
                             $html .= "
                                 <thead class='table-active'>
                                     <tr>
-                                        <th>".$escaper->escapeHtml($lang['ID'])."</th>
-                                        <th>".$escaper->escapeHtml($lang['TestName'])."</th>
-                                        <th>".$escaper->escapeHtml($lang['Tester'])."</th>
-                                        <th>".$escaper->escapeHtml($lang['AdditionalStakeholders'])."</th>
-                                        <th width='150px'>".$escaper->escapeHtml($lang['Tags'])."</th>
-                                        <th width='110px'>".$escaper->escapeHtml($lang['TestFrequency'])."</th>
-                                        <th width='110px'>".$escaper->escapeHtml($lang['LastTestDate'])."</th>
-                                        <th width='110px'>".$escaper->escapeHtml($lang['NextTestDate'])."</th>
-                                        <th width='130px'>".$escaper->escapeHtml($lang['ApproximateTime'])."</th>
-                                        <th width='50px'>&nbsp;</th>
+                                        <th style='width: 100px; min-width: 100px'>".$escaper->escapeHtml($lang['ID'])."</th>
+                                        <th style='width: 150px; min-width: 150px'>".$escaper->escapeHtml($lang['TestName'])."</th>
+                                        <th style='width: 100px; min-width: 100px'>".$escaper->escapeHtml($lang['Tester'])."</th>
+                                        <th style='width: 100px; min-width: 100px'>".$escaper->escapeHtml($lang['AdditionalStakeholders'])."</th>
+                                        <th style='width: 150px; min-width: 150px'>".$escaper->escapeHtml($lang['Tags'])."</th>
+                                        <th style='width: 110px; min-width: 110px'>".$escaper->escapeHtml($lang['TestFrequency'])."</th>
+                                        <th style='width: 110px; min-width: 110px'>".$escaper->escapeHtml($lang['LastTestDate'])."</th>
+                                        <th style='width: 110px; min-width: 110px'>".$escaper->escapeHtml($lang['NextTestDate'])."</th>
+                                        <th style='width: 130px; min-width: 130px'>".$escaper->escapeHtml($lang['ApproximateTime'])."</th>
+                                        <th style='width: 50px; min-width: 50px'>&nbsp;</th>
                                     </tr>
                                 </thead>
                             ";
@@ -5158,18 +5158,29 @@ function getPastTestAuditsResponse()
 /************************************************************************
  * FUNCTION: RETURN JSON DATA FOR ACTIVE AUDITS DATATABLE IN COMPLIANCE *
  ************************************************************************/
-function getActiveTestAuditsResponse()
-{
+function getActiveTestAuditsResponse() {
+
     global $lang;
     global $escaper;
 
     // If the user has compliance permissions
-    if (check_permission("compliance"))
-    {
+    if (check_permission("compliance")) {
+
         $draw = $escaper->escapeHtml($_POST['draw']);
 
-        $orderColumn = (int)$_POST['order'][0]['column'];
-        $orderDir = strtolower($_POST['order'][0]['dir']) == "asc" ? "asc" : "desc";
+        // should check if sorting is enabled
+        if (isset($_POST['order'])) {
+
+            $orderColumn = (int)$_POST['order'][0]['column'];
+            $orderDir = strtolower($_POST['order'][0]['dir']) == "asc" ? "asc" : "desc";
+
+        // if not, we should set the default value
+        } else {
+
+            $orderColumn = 0;
+            $orderDir = "asc";
+
+        }
 
         // Filter params
         $filters = array(
@@ -5384,11 +5395,13 @@ function reopenTestAuditResponse()
             'status' => true
         );
 
-        json_response(200, "Reopen Test Audit", $result);
+        set_alert(true, "good", "Reopen Test Audit");
+        json_response(200, get_alert(true), null);
     }
     else
     {
-        json_response(400, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForCompliance']));
+        json_response(400, get_alert(true), NULL);
     }
 }
 
@@ -11770,4 +11783,95 @@ function incidentManagementAPI() {
 
     return json_response($status, $status_message);
 }
+
+/*******************************
+ * FUNCTION: GET DATATABLE API *
+ *******************************/
+function getDatatableAPI() {
+
+    global $field_settings, $field_settings_views;
+    
+    $view = !empty($_GET['view']) ? $_GET['view'] : false;
+    
+    if (!$view) {
+        return ;
+    }
+
+    //check if the necessary permissions have already been set.
+    // check_incident_management_permission_for_view($view);
+
+    $type = $field_settings_views[$view]['view_type'];
+
+    //don't need customization now, but keep it yet.
+    $customization = customization_extra();
+    
+    $selected_fields = display_settings_get_display_settings_for_view($view);
+    
+    // Validating and defaulting for the paging data
+    $start = !empty($_POST['start']) ? (int)$_POST['start'] : 0;
+    $length = !empty($_POST['length']) ? (int)$_POST['length'] : 10;
+    
+    // In case there's no column selected that is orderable the order won't be sent from the client
+    if (!empty($_POST['order'])) {
+        
+        $orderDir = strtoupper($_POST['order'][0]['dir']) == "ASC" ? "ASC" : "DESC";
+        
+        // Get and validate the order column
+        $orderColumnIndex = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : 0;
+        $orderColumnName =
+        !empty($_POST['columns'][$orderColumnIndex]['name'])
+        && in_array($_POST['columns'][$orderColumnIndex]['name'], $selected_fields)
+        && (
+            (!empty($field_settings[$type][$_POST['columns'][$orderColumnIndex]['name']]) && $field_settings[$type][$_POST['columns'][$orderColumnIndex]['name']]['orderable'])
+            || str_starts_with($_POST['columns'][$orderColumnIndex]['name'], 'custom_field_')
+            )
+            ? $_POST['columns'][$orderColumnIndex]['name']
+            : 'id';
+    } else {
+
+        // so we're defaulting to ordering by the asset's id
+        $orderColumnName = 'id';
+        $orderDir = "ASC";
+
+    }
+    
+    $column_filters = [];
+    for ($i = 0; $i < count($_POST['columns']); $i++) {
+        
+        // Gathering filter data for only the fields that are either set as searchable in the field settings
+        // or a custom field which is searchable by default
+        // when unselect all in the multi select of the table header, $_POST['columns'][$i]['search']['value'] is not set but it is also one of the custom cases that we input filter value. So we should consider that case as column_filters too.
+        if (
+            !empty($_POST['columns'][$i]['name']) &&
+            (!empty($_POST['columns'][$i]['search']['value']) || !isset($_POST['columns'][$i]['search']['value'])) &&
+            in_array($_POST['columns'][$i]['name'], $selected_fields) &&
+            (
+                (!empty($field_settings[$type][$_POST['columns'][$i]['name']]['searchable']) && $field_settings[$type][$_POST['columns'][$i]['name']]['searchable'])
+                ||
+                ($customization && str_starts_with($_POST['columns'][$i]['name'], 'custom_field_'))
+            )
+        ) {
+            if (isset($_POST['columns'][$i]['search']['value'])) {
+                $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
+            } else {
+                $column_filters[$_POST['columns'][$i]['name']] = null;
+            }
+        }
+    }
+    
+    // Get data for datatable
+    $data = get_data_for_datatable($view, $selected_fields, $start, $length, $orderColumnName, $orderDir, $column_filters);
+
+    $result = array(
+        'draw' => (int)$_POST['draw'],
+        'data' => $data['rows'],
+        'recordsTotal' => $data['recordsTotal'],
+        'recordsFiltered' => $data['recordsFiltered'],
+    );
+    
+    echo json_encode($result);
+    exit;
+
+}
+
 ?>

@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'העלאת הקובץ נכשלה: שגיאות לא ידועות',
     'DynamicIncidentReport' => 'דוח אירועים דינמי',
     'FilteringSelections' => 'בחירות סינון',
+    'ProcessingPleaseWait' => 'עיבוד. אנא המתן!',
+    'PleaseEnterAValidPhoneNumber' => 'נא להזין מספר טלפון חוקי',
 
     '' => '',
 );

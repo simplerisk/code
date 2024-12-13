@@ -102,7 +102,7 @@
         app()->post('/assessment/update', 'updateAssessment');
 
         app()->post('/datatable/framework_controls', 'getFrameworkControlsDatatable');
-        app()->get('/datatable/mitigation_controls', 'getMitigationControlsDatatable');
+        app()->post('/datatable/mitigation_controls', 'getMitigationControlsDatatable');
         app()->get('/role_responsibilities/get_responsibilities', 'getResponsibilitiesByRoleIdForm');
 
         /******************** Risk Management Datatatable API **********************/
@@ -136,7 +136,7 @@
         app()->post('/governance/add_control', 'addControlResponse');
         app()->post('/governance/update_control', 'updateControlResponse');
 
-        app()->get('/compliance/define_tests', 'getDefineTestsResponse');
+        app()->post('/compliance/define_tests', 'getDefineTestsResponse');
         app()->get('/compliance/test', 'getTestResponse');
         app()->get('/compliance/initiate_audits', 'getInitiateTestAuditsResponse');
         app()->post('/compliance/active_audits', 'getActiveTestAuditsResponse');
@@ -265,6 +265,9 @@
         app()->get('/complianceforgescf/disable', 'api_complianceforgescf_disable');
         app()->get('/complianceforgescf/status', 'api_complianceforgescf_status');
 
+    /************************** DATATABLE API BEGIN *******************************/
+        app()->post('/get/datatable', 'getDatatableAPI');
+    /*************************** DATATABLE API END ********************************/
 
 	/************************** SIMPLERISK EXTRAS APIS ************************************/
 

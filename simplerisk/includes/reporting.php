@@ -105,7 +105,9 @@ function create_chartjs_pie_code($title = "", $element_id = "", $array = [], $wi
         echo "
             <div style='{$width}{$height}'>
                 <canvas id='{$element_id}'></canvas>
-                <i class='far fa-save' id='{$element_id}_save' style='float: right;'></i>
+                <div class='d-flex justify-content-end align-items-center'>
+                    <i class='far fa-save' id='{$element_id}_save'></i>
+                </div>
             </div>
             <script>
                 $(function() {
@@ -156,10 +158,9 @@ function create_chartjs_pie_code($title = "", $element_id = "", $array = [], $wi
         ";
     } else {
         echo "
-            <div style='align-items: center; display: flex; flex-flow: row; height: 100%; justify-content: center; flex-flow:wrap;'>
-                {$title}
-                <br style=\"width: 100%; content: ''\">
-                No Data Available
+            <div class='d-flex flex-column text-center'>
+                <strong class='mb-3'>{$title}</strong>
+                <strong>No Data Available</strong>
             </div>
         ";
     }
@@ -203,7 +204,9 @@ function create_chartjs_multi_series_pie_code($title = "", $element_id = "", $da
         echo "
             <div style='{$width}{$height}'>
                 <canvas id='{$element_id}'></canvas>
-                <i class='far fa-save' id='{$element_id}_save' style='float: right;'></i>
+                <div class='d-flex justify-content-end align-items-center'>
+                    <i class='far fa-save' id='{$element_id}_save'></i>
+                </div>
             </div>
             <script>
                 $(function () {
@@ -323,10 +326,9 @@ function create_chartjs_multi_series_pie_code($title = "", $element_id = "", $da
     else
     {
         echo "
-            <div style='align-items: center; display: flex; flex-flow: row; height: 100%; justify-content: center; flex-flow:wrap;'>
-                {$title}
-                <br style=\"width: 100%; content: ''\">
-                No Data Available
+            <div class='d-flex flex-column text-center'>
+                <strong class='mb-3'>{$title}</strong>
+                <strong>No Data Available</strong>
             </div>
         ";
     }
@@ -369,7 +371,9 @@ function create_chartjs_line_code($title = "", $element_id = "", $labels = [], $
         echo "
             <div style='{$width}{$height}'>
                 <canvas id='{$element_id}'></canvas>
-                <i class='far fa-save' id='{$element_id}_save' style='float: right;'></i>
+                <div class='d-flex justify-content-end align-items-center'>
+                    <i class='far fa-save' id='{$element_id}_save'></i>
+                </div>
             </div>
             <script>
                 $(function() {
@@ -474,10 +478,9 @@ function create_chartjs_line_code($title = "", $element_id = "", $labels = [], $
         ";
     } else {
         echo "
-            <div style='align-items: center; display: flex; flex-flow: row; height: 100%; justify-content: center; flex-flow:wrap;'>
-                {$title}
-                <br style=\"width: 100%; content: ''\">
-                No Data Available
+            <div class='d-flex flex-column text-center'>
+                <strong class='mb-3'>{$title}</strong>
+                <strong>No Data Available</strong>
             </div>
         ";
     }
@@ -520,7 +523,9 @@ function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $d
         echo "
             <div style='{$width}{$height}'>
                 <canvas id='{$element_id}'></canvas>
-                <i class='far fa-save' id='{$element_id}_save' style='float: right;'></i>
+                <div class='d-flex justify-content-end align-items-center'>
+                    <i class='far fa-save' id='{$element_id}_save'></i>
+                </div>
             </div>
             <script>
                 $(function() {
@@ -611,10 +616,9 @@ function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $d
     else
     {
         echo "
-            <div style='align-items: center; display: flex; flex-flow: row; height: 100%; justify-content: center; flex-flow:wrap;'>
-                {$title}
-                <br style=\"width: 100%; content: ''\">
-                No Data Available
+            <div class='d-flex flex-column text-center'>
+                <strong class='mb-3'>{$title}</strong>
+                <strong>No Data Available</strong>
             </div>
         ";
     }
@@ -632,32 +636,34 @@ function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $d
  * $width - The width of the created canvas                                     *
  * $height - The height of the created canvas                                   *
  ********************************************************************************/
-function create_chartjs_radar_code($title = "", $element_id = "", $labels = [], $datasets = [], $width = null, $height = null)
-{
+function create_chartjs_radar_code($title = "", $element_id = "", $labels = [], $datasets = [], $width = null, $height = null) {
+
     // Escape the title for javascript display
     $title = str_replace("'", "\'", $title);
 
     // If the labels and datasets are not empty
-    if (!empty($labels) && !empty($datasets))
-    {
+    if (!empty($labels) && !empty($datasets)) {
+
         // Set the width
-        if (is_null($width))
-        {
+        if (is_null($width)) {
             $width = "";
+        } else {
+            $width = "width: {$width};";
         }
-        else $width = "width: {$width};";
 
         // Set the height
-        if (is_null($height))
-        {
+        if (is_null($height)) {
             $height = "";
+        } else {
+            $height = "height: {$height};";
         }
-        else $height = "height: {$height};";
 
         echo "
             <div style='{$width}{$height}'>
                 <canvas id='{$element_id}'></canvas>
-                <i class='far fa-save' id='{$element_id}_save' style='float: right;'></i>
+                <div class='d-flex justify-content-end align-items-center'>
+                    <i class='far fa-save' id='{$element_id}_save'></i>
+                </div>
             </div>
             <script>
                 $(function() {
@@ -668,9 +674,10 @@ function create_chartjs_radar_code($title = "", $element_id = "", $labels = [], 
         echo "
                     var maturity_levels = {
         ";
-        foreach($control_maturity_levels as $maturity_level)
-        {
-            echo $maturity_level['value'] . ": '" . $maturity_level['name'] . "',";
+        foreach($control_maturity_levels as $maturity_level) {
+            echo "
+                        {$maturity_level['value']}: '{$maturity_level['name']}', 
+            ";
         }
         echo "
                     }
@@ -687,8 +694,7 @@ function create_chartjs_radar_code($title = "", $element_id = "", $labels = [], 
         ";
 
         // For each of the datasets provided
-        foreach ($datasets as $dataset)
-        {
+        foreach ($datasets as $dataset) {
             // Get the values for the dataset
             $label = $dataset['label'];
             $data = implode(",", $dataset['data']);
@@ -758,16 +764,16 @@ function create_chartjs_radar_code($title = "", $element_id = "", $labels = [], 
                 });
             </script>
         ";
-    }
-    else
-    {
+
+    } else {
+
         echo "
-            <div style='align-items: center; display: flex; flex-flow: row; height: 100%; justify-content: center; flex-flow:wrap;'>
-                {$title}
-                <br style=\"width: 100%; content: ''\">
-                No Data Available
+            <div class='d-flex flex-column text-center'>
+                <strong class='mb-3'>{$title}</strong>
+                <strong>No Data Available</strong>
             </div>
         ";
+
     }
 }
 
@@ -783,27 +789,26 @@ function create_chartjs_radar_code($title = "", $element_id = "", $labels = [], 
  * $width - The width of the created canvas                                     *
  * $height - The height of the created canvas                                   *
  ********************************************************************************/
-function create_chartjs_bubble_code($title = "", $element_id = "", $datasets = [], $tooltip = [], $x_axis_title = null, $y_axis_title = null, $width = null, $height = null)
-{
+function create_chartjs_bubble_code($title = "", $element_id = "", $datasets = [], $tooltip = [], $x_axis_title = null, $y_axis_title = null, $width = null, $height = null) {
+
     // Escape the title for javascript display
     $title = str_replace("'", "\'", $title);
 
     // If the datasets are not empty
-    if (!empty($datasets))
-    {
+    if (!empty($datasets)) {
         // Set the width
-        if (is_null($width))
-        {
+        if (is_null($width)) {
             $width = "";
+        } else {
+            $width = "width: {$width};";
         }
-        else $width = "width: {$width};";
 
         // Set the height
-        if (is_null($height))
-        {
+        if (is_null($height)) {
             $height = "";
+        } else {
+            $height = "height: {$height};";
         }
-        else $height = "height: {$height};";
 
         // Create empty arrays
         $colors = [];
@@ -814,7 +819,9 @@ function create_chartjs_bubble_code($title = "", $element_id = "", $datasets = [
         echo "
             <div style='{$width}{$height}'>
                 <canvas id='{$element_id}'></canvas>
-                <i class='far fa-save' id='{$element_id}_save' style='float: right;'></i>
+                <div class='d-flex justify-content-end align-items-center'>
+                    <i class='far fa-save' id='{$element_id}_save'></i>
+                </div>
             </div>
             <script>
                 $(function () {
@@ -827,8 +834,8 @@ function create_chartjs_bubble_code($title = "", $element_id = "", $datasets = [
         ";
 
         // For each of the datasets provided
-        foreach ($datasets as $dataset)
-        {
+        foreach ($datasets as $dataset) {
+
             // Get the values for the dataset
             $x = $dataset['x'];
             $y = $dataset['y'];
@@ -871,8 +878,7 @@ function create_chartjs_bubble_code($title = "", $element_id = "", $datasets = [
 
         // Get the likelihood options
         $likelihoods = get_options_from_table("likelihood");
-        foreach($likelihoods as $key=>$likelihood)
-        {
+        foreach ($likelihoods as $key=>$likelihood) {
             // Escape single quotes
             $likelihoods[$key] = str_replace("'", "\'", $likelihood['name']);
         }
@@ -882,8 +888,7 @@ function create_chartjs_bubble_code($title = "", $element_id = "", $datasets = [
 
         // Get the impact options
         $impacts = get_options_from_table("impact");
-        foreach($impacts as $key=>$impact)
-        {
+        foreach ($impacts as $key=>$impact) {
             // Escape single quotes
             $impacts[$key] = str_replace("'", "\'", $impact['name']);
         }
@@ -970,14 +975,11 @@ function create_chartjs_bubble_code($title = "", $element_id = "", $datasets = [
                 });
             </script>
         ";
-    }
-    else
-    {
+    } else {
         echo "
-            <div style='align-items: center; display: flex; flex-flow: row; height: 100%; justify-content: center; flex-flow:wrap;'>
-                {$title}
-                <br style=\"width: 100%; content: ''\">
-                No Data Available
+            <div class='d-flex flex-column text-center'>
+                <strong class='mb-3'>{$title}</strong>
+                <strong>No Data Available</strong>
             </div>
         ";
     }
@@ -1511,8 +1513,8 @@ function get_risk_trend($title = null, $labels = [], $datasets = []) {
 /******************************
  * FUNCTION: GET REPORT DASHBOARD DROPDOWN SCRIPT *
  ******************************/
-function get_report_dashboard_dropdown_script()
-{
+function get_report_dashboard_dropdown_script() {
+
     global $lang, $escaper;
 
     echo "
@@ -1530,7 +1532,7 @@ function get_report_dashboard_dropdown_script()
 
             $(function(){
                 $('#teams').multiselect({
-                    allSelectedText: '" . $escaper->escapeHtml($lang['AllTeams']) . "',
+                    allSelectedText: '{$escaper->escapeHtml($lang['AllTeams'])}',
                     buttonWidth: '100%',
                     includeSelectAllOption: true,
                     onChange: submitForm,
@@ -1541,22 +1543,32 @@ function get_report_dashboard_dropdown_script()
             });
         </script>
     ";
+
 }
 
 /**********************************
  * FUNCTION: OPEN RISK LEVEL PIE *
  * $teams: ex: 1:2:3:4
  **********************************/
-function open_risk_level_pie($title = null, $element_id = "open_risk_level_pie", $teams = false, $score_used='inherent')
-{
+function open_risk_level_pie($title = null, $element_id = "open_risk_level_pie", $teams = false, $score_used='inherent') {
+
     global $lang, $escaper;
 
     // Open the database connection
     $db = db_open();
 
     // Get the risk levels
-    $stmt = $db->prepare("SELECT * from `risk_levels` ORDER BY value DESC");
+    $stmt = $db->prepare("
+        SELECT 
+            * 
+        from 
+            `risk_levels` 
+        ORDER BY 
+            value DESC
+    ");
+
     $stmt->execute();
+
     $risk_levels = $stmt->fetchAll();
 
     $veryhigh = $risk_levels[0]['value'];
@@ -1577,19 +1589,24 @@ function open_risk_level_pie($title = null, $element_id = "open_risk_level_pie",
     $separation_query_from = "";
 
     if (team_separation_extra()) {
+
         // Include the team separation extra
         require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
         $separation_query_where = " AND ". get_user_teams_query("rsk");
         $separation_query_from = "
             LEFT JOIN `risk_to_additional_stakeholder` rtas ON `rsk`.`id` = `rtas`.`risk_id`
         ";
+
     }
+
     // Build the inner query that's querying the scores the user requested
     if ($score_used=='inherent') {
         $inner_query = "
             SELECT
                 `scoring`.`calculated_risk` as score
-            FROM `risk_scoring` scoring
+            FROM 
+                `risk_scoring` scoring
                 JOIN `risks` rsk ON `scoring`.`id` = `rsk`.`id`
                 LEFT JOIN `risk_to_team` rtt ON `rsk`.`id` = `rtt`.`risk_id`
                 {$separation_query_from}
@@ -1604,7 +1621,8 @@ function open_risk_level_pie($title = null, $element_id = "open_risk_level_pie",
         $inner_query = "
             SELECT
                 ROUND(`scoring`.`calculated_risk` - (`scoring`.`calculated_risk` * GREATEST(IFNULL(`mtg`.`mitigation_percent`,0), IFNULL(MAX(`ctrl`.`mitigation_percent`), 0)) / 100), 2) AS score
-            FROM `risk_scoring` scoring
+            FROM 
+                `risk_scoring` scoring
                 JOIN `risks` rsk ON `scoring`.`id` = `rsk`.`id`
                 LEFT JOIN `risk_to_team` rtt ON `rsk`.`id` = `rtt`.`risk_id`
                 LEFT JOIN `mitigations` mtg ON `rsk`.`id` = `mtg`.`risk_id`
@@ -1641,6 +1659,7 @@ function open_risk_level_pie($title = null, $element_id = "open_risk_level_pie",
     ";
 
     $stmt = $db->prepare($sql);
+
     $stmt->bindParam(":veryhigh", $veryhigh, PDO::PARAM_STR);
     $stmt->bindParam(":high", $high, PDO::PARAM_STR);
     $stmt->bindParam(":medium", $medium, PDO::PARAM_STR);
@@ -1661,17 +1680,19 @@ function open_risk_level_pie($title = null, $element_id = "open_risk_level_pie",
     db_close($db);
 
     // For each row in the array
-    foreach ($array as $index=>$row)
-    {
+    foreach ($array as $index=>$row) {
+
         // Add the pie chart indexes
         $array[$index]['label'] = $row['level'];
         $array[$index]['data'] = $row['num'];
         $array[$index]['color'] = get_risk_color_from_levels($row['score'], $risk_levels);
         $array[$index]['url'] = "dynamic_risk_report.php?status=0&group=1&sort=0";
+
     }
 
     // Create the Chart.js pie chart
     create_chartjs_pie_code($title, $element_id, $array);
+
 }
 
 /**********************************
@@ -1741,7 +1762,7 @@ function closed_risk_reason_pie($title = null, $teams = false) {
                         JOIN `close_reason` b ON a.close_reason = b.value 
                         LEFT JOIN risk_to_team rtt ON c.id = rtt.risk_id 
                     WHERE 
-                        c.status = \"Closed\" AND {$teams_query} 
+                        c.status = 'Closed' AND {$teams_query} 
                     GROUP BY 
                         a.risk_id 
                     ORDER BY 
@@ -2119,19 +2140,32 @@ function open_risk_scoring_method_pie($array, $title = null) {
 /*********************************
  * FUNCTION: OPEN MITIGATION PIE *
  *********************************/
-function open_mitigation_pie($title = null)
-{
+function open_mitigation_pie($title = null) {
+
     // Create an element id to use for this chart
     $element_id = "open_mitigation_pie";
 
     // If team separation is not enabled
-    if (!team_separation_extra())
-    {
+    if (!team_separation_extra()) {
+
         // Open the database connection
         $db = db_open();
 
         // Query the database
-        $stmt = $db->prepare("SELECT id, CASE WHEN mitigation_id = 0 THEN 'Unplanned' WHEN mitigation_id != 0 THEN 'Planned' END AS name FROM `risks` WHERE status != \"Closed\" ORDER BY name");
+        $stmt = $db->prepare("
+            SELECT 
+                id, 
+                CASE 
+                    WHEN mitigation_id = 0 THEN 'Unplanned' 
+                    WHEN mitigation_id != 0 THEN 'Planned' 
+                END AS name 
+            FROM 
+                `risks` 
+            WHERE 
+                status != 'Closed' 
+            ORDER BY 
+                name
+        ");
         $stmt->execute();
 
         // Store the list in the array
@@ -2139,15 +2173,16 @@ function open_mitigation_pie($title = null)
 
         // Close the database connection
         db_close($db);
-    }
+
     // Otherwise team separation is enabled
-    else
-    {
+    } else {
+
         //Include the team separation extra
         require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
         // Get the open mitigation pie with risks stripped
         $array = strip_open_mitigation_pie();
+
     }
 
     // Set the defaults
@@ -2155,11 +2190,11 @@ function open_mitigation_pie($title = null)
     $grouped_array = array();
     $counter = -1;
 
-    foreach ($array as $row)
-    {
+    foreach ($array as $row) {
+
         // If the row name is not the current row
-        if ($row['name'] != $current_type)
-        {
+        if ($row['name'] != $current_type) {
+
             // Increment the counter
             $counter = $counter + 1;
 
@@ -2169,25 +2204,28 @@ function open_mitigation_pie($title = null)
 
             // Set the current type
             $current_type = $row['name'];
-        }
-        else
-        {
-            if(!isset($grouped_array[$counter]['data'])) $grouped_array[$counter]['data'] = 0;
+
+        } else {
+
+            if (!isset($grouped_array[$counter]['data'])) {
+                $grouped_array[$counter]['data'] = 0;
+            }
 
             // Add the value to the grouped array
             $grouped_array[$counter]['label'] = $row['name'];
             $grouped_array[$counter]['data'] = $grouped_array[$counter]['data'] + 1;
+
         }
     }
 
     $array = $grouped_array;
 
     // For each row in the array
-    foreach ($array as $index=>$row)
-    {
+    foreach ($array as $index=>$row) {
+
         // Add the color and url to the labels
-        switch($row['label'])
-        {
+        switch($row['label']) {
+
             case "Planned":
                 $array[$index]['color'] = '#FF0000';
                 $array[$index]['url'] = 'dynamic_risk_report.php?status=2&group=2&sort=0';
@@ -2200,29 +2238,45 @@ function open_mitigation_pie($title = null)
                 $array[$index]['color'] = null;
                 $array[$index]['url'] = null;
                 break;
+
         }
     }
 
     // Create the Chart.js pie chart
     create_chartjs_pie_code($title, $element_id, $array);
+
 }
 
 /*****************************
  * FUNCTION: OPEN REVIEW PIE *
  *****************************/
-function open_review_pie($title = null)
-{
+function open_review_pie($title = null) {
+
     // Create an element id to use for this chart
     $element_id = "open_review_pie";
 
     // If team separation is not enabled
-    if (!team_separation_extra())
-    {
+    if (!team_separation_extra()) {
+
         // Open the database connection
         $db = db_open();
 
         // Query the database
-        $stmt = $db->prepare("SELECT id, CASE WHEN mgmt_review = 0 THEN 'Unreviewed' WHEN mgmt_review != 0 THEN 'Reviewed' END AS name FROM `risks` WHERE status != \"Closed\" ORDER BY name");
+        $stmt = $db->prepare("
+            SELECT 
+                id, 
+                CASE 
+                    WHEN mgmt_review = 0 THEN 'Unreviewed' 
+                    WHEN mgmt_review != 0 THEN 'Reviewed' 
+                END AS name 
+            FROM 
+                `risks` 
+            WHERE 
+                status != 'Closed' 
+            ORDER BY 
+                name
+        ");
+
         $stmt->execute();
 
         // Store the list in the array
@@ -2230,15 +2284,16 @@ function open_review_pie($title = null)
 
         // Close the database connection
         db_close($db);
-    }
+
     // Otherwise team separation is enabled
-    else
-    {
+    } else {
+
         //Include the team separation extra
         require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
         // Get the open review pie with risks stripped
         $array = strip_open_review_pie();
+
     }
 
     // Set the defaults
@@ -2246,11 +2301,11 @@ function open_review_pie($title = null)
     $grouped_array = array();
     $counter = -1;
 
-    foreach ($array as $row)
-    {
+    foreach ($array as $row) {
+
         // If the row name is not the current row
-        if ($row['name'] != $current_type)
-        {
+        if ($row['name'] != $current_type) {
+
             // Increment the counter
             $counter = $counter + 1;
 
@@ -2260,24 +2315,28 @@ function open_review_pie($title = null)
 
             // Set the current type
             $current_type = $row['name'];
-        }
-        else
-        {
-            if(!isset($grouped_array[$counter]['data'])) $grouped_array[$counter]['data'] = 0;
+
+        } else {
+
+            if (!isset($grouped_array[$counter]['data'])) {
+                $grouped_array[$counter]['data'] = 0;
+            }
+
             // Add the value to the grouped array
             $grouped_array[$counter]['label'] = $row['name'];
             $grouped_array[$counter]['data'] = $grouped_array[$counter]['data'] + 1;
+
         }
     }
 
     $array = $grouped_array;
 
     // For each row in the array
-    foreach ($array as $index=>$row)
-    {
+    foreach ($array as $index=>$row) {
+
         // Add the color and url to the labels
-        switch($row['label'])
-        {
+        switch($row['label']) {
+
             case "Reviewed":
                 $array[$index]['color'] = '#FF0000';
                 $array[$index]['url'] = 'dynamic_risk_report.php?status=2&group=2&sort=0';
@@ -2290,29 +2349,42 @@ function open_review_pie($title = null)
                 $array[$index]['color'] = null;
                 $array[$index]['url'] = null;
                 break;
+
         }
     }
 
     // Create the Chart.js pie chart
     create_chartjs_pie_code($title, $element_id, $array);
+
 }
 
 /*****************************
  * FUNCTION: OPEN CLOSED PIE *
  *****************************/
-function open_closed_pie($title = null)
-{
+function open_closed_pie($title = null) {
+
     // Create an element id to use for this chart
     $element_id = "open_closed_pie";
 
     // If team separation is not enabled
-    if (!team_separation_extra())
-    {
+    if (!team_separation_extra()) {
+
         // Open the database connection
         $db = db_open();
 
-            // Query the database
-        $stmt = $db->prepare("SELECT id, CASE WHEN status = \"Closed\" THEN 'Closed' WHEN status != \"Closed\" THEN 'Open' END AS name FROM `risks` ORDER BY name");
+        // Query the database
+        $stmt = $db->prepare("
+            SELECT 
+                id, 
+                CASE 
+                    WHEN status = \"Closed\" THEN 'Closed' 
+                    WHEN status != \"Closed\" THEN 'Open' 
+                END AS name 
+            FROM 
+                `risks` 
+            ORDER BY 
+                name
+        ");
         $stmt->execute();
 
         // Store the list in the array
@@ -2320,15 +2392,16 @@ function open_closed_pie($title = null)
 
         // Close the database connection
         db_close($db);
-    }
+
     // Otherwise team separation is enabled
-    else
-    {
+    } else {
+
         //Include the team separation extra
         require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
         // Get the open pie with risks stripped
         $array = strip_open_closed_pie();
+
     }
 
     // Set the defaults
@@ -2336,11 +2409,11 @@ function open_closed_pie($title = null)
     $grouped_array = array();
     $counter = -1;
 
-    foreach ($array as $row)
-    {
+    foreach ($array as $row) {
+
         // If the row name is not the current row
-        if ($row['name'] != $current_type)
-        {
+        if ($row['name'] != $current_type) {
+
             // Increment the counter
             $counter = $counter + 1;
 
@@ -2350,24 +2423,27 @@ function open_closed_pie($title = null)
 
             // Set the current type
             $current_type = $row['name'];
-        }
-        else
-        {
-            if(!isset($grouped_array[$counter]['data'])) $grouped_array[$counter]['data'] = 0;
+            
+        } else {
+
+            if (!isset($grouped_array[$counter]['data'])) {
+                $grouped_array[$counter]['data'] = 0;
+            }
+
             // Add the value to the grouped array
             $grouped_array[$counter]['label'] = $row['name'];
             $grouped_array[$counter]['data'] = $grouped_array[$counter]['data'] + 1;
+
         }
     }
 
     $array = $grouped_array;
 
     // For each row in the array
-    foreach ($array as $index=>$row)
-    {
+    foreach ($array as $index=>$row) {
+
         // Add the color and url to the labels
-        switch($row['label'])
-        {
+        switch($row['label']) {
             case "Open":
                 $array[$index]['color'] = '#FF0000';
                 $array[$index]['url'] = 'dynamic_risk_report.php?status=2&group=2&sort=0';
@@ -2385,13 +2461,14 @@ function open_closed_pie($title = null)
 
     // Create the Chart.js pie chart
     create_chartjs_pie_code($title, $element_id, $array);
+
 }
 
 /************************************
  * FUNCTION: GET MY OPEN TABLE *
  ************************************/
-function get_my_open_table()
-{
+function get_my_open_table() {
+
     global $lang;
     global $escaper;
 
@@ -2399,13 +2476,13 @@ function get_my_open_table()
         <table id='my-risk-datatable' class='risk-datatable table table-bordered table-striped table-condensed'>
             <thead>
                 <tr>
-                    <th data-name='id' align='left' width='50px' valign='top'>" . $escaper->escapeHtml($lang['ID']) . "</th>
-                    <th data-name='risk_status' align='left' width='150px' valign='top'>" . $escaper->escapeHtml($lang['Status']) . "</th>
-                    <th data-name='subject' align='left' width='300px' valign='top'>" . $escaper->escapeHtml($lang['Subject']) . "</th>
-                    <th data-name='score' align='center' width='80px' valign='top'>" . $escaper->escapeHtml($lang['InherentRisk']) . "</th>
-                    <th data-name='submission_date' align='center' width='150px' valign='top'>" . $escaper->escapeHtml($lang['Submitted']) . "</th>
-                    <th data-name='mitigation_planned' align='center' width='150px' valign='top'>" . $escaper->escapeHtml($lang['MitigationPlanned']) . "</th>
-                    <th data-name='management_review' align='center' width='160px' valign='top'>" . $escaper->escapeHtml($lang['ManagementReview']) . "</th>
+                    <th data-name='id' align='left' width='50px' valign='top'>{$escaper->escapeHtml($lang['ID'])}</th>
+                    <th data-name='risk_status' align='left' width='150px' valign='top'>{$escaper->escapeHtml($lang['Status'])}</th>
+                    <th data-name='subject' align='left' width='300px' valign='top'>{$escaper->escapeHtml($lang['Subject'])}</th>
+                    <th data-name='score' align='center' width='80px' valign='top'>{$escaper->escapeHtml($lang['InherentRisk'])}</th>
+                    <th data-name='submission_date' align='center' width='150px' valign='top'>{$escaper->escapeHtml($lang['Submitted'])}</th>
+                    <th data-name='mitigation_planned' align='center' width='150px' valign='top'>{$escaper->escapeHtml($lang['MitigationPlanned'])}</th>
+                    <th data-name='management_review' align='center' width='160px' valign='top'>{$escaper->escapeHtml($lang['ManagementReview'])}</th>
                 </tr>
             </thead>
             <tbody>
@@ -2413,9 +2490,9 @@ function get_my_open_table()
         </table>
         <script>
             $(document).ready(function(){
-                var yes_str = '" . $escaper->escapeHtml($lang['Yes']) . "';
-                var no_str = '" . $escaper->escapeHtml($lang['No']) . "';
-                var PASTDUE_str = '" . $escaper->escapeHtml($lang['PASTDUE']) . "';
+                var yes_str = '{$escaper->escapeHtml($lang['Yes'])}';
+                var no_str = '{$escaper->escapeHtml($lang['No'])}';
+                var PASTDUE_str = '{$escaper->escapeHtml($lang['PASTDUE'])}';
                 $('#my-risk-datatable thead tr').clone(true).appendTo( '#my-risk-datatable thead');
                 $('#my-risk-datatable thead tr:eq(1) th').each( function (i) {
                     var title = $(this).text();
@@ -2598,25 +2675,17 @@ function get_high_risk_report_table()
     global $escaper;
     global $score_used;
 
-    echo 
-    "
+    echo "
         <table id='high-risk-datatable' width='100%' class='risk-datatable table table-bordered table-striped table-condensed'>
             <thead>
                 <tr>
-                    <th data-name='id' align='left' width='50px' valign='top'>" . $escaper->escapeHtml($lang['ID']) . "
-                    </th>
-                    <th data-name='risk_status' align='left' width='150px' valign='top'>" . $escaper->escapeHtml($lang['Status']) . "
-                    </th>
-                    <th data-name='subject' align='left' width='300px' valign='top'>" . $escaper->escapeHtml($lang['Subject']) . "
-                    </th>
-                    <th data-name='score' align='center' width='65px' valign='top'>" . $escaper->escapeHtml($lang['InherentRisk']) . "
-                    </th>
-                    <th data-name='submission_date' align='center' width='100px' valign='top'>" . $escaper->escapeHtml($lang['Submitted']) . "
-                    </th>
-                    <th data-name='mitigation_planned' align='center' width='150px' valign='top'>" . $escaper->escapeHtml($lang['MitigationPlanned']) . "
-                    </th>
-                    <th data-name='management_review' align='center' width='150px' valign='top'>" . $escaper->escapeHtml($lang['ManagementReview']) . "
-                    </th>
+                    <th data-name='id' align='left' width='50px' valign='top'>{$escaper->escapeHtml($lang['ID'])}</th>
+                    <th data-name='risk_status' align='left' width='150px' valign='top'>{$escaper->escapeHtml($lang['Status'])}</th>
+                    <th data-name='subject' align='left' width='300px' valign='top'>{$escaper->escapeHtml($lang['Subject'])}</th>
+                    <th data-name='score' align='center' width='65px' valign='top'>{$escaper->escapeHtml($lang['InherentRisk'])}</th>
+                    <th data-name='submission_date' align='center' width='100px' valign='top'>{$escaper->escapeHtml($lang['Submitted'])}</th>
+                    <th data-name='mitigation_planned' align='center' width='150px' valign='top'>{$escaper->escapeHtml($lang['MitigationPlanned'])}</th>
+                    <th data-name='management_review' align='center' width='150px' valign='top'>{$escaper->escapeHtml($lang['ManagementReview'])}</th>
                 </tr>
             </thead>
             <tbody>
@@ -2624,14 +2693,14 @@ function get_high_risk_report_table()
         </table>
         <script>
             $(function() {
-                var yes_str = '" . $escaper->escapeHtml($lang['Yes']) . "';
-                var no_str = '" . $escaper->escapeHtml($lang['No']) . "';
-                var PASTDUE_str = '" . $escaper->escapeHtml($lang['PASTDUE']) . "';
+                var yes_str = '{$escaper->escapeHtml($lang['Yes'])}';
+                var no_str = '{$escaper->escapeHtml($lang['No'])}';
+                var PASTDUE_str = '{$escaper->escapeHtml($lang['PASTDUE'])}';
                 $('#high-risk-datatable thead tr').clone(true).appendTo( '#high-risk-datatable thead' );
                 $('#high-risk-datatable thead tr:eq(1) th').each( function (i) {
                     var title = $(this).text();
-                    var data_name = $(this).attr(\"data-name\");
-                    if(data_name == \"mitigation_planned\") {
+                    var data_name = $(this).attr('data-name');
+                    if(data_name == 'mitigation_planned') {
                         $(this).html( '<select name=\"mitigation_planned\" class=\"form-control\"><option value=\"\">--</option><option value=\"' + yes_str+ '\">' + yes_str + '</option><option value=\"' + no_str + '\">' + no_str + '</option></select>');
                     } else if(data_name == 'management_review') {
                         $(this).html( '<select name=\"management_review\" class=\"form-control\"><option value=\"\">--</option><option value=\"'+yes_str+'\">' + yes_str + '</option><option value=\"'+no_str+'\">' + no_str + '</option><option value=\"' + PASTDUE_str + '\">' + PASTDUE_str + '</option></select>');
@@ -2655,7 +2724,7 @@ function get_high_risk_report_table()
                     },
                     order: [[3, 'DESC']],
                     ajax: {
-                        url: BASE_URL + '/api/reports/high_risk?score_used=" . $score_used . "',
+                        url: BASE_URL + '/api/reports/high_risk?score_used={$score_used}',
                         type: 'POST',
                         error: function(xhr,status,error){
                             retryCSRF(xhr, this);
@@ -2676,35 +2745,28 @@ function get_high_risk_report_table()
 /************************************
  * FUNCTION: GET MY OPEN TABLE *
  ************************************/
-function get_recent_commented_table()
-{
+function get_recent_commented_table() {
+
     global $lang;
     global $escaper;
 
-    echo 
-    "
+    echo "
         <table id='risk-datatable' width='100%' class='risk-datatable table table-bordered table-striped table-condensed'>
             <thead>
                 <tr>
-                    <th data-name='id' align='left' width='50px' valign='top'>" . $escaper->escapeHtml($lang['ID']) . "
-                    </th>
-                    <th data-name='risk_status' align='left' width='150px' valign='top'>" . $escaper->escapeHtml($lang['Status']) . "
-                    </th>
-                    <th data-name='subject' align='left' width='300px' valign='top'>" . $escaper->escapeHtml($lang['Subject']) . "
-                    </th>
-                    <th data-name='score' align='center' width='80px' valign='top'>" . $escaper->escapeHtml($lang['InherentRisk']) . "
-                    </th>
-                    <th data-name='residual_risk' align='center' width='80px' valign='top'>" . $escaper->escapeHtml($lang['ResidualRisk']) . "
-                    </th>
-                    <th data-name='comment_date' align='center' width='150px' valign='top'>" . $escaper->escapeHtml($lang['CommentDate']) . "
-                    </th>
-                    <th data-name='comment' align='center' width='150px' valign='top'>" . $escaper->escapeHtml($lang['Comment']) . "
-                    </th>
+                    <th data-name='id' align='left' width='50px' valign='top'>{$escaper->escapeHtml($lang['ID'])}</th>
+                    <th data-name='risk_status' align='left' width='150px' valign='top'>{$escaper->escapeHtml($lang['Status'])}</th>
+                    <th data-name='subject' align='left' width='300px' valign='top'>{$escaper->escapeHtml($lang['Subject'])}</th>
+                    <th data-name='score' align='center' width='80px' valign='top'>{$escaper->escapeHtml($lang['InherentRisk'])}</th>
+                    <th data-name='residual_risk' align='center' width='80px' valign='top'>{$escaper->escapeHtml($lang['ResidualRisk'])}</th>
+                    <th data-name='comment_date' align='center' width='150px' valign='top'>{$escaper->escapeHtml($lang['CommentDate'])}</th>
+                    <th data-name='comment' align='center' width='150px' valign='top'>{$escaper->escapeHtml($lang['Comment'])}</th>
                 </tr>
             </thead>
             <tbody>
             </tbody>
         </table>
+
         <script>
             $(document).ready(function(){
                 $('#risk-datatable thead tr').clone(true).appendTo( '#risk-datatable thead');
@@ -2747,19 +2809,20 @@ function get_recent_commented_table()
             });
         </script>
     ";
+    
 }
 
 /************************************
  * FUNCTION: RISKS AND ASSETS TABLE *
  ************************************/
-function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projects_in_array)
-{
+function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projects_in_array) {
+
     global $lang;
     global $escaper;
 
     // If team separation is enabled
-    if (team_separation_extra())
-    {
+    if (team_separation_extra()) {
+
         // Include the team separation extra
         require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
@@ -2767,6 +2830,7 @@ function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projec
         // the user doesn't have permission to.
         // It's because all grouping type has different logic where its risk id is stored
         $separation = true;
+
     } else {
         $separation = false;
     }
@@ -2777,17 +2841,20 @@ function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projec
 
     // If risks by asset
     if ($report == 0) {
-        foreach($rows as $gr_id => $group) {
+        foreach ($rows as $gr_id => $group) {
 
             if ($separation) {
                 $tmp = [];
                 
-                foreach($group as $key => $item)
-                    if (extra_grant_access($_SESSION['uid'], (int)$item['risk_id'] + 1000))
+                foreach ($group as $key => $item) {
+                    if (extra_grant_access($_SESSION['uid'], (int)$item['risk_id'] + 1000)) {
                         $tmp[] = $item;
+                    }
+                }
 
-                if (empty($tmp))
+                if (empty($tmp)) {
                     continue;
+                }
 
                 $group = $tmp;
             }
@@ -2797,7 +2864,7 @@ function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projec
             $array_residual_risk = [];
 
             $risk_html = "";
-            foreach($group as $row) {
+            foreach ($group as $row) {
 
                 // Get the variables for the row
                 $risk_id = (int)$row['risk_id'];
@@ -2820,7 +2887,7 @@ function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projec
                 // Display the individual asset/asset group information
                 $risk_html .= "
                     <tr>
-                        <td align='left' width='50px'>
+                        <td style='width: 100px; min-width: 100px;' align='left'>
                             <a class='open-in-new-tab' target='_blank' href='../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "'>" . $escaper->escapeHtml(convert_id($risk_id)) . "</a>
                         </td>
                         <td align='left' width='150px'>" . $escaper->escapeHtml($status) . "</td>
@@ -2856,7 +2923,7 @@ function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projec
             
             // Display the table header
             echo "
-                <table class='table table-bordered table-condensed sortable'>
+                <table class='table table-bordered table-condensed sortable mb-2'>
                     <thead>
                         <tr>
             ";
@@ -2898,7 +2965,7 @@ function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projec
             echo "
                         </tr>
                         <tr>
-                            <th align='left' width='50px'>" . $escaper->escapeHtml($lang['ID']) . "</th>
+                            <th style='width: 100px; min-width: 100px;' align='left'>" . $escaper->escapeHtml($lang['ID']) . "</th>
                             <th align='left' width='150px'>" . $escaper->escapeHtml($lang['Status']) . "</th>
                             <th align='left' width='300px'>" . $escaper->escapeHtml($lang['Subject']) . "</th>
                             <th align='left' width='50px'>" . $escaper->escapeHtml($lang['SiteLocation']) . "</th>
@@ -2915,10 +2982,10 @@ function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projec
                 </table>
             ";
         }
-    }
+        
     // If assets by risk
-    elseif ($report == 1) {
-        foreach($rows as $risk_id => $group){
+    } elseif ($report == 1) {
+        foreach ($rows as $risk_id => $group) {
 
             $status = $group[0]['status'];
             $subject = try_decrypt($group[0]['subject']);
@@ -2933,7 +3000,7 @@ function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projec
 
             // Display the table header
             echo "
-                <table class='table table-bordered table-condensed sortable'>
+                <table class='table table-bordered table-condensed sortable mb-2'>
                     <thead>
                         <tr>
                             <th style='background-color:" . $escaper->escapeHtml($color) . "' bgcolor='" . $escaper->escapeHtml($color) . "' colspan='7'>
@@ -2959,7 +3026,7 @@ function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projec
                     <tbody>
             ";
 
-            foreach($group as $row){
+            foreach ($group as $row) {
                 // Get the variables for the row
                 $asset_id = (int)$row['asset_id'];
                 $asset_ip = (isset($row['asset_ip']) ? try_decrypt($row['asset_ip']) : "N/A");
@@ -3291,34 +3358,34 @@ function get_risks_and_assets_rows($report, $sort_by, $asset_tags_in_array, $pro
 /************************************
  * FUNCTION: RISKS AND ISSUES TABLE *
  ************************************/
-function risks_and_issues_table($risk_tags, $start_date, $end_date)
-{
+function risks_and_issues_table($risk_tags, $start_date, $end_date) {
+
     global $lang;
     global $escaper;
 
     echo "
         <div>
             <div class='d-flex align-items-center mb-3'>
-                <label class='mb-0' style='width: 100px;'>" . $escaper->escapeHtml($lang['Trend']) . ":</label>
-                <span>" . $escaper->escapeHtml($lang['Increasing']) . "</span><span class='m-r-20 m-l-10'>&#8593;</span>
-                <span>" . $escaper->escapeHtml($lang['Decreasing']) . "</span><span class='m-r-20 m-l-10'>&#8595;</span>
-                <span>" . $escaper->escapeHtml($lang['NoChange']) . "</span><span class='m-r-20 m-l-10'>&#8596;</span>
+                <label class='mb-0' style='width: 100px;'>{$escaper->escapeHtml($lang['Trend'])} :</label>
+                <span>{$escaper->escapeHtml($lang['Increasing'])}</span><span class='m-r-20 m-l-10'>&#8593;</span>
+                <span>{$escaper->escapeHtml($lang['Decreasing'])}</span><span class='m-r-20 m-l-10'>&#8595;</span>
+                <span>{$escaper->escapeHtml($lang['NoChange'])}</span><span class='m-r-20 m-l-10'>&#8596;</span>
             </div>
             <div class='d-flex align-items-center mb-3'>
-                <label class='mb-0' style='width: 100px;'>" . $escaper->escapeHtml($lang['Status']) . ":</label>
+                <label class='mb-0' style='width: 100px;'>{$escaper->escapeHtml($lang['Status'])} :</label>
     ";
 
     $risk_levels = get_risk_levels();
 
     foreach (array_reverse($risk_levels) as $level) {
         echo "
-                <span class='risk-color1' style='width:20px; height: 20px; position: relative; display:block; float:left; border: 1px solid; background-color:" . $level['color'] . "'></span>
-                <span class='m-r-20 m-l-10'>(" . $escaper->escapeHtml($level['display_name']) . ")</span>
+                <span class='risk-color1' style='width:20px; height: 20px; position: relative; display:block; float:left; border: 1px solid; background-color:{$level['color']}'></span>
+                <span class='m-r-20 m-l-10'>({$escaper->escapeHtml($level['display_name'])})</span>
         ";
     }
     echo "
                 <span class='risk-color1' style='width:20px; height: 20px; position: relative; display:block; float:left; border: 1px solid; background-color: white'></span>
-                <span class='m-r-20 m-l-10'>(" . $escaper->escapeHtml($lang['Insignificant']) . ")</span>
+                <span class='m-r-20 m-l-10'>({$escaper->escapeHtml($lang['Insignificant'])})</span>
             </div>
         </div>
     ";
@@ -3329,50 +3396,51 @@ function risks_and_issues_table($risk_tags, $start_date, $end_date)
         <table class='table table-bordered table-condensed mb-0' style='table-layout:fixed;'>
             <thead>
                 <tr>
-                    <th width='10%'>" . $escaper->escapeHtml($lang['Category']) . "</th>
-                    <th width='8%'>" . $escaper->escapeHtml($lang['Status']) . "</th>
-                    <th width='8%'>" . $escaper->escapeHtml($lang['Trend']) . "</th>
-                    <th width='74%'>" . $escaper->escapeHtml($lang['Details']) . "</th>
+                    <th width='10%'>{$escaper->escapeHtml($lang['Category'])}</th>
+                    <th width='8%'>{$escaper->escapeHtml($lang['Status'])}</th>
+                    <th width='8%'>{$escaper->escapeHtml($lang['Trend'])}</th>
+                    <th width='74%'>{$escaper->escapeHtml($lang['Details'])}</th>
                 </tr>
             </thead>
             <tbody>
     ";
 
     $categories = [];
-    foreach($rows as $risk) {
+    foreach ($rows as $risk) {
         $categories[$risk['category']][] = $risk;
     }
-    foreach($rows as $index => $risk) {
+
+    foreach ($rows as $index => $risk) {
         $color = get_risk_color($risk['residual_risk']);
         $risk_id = $risk['id'] + 1000;
         $trend = "";
-        if($risk['residual_risk_start'] == $risk['residual_risk_end']) {
+        if ($risk['residual_risk_start'] == $risk['residual_risk_end']) {
             $trend = "&#8596;";
-        } else if($risk['residual_risk_start'] < $risk['residual_risk_end']) {
+        } else if ($risk['residual_risk_start'] < $risk['residual_risk_end']) {
             $trend = "&#8593;";
         } else {
             $trend = "&#8595;";
         }
         $details = "
-                        <a class='open-in-new-tab font-22' href='../management/view.php?id=" . $escaper->escapeHtml($risk_id) . "' target='_blank'>" . $risk_id . " : " . $escaper->escapeHtml(try_decrypt($risk['subject'])) . "</a>
+                        <a class='open-in-new-tab font-22' href='../management/view.php?id={$escaper->escapeHtml($risk_id)}' target='_blank'>{$risk_id} : {$escaper->escapeHtml(try_decrypt($risk['subject']))}</a>
                         <ul>
         ";
-        if($risk['assessment']) {
+        if ($risk['assessment']) {
             $details .= "
                             <li>" . $escaper->purifyHtml(try_decrypt($risk['assessment'])) . "</li>
             ";
         }
-        if($risk['notes']) {
+        if ($risk['notes']) {
             $details .= "
                             <li>" . $escaper->purifyHtml(try_decrypt($risk['notes'])) . "</li>
             ";
         }
 
         $comments = get_comments($risk_id, false);
-        if(count($comments) > 0) {
+        if (count($comments) > 0) {
             foreach ($comments as $comment) {
                 $details .= "
-                            <li>" . format_date($comment['date']) . " [ " . $comment['name'] . " ] : " . $escaper->purifyHtml(try_decrypt($comment['comment'])) . "</li>
+                            <li>" . format_date($comment['date']) . " [ {$comment['name']} ] : " . $escaper->purifyHtml(try_decrypt($comment['comment'])) . "</li>
                 ";
             }
         }
@@ -3382,15 +3450,15 @@ function risks_and_issues_table($risk_tags, $start_date, $end_date)
         echo "
                 <tr>
         ";
-        if($index == 0 || $rows[$index-1]['category'] != $risk['category']) {
+        if ($index == 0 || $rows[$index-1]['category'] != $risk['category']) {
             echo "
-                    <td rowspan='" . count($categories[$risk['category']]) . "'>" . $escaper->escapeHtml($risk['category_name']) . "</td>
+                    <td rowspan='" . count($categories[$risk['category']]) . "'>{$escaper->escapeHtml($risk['category_name'])}</td>
             ";
         } 
         echo "
-                    <td style='background-color:" . $escaper->escapeHtml($color) . "'></td>
-                    <td style='text-align:center; font-weight:bold; font-size: 30px;'>" . $trend . "</td>
-                    <td style='word-wrap: break-word;'>" . $details . "</td>
+                    <td style='background-color:{$escaper->escapeHtml($color)}'></td>
+                    <td style='text-align:center; font-weight:bold; font-size: 30px;'>{$trend}</td>
+                    <td style='word-wrap: break-word;'>{$details}</td>
                 </tr>
         ";
     }
@@ -3399,6 +3467,7 @@ function risks_and_issues_table($risk_tags, $start_date, $end_date)
         </table>
     ";
 }
+
 /************************************************
  * FUNCTION: RETURN RISKS AND ISSUES REPORT SQL *
  ************************************************/
@@ -3630,8 +3699,8 @@ function get_group_query_for_dynamic_risk($group, &$group_value_from_db, $rename
 /********************************
  * FUNCTION: GET RISKS BY TABLE *
  ********************************/
-function get_risks_by_table($status, $sort=0, $group=0, $table_columns=[])
-{
+function get_risks_by_table($status, $sort=0, $group=0, $table_columns=[]) {
+
     global $lang;
     global $escaper;
     
@@ -3650,8 +3719,8 @@ function get_risks_by_table($status, $sort=0, $group=0, $table_columns=[])
     ";
     
     // If Group By is not selected or Import/Export extra is disabled, hide download button by group
-    if ($group_name == "none" || !import_export_extra())
-    {
+    if ($group_name == "none" || !import_export_extra()) {
+
         echo "
         <style>
             .download-by-group {
@@ -3660,9 +3729,10 @@ function get_risks_by_table($status, $sort=0, $group=0, $table_columns=[])
         </style>
         ";
     }
+
     // If Import/Export extra is disabled, hide print button by group
-    if (!import_export_extra())
-    {
+    if (!import_export_extra()) {
+
         echo "
         <style>
             .print-by-group {
@@ -3673,40 +3743,38 @@ function get_risks_by_table($status, $sort=0, $group=0, $table_columns=[])
     }
     
     // If the group name is none
-    if ($group_name == "none")
-    {
+    if ($group_name == "none") {
+
         // Display the table header
         echo "
-            <table name='risks' id='risks' data-group='' class='table risk-datatable table-bordered table-striped table-condensed  table-margin-top' style='width: 100%'>
-                <thead>
-                    <tr class='main'>
+        <table name='risks' id='risks' data-group='' class='table risk-datatable table-bordered table-striped table-condensed table-margin-top mb-0' style='width: 100%'>
+            <thead>
+                <tr class='main'>
         ";
-                        // Header columns go here
-                        get_header_columns(false, $table_columns);
+                    // Header columns go here
+                    get_header_columns(false, $table_columns);
         echo "
-                    </tr>
-                    <tr class='filter'>
+                </tr>
+                <tr class='filter'>
         ";
-                        // Header columns go here
-                        get_header_columns(false, $table_columns);
+                    // Header columns go here
+                    get_header_columns(false, $table_columns);
         echo "
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-            <br />
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
         ";
-    }
-    else
-    {
+
+    } else {
+
         // In getting table structures, disregard column_filters
         $risks = get_risks_only_dynamic($need_total_count=false, $status, $sort, 0, [], $rowCount, 0, -1);
         $displayed_group_names = [];
 
         // For each risk in the risks array
-        foreach ($risks as $risk)
-        {
+        foreach ($risks as $risk) {
 
             // We only need these for grouping, it's a waste of time to calculate the rest.
             // In case you add a new grouping add to this list
@@ -3723,77 +3791,72 @@ function get_risks_by_table($status, $sort=0, $group=0, $table_columns=[])
             $manager = $risk['manager'];
             $regulation = try_decrypt($risk['regulation']);
             $project = try_decrypt($risk['project']);
-            $next_step = $risk['next_step'];        
-            if (!$risk['submission_date'] || stripos($risk['submission_date'], "0000-00-00") !== false)
-            {
+            $next_step = $risk['next_step'];    
+
+            if (!$risk['submission_date'] || stripos($risk['submission_date'], "0000-00-00") !== false) {
                 // Set the review date to empty
                 $month_submitted = $lang['Unassigned'];
-            }
-            else
-            {
+            } else {
                 $month_submitted = date('Y F', strtotime($risk['submission_date']));
             }
 
             // If the group name is not none
-            if ($group_name != "none")
-            {
+            if ($group_name != "none") {
+
                 $initial_group_value = trim(${$group_name} ?? '');
                 
                 // Check comma splitted group
-                if($group_name == "team" || $group_name == "technology")
-                {
-                    if($initial_group_value)
-                    {
+                if ($group_name == "team" || $group_name == "technology") {
+
+                    if ($initial_group_value) {
                         $group_values_including_empty = str_getcsv($initial_group_value);
                         $group_values = [];
-                        foreach($group_values_including_empty as $val){
+                        foreach ($group_values_including_empty as $val) {
                             // Remove empty values from group_values
-                            if($val) $group_values[] = $val;
+                            if ($val) {
+                                $group_values[] = $val;
+                            }
                         }
-                    }
-                    else
-                    {
+                    } else {
                         $group_values = [""];
                     }
-                }
-                else
-                {
+
+                } else {
                     $group_values = [$initial_group_value];
                 }
+
                 //$group_value = $group_values[0];
 
-                foreach($group_values as $group_value)
-                {
-                    switch($group_name){
+                foreach($group_values as $group_value) {
+
+                    switch ($group_name) {
                         case "risk_level":
                             $group_value_from_db = $risk['calculated_risk'];
-                        break;
+                            break;
                         case "month_submitted":
                             $group_value_from_db = $risk['submission_date'];
-                        break;
+                            break;
                         // Comma splitted group
                         case "team";
                         case "technology";
                             $group_value_from_db = get_value_by_name($group_name, $group_value);
-                        break;
+                            break;
                         default:
                             $group_value_from_db = $risk[$group_name];
-                        break;
+                            break;
                     }
                     
-                    
                     // If the selected group value is empty
-                    if ($group_value == "")
-                    {
+                    if ($group_value == "") {
                         // Current group is Unassigned
                         $group_value = $lang['Unassigned'];
                     }
 
                     // If the group is not the current group
-//                    if ($group_value != $current_group && !in_array($group_value, $displayed_group_names))
-                    if (!in_array($group_value, $displayed_group_names))
-                    {
-                        // If this is not the first group
+                    // if ($group_value != $current_group && !in_array($group_value, $displayed_group_names))
+                    if (!in_array($group_value, $displayed_group_names)) {
+
+// If this is not the first group
 //                        if ($current_group != "")
 //                        {
 //                                echo "</tbody>\n";
@@ -3807,25 +3870,28 @@ function get_risks_by_table($status, $sort=0, $group=0, $table_columns=[])
                         
                         // Display the table header
                         echo "
-                            <table data-group='" . $escaper->escapeHtml($group_value_from_db) . "' class='table risk-datatable table-bordered table-striped table-condensed  table-margin-top' style='width: 100%'>
-                                <thead data-group-header-title='{$escaper->escapeHtml($group_value)}' data-group-header-colspan='{$length}'>
-                                    <tr class='main'>
+        <table data-group='{$escaper->escapeHtml($group_value_from_db)}' class='table risk-datatable table-bordered table-striped table-condensed  table-margin-top' style='width: 100%'>
+            <thead data-group-header-title='{$escaper->escapeHtml($group_value)}' data-group-header-colspan='{$length}'>
+                <tr class='main'>
                         ";
-                                        // Header columns go here
-                                        get_header_columns(false, $table_columns);
+
+                    // Header columns go here
+                    get_header_columns(false, $table_columns);
+
                         echo "
-                                    </tr>
-                                    <tr class='filter'>
+                </tr>
+                <tr class='filter'>
                         ";
-                                        // Header columns go here
-                                        get_header_columns(false, $table_columns);
+
+                    // Header columns go here
+                    get_header_columns(false, $table_columns);
+
                         echo "
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
-                            <br />
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
                         ";
                     }
                 }
@@ -4044,35 +4110,36 @@ function get_print_header_columns($columns)
 /********************************
  * FUNCTION: GET HEADER COLUMNS *
  ********************************/
-function get_header_columns($hide, $selected_columns=[])
-{
+function get_header_columns($hide, $selected_columns=[]) {
+
     global $lang;
     global $escaper;
 
-    if($hide) {
+    if ($hide) {
         $display = "display: none;";
     } else {
         $display = "display: table-cell;";
     }
 
-    foreach($selected_columns as $column=>$status) {
-        if(stripos($column, "custom_field_") === false) {
+    foreach ($selected_columns as $column=>$status) {
+        if (stripos($column, "custom_field_") === false) {
             $name = get_label_by_risk_field_name($column);
             echo "
-                <th class='{$column}' data-name='{$column}' " . ($status == true ? "" : "style='{$display}' ") . "align='left' >" . $name . "</th>
+                <th class='{$column}' data-name='{$column}' " . ($status == true ? "" : "style='{$display}' ") . "align='left' >{$name}</th>
             "; 
         } else {
             // If customization extra is enabled, includes customization fields 
-            if(customization_extra()) {
+            if (customization_extra()) {
                 $custom_cols = "";
                 
                 // Include the extra
                 require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
                 $field_id = str_replace("custom_field_", "", $column);
                 $custom_field = get_field_by_id($field_id);
                 $label = $escaper->escapeHtml($custom_field['name']);
                 echo "
-                <th class='custom_field_{$field_id}' data-name='" . $column . "' align='left' width='50px' valign='top'>" . $label . "</th>
+                <th class='custom_field_{$field_id}' data-name='{$column}' align='left' width='50px' valign='top'>{$label}</th>
                 ";
             }
         }
@@ -4082,38 +4149,44 @@ function get_header_columns($hide, $selected_columns=[])
 /**********************************
  * FUNCTION: TABLE OF RISK BY TEAM *
  *********************************/
-function risk_table_open_by_team($selected_columns=[]){
+function risk_table_open_by_team($selected_columns=[]) {
 
     global $lang;
     global $escaper;
 
     // Display the table header
-    echo "<table data-group='' class=\"table risk-datatable table-bordered table-striped table-condensed  table-margin-top\" style='width: 100%'>\n";
-    echo "<thead>\n";
-    echo "<tr class='main'>\n";
-
-    // Header columns go here
-    get_header_columns(false, $selected_columns);
-
-    echo "</tr>\n";
-    echo "<tr class='filter'>\n";
-    // Header columns go here
-    get_header_columns(false, $selected_columns);
-    echo "</tr>\n";
-    echo "</thead>\n";
-    echo "<tbody>\n";
+    echo "
+        <table data-group='' class='table risk-datatable table-bordered table-striped table-condensed table-margin-top' style='width: 100%'>
+            <thead>
+                <tr class='main'>
+    ";
+                    // Header columns go here
+                    get_header_columns(false, $selected_columns);
+    echo "
+                </tr>
+                <tr class='filter'>
+    ";
+                    // Header columns go here
+                    get_header_columns(false, $selected_columns);
+    echo "
+                </tr>
+            </thead>
+            <tbody>
+    ";
     
     // End the table
-    echo "</tbody>\n";
-    echo "</table>\n";
-    echo "<br />\n";
+    echo "
+            </tbody>
+        </table>
+    ";
+
 }
 
 /**********************************
  * FUNCTION: RISKS BY MONTH TABLE *
  **********************************/
-function risks_by_month_table()
-{
+function risks_by_month_table() {
+
     global $escaper;
     global $lang;
 
@@ -4124,32 +4197,40 @@ function risks_by_month_table()
 
     // Get the closed risks array by month
     $closed_risks = get_closed_risks_array("month");
+
     $close_date = $closed_risks[0];
     $close_count = $closed_risks[1];
 
-    echo "<table class='table table-hover'>\n";
-    echo "<thead>\n";
-    echo "<tr bgcolor=\"white\">\n";
-    echo "<th>&nbsp;</th>\n";
+    echo "
+        <table class='table table-hover border mb-0'>
+            <thead>
+                <tr bgcolor='white'>
+                    <th>&nbsp;</th>
+    ";
 
     // For each of the past 12 months
-    for ($i=12; $i>=0; $i--)
-    {
+    for ($i = 12; $i >= 0; $i--) {
+
         // Get the month
         $month = date('Y M', strtotime("first day of -$i month"));
 
-        echo "<th align=\"center\" width=\"50px\">" . $escaper->escapeHtml($month) . "</th>\n";
+        echo "
+                    <th align='center' width='50px'>{$escaper->escapeHtml($month)}</th>
+        ";
+
     }
 
-    echo "</tr>\n";
-    echo "</thead>\n";
-    echo "<tbody>\n";
-    echo "<tr bgcolor=\"white\">\n";
-    echo "<td align=\"center\">" . $escaper->escapeHtml($lang['OpenedRisks']) . "</td>\n";
+    echo "
+                </tr>
+            </thead>
+            <tbody>
+                <tr bgcolor='white'>
+                    <td align='center'>{$escaper->escapeHtml($lang['OpenedRisks'])}</td>
+    ";
 
     // For each of the past 12 months
-    for ($i=12; $i>=0; $i--)
-    {
+    for ($i = 12; $i >= 0; $i--) {
+
         // Get the month
         $month = date('Y-m', strtotime("first day of -$i month"));
         
@@ -4157,24 +4238,32 @@ function risks_by_month_table()
         $key = array_search($month, $open_date);
 
         // If no result was found or the key is null
-        if ($key === false || is_null($key))
-        {
+        if ($key === false || is_null($key)) {
+
             // Set the value to 0
             $open[$i] = 0;
-        }
+            
         // Otherwise, use the value found
-        else $open[$i] = $open_count[$key];
+        } else {
+            
+            $open[$i] = $open_count[$key];
 
-        echo "<td align=\"center\" width=\"50px\">" . $escaper->escapeHtml($open[$i]) . "</td>\n";
+        }
+
+        echo "
+                    <td align='center' width='50px'>{$escaper->escapeHtml($open[$i])}</td>
+        ";
     }
 
-    echo "</tr>\n";
-    echo "<tr bgcolor=\"white\">\n";
-    echo "<td align=\"center\">" . $escaper->escapeHtml($lang['ClosedRisks']) . "</td>\n";
+    echo "
+                </tr>
+                <tr bgcolor='white'>
+                    <td align='center'>{$escaper->escapeHtml($lang['ClosedRisks'])}</td>
+    ";
 
     // For each of the past 12 months
-    for ($i=12; $i>=0; $i--)
-    {
+    for ($i = 12; $i >= 0; $i--) {
+
         // Get the month
         $month = date('Y-m', strtotime("first day of -$i month"));
 
@@ -4182,43 +4271,56 @@ function risks_by_month_table()
         $key = array_search($month, $close_date);
 
         // If no result was found or the key is null
-        if ($key === false || is_null($key))
-        {
+        if ($key === false || is_null($key)) {
+
             // Set the value to 0
             $close[$i] = 0;
-        }
-        // Otherwise, use the value found
-        else $close[$i] = $close_count[$key];
 
-        echo "<td align=\"center\" width=\"50px\">" . $escaper->escapeHtml($close[$i]) . "</td>\n";
+        // Otherwise, use the value found
+        } else {
+
+            $close[$i] = $close_count[$key];
+
+        }
+
+        echo "
+                    <td align='center' width='50px'>{$escaper->escapeHtml($close[$i])}</td>
+        ";
+
     }
 
-    echo "</tr>\n";
-    echo "<tr bgcolor=\"white\">\n";
-    echo "<td align=\"center\">" . $escaper->escapeHtml($lang['RiskTrend']) . "</td>\n";
+    echo "
+                </tr>
+                <tr bgcolor='white'>
+                    <td align='center'>{$escaper->escapeHtml($lang['RiskTrend'])}</td>
+    ";
 
     // For each of the past 12 months
-    for ($i=12; $i>=0; $i--)
-    {
+    for ($i = 12; $i >= 0; $i--) {
+
         // Subtract the open number from the closed number
         $total[$i] = $open[$i] - $close[$i];
 
         // If the total is positive
-        if ($total[$i] > 0)
-        {
-            // Display it in red
-            $total_string = "<font color=\"red\">+" . $total[$i] . "</font>";
-        }
-        // If the total is negative
-        else if ($total[$i] < 0)
-        {
-            // Display it in green
-            $total_string = "<font color=\"green\">" . $total[$i] . "</font>";
-        }
-        // Otherwise the total is 0
-        else $total_string = $total[$i];
+        if ($total[$i] > 0) {
 
-        echo "<td align=\"center\" width=\"50px\">" . $total_string . "</td>\n";
+            // Display it in red
+            $total_string = "<font color='red'>+{$total[$i]}</font>";
+
+        // If the total is negative
+        } else if ($total[$i] < 0) {
+
+            // Display it in green
+            $total_string = "<font color='green'>{$total[$i]}</font>";
+
+        // Otherwise the total is 0
+        } else {
+            $total_string = $total[$i];
+        }
+
+        echo "
+                    <td align='center' width='50px'>{$total_string}</td>
+        ";
     }
 
     // Reverse the total array
@@ -4231,30 +4333,39 @@ function risks_by_month_table()
     $total_open_risks[] = $open_risks_today;
 
     // For each of the past 12 months
-    for ($i=1; $i<=12; $i++)
-    {
+    for ($i=1; $i<=12; $i++) {
+
         $total_open_risks[$i] = $total_open_risks[$i-1] - $total[$i-1];
+
     }
 
     // Reverse the total open risks array
     $total_open_risks = array_reverse($total_open_risks);
     
-    echo "</tr>\n";
-    echo "<tr bgcolor=\"white\">\n";
-    echo "<td align=\"center\">" . $escaper->escapeHtml($lang['TotalOpenRisks']) . "</td>\n";
+    echo "
+                </tr>
+                <tr bgcolor='white'>
+                    <td align='center'>{$escaper->escapeHtml($lang['TotalOpenRisks'])}</td>
+    ";
 
     // For each of the past 12 months
-    for ($i=0; $i<=12; $i++)
-    {
+    for ($i = 0; $i <= 12; $i++) {
+
         // Get the total number of risks
         $total = $total_open_risks[$i];
 
-        echo "<td align=\"center\" width=\"50px\">" . $escaper->escapeHtml($total) . "</td>\n";
+        echo "
+                    <td align='center' width='50px'>{$escaper->escapeHtml($total)}</td>
+        ";
+
     }
 
-    echo "</tr>\n";
-    echo "</tbody>\n";
-    echo "</table>\n";
+    echo "
+                </tr>
+            </tbody>
+        </table>
+    ";
+
 }
 
 /*************************************
@@ -6376,16 +6487,24 @@ function count_array_values($array, $sort)
 /************************************
  * FUNCTION: GET OPENED RISKS ARRAY *
  ************************************/
-function get_opened_risks_array($timeframe)
-{
+function get_opened_risks_array($timeframe) {
+
     // If team separation is not enabled
-    if (!team_separation_extra())
-    {
+    if (!team_separation_extra()) {
+
         // Open the database connection
         $db = db_open();
 
         // Query the database
-        $stmt = $db->prepare("SELECT id, submission_date FROM risks ORDER BY submission_date;");
+        $stmt = $db->prepare("
+            SELECT 
+                id, submission_date 
+            FROM 
+                risks 
+            ORDER BY 
+                submission_date;
+        ");
+
         $stmt->execute();
 
         // Store the list in the array
@@ -6393,15 +6512,16 @@ function get_opened_risks_array($timeframe)
 
         // Close the database connection
         db_close($db);
-    }
+
     // Otherwise team separation is enabled
-    else
-    {
+    } else {
+
         //Include the team separation extra
         require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
         // Get the opened risks stripped
         $array = strip_get_opened_risks_array();
+
     }
 
     // Set the defaults
@@ -6411,30 +6531,31 @@ function get_opened_risks_array($timeframe)
     $open_count = array();
 
     // For each row
-    foreach ($array as $key=>$row)
-    {
+    foreach ($array as $key=>$row) {
+
         // If the timeframe is by day
-        if ($timeframe === "day")
-        {
+        if ($timeframe === "day") {
+
             // Set the date to the day
             $date = date('Y-m-d', strtotime($row['submission_date']));
-        }
+
         // If the timeframe is by month
-        else if ($timeframe === "month")
-        {
+        } else if ($timeframe === "month") {
+
             // Set the date to the month
             $date = date('Y-m', strtotime($row['submission_date']));
-        }
+
         // If the timeframe is by year
-        else if ($timeframe === "year")
-        {
+        } else if ($timeframe === "year") {
+
             // Set the date to the year
             $date = date('Y', strtotime($row['submission_date']));
+
         }
 
         // If the date is different from the current date
-        if ($current_date != $date)
-        {
+        if ($current_date != $date) {
+
             // Increment the counter
             $counter = $counter + 1;
 
@@ -6448,48 +6569,62 @@ function get_opened_risks_array($timeframe)
             $open_count[$counter] = 1;
 
             // If this is the first entry
-            if ($counter == 0)
-            {
+            if ($counter == 0) {
+
                 // Set the open total to 1
                 $open_total[$counter] = 1;
-            }
+
             // Otherwise, add the value of this row to the previous value
-            else $open_total[$counter] = $open_total[$counter-1] + 1;
-        }
+            } else {
+
+                $open_total[$counter] = $open_total[$counter-1] + 1;
+
+            }
+        
         // Otherwise, if the date is the same
-        else
-        {
+        } else {
+
             // Increment the open count
             $open_count[$counter] = $open_count[$counter] + 1;
 
             // Update the open total
             $open_total[$counter] = $open_total[$counter] + 1;
+
         }
     }
 
     // Return the open date array
     return array($open_date, $open_count);
+
 }
 
 /************************************
  * FUNCTION: GET CLOSED RISKS ARRAY *
  ************************************/
-function get_closed_risks_array($timeframe)
-{
+function get_closed_risks_array($timeframe) {
+
     // If team separation is not enabled
-    if (!team_separation_extra())
-    {
+    if (!team_separation_extra()) {
+
         // Open the database connection
         $db = db_open();
 
         // Query the database
-//$stmt = $db->prepare("SELECT a.risk_id as id, a.closure_date, c.status FROM closures a LEFT JOIN risks c ON a.risk_id=c.id WHERE a.closure_date=(SELECT max(b.closure_date) FROM closures b WHERE a.risk_id=b.risk_id) AND c.status='Closed' GROUP BY a.risk_id ORDER BY closure_date;");
+        //$stmt = $db->prepare("SELECT a.risk_id as id, a.closure_date, c.status FROM closures a LEFT JOIN risks c ON a.risk_id=c.id WHERE a.closure_date=(SELECT max(b.closure_date) FROM closures b WHERE a.risk_id=b.risk_id) AND c.status='Closed' GROUP BY a.risk_id ORDER BY closure_date;");
         $stmt = $db->prepare("
-            SELECT t1.id, IFNULL(t2.closure_date, NOW()) closure_date, t1.status 
-            FROM `risks` t1 LEFT JOIN `closures` t2 ON t1.close_id=t2.id
-            WHERE t1.status='Closed' 
-            ORDER BY IFNULL(t2.closure_date, NOW());
+            SELECT 
+                t1.id, 
+                IFNULL(t2.closure_date, NOW()) closure_date, 
+                t1.status 
+            FROM 
+                `risks` t1 
+                LEFT JOIN `closures` t2 ON t1.close_id=t2.id
+            WHERE 
+                t1.status = 'Closed' 
+            ORDER BY 
+                IFNULL(t2.closure_date, NOW());
         ");
+
         $stmt->execute();
 
         // Store the list in the array
@@ -6497,15 +6632,16 @@ function get_closed_risks_array($timeframe)
 
         // Close the database connection
         db_close($db);
-    }
+
     // Otherwise team separation is enabled
-    else
-    {
+    } else {
+
         //Include the team separation extra
         require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
         // Get the closed risks stripped
         $array = strip_get_closed_risks_array();
+
     }
 
     // Set the defaults
@@ -6515,67 +6651,71 @@ function get_closed_risks_array($timeframe)
     $close_count = array();
     
     // For each row
-    foreach ($array as $key=>$row)
-    {
-            // If the timeframe is by day
-            if ($timeframe === "day")
-            {
-                    // Set the date to the day
-                    $date = date('Y-m-d', strtotime($row['closure_date']));
+    foreach ($array as $key=>$row) {
+
+        // If the timeframe is by day
+        if ($timeframe === "day") {
+
+            // Set the date to the day
+            $date = date('Y-m-d', strtotime($row['closure_date']));
+        
+        // If the timeframe is by month
+        } else if ($timeframe === "month") {
+
+            // Set the date to the month
+            $date = date('Y-m', strtotime($row['closure_date']));
+
+        // If the timeframe is by year
+        } else if ($timeframe === "year") {
+
+            // Set the date to the year
+            $date = date('Y', strtotime($row['closure_date']));
+
+        }
+
+        // If the date is different from the current date
+        if ($current_date != $date) {
+
+            // Increment the counter
+            $counter = $counter + 1;
+
+            // Set the current date
+            $current_date = $date;
+
+            // Add the date
+            $close_date[$counter] = $current_date;
+
+            // Set the close count to 1
+            $close_count[$counter] = 1;
+
+            // If this is the first entry
+            if ($counter == 0) {
+
+                // Set the close total to 1
+                $close_total[$counter] = 1;
+
+            // Otherwise, add the value of this row to the previous value
+            } else {
+
+                $close_total[$counter] = $close_total[$counter-1] + 1;
+
             }
-            // If the timeframe is by month
-            else if ($timeframe === "month")
-            {
-                    // Set the date to the month
-                    $date = date('Y-m', strtotime($row['closure_date']));
-            }
-            // If the timeframe is by year
-            else if ($timeframe === "year")
-            {
-                    // Set the date to the year
-                    $date = date('Y', strtotime($row['closure_date']));
-            }
+        
+        // Otherwise, if the date is the same
+        } else {
 
-            // If the date is different from the current date
-            if ($current_date != $date)
-            {
-                    // Increment the counter
-                    $counter = $counter + 1;
+            // Increment the closed count
+            $close_count[$counter] = $close_count[$counter] + 1;
 
-                    // Set the current date
-                    $current_date = $date;
+            // Update the close total
+            $close_total[$counter] = $close_total[$counter] + 1;
 
-                    // Add the date
-                    $close_date[$counter] = $current_date;
-
-                    // Set the close count to 1
-                    $close_count[$counter] = 1;
-
-                    // If this is the first entry
-                    if ($counter == 0)
-                    {
-                        // Set the close total to 1
-                        $close_total[$counter] = 1;
-                    }
-                    // Otherwise, add the value of this row to the previous value
-                    else 
-                    {
-                        $close_total[$counter] = $close_total[$counter-1] + 1;
-                    }
-            }
-            // Otherwise, if the date is the same
-            else
-            {
-                // Increment the closed count
-                $close_count[$counter] = $close_count[$counter] + 1;
-
-                // Update the close total
-                $close_total[$counter] = $close_total[$counter] + 1;
-            }
+        }
     }
     
     // Return the close date array
     return array($close_date, $close_count);
+
 }
 
 /****************************************
@@ -6603,12 +6743,12 @@ function encode_data_before_display($array)
 /************************************
  * FUNCTION: RISKS AND CONTROLS TABLE *
  ************************************/
-function risks_and_control_table($report, $sort_by, $projects, $status)
-{
+function risks_and_control_table($report, $sort_by, $projects, $status) {
+
     global $lang;
     global $escaper;
 
-    if(count($_POST) > 3) {
+    if (count($_POST) > 3) {
         $control_framework = isset($_POST['control_framework']) ? $_POST['control_framework'] : [];
         $control_family = isset($_POST['control_family']) ? $_POST['control_family'] : [];
         $control_class = isset($_POST['control_class']) ? $_POST['control_class'] : [];
@@ -6640,46 +6780,45 @@ function risks_and_control_table($report, $sort_by, $projects, $status)
     
 
     // If team separation is enabled
-    if (team_separation_extra())
-    {
+    if (team_separation_extra()) {
+
         // Include the team separation extra
         require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
 
         // Just setting it true so we can later remove the risks
         // the user doesn't have permission to.
         // It's because all grouping type has different logic where its risk id is stored
         $separation = true;
+
     } else {
         $separation = false;
     }
     
-    foreach($rows as $gr_id => $row){
-        if($separation)
-        {
+    foreach ($rows as $gr_id => $row) {
+
+        if ($separation) {
             $risks = strip_no_access_risks($row);
-        }
-        else
-        {
+        } else {
             $risks = $row;
         }
+
         // Risks by Controls
         if ( $report == 0 ) {
             $header_color = get_risk_color($risks[0]['calculated_risk']);
             $control_frameworks = get_mapping_control_frameworks($gr_id);
-            if(count($control_frameworks)) {
+            if (count($control_frameworks)) {
                 $cf_table = "
-                    <table border='1px' class='table table-bordered mb-2' style='background-color:" . $escaper->escapeHtml($header_color) . "'>
+                    <table border='1px' class='table table-bordered mb-2' style='background-color:{$escaper->escapeHtml($header_color)}'>
                         <tr>
-                            <th width='50%' style='background-color:" . $escaper->escapeHtml($header_color) . "'>" . $escaper->escapeHtml($lang['Framework']) . "</th>
-                            <th width='35%' style='background-color:" . $escaper->escapeHtml($header_color) . "'>" . $escaper->escapeHtml($lang['Control']) . "</th>
+                            <th width='50%' style='background-color:{$escaper->escapeHtml($header_color)}'>{$escaper->escapeHtml($lang['Framework'])}</th>
+                            <th width='35%' style='background-color:{$escaper->escapeHtml($header_color)}'>{$escaper->escapeHtml($lang['Control'])}</th>
                         </tr>
                 ";
-                foreach ($control_frameworks as $framework){
+                foreach ($control_frameworks as $framework) {
                     $cf_table .= "
                         <tr>
-                            <td style='background-color:" . $escaper->escapeHtml($header_color) . "'>" . $escaper->escapeHtml($framework['framework_name']) . "</td>
-                            <td style='background-color:" . $escaper->escapeHtml($header_color) . "'>" . $escaper->escapeHtml($framework['reference_name']) . "</td>
+                            <td style='background-color:{$escaper->escapeHtml($header_color)}'>{$escaper->escapeHtml($framework['framework_name'])}</td>
+                            <td style='background-color:{$escaper->escapeHtml($header_color)}'>{$escaper->escapeHtml($framework['reference_name'])}</td>
                         </tr>
                     ";
                 }
@@ -6719,7 +6858,7 @@ function risks_and_control_table($report, $sort_by, $projects, $status)
                                 </th>
                             </tr>
                             <tr>
-                                <th align='left' width='50px'>" . $escaper->escapeHtml($lang['ID']) . "</th>
+                                <th style='width: 100px; min-width: 100px;' align='left'>" . $escaper->escapeHtml($lang['ID']) . "</th>
                                 <th align='left' width='150px'>" . $escaper->escapeHtml($lang['Status']) . "</th>
                                 <th align='left' width='300px'>" . $escaper->escapeHtml($lang['Subject']) . "</th>
                                 <th align='left' width='200px'>" . $escaper->escapeHtml($lang['SiteLocation']) . "</th>
@@ -6730,8 +6869,8 @@ function risks_and_control_table($report, $sort_by, $projects, $status)
                         </thead>
                 ";
 
-            foreach($risks as $risk)
-            {
+            foreach ($risks as $risk) {
+
                 $risk_id = convert_id($risk['id']);
                 $status = $risk['status'];
                 $subject = try_decrypt($risk['subject']);
@@ -6747,7 +6886,7 @@ function risks_and_control_table($report, $sort_by, $projects, $status)
                 echo "
                         <tbody>
                             <tr>
-                                <td align='left' width='50px'><a class='open-in-new-tab' href='../management/view.php?id=" . $risk_id . "'>" . $risk_id . "</a></td>
+                                <td style='width: 100px; min-width: 100px;' align='left'><a class='open-in-new-tab' href='../management/view.php?id=" . $risk_id . "'>" . $risk_id . "</a></td>
                                 <td align='left' width='150px'>" . $escaper->escapeHtml($status) . "</td>
                                 <td align='left' width='300px'>" . $escaper->escapeHtml($subject) . "</td>
                                 <td align='left' width='200px'>" . $escaper->escapeHtml($location) . "</td>
@@ -6767,9 +6906,10 @@ function risks_and_control_table($report, $sort_by, $projects, $status)
                         </tbody>
                     </table>
             ";
-        } 
+        
         // Controls by Risks
-        elseif ($report == 1){
+        } else if ($report == 1) {
+
             // Get the variables for the row
             $origin_risk_id = $risks[0]['id'];
             $risk_id = convert_id($origin_risk_id);
@@ -6781,7 +6921,7 @@ function risks_and_control_table($report, $sort_by, $projects, $status)
             $color = get_risk_color($calculated_risk);
 
             echo "
-                <table width='100%' class='table table-bordered table-condensed' role='grid' style='width: 100%;'>
+                <table width='100%' class='table table-bordered table-condensed mb-2' role='grid' style='width: 100%;'>
                     <tbody>
                         <tr>
                             <th style='background-color:{$escaper->escapeHtml($color)};' bgcolor='{$escaper->escapeHtml($color)}' colspan='5'>
@@ -6804,7 +6944,7 @@ function risks_and_control_table($report, $sort_by, $projects, $status)
                         </tr>
                     ";
 
-            foreach($risks as $gr_id => $control){
+            foreach ($risks as $gr_id => $control) {
                 $control_id = $control['control_id'];
                 $control_long_name = $control['control_long_name'];
                 $control_long_name = $control['control_long_name'];
@@ -7401,13 +7541,13 @@ function display_appetite_datatable($within=true) {
 
     echo "
         <div class='table-container' data-id='{$tableID}'>
-            <table id='{$tableID}' width='100%' data-type='$type' class='risk-datatable table table-bordered table-striped table-condensed'>
+            <table id='{$tableID}' width='100%' data-type='{$type}' class='risk-datatable table table-bordered table-striped table-condensed'>
                 <thead>
                     <tr>
-                        <th data-name='id' align='left' valign='top'>" . $escaper->escapeHtml($lang['ID']) . "</th>
-                        <th data-name='subject' align='left' valign='top'>" . $escaper->escapeHtml($lang['Subject']) . "</th>
-                        <th data-name='calculated_risk' align='center' valign='top'>" . $escaper->escapeHtml($lang['InherentRisk']) . "</th>
-                        <th data-name='residual_risk' align='center' valign='top'>" . $escaper->escapeHtml($lang['ResidualRisk']) . "</th>
+                        <th data-name='id' align='left' valign='top'>{$escaper->escapeHtml($lang['ID'])}</th>
+                        <th data-name='subject' align='left' valign='top'>{$escaper->escapeHtml($lang['Subject'])}</th>
+                        <th data-name='calculated_risk' align='center' valign='top'>{$escaper->escapeHtml($lang['InherentRisk'])}</th>
+                        <th data-name='residual_risk' align='center' valign='top'>{$escaper->escapeHtml($lang['ResidualRisk'])}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -7415,6 +7555,7 @@ function display_appetite_datatable($within=true) {
             </table>
         </div>
     ";
+
 }
 
 function display_appetite_datatable_script() {
@@ -7465,6 +7606,7 @@ function display_appetite_datatable_script() {
             });
         </script>
     ";
+
 }
 
 function display_user_management_reports_datatable($type) {
@@ -7851,8 +7993,8 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
 /*****************************************
  * FUNCTION: GET CONNECTIVITY VISUALIZER *
  *****************************************/
-function get_connectivity_visualizer()
-{
+function get_connectivity_visualizer() {
+
     global $lang, $escaper;
 
     echo "
@@ -7866,23 +8008,23 @@ function get_connectivity_visualizer()
 
     // Create a filter by
     echo "
-                <label>" . $escaper->escapeHtml($lang['FilterBy']) . ":</label>
+                <label>" . $escaper->escapeHtml($lang['FilterBy']) . " :</label>
     ";
     // If no filter was posted
-    if (!isset($_POST['filter']))
-    {
+    if (!isset($_POST['filter'])) {
         // Set the filter option to None Selected
         $filter = 0;
+    } else {
+        $filter = (int)$_POST['filter'];
     }
-    else $filter = (int)$_POST['filter'];
 
     // If no selected was posted
-    if (!isset($_POST['selected']))
-    {
+    if (!isset($_POST['selected'])) {
         // Set the selected option to None Selected
         $selected = 0;
+    } else {
+        $selected = (int)$_POST['selected'];
     }
-    else $selected = (int)$_POST['selected'];
 
     // Create the dropdown
     echo "
@@ -7898,8 +8040,8 @@ function get_connectivity_visualizer()
     ";
 
     // If the filter is not zero
-    if ($filter != 0)
-    {
+    if ($filter != 0) {
+
         // Create an empty array
         $array = [];
 
@@ -7911,7 +8053,7 @@ function get_connectivity_visualizer()
                     });
                 </script>
                 
-                <label class='mt-3'>" . $escaper->escapeHtml($lang['Selected']) . ":</label>
+                <label class='mt-3'>" . $escaper->escapeHtml($lang['Selected']) . " :</label>
         ";
 
         // Create the dropdown
@@ -7921,8 +8063,8 @@ function get_connectivity_visualizer()
         ";
 
         // Get the query based on the filter
-        switch ($filter)
-        {
+        switch ($filter) {
+
             // If the filter is risks
             case 1:
                 // Get the risks
@@ -7932,8 +8074,8 @@ function get_connectivity_visualizer()
                 $risks = $risks['risks'];
 
                 // For each of the risks
-                foreach ($risks as $risk)
-                {
+                foreach ($risks as $risk) {
+
                     // Get the risk id and calculated risk score
                     $risk_id = $risk['id']+1000;
                     $calculated_risk = $risk['calculated_risk'];
@@ -7957,8 +8099,7 @@ function get_connectivity_visualizer()
                 $assets = $assets['assets'];
 
                 // For each of the assets
-                foreach ($assets as $asset)
-                {
+                foreach ($assets as $asset) {
                     echo "
                     <option value='" . $escaper->escapeHtml($asset['id']) . "'" . ($selected == $asset['id'] ? " selected" : "") . ">" . $escaper->escapeHtml($asset['name']) . "</option>
                     ";
@@ -7978,8 +8119,7 @@ function get_connectivity_visualizer()
                 $frameworks = $frameworks['frameworks'];
 
                 // For each of the frameworks
-                foreach ($frameworks as $framework)
-                {
+                foreach ($frameworks as $framework) {
                     echo "
                     <option value='" . $escaper->escapeHtml($framework['value']) . "'" . ($selected == $framework['value'] ? " selected" : "") . ">" . $escaper->escapeHtml($framework['name']) . "</option>
                     ";
@@ -7999,8 +8139,7 @@ function get_connectivity_visualizer()
                 $controls = $controls['controls'];
 
                 // For each of the controls
-                foreach ($controls as $control)
-                {
+                foreach ($controls as $control) {
                     echo "
                     <option value='" . $escaper->escapeHtml($control['id']) . "'" . ($selected == $control['id'] ? " selected" : "") . ">" . $escaper->escapeHtml($control['long_name']) . "</option>
                     ";
@@ -8020,8 +8159,7 @@ function get_connectivity_visualizer()
                 $tests = $tests['tests'];
 
                 // For each of the tests
-                foreach ($tests as $test)
-                {
+                foreach ($tests as $test) {
                     echo "
                     <option value='" . $escaper->escapeHtml($test['id']) . "'" . ($selected == $test['id'] ? " selected" : "") . ">" . $escaper->escapeHtml($test['name']) . "</option>
                     ";
@@ -8041,8 +8179,7 @@ function get_connectivity_visualizer()
                 $documents = $documents['documents'];
 
                 // For each of the documents
-                foreach ($documents as $document)
-                {
+                foreach ($documents as $document) {
                     echo "
                     <option value='" . $escaper->escapeHtml($document['id']) . "'" . ($selected == $document['id'] ? " selected" : "") . ">" . $escaper->escapeHtml($document['document_name']) . "</option>
                     ";
@@ -8074,16 +8211,15 @@ function get_connectivity_visualizer()
 /*************************************
  * FUNCTION: CONNECTIVITY VISUALIZER *
  *************************************/
-function connectivity_visualizer($type, $id, $array)
-{
+function connectivity_visualizer($type, $id, $array) {
+
     global $escaper, $lang;
 
     // If the id provided is not 0 (None Selected)
-    if ($id != 0)
-    {
+    if ($id != 0) {
+
         // Get the associations based on the type
-        switch ($type)
-        {
+        switch ($type) {
             case "risk":
                 $associations = connectivity_visualizer_associations_risk($id);
                 $found = (!empty($associations['frameworks']) || !empty($associations['controls']) || !empty($associations['documents']) || !empty($associations['tests']) || !empty($associations['test_results']) || !empty($associations['assets']));
@@ -8115,18 +8251,16 @@ function connectivity_visualizer($type, $id, $array)
         }
 
         // If we found associations
-        if ($found)
-        {
+        if ($found) {
             // Get the array values that goes with the id
             $key = array_search($id, array_column($array, "id"));
             $selected_array = $array[$key];
 
             // Display the connectivity visualizer
             connectivity_visualizer_display($type, $id, $selected_array, $associations);
-        }
+            
         // If no associations were found
-        else
-        {
+        } else {
             echo "
                 <div class='card-body my-2 border'>
                     <font style='font-weight: bold; color: red;'>" . $escaper->escapeHtml($lang['ThereAreNoConnectionsAssociatedWithTheSelectedValue']) . "</font>
@@ -8139,8 +8273,8 @@ function connectivity_visualizer($type, $id, $array)
 /*********************************************
  * FUNCTION: CONNECTIVITY VISUALIZER DISPLAY *
  *********************************************/
-function connectivity_visualizer_display($type, $id, $selected_array, $associations)
-{
+function connectivity_visualizer_display($type, $id, $selected_array, $associations) {
+
     global $escaper, $lang;
 
     // Create an array of nodes and edges we have already added to prevent duplicates
@@ -8153,8 +8287,7 @@ function connectivity_visualizer_display($type, $id, $selected_array, $associati
     $color = $selected_array['color'];
 
     // If the name is longer than 50 characters
-    if (strlen($node_name) > 50)
-    {
+    if (strlen($node_name) > 50) {
         // Truncate the name to 50 characters
         $node_name = substr($node_name, 0, 50) . "...";
     }
@@ -8176,7 +8309,7 @@ function connectivity_visualizer_display($type, $id, $selected_array, $associati
                     </button>
                 </h2>
                 <div id='filter-selections-accordion-body' class='accordion-collapse collapse'>
-                    <div class='accordion-body'>
+                    <div class='accordion-body card-body'>
                         <div class='row'>
                             <div class='col-4'><h6>" . $escaper->escapeHtml($lang['Type']) . "</h6></div>
                             <div class='col-4'><h6>" . $escaper->escapeHtml($lang['Name']) . "</h6></div>
@@ -8185,11 +8318,9 @@ function connectivity_visualizer_display($type, $id, $selected_array, $associati
     ";
 
     // Iterate through the associations
-    foreach ($associations as $key => $association)
-    {
+    foreach ($associations as $key => $association) {
         // Iterate through the nodes to add the nodes
-        foreach ($association as $node)
-        {
+        foreach ($association as $node) {
             // Get the node details
             $node_id = $node['node_id'];
             $node_name = $node['node_name'];
@@ -8197,8 +8328,7 @@ function connectivity_visualizer_display($type, $id, $selected_array, $associati
             $color = $node['color'];
 
             // If we haven't already created this node
-            if (!in_array($node_id, array_column($added_nodes, "node_id")))
-            {
+            if (!in_array($node_id, array_column($added_nodes, "node_id"))) {
                 // Add the node to the graph
                 $added_nodes[] = [
                     "node_id" => $node_id,
@@ -8220,8 +8350,7 @@ function connectivity_visualizer_display($type, $id, $selected_array, $associati
             // If the current edge does not overlap with an existing edge
             $edge1 = in_array($connected_node_id, array_column($added_edges, $node_id));
             $edge2 = in_array($node_id, array_column($added_edges, $connected_node_id));
-            if (!$edge1 && !$edge2)
-            {
+            if (!$edge1 && !$edge2) {
                 // Add the edge to the added_edges array
                 $added_edges[] = [
                     "node_id" => $node_id,
@@ -8250,8 +8379,7 @@ function connectivity_visualizer_display($type, $id, $selected_array, $associati
     ";
 
     // For each of the added nodes
-    foreach ($added_nodes as $node)
-    {
+    foreach ($added_nodes as $node) {
         // Display the node
         $node_id = $node['node_id'];
         $node_name = $node['node_name'];
@@ -8263,8 +8391,7 @@ function connectivity_visualizer_display($type, $id, $selected_array, $associati
     }
 
     // For each of the added edges
-    foreach ($added_edges as $edge)
-    {
+    foreach ($added_edges as $edge) {
         // Display the edge
         $node_id = $edge['node_id'];
         $connected_node_id = $edge['connected_node_id'];
@@ -9399,6 +9526,7 @@ function display_control_maturity_spider_chart($framework_id) {
     $title = $escaper->escapeHtml($lang['CurrentVsDesiredMaturity']);
     $element_id = "control_maturity_spider_chart";
     create_chartjs_radar_code($title, $element_id, $categories, $datasets);
+
 }
 
 /*********************************************

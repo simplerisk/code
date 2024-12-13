@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace SimpleSAML\Locale;
 
 use Gettext\TranslatorFunctions;
-use SimpleSAML\Configuration;
+use SimpleSAML\{Configuration, Logger};
 
 class Translate
 {
@@ -22,6 +22,10 @@ class Translate
      */
     private Language $language;
 
+    /**
+     * A theme and module may exist together as dual default translation domains
+     */
+    private static array $defaultDomains = [];
 
     /**
      * Constructor
@@ -29,7 +33,7 @@ class Translate
      * @param \SimpleSAML\Configuration $configuration Configuration object
      */
     public function __construct(
-        private Configuration $configuration
+        private Configuration $configuration,
     ) {
         $this->language = new Language($configuration);
     }
@@ -58,6 +62,10 @@ class Translate
         return $tag;
     }
 
+    public static function addDefaultDomain(string $domain): void
+    {
+        array_push(self::$defaultDomains, $domain);
+    }
 
     /**
      * Translate a singular text.
@@ -72,7 +80,25 @@ class Translate
         $original = $original ?? 'undefined variable';
 
         $text = TranslatorFunctions::getTranslator()->gettext($original);
+        if ($text === $original) {
+            $text = TranslatorFunctions::getTranslator()->dgettext("core", $original);
+            if ($text === $original) {
+                $text = TranslatorFunctions::getTranslator()->dgettext("messages", $original);
+                if ($text === $original) {
+                    foreach (self::$defaultDomains as $d) {
+                        $text = TranslatorFunctions::getTranslator()->dgettext($d, $original);
+                        if ($text != $original) {
+                            return $text;
+                        }
+                    }
 
+                    // try attributes.po
+                    if ($text === $original) {
+                        $text = TranslatorFunctions::getTranslator()->dgettext("", $original);
+                    }
+                }
+            }
+        }
         if (func_num_args() === 1) {
             return $text;
         }

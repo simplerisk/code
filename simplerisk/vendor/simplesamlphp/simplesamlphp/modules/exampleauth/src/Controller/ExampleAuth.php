@@ -46,7 +46,7 @@ class ExampleAuth
      */
     public function __construct(
         protected Configuration $config,
-        protected Session $session
+        protected Session $session,
     ) {
     }
 
@@ -77,7 +77,7 @@ class ExampleAuth
          * Note that we don't actually validate the user in this example. This page
          * just serves to make the example work out of the box.
          */
-        $returnTo = $request->request->get('ReturnTo');
+        $returnTo = $request->get('ReturnTo');
         if ($returnTo === null) {
             throw new Error\Exception('Missing ReturnTo parameter.');
         }

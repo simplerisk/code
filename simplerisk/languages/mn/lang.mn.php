@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'Файл байршуулж чадсангүй: Үл мэдэгдэх алдаа',
     'DynamicIncidentReport' => 'Динамик ослын тайлан',
     'FilteringSelections' => 'Сонголтуудыг шүүж байна',
+    'ProcessingPleaseWait' => 'Боловсруулж байна. Хүлээгээрэй!',
+    'PleaseEnterAValidPhoneNumber' => 'Хүчинтэй утасны дугаар оруулна уу',
 
     '' => '',
 );

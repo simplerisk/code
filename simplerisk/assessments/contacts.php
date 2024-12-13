@@ -91,7 +91,7 @@
 <div id="aseessment-contact--add" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="aseessment-contact--add" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
-            <form method="post" action="">
+            <form method="post" action="" name="aseessment-contact--add-form">
                 <div class="modal-header">
                     <h4 class="modal-title"><?= $escaper->escapeHtml($lang['AddNewAssessmentContact']); ?></h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -111,7 +111,7 @@
                     </div>
                     <div class="form-group">
                         <label><?= $escaper->escapeHtml($lang['Phone']);?> :</label>
-                        <input required class = "form-control" name="phone" maxlength="200" size="100" value="" type="text">
+                        <input class = "form-control" name="phone" maxlength="200" size="100" value="" type="text">
                     </div>
                     <div class="form-group">
                         <label><?= $escaper->escapeHtml($lang['ContactManager']);?> :</label>
@@ -137,7 +137,7 @@
 <div id="aseessment-contact--edit" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="aseessment-contact--edit" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
-            <form method="post" action="">
+            <form method="post" action="" name="aseessment-contact--edit-form">
                 <input type='hidden' name='id' value=''/>
                 <div class="modal-header">
                     <h4 class="modal-title"><?= $escaper->escapeHtml($lang['UpdateAssessmentContact']); ?></h4>
@@ -158,7 +158,7 @@
                     </div>
                     <div class="form-group">
                         <label><?= $escaper->escapeHtml($lang['Phone']);?> :</label>
-                        <input name="phone" class = "form-control" maxlength="200" value="" size="100" type="text" required>
+                        <input name="phone" class = "form-control" maxlength="200" value="" size="100" type="text">
                     </div>
                     <div class="form-group">
                         <label><?= $escaper->escapeHtml($lang['ContactManager']);?> :</label>
@@ -263,6 +263,16 @@
 
             $("#aseessment-contact--delete").modal("show");
             
+        });
+        
+        // Phone number validation before submitting the add/edit assessment contact form data
+        $('body').on("submit", "[name=aseessment-contact--add-form], [name=aseessment-contact--edit-form]", function() {
+            let phone_regex = /^[+]?[\d\s-]{10,15}$/;
+            let input_value = $(this).find("[name=phone]").val();
+            if (!phone_regex.test(input_value)) {
+                toastr.error("<?= $escaper->escapeHtml($lang['PleaseEnterAValidPhoneNumber']) ?>");
+                event.preventDefault();
+            }
         });
 
     });

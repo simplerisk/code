@@ -6,6 +6,7 @@ namespace SimpleSAML\Module\exampleauth\Auth\Source;
 
 use Exception;
 use SimpleSAML\Error;
+use SimpleSAML\Logger;
 use SimpleSAML\Module\core\Auth\UserPassBase;
 use SimpleSAML\Utils;
 
@@ -42,18 +43,29 @@ class UserPass extends UserPassBase
 
         $this->users = [];
 
+        // Old version of SimpleSAMLphp had the username:password just be a list in the top level
+        // configuration. We now have them under the "users" key, so that exampleauth can be used
+        // for testing things like core:loginpage_links, etc. that require top level configuration.
+        if (array_key_exists('users', $config)) {
+            $config_users = $config['users'];
+        } else {
+            Logger::warning("Module exampleauth:UserPass configured in legacy mode. Please put your " .
+                "username:password entries under the \"users\" key in your authsource.");
+            $config_users = $config;
+        }
+
         // Validate and parse our configuration
-        foreach ($config as $userpass => $attributes) {
+        foreach ($config_users as $userpass => $attributes) {
             if (!is_string($userpass)) {
                 throw new Exception(
-                    'Invalid <username>:<password> for authentication source ' . $this->authId . ': ' . $userpass
+                    'Invalid <username>:<password> for authentication source ' . $this->authId . ': ' . $userpass,
                 );
             }
 
             $userpass = explode(':', $userpass, 2);
             if (count($userpass) !== 2) {
                 throw new Exception(
-                    'Invalid <username>:<password> for authentication source ' . $this->authId . ': ' . $userpass[0]
+                    'Invalid <username>:<password> for authentication source ' . $this->authId . ': ' . $userpass[0],
                 );
             }
             $username = $userpass[0];

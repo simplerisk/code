@@ -49,11 +49,12 @@ class App extends Router
     protected function loadConfig(array $userSettings = [])
     {
         if (!empty($userSettings)) {
-            Config::set($userSettings);
+            Config::set(array_merge($userSettings, [
+                'mode' => _env('APP_ENV', Config::getStatic('mode')),
+            ]));
         }
 
         $this->setupDefaultContainer();
-        $this->loadViewEngines();
     }
 
     protected function setupErrorHandler()
@@ -88,22 +89,6 @@ class App extends Router
     public function register($name, $value)
     {
         Config::singleton($name, $value);
-    }
-
-    /**
-     * This method loads all added view engines
-     */
-    public function loadViewEngines()
-    {
-        $views = View::$engines;
-
-        if (!empty($views)) {
-            foreach ($views as $key => $value) {
-                Config::singleton($key, function () use ($value) {
-                    return $value;
-                });
-            }
-        }
     }
 
     private function setupDefaultContainer()
@@ -145,6 +130,11 @@ class App extends Router
     public function __unset($name)
     {
         Config::remove($name);
+    }
+
+    public function __call($method, $args)
+    {
+        return Config::view($method);
     }
 
     /**
@@ -200,6 +190,27 @@ class App extends Router
         } else {
             \trigger_error('Cors module not found! Run `leaf install cors` or `composer require leafs/cors` to install the CORS module. This is required to configure CORS.');
         }
+    }
+
+    /**
+     * Add CSRF protection to your app
+     *
+     * @param array $options Config for csrf
+     */
+    public function csrf($options = [])
+    {
+        if (!\class_exists('Leaf\Anchor\CSRF')) {
+            \trigger_error('CSRF module not found! Run `leaf install csrf` or `composer require leafs/csrf` to install the CSRF module. This is required to configure CSRF.');
+        }
+
+        if (!Anchor\CSRF::token()) {
+            Anchor\CSRF::config($options);
+            Anchor\CSRF::init();
+        }
+
+        $this->use(function () {
+            Anchor\CSRF::validate();
+        });
     }
 
     /**

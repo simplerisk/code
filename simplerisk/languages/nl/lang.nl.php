@@ -2434,6 +2434,8 @@ $lang = array(
     'FileUploadUnknownErrors' => 'Bestandsupload mislukt: onbekende fouten',
     'DynamicIncidentReport' => 'Dynamisch incidentrapport',
     'FilteringSelections' => 'Selecties filteren',
+    'ProcessingPleaseWait' => 'Verwerken. Even geduld aub!',
+    'PleaseEnterAValidPhoneNumber' => 'Voer een geldig telefoonnummer in',
 
     '' => '',
 );
