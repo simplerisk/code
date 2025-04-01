@@ -311,43 +311,27 @@ use function strval;
  * @method static void nullOrThrows(Closure|null $expression, string $class, string $message = '', string $exception = '')
  * @method static void allThrows(Closure[] $expression, string $class, string $message = '', string $exception = '')
  *
- * @method static void validNMToken(mixed $value, string $message = '', string $exception = '')
- * @method static void validNMTokens(mixed $value, string $message = '', string $exception = '')
- * @method static void validDuration(mixed $value, string $message = '', string $exception = '')
- * @method static void stringPlausibleBase64(mixed $value, string $message = '', string $exception = '')
- * @method static void validDateTime(mixed $value, string $message = '', string $exception = '')
+ * @method static void validBase64(mixed $value, string $message = '', string $exception = '')
  * @method static void notInArray(mixed $value, array $values, string $message = '', string $exception = '')
  * @method static void validURN(mixed $value, string $message = '', string $exception = '')
  * @method static void validURI(mixed $value, string $message = '', string $exception = '')
  * @method static void validURL(mixed $value, string $message = '', string $exception = '')
- * @method static void validNCName(mixed $value, string $message = '', string $exception = '')
- * @method static void validQName(mixed $value, string $message = '', string $exception = '')
- * @method static void nullOrValidNMToken(mixed $value, string $message = '', string $exception = '')
- * @method static void nullOrValidNMTokens(mixed $value, string $message = '', string $exception = '')
- * @method static void nullOrValidDuration(mixed $value, string $message = '', string $exception = '')
- * @method static void nullOrStringPlausibleBase64(mixed $value, string $message = '', string $exception = '')
- * @method static void nullOrValidDateTime(mixed $value, string $message = '', string $exception = '')
+ * @method static void nullOrValidBase64(mixed $value, string $message = '', string $exception = '')
  * @method static void nullOrNotInArray(mixed $value, array $values, string $message = '', string $exception = '')
  * @method static void nullOrValidURN(mixed $value, string $message = '', string $exception = '')
  * @method static void nullOrValidURI(mixed $value, string $message = '', string $exception = '')
  * @method static void nullOrValidURL(mixed $value, string $message = '', string $exception = '')
- * @method static void nullOrValidNCName(mixed $value, string $message = '', string $exception = '')
- * @method static void nullOrValidQName(mixed $value, string $message = '', string $exception = '')
- * @method static void allValidNMToken(mixed $value, string $message = '', string $exception = '')
- * @method static void allValidNMTokens(mixed $value, string $message = '', string $exception = '')
- * @method static void allValidDuration(mixed $value, string $message = '', string $exception = '')
- * @method static void allStringPlausibleBase64(mixed $value, string $message = '', string $exception = '')
- * @method static void allValidDateTime(mixed $value, string $message = '', string $exception = '')
+ * @method static void allValidBase64(mixed $value, string $message = '', string $exception = '')
  * @method static void allNotInArray(mixed $value, array $values, string $message = '', string $exception = '')
  * @method static void allValidURN(mixed $value, string $message = '', string $exception = '')
  * @method static void allValidURI(mixed $value, string $message = '', string $exception = '')
  * @method static void allValidURL(mixed $value, string $message = '', string $exception = '')
- * @method static void allValidNCName(mixed $value, string $message = '', string $exception = '')
- * @method static void allValidQName(mixed $value, string $message = '', string $exception = '')
  */
-final class Assert
+class Assert
 {
-    use CustomAssertionTrait;
+    use Base64Trait;
+    use NotInArrayTrait;
+    use URITrait;
 
 
     /**

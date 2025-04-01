@@ -95,23 +95,23 @@ trait DocblockTrait
 
         $comment = preg_split('/(\n|\r\n)/', (string) $docblock);
         $comment[0] = preg_replace('/[ \t]*\\/\*\*/', '', $comment[0]); // strip '/**'
-        $i = count($comment) - 1;
-        $comment[$i] = preg_replace('/\*\/[ \t]*$/', '', $comment[$i]); // strip '*/'
+        $ii = count($comment) - 1;
+        $comment[$ii] = preg_replace('/\*\/[ \t]*$/', '', $comment[$ii]); // strip '*/'
         $lines = [];
         $append = false;
         $skip = false;
         foreach ($comment as $line) {
-            $line = ltrim($line, "\t *");
-            if (substr($line, 0, 1) === '@') {
-                $this->handleTag($line, $tags);
+            $line = preg_replace('/^\s+\* ?/', '', $line);
+            if (substr($tagline = trim($line), 0, 1) === '@') {
+                $this->handleTag($tagline, $tags);
                 $skip = true;
             }
             if ($skip) {
                 continue;
             }
             if ($append) {
-                $i = count($lines) - 1;
-                $lines[$i] = substr($lines[$i], 0, -1) . $line;
+                $ii = count($lines) - 1;
+                $lines[$ii] = substr($lines[$ii], 0, -1) . $line;
             } else {
                 $lines[] = $line;
             }
@@ -172,7 +172,7 @@ trait DocblockTrait
     /**
      * Extract property type and description from a `@var` dockblock line.
      *
-     * @return array<string, string> extracted `type` and `description`; values default to `null`
+     * @return array<string, ?string> extracted `type` and `description`; values default to `null`
      */
     public function extractVarTypeAndDescription(?string $docblock): array
     {
@@ -182,13 +182,9 @@ trait DocblockTrait
 
         return array_merge(
             ['type' => null, 'description' => null],
-            array_filter($matches, function ($key) {
-                return in_array($key, ['type', 'description']);
-            }, ARRAY_FILTER_USE_KEY)
+            array_filter($matches, fn ($key) => in_array($key, ['type', 'description']), ARRAY_FILTER_USE_KEY)
         );
     }
-
-    // ------------------------------------------------------------------------
 
     /**
      * Extract example text from a `@example` dockblock line.

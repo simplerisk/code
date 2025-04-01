@@ -8,8 +8,15 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "1") {
 // Enforce that the user has access to risk management
 enforce_permission("riskmanagement");
 
+// Include required functions file
+require_once(realpath(__DIR__ . '/../../includes/artificial_intelligence.php'));
+
 ?>
 <div class="risk-details mt-2">
+    <?php
+    // Display the AI Extra icon
+    display_artificial_intelligence_icon("risk_tabs", $id);
+    ?>
     <nav class="nav nav-tabs">
         <a id="tab_details" data-bs-target="#details" class="nav-link active" data-bs-toggle="tab"><?php echo $escaper->escapeHtml($lang['Details']); ?></a>
         <a id="tab_mitigation" data-bs-target="#mitigation" class="nav-link" data-bs-toggle="tab"><?php echo $escaper->escapeHtml($lang['Mitigation']); ?></a>
@@ -17,7 +24,7 @@ enforce_permission("riskmanagement");
     </nav>
     <div class="tab-content position-relative card-body my-2 border">
 
-        <div id="details" class="tab-pane active">
+        <div id="details" class="tab-pane active clearfix">
             <form name="details" method="post" action="" enctype="multipart/form-data">
                 <input type="hidden" class="risk_id" value="<?php echo $escaper->escapeHtml($id); ?>">
 
@@ -37,7 +44,6 @@ enforce_permission("riskmanagement");
                 view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes,  $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $risk_tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping, $template_group_id);
         }
     ?>
-
             </form>
         </div>
 

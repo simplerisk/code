@@ -106,7 +106,7 @@ class XML
                     if ($xpath !== null) {
                         $arXPath = [];
                         $arXPath['query'] = '(.//. | .//@* | .//namespace::*)[' . $xpath->getExpression() . ']';
-                        $arXpath['namespaces'] = $xpath->getNamespaces();
+//                        $arXpath['namespaces'] = $xpath->getNamespaces();
                         // TODO: review if $nsnode->localName is equivalent to the keys in getNamespaces()
 //                        $nslist = $xp->query('./namespace::*', $node);
 //                        foreach ($nslist as $nsnode) {

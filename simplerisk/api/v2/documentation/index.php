@@ -91,6 +91,17 @@ $scan_directories = [
     realpath(__DIR__ . '/reporting.php'),
 ];
 
+// If the artificial intelligence extra is enabled
+if (artificial_intelligence_extra())
+{
+    if (file_exists(realpath(__DIR__ . '/../../../extras/artificial_intelligence/includes/api_documentation.php')))
+    {
+        // Add the artificial intelligence extra API documentation
+        require_once realpath(__DIR__ . '/../../../extras/artificial_intelligence/includes/api_documentation.php');
+        $scan_directories[] = realpath(__DIR__ . '/../../../extras/artificial_intelligence/includes/api_documentation.php');
+    }
+}
+
 // If the assessment extra is enabled
 if (assessments_extra())
 {

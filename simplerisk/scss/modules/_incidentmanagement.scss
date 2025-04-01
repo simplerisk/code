@@ -5,16 +5,24 @@
     }
     
     #response_summary_view {
-        word-break: break-all;
+        word-break: break-word;
     }
 }
 
 .incident-details-tab-content {
-    word-break: break-all;
+    word-break: break-word;
 
     #incident_response_identification_view {
         #details_view_details {
-            word-break: break-all;
+            word-break: break-word;
+        }
+    }
+
+    #incident_response_identification_edit {
+        #destination_tags_edit {
+            .destination-tags-input-container {
+                width: inherit;
+            }
         }
     }
 
@@ -27,5 +35,27 @@
         }
     }
 }
-
 //************************** INCIDENT DETAILS END *************************//
+
+//*********** INCIDENT MANAGEMENT > INCIDENTS > IDENTIFICATION BEGIN ******//
+#identification-form {
+    #association {
+        .multiselect-native-select {
+            .multiselect-container.dropdown-menu {
+                button.dropdown-item {
+                    label.form-check-label {
+                        white-space: normal;
+                        word-break: break-word;
+                    }
+                }
+            }
+        }
+    }
+}
+//*********** INCIDENT MANAGEMENT > INCIDENTS > IDENTIFICATION END ********//
+
+//************ INCIDENT MANAGEMENT > CONFIGURE > PLAYBOOKS BEGIN **********//
+td.playbook_action_name {
+    word-break: break-word;
+}
+//************* INCIDENT MANAGEMENT > CONFIGURE > PLAYBOOKS END ***********//

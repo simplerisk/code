@@ -5,7 +5,7 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['multiselect', 'selectize', 'datatables', 'blockUI', 'CUSTOM:dynamic.js', 'CUSTOM:common.js']);
+    render_header_and_sidebar(['multiselect', 'selectize', 'datatables', 'blockUI', 'CUSTOM:dynamic.js', 'CUSTOM:common.js'], active_sidebar_submenu: 'Reporting_RiskManagement', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'DynamicRiskReport');
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));
@@ -85,13 +85,13 @@
         } else {
 
             if ($selection['custom_display_settings']) {
-                $custom_display_settings = json_decode($selection['custom_display_settings'], true);
+                $custom_display_settings = json_decode($selection['custom_display_settings'] ?? '', true);
             } else {
                 $custom_display_settings = "";
             }
 
             if ($selection['custom_selection_settings']) {
-                $custom_selection_settings = json_decode($selection['custom_selection_settings'], true);
+                $custom_selection_settings = json_decode($selection['custom_selection_settings'] ?? '', true);
             }
 
             if ($selection['custom_column_filters']) {

@@ -17,14 +17,16 @@
         $descripiton  = get_param("POST", "framework_description", "");
         $parent       = get_param("POST", "parent", "");
 
-        // Check if the framework name is null
-        if (isset($name) && $name == "") {
+        // Check if the framework name is null/empty/trimmed empty
+        if (isset($name) && !trim($name)) {
 
             // Display an alert
-            set_alert(true, "bad", $lang["FrameworkNameCantBeEmpty."]);
+            set_alert(true, "bad", $lang["FrameworkNameCantBeEmpty"]);
 
         // Otherwise
         } else {
+
+            $name = trim($name);
 
             if (empty($_SESSION['add_new_frameworks'])) {
 
@@ -389,10 +391,14 @@
             </div>
             <div class="tab-content mt-2 card-body border">
                 <div id="active-frameworks" class="active tab-pane custom-treegrid-container">
-                    <?php get_framework_tabs(1) ?>
+    <?php 
+                    get_framework_tabs(1) 
+    ?>
                 </div>
                 <div id="inactive-frameworks" class="tab-pane custom-treegrid-container">
-                    <?php get_framework_tabs(2) ?>
+    <?php 
+                    get_framework_tabs(2) 
+    ?>
                 </div>    
             </div>
     <?php
@@ -547,15 +553,13 @@
             </div>
             <div class="modal-body">
                 <form id="framework-create-form" action="#" method="post" autocomplete="off">
-                    <div class="form-group">
     <?php 
-                        display_add_framework();
+                    display_add_framework();
     ?>
-                    </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
                 <button type="submit" form="framework-create-form" name="add_framework" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Add']); ?></button>
             </div>
         </div>
@@ -573,15 +577,13 @@
             <div class="modal-body">
                 <form id="framework-update-form" action="#" method="post" autocomplete="off">
                     <input type="hidden" class="framework_id" name="framework_id" value="" /> 
-                    <div class="form-group">
     <?php 
-                        display_add_framework();
+                    display_add_framework();
     ?>
-                    </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
                 <button type="submit" form="framework-update-form" name="update_framework" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Update']); ?></button>
             </div>
         </div>
@@ -590,40 +592,40 @@
 
 <!-- MODEL WINDOW FOR FRAMEWORK DELETE CONFIRM -->
 <div class="modal fade" id="framework--delete" tabindex="-1" aria-labelledby="framework--delete" aria-hidden="true">
-    <form class="" id="framework-delete-form" action="" method="post">
-        <div class="modal-dialog modal-md modal-dialog-centered modal-dark">
-            <div class="modal-content">
+    <div class="modal-dialog modal-md modal-dialog-centered modal-dark">
+        <div class="modal-content">
+            <form class="" id="framework-delete-form" action="" method="post">
+                <input type="hidden" class="delete-id" name="framework_id" value="" />
                 <div class="modal-body">
-                    <div class="form-group text-center">
-                        <label for=""><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisFramework']); ?></label>
-                        <input type="hidden" class="delete-id" name="framework_id" value="" />
+                    <div class="form-group text-center message-container">
+                        <label class="message"><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisFramework']); ?></label>
                     </div>
                     <div class="form-group text-center project-delete-actions">
-                        <button class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
                         <button type="submit" name="delete_framework" class="delete_project btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
                     </div>
                 </div>
-            </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 
 <!-- MODEL WINDOW FOR CONTROL DELETE CONFIRM -->
 <div class="modal fade" id="control--delete" tabindex="-1" aria-labelledby="control--delete" aria-hidden="true">
     <div class="modal-dialog modal-md modal-dialog-centered modal-dark">
         <div class="modal-content">
-            <div class="modal-body">
-                <div class="form-group text-center">
-                    <label for=""><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisControl']); ?></label>
-                    <form class="" id="control--delete-form" action="" method="post">
-                        <input type="hidden" class="delete-id" name="control_id" value="" />
-                    </form>
+            <form class="" id="control--delete-form" action="" method="post">
+                <input type="hidden" class="delete-id" name="control_id" value="" />
+                <div class="modal-body">
+                    <div class="form-group text-center">
+                        <label for=""><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisControl']); ?></label>
+                    </div>
+                    <div class="form-group text-center control-delete-actions">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                        <button type="submit" name="delete_control" form="control--delete-form" class="delete_control btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
+                    </div>
                 </div>
-                <div class="form-group text-center control-delete-actions">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
-                    <button type="submit" name="delete_control" form="control--delete-form" class="delete_control btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
-                </div>
-            </div>
+            </form>
         </div>
     </div>
 </div>
@@ -636,7 +638,7 @@
                     <label for=""><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteTheSelectedControls']); ?></label>
                 </div>
                 <div class="form-group text-center control-delete-actions">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
                     <button type="button" id="confirm_delete_controls" class="delete_control btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
                 </div>
             </div>
@@ -654,17 +656,13 @@
             </div>
             <div class="modal-body">
                 <form class="control-edit" id="add-control-form" action="#controls-tab" method="post" autocomplete="off">
-                    <div class="row">
-                        <div class="col-12">
     <?php 
-                            display_add_control();
+                    display_add_control();
     ?>
-                        </div>
-                    </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
                 <button type="submit" id="add_control" form="add-control-form" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Add']); ?></button>
             </div>
         </div>
@@ -681,18 +679,14 @@
             </div>
             <div class="modal-body">
                 <form class="control-edit" id="update-control-form" action="#controls-tab" method="post" autocomplete="off">
-                    <input type="hidden" class="control_id" name="control_id" value=""> 
-                    <div class="row">
-                        <div class="col-12">
+                    <input type="hidden" class="control_id" name="control_id" value="">
     <?php 
-                            display_add_control();
+                    display_add_control();
     ?>
-                        </div>
-                    </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
                 <button type="submit" id="update_control" form="update-control-form" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Update']); ?></button>
             </div>
         </div>
@@ -702,21 +696,40 @@
 <div id="add_mapping_row" class="hide">
     <table>
         <tr>
-            <td><?php create_dropdown("frameworks", NULL,"map_framework_id[]", true, false, false, "required"); ?></td>
-            <td><input type="text" name="reference_name[]" value="" class="form-control" maxlength="100" required></td>
-            <td class="text-center"><a href="javascript:void(0);" class="control-block--delete-mapping" title="<?= $escaper->escapeHtml($lang["Delete"]);?>"><i class="fa fa-trash"></i></a></td>
+            <td>
+    <?php 
+                create_dropdown("frameworks", NULL,"map_framework_id[]", true, false, false, "required title='{$escaper->escapeHtml($lang['Framework'])}'"); 
+    ?>
+            </td>
+            <td>
+                <input type="text" name="reference_name[]" value="" class="form-control" maxlength="100" required title="<?= $escaper->escapeHtml($lang["Control"]);?>">
+            </td>
+            <td class="text-center">
+                <a href="javascript:void(0);" class="control-block--delete-mapping" title="<?= $escaper->escapeHtml($lang["Delete"]);?>"><i class="fa fa-trash"></i></a>
+            </td>
         </tr>
     </table>
 </div>
 <div id="add_asset_row" class="hide">
     <table>
         <tr>
-            <td><?php create_dropdown("control_maturity", "", "asset_maturity[]", true, false, false, "required"); ?></td>
-            <td><select class="assets-asset-groups-select" name="assets_asset_groups[]" multiple placeholder="<?= $escaper->escapeHtml($lang['AffectedAssetsWidgetPlaceholder']);?>" required></select></td>
-            <td class="text-center"><a href="javascript:void(0);" class="control-block--delete-asset" title="<?= $escaper->escapeHtml($lang["Delete"]);?>"><i class="fa fa-trash"></i></a></td>
+            <td>
+    <?php 
+                create_dropdown("control_maturity", "", "asset_maturity[]", true, false, false, "required title='{$escaper->escapeHtml($lang['CurrentMaturity'])}'"); 
+    ?>
+            </td>
+            <td>
+                <select class="assets-asset-groups-select" name="assets_asset_groups[]" multiple placeholder="<?= $escaper->escapeHtml($lang['AffectedAssetsWidgetPlaceholder']);?>" required title="<?= $escaper->escapeHtml($lang["Asset"]);?>"></select>
+            </td>
+            <td class="text-center">
+                <a href="javascript:void(0);" class="control-block--delete-asset" title="<?= $escaper->escapeHtml($lang["Delete"]);?>"><i class="fa fa-trash"></i></a>
+            </td>
         </tr>
     </table>
 </div>
+<script>
+    <?php prevent_form_double_submit_script(['framework-delete-form', 'control--delete-form']); ?>
+</script>
 <?php
     // Render the footer of the page. Please don't put code after this part.
     render_footer();

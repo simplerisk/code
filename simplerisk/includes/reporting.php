@@ -103,11 +103,9 @@ function create_chartjs_pie_code($title = "", $element_id = "", $array = [], $wi
         }
 
         echo "
-            <div style='{$width}{$height}'>
-                <canvas id='{$element_id}'></canvas>
-                <div class='d-flex justify-content-end align-items-center'>
-                    <i class='far fa-save' id='{$element_id}_save'></i>
-                </div>
+            <canvas id='{$element_id}'></canvas>
+            <div class='save_as_image'>
+                <i class='far fa-save' id='{$element_id}_save'></i>
             </div>
             <script>
                 $(function() {
@@ -1330,7 +1328,7 @@ function get_risk_count_of_risk_level($risk_level, $scoring='inherent') {
                 COUNT(1) AS num
             FROM (
                 SELECT
-                    ROUND(scoring.calculated_risk - (scoring.calculated_risk * GREATEST(IFNULL(mitg.mitigation_percent,0), IFNULL(MAX(ctrl.mitigation_percent), 0)) / 100), 2) AS residual_risk
+                    ROUND(scoring.calculated_risk - (scoring.calculated_risk * IF(IFNULL(mitg.mitigation_percent,0) > 0, mitg.mitigation_percent, IFNULL(MAX(ctrl.mitigation_percent), 0)) / 100), 2) AS residual_risk
                 FROM `risk_scoring` scoring
                     JOIN `risks` rsk ON `scoring`.`id` = `rsk`.`id`
                     LEFT JOIN `mitigations` mitg ON `rsk`.`id` = `mitg`.`risk_id`
@@ -1790,6 +1788,8 @@ function closed_risk_reason_pie($title = null, $teams = false) {
 
     // Close the database connection
     db_close($db);
+
+    $data = [];
 
     // If the array is not empty
     if (!empty($array)) {
@@ -3126,7 +3126,7 @@ function get_risks_and_assets_rows($report, $sort_by, $asset_tags_in_array, $pro
                 rsk_loc.name AS risk_location,
                 GROUP_CONCAT(DISTINCT rsk_team.name SEPARATOR ', ') AS risk_teams,
                 GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag ASC SEPARATOR ',') as tags,
-                GREATEST(IFNULL(m.mitigation_percent, 0), IFNULL(MAX(fc.mitigation_percent), 0)) AS mitigation_percent,
+                IF(IFNULL(m.mitigation_percent, 0) > 0, m.mitigation_percent, IFNULL(MAX(fc.mitigation_percent), 0)) AS mitigation_percent,
                 p.name AS project, 
                 p.status AS project_status_value,
                 CASE p.status
@@ -3512,7 +3512,7 @@ function get_risks_and_issues_rows($risk_tags_in_array, $start_date, $end_date)
     $sql = "
         SELECT 
             a.*, b.calculated_risk, c.name category_name,
-            ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) AS residual_risk,
+            ROUND((b.calculated_risk - (b.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) AS residual_risk,
             IFNULL(rsh_s.residual_risk, rsh_e.residual_risk) residual_risk_start,
             rsh_e.residual_risk residual_risk_end
         FROM risks a
@@ -3531,7 +3531,7 @@ function get_risks_and_issues_rows($risk_tags_in_array, $start_date, $end_date)
         {$where_in_string}
         GROUP BY
             a.id
-        ORDER By a.category, ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) DESC, a.submission_date
+        ORDER By a.category, ROUND((b.calculated_risk - (b.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) DESC, a.submission_date
     ";
     $stmt = $db->prepare($sql);
     foreach($bind_params as $key => $value){
@@ -4202,7 +4202,7 @@ function risks_by_month_table() {
     $close_count = $closed_risks[1];
 
     echo "
-        <table class='table table-hover border mb-0'>
+        <table class='table table-hover border-bottom border-top mb-0'>
             <thead>
                 <tr bgcolor='white'>
                     <th>&nbsp;</th>
@@ -4430,7 +4430,7 @@ function risks_query_select($column_filters=[])
         b.OWASP_PrivacyViolation, 
         b.Custom, 
         p.mitigation_percent,
-        ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) AS residual_risk,
+        ROUND((b.calculated_risk - (b.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) AS residual_risk,
 
        CASE 
             WHEN DATEDIFF(NOW(), `a`.`submission_date`) < 30 THEN '--'
@@ -4455,18 +4455,18 @@ function risks_query_select($column_filters=[])
             WHEN NOT(ISNULL(`rrsh_lua_30`.`residual_risk`)) THEN `rrsh_lua_30`.`residual_risk`
             WHEN NOT(ISNULL(`rrsh_lua_60`.`residual_risk`)) THEN `rrsh_lua_60`.`residual_risk`
             WHEN NOT(ISNULL(`rrsh_lua_90`.`residual_risk`)) THEN `rrsh_lua_90`.`residual_risk`
-            ELSE ROUND((`b`.`calculated_risk` - (`b`.`calculated_risk` * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2)
+            ELSE ROUND((`b`.`calculated_risk` - (`b`.`calculated_risk` * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2)
         END AS residual_risk_30,
         CASE 
             WHEN DATEDIFF(NOW(), `a`.`submission_date`) < 60 THEN '--'
             WHEN NOT(ISNULL(`rrsh_lua_60`.`residual_risk`)) THEN `rrsh_lua_60`.`residual_risk`
             WHEN NOT(ISNULL(`rrsh_lua_90`.`residual_risk`)) THEN `rrsh_lua_90`.`residual_risk`
-            ELSE ROUND((`b`.`calculated_risk` - (`b`.`calculated_risk` * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2)
+            ELSE ROUND((`b`.`calculated_risk` - (`b`.`calculated_risk` * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2)
         END AS residual_risk_60,
         CASE 
             WHEN DATEDIFF(NOW(), `a`.`submission_date`) < 90 THEN '--'
             WHEN NOT(ISNULL(`rrsh_lua_90`.`residual_risk`)) THEN `rrsh_lua_90`.`residual_risk`
-            ELSE ROUND((`b`.`calculated_risk` - (`b`.`calculated_risk` * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2)
+            ELSE ROUND((`b`.`calculated_risk` - (`b`.`calculated_risk` * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2)
         END AS residual_risk_90,
 
         `associated_rc_entries`.`risk_mapping_risk_event` AS risk_mapping,
@@ -7418,7 +7418,7 @@ function get_risks_by_appetite($type, $start, $length, $orderColumn, $orderDir, 
             a.id,
             a.subject,
             b.calculated_risk,
-            ROUND(b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100), 2) as residual_risk
+            ROUND(b.calculated_risk - (b.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100), 2) as residual_risk
         FROM
             risks a
             LEFT JOIN risk_scoring b ON a.id = b.id
@@ -9452,7 +9452,8 @@ function display_control_maturity_spider_chart($framework_id) {
 	foreach ($control_gaps as $value) {
 
 	    // Escaping it here as it's used later both as key and value and wanted to make sure that they match
-	    $value['family_short_name'] = str_replace("'", "\'", $value['family_short_name']);
+        // Also, passing null to the third parameter of str_replace is deprecated, so using an empty string instead
+	    $value['family_short_name'] = str_replace("'", "\'", $value['family_short_name'] ?? '');
 
 		// If this is not the current category
 		if ($value['family_short_name'] != $current_category) {

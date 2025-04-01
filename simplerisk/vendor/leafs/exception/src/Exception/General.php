@@ -217,9 +217,23 @@ class General extends \Exception
         (new \Leaf\Http\Response())->exit(
             static::errorMarkup(
                 'Invalid request',
-                "<p>$error</p>" ?? '<p>The page you are looking for has expired.</p>'
+                $error ? "<p>$error</p>" : '<p>The page you are looking for has expired.</p>'
             ),
             400
+        );
+    }
+
+    /**
+     * Generic error page
+     */
+    public static function error($title, $message, $code = 500)
+    {
+        (new \Leaf\Http\Response())->exit(
+            static::errorMarkup(
+                $title,
+                "<p>$message</p>"
+            ),
+            $code
         );
     }
 

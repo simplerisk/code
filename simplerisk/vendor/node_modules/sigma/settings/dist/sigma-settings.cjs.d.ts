@@ -1,0 +1,2 @@
+export * from "../../dist/declarations/src/settings.js";
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoic2lnbWEtc2V0dGluZ3MuY2pzLmQudHMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi9kaXN0L2RlY2xhcmF0aW9ucy9zcmMvc2V0dGluZ3MuZC50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSJ9

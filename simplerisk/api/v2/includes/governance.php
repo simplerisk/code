@@ -205,6 +205,79 @@ function api_v2_governance_documents()
     api_v2_json_result($status_code, $status_message, $data);
 }
 
+/************************************************
+ * FUNCTION: API V2 GOVERNANCE DOCUMENTS DELETE *
+ * **********************************************/
+function api_v2_governance_documents_delete()
+{
+    global $lang;
+
+    // Check that this user has the proper permissions
+    api_v2_check_permission("governance");
+    api_v2_check_permission("delete_documentation");
+
+    // Get the document id and version
+    $id = get_param("GET", "document_id", null);
+    $version = get_param("GET", "version", null);
+
+    // If we received an id
+    if (!empty($id))
+    {
+        // If the user has the permission to access this document
+        if (check_access_for_document($id))
+        {
+            // Get just the document with that id
+            $document = get_document_by_id($id);
+
+            // If the document value returned is empty then we are unable to find a document with that id
+            if (empty($document))
+            {
+                // Set the status
+                $status_code = 204;
+                $status_message = "NO CONTENT: Unable to find a document with the specified id.";
+                $data = [];
+            }
+            else
+            {
+                // Attempt to delete the document
+                if ($result = delete_document($id, $version))
+                {
+                    $status_code = 200;
+                    $status_message = "Document was deleted successfully.";
+
+                    // Create the data array
+                    $data = [
+                        "document_id" => $id,
+                        "document_name" => $document['document_name'],
+                        "document_type" => $document['document_type'],
+                    ];
+                }
+                else
+                {
+                    $status_code = 400;
+                    $status_message = "BAD REQUEST: " . $lang['ErrorDeletingDocument'];
+                    $data = [];
+                }
+            }
+        }
+        else
+        {
+            $status_code = 204;
+            $status_message = "NO CONTENT: Unable to find a document with the specified id.";
+            $data = [];
+        }
+    }
+    else
+    {
+        $status_code = 204;
+        $status_message = "NO CONTENT: Unable to find a document with the specified id.";
+        $data = [];
+    }
+
+    // Return the result
+    api_v2_json_result($status_code, $status_message, $data);
+}
+
 /******************************************
  * FUNCTION: API V2 CONTROLS ASSOCIATIONS *
  * ****************************************/

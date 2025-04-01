@@ -9,6 +9,8 @@ use SimpleSAML\Assert\Assert;
 use SimpleSAML\XML\Exception\InvalidDOMElementException;
 use SimpleSAML\XML\Exception\SchemaViolationException;
 use SimpleSAML\XML\Exception\TooManyElementsException;
+use SimpleSAML\XML\SchemaValidatableElementInterface;
+use SimpleSAML\XML\SchemaValidatableElementTrait;
 use SimpleSAML\XMLSecurity\Constants as C;
 use SimpleSAML\XMLSecurity\XML\ec\InclusiveNamespaces;
 
@@ -19,8 +21,10 @@ use function array_pop;
  *
  * @package simplesamlphp/xml-security
  */
-class Transform extends AbstractDsElement
+class Transform extends AbstractDsElement implements SchemaValidatableElementInterface
 {
+    use SchemaValidatableElementTrait;
+
     /**
      * Initialize the Transform element.
      *
@@ -130,13 +134,11 @@ class Transform extends AbstractDsElement
     public function toXML(?DOMElement $parent = null): DOMElement
     {
         $e = $this->instantiateParentElement($parent);
+        $e->setAttribute('Algorithm', $this->getAlgorithm());
 
-        $algorithm = $this->getAlgorithm();
-        $e->setAttribute('Algorithm', $algorithm);
-
-        switch ($algorithm) {
+        switch ($this->getAlgorithm()) {
             case C::XPATH10_URI:
-                $this->getXpath()?->toXML($e);
+                $this->getXPath()?->toXML($e);
                 break;
             case C::C14N_EXCLUSIVE_WITH_COMMENTS:
             case C::C14N_EXCLUSIVE_WITHOUT_COMMENTS:
@@ -144,6 +146,9 @@ class Transform extends AbstractDsElement
                 break;
         }
 
+//$doc = \SimpleSAML\XML\DOMDocumentFactory::create();
+//$doc->append($doc->importNode($e, true));
+//return $doc->documentElement;
         return $e;
     }
 }

@@ -2549,7 +2549,7 @@ function get_asset_groups_for_treegrid($offset, $rows) {
     foreach($groups as &$group) {
         $group['name'] = $escaper->escapeHtml($group['name']);
         $group['actions'] = "
-            <div class='text-center actions-cell'>
+            <div class='actions-cell d-flex justify-content-center align-items-center w-100'>
                 <a title='{$update_tooltip}' class='asset-group--update' data-id='{$group['id']}'><i class='fa fa-edit'></i></a>
                 <a title='{$delete_tooltip}' class='asset-group--delete' data-id='{$group['id']}'><i class='fa fa-trash'></i></a>
             </div>";
@@ -2625,7 +2625,7 @@ function get_assets_of_asset_group_for_treegrid($id){
         $asset['tags'] = $escaper->escapeHtml($asset['tags']);
 
         $asset['actions'] = "
-            <div class='text-center actions-cell'>
+            <div class='actions-cell d-flex justify-content-center align-items-center w-100'>
                 <a title='{$remove_tooltip}' class='asset--remove' data-asset-id='{$asset['id']}' data-asset-group-id='{$id}'><i class='fa fa-times'></i></a>
             </div>";
 
@@ -3463,7 +3463,7 @@ function update_asset_field_API_v2($view, $fieldName) {
 // Used to update the asset through the API call
 function update_asset_API_v2($view) {
     
-    global $field_settings_views, $field_settings, $lang;
+    global $field_settings_views, $field_settings, $lang, $escaper;
 
     $view_type = $field_settings_views[$view]['view_type'];
     $id_field = $field_settings_views[$view]['id_field'];
@@ -3505,8 +3505,11 @@ function update_asset_API_v2($view) {
     if ($notification = notification_extra()) {
         require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
     }
-    
+
+    $tags = [];
     $mapped_controls = [];
+    $associated_risks_new = [];
+
     $update_parts = [];
     $params = [":$id_field" => $id];
     // Do the field validation(like required fields not having a value) and collect the data for the update
@@ -3627,6 +3630,9 @@ function update_asset_API_v2($view) {
         update_name_order_for_asset($id, $asset_name);
     }
 
+    set_alert(true, "good", $escaper->escapeHtml($lang['AssetWasUpdatedSuccessfully']));
+    api_v2_json_result(200, get_alert(true), NULL);
+
     $message = _lang("UpdateSuccess_{$view_type}", ['name' => $asset_name, 'user' => $_SESSION['user']]);
     write_log($id, $_SESSION['uid'], $message, "asset");
 }
@@ -3634,7 +3640,7 @@ function update_asset_API_v2($view) {
 
 function create_asset_API_v2($view) {
     
-    global $field_settings_views, $field_settings, $lang;
+    global $field_settings_views, $field_settings, $lang, $escaper;
     
     $view_type = $field_settings_views[$view]['view_type'];
     
@@ -3673,7 +3679,9 @@ function create_asset_API_v2($view) {
         require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
     }
     
+    $tags = [];
     $mapped_controls = [];
+    $associated_risks = [];
     
     $insert_parts = ["`verified` = :verified"];
     $params = ["verified" => true];
@@ -3791,6 +3799,9 @@ function create_asset_API_v2($view) {
     if ($encryption) {
         update_name_order_for_asset($id, $asset_name);
     }
+
+    set_alert(true, "good", $escaper->escapeHtml($lang['SavedSuccess']));
+    api_v2_json_result(200, get_alert(true), NULL);
     
     $message = _lang("CreateSuccess_{$view_type}", ['name' => $asset_name, 'user' => $_SESSION['user']]);
     write_log($id, $_SESSION['uid'], $message, "asset");

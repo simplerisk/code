@@ -67,7 +67,7 @@
             $breadcrumb_title_key = "Incidents";
         }
     }
-    render_header_and_sidebar(['tabs:logic', 'datatables', 'multiselect', 'selectize', 'blockUI', 'datetimerangepicker'], ['check_im' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
+    render_header_and_sidebar(['tabs:logic', 'datatables', 'multiselect', 'selectize', 'blockUI', 'datetimerangepicker', 'CUSTOM:common.js'], ['check_im' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/permissions.php'));
@@ -181,6 +181,9 @@
 		</div>
 	</div>
 </div>
+<script>
+    <?php prevent_form_double_submit_script(['evidence--new']); ?>
+</script>
 <?php
     // Render the footer of the page. Please don't put code after this part.
     render_footer();

@@ -5,19 +5,22 @@ declare(strict_types=1);
 namespace SimpleSAML\XMLSecurity\XML\ds;
 
 use DOMElement;
-use SimpleSAML\Assert\Assert;
 use SimpleSAML\XML\Exception\InvalidDOMElementException;
 use SimpleSAML\XML\ExtendableElementTrait;
+use SimpleSAML\XML\SchemaValidatableElementInterface;
+use SimpleSAML\XML\SchemaValidatableElementTrait;
 use SimpleSAML\XML\XsNamespace as NS;
+use SimpleSAML\XMLSecurity\Assert\Assert;
 
 /**
  * Class representing a ds:Object element.
  *
  * @package simplesamlphp/xml-security
  */
-final class DsObject extends AbstractDsElement
+final class DsObject extends AbstractDsElement implements SchemaValidatableElementInterface
 {
     use ExtendableElementTrait;
+    use SchemaValidatableElementTrait;
 
     /** @var string */
     public const LOCALNAME = 'Object';

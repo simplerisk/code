@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SimpleSAML\XMLSecurity\XML\ds;
 
+use SimpleSAML\XML\SchemaValidatableElementInterface;
+use SimpleSAML\XML\SchemaValidatableElementTrait;
 use SimpleSAML\XML\StringElementTrait;
 
 /**
@@ -11,8 +13,9 @@ use SimpleSAML\XML\StringElementTrait;
  *
  * @package simplesamlphp/xml-security
  */
-final class KeyName extends AbstractDsElement
+final class KeyName extends AbstractDsElement implements SchemaValidatableElementInterface
 {
+    use SchemaValidatableElementTrait;
     use StringElementTrait;
 
 

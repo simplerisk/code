@@ -14,7 +14,7 @@ use OpenApi\Annotations as OA;
  *
  * Describes a single API operation on a path.
  *
- * @see [OAI Operation Object](https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#operation-object)
+ * @see [Operation Object](https://spec.openapis.org/oas/v3.1.1.html#operation-object)
  *
  * @Annotation
  */
@@ -224,7 +224,7 @@ abstract class Operation extends AbstractAnnotation
 
         if (!Generator::isDefault($this->responses)) {
             foreach ($this->responses as $response) {
-                if (!Generator::isDefault($response->response) && $response->response !== 'default' && preg_match('/^([12345]{1}[0-9]{2})|([12345]{1}XX)$/', (string) $response->response) === 0) {
+                if (!Generator::isDefault($response->response) && $response->response !== 'default' && preg_match('/^([12345]{1}\d{2})|([12345]{1}XX)$/', (string) $response->response) === 0) {
                     $this->_context->logger->warning('Invalid value "' . $response->response . '" for ' . $response->_identity([]) . '->response, expecting "default", a HTTP Status Code or HTTP Status Code range definition in ' . $response->_context);
                     $valid = false;
                 }

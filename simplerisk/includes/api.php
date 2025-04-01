@@ -183,10 +183,11 @@ function unauthenticated_access()
 /*********************************
  * FUNCTION: UNAUTHORIZED ACCESS *
  *********************************/
-function unauthorized_access()
-{
+function unauthorized_access() {
+
     // Return a JSON response
-    json_response(401, "Unauthorized Access.  The authenticated user does not have proper permissions.", NULL);
+    json_response(401, $escaper->escapeHtml($lang['UnauthorizedAccessInAPI']), NULL);
+
 }
 
 /****************************
@@ -4134,7 +4135,7 @@ function addControlResponse()
 {
     global $lang, $escaper;
     $control = array(
-        'short_name' => isset($_POST['short_name']) ? $_POST['short_name'] : "",
+        'short_name' => isset($_POST['short_name']) ? trim($_POST['short_name']) : "",
         'long_name' => isset($_POST['long_name']) ? $_POST['long_name'] : "",
         'description' => isset($_POST['description']) ? $_POST['description'] : "",
         'supplemental_guidance' => isset($_POST['supplemental_guidance']) ? $_POST['supplemental_guidance'] : "",
@@ -4166,34 +4167,38 @@ function addControlResponse()
     }
     $control["mapped_assets"] = $mapped_assets;
     $control_id = "";
+
     // Check if the control name is null
     if (!$control['short_name'])
     {
         // Display an alert
-        set_alert(true, "bad", "The control name cannot be empty.");
+        set_alert(true, "bad", $escaper->escapeHtml($lang['TheControlNameCannotBeEmpty']));
+        json_response(400, get_alert(true), null);
+        return;
     }
-    // Otherwise
+
+    // If user has no permission for add new controls
+    if(empty($_SESSION['add_new_controls']))
+    {
+        // Display an alert
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoAddControlPermission']));
+        json_response(400, get_alert(true), null);
+        return;
+    }
+
+    // Insert a new control up to 100 chars
+    if($control_id = add_framework_control($control))
+    {
+        // Display an alert
+        set_alert(true, "good", $escaper->escapeHtml($lang['ANewControlWasAddedSuccessfully']));
+        json_response(200, get_alert(true), array("control_id"=>$control_id));
+    }
     else
     {
-        // If user has no permission for add new controls
-        if(empty($_SESSION['add_new_controls']))
-        {
-            // Display an alert
-            set_alert(true, "bad", $escaper->escapeHtml($lang['NoAddControlPermission']));
-        }
-        // Insert a new control up to 100 chars
-        elseif($control_id = add_framework_control($control))
-        {
-            // Display an alert
-            set_alert(true, "good", "A new control was added successfully.");
-        }
-        else
-        {
-            // Display an alert
-            set_alert(true, "bad", "The control already exists.");
-        }
+        // Display an alert
+        json_response(400, get_alert(true), null);
     }
-    json_response(200, get_alert(true), array("control_id"=>$control_id));
+
 }
 /****************************
  * FUNCTION: UPDATE CONTROL *
@@ -4214,7 +4219,7 @@ function updateControlResponse()
     elseif (is_int($control_id))
     {
         $control = array(
-            'short_name' => isset($_POST['short_name']) ? $_POST['short_name'] : "",
+            'short_name' => isset($_POST['short_name']) ? trim($_POST['short_name']) : "",
             'long_name' => isset($_POST['long_name']) ? $_POST['long_name'] : "",
             'description' => isset($_POST['description']) ? $_POST['description'] : "",
             'supplemental_guidance' => isset($_POST['supplemental_guidance']) ? $_POST['supplemental_guidance'] : "",
@@ -4246,13 +4251,24 @@ function updateControlResponse()
         }
         $control["mapped_assets"] = $mapped_assets;
 
-        // Update the control
-        update_framework_control($control_id, $control);
+        // Check if the control name is null
+        if (!$control['short_name'])
+        {
+            // Display an alert
+            set_alert(true, "bad", "The control name cannot be empty.");
+            json_response(400, get_alert(true), []);
 
-        // Display an alert
-        set_alert(true, "good", "An existing control was updated successfully.");
+        } else {
 
-        json_response(200, get_alert(true), array("control_id"=>$control_id));
+            // Update the control
+            update_framework_control($control_id, $control);
+    
+            // Display an alert
+            set_alert(true, "good", "An existing control was updated successfully.");
+    
+            json_response(200, get_alert(true), array("control_id"=>$control_id));
+
+        }
     }
     // We should never get here as we bound the variable as an int
     else
@@ -4306,7 +4322,7 @@ function getParentFrameworksDropdownResponse()
     {
         $frameworks = get_frameworks($status);
 
-        $html = "<select name='parent' class='form-select'>\n";
+        $html = "<select name='parent' class='form-select' title='{$escaper->escapeHtml($lang['ParentFramework'])}'>\n";
         $html .= "<option value='0'>--</option>";
         make_tree_options_html($frameworks, 0, $html);
         $html .= "</select>\n";
@@ -4728,7 +4744,6 @@ function getDefineTestsResponse()
         $control_name = isset($_POST['control_name']) ? $_POST['control_name'] : "";
 
         $controls = get_framework_controls_by_filter("all", "all", "all", $control_family, $control_framework, "all", "all", "all", $control_name);
-        $recordsTotal = count($controls);
 
          // If team separation is enabled
         if (team_separation_extra()) {
@@ -4745,6 +4760,11 @@ function getDefineTestsResponse()
 
         // Remove those controls from the results that have no frameworks mapped
         $controls = array_filter($controls, fn($c) => !empty($c['framework_ids'])); 
+
+        // Reindex the array after filtering
+        $controls = array_values($controls);
+
+        $recordsTotal = count($controls);
 
         $data = array();
         foreach ($controls as $key=>$control)
@@ -4804,7 +4824,7 @@ function getDefineTestsResponse()
 
                     if(isset($_SESSION["define_tests"]) && $_SESSION["define_tests"] == 1){
                         $html .= "<div class='float-end mb-2'>\n";
-                            $html .= "<a href='#test--add' data-control-id='". $control['id'] ."' role='button' data-bs-toggle='modal' data-bs-target='#test--add' class='btn btn-dark add-test'>".$escaper->escapeHtml($lang['AddTest'])."</a>";
+                            $html .= "<button type='button' data-control-id='". $control['id'] ."' class='btn btn-dark add-test'>".$escaper->escapeHtml($lang['AddTest'])."</button>";
                         $html .= "</div>\n";
                     }
                     $html .= "<div class='framework-control-test-list'>\n";
@@ -4821,7 +4841,7 @@ function getDefineTestsResponse()
                                         <th style='width: 110px; min-width: 110px'>".$escaper->escapeHtml($lang['LastTestDate'])."</th>
                                         <th style='width: 110px; min-width: 110px'>".$escaper->escapeHtml($lang['NextTestDate'])."</th>
                                         <th style='width: 130px; min-width: 130px'>".$escaper->escapeHtml($lang['ApproximateTime'])."</th>
-                                        <th style='width: 50px; min-width: 50px'>&nbsp;</th>
+                                        <th style='width: 50px; min-width: 50px'>".$escaper->escapeHtml($lang['Actions'])."</th>
                                     </tr>
                                 </thead>
                             ";
@@ -4933,14 +4953,14 @@ function getTestResponse()
 /*******************************************************
  * FUNCTION: RETURN JSON DATA FOR INITIATE AUDITS TREE *
  *******************************************************/
-function getInitiateTestAuditsResponse()
-{
+function getInitiateTestAuditsResponse() {
+
     global $lang;
     global $escaper;
 
     // If the user has compliance permissions
-    if (check_permission("compliance"))
-    {
+    if (check_permission("compliance")) {
+
         $filter_by_text         = $_GET["filter_by_text"];
         $filter_by_status       = empty($_GET["filter_by_status"]) ? [] : $_GET["filter_by_status"];
         $filter_by_frequency    = $_GET["filter_by_frequency"];
@@ -4951,6 +4971,7 @@ function getInitiateTestAuditsResponse()
 
         // If team separation is enabled
         if (team_separation_extra()) {
+
             //Include the team separation extra
             require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
@@ -4958,30 +4979,54 @@ function getInitiateTestAuditsResponse()
             // or everyone has access to the tests/audits.
             // It means we can treat Team Separation like it is disabled
             if (should_skip_test_and_audit_permission_check()) {
+
                 $separation_enabled = false;
+
             } else {
+
                 $separation_enabled = true;
                 $compliance_separation_access_info = get_compliance_separation_access_info();
+
             }
-        } else
+
+        } else {
+            
             $separation_enabled = false;
 
+        }
+
         // If framework was loaded
-        if(empty($_GET['id'])){
+        if (empty($_GET['id'])) {
+
             // Get active frameworks
             $frameworks = get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control);
             
-            foreach($frameworks as $framework){
-                if ($separation_enabled && !in_array($framework['value'], $compliance_separation_access_info['frameworks']))
+            foreach ($frameworks as $framework) {
+
+                if ($separation_enabled && !in_array($framework['value'], $compliance_separation_access_info['frameworks'])) {
+
                     continue;
 
-                if(isset($_SESSION["initiate_audits"]) && $_SESSION["initiate_audits"] == 1) 
-                    $action = "<div class='text-center'><button data-id='{$framework['value']}' type='button' class='btn btn-dark initiate-framework-audit-btn' >".$escaper->escapeHtml($lang['InitiateFrameworkAudit'])."</button></div>"; 
-                else $action = "";
+                }
+
+                if (isset($_SESSION["initiate_audits"]) && $_SESSION["initiate_audits"] == 1) {
+
+                    $action = "
+                        <div class='text-center'>
+                            <button data-id='{$framework['value']}' type='button' class='btn btn-dark initiate-framework-audit-btn' >{$escaper->escapeHtml($lang['InitiateFrameworkAudit'])}</button>
+                        </div>
+                    ";
+
+                } else {
+
+                    $action = "";
+
+                }
+
                 $results[] = array(
                     'id' => 'framework_'.$framework['value'],
                     'state' => 'closed',
-                    'name' => "<a class='framework-name' data-id='{$framework['value']}' href='' title='".$escaper->escapeHtml($lang['Framework'])."'>".$escaper->escapeHtml($framework['name'])."</a>",
+                    'name' => "<a class='framework-name' data-id='{$framework['value']}' href='' title='{$escaper->escapeHtml($lang['Framework'])}'>{$escaper->escapeHtml($framework['name'])}</a>",
                     'last_audit_date' => $escaper->escapeHtml(format_date($framework['last_audit_date'])),
                     'test_frequency' => $escaper->escapeHtml($framework['desired_frequency']),
                     'next_audit_date' => $escaper->escapeHtml(format_date($framework['next_audit_date'])),
@@ -4989,18 +5034,35 @@ function getInitiateTestAuditsResponse()
                     'action' => $action
                 );
             }
-        }
+            
         // If a framework node was clicked
-        elseif(stripos($_GET['id'], "framework_") !== false){
+        } elseif (stripos($_GET['id'], "framework_") !== false) {
+
             $framework_value = (int)str_replace("framework_", "", $_GET['id']);
             $framework_controls = get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_value);
-            foreach($framework_controls as $framework_control){
-                if ($separation_enabled && !in_array($framework_control['id'], $compliance_separation_access_info['framework_controls']))
+
+            foreach ($framework_controls as $framework_control) {
+
+                if ($separation_enabled && !in_array($framework_control['id'], $compliance_separation_access_info['framework_controls'])) {
+                    
                     continue;
+
+                }
                 
-                if(isset($_SESSION["initiate_audits"]) && $_SESSION["initiate_audits"] == 1) 
-                    $action = "<div class='text-center'><button data-id='{$framework_control['id']}' type='button' class='btn btn-dark initiate-control-audit-btn' >".$escaper->escapeHtml($lang['InitiateControlAudit'])."</button></div>"; 
-                else $action = "";
+                if (isset($_SESSION["initiate_audits"]) && $_SESSION["initiate_audits"] == 1) {
+                    
+                    $action = "
+                        <div class='text-center'>
+                            <button data-id='{$framework_control['id']}' type='button' class='btn btn-dark initiate-control-audit-btn' >{$escaper->escapeHtml($lang['InitiateControlAudit'])}</button>
+                        </div>
+                    ";
+
+                } else {
+                    
+                    $action = "";
+
+                }
+
                 $results[] = array(
                     'id' => "control_".$framework_value."_".$framework_control['id'],
                     'state' => 'closed',
@@ -5011,22 +5073,39 @@ function getInitiateTestAuditsResponse()
                     'status' => $escaper->escapeHtml($framework_control['status'] == 1 ? $lang['Active'] : $lang['Inactive']),
                     'action' => $action
                 );
+
             }
-        }
-        elseif(stripos($_GET['id'], "control_") !== false)
-        {
+            
+        } elseif (stripos($_GET['id'], "control_") !== false) {
+
             $framework_and_control = str_replace("control_", "", $_GET['id']);
             $framework_id = (int)explode("_", $framework_and_control)[0];
             $control_id = (int)explode("_", $framework_and_control)[1];
 
             $framework_control_tests = get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id, $control_id);
-            foreach($framework_control_tests as $framework_control_test){
-                if ($separation_enabled && !in_array($framework_control_test['id'], $compliance_separation_access_info['framework_control_tests']))
+
+            foreach ($framework_control_tests as $framework_control_test) {
+
+                if ($separation_enabled && !in_array($framework_control_test['id'], $compliance_separation_access_info['framework_control_tests'])) {
+                    
                     continue;
 
-                if(isset($_SESSION["initiate_audits"]) && $_SESSION["initiate_audits"] == 1) 
-                    $action = "<div class='text-center'><button data-id='{$framework_control_test['id']}' type='button' class='btn btn-dark initiate-test-btn' >".$escaper->escapeHtml($lang['InitiateTest'])."</button></div>"; 
-                else $action = "";
+                }
+
+                if (isset($_SESSION["initiate_audits"]) && $_SESSION["initiate_audits"] == 1) {
+
+                    $action = "
+                        <div class='text-center'>
+                            <button data-id='{$framework_control_test['id']}' type='button' class='btn btn-dark initiate-test-btn' >{$escaper->escapeHtml($lang['InitiateTest'])}</button>
+                        </div>
+                    ";
+
+                } else {
+
+                    $action = "";
+
+                }
+
                 $results[] = array(
                     'id' => "test_".$framework_and_control."_".$framework_control_test['id'],
                     'state' => 'open',
@@ -5037,16 +5116,20 @@ function getInitiateTestAuditsResponse()
                     'status' => $escaper->escapeHtml($framework_control_test['status'] == 1 ? $lang['Active'] : $lang['Inactive']),
                     'action' => $action
                 );
+
             }
         }
+
         echo json_encode($results);
-    }
-    else
-    {
+
+    } else {
+
         json_response(400, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+
     }    
 
     exit;
+
 }
 
 /**********************************************************************
@@ -6027,7 +6110,7 @@ function getPlanMitigationsDatatableResponse()
     if (check_permission("riskmanagement")) {
 
         $user = get_user_by_id($_SESSION['uid']);
-        $settings = json_decode($user["custom_plan_mitigation_display_settings"], true);
+        $settings = json_decode($user["custom_plan_mitigation_display_settings"] ?? '', true);
         $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
         $mitigation_colums_setting = isset($settings["mitigation_colums"])?$settings["mitigation_colums"]:[];
         $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
@@ -6449,7 +6532,7 @@ function getManagementReviewsDatatableResponse()
     if (check_permission("riskmanagement"))
     {
         $user = get_user_by_id($_SESSION['uid']);
-        $settings = json_decode($user["custom_perform_reviews_display_settings"], true);
+        $settings = json_decode($user["custom_perform_reviews_display_settings"] ?? '', true);
         $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
         $mitigation_colums_setting = isset($settings["mitigation_colums"])?$settings["mitigation_colums"]:[];
         $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
@@ -6870,7 +6953,7 @@ function getReviewRisksDatatableResponse()
     if (check_permission("riskmanagement"))
     {
         $user = get_user_by_id($_SESSION['uid']);
-        $settings = json_decode($user["custom_reviewregularly_display_settings"], true);
+        $settings = json_decode($user["custom_reviewregularly_display_settings"] ?? '', true);
         $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
         $mitigation_colums_setting = isset($settings["mitigation_colums"])?$settings["mitigation_colums"]:[];
         $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
@@ -7782,10 +7865,9 @@ function create_document_api() {
             json_response(200, get_alert(true), array('type' => $document_type));
             return;
         } else {
-            set_alert(true, "bad", $lang['FailedToAddNewItem']);
+            // Display an alert
             json_response(400, get_alert(true), NULL);
             return;
-
         }
     }
 }
@@ -7863,6 +7945,8 @@ function delete_document_api() {
     if($result = delete_document($id, $version)){
         set_alert(true, "good", $lang['DocumentDeleted']);
         json_response(200, get_alert(true), array('type' => $document_type));
+    } else {
+        json_response(400, get_alert(true), NULL);
     }
     return;
 }
@@ -9438,7 +9522,7 @@ function high_risk_report_datatable() {
                 SELECT
                     `rsk`.`id` as risk_id,
                     `scoring`.`calculated_risk` as inherent_score,
-                    ROUND(`scoring`.`calculated_risk` - (`scoring`.`calculated_risk` * GREATEST(IFNULL(`mtg`.`mitigation_percent`,0), IFNULL(MAX(`ctrl`.`mitigation_percent`), 0)) / 100), 2) AS residual_score
+                    ROUND(`scoring`.`calculated_risk` - (`scoring`.`calculated_risk` * IF(IFNULL(`mtg`.`mitigation_percent`,0) > 0, mtg.mitigation_percent, IFNULL(MAX(`ctrl`.`mitigation_percent`), 0)) / 100), 2) AS residual_score
                 FROM `risk_scoring` scoring
                     JOIN `risks` rsk ON `scoring`.`id` = `rsk`.`id`
                     LEFT JOIN `mitigations` mtg ON `rsk`.`id` = `mtg`.`risk_id`
@@ -9623,7 +9707,7 @@ function add_project_api(){
     global $lang, $escaper;
     // check permission for project add 
     if(isset($_SESSION["add_projects"]) && $_SESSION["add_projects"] == 1){
-        $name = isset($_POST['new_project'])?$_POST['new_project']:"";
+        $name = isset($_POST['new_project']) ? trim($_POST['new_project']) : "";
         $exist = get_value_by_name("projects", $name);
         // Check if the project name is null
         if ($name == "")
@@ -9690,7 +9774,7 @@ function edit_project_api(){
     $value = (int)$_POST['project_id'];
     // check permission for project add 
     if(isset($_SESSION["add_projects"]) && $_SESSION["add_projects"] == 1){
-        $name = isset($_POST['name'])?$_POST['name']:"";
+        $name = isset($_POST['name']) ? trim($_POST['name']) : "";
         $exist = get_value_by_name("projects", $name);
         // Check if the project name is null
         if ($name == "")
@@ -10158,194 +10242,271 @@ function updateThreatCatalogOrderAPI()
 /******************************
  * FUNCTION: ADD RISK CATALOG *
  ******************************/
-function addRiskCatalogAPI()
-{
+function addRiskCatalogAPI() {
+
     global $lang, $escaper;
-    if (is_admin())
-    {
+
+    if (is_admin()) {
+
         $data = array(
-            "number" => isset($_POST['number']) ? $_POST['number'] : "",
+            "number" => !empty($_POST['number']) ? trim($_POST['number']) : "",
             "grouping" => isset($_POST['risk_grouping']) ? $_POST['risk_grouping'] : 0,
-            "name" => isset($_POST['name']) ? $_POST['name'] : "",
+            "name" => !empty($_POST['name']) ? trim($_POST['name']) : "",
             "description" => isset($_POST['description']) ? $_POST['description'] : "",
             "function" => isset($_POST['risk_function']) ? $_POST['risk_function'] : 0,
         );
-        if (!$data["name"]) {
-            set_alert(true, "bad", "The risk event cannot be empty.");
-        } elseif (!$data["number"]) {
+
+        if (!$data["number"]) {
+
             // Display an alert
-            set_alert(true, "bad", "The risk number cannot be empty.");
+            set_alert(true, "bad", _lang('FieldRequired', array("field"=>$lang['Risk'])));
+            json_response(400, get_alert(true), NULL);
+
+        } else if (!$data["name"]) {
+
+            // Display an alert
+            set_alert(true, "bad", _lang('FieldRequired', array("field"=>$lang['RiskEvent'])));
+            json_response(400, get_alert(true), NULL);
+
         } else {
+
+            // Add Risk Catalog
             add_risk_catalog($data);
+
             // Display an alert
-            set_alert(true, "good", "A new risk catalog item was added successfully.");
+            set_alert(true, "good", $escaper->escapeHtml($lang["ANewRiskCatalogItemWasAddedSuccessfully"]));
+            json_response(200, get_alert(true), NULL);
+
         }
-        json_response(200, get_alert(true), NULL);
-        return true;
-    }
-    else
-    {
+
+    } else {
+
         unauthorized_access();
+
     }
 }
 
 /********************************
  * FUNCTION: ADD THREAT CATALOG *
  ********************************/
-function addThreatCatalogAPI()
-{
+function addThreatCatalogAPI() {
+
     global $lang, $escaper;
-    if (is_admin())
-    {
+
+    if (is_admin()) {
+        
         $data = array(
-            "number" => isset($_POST['number']) ? $_POST['number'] : "",
+            "number" => !empty($_POST['number']) ? trim($_POST['number']) : "",
             "grouping" => isset($_POST['threat_grouping']) ? $_POST['threat_grouping'] : 0,
-            "name" => isset($_POST['name']) ? $_POST['name'] : "",
+            "name" => !empty($_POST['name']) ? trim($_POST['name']) : "",
             "description" => isset($_POST['description']) ? $_POST['description'] : "",
         );
-        if (!$data["number"])
-        {
+
+        if (!$data["number"]) {
+
             // Display an alert
-            set_alert(true, "bad", "The threat name cannot be empty.");
+            set_alert(true, "bad", _lang('FieldRequired', array("field"=>$lang['Threat'])));
+            json_response(400, get_alert(true), NULL);
+
+        } elseif (!$data["name"]) {
+
+            // Display an alert
+            set_alert(true, "bad", _lang('FieldRequired', array("field"=>$lang['ThreatEvent'])));
+            json_response(400, get_alert(true), NULL);
+
         } else {
+
+            // Add Threat Catalog
             add_threat_catalog($data);
+
             // Display an alert
-            set_alert(true, "good", "A new threat catalog item was added successfully.");
+            set_alert(true, "good", $escaper->escapeHtml($lang["ANewThreatCatalogItemWasAddedSuccessfully"]));
+            json_response(200, get_alert(true), NULL);
+
         }
-        json_response(200, get_alert(true), NULL);
-        return true;
-    }
-    else
-    {
+        
+    } else {
+
         unauthorized_access();
+
     }
 }
 
 /*********************************
  * FUNCTION: UPDATE RISK CATALOG *
  *********************************/
-function updateRiskCatalogAPI()
-{
+function updateRiskCatalogAPI() {
+
     global $lang, $escaper;
-    if (is_admin())
-    {
+
+    if (is_admin()) {
+
         $data = array(
             "id" => isset($_POST['id']) ? $_POST['id'] : "",
-            "number" => isset($_POST['number']) ? $_POST['number'] : "",
+            "number" => !empty($_POST['number']) ? trim($_POST['number']) : "",
             "grouping" => isset($_POST['risk_grouping']) ? $_POST['risk_grouping'] : 0,
-            "name" => isset($_POST['name']) ? $_POST['name'] : "",
+            "name" => !empty($_POST['name']) ? trim($_POST['name']) : "",
             "description" => isset($_POST['description']) ? $_POST['description'] : "",
             "function" => isset($_POST['risk_function']) ? $_POST['risk_function'] : 0,
         );
+
         if (!$data["id"]) {
+
             // Display an alert
-            set_alert(true, "bad", "The data ID was not a valid value.  Please try again.");
-        } elseif (!$data["name"]) {
-            set_alert(true, "bad", "The risk event cannot be empty.");
+            set_alert(true, "bad", $escaper->escapeHtml($lang["TheDataIDWasNotAValidValue"]));
+            json_response(400, get_alert(true), NULL);
+
         } elseif (!$data["number"]) {
+
             // Display an alert
-            set_alert(true, "bad", "The risk number cannot be empty.");
+            set_alert(true, "bad", _lang('FieldRequired', array("field"=>$lang['Risk'])));
+            json_response(400, get_alert(true), NULL);
+
+        } elseif (!$data["name"]) {
+            
+            // Display an alert
+            set_alert(true, "bad", _lang('FieldRequired', array("field"=>$lang['RiskEvent'])));
+            json_response(400, get_alert(true), NULL);
+
         } else {
+
+            // Update Risk Catalog
             update_risk_catalog($data);
+
             // Display an alert
-            set_alert(true, "good", "An existing risk catalog item was updated successfully.");
+            set_alert(true, "good", $escaper->escapeHtml($lang["AnExistingRiskCatalogItemWasUpdatedSuccessfully"]));
+            json_response(200, get_alert(true), NULL);
+
         }
-        json_response(200, get_alert(true), NULL);
-        return true;
-    }
-    else
-    {
+
+    } else {
+
         unauthorized_access();
+
     }
 }
 
 /***********************************
  * FUNCTION: UPDATE THREAT CATALOG *
  ***********************************/
-function updateThreatCatalogAPI()
-{
+function updateThreatCatalogAPI() {
+
     global $lang, $escaper;
-    if (is_admin())
-    {
+
+    if (is_admin()) {
+
         $data = array(
             "id" => isset($_POST['id']) ? $_POST['id'] : "",
-            "number" => isset($_POST['number']) ? $_POST['number'] : "",
+            "number" => !empty($_POST['number']) ? trim($_POST['number']) : "",
             "grouping" => isset($_POST['threat_grouping']) ? $_POST['threat_grouping'] : 0,
-            "name" => isset($_POST['name']) ? $_POST['name'] : "",
+            "name" => !empty($_POST['name']) ? trim($_POST['name']) : "",
             "description" => isset($_POST['description']) ? $_POST['description'] : "",
         );
-        if (!$data["id"])
-        {
+
+        if (!$data["id"]) {
+
             // Display an alert
-            set_alert(true, "bad", "The data ID was not a valid value.  Please try again.");
+            set_alert(true, "bad", $escaper->escapeHtml($lang["TheDataIDWasNotAValidValue"]));
+            json_response(400, get_alert(true), NULL);
+
+        } elseif (!$data["number"]) {
+
+            // Display an alert
+            set_alert(true, "bad", _lang('FieldRequired', array("field"=>$lang['Threat'])));
+            json_response(400, get_alert(true), NULL);
+
+        } elseif (!$data["name"]) {
+
+            // Display an alert
+            set_alert(true, "bad", _lang('FieldRequired', array("field"=>$lang['ThreatEvent'])));
+            json_response(400, get_alert(true), NULL);
+
         } else {
+
+            // Update Threat Catalog
             update_threat_catalog($data);
+
             // Display an alert
-            set_alert(true, "good", "An existing threat catalog item was updated successfully.");
+            set_alert(true, "good", $escaper->escapeHtml($lang["AnExistingThreatCatalogItemWasUpdatedSuccessfully"]));
+            json_response(200, get_alert(true), NULL);
+
         }
-        json_response(200, get_alert(true), NULL);
-        return true;
-    }
-    else
-    {
+
+    } else {
+
         unauthorized_access();
+
     }
 }
 
 /*********************************
  * FUNCTION: DELETE RISK CATALOG *
  *********************************/
-function deleteRiskCatalogAPI()
-{
+function deleteRiskCatalogAPI() {
+
     global $lang, $escaper;
-    if (is_admin())
-    {
+
+    if (is_admin()) {
+
         $id = isset($_POST['id']) ? $_POST['id'] : "";
-        if (!$id)
-        {
+
+        if (!$id) {
+
             // Display an alert
             set_alert(true, "bad", "The data ID was not a valid value.  Please try again.");
+
         } else {
+
             delete_risk_catalog($id);
+
             // Display an alert
-            set_alert(true, "good", "An existing risk catalog item was deleted successfully.");
+            set_alert(true, "good", $escaper->escapeHtml($lang['AnExistingRiskCatalogItemWasDeletedSuccessfully']));
+
         }
+
         json_response(200, get_alert(true), NULL);
         return true;
-    }
-    else
-    {
-        unauthorized_access();
-    }
 
+    } else {
+
+        unauthorized_access();
+
+    }
 }
 
 /***********************************
  * FUNCTION: DELETE THREAT CATALOG *
  ***********************************/
-function deleteThreatCatalogAPI()
-{
+function deleteThreatCatalogAPI() {
+
     global $lang, $escaper;
-    if (is_admin())
-    {
+
+    if (is_admin()) {
+
         $id = isset($_POST['id']) ? $_POST['id'] : "";
-        if (!$id)
-        {
+        
+        if (!$id) {
+
             // Display an alert
             set_alert(true, "bad", "The data ID was not a valid value.  Please try again.");
+
         } else {
+
             delete_threat_catalog($id);
+            
             // Display an alert
-            set_alert(true, "good", "An existing risk catalog item was deleted successfully.");
+            set_alert(true, "good", $escaper->escapeHtml($lang['AnExistingThreatCatalogItemWasDeletedSuccessfully']));
+
         }
+
         json_response(200, get_alert(true), NULL);
         return true;
-    }
-    else
-    {
-        unauthorized_access();
-    }
 
+    } else {
+
+        unauthorized_access();
+
+    }
 }
 
 /**********************************************
@@ -10738,7 +10899,7 @@ function my_open_risk_datatable() {
     {
         // Query the database
         $sql = "
-            SELECT SQL_CALC_FOUND_ROWS a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+            SELECT SQL_CALC_FOUND_ROWS a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
             FROM risk_scoring a
                 LEFT JOIN risks b ON a.id = b.id
                 LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
@@ -10762,7 +10923,7 @@ function my_open_risk_datatable() {
 
         // Query the database
         $sql = "
-            SELECT SQL_CALC_FOUND_ROWS a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+            SELECT SQL_CALC_FOUND_ROWS a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
             FROM risk_scoring a
                 LEFT JOIN risks b ON a.id = b.id
                 LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
@@ -11031,7 +11192,7 @@ function recent_commented_risk_datatable() {
     }
     // Query the database
     $sql = "
-        SELECT SQL_CALC_FOUND_ROWS a.calculated_risk, b.*, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+        SELECT SQL_CALC_FOUND_ROWS a.calculated_risk, b.*, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
         FROM risk_scoring a
             LEFT JOIN (
                 SELECT *,

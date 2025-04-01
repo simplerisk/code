@@ -28,7 +28,7 @@ something like:
     "description": "A description of the module 'mymodule'.",
     "type": "simplesamlphp-module",
     "require": {
-        "simplesamlphp/composer-module-installer": "~1.0"
+        "simplesamlphp/composer-module-installer": "~1.4"
     }
 }
 ```
@@ -123,7 +123,7 @@ name can be provided in the `ssp-mixedcase-module-name` extra data option:
         "ssp-mixedcase-module-name": "myModule"
     },
     "require": {
-        "simplesamlphp/composer-module-installer": "~1.1"
+        "simplesamlphp/composer-module-installer": "~1.4"
     }
 }
 ```

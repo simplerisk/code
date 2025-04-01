@@ -114,7 +114,7 @@ class ModuleInstaller extends LibraryInstaller
     /**
      * {@inheritDoc}
      */
-    public function supports($packageType)
+    public function supports(string $packageType)
     {
         return in_array($packageType, self::SUPPORTED);
     }

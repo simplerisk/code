@@ -70,7 +70,7 @@ function risk_distribution_analysis() {
                 END AS level 
             from (
                 SELECT 
-                    a.calculated_risk, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(c.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk 
+                    a.calculated_risk, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(c.mitigation_percent,0) > 0, c.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk 
                 FROM 
                     `risk_scoring` a 
                     JOIN `risks` b ON a.id = b.id 
@@ -78,7 +78,7 @@ function risk_distribution_analysis() {
                     LEFT JOIN mitigation_to_controls mtc ON c.id = mtc.mitigation_id
                     LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
                 WHERE 
-                    b.status != \"Closed\"
+                    b.status != 'Closed'
                 GROUP BY
                     b.id
             ) as a 
@@ -107,7 +107,7 @@ function risk_distribution_analysis() {
     }
 
     echo "
-        <p><b>" . $escaper->escapeHtml("Your residual risk level distribution is as follows:") . "</b></p>
+        <p><b>{$escaper->escapeHtml("Your residual risk level distribution is as follows:")}</b></p>
         <ul>
     ";
 
@@ -123,7 +123,7 @@ function risk_distribution_analysis() {
 
         echo "
             <li>
-                <label class='m-r-10'>" . $escaper->escapeHtml($row['level']) . " :</label>" . (int)$row['num'] . "
+                <label class='me-3'>{$escaper->escapeHtml($row['level'])} :</label>" . (int)$row['num'] . "
             </li>
         ";
 
@@ -143,26 +143,26 @@ function risk_distribution_analysis() {
 
     echo "
         </ul>
-        <p><b>" . $escaper->escapeHtml("Recommendation(s):") . "</b></p>
-        <ul class='mb-0 p-l-0'>
+        <p><b>{$escaper->escapeHtml("Recommendation(s):")}</b></p>
+        <ul class='mb-0 ps-0'>
     ";
 
     // If we have more high or very high than everything else
     if ($veryhigh + $high > $medium + $low + $insignificant) {
         echo "
-            <li style='margin-left: 2rem;'><label>Your VERY HIGH and HIGH level risks account for over half of your total risks.  You should consider mitigating some of them.</label></li>
+            <li class='ms-4'><label>Your VERY HIGH and HIGH level risks account for over half of your total risks.  You should consider mitigating some of them.</label></li>
         ";
     }
     // If veryhigh risks are more than 1/5 of the total risks
     if ($veryhigh > ($veryhigh + $high + $medium + $low + $insignificant)/5) {
         echo "
-            <li style='margin-left: 2rem;'><label>Your VERY HIGH risks account for over &#8533; of your total risks.  You should consider mitigating some of them.</label></li>
+            <li class='ms-4'><label>Your VERY HIGH risks account for over &#8533; of your total risks.  You should consider mitigating some of them.</label></li>
         ";
     }
     // If high risks are more than 1/5 of the total risks
     if ($high > ($veryhigh + $high + $medium + $low + $insignificant)/5) {
         echo "
-            <li style='margin-left: 2rem;'><label>Your HIGH risks account for over &#8533; of your total risks.  You should consider mitigating some of them.</label></li>
+            <li class='ms-4'><label>Your HIGH risks account for over &#8533; of your total risks.  You should consider mitigating some of them.</label></li>
         ";
     }
 
@@ -177,7 +177,7 @@ function risk_distribution_analysis() {
             c.calculated_risk,
             b.mitigation_effort,
             b.mitigation_percent,
-            (c.calculated_risk - (c.calculated_risk * GREATEST(IFNULL(b.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)) as residual_risk 
+            (c.calculated_risk - (c.calculated_risk * IF(IFNULL(b.mitigation_percent,0) > 0, b.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)) as residual_risk 
         FROM 
             risks a 
             JOIN mitigations b ON a.id = b.risk_id 
@@ -186,7 +186,7 @@ function risk_distribution_analysis() {
             LEFT JOIN risk_scoring c ON a.id = c.id 
         WHERE
             b.mitigation_effort != 0
-            AND a.status != \"Closed\"
+            AND a.status != 'Closed'
         GROUP BY
             a.id
         ORDER BY
@@ -205,16 +205,16 @@ function risk_distribution_analysis() {
 
         // Suggest performing the mitigations
         echo "
-            <li style='margin-left: 2rem;'><label>Mitigating these risks would provide the highest risk reduction for the lowest level of effort :</label></li>
-            <div class='col-12'>
+            <li class='ms-4'><label>Mitigating these risks would provide the highest risk reduction for the lowest level of effort :</label></li>
+            <div class='risk-advice-table-container'>
                 <table class='table table-bordered table-condensed sortable mb-0'>
                     <thead>
                         <tr>
-                            <th align='left' width='50px'>" . $escaper->escapeHtml($lang['ID']) . "</th>
-                            <th align='left'>" . $escaper->escapeHtml($lang['Subject']) . "</th>
-                            <th align='left' width='105px'>" . $escaper->escapeHtml($lang['MitigationEffort']) . "</th>
-                            <th align='left' width='30px'>" . $escaper->escapeHtml($lang['InherentRisk']) . "</th>
-                            <th align='left' width='30px'>" . $escaper->escapeHtml($lang['ResidualRisk']) . "</th>
+                            <th align='left' width='50px'>{$escaper->escapeHtml($lang['ID'])}</th>
+                            <th align='left'>{$escaper->escapeHtml($lang['Subject'])}</th>
+                            <th align='left' width='105px'>{$escaper->escapeHtml($lang['MitigationEffort'])}</th>
+                            <th align='left' width='30px'>{$escaper->escapeHtml($lang['InherentRisk'])}</th>
+                            <th align='left' width='30px'>{$escaper->escapeHtml($lang['ResidualRisk'])}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -243,6 +243,7 @@ function risk_distribution_analysis() {
 
         // For each result
         foreach ($array as $risk) {
+
             // Get the values
             $id = (int)$risk['id'];
             $subject = $risk['subject'];
@@ -262,8 +263,8 @@ function risk_distribution_analysis() {
                 if (!$team_separation_enabled || ($team_separation_enabled && extra_grant_access($_SESSION['uid'], $risk_id))) {
                     echo "
                         <tr>
-                            <td><a class='open-in-new-tab' href='../management/view.php?id=" . $escaper->escapeHtml($risk_id) . "' target='_blank'>" . $escaper->escapeHtml($risk_id) . "</a></td>
-                            <td>" . $escaper->escapeHtml($subject) . "</td>
+                            <td><a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml($risk_id)}' target='_blank'>{$escaper->escapeHtml($risk_id)}</a></td>
+                            <td>{$escaper->escapeHtml($subject)}</td>
                             <td>
                                 <div style='height: 50px; width: 100px; border: 1px solid black; clear: both; align-content: center; text-align: center; background-color: #FFFFFF; font-weight:bold;'>
                                     {$escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort))}
@@ -287,11 +288,13 @@ function risk_distribution_analysis() {
                 }
             }
         }
+
         echo "
                     </tbody>
                 </table>
             </div>
         ";
+
     }
 
     echo "

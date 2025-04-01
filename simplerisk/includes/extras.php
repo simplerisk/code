@@ -25,6 +25,7 @@ function available_extras()
     $extras = array(
         array("short_name" => "advanced_search", "long_name" => "Advanced Search Extra"),
         array("short_name" => "api", "long_name" => "API Extra"),
+        array("short_name" => "artificial_intelligence", "long_name" => "Artificial Intelligence Extra"),
         array("short_name" => "assessments", "long_name" => "Risk Assessment Extra"),
         array("short_name" => "authentication", "long_name" => "Custom Authentication Extra"),
         array("short_name" => "complianceforgescf", "long_name" => "ComplianceForge SCF Extra"),
@@ -93,6 +94,8 @@ function core_extra_current_version($extra)
                     return ADVANCED_SEARCH_EXTRA_VERSION;
                 case "api":
                     return API_EXTRA_VERSION;
+                case "artificial_intelligence":
+                    return ARTIFICIAL_INTELLIGENCE_EXTRA_VERSION;
                 case "assessments":
                     return ASSESSMENTS_EXTRA_VERSION;
                 case "authentication":
@@ -117,12 +120,12 @@ function core_extra_current_version($extra)
                     return SEPARATION_EXTRA_VERSION;
                 case "ucf":
                     return UCF_EXTRA_VERSION;
-		case "upgrade":
-		    return UPGRADE_EXTRA_VERSION;
-		case "vulnmgmt":
-		    return VULNMGMT_EXTRA_VERSION;
-		default:
-		    return "N/A";
+                case "upgrade":
+                    return UPGRADE_EXTRA_VERSION;
+                case "vulnmgmt":
+                    return VULNMGMT_EXTRA_VERSION;
+                default:
+                    return "N/A";
 			}
 		}
 		else return "N/A";
@@ -137,40 +140,42 @@ function core_extra_activated($extra)
 {
 	// Return the extra activated
         switch ($extra) {
-                case "advanced_search":
-                    return advanced_search_extra();
-                case "api":
-                    return api_extra();
-                case "assessments":
-                    return assessments_extra();
-                case "authentication":
-                    return custom_authentication_extra();
-                case "complianceforgescf":
-                    return complianceforge_scf_extra();
-                case "customization":
-                    return customization_extra();
-                case "encryption":
-                    return encryption_extra();
-                case "import-export":
-                    return import_export_extra();
-                case "incident_management":
-                    return incident_management_extra();
-                case "jira":
-                    return jira_extra();
-                case "notification":
-                    return notification_extra();
-                case "organizational_hierarchy":
-                    return organizational_hierarchy_extra();
-                case "separation":
-                    return team_separation_extra();
-                case "ucf":
-                    return ucf_extra();
-                case "upgrade":
-                	return true;
-		case "vulnmgmt":
-			return vulnmgmt_extra();
-                default:
-                	return false;
+            case "advanced_search":
+                return advanced_search_extra();
+            case "api":
+                return api_extra();
+            case "artificial_intelligence":
+                return artificial_intelligence_extra();
+            case "assessments":
+                return assessments_extra();
+            case "authentication":
+                return custom_authentication_extra();
+            case "complianceforgescf":
+                return complianceforge_scf_extra();
+            case "customization":
+                return customization_extra();
+            case "encryption":
+                return encryption_extra();
+            case "import-export":
+                return import_export_extra();
+            case "incident_management":
+                return incident_management_extra();
+            case "jira":
+                return jira_extra();
+            case "notification":
+                return notification_extra();
+            case "organizational_hierarchy":
+                return organizational_hierarchy_extra();
+            case "separation":
+                return team_separation_extra();
+            case "ucf":
+                return ucf_extra();
+            case "upgrade":
+                return true;
+            case "vulnmgmt":
+                return vulnmgmt_extra();
+            default:
+                return false;
         }
 }
 
@@ -189,6 +194,8 @@ function core_extra_activated_link($extra)
             return "<a class='text-info m-l-10' href='advanced_search.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
         case "api":
             return "<a class='text-info m-l-10' href='api.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
+        case "artificial_intelligence":
+            return "<a class='text-info m-l-10' href='artificial_intelligence.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
         case "assessments":
             return "<a class='text-info m-l-10' href='assessments.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
         case "authentication":
@@ -573,6 +580,11 @@ function core_get_action_button($extra_name, $purchased, $installed, $activated,
 	    case "vulnmgmt":
 	        $button_name = "get_vulnmgmt_extra";
 	        $action_link = "vulnmgmt.php";
+            break;
+        case "artificial_intelligence":
+            $button_name = "get_artificial_intelligence_extra";
+            $action_link = "artificial_intelligence.php";
+            break;
     }
 
     // If the Extra has been purchased
@@ -971,6 +983,9 @@ function core_deactivate_extra($extra)
 				case "api":
 					disable_api_extra();
 					return true;
+                case "artificial_intelligence":
+                    disable_artificial_intelligence_extra();
+                    return true;
 				case "assessments":
 					disable_assessments_extra();
 					return true;

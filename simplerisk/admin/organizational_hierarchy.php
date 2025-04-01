@@ -1,101 +1,123 @@
 <?php
-/* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this
-* file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+	/* This Source Code Form is subject to the terms of the Mozilla Public
+	* License, v. 2.0. If a copy of the MPL was not distributed with this
+	* file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Render the header and sidebar
-require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['easyui:treegrid', 'easyui:dnd', 'CUSTOM:selectlist.js'], ['check_admin' => true]);
-
-// If the extra directory exists
-if (is_dir(realpath(__DIR__ . '/../extras/organizational_hierarchy'))) {
-	// Include the Advanced Search Extra
-	require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
-
-	// If the user wants to activate the extra
-	if (isset($_POST['activate'])) {
-		// Enable the Advanced Search Extra
-		enable_organizational_hierarchy_extra();
-	}
-
-	// If the user wants to deactivate the extra
-	if (isset($_POST['deactivate'])) {
-		// Disable the Advanced Search Extra
-		disable_organizational_hierarchy_extra();
-	}
-}
-
-/*********************
- * FUNCTION: DISPLAY *
- *********************/
-function display() {
-	global $lang;
-	global $escaper;
+	// Render the header and sidebar
+	require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+	render_header_and_sidebar(['easyui:treegrid', 'easyui:dnd', 'CUSTOM:selectlist.js', 'CUSTOM:common.js'], ['check_admin' => true]);
 
 	// If the extra directory exists
 	if (is_dir(realpath(__DIR__ . '/../extras/organizational_hierarchy'))) {
-		// But the extra is not activated
-		if (!organizational_hierarchy_extra()) {
-			echo "	<div class='card-body my-2 border'>";
-			// If the extra is not restricted based on the install type
-			if (!restricted_extra("organizational_hierarchy")) {
-				echo "	<form id='activate_extra' name='activate_extra' method='post' action=''>
-							<input type='submit' value='" . $escaper->escapeHtml($lang['Activate']) . "' name='activate' class='btn btn-submit'/><br />
-						</form>";
-			// The extra is restricted
-			} else echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
-			echo "	</div>";
-		} else { // Once it has been activated
+		// Include the Advanced Search Extra
+		require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
 
-			// Include the Organizational Hierarchy Extra
-			require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
-
-			echo "
-				<div class='card-body my-2 border'>
-					<form id='deactivate_extra' name='deactivate' method='post'>
-						<font color='green'>
-							<b>" . $escaper->escapeHtml($lang['Activated']) . "</b>
-						</font> 
-						[" . organizational_hierarchy_version() . "]&nbsp;&nbsp;
-						<input type='submit' name='deactivate' value='" . $escaper->escapeHtml($lang['Deactivate']) . "' class='btn btn-dark'/>
-					</form>
-				</div>";
+		// If the user wants to activate the extra
+		if (isset($_POST['activate'])) {
+			// Enable the Advanced Search Extra
+			enable_organizational_hierarchy_extra();
 		}
-	} else { // Otherwise, the Extra does not exist
-		echo "
-			<div class='card-body my-2 border'>
-				<a href='https://www.simplerisk.com/extras' target='_blank' class='text-info'>Purchase the Extra</a>
-			</div>";
+
+		// If the user wants to deactivate the extra
+		if (isset($_POST['deactivate'])) {
+			// Disable the Advanced Search Extra
+			disable_organizational_hierarchy_extra();
+		}
 	}
-}
+
+	/*********************
+	 * FUNCTION: DISPLAY *
+	 *********************/
+	function display() {
+
+		global $lang;
+		global $escaper;
+
+		// If the extra directory exists
+		if (is_dir(realpath(__DIR__ . '/../extras/organizational_hierarchy'))) {
+
+			// But the extra is not activated
+			if (!organizational_hierarchy_extra()) {
+
+				echo "
+					<div class='card-body my-2 border'>
+				";
+
+				// If the extra is not restricted based on the install type
+				if (!restricted_extra("organizational_hierarchy")) {
+
+					echo "
+						<form id='activate_extra' name='activate_extra' method='post' action=''>
+							<input type='submit' value='{$escaper->escapeHtml($lang['Activate'])}' name='activate' class='btn btn-submit'/>
+						</form>
+					";
+
+				// The extra is restricted
+				} else {
+					echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
+				}
+
+				echo "
+					</div>
+				";
+
+			// Once it has been activated
+			} else {
+
+				// Include the Organizational Hierarchy Extra
+				require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
+
+				echo "
+					<div class='card-body my-2 border'>
+						<form id='deactivate_extra' name='deactivate' method='post'>
+							<font color='green'>
+								<b>{$escaper->escapeHtml($lang['Activated'])}</b>
+							</font> 
+							[" . organizational_hierarchy_version() . "]
+							<input type='submit' name='deactivate' value='" . $escaper->escapeHtml($lang['Deactivate']) . "' class='btn btn-dark ms-2'/>
+						</form>
+					</div>
+				";
+
+			}
+
+		// Otherwise, the Extra does not exist
+		} else {
+			echo "
+					<div class='card-body my-2 border'>
+						<a href='https://www.simplerisk.com/extras' target='_blank' class='text-info'>Purchase the Extra</a>
+					</div>
+			";
+		}
+	}
 
 ?>
 <div class="row bg-white"> 
 	<div class="col-12">
-		<?php display(); ?>
+	<?php 
+		display(); 
+	?>
 	</div>
-<?php if (organizational_hierarchy_extra()) {?>
+	<?php 
+		if (organizational_hierarchy_extra()) {
+	?>
 	<div class='organizational-hierarchy-page custom-treegrid-container mb-2'>
 		<div class='text-end'>
-			<button id='create_business_unit' type='button' class='btn btn-dark mb-2'><?php echo $escaper->escapeHtml($lang['CreateNewBusinessUnit']); ?></button>
+			<button id='create_business_unit' type='button' class='btn btn-dark mb-2'><?= $escaper->escapeHtml($lang['CreateNewBusinessUnit']); ?></button>
 		</div>
 		<table id='business_units' class='easyui-treegrid framework-table'>
 			<thead>
 				<tr>
-					<th data-options="field:'name'" width='20%'><?php echo $escaper->escapeHtml($lang['Name']); ?></th>
-					<th data-options="field:'description'" width='70%'>
-						<?php echo $escaper->escapeHtml($lang['Description']); ?>
-					</th>
-					<th data-options="field:'actions'" width='10%'>&nbsp;</th>
+					<th data-options="field:'name'" width='20%'><?= $escaper->escapeHtml($lang['Name']); ?></th>
+					<th data-options="field:'description'" width='70%'><?= $escaper->escapeHtml($lang['Description']); ?></th>
+					<th data-options="field:'actions'" width='10%'><?= $escaper->escapeHtml($lang['Actions']); ?></th>
 				</tr>
 			</thead>
 		</table>
 	</div>
-<?php } ?>
-		
-	<script>
-		<?php prevent_form_double_submit_script(['activate_extra', 'deactivate_extra']); ?>
-	</script>
+	<?php
+		} 
+	?>
 </div>
 
 <!-- MODAL WINDOW FOR ADDING BUSINESS UNIT -->
@@ -104,25 +126,29 @@ function display() {
 		<div class="modal-content">
 			<form id="business-unit-new-form" action="#" method="POST" autocomplete="off">
 				<div class="modal-header">
-					<h5 class="modal-title"><?php echo $escaper->escapeHtml($lang['CreateNewBusinessUnit']); ?></h5>
+					<h5 class="modal-title"><?= $escaper->escapeHtml($lang['CreateNewBusinessUnit']); ?></h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
 					<div class="form-group">
-						<label for=""><?php echo $escaper->escapeHtml($lang['Name']); ?>:</label>
-						<input type="text" required name="name" value="" class="form-control" autocomplete="off">
+						<label for=""><?= $escaper->escapeHtml($lang['Name']); ?><span class="required">*</span> :</label>
+						<input type="text" required name="name" value="" class="form-control" autocomplete="off" title="<?= $escaper->escapeHtml($lang['Name']); ?>">
 					</div>
 					<div class="form-group">
-						<label for=""><?php echo $escaper->escapeHtml($lang['Description']); ?>:</label>
+						<label for=""><?= $escaper->escapeHtml($lang['Description']); ?> :</label>
 						<textarea name="description" class="form-control" rows="6"></textarea>
 					</div>
 					<div class="select-list-wrapper" >
 						<div class="select-list-available">
-							<label for=""><?php echo $escaper->escapeHtml($lang['AvailableTeams']); ?>:</label>
+							<label for=""><?= $escaper->escapeHtml($lang['AvailableTeams']); ?> :</label>
 							<select multiple="multiple" class="form-control">
-							<?php foreach (get_all_teams() as $team) {?>
-								<option value="<?php echo (int)$team['value'];?>"><?php echo $escaper->escapeHtml($team['name']);?></option>
-							<?php }?>
+	<?php 
+		foreach (get_all_teams() as $team) {
+	?>
+								<option value="<?= (int)$team['value'];?>"><?= $escaper->escapeHtml($team['name']);?></option>
+	<?php
+		}
+	?>
 							</select>
 						</div>
 						<div class="select-list-arrows text-center">
@@ -132,15 +158,14 @@ function display() {
 							<input type='button' value='&lt;&lt;' class="btn btn-secondary btnAllLeft" />
 						</div>
 						<div class="select-list-selected">
-							<label for=""><?php echo $escaper->escapeHtml($lang['SelectedTeams']); ?>:</label>
-							<select name="selected-business-units" multiple="multiple" class="form-control">
-							</select>
+							<label for=""><?= $escaper->escapeHtml($lang['SelectedTeams']); ?> :</label>
+							<select name="selected-business-units" multiple="multiple" class="form-control"></select>
 						</div>
 					</div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-					<button type="submit" class="btn btn-submit"><?php echo $escaper->escapeHtml($lang['Create']); ?></button>
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+					<button type="submit" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Create']); ?></button>
 				</div>
 			</form>
 		</div>
@@ -152,47 +177,41 @@ function display() {
 	<div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
 		<div class="modal-content">
 			<form id="business-unit-update-form" class="" action="#" method="post" autocomplete="off">
+				<input type="hidden" class="business_unit_id" name="business_unit_id" value="">
 				<div class="modal-header">
-					<h5 class="modal-title"><?php echo $escaper->escapeHtml($lang['BusinessUnitUpdate']); ?></h5>
+					<h5 class="modal-title"><?= $escaper->escapeHtml($lang['BusinessUnitUpdate']); ?></h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
-				<input type="hidden" class="business_unit_id" name="business_unit_id" value="">
-
 				<div class="modal-body">
 					<div class="form-group">
-						<label for=""><?php echo $escaper->escapeHtml($lang['Name']); ?>:</label>
-						<input type="text" required name="name" value="" class="form-control" autocomplete="off">
+						<label for=""><?= $escaper->escapeHtml($lang['Name']); ?><span class="required">*</span> :</label>
+						<input type="text" required name="name" value="" class="form-control" autocomplete="off" title="<?= $escaper->escapeHtml($lang['Name']); ?>">
 					</div>
 					<div class="form-group">
-						<label for=""><?php echo $escaper->escapeHtml($lang['Description']); ?>:</label>
+						<label for=""><?= $escaper->escapeHtml($lang['Description']); ?> :</label>
 						<textarea name="description" class="form-control" rows="6" style="width:100%;"></textarea>
 					</div>
 					<div class="select-list-wrapper" >
-
 						<div class="select-list-available">
-							<label for=""><?php echo $escaper->escapeHtml($lang['AvailableTeams']); ?>:</label>
+							<label for=""><?= $escaper->escapeHtml($lang['AvailableTeams']); ?> :</label>
 							<select multiple="multiple" class="form-control">
 							</select>
 						</div>
-
 						<div class="select-list-arrows text-center">
 							<input type='button' value='&gt;&gt;' class="btn btn-secondary btnAllRight" /><br />
 							<input type='button' value='&gt;' class="btn btn-secondary btnRight" /><br />
 							<input type='button' value='&lt;' class="btn btn-secondary btnLeft" /><br />
 							<input type='button' value='&lt;&lt;' class="btn btn-secondary btnAllLeft" />
 						</div>
-
 						<div class="select-list-selected">
-							<label for=""><?php echo $escaper->escapeHtml($lang['SelectedTeams']); ?>:</label>
-							<select name="selected-business-units" multiple="multiple" class="form-control">
-							</select>
+							<label for=""><?= $escaper->escapeHtml($lang['SelectedTeams']); ?> :</label>
+							<select name="selected-business-units" multiple="multiple" class="form-control"></select>
 						</div>
-
 					</div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-					<button type="submit" class="btn btn-submit"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+					<button type="submit" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Update']); ?></button>
 				</div>
 			</form>
 		</div>
@@ -204,15 +223,14 @@ function display() {
 	<div class="modal-dialog modal-md modal-dialog-scrollable modal-dialog-centered">
 		<div class="modal-content">
 			<form class="" id="business-unit-delete-form" action="" method="post">
+				<input type="hidden" name="business_unit_id" value="" />
 				<div class="modal-body">
 					<div class="form-group text-center">
-						<label for=""><?php echo $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisBusinessUnit']); ?></label>
-						<input type="hidden" name="business_unit_id" value="" />
+						<label for=""><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisBusinessUnit']); ?></label>
 					</div>
-
 					<div class="form-group text-center">
-						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-						<button type="submit" class="btn btn-submit"><?php echo $escaper->escapeHtml($lang['Yes']); ?></button>
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+						<button type="submit" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
 					</div>
 				</div>
 			</form>
@@ -225,15 +243,17 @@ function display() {
 	<div class="modal-dialog modal-md modal-dialog-scrollable modal-dialog-centered">
 		<div class="modal-content">
 			<form class="" id="team-remove-form" action="" method="post">
+				<input type="hidden" name="business_unit_id" value="" />
+				<input type="hidden" name="team_id" value="" />
 				<div class="modal-body">
 					<div class="form-group text-center">
-						<label for=""><?php echo $escaper->escapeHtml($lang['AreYouSureYouWantToRemoveThisTeam']); ?></label>
+						<label for=""><?= $escaper->escapeHtml($lang['AreYouSureYouWantToRemoveThisTeam']); ?></label>
 						<input type="hidden" name="business_unit_id" value="" />
 						<input type="hidden" name="team_id" value="" />
 					</div>
 					<div class="form-group text-center">
-						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-						<button type="submit" class="btn btn-submit"><?php echo $escaper->escapeHtml($lang['Yes']); ?></button>
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+						<button type="submit" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
 					</div>
 				</div>
 			</form>
@@ -242,11 +262,11 @@ function display() {
 </div>
 <style type='text/css'>
 	#create_business_unit {
-	margin-bottom: 3px;
+		margin-bottom: 3px;
 	}
 
 	a.business-unit--update {
-	padding-right: 5px;
+		padding-right: 5px;
 	}
 
 	a.business-unit--update, a.business-unit--delete, a.team--remove {
@@ -256,9 +276,11 @@ function display() {
 	td[field='actions'], td[field='actions']>div, .actions-cell, .actions-cell a {
 		vertical-align: bottom;
 	}
+
 	.modal-body {
 		max-height: unset;
 	}
+
 	.business-unit-name {
 		cursor: pointer;
 		user-select: none; /* standard syntax */
@@ -266,9 +288,6 @@ function display() {
 		-moz-user-select: none; /* mozilla browsers */
 		-khtml-user-select: none; /* webkit (konqueror) browsers */
 		-ms-user-select: none; /* IE10+ */
-	}
-	input[type='text'], textarea.form-control{
-		max-width: 100%;
 	}
 </style> 
 
@@ -278,7 +297,7 @@ function display() {
 			url: BASE_URL + '/api/organizational_hierarchy/business_unit/available_business_unit_menu_items',
 			type: 'GET',
 			success : function (response) {
-			$('li.dropdown-submenu.business-units ul.dropdown-menu').html(response);
+				$('li.dropdown-submenu.business-units ul.dropdown-menu').html(response);
 			},
 			error: function(xhr, status, error) {
 				if(!retryCSRF(xhr, this)) {
@@ -297,7 +316,7 @@ function display() {
 	}
 
 	$(document).ready(function() {
-	//Have to remove the 'fade' class for the shown event to work for modals
+		//Have to remove the 'fade' class for the shown event to work for modals
 		$('#business-unit--create, #business-unit--update').on('shown.bs.modal', function() {
 			$(this).find('.modal-body').scrollTop(0);
 		});
@@ -340,15 +359,29 @@ function display() {
 		});
 
 		$('#create_business_unit').click(function(event) {
+
 			event.preventDefault();
+
+			// Reset the form
+			resetForm('#business-unit-new-form', false);
+
 			// Move teams back to the available select if they were previously selected
 			$('#business-unit-new-form .select-list-arrows .btnAllLeft')[0].click();
+
 			// Show the modal
 			$('#business-unit--create').modal('show');
+
 		});
 
 		$('#business-unit-new-form').submit(function(event) {
+
 			event.preventDefault();
+
+			// Check empty/trimmed empty valiation for the required fields 
+			if (!checkAndSetValidation(this)) {
+				return;
+			}
+
 			var data = new FormData($('#business-unit-new-form')[0]);
 
 			//adding the ids of the selected teams to the data sent
@@ -370,7 +403,9 @@ function display() {
 					}
 
 					$('#business-unit--create').modal('hide');
-					$('#business-unit-new-form')[0].reset();
+
+					// Reset the form
+					resetForm('#business-unit-new-form', false);
 
 					var tree = $('#business_units');
 					tree.treegrid('options').animate = false;
@@ -423,14 +458,31 @@ function display() {
 			});
 		});
 
+        // variable which is used to prevent multiple form submissions
+        var loading = false;
+
 		$('#business-unit-update-form').submit(function(event) {
 			event.preventDefault();
+
+            // prevent multiple form submissions
+            if (loading) {
+                return;
+            }
+
+			// Check empty/trimmed empty valiation for the required fields 
+			if (!checkAndSetValidation(this)) {
+				return;
+			}
+
 			var data = new FormData($('#business-unit-update-form')[0]);
 
 			//adding the ids of the selected teams
 			$('#business-unit-update-form .select-list-selected select option').each(function() {
 				data.append('selected_teams[]', $(this).val());
 			});
+
+            // set the loading to true to prevent form submission
+            loading = true;
 
 			$.ajax({
 				type: 'POST',
@@ -446,7 +498,13 @@ function display() {
 					}
 
 					$('#business-unit--update').modal('hide');
-					$('#business-unit-update-form')[0].reset();
+
+                    // set loading to false to allow form submission
+                    loading = false;
+
+
+					// Reset the form
+					resetForm('#business-unit-update-form', false);
 
 					var tree = $('#business_units');
 					tree.treegrid('options').animate = false;
@@ -460,6 +518,10 @@ function display() {
 							showAlertsFromArray(xhr.responseJSON.status_message);
 						}
 					}
+
+					// set loading to false to allow form submission
+					loading = false;
+
 				},
 				complete: function(xhr, status) {
 					enableSubmit();
@@ -492,7 +554,9 @@ function display() {
 					}
 
 					$('#business-unit--delete').modal('hide');
-					$('#business-unit-delete-form')[0].reset();
+
+					// Reset the form
+					resetForm('#business-unit-delete-form', false);
 
 					var tree = $('#business_units');
 					tree.treegrid('options').animate = false;
@@ -542,7 +606,9 @@ function display() {
 					}
 
 					$('#team--remove').modal('hide');
-					$('#team-remove-form')[0].reset();
+
+					// Reset the form
+					resetForm('#team-remove-form', false);
 
 					//$('tr[node-id=\"' + business_unit_id + '-' + team_id + '\"]').remove();
 					var tree = $('#business_units');
@@ -570,6 +636,9 @@ function display() {
 		
 	});
 
+</script>
+<script>
+	<?php prevent_form_double_submit_script(['activate_extra', 'deactivate_extra', 'business-unit-delete-form']); ?>
 </script>
 <?php
     // Render the footer of the page. Please don't put code after this part.

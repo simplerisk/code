@@ -9,6 +9,8 @@ use SimpleSAML\Assert\Assert;
 use SimpleSAML\XML\Exception\InvalidDOMElementException;
 use SimpleSAML\XML\Exception\SchemaViolationException;
 use SimpleSAML\XML\ExtendableElementTrait;
+use SimpleSAML\XML\SchemaValidatableElementInterface;
+use SimpleSAML\XML\SchemaValidatableElementTrait;
 use SimpleSAML\XML\XsNamespace as NS;
 use SimpleSAML\XMLSecurity\Constants as C;
 use SimpleSAML\XMLSecurity\Exception\InvalidArgumentException;
@@ -18,9 +20,10 @@ use SimpleSAML\XMLSecurity\Exception\InvalidArgumentException;
  *
  * @package simplesamlphp/xml-security
  */
-final class DigestMethod extends AbstractDsElement
+final class DigestMethod extends AbstractDsElement implements SchemaValidatableElementInterface
 {
     use ExtendableElementTrait;
+    use SchemaValidatableElementTrait;
 
     public const XS_ANY_ELT_NAMESPACE = NS::OTHER;
 

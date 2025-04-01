@@ -33,7 +33,7 @@
 <div class="row bg-white">
     <div class="col-12">
     <?php 
-        if(!isset($_GET['action']) || $_GET['action'] == "questions_list") {
+        if (!isset($_GET['action']) || $_GET['action'] == "questions_list") {
 
         display_questionnaire_questions();
 
@@ -57,6 +57,9 @@
     ?>
     </div>
 </div>
+<script>
+    <?php prevent_form_double_submit_script(['aseessment-questionnaire-question--delete-form']);?>
+</script>
 <?php
     // Render the footer of the page. Please don't put code after this part.
     render_footer();

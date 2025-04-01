@@ -9,6 +9,8 @@ use SimpleSAML\Assert\Assert;
 use SimpleSAML\XML\Constants as C;
 use SimpleSAML\XML\Exception\InvalidDOMElementException;
 use SimpleSAML\XML\Exception\SchemaViolationException;
+use SimpleSAML\XML\SchemaValidatableElementInterface;
+use SimpleSAML\XML\SchemaValidatableElementTrait;
 use SimpleSAML\XMLSecurity\XML\xenc\Transforms;
 
 /**
@@ -16,8 +18,10 @@ use SimpleSAML\XMLSecurity\XML\xenc\Transforms;
  *
  * @package simplesamlphp/xml-security
  */
-final class CipherReference extends AbstractXencElement
+final class CipherReference extends AbstractXencElement implements SchemaValidatableElementInterface
 {
+    use SchemaValidatableElementTrait;
+
     /**
      * AbstractReference constructor.
      *

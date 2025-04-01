@@ -58,6 +58,9 @@ var planProject = {
 
                     self.refreshProjectPriorities();
                     self.refreshRiskCounts();
+
+                    // need to reload to reset project counts in the tab header
+                    location.reload();
                 },
                 error: function(xhr,status,error){
                     if(xhr.responseJSON && xhr.responseJSON.status_message){
@@ -225,6 +228,32 @@ var planProject = {
 
 $(function() {
     $('#project-new').on('submit', function(event) {
+        event.preventDefault();
+
+        let form_element = this;
+        let trim_flag = false;
+
+        // check if the trimmed value is empty for the required fields
+        $(form_element).find("[required]").each(function() {
+            // Remove the spaces from the begining and the end from the input value.
+            let trimmed_value = $(this).val().trim();
+
+            // Update the required field with the trimmed value
+            $(this).val(trimmed_value);
+
+            // Check if the trimmed value is empty
+            if (!trimmed_value) {
+                toastr.error(_lang["ThereAreRequiredFields"]);
+                trim_flag = true;
+                return;
+            }
+        });
+
+        // if there are empty required field
+        if (trim_flag) {
+            return;
+        }
+
         var form = new FormData($(this)[0]);
         $.ajax({
             url: BASE_URL + '/api/management/project/add',
@@ -251,7 +280,34 @@ $(function() {
         $("#project--add").modal('hide');
         return false;
     });
+
     $('#project-edit').on('submit', function(event) {
+        event.preventDefault();
+        
+        let form_element = this;
+        let trim_flag = false;
+
+        // check if the trimmed value is empty for the required fields
+        $(form_element).find("[required]").each(function() {
+            // Remove the spaces from the begining and the end from the input value.
+            let trimmed_value = $(this).val().trim();
+
+            // Update the required field with the trimmed value
+            $(this).val(trimmed_value);
+
+            // Check if the trimmed value is empty
+            if (!trimmed_value) {
+                toastr.error(_lang["ThereAreRequiredFields"]);
+                trim_flag = true;
+                return;
+            }
+        });
+
+        // if there are empty required field
+        if (trim_flag) {
+            return;
+        }
+
         var form = new FormData($(this)[0]);
         $.ajax({
             url: BASE_URL + '/api/management/project/edit',
@@ -278,6 +334,16 @@ $(function() {
         return false;
     });
 
+    $(document).on('click', '.project-block--add', function() {
+        
+        // Clear all the input elements
+        resetForm('#project--add form');
+
+        // Open a add project modal
+        $("#project--add").modal("show");
+
+    });
+
     $(document).on('click', '.project-block--edit', function(event) {
         event.preventDefault();
         resetForm('#project--edit form');
@@ -291,9 +357,11 @@ $(function() {
                 $("#project--edit [name=project_id]").val(project_id);
                 $("#project--edit [name=name]").val(project.name);
                 $("#project--edit [name=due_date]").val(project.due_date);
-                $("#project--edit [name=consultant]").val(project.consultant);
-                $("#project--edit [name=business_owner]").val(project.business_owner);
-                $("#project--edit [name=data_classification]").val(project.data_classification);
+                
+                // Show 'Unassigned' if the value of the following field is not assigned to the project
+                $("#project--edit [name=consultant]").val(project.consultant || '');
+                $("#project--edit [name=business_owner]").val(project.business_owner || '');
+                $("#project--edit [name=data_classification]").val(project.data_classification || '');
                 if(project.custom_values){
                     var custom_values = project.custom_values;
                     for (var i=0; i<custom_values.length; i++) {
@@ -306,7 +374,7 @@ $(function() {
                         }
                     }
                 }
-                $("#project--edit").modal();
+                $("#project--edit").modal("show");
             }
         });
     });

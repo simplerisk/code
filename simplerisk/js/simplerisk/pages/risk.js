@@ -650,10 +650,8 @@ $(document).ready(function(){
                     showAlertsFromArray(result.status_message);
                 }
                 
-                //Need the status of the risk to be displayed properly after mitigation update.
-                //Page reloading after mitigation update is also good way in the 'Risk Details' page but it doesn't fit the 'Submit Risk' page.
-                //Also, it's enough to update only the text of status, not reloading the page since it was already updated in datebase after mitigation update.
-                $(".details--wrapper .status-text").text(_lang["MitigationPlanned"]);
+                // Need to reload the page since the scoring history chart is not updating after mitigation update.
+                location.reload();
                 
             }
         })
@@ -1442,6 +1440,458 @@ $(document).ready(function(){
         });
     });    
     /*********** End mark as unreview ***********/
+
+    /**************** Start get AI risk recommendations **********/
+
+    $('body').on('click', '.ai-recommendations-risk--view', function(e){
+        e.preventDefault();
+        var risk_id  = $(this).attr('data-id');
+
+        // Show spinner before API call
+        $.blockUI({message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>', baseZ:'10001'});
+
+        $.ajax({
+            url: BASE_URL + '/api/v2/ai/recommendations/risk?risk_id=' + risk_id,
+            type: 'GET',
+            dataType: 'json',
+            success : function (res){
+                var data = res.data;
+                var details = data.details;
+                var mitigation = data.mitigation;
+                var risk_scenario = data.risk_scenario;
+                var assumptions = data.assumptions;
+                var contactfrequency = data.contact_frequency;
+                var contactfrequencymin = contactfrequency.min;
+                var contactfrequencymostlikely = contactfrequency.most_likely;
+                var contactfrequencymax = contactfrequency.max;
+                var contactfrequencyconfidence = contactfrequency.confidence;
+                var contactfrequencyrationale = contactfrequency.rationale;
+                var probabilityofaction = data.probability_of_action;
+                var probabilityofactionmin = probabilityofaction.min;
+                var probabilityofactionmostlikely = probabilityofaction.most_likely;
+                var probabilityofactionmax = probabilityofaction.max;
+                var probabilityofactionconfidence = probabilityofaction.confidence;
+                var probabilityofactionrationale = probabilityofaction.rationale;
+                var threatcapability = data.threat_capability;
+                var threatcapabilitymin = threatcapability.min;
+                var threatcapabilitymostlikely = threatcapability.most_likely;
+                var threatcapabilitymax = threatcapability.max;
+                var threatcapabilityconfidence = threatcapability.confidence;
+                var threatcapabilityrationale = threatcapability.rationale;
+                var resistancestrength = data.resistance_strength;
+                var resistancestrengthmin = resistancestrength.min;
+                var resistancestrengthmostlikely = resistancestrength.most_likely;
+                var resistancestrengthmax = resistancestrength.max;
+                var resistancestrengthconfidence = resistancestrength.confidence;
+                var resistancestrengthrationale = resistancestrength.rationale;
+                var threateventfrequency = data.threat_event_frequency;
+                var threateventfrequencymin = threateventfrequency.min;
+                var threateventfrequencymostlikely = threateventfrequency.most_likely;
+                var threateventfrequencymax = threateventfrequency.max;
+                var threateventfrequencyconfidence = threateventfrequency.confidence;
+                var threateventfrequencyrationale = threateventfrequency.rationale;
+                var vulnerability = data.vulnerability;
+                var vulnerabilitymin = vulnerability.min;
+                var vulnerabilitymostlikely = vulnerability.most_likely;
+                var vulnerabilitymax = vulnerability.max;
+                var vulnerabilityconfidence = vulnerability.confidence;
+                var vulnerabilityrationale = vulnerability.rationale;
+                var losseventfrequency = data.loss_event_frequency;
+                var losseventfrequencymin = losseventfrequency.min;
+                var losseventfrequencymostlikely = losseventfrequency.most_likely;
+                var losseventfrequencymax = losseventfrequency.max;
+                var losseventfrequencyconfidence = losseventfrequency.confidence;
+                var losseventfrequencyrationale = losseventfrequency.rationale;
+                var primaryloss = data.primary_loss;
+                var primarylossmin = primaryloss.min;
+                var primarylossmostlikely = primaryloss.most_likely;
+                var primarylossmax = primaryloss.max;
+                var primarylossconfidence = primaryloss.confidence;
+                var primarylossrationale = primaryloss.rationale;
+                var secondarylosseventfrequency = data.secondary_loss_event_frequency;
+                var secondarylosseventfrequencymin = secondarylosseventfrequency.min;
+                var secondarylosseventfrequencymostlikely = secondarylosseventfrequency.most_likely;
+                var secondarylosseventfrequencymax = secondarylosseventfrequency.max;
+                var secondarylosseventfrequencyconfidence = secondarylosseventfrequency.confidence;
+                var secondarylosseventfrequencyrationale = secondarylosseventfrequency.rationale;
+                var secondarylossmagnitude = data.secondary_loss_magnitude;
+                var secondarylossmagnitudeproductivity = secondarylossmagnitude.productivity;
+                var secondarylossmagnitudeproductivitymin = secondarylossmagnitudeproductivity.min;
+                var secondarylossmagnitudeproductivitymostlikely = secondarylossmagnitudeproductivity.most_likely;
+                var secondarylossmagnitudeproductivitymax = secondarylossmagnitudeproductivity.max;
+                var secondarylossmagnitudeproductivityconfidence = secondarylossmagnitudeproductivity.confidence;
+                var secondarylossmagnitudeproductivityrationale = secondarylossmagnitudeproductivity.rationale;
+                var secondarylossmagnituderesponse = secondarylossmagnitude.response;
+                var secondarylossmagnituderesponsemin = secondarylossmagnituderesponse.min;
+                var secondarylossmagnituderesponsemostlikely = secondarylossmagnituderesponse.most_likely;
+                var secondarylossmagnituderesponsemax = secondarylossmagnituderesponse.max;
+                var secondarylossmagnituderesponseconfidence = secondarylossmagnituderesponse.confidence;
+                var secondarylossmagnituderesponserationale = secondarylossmagnituderesponse.rationale;
+                var secondarylossmagnitudereplacement = secondarylossmagnitude.replacement;
+                var secondarylossmagnitudereplacementmin = secondarylossmagnitudereplacement.min;
+                var secondarylossmagnitudereplacementmostlikely = secondarylossmagnitudereplacement.most_likely;
+                var secondarylossmagnitudereplacementmax = secondarylossmagnitudereplacement.max;
+                var secondarylossmagnitudereplacementconfidence = secondarylossmagnitudereplacement.confidence;
+                var secondarylossmagnitudereplacementrationale = secondarylossmagnitudereplacement.rationale;
+                var secondarylossmagnitudecompetitiveadvantage = secondarylossmagnitude.competitive_advantage;
+                var secondarylossmagnitudecompetitiveadvantagemin = secondarylossmagnitudecompetitiveadvantage.min;
+                var secondarylossmagnitudecompetitiveadvantagemostlikely = secondarylossmagnitudecompetitiveadvantage.most_likely;
+                var secondarylossmagnitudecompetitiveadvantagemax = secondarylossmagnitudecompetitiveadvantage.max;
+                var secondarylossmagnitudecompetitiveadvantageconfidence = secondarylossmagnitudecompetitiveadvantage.confidence;
+                var secondarylossmagnitudecompetitiveadvantagerationale = secondarylossmagnitudecompetitiveadvantage.rationale;
+                var secondarylossmagnitudefinesandjudgements = secondarylossmagnitude.fines_and_judgements;
+                var secondarylossmagnitudefinesandjudgementsmin = secondarylossmagnitudefinesandjudgements.min;
+                var secondarylossmagnitudefinesandjudgementsmostlikely = secondarylossmagnitudefinesandjudgements.most_likely;
+                var secondarylossmagnitudefinesandjudgementsmax = secondarylossmagnitudefinesandjudgements.max;
+                var secondarylossmagnitudefinesandjudgementsconfidence = secondarylossmagnitudefinesandjudgements.confidence;
+                var secondarylossmagnitudefinesandjudgementsrationale = secondarylossmagnitudefinesandjudgements.rationale;
+                var secondarylossmagnitudereputation = secondarylossmagnitude.reputation;
+                var secondarylossmagnitudereputationmin = secondarylossmagnitudereputation.min;
+                var secondarylossmagnitudereputationmostlikely = secondarylossmagnitudereputation.most_likely;
+                var secondarylossmagnitudereputationmax = secondarylossmagnitudereputation.max;
+                var secondarylossmagnitudereputationconfidence = secondarylossmagnitudereputation.confidence;
+                var secondarylossmagnitudereputationrationale = secondarylossmagnitudereputation.rationale;
+                var secondaryrisk = data.secondary_risk;
+                var secondaryriskmin = secondaryrisk.min;
+                var secondaryriskmostlikely = secondaryrisk.most_likely;
+                var secondaryriskmax = secondaryrisk.max;
+                var lossmagnitude = data.loss_magnitude;
+                var lossmagnitudemin = lossmagnitude.min;
+                var lossmagnitudemostlikely = lossmagnitude.most_likely;
+                var lossmagnitudemax = lossmagnitude.max;
+                var annuallossexposure = data.annual_loss_exposure;
+                var annuallossexposuremin = annuallossexposure.min;
+                var annuallossexposureaverage = annuallossexposure.average;
+                var annuallossexposuremax = annuallossexposure.max;
+                var last_updated = data.last_updated;
+
+                // Insert values into the respective divs
+                document.querySelector('.ai-recommendations-risk-details').innerHTML = sanitizeHTML(details);
+                document.querySelector('.ai-recommendations-risk-mitigation').innerHTML = sanitizeHTML(mitigation);
+                document.querySelector('.ai-recommendations-fair-risk-scenario').innerHTML = sanitizeHTML(risk_scenario);
+                document.querySelector('.ai-recommendations-fair-assumptions').innerHTML = sanitizeHTML(assumptions);
+                document.querySelector('.ai-recommendations-fair-contact-frequency-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(contactfrequencymin);
+                document.querySelector('.ai-recommendations-fair-contact-frequency-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(contactfrequencymostlikely);
+                document.querySelector('.ai-recommendations-fair-contact-frequency-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(contactfrequencymax);
+                document.querySelector('.ai-recommendations-fair-contact-frequency-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(contactfrequencyconfidence);
+                document.querySelector('.ai-recommendations-fair-contact-frequency-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(contactfrequencyrationale);
+                document.querySelector('.ai-recommendations-fair-probability-of-action-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(probabilityofactionmin);
+                document.querySelector('.ai-recommendations-fair-probability-of-action-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(probabilityofactionmostlikely);
+                document.querySelector('.ai-recommendations-fair-probability-of-action-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(probabilityofactionmax);
+                document.querySelector('.ai-recommendations-fair-probability-of-action-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(probabilityofactionconfidence);
+                document.querySelector('.ai-recommendations-fair-probability-of-action-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(probabilityofactionrationale);
+                document.querySelector('.ai-recommendations-fair-threat-capability-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(threatcapabilitymin);
+                document.querySelector('.ai-recommendations-fair-threat-capability-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(threatcapabilitymostlikely);
+                document.querySelector('.ai-recommendations-fair-threat-capability-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(threatcapabilitymax);
+                document.querySelector('.ai-recommendations-fair-threat-capability-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(threatcapabilityconfidence);
+                document.querySelector('.ai-recommendations-fair-threat-capability-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(threatcapabilityrationale);
+                document.querySelector('.ai-recommendations-fair-resistance-strength-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(resistancestrengthmin);
+                document.querySelector('.ai-recommendations-fair-resistance-strength-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(resistancestrengthmostlikely);
+                document.querySelector('.ai-recommendations-fair-resistance-strength-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(resistancestrengthmax);
+                document.querySelector('.ai-recommendations-fair-resistance-strength-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(resistancestrengthconfidence);
+                document.querySelector('.ai-recommendations-fair-resistance-strength-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(resistancestrengthrationale);
+                document.querySelector('.ai-recommendations-fair-threat-event-frequency-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(threateventfrequencymin);
+                document.querySelector('.ai-recommendations-fair-threat-event-frequency-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(threateventfrequencymostlikely);
+                document.querySelector('.ai-recommendations-fair-threat-event-frequency-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(threateventfrequencymax);
+                document.querySelector('.ai-recommendations-fair-threat-event-frequency-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(threateventfrequencyconfidence);
+                document.querySelector('.ai-recommendations-fair-threat-event-frequency-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(threateventfrequencyrationale);
+                document.querySelector('.ai-recommendations-fair-vulnerability-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(vulnerabilitymin);
+                document.querySelector('.ai-recommendations-fair-vulnerability-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(vulnerabilitymostlikely);
+                document.querySelector('.ai-recommendations-fair-vulnerability-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(vulnerabilitymax);
+                document.querySelector('.ai-recommendations-fair-vulnerability-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(vulnerabilityconfidence);
+                document.querySelector('.ai-recommendations-fair-vulnerability-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(vulnerabilityrationale);
+                document.querySelector('.ai-recommendations-fair-loss-event-frequency-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(losseventfrequencymin);
+                document.querySelector('.ai-recommendations-fair-loss-event-frequency-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(losseventfrequencymostlikely);
+                document.querySelector('.ai-recommendations-fair-loss-event-frequency-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(losseventfrequencymax);
+                document.querySelector('.ai-recommendations-fair-loss-event-frequency-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(losseventfrequencyconfidence);
+                document.querySelector('.ai-recommendations-fair-loss-event-frequency-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(losseventfrequencyrationale);
+                document.querySelector('.ai-recommendations-fair-primary-loss-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(primarylossmin);
+                document.querySelector('.ai-recommendations-fair-primary-loss-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(primarylossmostlikely);
+                document.querySelector('.ai-recommendations-fair-primary-loss-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(primarylossmax);
+                document.querySelector('.ai-recommendations-fair-primary-loss-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(primarylossconfidence);
+                document.querySelector('.ai-recommendations-fair-primary-loss-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(primarylossrationale);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-event-frequency-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(secondarylosseventfrequencymin);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-event-frequency-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(secondarylosseventfrequencymostlikely);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-event-frequency-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(secondarylosseventfrequencymax);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-event-frequency-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(secondarylosseventfrequencyconfidence);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-event-frequency-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(secondarylosseventfrequencyrationale);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-productivity-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudeproductivitymin);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-productivity-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudeproductivitymostlikely);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-productivity-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudeproductivitymax);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-productivity-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudeproductivityconfidence);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-productivity-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudeproductivityrationale);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-response-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnituderesponsemin);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-response-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnituderesponsemostlikely);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-response-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnituderesponsemax);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-response-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnituderesponseconfidence);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-response-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnituderesponserationale);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-replacement-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereplacementmin);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-replacement-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereplacementmostlikely);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-replacement-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereplacementmax);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-replacement-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereplacementconfidence);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-replacement-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereplacementrationale);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-competitive-advantage-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudecompetitiveadvantagemin);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-competitive-advantage-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudecompetitiveadvantagemostlikely);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-competitive-advantage-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudecompetitiveadvantagemax);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-competitive-advantage-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudecompetitiveadvantageconfidence);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-competitive-advantage-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudecompetitiveadvantagerationale);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-fines-and-judgements-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudefinesandjudgementsmin);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-fines-and-judgements-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudefinesandjudgementsmostlikely);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-fines-and-judgements-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudefinesandjudgementsmax);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-fines-and-judgements-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudefinesandjudgementsconfidence);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-fines-and-judgements-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudefinesandjudgementsrationale);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-reputation-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereputationmin);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-reputation-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereputationmostlikely);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-reputation-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereputationmax);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-reputation-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereputationconfidence);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-reputation-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereputationrationale);
+                document.querySelector('.ai-recommendations-fair-secondary-risk-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(secondaryriskmin);
+                document.querySelector('.ai-recommendations-fair-secondary-risk-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(secondaryriskmostlikely);
+                document.querySelector('.ai-recommendations-fair-secondary-risk-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(secondaryriskmax);
+                document.querySelector('.ai-recommendations-fair-loss-magnitude-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(lossmagnitudemin);
+                document.querySelector('.ai-recommendations-fair-loss-magnitude-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(lossmagnitudemostlikely);
+                document.querySelector('.ai-recommendations-fair-loss-magnitude-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(lossmagnitudemax);
+                document.querySelector('.ai-recommendations-fair-annual-loss-exposure-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(annuallossexposuremin);
+                document.querySelector('.ai-recommendations-fair-annual-loss-exposure-average').innerHTML = "<strong>Average:&nbsp;</strong>"+sanitizeHTML(annuallossexposureaverage);
+                document.querySelector('.ai-recommendations-fair-annual-loss-exposure-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(annuallossexposuremax);
+                document.querySelector('.ai-recommendations-risk-last-updated').textContent = last_updated; // This one doesn't need HTML
+
+                var modal = $('#modal-ai-recommendations-risk');
+                $(modal).modal('show');
+            },
+            complete: function(){
+                $.unblockUI();
+            }
+        });
+    });
+
+    $('body').on('click', '.refresh-recommendations-risk', function(e){
+        e.preventDefault();
+        var risk_id  = $(this).attr('data-id');
+
+        // Hide the modal
+        var modal = $('#modal-ai-recommendations-risk');
+        $(modal).modal('hide');
+
+        // Show spinner before API call
+        $.blockUI({message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>', baseZ:'10001'});
+
+        $.ajax({
+            url: BASE_URL + '/api/v2/ai/recommendations/risk?risk_id=' + risk_id + '&refresh=true',
+            type: 'GET',
+            dataType: 'json',
+            success : function (res){
+                var data = res.data;
+                var details = data.details;
+                var mitigation = data.mitigation;
+                var risk_scenario = data.risk_scenario;
+                var assumptions = data.assumptions;
+                var contactfrequency = data.contact_frequency;
+                var contactfrequencymin = contactfrequency.min;
+                var contactfrequencymostlikely = contactfrequency.most_likely;
+                var contactfrequencymax = contactfrequency.max;
+                var contactfrequencyconfidence = contactfrequency.confidence;
+                var contactfrequencyrationale = contactfrequency.rationale;
+                var probabilityofaction = data.probability_of_action;
+                var probabilityofactionmin = probabilityofaction.min;
+                var probabilityofactionmostlikely = probabilityofaction.most_likely;
+                var probabilityofactionmax = probabilityofaction.max;
+                var probabilityofactionconfidence = probabilityofaction.confidence;
+                var probabilityofactionrationale = probabilityofaction.rationale;
+                var threatcapability = data.threat_capability;
+                var threatcapabilitymin = threatcapability.min;
+                var threatcapabilitymostlikely = threatcapability.most_likely;
+                var threatcapabilitymax = threatcapability.max;
+                var threatcapabilityconfidence = threatcapability.confidence;
+                var threatcapabilityrationale = threatcapability.rationale;
+                var resistancestrength = data.resistance_strength;
+                var resistancestrengthmin = resistancestrength.min;
+                var resistancestrengthmostlikely = resistancestrength.most_likely;
+                var resistancestrengthmax = resistancestrength.max;
+                var resistancestrengthconfidence = resistancestrength.confidence;
+                var resistancestrengthrationale = resistancestrength.rationale;
+                var threateventfrequency = data.threat_event_frequency;
+                var threateventfrequencymin = threateventfrequency.min;
+                var threateventfrequencymostlikely = threateventfrequency.most_likely;
+                var threateventfrequencymax = threateventfrequency.max;
+                var threateventfrequencyconfidence = threateventfrequency.confidence;
+                var threateventfrequencyrationale = threateventfrequency.rationale;
+                var vulnerability = data.vulnerability;
+                var vulnerabilitymin = vulnerability.min;
+                var vulnerabilitymostlikely = vulnerability.most_likely;
+                var vulnerabilitymax = vulnerability.max;
+                var vulnerabilityconfidence = vulnerability.confidence;
+                var vulnerabilityrationale = vulnerability.rationale;
+                var losseventfrequency = data.loss_event_frequency;
+                var losseventfrequencymin = losseventfrequency.min;
+                var losseventfrequencymostlikely = losseventfrequency.most_likely;
+                var losseventfrequencymax = losseventfrequency.max;
+                var losseventfrequencyconfidence = losseventfrequency.confidence;
+                var losseventfrequencyrationale = losseventfrequency.rationale;
+                var primaryloss = data.primary_loss;
+                var primarylossmin = primaryloss.min;
+                var primarylossmostlikely = primaryloss.most_likely;
+                var primarylossmax = primaryloss.max;
+                var primarylossconfidence = primaryloss.confidence;
+                var primarylossrationale = primaryloss.rationale;
+                var secondarylosseventfrequency = data.secondary_loss_event_frequency;
+                var secondarylosseventfrequencymin = secondarylosseventfrequency.min;
+                var secondarylosseventfrequencymostlikely = secondarylosseventfrequency.most_likely;
+                var secondarylosseventfrequencymax = secondarylosseventfrequency.max;
+                var secondarylosseventfrequencyconfidence = secondarylosseventfrequency.confidence;
+                var secondarylosseventfrequencyrationale = secondarylosseventfrequency.rationale;
+                var secondarylossmagnitude = data.secondary_loss_magnitude;
+                var secondarylossmagnitudeproductivity = secondarylossmagnitude.productivity;
+                var secondarylossmagnitudeproductivitymin = secondarylossmagnitudeproductivity.min;
+                var secondarylossmagnitudeproductivitymostlikely = secondarylossmagnitudeproductivity.most_likely;
+                var secondarylossmagnitudeproductivitymax = secondarylossmagnitudeproductivity.max;
+                var secondarylossmagnitudeproductivityconfidence = secondarylossmagnitudeproductivity.confidence;
+                var secondarylossmagnitudeproductivityrationale = secondarylossmagnitudeproductivity.rationale;
+                var secondarylossmagnituderesponse = secondarylossmagnitude.response;
+                var secondarylossmagnituderesponsemin = secondarylossmagnituderesponse.min;
+                var secondarylossmagnituderesponsemostlikely = secondarylossmagnituderesponse.most_likely;
+                var secondarylossmagnituderesponsemax = secondarylossmagnituderesponse.max;
+                var secondarylossmagnituderesponseconfidence = secondarylossmagnituderesponse.confidence;
+                var secondarylossmagnituderesponserationale = secondarylossmagnituderesponse.rationale;
+                var secondarylossmagnitudereplacement = secondarylossmagnitude.replacement;
+                var secondarylossmagnitudereplacementmin = secondarylossmagnitudereplacement.min;
+                var secondarylossmagnitudereplacementmostlikely = secondarylossmagnitudereplacement.most_likely;
+                var secondarylossmagnitudereplacementmax = secondarylossmagnitudereplacement.max;
+                var secondarylossmagnitudereplacementconfidence = secondarylossmagnitudereplacement.confidence;
+                var secondarylossmagnitudereplacementrationale = secondarylossmagnitudereplacement.rationale;
+                var secondarylossmagnitudecompetitiveadvantage = secondarylossmagnitude.competitive_advantage;
+                var secondarylossmagnitudecompetitiveadvantagemin = secondarylossmagnitudecompetitiveadvantage.min;
+                var secondarylossmagnitudecompetitiveadvantagemostlikely = secondarylossmagnitudecompetitiveadvantage.most_likely;
+                var secondarylossmagnitudecompetitiveadvantagemax = secondarylossmagnitudecompetitiveadvantage.max;
+                var secondarylossmagnitudecompetitiveadvantageconfidence = secondarylossmagnitudecompetitiveadvantage.confidence;
+                var secondarylossmagnitudecompetitiveadvantagerationale = secondarylossmagnitudecompetitiveadvantage.rationale;
+                var secondarylossmagnitudefinesandjudgements = secondarylossmagnitude.fines_and_judgements;
+                var secondarylossmagnitudefinesandjudgementsmin = secondarylossmagnitudefinesandjudgements.min;
+                var secondarylossmagnitudefinesandjudgementsmostlikely = secondarylossmagnitudefinesandjudgements.most_likely;
+                var secondarylossmagnitudefinesandjudgementsmax = secondarylossmagnitudefinesandjudgements.max;
+                var secondarylossmagnitudefinesandjudgementsconfidence = secondarylossmagnitudefinesandjudgements.confidence;
+                var secondarylossmagnitudefinesandjudgementsrationale = secondarylossmagnitudefinesandjudgements.rationale;
+                var secondarylossmagnitudereputation = secondarylossmagnitude.reputation;
+                var secondarylossmagnitudereputationmin = secondarylossmagnitudereputation.min;
+                var secondarylossmagnitudereputationmostlikely = secondarylossmagnitudereputation.most_likely;
+                var secondarylossmagnitudereputationmax = secondarylossmagnitudereputation.max;
+                var secondarylossmagnitudereputationconfidence = secondarylossmagnitudereputation.confidence;
+                var secondarylossmagnitudereputationrationale = secondarylossmagnitudereputation.rationale;
+                var secondaryrisk = data.secondary_risk;
+                var secondaryriskmin = secondaryrisk.min;
+                var secondaryriskmostlikely = secondaryrisk.most_likely;
+                var secondaryriskmax = secondaryrisk.max;
+                var lossmagnitude = data.loss_magnitude;
+                var lossmagnitudemin = lossmagnitude.min;
+                var lossmagnitudemostlikely = lossmagnitude.most_likely;
+                var lossmagnitudemax = lossmagnitude.max;
+                var annuallossexposure = data.annual_loss_exposure;
+                var annuallossexposuremin = annuallossexposure.min;
+                var annuallossexposureaverage = annuallossexposure.average;
+                var annuallossexposuremax = annuallossexposure.max;
+                var last_updated = data.last_updated;
+
+                // Insert values into the respective divs
+                document.querySelector('.ai-recommendations-risk-details').innerHTML = sanitizeHTML(details);
+                document.querySelector('.ai-recommendations-risk-mitigation').innerHTML = sanitizeHTML(mitigation);
+                document.querySelector('.ai-recommendations-fair-risk-scenario').innerHTML = sanitizeHTML(risk_scenario);
+                document.querySelector('.ai-recommendations-fair-assumptions').innerHTML = sanitizeHTML(assumptions);
+                document.querySelector('.ai-recommendations-fair-contact-frequency-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(contactfrequencymin);
+                document.querySelector('.ai-recommendations-fair-contact-frequency-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(contactfrequencymostlikely);
+                document.querySelector('.ai-recommendations-fair-contact-frequency-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(contactfrequencymax);
+                document.querySelector('.ai-recommendations-fair-contact-frequency-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(contactfrequencyconfidence);
+                document.querySelector('.ai-recommendations-fair-contact-frequency-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(contactfrequencyrationale);
+                document.querySelector('.ai-recommendations-fair-probability-of-action-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(probabilityofactionmin);
+                document.querySelector('.ai-recommendations-fair-probability-of-action-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(probabilityofactionmostlikely);
+                document.querySelector('.ai-recommendations-fair-probability-of-action-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(probabilityofactionmax);
+                document.querySelector('.ai-recommendations-fair-probability-of-action-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(probabilityofactionconfidence);
+                document.querySelector('.ai-recommendations-fair-probability-of-action-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(probabilityofactionrationale);
+                document.querySelector('.ai-recommendations-fair-threat-capability-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(threatcapabilitymin);
+                document.querySelector('.ai-recommendations-fair-threat-capability-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(threatcapabilitymostlikely);
+                document.querySelector('.ai-recommendations-fair-threat-capability-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(threatcapabilitymax);
+                document.querySelector('.ai-recommendations-fair-threat-capability-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(threatcapabilityconfidence);
+                document.querySelector('.ai-recommendations-fair-threat-capability-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(threatcapabilityrationale);
+                document.querySelector('.ai-recommendations-fair-resistance-strength-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(resistancestrengthmin);
+                document.querySelector('.ai-recommendations-fair-resistance-strength-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(resistancestrengthmostlikely);
+                document.querySelector('.ai-recommendations-fair-resistance-strength-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(resistancestrengthmax);
+                document.querySelector('.ai-recommendations-fair-resistance-strength-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(resistancestrengthconfidence);
+                document.querySelector('.ai-recommendations-fair-resistance-strength-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(resistancestrengthrationale);
+                document.querySelector('.ai-recommendations-fair-threat-event-frequency-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(threateventfrequencymin);
+                document.querySelector('.ai-recommendations-fair-threat-event-frequency-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(threateventfrequencymostlikely);
+                document.querySelector('.ai-recommendations-fair-threat-event-frequency-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(threateventfrequencymax);
+                document.querySelector('.ai-recommendations-fair-threat-event-frequency-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(threateventfrequencyconfidence);
+                document.querySelector('.ai-recommendations-fair-threat-event-frequency-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(threateventfrequencyrationale);
+                document.querySelector('.ai-recommendations-fair-vulnerability-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(vulnerabilitymin);
+                document.querySelector('.ai-recommendations-fair-vulnerability-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(vulnerabilitymostlikely);
+                document.querySelector('.ai-recommendations-fair-vulnerability-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(vulnerabilitymax);
+                document.querySelector('.ai-recommendations-fair-vulnerability-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(vulnerabilityconfidence);
+                document.querySelector('.ai-recommendations-fair-vulnerability-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(vulnerabilityrationale);
+                document.querySelector('.ai-recommendations-fair-loss-event-frequency-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(losseventfrequencymin);
+                document.querySelector('.ai-recommendations-fair-loss-event-frequency-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(losseventfrequencymostlikely);
+                document.querySelector('.ai-recommendations-fair-loss-event-frequency-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(losseventfrequencymax);
+                document.querySelector('.ai-recommendations-fair-loss-event-frequency-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(losseventfrequencyconfidence);
+                document.querySelector('.ai-recommendations-fair-loss-event-frequency-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(losseventfrequencyrationale);
+                document.querySelector('.ai-recommendations-fair-primary-loss-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(primarylossmin);
+                document.querySelector('.ai-recommendations-fair-primary-loss-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(primarylossmostlikely);
+                document.querySelector('.ai-recommendations-fair-primary-loss-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(primarylossmax);
+                document.querySelector('.ai-recommendations-fair-primary-loss-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(primarylossconfidence);
+                document.querySelector('.ai-recommendations-fair-primary-loss-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(primarylossrationale);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-event-frequency-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(secondarylosseventfrequencymin);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-event-frequency-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(secondarylosseventfrequencymostlikely);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-event-frequency-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(secondarylosseventfrequencymax);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-event-frequency-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(secondarylosseventfrequencyconfidence);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-event-frequency-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(secondarylosseventfrequencyrationale);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-productivity-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudeproductivitymin);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-productivity-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudeproductivitymostlikely);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-productivity-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudeproductivitymax);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-productivity-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudeproductivityconfidence);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-productivity-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudeproductivityrationale);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-response-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnituderesponsemin);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-response-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnituderesponsemostlikely);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-response-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnituderesponsemax);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-response-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnituderesponseconfidence);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-response-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnituderesponserationale);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-replacement-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereplacementmin);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-replacement-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereplacementmostlikely);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-replacement-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereplacementmax);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-replacement-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereplacementconfidence);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-replacement-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereplacementrationale);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-competitive-advantage-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudecompetitiveadvantagemin);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-competitive-advantage-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudecompetitiveadvantagemostlikely);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-competitive-advantage-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudecompetitiveadvantagemax);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-competitive-advantage-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudecompetitiveadvantageconfidence);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-competitive-advantage-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudecompetitiveadvantagerationale);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-fines-and-judgements-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudefinesandjudgementsmin);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-fines-and-judgements-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudefinesandjudgementsmostlikely);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-fines-and-judgements-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudefinesandjudgementsmax);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-fines-and-judgements-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudefinesandjudgementsconfidence);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-fines-and-judgements-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudefinesandjudgementsrationale);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-reputation-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereputationmin);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-reputation-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereputationmostlikely);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-reputation-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereputationmax);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-reputation-confidence').innerHTML = "<strong>Confidence:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereputationconfidence);
+                document.querySelector('.ai-recommendations-fair-secondary-loss-magnitude-reputation-rationale').innerHTML = "<strong>Rationale:&nbsp;</strong>"+sanitizeHTML(secondarylossmagnitudereputationrationale);
+                document.querySelector('.ai-recommendations-fair-secondary-risk-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(secondaryriskmin);
+                document.querySelector('.ai-recommendations-fair-secondary-risk-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(secondaryriskmostlikely);
+                document.querySelector('.ai-recommendations-fair-secondary-risk-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(secondaryriskmax);
+                document.querySelector('.ai-recommendations-fair-loss-magnitude-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(lossmagnitudemin);
+                document.querySelector('.ai-recommendations-fair-loss-magnitude-most-likely').innerHTML = "<strong>Most Likely:&nbsp;</strong>"+sanitizeHTML(lossmagnitudemostlikely);
+                document.querySelector('.ai-recommendations-fair-loss-magnitude-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(lossmagnitudemax);
+                document.querySelector('.ai-recommendations-fair-annual-loss-exposure-min').innerHTML = "<strong>Minimum:&nbsp;</strong>"+sanitizeHTML(annuallossexposuremin);
+                document.querySelector('.ai-recommendations-fair-annual-loss-exposure-average').innerHTML = "<strong>Average:&nbsp;</strong>"+sanitizeHTML(annuallossexposureaverage);
+                document.querySelector('.ai-recommendations-fair-annual-loss-exposure-max').innerHTML = "<strong>Maximum:&nbsp;</strong>"+sanitizeHTML(annuallossexposuremax);
+                document.querySelector('.ai-recommendations-risk-last-updated').textContent = last_updated; // This one doesn't need HTML
+            },
+            complete: function(){
+                $.unblockUI();
+
+                // Show the modal again
+                $(modal).modal('show');
+            }
+        });
+    });
+
+    /**************** End get AI risk recommendations **********/
 
     // If there're template tabs we have to separately initialize the WYSIWYG editors
     if ($("#template_group_id").length > 0) {

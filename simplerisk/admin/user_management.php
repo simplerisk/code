@@ -441,17 +441,16 @@
             <div class="tab-pane active risk-levels-container settings_tab" id="addusers" role="tabpanel" aria-labelledby="addusers-tab">
                 <div class="card-body my-2 border">
                     <form name="add_user" method="post" action="">
-                        <h4><?php echo $escaper->escapeHtml($lang['AddANewUser']); ?></h4>
+                        <h4><?= $escaper->escapeHtml($lang['AddANewUser']); ?></h4>
                         <div class="row">
                             <div class="col-md-8"> 
                                 <div class="form-group">
-                                    <label><?php echo $escaper->escapeHtml($lang['Type']); ?>:</label>
+                                    <label><?= $escaper->escapeHtml($lang['Type']); ?> :</label>
                                     <select name="type" id="select" class="form-select">
                                         <option selected value="1">SimpleRisk</option>
     <?php
         // If the custom authentication extra is enabeld
-        if (custom_authentication_extra())
-        {
+        if (custom_authentication_extra()) {
             // Display the LDAP option
             echo "
                                         <option value='2'>LDAP</option>
@@ -466,48 +465,52 @@
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label><?php echo $escaper->escapeHtml($lang['FullName']); ?>:</label>
-                                    <input name="name" type="text" maxlength="50" size="20" value="<?php echo isset($name) ? $escaper->escapeHtml($name) : "" ?>" class="form-control"/>
+                                    <label><?= $escaper->escapeHtml($lang['FullName']); ?> :</label>
+                                    <input name="name" type="text" maxlength="50" size="20" value="<?= isset($name) ? $escaper->escapeHtml($name) : "" ?>" class="form-control"/>
                                 </div>
                                 <div class="form-group">
-                                    <label><?php echo $escaper->escapeHtml($lang['EmailAddress']); ?>:</label>
-                                    <input name="email" type="email" maxlength="200" value="<?php echo isset($email) ? $escaper->escapeHtml($email) : "" ?>" size="20" class="form-control"/>
+                                    <label><?= $escaper->escapeHtml($lang['EmailAddress']); ?> :</label>
+                                    <input name="email" type="email" maxlength="200" value="<?= isset($email) ? $escaper->escapeHtml($email) : "" ?>" size="20" class="form-control"/>
                                 </div>
                                 <div class="form-group">
-                                    <label><?php echo $escaper->escapeHtml($lang['Username']); ?>:</label>
-                                    <input name="new_user" type="text" maxlength="200" value="<?php echo isset($user) ? $escaper->escapeHtml($user) : "" ?>" size="20" class="form-control"/>
+                                    <label><?= $escaper->escapeHtml($lang['Username']); ?> :</label>
+                                    <input name="new_user" type="text" maxlength="200" value="<?= isset($user) ? $escaper->escapeHtml($user) : "" ?>" size="20" class="form-control"/>
                                 </div>
                                 <div class="form-group">
-                                    <label><?php echo $escaper->escapeHtml($lang['Password']); ?>:</label>
+                                    <label><?= $escaper->escapeHtml($lang['Password']); ?> :</label>
                                     <input name="password" type="password" maxlength="50" size="20" autocomplete="off" class="form-control"/>
                                 </div>
                                 <div class="form-group">
-                                    <label><?php echo $escaper->escapeHtml($lang['RepeatPassword']); ?>:</label>
+                                    <label><?= $escaper->escapeHtml($lang['RepeatPassword']); ?> :</label>
                                     <input name="repeat_password" type="password" maxlength="50" size="20" autocomplete="off" class="form-control"/>
                                 </div>
                                 <div class="form-group">
-                                    <input name="multi_factor" id="multi_factor" <?php if(isset($multi_factor) && $multi_factor == 1) echo "checked"; ?> <?php if(get_setting("mfa_required")) echo "checked readonly=\"readonly\""; ?> class="form-check-input" type="checkbox" value="1" />  <label for="multi_factor" class="form-check-label mb-0">  &nbsp;&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['MultiFactorAuthentication']); ?> </label> 
+                                    <input name="multi_factor" id="multi_factor" <?php if(isset($multi_factor) && $multi_factor == 1) echo "checked"; ?> <?php if(get_setting("mfa_required")) echo "checked readonly=\"readonly\""; ?> class="form-check-input" type="checkbox" value="1" />  <label for="multi_factor" class="form-check-label mb-0">  &nbsp;&nbsp;&nbsp; <?= $escaper->escapeHtml($lang['MultiFactorAuthentication']); ?> </label> 
                                 </div>
                                 <div class="form-group">
-                                    <input name="change_password" id="change_password" <?php if(isset($change_password) && $change_password == 1) echo "checked"; ?> class="form-check-input" type="checkbox" value="1" />  <label for="change_password" class="form-check-label mb-0">  &nbsp;&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['RequirePasswordChangeOnLogin']); ?> </label> 
+                                    <input name="change_password" id="change_password" <?php if(isset($change_password) && $change_password == 1) echo "checked"; ?> class="form-check-input" type="checkbox" value="1" />  <label for="change_password" class="form-check-label mb-0">  &nbsp;&nbsp;&nbsp; <?= $escaper->escapeHtml($lang['RequirePasswordChangeOnLogin']); ?> </label> 
                                 </div>
                                 <div class="form-group">
-                                    <label><?php echo $escaper->escapeHtml($lang['Manager']); ?>:</label>
-                                    <?php create_dropdown("enabled_users_all", "", "manager"); ?>
+                                    <label><?= $escaper->escapeHtml($lang['Manager']); ?> :</label>
+    <?php 
+                                    create_dropdown("enabled_users_all", "", "manager"); 
+    ?>
                                 </div>
                                 <div class="form-group">
-                                    <label><?php echo $escaper->escapeHtml($lang['Teams']); ?>:</label>
-                                    <?php create_multiple_dropdown("team", null, null, get_all_teams()); ?>
+                                    <label><?= $escaper->escapeHtml($lang['Teams']); ?> :</label>
+    <?php 
+                                    create_multiple_dropdown("team", null, null, get_all_teams()); 
+    ?>
                                 </div>
                                 <div class="form-group">
-                                    <label><?php echo $escaper->escapeHtml($lang['Role']); ?>:</label>
+                                    <label><?= $escaper->escapeHtml($lang['Role']); ?> :</label>
     <?php 
                                     create_dropdown("role", $default_role_id); 
         if ($default_role_id) {
             echo "
                                     <script>
                                         $(document).ready(function() {
-                                            get_responsibilities(" . $default_role_id . ");
+                                            get_responsibilities({$default_role_id});
                                         });
                                     </script>
             ";
@@ -515,19 +518,19 @@
     ?>
                                 </div>
                                 <div class="form-group admin-button">
-                                    <button id="admin_button" type="button" class="btn btn-dark" data-grant="<?php echo $escaper->escapeHtml($lang['GrantAdmin']); ?>" data-remove="<?php echo $escaper->escapeHtml($lang['RemoveAdmin']); ?>" title="<?php echo $escaper->escapeHtml($lang['AdminRoleDescription']);?>"><?php echo $escaper->escapeHtml($lang['GrantAdmin']);?></button>
+                                    <button id="admin_button" type="button" class="btn btn-dark" data-grant="<?= $escaper->escapeHtml($lang['GrantAdmin']); ?>" data-remove="<?= $escaper->escapeHtml($lang['RemoveAdmin']); ?>" title="<?= $escaper->escapeHtml($lang['AdminRoleDescription']);?>"><?= $escaper->escapeHtml($lang['GrantAdmin']);?></button>
                                     <input type="checkbox" name="admin" id="admin">
 									<div class="mt-2 col-12 form-group alert alert-danger admin-alert" role="alert">
                             			<?= $escaper->escapeHtml($lang['UserResponsibilitiesAndTeamsCannotBeEditedWhenTheUserIsGoingToBeAnAdmin']); ?>
                         			</div>
                                 </div>
-                                <h4><?= $escaper->escapeHtml($lang['UserResponsibilities']); ?>:</h4>
+                                <h4><?= $escaper->escapeHtml($lang['UserResponsibilities']); ?> :</h4>
                                 <div class="form-check">
                                     <div class="permissions-widget">
                                         <ul>
                                             <li>
                                                 <input class="form-check-input" type="checkbox" id="check_all">
-                                                <label for="check_all" class="form-check-label mb-0"> &nbsp;&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['CheckAll']); ?></label>
+                                                <label for="check_all" class="form-check-label mb-0"> &nbsp;&nbsp;&nbsp; <?= $escaper->escapeHtml($lang['CheckAll']); ?></label>
                                                 <ul>
     <?php
         $permission_groups = get_grouped_permissions();
@@ -538,8 +541,8 @@
         $permission_group_description = $escaper->escapeHtml($permission_group[0]['permission_group_description']);
     ?>       
                                                     <li>
-                                                        <input class="form-check-input permission-group" type="checkbox" id="<?php echo $permission_group_id;?>">
-                                                        <label for="<?php echo $permission_group_id;?>" title="<?php echo $permission_group_description;?>" class="form-check-label mb-0"> &nbsp;&nbsp;&nbsp; <?php echo $permission_group_name;?></label>
+                                                        <input class="form-check-input permission-group" type="checkbox" id="<?= $permission_group_id;?>">
+                                                        <label for="<?= $permission_group_id;?>" title="<?= $permission_group_description;?>" class="form-check-label mb-0"> &nbsp;&nbsp;&nbsp; <?= $permission_group_name;?></label>
                                                         <ul>
     <?php
             foreach ($permission_group as $permission) {
@@ -549,8 +552,8 @@
                 $permission_description = $escaper->escapeHtml($permission['permission_description']);
     ?>       
                                                             <li>
-                                                                <input class="form-check-input permission" type="checkbox" name="permissions[]" id="<?php echo $permission_key;?>" value="<?php echo $permission_id;?>">
-                                                                <label for="<?php echo $permission_key;?>" title="<?php echo $permission_description;?>" class="form-check-label mb-0"> &nbsp;&nbsp;&nbsp; <?php echo $permission_name;?></label>
+                                                                <input class="form-check-input permission" type="checkbox" name="permissions[]" id="<?= $permission_key;?>" value="<?= $permission_id;?>">
+                                                                <label for="<?= $permission_key;?>" title="<?= $permission_description;?>" class="form-check-label mb-0"> &nbsp;&nbsp;&nbsp; <?= $permission_name;?></label>
                                                             </li>
     <?php
             }
@@ -566,7 +569,7 @@
                                     </div>
                                 </div>
                                 <div class="mt-3">
-                                    <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_user" class="btn btn-submit"/>
+                                    <input type="submit" value="<?= $escaper->escapeHtml($lang['Add']); ?>" name="add_user" class="btn btn-submit"/>
                                 </div>
                             </div>
                         </div>  
@@ -576,90 +579,98 @@
             <div class="tab-pane settings_tab" id="manageusers" role="tabpanel" aria-labelledby="manageusers-tab">
                 <div class="card-body my-2 border">
                     <form name="view_user_details" method="post" action="view_user_details.php">
-                        <h4><?php echo $escaper->escapeHtml($lang['ViewDetailsForUser']); ?></h4>
+                        <h4><?= $escaper->escapeHtml($lang['ViewDetailsForUser']); ?></h4>
                         <div class="row" style="align-items:flex-end">
                             <div class="col-md-4">
-                                <label><?php echo $escaper->escapeHtml($lang['DetailsForUser']); ?>:</label>
-                                <?php create_dropdown('enabled_users_all', null, 'user'); ?>
+                                <label><?= $escaper->escapeHtml($lang['DetailsForUser']); ?> :</label>
+    <?php 
+                                create_dropdown('enabled_users_all', null, 'user'); 
+    ?>
                             </div>
                             <div class="col-md-2">
-                                <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Select']); ?>" name="select_user" class="btn btn-dark"/>
+                                <input type="submit" value="<?= $escaper->escapeHtml($lang['Select']); ?>" name="select_user" class="btn btn-dark"/>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="card-body my-2 border">
                     <form name="enable_disable_user" method="post" action="">
-                        <h4><?php echo $escaper->escapeHtml($lang['EnableAndDisableUsers']); ?>:</h4>
-                        <p><?php echo $escaper->escapeHtml($lang['EnableAndDisableUsersHelp']); ?>.</p>
+                        <h4><?= $escaper->escapeHtml($lang['EnableAndDisableUsers']); ?></h4>
+                        <p><?= $escaper->escapeHtml($lang['EnableAndDisableUsersHelp']); ?>.</p>
                         <div class="row" style="align-items:flex-end">
                             <div class="form-group col-md-4">
-                                <label> <?php echo $escaper->escapeHtml($lang['DisableUser']); ?></label>
-                                <?php create_dropdown("enabled_users_all"); ?>
+                                <label> <?= $escaper->escapeHtml($lang['DisableUser']); ?> :</label>
+    <?php 
+                                create_dropdown("enabled_users_all"); 
+    ?>
                             </div>
                             <div class="form-group col-md-2">
-                                <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Disable']); ?>" name="disable_user" class="btn btn-submit"/>
+                                <input type="submit" value="<?= $escaper->escapeHtml($lang['Disable']); ?>" name="disable_user" class="btn btn-submit"/>
                             </div>
                         </div>
                         <div class="row" style="align-items:flex-end">
                             <div class="col-md-4">
-                                <label> <?php echo $escaper->escapeHtml($lang['EnableUser']); ?></label>
-                                <?php create_dropdown("disabled_users_all"); ?>
+                                <label> <?= $escaper->escapeHtml($lang['EnableUser']); ?> :</label>
+    <?php 
+                                create_dropdown("disabled_users_all"); 
+    ?>
                             </div>
                             <div class="col-md-2">
-                                <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Enable']); ?>" name="enable_user" class="btn btn-submit"/>
+                                <input type="submit" value="<?= $escaper->escapeHtml($lang['Enable']); ?>" name="enable_user" class="btn btn-submit"/>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="card-body my-2 border">
                     <form name="delete_user" method="post" action="">
-                        <h4><?php echo $escaper->escapeHtml($lang['DeleteAnExistingUser']); ?>:</h4>
+                        <h4><?= $escaper->escapeHtml($lang['DeleteAnExistingUser']); ?></h4>
                         <div class="row" style="align-items:flex-end">
                             <div class="col-md-4">
-                                <label><?php echo $escaper->escapeHtml($lang['DeleteCurrentUser']); ?></label>
-                                <?php create_dropdown("user"); ?>
+                                <label><?= $escaper->escapeHtml($lang['DeleteCurrentUser']); ?> :</label>
+    <?php 
+                                create_dropdown("user"); 
+    ?>
                             </div>
                             <div class="col-md-2">
-                                <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_user" class="btn btn-submit"/>
+                                <input type="submit" value="<?= $escaper->escapeHtml($lang['Delete']); ?>" name="delete_user" class="btn btn-submit"/>
                             </div>
                         </div>
-                        
                     </form>
                 </div>
-                
                 <div class="card-body my-2 border">
                     <form name="password_reset" method="post" action="">
-                        <h4><?php echo $escaper->escapeHtml($lang['PasswordReset']); ?>:</h4>
+                        <h4><?= $escaper->escapeHtml($lang['PasswordReset']); ?></h4>
                         <div class="row" style="align-items:flex-end">
                             <div class="col-md-4">
-                                <label><?php echo $escaper->escapeHtml($lang['SendPasswordResetEmailForUser']); ?></label>
-                                <?php create_dropdown("user"); ?>
+                                <label><?= $escaper->escapeHtml($lang['SendPasswordResetEmailForUser']); ?> :</label>
+    <?php 
+                                create_dropdown("user"); 
+    ?>
                             </div>
                             <div class="col-md-2">
-                                <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Send']); ?>" name="password_reset" class="btn btn-submit"/>
+                                <input type="submit" value="<?= $escaper->escapeHtml($lang['Send']); ?>" name="password_reset" class="btn btn-submit"/>
                             </div>
                         </div>
                     </form>
                 </div>
-
                 <div class="card-body my-2 border">
                     <form name="mfa_reset" method="post" action="">
-                        <h4><?php echo $escaper->escapeHtml($lang['MFAReset']); ?>:</h4>
+                        <h4><?= $escaper->escapeHtml($lang['MFAReset']); ?></h4>
                         <div class="row" style="align-items:flex-end">
                             <div class="form-group col-md-4">
-                                <label><?php echo $escaper->escapeHtml($lang['PerformMFAResetForUser']); ?></label>
-                                <?php create_dropdown("user"); ?>
+                                <label><?= $escaper->escapeHtml($lang['PerformMFAResetForUser']); ?> :</label>
+    <?php 
+                                create_dropdown("user"); 
+    ?>
                             </div>
                         </div>
 <?php
     // If the user has MFA enabled display the token input
-    if (mfa_enabled_for_uid($_SESSION['uid']))
-    {
+    if (mfa_enabled_for_uid($_SESSION['uid'])) {
 ?>
                         <div class="row" style="align-items:flex-end">
                             <div class="form-group col-md-4">
-                                <label><?php echo $escaper->escapeHtml($lang['MFAToken']); ?></label>
+                                <label><?= $escaper->escapeHtml($lang['MFAToken']); ?> :</label>
                                 <input name='mfa_token' type='number' minlength='6' maxlength='6' autofocus='autofocus' class='form-control m-r-20'/>
                             </div>
                         </div>
@@ -668,7 +679,7 @@
 ?>
                         <div class="row" style="align-items:flex-end">
                             <div class="col-md-2">
-                                <input type="submit" value="<?php echo $escaper->escapeHtml($lang['ResetMFA']); ?>" name="mfa_reset" class="btn btn-submit"/>
+                                <input type="submit" value="<?= $escaper->escapeHtml($lang['ResetMFA']); ?>" name="mfa_reset" class="btn btn-submit"/>
                             </div>
                         </div>
                     </form>
@@ -679,134 +690,142 @@
                     <div class="row">
                         <div class="col-6 d-flex">
                             <div class="card-body my-2 border">
-                                <h4><?php echo $escaper->escapeHtml($lang['UserPolicy']); ?></h4>
+                                <h4><?= $escaper->escapeHtml($lang['UserPolicy']); ?></h4>
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="strict_user_validation" name="strict_user_validation"<?php if (get_setting('strict_user_validation') == 1) echo " checked" ?> />
-                                    <label class="form-check-label mb-0">&nbsp;&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['UseCaseSensitiveValidationOfUsername']); ?></label>
+                                    <label class="form-check-label mb-0">&nbsp;&nbsp;&nbsp;<?= $escaper->escapeHtml($lang['UseCaseSensitiveValidationOfUsername']); ?></label>
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="mfa_required" name="mfa_required"<?php if (get_setting('mfa_required') == 1) echo " checked" ?> />
-                                    <label for="mfa_required" class="form-check-label mb-0">&nbsp;&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['RequireMFAForAllUsers']); ?></label>
+                                    <label for="mfa_required" class="form-check-label mb-0">&nbsp;&nbsp;&nbsp;<?= $escaper->escapeHtml($lang['RequireMFAForAllUsers']); ?></label>
                                 </div>
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="card-body my-2 border">
-                                <h4><?php echo $escaper->escapeHtml($lang['AccountLockoutPolicy']); ?></h4>
+                                <h4><?= $escaper->escapeHtml($lang['AccountLockoutPolicy']); ?></h4>
                                 <div class="form-group">
                                     <label class="d-flex align-items-center">
-                                        <?php echo $escaper->escapeHtml($lang['MaximumAttemptsLockout']); ?>:&nbsp;&nbsp;
-                                        <input class="form-control" style="width:60px" type="number" id="pass_policy_attempt_lockout" name="pass_policy_attempt_lockout" min="0" maxlength="2" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_attempt_lockout')); ?>"/> 
-                                        <?php echo $escaper->escapeHtml($lang['attempts']); ?>.&nbsp;&nbsp;[0 = Lockout Disabled]
+                                        <?= $escaper->escapeHtml($lang['MaximumAttemptsLockout']); ?>:&nbsp;&nbsp;
+                                        <input class="form-control" style="width:60px" type="number" id="pass_policy_attempt_lockout" name="pass_policy_attempt_lockout" min="0" maxlength="2" size="2" value="<?= $escaper->escapeHtml(get_setting('pass_policy_attempt_lockout')); ?>"/> 
+                                        <?= $escaper->escapeHtml($lang['attempts']); ?>.&nbsp;&nbsp;[0 = Lockout Disabled]
                                     </label>
                                 </div>
                                 <div>
                                     <label class="d-flex align-items-center">
-                                        <?php echo $escaper->escapeHtml($lang['MaximumAttemptsLockoutTime']); ?>:&nbsp;&nbsp;
-                                        <input class="form-control" style="width:60px" type="number" id="pass_policy_attempt_lockout_time" name="pass_policy_attempt_lockout_time" min="0" maxlength="2" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_attempt_lockout_time')); ?>"/> 
-                                        <?php echo $escaper->escapeHtml($lang['minutes']); ?>.&nbsp;&nbsp;[0 = Manual Enable Required]
+                                        <?= $escaper->escapeHtml($lang['MaximumAttemptsLockoutTime']); ?>:&nbsp;&nbsp;
+                                        <input class="form-control" style="width:60px" type="number" id="pass_policy_attempt_lockout_time" name="pass_policy_attempt_lockout_time" min="0" maxlength="2" size="2" value="<?= $escaper->escapeHtml(get_setting('pass_policy_attempt_lockout_time')); ?>"/> 
+                                        <?= $escaper->escapeHtml($lang['minutes']); ?>.&nbsp;&nbsp;[0 = Manual Enable Required]
                                     </label>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="card-body my-2 border">
-                        <h4><?php echo $escaper->escapeHtml($lang['PasswordPolicy']); ?></h4>
+                    <div class="card-body mb-2 border">
+                        <h4><?= $escaper->escapeHtml($lang['PasswordPolicy']); ?></h4>
                         <div class="form-check col-md-6">
                             <input class="form-check-input" type="checkbox" id="pass_policy_enabled" name="pass_policy_enabled"<?php if (get_setting('pass_policy_enabled') == 1) echo " checked" ?> />
-                            <label for="pass_policy_enabled" class="form-check-label mb-0">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['Enabled']); ?></label>
+                            <label for="pass_policy_enabled" class="form-check-label mb-0">&nbsp;&nbsp;<?= $escaper->escapeHtml($lang['Enabled']); ?></label>
                         </div>
-                        <div class="form-check  col-md-6 my-2">
+                        <div class="form-check col-md-6 my-2">
                             <label class="d-flex align-items-center">
-                                <?php echo $escaper->escapeHtml($lang['MinimumNumberOfCharacters']); ?>:&nbsp;&nbsp;
-                                <input class="form-control" style="width: 10%" type="number" id="min_characters" name="min_characters" min="1" max="50" maxlength="2" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_min_chars')); ?>"/> [1-50]
+                                <?= $escaper->escapeHtml($lang['MinimumNumberOfCharacters']); ?>:&nbsp;&nbsp;
+                                <input class="form-control" style="width: 10%" type="number" id="min_characters" name="min_characters" min="1" max="50" maxlength="2" size="2" value="<?= $escaper->escapeHtml(get_setting('pass_policy_min_chars')); ?>"/> [1-50]
                             </label>
                         </div>
                         <div class="form-check col-md-6">
                             <input class="form-check-input" type="checkbox"  id="alpha_required" name="alpha_required"<?php if (get_setting('pass_policy_alpha_required') == 1) echo " checked" ?>  />
                             <label for="alpha_required" class="form-check-label">
-                                &nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['RequireAlphaCharacter']); ?></label>
+                                &nbsp;&nbsp;<?= $escaper->escapeHtml($lang['RequireAlphaCharacter']); ?></label>
                         </div>
                         <div class="form-check col-md-6">
                             <input class="form-check-input" type="checkbox" id="upper_required" name="upper_required"<?php if (get_setting('pass_policy_upper_required') == 1) echo " checked" ?>  />
-                            <label for="upper_required" class="form-check-label">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['RequireUpperCaseCharacter']); ?></label>
+                            <label for="upper_required" class="form-check-label">&nbsp;&nbsp;<?= $escaper->escapeHtml($lang['RequireUpperCaseCharacter']); ?></label>
                         </div>
                         <div class="form-check col-md-6">
                             <input class="form-check-input" type="checkbox" id="lower_required" name="lower_required"<?php if (get_setting('pass_policy_lower_required') == 1) echo " checked" ?>  />
-                            <label for="lower_required" class="form-check-label">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['RequireLowerCaseCharacter']); ?></label>
+                            <label for="lower_required" class="form-check-label">&nbsp;&nbsp;<?= $escaper->escapeHtml($lang['RequireLowerCaseCharacter']); ?></label>
                         </div>
                         <div class="form-check col-md-6">
                             <input class="form-check-input" type="checkbox" id="digits_required" name="digits_required"<?php if (get_setting('pass_policy_digits_required') == 1) echo " checked" ?>  />
-                            <label for="digits_required" class="form-check-label">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['RequireNumericCharacter']); ?></label>
+                            <label for="digits_required" class="form-check-label">&nbsp;&nbsp;<?= $escaper->escapeHtml($lang['RequireNumericCharacter']); ?></label>
                         </div>
                         <div class="form-check col-md-6">
                             <input class="form-check-input" type="checkbox" id="special_required" name="special_required"<?php if (get_setting('pass_policy_special_required') == 1) echo " checked" ?> />
-                            <label for="special_required" class="form-check-label">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['RequireSpecialCharacter']); ?></label>
+                            <label for="special_required" class="form-check-label">&nbsp;&nbsp;<?= $escaper->escapeHtml($lang['RequireSpecialCharacter']); ?></label>
                         </div>
                         <div class="form-check  col-md-6 my-2">
                             <label class="d-flex align-items-center">
-                                <?php echo $escaper->escapeHtml($lang['MinimumPasswordAge']); ?>:&nbsp;&nbsp;
-                                <input class="form-control" style="width:10%" type="number" id="pass_policy_min_age" name="pass_policy_min_age" min="0" maxlength="4" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_min_age')); ?>"/> <?php echo $escaper->escapeHtml($lang['days']); ?>.&nbsp;&nbsp;
+                                <?= $escaper->escapeHtml($lang['MinimumPasswordAge']); ?>:&nbsp;&nbsp;
+                                <input class="form-control" style="width:10%" type="number" id="pass_policy_min_age" name="pass_policy_min_age" min="0" maxlength="4" size="2" value="<?= $escaper->escapeHtml(get_setting('pass_policy_min_age')); ?>"/> <?= $escaper->escapeHtml($lang['days']); ?>.&nbsp;&nbsp;
                                 [0 = Min Age Disabled]
                             </label>
                         </div>
-                        <div class="form-check  col-md-6 my-2">
+                        <div class="form-check col-md-6 my-2">
                             <label class="d-flex align-items-center">
-                                <?php echo $escaper->escapeHtml($lang['MaximumPasswordAge']); ?>:&nbsp;&nbsp;
-                                <input class="form-control" style="width:10%" type="number" id="pass_policy_max_age" name="pass_policy_max_age" min="0" maxlength="4" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_max_age')); ?>"/> <?php echo $escaper->escapeHtml($lang['days']); ?>.&nbsp;&nbsp;
+                                <?= $escaper->escapeHtml($lang['MaximumPasswordAge']); ?>:&nbsp;&nbsp;
+                                <input class="form-control" style="width:10%" type="number" id="pass_policy_max_age" name="pass_policy_max_age" min="0" maxlength="4" size="2" value="<?= $escaper->escapeHtml(get_setting('pass_policy_max_age')); ?>"/> <?= $escaper->escapeHtml($lang['days']); ?>.&nbsp;&nbsp;
                                 [0 = Max Age Disabled]
                             </label>
                         </div>
-                        <div class="form-check  col-md-6 my-2">
+                        <div class="form-check col-md-6 my-2">
                             <label class="d-flex align-items-center">
-                                <?php echo $escaper->escapeHtml($lang['RememberTheLast']); ?>&nbsp;&nbsp;
-                                <input class="form-control" class="text-right" style="width:12%" type="number" id="pass_policy_reuse_limit" name="pass_policy_reuse_limit" min="0" maxlength="4" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_reuse_limit')); ?>"/> 
-                                <?php echo $escaper->escapeHtml($lang['Passwords']); ?>
+                                <?= $escaper->escapeHtml($lang['RememberTheLast']); ?>&nbsp;&nbsp;
+                                <input class="form-control" class="text-right" style="width:12%" type="number" id="pass_policy_reuse_limit" name="pass_policy_reuse_limit" min="0" maxlength="4" size="2" value="<?= $escaper->escapeHtml(get_setting('pass_policy_reuse_limit')); ?>"/> 
+                                <?= $escaper->escapeHtml($lang['Passwords']); ?>
                             </label>
                         </div>
                     </div>
-                    <div class="col-md-6 my-2">
-                        <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="password_policy_update" class="btn btn-submit"/>
+                    <div class="card-body mb-2 border">
+                        <input type="submit" value="<?= $escaper->escapeHtml($lang['Update']); ?>" name="password_policy_update" class="btn btn-submit"/>
                     </div>
                 </form>
             </div>
             <div class="tab-pane" id="userreports" role="tabpanel" aria-labelledby="userreports-tab">
                 <div class="card-body my-2 border">
                     <div data-sr-role='dt-settings' data-sr-target='users_of_teams-table' class="d-flex align-items-center float-end">
-                        <label style="width: 200px;">
-                            <?php echo $escaper->escapeHtml($lang['ReportDisplayed']); ?>:
-                        </label>
+                        <label style="width: 200px;"><?= $escaper->escapeHtml($lang['ReportDisplayed']); ?> :</label>
                         <select id="report_displayed_dropdown" class="form-select">
     <?php if ($separation) { ?>
-                            <option value='users_of_teams' selected><?php echo $escaper->escapeHtml($lang['UsersOfTeams']);?></option>
-                            <option value='teams_of_users'><?php echo $escaper->escapeHtml($lang['TeamsOfUsers']);?></option>
+                            <option value='users_of_teams' selected><?= $escaper->escapeHtml($lang['UsersOfTeams']);?></option>
+                            <option value='teams_of_users'><?= $escaper->escapeHtml($lang['TeamsOfUsers']);?></option>
     <?php } ?>
-                            <option value='users_of_permissions' <?php if (!$separation) { ?>selected<?php } ?>><?php echo $escaper->escapeHtml($lang['UsersOfPermissions']);?></option>
-                            <option value='permissions_of_users'><?php echo $escaper->escapeHtml($lang['PermissionsOfUsers']);?></option>
-                            <option value='users_of_roles'><?php echo $escaper->escapeHtml($lang['UsersOfRoles']);?></option>
+                            <option value='users_of_permissions' <?php if (!$separation) { ?>selected<?php } ?>><?= $escaper->escapeHtml($lang['UsersOfPermissions']);?></option>
+                            <option value='permissions_of_users'><?= $escaper->escapeHtml($lang['PermissionsOfUsers']);?></option>
+                            <option value='users_of_roles'><?= $escaper->escapeHtml($lang['UsersOfRoles']);?></option>
                         </select>
                     </div>
                     <div class="col-12">
     <?php if ($separation) { ?>
                         <div id="users_of_teams-report" class="report">
-                            <?php display_user_management_reports_datatable('users_of_teams'); ?>
+    <?php 
+                            display_user_management_reports_datatable('users_of_teams'); 
+    ?>
                         </div>
     
                         <div id="teams_of_users-report" style="display: none" class="report">
-                            <?php display_user_management_reports_datatable('teams_of_users'); ?>
+    <?php 
+                            display_user_management_reports_datatable('teams_of_users'); 
+    ?>
                         </div>
     <?php } ?>
                         
                         <div id="users_of_permissions-report" class="report" <?php if ($separation) { ?>style="display: none"<?php } ?>>
-                            <?php display_user_management_reports_datatable('users_of_permissions'); ?>
+    <?php 
+                            display_user_management_reports_datatable('users_of_permissions'); 
+    ?>
                         </div>
     
                         <div id="permissions_of_users-report" class="report" style="display: none">
-                            <?php display_user_management_reports_datatable('permissions_of_users'); ?>
+    <?php 
+                            display_user_management_reports_datatable('permissions_of_users'); 
+    ?>
                         </div>
     
                         <div id="users_of_roles-report" class="report" style="display: none">
-                            <?php display_user_management_reports_datatable('users_of_roles'); ?>
+    <?php 
+                            display_user_management_reports_datatable('users_of_roles'); 
+    ?>
                         </div>
                     </div>
                 </div>

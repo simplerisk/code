@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace SimpleSAML\XML\Registry;
 
-use SimpleSAML\Assert\Assert;
 use SimpleSAML\XML\AbstractElement;
+use SimpleSAML\XML\Assert\Assert;
 use SimpleSAML\XML\Exception\InvalidDOMElementException;
 use SimpleSAML\XML\Exception\IOException;
 use Symfony\Component\Finder\Finder;

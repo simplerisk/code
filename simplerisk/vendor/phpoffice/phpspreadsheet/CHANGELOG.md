@@ -5,10 +5,69 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com)
 and this project adheres to [Semantic Versioning](https://semver.org).
 
-## 2024-11-10 - 2.3.1
+# 2025-02-07 - 2.3.8
 
 ### Fixed
 
+- Xls writer Parser Mishandling True/False Argument. Backport of [PR #4333](https://github.com/PHPOffice/PhpSpreadsheet/pull/4333)
+- Xls writer Parser Parse By Character Not Byte. Backport of [PR #4344](https://github.com/PHPOffice/PhpSpreadsheet/pull/4344)
+
+# 2025-01-26 - 2.3.7
+
+### Fixed
+
+- Backported security patch for control characters in protocol.
+- Use Composer\Pcre in Xls/Parser. Partial backport of [PR #4203](https://github.com/PHPOffice/PhpSpreadsheet/pull/4203)
+
+# 2025-01-11 - 2.3.6
+
+### Deprecated
+
+- Worksheet::getHashCode is no longer needed.
+
+### Fixed
+
+- Backported security patch for Html navigation.
+- Change hash code for worksheet. Backport of [PR #4207](https://github.com/PHPOffice/PhpSpreadsheet/pull/4207)
+- Retitling cloned worksheets. Backport of [PR #4302](https://github.com/PHPOffice/PhpSpreadsheet/pull/4302)
+
+
+# 2024-12-26 - 2.3.5
+
+### Deprecated
+
+- Drawing::setIsUrl is unneeded. The property is set when setPath determines whether path is a url.
+
+### Fixed
+
+- More context options may be needed for http(s) image. Backport of [PR #4276](https://github.com/PHPOffice/PhpSpreadsheet/pull/4276)
+- Backported security patches for Samples.
+- Backported security patches for Html Writer.
+
+## 2024-12-08 - 2.3.4
+
+### Fixed
+
+- Fix Minor Break Handling Drawings. Backport of [PR #4244](https://github.com/PHPOffice/PhpSpreadsheet/pull/4244)
+- Swapped Row and Column Indexes in Reference Helper. Backport of [PR #4247](https://github.com/PHPOffice/PhpSpreadsheet/pull/4247)
+- Upgrade locked version of Dompdf (Php8.4 compatibility).
+- Remove unnecessary files from Composer package.
+
+## 2024-11-22 - 2.3.3
+
+### Changed
+
+- Settings::libXmlLoaderOptions is ignored. Backport of [PR #4233](https://github.com/PHPOffice/PhpSpreadsheet/pull/4233)
+
+### Deprecated
+
+- Settings::setLibXmlLoaderOptions() and Settings::getLibXmlLoaderOptions() are no longer needed - no replacement.
+
+## 2024-11-10 - 2.3.2
+
+### Fixed
+
+- 2.3.1 omitted.
 - Backported security patches.
 - Write ignoredErrors Tag Before Drawings. Backport of [PR #4212](https://github.com/PHPOffice/PhpSpreadsheet/pull/4212) intended for 3.4.0.
 - Changes to ROUNDDOWN/ROUNDUP/TRUNC. Backport of [PR #4214](https://github.com/PHPOffice/PhpSpreadsheet/pull/4214) intended for 3.4.0.

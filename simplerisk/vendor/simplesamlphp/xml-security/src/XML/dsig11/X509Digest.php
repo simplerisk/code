@@ -9,6 +9,8 @@ use SimpleSAML\Assert\Assert;
 use SimpleSAML\XML\Base64ElementTrait;
 use SimpleSAML\XML\Exception\InvalidDOMElementException;
 use SimpleSAML\XML\Exception\SchemaViolationException;
+use SimpleSAML\XML\SchemaValidatableElementInterface;
+use SimpleSAML\XML\SchemaValidatableElementTrait;
 use SimpleSAML\XMLSecurity\Constants as C;
 use SimpleSAML\XMLSecurity\Exception\InvalidArgumentException;
 
@@ -17,9 +19,10 @@ use SimpleSAML\XMLSecurity\Exception\InvalidArgumentException;
  *
  * @package simplesaml/xml-security
  */
-final class X509Digest extends AbstractDsig11Element
+final class X509Digest extends AbstractDsig11Element implements SchemaValidatableElementInterface
 {
     use Base64ElementTrait;
+    use SchemaValidatableElementTrait;
 
 
     /**

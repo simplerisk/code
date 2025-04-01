@@ -43,7 +43,7 @@ trait Base64ElementTrait
     protected function validateContent(string $content): void
     {
         // Note: content must already be sanitized before validating
-        Assert::stringPlausibleBase64(
+        Assert::validBase64(
             $this->sanitizeContent($content),
             SchemaViolationException::class,
         );

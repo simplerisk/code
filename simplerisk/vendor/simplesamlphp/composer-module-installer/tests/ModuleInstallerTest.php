@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace SimpleSAML\Test\Composer;
 
 use Composer\IO\NullIO;
-use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
+use Composer\Package\Package;
+use Composer\Package\RootPackage;
 use Composer\Config;
 use Composer\PartialComposer;
 use Composer\Repository\InstalledArrayRepository;
@@ -15,6 +16,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\HttpDownloader;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Composer\ModuleInstaller;
 
@@ -37,15 +39,16 @@ class ModuleInstallerTest extends TestCase
             new RepositoryManager(new NullIO(), new Config(), new HttpDownloader(new NullIO(), new Config()))
         );
         $partialComposer->getRepositoryManager()->setLocalRepository(new InstalledArrayRepository());
+        $partialComposer->setPackage(new RootPackage('simplesamlphp/simplesamlphp', '0.0.1', 'v0.0.1'));
+
         $this->moduleInstaller = new ModuleInstaller(new NullIO(), $partialComposer);
     }
 
 
-    /**
-     * @dataProvider packageProvider
-     */
-    public function testGetInstallPath(bool $shouldPass, PackageInterface $package): void
+    #[DataProvider('packageProvider')]
+    public function testGetInstallPath(bool $shouldPass, string $package): void
     {
+        $package = new Package($package, '0.0.1', 'v0.0.1');
         try {
             $this->moduleInstaller->getInstallPath($package);
             $this->assertTrue($shouldPass);
@@ -55,9 +58,7 @@ class ModuleInstallerTest extends TestCase
     }
 
 
-    /**
-     * @dataProvider packageTypeProvider
-     */
+    #[DataProvider('packageTypeProvider')]
     public function testSupports(bool $shouldPass, string $packageType): void
     {
         $this->assertEquals(
@@ -70,7 +71,7 @@ class ModuleInstallerTest extends TestCase
     /**
      * @return array
      */
-    public function packageTypeProvider(): array
+    public static function packageTypeProvider(): array
     {
         return [
             'simplesamlphp-module' => [true, 'simplesamlphp-module'],
@@ -83,29 +84,14 @@ class ModuleInstallerTest extends TestCase
     /**
      * @return array
      */
-    public function packageProvider(): array
+    public static function packageProvider(): array
     {
         return [
-            'base' => [
-                true,
-                $this->getMockForAbstractClass(BasePackage::class, ['simplesamlphp/simplesamlphp-assets']),
-            ],
-            'bogus-nonmodule' => [
-                false,
-                $this->getMockForAbstractClass(BasePackage::class, ['simplesamlphp/simplesamlphp-bogus-nonmodule']),
-            ],
-            'consent-assets' => [
-                true,
-                $this->getMockForAbstractClass(BasePackage::class, ['simplesamlphp/simplesamlphp-assets-consent']),
-            ],
-            'ldap' => [
-                true,
-                $this->getMockForAbstractClass(BasePackage::class, ['simplesamlphp/simplesamlphp-module-ldap']),
-            ],
-            'module' => [
-                false,
-                $this->getMockForAbstractClass(BasePackage::class, ['simplesamlphp/simplesamlphp-module']),
-            ],
+            'base' => [false, 'simplesamlphp/simplesamlphp-assets'],
+            'bogus-nonmodule' => [false, 'simplesamlphp/simplesamlphp-bogus-nonmodule'],
+            'consent-assets' => [true, 'simplesamlphp/simplesamlphp-assets-consent'],
+            'ldap' => [true, 'simplesamlphp/simplesamlphp-module-ldap'],
+            'module' => [false, 'simplesamlphp/simplesamlphp-module'],
         ];
     }
 }

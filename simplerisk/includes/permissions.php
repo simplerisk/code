@@ -81,17 +81,16 @@ function check_permission($permission) {
 function enforce_permission($permission)
 {
 	// If the permission is not authorized
-	if (!check_permission($permission))
-	{
+	if (!check_permission($permission)) {
+
+	    write_debug_log("Redirecting back to the login page. User doesn't have the '{$permission}' permission.");
+
 		// Different actions for different permissions
-		switch ($permission)
-		{
+		switch ($permission) {
 			// If this is the access permission
 			case "access":
 				// Store the requested URL in the session so we can redirect the user back to it after authentication
 				set_unauthenticated_redirect();
-
-				write_debug_log("Redirecting back to the login page.");
 
 				// Redirect the user to the login page
 				header("Location: ../index.php");
@@ -99,8 +98,6 @@ function enforce_permission($permission)
 				// Stop any further processing
 				exit(0);
 			default:
-				write_debug_log("Redirecting back to the login page.");
-
 				// Redirect the user to the login page
 				header("Location: ../index.php");
 

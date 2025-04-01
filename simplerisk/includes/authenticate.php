@@ -314,7 +314,7 @@ function set_user_permissions($user, $upgrade = false)
     // If we are not doing an upgrade
     if (!$upgrade)
     {
-        $_SESSION['custom_display_settings'] = empty($array[0]['custom_display_settings']) ? array() : json_decode($array[0]['custom_display_settings'], true);
+        $_SESSION['custom_display_settings'] = empty($array[0]['custom_display_settings']) ? array() : json_decode($array[0]['custom_display_settings'] ?? '', true);
 
         $possible_permissions = get_possible_permissions();
         $actual_permissions = get_permissions_of_user($_SESSION['uid']);
@@ -378,9 +378,6 @@ function grant_access()
 
     // Update the last login
     update_last_login($_SESSION['uid']);
-
-    // Since access was granted, ping the server asynchronously
-    ping_server_asynchronously();
 
     // Audit log
     $message = "Username \"" . $_SESSION['user'] . "\" logged in successfully.";

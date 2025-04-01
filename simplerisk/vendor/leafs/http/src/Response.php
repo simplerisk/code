@@ -55,12 +55,23 @@ class Response
     }
 
     /**
-     * Output any text
+     * Alias of custom
      *
      * @param string $data The data to output
      * @param int $code The response status code
      */
     public function echo(string $data, int $code = 200)
+    {
+        $this->custom($data, $code);
+    }
+
+    /**
+     * Output any text
+     *
+     * @param string $data The data to output
+     * @param int $code The response status code
+     */
+    public function custom(string $data, int $code = 200)
     {
         $this->status = $code;
         $this->headers['Content-Type'] ??= 'text/plain';
@@ -186,7 +197,7 @@ EOT;
      * @param string|null $name The of the file as shown to user
      * @param int $code The response status code
      */
-    public function download(string $file, string $name = null, int $code = 200)
+    public function download(string $file, ?string $name = null, int $code = 200)
     {
         $this->status = $code;
 
@@ -219,6 +230,44 @@ EOT;
     {
         $this->status = 204;
         $this->send();
+    }
+
+    /**
+     * Render a view file if a view engine is available
+     * 
+     * @param string $view The view file to render
+     * @param array $data The data to pass to the view
+     */
+    public function view(string $view, array $data = [])
+    {
+        if (function_exists('view')) {
+            return $this->markup(
+                view($view, $data),
+            );
+        }
+
+        if (app()->blade()) {
+            return $this->markup(
+                app()->blade()->render($view, $data),
+            );
+        }
+
+        if (app()->template()) {
+            return $this->markup(
+                app()->template()->render($view, $data),
+            );
+        }
+    }
+
+    /**
+     * Render a view file if a view engine is available
+     * 
+     * @param string $view The view file to render
+     * @param array $data The data to pass to the view
+     */
+    public function render(string $view, array $data = [])
+    {
+        $this->view($view, $data);
     }
 
     /**
@@ -266,10 +315,10 @@ EOT;
     public function redirect($url, int $status = 302, bool $exit = true)
     {
         if (is_array($url)) {
-            $url = app()->route($url[0]);
+            $url = app()->route($url[0], ...array_slice($url, 1));
         }
 
-        if (class_exists('Leaf\App')) {
+        if (class_exists('Leaf\App') && !strpos($url, '://')) {
             $url = str_replace('//', '/', app()->getBasePath() . $url);
         }
 
@@ -356,7 +405,7 @@ EOT;
      *
      * @return Response
      */
-    public function withCookie(string $name, string $value, int $expire = null): Response
+    public function withCookie(string $name, string $value, ?int $expire = null): Response
     {
         $this->cookies[$name] = [$value, $expire ?? (time() + 604800)];
 
@@ -440,7 +489,7 @@ EOT;
         Headers::set($this->headers);
 
         // status
-        header(sprintf('%s %s %s', $this->httpVersion(), $this->status, Status::$statusTexts[$this->status]), true, $this->status);
+        header(sprintf('%s %s %s', $this->httpVersion(), $this->status, Status::$statusTexts[$this->status] ?? ''), true, $this->status);
 
         return $this;
     }

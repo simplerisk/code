@@ -2,7 +2,7 @@
                 <!-- End of content -->
                 <!-- footer -->
                 <footer class="footer text-center">
-                  Copyright 2024 SimpleRisk, Inc.  All rights reserved.
+                  Copyright 2025 SimpleRisk, Inc.  All rights reserved.
                   <a href="#"></a>
                 </footer>
                 <!-- End footer -->

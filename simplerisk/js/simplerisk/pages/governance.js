@@ -267,6 +267,7 @@ jQuery(document).ready(function($){
           });
 
           $(document).on('click', '.control-block--edit', function(event) {
+
             event.preventDefault();
             resetForm('#control--update form');
             var control_id  = $(this).attr('data-id');
@@ -308,11 +309,25 @@ jQuery(document).ready(function($){
                     $('[name=family]', modal).val(Number(control.family) ? control.family : "");
                     $('[name=mitigation_percent]', modal).val(Number(control.mitigation_percent) ? control.mitigation_percent : "");
                     $(".mapping_framework_table tbody", modal).html(data.mapped_frameworks);
+
+                    let mapping_framework_count = $(".mapping_framework_table tbody tr").length;
+                    // Show the mandatory fields when there are mapping frameworks
+                    if (mapping_framework_count) {
+                        $(".mapping_framework_table thead .mapping-framework-required-mark").removeClass('d-none');
+                    }
+
                     $(".mapping_asset_table tbody", modal).html(data.mapped_assets);
                     $('.mapping_asset_table select.assets-asset-groups-select', modal).each(function(index, element){
                         $(element).attr('name', 'assets_asset_groups[' + index + '][]');
                         setupAssetsAssetGroupsWidget($(element),control_id, control.mapped_maturity[index]);
                     });
+
+                    let mapping_asset_count = $(".mapping_asset_table tbody tr").length;
+                    // Show the mandatory fields when there are mapping assets
+                    if (mapping_asset_count) {
+                        $(".mapping_asset_table thead .mapping-asset-required-mark").removeClass('d-none');
+                    }
+
                     $('[name*="custom_field"]', modal).val("");
                     if(control.custom_values){
                       var custom_values = control.custom_values;
@@ -397,14 +412,30 @@ jQuery(document).ready(function($){
             });
           });
           $(document).on('click', '.control-block--add-mapping', function(event) {
+
             event.preventDefault();
+
             var form = $(this).closest('form');
             // To get the html of the <tr> tag
             $(".mapping_framework_table tbody", form).append($("#add_mapping_row table tr:first-child").parent().html());
+
+            // Show the mandatory fields when there are mapping frameworks
+            $(".mapping_framework_table thead .mapping-framework-required-mark", form).removeClass('d-none');
+
           });
           $(document).on('click', '.control-block--delete-mapping', function(event) {
+
             event.preventDefault();
+
             $(this).closest("tr").remove();
+
+            let mapping_framework_count = $(".mapping_framework_table tbody tr").length;
+
+            // Hide the mandatory fields when there are no mapping frameworks
+            if (!mapping_framework_count) {
+              $(".mapping_framework_table thead .mapping-framework-required-mark").addClass('d-none');
+            }
+
           });
           $('#control--add').on('shown.bs.modal', function () {
               $(".mapping_framework_table tbody", this).html("");
@@ -438,22 +469,39 @@ jQuery(document).ready(function($){
               });
           })
           $(document).on('click', '.control-block--add-asset', function(event) {
+
             event.preventDefault();
+
             var form = $(this).closest('form');
             var appended_row = $($("#add_asset_row table tr:first-child").parent().html()).appendTo($(".mapping_asset_table tbody", form));
+
             $('.mapping_asset_table select.assets-asset-groups-select', form).each(function(index, element){
                 $(element).attr('name', 'assets_asset_groups[' + index + '][]');
             });
             // var appended_row = $(".mapping_asset_table tbody", form).append($("#add_asset_row table tr:first-child").parent().html());
             setupAssetsAssetGroupsWidget($("select.assets-asset-groups-select", appended_row));
+
+            // Show the mandatory fields when there are mapping assets
+            $(".mapping_asset_table thead .mapping-asset-required-mark", form).removeClass('d-none');
+
           });
           $(document).on('click', '.control-block--delete-asset', function(event) {
+
             event.preventDefault();
+
             var form = $(this).closest('form');
             $(this).closest("tr").remove();
             $('.mapping_asset_table select.assets-asset-groups-select', form).each(function(index, element){
                 $(element).attr('name', 'assets_asset_groups[' + index + '][]');
             });
+
+            let mapping_asset_count = $(".mapping_asset_table tbody tr").length;
+
+            // Hide the mandatory fields when there are no mapping assets
+            if (!mapping_asset_count) {
+              $(".mapping_asset_table thead .mapping-asset-required-mark").addClass('d-none');
+            }
+            
           });
           $(document).on('change', '[name*=asset_maturity]', function(event) {
               var cur_select = this;
@@ -475,42 +523,141 @@ jQuery(document).ready(function($){
   
     // Initiate Datatable of controls
     var pageLength = 10;
-    controlDatatable = $("#active-controls").DataTable({
-        scrollX: true,
-        bSort: true,
-        ajax: {
-            url: BASE_URL + '/api/datatable/framework_controls',
-            type: "POST",
-            data: function(d){
-                d.control_class = $("#filter_by_control_class").val();
-                d.control_phase = $("#filter_by_control_phase").val();
-                d.control_family = $("#filter_by_control_family").val();
-                d.control_owner = $("#filter_by_control_owner").val();
-                d.control_framework = $("#filter_by_control_framework").val();
-                d.control_priority = $("#filter_by_control_priority").val();
-                d.control_type = $("#filter_by_control_type").val();
-                d.control_status = $("#filter_by_control_status").val();
-                d.control_text = $("#filter_by_control_text").val();
-            },
-            error: function(xhr,status,error){
-                retryCSRF(xhr, this);
-            },
-            complete: function(response){
-                if(response.status == 200){
-                    $("#controls_count").html(parseInt(response.responseJSON.recordsFiltered));
-                    rebuild_filter($("#filter_by_control_class"),response.responseJSON.classList);
-                    rebuild_filter($("#filter_by_control_phase"),response.responseJSON.phaseList);
-                    rebuild_filter($("#filter_by_control_family"),response.responseJSON.familyList);
-                    rebuild_filter($("#filter_by_control_owner"),response.responseJSON.ownerList);
-                    rebuild_filter($("#filter_by_control_priority"),response.responseJSON.priorityList);
+    if ($.fn.DataTable && $("#active-controls").length) {
+        controlDatatable = $("#active-controls").DataTable({
+            scrollX: true,
+            bSort: true,
+            ajax: {
+                url: BASE_URL + '/api/datatable/framework_controls',
+                type: "POST",
+                data: function (d) {
+                    d.control_class = $("#filter_by_control_class").val();
+                    d.control_phase = $("#filter_by_control_phase").val();
+                    d.control_family = $("#filter_by_control_family").val();
+                    d.control_owner = $("#filter_by_control_owner").val();
+                    d.control_framework = $("#filter_by_control_framework").val();
+                    d.control_priority = $("#filter_by_control_priority").val();
+                    d.control_type = $("#filter_by_control_type").val();
+                    d.control_status = $("#filter_by_control_status").val();
+                    d.control_text = $("#filter_by_control_text").val();
+                },
+                error: function (xhr, status, error) {
+                    retryCSRF(xhr, this);
+                },
+                complete: function (response) {
+                    if (response.status == 200) {
+                        $("#controls_count").html(parseInt(response.responseJSON.recordsFiltered));
+                        rebuild_filter($("#filter_by_control_class"), response.responseJSON.classList);
+                        rebuild_filter($("#filter_by_control_phase"), response.responseJSON.phaseList);
+                        rebuild_filter($("#filter_by_control_family"), response.responseJSON.familyList);
+                        rebuild_filter($("#filter_by_control_owner"), response.responseJSON.ownerList);
+                        rebuild_filter($("#filter_by_control_priority"), response.responseJSON.priorityList);
+                    }
                 }
             }
-        }
+        });
+
+        controlDatatable.on('draw', function (e, settings) {
+            $('#delete-controls-btn').attr('disabled', true);
+        });
+    }
+
+    /**************** Start get AI document create **********/
+
+    $('body').on('click', '.ai-document--create', function(e){
+        e.preventDefault();
+        var document_type  = $(this).attr('data-type');
+        var document_name  = $(this).attr('data-name');
+
+        var createButton = $(this); // Reference to the clicked button
+        var deleteButton = $('input.ai-document--delete[data-type="' + document_type + '"][data-name="' + document_name + '"]');
+
+        // Show spinner before API call
+        $.blockUI({
+            message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>',
+            baseZ:'10001'
+        });
+
+        $.ajax({
+            url: BASE_URL + '/api/v2/ai/document/create?document_type=' + document_type + '&document_name=' + document_name,
+            type: 'GET',
+            dataType: 'json',
+            success : function (res){
+                // If there are any status messages, show them
+                if(res && res.status_message){
+                    showAlertsFromArray(res.status_message, true);
+                }
+
+                // Get the document id that was created
+                var data = res.data;
+                document_id = data.document_id;
+
+                // Hide the create button and disable it
+                createButton.hide().prop('disabled', true);
+
+                // Show the delete button and enable it
+                deleteButton.show().prop('disabled', false).attr('data-id', document_id);
+            },
+            complete: function(){
+                $.unblockUI();
+            },
+            error: function(res) {
+                // If there are any status messages, show them
+                if(res && res.status_message){
+                    showAlertsFromArray(res.status_message);
+                }
+            }
+        });
     });
 
-    controlDatatable.on('draw', function(e, settings){
-		$('#delete-controls-btn').attr('disabled', true);
+    /**************** End get AI document create **********/
+
+    /**************** Start get AI document delete **********/
+
+    $('body').on('click', '.ai-document--delete', function(e){
+        e.preventDefault();
+        var document_id  = $(this).attr('data-id');
+        var document_type = $(this).attr('data-type');
+        var document_name  = $(this).attr('data-name');
+
+        var deleteButton = $(this); // Reference to the clicked button
+        var createButton = $('input.ai-document--create[data-type="' + document_type + '"][data-name="' + document_name + '"]');
+
+        // Show spinner before API call
+        $.blockUI({
+            message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>',
+            baseZ:'10001'
+        });
+
+        $.ajax({
+            type: "DELETE",
+            url: BASE_URL + "/api/v2/governance/documents?document_id=" + document_id,
+            dataType: 'json',
+            success : function (res){
+                // If there are any status messages, show them
+                if(res && res.status_message){
+                    showAlertsFromArray(res.status_message, true);
+                }
+
+                // Hide the delete button and disable it
+                deleteButton.hide().prop('disabled', true);
+
+                // Show the create button and enable it
+                createButton.show().prop('disabled', false);
+            },
+            complete: function(){
+                $.unblockUI();
+            },
+            error: function(res) {
+                // If there are any status messages, show them
+                if(res && res.status_message){
+                    showAlertsFromArray(res.status_message);
+                }
+            }
+        });
     });
+
+    /**************** End get AI document delete **********/
 });
 
 function rebuild_filters()
@@ -576,13 +723,29 @@ function redrawFrameworkControl() {
     $("#active-controls").DataTable().draw();
 }    
 
-
 $(function(){
-    
+
+    // the variable which is used for preventing the form from double submitting
+    var loading = false;
+
     // Add control form event
     $(document).on('submit', '#add-control-form', function(event) {
 		event.preventDefault();
+
+        // if not received ajax response, don't submit again
+        if (loading) {
+            return
+        }
+        // Check empty/trimmed empty valiation for the required fields 
+        if (!checkAndSetValidation(this)) {
+            return;
+        }
+        
         var form = new FormData($("#add-control-form")[0]);
+
+        // the ajax request is sent
+        loading = true;
+
         $.ajax({
             type: "POST",
             url: BASE_URL + "/api/governance/add_control",
@@ -612,6 +775,9 @@ $(function(){
                 $('#add-control-form [name*="custom_field"]').val("");
                 $('#add-control-form [name*="custom_field"].multiselect').multiselect('refresh');
                 controlDatatable.ajax.reload(null, false);
+
+                // the response is received
+                loading = false;
             }
         })
         .fail(function(xhr, textStatus){
@@ -621,13 +787,31 @@ $(function(){
                     showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
+
+            // the response is received
+            loading = false;
         });
         return false;
     });
     // Update control form event
     $(document).on('submit', '#update-control-form', function(event) {
 		event.preventDefault();
+
+        // if not received ajax response, don't submit again
+        if (loading) {
+            return
+        }
+
+        // Check empty/trimmed empty valiation for the required fields 
+        if (!checkAndSetValidation(this)) {
+            return;
+        }
+
         var form = new FormData($("#update-control-form")[0]);
+        
+        // the ajax request is sent
+        loading = true;
+
         $.ajax({
             type: "POST",
             url: BASE_URL + "/api/governance/update_control",
@@ -643,6 +827,9 @@ $(function(){
 
                 $('#control--update').modal('hide');
                 controlDatatable.ajax.reload(null, false);
+
+                // the response is received
+                loading = false;
             }
         })
         .fail(function(xhr, textStatus){
@@ -653,10 +840,62 @@ $(function(){
                 }
             }
 
+            // the response is received
+            loading = false;
+
         });
         
         return false;
     });
+
+    // Add framework form event
+    $(document).on('submit', '#framework-create-form', function(event) {
+
+		event.preventDefault();
+
+        // Check empty/trimmed empty valiation for the required fields 
+        if (!checkAndSetValidation(this)) {
+            return;
+        }
+
+        // Add the submit button's name and value as a hidden field 
+        // since the name and value of the submit button aren't included in the form data when triggering the submit event programmatically
+        const hiddenInput = $('<input>')
+            .attr('type', 'hidden')
+            .attr('name', 'add_framework') // The submit button's name
+            .attr('value', 'true'); // The submit button's value
+
+        $(this).append(hiddenInput);
+
+        // Submit the form using the native Javascript submit method not using jQuery submit method 
+        // to prevent the form from submitting infinitely
+        this.submit();
+    });
+
+    // Add framework form event
+    $(document).on('submit', '#framework-update-form', function(event) {
+
+		event.preventDefault();
+
+        // Check empty/trimmed empty valiation for the required fields 
+        if (!checkAndSetValidation(this)) {
+            return;
+        }
+
+        // Add the submit button's name and value as a hidden field 
+        // since the name and value of the submit button aren't included in the form data when triggering the submit event programmatically
+        const hiddenInput = $('<input>')
+            .attr('type', 'hidden')
+            .attr('name', 'update_framework') // The submit button's name
+            .attr('value', 'true'); // The submit button's value
+
+        $(this).append(hiddenInput);
+
+        // Submit the form using the native Javascript submit method not using jQuery submit method 
+        // to prevent the form from submitting infinitely
+        this.submit();
+    });
+
     // timer identifier
     var typingTimer;                
     // time in ms (5 seconds)

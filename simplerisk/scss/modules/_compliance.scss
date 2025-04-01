@@ -13,6 +13,48 @@
 }
 //***************************************** COMMON PART END ***************************************//
 
+//********************************** COMPLIANCE > DEFINE TESTS BEGIN ******************************//
+.define-tests-filter-part {
+    .multiselect-native-select {
+        .multiselect-container.dropdown-menu {
+            width: auto;
+        }
+    }
+}
+//*********************************** COMPLIANCE > DEFINE TESTS END *******************************//
+
+//********************************* COMPLIANCE > INITIATE AUDITS BEGIN ****************************//
+#tags--edit {
+    .test_tags.selectize-control {
+        .selectize-input {
+            .item {
+                word-break: break-word;
+            }
+        }
+    }
+}
+//********************************** COMPLIANCE > INITIATE AUDITS END ******************************//
+
+//***************************** COMPLIANCE > ACTIVE AUDITS BEGIN *******************************//
+#active_audits_datatable_wrapper {
+    .multiselect-native-select {
+        .multiselect-container.dropdown-menu {
+            width: auto;
+        }
+    }
+}
+//****************************** COMPLIANCE > ACTIVE AUDITS END ********************************//
+
+//********************************** COMPLIANCE > PAST AUDITS BEGIN *******************************//
+#past_audits_datatable_wrapper {
+    .multiselect-native-select {
+        .multiselect-container.dropdown-menu {
+            width: auto;
+        }
+    }
+}
+//*********************************** COMPLIANCE > PAST AUDITS END ********************************//
+
 //***************************** Compliance > Active Audits > View Test Begin *******************************//
 .active-audit-test-container {
     #edit-test {
@@ -57,6 +99,26 @@
     }
 }
 //****************************** Compliance > Active Audits > View Test End ********************************//
+
+//***************************** COMPLIANCE > PAST AUDITS BEGIN *******************************//
+#past_audits_datatable_wrapper {
+    th[data-name="tags"] {
+        .multiselect-native-select {
+            .multiselect-container.dropdown-menu {
+                width: auto;
+                min-width: 250px;
+    
+                button.dropdown-item {
+                    label.form-check-label {
+                        white-space: normal;
+                        word-break: break-word;
+                    }
+                }
+            }
+        }
+    }
+}
+//****************************** COMPLIANCE > PAST AUDITS END ********************************//
 
 //****************************** Compliance > Past Audits > View Test Begin ********************************//
 .past-audit-test-container {
@@ -108,4 +170,32 @@
         }
     }
 }
+
+#modal-existing-risk {
+    .multiselect-native-select {
+        .multiselect-container.dropdown-menu {    
+            button.dropdown-item {
+                label.form-check-label {
+                    white-space: normal;
+                    word-break: break-word;
+                }
+            }
+        }
+    }
+}
 //******************************* Compliance > Past Audits > View Test End *********************************//
+
+//***************************** COMPLIANCE > ACTIVE AUDITS > VIEW TEST BEGIN *******************************//
+#modal-existing-risk {
+    .multiselect-native-select {
+        .multiselect-container.dropdown-menu {    
+            button.dropdown-item {
+                label.form-check-label {
+                    white-space: normal;
+                    word-break: break-word;
+                }
+            }
+        }
+    }
+}
+//****************************** COMPLIANCE > ACTIVE AUDITS > VIEW TEST END ********************************//

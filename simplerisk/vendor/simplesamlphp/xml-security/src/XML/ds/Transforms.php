@@ -8,6 +8,8 @@ use DOMElement;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\XML\Constants as C;
 use SimpleSAML\XML\Exception\InvalidDOMElementException;
+use SimpleSAML\XML\SchemaValidatableElementInterface;
+use SimpleSAML\XML\SchemaValidatableElementTrait;
 use SimpleSAML\XMLSecurity\Exception\InvalidArgumentException;
 
 /**
@@ -15,8 +17,10 @@ use SimpleSAML\XMLSecurity\Exception\InvalidArgumentException;
  *
  * @package simplesamlphp/xml-security
  */
-final class Transforms extends AbstractDsElement
+final class Transforms extends AbstractDsElement implements SchemaValidatableElementInterface
 {
+    use SchemaValidatableElementTrait;
+
     /**
      * Initialize a ds:Transforms
      *

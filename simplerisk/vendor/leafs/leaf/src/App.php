@@ -10,7 +10,7 @@ namespace Leaf;
  * The easiest way to build simple but powerful apps and APIs quickly.
  *
  * @author Michael Darko <mickdd22@gmail.com>
- * @copyright 2019-2024 Michael Darko
+ * @copyright 2019-2025 Michael Darko
  * @link https://leafphp.dev
  * @license MIT
  * @package Leaf
@@ -179,8 +179,16 @@ class App extends Router
     }
 
     /**
+     * Attach a view engine to Leaf
+     * @param mixed $view The view engine to attach
+     */
+    public function attachView($view, $name = null)
+    {
+        Config::attachView($view, $name);
+    }
+
+    /**
      * Evade CORS errors
-     *
      * @param $options Config for cors
      */
     public function cors($options = [])
@@ -189,6 +197,23 @@ class App extends Router
             Http\Cors::config($options);
         } else {
             \trigger_error('Cors module not found! Run `leaf install cors` or `composer require leafs/cors` to install the CORS module. This is required to configure CORS.');
+        }
+    }
+
+    /**
+     * Tune vite to work without Leaf MVC
+     */
+    public function vite(
+        $options = [
+            'assets' => '',
+            'build' => '',
+            'hotFile' => 'hot',
+        ]
+    ) {
+        if (class_exists('Leaf\Vite')) {
+            \Leaf\Vite::config('assets', $options['assets']);
+            \Leaf\Vite::config('build', $options['build']);
+            \Leaf\Vite::config('hotFile', $options['hotFile']);
         }
     }
 
@@ -202,6 +227,8 @@ class App extends Router
         if (!\class_exists('Leaf\Anchor\CSRF')) {
             \trigger_error('CSRF module not found! Run `leaf install csrf` or `composer require leafs/csrf` to install the CSRF module. This is required to configure CSRF.');
         }
+
+        Config::set('session', true);
 
         if (!Anchor\CSRF::token()) {
             Anchor\CSRF::config($options);
@@ -336,7 +363,7 @@ class App extends Router
     }
 
     /**
-     * Run mode-specific code. Unlike script, this runs immedietly.
+     * Run mode-specific code. Unlike script, this runs immediately.
      *
      * @param string $mode The mode to run code in
      * @param callable $callback The code to run in selected mode.

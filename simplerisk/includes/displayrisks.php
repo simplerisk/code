@@ -494,7 +494,7 @@ function display_risk_assessment_view($assessment , $panel_name="")
             <div class='{$span1} d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['RiskAssessment']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} rich-text-container risk-details-assessment'>" . 
                 $escaper->purifyHtml($assessment) . "
             </div>
         </div>
@@ -522,7 +522,7 @@ function display_additional_notes_view($notes, $panel_name="")
             <div class='{$span1} d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['AdditionalNotes']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} rich-text-container risk-details-additional-notes'>" . 
                 $escaper->purifyHtml($notes) . "
             </div>
         </div>
@@ -2689,7 +2689,7 @@ function display_comments_view($comment, $panel_name = "")
             <div class='{$span1} d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['Comment']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} rich-text-container'>" . 
                 $escaper->purifyHtml($comment) . "
             </div>
         </div>

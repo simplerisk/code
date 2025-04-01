@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace SimpleSAML\XMLSecurity\XML\ds;
 
 use DOMElement;
-use SimpleSAML\Assert\Assert;
 use SimpleSAML\XML\Exception\SchemaViolationException;
 use SimpleSAML\XML\ExtendableElementTrait;
 use SimpleSAML\XML\SerializableElementInterface;
 use SimpleSAML\XML\XsNamespace as NS;
+use SimpleSAML\XMLSecurity\Assert\Assert;
 use SimpleSAML\XMLSecurity\Constants as C;
 use SimpleSAML\XMLSecurity\Exception\InvalidArgumentException;
 use SimpleSAML\XMLSecurity\XML\ds\AbstractDsElement;
@@ -35,6 +35,9 @@ abstract class AbstractKeyInfoType extends AbstractDsElement
      *     \SimpleSAML\XMLSecurity\XML\ds\KeyValue|
      *     \SimpleSAML\XMLSecurity\XML\ds\RetrievalMethod|
      *     \SimpleSAML\XMLSecurity\XML\ds\X509Data|
+     *     \SimpleSAML\XMLSecurity\XML\ds\PGPData|
+     *     \SimpleSAML\XMLSecurity\XML\ds\SPKIData|
+     *     \SimpleSAML\XMLSecurity\XML\ds\MgmtData|
      *     \SimpleSAML\XML\SerializableElementInterface
      * )[] $info
      * @param string|null $Id
@@ -64,7 +67,15 @@ abstract class AbstractKeyInfoType extends AbstractDsElement
             if ($item instanceof AbstractDsElement) {
                 Assert::isInstanceOfAny(
                     $item,
-                    [KeyName::class, KeyValue::class, RetrievalMethod::class, X509Data::class],
+                    [
+                        KeyName::class,
+                        KeyValue::class,
+                        RetrievalMethod::class,
+                        X509Data::class,
+                        PGPData::class,
+                        SPKIData::class,
+                        MgmtData::class,
+                    ],
                     SchemaViolationException::class,
                 );
             }

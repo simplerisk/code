@@ -93,8 +93,32 @@ else {
         // If the login form was posted
         $user='';
         if (isset($_POST["submit"])) {
-            $user = $_POST["user"];
-            $pass = $_POST["pass"];
+            $user = !empty($_POST["user"]) ? trim($_POST["user"]) : '';
+            $pass = !empty($_POST["pass"]) ? $_POST["pass"] : '';
+
+            // check if the username is empty
+            if (empty($user)) {
+
+                // Display an alert
+                set_alert(true, "bad", $escaper->escapeHtml($lang["UsernameCannotBeEmpty"]));
+
+                // Redirect to the login page
+                header("location: index.php");
+                exit();
+
+            }
+
+            // check if the password is empty
+            if (empty(trim($pass))) {
+
+                // Display an alert
+                set_alert(true, "bad", $escaper->escapeHtml($lang["PasswordCannotBeEmptyOrContainOnlySpaces"]));
+
+                // Redirect to the login page
+                header("location: index.php");
+                exit();
+                
+            }
 
             // Check for expired lockouts
             check_expired_lockouts();
@@ -359,11 +383,14 @@ else {
                                                     <h4 class="card-title"><?= $escaper->escapeHtml($lang['LogInHere']);?>:</h4>
                                                     <div class="form-group">
                                                         <label><?= $escaper->escapeHtml($lang['Username']);?></label>
-                                                        <input type="text" class="form-control user" id="user" name="user" required/>
+                                                        <input type="text" class="form-control user" id="user" name="user" required />
                                                     </div>
                                                     <div class="form-group">
                                                         <label><?= $escaper->escapeHtml($lang['Password']);?></label>
-                                                        <input type="password" class="form-control pass" id="pass" name="pass" required/>
+                                                        <div class="password-container">
+                                                            <input type="password" class="form-control pass" id="pass" name="pass" required />
+                                                            <span id="eye-icon"><i class="fa fa-eye"></i></span>
+                                                        </div>
                                                     </div>
 <?php
         // If the custom authentication extra is enabled
@@ -410,9 +437,33 @@ else {
     setup_alert_requirements("");
 ?>
     	<script>
-        	$(function() {
+            $(function() {
+
+                // Show the password when the eye icon is clicked
+                $("#eye-icon").on("mousedown", function() {
+
+                    // Change the password input type to text so the password is visible
+                    $("#pass").attr("type", "text");
+
+                    // Change the eye icon to an eye slash icon
+                    $("#eye-icon i").attr("class", "fa fa-eye-slash");
+
+                });
+    
+                // Hide the password when the eye icon is released or the mouse leaves the icon
+                $("#eye-icon").on("mouseup mouseleave", function() {
+
+                    // Change the password input type back to password so the password is hidden
+                    $("#pass").attr("type", "password");
+
+                    // Change the eye slash icon back to an eye icon
+                    $("#eye-icon i").attr("class", "fa fa-eye");
+
+                });
+                
         		// Fading out the preloader once everything is done rendering
         		$(".preloader").fadeOut();
+
             });
     	</script>
     </body>

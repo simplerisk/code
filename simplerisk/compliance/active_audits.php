@@ -18,6 +18,24 @@
     ?>
     </div>
 </div>
+<script>
+    $(function() {
+
+        // display custom display settings when clicking the setting cog button
+        $("[data-bs-target='#setting_modal-active_audits']").on('click', function() {
+
+            // Set false to all checkboxes
+            $(`form#custom_display_settings-active_audits [type='checkbox']`).prop('checked', false);
+
+            // Set true to checkboxes that are in the custom_display_settings array
+            custom_display_settings.map((e) => {
+                return $(`form#custom_display_settings-active_audits [name='${e}']`).prop('checked', true);
+            });
+            
+        });
+
+    });
+</script>
 <?php  
     // Render the footer of the page. Please don't put code after this part.
     render_footer();

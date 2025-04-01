@@ -8,6 +8,8 @@ use DOMElement;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\XML\Exception\InvalidDOMElementException;
 use SimpleSAML\XML\Exception\TooManyElementsException;
+use SimpleSAML\XML\SchemaValidatableElementInterface;
+use SimpleSAML\XML\SchemaValidatableElementTrait;
 
 use function array_pop;
 
@@ -16,8 +18,10 @@ use function array_pop;
  *
  * @package simplesamlphp/xml-security
  */
-class CipherData extends AbstractXencElement
+class CipherData extends AbstractXencElement implements SchemaValidatableElementInterface
 {
+    use SchemaValidatableElementTrait;
+
     /**
      * CipherData constructor.
      *

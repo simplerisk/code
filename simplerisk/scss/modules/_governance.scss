@@ -1,3 +1,65 @@
+//***************************** GOVERNANCE > DEFINE CONTROL FRAMEWORKS BEGIN *******************************//
+#active-controls {
+    .sorting_1{
+        padding: 0px;
+    }
+    
+    .control-content {
+        .control-longname,
+        .control-description,
+        .control-supplemental-guidance {
+            word-break: break-word;
+        }
+    }
+    
+    td{
+        vertical-align: top;
+    }
+}
+
+#framework-create-form,
+#framework-update-form,
+#add-control-form,
+#update-control-form {
+    .form-group {
+        &:last-of-type {
+            margin-bottom: 0;
+        }
+        
+        .multiselect-native-select {
+            display: inline-block;
+            width: 100%;
+    
+            &>.btn-group {
+                width: 100% !important;
+            }
+        }
+    }
+}
+
+#frameworks-tab-content {
+    .datagrid-htable {
+        td[field='actions'] {
+            text-align: center;
+        }
+    }
+}
+//****************************** GOVERNANCE > DEFINE CONTROL FRAMEWORKS END ********************************//
+
+//********************************* GOVERNANCE > DOCUMENT PROGRAM BEGIN ************************************//
+#documents-tab-content {
+    .datagrid-editable-input {
+        border-color: var(--bs-border-color) !important;
+    }
+    
+    .document--edit, 
+    .document--delete{
+        cursor: pointer;
+    }
+}
+//********************************** GOVERNANCE > DOCUMENT PROGRAM END *************************************//
+
+
 
 
 .custom-treegrid-container {
@@ -7,21 +69,7 @@
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 /*Leaving the old one in place in case we need something from there*/
-
-
 
 .control-block,
 .control-block-unassined {
@@ -86,22 +134,6 @@
     padding-left: 15px;      
   }
 }
-
-#active-controls{
-    .sorting_1{
-        padding: 0px;
-    }
-    
-    td{
-        vertical-align: top;
-    }
-}
-
-
-
-
-
-
 
 
 

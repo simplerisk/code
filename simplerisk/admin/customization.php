@@ -49,14 +49,17 @@
 			$encryption = get_param("POST", "encryption", 0);
 			$alphabetical_order = get_param("POST", "alphabetical_order", 0);
 			
-			if(!$id || !$name) {
+			if (!$id || !$name) {
 
 				// Display an alert
 				set_alert(true, "bad", $escaper->escapeHtml($lang['TheNameFieldIsRequired']));
 
 			} else {
-				if(update_custom_field($id, $name, $required, $encryption, $alphabetical_order)) {
+
+				if (update_custom_field($id, $name, $required, $encryption, $alphabetical_order)) {
+
 					set_alert(true, "good", $escaper->escapeHtml($lang['SuccessfullyUpdatedCustomField']));
+
 				}
 			}
 
@@ -97,16 +100,20 @@
 			$fgroup = get_param("POST", "fgroup", "risk");
 			$old_group = get_custom_template_group_by_name($name,$fgroup);
 
-			if(!$name) {
+			if (!$name) {
 
 				// Display an alert
 				set_alert(true, "bad", $escaper->escapeHtml($lang['TheNameFieldIsRequired']));
 
 			} else if ($old_group) { 
+
 				set_alert(true, "bad", $escaper->escapeHtml($lang['TheNameAlreadyExists']));
+
 			} else {
+
 				add_custom_template_group($name, $fgroup);
 				set_alert(true, "good", $escaper->escapeHtml($lang['AddedSuccess']));
+
 			}
 
 			refresh();
@@ -119,16 +126,20 @@
 			$fgroup = get_param("POST", "fgroup", "risk");
 			$old_group = get_custom_template_group_by_name($name,$fgroup);
 
-			if(!$id || !$name) {
+			if (!$id || !$name) {
 
 				// Display an alert
 				set_alert(true, "bad", $escaper->escapeHtml($lang['TheNameFieldIsRequired']));
 
-			} else if($old_group && $name == $old_group['name']) { 
+			} else if ($old_group && $name == $old_group['name']) { 
+				
 				set_alert(true, "bad", $escaper->escapeHtml($lang['TheNameAlreadyExists']));
+
 			} else {
+
 				update_custom_template_group($id, $name);
 				set_alert(true, "good", $escaper->escapeHtml($lang['SavedSuccess']));
+
 			}
 
 			refresh();
@@ -138,14 +149,16 @@
 
 			$id = get_param("POST", "custom_template_group");
 
-			if(!$id) {
+			if (!$id) {
 
 				// Display an alert
 				set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
 
 			} else {
+
 				delete_custom_template_group($id);
 				set_alert(true, "good", $escaper->escapeHtml($lang['DeletedSuccess']));
+
 			}
 
 			refresh();
@@ -156,17 +169,23 @@
 			$fgroup = get_param("POST", "fgroup");
 			$business_unit_ids = get_param("POST", "business_unit_ids");
 			
-			if(!$business_unit_ids) {
+			if (!$business_unit_ids) {
 
 				// Display an alert
 				set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
 
 			} else {
-				if(assign_template_to_business_unit($fgroup, $business_unit_ids)) {
+
+				if (assign_template_to_business_unit($fgroup, $business_unit_ids)) {
+
 					set_alert(true, "good", $escaper->escapeHtml($lang['SavedSuccess']));
+
 				} else {
+
 					set_alert(true, "bad", $escaper->escapeHtml($lang['UpdateFailed']));
+
 				}
+
 			}
 
 			refresh();
@@ -197,7 +216,7 @@
 					echo "
 						<div class='hero-unit'>
 							<form name='activate_extra' method='post' action=''>
-								<input type='submit' value='" . $escaper->escapeHtml($lang['Activate']) . "' name='activate' class='btn btn-submit'/>
+								<input type='submit' value='{$escaper->escapeHtml($lang['Activate'])}' name='activate' class='btn btn-submit'/>
 							</form>
 						</div>
 					";
@@ -233,12 +252,14 @@
 ?>
 <div class="row bg-white"> 
 	<div class="col-12">
-		<?php display(); ?>
+	<?php 
+		display(); 
+	?>
 	</div>
-	<script>
-		<?php prevent_form_double_submit_script(); ?>
-	</script>
 </div>
+<script>
+	<?php prevent_form_double_submit_script(); ?>
+</script>
 <?php
 	// Render the footer of the page. Please don't put code after this part.
 	render_footer();

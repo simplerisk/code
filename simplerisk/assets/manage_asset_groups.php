@@ -16,13 +16,13 @@
         <div>
             <nav class="nav nav-tabs">
                 <a class="btn btn-primary" id="asset-group-create-btn"><i class="fa fa-plus"></i></a>
-                <a class="nav-link active" id="asset-groups-tab" data-bs-target="#tb-asset-groups" data-bs-toggle="tab"><?php echo $escaper->escapeHtml($lang['AssetGroups']); ?> (<span id="asset-groups-count">0</span>)</a>
+                <a class="nav-link active" id="asset-groups-tab" data-bs-target="#tb-asset-groups" data-bs-toggle="tab"><?= $escaper->escapeHtml($lang['AssetGroups']); ?> (<span id="asset-groups-count">0</span>)</a>
             </nav>
         </div>
         <div class="tab-content">
             <div class="tab-pane active card-body border mt-2" id="tb-asset-groups" role="tabpanel" aria-labelledby="asset-groups-tab">
                 <div class="row">
-                    <div id="asset-groups" class="col-12 custom-treegrid-container">
+                    <div id="asset-groups" class="col-12 custom-treegrid-container manage-asset-groups-table-container">
                          <?php get_asset_groups_table(); ?>
                     </div>
                 </div>
@@ -37,18 +37,18 @@
         <div class="modal-content">
             <form id="asset-group-new-form" action="#" method="POST" autocomplete="off">
                 <div class="modal-header">
-                    <h5 class="modal-title"><?php echo $escaper->escapeHtml($lang['NewRisk']); ?></h5>
+                    <h5 class="modal-title"><?= $escaper->escapeHtml($lang['NewAssetGroup']); ?></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['AssetGroupName']); ?>:</label>
+                        <label for=""><?= $escaper->escapeHtml($lang['AssetGroupName']); ?><span class="required">*</span> :</label>
                         <input type="text" required name="name" value="" class="form-control" autocomplete="off">
                     </div>
                     <div class="form-group">
                         <div class="select-list-wrapper" >
                             <div class="select-list-available">
-                                <label for=""><?php echo $escaper->escapeHtml($lang['AvailableAssets']); ?>:</label>
+                                <label for=""><?= $escaper->escapeHtml($lang['AvailableAssets']); ?> :</label>
                                 <select multiple="multiple" class="form-control">
                                 </select>
                             </div>
@@ -59,7 +59,7 @@
                                 <input type='button' value='&lt;&lt;' class="btn btn-secondary btnAllLeft" />
                             </div>
                             <div class="select-list-selected">
-                                <label for=""><?php echo $escaper->escapeHtml($lang['SelectedAssets']); ?>:</label>
+                                <label for=""><?= $escaper->escapeHtml($lang['SelectedAssets']); ?> :</label>
                                 <select name="selected-asset-groups" multiple="multiple" class="form-control">
                                 </select>
                             </div>
@@ -67,8 +67,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> <?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                    <button type="submit" class="btn btn-submit"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> <?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                    <button type="submit" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Add']); ?></button>
                 </div>
             </form>
         </div>
@@ -82,18 +82,18 @@
             <form id="asset-group-update-form" class="" action="#" method="post" autocomplete="off">
                 <input type="hidden" class="asset_group_id" name="asset_group_id" value="">
                 <div class="modal-header">
-                    <h5 class="modal-title"><?php echo $escaper->escapeHtml($lang['AssetGroupUpdate']); ?></h5>
+                    <h5 class="modal-title"><?= $escaper->escapeHtml($lang['AssetGroupUpdate']); ?></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['AssetGroupName']); ?></label>
+                        <label for=""><?= $escaper->escapeHtml($lang['AssetGroupName']); ?><span class="required">*</span> :</label>
                         <input type="text" required name="name" value="" class="form-control" autocomplete="off">
                     </div>
                     <div class="form-group">
                         <div class="select-list-wrapper" >
                             <div class="select-list-available">
-                                <label for=""><?php echo $escaper->escapeHtml($lang['AvailableAssets']); ?>:</label>
+                                <label for=""><?= $escaper->escapeHtml($lang['AvailableAssets']); ?> :</label>
                                 <select multiple="multiple" class="form-control">
                                 </select>
                             </div>
@@ -104,7 +104,7 @@
                                 <input type='button' value='&lt;&lt;' class="btn btn-secondary btnAllLeft" />
                             </div>
                             <div class="select-list-selected">
-                                <label for=""><?php echo $escaper->escapeHtml($lang['SelectedAssets']); ?>:</label>
+                                <label for=""><?= $escaper->escapeHtml($lang['SelectedAssets']); ?> :</label>
                                 <select name="selected-asset-groups" multiple="multiple" class="form-control">
                                 </select>
                             </div>
@@ -112,8 +112,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                    <button type="submit" class="btn btn-submit"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                    <button type="submit" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Update']); ?></button>
                 </div>
             </form>
         </div>
@@ -127,12 +127,12 @@
             <form class="" id="asset-group-delete-form" action="" method="post">
                 <div class="modal-body">
                     <div class="form-group text-center">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisAssetGroup']); ?></label>
+                        <label for=""><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisAssetGroup']); ?></label>
                         <input type="hidden" name="asset_group_id" value="" />
                     </div>
                     <div class="form-group text-center">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                        <button type="submit" class="btn btn-submit"><?php echo $escaper->escapeHtml($lang['Yes']); ?></button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                        <button type="submit" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
                     </div>
                 </div>
             </form>
@@ -147,13 +147,13 @@
             <form class="" id="asset-remove-form" action="" method="post">
                 <div class="modal-body">
                     <div class="form-group text-center">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['AreYouSureYouWantToRemoveThisAsset']); ?></label>
+                        <label for=""><?= $escaper->escapeHtml($lang['AreYouSureYouWantToRemoveThisAsset']); ?></label>
                         <input type="hidden" name="asset_group_id" value="" />
                         <input type="hidden" name="asset_id" value="" />
                     </div>
                     <div class="form-group text-center">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                        <button type="submit" class="btn btn-submit"><?php echo $escaper->escapeHtml($lang['Yes']); ?></button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                        <button type="submit" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
                     </div>
                 </div>
             </form>
@@ -215,6 +215,10 @@
     }
 
     $(document).ready(function(){
+
+        // variable which is used to prevent multiple form submissions
+        var loading = false;
+
         $("#asset-group-create-btn").click(function(event) {
             event.preventDefault();
 
@@ -316,7 +320,16 @@
 
         $("#asset-group-delete-form").submit(function(event) {
             event.preventDefault();
+
+            // prevent multiple form submissions
+            if (loading) {
+                return;
+            }
+
             var data = new FormData($('#asset-group-delete-form')[0]);
+            
+            // set the loading to true to prevent form submission
+            loading = true;
 
             $.ajax({
                 type: "POST",
@@ -332,6 +345,10 @@
                     }
 
                     $('#asset-group--delete').modal('hide');
+
+                    // set loading to false to allow form submission
+                    loading = false;
+
                     $('#asset-group-delete-form')[0].reset();
 
                     var tree = $('#asset-groups-table');
@@ -345,6 +362,10 @@
                             showAlertsFromArray(xhr.responseJSON.status_message);
                         }
                     }
+
+                    // set loading to false to allow form submission
+                    loading = false;
+
                 }
             });
 
@@ -354,9 +375,17 @@
         $("#asset-remove-form").submit(function(event) {
             event.preventDefault();
 
+            // prevent multiple form submissions
+            if (loading) {
+                return;
+            }
+
             var data = new FormData($('#asset-remove-form')[0]);
             var asset_group_id = $("#asset-remove-form [name='asset_group_id']").val();
             var asset_id = $("#asset-remove-form [name='asset_id']").val();
+
+            // set the loading to true to prevent form submission
+            loading = true;
 
             $.ajax({
                 type: "POST",
@@ -372,6 +401,10 @@
                     }
 
                     $('#asset--remove').modal('hide');
+
+                    // set loading to false to allow form submission
+                    loading = false;
+
                     $('#asset-remove-form')[0].reset();
 
                     $("tr[node-id='" + asset_id + "-" + asset_group_id + "']").remove();
@@ -383,6 +416,10 @@
                             showAlertsFromArray(xhr.responseJSON.status_message);
                         }
                     }
+
+                    // set loading to false to allow form submission
+                    loading = false;
+
                 }
             });
 

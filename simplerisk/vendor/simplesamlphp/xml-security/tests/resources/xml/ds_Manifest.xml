@@ -1,4 +1,4 @@
-<ds:Manifest xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="abc123">
+<ds:Manifest xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="def456">
   <ds:Reference Id="abc123" Type="http://www.w3.org/2000/09/xmldsig#Manifest" URI="#_1e280ee704fb1d8d9dec4bd6c1889ec96942921153">
     <ds:Transforms>
       <ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" />

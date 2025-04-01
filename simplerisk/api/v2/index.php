@@ -37,6 +37,7 @@ if (api_v2_is_authenticated())
     app()->get('/admin/version', 'api_v2_admin_version');
     app()->get('/admin/version/app', 'api_v2_admin_version_app');
     app()->get('/admin/version/db', 'api_v2_admin_version_db');
+    app()->post('/admin/upgrade/db', 'api_v2_admin_upgrade_db');
     app()->get('/admin/write_debug_log', 'api_v2_admin_write_debug_log');
     app()->delete('/admin/tag', 'api_v2_admin_tag_delete');
     app()->delete('/admin/tag/all', 'api_v2_admin_tag_delete_all');
@@ -54,6 +55,7 @@ if (api_v2_is_authenticated())
     app()->get('/governance/controls', 'api_v2_governance_controls');
     app()->get('/governance/controls/associations', 'api_v2_governance_controls_associations');
     app()->get('/governance/documents', 'api_v2_governance_documents');
+    app()->delete('/governance/documents', 'api_v2_governance_documents_delete');
     app()->get('/governance/documents/associations', 'api_v2_governance_documents_associations');
 
     // SimpleRisk Risk Routes
@@ -326,6 +328,13 @@ if (api_v2_is_authenticated())
     app()->post('/get/datatable', 'getDatatableAPI');
     /*************************** DATATABLE API END ********************************/
 
+    /************************** UI LAYOUT API BEGIN *******************************/
+    app()->post('/ui/layout', 'api_save_ui_layout');
+    app()->get('/ui/layout', 'api_get_ui_layout');
+    app()->get('/ui/widget', 'api_get_ui_widget');
+    app()->post('/ui/default_layout', 'api_update_default_status');
+    /*************************** UI LAYOUT API END ********************************/
+
     /************************** SIMPLERISK EXTRAS APIS ************************************/
 
     // If the Advanced Search Extra is enabled
@@ -359,6 +368,23 @@ if (api_v2_is_authenticated())
 
             // Get the api routes
             get_api_routes();
+        }
+    }
+
+    // If the Artificial Intelligence Extra is enabled
+    if (artificial_intelligence_extra())
+    {
+        // Required file
+        $required_file = realpath(__DIR__ . '/../../extras/artificial_intelligence/includes/api.php');
+
+        // If the file exists
+        if (file_exists($required_file))
+        {
+            // Include the required file
+            require_once($required_file);
+
+            // Get the artificial intelligence routes
+            get_artificial_intelligence_routes();
         }
     }
 

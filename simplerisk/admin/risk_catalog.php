@@ -1,51 +1,35 @@
 <?php
-/* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this
-* file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+    /* This Source Code Form is subject to the terms of the Mozilla Public
+    * License, v. 2.0. If a copy of the MPL was not distributed with this
+    * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Render the header and sidebar
-require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['tabs:logic', 'easyui', 'datatables' ,'datatables:rowgroup', 'datatables:rowreorder'], ['check_admin' => true]);
+    // Render the header and sidebar
+    require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+    render_header_and_sidebar(['tabs:logic', 'easyui', 'datatables' ,'datatables:rowgroup', 'datatables:rowreorder', 'CUSTOM:common.js'], ['check_admin' => true]);
 
 ?>
 <div class="row risk_thread_catalog">
     <div class="col-12">
         <div class="mt-2">
             <nav class="nav nav-tabs">
-                <a class="nav-link active" id="riskcatalog-tab" data-bs-toggle="tab" data-bs-target="#riskcatalog" type="button" role="tab" aria-controls="riskcatalog" aria-selected="true">
-                    <?= $escaper->escapeHtml($lang['RiskCatalog']); ?> 
-                </a>
-                <a class="nav-link" id="threatcatalog-tab" data-bs-toggle="tab" data-bs-target="#threatcatalog" type="button" role="tab" aria-controls="threatcataloga" aria-selected="false">
-                    <?= $escaper->escapeHtml($lang['ThreatCatalog']); ?>
-                </a>
+                <a class="nav-link active" id="riskcatalog-tab" data-bs-toggle="tab" data-bs-target="#riskcatalog" type="button" role="tab" aria-controls="riskcatalog" aria-selected="true"><?= $escaper->escapeHtml($lang['RiskCatalog']); ?></a>
+                <a class="nav-link" id="threatcatalog-tab" data-bs-toggle="tab" data-bs-target="#threatcatalog" type="button" role="tab" aria-controls="threatcataloga" aria-selected="false"><?= $escaper->escapeHtml($lang['ThreatCatalog']); ?></a>
             </nav>
         </div>
         <div class="tab-content cust-tab-content" id="content" >
             <div class="tab-pane active settings_tab card-body my-2 border" id="riskcatalog" role="tabpanel" aria-labelledby="general-tab">
                 <div class="text-end mb-1">
-                    <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#risk-catalog--add"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
+                    <button type="button" class="btn btn-dark add_risk_catalog"><?= $escaper->escapeHtml($lang['Add']); ?></button>
                 </div>
-                <table class="table risk-datatable table-bordered table-striped table-condensed " width="100%" id="risk_catalog" >
+                <table class="table table-bordered table-striped table-condensed" width="100%" id="risk_catalog" >
                     <thead>
                         <tr>
-                            <th width="15%">
-                                <?php echo $escaper->escapeHtml($lang['RiskGrouping']);?>
-                            </th>
-                            <th width="10%">
-                                <?php echo $escaper->escapeHtml($lang['Risk']);?>
-                            </th>
-                            <th width="25%">
-                                <?php echo $escaper->escapeHtml($lang['RiskEvent']);?> 
-                            </th>
-                            <th>
-                                <?php echo $escaper->escapeHtml($lang['Description']);?>
-                            </th>
-                            <th style="width: 40px; max-width: 40px;">
-                                <?php echo $escaper->escapeHtml($lang['Function']);?>
-                            </th>
-                            <th style="width: 80px; max-width: 80px;">
-                                <?php echo $escaper->escapeHtml($lang['Actions']);?>
-                            </th>
+                            <th width="15%"><?= $escaper->escapeHtml($lang['RiskGrouping']);?></th>
+                            <th width="10%"><?= $escaper->escapeHtml($lang['Risk']);?></th>
+                            <th width="25%"><?= $escaper->escapeHtml($lang['RiskEvent']);?></th>
+                            <th><?= $escaper->escapeHtml($lang['Description']);?></th>
+                            <th width="10%"><?= $escaper->escapeHtml($lang['Function']);?></th>
+                            <th width="10%" class="text-center"><?= $escaper->escapeHtml($lang['Actions']);?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -54,16 +38,16 @@ render_header_and_sidebar(['tabs:logic', 'easyui', 'datatables' ,'datatables:row
             </div>
             <div class="tab-pane card-body my-2 border" id="threatcatalog" role="tabpanel" aria-labelledby="threatcatalog-tab">
                 <div class="text-end mb-1">
-                    <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#threat-catalog--add"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
+                    <button type="button" class="btn btn-dark add_threat_catalog"><?= $escaper->escapeHtml($lang['Add']); ?></button>
                 </div>
-                <table class="table risk-datatable table-bordered table-striped table-condensed  " width="100%" id="threat_catalog" >
+                <table class="table table-bordered table-striped table-condensed" width="100%" id="threat_catalog" >
                     <thead >
                         <tr>
-                            <th width="15%"><?php echo $escaper->escapeHtml($lang['ThreatGrouping']);?></th>
-                            <th width="10%"><?php echo $escaper->escapeHtml($lang['Threat']);?></th>
-                            <th width="25%"><?php echo $escaper->escapeHtml($lang['ThreatEvent']);?></th>
-                            <th><?php echo $escaper->escapeHtml($lang['Description']);?></th>
-                            <th style="width: 80px; max-width: 80px;"><?php echo $escaper->escapeHtml($lang['Actions']);?></th>
+                            <th width="15%"><?= $escaper->escapeHtml($lang['ThreatGrouping']);?></th>
+                            <th width="10%"><?= $escaper->escapeHtml($lang['Threat']);?></th>
+                            <th width="25%"><?= $escaper->escapeHtml($lang['ThreatEvent']);?></th>
+                            <th><?= $escaper->escapeHtml($lang['Description']);?></th>
+                            <th width="10%" class="text-center"><?= $escaper->escapeHtml($lang['Actions']);?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -76,202 +60,210 @@ render_header_and_sidebar(['tabs:logic', 'easyui', 'datatables' ,'datatables:row
 
 <!-- MODEL WINDOW FOR ADDING RISK CATALOG -->
 <div id="risk-catalog--add" class="modal fade no-padding" tabindex="-1" aria-labelledby="risk-catalog--add" aria-hidden="true">
-    <form class="" id="risk_catalog_add_form" action="#" method="post" autocomplete="off">
-        <div class="modal-dialog-scrollable modal-dialog-centered modal-dialog modal-md">
-            <div class="modal-content">
+    <div class="modal-dialog-scrollable modal-dialog-centered modal-dialog modal-md">
+        <div class="modal-content">
+            <form class="" id="risk_catalog_add_form" action="#" method="post" autocomplete="off">
                 <div class="modal-header">
-                    <h5 class="modal-title"><?php echo $escaper->escapeHtml($lang['NewRisk']); ?></h5>
+                    <h5 class="modal-title"><?= $escaper->escapeHtml($lang['NewRisk']); ?></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['RiskGrouping']); ?></label>
-                        <?php create_dropdown("risk_grouping"); ?>
+                        <label for=""><?= $escaper->escapeHtml($lang['RiskGrouping']); ?> :</label>
+    <?php 
+                        create_dropdown("risk_grouping"); 
+    ?>
                     </div>
                     <div class="form-group">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['Risk']); ?></label>
-                        <input type="text" name="number" id="number" value="" class="form-control" autocomplete="off" maxlength="20" required>
+                        <label for=""><?= $escaper->escapeHtml($lang['Risk']); ?><span class="required">*</span> :</label>
+                        <input type="text" name="number" id="number" value="" class="form-control" autocomplete="off" maxlength="20" required title="<?= $escaper->escapeHtml($lang['Risk']); ?>">
                     </div>
                     <div class="form-group">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['RiskEvent']); ?></label>
-                        <input type="text" name="name" id="name" value="" class="form-control" autocomplete="off" maxlength="1000" required>
+                        <label for=""><?= $escaper->escapeHtml($lang['RiskEvent']); ?><span class="required">*</span> :</label>
+                        <input type="text" name="name" id="name" value="" class="form-control" autocomplete="off" maxlength="1000" required title="<?= $escaper->escapeHtml($lang['RiskEvent']); ?>">
                     </div>
                     <div class="form-group">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['Description']); ?></label>
-                        <textarea name="description" id="description" value="" class="form-control" rows="6" style="width:100%;"></textarea>
+                        <label for=""><?= $escaper->escapeHtml($lang['Description']); ?> :</label>
+                        <textarea name="description" id="description" value="" class="form-control" rows="6"></textarea>
                     </div>
                     <div class="form-group">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['Function']); ?></label>
-                        <?php create_dropdown("risk_function"); ?>
+                        <label for=""><?= $escaper->escapeHtml($lang['Function']); ?> :</label>
+    <?php 
+                        create_dropdown("risk_function"); 
+    ?>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                    <button type="submit" class="btn btn-submit"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                    <button type="submit" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Add']); ?></button>
                 </div>
-            </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
+
 <!-- MODEL WINDOW FOR ADDING THREAT CATALOG -->
 <div id="threat-catalog--add" class="modal fade no-padding" tabindex="-1" aria-labelledby="threat-catalog--add" aria-hidden="true">
-        <form class="" id="threat_catalog_add_form" action="#" method="post" autocomplete="off">
-            <div class="modal-dialog-scrollable modal-dialog-centered modal-dialog modal-md">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title"><?php echo $escaper->escapeHtml($lang['NewThreat']); ?></h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog-scrollable modal-dialog-centered modal-dialog modal-md">
+        <div class="modal-content">
+            <form class="" id="threat_catalog_add_form" action="#" method="post" autocomplete="off">
+                <div class="modal-header">
+                    <h5 class="modal-title"><?= $escaper->escapeHtml($lang['NewThreat']); ?></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for=""><?= $escaper->escapeHtml($lang['ThreatGrouping']); ?> :</label>
+    <?php 
+                        create_dropdown("threat_grouping"); 
+    ?>
                     </div>
-                    <div class="modal-body">
-                        <div class="form-group">
-                                <label for=""><?php echo $escaper->escapeHtml($lang['ThreatGrouping']); ?></label>
-                                <?php create_dropdown("threat_grouping"); ?>
-                        </div>
-                        <div class="form-group">
-                                <label for=""><?php echo $escaper->escapeHtml($lang['Threat']); ?></label>
-                                <input type="text" name="number" id="number" value="" class="form-control" autocomplete="off" maxlength="20" required>
-                        </div>
-                        <div class="form-group">
-                                <label for=""><?php echo $escaper->escapeHtml($lang['ThreatEvent']); ?></label>
-                                <input type="text" name="name" id="name" value="" class="form-control" autocomplete="off" maxlength="1000" required>
-                        </div>
-                        <div class="form-group">
-                                <label for=""><?php echo $escaper->escapeHtml($lang['Description']); ?></label>
-                                <textarea name="description" id="description" value="" class="form-control" rows="6" style="width:100%;"></textarea>
-                        </div>
+                    <div class="form-group">
+                        <label for=""><?= $escaper->escapeHtml($lang['Threat']); ?><span class="required">*</span> :</label>
+                        <input type="text" name="number" id="number" value="" class="form-control" autocomplete="off" maxlength="20" required title="<?= $escaper->escapeHtml($lang['Threat']); ?>">
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                        <button type="submit" class="btn btn-submit"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
+                    <div class="form-group">
+                        <label for=""><?= $escaper->escapeHtml($lang['ThreatEvent']); ?><span class="required">*</span> :</label>
+                        <input type="text" name="name" id="name" value="" class="form-control" autocomplete="off" maxlength="1000" required title="<?= $escaper->escapeHtml($lang['ThreatEvent']); ?>">
+                    </div>
+                    <div class="form-group">
+                        <label for=""><?= $escaper->escapeHtml($lang['Description']); ?> :</label>
+                        <textarea name="description" id="description" value="" class="form-control" rows="6"></textarea>
                     </div>
                 </div>
-            </div>
-        </form>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                    <button type="submit" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Add']); ?></button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+
 <!-- MODEL WINDOW FOR EDIT RISK CATALOG -->
 <div id="risk-catalog--edit" class="modal fade no-padding" tabindex="-1" aria-labelledby="risk-catalog--edit" aria-hidden="true">
-    <form class="" id="risk_catalog_edit_form" action="#" method="post" autocomplete="off">
-        <div class="modal-dialog-scrollable modal-dialog-centered modal-dialog modal-md">
-            <div class="modal-content">
+    <div class="modal-dialog-scrollable modal-dialog-centered modal-dialog modal-md">
+        <div class="modal-content">
+            <form class="" id="risk_catalog_edit_form" action="#" method="post" autocomplete="off">
+                <input type="hidden" name="id" id="id" value="">
                 <div class="modal-header">
-                    <h5 class="modal-title"><?php echo $escaper->escapeHtml($lang['EditRisk']); ?></h5>
+                    <h5 class="modal-title"><?= $escaper->escapeHtml($lang['EditRisk']); ?></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['RiskGrouping']); ?></label>
-                        <?php create_dropdown("risk_grouping") ?>
+                        <label for=""><?= $escaper->escapeHtml($lang['RiskGrouping']); ?> :</label>
+    <?php 
+                        create_dropdown("risk_grouping") 
+    ?>
                     </div>
                     <div class="form-group">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['Risk']); ?></label>
-                        <input type="text" name="number" id="number" value="" class="form-control" autocomplete="off" maxlength="20" required>
+                        <label for=""><?= $escaper->escapeHtml($lang['Risk']); ?><span class="required">*</span> :</label>
+                        <input type="text" name="number" id="number" value="" class="form-control" autocomplete="off" maxlength="20" required title="<?= $escaper->escapeHtml($lang['Risk']); ?>">
                     </div>
                     <div class="form-group">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['RiskEvent']); ?></label>
-                        <input type="text" name="name" id="name" value="" class="form-control" autocomplete="off" maxlength="1000" required>
+                        <label for=""><?= $escaper->escapeHtml($lang['RiskEvent']); ?><span class="required">*</span> :</label>
+                        <input type="text" name="name" id="name" value="" class="form-control" autocomplete="off" maxlength="1000" required title="<?= $escaper->escapeHtml($lang['RiskEvent']); ?>">
                     </div>
                     <div class="form-group">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['Description']); ?></label>
-                        <textarea name="description" id="description" value="" class="form-control" rows="6" style="width:100%;"></textarea>
+                        <label for=""><?= $escaper->escapeHtml($lang['Description']); ?> :</label>
+                        <textarea name="description" id="description" value="" class="form-control" rows="6"></textarea>
                     </div>
                     <div class="form-group">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['Function']); ?></label>
-                        <?php create_dropdown("risk_function") ?>
-                        <input type="hidden" name="id" id="id" value="">
+                        <label for=""><?= $escaper->escapeHtml($lang['Function']); ?> :</label>
+    <?php 
+                        create_dropdown("risk_function") 
+    ?>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                    <button type="submit" class="btn btn-submit"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                    <button type="submit" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Update']); ?></button>
                 </div>
-            </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
+
 <!-- MODEL WINDOW FOR EDIT THREAT CATALOG -->
 <div id="threat-catalog--edit" class="modal fade no-padding" tabindex="-1"aria-labelledby="threat-catalog--edit" aria-hidden="true">
-    <form class="" id="threat_catalog_edit_form" action="#" method="post" autocomplete="off">
-        <div class="modal-dialog-scrollable modal-dialog-centered modal-dialog modal-md">
-            <div class="modal-content">        
+    <div class="modal-dialog-scrollable modal-dialog-centered modal-dialog modal-md">
+        <div class="modal-content">        
+            <form class="" id="threat_catalog_edit_form" action="#" method="post" autocomplete="off">
+                <input type="hidden" name="id" id="id" value="">
                 <div class="modal-header">
-                    <h5 class="modal-title"><?php echo $escaper->escapeHtml($lang['EditThreat']); ?></h5>
+                    <h5 class="modal-title"><?= $escaper->escapeHtml($lang['EditThreat']); ?></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['ThreatGrouping']); ?></label>
-                        <?php create_dropdown("threat_grouping") ?>
+                        <label for=""><?= $escaper->escapeHtml($lang['ThreatGrouping']); ?> :</label>
+    <?php 
+                        create_dropdown("threat_grouping") 
+    ?>
                     </div>
                     <div class="form-group">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['Threat']); ?></label>
-                        <input type="text" name="number" id="number" value="" class="form-control" autocomplete="off" maxlength="20" required>
+                        <label for=""><?= $escaper->escapeHtml($lang['Threat']); ?><span class="required">*</span> :</label>
+                        <input type="text" name="number" id="number" value="" class="form-control" autocomplete="off" maxlength="20" required title="<?= $escaper->escapeHtml($lang['Threat']); ?>">
                     </div>
                     <div class="form-group">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['ThreatEvent']); ?></label>
-                        <input type="text" name="name" id="name" value="" class="form-control" autocomplete="off" maxlength="1000" required>
+                        <label for=""><?= $escaper->escapeHtml($lang['ThreatEvent']); ?><span class="required">*</span> :</label>
+                        <input type="text" name="name" id="name" value="" class="form-control" autocomplete="off" maxlength="1000" required title="<?= $escaper->escapeHtml($lang['ThreatEvent']); ?>">
                     </div>
                     <div class="form-group">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['Description']); ?></label>
-                        <textarea name="description" id="description" value="" class="form-control" rows="6" style="width:100%;"></textarea>
-                        <input type="hidden" name="id" id="id" value="">
+                        <label for=""><?= $escaper->escapeHtml($lang['Description']); ?> :</label>
+                        <textarea name="description" id="description" value="" class="form-control" rows="6"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                    <button type="submit" class="btn btn-submit"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                    <button type="submit" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Update']); ?></button>
                 </div>
-            </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
+
 <!-- MODEL WINDOW FOR RISK CATALOG DELETE CONFIRM -->
 <div id="risk-catalog--delete" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="risk-catalog--delete" aria-hidden="true">
-    <form class="" id="risk_catalog_delete_form" action="" method="post">
-        <div class="modal-dialog-scrollable modal-dialog-centered modal-dialog modal-md">
-            <div class="modal-content"> 
+    <div class="modal-dialog-scrollable modal-dialog-centered modal-dialog modal-md">
+        <div class="modal-content"> 
+            <form class="" id="risk_catalog_delete_form" action="" method="post">
+                <input type="hidden" class="delete-id" name="id" value="" />
                 <div class="modal-body">
                     <div class="form-group text-center">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisRiskCatalog']); ?></label>
-                        <input type="hidden" class="delete-id" name="id" value="" />
+                        <label for=""><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisRiskCatalog']); ?></label>
                     </div>
                     <div class="form-group text-center control-delete-actions">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                        <button type="submit" name="delete_control" class="delete_control btn btn-submit"><?php echo $escaper->escapeHtml($lang['Yes']); ?></button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                        <button type="submit" name="delete_control" class="delete_control btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
                     </div>
                 </div>
-            </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
+
 <!-- MODEL WINDOW FOR THREAT CATALOG DELETE CONFIRM -->
 <div id="threat-catalog--delete" class="modal fade" tabindex="-1"  aria-labelledby="threat-catalog--delete" aria-hidden="true">
-    <form class="" id="threat_catalog_delete_form" action="" method="post">
-        <div class="modal-dialog-scrollable modal-dialog-centered modal-dialog modal-md">
-            <div class="modal-content"> 
+    <div class="modal-dialog-scrollable modal-dialog-centered modal-dialog modal-md">
+        <div class="modal-content"> 
+            <form class="" id="threat_catalog_delete_form" action="" method="post">
+                <input type="hidden" class="delete-id" name="id" value="" />
                 <div class="modal-body">
                     <div class="form-group text-center">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisThreatCatalogItem']); ?></label>
-                        <input type="hidden" class="delete-id" name="id" value="" />
+                        <label for=""><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisThreatCatalogItem']); ?></label>
                     </div>
-
                     <div class="form-group text-center control-delete-actions">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                        <button type="submit" name="delete_control" class="delete_control btn btn-submit"><?php echo $escaper->escapeHtml($lang['Yes']); ?></button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                        <button type="submit" name="delete_control" class="delete_control btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
                     </div>
                 </div>
-            </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
-<style> 
-    .modal input[type="text"], .modal textarea.form-control, .modal select.form-select {
-        max-width: 100%;
-    }
+<style>
     #risk_catalog_wrapper .paginate, #threat_catalog_wrapper .paginate {
         display: none;
     }
@@ -326,7 +318,7 @@ render_header_and_sidebar(['tabs:logic', 'easyui', 'datatables' ,'datatables:row
                 {
                     data: 'number',
                     render: function(data, type, row, meta) {
-                    return '<span class="grippy"></span>' + data;
+                    return '<div class="d-flex align-items-center"><span class="grippy"></span>' + data + '</div>';
                     }
                 },
                 {
@@ -339,7 +331,10 @@ render_header_and_sidebar(['tabs:logic', 'easyui', 'datatables' ,'datatables:row
                     data: 'function_name'
                 },
                 {
-                    data: 'actions'
+                    data: 'actions',
+                    render: function(data, type, row, meta) {
+                        return '<div class="text-center">' + data + '</div>';
+                    }
                 },
             ],
             createdRow: function (row, data, dataIndex) {
@@ -362,7 +357,14 @@ render_header_and_sidebar(['tabs:logic', 'easyui', 'datatables' ,'datatables:row
                         
                         return $("<tr data-group_id= '" + row.group_id + "'/>")
                             .append('<td colspan="4">' + group + ' (' + rows.count() + ')</td>' )
-                            .append("<td><button type='button' class='btn btn-secondary btn-small move-group move-group-up'><i class='fas fa-arrow-up'></i></button><button type='button' class='btn btn-secondary btn-small move-group move-group-down'><i class='fas fa-arrow-down'></i></button></td>");
+                            .append(`
+                                <td>
+                                    <div class='text-center'>
+                                        <button type='button' class='btn btn-secondary btn-small move-group move-group-up'><i class='fas fa-arrow-up'></i></button>
+                                        <button type='button' class='btn btn-secondary btn-small move-group move-group-down'><i class='fas fa-arrow-down'></i></button>
+                                    </div>
+                                </td>
+                            `);
                     }
                 }
             },
@@ -440,7 +442,7 @@ render_header_and_sidebar(['tabs:logic', 'easyui', 'datatables' ,'datatables:row
                 {
                     data: 'number',
                     render: function(data, type, row, meta) {
-                    return '<span class="grippy"></span>' + data;
+                    return '<div class="d-flex align-items-center"><span class="grippy"></span>' + data + '</div>';
                     }
                 },
                 {
@@ -450,7 +452,10 @@ render_header_and_sidebar(['tabs:logic', 'easyui', 'datatables' ,'datatables:row
                     data: 'description'
                 },
                 {
-                    data: 'actions'
+                    data: 'actions',
+                    render: function(data, type, row, meta) {
+                        return '<div class="text-center">' + data + '</div>';
+                    }
                 },
             ],
             createdRow: function (row, data, dataIndex) {
@@ -473,7 +478,14 @@ render_header_and_sidebar(['tabs:logic', 'easyui', 'datatables' ,'datatables:row
                         
                         return $("<tr data-group_id= '" + row.group_id + "'/>")
                             .append('<td colspan="3">' + group + ' (' + rows.count() + ')</td>' )
-                            .append("<td><button type='button' class='btn btn-secondary btn-small move-group move-group-up'><i class='fas fa-arrow-up'></i></button><button type='button' class='btn btn-secondary btn-small move-group move-group-down'><i class='fas fa-arrow-down'></i></button></td>");
+                            .append(`
+                                <td>
+                                    <div class='text-center'>
+                                        <button type='button' class='btn btn-secondary btn-small move-group move-group-up'><i class='fas fa-arrow-up'></i></button>
+                                        <button type='button' class='btn btn-secondary btn-small move-group move-group-down'><i class='fas fa-arrow-down'></i></button>
+                                    </div>
+                                </td>
+                            `);
                     }
                 }
             },
@@ -601,10 +613,42 @@ render_header_and_sidebar(['tabs:logic', 'easyui', 'datatables' ,'datatables:row
             $('#threat-catalog--delete').modal('show');
         });
 
+        // Open add risk catalog modal
+        $(document).on('click', '.add_risk_catalog', function() {
+
+            // Reset the add risk catalog form
+            resetForm('#risk_catalog_add_form', false);
+
+            // Show the add risk catalog modal
+            $('#risk-catalog--add').modal('show');
+
+        });
+
+        // the variable which is used for preventing the form from double submitting
+        var loading = false;
+
         // Add risk catalog form event
         $("#risk_catalog_add_form").submit(function(){
+        
+            // prevent the form from submitting
+            event.preventDefault();
+
+            // if not received ajax response, don't submit again
+            if (loading) {
+                return
+            }
+
+            // Check empty/trimmed empty valiation for the required fields 
+			if (!checkAndSetValidation(this)) {
+				return;
+			}
+
             var form = $(this);
             var form_data = new FormData(form[0]);
+
+            // the ajax request is sent
+            loading = true;
+
             $.ajax({
                 type: "POST",
                 url: BASE_URL + "/api/admin/risk_catalog/add_risk_catalog",
@@ -623,6 +667,10 @@ render_header_and_sidebar(['tabs:logic', 'easyui', 'datatables' ,'datatables:row
                     $("[name=risk_function]", form).prop('selectedIndex',0);
                     $('#risk-catalog--add').modal('hide');
                     risk_table.ajax.reload(null, false);
+
+                    // the response is received
+                    loading = false;
+
                 }
             })
             .fail(function(xhr, textStatus){
@@ -632,14 +680,47 @@ render_header_and_sidebar(['tabs:logic', 'easyui', 'datatables' ,'datatables:row
                         showAlertsFromArray(xhr.responseJSON.status_message);
                     }
                 }
+
+                // the response is received
+                loading = false;
+                
             });
             return false;
         });
 
+        // Open add threat catalog modal
+        $(document).on('click', '.add_threat_catalog', function() {
+
+            // Reset the add risk catalog form
+            resetForm('#threat_catalog_add_form', false);
+
+            // Show the add risk catalog modal
+            $('#threat-catalog--add').modal('show');
+
+        });
+
         // Add threat catalog form event
         $("#threat_catalog_add_form").submit(function(){
+
+            // prevent the form from submitting
+            event.preventDefault();
+
+            // if not received ajax response, don't submit again
+            if (loading) {
+                return
+            }
+            
+            // Check empty/trimmed empty valiation for the required fields 
+            if (!checkAndSetValidation(this)) {
+                return;
+            }
+
             var form = $(this);
             var form_data = new FormData(form[0]);
+
+            // the ajax request is sent
+            loading = true;
+
             $.ajax({
                 type: "POST",
                 url: BASE_URL + "/api/admin/threat_catalog/add_threat_catalog",
@@ -657,6 +738,10 @@ render_header_and_sidebar(['tabs:logic', 'easyui', 'datatables' ,'datatables:row
                     $("[name=threat_grouping]", form).prop('selectedIndex',0);
                     $('#threat-catalog--add').modal('hide');
                     threat_table.ajax.reload(null, false);
+
+                    // the response is received
+                    loading = false;
+
                 }
             })
             .fail(function(xhr, textStatus){
@@ -666,12 +751,24 @@ render_header_and_sidebar(['tabs:logic', 'easyui', 'datatables' ,'datatables:row
                         showAlertsFromArray(xhr.responseJSON.status_message);
                     }
                 }
+
+                // the response is received
+                loading = false;
+
             });
             return false;
         });
 
         // edit risk catalog form event
-        $("#risk_catalog_edit_form").submit(function(){
+        $("#risk_catalog_edit_form").submit(function(event){
+            
+            event.preventDefault();
+
+            // Check empty/trimmed empty valiation for the required fields 
+            if (!checkAndSetValidation(this)) {
+                return;
+            }
+            
             var form = $(this);
             var form_data = new FormData(form[0]);
             $.ajax({
@@ -704,7 +801,15 @@ render_header_and_sidebar(['tabs:logic', 'easyui', 'datatables' ,'datatables:row
         });
 
         // edit threat catalog form event
-        $("#threat_catalog_edit_form").submit(function(){
+        $("#threat_catalog_edit_form").submit(function(event){
+            
+            event.preventDefault();
+
+			// Check empty/trimmed empty valiation for the required fields 
+			if (!checkAndSetValidation(this)) {
+				return;
+			}
+
             var form = $(this);
             var form_data = new FormData(form[0]);
             $.ajax({

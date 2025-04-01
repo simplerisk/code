@@ -1,0 +1,149 @@
+/******** Gridstack.js ********/
+section.gridstack {
+    padding: 0 2rem;
+
+    .layout_toolbar {
+
+        margin: 1rem 0;
+
+        .hide {
+            display: none !important;
+        }
+
+        .save-info {
+            padding: .5rem 1rem;
+            margin: unset;
+        }
+
+        .add_widget.disabled {
+            opacity: .5;
+            pointer-events: none;
+        }
+
+        .settings {
+            .dropdown-menu {
+                --bs-dropdown-divider-bg: var(--bs-dropdown-border-color);
+
+                hr.dropdown-divider {
+                    width: 100%;
+                }
+            }
+
+            .btn {
+                --bs-btn-font-size: 1.2rem;
+            }
+
+            .edit-mode-dropdown {
+
+                padding: 10px;
+
+                &.dropdown-menu.show {
+                    display: flex !important;
+                    flex-direction: column;
+                    flex-wrap: wrap;
+                    align-content: center;
+                    justify-content: center;
+                    align-items: center;
+
+                    .dropdown-header {
+                        font-weight: bold !important;
+                        padding: unset;
+                        font-size: inherit;
+                        color: var(--bs-dropdown-color);
+                    }
+                }
+            }
+        }
+
+        .switch-widget {
+
+            label {
+                cursor: pointer;
+            }
+
+            .form-switch {
+                .form-check-input {
+                    border-radius: 2em !important;
+                    transition: background-position .15s ease-in-out !important;
+
+                    &:checked {
+                        background-color: seagreen;
+                    }
+
+                    &:not(:checked) + label.on {
+                        font-weight: var(--bs-body-font-weight) !important;
+                    }
+                }
+            }
+
+            label.off:has(+div.form-check.form-switch input[type=checkbox].form-check-input:checked) {
+                font-weight: var(--bs-body-font-weight) !important;
+            }
+
+            label.off:has(+div.form-check.form-switch input[type=checkbox]:disabled) {
+                cursor: default;
+                opacity: .5;
+            }
+        }
+    }
+
+    .layout_panel {
+
+        .grid-stack {
+            min-height: 50px;
+        }
+
+        // Styling specific for the editable layout panel
+        &:not(:has(.grid-stack.grid-stack-static)) {
+            --bs-bg-opacity: 1;
+            background-color: rgba(var(--bs-default-rgb), var(--bs-bg-opacity)) !important;
+
+            // a hack so the widget keeps the cursor while it's being dragged
+            &:has(.grid-stack-item.ui-draggable-dragging) {
+                cursor: move !important;
+            }
+
+            .grid-stack-item {
+                border-radius: 8px;
+
+                .grid-stack-item-content {
+                    cursor: move;
+                    border-radius: 8px;
+
+                    // Save as image shouldn't trigger when trying to drag a widget
+                    &.chart .save_as_image{
+                        pointer-events: none;
+                    }
+                }
+            }
+        }
+
+        .grid-stack-item {
+
+            .grid-stack-item-content {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: var(--bs-body-bg);
+                text-align: center;
+                flex-direction: row;
+
+                overflow-x: unset !important;
+                overflow-y: unset !important;
+
+                &.chart {
+                    align-items: flex-start !important;
+
+                    .save_as_image{
+                        position: absolute;
+                        bottom: 0px;
+                        left: 0.5em;
+                        cursor: pointer;
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* End of Gridstack style */

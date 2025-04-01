@@ -137,38 +137,70 @@ function alert(message) {
     $("#" + modal_container_id).modal('show');
 }
 
+// function to check empty / trimmed empty value for the required fields
 function checkAndSetValidation(container) {
-    var issue_els = [];
+
+    let issue_els = [];
     $("input, select, textarea", container).each(function () {
         if ($(this).prop('required') && (!$.trim($(this).val()) || (Array.isArray($(this).val()) && $(this).val().length == 0))) {
+            
             issue_els.push($(this));
+
+            if (!$.trim($(this).val())) {
+                $(this).val('');
+            }
         }
-    })
+    });
+
     // If issue elements exist, stop progress
     if (issue_els.length > 0) {
-        var error_messages = [];
+        
         issue_els.reverse();
-        for (var key in issue_els) {
-            var issue_el = issue_els[key];
+        for (let key in issue_els) {
 
+            let issue_el = issue_els[key];
+
+            // if the element is a multiselect
             if (issue_el.parent().hasClass("multiselect-native-select")) {
-                issue_el.parent().find("button.multiselect").addClass("error")
-                issue_el.parent().find("button.multiselect").focus()
+
+                issue_el.parent().find("button.multiselect").addClass("error");
+
+            // if the element is a normal one
             } else {
+
                 issue_el.addClass("error");
-                issue_el.focus()
+
+            }
+
+            // if the element is the first required element, focus on it.
+            if (key == issue_els.length - 1) {
+
+                // if the element is a multiselect
+                if (issue_el.parent().hasClass("multiselect-native-select")) {
+
+                    issue_el.parent().find("button.multiselect").focus();
+
+                // if the element is a normal one
+                } else {
+
+                    issue_el.focus();
+
+                }
             }
 
             // We have to make sure that no html gets through to toastr as it's displaying what it gets 'as is';
             var escaped = $("<div/>").text(issue_el.attr("title")).html();
-            var message = _lang['FieldIsRequired'].replace("_XXX_", escaped);
+            var message = _lang['FieldRequired'].replace("{$field}", escaped);
 
             showAlertFromMessage(message, false)
         }
+
         return false;
-    }
-    else {
+
+    } else {
+
         return true;
+
     }
 }
 
@@ -236,10 +268,23 @@ $(document).ready(function () {
 
 // A function to properly reset a form.
 // Add logic for new widgets when needed
-function resetForm(formEL) {
+function resetForm(formEL, multiselect = true, selectize = false) {
+
     let $form = $(formEL);
     $form[0].reset();
-    $form.find('select.multiselect').multiselect('refresh');
+
+    // if there are any multiselects, refresh them
+    if (multiselect) {
+        $form.find('select.multiselect').multiselect('refresh');
+    }
+
+    // if there are any selectizes, refresh them
+    if (selectize) {
+        $form.find('select.selectized').each(function () {
+            $(this)[0].selectize.clear();
+        });
+    }
+    
 }
 
 /**
@@ -293,4 +338,28 @@ function confirm(message, callback) {
 
 	// Show it
 	myModal.show();
+}
+
+// Function to sanitize HTML while keeping basic formatting tags
+function sanitizeHTML(str) {
+    // Create a new div element
+    const div = document.createElement('div');
+
+    // Set the HTML content
+    div.innerHTML = str;
+
+    // Only allow specific HTML tags
+    const allowedTags = ['br', 'ul', 'li', 'p', 'strong', 'em'];
+
+    // Remove any tags that aren't in our allowlist
+    const allElements = div.getElementsByTagName('*');
+    for (let i = allElements.length - 1; i >= 0; i--) {
+        const element = allElements[i];
+        if (!allowedTags.includes(element.tagName.toLowerCase())) {
+            // Replace the element with its text content
+            element.outerHTML = element.textContent;
+        }
+    }
+
+    return div.innerHTML;
 }

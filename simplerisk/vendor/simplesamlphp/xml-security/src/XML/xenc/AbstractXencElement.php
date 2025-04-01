@@ -19,4 +19,7 @@ abstract class AbstractXencElement extends AbstractElement
 
     /** @var string */
     public const NS_PREFIX = 'xenc';
+
+    /** @var string */
+    public const SCHEMA = 'resources/schemas/xenc-schema.xsd';
 }

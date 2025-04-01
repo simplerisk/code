@@ -15,7 +15,7 @@ require_once(realpath(__DIR__ . '/healthcheck.php'));
 require_once(realpath(__DIR__ . '/escaper.php'));
 require_once(realpath(__DIR__ . '/mfa.php'));
 require_once(realpath(__DIR__ . '/Widgets/AssetAssetGroupDropdown.php'));
-
+require_once(realpath(__DIR__ . '/renderutils.php'));
 
 // Include the language file
 // Ignoring detections related to language files
@@ -50,6 +50,7 @@ global $available_extras;
 $available_extras = array(
     'advanced_search',
     'api',
+    'artificial_intelligence',
     'assessments',
     'complianceforgescf',
     'authentication',
@@ -882,7 +883,7 @@ $field_settings = [
         ],
         'id' => [
             'customization_field_name' => 'ID',
-            'localization_key' => '',
+            'localization_key' => 'ID',
             'technical_field' => true,
             'encrypted' => false,
             'searchable' => true,
@@ -899,6 +900,7 @@ $field_settings = [
             'customization_field_name' => 'TestName',
             'localization_key' => 'TestName',
             'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
             'encrypted' => false,
             'searchable' => true,
             'orderable' => true,
@@ -966,6 +968,7 @@ $field_settings = [
             'customization_field_name' => 'Objective',
             'localization_key' => 'Objective',
             'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
             'encrypted' => false,
             'searchable' => true,
             'orderable' => true,
@@ -981,6 +984,7 @@ $field_settings = [
             'customization_field_name' => 'ControlName',
             'localization_key' => 'ControlName',
             'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
             'encrypted' => false,
             'searchable' => true,
             'orderable' => true,
@@ -997,6 +1001,7 @@ $field_settings = [
             'customization_field_name' => 'FrameworkName',
             'localization_key' => 'FrameworkName',
             'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
             'encrypted' => true,
             'searchable' => true,
             'orderable' => true,
@@ -1010,6 +1015,24 @@ $field_settings = [
             'join_parts' => [
                 "LEFT JOIN `framework_control_mappings` fcm ON fc.id=fcm.control_id",
                 "LEFT JOIN `frameworks` f ON fcm.framework=f.value AND f.status=1"
+            ],
+        ],
+        "mapped_control_number" => [
+            'customization_field_name' => 'MappedControlNumbers',
+            'localization_key' => 'MappedControlNumbers',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "mapped_control_number",
+            'editable' => false,
+            'select_parts' => [
+                "IFNULL(GROUP_CONCAT(DISTINCT CASE WHEN fcm.reference_name != '' THEN fcm.reference_name END ORDER BY fcm.reference_name ASC), '') mapped_control_number",
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN `framework_control_mappings` fcm ON fc.id=fcm.control_id",
             ],
         ],
         "tags" => [
@@ -1055,6 +1078,7 @@ $field_settings = [
             'customization_field_name' => 'TestDate',
             'localization_key' => 'TestDate',
             'technical_field' => true,
+            'custom_column_style' => 'min-width:150px;',
             'encrypted' => false,
             'searchable' => true,
             'orderable' => true,
@@ -1073,6 +1097,7 @@ $field_settings = [
             'customization_field_name' => 'LastAuditDate',
             'localization_key' => 'LastAuditDate',
             'technical_field' => true,
+            'custom_column_style' => 'min-width:150px;',
             'encrypted' => false,
             'searchable' => true,
             'orderable' => true,
@@ -1088,7 +1113,7 @@ $field_settings = [
             'customization_field_name' => 'AuditDate',
             'localization_key' => 'AuditDate',
             'technical_field' => true,
-            'custom_column_style' => 'min-width:200px;',
+            'custom_column_style' => 'min-width:150px;',
             'encrypted' => false,
             'searchable' => true,
             'orderable' => true,
@@ -1104,6 +1129,7 @@ $field_settings = [
             'customization_field_name' => 'NextAuditDate',
             'localization_key' => 'NextAuditDate',
             'technical_field' => true,
+            'custom_column_style' => 'min-width:150px;',
             'encrypted' => false,
             'searchable' => true,
             'orderable' => true,
@@ -1116,7 +1142,7 @@ $field_settings = [
             'join_parts' => [],
         ],
         "teams" => [
-            'customization_field_name' => 'NextAuditDate',
+            'customization_field_name' => 'Teams',
             'localization_key' => '',
             'technical_field' => true,
             'encrypted' => false,
@@ -1137,7 +1163,7 @@ $field_settings = [
             'encrypted' => false,
             'searchable' => true,
             'orderable' => true,
-            'order_column' => "teams",
+            'order_column' => "test_result_filter",
             'editable' => false,
             'select_parts' => [
                 "fctr.test_result", 
@@ -2056,6 +2082,28 @@ $field_settings_display_groups = [
             "test_result_background_class"
         ],
     ],
+    'dynamic_audit_report' => [
+        'header_key' => '',
+        'field_type' => 'framework_control_test_audit',
+        'fields' => [
+            "id",
+            "test_name",
+            "test_frequency",
+            "tester",
+            "additional_stakeholders",
+            "objective",
+            "control_name",
+            "mapped_control_number",
+            "framework_name",
+            "tags",
+            "status",
+            "test_date",
+            "last_date",
+            "next_date",
+            "test_result",
+            "teams"
+        ],
+    ],
     'incident_detection' => [
         'header_key' => 'Detection',
         'field_type' => 'incident_management_incident',
@@ -2366,6 +2414,32 @@ $field_settings_views = [
             },
         ',
     ],
+    'dynamic_audit_report' => [
+        'view_type' => 'framework_control_test_audit',
+        'join_parts' => [
+            "LEFT JOIN `framework_controls` fc ON a.framework_control_id = fc.id",
+            "INNER JOIN `framework_control_tests` fct ON fct.id=a.test_id",
+            "LEFT JOIN `items_to_teams` i2t ON i2t.`item_id` = `a`.`id` and i2t.`type` = 'audit'"
+        ],
+        'id_field' => 'id',
+        'datatable_ajax_uri' => '/api/v2/get/datatable?view=dynamic_audit_report',
+        'datatable_data_type' => 'associative',
+        'datatable_filter_submit_delay' => 600,
+        'groups' => [
+            'dynamic_audit_report'
+        ],
+        'default_enabled_columns' => [
+            "id",
+            "test_name",
+            "last_date",
+            "control_name",
+            "mapped_control_number",
+            "framework_name",
+            "tags",
+            "status",
+            "test_result"
+        ]
+    ],
     'dynamic_incident_report' => [
         'view_type' => 'incident_management_incident',
         'id_field' => 'id',
@@ -2469,6 +2543,125 @@ $field_settings_views = [
             'recovery_average'
         ],
     ],
+];
+
+/**
+UI Widget configuration for the layout.
+
+`required_permission` : the permission required to be able to get that widget. No additional permission needed for widgets on the reports. Permission to access the application(i.e. being logged in) is always required.
+
+*/
+global $ui_layout_widget_config;
+$ui_layout_widget_config = [
+    'chart_open_vs_closed' => [
+        'localization_key' => 'OpenVsClosed',
+        'type' => 'chart',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'chart_mitigation_planned_vs_unplanned' => [
+        'localization_key' => 'MitigationPlannedVsUnplanned',
+        'type' => 'chart',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'chart_reviewed_vs_unreviewed' => [
+        'localization_key' => 'ReviewedVsUnreviewed',
+        'type' => 'chart',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'table_risks_by_month' => [
+        'localization_key' => 'RisksByMonth',
+        'type' => 'table',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 12,
+            'h' => 3,
+            'minW' => 8,
+            'minH' => 3,
+        ],
+        '' => '',
+    ],
+];
+
+/**
+ UI Widget screen configuration for the layout.
+ 
+ `required_permission` : the permission required to be able to get that layout. No additional permission needed for layouts on the reports pages. Permission to access the application(i.e. being logged in) is always required.
+ */
+global $ui_layout_config;
+$ui_layout_config = [
+    'overview' => [
+        'API_endpoint' => '/api/v2/ui/layout',
+        'required_permission' =>'', //???
+        'available_widgets' => [
+            'chart_open_vs_closed',
+            'chart_mitigation_planned_vs_unplanned',
+            'chart_reviewed_vs_unreviewed',
+            'table_risks_by_month'
+        ],
+        'default_layout' => [
+            [
+                'x' => 0,
+                'y' => 0,
+                'w' => 4,
+                'h' => 4,
+                'minW' => 2,
+                'minH' => 2,
+                'name' => 'chart_open_vs_closed',
+                'type' => 'chart',
+            ],
+            [
+                'x' => 4,
+                'y' => 0,
+                'w' => 4,
+                'h' => 4,
+                'minW' => 2,
+                'minH' => 2,
+                'name' => 'chart_mitigation_planned_vs_unplanned',
+                'type' => 'chart',
+            ],
+            [
+                'x' => 8,
+                'y' => 0,
+                'w' => 4,
+                'h' => 4,
+                'minW' => 2,
+                'minH' => 2,
+                'name' => 'chart_reviewed_vs_unreviewed',
+                'type' => 'chart',
+            ],
+            [
+                'x' => 0,
+                'y' => 4,
+                'w' => 12,
+                'h' => 3,
+                'minW' => 8,
+                'minH' => 3,
+                'name' => 'table_risks_by_month',
+                'type' => 'table',
+            ]
+        ],
+    ]
 ];
 
 /******************************
@@ -3908,7 +4101,7 @@ function create_multiusers_dropdown($name, $selected = "", $custom_html = "", $r
  * "enabled/disabled_users": Will return the enabled/disabled users of the selected business unit(EVEN FOR ADMINS). Use it outside of admin-only area
  * "enabled/disabled_users_all": Will return the enabled/disabled users, ignoring the selected business unit. Use it ONLY inside of admin-only area
  *****************************/
-function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true, $help = false, $returnHtml=false, $customHtml="", $blankText="--", $blankValue="", $useValue=true, $alphabetical_order = 0, $options = null) {
+function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true, $help = false, $returnHtml=false, $customHtml="", $blankText="--", $blankValue="", $useValue=true, $alphabetical_order = 0, $options = null, $display_empty_name = true) {
 
     global $escaper;
 
@@ -3941,6 +4134,16 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
                 return strcmp($a["name"], $b["name"]);
             });
         }
+
+    }
+
+    // If we don't want to display an empty name
+    if ($display_empty_name == false) {
+
+        // Remove empty / trimmed empty names and Re-index the array
+        $options = array_values(array_filter($options, function($a) {
+            return (!empty($a['name']) && (trim($a['name']) != ''));
+        }));
 
     }
 
@@ -5644,6 +5847,12 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
         'management_review'
     ));
 
+    $custom_plan_mitigation_display_settings = '{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["submission_date","1"],["closure_date","0"],["reference_id","0"],["regulation","0"],["control_number","0"],["location","0"],["source","0"],["category","0"],["team","0"],["additional_stakeholders","0"],["technology","0"],["owner","0"],["manager","0"],["submitted_by","0"],["risk_tags","0"],["scoring_method","0"],["residual_risk","0"],["project","0"],["days_open","0"],["affected_assets","0"],["risk_assessment","0"],["additional_notes","0"],["risk_mapping","0"],["threat_mapping","0"]],"mitigation_colums":[["mitigation_planned","1"],["planning_strategy","0"],["planning_date","0"],["mitigation_effort","0"],["mitigation_cost","0"],["mitigation_owner","0"],["mitigation_team","0"],["mitigation_accepted","0"],["mitigation_date","0"],["mitigation_controls","0"],["current_solution","0"],["security_recommendations","0"],["security_requirements","0"]],"review_colums":[["management_review","1"],["review_date","0"],["next_review_date","0"],["next_step","0"],["comments","0"]]}';
+
+    $custom_perform_reviews_display_settings = '{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["submission_date","1"],["closure_date","0"],["reference_id","0"],["regulation","0"],["control_number","0"],["location","0"],["source","0"],["category","0"],["team","0"],["additional_stakeholders","0"],["technology","0"],["owner","0"],["manager","0"],["submitted_by","0"],["risk_tags","0"],["scoring_method","0"],["residual_risk","0"],["project","0"],["days_open","0"],["affected_assets","0"],["risk_assessment","0"],["additional_notes","0"],["risk_mapping","0"],["threat_mapping","0"]],"mitigation_colums":[["mitigation_planned","1"],["planning_strategy","0"],["planning_date","0"],["mitigation_effort","0"],["mitigation_cost","0"],["mitigation_owner","0"],["mitigation_team","0"],["mitigation_accepted","0"],["mitigation_date","0"],["mitigation_controls","0"],["current_solution","0"],["security_recommendations","0"],["security_requirements","0"]],"review_colums":[["management_review","1"],["review_date","0"],["next_review_date","0"],["next_step","0"],["comments","0"]]}';
+
+    $custom_reviewregularly_display_settings = '{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["days_open","1"],["closure_date","0"],["reference_id","0"],["regulation","0"],["control_number","0"],["location","0"],["source","0"],["category","0"],["team","0"],["additional_stakeholders","0"],["technology","0"],["owner","0"],["manager","0"],["submitted_by","0"],["risk_tags","0"],["scoring_method","0"],["residual_risk","0"],["submission_date","0"],["project","0"],["affected_assets","0"],["risk_assessment","0"],["additional_notes","0"],["risk_mapping","0"],["threat_mapping","0"]],"mitigation_colums":[["mitigation_planned","0"],["planning_strategy","0"],["planning_date","0"],["mitigation_effort","0"],["mitigation_cost","0"],["mitigation_owner","0"],["mitigation_team","0"],["mitigation_accepted","0"],["mitigation_date","0"],["mitigation_controls","0"],["current_solution","0"],["security_recommendations","0"],["security_requirements","0"]],"review_colums":[["management_review","0"],["review_date","0"],["next_step","0"],["next_review_date","1"],["comments","0"]]}';
+
     // If we require MFA for all users
     if (get_setting("mfa_required"))
     {
@@ -5670,6 +5879,9 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
                 `change_password`,
                 `manager`,
                 `custom_display_settings`,
+                `custom_plan_mitigation_display_settings`,
+                `custom_perform_reviews_display_settings`,
+                `custom_reviewregularly_display_settings`,
                 `lang`
             )
         VALUES (
@@ -5685,6 +5897,9 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
             :change_password,
             :manager,
             :custom_display_settings,
+            :custom_plan_mitigation_display_settings,
+            :custom_perform_reviews_display_settings,
+            :custom_reviewregularly_display_settings,
             ''
         );
     ");
@@ -5700,6 +5915,9 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
     $stmt->bindParam(":change_password", $change_password, PDO::PARAM_INT);
     $stmt->bindParam(":manager", $manager, PDO::PARAM_INT);
     $stmt->bindParam(":custom_display_settings", $custom_display_settings, PDO::PARAM_STR);
+    $stmt->bindParam(":custom_plan_mitigation_display_settings", $custom_plan_mitigation_display_settings, PDO::PARAM_STR);
+    $stmt->bindParam(":custom_perform_reviews_display_settings", $custom_perform_reviews_display_settings, PDO::PARAM_STR);
+    $stmt->bindParam(":custom_reviewregularly_display_settings", $custom_reviewregularly_display_settings, PDO::PARAM_STR);
 
     $stmt->execute();
     
@@ -6002,8 +6220,7 @@ function get_id_by_user($user)
 /*******************************
  * FUNCTION: GET MAPPING VALUE *
  *******************************/
-function core_get_mapping_value($prefix, $type, $mappings, $csv_line)
-{
+function core_get_mapping_value($prefix, $type, $mappings, $csv_line) {
     // Create the search term
     $search_term = $prefix . $type;
 
@@ -6011,18 +6228,22 @@ function core_get_mapping_value($prefix, $type, $mappings, $csv_line)
     $column = array_search($search_term, $mappings);
 
     // If the search term was mapped
-    if ($column != false)
-    {
+    if ($column != false) {
         // Remove col_ to get the id value
         $key = (int)preg_replace("/^col_/", "", $column);
 
-        // The value is located in that spot in the array
-        $value = $csv_line[$key];
+        // Check if the value is there, because if the last column is empty it's possible that it won't even be in the
+        // row data as an empty element, just simply missing from the row
+        if (array_key_exists($key, $csv_line)) {
+            // The value is located in that spot in the array
+            $value = $csv_line[$key];
 
-        // Return the value
-        return trim((string)$value);
+            // Return the value
+            return trim((string)$value);
+        }
     }
-    else return null;
+
+    return null;
 }
 
 /*****************************
@@ -8113,7 +8334,7 @@ function get_residual_risk($risk_id) {
     $stmt = $db->prepare("
         SELECT 
             t2.calculated_risk, 
-            GREATEST(IFNULL(t3.mitigation_percent, 0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, t4.mitigation_percent)), 0)) AS mitigation_percent
+            IF(IFNULL(t3.mitigation_percent, 0) > 0, t3.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, t4.mitigation_percent)), 0)) AS mitigation_percent
         FROM 
             risks t1
         LEFT JOIN risk_scoring t2 ON t1.id=t2.id
@@ -8284,7 +8505,7 @@ function get_risk_by_id($id)
             group_concat(distinct CONCAT_WS('_', rsci.contributing_risk_id, rsci.impact)) as Contributing_Risks_Impacts,
             b.*,
             c.next_review,
-            ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+            ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
             GROUP_CONCAT(DISTINCT t.tag ORDER BY t.tag ASC SEPARATOR ',') as risk_tags
             " . (jira_extra() ?
             ",ji.issue_key as jira_issue_key,
@@ -8814,7 +9035,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             $stmt = $db->prepare("
                 SELECT
                     a.calculated_risk, b.*, c.next_review
-                    , ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+                    , ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -8839,7 +9060,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             // Query the database
             $stmt = $db->prepare("
                 SELECT
-                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -8876,7 +9097,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             // Query the database
             $stmt = $db->prepare("
                 SELECT
-                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
                     o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
                     (
                         SELECT
@@ -9020,7 +9241,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             // Query the database
             $stmt = $db->prepare("
                 SELECT
-                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
                     o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
                     (
                         SELECT
@@ -9174,7 +9395,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             // Query the database
             $stmt = $db->prepare("
                 SELECT
-                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
                     o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
                     (
                         SELECT
@@ -9319,7 +9540,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             // Query the database
             $stmt = $db->prepare("
                 SELECT
-                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
                     o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
                     (
                         SELECT
@@ -9484,7 +9705,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                 a.calculated_risk,
                 b.*,
                 c.next_review,
-                ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
                 DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
                 o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
                 (
@@ -9629,7 +9850,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             // Query the database
             $stmt = $db->prepare("
                 SELECT
-                    a.calculated_risk, b.*, c.next_review, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+                    a.calculated_risk, b.*, c.next_review, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -9658,7 +9879,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             $stmt = $db->prepare("
                 SELECT
-                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -9693,7 +9914,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         {
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
             FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, c1.next_review, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id
                 LEFT JOIN mitigations mg ON b.id = mg.risk_id
                 LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
@@ -9712,7 +9933,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
             FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id
                 LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
                 LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
@@ -9788,7 +10009,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         {
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
             FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, c1.next_review, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 3) AS c ON a.id = c.risk_id
                 LEFT JOIN mitigations mg ON b.id = mg.risk_id
                 LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
@@ -9807,7 +10028,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
             FROM risk_scoring a
                 LEFT JOIN risks b ON a.id = b.id 
                 LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
@@ -9835,7 +10056,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         {
             // Query the database
             $stmt = $db->prepare("
-                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
                 FROM risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
@@ -9858,7 +10079,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             // Query the database
             $stmt = $db->prepare("
-                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
                 FROM risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
@@ -10248,7 +10469,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         {
             // Query the database
             $stmt = $db->prepare("
-                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -10272,7 +10493,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             // Query the database
             $stmt = $db->prepare("
-                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
                 FROM risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
@@ -10561,13 +10782,13 @@ function get_submitted_risks_table() {
         <table id='submitted_risk' class='table table-bordered table-condensed sortable'>
             <thead>
                 <tr>
-                    <th align='left' width='50px'>{$escaper->escapeHtml($lang['ID'])}</th>
-                    <th align='left' width='300px'>{$escaper->escapeHtml($lang['Subject'])}</th>
-                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['SubmissionDate'])}</th>
-                    <th align='left' width='150px'>{$escaper->escapeHtml($lang['CalculatedRisk'])}</th>
-                    <th align='left' width='150px'>{$escaper->escapeHtml($lang['Status'])}</th>
-                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['Team'])}</th>
-                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['SubmittedBy'])}</th>
+                    <th align='left' style='min-width: 50px;'>{$escaper->escapeHtml($lang['ID'])}</th>
+                    <th align='left' style='min-width: 300px;'>{$escaper->escapeHtml($lang['Subject'])}</th>
+                    <th align='center' style='min-width: 150px;'>{$escaper->escapeHtml($lang['SubmissionDate'])}</th>
+                    <th align='left' style='min-width: 150px;'>{$escaper->escapeHtml($lang['CalculatedRisk'])}</th>
+                    <th align='left' style='min-width: 150px;'>{$escaper->escapeHtml($lang['Status'])}</th>
+                    <th align='center' style='min-width: 150px;'>{$escaper->escapeHtml($lang['Team'])}</th>
+                    <th align='center' style='min-width: 150px;'>{$escaper->escapeHtml($lang['SubmittedBy'])}</th>
                 </tr>
             </thead>
             <tbody>
@@ -10616,6 +10837,7 @@ function get_submitted_risks_table() {
                     });
                 });
                 var riskTable = $('#submitted_risk').DataTable( {
+                    scrollX: true,
                     paging: false,
                     orderCellsTop: true,
                     fixedHeader: true,
@@ -10727,12 +10949,12 @@ function get_reviewed_risk_table($sort_order=12) {
         <table id='reviewed_risk' class='table table-bordered table-condensed sortable'>
             <thead>
                 <tr>
-                    <th align='left' width='50px'>{$escaper->escapeHtml($lang['ID'])}</th>
-                    <th align='left' width='300px'>{$escaper->escapeHtml($lang['Subject'])}</th>
-                    <th align='left' width='150px'>{$escaper->escapeHtml($lang['ReviewDate'])}</th>
-                    <th align='left' width='150px'>{$escaper->escapeHtml($lang['Review'])}</th>
-                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['NextStep'])}</th>
-                    <th align='center' width='150px'>{$escaper->escapeHtml($lang['Reviewer'])}</th>
+                    <th align='left' style='min-width: 100px;'>{$escaper->escapeHtml($lang['ID'])}</th>
+                    <th align='left' style='min-width: 250px;'>{$escaper->escapeHtml($lang['Subject'])}</th>
+                    <th align='left' style='min-width: 160px;'>{$escaper->escapeHtml($lang['ReviewDate'])}</th>
+                    <th align='left' style='min-width: 100px;'>{$escaper->escapeHtml($lang['Review'])}</th>
+                    <th align='center' style='min-width: 150px;'>{$escaper->escapeHtml($lang['NextStep'])}</th>
+                    <th align='center' style='min-width: 100px;'>{$escaper->escapeHtml($lang['Reviewer'])}</th>
                 </tr>
             </thead>
             <tbody>
@@ -10774,6 +10996,7 @@ function get_reviewed_risk_table($sort_order=12) {
                 var riskTable = $('#reviewed_risk').DataTable( {
                     paging: false,
                     orderCellsTop: true,
+                    scrollX: true,
                     fixedHeader: true,
                     order: [[2, 'desc']],
                     serverSide: false
@@ -11561,17 +11784,12 @@ function update_project_status($status_id, $project_id)
 /******************************************
  * FUNCTION: GET PROJECTS COUNT BY STATUS *
  ******************************************/
-function get_projects_count($status)
-{
+function get_projects_count($status) {
+
     $projects = count_by_status($status);
-    if ($status == 1)
-    {
-          echo $projects[0]['count'];
-    }
-    else
-    {
-          echo $projects[0]['count'];
-    }
+    
+    return $projects[0]['count'];
+
 }
 
 /********************************************
@@ -11600,25 +11818,28 @@ function get_project_tabs($status, $template_group_id="") {
     $custom_field_count = 0;
 
     // If customization extra is enabled
-    if(customization_extra()) {
+    if (customization_extra()) {
 
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
         $customization = true;
 
-        if(!$template_group_id) {
+        if (!$template_group_id) {
             $group = get_default_template_group("project");
             $template_group_id = $group["id"];
-
         }
 
         $active_fields = get_active_fields("project", $template_group_id);
-        foreach($active_fields as $field) {
-            if($field['is_basic'] != 1) $custom_field_count++;
+        foreach ($active_fields as $field) {
+            if ($field['is_basic'] != 1) {
+                $custom_field_count++;
+            }
         }
 
-    } else $customization = false;
+    } else {
+        $customization = false;
+    }
 
     $row_width += $custom_field_count * 150;
 
@@ -11645,11 +11866,13 @@ function get_project_tabs($status, $template_group_id="") {
 
             // If project ID was defined
             } else {
-                if(isset($_SESSION["delete_projects"]) && $_SESSION["delete_projects"] == 1) {
+                if (isset($_SESSION["delete_projects"]) && $_SESSION["delete_projects"] == 1) {
                     $delete = '
                         <button type="button" class="project-block--delete float-end btn btn-outline-secondary btn-sm mx-1"><i class="fa fa-trash"></i></button>
                     ';
-                } else $delete ='';
+                } else {
+                    $delete ='';
+                }
 
                 $no_sort = '';
                 $name = $escaper->escapeHtml($name);
@@ -11662,82 +11885,78 @@ function get_project_tabs($status, $template_group_id="") {
                 $risks = get_risks_by_project_id($id);
                 $index++;
                 $priority = $index;
-                $edit_link = '
-                        <button type="button" data-bs-toggle="modal" data-bs-target="#project--edit" class="project-block--edit float-end btn btn-outline-secondary btn-sm mx-1" data-id="' . $escaper->escapeHtml($id) . '" data-name="' . $name . '"><i class="fa fa-edit"></i></button>
-                ';
+                $edit_link = "
+                        <button type='button' class='project-block--edit float-end btn btn-outline-secondary btn-sm mx-1' data-id='{$escaper->escapeHtml($id)}' data-name='{$name}'><i class='fa fa-edit'></i></button>
+                ";
             }
             
             // Get count of risks for this project
             $count = count($risks);
 
-            $str .= '
-                <div class="project-block clearfix" ' . $no_sort . ' style="width:' . $row_width . 'px">
-                    <div class="d-flex project-block--header" data-project="' . $escaper->escapeHtml($id) . '" style="width:' . $row_width . 'px">
-                        <div class="col p-2 border ">' . $escaper->escapeHtml($priority) . '</div>
-            ';
-            if($customization == true) {
-                foreach($active_fields as $field) {
-                    if($field['is_basic'] == 1) {
-                        switch($field['name']) {
+            $str .= "
+                <div class='project-block clearfix' {$no_sort} style='width:{$row_width}px'>
+                    <div class='d-flex project-block--header' data-project='{$escaper->escapeHtml($id)}' style='width:{$row_width}px'>
+                        <div class='col p-2 border '>{$escaper->escapeHtml($priority)}</div>
+            ";
+            if ($customization == true) {
+                foreach ($active_fields as $field) {
+                    if ($field['is_basic'] == 1) {
+                        switch ($field['name']) {
                             case 'ProjectName':
-                                $str .= '
-                        <div class="col-3 p-2 border">' . $name . '</div>
-                                ';
+                                $str .= "
+                        <div class='col-3 p-2 border'>{$name}</div>
+                                ";
                                 break;
                             case 'DueDate':
-                                $str .= '
-                        <div class="col p-2 border">' . $due_date . '</div>
-                        ';
+                                $str .= "
+                        <div class='col p-2 border'>{$due_date}</div>
+                        ";
                                 break;
                             case 'Consultant':
-                                $str .= '
-                        <div class="col p-2 border">' . $consultant . '</div>
-                                ';
+                                $str .= "
+                        <div class='col p-2 border'>{$consultant}</div>
+                                ";
                                 break;
                             case 'BusinessOwner':
-                                $str .= '
-                        <div class="col p-2 border">' . $business_owner . '</div>
-                                ';
+                                $str .= "
+                        <div class='col p-2 border'>{$business_owner}</div>
+                                ";
                                 break;
                             case 'DataClassification':
-                                $str .= '
-                        <div class="col p-2 border">' . $data_classification . '</div>
-                                ';
+                                $str .= "
+                        <div class='col p-2 border'>{$data_classification}</div>
+                                ";
                                 break;
                         }
-                    } 
-                    else {
+                    } else {
                         $custom_field_count++;
                         $text = get_plan_custom_field_name_by_row_id($field, $id, "project");
-                        $str .= '
-                        <div class="col p-2 border">' . $text . '</div>
-                        ';
+                        $str .= "
+                        <div class='col p-2 border'>{$text}</div>
+                        ";
                     }
                 }
             } else {
-                $str .= '
-                        <div class="col-3 p-2 border">' . $name . '</div>
-                        <div class="col p-2 border">' . $due_date . '</div>
-                        <div class="col p-2 border">' . $consultant . '</div>
-                        <div class="col p-2 border">' . $business_owner . '</div>
-                        <div class="col p-2 border">' . $data_classification . '</div>
-                ';
+                $str .= "
+                        <div class='col-3 p-2 border'>{$name}</div>
+                        <div class='col p-2 border'>{$due_date}</div>
+                        <div class='col p-2 border'>{$consultant}</div>
+                        <div class='col p-2 border'>{$business_owner}</div>
+                        <div class='col p-2 border'>{$data_classification}</div>
+                ";
             }
-            $str .= '
-                        <div class="col-2 p-2 border">
-                            <span class="p-2 risk-count">' . $count . '</span>
-                            <a href="#" class="view--risks link-info">' . $escaper->escapeHtml($lang['ViewRisk']) . '</a>' . 
-                            $delete . 
-                            $edit_link . '
+            $str .= "
+                        <div class='col-2 p-2 border'>
+                            <span class='p-2 risk-count'>{$count}</span>
+                            <a href='#' class='view--risks link-info'>{$escaper->escapeHtml($lang['ViewRisk'])}</a>
+                            {$delete} {$edit_link}
                         </div>
                     </div>
-                    
-                    <div class="risks hide">
-            ';
+                    <div class='risks hide'>
+            ";
 
             // For each risk
-            foreach ($risks as $risk)
-            {
+            foreach ($risks as $risk) {
                 $subject = try_decrypt($risk['subject']);
                 $risk_id = (int)$risk['id'];
                 $project_id = (int)$risk['project_id'];
@@ -11745,21 +11964,24 @@ function get_project_tabs($status, $template_group_id="") {
 
                 $risk_number = (int)$risk_id + 1000;
 
-                $str .= '
-                        <div class="risk row" style="width:' . $row_width . 'px" data-risk="' . $escaper->escapeHtml($risk_id) . '" data-project="' . $escaper->escapeHtml($project_id) . '">
-                            <div class="col-1"></div>
-                            <div class="col-11 bg-secondary my-1 p-2 text-light">
-                                <div class="float-start">
-                                    <span class="grippy"></span>
-                                    <a class="text-light" href="../management/view.php?id=' . $escaper->escapeHtml(convert_id($risk_id)) . '" target="_blank">#' . $risk_number . ' ' . $escaper->escapeHtml($subject) . '</a>
+                $str .= "
+                        <div class='risk row' style='width:{$row_width}px' data-risk='{$escaper->escapeHtml($risk_id)}' data-project='{$escaper->escapeHtml($project_id)}'>
+                            <div class='col-1'></div>
+                            <div class='col-11 bg-secondary my-1 p-2 text-light d-flex justify-content-between align-items-center'>
+                                <div class='d-flex align-items-center'>
+                                    <span class='grippy'></span>
+                                    <a class='risk-content d-flex align-items-center text-light' href='../management/view.php?id={$escaper->escapeHtml(convert_id($risk_id))}' target='_blank'>
+                                        <span class='risk-number me-2'>#{$risk_number}</span>
+                                        <span class='risk-subject'>{$escaper->escapeHtml($subject)}</span>
+                                    </a>
                                 </div>
-                                <div class="float-end risk--score"> ' . 
-                                    $escaper->escapeHtml($lang['InherentRisk']) . ' : 
-                                    <span class="label label-danger" style="background-color: ' . $escaper->escapeHtml($color) . '; color: #000000;">' . $risk['calculated_risk'] .'</span> 
+                                <div class='risk--score ms-2'>
+                                    {$escaper->escapeHtml($lang['InherentRisk'])} : 
+                                    <span class='label label-danger' style='background-color: {$escaper->escapeHtml($color)}; color: #000000;'>{$risk['calculated_risk']}</span> 
                                 </div>
                             </div>
                         </div>
-                ';
+                ";
             }
 
             $str .= "
@@ -11778,13 +12000,18 @@ function get_project_tabs($status, $template_group_id="") {
 /**************************************************
  * FUNCTION: GET PROJECTS COUNT FROM DB BY STATUS *
  **************************************************/
-function count_by_status($status)
-{
+function count_by_status($status) {
+
     $db = db_open();
 
-
-    $stmt = $db->prepare("SELECT count(*) as count FROM projects WHERE `status` = $status");
-
+    $stmt = $db->prepare("
+        SELECT 
+            count(*) as count 
+        FROM 
+            projects 
+        WHERE 
+            `status` = {$status}
+    ");
 
     $stmt->execute();
 
@@ -11795,6 +12022,7 @@ function count_by_status($status)
     db_close($db);
 
     return $array;
+    
 }
 
 /**************************
@@ -11870,8 +12098,8 @@ function getTextBetweenTags($string, $tagname) {
 /***********************************
  * FUNCTION: GET DELETE RISK TABLE *
  ***********************************/
-function get_delete_risk_table()
-{
+function get_delete_risk_table() {
+
     global $lang;
     global $escaper;
 
@@ -11885,17 +12113,17 @@ function get_delete_risk_table()
                     <th width='7%' class='text-center'>
                         <input type='checkbox' class='form-check-input' onclick='checkAll(this)' />
                     </th>
-                    <th align='left' width='7%'>" . $escaper->escapeHtml($lang['ID']) . "</th>
-                    <th align='left' width='15%'>" . $escaper->escapeHtml($lang['Status']) . "</th>
-                    <th align='left'>" . $escaper->escapeHtml($lang['Subject']) . "</th>
+                    <th align='left' width='7%'>{$escaper->escapeHtml($lang['ID'])}</th>
+                    <th align='left' width='15%'>{$escaper->escapeHtml($lang['Status'])}</th>
+                    <th align='left'>{$escaper->escapeHtml($lang['Subject'])}</th>
                 </tr>
             </thead>
             <tbody>
-        ";
+    ";
 
     // For each risk
-    foreach ($risks as $risk)
-    {
+    foreach ($risks as $risk) {
+
         $risk_id = $risk['id'];
         $subject = $risk['subject'];
         $status = $risk['status'];
@@ -11903,21 +12131,23 @@ function get_delete_risk_table()
         echo "
                 <tr>
                     <td align='center'>
-                        <input type='checkbox' class='form-check-input' name='risks[]' value='" . $escaper->escapeHtml($risk['id']) . "' />
+                        <input type='checkbox' class='form-check-input' name='risks[]' value='{$escaper->escapeHtml($risk['id'])}' />
                     </td>
                     <td align='left' width='50px'>
-                        <a class='open-in-new-tab' href='../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "'>" . $escaper->escapeHtml(convert_id($risk_id)) . "</a>
+                        <a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml(convert_id($risk_id))}'>{$escaper->escapeHtml(convert_id($risk_id))}</a>
                     </td>
-                    <td align='left' width='150px'>" . $escaper->escapeHtml($status) . "</td>
-                    <td align='left' width='300px'>" . $escaper->escapeHtml($subject) . "</td>
+                    <td align='left' width='150px'>{$escaper->escapeHtml($status)}</td>
+                    <td align='left' width='300px'>{$escaper->escapeHtml($subject)}</td>
                 </tr>
-            ";
+        ";
+
     }
 
     echo "
             </tbody>
         </table>
-        ";
+    ";
+    
 }
 
 /*******************************
@@ -13405,6 +13635,25 @@ function update_last_login($user_id)
     $stmt = $db->prepare("UPDATE user SET `last_login`=:last_login WHERE `value`=:user_id");
     $stmt->bindParam(":last_login", $current_datetime, PDO::PARAM_STR, 20);
     $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Get the total number of users
+    $stmt = $db->prepare("SELECT COUNT(value) FROM user");
+    $stmt->execute();
+    $array = $stmt->fetchAll();
+    $users = $array[0][0];
+
+    // Get the total number of risks
+    $stmt = $db->prepare("SELECT COUNT(id) FROM risks");
+    $stmt->execute();
+    $array = $stmt->fetchAll();
+    $risks = $array[0][0];
+
+    // Add an entry to the user login history table
+    $stmt = $db->prepare("INSERT INTO `user_login_history` (`user_id`, `users`, `risks`) VALUES (:user_id, :users, :risks);");
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->bindParam(":users", $users, PDO::PARAM_INT);
+    $stmt->bindParam(":risks", $risks, PDO::PARAM_INT);
     $stmt->execute();
 
     // Close the database connection
@@ -16340,6 +16589,90 @@ function ping_server()
     // Get the database version
     $db_version = $escaper->escapeHtml(current_version("app"));
 
+    // Get the 90-day and 12-month metrics for user login activity
+    $stmt = $db->prepare("
+        WITH last_90 AS (
+            SELECT 
+                COUNT(*) AS total_logins,
+                COUNT(DISTINCT DATE(timestamp)) AS unique_login_days,
+                COUNT(DISTINCT user_id) AS unique_users_logged_in,
+                AVG(users) AS avg_users
+            FROM user_login_history
+            WHERE timestamp >= NOW() - INTERVAL 90 DAY
+        ),
+        prev_90 AS (
+            SELECT 
+                COUNT(*) AS total_logins,
+                COUNT(DISTINCT DATE(timestamp)) AS unique_login_days,
+                COUNT(DISTINCT user_id) AS unique_users_logged_in,
+                AVG(users) AS avg_users
+            FROM user_login_history
+            WHERE timestamp >= NOW() - INTERVAL 180 DAY 
+            AND timestamp < NOW() - INTERVAL 90 DAY
+        ),
+        last_12_months AS (
+            SELECT 
+                COUNT(*) AS total_logins,
+                COUNT(DISTINCT DATE(timestamp)) AS unique_login_days,
+                COUNT(DISTINCT user_id) AS unique_users_logged_in,
+                AVG(users) AS avg_users
+            FROM user_login_history
+            WHERE timestamp >= NOW() - INTERVAL 12 MONTH
+        ),
+        prev_12_months AS (
+            SELECT 
+                COUNT(*) AS total_logins,
+                COUNT(DISTINCT DATE(timestamp)) AS unique_login_days,
+                COUNT(DISTINCT user_id) AS unique_users_logged_in,
+                AVG(users) AS avg_users
+            FROM user_login_history
+            WHERE timestamp >= NOW() - INTERVAL 24 MONTH 
+            AND timestamp < NOW() - INTERVAL 12 MONTH
+        )
+        SELECT 
+            -- Last 90 Days
+            l90.total_logins AS total_logins_last_90,
+            l90.unique_login_days AS unique_days_last_90,
+            l90.unique_users_logged_in AS unique_users_last_90,
+            l90.avg_users AS avg_users_last_90,
+            (l90.total_logins / NULLIF(l90.avg_users, 0)) AS active_logins_rate_last_90,
+            (l90.unique_login_days / NULLIF(l90.avg_users, 0)) AS active_days_rate_last_90,
+            (l90.unique_users_logged_in / NULLIF(l90.avg_users, 0)) * 100 AS login_participation_last_90,
+
+            -- Previous 90 Days
+            p90.total_logins AS total_logins_prev_90,
+            p90.unique_login_days AS unique_days_prev_90,
+            p90.unique_users_logged_in AS unique_users_prev_90,
+            p90.avg_users AS avg_users_prev_90,
+            (p90.total_logins / NULLIF(p90.avg_users, 0)) AS active_logins_rate_prev_90,
+            (p90.unique_login_days / NULLIF(p90.avg_users, 0)) AS active_days_rate_prev_90,
+            (p90.unique_users_logged_in / NULLIF(p90.avg_users, 0)) * 100 AS login_participation_prev_90,
+
+            -- Last 12 Months
+            l12.total_logins AS total_logins_last_12m,
+            l12.unique_login_days AS unique_days_last_12m,
+            l12.unique_users_logged_in AS unique_users_last_12m,
+            l12.avg_users AS avg_users_last_12m,
+            (l12.total_logins / NULLIF(l12.avg_users, 0)) AS active_logins_rate_last_12m,
+            (l12.unique_login_days / NULLIF(l12.avg_users, 0)) AS active_days_rate_last_12m,
+            (l12.unique_users_logged_in / NULLIF(l12.avg_users, 0)) * 100 AS login_participation_last_12m,
+
+            -- Previous 12 Months
+            p12.total_logins AS total_logins_prev_12m,
+            p12.unique_login_days AS unique_days_prev_12m,
+            p12.unique_users_logged_in AS unique_users_prev_12m,
+            p12.avg_users AS avg_users_prev_12m,
+            (p12.total_logins / NULLIF(p12.avg_users, 0)) AS active_logins_rate_prev_12m,
+            (p12.unique_login_days / NULLIF(p12.avg_users, 0)) AS active_days_rate_prev_12m,
+            (p12.unique_users_logged_in / NULLIF(p12.avg_users, 0)) * 100 AS login_participation_prev_12m
+
+        FROM last_90 l90, prev_90 p90, last_12_months l12, prev_12_months p12;
+    ");
+    $stmt->execute();
+
+    // Fetch the results
+    $result = $stmt->fetch();
+
     // Create the parameters
     $parameters = [
         'instance_id' => $instance_id,
@@ -16348,6 +16681,34 @@ function ping_server()
         'users' => $users,
         'app_version' => $app_version,
         'db_version' => $db_version,
+        'total_logins_last_90' => $result['total_logins_last_90'],
+        'unique_days_last_90' => $result['unique_days_last_90'],
+        'unique_users_last_90' => $result['unique_users_last_90'],
+        'avg_users_last_90' => $result['avg_users_last_90'],
+        'active_logins_rate_last_90' => round($result['active_logins_rate_last_90'], 2),
+        'active_days_rate_last_90' => round($result['active_days_rate_last_90'], 2),
+        'login_participation_last_90' => round($result['login_participation_last_90'], 2),
+        'total_logins_prev_90' => $result['total_logins_prev_90'],
+        'unique_days_prev_90' => $result['unique_days_prev_90'],
+        'unique_users_prev_90' => $result['unique_users_prev_90'],
+        'avg_users_prev_90' => $result['avg_users_prev_90'],
+        'active_logins_rate_prev_90' => round($result['active_logins_rate_prev_90'], 2),
+        'active_days_rate_prev_90' => round($result['active_days_rate_prev_90'], 2),
+        'login_participation_prev_90' => round($result['login_participation_prev_90'], 2),
+        'total_logins_last_12m' => $result['total_logins_last_12m'],
+        'unique_days_last_12m' => $result['unique_days_last_12m'],
+        'unique_users_last_12m' => $result['unique_users_last_12m'],
+        'avg_users_last_12m' => $result['avg_users_last_12m'],
+        'active_logins_rate_last_12m' => round($result['active_logins_rate_last_12m'], 2),
+        'active_days_rate_last_12m' => round($result['active_days_rate_last_12m'], 2),
+        'login_participation_last_12m' => round($result['login_participation_last_12m'], 2),
+        'total_logins_prev_12m' => $result['total_logins_prev_12m'],
+        'unique_days_prev_12m' => $result['unique_days_prev_12m'],
+        'unique_users_prev_12m' => $result['unique_users_prev_12m'],
+        'avg_users_previous_12m' => $result['avg_users_prev_12m'],
+        'active_logins_rate_prev_12m' => round($result['active_logins_rate_prev_12m'], 2),
+        'active_days_rate_prev_12m' => round($result['active_days_rate_prev_12m'], 2),
+        'login_participation_prev_12m' => round($result['login_participation_prev_12m'], 2),
     ];
 
     // If the instance is registered
@@ -16361,6 +16722,9 @@ function ping_server()
             'api_installed' => core_is_installed("api"),
             'api_enabled' => api_extra(),
             'api_version' => core_extra_current_version("api"),
+            'artificial_intelligence_installed' => core_is_installed("artificial_intelligence"),
+            'artificial_intelligence_enabled' => artificial_intelligence_extra(),
+            'artificial_intelligence_version' => core_extra_current_version("artificial_intelligence"),
             'risk_assessment_installed' => core_is_installed("assessments"),
             'risk_assessment_enabled' => assessments_extra(),
             'risk_assessment_version' => core_extra_current_version("assessments"),
@@ -16966,6 +17330,29 @@ function set_unauthenticated_redirect()
 
     // Store it in the session
     $_SESSION['requested_url'] = $requested_url;
+}
+
+/************************
+ * FUNCTION: ADD A ROLE *
+ ************************/
+function add_role($role_name) {
+
+    global $escaper, $lang;
+
+    // Check if the role name already exists
+    if (get_value_by_name('role', $role_name)) {
+
+        // Set the alert
+        set_alert(true, "bad", $lang['TheRoleNameAlreadyExists']);
+        return;
+    }
+
+    // Add the role
+    add_name("role", $role_name);
+
+    // Set the alert
+    set_alert(true, "good", $escaper->escapeHtml($lang['AddedSuccess']));
+
 }
 
 /***************************
@@ -23769,7 +24156,7 @@ function create_default_admin_account()
                         </div>
                         <!-- End of content -->
                         <footer class="footer text-center">
-                  			Copyright 2024 SimpleRisk, Inc. All rights reserved.
+                  			Copyright 2025 SimpleRisk, Inc. All rights reserved.
                 		</footer>
                 	</div>
                 	<!-- End of content-wrapper -->
@@ -24183,31 +24570,35 @@ function add_quotes($str) {
  */
 function get_limited_cell_data_array(array $data, bool $presort = true): array {
 
+    // Just return an empty array if the input data is invalid
+    if (empty($data)) {
+        return [];
+    }
+
     global $cell_character_limit;
-    
+
     // Sorting it to be able to fit in more
     if ($presort) {
         usort($data, fn($a, $b) => strlen($a) - strlen($b));
     }
-    
+
     // Init variables
     $index = 0;
     $count = count($data);
     $sum = strlen(add_quotes($data[0]));
-    
+
     // Go through the data until the sum of the checked items' lengths adds up to be more than the limit.
     // Since we're using a PRETEST loop, when it stops because it's over the limit we know that the
     // previous iteration's values are the largest that still fit into the character limit
-    while($index + 1 < $count && $sum + strlen(add_quotes($data[$index + 1])) +1 <= $cell_character_limit) {
+    while($index + 1 < $count && !empty($data[$index + 1]) && $sum + strlen(add_quotes($data[$index + 1])) +1 <= $cell_character_limit) {
         // Adding one to the sum for each items(other than the first) to account for the comma(,) that will be used
         // when the list of items will be imploded before added to the cell
         $sum += 1 + strlen(add_quotes($data[++$index]));
     }
-    
+
     // $index contains the position of the last valid element, but the array_splice() function
     // expects the count of elements we want to include, so we have to add one to the $index
     return array_splice($data, 0, $index + 1);
-    
 }
 
 /*****************************
@@ -24667,7 +25058,7 @@ function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 1
 
         require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-        if (in_array($view, ['active_audits', 'past_audits'])) {
+        if (in_array($view, ['active_audits', 'past_audits', 'dynamic_audit_report'])) {
             $where .= get_user_teams_query_for_tests_and_audits("a", false, true);
         }
     }
@@ -24879,6 +25270,10 @@ function get_wheres_for_view($view) {
 
         $where = "where fc.deleted = 0 AND a.status = '{$closed_audit_status}' ";
         
+    } else if ($view == "dynamic_audit_report") {
+
+        $where = "where fc.deleted = 0 ";
+        
     } else {
         $where = "where 1";
     }
@@ -24896,6 +25291,8 @@ function get_custom_formatting_data($view, $selected_field_name, $value = '', $d
         $result = get_custom_formatting_data_for_active_audits($selected_field_name, $value, $display, $item);
     } else if ($view == 'past_audits') {
         $result = get_custom_formatting_data_for_past_audits($selected_field_name, $value, $display, $item);
+    } else if ($view == 'dynamic_audit_report') {
+        $result = get_custom_formatting_data_for_dynamic_audit_report($selected_field_name, $value, $display, $item);
     } else {
         $result = [$value, $display];
     }
@@ -24981,6 +25378,50 @@ function get_custom_formatting_data_for_past_audits($selected_field_name, $value
 
 }
 
+/*****************************************************************
+ * FUNCTION: GET CUSTOM FORMATTING DATA FOR DYNAMIC AUDIT REPORT *
+ *****************************************************************/
+function get_custom_formatting_data_for_dynamic_audit_report($selected_field_name, $value, $display, $item) {
+
+    global $lang, $escaper;
+
+    // For fields that need custom formatting
+    switch($selected_field_name) {
+        case "id":
+            $value = "<a href='{$_SESSION['base_url']}/compliance/testing.php?id={$item['id']}' class='text-left open-in-new-tab' target='_blank'>{$escaper->escapeHtml($value)}</a>";
+            break;
+        case 'test_frequency':
+            $value = (int)$value . " " .$escaper->escapeHtml($value > 1 ? $lang['days'] : $lang['Day']);
+            break;
+        case 'objective': 
+            $value = $escaper->purifyHtml($value);
+            break;
+        case 'tags':
+            if ($value) {
+                $tags = [];
+                foreach(explode("|", $value) as $tag) {
+                    $tags []= $escaper->escapeHtml($tag);
+                }
+                $value = $tags;
+            }
+            break;
+        case 'test_date':
+        case 'last_date':
+        case 'next_date':
+            $value = $escaper->escapeHtml(format_date($value));
+            break;
+        case 'test_result':
+            $value = $escaper->escapeHtml($value ? $value : "--");
+            break;
+        default:
+            // Only have to escape non-custom fields as those are already escaped
+            $value = $escaper->escapeHtml($value);
+    }
+
+    return [$value, $display];
+
+}
+
 /*****************************************************
  * FUNCTION: PROCESS SELECTED FIELD FILTER FOR VIEWS *
  *****************************************************/
@@ -24989,6 +25430,8 @@ function process_selected_field_filter_for_views($view, $selected_field_name, $f
         $filter_result = process_selected_field_filter_for_active_audits($selected_field_name, $filter_value, $column_filters, $item);
     } else if ($view == 'past_audits') {
         $filter_result = process_selected_field_filter_for_past_audits($selected_field_name, $filter_value, $column_filters, $item);
+    } else if ($view == 'dynamic_audit_report') {
+        $filter_result = process_selected_field_filter_for_dynamic_audit_report($selected_field_name, $filter_value, $column_filters, $item);
     } else {
         if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
             $filter_result = true;
@@ -25037,15 +25480,7 @@ function process_selected_field_filter_for_active_audits($selected_field_name, $
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
             } else {
-                if (in_array(-1, $search_value)) {
-                    if (empty($item_filter_value_array)) {
-                        $filter_result = false;
-                    } else {
-                        $filter_result = true;
-                    }
-                } else {
-                    $filter_result = true;
-                }
+                $filter_result = true;
             }
         } else {
             $filter_result = true;
@@ -25182,15 +25617,7 @@ function process_selected_field_filter_for_past_audits($selected_field_name, $fi
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
             } else {
-                if (in_array(-1, $search_value)) {
-                    if (empty($item_filter_value_array)) {
-                        $filter_result = false;
-                    } else {
-                        $filter_result = true;
-                    }
-                } else {
-                    $filter_result = true;
-                }
+                $filter_result = true;
             }
         } else {
             $filter_result = true;
@@ -25210,6 +25637,126 @@ function process_selected_field_filter_for_past_audits($selected_field_name, $fi
             } else {
                 if (in_array(-1, $search_value)) {
                     if (empty($item_filter_value_array)) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'test_result') {
+        $item_filter_value = $item['test_result_filter'];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(0, $search_value)) {
+                    if (!$item_filter_value) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            // unselect all
+            $filter_result = true;
+        }
+    } else {
+        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
+            $filter_result = true;
+        } else {
+            $filter_result = false;
+        }
+    }
+
+    return $filter_result;
+
+}
+
+/********************************************************************
+ * FUNCTION: PROCESS SELECTED FIELD FILTER FOR DYNAMIC AUDIT REPORT *
+ ********************************************************************/
+function process_selected_field_filter_for_dynamic_audit_report($selected_field_name, $filter_value, $column_filters, $item) {
+    if ($selected_field_name == 'test_name') {
+        $item_filter_value = $item['test_name_filter'];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                $filter_result = true;
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'tester') {
+        $item_filter_value = $item['tester'];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                $filter_result = true;
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'framework_name') {
+        $item_filter_value = $item['framework_name_filter'];
+        $item_filter_value_array = explode(",", $item_filter_value);
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (array_intersect($item_filter_value_array, $search_value)) {
+                $filter_result = false;
+            } else {
+                $filter_result = true;
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'tags') {
+        $item_filter_value = $item['tags_filter'];
+
+        if ($item_filter_value) {
+            $item_filter_value_array = explode("|", $item_filter_value);
+        } else {
+            $item_filter_value_array = [];
+        }
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (array_intersect($item_filter_value_array, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(-1, $search_value)) {
+                    if (empty($item_filter_value_array)) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'status') {
+        $item_filter_value = $item['status_filter'];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(0, $search_value)) {
+                    if (!$item_filter_value) {
                         $filter_result = false;
                     } else {
                         $filter_result = true;
@@ -25328,6 +25875,8 @@ function get_filter_field_for_views($view, $field_name, $localizations) {
         $filter_field = get_filter_field_for_active_audits($field_name, $localizations);
     } else if ($view == 'past_audits') {
         $filter_field = get_filter_field_for_past_audits($field_name, $localizations);
+    } else if ($view == 'dynamic_audit_report') {
+        $filter_field = get_filter_field_for_dynamic_audit_report($field_name, $localizations);
     } else {
         $filter_field = "
             <input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control' style='max-width: unset;'>
@@ -25356,7 +25905,6 @@ function get_filter_field_for_active_audits($field_name, $localizations) {
     } else if ($field_name == 'framework_name') {
         $filter_field = "
             <select name='framework_name[]' id='framework_name' class='multiselect' multiple=''>
-                <option selected value='-1'>{$escaper->escapeHtml($lang['Unassigned'])}</option>
         ";
 
         $options = getHasBeenAuditFrameworkList();
@@ -25413,7 +25961,6 @@ function get_filter_field_for_past_audits($field_name, $localizations) {
     } else if ($field_name == 'framework_name') {
         $filter_field = "
             <select name='framework_name[]' id='framework_name' class='multiselect' multiple=''>
-                <option selected value='-1'>{$escaper->escapeHtml($lang['Unassigned'])}</option>
         ";
 
         $options = getHasBeenAuditFrameworkList();
@@ -25445,6 +25992,64 @@ function get_filter_field_for_past_audits($field_name, $localizations) {
         $filter_field = "
             <input type='text' name='audit_date' placeholder='{$localizations[$field_name]}' autocomplete='off' class='datepicker form-control cursor-pointer' style='max-width: unset;'/>
         ";
+        
+    } else {
+        $filter_field = "
+            <input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control' style='max-width: unset;'>
+        ";
+    }
+
+    return $filter_field;
+
+}
+
+/*******************************************************
+ * FUNCTION: GET FILTER FIELD FOR DYNAMIC AUDIT REPORT *
+ *******************************************************/
+function get_filter_field_for_dynamic_audit_report($field_name, $localizations) {
+
+    global $lang, $escaper;
+
+    if ($field_name == 'test_name') {
+
+        $filter_field = create_multiple_dropdown("framework_control_tests", "all", "test_name", null, false, "--", "", true, "", 0, true, "");
+
+    } else if ($field_name == 'tester') {
+
+        $filter_field = create_multiple_dropdown("enabled_users", "all", "tester", null, false, "--", "", true, "", 0, true, "");
+
+    } else if ($field_name == 'framework_name') {
+        $filter_field = "
+            <select name='framework_name[]' id='framework_name' class='multiselect' multiple=''>
+        ";
+
+        $options = getHasBeenAuditFrameworkList();
+        is_array($options) || $options = array();
+        foreach ($options as $option) {
+            $filter_field .= "
+                <option selected value='{$escaper->escapeHtml($option['value'])}'>{$escaper->escapeHtml($option['name'])}</option>
+            ";
+        }
+
+        $filter_field .= "
+            </select>
+        ";
+
+    } else if ($field_name == 'tags') {
+        
+        $tags = [];
+        foreach (getTagsOfType("test_audit") as $tag) {
+            $tags[] = array('name' => $escaper->escapeHtml($tag['tag']), 'value' => (int)$tag['id']);
+        }
+        $filter_field = create_multiple_dropdown("tags", "all", "tags", $tags, true, $escaper->escapeHtml($lang['Unassigned']), "-1", true, "", 0, true, "");
+        
+    } else if ($field_name == 'status') {
+
+        $filter_field = create_multiple_dropdown("test_status", "all", "status", null, true, $escaper->escapeHtml($lang['Unassigned']), "0", true, "", 0, true, "");
+        
+    } else if ($field_name == 'test_result') {
+        
+        $filter_field = create_multiple_dropdown("test_results_filter", "all", "test_result", null, true, $escaper->escapeHtml($lang['Unassigned']), "0", true, "", 0, true, "");
         
     } else {
         $filter_field = "
@@ -25980,4 +26585,299 @@ function wait(int $millisecond = 0) {
         time_nanosleep($seconds, $nanoSeconds);
     }
 }
+
+/**
+ * Sets the default status of the user's layout. If set to true then this layout will be used for users who doesn't have a custom layout set
+ * 
+ * @param int $user_id
+ * @param string $layout_name
+ * @param boolean $new_default_status
+ */
+function set_layout_default_status($user_id, $layout_name, $new_default_status) {
+    // Open the database connection
+    $db = db_open();
+
+    if ($new_default_status) {
+        // To update in a single db call to prevent having no default or having two defaults at the same time
+        $stmt = $db->prepare("UPDATE `layouts` l SET `l`.`default` = CASE WHEN `l`.`user_id` = :user_id AND `l`.`layout_name` = :layout_name THEN 1 ELSE NULL END WHERE `l`.`layout_name` = :layout_name ORDER BY `l`.`default` DESC;");
+    } else {
+        $stmt = $db->prepare("UPDATE `layouts` l SET `l`.`default` = NULL WHERE `l`.`user_id` = :user_id AND `l`.`layout_name` = :layout_name;");
+    }
+
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->bindParam(":layout_name", $layout_name, PDO::PARAM_STR);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+}
+
+/**
+ * Saves a layout or updates it if the user already has one custom config for that layout.
+ *
+ * @param int $user_id
+ * @param string $layout_name
+ * @param string $layout
+ */
+function save_layout_for_user($user_id, $layout_name, $layout, $default = false) {
+    // Open the database connection
+    $db = db_open();
+
+    // To update in a single db call to prevent having no default or having two defaults at the same time
+    $stmt = $db->prepare("
+        INSERT INTO `layouts`
+            (`user_id`, `layout_name`, `layout`)
+        VALUES
+            (:user_id, :layout_name, :layout)
+        ON DUPLICATE KEY UPDATE
+            `layout` = :layout;
+    ");
+
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->bindParam(":layout_name", $layout_name, PDO::PARAM_STR);
+    $stmt->bindParam(":layout", $layout, PDO::PARAM_STR);
+    $stmt->execute();
+
+    if ($default) {
+        set_layout_default_status($user_id, $layout_name);
+    }
+
+    // Close the database connection
+    db_close($db);
+}
+
+/**
+ * Gets the default layout.
+ * If there's a custom layout marked as 'default' for that layout, then it'll return that,
+ * otherwise it'll return the original default layout.
+ *
+ * @param string $layout_name
+ */
+function get_default_layout($layout_name) {
+    // Open the database connection
+    $db = db_open();
+
+    // Gets the custom layout saved by the user
+    $stmt = $db->prepare("SELECT `layout` FROM `layouts` WHERE `layout_name` = :layout_name AND `default` = '1';");
+
+    $stmt->bindParam(":layout_name", $layout_name, PDO::PARAM_STR);
+    $stmt->execute();
+
+    $layout = $stmt->fetchColumn();
+
+    if (!isset($layout) || !$layout) {
+        global $ui_layout_config;
+        $layout = json_encode($ui_layout_config[$layout_name]['default_layout']);
+    }
+
+    // Close the database connection
+    db_close($db);
+
+    return $layout;
+}
+
+/**
+ * Gets the user's saved custom layout for a layout. If there's no custom layout saved for the user, but there's a
+ * custom layout marked as 'default' for that layout, then it'll return that, otherwise it'll return the original default layout.
+ *
+ * @param string $layout_name
+ * @param int $user_id
+ * 
+ * @return [string $layout, boolean $is_custom, boolean $default_set_by_user]
+ */
+function get_layout_for_user($layout_name, $user_id = null) {
+    // Open the database connection
+    $db = db_open();
+
+    // Use the currently authenticated user by default
+    $user_id = $user_id ?? $_SESSION['uid'];
+    $is_admin = is_admin($user_id);
+
+    // Gets the custom layout saved by the user
+    $stmt = $db->prepare("SELECT `layout`" . ($is_admin ? ", `default`" : "") . " FROM `layouts` WHERE `user_id` = :user_id AND `layout_name` = :layout_name;");
+
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->bindParam(":layout_name", $layout_name, PDO::PARAM_STR);
+    $stmt->execute();
+
+    $result = $stmt->fetch();
+
+    if (!isset($result) || !$result || !isset($result['layout']) || !$result['layout']) {
+        $layout = get_default_layout($layout_name);
+        $is_custom = false;
+    } else {
+        $layout = $result['layout'];
+        $is_custom = true;
+    }
+
+    // Check if this is the current default for this layout type and it's set by this user
+    $default_set_by_user = $is_custom && isset($result['default']) && $result['default'];
+
+    // Close the database connection
+    db_close($db);
+
+    return [$layout, $is_custom, $default_set_by_user];
+}
+
+/**
+ * Deletes custom layout defined by the user for the specified layout
+ * 
+ * @param string $layout_name
+ * @param boolean $user_id
+ */
+function delete_layout_for_user($layout_name, $user_id = null) {
+    // Open the database connection
+    $db = db_open();
+
+    // Use the currently authenticated user as default
+    $user_id = $user_id ?? $_SESSION['uid'];
+
+    // Deletes the custom layout saved by the user
+    $stmt = $db->prepare("DELETE FROM `layouts` WHERE `user_id` = :user_id AND `layout_name` = :layout_name;");
+
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->bindParam(":layout_name", $layout_name, PDO::PARAM_STR);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+}
+
+/**
+ * Get the configurations for the widgets allowed for a layout type
+ * 
+ * @param string $layout_name
+ * @return ['<widget name>' => [widget configuration], '<widget name 2>' => [widget configuration 2], ...]
+ */
+function get_widget_configuration_for_layout_name($layout_name) {
+    global $lang, $escaper, $ui_layout_config, $ui_layout_widget_config;
+
+    $widget_configurations = [];
+
+    foreach ($ui_layout_config[$layout_name]['available_widgets'] as $widget_name) {
+        $widget_config = $ui_layout_widget_config[$widget_name];
+
+        $widget_config['name'] = $widget_name;
+        $widget_config['localization'] = $escaper->escapeHtml($lang[$widget_config['localization_key']]);
+        $defaults = $widget_config['defaults'];
+
+        unset($widget_config['localization_key']);
+        unset($widget_config['required_permission']);
+        unset($widget_config['defaults']);
+
+        $widget_config = [...$widget_config, ...$defaults];
+
+        $widget_configurations[$widget_name]= $widget_config;
+    }
+
+    return $widget_configurations;
+}
+
+/*
+ * Sanitize and clean JSON response (from Claude)
+ */
+function sanitize_json_response($json_string) {
+    // First, decode any unicode escapes
+    $json_string = preg_replace_callback('/\\\\u([0-9a-fA-F]{4})/', function ($match) {
+        return mb_convert_encoding(pack('H*', $match[1]), 'UTF-8', 'UCS-2BE');
+    }, $json_string);
+
+    // Remove any potential UTF-8 BOM and control characters
+    $json_string = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $json_string);
+
+    // Remove any potential leading/trailing whitespace
+    $json_string = trim($json_string);
+
+    // Extract the actual content
+    if (preg_match('/\{.*\}/s', $json_string, $matches)) {
+        $json_string = $matches[0];
+    }
+
+    // Parse the content into an array
+    $data = [
+        'details' => '',
+        'mitigation' => ''
+    ];
+
+    // Extract details and mitigation using regex
+    if (preg_match('/"details":\s*"([^"]+)"/', $json_string, $matches)) {
+        $data['details'] = str_replace('\n', "\n", $matches[1]);
+    }
+    if (preg_match('/"mitigation":\s*"([^"]+)"/', $json_string, $matches)) {
+        $data['mitigation'] = str_replace('\n', "\n", $matches[1]);
+    }
+
+    // Create a clean JSON string
+    return json_encode([
+        'details' => trim($data['details']),
+        'mitigation' => trim($data['mitigation'])
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+}
+
+/***************************
+ * FUNCTION: IS VALID JSON *
+ ***************************/
+function isValidJson($string, $type = 'array') {
+    // Decode the JSON string
+    $decoded = json_decode($string, true); // true = decode as associative array
+
+    // Check for JSON errors
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        return false; // Invalid JSON
+    }
+
+    // Check if the decoded value matches the expected type
+    if ($type === 'array' && is_array($decoded)) {
+        return true;
+    } elseif ($type === 'object' && is_object(json_decode($string))) {
+        return true;
+    }
+
+    return false; // Valid JSON but not the expected type
+}
+
+/********************************************
+ * FUNCTION: SANITIZE ARRAY FOR JSON ENCODE *
+ ********************************************/
+function sanitze_array_for_json_encode($array)
+{
+    // If we were provided with a PHP array
+    if (is_array($array))
+    {
+        // Recursively traverse the array
+        array_walk_recursive($array, function (&$item)
+        {
+            // If the item is a string
+            if (is_string($item))
+            {
+                // Remove invalid characters
+                $item = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $item);
+            }
+        });
+
+        // Return the updated array
+        return $array;
+    }
+    // Return false if this is not an array
+    else return false;
+}
+
+/**
+ * A helper function to centralize the logging for toggling extras on or off.
+ * 
+ * @param string $extra Localization key for the name of the extra
+ * @param boolean $on Activated state of the extra (true = ON, false = OFF) Default: true
+ */
+function audit_log_extra_toggle(string $extra, bool $on = true) {
+    global $lang;
+
+    $on_off = $on ? 'On' : 'Off';
+
+    if (!empty($_SESSION['uid']) && !empty($_SESSION['user'])) {
+        write_log(1000, $_SESSION['uid'], _lang("ExtraToggled{$on_off}", ['extra_name' => $lang[$extra], 'user' => $_SESSION['user']]), 'extra');
+    } else {
+        write_log(1000, 0, _lang("ExtraTechnicalToggled{$on_off}", ['extra_name' => $lang[$extra]]), 'extra');
+    }
+}
+
 ?>

@@ -54,13 +54,27 @@
 ?>
 <div class="row bg-white">
     <div class="col-12 active-audit-test-container">
-        <?php display_testing(); ?>
+    <?php 
+        display_testing(); 
+    ?>
     </div>
 </div>
+
 <script>
     $(document).ready(function() {
         $("[name='team[]']").multiselect({enableFiltering: true, buttonWidth: '100%'});
         $(".datepicker").initAsDatePicker();
+
+    <?php 
+        if (!check_permission("riskmanagement")) { 
+    ?>
+        $(document).on("click", "#submit_test_result", function() {
+            $('#edit-test').submit();
+        });
+    <?php 
+        } else { 
+    ?>
+
         $('#tab-content-container select.assets-asset-groups-select').each(function() {
             setupAssetsAssetGroupsWidget($(this));
         });
@@ -73,6 +87,7 @@
             enableFiltering: true,
             allSelectedText: "<?= $escaper->escapeHtml($lang['ALL']);?>",
             buttonWidth: '100%',
+            maxHeight: 350,
             includeSelectAllOption: true,
             enableCaseInsensitiveFiltering: true,
         });
@@ -104,6 +119,10 @@
             $('#edit-test').submit();
         });
         $(document).on("click", ".associate_new_risk", function() {
+
+            // Reset the form
+            reset_new_risk_form("#reset_form");
+
             $("#modal-new-risk").modal('show');
             $("#associate-risk").modal("hide");
         });
@@ -131,8 +150,15 @@
             $("#associate_exist_risk_ids").val(risk_ids.join(","));
             $('form#edit-test').submit();
         });
+    <?php 
+        } 
+    ?>
     });
 </script>
+
+    <?php 
+        if (check_permission("riskmanagement")) { 
+    ?>
 
 <!-- MODEL WINDOW FOR ASSOCIATE RISK CONFIRM -->
 <div id="associate-risk" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="associate-risk" aria-hidden="true">
@@ -173,13 +199,13 @@
 
 <!-- MODEL WINDOW FOR SELECT EXISTING RISK -->
 <div id="modal-existing-risk" class="modal hide fade in" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title"><?= $escaper->escapeHtml($lang['ExistingRisk']); ?></h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" style="padding-bottom:250px">
+            <div class="modal-body">
                 <div class="form-group">
                     <label for=""><?= $escaper->escapeHtml($lang['AvailableRisks']); ?></label>
     <?php 
@@ -218,7 +244,10 @@
         </div>
     </div>
 </div>
-<?php  
+    <?php 
+        } 
+    ?>
+<?php
     // Render the footer of the page. Please don't put code after this part.
     render_footer();
 ?>

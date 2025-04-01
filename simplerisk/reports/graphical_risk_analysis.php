@@ -5,7 +5,7 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['chart.js', 'CUSTOM:common.js']);
+    render_header_and_sidebar(['chart.js', 'CUSTOM:common.js'], active_sidebar_submenu: 'Reporting_RiskManagement', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'GraphicalRiskAnalysis');
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/graphical.php'));

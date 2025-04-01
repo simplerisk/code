@@ -326,6 +326,34 @@ class Router
     }
 
     /**
+     * Add a route that renders a view
+     *
+     * @param string $pattern The route pattern/path to match
+     * @param string $view The view to render
+     * @param array $data The data to pass to the view
+     */
+    public static function view(string $pattern, string $view, $data = [])
+    {
+        static::get($pattern, function () use ($view, $data) {
+            return response()->view($view, $data);
+        });
+    }
+
+    /**
+     * Add a route that renders an inertia view
+     *
+     * @param string $pattern The route pattern/path to match
+     * @param string $view The view to render
+     * @param array $data The data to pass to the view
+     */
+    public static function inertia(string $pattern, string $view, $data = [])
+    {
+        static::get($pattern, function () use ($view, $data) {
+            return inertia($view, $data);
+        });
+    }
+
+    /**
      * Create a resource route for using controllers.
      *
      * This creates a routes that implement CRUD functionality in a controller
@@ -356,10 +384,14 @@ class Router
         static::match('GET|HEAD', $pattern, "$controller@index");
         static::post($pattern, "$controller@store");
         static::match('GET|HEAD', "$pattern/create", "$controller@create");
-        static::match('POST|DELETE', "$pattern/{id}/delete", "$controller@destroy");
-        static::match('POST|PUT|PATCH', "$pattern/{id}/edit", "$controller@update");
+        static::match('DELETE', "$pattern/{id}", "$controller@destroy");
+        static::match('PUT|PATCH', "$pattern/{id}", "$controller@update");
         static::match('GET|HEAD', "$pattern/{id}/edit", "$controller@edit");
         static::match('GET|HEAD', "$pattern/{id}", "$controller@show");
+
+        // still keeping DELETE and PUT|PATCH so earlier versions of leaf apps don't break
+        static::match('POST|DELETE', "$pattern/{id}/delete", "$controller@destroy");
+        static::match('POST|PUT|PATCH', "$pattern/{id}/edit", "$controller@update");
     }
 
     /**
@@ -374,15 +406,29 @@ class Router
      * - `/posts/{id}/delete` - POST | DELETE - Controller@destroy
      *
      * @param string $pattern The base route to use eg: /post
-     * @param string $controller to handle route eg: PostController
+     * @param array|string $controller to handle route eg: PostController
      */
-    public static function apiResource(string $pattern, string $controller)
+    public static function apiResource(string $pattern, $controller)
     {
+        if (is_array($controller)) {
+            $controllerToCall = $controller[0];
+
+            $controller[0] = function () use ($pattern, $controllerToCall) {
+                static::apiResource('/', $controllerToCall);
+            };
+
+            return static::group($pattern, $controller);
+        }
+
         static::match('GET|HEAD', $pattern, "$controller@index");
         static::post($pattern, "$controller@store");
+        static::match('GET|HEAD', "$pattern/{id}", "$controller@show");
+        static::match('DELETE', "$pattern/{id}", "$controller@destroy");
+        static::match('PUT|PATCH', "$pattern/{id}", "$controller@update");
+
+        // still keeping DELETE and PUT|PATCH so earlier versions of leaf apps don't break
         static::match('POST|DELETE', "$pattern/{id}/delete", "$controller@destroy");
         static::match('POST|PUT|PATCH', "$pattern/{id}/edit", "$controller@update");
-        static::match('GET|HEAD', "$pattern/{id}", "$controller@show");
     }
 
     /**
@@ -390,6 +436,8 @@ class Router
      *
      * @param string|array $route The route to redirect to
      * @param array|null $data Data to pass to the next route
+     *
+     * @deprecated Use `Leaf\Http\Response::redirect` instead
      */
     public static function push($route, ?array $data = null)
     {
@@ -717,11 +765,20 @@ class Router
                         return trim(substr($match[0][0], 0, $matches[$index + 1][0][1] - $match[0][1]), '/');
                     }
 
+                    // Temporary fix for optional parameters
+                    if (($match[0][1] ?? 1) === -1 && ($match[0][0] ?? null) === '') {
+                        return;
+                    }
+
                     // We have no following parameters: return the whole lot
                     return isset($match[0][0]) ? trim($match[0][0], '/') : null;
                 }, $matches, array_keys($matches));
 
                 $paramsWithSlash = array_filter($params, function ($param) {
+                    if (!$param) {
+                        return false;
+                    }
+
                     return strpos($param, '/') !== false;
                 });
 
@@ -840,6 +897,12 @@ class Router
 
     private static function invoke($handler, $params = [])
     {
+        if (!empty($params)) {
+            $params = array_filter($params, function ($param) {
+                return $param !== null;
+            });
+        }
+
         if (is_callable($handler)) {
             call_user_func_array(
                 $handler,
@@ -863,6 +926,13 @@ class Router
                 if (forward_static_call_array([$controller, $method], $params) === false)
                 ;
             }
+        } elseif (strpos($handler, ':') !== false) {
+            $middlewareParams = [];
+
+            $middlewareParams = explode(':', $handler);
+            $middleware = array_shift($middlewareParams);
+
+            static::$namedMiddleware[$middleware](explode('|', $middlewareParams[0] ?? ''));
         }
     }
 }

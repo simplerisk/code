@@ -6,16 +6,17 @@
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 
-    render_header_and_sidebar(['datatables', 'tabs:logic', 'chart.js']);
+    render_header_and_sidebar(['datatables', 'tabs:logic', 'chart.js'], active_sidebar_submenu: 'Reporting_Governance', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'ControlGapAnalysis');
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));
 
     // If User has no access permission for governance menu, enforce to main page.
-    if(empty($_SESSION['governance']))
-    {
+    if(empty($_SESSION['governance'])) {
+
         header("Location: ../index.php");
         exit(0);
+        
     }
 
 ?>

@@ -22,7 +22,7 @@ class Headers
      *
      * @param int|null $httpCode The current response code.
      */
-    public static function status(int $httpCode = null)
+    public static function status(?int $httpCode = null)
     {
         if ($httpCode === null) return self::$httpCode;
         self::$httpCode = $httpCode;

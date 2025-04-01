@@ -8,6 +8,8 @@ use DOMElement;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\XML\Constants as C;
 use SimpleSAML\XML\Exception\SchemaViolationException;
+use SimpleSAML\XML\SchemaValidatableElementInterface;
+use SimpleSAML\XML\SchemaValidatableElementTrait;
 use SimpleSAML\XMLSecurity\Exception\InvalidArgumentException;
 
 use function explode;
@@ -18,8 +20,10 @@ use function join;
  *
  * @package simplesamlphp/xml-security
  */
-class InclusiveNamespaces extends AbstractEcElement
+class InclusiveNamespaces extends AbstractEcElement implements SchemaValidatableElementInterface
 {
+    use SchemaValidatableElementTrait;
+
     /**
      * Initialize the InclusiveNamespaces element.
      *

@@ -1,22 +1,24 @@
 <?php
-/* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this
-* file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+    /* This Source Code Form is subject to the terms of the Mozilla Public
+    * License, v. 2.0. If a copy of the MPL was not distributed with this
+    * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Render the header and sidebar
-require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'multiselect'], ['check_riskmanagement' => true]);
+    // Render the header and sidebar
+    require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'multiselect'], ['check_riskmanagement' => true]);
 
-// If reviewed is passed via GET
-if (isset($_GET['reviewed']))
-{
-    // If it's true
-    if ($_GET['reviewed'] == true)
-    {
-        // Display an alert
-        set_alert(true, "good", "Risk review submitted successfully!");
+    // If reviewed is passed via GET
+    if (isset($_GET['reviewed'])) {
+
+        // If it's true
+        if ($_GET['reviewed'] == true) {
+
+            // Display an alert
+            set_alert(true, "good", "Risk review submitted successfully!");
+
+        }
     }
-}
+
 ?>
 <div class="row bg-white">
     <div class="col-12">
@@ -25,10 +27,10 @@ if (isset($_GET['reviewed']))
                 <div id="tab-container" class="tab-data">
                     <div class="row">
                         <div class="col-10">
-                            <p><strong><?php echo $escaper->escapeHtml($lang['ReviewRegularlyHelp']); ?>.</strong></p>
+                            <p><strong><?= $escaper->escapeHtml($lang['ReviewRegularlyHelp']); ?>.</strong></p>
                         </div>
                         <div class="col-2 text-end">
-                            <a href="#" data-sr-role="dt-settings" data-sr-target="review-risks" title="<?php echo $escaper->escapeHtml($lang['Settings']);?>" role="button" class="btn btn-dark float-end" data-bs-toggle="modal" data-bs-target="#setting_modal"><i class="fa fa-cog"></i></a>
+                            <a href="#" data-sr-role="dt-settings" data-sr-target="review-risks" title="<?= $escaper->escapeHtml($lang['Settings']);?>" role="button" class="btn btn-dark float-end" data-bs-toggle="modal" data-bs-target="#setting_modal"><i class="fa fa-cog"></i></a>
                         </div>
                     </div>
                     <div class="row">
@@ -46,22 +48,40 @@ if (isset($_GET['reviewed']))
   <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
     <div class="modal-content">
         <div class="modal-header">
-            <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['ColumnSelections']); ?></h4>
+            <h4 class="modal-title"><?= $escaper->escapeHtml($lang['ColumnSelections']); ?></h4>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
             <form id="custom_display_settings" name="custom_display_settings" method="post">
-                <?php echo display_custom_risk_columns("custom_reviewregularly_display_settings");?>
+                <?= display_custom_risk_columns("custom_reviewregularly_display_settings");?>
             </form>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-            <button type="button" id="save_display_settings" class="btn btn-submit"><?php echo $escaper->escapeHtml($lang['Save']); ?></button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+            <button type="button" id="save_display_settings" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Save']); ?></button>
         </div>
     </div>
    </div>
 </div>
+<script>
+
+    $(function () {
+                        
+        // display custom display settings when clicking the setting cog button
+        $("[data-bs-target='#setting_modal']").on('click', function() {
+
+            // Set false to all checkboxes
+            $(`form#custom_display_settings [type='checkbox']`).prop('checked', false);
+
+            // Set true to checkboxes that are in the custom_display_settings array
+            custom_display_settings.map((e) => {
+                return $(`form#custom_display_settings [name='${e}']`).prop('checked', true);
+            }); 
+        });
+    });
+
+</script>
 <?php  
-// Render the footer of the page. Please don't put code after this part.
-render_footer();
+    // Render the footer of the page. Please don't put code after this part.
+    render_footer();
 ?>

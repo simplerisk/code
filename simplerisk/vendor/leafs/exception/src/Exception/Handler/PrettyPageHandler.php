@@ -88,7 +88,7 @@ class PrettyPageHandler extends Handler
         '_FILES' => [],
         '_COOKIE' => [],
         '_SESSION' => [],
-        '_SERVER' => [],
+        '' => [],
         '_ENV' => [],
     ];
 
@@ -150,7 +150,7 @@ class PrettyPageHandler extends Handler
         $this->searchPaths[] = __DIR__ . "/../Resources";
 
         // blacklist php provided auth based values
-        $this->blacklist('_SERVER', 'PHP_AUTH_PW');
+        $this->blacklist('', 'PHP_AUTH_PW');
 
         $this->templateHelper = new TemplateHelper();
 
@@ -266,8 +266,8 @@ class PrettyPageHandler extends Handler
                 "Files"                 => isset($_FILES) ? $this->masked($_FILES, '_FILES') : [],
                 "Cookies"               => $this->masked($_COOKIE, '_COOKIE'),
                 "Session"               => isset($_SESSION) ? $this->masked($_SESSION, '_SESSION') :  [],
-                "Server/Request Data"   => $this->masked($_SERVER, '_SERVER'),
-                "Environment Variables" => $this->masked($_ENV, '_ENV'),
+                "Server/Request Data"   => $this->isLocal() ? $this->masked($_SERVER, '_SERVER') : [],
+                "Environment Variables" => $this->isLocal() ? $this->masked($_ENV, '_ENV') : [],
             ],
         ];
 
@@ -383,7 +383,7 @@ class PrettyPageHandler extends Handler
             throw new InvalidArgumentException('Expecting callback argument to be callable');
         }
 
-        $this->extraTables[$label] = function (\Leaf\Exceptions\Inspector $inspector = null) use ($callback) {
+        $this->extraTables[$label] = function (?\Leaf\Exceptions\Inspector $inspector = null) use ($callback) {
             try {
                 $result = call_user_func($callback, $inspector);
 
@@ -438,6 +438,19 @@ class PrettyPageHandler extends Handler
         $this->handleUnconditionally = (bool) $value;
         return $this;
     }
+
+    /**
+     * is Local Environment
+     * Check if the application is running in a local environment.
+     *
+     * @return bool True if running locally, otherwise false.
+     */
+    public function isLocal(): bool
+    {
+        return ($_SERVER['APP_ENV'] ?? '') === 'local' 
+            || in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1'], true);
+    }
+
 
     /**
      * Adds an editor resolver.
@@ -819,7 +832,7 @@ class PrettyPageHandler extends Handler
      */
     private function masked(array $superGlobal, $superGlobalName)
     {
-        $blacklisted = $this->blacklist[$superGlobalName];
+        $blacklisted = $this->blacklist[$superGlobalName ?? ''] ?? [];
 
         $values = $superGlobal;
 

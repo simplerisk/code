@@ -97,6 +97,15 @@ function display($display = "")
                 <div class='row'>
                     <div class='form-group'>
                         <label>Anthropic API Key:</label>
+                        <div>To begin using an Anthropic API key:</div>
+                        <div>
+                            <ol>
+                                <li>Create an account <a class="open-in-new-tab" href="https://console.anthropic.com/" target="_blank">here</a>.</li>
+                                <li>Add credits to your account <a class="open-in-new-tab" href="https://console.anthropic.com/settings/billing" target="_blank">here</a>.  We recommend at least $40 so that you can take advantage of the Tier 2 limits.</li>
+                                <li>Create an API key <a class="open-in-new-tab" href="https://console.anthropic.com/settings/keys" target="_blank">here.</a></li>
+                                <li>Enter your API key in the input box below.</li>
+                            </ol>
+                        </div>
                         <?php display_anthropic_api_key_input() ?>
                     </div>
                 </div>
@@ -104,6 +113,14 @@ function display($display = "")
         </div>
 
 <?php
+
+    // And the AI extra is  activated
+    if (artificial_intelligence_extra())
+    {
+            // Display the artificial intelligence settings
+            display_artificial_intelligence_settings();
+    }
+
     // If we have an Anthropic API key
     if (get_setting("anthropic_api_key") != false)
     {

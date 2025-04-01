@@ -16,14 +16,14 @@ namespace Leaf\Http;
  */
 class Request
 {
-    const METHOD_HEAD = 'HEAD';
-    const METHOD_GET = 'GET';
-    const METHOD_POST = 'POST';
-    const METHOD_PUT = 'PUT';
-    const METHOD_PATCH = 'PATCH';
-    const METHOD_DELETE = 'DELETE';
-    const METHOD_OPTIONS = 'OPTIONS';
-    const METHOD_OVERRIDE = '_METHOD';
+    public const METHOD_HEAD = 'HEAD';
+    public const METHOD_GET = 'GET';
+    public const METHOD_POST = 'POST';
+    public const METHOD_PUT = 'PUT';
+    public const METHOD_PATCH = 'PATCH';
+    public const METHOD_DELETE = 'DELETE';
+    public const METHOD_OPTIONS = 'OPTIONS';
+    public const METHOD_OVERRIDE = '_METHOD';
 
     protected static $errors = [];
     protected static $formDataMediaTypes = ['application/x-www-form-urlencoded'];
@@ -45,7 +45,32 @@ class Request
      */
     public static function getMethod(): string
     {
+        return static::methodOverride() ?? static::getOriginalMethod();
+    }
+
+    /**
+     * Get original method
+     */
+    public static function getOriginalMethod(): string
+    {
         return $_SERVER['REQUEST_METHOD'];
+    }
+
+    /**
+     * Is this a method override request?
+     * @return string|null
+     */
+    public static function methodOverride()
+    {
+        if ($method = static::headers('X-Http-Method-Override')) {
+            return strtoupper($method);
+        }
+
+        if (static::getOriginalMethod() === 'POST' && $method = static::get(static::METHOD_OVERRIDE)) {
+            return strtoupper($method);
+        }
+
+        return null;
     }
 
     /**
@@ -234,7 +259,7 @@ class Request
      *
      * @return mixed
      */
-    public static function params(string $key = null, $default = null)
+    public static function params(?string $key = null, $default = null)
     {
         return static::get($key) ?? $default;
     }
@@ -250,7 +275,7 @@ class Request
      *
      * @return mixed
      */
-    public static function getOrDefault(string $key = null, $default = null)
+    public static function getOrDefault(?string $key = null, $default = null)
     {
         return static::get($key) ?? $default;
     }
@@ -300,7 +325,7 @@ class Request
      * @param string|null $key
      * @return array|string|null
      */
-    public static function cookies(string $key = null)
+    public static function cookies(?string $key = null)
     {
         return $key === null ?
             Cookie::all() :
@@ -438,13 +463,13 @@ class Request
             }
         }
 
-        $fileSystem = new \Leaf\FS;
+        $fileSystem = new \Leaf\FS\File;
 
         if (!isset($config['rename']) || !$config['rename']) {
             $config['unique'] = true;
         }
 
-        $uploadedFile = $fileSystem->uploadFile(
+        $uploadedFile = $fileSystem->upload(
             $file,
             preg_replace(
                 '/\/$/',
@@ -454,12 +479,7 @@ class Request
             $config
         );
 
-        if (!$uploadedFile) {
-            static::$errors = $fileSystem->errors();
-            return false;
-        }
-
-        return $fileSystem->uploadInfo($uploadedFile);
+        return $uploadedFile;
     }
 
     /**
@@ -472,8 +492,10 @@ class Request
      */
     public static function uploadAs(string $key, string $destination, string $name, array $config = [])
     {
-        $config['name'] = $name;
+        $fileExtension = pathinfo($_FILES[$key]['name'], PATHINFO_EXTENSION);
+
         $config['rename'] = true;
+        $config['name'] = $name . '.' . $fileExtension;
 
         return static::upload($key, $destination, $config);
     }
@@ -598,7 +620,7 @@ class Request
     }
 
     /**
-     * Get Script Name (physical path)
+     * Get Script Name
      * @return string
      */
     public static function getScriptName(): string
@@ -607,12 +629,26 @@ class Request
     }
 
     /**
-     * Get Path (physical path + virtual path)
+     * Get physical path
+     * @return string
+     */
+    public static function getPhysicalPath(): string
+    {
+        return dirname($_SERVER['SCRIPT_NAME']);
+    }
+
+    /**
+     * Get Path
      * @return string
      */
     public static function getPath(): string
     {
-        return static::getScriptName() . static::getPathInfo();
+        $physicalPath = static::getPhysicalPath();
+
+        return substr(
+            parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH),
+            $physicalPath == '/' ? 0 : strlen($physicalPath)
+        );
     }
 
     /**
@@ -622,6 +658,15 @@ class Request
     public static function getPathInfo(): ?string
     {
         return $_SERVER['REQUEST_URI'] ?? null;
+    }
+
+    /**
+     * Get query string
+     * @return string|null
+     */
+    public static function getQueryString(): ?string
+    {
+        return $_SERVER['QUERY_STRING'] ?? null;
     }
 
     /**
@@ -680,7 +725,7 @@ class Request
      */
     public static function getUserAgent(): ?string
     {
-        return Headers::get('HTTP_USER_AGENT');
+        return Headers::get('USER-AGENT');
     }
 
     /**

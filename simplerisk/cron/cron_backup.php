@@ -7,7 +7,7 @@
 // Only run this script if called via the command line
 if (php_sapi_name() == "cli")
 {
-        // Include required functions file
+    // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/functions.php'));
 	require_once(realpath(__DIR__ . '/../includes/config.php'));
     require_once(realpath(__DIR__ . '/../vendor/autoload.php'));

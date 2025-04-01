@@ -36,7 +36,7 @@ class Date
     /**
      * Base method for all date/time operations
      */
-    public function tick($userDate = 'now', string $userTimeZone = null): Date
+    public function tick($userDate = 'now', ?string $userTimeZone = null): Date
     {
         $this->date = ($userDate instanceof DateTime ? $userDate : new DateTime(str_replace('/', '-', $userDate)));
 
@@ -60,7 +60,7 @@ class Date
     /**
      * Add a duration to the current date
      */
-    public function add($duration, string $interval = null): Date
+    public function add($duration, ?string $interval = null): Date
     {
         $this->date->modify($interval ? "$duration $interval" : $duration);
 
@@ -70,9 +70,9 @@ class Date
     /**
      * Subtract a duration to the current date
      */
-    public function subtract($duration, string $interval = null): Date
+    public function subtract($duration, ?string $interval = null): Date
     {
-        return $this->add($interval ? "-$duration $interval" : '-' . $duration);
+        return $this->add($interval ? "-$duration $interval" : "-$duration");
     }
 
     /**
@@ -172,7 +172,7 @@ class Date
      *
      * @return Date|int
      */
-    public function millisecond(int $value = null)
+    public function millisecond(?int $value = null)
     {
         return $value ? $this->set('millisecond', $value) : (int) $this->get('millisecond');
     }
@@ -182,7 +182,7 @@ class Date
      *
      * @return Date|int
      */
-    public function second(int $value = null)
+    public function second(?int $value = null)
     {
         return $value ? $this->set('second', $value) : (int) $this->get('second');
     }
@@ -192,7 +192,7 @@ class Date
      *
      * @return Date|int
      */
-    public function minute(int $value = null)
+    public function minute(?int $value = null)
     {
         return $value ? $this->set('minute', $value) : (int) $this->get('minute');
     }
@@ -202,7 +202,7 @@ class Date
      *
      * @return Date|int
      */
-    public function hour(int $value = null)
+    public function hour(?int $value = null)
     {
         return $value ? $this->set('hour', $value) : (int) $this->get('hour');
     }
@@ -212,7 +212,7 @@ class Date
      *
      * @return Date|int
      */
-    public function day(int $value = null)
+    public function day(?int $value = null)
     {
         return $value ? $this->set('day', $value) : (int) $this->get('day');
     }
@@ -222,7 +222,7 @@ class Date
      *
      * @return Date|int
      */
-    public function month(int $value = null)
+    public function month(?int $value = null)
     {
         return $value ? $this->set('month', $value) : (int) $this->get('month');
     }
@@ -232,7 +232,7 @@ class Date
      *
      * @return Date|int
      */
-    public function year(int $value = null)
+    public function year(?int $value = null)
     {
         return $value ? $this->set('year', $value) : (int) $this->get('year');
     }

@@ -5,7 +5,7 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'tabs:logic', 'datetimerangepicker', 'CUSTOM:pages/asset.js'], ['check_assets' => true]);
+    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'tabs:logic', 'datetimerangepicker', 'CUSTOM:pages/asset.js', 'CUSTOM:common.js'], ['check_assets' => true]);
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/assets.php'));
@@ -128,6 +128,25 @@
             var action = _this.data('action');
             var view = _this.closest('table').data('view');
 
+            // If the action is delete, we need to show the popup to confirm the action
+            if (action == 'delete') {
+
+                confirm("<?= $escaper->escapeHtml($lang["AreYouSureYouWantToDeleteSelction"]) ?>", () => {
+                    handle_asset_row_action(id, action, view);
+                });
+
+            // If the action isn't delete, we don't need to show the popup, just call the handler
+            } else {
+
+                handle_asset_row_action(id, action, view); 
+
+            }
+        
+        });
+
+        // Event handler for the asset row action
+        function handle_asset_row_action(id, action, view) {
+
             $.blockUI({message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>'});
             $.ajax({
                 type: "POST",
@@ -220,7 +239,7 @@
                 },
                 complete: function() { }
             });
-        });
+        }
 
         // Event handler for the view level actions
         $('body').on('click', 'button.asset-view-action', function(e) {

@@ -32,7 +32,7 @@
     if (isset($_POST['update_associated_risks'])) {
 
         // check permission
-        if (!isset($_SESSION["modify_audits"]) || $_SESSION["modify_audits"] != 1) {
+        if (!isset($_SESSION["modify_audits"]) || $_SESSION["modify_audits"] != 1 || !check_permission("riskmanagement")) {
             set_alert(true, "bad", $lang['NoPermissionForThisAction']);
             refresh();
         }
@@ -44,17 +44,20 @@
     }
 
     $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
-
 ?>
 
 <div class="row bg-white">
     <div class="col-12 past-audit-test-container">
     <?php 
-        display_detail_test(); 
+        display_detail_test();
     ?>
     </div>
 </div>
-    
+
+<?php 
+    if (check_permission("riskmanagement")) { 
+?>
+
 <!-- MODEL WINDOW FOR SUBMIT RISK -->
 <div id="modal-new-risk" class="modal hide fade in" tabindex="-1" role="dialog" aria-labelledby="modal-new-risk" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -65,7 +68,7 @@
             </div>
             <div class="modal-body">
                 <div id="tab-content-container" class="tab-data" style="background-color:#fff;padding-top:20px;padding-right:20px;margin-bottom:15px">
-    <?php 
+    <?php
                     display_add_risk();
     ?>
                 </div>
@@ -82,10 +85,10 @@
                 <h4 class="modal-title"><?= $escaper->escapeHtml($lang['ExistingRisk']); ?></h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" style="padding-bottom:250px">
-                <div class="form-group">
+            <div class="modal-body">
+                <div>
                     <label for=""><?= $escaper->escapeHtml($lang['AvailableRisks']); ?></label>
-    <?php 
+    <?php
         $risks = get_risks();
         $risk_options = [];
         foreach ($risks as $risk) {
@@ -98,7 +101,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
                 <button id="add_existing_risks" class="btn btn-danger"><?= $escaper->escapeHtml($lang['Select']); ?></button>
             </div>
         </div>
@@ -117,6 +120,7 @@
             enableFiltering: true,
             allSelectedText: "<?= $escaper->escapeHtml($lang['ALL']);?>",
             buttonWidth: '100%',
+            maxHeight: 300,
             includeSelectAllOption: true,
             enableCaseInsensitiveFiltering: true,
         });
@@ -149,8 +153,13 @@
             $('#edit-test').submit();
         });
         $(document).on("click", ".associate_new_risk", function() {
+
+            // Reset the form
+            reset_new_risk_form("#reset_form");
+
             $("#modal-new-risk").modal("show");
             $("#associate-risk").modal("hide");
+
         });
         $(document).on("click", ".associate_existing_risk", function() {
             $("#modal-existing-risk").modal("show");
@@ -201,7 +210,10 @@
         }
     });
 </script>
-<?php  
+<?php
+    } // End of permission check
+?>
+<?php
     // Render the footer of the page. Please don't put code after this part.
     render_footer();
 ?>

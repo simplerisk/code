@@ -1,0 +1,48 @@
+//****************************** CONFIGURE > RISK AND THREAT BEGIN ********************************//
+.risk_thread_catalog {
+    table.dataTable tbody {
+        tr.data-row td span.grippy {
+            content: "....";
+            width: 2em;
+            height: 2em;
+            flex-shrink: 0;
+            flex-grow:0;
+            display: inline-block;
+            overflow: hidden;
+            line-height: 5px;
+            padding: 3px 4px;
+            cursor: move;
+            vertical-align: middle;
+            margin-top: -0.7em;
+            margin-right: 0.3em;
+            font-size: 12px;
+            font-family: sans-serif;
+            letter-spacing: 2px;
+            text-shadow: 1px 0 1px black;
+    
+            &::after {
+                content: ".. .. .. .. .. .. ..";
+            }
+        }
+    
+        tr.dtrg-group.dtrg-start td {
+            background-color: var(--sr-default) !important;
+    
+            // get rid of striped color effect
+            box-shadow: none;
+        }
+    }
+
+    #risk_catalog {
+        td {
+            word-break: break-word;
+        }
+    }
+
+    #threat_catalog {
+        td {
+            word-break: break-word;
+        }
+    }
+}
+//******************************* CONFIGURE > RISK AND THREAT END *********************************//

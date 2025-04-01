@@ -28,6 +28,9 @@ class Config
         'log.file' => 'app.log',
         'log.open' => true,
         'mode' => 'development',
+        'session' => true,
+        'session.lifetime' => 60 * 60 * 24,
+        'session.cookie' => ['secure' => false, 'httponly' => true, 'samesite' => 'lax'],
         'scripts' => [],
         'views.path' => null,
         'views.cachePath' => null,
@@ -58,6 +61,23 @@ class Config
     {
         $class = new $className();
         $diIndex = $name ?? static::getDiIndex($class);
+
+        if (!class_exists('Leaf\Core') && !static::getStatic('views.path') && is_dir('views')) {
+            app()->vite();
+            app()->config([
+                'views.path' => 'views',
+                'views.cache' => 'cache',
+            ]);
+
+            if ($className === 'Leaf\Blade') {
+                $class->configure([
+                    'views' => 'views',
+                    'cache' => 'cache',
+                ]);
+            } elseif ($className === 'Leaf\BareUI') {
+                $class->config('path', './views');
+            }
+        }
 
         static::set("views.$diIndex", $class);
     }

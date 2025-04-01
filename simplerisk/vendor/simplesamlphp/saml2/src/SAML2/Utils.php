@@ -120,7 +120,7 @@ class Utils
      * @param string $type Public or private key, defaults to public.
      * @return XMLSecurityKey The new key.
      */
-    public static function castKey(XMLSecurityKey $key, string $algorithm, string $type = null) : XMLSecurityKey
+    public static function castKey(XMLSecurityKey $key, string $algorithm, ?string $type = null) : XMLSecurityKey
     {
         $type = $type ?: 'public';
         Assert::oneOf($type, ["private", "public"]);
@@ -172,7 +172,7 @@ class Utils
 
         /** @var XMLSecurityDSig $objXMLSecDSig */
         $objXMLSecDSig = $info['Signature'];
-        
+
         /**
          * @var \DOMElement[] $sigMethod
          * @var \DOMElement $objXMLSecDSig->sigNode
@@ -221,6 +221,7 @@ class Utils
             $xpCache->registerNamespace('saml_protocol', Constants::NS_SAMLP);
             $xpCache->registerNamespace('saml_assertion', Constants::NS_SAML);
             $xpCache->registerNamespace('saml_metadata', Constants::NS_MD);
+            $xpCache->registerNamespace('saml_idpdisc', Constants::NS_IDPDISC);
             $xpCache->registerNamespace('ds', XMLSecurityDSig::XMLDSIGNS);
             $xpCache->registerNamespace('xenc', XMLSecEnc::XMLENCNS);
         }
@@ -242,7 +243,7 @@ class Utils
      * @param \DOMElement|null $parent The target parent element.
      * @return \DOMElement The copied element.
      */
-    public static function copyElement(DOMElement $element, DOMElement $parent = null) : DOMElement
+    public static function copyElement(DOMElement $element, ?DOMElement $parent = null) : DOMElement
     {
         if ($parent === null) {
             $document = DOMDocumentFactory::create();
@@ -321,7 +322,7 @@ class Utils
         XMLSecurityKey $key,
         array $certificates,
         DOMElement $root,
-        DOMNode $insertBefore = null
+        ?DOMNode $insertBefore = null
     ) : void {
         $objXMLSecDSig = new XMLSecurityDSig();
         $objXMLSecDSig->setCanonicalMethod(XMLSecurityDSig::EXC_C14N);

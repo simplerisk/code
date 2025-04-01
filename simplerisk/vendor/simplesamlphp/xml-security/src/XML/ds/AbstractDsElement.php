@@ -19,4 +19,7 @@ abstract class AbstractDsElement extends AbstractElement
 
     /** @var string */
     public const NS_PREFIX = 'ds';
+
+    /** @var string */
+    public const SCHEMA = 'resources/schemas/xmldsig-core-schema.xsd';
 }

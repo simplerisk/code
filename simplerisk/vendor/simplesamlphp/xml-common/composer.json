@@ -29,12 +29,12 @@
         "php": "^8.1",
         "ext-date": "*",
         "ext-dom": "*",
+        "ext-filter": "*",
         "ext-libxml": "*",
         "ext-pcre": "*",
         "ext-spl": "*",
-        "ext-xmlreader": "*",
 
-        "simplesamlphp/assert": "^1.2",
+        "simplesamlphp/assert": "~1.8.0",
         "simplesamlphp/composer-xmlprovider-installer": "~1.0.0",
         "symfony/finder": "^6.4"
     },

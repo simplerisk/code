@@ -966,7 +966,7 @@ function check_extra_versions($current_app_version)
 						// Get the expiration date
 						$expires = $extra_xml->{"expires"}->__toString();
 
-						// If the exipration date is not set
+						// If the expiration date is not set
 						if ($expires == "0000-00-00 00:00:00")
 						{
 							$expired = false;
@@ -1305,7 +1305,7 @@ function unable_to_communicate_with_database() {
                         </div>
                         <!-- End of content -->
                         <footer class="footer text-center">
-                  			Copyright 2024 SimpleRisk, Inc. All rights reserved.
+                  			Copyright 2025 SimpleRisk, Inc. All rights reserved.
                 		</footer>
                 	</div>
                 	<!-- End of content-wrapper -->

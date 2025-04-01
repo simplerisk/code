@@ -38,7 +38,7 @@ Zepto(function($) {
     // We show more code than needed, purely for proper syntax highlighting
     // Let’s hide a big chunk of that code and then scroll the remaining block
     $activeFrame.find('.code-block').first().css({
-      maxHeight: 345,
+      maxHeight: 450,
       overflow: 'hidden',
     }).scrollTop(999);
 

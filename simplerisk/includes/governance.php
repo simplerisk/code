@@ -101,7 +101,7 @@ function get_frameworks_as_treegrid($status) {
         $framework_value = (int)$framework['value'];
         $framework['name'] = $escaper->escapeHtml($framework['name']);
         $framework['actions'] = "
-            <div class='text-center'>
+            <div class='d-flex justify-content-center align-items-center w-100'>
                 <a class='framework-block--edit' data-id='{$framework_value}'>
                     <i class='fa fa-edit'></i>
                 </a>" .
@@ -165,7 +165,6 @@ function get_framework($framework_id){
         return false;
     }
 }
-
 
 /***************************************************
  * FUNCTION: GET PARENT FRAMEWORKS BY FRAMEWORK ID *
@@ -347,7 +346,7 @@ function get_framework_tabs($status) {
             <thead>
                 <th data-options=\"field:'name'\" width='20%'>{$escaper->escapeHtml($lang['FrameworkName'])}</th>
                 <th data-options=\"field:'description'\" width='70%'>{$escaper->escapeHtml($lang['FrameworkDescription'])}</th>
-                <th data-options=\"field:'actions'\" width='10%'></th>
+                <th data-options=\"field:'actions'\" width='10%'>{$escaper->escapeHtml($lang['Actions'])}</th>
             </thead>
         </table>
     ";
@@ -635,7 +634,7 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
             }
         }
 
-        if (!empty($where_ids)) {
+        if (!empty($where_or_ids)) {
             $where[] = "FIND_IN_SET(t6.value, '".implode(",", $where_or_ids)."')";
         }
 
@@ -667,7 +666,9 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
                 }
             }
         }
-        $where[] = "m_1.framework IN (".implode(",", $where_or_ids).")";
+        if (!empty($where_or_ids)) {
+            $where[] = "m_1.framework IN (".implode(",", $where_or_ids).")";
+        }
         
         $sql .= " AND (". implode(" OR ", $where) . ")";
 
@@ -760,7 +761,7 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
     $stmt->execute();
     // Controls by filter except framework
     $controls = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
     // Final results
     $filtered_controls = array();
     
@@ -917,9 +918,13 @@ function update_framework($framework_id, $name, $description=false, $parent=fals
 
     global $lang;
 
-    if (isset($name) && !trim($name)) {
-        set_alert(true, "bad", $lang['FrameworkNameCantBeEmpty']);
-        return false;
+    if (isset($name)) {
+        $name = trim($name);
+
+        if (!$name) {
+            set_alert(true, "bad", $lang['FrameworkNameCantBeEmpty']);
+            return false;
+        }
     }
 
     $encrypted_name = try_encrypt($name);
@@ -945,11 +950,22 @@ function update_framework($framework_id, $name, $description=false, $parent=fals
         return false;
     }
 
+    // If customization extra is enabled
+    if(customization_extra())
+    {
+        // Include the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+        if (!save_custom_field_values($framework_id, "framework")) {
+            return false;
+        }
+    }
+
     $framework = get_framework($framework_id);
 
     $framework['name'] = $encrypted_name;
     // Sanitizing input that comes from the WYSIWYG editor or outside sources
-    $framework['description'] = $description === false ? try_encrypt($framework['description']) : try_encrypt(/*purify_html(*/$description/*)*/);
+    $framework['description'] = $description === false ? try_encrypt($framework['description']) : try_encrypt(purify_html($description));
     $framework['parent'] = $parent === false ? $framework['parent'] : $parent;
 
     // Create a framework
@@ -959,15 +975,6 @@ function update_framework($framework_id, $name, $description=false, $parent=fals
     $stmt->bindParam(":parent", $framework['parent'], PDO::PARAM_INT);
     $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
     $stmt->execute();
-    
-    // If customization extra is enabled
-    if(customization_extra())
-    {
-        // Include the extra
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-        save_custom_field_values($framework_id, "framework");
-    }
 
     $message = "A framework named \"{$name}\" was updated by username \"" . $_SESSION['user'] . "\".";
     write_log((int)$framework_id + 1000, $_SESSION['uid'], $message, "framework");
@@ -1103,6 +1110,8 @@ function update_framework_orders($framework_ids){
  * FUNCTION: ADD NEW FRAMEWORK      *
  ************************************/
 function add_framework_control($control){
+
+    global $lang, $escaper;
     
     $short_name = isset($control['short_name']) ? $control['short_name'] : "";
     $long_name = isset($control['long_name']) ? $control['long_name'] : "";
@@ -1123,6 +1132,16 @@ function add_framework_control($control){
     
     // Open the database connection
     $db = db_open();
+
+    // Check if the control exists
+    $stmt = $db->prepare("SELECT COUNT(*) FROM `framework_controls` where short_name=:short_name");
+    $stmt->bindParam(":short_name", $short_name);
+    $stmt->execute();
+    $count = (int)$stmt->fetchColumn();
+    if($count > 0){
+        set_alert(true, "bad", $escaper->escapeHtml($lang['TheControlAlreadyExists']));
+        return false;
+    }
 
     // Create a framework
     $stmt = $db->prepare("INSERT INTO `framework_controls` (`short_name`, `long_name`, `description`, `supplemental_guidance`, `control_owner`, `control_class`, `control_phase`, `control_number`, `control_maturity`, `desired_maturity`, `control_priority`, `family`, `mitigation_percent`, `control_status`) VALUES (:short_name, :long_name, :description, :supplemental_guidance, :control_owner, :control_class, :control_phase, :control_number, :control_current_maturity, :control_desired_maturity, :control_priority, :family, :mitigation_percent, :control_status)");
@@ -1952,7 +1971,7 @@ function make_tree_options_html($options, $parent, &$html, $indent="", $selected
  ******************************/
 function add_document($submitted_by, $document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, $additional_stakeholders, $approver, $team_ids){
     global $lang, $escaper;
-    
+
     // Open the database connection
     $db = db_open();
     
@@ -2003,7 +2022,7 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
         }
     }
 
-    // Check if error was happen in uploading files
+    // Check if error was happening in uploading files
     if(!empty($errors)) {
         // Delete added document if failed to upload a document file
         delete_document($document_id);
@@ -2222,8 +2241,8 @@ function delete_document($document_id, $version=null)
     $stmt = $db->prepare($sql);
     $stmt->bindParam(":id", $document_id, PDO::PARAM_INT);
     $stmt->execute();
-    $row = $stmt->fetch();
-    if(!$row[0]){
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if(!$row){
         set_alert(true, "bad", $escaper->escapeHtml($lang['NoDeleteDocumentationPermission']));
         return false;
     }
@@ -3448,11 +3467,9 @@ function display_framework_name_edit($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <label class='col-3 col-form-label' for='framework_name'>{$escaper->escapeHtml($lang['FrameworkName'])}<span class='required'>*</span> : </label>
-            <div class='col-9'>
-                <input type='text' required name='framework_name' autocomplete='off' maxlength='100' class='form-control'/>
-            </div>
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <label for='framework_name'>{$escaper->escapeHtml($lang['FrameworkName'])}<span class='required'>*</span> : </label>
+            <input type='text' required name='framework_name' autocomplete='off' maxlength='100' class='form-control' title='{$escaper->escapeHtml($lang['FrameworkName'])}'/>
         </div>
     ";
 
@@ -3466,11 +3483,9 @@ function display_framework_parent_edit($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <label class='col-3 col-form-label' for='parent'>{$escaper->escapeHtml($lang['ParentFramework'])} : </label>
-            <div class='col-9'>
-                <div class='parent_frameworks_container'></div>
-            </div>
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <label for='parent'>{$escaper->escapeHtml($lang['ParentFramework'])} : </label>
+            <div class='parent_frameworks_container w-100'></div>
         </div>
     ";
 
@@ -3485,9 +3500,9 @@ function display_framework_description_edit($display = true) {
 
     echo "
         <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <label class='col-12 col-form-label' for='framework_description'>{$escaper->escapeHtml($lang['FrameworkDescription'])} : </label>
-            <div class='col-12'>
-                <textarea name='framework_description' value='' class='form-control' rows='6' style='width:100%;'></textarea>
+            <label for='framework_description'>{$escaper->escapeHtml($lang['FrameworkDescription'])} : </label>
+            <div class='w-100'>
+                <textarea name='framework_description' value='' class='form-control' rows='6' style='width:100%;' title='{$escaper->escapeHtml($lang['FrameworkDescription'])}'></textarea>
             </div>
         </div>
     ";
@@ -3646,11 +3661,9 @@ function display_control_name_edit($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <label class='col-3 col-form-label' for='short_name'>{$escaper->escapeHtml($lang['ControlShortName'])}<span class='required'>*</span> : </label>
-            <div class='col-9'>
-                <input type='text' name='short_name' value='' class='form-control' maxlength='100' required>
-            </div>
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <label for='short_name'>{$escaper->escapeHtml($lang['ControlShortName'])}<span class='required'>*</span> : </label>
+            <input type='text' name='short_name' value='' class='form-control' maxlength='100' required title='{$escaper->escapeHtml($lang['ControlShortName'])}'>
         </div>
     ";
 
@@ -3664,11 +3677,9 @@ function display_control_longname_edit($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <label class='col-3 col-form-label' for='long_name'>{$escaper->escapeHtml($lang['ControlLongName'])} : </label>
-            <div class='col-9'>
-                <input type='text' name='long_name' value='' class='form-control' maxlength='65500'>
-            </div>
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <label for='long_name'>{$escaper->escapeHtml($lang['ControlLongName'])} : </label>
+            <input type='text' name='long_name' value='' class='form-control' maxlength='65500' title='{$escaper->escapeHtml($lang['ControlLongName'])}'>
         </div>
     ";
 
@@ -3682,11 +3693,9 @@ function display_control_description_edit($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <label class='col-12 col-form-label' for='description'>{$escaper->escapeHtml($lang['ControlDescription'])} : </label>
-            <div class='col-12'>
-                <textarea name='description' value='' class='form-control' rows='6' style='width:100%;' maxlength='65500'></textarea>
-            </div>
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <label for='description'>{$escaper->escapeHtml($lang['ControlDescription'])} : </label>
+            <textarea name='description' value='' class='form-control' rows='6' style='width:100%;' maxlength='65500' title='{$escaper->escapeHtml($lang['ControlDescription'])}'></textarea>
         </div>
     ";
 
@@ -3700,11 +3709,9 @@ function display_supplemental_guidance_edit($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <label class='col-12 col-form-label' for='supplemental_guidance'>{$escaper->escapeHtml($lang['SupplementalGuidance'])} : </label>
-            <div class='col-12'>
-                <textarea name='supplemental_guidance' value='' class='form-control' rows='6' style='width:100%;'></textarea>
-            </div>
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <label for='supplemental_guidance'>{$escaper->escapeHtml($lang['SupplementalGuidance'])} : </label>
+            <textarea name='supplemental_guidance' value='' class='form-control' rows='6' style='width:100%;' title='{$escaper->escapeHtml($lang['SupplementalGuidance'])}'></textarea>
         </div>
     ";
 
@@ -3718,11 +3725,9 @@ function display_control_owner_edit($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <label class='col-3 col-form-label' for='enabled_users'>{$escaper->escapeHtml($lang['ControlOwner'])} : </label>
-            <div class='col-9'>" . 
-                create_dropdown("enabled_users", NULL, "control_owner", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
-            </div>
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <label for='enabled_users'>{$escaper->escapeHtml($lang['ControlOwner'])} : </label>" . 
+            create_dropdown("enabled_users", NULL, "control_owner", true, false, true, "title='{$escaper->escapeHtml($lang['ControlOwner'])}'", $escaper->escapeHtml($lang['Unassigned'])) . "
         </div>
     ";
 
@@ -3736,27 +3741,25 @@ function display_mapping_framework_edit($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <div class='col-12'>
-                <div class='row align-items-center'>
-                    <label class='col-10 col-form-label' for=''>{$escaper->escapeHtml($lang['MappedControlFrameworks'])} : </label>
-                    <div class='col-2 text-end col-form-label'>
-                        <a href='javascript:void(0);' class='btn btn-primary btn-sm control-block--add-mapping'>{$escaper->escapeHtml($lang['AddMapping'])}</a>
-                    </div>
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <div class='row align-items-center'>
+                <label class='col-10 col-form-label' for=''>{$escaper->escapeHtml($lang['MappedControlFrameworks'])} : </label>
+                <div class='col-2 text-end col-form-label'>
+                    <a href='javascript:void(0);' class='btn btn-primary btn-sm control-block--add-mapping'>{$escaper->escapeHtml($lang['AddMapping'])}</a>
                 </div>
-                <div class='bg-light border p-3'>
-                    <table width='100%' class='table table-bordered mapping_framework_table mb-0'>
-                        <thead>
-                            <tr>
-                                <th width='60%'>{$escaper->escapeHtml($lang['Framework'])}</th>
-                                <th width='35%'>{$escaper->escapeHtml($lang['Control'])}</th>
-                                <th>{$escaper->escapeHtml($lang['Actions'])}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
+            </div>
+            <div class='bg-light border p-3'>
+                <table width='100%' class='table table-bordered mapping_framework_table mb-0'>
+                    <thead>
+                        <tr>
+                            <th width='60%'>{$escaper->escapeHtml($lang['Framework'])}<span class='mapping-framework-required-mark required d-none'>*</span></th>
+                            <th width='35%'>{$escaper->escapeHtml($lang['Control'])}<span class='mapping-framework-required-mark required d-none'>*</span></th>
+                            <th>{$escaper->escapeHtml($lang['Actions'])}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
             </div>
         </div>
     ";
@@ -3771,27 +3774,25 @@ function display_mapping_asset_edit($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <div class='col-12'>
-                <div class='row text-align-center'>
-                    <label class='col-10 col-form-label' for=''>{$escaper->escapeHtml($lang['MappedAssets'])} : </label>
-                    <div class='col-2 text-end col-form-label'>
-                        <a href='javascript:void(0);' class='btn btn-primary btn-sm control-block--add-asset'>{$escaper->escapeHtml($lang['AddMapping'])}</a>
-                    </div>
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <div class='row text-align-center'>
+                <label class='col-10 col-form-label' for=''>{$escaper->escapeHtml($lang['MappedAssets'])} : </label>
+                <div class='col-2 text-end col-form-label'>
+                    <a href='javascript:void(0);' class='btn btn-primary btn-sm control-block--add-asset'>{$escaper->escapeHtml($lang['AddMapping'])}</a>
                 </div>
-                <div class='bg-light border p-3'>
-                    <table width='100%' class='table table-bordered mapping_asset_table mb-0'>
-                        <thead>
-                            <tr>
-                                <th width='25%'>{$escaper->escapeHtml($lang['CurrentMaturity'])}</th>
-                                <th width='70%'>{$escaper->escapeHtml($lang['Asset'])}</th>
-                                <th>{$escaper->escapeHtml($lang['Actions'])}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
+            </div>
+            <div class='bg-light border p-3'>
+                <table width='100%' class='table table-bordered mapping_asset_table mb-0'>
+                    <thead>
+                        <tr>
+                            <th width='25%'>{$escaper->escapeHtml($lang['CurrentMaturity'])}<span class='mapping-asset-required-mark required d-none'>*</span></th>
+                            <th width='70%'>{$escaper->escapeHtml($lang['Asset'])}<span class='mapping-asset-required-mark required d-none'>*</span></th>
+                            <th>{$escaper->escapeHtml($lang['Actions'])}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
             </div>
         </div>
     ";
@@ -3806,11 +3807,9 @@ function display_control_class_edit($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <label class='col-3 col-form-label' for='control_class'>{$escaper->escapeHtml($lang['ControlClass'])} : </label>
-            <div class='col-9'>" . 
-                create_dropdown("control_class", NULL, "control_class", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
-            </div>
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <label for='control_class'>{$escaper->escapeHtml($lang['ControlClass'])} : </label>" . 
+            create_dropdown("control_class", NULL, "control_class", true, false, true, "title='{$escaper->escapeHtml($lang['ControlClass'])}'", $escaper->escapeHtml($lang['Unassigned'])) . "
         </div>
     ";
 
@@ -3824,11 +3823,9 @@ function display_control_phase_edit($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <label class='col-3 col-form-label' for='control_phase'>{$escaper->escapeHtml($lang['ControlPhase'])} : </label>
-            <div class='col-9'>" . 
-                create_dropdown("control_phase", NULL, "control_phase", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
-            </div>
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <label for='control_phase'>{$escaper->escapeHtml($lang['ControlPhase'])} : </label>" . 
+            create_dropdown("control_phase", NULL, "control_phase", true, false, true, "title='{$escaper->escapeHtml($lang['ControlPhase'])}'", $escaper->escapeHtml($lang['Unassigned'])) . "
         </div>
     ";
 
@@ -3842,11 +3839,9 @@ function display_control_number_edit2($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <label class='col-3 col-form-label' for='control_number'>{$escaper->escapeHtml($lang['ControlNumber'])} : </label>
-            <div class='col-9'>
-                <input type='text' name='control_number' value='' class='form-control' maxlength='100'>
-            </div>
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <label for='control_number'>{$escaper->escapeHtml($lang['ControlNumber'])} : </label>
+            <input type='text' name='control_number' value='' class='form-control' maxlength='100' title='{$escaper->escapeHtml($lang['ControlNumber'])}'>
         </div>
     ";
 
@@ -3860,11 +3855,9 @@ function display_current_maturity_edit($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <label class='col-3 col-form-label' for='control_current_maturity'>{$escaper->escapeHtml($lang['CurrentControlMaturity'])} : </label>
-            <div class='col-9'>" . 
-                create_dropdown("control_maturity", get_setting("default_current_maturity"), "control_current_maturity", true, false, true) . "
-            </div>
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <label for='control_current_maturity'>{$escaper->escapeHtml($lang['CurrentControlMaturity'])} : </label>" . 
+            create_dropdown("control_maturity", get_setting("default_current_maturity"), "control_current_maturity", true, false, true, "title='{$escaper->escapeHtml($lang['CurrentControlMaturity'])}'") . "
         </div>
     ";
 
@@ -3878,11 +3871,9 @@ function display_desired_maturity_edit($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <label class='col-3 col-form-label' for='control_desired_maturity'>{$escaper->escapeHtml($lang['DesiredControlMaturity'])} : </label>
-            <div class='col-9'>" . 
-                create_dropdown("control_maturity", get_setting("default_current_maturity"), "control_desired_maturity", true, false, true) . "
-            </div>
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <label for='control_desired_maturity'>{$escaper->escapeHtml($lang['DesiredControlMaturity'])} : </label>" . 
+            create_dropdown("control_maturity", get_setting("default_current_maturity"), "control_desired_maturity", true, false, true, "title='{$escaper->escapeHtml($lang['DesiredControlMaturity'])}'") . "
         </div>
     ";
 
@@ -3896,11 +3887,9 @@ function display_control_priority_edit($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <label class='col-3 col-form-label' for='control_priority'>{$escaper->escapeHtml($lang['ControlPriority'])} : </label>
-            <div class='col-9'>" . 
-                create_dropdown("control_priority", NULL, "control_priority", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
-            </div>
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <label for='control_priority'>{$escaper->escapeHtml($lang['ControlPriority'])} : </label>" . 
+            create_dropdown("control_priority", NULL, "control_priority", true, false, true, "title='{$escaper->escapeHtml($lang['ControlPriority'])}'", $escaper->escapeHtml($lang['Unassigned'])) . "
         </div>
     ";
 
@@ -3914,11 +3903,9 @@ function display_control_family_edit($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <label class='col-3 col-form-label' for='family'>{$escaper->escapeHtml($lang['ControlFamily'])} : </label>
-            <div class='col-9'>" . 
-                create_dropdown("family", NULL, "family", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
-            </div>
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <label for='family'>{$escaper->escapeHtml($lang['ControlFamily'])} : </label>" . 
+            create_dropdown("family", NULL, "family", true, false, true, "title='{$escaper->escapeHtml($lang['ControlFamily'])}'", $escaper->escapeHtml($lang['Unassigned'])) . "
         </div>
     ";
 
@@ -3932,10 +3919,10 @@ function display_control_type_edit($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <label class='col-3 col-form-label' for='control_type'>{$escaper->escapeHtml($lang['ControlType'])} : </label>
-            <div class='col-9'>" . 
-                create_multiple_dropdown("control_type", array(1), returnHtml: true) . "
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <label for='control_type'>{$escaper->escapeHtml($lang['ControlType'])} : </label>
+            <div class='w-100'>" . 
+                create_multiple_dropdown("control_type", array(1), returnHtml: true, customHtml: "title='{$escaper->escapeHtml($lang['ControlType'])}'") . "
             </div>
         </div>
     ";
@@ -3950,14 +3937,12 @@ function display_control_status_edit($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <label class='col-3 col-form-label' for='control_status'>{$escaper->escapeHtml($lang['ControlStatus'])} : </label>
-            <div class='col-9'>
-                <select name='control_status' class='form-select form-control'>
-                    <option value='1'>{$escaper->escapeHtml($lang['Pass'])}</option>
-                    <option value='0'>{$escaper->escapeHtml($lang['Fail'])}</option>
-                </select>
-            </div>
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <label for='control_status'>{$escaper->escapeHtml($lang['ControlStatus'])} : </label>
+            <select name='control_status' class='form-select' title='{$escaper->escapeHtml($lang['ControlStatus'])}'>
+                <option value='1'>{$escaper->escapeHtml($lang['Pass'])}</option>
+                <option value='0'>{$escaper->escapeHtml($lang['Fail'])}</option>
+            </select>
         </div>
     ";
 
@@ -3971,11 +3956,9 @@ function display_control_mitigation_percent_edit($display = true) {
     global $lang, $escaper;
 
     echo "
-        <div class='form-group row'" . ($display ? "" : " style='display: none;'") . ">
-            <label class='col-3 col-form-label' for='mitigation_percent'>{$escaper->escapeHtml($lang['MitigationPercent'])} : </label>
-            <div class='col-9'>
-                <input type='number' min='0' max='100' name='mitigation_percent' value='0' class='form-control'>
-            </div>
+        <div class='form-group'" . ($display ? "" : " style='display: none;'") . ">
+            <label for='mitigation_percent'>{$escaper->escapeHtml($lang['MitigationPercent'])} : </label>
+            <input type='number' min='0' max='100' name='mitigation_percent' value='0' class='form-control' title='{$escaper->escapeHtml($lang['MitigationPercent'])}'>
         </div>
     ";
 
@@ -4138,7 +4121,7 @@ function display_control_longname_view($long_name, $panel_name="") {
     $html = "
         <div class='row mb-2 {$panel_name}'>
             <div class='{$span1} text-right'><label>{$escaper->escapeHtml($lang['ControlLongName'])} : </label></div>
-            <div class='{$span2}'>{$escaper->escapeHtml($long_name)}</div>
+            <div class='{$span2} control-longname'>{$escaper->escapeHtml($long_name)}</div>
         </div>
     ";
 
@@ -4164,7 +4147,7 @@ function display_control_description_view($description, $panel_name="") {
     $html = "
         <div class='row mb-2 {$panel_name}'>
             <div class='{$span1} text-right'><label>{$escaper->escapeHtml($lang['Description'])} : </label></div>
-            <div class='{$span2}'>{$escaper->purifyHtml($description)}</div>
+            <div class='{$span2} control-description'>{$escaper->purifyHtml($description)}</div>
         </div>
     ";
 
@@ -4190,7 +4173,7 @@ function display_supplemental_guidance_view($supplemental_guidance, $panel_name=
     $html = "
         <div class='row mb-2 {$panel_name}'>
             <div class='{$span1} text-right'><label>{$escaper->escapeHtml($lang['SupplementalGuidance'])} : </label></div>
-            <div class='{$span2}'>{$escaper->purifyHtml($supplemental_guidance)}</div>
+            <div class='{$span2} control-supplemental-guidance'>{$escaper->purifyHtml($supplemental_guidance)}</div>
         </div>
     ";
     
@@ -4601,6 +4584,29 @@ function framework_exists($framework_name)
 
     // We never found the framework so return false
     return false;
+}
+
+/******************************************
+ * FUNCTION: GET FRAMEWORKS BY CONTROL ID *
+ ******************************************/
+function get_frameworks_by_control_id($control_id)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Query the database
+    $stmt = $db->prepare("SELECT framework FROM `framework_control_mappings` WHERE `control_id` = :control_id");
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+
+    $stmt->execute();
+
+    $frameworks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    // Return the array of frameworks for the control
+    return $frameworks;
 }
 
 ?>

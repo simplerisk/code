@@ -11,6 +11,8 @@ use SimpleSAML\XML\Exception\InvalidDOMElementException;
 use SimpleSAML\XML\Exception\SchemaViolationException;
 use SimpleSAML\XML\Exception\TooManyElementsException;
 use SimpleSAML\XML\ExtendableElementTrait;
+use SimpleSAML\XML\SchemaValidatableElementInterface;
+use SimpleSAML\XML\SchemaValidatableElementTrait;
 use SimpleSAML\XML\XsNamespace as NS;
 
 /**
@@ -18,9 +20,10 @@ use SimpleSAML\XML\XsNamespace as NS;
  *
  * @package simplesamlphp/xml-security
  */
-final class KeyValue extends AbstractDsElement
+final class KeyValue extends AbstractDsElement implements SchemaValidatableElementInterface
 {
     use ExtendableElementTrait;
+    use SchemaValidatableElementTrait;
 
 
     /** The namespace-attribute for the xs:any element */

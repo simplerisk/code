@@ -4,7 +4,7 @@
 
 # swagger-php
 
-Generate interactive [OpenAPI](https://www.openapis.org) documentation for your RESTful API using [PHP attributes](https://www.php.net/manual/en/language.attributes.overview.php) (preferred) or 
+Generate interactive [OpenAPI](https://www.openapis.org) documentation for your RESTful API using [PHP attributes](https://www.php.net/manual/en/language.attributes.overview.php) (preferred) or
 [doctrine annotations](https://www.doctrine-project.org/projects/annotations.html) (requires additional `doctrine/annotations` library).
 
 See the [documentation website](https://zircote.github.io/swagger-php/guide/attributes.html) for supported attributes and annotations.
@@ -30,7 +30,7 @@ Programmatically, the method `Generator::setVersion()` can be used to change the
 
 ## Requirements
 
-`swagger-php` requires at least PHP 7.2 for annotations and PHP 8.1 for using attributes.
+`swagger-php` requires at least PHP 7.4 for annotations and PHP 8.1 for using attributes.
 
 ## Installation (with [Composer](https://getcomposer.org))
 
@@ -76,7 +76,7 @@ Add annotations to your php files.
  */
 ```
 
-Visit the [Documentation website](https://zircote.github.io/swagger-php/) for the [Getting started guide](https://zircote.github.io/swagger-php/guide) or look at the [Examples directory](Examples/) for more examples.
+Visit the [Documentation website](https://zircote.github.io/swagger-php/) for the [Getting started guide](https://zircote.github.io/swagger-php/guide) or look at the [examples directory](docs/examples) for more examples.
 
 ### Usage from php
 
@@ -98,9 +98,6 @@ The `openapi` command line interface can be used to generate the documentation t
 ```shell
 ./vendor/bin/openapi --help
 ```
-Starting with version 4 the default analyser used on the command line is the new `ReflectionAnalyser`.
-
-Using the `--legacy` flag (`-l`) the legacy `TokenAnalyser` can still be used.
 
 ### Usage from the Deserializer
 

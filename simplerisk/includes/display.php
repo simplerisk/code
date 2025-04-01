@@ -177,7 +177,7 @@ function view_top_table($risk_id, $calculated_risk, $subject, $status, $show_det
                     <div class='row border-top pt-2'>
                         <div class='col-12'>
                             <div id='static-subject' class='static-subject'>
-                                <label>Subject : <span class='fs-3'>" . $escaper->escapeHtml($subject) . "</span>
+                                <label>Subject : <span class='fs-3 risk-subject'>" . $escaper->escapeHtml($subject) . "</span>
     ";
 
     // If we are displaying the risk and the user has modify risk permissions
@@ -426,28 +426,35 @@ function add_risk_details($template_group_id = "") {
         </form>
         
         <script>
+            function reset_new_risk_form(reset_btn) {
+
+                // To make sure the reset only affects the current tab
+                var tab = $(reset_btn).closest('.tab-data');
+
+                // reset the form
+                $('form[name=submit_risk]', tab).trigger('reset');
+
+                // re-draw the multiselects as they ARE reset, but their texts still display the previous selections
+                $('form[name=submit_risk] span.multiselect-native-select select[multiple]', tab).multiselect('refresh');
+
+                // Clear all the selectize widgets
+                $('form[name=submit_risk] select.selectized', tab).each(function() {
+                    $(this)[0].selectize.clear();
+                });
+
+                // Trigger the file removal logic for the added files
+                $('form[name=submit_risk] .file-list .remove-file', tab).trigger('click');
+
+                // Select the classic scoring and trigger a change event instead of click to make sure the logic runs properly
+                $('#scoring_method', tab).find('option[value=1]').prop('selected', true).trigger('change');
+
+            }
             $(document).ready(function(){
         		$('body').on('click', '#reset_form', function(){
 
-                    // To make sure the reset only affects the current tab
-                    var tab = $(this).closest('.tab-data');
-
-        			// reset the form
-        			$('form[name=submit_risk]', tab).trigger('reset');
-
-        			// re-draw the multiselects as they ARE reset, but their texts still display the previous selections
-        			$('form[name=submit_risk] span.multiselect-native-select select[multiple]', tab).multiselect('refresh');
-
-                    // Clear all the selectize widgets
-                    $('form[name=submit_risk] select.selectized', tab).each(function() {
-                        $(this)[0].selectize.clear();
-                    });
-
-                    // Trigger the file removal logic for the added files
-                    $('form[name=submit_risk] .file-list .remove-file', tab).trigger('click');
-
-                    // Select the classic scoring and trigger a change event instead of click to make sure the logic runs properly
-                    $('#scoring_method', tab).find('option[value=1]').prop('selected', true).trigger('change');
+                    // Reset the form
+                    reset_new_risk_form(this);
+                    
         		});
             });
         </script>
@@ -8284,7 +8291,7 @@ function display_plan_mitigations()
     global $lang, $escaper;
 
     $user = get_user_by_id($_SESSION['uid']);
-    $settings = json_decode($user["custom_plan_mitigation_display_settings"], true);
+    $settings = json_decode($user["custom_plan_mitigation_display_settings"] ?? '', true);
     $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
     $mitigation_colums_setting = isset($settings["mitigation_colums"])?$settings["mitigation_colums"]:[];
     $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
@@ -8461,7 +8468,7 @@ function display_management_review()
     global $lang, $escaper;
 
     $user = get_user_by_id($_SESSION['uid']);
-    $settings = json_decode($user["custom_perform_reviews_display_settings"], true);
+    $settings = json_decode($user["custom_perform_reviews_display_settings"] ?? '', true);
     $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
     $mitigation_colums_setting = isset($settings["mitigation_colums"])?$settings["mitigation_colums"]:[];
     $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
@@ -8638,7 +8645,7 @@ function display_review_risks()
     global $lang, $escaper;
 
     $user = get_user_by_id($_SESSION['uid']);
-    $settings = json_decode($user["custom_reviewregularly_display_settings"], true);
+    $settings = json_decode($user["custom_reviewregularly_display_settings"] ?? '', true);
     $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
     $mitigation_colums_setting = isset($settings["mitigation_colums"])?$settings["mitigation_colums"]:[];
     $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
@@ -8802,6 +8809,49 @@ function display_review_risks()
             });
         </script>
     ";
+}
+
+/**********************************************
+ * FUNCTION: DISPLAY THE DYNAMIC AUDIT REPORT *
+***********************************************/
+function display_dynamic_audit_report() {
+
+    global $lang, $escaper;
+    
+	echo "
+		<div class='card-body border my-2'>
+			<div class='row'>
+				<div class='col-10'></div>
+				<div class='col-2'>
+					<div style='float: right;'>
+	";
+						render_column_selection_widget('dynamic_audit_report');
+	echo "
+					</div>
+				</div>
+			</div>
+			<div class='row'>
+				<div class='col-12'>
+	";
+					render_view_table('dynamic_audit_report');
+	echo "
+				</div>
+			</div>
+		</div>
+
+        <script>
+            $(function () {
+                $('.header_filter .multiselect').multiselect({
+					allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
+					includeSelectAllOption: true,
+					buttonWidth: '100%',
+                    maxHeight: 400,
+					enableCaseInsensitiveFiltering: true,
+				});
+            });
+        </script>
+	";
+
 }
 
 /*****************************************
@@ -9323,7 +9373,7 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
     $risk_columns_keys = array_values(array_unique(array_merge(array_keys($risk_setting),array_keys($risk_columns))));
     $mitigation_columns_keys = array_values(array_unique(array_merge(array_keys($mitigation_setting),array_keys($mitigation_columns))));
     $review_columns_keys = array_values(array_unique(array_merge(array_keys($review_setting),array_keys($review_columns))));
-    
+
     // risk columns
     $str .= "
             <div class='accordion-item'>
@@ -9338,6 +9388,9 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
                                     <ul class='sortable sortable-risk mb-0 ps-0'>
     ";
 
+    // variable to store the custom display settings
+    $custom_display_settings = [];
+
     $half_num = ceil(count($risk_columns_keys)/2);
     for ($i = 0; $i < $half_num ; $i++) {
 
@@ -9345,6 +9398,11 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
         $elem_id = "checkbox_" . $field;
         $check_val = isset($risk_setting[$field]) ? $risk_setting[$field] : 0;
         $checked = $check_val ? "checked='yes'" : "";
+
+        // if the field is checked, add it to the custom display settings
+        if ($check_val) {
+            $custom_display_settings[] = $field;
+        }
 
         if (isset($risk_columns[$field])) {
             $str .= "
@@ -9371,6 +9429,11 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
         $elem_id = "checkbox_" . $field;
         $check_val = isset($risk_setting[$field]) ? $risk_setting[$field] : 0;
         $checked = $check_val ? "checked='yes'" : "";
+    
+        // if the field is checked, add it to the custom display settings
+        if ($check_val) {
+            $custom_display_settings[] = $field;
+        }
 
         if (isset($risk_columns[$field])) {
             $str .= "
@@ -9414,6 +9477,11 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
         $elem_id = "checkbox_" . $field;
         $checked = $check_val ? "checked='yes'" : "";
 
+        // if the field is checked, add it to the custom display settings
+        if ($check_val) {
+            $custom_display_settings[] = $field;
+        }
+
         if (isset($mitigation_columns[$field])) {
             $str .= "
                                         <li>
@@ -9439,6 +9507,11 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
         $elem_id = "checkbox_" . $field;
         $check_val = isset($mitigation_setting[$field]) ? $mitigation_setting[$field] : 0;
         $checked = $check_val ? "checked='yes'" : "";
+
+        // if the field is checked, add it to the custom display settings
+        if ($check_val) {
+            $custom_display_settings[] = $field;
+        }
 
         if (isset($mitigation_columns[$field])) {
             $str .= "
@@ -9482,6 +9555,11 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
         $elem_id = "checkbox_" . $field;
         $checked = $check_val ? "checked='yes'" : "";
 
+        // if the field is checked, add it to the custom display settings
+        if ($check_val) {
+            $custom_display_settings[] = $field;
+        }
+
         if (isset($review_columns[$field])) {
             $str .= "
                                         <li>
@@ -9507,6 +9585,11 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
         $check_val = isset($review_setting[$field]) ? $review_setting[$field] : 0;
         $checked = $check_val ? "checked='yes'" : "";
 
+        // if the field is checked, add it to the custom display settings
+        if ($check_val) {
+            $custom_display_settings[] = $field;
+        }
+
         if (isset($review_columns[$field])) {
             $str .= "
                                         <li>
@@ -9528,6 +9611,15 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
         </div>
     ";
     echo $str;
+
+    echo "
+        <script>
+
+            // variable to store the custom display settings
+            var custom_display_settings = JSON.parse('" . json_encode($custom_display_settings) . "');
+
+        </script>
+    ";
 }
 
 function get_label_by_risk_field_name($field){
@@ -9723,13 +9815,12 @@ function display_control_gap_analysis() {
             echo "
             <div class='card-body border'>
             ";
+
                 // Display the control maturity spider chart
                 display_control_maturity_spider_chart($framework);
+                
             echo " 
             </div>
-            ";
-
-            echo "
             <div class='row my-2'>
                 <div class='col-12'>
                     <div>
@@ -9956,15 +10047,15 @@ function display_add_projects($template_group_id = "") {
                     case 'ProjectName':
                         echo "
                             <div class='form-group'>
-                                <label for=''>" . $escaper->escapeHtml($lang['NewProjectName']) . ":</label>
-                                <input type='text' name='new_project' id='project--name' value='' class='form-control' required>
+                                <label for=''>{$escaper->escapeHtml($lang['NewProjectName'])}<span class='required'>*</span> :</label>
+                                <input type='text' name='new_project' value='' class='form-control' required>
                             </div>
                         ";
                         break;
                     case 'DueDate':
                         echo "
                             <div class='form-group'>
-                                <label for=''>" . $escaper->escapeHtml($lang['DueDate']) . ":</label>
+                                <label for=''>{$escaper->escapeHtml($lang['DueDate'])} :</label>
                                 <input type='text' name='due_date' class='form-control datepicker' value='' autocomplete='off'>
                             </div>
                         ";
@@ -9972,7 +10063,7 @@ function display_add_projects($template_group_id = "") {
                     case 'Consultant':
                         echo "
                             <div class='form-group'>
-                                <label for=''>" . $escaper->escapeHtml($lang['Consultant']) . ":</label>
+                                <label for=''>{$escaper->escapeHtml($lang['Consultant'])} :</label>
                         ";
                                 create_dropdown("enabled_users", NULL, "consultant", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']));
                         echo "
@@ -9982,7 +10073,7 @@ function display_add_projects($template_group_id = "") {
                     case 'BusinessOwner':
                         echo "
                             <div class='form-group'>
-                                <label for=''>" . $escaper->escapeHtml($lang['BusinessOwner']) . ":</label>
+                                <label for=''>{$escaper->escapeHtml($lang['BusinessOwner'])} :</label>
                         ";
                                 create_dropdown("enabled_users", NULL, "business_owner", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']));
                         echo "
@@ -9992,7 +10083,7 @@ function display_add_projects($template_group_id = "") {
                     case 'DataClassification':
                         echo "
                             <div class='form-group'>
-                                <label for=''>" . $escaper->escapeHtml($lang['DataClassification']) . ":</label>
+                                <label for=''>{$escaper->escapeHtml($lang['DataClassification'])} :</label>
                         ";
                                 create_dropdown("data_classification", NULL, "data_classification", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']));
                         echo "
@@ -10008,23 +10099,23 @@ function display_add_projects($template_group_id = "") {
     } else {
         echo "
             <div class='form-group'>
-                <label for=''>" . $escaper->escapeHtml($lang['NewProjectName']) . ":</label>
-                <input type='text' name='new_project' id='project--name' value='' class='form-control' required>
+                <label for=''>{$escaper->escapeHtml($lang['NewProjectName'])}<span class='required'>*</span> :</label>
+                <input type='text' name='new_project' value='' class='form-control' required>
             </div>
             <div class='form-group'>
-                <label for=''>" . $escaper->escapeHtml($lang['DueDate']) . ":</label>
+                <label for=''>{$escaper->escapeHtml($lang['DueDate'])} :</label>
                 <input type='text' name='due_date' class='form-control datepicker' value='' autocomplete='off'>
             </div>
             <div class='form-group'>
-                <label for=''>" . $escaper->escapeHtml($lang['Consultant']) . ":</label>" . 
+                <label for=''>{$escaper->escapeHtml($lang['Consultant'])} :</label>" . 
                 create_dropdown("enabled_users", NULL, "consultant", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
             </div>
             <div class='form-group'>
-                <label for=''>" . $escaper->escapeHtml($lang['BusinessOwner']) . ":</label>" . 
+                <label for=''>{$escaper->escapeHtml($lang['BusinessOwner'])} :</label>" . 
                 create_dropdown("enabled_users", NULL, "business_owner", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
             </div>
             <div class='form-group'>
-                <label for=''>" . $escaper->escapeHtml($lang['DataClassification']) . ":</label>" . 
+                <label for=''>{$escaper->escapeHtml($lang['DataClassification'])} :</label>" . 
                 create_dropdown("data_classification", NULL, "data_classification", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
             </div>
         ";
@@ -10055,7 +10146,7 @@ function display_edit_projects($template_group_id = ""){
                     case 'ProjectName':
                         echo "
                             <div class='form-group'>
-                                <label for=''>" . $escaper->escapeHtml($lang['Name']) . ":</label>
+                                <label for=''>{$escaper->escapeHtml($lang['Name'])}<span class='required'>*</span> :</label>
                                 <input type='text' name='name' class='form-control' required>
                             </div>
                         ";
@@ -10063,7 +10154,7 @@ function display_edit_projects($template_group_id = ""){
                     case 'DueDate':
                         echo "
                             <div class='form-group'>
-                                <label for=''>" . $escaper->escapeHtml($lang['DueDate']) . ":</label>
+                                <label for=''>{$escaper->escapeHtml($lang['DueDate'])} :</label>
                                 <input type='text' name='due_date' class='form-control datepicker' value='' autocomplete='off'>
                             </div>
                         ";
@@ -10071,7 +10162,7 @@ function display_edit_projects($template_group_id = ""){
                     case 'Consultant':
                         echo "
                             <div class='form-group'>
-                                <label for=''>" . $escaper->escapeHtml($lang['Consultant']) . ":</label>" . 
+                                <label for=''>{$escaper->escapeHtml($lang['Consultant'])} :</label>" . 
                                 create_dropdown("enabled_users", NULL, "consultant", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
                             </div>
                         ";
@@ -10079,7 +10170,7 @@ function display_edit_projects($template_group_id = ""){
                     case 'BusinessOwner':
                         echo "
                             <div class='form-group'>
-                                <label for=''>" . $escaper->escapeHtml($lang['BusinessOwner']) . ":</label>" . 
+                                <label for=''>{$escaper->escapeHtml($lang['BusinessOwner'])} :</label>" . 
                                 create_dropdown("enabled_users", NULL, "business_owner", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
                             </div>
                         ";
@@ -10087,7 +10178,7 @@ function display_edit_projects($template_group_id = ""){
                     case 'DataClassification':
                         echo "
                             <div class='form-group'>
-                                <label for=''>" . $escaper->escapeHtml($lang['DataClassification']) . ":</label>" . 
+                                <label for=''>{$escaper->escapeHtml($lang['DataClassification'])} :</label>" . 
                                 create_dropdown("data_classification", NULL, "data_classification", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
                             </div>        
                         ";
@@ -10100,23 +10191,23 @@ function display_edit_projects($template_group_id = ""){
     } else {
         echo "
             <div class='form-group'>
-                <label for=''>" . $escaper->escapeHtml($lang['Name']) . ":</label>
+                <label for=''>{$escaper->escapeHtml($lang['Name'])}<span class='required'>*</span> :</label>
                 <input type='text' name='name' class='form-control' required>
             </div>
             <div class='form-group'>
-                <label for=''>" . $escaper->escapeHtml($lang['DueDate']) . ":</label>
+                <label for=''>{$escaper->escapeHtml($lang['DueDate'])} :</label>
                 <input type='text' name='due_date' class='form-control datepicker' value='' autocomplete='off'>
             </div>
             <div class='form-group'>
-                <label for=''>" . $escaper->escapeHtml($lang['Consultant']) . ":</label>" . 
+                <label for=''>{$escaper->escapeHtml($lang['Consultant'])} :</label>" . 
                 create_dropdown("enabled_users", NULL, "consultant", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
             </div>
             <div class='form-group'>
-                <label for=''>" . $escaper->escapeHtml($lang['BusinessOwner']) . ":</label>" . 
+                <label for=''>{$escaper->escapeHtml($lang['BusinessOwner'])} :</label>" . 
                 create_dropdown("enabled_users", NULL, "business_owner", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
             </div>
             <div class='form-group'>
-                <label for=''>" . $escaper->escapeHtml($lang['DataClassification']) . ":</label>" . 
+                <label for=''>{$escaper->escapeHtml($lang['DataClassification'])} :</label>" . 
                 create_dropdown("data_classification", NULL, "data_classification", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
             </div>
         ";
@@ -10132,87 +10223,87 @@ function display_project_table_header($template_group_id = "") {
     $header_width = "1301";
     
     // If customization extra is enabled
-    if(customization_extra()) {
+    if (customization_extra()) {
 
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
-        if(!$template_group_id) {
+        if (!$template_group_id) {
             $group = get_default_template_group("project");
             $template_group_id = $group["id"];
         }
 
         $active_fields = get_active_fields("project", $template_group_id);
-        $header_html .= '
-                <div class="col p-2 border border-light">' . $escaper->escapeHtml($lang['Priority']) . '</div>
-        ';
+        $header_html .= "
+                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['Priority'])}</div>
+        ";
         $custom_field_count = 0;
 
         foreach ($active_fields as $field) {
-            if($field['is_basic'] == 1) {
-                switch($field['name']) {
+            if ($field['is_basic'] == 1) {
+                switch ($field['name']) {
                     case 'ProjectName':
-                        $header_html .= '
-                <div class="col-3 p-2 border border-light">' . $escaper->escapeHtml($lang['Name']) . '</div>
-                        ';
+                        $header_html .= "
+                <div class='col-3 p-2 border border-light'>{$escaper->escapeHtml($lang['Name'])}</div>
+                        ";
                         break;
                     case 'DueDate':
-                        $header_html .= '
-                <div class="col p-2 border border-light">' . $escaper->escapeHtml($lang['DueDate']) . '</div>
-                        ';
+                        $header_html .= "
+                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['DueDate'])}</div>
+                        ";
                         break;
                     case 'Consultant':
-                        $header_html .= '
-                <div class="col p-2 border border-light">' . $escaper->escapeHtml($lang['Consultant']) . '</div>
-                        ';
+                        $header_html .= "
+                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['Consultant'])}</div>
+                        ";
                         break;
                     case 'BusinessOwner':
-                        $header_html .= '
-                <div class="col p-2 border border-light">' . $escaper->escapeHtml($lang['BusinessOwner']) . '</div>
-                        ';
+                        $header_html .= "
+                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['BusinessOwner'])}</div>
+                        ";
                         break;
                     case 'DataClassification':
-                        $header_html .= '
-                <div class="col p-2 border border-light">' . $escaper->escapeHtml($lang['DataClassification']) . '</div>
-                        ';
+                        $header_html .= "
+                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['DataClassification'])}</div>
+                        ";
                         break;
                 }
             } else {
 
                 // If customization extra is enabled
-                if(customization_extra()) {
+                if (customization_extra()) {
 
                     // Include the extra
                     require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
                     $custom_field_count++;
-                    $header_html .= '
-                <div class="col p-2 border border-light">' . $escaper->escapeHtml($field['name']) . '</div>
-                    ';
+                    $header_html .= "
+                <div class='col p-2 border border-light'>{$escaper->escapeHtml($field['name'])}</div>
+                    ";
                 }
             }
         }
-        $header_html .= '
-                <div class="col-2 p-2 border border-light">' . $escaper->escapeHtml($lang['Risk']) . '</div>
-        ';
+        $header_html .= "
+                <div class='col-2 p-2 border border-light'>{$escaper->escapeHtml($lang['Risk'])}</div>
+        ";
         $header_width += $custom_field_count * 150;
-        $header_html = '
-            <div class="d-flex bg-secondary text-light table-header" style="width:' . $header_width . 'px">' . 
-                $header_html . '
+        $header_html = "
+            <div class='d-flex bg-secondary text-light table-header' style='width:{$header_width}px'>
+                {$header_html}
             </div>
-        ';
+        ";
     } else {
-        $header_html .= '
-            <div class="d-flex bg-secondary text-light table-header" style="width:' . $header_width . 'px">
-                <div class="col p-2 border border-light">' . $escaper->escapeHtml($lang['Priority']) . '</div>
-                <div class="col-3 p-2 border border-light">' . $escaper->escapeHtml($lang['Name']) . '</div>
-                <div class="col p-2 border border-light">' . $escaper->escapeHtml($lang['DueDate']) . '</div>
-                <div class="col p-2 border border-light">' . $escaper->escapeHtml($lang['Consultant']) . '</div>
-                <div class="col p-2 border border-light">' . $escaper->escapeHtml($lang['BusinessOwner']) . '</div>
-                <div class="col p-2 border border-light">' . $escaper->escapeHtml($lang['DataClassification']) . '</div>
-                <div class="col-2 p-2 border border-light">' . $escaper->escapeHtml($lang['Risk']) . '</div>
+        $header_html .= "
+            <div class='d-flex bg-secondary text-light table-header' style='width:{$header_width}px'>
+                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['Priority'])}</div>
+                <div class='col-3 p-2 border border-light'>{$escaper->escapeHtml($lang['Name'])}</div>
+                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['DueDate'])}</div>
+                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['Consultant'])}</div>
+                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['BusinessOwner'])}</div>
+                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['DataClassification'])}</div>
+                <div class='col-2 p-2 border border-light'>{$escaper->escapeHtml($lang['Risk'])}</div>
             </div>
-        ';
+        ";
     }
     echo $header_html;
 }
@@ -10253,6 +10344,10 @@ function render_column_selection_widget($view) {
     
     echo "
         <script>
+
+            // This is the list of selected columns for the view
+            var custom_display_settings = JSON.parse('" . json_encode($settings) . "');
+
             $(function() {
                 $('form#custom_display_settings-{$view}').submit(function() {
                     event.preventDefault();
@@ -10328,7 +10423,7 @@ function render_column_selection_widget($view) {
         $counter = 1;
         $halfpoint = count($group['fields']) / 2;
 
-        foreach ($group['fields'] as $field_name => $text) {
+        foreach ($group['fields'] as $field_name => $text) { 
 
             echo "
                                             <div class='mb-1'>
@@ -10451,9 +10546,15 @@ function render_field_edit_popup_modal($view) {
                         contentType: false,
                         processData: false,
                         success: function(data){
+                            
+                            if(data.status_message){
+                                showAlertsFromArray(data.status_message);
+                            }
+
                             $('#edit_popup_modal-{$view}').modal('hide');
                             // document.location.reload(true);
                             datatableInstances['{$view}'].draw();
+                            
                         },
                         error: function(xhr,status,error){
                             if(!retryCSRF(xhr, this)){
@@ -10692,7 +10793,7 @@ function render_field_edit_popup_modal($view) {
                     </div>
                     <div class='modal-footer'>
                         <button class='btn btn-secondary' data-bs-dismiss='modal'>{$escaper->escapeHtml($lang['Cancel'])}</button>
-                        <button type='submit' form='edit_popup-{$view}' class='btn btn-submit'>{$escaper->escapeHtml($lang['Save'])}</button>
+                        <button type='submit' form='edit_popup-{$view}' class='btn btn-submit'>{$escaper->escapeHtml($lang['Update'])}</button>
                     </div>
                 </div>
             </div>
@@ -10702,6 +10803,7 @@ function render_field_edit_popup_modal($view) {
 
 
 function render_create_modal($view) {
+
     global $field_settings_views, $field_settings_display_groups, $field_settings, $escaper, $lang;
     
     $view_type = $field_settings_views[$view]['view_type'];
@@ -10709,6 +10811,7 @@ function render_create_modal($view) {
     //$id_field_settings = !empty($field_settings_views[$view]['id_field']) ?  $field_settings[$view_type][$field_settings_views[$view]['id_field']] : false;
     $groups = [];
     $has_header = false;
+
     foreach (field_settings_get_localization($view) as $group_name => $group) {
         $groups[$group_name] = [
             'header' => empty($field_settings_display_groups[$group_name]['header_key']) ? false : $escaper->escapeHtml($lang[$field_settings_display_groups[$group_name]['header_key']]),
@@ -10722,7 +10825,9 @@ function render_create_modal($view) {
         <script>
             $(function() {
     ";
+
     if ($has_header) {
+
         echo "
                 // .off() is there to make sure there's no multiple click handlers on it in case multiple of this widget is rendered on the same page
                 $('body').off('click', '#create_popup_modal-{$view} .collapsible--toggle span.collapse-title').on('click', '#create_popup_modal-{$view} .collapsible--toggle span.collapse-title', function(event) {
@@ -10731,7 +10836,7 @@ function render_create_modal($view) {
                     $(this).find('i').toggleClass('fa-caret-right fa-caret-down');
                 });
         ";
-        
+    
     }
     
     echo "
@@ -10759,6 +10864,11 @@ function render_create_modal($view) {
                         contentType: false,
                         processData: false,
                         success: function(data){
+
+                            if(data.status_message){
+                                showAlertsFromArray(data.status_message);
+                            }
+
                             $('#create_popup_modal-{$view}').modal('hide');
                             // document.location.reload(true);
                             datatableInstances['{$view}'].draw();
@@ -10781,27 +10891,46 @@ function render_create_modal($view) {
             <div class='modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered'>
                 <div class='modal-content'>
                     <div class='modal-header'>
-                        <h4 class='modal-title'>{$escaper->escapeHtml($lang['Create'])}</h4>
+                        <h4 class='modal-title'>
+    ";
+    if ($view == 'asset_verified') {
+        echo "
+                            {$escaper->escapeHtml($lang['NewAsset'])}
+        ";
+    } else {
+        echo "
+                            {$escaper->escapeHtml($lang['Create'])}
+        ";
+    }
+    echo "
+                        </h4>
                         <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                     </div>
                     <div class='modal-body'>
                         <form id='create_popup-{$view}' name='create_popup-{$view}' method='post'>
-                            <input type='hidden' name='create_view' value='{$view}'>";
+                            <input type='hidden' name='create_view' value='{$view}'>
+    ";
     
     // If there's an id field setup add a hidden field for it
     if (!empty($field_settings_views[$view]['id_field'])) {
+
         echo "
                             <input type='hidden' name='{$field_settings_views[$view]['id_field']}' class='create_input'/>
-                        ";
+        ";
+
     }
     
-    echo "<div class='well create-popup-container'>";
+    echo "
+                            <div class='well create-popup-container'>
+    ";
     
     if ($customization = customization_extra()) {
+
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
         
         $active_fields = get_active_fields($view_type);
         $mapped_custom_field_settings = [];
+        
         foreach ($active_fields as $active_field) {
             
             // Skip this step for basic fields
@@ -10842,6 +10971,7 @@ function render_create_modal($view) {
     }
     
     foreach ($groups as $group_name => $group) {
+
         // If the group has a header setup, then render it
         if ($group['header']) {
             echo "
@@ -10850,13 +10980,16 @@ function render_create_modal($view) {
                                     <span class='collapse-title'><i class='fa fa-caret-down'></i>{$group['header']}</span>
                                 </h4>
                                 <div class='collapsible'>
-                            ";
+            ";
         }
+
         echo "
                             <div class='row'>
-                                <div class='col-12'>";
+                                <div class='col-12'>
+        ";
         
         foreach ($group['fields'] as $field_name => $text) {
+
             // If it's not in the field settings then it's a custom field
             $field_setting = $field_settings[$view_type][$field_name] ?? $mapped_custom_field_settings[$field_name];
             $required = $field_setting['required'];
@@ -10876,17 +11009,19 @@ function render_create_modal($view) {
                 ";
             }
 
-            switch($field_type) {
+            switch ($field_type) {
                 case 'short_text':
                     echo "
-                                            <input type='text' name='{$field_name}' id='create_{$field_name}-{$view}-{$group_name}' autocomplete='off' class='form-control create_input'{$required_attribute}/>";
+                                            <input type='text' name='{$field_name}' id='create_{$field_name}-{$view}-{$group_name}' autocomplete='off' class='form-control create_input'{$required_attribute}/>
+                    ";
                     break;
                 case 'long_text':
                     echo "
                                     <div class='form-group row'>
                                         <label class='col-12' for='create_{$field_name}-{$view}-{$group_name}'>{$text}{$required_text}</label>
                                         <div class='col-12'>
-                                            <textarea name='{$field_name}' id='create_{$field_name}-{$view}-{$group_name}' style='width: 100%;' class='form-control create_input'{$required_attribute}></textarea>";
+                                            <textarea name='{$field_name}' id='create_{$field_name}-{$view}-{$group_name}' style='width: 100%;' class='form-control create_input'{$required_attribute}></textarea>
+                    ";
                     break;
                 case 'select':
                     create_dropdown($field_sub_type, null, $field_name, !$field_setting['required'], false, false, " class='form-select create_input' {$required_attribute}", '--', '', true, $field_setting['alphabetical_order'] ?? 0);

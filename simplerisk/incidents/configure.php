@@ -50,7 +50,7 @@
 
     }
 
-    render_header_and_sidebar(['tabs:logic', 'multiselect', 'CUSTOM:common.js'], ['check_im_configure' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
+    render_header_and_sidebar(['tabs:logic', 'multiselect', 'CUSTOM:common.js', 'JSLocalization'], ['check_im_configure' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu, required_localization_keys: ['TheNameOfAPlaybookActionCannotBeEmpty']);
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/permissions.php'));

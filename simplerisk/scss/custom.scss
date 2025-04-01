@@ -134,6 +134,11 @@ span.required {
 	color: var(--sr-important);
 }
 
+// REQUIRED FIELDS
+.error {
+	border-color: var(--sr-danger);
+}
+
 .accordion {
 	--bs-accordion-active-bg: var(--bs-default);
 	--bs-accordion-btn-bg: var(--bs-default);
@@ -211,14 +216,12 @@ input[type=number]::-webkit-outer-spin-button {
 //************************* ALERT MODAL AND CONFIRM MODAL END *************************//
 
 //**************** MAKE THE LONG TEXT WITHOUT SPACES WRAPPED IN THE TABLE *************//
-td {
-	word-break: break-all;
-}
-
 .datagrid-body {
 	table.datagrid-btable {
 		tr.datagrid-row {
 			td {
+				word-break: break-word;
+
 				&>div.datagrid-cell {
 					display: flex;
 
@@ -319,39 +322,6 @@ html:has(.print-by-group-page) {
 
 	a:hover {
 		color: var(--bs-purple);
-	}
-}
-
-
-// CONFIGURE / RISK AND THREAT PAGE -- datatable rowgroup, rowreorder
-.risk_thread_catalog table.dataTable tbody {
-	tr.data-row td span.grippy {
-		content: "....";
-		width: 1.5em;
-		height: 2em;
-		display: inline-block;
-		overflow: hidden;
-		line-height: 5px;
-		padding: 3px 4px;
-		cursor: move;
-		vertical-align: middle;
-		margin-top: -0.7em;
-		margin-right: 0.3em;
-		font-size: 12px;
-		font-family: sans-serif;
-		letter-spacing: 2px;
-		text-shadow: 1px 0 1px black;
-
-		&::after {
-			content: ".. .. .. .. .. .. ..";
-		}
-	}
-
-	tr.dtrg-group.dtrg-start td {
-		background-color: var(--sr-default) !important;
-
-		// get rid of striped color effect
-		box-shadow: none;
 	}
 }
 
@@ -754,6 +724,25 @@ div#main-wrapper[data-function="reset_password"] {
 					}
 				}
 			}
+
+			.container.login-form {
+				.password-container {
+					position: relative;
+
+					#pass {
+						padding-right: 30px;
+					}
+
+					#eye-icon {
+						position: absolute;
+						right: 10px;
+						top: 18px;
+						transform: translateY(-50%);
+						cursor: pointer;
+						color: var(--bs-body-color);
+					}
+				}
+			}
 		}
 	}
 }
@@ -875,9 +864,28 @@ table tr.ui-sortable-helper {
 }
 
 // RISK MANAGEMENT / RISK DETAILS
+.risk-session {
+	.risk-subject {
+		word-break: break-word;
+	}
+}
+
 .risk-details {
+	word-break: break-all;
+
 	label {
 		white-space: nowrap;
+	}
+
+	.rich-text-container {
+		&>:last-child {
+			margin-bottom: 0;
+		}
+	}
+
+	.risk-details-assessment,
+	.risk-details-additional-notes {
+		word-break: break-word;
 	}
 }
 
@@ -958,7 +966,7 @@ html:has(.score-method-page) {
 .project-block {
 	.project-block--header {
 		div {
-			word-break: break-all;
+			word-break: break-word;
 		}
 	}
 }
@@ -1124,6 +1132,7 @@ a.open-in-new-tab {
 .selectize-dropdown {
 	border: var(--bs-border-width) solid $input-border-color !important;
     border-radius: var(--bs-border-radius) !important;
+    z-index: 10001 !important;
 }
 
 // COMPLIANCE / PAST AUDITS PAGE
@@ -1174,17 +1183,31 @@ a.open-in-new-tab {
 //     text-overflow: ellipsis;
 // }
 
+
+
+.prevent-select {
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+}
+
+
+
+
+
 @import "modules/treegrid";
 @import "modules/colorpicker";
 @import "modules/tabs";
 
 @import "modules/governance";
-@import "modules/plan-projects";
+@import "modules/riskmanagement";
 @import "modules/compliance";
+@import "modules/assetmanagement";
 @import "modules/incidentmanagement";
 @import "modules/assessment";
 @import "modules/questionnaire";
 @import "modules/reporting";
+@import "modules/configure";
 //@import "modules/_tabs";
 
 
@@ -1195,14 +1218,12 @@ a.open-in-new-tab {
 
 // @import "modules/asset_management";
 // @import "modules/buttons";
-
 // @import "modules/comments";
 // @import "modules/custom";
 // @import "modules/customization";
 // @import "modules/datatable_widget";
 // @import "modules/datepicker";
 // @import "modules/dsp";
-
 // @import "modules/login";
 // @import "modules/modals";
 // @import "modules/model";
@@ -1213,9 +1234,7 @@ a.open-in-new-tab {
 // @import "modules/permissions_widget";
 // @import "modules/plan-projects";
 // @import "modules/profile";
-
 // @import "modules/risks";
 // @import "modules/scoring";
 // @import "modules/selectlist";
-
 // @import "modules/widgets";

@@ -7,6 +7,8 @@ namespace SimpleSAML\XMLSecurity\XML\ds;
 use DOMElement;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\XML\Exception\InvalidDOMElementException;
+use SimpleSAML\XML\SchemaValidatableElementInterface;
+use SimpleSAML\XML\SchemaValidatableElementTrait;
 
 use function array_merge;
 
@@ -15,8 +17,10 @@ use function array_merge;
  *
  * @package simplesamlphp/xml-security
  */
-final class KeyInfo extends AbstractKeyInfoType
+final class KeyInfo extends AbstractKeyInfoType implements SchemaValidatableElementInterface
 {
+    use SchemaValidatableElementTrait;
+
     /**
      * Convert XML into a KeyInfo
      *
@@ -37,9 +41,9 @@ final class KeyInfo extends AbstractKeyInfoType
         $keyValue = KeyValue::getChildrenOfClass($xml);
         $retrievalMethod = RetrievalMethod::getChildrenOfClass($xml);
         $x509Data = X509Data::getChildrenOfClass($xml);
-        //$pgpData = PGPData::getChildrenOfClass($xml);
-        //$spkiData = SPKIData::getChildrenOfClass($xml);
-        //$mgmtData = MgmtData::getChildrenOfClass($xml);
+        $pgpData = PGPData::getChildrenOfClass($xml);
+        $spkiData = SPKIData::getChildrenOfClass($xml);
+        $mgmtData = MgmtData::getChildrenOfClass($xml);
         $other = self::getChildElementsFromXML($xml);
 
         $info = array_merge(
@@ -47,9 +51,9 @@ final class KeyInfo extends AbstractKeyInfoType
             $keyValue,
             $retrievalMethod,
             $x509Data,
-            //$pgpdata,
-            //$spkidata,
-            //$mgmtdata,
+            $pgpData,
+            $spkiData,
+            $mgmtData,
             $other,
         );
 

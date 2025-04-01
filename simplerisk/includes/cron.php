@@ -14,6 +14,7 @@ $cron_jobs = array(
 	'cron_notification',
 	'cron_assessments',
     'cron_ai',
+    'cron_ping',
 );
 
 /***************************
@@ -154,6 +155,32 @@ function cron_ai()
 {
     // Get the backup schedule
     $schedule = cron_schedule("minutely");
+
+    // Return the schedule
+    return $schedule;
+}
+
+/***********************
+ * FUNCTION: CRON PING *
+ ***********************/
+function cron_ping()
+{
+    // Get the backup schedule
+    $schedule = get_setting("schedule_cron_ping");
+
+    // If the schedule does not exist
+    if ($schedule === false)
+    {
+        // Generate a random hour (0-23) and minute (0-59)
+        $hour = rand(0, 23);
+        $minute = rand(0, 59);
+
+        // Create the cron schedule line
+        $schedule = "${minute} ${hour} * * *";
+
+        // Save the schedule
+        add_setting("schedule_cron_ping", $schedule);
+    }
 
     // Return the schedule
     return $schedule;

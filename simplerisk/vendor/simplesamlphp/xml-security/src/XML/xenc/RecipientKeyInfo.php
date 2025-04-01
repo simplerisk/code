@@ -11,7 +11,10 @@ use SimpleSAML\XMLSecurity\Constants as C;
 use SimpleSAML\XMLSecurity\XML\ds\AbstractKeyInfoType;
 use SimpleSAML\XMLSecurity\XML\ds\KeyName;
 use SimpleSAML\XMLSecurity\XML\ds\KeyValue;
+use SimpleSAML\XMLSecurity\XML\ds\MgmtData;
+use SimpleSAML\XMLSecurity\XML\ds\PGPData;
 use SimpleSAML\XMLSecurity\XML\ds\RetrievalMethod;
+use SimpleSAML\XMLSecurity\XML\ds\SPKIData;
 use SimpleSAML\XMLSecurity\XML\ds\X509Data;
 
 use function array_merge;
@@ -50,9 +53,9 @@ final class RecipientKeyInfo extends AbstractKeyInfoType
         $keyValue = KeyValue::getChildrenOfClass($xml);
         $retrievalMethod = RetrievalMethod::getChildrenOfClass($xml);
         $x509Data = X509Data::getChildrenOfClass($xml);
-        //$pgpData = PGPData::getChildrenOfClass($xml);
-        //$spkiData = SPKIData::getChildrenOfClass($xml);
-        //$mgmtData = MgmtData::getChildrenOfClass($xml);
+        $pgpData = PGPData::getChildrenOfClass($xml);
+        $spkiData = SPKIData::getChildrenOfClass($xml);
+        $mgmtData = MgmtData::getChildrenOfClass($xml);
         $other = self::getChildElementsFromXML($xml);
 
         $info = array_merge(
@@ -60,9 +63,9 @@ final class RecipientKeyInfo extends AbstractKeyInfoType
             $keyValue,
             $retrievalMethod,
             $x509Data,
-            //$pgpdata,
-            //$spkidata,
-            //$mgmtdata,
+            $pgpData,
+            $spkiData,
+            $mgmtData,
             $other,
         );
 

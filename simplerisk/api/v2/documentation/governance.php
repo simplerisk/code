@@ -181,6 +181,49 @@ class OpenApiControlsAssociations {}
 class OpenApiGovernanceDocuments {}
 
 /**
+ * @OA\Delete(
+ *     path="/governance/documents",
+ *     summary="Delete documents in SimpleRisk",
+ *     operationId="governanceDocumentsDelete",
+ *     tags={"governance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *        parameter="document_id",
+ *        in="query",
+ *        name="document_id",
+ *        description="The id of the document you would like to delete.",
+ *        required=true,
+ *        @OA\Schema(
+ *          type="integer",
+ *        ),
+ *     ),
+ *     @OA\Parameter(
+ *         parameter="version",
+ *         in="query",
+ *         name="version",
+ *         description="The versionof the document you would like to delete.",
+ *         required=false,
+ *         @OA\Schema(
+ *           type="integer",
+ *         ),
+ *      ),
+ *     @OA\Response(
+ *       response=200,
+ *       description="SimpleRisk documents delete successful",
+ *     ),
+ *     @OA\Response(
+ *       response=204,
+ *       description="NO CONTENT: Unable to find a document with the specified id.",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The user does not have the required permission to perform this action.",
+ *     ),
+ * )
+ */
+class OpenApiGovernanceDocumentsDelete {}
+
+/**
  * @OA\Get(
  *     path="/governance/documents/associations",
  *     summary="List document associations in SimpleRisk",

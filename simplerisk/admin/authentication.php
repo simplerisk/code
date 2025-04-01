@@ -5,7 +5,7 @@
 
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['tabs:logic', 'selectize'], ['check_admin' => true], 'Custom Authentication Extra', 'Configure', 'Extras');
+render_header_and_sidebar(['tabs:logic', 'selectize', 'blockUI'], ['check_admin' => true], 'Custom Authentication Extra', 'Configure', 'Extras');
 
 // If the extra directory exists
 if (is_dir(realpath(__DIR__ . '/../extras/authentication')))

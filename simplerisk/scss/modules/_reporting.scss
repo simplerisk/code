@@ -1,3 +1,17 @@
+//*************************** REPORTING > RISK ADVICE BEGIN ***************************//
+.risk-advice-table-container {
+    table {
+        tr {
+            td {
+                &:nth-child(2) {
+                    word-break: break-word;
+                }
+            }
+        }
+    }
+}
+//**************************** REPORTING > RISK ADVICE END ****************************//
+
 //************************* REPORTING > RISKS AND ASSETS BEGIN ************************//
 #risks_and_assets_table_container {
     table {
@@ -25,3 +39,13 @@
     }
 }
 //************************* REPORTING > RISKS AND CONTROLS END ************************//
+
+//*********************** REPORTING > DYNAMIC AUDIT REPORT BEGIN **********************//
+#dynamic_audit_report_datatable_wrapper {
+    .multiselect-native-select {
+        .multiselect-container.dropdown-menu {
+            width: auto;
+        }
+    }
+}
+//************************ REPORTING > DYNAMIC AUDIT REPORT END ***********************//

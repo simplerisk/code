@@ -7,7 +7,7 @@ namespace SimpleSAML\XML;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DOMElement;
-use SimpleSAML\Assert\Assert;
+use SimpleSAML\XML\Assert\Assert;
 
 use function trim;
 

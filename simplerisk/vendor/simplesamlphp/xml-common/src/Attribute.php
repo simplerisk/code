@@ -32,7 +32,6 @@ final class Attribute implements ArrayizableElementInterface
         protected string $attrValue,
     ) {
         Assert::nullOrStringNotEmpty($namespaceURI);
-        Assert::notSame('xmlns', $namespacePrefix);
         if ($namespaceURI !== null) {
             Assert::stringNotEmpty($namespacePrefix);
         }

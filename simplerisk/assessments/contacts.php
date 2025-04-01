@@ -68,7 +68,7 @@
     <?php
             if (has_permission("assessment_add_contact")) {
     ?>
-                <a id="aseessment-contact--add-btn" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Add']); ?></a>
+                <a id="assessment-contact--add-btn" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Add']); ?></a>
     <?php
             }
     ?>
@@ -88,26 +88,26 @@
 </div>
 
 <!-- MODAL FOR ADDING A NEW CONTACT -->
-<div id="aseessment-contact--add" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="aseessment-contact--add" aria-hidden="true">
+<div id="assessment-contact--add" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="assessment-contact--add" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
-            <form method="post" action="" name="aseessment-contact--add-form">
+            <form method="post" action="" name="assessment-contact--add-form">
                 <div class="modal-header">
                     <h4 class="modal-title"><?= $escaper->escapeHtml($lang['AddNewAssessmentContact']); ?></h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label><?= $escaper->escapeHtml($lang['Company']);?> :</label>
-                        <input required class = "form-control" name="company" maxlength="255" size="100" value="" type="text">
+                        <label><?= $escaper->escapeHtml($lang['Company']);?><span class="required">*</span> :</label>
+                        <input required class = "form-control" name="company" maxlength="255" size="100" value="" type="text" title="<?= $escaper->escapeHtml($lang['Company']);?>">
                     </div>
                     <div class="form-group">
-                        <label><?= $escaper->escapeHtml($lang['Name']);?> :</label>
-                        <input required class = "form-control" name="name" maxlength="255" size="100" value="" type="text">
+                        <label><?= $escaper->escapeHtml($lang['Name']);?><span class="required">*</span> :</label>
+                        <input required class = "form-control" name="name" maxlength="255" size="100" value="" type="text" title="<?= $escaper->escapeHtml($lang['Name']);?>">
                     </div>
                     <div class="form-group">
-                        <label><?= $escaper->escapeHtml($lang['EmailAddress']);?> :</label>
-                        <input required class = "form-control" name="email" maxlength="200" size="100" value="" type="email">
+                        <label><?= $escaper->escapeHtml($lang['EmailAddress']);?><span class="required">*</span> :</label>
+                        <input required class = "form-control" name="email" maxlength="200" size="100" value="" type="email" title="<?= $escaper->escapeHtml($lang['EmailAddress']);?>">
                     </div>
                     <div class="form-group">
                         <label><?= $escaper->escapeHtml($lang['Phone']);?> :</label>
@@ -121,7 +121,7 @@
                     </div>
                     <div>
                         <label><?= $escaper->escapeHtml($lang['Details']);?> :</label>
-                        <textarea class = "form-control" name='details' class='full-width'></textarea>
+                        <textarea class = "form-control" name='details'></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -134,10 +134,10 @@
 </div>
 
 <!-- MODAL FOR EDITING A CONTACT -->
-<div id="aseessment-contact--edit" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="aseessment-contact--edit" aria-hidden="true">
+<div id="assessment-contact--edit" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="assessment-contact--edit" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
-            <form method="post" action="" name="aseessment-contact--edit-form">
+            <form method="post" action="" name="assessment-contact--edit-form">
                 <input type='hidden' name='id' value=''/>
                 <div class="modal-header">
                     <h4 class="modal-title"><?= $escaper->escapeHtml($lang['UpdateAssessmentContact']); ?></h4>
@@ -145,16 +145,16 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label><?= $escaper->escapeHtml($lang['Company']);?> :</label>
-                        <input required class = "form-control" name="company" maxlength="255" size="100" value="" type="text">
+                        <label><?= $escaper->escapeHtml($lang['Company']);?><span class="required">*</span> :</label>
+                        <input required class = "form-control" name="company" maxlength="255" size="100" value="" type="text" title="<?= $escaper->escapeHtml($lang['Company']);?>">
                     </div>
                     <div class="form-group">
-                        <label><?= $escaper->escapeHtml($lang['Name']);?> :</label>
-                        <input required class = "form-control" name="name" maxlength="255" size="100" type="text" value="">
+                        <label><?= $escaper->escapeHtml($lang['Name']);?><span class="required">*</span> :</label>
+                        <input required class = "form-control" name="name" maxlength="255" size="100" type="text" value="" title="<?= $escaper->escapeHtml($lang['Name']);?>">
                     </div>
                     <div class="form-group">
-                        <label><?= $escaper->escapeHtml($lang['EmailAddress']);?> :</label>
-                        <input required class = "form-control" name="email" maxlength="200" size="100" type="email" value="">
+                        <label><?= $escaper->escapeHtml($lang['EmailAddress']);?><span class="required">*</span> :</label>
+                        <input required class = "form-control" name="email" maxlength="200" size="100" type="email" value="" title="<?= $escaper->escapeHtml($lang['EmailAddress']);?>">
                     </div>
                     <div class="form-group">
                         <label><?= $escaper->escapeHtml($lang['Phone']);?> :</label>
@@ -181,10 +181,10 @@
 </div>
 
 <!-- MODAL FOR DELETING A CONTACT -->
-<div id='aseessment-contact--delete' class='modal fade' aria-labelledby='aseessment-contact--delete' tabindex='-1' aria-hidden='true'>
+<div id='assessment-contact--delete' class='modal fade' aria-labelledby='assessment-contact--delete' tabindex='-1' aria-hidden='true'>
     <div class='modal-dialog modal-md modal-dialog-scrollable modal-dialog-centered'>
         <div class='modal-content'>
-            <form class='' action="" method='post'>
+            <form class='' action="" method='post' id='assessment-contact--delete-form'>
                 <input type='hidden' name='contact_id' value=''/>
                 <div class='modal-body'>
                     <div class='form-group text-center'>
@@ -208,25 +208,28 @@
     $(function() {
 
         // Open a modal for adding a contact
-        $('body').on("click", "#aseessment-contact--add-btn", function() {
+        $('body').on("click", "#assessment-contact--add-btn", function() {
 
             if (!assessment_add_contact_permission) {
                 return toastr.error("<?= $escaper->escapeHtml($lang['NoPermissionForAddAssessmentContacts']) ?>");
             }
 
-            $("#aseessment-contact--add").modal("show");
+            // Reset the form fields
+            resetForm("[name='assessment-contact--add-form']");
+
+            $("#assessment-contact--add").modal("show");
 
         });
         
         // Open a modal for editing a contact
-        $('body').on("click", ".aseessment-contact--edit-btn", function() {
+        $('body').on("click", ".assessment-contact--edit-btn", function() {
 
             if (!assessment_edit_contact_permission) {
                 return toastr.error("<?= $escaper->escapeHtml($lang['NoPermissionForThisAction']) ?>");
             }
             
             let contact_id = $(this).data("id");
-            $("#aseessment-contact--edit [name=id]").val(contact_id);
+            $("#assessment-contact--edit [name=id]").val(contact_id);
 
             $.ajax({
                 url: BASE_URL + '/api/assessment/contacts/edit',
@@ -237,14 +240,14 @@
                         showAlertsFromArray(result.status_message);
                     }
 
-                    $("#aseessment-contact--edit [name='company']").val(result.data.company || '');
-                    $("#aseessment-contact--edit [name='name']").val(result.data.name || '');
-                    $("#aseessment-contact--edit [name='email']").val(result.data.email || '');
-                    $("#aseessment-contact--edit [name='phone']").val(result.data.phone || '');
-                    $("#aseessment-contact--edit [name='manager']").val(result.data.manager || '');
-                    $("#aseessment-contact--edit [name='details']").val(result.data.details || '');
+                    $("#assessment-contact--edit [name='company']").val(result.data.company || '');
+                    $("#assessment-contact--edit [name='name']").val(result.data.name || '');
+                    $("#assessment-contact--edit [name='email']").val(result.data.email || '');
+                    $("#assessment-contact--edit [name='phone']").val(result.data.phone || '');
+                    $("#assessment-contact--edit [name='manager']").val(result.data.manager || '');
+                    $("#assessment-contact--edit [name='details']").val(result.data.details || '');
 
-                    $("#aseessment-contact--edit").modal("show");
+                    $("#assessment-contact--edit").modal("show");
 
                 },
                 error: function(xhr,status,error){
@@ -257,26 +260,36 @@
         });
         
         // Open a modal for deleting a contact
-        $('body').on("click", ".aseessment-contact--delete-btn", function() {
+        $('body').on("click", ".assessment-contact--delete-btn", function() {
 
-            $("#aseessment-contact--delete [name=contact_id]").val($(this).data("id"));
+            $("#assessment-contact--delete [name=contact_id]").val($(this).data("id"));
 
-            $("#aseessment-contact--delete").modal("show");
+            $("#assessment-contact--delete").modal("show");
             
         });
         
-        // Phone number validation before submitting the add/edit assessment contact form data
-        $('body').on("submit", "[name=aseessment-contact--add-form], [name=aseessment-contact--edit-form]", function() {
+        $('body').on("submit", "[name=assessment-contact--add-form], [name=assessment-contact--edit-form]", function() {
+
+			// Check empty/trimmed empty valiation for the required fields 
+			if (!checkAndSetValidation(this)) {
+				event.preventDefault();
+			}
+
+            // Phone number validation before submitting the add/edit assessment contact form data
             let phone_regex = /^[+]?[\d\s-]{10,15}$/;
             let input_value = $(this).find("[name=phone]").val();
-            if (!phone_regex.test(input_value)) {
+
+            // if there is a phone number inputted and it doesn't satisfy the verification
+            if (input_value && !phone_regex.test(input_value)) {
                 toastr.error("<?= $escaper->escapeHtml($lang['PleaseEnterAValidPhoneNumber']) ?>");
                 event.preventDefault();
             }
         });
-
     });
 
+</script>
+<script>
+    <?php prevent_form_double_submit_script(['assessment-contact--delete-form']); ?>
 </script>
 <?php
     // Render the footer of the page. Please don't put code after this part.

@@ -879,7 +879,7 @@ function get_risks_array_for_graphical($timeframe, $risk_status)
             a.id,
             a.submission_date,
             b.calculated_risk,
-            ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2) AS residual_risk,
+            ROUND((b.calculated_risk - (b.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2) AS residual_risk,
             IFNULL(c.closure_date, NOW()) closure_date
         FROM `risks` a
             LEFT JOIN `risk_scoring` b ON a.id = b.id

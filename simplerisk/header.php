@@ -2,12 +2,14 @@
 require_once(realpath(__DIR__ .'/head.php'));
 
 // Define the localization keys required by certain scripts and if there's a match in the requested scripts then the required localizations will be made available for the script to use
+// In the script and the page using it you will be able to use _lang['localization_key'] in javascript.
 $localization_required_by_scripts = [
-    'CUSTOM:common.js' => ['Yes', 'Cancel', 'FieldIsRequired'],
+    'CUSTOM:common.js' => ['Yes', 'Cancel', 'FieldRequired'],
     'EXTRA:JS:assessments:questionnaire_templates.js' => ['SelectedOnAnotherTab', 'ID', 'SelectedQuestions', 'SearchForQuestion', 'ConfirmDisableTabbedExperience', 'ConfirmDeleteTab', 'NewTab', 'Default'],
     'CUSTOM:pages/plan-project.js' => ['AreYouSureYouWantToDeleteThisProject'],
     'datatables' => ['All', 'datatables_ShowAll', 'datatables_ShowLess', 'First', 'Previous', 'Next', 'Last'],
     'blockUI' => ['ProcessingPleaseWait'],
+    'UILayoutWidget' => ['WidgetType_chart', 'WidgetType_table'],
 ];
 
 ?>
@@ -59,6 +61,18 @@ if (!empty($required_localization_keys) && !in_array('JSLocalization', $required
 
 // If there're any scripts that's required by a page
 if (!empty($required_scripts_or_css)) {
+
+    // Add the other scripts required by the UILayoutWidget
+    // Later we could build a kind of dependency management, but right now it's not really needed
+    // so I decided to not waste the time on it
+    if (in_array('UILayoutWidget', $required_scripts_or_css)) {
+        foreach (['gridstack', 'CUSTOM:common.js'] as $script_dependency) {
+            if (!in_array($script_dependency, $required_scripts_or_css)) {
+                $required_scripts_or_css []= $script_dependency;
+            }
+        }
+    }
+
     // check if there's a script that needs localization
     $scripts_with_localization_needs = array_intersect(array_keys($localization_required_by_scripts), $required_scripts_or_css);
 
@@ -493,7 +507,7 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
             break;
         case 'graphology':
 ?>
-            <script type="text/javascript" src="../vendor/node_modules/sigma/build/sigma.min.js?<?= $current_app_version ?>" id="script_sigma" defer></script>
+            <script type="text/javascript" src="../vendor/node_modules/sigma/dist/sigma.min.js?<?= $current_app_version ?>" id="script_sigma" defer></script>
             <script type="text/javascript" src="../vendor/node_modules/graphology/dist/graphology.umd.min.js?<?= $current_app_version ?>" id="script_graphology" defer></script>
 <?php
             break;
@@ -624,7 +638,16 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
     </script>
 <?php
             break;
-            
+        case 'gridstack':
+?>
+	<script type="text/javascript" src="../vendor/node_modules/gridstack/dist/gridstack-all.js?<?= $current_app_version ?>" id="script_gridstack" defer></script>
+	<link rel="stylesheet" type="text/css" href="../vendor/node_modules/gridstack/dist/gridstack.min.css?<?= $current_app_version ?>" />
+<?php
+            break;
+
+        case 'UILayoutWidget':
+            require_once(realpath(__DIR__ . '/includes/Widgets/UILayout.php'));
+            break;
         default:
             // Custom scripts
             if (preg_match("/^CUSTOM:((?:[\w,\s-]+\/)*[\w,\s-]+\.js)$/", $required_script_or_css, $matches)) {
@@ -725,7 +748,7 @@ if (!advanced_search_extra()) { ?>
                   <li><a class="dropdown-item" href="https://github.com/simplerisk/documentation/raw/master/SimpleRisk%20Release%20Notes%20<?= $escaper->escapeHtml(get_latest_app_version());?>.pdf" target="_blank"><i class="fas fa-link me-1 ms-1"></i><?= $escaper->escapeHtml($lang['WhatsNew']);?></a></li>
 
                   <!-- Roadmap -->
-                  <li><a class="dropdown-item" href="https://simplerisk.freshdesk.com/a/solutions/articles/6000190811" target="_blank"><i class="fas fa-map me-1 ms-1"></i><?= $escaper->escapeHtml($lang['Roadmap']);?></a></li>
+                  <li><a class="dropdown-item" href="https://simplerisk.atlassian.net/jira/discovery/share/views/ecc28d2f-82d4-444c-82ad-f16ea7e1a1c1" target="_blank"><i class="fas fa-map me-1 ms-1"></i><?= $escaper->escapeHtml($lang['Roadmap']);?></a></li>
 
                   <!-- Support Portal -->
                   <li><a class="dropdown-item" href="https://simplerisk.freshdesk.com/support/solutions" target="_blank"><i class="fas fa-cloud me-1 ms-1"></i><?= $escaper->escapeHtml($lang['SupportPortal']);?></a></li>

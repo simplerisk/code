@@ -124,4 +124,171 @@ function saveColumnSelectionSettingsAPI() {
     api_v2_json_result(400, get_alert(true), null);
 }
 
+/**
+ * Used for 'POST' API call '/ui/layout'
+ */
+function api_save_ui_layout() {
+    global $lang, $ui_layout_config, $ui_layout_widget_config;
+
+    $layout_name = $_POST['layout_name'];
+
+    // Check the user's permissions
+    if (($ui_layout_config[$layout_name]['required_permission'] && !check_permission($ui_layout_config[$layout_name]['required_permission']))) {
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+        api_v2_json_result(400, get_alert(true), null);
+    }
+
+    $layout = isset($_POST['layout']) ? $_POST['layout'] : '' ;
+    $user_id = $_SESSION['uid'];
+
+    if (!empty($layout)) {
+
+        // Remove widget configuration that's not alowed on the layout (sanitizing widget name and type coming from client side)
+        $layout = array_filter($layout, function($widget) use($ui_layout_config, $layout_name) {
+            return in_array($widget['name'], $ui_layout_config[$layout_name]['available_widgets']);
+        });
+
+        if (!empty($layout)) {
+            // Sanitizing data
+            // Also adding back information that's not sent by the client(width(w) and height(h) information is not sent if it matches the minimum value)
+            $layout = array_map(function($w) use($ui_layout_widget_config) {
+                    $config = $ui_layout_widget_config[$w['name']];
+                    $default = $config['defaults'];
+                    return [
+                        'name' => $w['name'],
+                        'type' => $config['type'],
+                        'x' => (int)$w['x'],
+                        'y' => (int)$w['y'],
+                        'w' => isset($w['w']) ? (int)$w['w'] : $default['minW'],
+                        'h' => isset($w['h']) ? (int)$w['h'] : $default['minH'],
+                        'minW' => $default['minW'],
+                        'minH' => $default['minH'],
+                    ];
+                }
+                , $layout
+            );
+        }
+    }
+
+    // Save the sanitized/empty layout data
+    save_layout_for_user($user_id, $layout_name, json_encode($layout ?? ''));
+
+    set_alert(true, "good", $lang['LayoutSaved']);
+    api_v2_json_result(200, get_alert(true), null);
+}
+
+/**
+ * Used for 'GET' API call '/ui/layout'
+ */
+function api_get_ui_layout() {
+    global $lang, $ui_layout_config;
+
+    $layout_name = $_GET['layout_name'];
+    $type = $_GET['type'];
+
+    // Check the user's permissions
+    if (($ui_layout_config[$layout_name]['required_permission'] && !check_permission($ui_layout_config[$layout_name]['required_permission']))
+        || !in_array($type, ['default', 'saved'])) {
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+        api_v2_json_result(400, get_alert(true), null);
+    }
+
+    // Get the requested layout
+    switch ($type) {
+        case 'saved':
+            // Get the user's saved layout
+            [$layout, $_, $_] = get_layout_for_user($layout_name);
+
+            set_alert(true, "good", $lang['SavedLayoutRestored']);
+            api_v2_json_result(200, get_alert(true), $layout);
+        break;
+
+        default:
+            // Delete the user's custom layout as we're setting it to the default
+            delete_layout_for_user($layout_name);
+
+            set_alert(true, "good", $lang['DefaultLayoutRestored']);
+            api_v2_json_result(200, get_alert(true), get_default_layout($layout_name));
+        break;
+    }
+}
+
+/**
+ * Used for 'GET' API call '/ui/widget' 
+ */
+function api_get_ui_widget() {
+    global $lang, $ui_layout_config, $ui_layout_widget_config;
+
+    $layout_name = $_GET['layout_name'];
+    $widget_name = $_GET['widget_name'];
+
+    if (empty($layout_name) || empty($widget_name) || !in_array($widget_name, $ui_layout_config[$layout_name]['available_widgets'])) {
+        set_alert(true, "bad", $lang['InvalidWidgetName']);
+        api_v2_json_result(400, get_alert(true), null);
+    }
+
+    // Check the user's permissions
+    if (($ui_layout_config[$layout_name]['required_permission'] && !check_permission($ui_layout_config[$layout_name]['required_permission']))
+        || ($ui_layout_widget_config[$widget_name]['required_permission'] && !check_permission($ui_layout_widget_config[$widget_name]['required_permission']))) {
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+        api_v2_json_result(400, get_alert(true), null);
+    }
+
+    // It's setup this way so we can generate the widget's html on the server side
+    // it means we're able to use the UI layout widget for every kind of content
+    ob_start();
+    switch ($widget_name) {
+        case 'chart_open_vs_closed':
+            open_closed_pie(js_string_escape($lang['OpenVsClosed']));
+            break;
+        case 'chart_mitigation_planned_vs_unplanned':
+            open_mitigation_pie(js_string_escape($lang['MitigationPlannedVsUnplanned']));
+            break;
+        case 'chart_reviewed_vs_unreviewed':
+            open_review_pie(js_string_escape($lang['ReviewedVsUnreviewed']));
+            break;
+        case 'table_risks_by_month':
+            risks_by_month_table();
+            break;
+    }
+    $widget_html = ob_get_contents();
+    ob_end_clean();
+
+    api_v2_json_result(200, null, $widget_html);
+}
+
+/**
+ * Used for 'GET' API call '/ui/default_layout'
+ */
+function api_update_default_status() {
+    global $lang, $ui_layout_config;
+
+    $layout_name = $_POST['layout_name'];
+
+    // Check the user's permissions
+    if (($ui_layout_config[$layout_name]['required_permission'] && !check_permission($ui_layout_config[$layout_name]['required_permission']))) {
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+        api_v2_json_result(400, get_alert(true), null);
+    }
+
+    $user_id = $_SESSION['uid'];
+    $default_status = $_POST['default'];
+
+    // Only do these checks if the user tries to set this layout as default(true)
+    if ($default_status) {
+        [$_, $is_custom, $_] = get_layout_for_user($layout_name, $user_id);
+
+        // Can only save custom layouts as default
+        if (!$is_custom) {
+            set_alert(true, "bad", $lang['InvalidLayoutOnlyCustomAllowedAsDefault']);
+            api_v2_json_result(400, get_alert(true), null);
+        }
+    }
+
+    set_layout_default_status($user_id, $layout_name, $default_status);
+
+    set_alert(true, "good", $lang['LayoutDefaultStatusUpdated']);
+    api_v2_json_result(200, get_alert(true), null);
+}
+
 ?>

@@ -155,7 +155,7 @@ else
         <div class="card-body my-2 border">
             <div class="row">
                 <form name="update_user" method="post" action="">
-                    <input type="hidden" name="user" value="<?= isset($_POST['user']) ? $_POST['user'] : '' ?>"/>
+                    <input type="hidden" name="user" value="<?= isset($_POST['user']) ? (int)$_POST['user'] : '' ?>"/>
                     <div class="col-12">
                         <input class="form-check-input" name="lockout" id="lockout" type="checkbox"<?php if ($lockout) echo " checked" ?> />
                         <label class="form-check-label"  for="lockout">&nbsp;&nbsp;&nbsp; <?php echo $lang['AccountLockedOut']; ?></label>

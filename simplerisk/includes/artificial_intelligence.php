@@ -15,7 +15,7 @@ require_once(realpath(__DIR__ . '/display.php'));
 class ClaudeAPIClient {
     private $api_key;
     private $url = 'https://api.anthropic.com/v1/messages';
-    private $model = 'claude-3-sonnet-20240229';
+    private $model = 'claude-3-7-sonnet-20250219';
     private $last_request_time = 0;
     private $rate_limit_delay = 1; // Delay between requests in seconds
 
@@ -23,14 +23,17 @@ class ClaudeAPIClient {
         $this->api_key = $api_key;
     }
 
-    public function callClaudeAPI($messages, $max_tokens = 300) {
-        // Implement rate limiting
-        $this->rateLimit();
+    public function callClaudeAPI($messages, $max_tokens = 300, $system = null) {
+        $baseDelay = 10; // Initial delay in seconds
+        $retries = 0;
+        $maxRetries = 5;
+        $success = false;
 
         $data = [
             'model' => $this->model,
             'max_tokens' => $max_tokens,
-            'system' => "You are an expert on Governance, Risk Management and Compliance (GRC) and have been hired by an organization to help them improve their program using SimpleRisk as the GRC tool of choice. You are working with some people who are new to working with GRC.",
+            // If a system is not specified, default to an expert on GRC
+            'system' => is_null($system) ? "You are an expert on Governance, Risk Management and Compliance (GRC) and have been hired by an organization to help them improve their program using SimpleRisk as the GRC tool of choice. You are working with some people who are new to working with GRC." : $system,
             'messages' => $messages
         ];
 
@@ -44,18 +47,103 @@ class ClaudeAPIClient {
             'anthropic-version: 2023-06-01'
         ]);
 
-        $response = curl_exec($ch);
-        $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        while (!$success && $retries < $maxRetries)
+        {
+            try
+            {
+                $response = curl_exec($ch);
+                $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-        if (curl_errno($ch)) {
-            throw new Exception('Curl error: ' . curl_error($ch));
-        }
-        curl_close($ch);
+                if (curl_errno($ch)) {
+                    throw new Exception('Curl error: ' . curl_error($ch));
+                }
+                curl_close($ch);
 
-        $result = json_decode($response, true);
+                if ($http_status !== 200)
+                {
+                    write_debug_log("Curl returned an HTTP status of {$http_status}");
 
-        if ($http_status !== 200) {
-            throw new Exception('API error: ' . ($result['error']['message'] ?? 'Unknown error'));
+                    // If the HTTP code is 400 a bad request was made
+                    if ($http_status === 400)
+                    {
+                        // Attempt to get the actual error message
+                        $data = json_decode($response, true);
+                        $message = $data['error']['message'];
+
+                        // If we were able to get the error message
+                        if (!empty($message))
+                        {
+                            // Log the error
+                            write_debug_log("Anthropic API Error: 400 - {$message}");
+                        }
+                        // Otherwise, just display a generic message and the whole response
+                        else
+                        {
+                            write_debug_log("Anthropic API Error: 400 - Bad request for Anthropic API");
+                            write_debug_log($response);
+                        }
+                    }
+                    // If the HTTP code is 402 a payment is required
+                    if ($http_status === 402)
+                    {
+                        // Display an alert
+                        $message = "Payment required: Please add credits to your Anthropic API account.";
+                        set_alert(true, "bad", $message);
+
+                        // Log the error
+                        write_debug_log("Anthropic API Error: 402 - Payment required for Anthropic API");
+
+                        // Throw an exception
+                        throw new Exception('Anthropic API Error: 402 - Payment required for Anthropic API');
+                    }
+                    // If the HTTP code is 429 a rate limit has been hit
+                    else if ($http_status === 429)
+                    {
+                        // We will try again with a backoff delay so no need to display an alert
+
+                        // Log the error
+                        write_debug_log("Anthropic API Error: 429 - Rate limit hit for Anthropic API");
+
+                        // Throw an exception
+                        throw new Exception("Anthropic API Error: 429 - Rate limit hit for Anthropic API");
+                    }
+                    // If the HTTP code is 529 anthropic is experiencing capacity issues
+                    else if ($http_status === 529)
+                    {
+                        // We will try again with a backoff delay so no need to display an alert
+
+                        // Log the error
+                        write_debug_log("Anthropic API Error: 529 - The Anthropic API is overloaded");
+
+                        // Throw an exception
+                        throw new Exception("Anthropic API Error: 529 - The Anthropic API is overloaded");
+                    }
+                    // If it's not an expected HTTP status code
+                    else
+                    {
+                        // Throw an exception
+                        throw new Exception("API error: {$http_status}");
+                    }
+                }
+                // The request was successful
+                else
+                {
+                    $result = json_decode($response, true);
+                    $success = true;
+                }
+            } catch (Exception $e) {
+                // If the error message is "429 Rate Limit Exceeded" or "529 Overloaded"
+                if ($http_status === 429 || $http_status === 529) {
+                    // Exponential backoff
+                    $delay = $baseDelay * (2 ** $retries);
+                    write_debug_log("Waiting {$delay} seconds before retry.");
+                    sleep($delay);
+                    $retries++;
+                }
+                else {
+                    throw $e;
+                }
+            }
         }
 
         return $result;
@@ -1342,7 +1430,7 @@ function ask_anthropic_for_recommendations($context_content)
         $client = new ClaudeAPIClient($anthropic_api_key);
 
         // Call the Claude API with the messages
-        $result = $client->callClaudeAPI($messages, 4096);
+        $result = $client->callClaudeAPI($messages, 8192);
 
         // If we received a result
         if (isset($result['content'][0]['text']))
@@ -1360,7 +1448,7 @@ function ask_anthropic_for_recommendations($context_content)
             ];
 
             // Call the Claude API with the messages
-            $result = $client->callClaudeAPI($messages, 4096);
+            $result = $client->callClaudeAPI($messages, 8192);
 
             // If we received a result
             if (isset($result['content'][0]['text']))
@@ -1389,7 +1477,7 @@ function ask_anthropic_for_recommendations($context_content)
                 ];
 
                 // Call the Claude API with the messages
-                $result = $client->callClaudeAPI($messages, 4096);
+                $result = $client->callClaudeAPI($messages, 8192);
             }
 
             // Update the ai_display_recommendations setting with the result
@@ -1414,6 +1502,26 @@ function ask_anthropic_for_recommendations($context_content)
 
         // Return false
         return false;
+    }
+}
+
+/**************************************************
+ * FUNCTION: DISPLAY ARTIFICIAL INTELLIGENCE ICON *
+ **************************************************/
+function display_artificial_intelligence_icon($type, $id)
+{
+    // If the AI Extra is enabled
+    if (artificial_intelligence_extra())
+    {
+        // If the extra directory exists
+        if (is_dir(realpath(__DIR__ . '/../extras/artificial_intelligence')))
+        {
+            // Include the Artificial Intelligence Extra
+            require_once(realpath(__DIR__ . '/../extras/artificial_intelligence/index.php'));
+
+            // Display the AI Extra icon
+            artificial_intelligence_display_icon($type, $id);
+        }
     }
 }
 

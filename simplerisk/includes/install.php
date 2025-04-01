@@ -173,6 +173,13 @@ function display_install_header()
         <script src="vendor/node_modules/jquery/dist/jquery.min.js" id="script_jquery"></script>
         <!-- Bootstrap tether Core JavaScript -->
         <script src="vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js" defer></script>
+
+    	<script>
+        	$(function() {
+        		// Fading out the preloader once everything is done rendering
+        		$(".preloader").fadeOut();
+            });
+    	</script>
     </head>
     <body>
         <div class="preloader">
@@ -220,7 +227,7 @@ function display_install_trailer()
                         </div>
                         <!-- End of content -->
                         <footer class="footer text-center">
-                  			Copyright 2024 SimpleRisk, Inc. All rights reserved.
+                  			Copyright 2025 SimpleRisk, Inc. All rights reserved.
                 		</footer>
                 	</div>
                 	<!-- End of content-wrapper -->
@@ -1084,6 +1091,18 @@ function step_6_simplerisk_installation()
     $stmt->bindParam(":instance_id", $instance_id, PDO::PARAM_STR, 50);
     $stmt->execute();
 
+    // Delete any existing cron ping schedule
+    $stmt = $db->prepare("DELETE FROM `" . $sr_db . "`.`settings` WHERE `name`='schedule_cron_ping'");
+    $stmt->execute();
+
+    // Generate a random hour (0-23) and minute (0-59) to create the cron ping schedule
+    $hour = rand(0, 23);
+    $minute = rand(0, 59);
+    $schedule = "${minute} ${hour} * * *";
+    $stmt = $db->prepare("INSERT INTO `" . $sr_db . "`.`settings` (`name`,`value`) VALUES ('schedule_cron_ping', :schedule)");
+    $stmt->bindParam(":schedule", $schedule, PDO::PARAM_STR);
+    $stmt->execute();
+
     // Register the instance
     installer_instance_registration($instance_id, $full_name, $email, $mailing_list);
 
@@ -1314,7 +1333,8 @@ function installer_db_open($db_host, $db_port, $db_user, $db_pass, $db_name)
     }
     catch (PDOException $e)
     {
-        die("Database Connection Failed: " . $e->getMessage());
+        global $escaper;
+        die("Database Connection Failed: " . $escaper->escapeHtml($e->getMessage()));
     }
 
     return null;

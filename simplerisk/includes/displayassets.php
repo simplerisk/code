@@ -747,7 +747,7 @@ function display_asset_actions_treegrid_th()
 {
     global $lang, $escaper;
 
-    echo "<th data-options=\"field:'actions', align: 'center'\" width='10%'>&nbsp;</th>";
+    echo "<th data-options=\"field:'actions', align: 'center'\" width='10%'>{$escaper->escapeHtml($lang['Actions'])}</th>";
 }
 
 ?>

@@ -51,8 +51,8 @@
      ul {
         list-style: none;
 
-        li {
-            span {
+        & > li {
+            & > span {
                 position: relative;
 
                 &:before {

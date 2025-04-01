@@ -40,14 +40,17 @@ Currently this library provides the following additional assertions:
 
 ### Assertions
 
-Method                                         | Description
------------------------------------------------|-----------------------------------------------------------------------------
-`stringPlausibleBase64($value, $message = '')` | Check that a value is plausibly base64  
-`validDateTime($value, $message = '')`         | Check that a value is a valid ISO8601 compliant DateTime
-`notInArray($value, $values, $message = '')`   | Check that a value is _NOT_ one of a list of values
-`validURI($value, $message = '')`              | Check that a value is a valid RFC3986 URI
-`validURL($value, $message = '')`              | Check that a value is a valid RFC2396 URL
-`validURN($value, $message = '')`              | Check that a value is a valid RFC8141 URN
-`validNCName($value, $message = '')`           | Check that a value is a valid xs:NCName
-`validQName($value, $message = '')`            | Check that a value is a valid xs:QName
-`validDuration($value, $message = '')`         | Check that a value is a xs:duration
+Method                                                                       | Description
+-----------------------------------------------------------------------------|-----------------------------------------------------------------
+`stringPlausibleBase64($value, $message = '', ?Throwable $exception = null)` | Check that a value is plausibly base64  
+`validDateTime($value, $message = '', ?Throwable $exception = null)`         | Check that a value is a valid ISO8601 compliant DateTime
+`notInArray($value, $values, $message = '', ?Throwable $exception = null)`   | Check that a value is _NOT_ one of a list of values
+`validURI($value, $message = '', ?Throwable $exception = null)`              | Check that a value is a valid RFC3986 URI
+`validURL($value, $message = '', ?Throwable $exception = null)`              | Check that a value is a valid RFC2396 URL
+`validURN($value, $message = '', ?Throwable $exception = null)`              | Check that a value is a valid RFC8141 URN
+`validNCName($value, $message = '', ?Throwable $exception = null)`           | Check that a value is a valid xs:NCName
+`validQName($value, $message = '', ?Throwable $exception = null)`            | Check that a value is a valid xs:QName
+`validDuration($value, $message = '', ?Throwable $exception = null)`         | Check that a value is a xs:duration
+`validNMTokens($value, $message = '', ?Throwable $exception = null)`         | Check that a value is a xs:NMTokens
+`validNMToken($value, $message = '', ?Throwable $exception = null)`          | Check that a value is a xs:NMToken
+`validHexBinary($value, $message = '', ?Throwable $exception = null)`        | Check that a value is a xs:hexBinary

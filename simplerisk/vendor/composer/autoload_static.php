@@ -10,9 +10,9 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
         '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
+        '7b11c4dc42b3b3023073cb14e519683c' => __DIR__ . '/..' . '/ralouphie/getallheaders/src/getallheaders.php',
         '662a729f963d39afe703c9d9b7ab4a8c' => __DIR__ . '/..' . '/symfony/polyfill-php83/bootstrap.php',
         '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
-        '23c18046f52bef3eea034657bafda50f' => __DIR__ . '/..' . '/symfony/polyfill-php81/bootstrap.php',
         '89efb1254ef2d1c5d80096acd12c4098' => __DIR__ . '/..' . '/twig/twig/src/Resources/core.php',
         'ffecb95d45175fd40f75be8a23b34f90' => __DIR__ . '/..' . '/twig/twig/src/Resources/debug.php',
         'c7baa00073ee9c61edf148c51917cfb4' => __DIR__ . '/..' . '/twig/twig/src/Resources/escaper.php',
@@ -57,7 +57,6 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         'S' => 
         array (
             'Symfony\\Polyfill\\Php83\\' => 23,
-            'Symfony\\Polyfill\\Php81\\' => 23,
             'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Polyfill\\Intl\\Normalizer\\' => 33,
             'Symfony\\Polyfill\\Intl\\Icu\\' => 26,
@@ -119,7 +118,10 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
             'Psr\\Clock\\' => 10,
             'Psr\\Cache\\' => 10,
             'PragmaRX\\Google2FA\\' => 19,
+            'PhpParser\\' => 10,
+            'PhpOffice\\PhpWord\\' => 18,
             'PhpOffice\\PhpSpreadsheet\\' => 25,
+            'PhpOffice\\Math\\' => 15,
             'ParagonIE\\ConstantTime\\' => 23,
             'PHPMailer\\PHPMailer\\' => 20,
         ),
@@ -134,7 +136,6 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         ),
         'L' => 
         array (
-            'League\\Uri\\' => 11,
             'Leaf\\Http\\' => 10,
             'Leaf\\' => 5,
             'Laravel\\SerializableClosure\\' => 28,
@@ -146,6 +147,7 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         ),
         'G' => 
         array (
+            'GuzzleHttp\\Psr7\\' => 16,
             'Gettext\\Languages\\' => 18,
             'Gettext\\' => 8,
         ),
@@ -157,6 +159,7 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         'C' => 
         array (
             'Cron\\' => 5,
+            'Composer\\Pcre\\' => 14,
             'Composer\\CaBundle\\' => 18,
             'Complex\\' => 8,
         ),
@@ -194,10 +197,6 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         'Symfony\\Polyfill\\Php83\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-php83',
-        ),
-        'Symfony\\Polyfill\\Php81\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/polyfill-php81',
         ),
         'Symfony\\Polyfill\\Mbstring\\' => 
         array (
@@ -420,9 +419,21 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         array (
             0 => __DIR__ . '/..' . '/pragmarx/google2fa/src',
         ),
+        'PhpParser\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/nikic/php-parser/lib/PhpParser',
+        ),
+        'PhpOffice\\PhpWord\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/phpoffice/phpword/src/PhpWord',
+        ),
         'PhpOffice\\PhpSpreadsheet\\' => 
         array (
             0 => __DIR__ . '/..' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet',
+        ),
+        'PhpOffice\\Math\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/phpoffice/math/src/Math',
         ),
         'ParagonIE\\ConstantTime\\' => 
         array (
@@ -444,23 +455,19 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         array (
             0 => __DIR__ . '/..' . '/markbaker/matrix/classes/src',
         ),
-        'League\\Uri\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/league/uri-interfaces',
-        ),
         'Leaf\\Http\\' => 
         array (
             0 => __DIR__ . '/..' . '/leafs/http/src',
         ),
         'Leaf\\' => 
         array (
-            0 => __DIR__ . '/..' . '/leafs/anchor/src',
-            1 => __DIR__ . '/..' . '/leafs/date/src',
+            0 => __DIR__ . '/..' . '/leafs/logger/src',
+            1 => __DIR__ . '/..' . '/leafs/leaf/src',
             2 => __DIR__ . '/..' . '/leafs/exception/src',
-            3 => __DIR__ . '/..' . '/leafs/form/src',
-            4 => __DIR__ . '/..' . '/leafs/fs/src',
-            5 => __DIR__ . '/..' . '/leafs/logger/src',
-            6 => __DIR__ . '/..' . '/leafs/leaf/src',
+            3 => __DIR__ . '/..' . '/leafs/date/src',
+            4 => __DIR__ . '/..' . '/leafs/form/src',
+            5 => __DIR__ . '/..' . '/leafs/fs/src',
+            6 => __DIR__ . '/..' . '/leafs/anchor/src',
         ),
         'Laravel\\SerializableClosure\\' => 
         array (
@@ -474,14 +481,18 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         array (
             0 => __DIR__ . '/..' . '/job-runner/job-runner/src',
         ),
+        'GuzzleHttp\\Psr7\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
+        ),
         'Gettext\\Languages\\' => 
         array (
             0 => __DIR__ . '/..' . '/gettext/languages/src',
         ),
         'Gettext\\' => 
         array (
-            0 => __DIR__ . '/..' . '/gettext/gettext/src',
-            1 => __DIR__ . '/..' . '/gettext/translator/src',
+            0 => __DIR__ . '/..' . '/gettext/translator/src',
+            1 => __DIR__ . '/..' . '/gettext/gettext/src',
         ),
         'Doctrine\\Common\\Lexer\\' => 
         array (
@@ -495,6 +506,10 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         array (
             0 => __DIR__ . '/..' . '/dragonmantank/cron-expression/src/Cron',
         ),
+        'Composer\\Pcre\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/composer/pcre/src',
+        ),
         'Composer\\CaBundle\\' => 
         array (
             0 => __DIR__ . '/..' . '/composer/ca-bundle/src',
@@ -506,6 +521,13 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
     );
 
     public static $prefixesPsr0 = array (
+        'P' => 
+        array (
+            'Parsedown' => 
+            array (
+                0 => __DIR__ . '/..' . '/erusev/parsedown',
+            ),
+        ),
         'H' => 
         array (
             'HTMLPurifier' => 
@@ -516,7 +538,6 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
     );
 
     public static $classMap = array (
-        'CURLStringFile' => __DIR__ . '/..' . '/symfony/polyfill-php81/Resources/stubs/CURLStringFile.php',
         'Collator' => __DIR__ . '/..' . '/symfony/polyfill-intl-icu/Resources/stubs/Collator.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'DateError' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateError.php',
@@ -533,7 +554,6 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         'Normalizer' => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer/Resources/stubs/Normalizer.php',
         'NumberFormatter' => __DIR__ . '/..' . '/symfony/polyfill-intl-icu/Resources/stubs/NumberFormatter.php',
         'Override' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/Override.php',
-        'ReturnTypeWillChange' => __DIR__ . '/..' . '/symfony/polyfill-php81/Resources/stubs/ReturnTypeWillChange.php',
         'SQLite3Exception' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/SQLite3Exception.php',
         '©' => __DIR__ . '/..' . '/symfony/cache/Traits/ValueWrapper.php',
     );

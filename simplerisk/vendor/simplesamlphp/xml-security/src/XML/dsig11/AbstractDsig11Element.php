@@ -19,4 +19,7 @@ abstract class AbstractDsig11Element extends AbstractElement
 
     /** @var string */
     public const NS_PREFIX = 'dsig11';
+
+    /** @var string */
+    public const SCHEMA = 'resources/schemas/xmldsig11-schema.xsd';
 }

@@ -8,7 +8,7 @@ use ArrayIterator;
 use Countable;
 use IteratorAggregate;
 use LogicException;
-use SimpleSAML\Assert\Assert;
+use SimpleSAML\XMLSecurity\Assert\Assert;
 use SimpleSAML\XMLSecurity\Exception\IOException;
 use UnexpectedValueException;
 
@@ -77,7 +77,7 @@ class PEMBundle implements Countable, IteratorAggregate
         $pems = array_map(
             function ($match) {
                 $payload = preg_replace('/\s+/', '', $match[2]);
-                Assert::stringPlausibleBase64($payload);
+                Assert::validBase64($payload);
 
                 $data = base64_decode($payload, true);
                 if (empty($data)) {

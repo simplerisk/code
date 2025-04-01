@@ -61,9 +61,16 @@ function display_framework_controls_in_compliance()
                     $('#{$tableID}').DataTable().draw();
                 })
                 $('body').on('click', '.add-test', function(){
-                    $('#test-new-form')[0].reset();
+
+                    // Reset the add test form
+                    resetForm('#test-new-form');
+
                     $('[name=framework_control_id]', $('#test-new-form')).val($(this).data('control-id'));
                     $('#test-new-form .datepicker').initAsDatePicker({maxDate: new Date});
+                    
+                    // Open the add test modal
+                    $('#test--add').modal('show');
+
                 })
                 
                 $('body').on('click', '.delete-row', function(){
@@ -501,27 +508,26 @@ function get_test_audit_name($test_audit_id) {
 /*************************************
  * FUNCTION: DISPLAY INITIATE AUDITS *
  *************************************/
-function display_initiate_audits()
-{
+function display_initiate_audits() {
 
     global $lang, $escaper;
     
     echo "
 		<div class='card-body border my-2'>
 			<div id='filter-container'>
-				<div class='row'>
+				<div class='row mb-3'>
 					<div class='col-6'>
-						<label>" . $escaper->escapeHtml($lang['FilterByText']) . "</label>
+						<label>{$escaper->escapeHtml($lang['FilterByText'])} :</label>
 						<input type='text' id='filter_by_text' class='form-control'>
 					</div>
 					<div class='col-6'>
-						<label>" . $escaper->escapeHtml($lang['TestFrequency']) . "</label>
+						<label>{$escaper->escapeHtml($lang['TestFrequency'])} :</label>
 						<input type='text' id='filter_by_frequency' class='form-control'>
 					</div>
 				</div>
 				<div class='row'>
 					<div class='col-6'>
-						<label class='hide'>" . $escaper->escapeHtml($lang['Status']) . "</label>
+						<label class='hide'>{$escaper->escapeHtml($lang['Status'])} :</label>
 						<div class='span2 hide'>
 							<div class='multiselect-content-container'>
 	";
@@ -533,7 +539,7 @@ function display_initiate_audits()
 				</div>
 				<div class='row'>
 					<div class='col-6'>
-						<label>" . $escaper->escapeHtml($lang['Framework']) . "</label>
+						<label>{$escaper->escapeHtml($lang['Framework'])} :</label>
 						<div class='multiselect-content-container'>
 							<select id='filter_by_framework' class='' multiple=''>
 	";
@@ -542,7 +548,7 @@ function display_initiate_audits()
 	is_array($options) || $options = array();
 	foreach($options as $option) {
 		echo "
-								<option selected value='" . $escaper->escapeHtml($option['value']) . "'>" . $escaper->escapeHtml($option['name']) . "</option>
+								<option selected value='{$escaper->escapeHtml($option['value'])}'>{$escaper->escapeHtml($option['name'])}</option>
 		";
 	}
 
@@ -551,13 +557,25 @@ function display_initiate_audits()
 						</div>
 					</div>
 					<div class='col-6'>
-						<label>" . $escaper->escapeHtml($lang['Control']) . "</label>
+						<label>{$escaper->escapeHtml($lang['Control'])} :</label>
 						<input type='text' id='filter_by_control' class='form-control'>
 					</div>
 				</div>
 			</div>
 		</div>
-		
+		<div class='card-body border my-2'>
+			<table id='initiate_audit_treegrid'>
+				<thead>
+					<th data-options=\"field:'name'\" width='57%'>{$escaper->escapeHtml($lang['Name'])}</th>
+					<th data-options=\"field:'test_frequency'\"  width='8%'>{$escaper->escapeHtml($lang['TestFrequency'])}</th>
+					<th data-options=\"field:'last_audit_date'\"  width='10%'>{$escaper->escapeHtml($lang['LastAuditDate'])}</th>
+					<th data-options=\"field:'next_audit_date'\"  width='10%'>{$escaper->escapeHtml($lang['NextAuditDate'])}</th>
+					<th data-options=\"field:'status'\"  width='5%'>{$escaper->escapeHtml($lang['Status'])}</th>
+					<th data-options=\"field:'action'\" width='10%'>&nbsp;</th>
+				</thead>
+			</table>
+		</div>
+        		
 		<script>
 
             // Redraw Past Audit table
@@ -572,7 +590,7 @@ function display_initiate_audits()
 
             $(document).ready(function(){
                 $('#filter_by_framework').multiselect({
-                    allSelectedText: '" . $escaper->escapeHtml($lang['ALL']) . "',
+                    allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
                     enableFiltering: true,
                     maxHeight: 250,
                     includeSelectAllOption: true,
@@ -584,7 +602,7 @@ function display_initiate_audits()
                 });
                 
                 $('#filter_by_status').multiselect({
-                    allSelectedText: '" . $escaper->escapeHtml($lang['ALL']) . "',
+                    allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
                     includeSelectAllOption: true,
                     enableCaseInsensitiveFiltering: true,
                     onDropdownHide: function(){
@@ -613,20 +631,8 @@ function display_initiate_audits()
                 $('#initiate_audit_treegrid').initAsInitiateAuditTreegrid();
             });
         </script>
-		
-		<div class='card-body border my-2'>
-			<table id='initiate_audit_treegrid'>
-				<thead>
-					<th data-options=\"field:'name'\" width='57%'>" . $escaper->escapeHtml($lang['Name']) . "</th>
-					<th data-options=\"field:'test_frequency'\"  width='8%'>" . $escaper->escapeHtml($lang['TestFrequency']) . "</th>
-					<th data-options=\"field:'last_audit_date'\"  width='10%'>" . $escaper->escapeHtml($lang['LastAuditDate']) . "</th>
-					<th data-options=\"field:'next_audit_date'\"  width='10%'>" . $escaper->escapeHtml($lang['NextAuditDate']) . "</th>
-					<th data-options=\"field:'status'\"  width='5%'>" . $escaper->escapeHtml($lang['Status']) . "</th>
-					<th data-options=\"field:'action'\" width='10%'>&nbsp;</th>
-				</thead>
-			</table>
-		</div>
     ";
+
 }
 
 /***********************************
@@ -663,6 +669,7 @@ function display_active_audits() {
 					allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
 					includeSelectAllOption: true,
 					buttonWidth: '100%',
+                    maxHeight: 400,
 					enableCaseInsensitiveFiltering: true,
 				});
 
@@ -1447,8 +1454,11 @@ function display_testing() {
             // Display the Control Details
             display_test_audit_framework_control($test_audit['framework_control_id']);
         
-            // Display associated risks
-            display_associated_risks($risk_ids);
+            // Only display the risks section if the user has the required permission
+            if (check_permission("riskmanagement")) {
+                // Display associated risks
+                display_associated_risks($risk_ids);
+            }
         
             // Display test audit comment
             display_test_audit_comment($test_audit_id);
@@ -1627,6 +1637,9 @@ function display_associated_risks($risk_ids) {
 
     global $escaper, $lang;
 
+    $submit_risks = check_permission("submit_risks");
+    $modify_risks = check_permission("modify_risks");
+
     echo "
         <div class='accordion-item risks--wrapper'>
             <h2 class='accordion-header'>
@@ -1634,17 +1647,17 @@ function display_associated_risks($risk_ids) {
             </h2>
             <div id='risks-accordion-body' class='accordion-collapse collapse'>
                 <div class='accordion-body card-body'>
-                    <div class='form-group text-end'>
-                        <button class='btn btn-submit associate_new_risk'>{$escaper->escapeHtml($lang['NewRisk'])}</button>
-                        <button class='btn btn-primary associate_existing_risk'>{$escaper->escapeHtml($lang['ExistingRisk'])}</button>
-                    </div>
+                    " . (($submit_risks || $modify_risks) ? "<div class='form-group text-end'>
+                        " . ($submit_risks ? "<button class='btn btn-submit associate_new_risk'>{$escaper->escapeHtml($lang['NewRisk'])}</button>" : "") . "
+                        " . ($modify_risks ? "<button class='btn btn-primary associate_existing_risk'>{$escaper->escapeHtml($lang['ExistingRisk'])}</button>" : "") . "
+                    </div>" : "") . "
                     <div class='bg-light border p-3'>
                         <table width='100%' class='table table-bordered mb-0 mapping_framework_table'>
                             <thead>
                                 <tr>
                                     <th width='5%'>{$escaper->escapeHtml($lang['ID'])}</th>
                                     <th width='90%'>{$escaper->escapeHtml($lang['Subject'])}</th>
-                                    <th>{$escaper->escapeHtml($lang["Actions"])}</th>
+                                    " . ($modify_risks ? "<th>{$escaper->escapeHtml($lang["Actions"])}</th>" : "") . "
                                 </tr>
                             </thead>
                             <tbody>
@@ -1662,9 +1675,9 @@ function display_associated_risks($risk_ids) {
                                         <a class='open-in-new-tab' target='_blank' href='../management/view.php?id=" . ($risk_id + 1000) . "'>" . ($risk_id + 1000) . "</a>
                                     </td>
                                     <td>{$escaper->escapeHtml($subject)}</td>
-                                    <td style='text-align:center'>
+                                    " . ($modify_risks ? "<td style='text-align:center'>
                                         <a href='javascript:void(0);' class='delete-risk' data-risk-id='{$risk_id}' data-risk-id='{$risk_id}' title='{$escaper->escapeHtml($lang["Delete"])}'><i class='fa fa-trash'></i></a>
-                                    </td>
+                                    </td>" : "") . "
                                 </tr>
         ";
     }
@@ -2152,7 +2165,9 @@ function display_past_audits() {
                     allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
                     includeSelectAllOption: true,
                     buttonWidth: '100%',
+                    maxHeight: 400,
                     enableCaseInsensitiveFiltering: true,
+                    maxHeight: 400,
                 });
 
                 $('.datepicker').initAsDateRangePicker();
@@ -2326,9 +2341,12 @@ function display_detail_test() {
     ";
             // Display the Control Details
             display_test_audit_framework_control($test_audit['framework_control_id']);
-            
-            // Display associated risks
-            display_associated_risks($risk_ids);
+
+            // Only display the risks section if the user has the required permission
+            if (check_permission("riskmanagement")) {
+                // Display associated risks
+                display_associated_risks($risk_ids);
+            }
 
             // Display test audit comment
             display_test_audit_comment($test_audit_id);
@@ -2397,8 +2415,8 @@ function reopen_test_audit($test_audit_id)
 /******************************************************
  * FUNCTION: GET FRAMEWORKS FROM INITIATE AUDITS PAGE *
  ******************************************************/
-function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control)
-{
+function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control) {
+
     // Open the database connection
     $db = db_open();
 
@@ -2422,10 +2440,11 @@ function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $
     
     $where = [];
     
-    if($filter_by_frequency){
+    if ($filter_by_frequency) {
         $where[] = "(t1.desired_frequency = :filter_by_frequency OR t2.desired_frequency = :filter_by_frequency OR t3.test_frequency = :filter_by_frequency)";
     }
-    if($filter_by_status){
+
+    if ($filter_by_status) {
         
     }
 //    if($filter_by_framework){
@@ -2433,11 +2452,11 @@ function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $
 //    }else{
 //        $where[] = "0";
 //    }
-    if($filter_by_control){
+    if ($filter_by_control) {
         $where[] = "t2.short_name like :filter_by_control";
     }
 
-    if($where){
+    if ($where) {
         $sql .= " AND ". implode(" AND ", $where);
     }
     
@@ -2445,17 +2464,18 @@ function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $
 
     $stmt = $db->prepare($sql);
     
-    if($filter_by_frequency){
+    if ($filter_by_frequency) {
         $stmt->bindParam(":filter_by_frequency", $filter_by_frequency, PDO::PARAM_STR);
     }
-    if($filter_by_status){
+
+    if ($filter_by_status) {
         
     }
 //    if($filter_by_framework){
 //        $framework_ids = implode(",", $filter_by_framework);
 //        $stmt->bindParam(":filter_by_framework", $framework_ids, PDO::PARAM_STR);
 //    }
-    if($filter_by_control){
+    if ($filter_by_control) {
         $filter_by_control = "%{$filter_by_control}%";
         $stmt->bindParam(":filter_by_control", $filter_by_control, PDO::PARAM_STR);
     }
@@ -2465,52 +2485,55 @@ function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $
     $frameworks = $stmt->fetchAll(PDO::FETCH_ASSOC);
     // Close the database connection
     db_close($db);
+
     $filtered_frameworks = [];
 
     $all_frameworks = get_frameworks(1);
-    foreach($frameworks as $framework){
+    foreach ($frameworks as $framework) {
 //        $framework['name'] = try_decrypt($framework['name']);
 //        if(!$filter_by_text || stripos($framework['name'], $filter_by_text) !== false 
-        if(!$filter_by_text 
-            || stripos($framework['desired_frequency'], $filter_by_text) !== false 
-            || stripos($framework['last_audit_date'], $filter_by_text) !== false 
-            || stripos($framework['next_audit_date'], $filter_by_text) !== false 
+        if (!$filter_by_text 
+            || stripos($framework['desired_frequency'] ?? '', $filter_by_text) !== false 
+            || stripos($framework['last_audit_date'] ?? '', $filter_by_text) !== false 
+            || stripos($framework['next_audit_date'] ?? '', $filter_by_text) !== false 
             
-            || stripos($framework['control_names'], $filter_by_text) !== false 
-            || stripos($framework['control_desired_frequencies'], $filter_by_text) !== false 
-            || stripos($framework['control_last_audit_dates'], $filter_by_text) !== false 
-            || stripos($framework['control_next_audit_dates'], $filter_by_text) !== false 
+            || stripos($framework['control_names'] ?? '', $filter_by_text) !== false 
+            || stripos($framework['control_desired_frequencies'] ?? '', $filter_by_text) !== false 
+            || stripos($framework['control_last_audit_dates'] ?? '', $filter_by_text) !== false 
+            || stripos($framework['control_next_audit_dates'] ?? '', $filter_by_text) !== false 
             
-            || stripos($framework['test_names'], $filter_by_text) !== false 
-            || stripos($framework['test_test_frequencies'], $filter_by_text) !== false 
-            || stripos($framework['test_last_audit_dates'], $filter_by_text) !== false 
-            || stripos($framework['test_next_audit_dates'], $filter_by_text) !== false 
-        ){
+            || stripos($framework['test_names'] ?? '', $filter_by_text) !== false 
+            || stripos($framework['test_test_frequencies'] ?? '', $filter_by_text) !== false 
+            || stripos($framework['test_last_audit_dates'] ?? '', $filter_by_text) !== false 
+            || stripos($framework['test_next_audit_dates'] ?? '', $filter_by_text) !== false 
+        ) {
+
             $filtered = true;
 //            $filtered_frameworks[] = $framework;
-        }
-        else{
+
+        } else {
+
             $filtered = false;
+
         }
-        
 
         $parent_frameworks = array();
         get_parent_frameworks($all_frameworks, $framework['value'], $parent_frameworks);
-        foreach($parent_frameworks as $parent_framework){
-            if($filtered || stripos($parent_framework['name'], $filter_by_text) !== false ){
+        foreach ($parent_frameworks as $parent_framework) {
+
+            if ($filtered || stripos($parent_framework['name'] ?? '', $filter_by_text) !== false ) {
+
                 $filtered_frameworks[] = $parent_framework;
+
             }
         }
-        
     }
-    
     
     $results = array();
     $ids = array();
     // Get unique array
-    foreach($filtered_frameworks as $filtered_framework){
-        if(!in_array($filtered_framework['value'], $ids) && in_array($filtered_framework['value'], $filter_by_framework))
-        {
+    foreach ($filtered_frameworks as $filtered_framework) {
+        if (!in_array($filtered_framework['value'], $ids) && in_array($filtered_framework['value'], $filter_by_framework)) {
             $results[] = $filtered_framework;
             $ids[] = $filtered_framework['value'];
         }
@@ -2523,8 +2546,8 @@ function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $
 /****************************************************
  * FUNCTION: GET CONTROLS FROM INITIATE AUDITS PAGE *
  ****************************************************/
-function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id=null)
-{
+function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id=null) {
+
     global $escaper;
     $current_framework = get_framework($framework_id);
 
@@ -2555,22 +2578,32 @@ function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $fi
     
     $where = [];
     
-    if($filter_by_frequency){
+    if ($filter_by_frequency) {
         $where[] = "(t1.desired_frequency = :filter_by_frequency OR t2.desired_frequency = :filter_by_frequency OR t3.test_frequency = :filter_by_frequency)";
     }
-    if($filter_by_status){
+
+    if ($filter_by_status) {
         
     }
-    if($filter_by_framework){
+
+    if ($filter_by_framework) {
+
         $where[] = "FIND_IN_SET(t1.value, :filter_by_framework)";
-    }else{
+
+    } else {
+
         $where[] = "0";
+
     }
-    if($filter_by_control){
+
+    if ($filter_by_control) {
+
         $where[] = "t2.short_name like :filter_by_control";
+
     }
     
-    if($framework_id){
+    if ($framework_id) {
+
         $child_frameworks = get_all_child_frameworks($framework_id, 1, false);
         
         $selected_framework_ids = array_map(function($row){
@@ -2581,10 +2614,13 @@ function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $fi
         $selected_framework_ids = implode(",", $selected_framework_ids);
         
         $where[] = "FIND_IN_SET(t1.value, :selected_framework_ids)";
+
     }
 
-    if($where){
+    if ($where) {
+
         $sql .= " AND ". implode(" AND ", $where);
+
     }
     
     $sql .= " GROUP BY t2.id ";
@@ -2600,22 +2636,35 @@ function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $fi
 //        $filter_by_text = "%{$filter_by_text}%";
 //        $stmt->bindParam(":filter_by_text", $filter_by_text, PDO::PARAM_STR);
 //    }
-    if($filter_by_frequency){
+
+    if ($filter_by_frequency) {
+
         $stmt->bindParam(":filter_by_frequency", $filter_by_frequency, PDO::PARAM_STR);
+
     }
+
     if($filter_by_status){
         
     }
-    if($filter_by_framework){
+
+    if ($filter_by_framework) {
+
         $framework_ids = implode(",", $filter_by_framework);
         $stmt->bindParam(":filter_by_framework", $framework_ids, PDO::PARAM_STR);
+
     }
-    if($filter_by_control){
+
+    if ($filter_by_control) {
+
         $filter_by_control = "%{$filter_by_control}%";
         $stmt->bindParam(":filter_by_control", $filter_by_control, PDO::PARAM_STR);
+
     }
-    if($framework_id){
+
+    if ($framework_id) {
+
         $stmt->bindParam(":selected_framework_ids", $selected_framework_ids, PDO::PARAM_STR);
+
     }
 
     $stmt->execute();
@@ -2626,34 +2675,37 @@ function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $fi
     db_close($db);
     
     $filtered_controls = [];
-    foreach($controls as $control){
-        if(!$filter_by_text || stripos($current_framework['name'], $filter_by_text) !== false 
-            || stripos($control['framework_desired_frequency'], $filter_by_text) !== false 
-            || stripos($control['framework_last_audit_date'], $filter_by_text) !== false 
-            || stripos($control['framework_next_audit_date'], $filter_by_text) !== false 
+    foreach ($controls as $control) {
+        if (!$filter_by_text || stripos($current_framework['name'] ?? '', $filter_by_text) !== false 
+            || stripos($control['framework_desired_frequency'] ?? '', $filter_by_text) !== false 
+            || stripos($control['framework_last_audit_date'] ?? '', $filter_by_text) !== false 
+            || stripos($control['framework_next_audit_date'] ?? '', $filter_by_text) !== false 
             
-            || stripos($control['control_names'], $filter_by_text) !== false 
-            || stripos($control['control_desired_frequencies'], $filter_by_text) !== false 
-            || stripos($control['control_last_audit_dates'], $filter_by_text) !== false 
-            || stripos($control['control_next_audit_dates'], $filter_by_text) !== false 
+            || stripos($control['control_names'] ?? '', $filter_by_text) !== false 
+            || stripos($control['control_desired_frequencies'] ?? '', $filter_by_text) !== false 
+            || stripos($control['control_last_audit_dates'] ?? '', $filter_by_text) !== false 
+            || stripos($control['control_next_audit_dates'] ?? '', $filter_by_text) !== false 
             
-            || stripos($control['test_names'], $filter_by_text) !== false 
-            || stripos($control['test_test_frequencies'], $filter_by_text) !== false 
-            || stripos($control['test_last_audit_dates'], $filter_by_text) !== false 
-            || stripos($control['test_next_audit_dates'], $filter_by_text) !== false 
-        ){
+            || stripos($control['test_names'] ?? '', $filter_by_text) !== false 
+            || stripos($control['test_test_frequencies'] ?? '', $filter_by_text) !== false 
+            || stripos($control['test_last_audit_dates'] ?? '', $filter_by_text) !== false 
+            || stripos($control['test_next_audit_dates'] ?? '', $filter_by_text) !== false 
+        ) {
+
             $filtered_controls[] = $control;
+
         }
     }
     
     return $filtered_controls;
+
 }
 
 /*************************************************
  * FUNCTION: GET TESTS FROM INITIATE AUDITS PAGE *
  *************************************************/
-function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id, $control_id)
-{
+function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id, $control_id) {
+
     $current_framework = get_framework($framework_id);
 
     // Open the database connection
@@ -2683,23 +2735,36 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
 
     $where = [];
     
-    if($filter_by_frequency){
+    if ($filter_by_frequency) {
+
         $where[] = "(t1.desired_frequency = :filter_by_frequency OR t2.desired_frequency = :filter_by_frequency OR t3.test_frequency = :filter_by_frequency)";
+
     }
-    if($filter_by_status){
+
+    if ($filter_by_status) {
         
     }
-    if($filter_by_framework){
+
+    if ($filter_by_framework) {
+
         $where[] = "FIND_IN_SET(t1.value, :filter_by_framework)";
-    }else{
+
+    } else {
+
         $where[] = "0";
+
     }
-    if($filter_by_control){
+
+    if ($filter_by_control) {
+
         $where[] = "t2.short_name like :filter_by_control";
+
     }
     
-    if($where){
+    if ($where) {
+
         $sql .= " AND ". implode(" AND ", $where);
+
     }
     
     $sql .= " GROUP BY t3.id ";
@@ -2712,19 +2777,29 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
     $stmt->bindParam(":framework_next_audit_date", $current_framework['next_audit_date'], PDO::PARAM_STR);
 
     $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-    if($filter_by_frequency){
+
+    if ($filter_by_frequency) {
+
         $stmt->bindParam(":filter_by_frequency", $filter_by_frequency, PDO::PARAM_STR);
+
     }
-    if($filter_by_status){
+
+    if ($filter_by_status) {
         
     }
-    if($filter_by_framework){
+
+    if ($filter_by_framework) {
+
         $framework_ids = implode(",", $filter_by_framework);
         $stmt->bindParam(":filter_by_framework", $framework_ids, PDO::PARAM_STR);
+
     }
-    if($filter_by_control){
+
+    if ($filter_by_control) {
+
         $filter_by_control = "%{$filter_by_control}%";
         $stmt->bindParam(":filter_by_control", $filter_by_control, PDO::PARAM_STR);
+
     }
 
     $stmt->execute();
@@ -2735,27 +2810,31 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
     db_close($db);
     
     $filtered_tests = [];
-    foreach($tests as $test){
-        if(!$filter_by_text || stripos($current_framework['name'], $filter_by_text) !== false 
-            || stripos($test['framework_desired_frequency'], $filter_by_text) !== false 
-            || stripos($test['framework_last_audit_date'], $filter_by_text) !== false 
-            || stripos($test['framework_next_audit_date'], $filter_by_text) !== false 
+    foreach ($tests as $test) {
+
+        if (!$filter_by_text || stripos($current_framework['name'] ?? '', $filter_by_text) !== false 
+            || stripos($test['framework_desired_frequency'] ?? '', $filter_by_text) !== false 
+            || stripos($test['framework_last_audit_date'] ?? '', $filter_by_text) !== false 
+            || stripos($test['framework_next_audit_date'] ?? '', $filter_by_text) !== false 
             
-            || stripos($test['control_names'], $filter_by_text) !== false 
-            || stripos($test['control_desired_frequencies'], $filter_by_text) !== false 
-            || stripos($test['control_last_audit_dates'], $filter_by_text) !== false 
-            || stripos($test['control_next_audit_dates'], $filter_by_text) !== false 
+            || stripos($test['control_names'] ?? '', $filter_by_text) !== false 
+            || stripos($test['control_desired_frequencies'] ?? '', $filter_by_text) !== false 
+            || stripos($test['control_last_audit_dates'] ?? '', $filter_by_text) !== false 
+            || stripos($test['control_next_audit_dates'] ?? '', $filter_by_text) !== false 
             
-            || stripos($test['test_names'], $filter_by_text) !== false 
-            || stripos($test['test_test_frequencies'], $filter_by_text) !== false 
-            || stripos($test['test_last_audit_dates'], $filter_by_text) !== false 
-            || stripos($test['test_next_audit_dates'], $filter_by_text) !== false 
-        ){
+            || stripos($test['test_names'] ?? '', $filter_by_text) !== false 
+            || stripos($test['test_test_frequencies'] ?? '', $filter_by_text) !== false 
+            || stripos($test['test_last_audit_dates'] ?? '', $filter_by_text) !== false 
+            || stripos($test['test_next_audit_dates'] ?? '', $filter_by_text) !== false 
+        ) {
+
             $filtered_tests[] = $test;
+
         }
     }
     
     return $filtered_tests;
+    
 }
 
 /****************************************

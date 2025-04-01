@@ -96,7 +96,7 @@ if (!function_exists('table_exists')) {
 }
 
 global $releases;
-$releases = array(
+$releases = [
     "20140728-001",
     "20141013-001",
     "20141129-001",
@@ -183,7 +183,8 @@ $releases = array(
     "20241106-001",
     "20241113-001",
     "20241209-001",
-);
+    "20250326-001",
+];
 
 /*************************
  * FUNCTION: GET API KEY *
@@ -8019,6 +8020,122 @@ function upgrade_from_20241113001($db) {
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/***************************************
+ * FUNCTION: UPGRADE FROM 20241209-001 *
+ ***************************************/
+function upgrade_from_20241209001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20241209-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20250326-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    if (!table_exists("layouts")) {
+        // Create a table for the layouts
+        echo "Creating the layouts table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `layouts` (
+                `user_id` INT NOT NULL,
+                `layout_name` VARCHAR(50) NOT NULL,
+                `default` ENUM('1') DEFAULT NULL,
+                `layout` TEXT NOT NULL,
+                `created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                `updated` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (`user_id`, `layout_name`),
+                UNIQUE (`layout_name`, `default`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        ");
+        $stmt->execute();
+    }         
+    
+    // Remove unnecessary files
+    echo "Removing unnecessary files.<br />\n";
+    $remove_files = [
+        realpath(__DIR__ . '/scss/modules/_plan-projects.scss'),
+    ];
+
+    foreach ($remove_files as $file)
+    {
+        // If the file exists
+        if (file_exists($file))
+        {
+            // Remove the file
+            unlink($file);
+        }
+    }                                                                                                                                                                                                                                                                         
+
+    // Update empty strings or null value to the default value for the custom_display_settings field in the user table
+    if (field_exists_in_table('custom_display_settings', 'user')) {
+        echo "Updating empty strings or null value to the default value for the custom_display_settings field in the user table.<br />\n";
+        $stmt = $db->prepare('
+            UPDATE
+	            `user` u
+            SET
+	            `u`.`custom_display_settings` = \'["id","subject","calculated_risk","submission_date","mitigation_planned","management_review"]\'
+            WHERE
+                `u`.`custom_display_settings` IS NULL OR `u`.`custom_display_settings` = \'\';
+        ');
+        $stmt->execute();
+    }
+
+    // Update empty strings or null value to the default value for the custom_plan_mitigation_display_settings field in the user table
+    if (field_exists_in_table('custom_plan_mitigation_display_settings', 'user')) {
+        echo "Updating empty strings or null value to the default value for the custom_plan_mitigation_display_settings field in the user table.<br />\n";
+        $stmt = $db->prepare('
+            UPDATE
+            	`user` u
+            SET
+	            `u`.`custom_plan_mitigation_display_settings` = \'{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["submission_date","1"],["closure_date","0"],["reference_id","0"],["regulation","0"],["control_number","0"],["location","0"],["source","0"],["category","0"],["team","0"],["additional_stakeholders","0"],["technology","0"],["owner","0"],["manager","0"],["submitted_by","0"],["risk_tags","0"],["scoring_method","0"],["residual_risk","0"],["project","0"],["days_open","0"],["affected_assets","0"],["risk_assessment","0"],["additional_notes","0"],["risk_mapping","0"],["threat_mapping","0"]],"mitigation_colums":[["mitigation_planned","1"],["planning_strategy","0"],["planning_date","0"],["mitigation_effort","0"],["mitigation_cost","0"],["mitigation_owner","0"],["mitigation_team","0"],["mitigation_accepted","0"],["mitigation_date","0"],["mitigation_controls","0"],["current_solution","0"],["security_recommendations","0"],["security_requirements","0"]],"review_colums":[["management_review","1"],["review_date","0"],["next_review_date","0"],["next_step","0"],["comments","0"]]}\'
+            WHERE
+                `u`.`custom_plan_mitigation_display_settings` IS NULL OR `u`.`custom_plan_mitigation_display_settings` = \'\';
+        ');
+        $stmt->execute();
+    }
+
+    // Update empty strings or null value to the default value for the custom_perform_reviews_display_settings field in the user table
+    if (field_exists_in_table('custom_perform_reviews_display_settings', 'user')) {
+        echo "Updating empty strings or null value to the default value for the custom_perform_reviews_display_settings field in the user table.<br />\n";
+        $stmt = $db->prepare('
+            UPDATE
+	            `user` u
+            SET
+	            `u`.`custom_perform_reviews_display_settings` = \'{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["submission_date","1"],["closure_date","0"],["reference_id","0"],["regulation","0"],["control_number","0"],["location","0"],["source","0"],["category","0"],["team","0"],["additional_stakeholders","0"],["technology","0"],["owner","0"],["manager","0"],["submitted_by","0"],["risk_tags","0"],["scoring_method","0"],["residual_risk","0"],["project","0"],["days_open","0"],["affected_assets","0"],["risk_assessment","0"],["additional_notes","0"],["risk_mapping","0"],["threat_mapping","0"]],"mitigation_colums":[["mitigation_planned","1"],["planning_strategy","0"],["planning_date","0"],["mitigation_effort","0"],["mitigation_cost","0"],["mitigation_owner","0"],["mitigation_team","0"],["mitigation_accepted","0"],["mitigation_date","0"],["mitigation_controls","0"],["current_solution","0"],["security_recommendations","0"],["security_requirements","0"]],"review_colums":[["management_review","1"],["review_date","0"],["next_review_date","0"],["next_step","0"],["comments","0"]]}\'
+            WHERE
+                `u`.`custom_perform_reviews_display_settings` IS NULL OR `u`.`custom_perform_reviews_display_settings` = \'\';
+        ');
+        $stmt->execute();
+    }
+
+    // Update empty strings or null value to the default value for the custom_reviewregularly_display_settings field in the user table
+    if (field_exists_in_table('custom_reviewregularly_display_settings', 'user')) {
+        echo "Updating empty strings or null value to the default value for the custom_reviewregularly_display_settings field in the user table.<br />\n";
+        $stmt = $db->prepare('
+            UPDATE
+	            `user` u
+            SET
+	            `u`.`custom_reviewregularly_display_settings` = \'{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["days_open","1"],["closure_date","0"],["reference_id","0"],["regulation","0"],["control_number","0"],["location","0"],["source","0"],["category","0"],["team","0"],["additional_stakeholders","0"],["technology","0"],["owner","0"],["manager","0"],["submitted_by","0"],["risk_tags","0"],["scoring_method","0"],["residual_risk","0"],["submission_date","0"],["project","0"],["affected_assets","0"],["risk_assessment","0"],["additional_notes","0"],["risk_mapping","0"],["threat_mapping","0"]],"mitigation_colums":[["mitigation_planned","0"],["planning_strategy","0"],["planning_date","0"],["mitigation_effort","0"],["mitigation_cost","0"],["mitigation_owner","0"],["mitigation_team","0"],["mitigation_accepted","0"],["mitigation_date","0"],["mitigation_controls","0"],["current_solution","0"],["security_recommendations","0"],["security_requirements","0"]],"review_colums":[["management_review","0"],["review_date","0"],["next_step","0"],["next_review_date","1"],["comments","0"]]}\'
+            WHERE
+                `u`.`custom_reviewregularly_display_settings` IS NULL OR `u`.`custom_reviewregularly_display_settings` = \'\';
+        ');
+        $stmt->execute();
+    }
+
+    // Add a table to track user logins
+    echo "Adding the table to track user logins.<br />\n";
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `user_login_history` (`id` int(11) AUTO_INCREMENT PRIMARY KEY, `user_id` int(11) NOT NULL, `timestamp` TIMESTAMP DEFAULT NOW(), `users` INT(11) NOT NULL, `risks` INT(11) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt->execute();
+    
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -8091,7 +8208,7 @@ function upgrade_database()
             }
             else echo "Unable to find an upgrade function for the current SimpleRisk database version.<br />\n";
         }
-        // The applicaton and database are updated to the same version
+        // The application and database are updated to the same version
         else
         {
             echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";

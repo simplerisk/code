@@ -19,4 +19,7 @@ abstract class AbstractEcElement extends AbstractElement
 
     /** @var string */
     public const NS_PREFIX = 'ec';
+
+    /** @var string */
+    public const SCHEMA = 'resources/schemas/exc-c14n.xsd';
 }

@@ -61,13 +61,13 @@
             <div class="row">
                 <div data-sr-role="dt-settings" data-sr-target="assessment-questionnaires-table" class="float-end">
     <?php
-            if(has_permission("assessment_add_questionnaire")) {
+            if (has_permission("assessment_add_questionnaire")) {
     ?>
-                    <a class="btn btn-submit" href="questionnaires.php?action=add"><?php echo $escaper->escapeHtml($lang['Add']); ?></a>
+                    <a class="btn btn-submit" href="questionnaires.php?action=add"><?= $escaper->escapeHtml($lang['Add']); ?></a>
     <?php
             }
     ?>
-                    <a id="setting_modal_btn" class="btn btn-primary" title="<?php echo $escaper->escapeHtml($lang['Settings']);?>" role="button"><i class="fa fa-cog"></i></a>
+                    <a id="setting_modal_btn" class="btn btn-primary" title="<?= $escaper->escapeHtml($lang['Settings']);?>" role="button"><i class="fa fa-cog"></i></a>
                 </div>
                 <div class="col-12 mt-2">
     <?php 
@@ -100,7 +100,9 @@
             </div>
             <div class="modal-body">
                 <form id="custom_display_settings" name="custom_display_settings" method="post">
-                    <?php display_custom_questionnaires_columns("custom_plan_mitigation_display_settings"); ?>
+    <?php 
+                    display_custom_questionnaires_columns("custom_plan_mitigation_display_settings"); 
+    ?>
                     <input type="hidden" name="column_settings" value='1'>
                 </form>
             </div>
@@ -111,8 +113,8 @@
         </div>
     </div>
 </div>
-<input type="hidden" id="_lang_SimpleriskUsers" value="<?php echo $escaper->escapeHtml($lang['SimpleriskUsers']) ?>">
-<input type="hidden" id="_lang_AssessmentContacts" value="<?php echo $escaper->escapeHtml($lang['AssessmentContacts']) ?>">
+<input type="hidden" id="_lang_SimpleriskUsers" value="<?= $escaper->escapeHtml($lang['SimpleriskUsers']) ?>">
+<input type="hidden" id="_lang_AssessmentContacts" value="<?= $escaper->escapeHtml($lang['AssessmentContacts']) ?>">
 <script>
     $(function() {
         $('#setting_modal_btn').on('click', function(e) {

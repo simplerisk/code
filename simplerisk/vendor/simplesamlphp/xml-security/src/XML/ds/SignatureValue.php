@@ -5,18 +5,21 @@ declare(strict_types=1);
 namespace SimpleSAML\XMLSecurity\XML\ds;
 
 use DOMElement;
-use SimpleSAML\Assert\Assert;
 use SimpleSAML\XML\Base64ElementTrait;
 use SimpleSAML\XML\Exception\InvalidDOMElementException;
+use SimpleSAML\XML\SchemaValidatableElementInterface;
+use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XMLSecurity\Assert\Assert;
 
 /**
  * Class representing a ds:SignatureValue element.
  *
  * @package simplesaml/xml-security
  */
-final class SignatureValue extends AbstractDsElement
+final class SignatureValue extends AbstractDsElement implements SchemaValidatableElementInterface
 {
     use Base64ElementTrait;
+    use SchemaValidatableElementTrait;
 
 
     /**

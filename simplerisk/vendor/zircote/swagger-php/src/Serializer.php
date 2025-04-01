@@ -11,8 +11,6 @@ use Symfony\Component\Yaml\Yaml;
 
 /**
  * Allows to serialize/de-serialize annotations from/to JSON.
- *
- * @see https://github.com/zircote/swagger-php
  */
 class Serializer
 {
@@ -90,7 +88,7 @@ class Serializer
         $contents = file_get_contents($filename);
 
         $ext = pathinfo($filename, PATHINFO_EXTENSION);
-        if ('yaml' == $format || in_array($ext, ['yml', 'yaml'])) {
+        if ('yaml' === $format || in_array($ext, ['yml', 'yaml'])) {
             $contents = json_encode(Yaml::parse($contents));
         }
 

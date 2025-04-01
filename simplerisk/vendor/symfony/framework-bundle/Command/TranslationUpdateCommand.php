@@ -64,6 +64,10 @@ class TranslationUpdateCommand extends Command
     {
         parent::__construct();
 
+        if (!method_exists($writer, 'getFormats')) {
+            throw new \InvalidArgumentException(sprintf('The writer class "%s" does not implement the "getFormats()" method.', $writer::class));
+        }
+
         $this->writer = $writer;
         $this->reader = $reader;
         $this->extractor = $extractor;

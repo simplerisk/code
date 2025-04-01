@@ -35,6 +35,24 @@
 
 <!-- End Chunk -->
 
+<!-- Start BooleanElement -->
+
+<element name="BooleanElement" type="boolean"/>
+
+<!-- End BooleanElement -->
+
+<!-- Start StringElement -->
+
+<element name="StringElement" type="string"/>
+
+<!-- End StringElement -->
+
+<!-- Start URIElement -->
+
+<element name="URIElement" type="anyURI"/>
+
+<!-- End URIElement -->
+
 <!-- Start ExtendableAttributesElement -->
 
 <element name="ExtendableAttributesElement" type="ssp:ExtendableAttributesElementType"/>

@@ -8,6 +8,8 @@ use DOMElement;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\XML\Exception\InvalidDOMElementException;
 use SimpleSAML\XML\Exception\SchemaViolationException;
+use SimpleSAML\XML\SchemaValidatableElementInterface;
+use SimpleSAML\XML\SchemaValidatableElementTrait;
 use SimpleSAML\XMLSecurity\Constants as C;
 use SimpleSAML\XMLSecurity\Exception\InvalidArgumentException;
 
@@ -16,8 +18,10 @@ use SimpleSAML\XMLSecurity\Exception\InvalidArgumentException;
  *
  * @package simplesamlphp/xml-security
  */
-final class CanonicalizationMethod extends AbstractDsElement
+final class CanonicalizationMethod extends AbstractDsElement implements SchemaValidatableElementInterface
 {
+    use SchemaValidatableElementTrait;
+
     /**
      * Initialize a CanonicalizationMethod element.
      *

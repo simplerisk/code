@@ -67,6 +67,47 @@ class OpenApiAdminVersionApp {}
 class OpenApiAdminVersionDB {}
 
 /**
+ * @OA\Post(
+ *      path="/admin/upgrade/db",
+ *      summary="Upgrade the SimpleRisk database",
+ *      operationId="upgrade_db",
+ *      tags={"Administrator Operations"},
+ *      security={{"ApiKeyAuth":{}}},
+ *      @OA\RequestBody(
+ *          required=true,
+ *          description="Upgrade the SimpleRisk database",
+ *          @OA\MediaType(
+ *              mediaType="application/json",
+ *              @OA\Schema(
+ *                  type="object",
+ *                  required={"version"},
+ *                  @OA\Property(
+ *                      property="version",
+ *                       type="string",
+ *                       description="The target database version for the upgrade (format: YYYYMMDD-XXX)",
+ *                       example="20241209-001",
+ *                       pattern="^\\d{8}-\\d{3}$"
+ *                  )
+ *              )
+ *          )
+ *      ),
+ *      @OA\Response(
+ *          response=200,
+ *          description="Upgrade successful",
+ *      ),
+ *     @OA\Response(
+ *          response=400,
+ *          description="BAD REQUEST: A file and tracking_id value are required.",
+ *     ),
+ *      @OA\Response(
+ *          response=403,
+ *          description="FORBIDDEN: The user does not have the required permission to perform this action.",
+ *      ),
+ *  )
+ */
+class OpenApiAdminUpgradeDB {}
+
+/**
  * @OA\Delete(
  *     path="/admin/tag",
  *     summary="Delete tag",
