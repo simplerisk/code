@@ -2601,6 +2601,138 @@ $ui_layout_widget_config = [
         ],
         '' => '',
     ],
+    'open_risk_level' => [
+        'localization_key' => 'ReviewedVsUnreviewed',
+        'type' => 'chart',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'open_status' => [
+        'localization_key' => 'ReviewedVsUnreviewed',
+        'type' => 'chart',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'open_site_location' => [
+        'localization_key' => 'ReviewedVsUnreviewed',
+        'type' => 'chart',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'open_risk_source' => [
+        'localization_key' => 'ReviewedVsUnreviewed',
+        'type' => 'chart',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'open_category' => [
+        'localization_key' => 'ReviewedVsUnreviewed',
+        'type' => 'chart',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'open_team' => [
+        'localization_key' => 'ReviewedVsUnreviewed',
+        'type' => 'chart',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'open_technology' => [
+        'localization_key' => 'ReviewedVsUnreviewed',
+        'type' => 'chart',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'open_owner' => [
+        'localization_key' => 'ReviewedVsUnreviewed',
+        'type' => 'chart',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'open_owners_manager' => [
+        'localization_key' => 'ReviewedVsUnreviewed',
+        'type' => 'chart',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'open_risk_scoring_method' => [
+        'localization_key' => 'ReviewedVsUnreviewed',
+        'type' => 'chart',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'close_reason' => [
+        'localization_key' => 'ReviewedVsUnreviewed',
+        'type' => 'chart',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ]
 ];
 
 /**
@@ -2629,6 +2761,7 @@ $ui_layout_config = [
                 'minH' => 2,
                 'name' => 'chart_open_vs_closed',
                 'type' => 'chart',
+                'layout' => 'overview'
             ],
             [
                 'x' => 4,
@@ -2639,6 +2772,7 @@ $ui_layout_config = [
                 'minH' => 2,
                 'name' => 'chart_mitigation_planned_vs_unplanned',
                 'type' => 'chart',
+                'layout' => 'overview'
             ],
             [
                 'x' => 8,
@@ -2649,6 +2783,7 @@ $ui_layout_config = [
                 'minH' => 2,
                 'name' => 'chart_reviewed_vs_unreviewed',
                 'type' => 'chart',
+                'layout' => 'overview'
             ],
             [
                 'x' => 0,
@@ -2659,6 +2794,155 @@ $ui_layout_config = [
                 'minH' => 3,
                 'name' => 'table_risks_by_month',
                 'type' => 'table',
+                'layout' => 'overview'
+            ]
+        ],
+    ],
+    'dashboard_open' => [
+        'API_endpoint' => '/api/v2/ui/layout',
+        'required_permission' =>'', //???
+        'available_widgets' => [
+            'open_risk_level',
+            'open_status',
+            'open_site_location',
+            'open_risk_source',
+            'open_category',
+            'open_team',
+            'open_technology',
+            'open_owner',
+            'open_owners_manager',
+            'open_risk_scoring_method'
+        ],
+        'default_layout' => [
+            [
+                'x' => 0,
+                'y' => 0,
+                'w' => 4,
+                'h' => 4,
+                'minW' => 2,
+                'minH' => 2,
+                'name' => 'open_risk_level',
+                'type' => 'chart',
+                'layout' => 'dashboard_open'
+            ],
+            [
+                'x' => 4,
+                'y' => 0,
+                'w' => 4,
+                'h' => 4,
+                'minW' => 2,
+                'minH' => 2,
+                'name' => 'open_status',
+                'type' => 'chart',
+                'layout' => 'dashboard_open'
+            ],
+            [
+                'x' => 8,
+                'y' => 0,
+                'w' => 4,
+                'h' => 4,
+                'minW' => 2,
+                'minH' > 2,
+                'name' => 'open_site_location',
+                'type' => 'chart',
+                'layout' => 'dashboard_open'
+            ],
+            [
+                'x' => 0,
+                'y' => 4,
+                'w' => 4,
+                'h' => 4,
+                'minW' => 2,
+                'minH' => 2,
+                'name' => 'open_risk_source',
+                'type' => 'chart',
+                'layout' => 'dashboard_open'
+            ],
+            [
+                'x' => 4,
+                'y' => 4,
+                'w' => 4,
+                'h' => 4,
+                'minW' => 2,
+                'minH' => 2,
+                'name' => 'open_category',
+                'type' => 'chart',
+                'layout' => 'dashboard_open'
+            ],
+            [
+                'x' => 8,
+                'y' => 4,
+                'w' => 4,
+                'h' => 4,
+                'minW' => 2,
+                'minH' > 2,
+                'name' => 'open_team',
+                'type' => 'chart',
+                'layout' => 'dashboard_open'
+            ],
+            [
+                'x' => 0,
+                'y' => 4,
+                'w' => 4,
+                'h' => 4,
+                'minW' => 2,
+                'minH' => 2,
+                'name' => 'open_technology',
+                'type' => 'chart',
+                'layout' => 'dashboard_open'
+            ],
+            [
+                'x' => 4,
+                'y' => 4,
+                'w' => 4,
+                'h' => 4,
+                'minW' => 2,
+                'minH' => 2,
+                'name' => 'open_owner',
+                'type' => 'chart',
+                'layout' => 'dashboard_open'
+            ],
+            [
+                'x' => 8,
+                'y' => 4,
+                'w' => 4,
+                'h' => 4,
+                'minW' => 2,
+                'minH' > 2,
+                'name' => 'open_owners_manager',
+                'type' => 'chart',
+                'layout' => 'dashboard_open'
+            ],
+            [
+                'x' => 0,
+                'y' => 8,
+                'w' => 4,
+                'h' => 4,
+                'minW' => 2,
+                'minH' > 2,
+                'name' => 'open_risk_scoring_method',
+                'type' => 'chart',
+                'layout' => 'dashboard_open'
+            ]
+        ],
+    ],
+    'dashboard_close' => [
+        'API_endpoint' => '/api/v2/ui/layout',
+        'required_permission' =>'', //???
+        'available_widgets' => [
+            'close_reason'
+        ],
+        'default_layout' => [
+            [
+                'x' => 0,
+                'y' => 0,
+                'w' => 4,
+                'h' => 4,
+                'minW' => 2,
+                'minH' => 2,
+                'name' => 'close_reason',
+                'type' => 'chart',
+                'layout' => 'dashboard_close'
             ]
         ],
     ]
@@ -18899,6 +19183,9 @@ function large_extra($extra_name)
  ***************************/
 function add_file_type($name, $extension)
 {
+
+    global $lang, $escaper;
+
     // If no name was provided
     if (!$name || $name == "")
     {
@@ -18922,13 +19209,44 @@ function add_file_type($name, $extension)
     // Open the database connection
     $db = db_open();
 
+    // Check if the file type already exists
+    $stmt = $db->prepare("SELECT COUNT(`name`) FROM `file_types` WHERE `name` = :name;");
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 250);
+    $stmt->execute();
+
+    $file_type_count = $stmt->fetchColumn();
+
+    if ($file_type_count > 0) {
+        // Display an alert
+        set_alert(false, "bad", $escaper->escapeHtml($lang['TheFileTypeAlreadyExists']));
+
+        // Return false
+        return false;
+    }
+
+    // Check if the file type extension already exists
+    $stmt = $db->prepare("SELECT COUNT(`name`) FROM `file_type_extensions` WHERE `name` = :extension;");
+    $stmt->bindParam(":extension", $extension, PDO::PARAM_STR, 10);
+    $stmt->execute();
+
+    $file_type_extension_count = $stmt->fetchColumn();
+
+    if ($file_type_extension_count > 0) {
+        // Display an alert
+        set_alert(false, "bad", $escaper->escapeHtml($lang['TheFileTypeExtensionAlreadyExists']));
+
+        // Return false
+        return false;
+    }
+
+
     // Insert the new file type
-    $stmt = $db->prepare("INSERT INTO `file_types` (`name`) VALUES (:name) ON DUPLICATE KEY UPDATE `name` = :name;");
+    $stmt = $db->prepare("INSERT IGNORE INTO `file_types` (`name`) VALUES (:name);");
     $stmt->bindParam(":name", $name, PDO::PARAM_STR, 250);
     $stmt->execute();
 
     // Insert the new file type extension
-    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES (:extension) ON DUPLICATE KEY UPDATE `name` = :extension;");
+    $stmt = $db->prepare("INSERT IGNORE INTO `file_type_extensions` (`name`) VALUES (:extension);");
     $stmt->bindParam(":extension", $extension, PDO::PARAM_STR, 10);
     $stmt->execute();
 
@@ -26877,6 +27195,71 @@ function audit_log_extra_toggle(string $extra, bool $on = true) {
         write_log(1000, $_SESSION['uid'], _lang("ExtraToggled{$on_off}", ['extra_name' => $lang[$extra], 'user' => $_SESSION['user']]), 'extra');
     } else {
         write_log(1000, 0, _lang("ExtraTechnicalToggled{$on_off}", ['extra_name' => $lang[$extra]]), 'extra');
+    }
+}
+
+/**
+ * Deleting a single backup entry and its files 
+ *
+ * @param array $backup_to_delete a single entry from the `backups` table`
+ * @param boolean $called_from_ui whether it was called from the UI. Will display toasts if true, add debug messages if false.
+ */
+function delete_backup($backup_to_delete, $called_from_ui = false) {
+
+    // Initializing variables
+    $parent_directory = dirname($backup_to_delete['app_zip_file_name']);
+    $missing_backup_directory = !is_dir($parent_directory);
+    $backup_directory_delete_successful = false;
+
+    $success = false;
+    $message = "";
+
+    // If the backup directory exists
+    if (!$missing_backup_directory) {
+
+        // Remove all files from this directory
+        array_map('unlink', glob("$parent_directory/*.*"));
+
+        // Remove the directory
+        rmdir($parent_directory);
+
+        // Check if the directory was successfully removed
+        $backup_directory_delete_successful = !is_dir($parent_directory);
+        if ($backup_directory_delete_successful) {
+            if ($called_from_ui) {
+                global $lang;
+                $message = $lang['DeleteBackup_Success'];
+            } else {
+                $message = _lang("DeleteBackup_Expired_Success", ['backup_remove' => (int)get_setting('backup_remove'), 'parent_directory' => $parent_directory]);
+            }
+
+            $success = true;
+        } else {
+            $message = _lang("DeleteBackup_Failed", ['parent_directory' => $parent_directory]);
+        }
+    } else {
+        $message = _lang("DeleteBackup_Cleanup_Success", ['parent_directory' => $parent_directory]);
+        $success = true;
+    }
+
+    // Delete the database entry if the directory was either missing already or successfully deleted
+    if ($missing_backup_directory || $backup_directory_delete_successful) {
+        // Open the database connection
+        $db = db_open();
+
+        $stmt = $db->prepare("DELETE FROM `backups` WHERE `random_id` = :random_id;");
+        $stmt->bindParam(":random_id", $backup_to_delete['random_id'], PDO::PARAM_STR);
+        $stmt->execute();
+
+        // Close the database connection
+        db_close($db);
+    }
+
+    if ($called_from_ui) {
+        set_alert(true, $success ? "good" : "bad", $message);
+    } else {
+        write_debug_log_cli($message);
+        write_log(0, 0, $message, 'backup');
     }
 }
 

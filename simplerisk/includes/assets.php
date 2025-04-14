@@ -1348,26 +1348,29 @@ function update_asset_values($min_value, $max_value)
 /*******************************************
  * FUNCTION: DISPLAY ASSET VALUATION TABLE *
  *******************************************/
-function display_asset_valuation_table()
-{
-    global $lang;
-    global $escaper;
+function display_asset_valuation_table() {
+
+    global $lang, $escaper;
 
     // Open the database connection
     $db = db_open();
 
-    echo "<table class='my-2' border=\"0\" cellspacing=\"5\" cellpadding=\"5\">\n";
+    echo "
+        <table class='my-2' border='0' cellspacing='5' cellpadding='5'>
+    ";
 
     // Display the table header
-    echo "<thead>\n";
-    echo "<tr>\n";
-    echo "<th align=\"left\">" . $escaper->escapeHtml($lang['ValueRange']) . "</th>\n";
-    echo "<th align=\"left\">" . $escaper->escapeHtml($lang['MinimumValue']) . "</th>\n";
-    echo "<th align=\"left\">" . $escaper->escapeHtml($lang['MaximumValue']) . "</th>\n";
-    echo "<th align=\"left\">" . $escaper->escapeHtml($lang['ValuationLevelName']) . "</th>\n";
-    echo "</tr>\n";
-    echo "</thead>\n";
-    echo "<tbody>\n";
+    echo "
+            <thead>
+                <tr>
+                    <th class='text-center'>{$escaper->escapeHtml($lang['ValueRange'])}</th>
+                    <th class='text-center'>{$escaper->escapeHtml($lang['MinimumValue'])}</th>
+                    <th class='text-center'>{$escaper->escapeHtml($lang['MaximumValue'])}</th>
+                    <th class='text-center'>{$escaper->escapeHtml($lang['ValuationLevelName'])}</th>
+                </tr>
+            </thead>
+            <tbody>
+    ";
 
     // Get the asset values
     $stmt = $db->prepare("SELECT * FROM asset_values;");
@@ -1375,25 +1378,36 @@ function display_asset_valuation_table()
     $values = $stmt->fetchAll();
 
     // For each asset value
-    foreach ($values as $value)
-    {
+    foreach ($values as $value) {
+
         // Minimum value for field
         $minimum = (int)$value['id'] - 1;
 
-        echo "<tr>\n";
-        echo "<td>" . $escaper->escapeHtml($value['id']) . "</td>\n";
-        echo "<td><input id=\"dollarsign\" type=\"number\" min=\"" . $escaper->escapeHtml($minimum) . "\" name=\"min_value_" . $escaper->escapeHtml($value['id']) . "\" value=\"" . $escaper->escapeHtml($value['min_value']) . "\" onFocus=\"this.oldvalue = this.value;\" onChange=\"javascript:updateMinValue('" . $escaper->escapeHtml($value['id']) . "');this.oldvalue = this.value;\" class=\"form-control\"/></td>\n";
-        echo "<td><input id=\"dollarsign\" type=\"number\" min=\"" . $escaper->escapeHtml($minimum) . "\" name=\"max_value_" . $escaper->escapeHtml($value['id']) . "\" value=\"" . $escaper->escapeHtml($value['max_value']) . "\" onFocus=\"this.oldvalue = this.value;\" onChange=\"javascript:updateMaxValue('" . $escaper->escapeHtml($value['id']) . "');this.oldvalue = this.value;\"  class=\"form-control\"/></td>\n";
-        echo "<td><input type=\"text\" name=\"valuation_level_name_" . $escaper->escapeHtml($value['id']) . "\" value=\"" . $escaper->escapeHtml($value['valuation_level_name']) . "\"  class=\"form-control\"/></td>\n";
+        echo "
+                <tr>
+                    <td class='text-center'>{$escaper->escapeHtml($value['id'])}</td>
+                    <td class='text-center'>
+                        <input id='dollarsign' type='number' min='{$escaper->escapeHtml($minimum)}' name='min_value_{$escaper->escapeHtml($value['id'])}' value='{$escaper->escapeHtml($value['min_value'])}' onFocus='this.oldvalue = this.value;' onChange='javascript:updateMinValue('{$escaper->escapeHtml($value['id'])}');this.oldvalue = this.value;' class='form-control'/>
+                    </td>
+                    <td class='text-center'>
+                        <input id='dollarsign' type='number' min='{$escaper->escapeHtml($minimum)}' name='max_value_{$escaper->escapeHtml($value['id'])}' value='{$escaper->escapeHtml($value['max_value'])}' onFocus='this.oldvalue = this.value;' onChange='javascript:updateMaxValue('{$escaper->escapeHtml($value['id'])}');this.oldvalue = this.value;'  class='form-control'/>
+                    </td>
+                    <td class='text-center'>
+                        <input type='text' name='valuation_level_name_{$escaper->escapeHtml($value['id'])}' value='{$escaper->escapeHtml($value['valuation_level_name'])}'  class='form-control' placeholder='{$escaper->escapeHtml($lang['EnterAValuationLevelName'])}'/>
+                    </td>
+                </tr>
+        ";
 
-        echo "</tr>\n";
     }
 
-    echo "</tbody>\n";
-    echo "</table>\n";
+    echo "
+            </tbody>
+        </table>
+    ";
 
     // Close the database connection
     db_close($db);
+
 }
 
 /*********************************************

@@ -58,23 +58,6 @@ function display($display = "")
 <?php
    $risks = get_risks(0, "id", "asc");
 ?>
-<style>
-    .exception--edit, .exception--delete, .exception-batch--delete, .exception--approve {
-        cursor: pointer;
-    }
-
-    #exception--view {
-        color: #000000;
-    }
-
-    #exception--view .modal-body label {
-        text-decoration: underline;
-    }
-
-    .exception-data {
-        padding-left: 10px;
-    }
-</style>
 <div class="row bg-white">
     <div class="col-12">
         <div id="exceptions-tab-content" class="my-2">

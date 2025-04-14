@@ -184,6 +184,7 @@ $releases = [
     "20241113-001",
     "20241209-001",
     "20250326-001",
+    "20250411-001",
 ];
 
 /*************************
@@ -8127,6 +8128,27 @@ function upgrade_from_20241209001($db) {
     $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `user_login_history` (`id` int(11) AUTO_INCREMENT PRIMARY KEY, `user_id` int(11) NOT NULL, `timestamp` TIMESTAMP DEFAULT NOW(), `users` INT(11) NOT NULL, `risks` INT(11) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
     
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20250326-001 *
+ ***************************************/
+function upgrade_from_20250326001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20250326-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20250411-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic
     $_SESSION['latest_version_app'] = latest_version('app');

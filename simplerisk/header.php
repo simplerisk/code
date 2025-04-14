@@ -5,7 +5,7 @@ require_once(realpath(__DIR__ .'/head.php'));
 // In the script and the page using it you will be able to use _lang['localization_key'] in javascript.
 $localization_required_by_scripts = [
     'CUSTOM:common.js' => ['Yes', 'Cancel', 'FieldRequired'],
-    'EXTRA:JS:assessments:questionnaire_templates.js' => ['SelectedOnAnotherTab', 'ID', 'SelectedQuestions', 'SearchForQuestion', 'ConfirmDisableTabbedExperience', 'ConfirmDeleteTab', 'NewTab', 'Default'],
+    'EXTRA:JS:assessments:questionnaire_templates.js' => ['SelectedOnAnotherTab', 'ID', 'SelectedQuestions', 'SearchForQuestion', 'ConfirmDisableTabbedExperience', 'ConfirmDeleteTab', 'NewTab', 'Default', 'Actions'],
     'CUSTOM:pages/plan-project.js' => ['AreYouSureYouWantToDeleteThisProject'],
     'datatables' => ['All', 'datatables_ShowAll', 'datatables_ShowLess', 'First', 'Previous', 'Next', 'Last'],
     'blockUI' => ['ProcessingPleaseWait'],
@@ -627,11 +627,12 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
             });
                 
             $("body").on("blur", "input.editable", function(){
-                if(!$(this).val()) return false;
+                let input_value = $(this).val();
+                if(!input_value || !input_value.trim()) return false;
                 var label = $(this).parent().find("span.editable");
                 $(this).hide();
-                label.text($(this).val());
-                label.attr("title", $(this).val());
+                label.text(input_value);
+                label.attr("title", input_value);
                 label.show();
             });
         });

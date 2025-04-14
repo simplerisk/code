@@ -103,7 +103,7 @@
 	?>
 	<div class='organizational-hierarchy-page custom-treegrid-container mb-2'>
 		<div class='text-end'>
-			<button id='create_business_unit' type='button' class='btn btn-dark mb-2'><?= $escaper->escapeHtml($lang['CreateNewBusinessUnit']); ?></button>
+			<button id='create_business_unit' type='button' class='btn btn-submit mb-2'><?= $escaper->escapeHtml($lang['CreateNewBusinessUnit']); ?></button>
 		</div>
 		<table id='business_units' class='easyui-treegrid framework-table'>
 			<thead>
@@ -260,36 +260,6 @@
 		</div>
 	</div>
 </div>
-<style type='text/css'>
-	#create_business_unit {
-		margin-bottom: 3px;
-	}
-
-	a.business-unit--update {
-		padding-right: 5px;
-	}
-
-	a.business-unit--update, a.business-unit--delete, a.team--remove {
-		cursor: pointer;
-	}
-
-	td[field='actions'], td[field='actions']>div, .actions-cell, .actions-cell a {
-		vertical-align: bottom;
-	}
-
-	.modal-body {
-		max-height: unset;
-	}
-
-	.business-unit-name {
-		cursor: pointer;
-		user-select: none; /* standard syntax */
-		-webkit-user-select: none; /* webkit (safari, chrome) browsers */
-		-moz-user-select: none; /* mozilla browsers */
-		-khtml-user-select: none; /* webkit (konqueror) browsers */
-		-ms-user-select: none; /* IE10+ */
-	}
-</style> 
 
 <script>
 	function refresh_business_unit_menu_items() {
@@ -536,9 +506,23 @@
 			$('#business-unit--delete').modal('show');
 		});
 
+		// Variable which is used to prevent multiple form submissions
+		var loading = false;
+
 		$('#business-unit-delete-form').submit(function(event) {
+
+			// Prevent form submission
 			event.preventDefault();
+
+			// Prevent multiple form submissions
+			if (loading) {
+				return;
+			}
+			
 			var data = new FormData($('#business-unit-delete-form')[0]);
+
+			// Set the loading to true to prevent form submission
+			loading = true;
 
 			$.ajax({
 				type: 'POST',
@@ -558,6 +542,9 @@
 					// Reset the form
 					resetForm('#business-unit-delete-form', false);
 
+					// Set loading to false to allow form submission
+					loading = false;
+
 					var tree = $('#business_units');
 					tree.treegrid('options').animate = false;
 					tree.treegrid('reload');
@@ -570,6 +557,10 @@
 							showAlertsFromArray(xhr.responseJSON.status_message);
 						}
 					}
+
+					// Set loading to false to allow form submission
+					loading = false;
+
 				},
 				complete: function(xhr, status) {
 					enableSubmit();
@@ -586,11 +577,21 @@
 		});
 
 		$('#team-remove-form').submit(function(event) {
+	
+			// Prevent form submission
 			event.preventDefault();
+
+			// Prevent multiple form submissions
+			if (loading) {
+				return;
+			}
 
 			var data = new FormData($('#team-remove-form')[0]);
 			var business_unit_id = $('#team-remove-form [name=\"business_unit_id\"]').val();
 			var team_id = $('#team-remove-form [name=\"team_id\"]').val();
+
+			// Set the loading to true to prevent form submission
+			loading = true;
 
 			$.ajax({
 				type: 'POST',
@@ -610,6 +611,9 @@
 					// Reset the form
 					resetForm('#team-remove-form', false);
 
+					// Set loading to false to allow form submission
+					loading = false;
+
 					//$('tr[node-id=\"' + business_unit_id + '-' + team_id + '\"]').remove();
 					var tree = $('#business_units');
 					tree.treegrid('remove', business_unit_id + '-' + team_id);
@@ -625,6 +629,10 @@
 							showAlertsFromArray(xhr.responseJSON.status_message);
 						}
 					}
+
+					// Set loading to false to allow form submission
+					loading = false;
+
 				},
 				complete: function(xhr, status) {
 					enableSubmit();
@@ -638,7 +646,7 @@
 
 </script>
 <script>
-	<?php prevent_form_double_submit_script(['activate_extra', 'deactivate_extra', 'business-unit-delete-form']); ?>
+	<?php prevent_form_double_submit_script(['activate_extra', 'deactivate_extra', 'business-unit-delete-form', 'team-remove-form']); ?>
 </script>
 <?php
     // Render the footer of the page. Please don't put code after this part.

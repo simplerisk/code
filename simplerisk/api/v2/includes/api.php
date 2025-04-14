@@ -163,6 +163,7 @@ function api_save_ui_layout() {
                         'h' => isset($w['h']) ? (int)$w['h'] : $default['minH'],
                         'minW' => $default['minW'],
                         'minH' => $default['minH'],
+                        'layout' => $w['layout']
                     ];
                 }
                 , $layout
@@ -234,26 +235,14 @@ function api_get_ui_widget() {
         api_v2_json_result(400, get_alert(true), null);
     }
 
-    // It's setup this way so we can generate the widget's html on the server side
-    // it means we're able to use the UI layout widget for every kind of content
-    ob_start();
-    switch ($widget_name) {
-        case 'chart_open_vs_closed':
-            open_closed_pie(js_string_escape($lang['OpenVsClosed']));
-            break;
-        case 'chart_mitigation_planned_vs_unplanned':
-            open_mitigation_pie(js_string_escape($lang['MitigationPlannedVsUnplanned']));
-            break;
-        case 'chart_reviewed_vs_unreviewed':
-            open_review_pie(js_string_escape($lang['ReviewedVsUnreviewed']));
-            break;
-        case 'table_risks_by_month':
-            risks_by_month_table();
-            break;
+    if ($layout_name == 'overview') {
+        $widget_html = get_ui_widget_overview($widget_name);
+    } else if ($layout_name == 'dashboard_open') {
+        $widget_html = get_ui_widget_dashboard_open($widget_name);
+    } else if ($layout_name == 'dashboard_close') {
+        $widget_html = get_ui_widget_dashboard_close($widget_name);
     }
-    $widget_html = ob_get_contents();
-    ob_end_clean();
-
+    
     api_v2_json_result(200, null, $widget_html);
 }
 
@@ -291,4 +280,158 @@ function api_update_default_status() {
     api_v2_json_result(200, get_alert(true), null);
 }
 
+function get_ui_widget_overview($widget_name) {
+
+    global $lang;
+
+    // It's setup this way so we can generate the widget's html on the server side
+    // it means we're able to use the UI layout widget for every kind of content
+    ob_start();
+
+    switch ($widget_name) {
+        case 'chart_open_vs_closed':
+            open_closed_pie(js_string_escape($lang['OpenVsClosed']));
+            break;
+        case 'chart_mitigation_planned_vs_unplanned':
+            open_mitigation_pie(js_string_escape($lang['MitigationPlannedVsUnplanned']));
+            break;
+        case 'chart_reviewed_vs_unreviewed':
+            open_review_pie(js_string_escape($lang['ReviewedVsUnreviewed']));
+            break;
+        case 'table_risks_by_month':
+            risks_by_month_table();
+            break;
+    }
+
+    $widget_html = ob_get_contents();
+    ob_end_clean();
+
+    return $widget_html;
+
+}
+
+function get_ui_widget_dashboard_open($widget_name) {
+
+    global $lang;
+    
+    $teamOptions = get_teams_by_login_user();
+    array_unshift($teamOptions, array(
+        'value' => "0",
+        'name' => $lang['Unassigned'],
+    ));
+
+    $teams = [];
+    // Get teams submitted by user
+    if (isset($_GET['teams'])) {
+        $teams = array_filter(explode(',', $_GET['teams']), 'ctype_digit');
+    } elseif (is_array($teamOptions)) {
+        foreach ($teamOptions as $teamOption) {
+            $teams[] = (int)$teamOption['value'];
+        }
+    }
+
+    // Get the risk pie array
+    $pie_array = get_pie_array(null, $teams);
+
+    // Get the risk location pie array
+    $pie_location_array = get_pie_array("location", $teams);
+
+    // Get the risk team pie array
+    $pie_team_array = get_pie_array("team", $teams);
+
+    // Get the risk technology pie array
+    $pie_technology_array = get_pie_array("technology", $teams);
+
+    // It's setup this way so we can generate the widget's html on the server side
+    // it means we're able to use the UI layout widget for every kind of content
+    ob_start();
+
+    switch ($widget_name) {
+        case 'open_risk_level':
+            open_risk_level_pie(js_string_escape($lang['RiskLevel']), "open_risk_level_pie", $teams); 
+            break;
+        case 'open_status':
+            open_risk_status_pie($pie_array, js_string_escape($lang['Status'])); 
+            break;
+        case 'open_site_location':
+            open_risk_location_pie($pie_location_array, js_string_escape($lang['SiteLocation'])); 
+            break;
+        case 'open_risk_source':
+            open_risk_source_pie($pie_array, js_string_escape($lang['RiskSource'])); 
+            break;
+        case 'open_category':
+            open_risk_category_pie($pie_array, js_string_escape($lang['Category'])); 
+            break;
+        case 'open_team':
+            open_risk_team_pie($pie_team_array, js_string_escape($lang['Team'])); 
+            break;
+        case 'open_technology':
+            open_risk_technology_pie($pie_technology_array, js_string_escape($lang['Technology'])); 
+            break;
+        case 'open_owner':
+            open_risk_owner_pie($pie_array, js_string_escape($lang['Owner'])); 
+            break;
+        case 'open_owners_manager':
+            open_risk_owners_manager_pie($pie_array, js_string_escape($lang['OwnersManager'])); 
+            break;
+        case 'open_risk_scoring_method':
+            open_risk_scoring_method_pie($pie_array, js_string_escape($lang['RiskScoringMethod'])); 
+            break;
+    }
+
+    $widget_html = ob_get_contents();
+    ob_end_clean();
+    
+    return $widget_html;
+
+}
+
+function get_ui_widget_dashboard_close($widget_name) {
+
+    global $lang;
+
+    $teamOptions = get_teams_by_login_user();
+    array_unshift($teamOptions, array(
+        'value' => "0",
+        'name' => $lang['Unassigned'],
+    ));
+
+    $teams = [];
+    // Get teams submitted by user
+    if (isset($_GET['teams'])) {
+        $teams = array_filter(explode(',', $_GET['teams']), 'ctype_digit');
+    } elseif (is_array($teamOptions)) {
+        foreach ($teamOptions as $teamOption) {
+            $teams[] = (int)$teamOption['value'];
+        }
+    }
+
+    // Get the risk pie array
+    $pie_array = get_pie_array(null, $teams);
+
+    // Get the risk location pie array
+    $pie_location_array = get_pie_array("location", $teams);
+
+    // Get the risk team pie array
+    $pie_team_array = get_pie_array("team", $teams);
+
+    // Get the risk technology pie array
+    $pie_technology_array = get_pie_array("technology", $teams);
+
+    // It's setup this way so we can generate the widget's html on the server side
+    // it means we're able to use the UI layout widget for every kind of content
+    ob_start();
+
+    switch ($widget_name) {
+        case 'close_reason':
+            closed_risk_reason_pie(js_string_escape($lang['Reason']), $teams); 
+            break;
+    }
+
+    $widget_html = ob_get_contents();
+    ob_end_clean();
+    
+    return $widget_html;
+
+}
 ?>

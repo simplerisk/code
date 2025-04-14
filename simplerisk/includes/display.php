@@ -7472,35 +7472,36 @@ function display_set_default_date_format_script()
 /*******************************
  * FUNCTION: CREATE RISK TABLE *
  *******************************/
-function create_risk_formula_table()
-{
+function create_risk_formula_table() {
+
     global $lang;
     global $escaper;
 
-    $impacts = arraY_reverse(get_table("impact"));
+    $impacts = array_reverse(get_table("impact"));
     $likelihoods = get_table("likelihood");
 
     $risk_levels = get_risk_levels();
     $risk_levels_by_color = array();
-    foreach($risk_levels as $risk_level){
+    foreach ($risk_levels as $risk_level) {
         $risk_levels_by_color[$risk_level['name']] = $risk_level;
     }
 
     $risk_model = get_setting("risk_model");
+
     echo "
-        <h4 class='page-title'>" . $escaper->escapeHtml($lang['MyClassicRiskFormulaIs']) . ":</h4>
+        <h4 class='page-title'>{$escaper->escapeHtml($lang['MyClassicRiskFormulaIs'])} :</h4>
         <form name='risk_levels' method='post' action=''>
             <div class='row'>
                 <div class='col-md-4'>
                     <div class='form-group'>
-                        <label>" . $escaper->escapeHtml($lang['RISK']) . "=</label>
+                        <label>{$escaper->escapeHtml($lang['RISK'])} =</label>
     ";
                         create_dropdown("risk_models", $risk_model, null, false);
     echo "
                     </div>
                 </div>
             </div>
-            <input type='submit' value='" . $escaper->escapeHtml($lang['Update']) . "' name='update_risk_formula' class='btn btn-submit'/>
+            <input type='submit' value='{$escaper->escapeHtml($lang['Update'])}' name='update_risk_formula' class='btn btn-submit'/>
         </form>
         <br>
     ";
@@ -7510,27 +7511,27 @@ function create_risk_formula_table()
         <table class='risk-level-table'>
             <tr height='20px'>
                 <td><div class='risk-table-veryhigh' style='background-color: {$risk_levels_by_color['Very High']['color']}' /></td>
-                <td>" . $escaper->escapeHtml($risk_levels_by_color['Very High']['display_name'] . " " . $lang['Risk']) . "</td>
+                <td>{$escaper->escapeHtml($risk_levels_by_color['Very High']['display_name'] . " " . $lang['Risk'])}</td>
                 <td>&nbsp;</td>
                 <td><div class='risk-table-high' style='background-color: {$risk_levels_by_color['High']['color']}' /></td>
-                <td>" . $escaper->escapeHtml($risk_levels_by_color['High']['display_name'] . " " . $lang['Risk']) . "</td>
+                <td>{$escaper->escapeHtml($risk_levels_by_color['High']['display_name'] . " " . $lang['Risk'])}</td>
                 <td>&nbsp;</td>
                 <td><div class='risk-table-medium' style='background-color: {$risk_levels_by_color['Medium']['color']}' /></td>
-                <td>" . $escaper->escapeHtml($risk_levels_by_color['Medium']['display_name'] . " " . $lang['Risk']) . "</td>
+                <td>{$escaper->escapeHtml($risk_levels_by_color['Medium']['display_name'] . " " . $lang['Risk'])}</td>
                 <td>&nbsp;</td>
                 <td><div class='risk-table-low' style='background-color: {$risk_levels_by_color['Low']['color']}' /></td>
-                <td>" . $escaper->escapeHtml($risk_levels_by_color['Low']['display_name'] . " " . $lang['Risk']) . "</td>
+                <td>{$escaper->escapeHtml($risk_levels_by_color['Low']['display_name'] . " " . $lang['Risk'])}</td>
                 <td>&nbsp;</td>
                 <td><div class='risk-table-insignificant' style='background-color: white' /></td>
-                <td>" . $escaper->escapeHtml($lang['Insignificant']) . "</td>
+                <td>{$escaper->escapeHtml($lang['Insignificant'])}</td>
             </tr>
         </table>
         
         <br>
         
         <div class='d-flex m-l-40 mb-2 impact-btn-container'>
-            <a id='add-impact' href='#'><i class='fa fa-plus' title='" . $escaper->escapeHtml($lang['AddImpact']) . "' width='25px'></i></a>&nbsp;&nbsp;&nbsp;&nbsp;
-            <a id='delete-impact' href='#'><i class='fa fa-minus' title='" . $escaper->escapeHtml($lang['DeleteImpact']) . "' width='25px'></i></a>
+            <a id='add-impact' href='#'><i class='fa fa-plus' title='{$escaper->escapeHtml($lang['AddImpact'])}' width='25px'></i></a>&nbsp;&nbsp;&nbsp;&nbsp;
+            <a id='delete-impact' href='#'><i class='fa fa-minus' title='{$escaper->escapeHtml($lang['DeleteImpact'])}' width='25px'></i></a>
         </div>
         
         <div class='risk-formula-table-container overflow-x-auto'>
@@ -7538,20 +7539,18 @@ function create_risk_formula_table()
     ";
 
     // For each impact level
-    foreach($impacts as $i => $impact)
-    {
+    foreach($impacts as $i => $impact) {
 
         echo "
                 <tr>
         ";
 
         // If this is the first row add the y-axis label
-        if ($i == 0)
-        {
+        if ($i == 0) {
             echo "
                     <td rowspan='" . count($impacts) . "'>
                         <div id='impact-label'>
-                            <b>" . $escaper->escapeHtml($lang['Impact']) . "</b>
+                            <b>{$escaper->escapeHtml($lang['Impact'])}</b>
                         </div>
                     </td>
             ";
@@ -7564,16 +7563,16 @@ function create_risk_formula_table()
         echo "
                     <td bgcolor='silver' height='50px' width='200px'>
                         <span>
-                            <span class='editable'>$impact_name</span>
-                            <input type='text' class='editable' value='$impact_name' style='display: none;' data-type='impact' data-id='$impact_value'>
+                            <span class='editable'>{$impact_name}</span>
+                            <input type='text' class='editable' value='{$impact_name}' style='display: none;' data-type='impact' data-id='{$impact_value}'>
                         </span>                    
                     </td>
-                    <td bgcolor='silver' align='center' height='50px' width='50px'>" . $escaper->escapeHtml($impacts[$i]['value']) . "</td>
+                    <td bgcolor='silver' align='center' height='50px' width='50px'>{$escaper->escapeHtml($impacts[$i]['value'])}</td>
         ";
 
         // For each likelihood level
-        foreach($likelihoods as $j => $likelihood)
-        {
+        foreach($likelihoods as $j => $likelihood) {
+
             // Calculate risk
             $risk = calculate_risk($impact['value'], $likelihood['value']);
 
@@ -7582,28 +7581,35 @@ function create_risk_formula_table()
             $value = $escaper->escapeHtml($risk);
 
             echo "
-                    <td align='center' bgcolor='" . $escaper->escapeHtml($color) . "' height='50px' width='150px'>
+                    <td align='center' bgcolor='{$escaper->escapeHtml($color)}' height='50px' width='150px'>
                         <span>
             ";
 
             if ($risk_model == 6) {
+
                 echo "
-                            <span class='editable'>$value</span>
-                            <input type='text' class='editable' value='$value' style='display: none;' data-type='score' data-impact='{$impact['value']}' data-likelihood='{$likelihood['value']}'>
+                            <span class='editable'>{$value}</span>
+                            <input type='text' class='editable' value='{$value}' style='display: none;' data-type='score' data-impact='{$impact['value']}' data-likelihood='{$likelihood['value']}'>
                 ";
+
             } else {
+
                 echo        $value;
+
             }
 
             echo "
                         </span>
                     </td>
             ";
+
         }
+
         echo "
                     <td>&nbsp;</td>
                 </tr>
         ";
+
     }
 
     echo "
@@ -7614,12 +7620,14 @@ function create_risk_formula_table()
     ";
 
     // Add the x-axis values
-    foreach(range(1, count($likelihoods)) as $likelihood_value) {
+    foreach (range(1, count($likelihoods)) as $likelihood_value) {
+
         echo "
                     <td align='center' bgcolor='silver'>
-                        $likelihood_value
+                        {$likelihood_value}
                     </td>
         ";
+
     }
 
     echo "
@@ -7631,18 +7639,20 @@ function create_risk_formula_table()
     ";
 
     // Add the x-axis names
-    foreach($likelihoods as $likelihood) {
+    foreach ($likelihoods as $likelihood) {
+
         $likelihood_name = $likelihood['name'] ? $escaper->escapeHtml($likelihood['name']) : "--";
         $likelihood_value = $escaper->escapeHtml($likelihood['value']);
 
         echo "
                     <td align='center' bgcolor='silver' height='50px' width='100px'>
                         <span>
-                            <span class='editable'>$likelihood_name</span>
-                            <input type='text' class='editable' value='$likelihood_name' style='display: none;' data-type='likelihood' data-id='$likelihood_value'>
+                            <span class='editable'>{$likelihood_name}</span>
+                            <input type='text' class='editable' value='{$likelihood_name}' style='display: none;' data-type='likelihood' data-id='{$likelihood_value}'>
                         </span> 
                     </td>
         ";
+        
     }
 
     echo "
@@ -7651,19 +7661,16 @@ function create_risk_formula_table()
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
-                    <td colspan='" . count($likelihoods) . "' align='center'><b>" . $escaper->escapeHtml($lang['Likelihood']) . "</b></td>
+                    <td colspan='" . count($likelihoods) . "' align='center'><b>{$escaper->escapeHtml($lang['Likelihood'])}</b></td>
                     <td align='center'>
                         <div class='d-flex likelihood-btn-container'>
-                            <a id='add-likelihood' href='#'><i class='fa fa-plus' title='" . $escaper->escapeHtml($lang['AddLikelihood']) . "' width='25px'></i></a>&nbsp;&nbsp;&nbsp;&nbsp;
-                            <a id='delete-likelihood' href='#'><i class='fa fa-minus' title='" . $escaper->escapeHtml($lang['DeleteLikelihood']) . "' width='25px'></i></a>
+                            <a id='add-likelihood' href='#'><i class='fa fa-plus' title='{$escaper->escapeHtml($lang['AddLikelihood'])}' width='25px'></i></a>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <a id='delete-likelihood' href='#'><i class='fa fa-minus' title='{$escaper->escapeHtml($lang['DeleteLikelihood'])}' width='25px'></i></a>
                         </div>
                     </td>
                 </tr>
             </table>
         </div>
-        
-        
-        
         
         <script>
             $(document).ready(function(){
@@ -7800,6 +7807,7 @@ function create_risk_formula_table()
             })
         </script>
     ";
+
 }
 
 /**********************************************
@@ -7954,8 +7962,7 @@ function view_controls_filter_selections() {
 /**********************************************
 * FUNCTION: DISPLAY CONTRIBUTING RISK FORMULA *
 **********************************************/
-function display_contributing_risk_formula()
-{
+function display_contributing_risk_formula() {
 
     global $lang, $escaper;
 
@@ -7975,14 +7982,10 @@ function display_contributing_risk_formula()
                 <td class='p-1 border-0' align='center' style='vertical-align: middle;'><a class='delete-row' href=''><i class='fa fa-trash'></i></a></td>
             </tr>
         </table>
-
-    ";
- 
-    echo "
         <div class='well card-body my-2 border'>
             <div class='row'>
                 <div class='col-6'>
-                    <h4>" . $escaper->escapeHtml($lang["Likelihood"]) . "</h4>
+                    <h4>{$escaper->escapeHtml($lang["Likelihood"])}</h4>
                 </div>
                 <div class='col-6 text-end'>
                     <button id='likelihood-add-btn' class='btn btn-dark'><i class='fa fa-plus'></i></button>
@@ -7992,14 +7995,15 @@ function display_contributing_risk_formula()
             <table width='100%' id='contributing-risks-likelihood-table' class='table table-hover header'>
                 <thead>
                     <tr class='text-center'>
-                        <th width='10%'>" . $escaper->escapeHtml($lang["Value"]) . "</th>
-                        <th width='40%'>" . $escaper->escapeHtml($lang["Name"]) . "</th>
-                        <th width='20%'>&nbsp;</td>
+                        <th width='10%'>{$escaper->escapeHtml($lang["Value"])}</th>
+                        <th width='40%'>{$escaper->escapeHtml($lang["Name"])}</th>
+                        <th width='20%'>{$escaper->escapeHtml($lang["Actions"])}</td>
                         <th>&nbsp;</th>
                     </tr>
                 </thead>
                 <tbody>
     ";
+
     $table_list = display_contributing_risks_likelihood_table_list();
 
     echo            $table_list;
@@ -8007,45 +8011,45 @@ function display_contributing_risk_formula()
                 </tbody>
             </table>
         </div>
-    ";
-    echo "
         <div class='well card-body my-2 border'>
             <div class='row'>
                 <div class='col-6'>
-                    <h4>" . $escaper->escapeHtml($lang["Impact"]) . "</h4>
+                    <h4>{$escaper->escapeHtml($lang["Impact"])}</h4>
                 </div>
                 <div class='col-6 text-end'>
-                    <button id='add-impact-row' class='btn btn-dark'>" . $escaper->escapeHtml($lang["AddImpact"]) . "</button>
+                    <button id='add-impact-row' class='btn btn-dark'>{$escaper->escapeHtml($lang["AddImpact"])}</button>
                 </div>
             </div>
-            <form class='contributing_risk_form' method='post' action=''>
+            <form id='contributing_risk_form' method='post' action=''>
                 <table width='100%' id='contributing-risk-table' class='table header'>
                     <thead>
                         <tr>
-                            <th width='50%'>".$escaper->escapeHtml($lang["Subject"])."</th>
-                            <th width='30%'>".$escaper->escapeHtml($lang["ContributionWeight"])."</th>
-                            <th>&nbsp;</th>
+                            <th width='50%'>{$escaper->escapeHtml($lang["Subject"])}</th>
+                            <th width='30%'>{$escaper->escapeHtml($lang["ContributionWeight"])}</th>
+                            <th class='text-center'>{$escaper->escapeHtml($lang["Actions"])}</th>
                         </tr>
                     </thead>
                     <tbody>
     ";
 
     $contributing_risks = get_contributing_risks();
-    foreach($contributing_risks as $key => $contributing_risk){
+    foreach ($contributing_risks as $key => $contributing_risk) {
+
         echo "
                         <tr>
-                            <td class='p-1 border-0' align='center'><input type='text' class='subject form-control' required name='existing_subject[" . $contributing_risk["id"] . "]' style='max-width: none' value='" . $escaper->escapeHtml($contributing_risk['subject']) . "'></td>
-                            <td class='p-1 border-0' align='center'><input type='number' class='weight form-control' required step='0.01' name='existing_weight[" . $contributing_risk["id"] . "]' value='" . $escaper->escapeHtml($contributing_risk['weight']) . "' max='1' min='0'></td>
+                            <td class='p-1 border-0' align='center'><input type='text' class='subject form-control' required name='existing_subject[{$contributing_risk["id"]}]' style='max-width: none' value='{$escaper->escapeHtml($contributing_risk['subject'])}'></td>
+                            <td class='p-1 border-0' align='center'><input type='number' class='weight form-control' required step='0.01' name='existing_weight[{$contributing_risk["id"]}]' value='{$escaper->escapeHtml($contributing_risk['weight'])}' max='1' min='0'></td>
                             <td class='p-1 border-0' align='center' style='vertical-align: middle; " . ($key==0 ? ("display: none;") : "") . "'><a class='delete-row' href=''><i class='fa fa-trash'></i></a></td>
                         </tr>
         ";
+
     }
                 
     echo "
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan='3' align='right'><button type='submit' name='save_contributing_risk' class='btn btn-submit'>".$escaper->escapeHtml($lang["Save"])."</button></td>
+                            <td colspan='3' align='right'><button type='submit' name='save_contributing_risk' class='btn btn-submit'>{$escaper->escapeHtml($lang["Save"])}</button></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -8054,9 +8058,9 @@ function display_contributing_risk_formula()
             <table width='100%' id='contributing-risks-impact-table' class='table table-hover v-middle header'>
                 <thead>
                     <tr class='text-center'>
-                        <th width='10%'>".$escaper->escapeHtml($lang["Value"])."</th>
-                        <th width='40%'>".$escaper->escapeHtml($lang["Name"])."</th>
-                        <th>&nbsp;</th>
+                        <th width='10%'>{$escaper->escapeHtml($lang["Value"])}</th>
+                        <th width='40%'>{$escaper->escapeHtml($lang["Name"])}</th>
+                        <th>{$escaper->escapeHtml($lang["Actions"])}</th>
                         <th>&nbsp;</th>
                     </tr>
                 </thead>
@@ -8069,9 +8073,6 @@ function display_contributing_risk_formula()
                 </tbody>
             </table>
         </div>
-    ";
-    
-    echo "
         <script>
             $('#likelihood-add-btn').click(function(e){
                 e.preventDefault();
@@ -8093,6 +8094,13 @@ function display_contributing_risk_formula()
                 var name = $(this).val();
                 var table_id = $(this).parents('table').attr('id');
                 if(table_id == 'contributing-risks-likelihood-table') {
+
+                    // Check if the name is empty or trimmed empty
+                    if (!name || !name.trim()) {
+                        showAlertFromMessage('{$escaper->escapeHtml($lang['TheNameFieldCannotBeEmptyOrContainOnlySpaces'])}');
+                        return;
+                    }
+
                     var table = 'likelihood';
                     var data = {
                         table: table,
@@ -8118,8 +8126,7 @@ function display_contributing_risk_formula()
                         redraw_contributing_table_list(table);
                     },
                     error: function(xhr,status,error){
-                        if(!retryCSRF(xhr, this))
-                        {
+                        if(!retryCSRF(xhr, this)) {
                             if(xhr.responseJSON && xhr.responseJSON.status_message){
                                 showAlertsFromArray(xhr.responseJSON.status_message);
                             }
@@ -8131,11 +8138,24 @@ function display_contributing_risk_formula()
                 var _this = $(this);
                 var id = _this.parent().data('id');
                 var value = _this.parent().data('value');
-                var name = _this.val();
-                if(!name) return false;
                 var table_id = $(this).parents('table').attr('id');
+                var name = _this.val();
+
+                // Check if the name is empty or trimmed empty in the contributing risks likelihood table
+                if (table_id == 'contributing-risks-likelihood-table') {
+                    if (!name || !name.trim()) {
+                        showAlertFromMessage('{$escaper->escapeHtml($lang['TheNameFieldCannotBeEmptyOrContainOnlySpaces'])}');
+                        return;
+                    }
+                } else {
+                    if(!name) {
+                        return false;
+                    }
+                }
+
                 if(table_id == 'contributing-risks-likelihood-table') var table = 'likelihood';
                 else var table = 'impact';
+
 
                 $.ajax({
                     type: 'POST',
@@ -8152,8 +8172,7 @@ function display_contributing_risk_formula()
                         _this.blur();
                     },
                     error: function(xhr,status,error){
-                        if(!retryCSRF(xhr, this))
-                        {
+                        if(!retryCSRF(xhr, this)) {
                             if(xhr.responseJSON && xhr.responseJSON.status_message){
                                 showAlertsFromArray(xhr.responseJSON.status_message);
                             }
@@ -8192,8 +8211,7 @@ function display_contributing_risk_formula()
                         redraw_contributing_table_list(table);
                     },
                     error: function(xhr,status,error){
-                        if(!retryCSRF(xhr, this))
-                        {
+                        if(!retryCSRF(xhr, this)) {
                             if(xhr.responseJSON && xhr.responseJSON.status_message){
                                 showAlertsFromArray(xhr.responseJSON.status_message);
                             }
@@ -8219,16 +8237,17 @@ function display_contributing_risk_formula()
                 });
             }
 
-            $('.contributing_risk_form').submit(function(){
-                if(!$(this).find('.weight').length)
+            $('#contributing_risk_form').submit(function(){
+                if(!$(this).find('.weight').length) {
                     return false;
+                }
                 var totalWeight = 0;
                 $(this).find('.weight').each(function(){
                     totalWeight += Number($(this).val());
                     totalWeight = (+totalWeight.toFixed(4))
                 })
                 if(totalWeight != 1){
-                    toastr.error('" . $escaper->escapeHtml($lang['TotalContributingWeightsShouldBe1']) ."');
+                    showAlertFromMessage('{$escaper->escapeHtml($lang['TotalContributingWeightsShouldBe1'])}');
                     
                     return false;
                 }
@@ -10574,7 +10593,19 @@ function render_field_edit_popup_modal($view) {
             <div class='modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered'>
                 <div class='modal-content'>
                     <div class='modal-header'>
-                        <h4 class='modal-title'>{$escaper->escapeHtml($lang['Edit'])}</h4>
+                        <h4 class='modal-title'>
+    ";
+    if ($view == 'asset_verified') {
+        echo "
+                            {$escaper->escapeHtml($lang['EditAsset'])}
+        ";
+    } else {
+        echo "
+                            {$escaper->escapeHtml($lang['Edit'])}
+        ";
+    }
+    echo "
+                        </h4>
                         <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                     </div>
                     <div class='modal-body edit-popup-container'>

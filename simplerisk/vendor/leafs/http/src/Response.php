@@ -271,6 +271,21 @@ EOT;
     }
 
     /**
+     * Render an inertia view file if inertia is installed
+     * 
+     * @param string $view The view file to render
+     * @param array $data The data to pass to the view
+     */
+    public function inertia(string $view, array $data = [])
+    {
+        if (function_exists('inertia')) {
+            return inertia($view, $data);
+        }
+
+        trigger_error('Inertia not found. Run `leaf install inertia` or `composer require leafs/inertia`');
+    }
+
+    /**
      * Output some data and break the application
      *
      * @param mixed $data The data to output

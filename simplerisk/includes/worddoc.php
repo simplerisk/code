@@ -8,7 +8,6 @@ require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\SimpleType\Jc;
-use Parsedown;
 
 class WordDocumentHandler {
     private $phpWord;

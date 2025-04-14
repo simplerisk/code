@@ -34,6 +34,6 @@
     "require": {
         "leafs/anchor": "*",
         "leafs/form": "^3.0",
-        "leafs/fs": "^2.0"
+        "leafs/fs": "^4.0"
     }
 }

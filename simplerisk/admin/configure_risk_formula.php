@@ -1,125 +1,129 @@
 <?php
-/* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this
-* file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+    /* This Source Code Form is subject to the terms of the Mozilla Public
+    * License, v. 2.0. If a copy of the MPL was not distributed with this
+    * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Render the header and sidebar
-require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['tabs:logic', 'editable'], ['check_admin' => true]);
+    // Render the header and sidebar
+    require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+    render_header_and_sidebar(['tabs:logic', 'editable'], ['check_admin' => true]);
 
-// Check if the risk formula update was submitted
-if (isset($_POST['update_risk_formula']))
-{
-    $risk_model = (int)$_POST['risk_models'];
+    // Check if the risk formula update was submitted
+    if (isset($_POST['update_risk_formula'])) {
+        
+        $risk_model = (int)$_POST['risk_models'];
 
-    // Check if risk model value is integer
-    if (is_int($risk_model))
-    {
-        // Risk model should be between 1 and 5
-        if ((1 <= $risk_model) && ($risk_model <= 6))
-        {
-            // Update the risk model
-            update_risk_model($risk_model);
+        // Check if risk model value is integer
+        if (is_int($risk_model)) {
+
+            // Risk model should be between 1 and 5
+            if ((1 <= $risk_model) && ($risk_model <= 6)) {
+
+                // Update the risk model
+                update_risk_model($risk_model);
+
+                // Display an alert
+                set_alert(true, "good", "The configuration was updated successfully.");
+                
+                refresh();
+
+            // Otherwise, there was a problem
+            } else {
+
+                // Display an alert
+                set_alert(true, "bad", "The risk formula submitted was an invalid value.");
+
+            }
+        }
+    }
+    
+    // Check if the impact update was submitted
+    if (isset($_POST['update_impact'])) {
+
+        $new_name = $_POST['new_name'];
+        $value = (int)$_POST['impact'];
+
+        // Verify value is an integer
+        if (is_int($value)) {
+
+            update_table("impact", $new_name, $value);
 
             // Display an alert
-            set_alert(true, "good", "The configuration was updated successfully.");
+            set_alert(true, "good", $escaper->escapeHtml($lang['SuccessUpdatingImpactName']));
+
+            refresh();
+
+        }
+    }
+
+    // Check if the likelihood update was submitted
+    if (isset($_POST['update_likelihood'])) {
+
+        $new_name = $_POST['new_name'];
+        $value = (int)$_POST['likelihood'];
+
+        // Verify value is an integer
+        if (is_int($value)) {
+
+            update_table("likelihood", $new_name, $value);
+
+            // Display an alert
+            set_alert(true, "good", $escaper->escapeHtml($lang['SuccessUpdatingLikelihoodName']));
             
             refresh();
+
         }
-        // Otherwise, there was a problem
-        else
-        {
+    }
+        
+    // Check if contributing risk was submitted
+    if (isset($_POST['save_contributing_risk'])) {
+
+        $subjects = empty($_POST['subject']) ? [] : $_POST['subject'];
+        $weights = empty($_POST['weight']) ? [] : $_POST['weight'];
+        $existing_subjects = empty($_POST['existing_subject']) ? [] : $_POST['existing_subject'];
+        $existing_weights = empty($_POST['existing_weight']) ? [] : $_POST['existing_weight'];
+        
+        // Save contributing risks
+        if (save_contributing_risks($subjects, $weights, $existing_subjects, $existing_weights)) {
+
             // Display an alert
-            set_alert(true, "bad", "The risk formula submitted was an invalid value.");
+            set_alert(true, "good", $escaper->escapeHtml($lang['SuccessSaveContributingRisks']));
+            
+            refresh();
+
         }
     }
-}
-    
-// Check if the impact update was submitted
-if (isset($_POST['update_impact']))
-{
-    $new_name = $_POST['new_name'];
-    $value = (int)$_POST['impact'];
 
-    // Verify value is an integer
-    if (is_int($value))
-    {
-        update_table("impact", $new_name, $value);
+    function display_editable_line_for($localizationKey, $risk_levels, $level) {
 
-        // Display an alert
-        set_alert(true, "good", $escaper->escapeHtml($lang['SuccessUpdatingImpactName']));
+        global $escaper;
 
-        refresh();
+        $risk_name = "
+            <span data-level='{$level}'>
+                <span class='editable'>{$escaper->escapeHtml($risk_levels[$level]['display_name'])}</span>
+                <input type='text' data-field='display_name' class='editable' value='{$escaper->escapeHtml($risk_levels[$level]['display_name'])}' style='display: none;'>
+            </span>
+        ";
+
+        $risk_value = "
+            <span data-level='{$level}'>
+                <span class='editable'>{$escaper->escapeHtml($risk_levels[$level]['value'])}</span>
+                <input type='text' data-field='value' class='editable' value='{$escaper->escapeHtml($risk_levels[$level]['value'])}' style='display: none;'>
+            </span>
+        ";
+
+        $color_select = "
+            <span data-level='{$level}'>
+                <input data-field='color' class='level-colorpicker level-color editable' type='hidden' value='{$escaper->escapeHtml($risk_levels[$level]['color'])}'>
+                <input type='color' class='form-control-color my-1 color-picker'/>
+            </span>
+        ";
+
+        echo "
+            <div>" . 
+                _lang($localizationKey, array('risk_name' => $risk_name, 'risk_value' => $risk_value, 'color_select' => $color_select), false) . "
+            </div>
+        ";
     }
-}
-
-// Check if the likelihood update was submitted
-if (isset($_POST['update_likelihood']))
-{
-    $new_name = $_POST['new_name'];
-    $value = (int)$_POST['likelihood'];
-
-    // Verify value is an integer
-    if (is_int($value))
-    {
-        update_table("likelihood", $new_name, $value);
-
-        // Display an alert
-        set_alert(true, "good", $escaper->escapeHtml($lang['SuccessUpdatingLikelihoodName']));
-        
-        refresh();
-    }
-}
-    
-// Check if contributing risk was submitted
-if (isset($_POST['save_contributing_risk']))
-{
-    $subjects = empty($_POST['subject']) ? [] : $_POST['subject'];
-    $weights = empty($_POST['weight']) ? [] : $_POST['weight'];
-    $existing_subjects = empty($_POST['existing_subject']) ? [] : $_POST['existing_subject'];
-    $existing_weights = empty($_POST['existing_weight']) ? [] : $_POST['existing_weight'];
-    
-    // Save contributing risks
-    if (save_contributing_risks($subjects, $weights, $existing_subjects, $existing_weights))
-    {
-        // Display an alert
-        set_alert(true, "good", $escaper->escapeHtml($lang['SuccessSaveContributingRisks']));
-        
-        refresh();
-    }
-}
-
-function display_editable_line_for($localizationKey, $risk_levels, $level) {
-
-    global $escaper;
-
-    $risk_name = "
-        <span data-level='{$level}'>
-            <span class='editable'>{$escaper->escapeHtml($risk_levels[$level]['display_name'])}</span>
-            <input type='text' data-field='display_name' class='editable' value='{$escaper->escapeHtml($risk_levels[$level]['display_name'])}' style='display: none;'>
-        </span>
-    ";
-
-    $risk_value = "
-        <span data-level='{$level}'>
-            <span class='editable'>{$escaper->escapeHtml($risk_levels[$level]['value'])}</span>
-            <input type='text' data-field='value' class='editable' value='{$escaper->escapeHtml($risk_levels[$level]['value'])}' style='display: none;'>
-        </span>
-    ";
-
-    $color_select = "
-        <span data-level='{$level}'>
-            <input data-field='color' class='level-colorpicker level-color editable' type='hidden' value='{$escaper->escapeHtml($risk_levels[$level]['color'])}'>
-            <input type='color' class='form-control-color my-1 color-picker'/>
-        </span>
-    ";
-
-    echo "
-        <div>" . 
-            _lang($localizationKey, array('risk_name' => $risk_name, 'risk_value' => $risk_value, 'color_select' => $color_select), false) . "
-        </div>
-    ";
-}
 
 ?>
 <div class="row">
@@ -139,31 +143,38 @@ function display_editable_line_for($localizationKey, $risk_levels, $level) {
     <div class="tab-content cust-tab-content" id="myTabContent" >
         <div class="tab-pane active risk-levels-container" id="risk-levels" role="tabpanel" aria-labelledby="riskLevels-tab">
             <div class="card-body my-2 border">
-                <?php $risk_levels = get_risk_levels(); ?>
-                <?php display_editable_line_for('RiskLevelTextTop', $risk_levels, 3); ?>
-                <?php display_editable_line_for('RiskLevelTextRest', $risk_levels, 2); ?>
-                <?php display_editable_line_for('RiskLevelTextRest', $risk_levels, 1); ?>
-                <?php display_editable_line_for('RiskLevelTextRest', $risk_levels, 0); ?>
+    <?php 
+        $risk_levels = get_risk_levels(); 
+                display_editable_line_for('RiskLevelTextTop', $risk_levels, 3); 
+                display_editable_line_for('RiskLevelTextRest', $risk_levels, 2); 
+                display_editable_line_for('RiskLevelTextRest', $risk_levels, 1); 
+                display_editable_line_for('RiskLevelTextRest', $risk_levels, 0); 
+    ?>
             </div>
         </div>
 
         <div class="tab-pane" id="classic-risk-formula" role="tabpanel" aria-labelledby="classic-risk-formula-tab">
             <div class="card-body my-2 border">
-                <?php create_risk_formula_table(); ?>
+    <?php 
+                create_risk_formula_table(); 
+    ?>
             </div>
         </div> 
         <div class="tab-pane" id="contributing-risk-formula" role="tabpanel" aria-labelledby="contributing-risk-formula-tab">
             <div class="row">
                 <div class="col-12">
-                    <?php display_contributing_risk_formula(); ?>
+    <?php 
+                    display_contributing_risk_formula(); 
+    ?>
                 </div> 
             </div>
         </div>
     </div>
 </div>
 <script>
-    function colourNameToHex(colour)
-    {
+
+    function colourNameToHex(colour) {
+
         var colours = {"aliceblue":"#f0f8ff","antiquewhite":"#faebd7","aqua":"#00ffff","aquamarine":"#7fffd4","azure":"#f0ffff",
         "beige":"#f5f5dc","bisque":"#ffe4c4","black":"#000000","blanchedalmond":"#ffebcd","blue":"#0000ff","blueviolet":"#8a2be2","brown":"#a52a2a","burlywood":"#deb887",
         "cadetblue":"#5f9ea0","chartreuse":"#7fff00","chocolate":"#d2691e","coral":"#ff7f50","cornflowerblue":"#6495ed","cornsilk":"#fff8dc","crimson":"#dc143c","cyan":"#00ffff",
@@ -189,16 +200,21 @@ function display_editable_line_for($localizationKey, $risk_levels, $level) {
         "wheat":"#f5deb3","white":"#ffffff","whitesmoke":"#f5f5f5",
         "yellow":"#ffff00","yellowgreen":"#9acd32"};
 
-        if (typeof colours[colour.toLowerCase()] != "undefined")
+        if (typeof colours[colour.toLowerCase()] != "undefined") {
+
             return colours[colour.toLowerCase()];
 
+        }
+
         return colour;
+
     }
 
 
-    $(document).ready(function(){
+    $(document).ready(function() {
 
-        $("#risk-levels input.editable").change(function(){
+        $("#risk-levels input.editable").change(function() {
+
             //saving it so it can be referenced from the AJAX callbacks
             var _this = $(this);
             var level = _this.parent().data("level");
@@ -213,22 +229,21 @@ function display_editable_line_for($localizationKey, $risk_levels, $level) {
                     field: field,
                     value: value
                 },
-                success: function(data){
+                success: function(data) {
                     $("input.editable").trigger("blur");
-                    if(data.status_message){
+                    if (data.status_message) {
                         showAlertsFromArray(data.status_message);
                     }
                 },
-                error: function(xhr,status,error){
-                    if(!retryCSRF(xhr, this))
-                    {
-                        if(xhr.responseJSON && xhr.responseJSON.status_message){
+                error: function(xhr,status,error) {
+                    if (!retryCSRF(xhr, this)) {
+                        if (xhr.responseJSON && xhr.responseJSON.status_message) {
                             showAlertsFromArray(xhr.responseJSON.status_message);
                         }
                     }
                 },
-                complete: function(xhr,status){
-                    if(xhr.responseJSON && xhr.responseJSON.data){
+                complete: function(xhr,status) {
+                    if (xhr.responseJSON && xhr.responseJSON.data) {
                         // If there\'s data returned set it back to the label
                         _this.parent().find("span.editable").text(xhr.responseJSON.data);
                         // and to the input
@@ -250,17 +265,23 @@ function display_editable_line_for($localizationKey, $risk_levels, $level) {
 
             //Display colors.
             $(this).val(color);
+
         });
 
         $(".color-picker").change(function() {
+
             //Store the color values in '.level-colorpicker'
             let inp = $(this).parent().find(".level-colorpicker");
             inp.val($(this).val());
 
             //Update color values
             inp.trigger("change");
+            
         });
     });
+</script>
+<script>
+	<?php prevent_form_double_submit_script(['contributing_risk_form']); ?>
 </script>
 <?php
     // Render the footer of the page. Please don't put code after this part.

@@ -73,8 +73,7 @@
             </form>
         </div>
         <div class="card-body my-2 border">
-            <form id="delete_role_form" method="post" action="">
-                <input type="hidden" name="delete_role" value="true">
+            <form id="update_delete_role_form" method="post" action="">
                 <h4><?= $escaper->escapeHtml($lang['EditRole']); ?></h4>
                 <div class="row">
                     <div class="col-md-4">
@@ -93,7 +92,7 @@
     ?>
                     </div>  
                      <div class="col-md-2">
-                        <button class="btn btn-primary" type="submit"><?= $escaper->escapeHtml($lang['Delete']); ?></button>
+                        <button class="btn btn-primary" name="delete_role" value="true" type="submit"><?= $escaper->escapeHtml($lang['Delete']); ?></button>
                      </div>
                 </div>
                 <div class="row mt-3">
@@ -203,19 +202,43 @@
 
         });
 
-        $("#delete_role_form").submit(function() {
+        $("#update_delete_role_form").submit(function() {
 
             // Prevent the form from submitting
             event.preventDefault();
 
-            // Confirm the deletion
-            confirm("<?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisRole']); ?>", function() {
+            // Find the submit button that was clicked
+            const clickedButton = $(document.activeElement);
+            const buttonName = clickedButton.attr('name');
+            const buttonValue = clickedButton.val();
 
-                    // Submit the form
-                    $("#delete_role_form")[0].submit();
+            // Append the clicked button's name and value to the form data
+            $('<input>').attr({ type: 'hidden', name: buttonName, value: buttonValue }).appendTo('#update_delete_role_form');
 
+            // Check if the delete button was clicked
+            if (buttonName === 'delete_role') {
+                
+                // Check if a role is selected
+                if (!$("#role").val()) {
+                    showAlertFromMessage("<?= $escaper->escapeHtml($lang['PleaseSelectARoleBeforeDeleting']); ?>");
+                    return;
                 }
-            );
+
+                // Confirm the deletion
+                confirm("<?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisRole']); ?>", function() {
+
+                        // Submit the form
+                        $("#update_delete_role_form")[0].submit();
+
+                    }
+                );
+
+            } else {
+
+                // Submit the form
+                $("#update_delete_role_form")[0].submit();
+                
+            }
 
         });
 

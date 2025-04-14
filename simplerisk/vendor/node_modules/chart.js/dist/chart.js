@@ -1,7 +1,7 @@
 /*!
- * Chart.js v4.4.7
+ * Chart.js v4.4.8
  * https://www.chartjs.org
- * (c) 2024 Chart.js Contributors
+ * (c) 2025 Chart.js Contributors
  * Released under the MIT License
  */
 import { r as requestAnimFrame, a as resolve, e as effects, c as color, i as isObject, d as defaults, b as isArray, v as valueOrDefault, u as unlistenArrayEvents, l as listenArrayEvents, f as resolveObjectKey, g as isNumberFinite, h as defined, s as sign, j as createContext, k as isNullOrUndef, _ as _arrayUnique, t as toRadians, m as toPercentage, n as toDimension, T as TAU, o as formatNumber, p as _angleBetween, H as HALF_PI, P as PI, q as _getStartAndCountOfVisiblePoints, w as _scaleRangesChanged, x as isNumber, y as _parseObjectDataRadialScale, z as getRelativePosition, A as _rlookupByKey, B as _lookupByKey, C as _isPointInArea, D as getAngleFromPoint, E as toPadding, F as each, G as getMaximumSize, I as _getParentNode, J as readUsedSize, K as supportsEventListenerOptions, L as throttled, M as _isDomSupported, N as _factorize, O as finiteOrDefault, Q as callback, R as _addGrace, S as _limitValue, U as toDegrees, V as _measureText, W as _int16Range, X as _alignPixel, Y as clipArea, Z as renderText, $ as unclipArea, a0 as toFont, a1 as _toLeftRightCenter, a2 as _alignStartEnd, a3 as overrides, a4 as merge, a5 as _capitalize, a6 as descriptors, a7 as isFunction, a8 as _attachContext, a9 as _createResolver, aa as _descriptors, ab as mergeIf, ac as uid, ad as debounce, ae as retinaScale, af as clearCanvas, ag as setsEqual, ah as _elementsEqual, ai as _isClickEvent, aj as _isBetween, ak as _readValueToProps, al as _updateBezierControlPoints, am as _computeSegments, an as _boundSegments, ao as _steppedInterpolation, ap as _bezierInterpolation, aq as _pointInLine, ar as _steppedLineTo, as as _bezierCurveTo, at as drawPoint, au as addRoundedRectPath, av as toTRBL, aw as toTRBLCorners, ax as _boundSegment, ay as _normalizeAngle, az as getRtlAdapter, aA as overrideTextDirection, aB as _textX, aC as restoreTextDirection, aD as drawPointLegend, aE as distanceBetweenPoints, aF as noop, aG as _setMinAndMaxByKey, aH as niceNum, aI as almostWhole, aJ as almostEquals, aK as _decimalPlaces, aL as Ticks, aM as log10, aN as _longestText, aO as _filterBetween, aP as _lookup } from './chunks/helpers.segment.js';
@@ -2631,10 +2631,20 @@ var adapters = {
 function binarySearch(metaset, axis, value, intersect) {
     const { controller , data , _sorted  } = metaset;
     const iScale = controller._cachedMeta.iScale;
+    const spanGaps = metaset.dataset ? metaset.dataset.options ? metaset.dataset.options.spanGaps : null : null;
     if (iScale && axis === iScale.axis && axis !== 'r' && _sorted && data.length) {
         const lookupMethod = iScale._reversePixels ? _rlookupByKey : _lookupByKey;
         if (!intersect) {
-            return lookupMethod(data, axis, value);
+            const result = lookupMethod(data, axis, value);
+            if (spanGaps) {
+                const { vScale  } = controller._cachedMeta;
+                const { _parsed  } = metaset;
+                const distanceToDefinedLo = _parsed.slice(0, result.lo + 1).reverse().findIndex((point)=>!isNullOrUndef(point[vScale.axis]));
+                result.lo -= Math.max(0, distanceToDefinedLo);
+                const distanceToDefinedHi = _parsed.slice(result.hi).findIndex((point)=>!isNullOrUndef(point[vScale.axis]));
+                result.hi += Math.max(0, distanceToDefinedHi);
+            }
+            return result;
         } else if (controller._sharedOptions) {
             const el = data[0];
             const range = typeof el.getRange === 'function' && el.getRange(axis);
@@ -5522,7 +5532,7 @@ function needContext(proxy, names) {
     return false;
 }
 
-var version = "4.4.7";
+var version = "4.4.8";
 
 const KNOWN_POSITIONS = [
     'top',
@@ -10990,7 +11000,7 @@ const INTERVALS = {
         value = parser(value);
     }
     if (!isNumberFinite(value)) {
-        value = typeof parser === 'string' ? adapter.parse(value,  parser) : adapter.parse(value);
+        value = typeof parser === 'string' ? adapter.parse(value, parser) : adapter.parse(value);
     }
     if (value === null) {
         return null;

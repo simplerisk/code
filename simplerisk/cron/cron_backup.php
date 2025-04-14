@@ -27,7 +27,7 @@ if (php_sapi_name() == "cli")
 // It's a separate function to be able to call from the UI
 // the $force parameter is to tell the function that it is called from the UI to force an immediate backup
 // (in this case the set_alert() function that can be used since there IS a session)
-function do_backup($force=false) {
+function do_backup($requested_from_ui=false) {
     // Create a timestamp for the current date and time
     $timestamp = date("Y-m-d--H-i-s");
     
@@ -48,11 +48,12 @@ function do_backup($force=false) {
             
             // Write a message to the error log
             $message = "Unable to create a backup directory under " . $backup_path . ".";
-            write_debug_log_cli($message);
 
             // If the backup was requested from the UI
-            if ($force) {
+            if ($requested_from_ui) {
                 set_alert(true, "bad", $message);
+            } else {
+                write_debug_log_cli($message);
             }
         }
     }
@@ -71,23 +72,25 @@ function do_backup($force=false) {
             
             // Write a message to the error log
             $message = "Unable to create a backup directory under " . $timestamp_path . ".";
-            write_debug_log_cli($message);
 
             // If the backup was requested from the UI
-            if ($force) {
+            if ($requested_from_ui) {
                 set_alert(true, "bad", $message);
+            } else {
+                write_debug_log_cli($message);
             }
         }
     }
     
     if ($error) {
         $message = "Backup failed.";
-        write_debug_log_cli($message);
         write_log(0, 0, $message, 'backup');
 
         // If the backup was requested from the UI
-        if ($force) {
+        if ($requested_from_ui) {
             set_alert(true, "bad", $message);
+        } else {
+            write_debug_log_cli($message);
         }
 
         return;
@@ -126,8 +129,9 @@ function do_backup($force=false) {
     $db = db_open();
     
     // Insert the backup information into the database
-    $stmt = $db->prepare("INSERT INTO `backups` (`random_id`, `app_zip_file_name`, `db_zip_file_name`) VALUES (:random_id, :app_zip_file_name, :db_zip_file_name);");
+    $stmt = $db->prepare("INSERT INTO `backups` (`random_id`, `timestamp`, `app_zip_file_name`, `db_zip_file_name`) VALUES (:random_id, :timestamp, :app_zip_file_name, :db_zip_file_name);");
     $stmt->bindParam(":random_id", $random_id, PDO::PARAM_STR, 50);
+    $stmt->bindParam(":timestamp", $timestamp, PDO::PARAM_STR);
     $stmt->bindParam(":app_zip_file_name", $app_zip_file_name, PDO::PARAM_STR);
     $stmt->bindParam(":db_zip_file_name", $db_zip_file_name, PDO::PARAM_STR);
     $stmt->execute();
@@ -138,52 +142,31 @@ function do_backup($force=false) {
     $stmt->execute();
     $backups_to_delete = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Iterate through the list of expired backups and clean them up
-    foreach ($backups_to_delete as $backup_to_delete) {
+    if (!empty($backups_to_delete)) {
 
-        // Initializing variables in every iteration
-        $parent_directory = dirname($backup_to_delete['app_zip_file_name']);
-        $missing_backup_directory = !is_dir($parent_directory);
-        $backup_directory_delete_successful = false;
-
-        // If the backup directory exists
-        if (!$missing_backup_directory) {
-
-            // Remove all files from this directory
-            array_map('unlink', glob("$parent_directory/*.*"));
-
-            // Remove the directory
-            rmdir($parent_directory);
-
-            // Check if the directory was successfully removed
-            $backup_directory_delete_successful = !is_dir($parent_directory);
-            if ($backup_directory_delete_successful) {
-                $message = "Removed backup older than {$backup_remove} days: '{$parent_directory}'.";
-            } else {
-                $message = "Failed to remove backup directory '{$parent_directory}', not deleting the associated database entry.";
-            }
-        } else {
-            $message = "Backup directory '{$parent_directory}' was already deleted, cleaned up associated database entry.";
-        }
-
-        // Delete the database entry if the directory was either missing already or successfully deleted
-        if ($missing_backup_directory || $backup_directory_delete_successful) {
-            $stmt = $db->prepare("DELETE FROM `backups` WHERE `random_id` = :random_id;");
-            $stmt->bindParam(":random_id", $backup_to_delete['random_id'], PDO::PARAM_STR);
-            $stmt->execute();
-        }
-
-        write_debug_log_cli($message);
+        $message = "Removing backup(s) older than {$backup_remove} day(s).";
         write_log(0, 0, $message, 'backup');
-    }
 
+        // If the backup was requested from the UI
+        if ($requested_from_ui) {
+            set_alert(true, "good", $message);
+        } else {
+            write_debug_log_cli($message);
+        }
+
+        // Iterate through the list of expired backups and clean them up
+        foreach ($backups_to_delete as $backup_to_delete) {
+            delete_backup($backup_to_delete, $requested_from_ui);
+        }
+    }
     $message = "Backup successfully completed.";
-    write_debug_log_cli($message);
     write_log(0, 0, $message, 'backup');
 
     // If the backup was requested from the UI
-    if ($force) {
+    if ($requested_from_ui) {
         set_alert(true, "good", $message);
+    } else {
+        write_debug_log_cli($message);
     }
 }
 

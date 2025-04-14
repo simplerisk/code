@@ -216,16 +216,16 @@ function display_save_graphic_selection() {
         </div>
         <div class='row align-items-end form-group'>
             <div class='col-4'>
-                <label>{$escaper->escapeHtml($lang['Type'])} :</label>
-                <select name='selection_type' title='{$escaper->escapeHtml($lang['PleaseSelectTypeForSaving'])}' class='form-select'>
+                <label>{$escaper->escapeHtml($lang['Type'])}<span class='required'>*</span> :</label>
+                <select name='selection_type' title='{$escaper->escapeHtml($lang['Type'])}' class='form-select' required>
                     <option value=''>--</option>
                     <option value='public'>{$escaper->escapeHtml($lang['Public'])}</option>
                     <option value='private'>{$escaper->escapeHtml($lang['Private'])}</option>
                 </select>
             </div>
             <div class='col-4'>
-                <label>{$escaper->escapeHtml($lang['Name'])} :</label>
-                <input name='selection_name' type='text' placeholder='{$escaper->escapeHtml($lang['Name'])}' title='{$escaper->escapeHtml($lang['Name'])}' style='max-width: unset;' class='form-control'>
+                <label>{$escaper->escapeHtml($lang['Name'])}<span class='required'>*</span> :</label>
+                <input name='selection_name' type='text' placeholder='{$escaper->escapeHtml($lang['Name'])}' title='{$escaper->escapeHtml($lang['Name'])}' style='max-width: unset;' class='form-control' required>
             </div>
             <div class='col-4'>
                 <button class='btn btn-submit' id='save_selection'>{$escaper->escapeHtml($lang['Save'])}</button>
@@ -283,6 +283,12 @@ function display_save_graphic_selection() {
                     confirm('{$escaper->escapeHtml($lang["AreYouSureYouWantToDeleteSelction"])}', delete_saved_selection);
                 });
                 $('#save_selection').click(function(){
+
+                    // Check if the required fields are empty or trimmed empty
+                    if (!checkAndSetValidation('#graphical_risk_analysis')) {
+                        return false;
+                    }
+
                     var graphic_form_data = $('#graphical_risk_analysis').serialize();
                     $.ajax({
                         type: 'POST',

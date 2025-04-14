@@ -4841,7 +4841,7 @@ function getDefineTestsResponse()
                                         <th style='width: 110px; min-width: 110px'>".$escaper->escapeHtml($lang['LastTestDate'])."</th>
                                         <th style='width: 110px; min-width: 110px'>".$escaper->escapeHtml($lang['NextTestDate'])."</th>
                                         <th style='width: 130px; min-width: 130px'>".$escaper->escapeHtml($lang['ApproximateTime'])."</th>
-                                        <th style='width: 50px; min-width: 50px'>".$escaper->escapeHtml($lang['Actions'])."</th>
+                                        <th class='text-center' style='width: 50px; min-width: 50px'>".$escaper->escapeHtml($lang['Actions'])."</th>
                                     </tr>
                                 </thead>
                             ";
@@ -4864,10 +4864,10 @@ function getDefineTestsResponse()
                                     $last_date = format_date($test['last_date']);
                                     $next_date = format_date($test['next_date']);
                                     if(isset($_SESSION["edit_tests"]) && $_SESSION["edit_tests"] == 1){
-                                        $edit_row = "<a class='edit-test' data-id=\"{$escaper->escapeHtml($test['id'])}\" role='button'><i class=\"fa fa-edit\"></i></a>";
+                                        $edit_row = "<a class='edit-test mx-1' data-id=\"{$escaper->escapeHtml($test['id'])}\" role='button'><i class=\"fa fa-edit\"></i></a>";
                                     } else $edit_row = "";
                                     if(isset($_SESSION["delete_tests"]) && $_SESSION["delete_tests"] == 1){
-                                        $delete_row = "<a class='delete-row' data-toggle=\"modal\" data-id=\"{$escaper->escapeHtml($test['id'])}\" role='button'><i class=\"fa fa-trash\"></i></a>";
+                                        $delete_row = "<a class='delete-row mx-1' data-toggle=\"modal\" data-id=\"{$escaper->escapeHtml($test['id'])}\" role='button'><i class=\"fa fa-trash\"></i></a>";
                                     } else $delete_row = "";
 
                                     
@@ -4882,7 +4882,7 @@ function getDefineTestsResponse()
                                             <td class='text-center'>".$escaper->escapeHtml($last_date)."</td>
                                             <td class='text-center'>".$escaper->escapeHtml($next_date)."</td>
                                             <td class='text-center'>".(int)$test['approximate_time']. " " .$escaper->escapeHtml($test['approximate_time'] > 1 ? $escaper->escapeHtml($lang['minutes']) : $escaper->escapeHtml($lang['minute']))."</td>
-                                            <td class='text-center'>{$edit_row}&nbsp;&nbsp;{$delete_row}
+                                            <td class='text-center'>{$edit_row}{$delete_row}
                                             </td>
                                         </tr>
                                     ";
@@ -8374,7 +8374,7 @@ function get_exceptions_audit_log_api()
     json_response(200, null, array_map(function($log) use ($escaper) {
             return array(
                 'timestamp' => date(get_default_datetime_format("g:i A T"), strtotime($log['timestamp'])),
-                'message' => $escaper->escapeHtml(try_decrypt($log['message']))
+                'message' => $escaper->purifyHtml(try_decrypt($log['message']))
             );
         }, get_exceptions_audit_log($days))
     );
@@ -11630,42 +11630,62 @@ function contributing_risks_table_list_api(){
 /***************************************
  * FUNCTION: SAVE GRAPHICAL SELECTIONS *
  ***************************************/
-function saveGraphicalSelectionsForm()
-{
+function saveGraphicalSelectionsForm() {
+
     global $lang, $escaper;
     
     $type = get_param("post", "selection_type");
     $name = get_param("post", "selection_name");
 
-    // If the id is not sent
-    if (!$type || !$name)
-    {
-        set_alert(true, "bad", $escaper->escapeHtml($lang['ThereAreRequiredFields']));
+    // Check if the type isn't empty
+    if (empty($type)) {
+
+        set_alert(true, "bad", _lang('FieldRequired', array("field"=>$lang['Type'])));
 
         // Return a JSON response
         json_response(400, get_alert(true), NULL);
+
+    }
+
+    // Check if the name isn't empty or trimmed empty
+    if (empty($name) || trim($name) == "") {
+
+        set_alert(true, "bad", _lang('FieldRequired', array("field"=>$lang['Name'])));
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+
     }
     
     // Check if this name already existing
-    if(check_exisiting_graphical_selection_name($_SESSION['uid'], $name))
-    {
+    if(check_exisiting_graphical_selection_name($_SESSION['uid'], $name)) {
+
         set_alert(true, "bad", $lang['TheNameAlreadyExists']);
         json_response(400, get_alert(true), []);
-    }
-    else
-    {
+
+    } else {
+
         $graphic_form_data = $_POST;
-        if(isset($graphic_form_data['__csrf_magic'])) unset($graphic_form_data['__csrf_magic']);
+        if (isset($graphic_form_data['__csrf_magic'])) {
+
+            unset($graphic_form_data['__csrf_magic']);
+
+        }
+
         $id = save_graphical_selections($type, $name, $graphic_form_data);
 
         $saved_selection = get_graphical_saved_selection($id);
         if ($saved_selection) {
+
             set_alert(true, "good", $lang['SavedSuccess']);
             json_response(200, get_alert(true), ['value' => $id, 'name' => $saved_selection['name'], 'type' => $saved_selection['type']]);
+
         }
     }
+
     set_alert(true, "bad", $lang['SelectionSaveFailed']);
     json_response(400, get_alert(true), []);
+
 }
 
 /****************************************

@@ -22,7 +22,6 @@ use function is_array;
 use function is_string;
 use function sprintf;
 use function str_replace;
-use function var_export;
 
 /**
  * Class for implementing authentication processing chains for IdPs.
@@ -90,7 +89,7 @@ class ProcessingChain
         }
 
         Logger::debug('Filter config for ' . $idpMetadata['entityid'] . '->' .
-            $spMetadata['entityid'] . ': ' . str_replace("\n", '', var_export($this->filters, true)));
+                      $spMetadata['entityid'] . ': ' . str_replace("\n", '', print_r($this->filters, true)));
     }
 
 

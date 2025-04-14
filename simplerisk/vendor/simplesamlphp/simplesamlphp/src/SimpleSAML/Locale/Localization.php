@@ -126,7 +126,7 @@ class Localization
      * @param string $localeDir Absolute path if the module is housed elsewhere
      * @param string $domain Translation domain within module; defaults to module name
      */
-    public function addModuleDomain(string $module, string $localeDir = null, string $domain = null): void
+    public function addModuleDomain(string $module, ?string $localeDir = null, ?string $domain = null): void
     {
         if (!$localeDir) {
             $localeDir = $this->getDomainLocaleDir($module);
@@ -261,6 +261,10 @@ class Localization
             $file = new File($langPath . $domain . '.po', false);
             if ($file->getRealPath() !== false && $file->isReadable()) {
                 $translations = (new PoLoader())->loadFile($file->getRealPath());
+                if (empty($translations->getDomain())) {
+                    $translations->setDomain($domain);
+                }
+
                 $arrayGenerator = new ArrayGenerator();
                 $this->translator->addTranslations(
                     $arrayGenerator->generateArray($translations),

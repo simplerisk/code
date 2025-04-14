@@ -5,7 +5,7 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['blockUI', 'tabs:logic', 'CUSTOM:common.js'], ['check_admin' => true]);
+    render_header_and_sidebar(['blockUI', 'tabs:logic', 'CUSTOM:common.js'], ['check_admin' => true], required_localization_keys: ['ConfirmDeleteBackup']);
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/mail.php'));
@@ -202,8 +202,29 @@
 
     // Check if a new file type was submitted
     if (isset($_POST['add_file_type'])) {
+
         $name = !empty($_POST['new_file_type']) ? trim($_POST['new_file_type']) : "";
         $extension = !empty($_POST['file_type_ext']) ? trim($_POST['file_type_ext']) : "";
+
+        // Check if the file extension is valid
+        if (!preg_match('/^[a-zA-Z0-9]+$/', $extension)) {
+
+            // Display an alert
+            set_alert(true, "bad", $escaper->escapeHtml($lang['PleaseEnterAValidExtension']));
+            header("Location: index.php");
+            exit();
+
+        }
+
+        // Check if the file extension has a valid length
+        if (strlen($extension) > 6) {
+
+            // Display an alert
+            set_alert(true, "bad", $escaper->escapeHtml($lang['TheFileTypeExtensionIsTooLong']));
+            header("Location: index.php");
+            exit();
+
+        }
 
         // Insert a new file type (250 chars) with extension (10 chars)
         $success = add_file_type($name, $extension);
@@ -238,7 +259,19 @@
 
     // Check if a file type extension was deleted
     if (isset($_POST['delete_file_extension'])) {
+        
         $value = (int)$_POST['file_type_extensions'];
+
+        // Check if a file type extension is selected
+        if (!$value) {
+
+            // Display an alert
+            set_alert(true, "bad", $escaper->escapeHtml($lang['PleaseSelectAnExtensionBeforeDeleting']));
+
+            header("Location: index.php");
+            exit();
+
+        }
 
         // Verify value is an integer
         if (is_int($value)) {
@@ -304,14 +337,26 @@
 
     // Check if the mail test was submitted
     if (isset($_POST['test_mail_configuration'])) {
+
         // Set up the test email
         $name = "SimpleRisk Test";
-        $email = $_POST['email'];
+        $email = !empty($_POST['email']) ? trim($_POST['email']) : "";
         $subject = "SimpleRisk Test Email";
         $full_message = "This is a test email from SimpleRisk.";
         $now = time();
+
+        // Check if the email address is not empty
+        if (empty($email)) {
+
+            // Display an alert
+            set_alert(true, "bad", $escaper->escapeHtml($lang['PleaseEnterAnEmailAddressBeforeSendingATestEmail']));
+            header("Location: index.php");
+            exit();
+
+        }
+
         // Set limit the frequency of test mail to 5 minutes.
-        if ((isset($_SESSION['test_mail_sent']) && $now - intval($_SESSION['test_mail_sent']) > 300) || !isset($_SESSION['test_mail_sent'])) {
+        if((isset($_SESSION['test_mail_sent']) && $now - intval($_SESSION['test_mail_sent']) > 300) || !isset($_SESSION['test_mail_sent'])) {
             // Send the e-mail
             send_email($name, $email, $subject, $full_message);
 
@@ -345,48 +390,79 @@
         // Remove any trailing slashes from the backup path
         $backup_path = rtrim($backup_path, "/");
 
-        // If the backup_path value has changed
-        if ($backup_path != get_setting("backup_path")) {
-            // Get the actual path to the document root and backup directory
-            $root_path = str_replace('/', '\\', realpath(__DIR__ . '/../'));
-            $dir_path = str_replace('/', '\\', $backup_path);
+        // To test the validity of a relative path we have to try and create the directory if it doesn't exist already
+        // but if we only created it for the test it's better if we remove it after
+        $test_created_backup_path = false;
 
-            // If the backup file is not in the web root
-            if (strpos($dir_path, $root_path) === false && $dir_path != "") {
-                // Update the backup_path setting
-                update_setting("backup_path", $backup_path);
-            } else {
-                // We have an error
+        // If the backup directory does not exist
+        if (!is_dir($backup_path)) {
+            // If we could not create the backup directory
+            if (!mkdir($backup_path)) {
+                // We have a problem
                 $error = true;
-                set_alert(true, "bad", $escaper->escapeHtml($lang['ForSecurityReasonsBackupOutsideWebRoot']));
-            }
-        }
 
-        // Get the submitted backup_schedule value
-        $backup_schedule = $_POST['backup_schedule'];
+                // Write a message to the error log
+                $message = "Unable to create a backup directory under " . $backup_path . ".";
+                set_alert(true, "bad", $message);
 
-        // If the backup_schedule value has changed
-        if ($backup_schedule != get_setting("backup_schedule")) {
-            // If the backup schedule is hourly, daily, weekly or monthly
-            if ($backup_schedule == "hourly" || $backup_schedule == "daily" || $backup_schedule == "weekly" || $backup_schedule == "monthly") {
-                // Update the backup_schedule setting
-                update_setting("backup_schedule", $backup_schedule);
-            }
-        }
-
-        // Get the posted backup_remove value
-        $backup_remove = (int)$_POST['backup_remove'];
-
-        // If the backup_remove value has changed
-        if ($backup_remove != get_setting("backup_remove")) {
-            // If the backup_remove value is an integer value
-            if (is_int($backup_remove)) {
-                // Update the backup_remove setting
-                update_setting("backup_remove", $backup_remove);
+            } else {
+                $test_created_backup_path = true;
             }
         }
 
         // If we don't have an error
+        if (!$error) {
+            // If the backup_path value has changed
+            if ($backup_path != get_setting("backup_path")) {
+                // Get the actual path to the document root and backup directory
+                $root_path = str_replace('/', '\\', realpath(__DIR__ . '/../'));
+                $dir_path = str_replace('/', '\\', realpath($backup_path));
+
+                // If the backup file is not in the web root
+                if (strpos($dir_path, $root_path) === false && $dir_path != "") {
+                    // Update the backup_path setting
+                    update_setting("backup_path", $backup_path);
+                } else {
+                    // We have an error
+                    $error = true;
+                    set_alert(true, "bad", $lang['ForSecurityReasonsBackupOutsideWebRoot']);
+                }
+            }
+
+            // Removing the backup directory after testing its validity
+            if ($test_created_backup_path) {
+                rmdir($backup_path);
+            }
+
+            // If we still don't have an error
+            if (!$error) {
+                // Get the submitted backup_schedule value
+                $backup_schedule = $_POST['backup_schedule'];
+
+                // If the backup_schedule value has changed
+                if ($backup_schedule != get_setting("backup_schedule")) {
+                    // If the backup schedule is hourly, daily, weekly or monthly
+                    if ($backup_schedule == "hourly" || $backup_schedule == "daily" || $backup_schedule == "weekly" || $backup_schedule == "monthly") {
+                        // Update the backup_schedule setting
+                        update_setting("backup_schedule", $backup_schedule);
+                    }
+                }
+
+                // Get the posted backup_remove value
+                $backup_remove = (int)$_POST['backup_remove'];
+
+                // If the backup_remove value has changed
+                if ($backup_remove != get_setting("backup_remove")) {
+                    // If the backup_remove value is an integer value
+                    if (is_int($backup_remove)) {
+                        // Update the backup_remove setting
+                        update_setting("backup_remove", $backup_remove);
+                    }
+                }
+            }
+        }
+
+        // If we still don't have an error
         if (!$error) {
             // Display an alert
             set_alert(true, "good", "The settings were updated successfully.");
@@ -410,6 +486,26 @@
         }
     }
     
+    if (isset($_POST['delete_backup_entry']) && !empty($_POST['delete_backup_entry'])) {
+        // Open the database connection
+        $db = db_open();
+
+        // Get the list of expired backups
+        $stmt = $db->prepare("SELECT * FROM `backups` WHERE random_id = :id LIMIT 1;");
+        $stmt->bindParam(":id", $_POST['delete_backup_entry'], PDO::PARAM_STR);
+        $stmt->execute();
+        $backup_to_delete = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!empty($backup_to_delete)) {
+            delete_backup($backup_to_delete, true);
+        } else {
+            set_alert(true, "bad", "Failed to delete backup.");
+        }
+
+        // Close the database connection
+        db_close($db);
+    }
+
     // If the Security tab was submitted
     if (isset($_POST['update_security_settings'])) {
         
@@ -557,7 +653,7 @@
 
 ?>
 <div class="row">
-    <div class="col-12">
+    <div class="col-12 settings">
         <div class="mt-2">
             <nav class="nav nav-tabs">
                 <a class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">
@@ -828,8 +924,8 @@
                     <div class="col-6">
                         <div class="card-body my-2 border">
                             <h4 class="page-title"><?= $escaper->escapeHtml($lang['AllowedFileTypes']);?></h4>
-                            <form id="add_file_type_form" method="post" action="">
-                                <input type="hidden" name="add_file_type" value="true">
+                            <form id="add_file_type_form" name="filetypes" method="post" action="">
+                                <input type="hidden" name="add_file_type" value="true"/>
                                 <div class="row" style="align-items:flex-end">
                                     <div class="col-8">
                                         <div class="form-group">
@@ -840,7 +936,7 @@
                                     <div class="col-2">
                                         <div class="form-group">
                                             <label><?= $escaper->escapeHtml($lang['WithExtension']); ?><span class="required">*</span> :</label>
-                                            <input name="file_type_ext" type="text" maxlength="10" size="10" class="form-control"  required title="<?= $escaper->escapeHtml($lang['FileExtension']); ?>"/>
+                                            <input name="file_type_ext" type="text" maxlength="6" size="10" class="form-control"  required title="<?= $escaper->escapeHtml($lang['FileExtension']); ?>"/>
                                         </div>
                                     </div>
                                     <div class="col-2">
@@ -869,7 +965,8 @@
                                     </div>
                                 </div>
                             </form>
-                            <form name="filetypes" method="post" action="">
+                            <form id="delete_file_extension_form" method="post" action="">
+                                <input type="hidden" name="delete_file_extension" value="true"/>
                                 <div class="row" style="align-items:flex-end">
                                     <div class="col-8">
                                         <div class="">
@@ -882,7 +979,7 @@
                                     <div class="col-2"></div>
                                     <div class="col-2">
                                         <div class="">
-                                           <input type="submit" value="<?= $escaper->escapeHtml($lang['Delete']); ?>" name="delete_file_extension" class="btn btn-dark form-control" style="margin-top: 30px;">
+                                           <input type="submit" value="<?= $escaper->escapeHtml($lang['Delete']); ?>" class="btn btn-dark form-control" style="margin-top: 30px;">
                                         </div>
                                     </div>
                                 </div>
@@ -1059,7 +1156,7 @@
                         <div class="row">
                             <div class="col-6">
                                 <div class="form-group">
-                                    <input type="text" name="email" size="50" placeholder="<?= $escaper->escapeHtml($lang['EmailAddress']); ?>" class="form-control"/>
+                                    <input type="email" name="email" size="50" placeholder="<?= $escaper->escapeHtml($lang['EmailAddress']); ?>" class="form-control"/>
                                 </div>
                             </div>
                         </div>
@@ -1144,7 +1241,7 @@
                         </div>
                     </div>
                 </form>
-                <div class="card-body my-2 border">
+                <div class="card-body my-2 border backups-list">
     <?php
         // Open the database connection
         $db = db_open();
@@ -1181,6 +1278,9 @@
                                 <td>
                                     <u><?= $escaper->escapeHtml($lang['DatabaseBackup']); ?></u>
                                 </td>
+	                           	<td>
+                                    <u><?= $escaper->escapeHtml($lang['Actions']); ?></u>
+                                </td>
                             </tr>
                         </thead>
                         <tbody>
@@ -1198,12 +1298,21 @@
             // If this is not a hosted customer
             if (get_setting('hosting_tier') == false) {
 
-                // Display the Download link for the application backup
-                echo "
-                                <td><a target='_blank' href='download_backup.php?type=app&id={$escaper->escapeHtml($backup['random_id'])}'>{$escaper->escapeHtml($lang['Download'])}</a></td>
-                                <td>&nbsp;</td>
-                ";
+                // Check if the file exists
+                if (file_exists($backup['app_zip_file_name'])) {
 
+                    // Display the Download link for the application backup
+                    echo "
+                                    <td><a target='_blank' href='download_backup.php?type=app&id={$escaper->escapeHtml($backup['random_id'])}'>{$escaper->escapeHtml($lang['Download'])}</a></td>
+                                    <td>&nbsp;</td>
+                    ";
+                } else {
+                    // Display a warning if the file doesn't exist for some reason
+                    echo "
+                                    <td><div class='missing-file-warning'>{$escaper->escapeHtml($lang['MissingFile'])}</div></td>
+                                    <td>&nbsp;</td>
+                    ";
+                }
             } else {
 
                 // If this is a hosted customer
@@ -1215,15 +1324,38 @@
 
             }
 
+            // Check if the file exists
+            if (file_exists($backup['db_zip_file_name'])) {
+                echo "
+                                    <td><a target='_blank' href='download_backup.php?type=db&id={$escaper->escapeHtml($backup['random_id'])}'>{$escaper->escapeHtml($lang['Download'])}</a></td>
+                ";
+            } else {
+                // Display a warning if the file doesn't exist for some reason
+                echo "
+                                    <td><div class='missing-file-warning'>{$escaper->escapeHtml($lang['MissingFile'])}</div></td>
+                ";
+            }
             echo "
-                                <td><a target='_blank' href='download_backup.php?type=db&id={$escaper->escapeHtml($backup['random_id'])}'>{$escaper->escapeHtml($lang['Download'])}</a></td>
-                            </tr>
+                                    <td><button type='button' class='btn btn-important btn-xs delete-backup-entry' data-id='{$escaper->escapeHtml($backup['random_id'])}'>{$escaper->escapeHtml($lang['Delete'])}</button></td>
+                                </tr>
             ";
         }
     ?>
                         </tbody>
                     </table> 
                 </div>
+                <form name="backup_delete_form" method="post" action="">
+                	<input type="hidden" name="delete_backup_entry" value=""/>
+                </form>
+                <script>
+                	$(function() {
+						$(document).on('click', 'button.delete-backup-entry', function(e) {e.stopPropagation(); confirm(_lang['ConfirmDeleteBackup'], () => {
+                        	let form = $("form[name='backup_delete_form']");
+                        	form.find("input[name='delete_backup_entry']").val($(this).attr('data-id'));
+                        	form.submit();
+                        })});
+                    });
+                </script>
             </div>
             <!----- security tab --------->
             <div class="tab-pane" id="security" role="tabpanel" aria-labelledby="security-tab">
@@ -1403,7 +1535,7 @@
                 handleValueInRange(ui.value / 10);
             }
         });
-
+        
         $("#add_file_type_form").submit(function() {
 
             // Prevent the form from submitting
@@ -1414,13 +1546,30 @@
                 return;
             }
 
+            // Check if the file type extension is valid.
+            const file_type_extension = $("[name='file_type_ext']", this).val();
+
+            // Regex to validate a file extension format
+            const regex = /^[a-zA-Z0-9]+$/;
+
+            if (!regex.test(file_type_extension)) {
+                showAlertFromMessage("<?= $escaper->escapeHtml($lang['PleaseEnterAValidExtension']); ?>");
+                return;
+            }
+
+            // Check if the file type extension has a valid length
+            if (file_type_extension.length > 6) {
+                showAlertFromMessage("<?= $escaper->escapeHtml($lang['TheFileTypeExtensionIsTooLong']); ?>");
+                return;
+            }
+
             // Submit the form using native javascript
             $(this)[0].submit();
 
         });
 
         $("#delete_file_type_form").submit(function() {
-        
+
             // Prevent the form from submitting
             event.preventDefault();
 
@@ -1438,9 +1587,57 @@
 
             });
         });
+
+        $("#delete_file_extension_form").submit(function() {
+
+            // Prevent the form from submitting.
+            event.preventDefault();
+
+            // Check if the file type extension is selected.
+            if (!$("#file_type_extensions", this).val()) {
+                showAlertFromMessage("<?= $escaper->escapeHtml($lang['PleaseSelectAnExtensionBeforeDeleting']); ?>");
+                return;
+            }
+
+            // Display a confirmation dialog.
+            confirm("<?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisExtension']); ?>", () => {
+                // Submit the form using native javascript.
+                $(this)[0].submit();
+            })
+
+        });
+
+        $("[name='mail_settings']").submit(function() {
+
+            // Prevent the form from submitting.
+            event.preventDefault();
+
+            // Get the submit button that triggered the event
+            const submit_button = $(document.activeElement);
+            const submit_button_name = submit_button.attr("name");
+            const submit_button_value = submit_button.val();
+
+            // Check if the test mail configuration button was clicked
+            if (submit_button_name === "test_mail_configuration") {
+                // Check if the email address is empty
+                if (!$("[name='email']").val().trim()) {
+                    showAlertFromMessage("<?= $escaper->escapeHtml($lang['PleaseEnterAnEmailAddressBeforeSendingATestEmail']); ?>");
+                    return;
+                }
+            }
+
+            // Append the clicked button's name and value to the form data
+            $('<input>').attr({ type: 'hidden', name: submit_button_name, value: submit_button_value }).appendTo($(this));
+
+            // Submit the form using native javascript.
+            $(this)[0].submit();
+
+        });
+
     });
 
-    function update_proxy() {
+    function update_proxy()
+    {
         var proxy_web_requests_checkbox = document.getElementById("proxy_web_requests_checkbox");
         var proxy_verify_ssl_certificate_checkbox = document.getElementById("proxy_verify_ssl_certificate_checkbox");
         var proxy_verify_ssl_certificate_row = document.getElementById("proxy_verify_ssl_certificate_row");

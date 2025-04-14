@@ -255,10 +255,18 @@ class UILayout {
 
 		// Called when an item is added to the grid
 		GridStack.renderCB = function(el, w) {
+
+			let layout_name = w.layout;
+
+			// If the layout name is not set, then we need to set it to the default layout name
+			if (!layout_name) {
+				layout_name = '<?= $this->layout_name ?>';
+			}
+
 			// Dynamically load the content of the widget based on its configuration
             $.ajax({
                 type: "GET",
-                url: BASE_URL + "/api/v2/ui/widget?widget_name=" + w.name + "&layout_name=<?= $this->layout_name ?>",
+                url: BASE_URL + "/api/v2/ui/widget?widget_name=" + w.name + "&layout_name=" + layout_name,
                 success: function(result){
                     if(result.status_message){
                         showAlertsFromArray(result.status_message);
@@ -269,6 +277,7 @@ class UILayout {
 
                     // Setting the widget's type as a class on the container, so we can apply type-specific css
                     $(el).addClass(w.type);
+
                 },
                 error: function(xhr,status,error){
                     if(!retryCSRF(xhr, this)) {

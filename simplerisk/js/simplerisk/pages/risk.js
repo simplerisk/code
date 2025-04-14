@@ -1,4 +1,8 @@
 var current_tab_close_object;
+
+// Variable to be used to prevent the form from being submitted multiple times
+var loading = false;
+
 function close_current_tab(index)
 {
     $('#tab-container'+index+'').remove();
@@ -1018,6 +1022,15 @@ $(document).ready(function(){
     })
     
     function updateScore($this){
+
+        // Prevent the form from being submitted multiple times
+        if (loading) {
+            return;
+        }
+
+        // Set loading to true to prevent multiple submissions
+        loading = true;
+
         var tabContainer = $this.parents('.tab-data');
         var risk_id = $('.risk-id', tabContainer).html();
         var action = $this.attr('name');
@@ -1063,6 +1076,9 @@ $(document).ready(function(){
                     cancelEditDetailsRequest(risk_id, tabContainer);
                 }
 
+                // Reset loading to false after the request is complete
+                loading = false;
+
             }
         })
         .fail(function(xhr, textStatus){
@@ -1072,6 +1088,9 @@ $(document).ready(function(){
                     showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
+
+            // Reset loading to false if the request fails
+            loading = false;
 
         });
     }

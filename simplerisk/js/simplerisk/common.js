@@ -309,7 +309,7 @@ function confirm(message, callback) {
 	// Create the modal window
 	let myModal = new bootstrap.Modal(
 		$(`
-			<div class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+			<div class="modal fade" tabindex="-1" role="dialog">
 		        <div class="modal-dialog modal-md modal-dialog-centered modal-dark">
 		            <div class="modal-content">
 		                <div class="modal-body">
@@ -317,8 +317,8 @@ function confirm(message, callback) {
 		                        <label class="message">${message}</label>
 		                    </div>
 		                    <div class="form-group text-center">
-		                        <button class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true">${_lang['Cancel']}</button>
-		                        <button class="btn btn-submit" data-bs-dismiss="modal" aria-hidden="true">${_lang['Yes']}</button>
+		                        <button class="btn btn-secondary" data-bs-dismiss="modal">${_lang['Cancel']}</button>
+		                        <button class="btn btn-submit" data-bs-dismiss="modal">${_lang['Yes']}</button>
 		                    </div>
 		                </div>
 		            </div>

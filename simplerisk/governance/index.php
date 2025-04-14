@@ -176,7 +176,7 @@
         if (empty($_SESSION['delete_controls'])) {
 
             // Display an alert
-            set_alert(true, "bad", $lang['NoDeleteControlPermission']);
+            set_alert(true, "bad", $escaper->escapeHtml($lang['NoDeleteControlPermission']));
 
         // Verify control ids for deleting was submitted
         } elseif (is_array($control_ids)) {
@@ -189,13 +189,13 @@
             }
 
             // Display an alert
-            set_alert(true, "good", "An selected controls were deleted successfully.");
+            set_alert(true, "good", $escaper->escapeHtml($lang['TheSelectedControlsWereDeletedSuccessfully']));
             
         // We should never get here as we bound the variable as an int
         } else {
 
             // Display an alert
-            set_alert(true, "bad", "Nothing controls for deleting were selected.");
+            set_alert(true, "bad", $escaper->escapeHtml($lang['NothingControlsForDeletingWereSelected']));
 
         }
 

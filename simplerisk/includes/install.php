@@ -1098,7 +1098,7 @@ function step_6_simplerisk_installation()
     // Generate a random hour (0-23) and minute (0-59) to create the cron ping schedule
     $hour = rand(0, 23);
     $minute = rand(0, 59);
-    $schedule = "${minute} ${hour} * * *";
+    $schedule = "{$minute} {$hour} * * *";
     $stmt = $db->prepare("INSERT INTO `" . $sr_db . "`.`settings` (`name`,`value`) VALUES ('schedule_cron_ping', :schedule)");
     $stmt->bindParam(":schedule", $schedule, PDO::PARAM_STR);
     $stmt->execute();

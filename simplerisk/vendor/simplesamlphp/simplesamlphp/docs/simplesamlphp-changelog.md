@@ -5,9 +5,31 @@
 This document lists the changes between versions of SimpleSAMLphp.
 See the [upgrade notes](https://simplesamlphp.org/docs/stable/simplesamlphp-upgrade-notes.html) for specific information about upgrading.
 
-## Version 2.3.6
+## Version 2.3.8
 
 Released TBD
+
+## Version 2.3.7
+
+Released 2025-03-11
+
+* Fixed loading translations for themes where there is no explicit X-Domain set in the po file.
+* Bumped vulnerable saml2-library to v4.17.0
+
+## Version 2.3.6
+
+Released 2025-02-17
+
+* Fixed PHP 8.4 deprecation notices
+* Fixed infinite recursion (#2367)
+* Fixed "Undefined array key" warning in RequestedAuthnContextSelector if no RAC is present in the request
+* Fixed an unintended BC-break in `simplesamlphp/assert` that caused composer dependency issues
+* Updated several dependencies
+* Started testing on PHP 8.4
+
+`ldap`
+
+* Verify attribute value is a string before calling strlen (simplesamlphp/simplesamlphp-module-ldap#64) (v2.4.4)
 
 ## Version 2.3.5
 

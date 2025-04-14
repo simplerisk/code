@@ -56,9 +56,135 @@
     .document--delete{
         cursor: pointer;
     }
+
+    #procedures-content {
+        .datagrid-htable {
+            td[field='actions'] {
+                text-align: center;
+            }
+        }
+
+        .datagrid-btable {
+            td[field='actions'] {
+                .datagrid-cell {
+                    justify-content: center;
+                    align-items: center;
+                }
+            }
+        }
+    }
+
+    #standards-content {
+        .datagrid-htable {
+            td[field='actions'] {
+                text-align: center;
+            }
+        }
+
+        .datagrid-btable {
+            td[field='actions'] {
+                .datagrid-cell {
+                    justify-content: center;
+                    align-items: center;
+                }
+            }
+        }
+    }
+
+    #guidelines-content {
+        .datagrid-htable {
+            td[field='actions'] {
+                text-align: center;
+            }
+        }
+
+        .datagrid-btable {
+            td[field='actions'] {
+                .datagrid-cell {
+                    justify-content: center;
+                    align-items: center;
+                }
+            }
+        }
+    }
 }
 //********************************** GOVERNANCE > DOCUMENT PROGRAM END *************************************//
 
+//********************************* GOVERNANCE > DEFINE EXCEPTIONS BEGIN ***********************************//
+#exceptions-tab-content {
+    .exception--edit, 
+    .exception--delete, 
+    .exception-batch--delete, 
+    .exception--approve {
+        cursor: pointer;
+    }
+
+    #control-exceptions {
+        .datagrid-htable {
+            td[field='actions'] {
+                text-align: center;
+            }
+        }
+
+        .datagrid-btable {
+            td[field='actions'] {
+                .datagrid-cell {
+                    justify-content: center;
+                    align-items: center;
+                }
+            }
+        }
+    }
+
+    #policy-exceptions {
+        .datagrid-htable {
+            td[field='actions'] {
+                text-align: center;
+            }
+        }
+
+        .datagrid-btable {
+            td[field='actions'] {
+                .datagrid-cell {
+                    justify-content: center;
+                    align-items: center;
+                }
+            }
+        }
+    }
+
+    #unapproved-exceptions {
+        .datagrid-htable {
+            td[field='actions'] {
+                text-align: center;
+            }
+        }
+
+        .datagrid-btable {
+            td[field='actions'] {
+                .datagrid-cell {
+                    justify-content: center;
+                    align-items: center;
+                }
+            }
+        }
+    }
+}
+
+#exception--view {
+    color: #000000;
+
+    .modal-body {
+        label {
+            text-decoration: underline;
+        }
+        
+        .exception-data {
+            padding-left: 10px;
+        }
+    }
+}
+//********************************** GOVERNANCE > DEFINE EXCEPTIONS END ************************************//
 
 
 

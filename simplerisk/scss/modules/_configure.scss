@@ -1,3 +1,26 @@
+//******************************* CONFIGURE > SETTINGS BEGIN *********************************//
+.settings {
+    .backups-list {
+        td {
+            vertical-align: middle;
+
+            .missing-file-warning {
+                cursor: default;
+
+                &:before {
+                  font: var(--fa-font-solid);
+                  color: var(--sr-warning);
+                  content: "\f071";
+                  margin-right: .5em;
+                  margin-left: .5em;
+                }
+            }
+        }
+    }
+}
+
+//******************************* CONFIGURE > SETTINGS END *********************************//
+
 //****************************** CONFIGURE > RISK AND THREAT BEGIN ********************************//
 .risk_thread_catalog {
     table.dataTable tbody {
@@ -46,3 +69,20 @@
     }
 }
 //******************************* CONFIGURE > RISK AND THREAT END *********************************//
+
+//**************************** CONFIGURE > ORGANIZATION MANAGEMENT BEGIN **************************//
+.organizational-hierarchy-page {
+	a.business-unit--update, a.business-unit--delete, a.team--remove {
+		cursor: pointer;
+	}
+
+	.business-unit-name {
+		cursor: pointer;
+		user-select: none; /* standard syntax */
+		-webkit-user-select: none; /* webkit (safari, chrome) browsers */
+		-moz-user-select: none; /* mozilla browsers */
+		-khtml-user-select: none; /* webkit (konqueror) browsers */
+		-ms-user-select: none; /* IE10+ */
+	}
+}
+//***************************** CONFIGURE > ORGANIZATION MANAGEMENT END ***************************//

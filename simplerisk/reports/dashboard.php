@@ -6,7 +6,7 @@
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 
-    render_header_and_sidebar(['multiselect', 'chart.js'], active_sidebar_submenu: 'Reporting_RiskManagement', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'RiskDashboard');
+    render_header_and_sidebar(['multiselect', 'chart.js', 'UILayoutWidget'], active_sidebar_submenu: 'Reporting_RiskManagement', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'RiskDashboard');
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));
@@ -60,83 +60,11 @@
     ?>
         </div>
     </div>
-    <div class="row mt-2">
-        <div class="col-4">
-            <div class="card-body border">
+    <div class="mt-2">
     <?php 
-                open_risk_level_pie(js_string_escape($lang['RiskLevel']), "open_risk_level_pie", $teams); 
+        // Render the 'overview' layout
+        (new \includes\Widgets\UILayout('dashboard_open'))->render();
     ?>
-            </div>
-        </div>
-        <div class="col-4">
-            <div class="card-body border">
-    <?php 
-                open_risk_status_pie($pie_array, js_string_escape($lang['Status'])); 
-    ?>
-            </div>
-        </div>
-        <div class="col-4">
-            <div class="card-body border">
-    <?php 
-                open_risk_location_pie($pie_location_array, js_string_escape($lang['SiteLocation'])); 
-    ?>
-            </div>
-        </div>
-    </div>
-    <div class="row mt-2">
-        <div class="col-4">
-            <div class="card-body border">
-    <?php 
-                open_risk_source_pie($pie_array, js_string_escape($lang['RiskSource'])); 
-    ?>
-            </div>
-        </div>
-        <div class="col-4">
-            <div class="card-body border">
-    <?php 
-                open_risk_category_pie($pie_array, js_string_escape($lang['Category'])); 
-    ?>
-            </div>
-        </div>
-        <div class="col-4">
-            <div class="card-body border">
-    <?php 
-                open_risk_team_pie($pie_team_array, js_string_escape($lang['Team'])); 
-    ?>
-            </div>
-        </div>
-    </div>
-    <div class="row mt-2">
-        <div class="col-4">
-            <div class="card-body border">
-    <?php 
-                open_risk_technology_pie($pie_technology_array, js_string_escape($lang['Technology'])); 
-    ?>
-            </div>
-        </div>
-        <div class="col-4">
-            <div class="card-body border">
-    <?php 
-                open_risk_owner_pie($pie_array, js_string_escape($lang['Owner'])); 
-    ?>
-            </div>
-        </div>
-        <div class="col-4">
-            <div class="card-body border">
-    <?php 
-                open_risk_owners_manager_pie($pie_array, js_string_escape($lang['OwnersManager'])); 
-    ?>
-            </div>
-        </div>
-    </div>
-    <div class="row mt-2">
-        <div class="col-4">
-            <div class="card-body border">
-    <?php 
-                open_risk_scoring_method_pie($pie_array, js_string_escape($lang['RiskScoringMethod'])); 
-    ?>
-            </div>
-        </div>
     </div>
 </div>
 <div class="card-body border my-2">
@@ -145,14 +73,11 @@
             <h4><?= $escaper->escapeHtml($lang['ClosedRisks']); ?> (<?= $escaper->escapeHtml(get_closed_risks($teams)); ?>)</h4>
         </div>
     </div>
-    <div class="row mt-2">
-        <div class="col-4">
-            <div class="card-body border">
+    <div class="mt-2">
     <?php 
-                closed_risk_reason_pie(js_string_escape($lang['Reason']), $teams); 
+        // Render the 'overview' layout
+        (new \includes\Widgets\UILayout('dashboard_close'))->render();
     ?>
-            </div>
-        </div>
     </div>
 </div>
 <?php

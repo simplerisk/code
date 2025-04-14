@@ -157,8 +157,8 @@
 					echo "
 								<form id='activate_extra' name='activate' method='post'  action=''>
 									<div>
-										<h4>" . $escaper->escapeHtml($lang['ImportExportExtra']) . "</h4>
-										<input type='submit' value='" . $escaper->escapeHtml($lang['Activate']) . "' name='activate' class='btn btn-submit'/>
+										<h4>{$escaper->escapeHtml($lang['ImportExportExtra'])}</h4>
+										<input type='submit' value='{$escaper->escapeHtml($lang['Activate'])}' name='activate' class='btn btn-submit'/>
 									</div>
 								</from>
 					";
@@ -248,7 +248,7 @@
 		});
 		$("#import").submit(function(event) {
 			if ($("#import input[type='file']").length && <?= $escaper->escapeHtml(get_setting('max_upload_size')) ?><= $("#import input[type='file']")[0].files[0].size) {
-				toastr.error("<?= $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
+				showAlertFromMessage("<?= $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
 				event.preventDefault();
 			}
 		});

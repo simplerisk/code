@@ -16,3 +16,7 @@ Thumbs.db
 
 # phpstorm
 .idea/*
+
+# Alchemy
+.alchemy
+.phpunit.result.cache

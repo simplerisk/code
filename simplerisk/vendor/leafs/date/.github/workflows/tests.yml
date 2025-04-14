@@ -1,32 +1,32 @@
 name: Run Tests
 
-on: ['push', 'pull_request']
+on: ["push","pull_request"]
 
 jobs:
-  ci:
+  tests:
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        php: ['7.4', '8.0', '8.1', '8.2']
       fail-fast: true
-      max-parallel: 1
+      matrix:
+        os: ["ubuntu-latest"]
+        php: ["7.4", "8.4"]
 
     name: PHP ${{ matrix.php }} - ${{ matrix.os }}
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{ matrix.php }}
-        tools: composer:v2
-        coverage: xdebug
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: json, zip, dom, curl, libxml, mbstring
+          tools: composer:v2
+          coverage: xdebug
 
-    - name: Install PHP dependencies
-      run: composer update --no-interaction --no-progress
+      - name: Install PHP dependencies
+        run: composer update --no-interaction --no-progress
 
-    - name: All Tests
-      run: php vendor/bin/alchemy run
+      - name: Run Tests
+        run: composer run test -- --flags=coverage

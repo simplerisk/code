@@ -176,7 +176,7 @@ function cron_ping()
         $minute = rand(0, 59);
 
         // Create the cron schedule line
-        $schedule = "${minute} ${hour} * * *";
+        $schedule = "{$minute} {$hour} * * *";
 
         // Save the schedule
         add_setting("schedule_cron_ping", $schedule);

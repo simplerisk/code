@@ -34,11 +34,20 @@ class Date
     }
 
     /**
-     * Base method for all date/time operations
+     * Initialize a new date instance
+     * @param string|DateTime|Date $userDate The date to initialize with
+     * @param string|null $userTimeZone The timezone to initialize with
+     * @return Date
      */
     public function tick($userDate = 'now', ?string $userTimeZone = null): Date
     {
-        $this->date = ($userDate instanceof DateTime ? $userDate : new DateTime(str_replace('/', '-', $userDate)));
+        if ($userDate instanceof DateTime) {
+            $this->date = $userDate;
+        } elseif ($userDate instanceof Date) {
+            $this->date = $userDate->toDateTime();
+        } else {
+            $this->date = new DateTime(str_replace('/', '-', $userDate));
+        }
 
         if ($userTimeZone) {
             $this->setTimezone($userTimeZone);
@@ -49,16 +58,26 @@ class Date
 
     /**
      * Set default date timezone
+     * @param string $timezone One of the supported timezone names , an offset value (+0200), or a timezone abbreviation (BST)
+     * @throws \Exception Invalid timezone selection
+     * @return Date
      */
-    public function setTimezone(String $timezone = "Africa/Accra")
+    public function setTimezone(string $timezone = 'Africa/Accra'): Date
     {
-        $this->date->setTimezone(new \DateTimeZone($timezone));
+        if (!$timezone = new \DateTimeZone($timezone)) {
+            throw new \Exception('Invalid timezone selection');
+        }
+
+        $this->date->setTimezone($timezone);
 
         return $this;
     }
 
     /**
      * Add a duration to the current date
+     * @param string|int The duration to add
+     * @param string|null The interval to add
+     * @return Date
      */
     public function add($duration, ?string $interval = null): Date
     {
@@ -69,6 +88,9 @@ class Date
 
     /**
      * Subtract a duration to the current date
+     * @param string|int The duration to subtract
+     * @param string|null The interval to subtract
+     * @return Date
      */
     public function subtract($duration, ?string $interval = null): Date
     {
@@ -77,6 +99,9 @@ class Date
 
     /**
      * Get the start of a time unit
+     * @param string $unit The time unit to start
+     * @return Date
+     * @throws \Exception Invalid time unit
      */
     public function startOf(string $unit): Date
     {
@@ -93,8 +118,8 @@ class Date
         $this->date->modify(date(
             $units[$unit],
             $unit === 'week' ?
-                strtotime("this week", $this->date->getTimestamp()) :
-                $this->date->getTimestamp()
+            strtotime('this week', $this->date->getTimestamp()) :
+            $this->date->getTimestamp()
         ));
 
         return $this;
@@ -102,6 +127,9 @@ class Date
 
     /**
      * Get the end of a time unit
+     * @param string $unit The time unit to end
+     * @return Date
+     * @throws \Exception Invalid time unit
      */
     public function endOf(string $unit): Date
     {
@@ -118,8 +146,8 @@ class Date
         $this->date->modify(date(
             $units[$unit],
             $unit === 'week' ?
-                date_add(date_create(date('Y-m-d', strtotime("this week", $this->date->getTimestamp()))), date_interval_create_from_date_string('6 days'))->getTimestamp() :
-                $this->date->getTimestamp()
+            date_add(date_create(date('Y-m-d', strtotime('this week', $this->date->getTimestamp()))), date_interval_create_from_date_string('6 days'))->getTimestamp() :
+            $this->date->getTimestamp()
         ));
 
         return $this;
@@ -127,6 +155,10 @@ class Date
 
     /**
      * Generic setter, accepting unit as first argument, and value as second, returns a new instance with the applied changes.
+     * @param string $unit The time unit to set
+     * @param int $value The value to set
+     * @return Date
+     * @throws \Exception Invalid time unit
      */
     public function set(string $unit, int $value): Date
     {
@@ -169,7 +201,7 @@ class Date
 
     /**
      * Gets or sets the millisecond
-     *
+     * @param int|null $value The value to set
      * @return Date|int
      */
     public function millisecond(?int $value = null)
@@ -179,7 +211,7 @@ class Date
 
     /**
      * Gets or sets the second
-     *
+     * @param int|null $value The value to set
      * @return Date|int
      */
     public function second(?int $value = null)
@@ -189,7 +221,7 @@ class Date
 
     /**
      * Gets or sets the minute
-     *
+     * @param int|null $value The value to set
      * @return Date|int
      */
     public function minute(?int $value = null)
@@ -199,7 +231,7 @@ class Date
 
     /**
      * Gets or sets the hour
-     *
+     * @param int|null $value The value to set
      * @return Date|int
      */
     public function hour(?int $value = null)
@@ -209,7 +241,7 @@ class Date
 
     /**
      * Gets or sets the day
-     *
+     * @param int|null $value The value to set
      * @return Date|int
      */
     public function day(?int $value = null)
@@ -219,7 +251,7 @@ class Date
 
     /**
      * Gets or sets the month
-     *
+     * @param int|null $value The value to set
      * @return Date|int
      */
     public function month(?int $value = null)
@@ -229,7 +261,7 @@ class Date
 
     /**
      * Gets or sets the year
-     *
+     * @param int|null $value The value to set
      * @return Date|int
      */
     public function year(?int $value = null)
@@ -239,6 +271,10 @@ class Date
 
     /**
      * Get the formatted date according to the string of tokens passed in.
+     * @param string $format The format to use
+     * @return string
+     * @throws \Exception Invalid format
+     * @see https://leafphp.dev/docs/utils/date.html#formatting-dates
      */
     public function format(string $format = 'c'): string
     {
@@ -285,6 +321,10 @@ class Date
 
     /**
      * Returns the string of relative time from a date.
+     * @param string $date The date to compare to
+     * @param bool $valueOnly Whether to return only the value or the full string
+     * @return string
+     * @throws \Exception Invalid date
      */
     public function from($date = 'now', $valueOnly = false): string
     {
@@ -320,6 +360,8 @@ class Date
 
     /**
      * Returns the string of relative time from now.
+     * @param bool $valueOnly Whether to return only the value or the full string
+     * @return string
      */
     public function fromNow($valueOnly = false): string
     {
@@ -328,6 +370,8 @@ class Date
 
     /**
      * Returns the string of relative time from now.
+     * @param bool $valueOnly Whether to return only the value or the full string
+     * @return string
      */
     public function toNow($valueOnly = false): string
     {
@@ -336,6 +380,7 @@ class Date
 
     /**
      * Return as PHP DateTime object
+     * @return DateTime
      */
     public function toDateTime(): DateTime
     {
@@ -343,7 +388,17 @@ class Date
     }
 
     /**
-     * Return as PHP DateTime object
+     * Return as Unix timestamp
+     * @return int
+     */
+    public function toTimestamp(): int
+    {
+        return $this->date->getTimestamp();
+    }
+
+    /**
+     * Return as string timestamp
+     * @return string
      */
     public function toDateTimeString(): string
     {
@@ -351,7 +406,8 @@ class Date
     }
 
     /**
-     * Return as PHP DateTime object
+     * Return as date string
+     * @return string
      */
     public function toDateString(): string
     {
@@ -359,7 +415,8 @@ class Date
     }
 
     /**
-     * Return as PHP DateTime object
+     * Return as time string
+     * @return string
      */
     public function toTimeString(): string
     {
@@ -367,7 +424,8 @@ class Date
     }
 
     /**
-     * Return as PHP DateTime object
+     * Return as ISO string
+     * @return string
      */
     public function toIsoString(): string
     {
@@ -376,14 +434,26 @@ class Date
 
     /**
      * This indicates whether the date object is before the other supplied date-time.
+     * @param string|DateTime|Date $date The date to compare to
+     * @return bool
      */
     public function isBefore($date): bool
     {
-        return $this->date < ($date instanceof DateTime ? $date : new DateTime(str_replace('/', '-', $date)));
+        if ($date instanceof DateTime) {
+            return $this->date < $date;
+        }
+
+        if ($date instanceof Date) {
+            return $this->date < $date->toDateTime();
+        }
+
+        return $this->date < new DateTime(str_replace('/', '-', $date));
     }
 
     /**
      * This indicates whether the date object is after the other supplied date-time.
+     * @param string|DateTime|Date $date The date to compare to
+     * @return bool
      */
     public function isAfter($date): bool
     {
@@ -392,6 +462,9 @@ class Date
 
     /**
      * This indicates whether the date object is between the other supplied date-time.
+     * @param string|DateTime|Date $date1 The first date to compare to
+     * @param string|DateTime|Date $date2 The second date to compare to
+     * @return bool
      */
     public function isBetween($date1 = 'now', $date2 = 'now'): bool
     {
@@ -400,6 +473,9 @@ class Date
 
     /**
      * This indicates whether the date object is between the other supplied date-time.
+     * @param string|DateTime|Date $date1 The first date to compare to
+     * @param string|DateTime|Date $date2 The second date to compare to
+     * @return bool
      */
     public function isBetweenOrEqual($date1 = 'now', $date2 = 'now'): bool
     {
@@ -408,46 +484,90 @@ class Date
 
     /**
      * This indicates whether the date object is the same as the other supplied date-time.
+     * @param string|DateTime|Date $date The date to compare to
+     * @return bool
      */
     public function isSame($date = 'now'): bool
     {
-        return $this->date == ($date instanceof DateTime ? $date : new DateTime(str_replace('/', '-', $date)));
+        if ($date instanceof DateTime) {
+            return $this->date == $date;
+        }
+
+        if ($date instanceof Date) {
+            return $this->date == $date->toDateTime();
+        }
+
+        return $this->date == new DateTime(str_replace('/', '-', $date));
     }
 
     /**
      * This indicates whether the date object is the same as the other supplied date-time.
+     * @param string|DateTime|Date $date The date to compare to
+     * @return bool
      */
     public function isSameDay($date = 'now'): bool
     {
-        return $this->date->format('Y-m-d') === ($date instanceof DateTime ? $date : new DateTime(str_replace('/', '-', $date)))->format('Y-m-d');
+        if ($date instanceof DateTime) {
+            return $this->date->format('Y-m-d') === $date->format('Y-m-d');
+        }
+
+        if ($date instanceof Date) {
+            return $this->date->format('Y-m-d') === $date->toDateTime()->format('Y-m-d');
+        }
+
+
+        return $this->date->format('Y-m-d') === (new DateTime(str_replace('/', '-', $date)))->format('Y-m-d');
     }
 
     /**
      * This indicates whether the date object is the same as the other supplied date-time.
+     * @param string|DateTime|Date $date The date to compare to
+     * @return bool
      */
     public function isSameMonth($date = 'now'): bool
     {
-        return $this->date->format('Y-m') === ($date instanceof DateTime ? $date : new DateTime(str_replace('/', '-', $date)))->format('Y-m');
+        if ($date instanceof DateTime) {
+            return $this->date->format('Y-m') === $date->format('Y-m');
+        }
+
+        if ($date instanceof Date) {
+            return $this->date->format('Y-m') === $date->toDateTime()->format('Y-m');
+        }
+
+        return $this->date->format('Y-m') === (new DateTime(str_replace('/', '-', $date)))->format('Y-m');
     }
 
     /**
      * This indicates whether the date object is the same as the other supplied date-time.
+     * @param string|DateTime|Date $date The date to compare to
+     * @return bool
      */
     public function isSameYear($date = 'now'): bool
     {
-        return $this->date->format('Y') === ($date instanceof DateTime ? $date : new DateTime(str_replace('/', '-', $date)))->format('Y');
+        if ($date instanceof DateTime) {
+            return $this->date->format('Y') === $date->format('Y');
+        }
+
+        if ($date instanceof Date) {
+            return $this->date->format('Y') === $date->toDateTime()->format('Y');
+        }
+
+        return $this->date->format('Y') === (new DateTime(str_replace('/', '-', $date)))->format('Y');
     }
 
     /**
      * This indicates whether the date object is a leap year.
+     * @return bool
      */
     public function isLeapYear(): bool
     {
-        return (int) $this->date->format('L') === 1;
+        return ((int) $this->date->format('L')) === 1;
     }
 
     /**
      * This indicates whether the date object is a datetime
+     * @param mixed $date The date to compare to
+     * @return bool
      */
     public function isDateTime($date): bool
     {
