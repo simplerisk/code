@@ -10,6 +10,7 @@ use OpenApi\Analysis;
 use OpenApi\Annotations as OA;
 use OpenApi\Context;
 use OpenApi\Generator;
+use OpenApi\GeneratorAwareTrait;
 use OpenApi\OpenApiException;
 
 /**
@@ -100,6 +101,7 @@ class ReflectionAnalyser implements AnalyserInterface
             'line' => $rc->getStartLine(),
             'annotations' => [],
             'scanned' => $details,
+            'reflector' => $rc,
         ], $analysis->context);
 
         $definition = [
@@ -130,6 +132,7 @@ class ReflectionAnalyser implements AnalyserInterface
                     'filename' => $method->getFileName() ?: null,
                     'line' => $method->getStartLine(),
                     'annotations' => [],
+                    'reflector' => $method,
                 ], $context);
                 foreach ($this->annotationFactories as $annotationFactory) {
                     $analysis->addAnnotations($annotationFactory->build($method, $ctx), $ctx);
@@ -143,6 +146,7 @@ class ReflectionAnalyser implements AnalyserInterface
                     'property' => $property->getName(),
                     'comment' => $property->getDocComment() ?: null,
                     'annotations' => [],
+                    'reflector' => $property,
                 ], $context);
                 if ($property->isStatic()) {
                     $ctx->static = true;
@@ -169,6 +173,7 @@ class ReflectionAnalyser implements AnalyserInterface
                     'constant' => $constant->getName(),
                     'comment' => $constant->getDocComment() ?: null,
                     'annotations' => [],
+                    'reflector' => $constant,
                 ], $context);
                 foreach ($annotationFactory->build($constant, $ctx) as $annotation) {
                     if ($annotation instanceof OA\Property) {

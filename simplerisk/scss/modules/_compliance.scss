@@ -35,27 +35,68 @@
 }
 //********************************** COMPLIANCE > INITIATE AUDITS END ******************************//
 
-//***************************** COMPLIANCE > ACTIVE AUDITS BEGIN *******************************//
+//********************************** COMPLIANCE > ACTIVE AUDITS BEGIN ******************************//
 #active_audits_datatable_wrapper {
     .multiselect-native-select {
         .multiselect-container.dropdown-menu {
             width: auto;
         }
     }
-}
-//****************************** COMPLIANCE > ACTIVE AUDITS END ********************************//
 
-//********************************** COMPLIANCE > PAST AUDITS BEGIN *******************************//
+    // When multiselect dropdown is moved to the outside of the datatable's header filter scrollable container so that it can't be cut off by the scrollable container
+    .multiselect-container.dropdown-menu {
+        width: auto;
+    }
+}
+//********************************** COMPLIANCE > ACTIVE AUDITS END ********************************//
+
+//********************************** COMPLIANCE > PAST AUDITS BEGIN ********************************//
 #past_audits_datatable_wrapper {
     .multiselect-native-select {
         .multiselect-container.dropdown-menu {
             width: auto;
         }
     }
-}
-//*********************************** COMPLIANCE > PAST AUDITS END ********************************//
+    
+    // When multiselect dropdown is moved to the outside of the datatable's header filter scrollable container so that it can't be cut off by the scrollable container
+    .multiselect-container.dropdown-menu {
+        width: auto;
+    }
 
-//***************************** Compliance > Active Audits > View Test Begin *******************************//
+    th[data-name="tags"] {
+        .multiselect-native-select {
+            .multiselect-container.dropdown-menu {
+                width: auto;
+                min-width: 250px;
+    
+                button.dropdown-item {
+                    label.form-check-label {
+                        white-space: normal;
+                        word-break: break-word;
+                    }
+                }
+            }
+        }
+    }
+}
+//*********************************** COMPLIANCE > PAST AUDITS END *********************************//
+
+//* COMPLIANCE > ACTIVE AUDITS > VIEW TEST, COMPLIANCE > PAST AUDITS > VIEW TEST COMMON PART BEGIN *//
+#modal-existing-risk {
+    .multiselect-native-select {
+        .multiselect-container.dropdown-menu {    
+            button.dropdown-item {
+                label.form-check-label {
+                    white-space: normal;
+                    word-break: break-word;
+                }
+            }
+        }
+    }
+}
+//** COMPLIANCE > ACTIVE AUDITS > VIEW TEST, COMPLIANCE > PAST AUDITS > VIEW TEST COMMON PART END **//
+
+//**************************** COMPLIANCE > ACTIVE AUDITS > VIEW TEST BEGIN ************************//
 .active-audit-test-container {
     #edit-test {
         .form-group {
@@ -98,29 +139,9 @@
         }
     }
 }
-//****************************** Compliance > Active Audits > View Test End ********************************//
+//****************************** COMPLIANCE > ACTIVE AUDITS > VIEW TEST END ************************//
 
-//***************************** COMPLIANCE > PAST AUDITS BEGIN *******************************//
-#past_audits_datatable_wrapper {
-    th[data-name="tags"] {
-        .multiselect-native-select {
-            .multiselect-container.dropdown-menu {
-                width: auto;
-                min-width: 250px;
-    
-                button.dropdown-item {
-                    label.form-check-label {
-                        white-space: normal;
-                        word-break: break-word;
-                    }
-                }
-            }
-        }
-    }
-}
-//****************************** COMPLIANCE > PAST AUDITS END ********************************//
-
-//****************************** Compliance > Past Audits > View Test Begin ********************************//
+//****************************** COMPLIANCE > PAST AUDITS > VIEW TEST BEGIN ************************//
 .past-audit-test-container {
     #test_detail_information, 
     #test_result_information {
@@ -170,32 +191,4 @@
         }
     }
 }
-
-#modal-existing-risk {
-    .multiselect-native-select {
-        .multiselect-container.dropdown-menu {    
-            button.dropdown-item {
-                label.form-check-label {
-                    white-space: normal;
-                    word-break: break-word;
-                }
-            }
-        }
-    }
-}
-//******************************* Compliance > Past Audits > View Test End *********************************//
-
-//***************************** COMPLIANCE > ACTIVE AUDITS > VIEW TEST BEGIN *******************************//
-#modal-existing-risk {
-    .multiselect-native-select {
-        .multiselect-container.dropdown-menu {    
-            button.dropdown-item {
-                label.form-check-label {
-                    white-space: normal;
-                    word-break: break-word;
-                }
-            }
-        }
-    }
-}
-//****************************** COMPLIANCE > ACTIVE AUDITS > VIEW TEST END ********************************//
+//******************************* COMPLIANCE > PAST AUDITS > VIEW TEST END *************************//

@@ -12,7 +12,8 @@ use SimpleSAML\XML\XsNamespace as NS;
 use SimpleSAML\XMLSecurity\Assert\Assert;
 use SimpleSAML\XMLSecurity\Constants as C;
 use SimpleSAML\XMLSecurity\Exception\InvalidArgumentException;
-use SimpleSAML\XMLSecurity\XML\ds\AbstractDsElement;
+use SimpleSAML\XMLSecurity\XML\dsig11\AbstractDsig11Element;
+use SimpleSAML\XMLSecurity\XML\dsig11\DEREncodedKeyValue;
 
 /**
  * Abstract class representing the KeyInfoType.
@@ -38,6 +39,7 @@ abstract class AbstractKeyInfoType extends AbstractDsElement
      *     \SimpleSAML\XMLSecurity\XML\ds\PGPData|
      *     \SimpleSAML\XMLSecurity\XML\ds\SPKIData|
      *     \SimpleSAML\XMLSecurity\XML\ds\MgmtData|
+     *     \SimpleSAML\XMLSecurity\XML\dsig11\DEREncodedKeyValue|
      *     \SimpleSAML\XML\SerializableElementInterface
      * )[] $info
      * @param string|null $Id
@@ -75,6 +77,14 @@ abstract class AbstractKeyInfoType extends AbstractDsElement
                         PGPData::class,
                         SPKIData::class,
                         MgmtData::class,
+                    ],
+                    SchemaViolationException::class,
+                );
+            } elseif ($item instanceof AbstractDsig11Element) {
+                Assert::isInstanceOfAny(
+                    $item,
+                    [
+                        DEREncodedKeyValue::class,
                     ],
                     SchemaViolationException::class,
                 );

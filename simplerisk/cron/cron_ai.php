@@ -10,7 +10,7 @@ if (php_sapi_name() == "cli")
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/functions.php'));
 	require_once(realpath(__DIR__ . '/../includes/config.php'));
-    require_once(realpath(__DIR__ . '/../includes/artificial_intelligence.php'));
+    require_once(realpath(__DIR__ . '/../extras/artificial_intelligence/index.php'));
     require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
     // If we have an Anthropic API key
@@ -45,6 +45,12 @@ if (php_sapi_name() == "cli")
         {
             write_debug_log_cli("No need to obtain updates from Anthropic at this time.");
         }
+
+        // Use AI to match documents to controls
+        $message = "Matching documents to controls via cron.";
+        write_debug_log_cli($message);
+        write_log(0, 0, $message, 'artificial_intelligence');
+        ai_match_documents_to_controls();
     }
 }
 

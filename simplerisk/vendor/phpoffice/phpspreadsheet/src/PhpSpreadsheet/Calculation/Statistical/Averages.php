@@ -44,6 +44,8 @@ class Averages extends AggregateBase
                 return ExcelError::VALUE();
             }
             if (self::isAcceptedCountable($arg, $k)) {
+                /** @var float|int|numeric-string $arg */
+                /** @var float|int|numeric-string $aMean */
                 $returnValue += abs($arg - $aMean);
                 ++$aCount;
             }
@@ -83,6 +85,7 @@ class Averages extends AggregateBase
                 return ExcelError::VALUE();
             }
             if (self::isAcceptedCountable($arg, $k)) {
+                /** @var float|int|numeric-string $arg */
                 $returnValue += $arg;
                 ++$aCount;
             }
@@ -153,6 +156,7 @@ class Averages extends AggregateBase
 
         $returnValue = ExcelError::NAN();
 
+        /** @var array<float|int> */
         $aArgs = self::filterArguments($aArgs);
         $valueCount = count($aArgs);
         if ($valueCount > 0) {
@@ -161,7 +165,7 @@ class Averages extends AggregateBase
             if ($valueCount == floor($valueCount)) {
                 $returnValue = ($aArgs[$valueCount--] + $aArgs[$valueCount]) / 2;
             } else {
-                $valueCount = floor($valueCount);
+                $valueCount = (int) floor($valueCount);
                 $returnValue = $aArgs[$valueCount];
             }
         }
@@ -196,6 +200,11 @@ class Averages extends AggregateBase
         return $returnValue;
     }
 
+    /**
+     * @param mixed[] $args
+     *
+     * @return mixed[]
+     */
     protected static function filterArguments(array $args): array
     {
         return array_filter(
@@ -210,6 +219,8 @@ class Averages extends AggregateBase
     /**
      * Special variant of array_count_values that isn't limited to strings and integers,
      * but can work with floating point numbers as values.
+     *
+     * @param mixed[] $data
      */
     private static function modeCalc(array $data): float|string
     {
@@ -219,9 +230,11 @@ class Averages extends AggregateBase
         $maxfreqkey = '';
         $maxfreqdatum = '';
         foreach ($data as $datum) {
+            /** @var float|string $datum */
             $found = false;
             ++$index;
             foreach ($frequencyArray as $key => $value) {
+                /** @var string[] $value */
                 if ((string) $value['value'] == (string) $datum) {
                     ++$frequencyArray[$key]['frequency'];
                     $freq = $frequencyArray[$key]['frequency'];

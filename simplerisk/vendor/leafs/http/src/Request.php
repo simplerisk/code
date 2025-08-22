@@ -334,7 +334,7 @@ class Request
 
     /**
      * Display a flash message from the previous request
-     * 
+     *
      * @param string|null $key The key to get from the flash data
      * @return array|string|null
      */
@@ -463,6 +463,22 @@ class Request
         if (!$file) {
             static::$errors['upload'] = 'No file was uploaded.';
             return false;
+        }
+
+        if (is_array($file['name'])) {
+            $uploadedFiles = [];
+
+            foreach ($file['name'] as $fileKey => $image) {
+                $uploadedFiles[] = \Leaf\FS\File::upload([
+                    'name' => $file['name'][$fileKey],
+                    'type' => $file['type'][$fileKey],
+                    'tmp_name' => $file['tmp_name'][$fileKey],
+                    'error' => $file['error'][$fileKey],
+                    'size' => $file['size'][$fileKey],
+                ], $destination, $config);
+            }
+
+            return $uploadedFiles;
         }
 
         if (isset($config['extensions'])) {
@@ -710,15 +726,65 @@ class Request
      */
     public static function getIp(): string
     {
-        $keys = ['X_FORWARDED_FOR', 'HTTP_X_FORWARDED_FOR', 'CLIENT_IP', 'REMOTE_ADDR'];
+        return $_SERVER['HTTP_CLIENT_IP']
+            ?? $_SERVER['HTTP_X_FORWARDED_FOR']
+            ?? $_SERVER['REMOTE_ADDR'];
+    }
 
-        foreach ($keys as $key) {
-            if (isset($_SERVER[$key])) {
-                return $_SERVER[$key];
+    /**
+     * Get Current User Location using IP
+     * @see https://ip-api.com/docs/api:json
+     * @uses \Leaf\Http\Request::getLocationFromIp
+     * @return array
+     */
+    public static function getUserLocation(): array
+    {
+        return static::getLocationFromIp(
+            static::getIp()
+        );
+    }
+
+    /**
+     * Get IP-based Location using ip-api
+     * @see https://ip-api.com/docs/api:json
+     * @return array
+     */
+    public static function getLocationFromIp(string $ip): array
+    {
+        $response = [
+            'country' => null,
+            'countryCode' => null,
+            'region' => null,
+            'regionName' => null,
+            'currency' => null,
+            'city' => null,
+            'zip' => null,
+            'lat' => null,
+            'lon' => null,
+            'timezone' => null,
+            'ip' => $ip,
+            'continent' => null,
+            'continentCode' => null,
+        ];
+
+        try {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, "http://ip-api.com/json/{$ip}?fields=status,continent,continentCode,country,countryCode,region,regionName,city,zip,lat,lon,timezone,currency,query");
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+
+            $res = curl_exec($ch);
+            curl_close($ch);
+
+            $data = json_decode($res ?? '{}', true);
+
+            if (($data['status'] ?? false) === 'success') {
+                $response = array_merge($response, $data);
             }
+        } catch (\Exception $e) {
         }
 
-        return $_SERVER['REMOTE_ADDR'];
+        return $response;
     }
 
     /**

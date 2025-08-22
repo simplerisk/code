@@ -81,6 +81,11 @@ class Cells
         return ($cellCoordinate === $this->currentCoordinate) || isset($this->index[$cellCoordinate]);
     }
 
+    public function has2(string $cellCoordinate): bool
+    {
+        return isset($this->index[$cellCoordinate]);
+    }
+
     /**
      * Add or update a cell in the collection.
      *
@@ -180,7 +185,7 @@ class Cells
     /**
      * Get highest worksheet column and highest row that have cell records.
      *
-     * @return array Highest column name and highest row number
+     * @return array{row: int, column: string} Highest column name and highest row number
      */
     public function getHighestRowAndColumn(): array
     {
@@ -382,6 +387,7 @@ class Cells
         $column = 0;
         $row = '';
         sscanf($cellCoordinate, '%[A-Z]%d', $column, $row);
+        /** @var int $row */
         $this->index[$cellCoordinate] = (--$row * self::MAX_COLUMN_ID) + Coordinate::columnIndexFromString((string) $column);
 
         $this->currentCoordinate = $cellCoordinate;

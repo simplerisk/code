@@ -145,7 +145,7 @@
         <script src="../js/simplerisk/common.js?<?= $current_app_version ?>" defer></script>
 
         <script type="text/javascript">
-            var BASE_URL = '<?= $escaper->escapeHtml($_SESSION['base_url'] ?? get_setting("simplerisk_base_url"))?>';
+            var BASE_URL = '<?= $escaper->escapeHtml(rtrim(($_SESSION['base_url'] ?? get_setting("simplerisk_base_url")), '/')) ?>';
         </script>
     </head>
     <body>

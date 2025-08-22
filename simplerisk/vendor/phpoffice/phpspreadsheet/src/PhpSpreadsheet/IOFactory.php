@@ -59,12 +59,16 @@ abstract class IOFactory
      */
     public static function createWriter(Spreadsheet $spreadsheet, string $writerType): IWriter
     {
-        if (!isset(self::$writers[$writerType])) {
-            throw new Writer\Exception("No writer found for type $writerType");
-        }
+        /** @var class-string<IWriter> */
+        $className = $writerType;
+        if (!in_array($writerType, self::$writers, true)) {
+            if (!isset(self::$writers[$writerType])) {
+                throw new Writer\Exception("No writer found for type $writerType");
+            }
 
-        // Instantiate writer
-        $className = self::$writers[$writerType];
+            // Instantiate writer
+            $className = self::$writers[$writerType];
+        }
 
         return new $className($spreadsheet);
     }
@@ -74,12 +78,16 @@ abstract class IOFactory
      */
     public static function createReader(string $readerType): IReader
     {
-        if (!isset(self::$readers[$readerType])) {
-            throw new Reader\Exception("No reader found for type $readerType");
-        }
+        /** @var class-string<IReader> */
+        $className = $readerType;
+        if (!in_array($readerType, self::$readers, true)) {
+            if (!isset(self::$readers[$readerType])) {
+                throw new Reader\Exception("No reader found for type $readerType");
+            }
 
-        // Instantiate reader
-        $className = self::$readers[$readerType];
+            // Instantiate reader
+            $className = self::$readers[$readerType];
+        }
 
         return new $className();
     }
@@ -108,13 +116,17 @@ abstract class IOFactory
 
     /**
      * Identify file type using automatic IReader resolution.
+     *
+     * @param string[] $readers
      */
-    public static function identify(string $filename, ?array $readers = null): string
+    public static function identify(string $filename, ?array $readers = null, bool $fullClassName = false): string
     {
         $reader = self::createReaderForFile($filename, $readers);
         $className = $reader::class;
+        if ($fullClassName) {
+            return $className;
+        }
         $classType = explode('\\', $className);
-        unset($reader);
 
         return array_pop($classType);
     }
@@ -215,7 +227,8 @@ abstract class IOFactory
      */
     public static function registerWriter(string $writerType, string $writerClass): void
     {
-        if (!is_a($writerClass, IWriter::class, true)) {
+        // We want phpstan to validate caller, but still need this test
+        if (!is_a($writerClass, IWriter::class, true)) { //* @phpstan-ignore-line
             throw new Writer\Exception('Registered writers must implement ' . IWriter::class);
         }
 
@@ -224,10 +237,13 @@ abstract class IOFactory
 
     /**
      * Register a reader with its type and class name.
+     *
+     * @param class-string<IReader> $readerClass
      */
     public static function registerReader(string $readerType, string $readerClass): void
     {
-        if (!is_a($readerClass, IReader::class, true)) {
+        // We want phpstan to validate caller, but still need this test
+        if (!is_a($readerClass, IReader::class, true)) { //* @phpstan-ignore-line
             throw new Reader\Exception('Registered readers must implement ' . IReader::class);
         }
 

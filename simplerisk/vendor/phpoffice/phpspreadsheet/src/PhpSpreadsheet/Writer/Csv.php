@@ -62,6 +62,8 @@ class Csv extends BaseWriter
      */
     private bool $variableColumns = false;
 
+    private bool $preferHyperlinkToLabel = false;
+
     /**
      * Create a new CSV.
      */
@@ -84,8 +86,7 @@ class Csv extends BaseWriter
 
         $saveDebugLog = Calculation::getInstance($this->spreadsheet)->getDebugLog()->getWriteDebugLog();
         Calculation::getInstance($this->spreadsheet)->getDebugLog()->setWriteDebugLog(false);
-        $saveArrayReturnType = Calculation::getArrayReturnType();
-        Calculation::setArrayReturnType(Calculation::RETURN_ARRAY_AS_VALUE);
+        $sheet->calculateArrays($this->preCalculateFormulas);
 
         // Open file
         $this->openFileHandle($filename);
@@ -124,11 +125,18 @@ class Csv extends BaseWriter
                     array_splice($cellsArray, Coordinate::columnIndexFromString($column));
                 }
             }
+            if ($this->preferHyperlinkToLabel) {
+                foreach ($cellsArray as $key => $value) {
+                    $url = $sheet->getCell([$key + 1, $row])->getHyperlink()->getUrl();
+                    if ($url !== '') {
+                        $cellsArray[$key] = $url;
+                    }
+                }
+            }
             $this->writeLine($this->fileHandle, $cellsArray);
         }
 
         $this->maybeCloseFileHandle();
-        Calculation::setArrayReturnType($saveArrayReturnType);
         Calculation::getInstance($this->spreadsheet)->getDebugLog()->setWriteDebugLog($saveDebugLog);
     }
 
@@ -281,7 +289,7 @@ class Csv extends BaseWriter
      * Write line to CSV file.
      *
      * @param resource $fileHandle PHP filehandle
-     * @param array $values Array containing values in a row
+     * @param mixed[] $values Array containing values in a row
      */
     private function writeLine($fileHandle, array $values): void
     {
@@ -317,7 +325,7 @@ class Csv extends BaseWriter
 
         // Write to file
         if ($this->outputEncoding != '') {
-            $line = mb_convert_encoding($line, $this->outputEncoding);
+            $line = (string) mb_convert_encoding($line, $this->outputEncoding);
         }
         fwrite($fileHandle, $line);
     }
@@ -340,6 +348,24 @@ class Csv extends BaseWriter
     public function setVariableColumns(bool $pValue): self
     {
         $this->variableColumns = $pValue;
+
+        return $this;
+    }
+
+    /**
+     * Get whether hyperlink or label should be output.
+     */
+    public function getPreferHyperlinkToLabel(): bool
+    {
+        return $this->preferHyperlinkToLabel;
+    }
+
+    /**
+     * Set whether hyperlink or label should be output.
+     */
+    public function setPreferHyperlinkToLabel(bool $preferHyperlinkToLabel): self
+    {
+        $this->preferHyperlinkToLabel = $preferHyperlinkToLabel;
 
         return $this;
     }

@@ -425,9 +425,7 @@ function call_extra_api_functionality($extra, $functionality, $target) {
         }
     }
 
-    // Get the simplerisk_base_url from the settings table
-    $url = get_setting("simplerisk_base_url");
-    $url .= (endsWith($url, '/') ? '' : '/') . "api/$extra/$uri";
+    $url = build_url("api", $extra, $uri);
     //error_log("URL: " . json_encode($url));
     $http_options = [
         'method' => 'GET',
@@ -464,7 +462,7 @@ function call_extra_api_functionality($extra, $functionality, $target) {
 /******************************************
  * FUNCTION: CALL SIMPLERISK API ENDPOINT *
  ******************************************/
-function call_simplerisk_api_endpoint($endpoint, $method = "GET", $system_token = false)
+function call_simplerisk_api_endpoint($endpoint, $method = "GET", $system_token = false, $timeout = 600)
 {
     // If no system token was provided
     if (!$system_token)
@@ -479,9 +477,7 @@ function call_simplerisk_api_endpoint($endpoint, $method = "GET", $system_token 
         $authentication = "X-SYSTEM-TOKEN: {$system_token}";
     }
 
-    // Get the simplerisk_base_url from the settings table
-    $url = get_setting("simplerisk_base_url");
-    $url .= (endsWith($url, '/') ? '' : '/') . $endpoint;
+    $url = build_url($endpoint);
     //error_log("URL: " . json_encode($url));
     $http_options = [
         'method' => $method,
@@ -491,7 +487,7 @@ function call_simplerisk_api_endpoint($endpoint, $method = "GET", $system_token 
             "Accept: application/json",
         ],
         'ignore_errors' => true,
-        'timeout' => 600,
+        'timeout' => $timeout,
     ];
 
     // If SSL certificate checks are enabled

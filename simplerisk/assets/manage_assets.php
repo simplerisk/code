@@ -135,6 +135,19 @@
                     handle_asset_row_action(id, action, view);
                 });
 
+            // If the action is verify, we need to show the popup to confirm the action
+            } else if (action == 'verify') {
+
+                confirm("<?= $escaper->escapeHtml($lang["AreYouSureYouWantToVerifyTheSelection"]) ?>", () => {
+                    handle_asset_row_action(id, action, view);
+                });
+
+            } else if (action == 'discard') {
+
+                confirm("<?= $escaper->escapeHtml($lang["AreYouSureYouWantToDiscardTheSelection"]) ?>", () => {
+                    handle_asset_row_action(id, action, view);
+                });
+                
             // If the action isn't delete, we don't need to show the popup, just call the handler
             } else {
 
@@ -177,6 +190,14 @@
                             var value = (data.data[name] !== undefined ? data.data[name] : false);
 
                             if (tagName == 'SELECT' && tag.hasClass('selectized')) {
+                                
+                                // Add the options to the selectize element since new tags added when creating a new asset don't exist in the selectize options
+                                if (value) {
+                                    value.forEach(item => {
+                                        tag[0].selectize.addOption({ label: item });
+                                    });
+                                }
+
                                 tag[0].selectize.setValue(value ? value : []);
                             } else if (tagName == 'SELECT' && tag.hasClass('multiselect')) {
 
@@ -210,8 +231,12 @@
                         });
                         $("select.mapped_control").multiselect({buttonWidth: 260, maxHeight: 250,enableFiltering: true});
                         if(data.data['details'] != undefined) {
-                            if(view == 'asset_verified') tinyMCE.get("edit_details-asset_verified-asset_fields").setContent(data.data['details']);
-                            if(view == 'asset_unverified') tinyMCE.get("edit_details-asset_unverified-asset_fields").setContent(data.data['details']);
+                            if(view == 'asset_verified') { 
+                            	setEditorContent("edit_details-asset_verified-asset_fields", data.data['details']);
+                            }
+                            if(view == 'asset_unverified') {
+                            	setEditorContent("edit_details-asset_unverified-asset_fields", data.data['details']);
+                        	}
                         }
 
                         $.unblockUI();
@@ -316,7 +341,7 @@
             e.preventDefault();
             $(this).closest("tr").remove();
         });
-        // init tinyMCE WYSIWYG editor
+        // init WYSIWYG editor
         init_minimun_editor('#create_details-asset_verified-asset_fields');
         init_minimun_editor('#edit_details-asset_unverified-asset_fields');
         init_minimun_editor('#edit_details-asset_verified-asset_fields');

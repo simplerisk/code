@@ -771,7 +771,7 @@ function viewmitigation() {
     $supporting_files = get_supporting_files($risk_id, 2);
     $mitigation['supporting_files'] = array();
     foreach($supporting_files as $supporting_file){
-        $mitigation['supporting_files'][] = $_SESSION['base_url']."/management/download.php?id=" . $escaper->escapeHtml($supporting_file['unique_name']);
+        $mitigation['supporting_files'][] = build_url("management/download.php?id=" . $escaper->escapeHtml($supporting_file['unique_name']));
     }
 
     $data = array(
@@ -2693,6 +2693,16 @@ function acceptMitigationForm()
     
         accept_mitigation_by_risk_id($id, $accept);
 
+        // If notification is enabled
+        if (notification_extra())
+        {
+            // Include the notification extra
+            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+
+            // Send the notification
+            notify_mitigation_update($id - 1000);
+        }
+
         $message = view_accepted_mitigations($id);
 
         $data = array("accept_mitigation_text" => $message);
@@ -3844,11 +3854,11 @@ function getMitigationControlsDatatable(){
                                 </tr>
                                 <tr>
                                     <td align='right'><strong>" . $escaper->escapeHtml($lang['Description']) . "</strong>: </td>
-                                    <td colspan='5'>" . $escaper->escapeHtml($control['description']) . "</td>
+                                    <td colspan='5'>" . $escaper->purifyHtml($control['description']) . "</td>
                                 </tr>
                                 <tr>
                                     <td align='right'><strong>" . $escaper->escapeHtml($lang['SupplementalGuidance']) . "</strong>: </td>
-                                    <td colspan='5'>" . $escaper->escapeHtml($control['supplemental_guidance']) . "</td>
+                                    <td colspan='5'>" . $escaper->purifyHtml($control['supplemental_guidance']) . "</td>
                                 </tr>
                             </table>
             ";
@@ -4094,6 +4104,32 @@ function getFrameworksResponse()
     else
     {
         json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
+    }
+}
+
+/*****************************************
+ * FUNCTION: UPDATE FRAMEWORK RESPONSE *
+ ****************************************/
+function updateFrameworkResponse() {
+
+    global $lang, $escaper;
+
+    $framework_id = get_param("POST", "framework_id", "");
+    $name         = get_param("POST", "framework_name", "");
+    $descripiton  = get_param("POST", "framework_description", "");
+    $parent       = get_param("POST", "parent", "");
+
+    // Check if user has a permission to modify framework
+    if (check_permission('modify_frameworks')) {
+        if (update_framework($framework_id, $name, $descripiton, $parent)) {
+            set_alert(true, "good", $lang['FrameworkUpdated']);
+            json_response(200, get_alert(true), []);
+        } else {
+            json_response(400, get_alert(true), []);
+        }
+    } else {
+        set_alert(true, "bad", $lang['NoModifyFrameworkPermission']);
+        json_response(400, get_alert(true), []);
     }
 }
 
@@ -4603,8 +4639,8 @@ function auditTimelineResponse()
                 }
             }
             
-            $active_audits_url = $_SESSION['base_url'].'/compliance/active_audits.php?test_id='.$audit_test['id'];
-            $past_audits_url = $_SESSION['base_url'].'/compliance/past_audits.php?test_id='.$audit_test['id'];
+            $active_audits_url = build_url('compliance/active_audits.php?test_id='.$audit_test['id']);
+            $past_audits_url = build_url('compliance/past_audits.php?test_id='.$audit_test['id']);
             $buttons = '<button class="btn btn-primary btn-initiate-audit" style="width:100%" id="'.$audit_test['id'].'">'.$escaper->escapeHtml($lang['InitiateAudit']).'</button>
                         <a class="btn btn-secondary my-1" style="width:100%" type="button" href="'.$active_audits_url.'" target="_blank"><i class="mdi mdi-open-in-new mx-2"></i>'.$escaper->escapeHtml($lang['ViewActiveAudits']).'</a>
                         <a class="btn btn-secondary" style="width:100%" type="button"href="'.$past_audits_url.'" target="_blank"><i class="mdi mdi-open-in-new mx-2"></i>'.$escaper->escapeHtml($lang['ViewPastAudits']).'</a>';
@@ -5026,7 +5062,7 @@ function getInitiateTestAuditsResponse() {
                 $results[] = array(
                     'id' => 'framework_'.$framework['value'],
                     'state' => 'closed',
-                    'name' => "<a class='framework-name' data-id='{$framework['value']}' href='' title='{$escaper->escapeHtml($lang['Framework'])}'>{$escaper->escapeHtml($framework['name'])}</a>",
+                    'name' => "<a class='framework-name text-info' data-id='{$framework['value']}' href='' title='{$escaper->escapeHtml($lang['Framework'])}'>{$escaper->escapeHtml($framework['name'])}</a>",
                     'last_audit_date' => $escaper->escapeHtml(format_date($framework['last_audit_date'])),
                     'test_frequency' => $escaper->escapeHtml($framework['desired_frequency']),
                     'next_audit_date' => $escaper->escapeHtml(format_date($framework['next_audit_date'])),
@@ -5066,7 +5102,7 @@ function getInitiateTestAuditsResponse() {
                 $results[] = array(
                     'id' => "control_".$framework_value."_".$framework_control['id'],
                     'state' => 'closed',
-                    'name' => "<a class='control-name' data-id='{$framework_control['id']}' href='' title='".$escaper->escapeHtml($lang['Control'])."'>".$escaper->escapeHtml($framework_control['short_name'])."</a>",
+                    'name' => "<a class='control-name text-info' data-id='{$framework_control['id']}' href='' title='".$escaper->escapeHtml($lang['Control'])."'>".$escaper->escapeHtml($framework_control['short_name'])."</a>",
                     'last_audit_date' => $escaper->escapeHtml(format_date($framework_control['last_audit_date'])),
                     'test_frequency' => $escaper->escapeHtml($framework_control['desired_frequency']),
                     'next_audit_date' => $escaper->escapeHtml(format_date($framework_control['next_audit_date'])),
@@ -5109,7 +5145,7 @@ function getInitiateTestAuditsResponse() {
                 $results[] = array(
                     'id' => "test_".$framework_and_control."_".$framework_control_test['id'],
                     'state' => 'open',
-                    'name' => "<a class='test-name' data-id='{$framework_control_test['id']}' href='".$_SESSION['base_url']."/' title='".$escaper->escapeHtml($lang['Test'])."'>".$escaper->escapeHtml($framework_control_test['name'])."</a>",
+                    'name' => "<a class='test-name text-info' data-id='{$framework_control_test['id']}' href='".build_url()."/' title='".$escaper->escapeHtml($lang['Test'])."'>".$escaper->escapeHtml($framework_control_test['name'])."</a>",
                     'test_frequency' => $escaper->escapeHtml($framework_control_test['test_frequency']),
                     'last_audit_date' => $escaper->escapeHtml(format_date($framework_control_test['last_date'])),
                     'next_audit_date' => $escaper->escapeHtml(format_date($framework_control_test['next_date'])),
@@ -5213,7 +5249,7 @@ function getPastTestAuditsResponse()
             } 
 
             $data[] = [
-                "<div ><a href='".$_SESSION['base_url']."/compliance/view_test.php?id=".$test_audit['id']."' class='text-left'>".$escaper->escapeHtml($test_audit['name'])."</a><input type='hidden' class='background-class' data-background='{$background_class}'></div>",
+                "<div ><a href='".build_url("compliance/view_test.php?id=".$test_audit['id'])."' class='text-left'>".$escaper->escapeHtml($test_audit['name'])."</a><input type='hidden' class='background-class' data-background='{$background_class}'></div>",
                 "<div>".$escaper->escapeHtml($test_date)."</div>",
                 "<div >".$escaper->escapeHtml($test_audit['control_name'])."</div>",
                 "<div >".$escaper->escapeHtml($test_audit['framework_name'])."</div>",
@@ -5341,7 +5377,7 @@ function getActiveTestAuditsResponse() {
             }
 
             $data[] = [
-                "<div><a href='".$_SESSION['base_url']."/compliance/testing.php?id=".$test['id']."' class='text-left'>".$escaper->escapeHtml($test['name'])."</a><input type='hidden' class='background-class' data-background='{$next_date_background_class}'></div>",
+                "<div><a href='".build_url("compliance/testing.php?id=".$test['id'])."' class='text-left'>".$escaper->escapeHtml($test['name'])."</a><input type='hidden' class='background-class' data-background='{$next_date_background_class}'></div>",
                 "<div>".(int)$test['test_frequency']. " " .$escaper->escapeHtml($test['test_frequency'] > 1 ? $lang['days'] : $lang['Day'])."</div>",
                 "<div>".$escaper->escapeHtml($test['tester_name'])."</div>",
                 "<div>".$escaper->escapeHtml(get_stakeholder_names($test['additional_stakeholders'], 2))."</div>",                
@@ -5804,8 +5840,8 @@ function getDocumentResponse()
         $document['last_review_date'] = format_date($document['last_review_date']);
         $document['approval_date'] = format_date($document['approval_date']);
         $document['next_review_date'] = format_date($document['next_review_date']);
-        $document['control_ids'] = explode(',', $document['control_ids']);
-        $document['framework_ids'] = explode(',', $document['framework_ids']);
+        $document['control_ids'] = explode(',', $document['control_ids'] ?? '');
+        $document['framework_ids'] = explode(',', $document['framework_ids'] ?? '');
         $document['team_ids'] = explode(',', $document['team_ids']);
         $document['additional_stakeholders'] = explode(',', $document['additional_stakeholders']);
 
@@ -5845,7 +5881,7 @@ function getTabularDocumentsResponse() {
                 $document['id'] = $document['id'] . "_" . $document['file_version'];
                 $document['state'] = "open";
                 $document['document_type'] = $escaper->escapeHtml($document['document_type']);
-                $document['document_name'] = "<a class='text-info' href='{$_SESSION['base_url']}/governance/download.php?id={$document['unique_name']}' >{$escaper->escapeHtml($document['document_name'])} ({$document['file_version']})</a>";
+                $document['document_name'] = "<a class='text-info' href='" . build_url("governance/download.php?id={$document['unique_name']}") . "' >{$escaper->escapeHtml($document['document_name'])} ({$document['file_version']})</a>";
                 $document['status'] = $escaper->escapeHtml(get_name_by_value('document_status', $document['status']));
                 
                 // if the version is the original version, the creation_date should be the date that the document is created.
@@ -5882,12 +5918,12 @@ function getTabularDocumentsResponse() {
             $filtered_documents = array();
             $documents = get_documents($type);
             foreach ($documents as &$document) {
-                $frameworks = get_frameworks_by_ids($document["framework_ids"]);
+                $frameworks = get_frameworks_by_ids($document["framework_ids"] ?? '');
                 $framework_names = implode(", ", array_map(function($framework) {
                     return $framework['name'];
                 }, $frameworks));
 
-                $control_ids = explode(",", $document["control_ids"]);
+                $control_ids = explode(",", $document["control_ids"] ?? '');
                 $controls = get_framework_controls_by_filter("all", "all", "all", "all", "all", "all", "all", "all", "", $control_ids);
                 $control_names = implode(", ", array_map(function($control) {
                     return $control['short_name'];
@@ -5939,7 +5975,7 @@ function getTabularDocumentsResponse() {
 
                 $document['state'] = "closed";
                 $document['document_type'] = $escaper->escapeHtml($document['document_type']);
-                $document['document_name'] = "<a class='text-info' href='{$_SESSION['base_url']}/governance/download.php?id={$document['unique_name']}' >{$escaper->escapeHtml($document['document_name'])}</a>";
+                $document['document_name'] = "<a class='text-info' href='" . build_url("governance/download.php?id={$document['unique_name']}") . "' >{$escaper->escapeHtml($document['document_name'])}</a>";
                 $document['status'] = $escaper->escapeHtml(get_name_by_value('document_status', $document['status']));
                 $document['framework_names'] = $escaper->escapeHtml($framework_names);
                 $document['control_names'] = $escaper->escapeHtml($control_names);
@@ -6090,7 +6126,7 @@ function get_tooltip_api()
         $calculated_risk = $risk['calculated_risk'];
         $color = get_risk_color($calculated_risk);
         
-        $tooltip_html .=  '<a href="'. $_SESSION['base_url'].'/management/view.php?id=' . $escaper->escapeHtml(convert_id($risk['id'])) . '" style="" ><b>' . $escaper->escapeHtml(try_decrypt($risk['subject'])) . '</b></a><hr>';
+        $tooltip_html .=  '<a href="'. build_url('management/view.php?id=' . $escaper->escapeHtml(convert_id($risk['id']))) .'" style="" ><b>' . $escaper->escapeHtml(try_decrypt($risk['subject'])) . '</b></a><hr>';
     }
 
     json_response(200, "result", $tooltip_html);
@@ -6554,9 +6590,21 @@ function getManagementReviewsDatatableResponse()
 
         $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
         $length = $_POST['length'] ? (int)$_POST['length'] : 10;
-        $orderColumn = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
-        $orderColumnName = isset($_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;
-        $orderDir = !empty($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
+
+        // In case there's no column selected that is orderable the order won't be sent from the client
+        if (!empty($_POST['order'])) {
+
+            $orderColumn = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
+            $orderColumnName = isset($_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;
+            $orderDir = !empty($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
+
+        } else {
+
+            // Default ordering by id ascending if no order is specified
+            $orderColumnName = 'id';
+            $orderDir = "asc";
+
+        }
 
         $column_filters = [];
         for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
@@ -7716,6 +7764,34 @@ function get_exceptions_as_treegrid_api()
     json_response(200, null, $result);
 }
 
+/***************************************************
+ * FUNCTION: GET ASSOCIATED EXCEPTIONS AS TREEGRID *
+ ***************************************************/
+function get_associated_exceptions_as_treegrid_api() {
+    global $lang;
+
+    if (!check_permission("governance")) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!check_permission_exception('view')) {
+        set_alert(true, "bad", $lang['NoPermissionForExceptionCreate']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    if (empty($_GET['type']) || !trim($_GET['type']) || !in_array($_GET['type'], ['policy', 'control', 'unapproved'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyATypeParameter']);
+
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    $type = $_GET['type'];
+    $risk_id = $_GET['id'];
+    $result = get_associated_exceptions_as_treegrid($risk_id, $type);
+    json_response(200, null, $result);
+}
+
 /********************************
  * FUNCTION: GET EXCEPTION DATA *
  ********************************/
@@ -7806,7 +7882,7 @@ function get_exception_for_display_api()
     }
 
     if($exception['unique_name'])
-        $exception['file_download'] = "<a class='text-info' href=\"".$_SESSION['base_url']."/governance/download.php?id=".$exception['unique_name']."\" >".$escaper->escapeHtml($exception['file_name']). " (".$exception['file_version'].")" ."</a>";
+        $exception['file_download'] = "<a class='text-info' href=\"".build_url("governance/download.php?id=".$exception['unique_name'])."\" >".$escaper->escapeHtml($exception['file_name']). " (".$exception['file_version'].")" ."</a>";
     else $exception['file_download'] = "";
 
     foreach($exception as $key => $value) {
@@ -7857,7 +7933,7 @@ function create_document_api() {
     else
     {
         // Insert a new document
-        $document_id = add_document($submitter, $document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver, implode(',', $team_ids));
+        $document_id = add_document($submitter, $document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver, implode(',', $team_ids));
         if($document_id)
         {
             // Display an alert
@@ -7888,6 +7964,27 @@ function update_document_api() {
     $document_name              = $_POST['document_name'];
     $framework_ids              = empty($_POST['framework_ids']) ? [] : $_POST['framework_ids'];
     $control_ids                = empty($_POST['control_ids']) ? [] : $_POST['control_ids'];
+
+    $framework_ids_str = implode(',', array_map('intval', $framework_ids));
+    $control_ids_str   = implode(',', array_map('intval', $control_ids));
+
+    // Open the database connection
+    $db = db_open();
+
+    $sql = "
+        SELECT DISTINCT control_id
+        FROM framework_control_mappings
+        WHERE framework IN ($framework_ids_str)
+        AND control_id IN ($control_ids_str)
+    ";
+    $stmt = $db->query($sql);
+    $control_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    // Close the database connection
+    db_close($db);
+
+    $control_ids                = empty($_POST['control_ids']) ? [] : $control_ids;
+
     $parent                     = (int)$_POST['parent'];
     $status                     = $_POST['status'];
     $creation_date              = get_standard_date_from_default_format($_POST['creation_date']);
@@ -7913,7 +8010,7 @@ function update_document_api() {
     else
     {
         // Update document
-        $result = update_document($id, $updater, $document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver, implode(',', $team_ids));
+        $result = update_document($id, $updater, $document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver, implode(',', $team_ids));
         if($result)
         {
             // Display an alert
@@ -8183,8 +8280,11 @@ function update_exception_api() {
 
     $approved_original = !empty($_POST['approved_original']);
     $approval_date = get_standard_date_from_default_format($_POST['approval_date']);
-    $approver = (ctype_digit($_POST['approver']) && get_user_by_id((int)$_POST['approver'])) ? (int)$_POST['approver'] : false;
-    $approved = false;
+    $approver = (!empty($_POST['approver']) && ctype_digit($_POST['approver']) && get_user_by_id((int)$_POST['approver'])) ? (int)$_POST['approver'] : false;
+
+    $old_exception = get_exception($id);
+
+    $approved = $old_exception['approved'];
     if ($approval_date && $approval_date !== "0000-00-00") {
         if (strtotime($approval_date) > $today_dt) {
             set_alert(true, "bad", $lang['InvalidApprovalDate']);
@@ -8194,7 +8294,9 @@ function update_exception_api() {
         }
 
         //Can only be approved if the user has the approve_exception permission
-        $approved = boolval($approver) && check_permission_exception('approve');
+        if (boolval($approver) && check_permission_exception('approve')) {
+            $approved = true;
+        }
     }
 
     if ($approved && get_setting('exception_update_resets_approval')) {
@@ -8239,7 +8341,8 @@ function update_exception_api() {
 
         //returning the created exception's type
         //the returned data is needed to know what tabs to refresh
-        json_response(200, get_alert(true), array('approved' => $approved_original, 'type' => $policy ? "policy" : "control"));
+        // type_1: policy, type_2: control
+        json_response(200, get_alert(true), array('approved_original' => $approved_original, 'approved' => $approved, 'type' => $policy ? "type_1" : "type_2"));
         return;
     }
     else{
@@ -8275,6 +8378,37 @@ function approve_exception_api() {
         approve_exception($id);
 
         set_alert(true, "good", $lang['ExceptionWasApprovedSuccessfully']);
+        json_response(200, get_alert(true), null);
+    }
+}
+
+function unapprove_exception_api() {
+    
+    global $lang;
+
+    if (!check_permission("governance")) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!check_permission_exception('approve')) {
+        set_alert(true, "bad", $lang['NoPermissionForExceptionApprove']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    // If the id is not sent
+    if (empty($_POST['exception_id']) || !ctype_digit($_POST['exception_id'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+        return;
+    }else {
+        $id = (int)$_POST['exception_id'];
+
+        unapprove_exception($id);
+
+        set_alert(true, "good", $lang['ExceptionWasUnApprovedSuccessfully']);
         json_response(200, get_alert(true), null);
     }
 }
@@ -8378,6 +8512,26 @@ function get_exceptions_audit_log_api()
             );
         }, get_exceptions_audit_log($days))
     );
+}
+
+/***************************************
+ * FUNCTION: GET EXCEPTIONS STATUS API *
+ ***************************************/
+function get_exceptions_status_api() {
+
+    global $lang, $escaper;
+
+    if (!check_permission("governance")) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForGovernance']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    // Get exceptions status
+    $exceptions_status = get_exceptions_status();
+
+    json_response(200, null, $exceptions_status);
+
 }
 
 /*******************************
@@ -8813,8 +8967,18 @@ function appetite_report_api()
 
             $draw = $escaper->escapeHtml($_GET['draw']);
 
-            $orderColumn = (int)$_GET['order'][0]['column'];
-            $orderDir = strtolower($_GET['order'][0]['dir']) == "asc" ? "asc" : "desc";
+            // In case there's no column selected that is orderable the order won't be sent from the client
+            if (!empty($_GET['order'])) {
+
+                $orderColumn = (int)$_GET['order'][0]['column'];
+                $orderDir = strtolower($_GET['order'][0]['dir']) == "asc" ? "asc" : "desc";
+
+            } else {
+
+                $orderColumn = 0; // Default to the first column
+                $orderDir = "asc";
+                
+            }
             $column_filters = [];
             for ( $i=0 ; $i<count($_GET['columns']) ; $i++ ) {
                 if ( isset($_GET['columns'][$i]) && $_GET['columns'][$i]['searchable'] == "true" && $_GET['columns'][$i]['search']['value'] != '' ) {

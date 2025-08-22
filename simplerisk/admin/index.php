@@ -179,7 +179,7 @@
                 // Update the base url
                 update_setting("simplerisk_base_url", $simplerisk_base_url);
 
-                $_SESSION['base_url'] = $simplerisk_base_url;
+                $_SESSION['base_url'] = rtrim($simplerisk_base_url, '/');
             } else {
                 set_alert(true, "bad", $escaper->escapeHtml($lang['InvalidSimpleriskBaseUrl']));
                 $error = true;
@@ -897,13 +897,24 @@
             );
         }
 
+        $need_risk_score_normalization = get_setting("need_risk_score_normalization", "true");
+
+        // Calculate the maximum risk score based on the current risk model
+        $max_risk = calculate_maximum_risk_score();
+
+        if ($need_risk_score_normalization == "true") {
+            $multiple_index = 10;
+        } else {
+            $multiple_index = round((100 / $max_risk), 2);
+        }
+
         foreach ($ranges as $key => $range) {
             if ($key == 0) {
-                $slider_bg_grad = "{$range['color']} " . ($range['range'][1] * 10) . "%";
+                $slider_bg_grad = "{$range['color']} " . ($range['range'][1] * $multiple_index) . "%";
             } elseif ($key == count($ranges) - 1) {
-                $slider_bg_grad .= ", {$range['color']} " . ($ranges[$key - 1]['range'][1] * 10) . "%, {$range['color']} 100%";
+                $slider_bg_grad .= ", {$range['color']} " . ($ranges[$key - 1]['range'][1] * $multiple_index) . "%, {$range['color']} 100%";
             } else {
-                $slider_bg_grad .= ", {$range['color']} " . ($ranges[$key - 1]['range'][1] * 10) . "%, {$range['color']} " . ($range['range'][1] * 10) . "%";
+                $slider_bg_grad .= ", {$range['color']} " . ($ranges[$key - 1]['range'][1] * $multiple_index) . "%, {$range['color']} " . ($range['range'][1] * $multiple_index) . "%";
             }
         }
     ?>
@@ -1526,7 +1537,17 @@
         $("#slider").slider({
             value:<?= $risk_appetite * 10; ?>,
             min: 0,
+    <?php
+        if ($need_risk_score_normalization == "true") {
+            echo "
             max: 100,
+            ";
+        } else {
+            echo "
+            max: " . $max_risk * 10 . ",
+            ";
+        }
+    ?>
             step: 1,
             create: function() {
                 handleValueInRange($("#slider").slider("value") / 10);

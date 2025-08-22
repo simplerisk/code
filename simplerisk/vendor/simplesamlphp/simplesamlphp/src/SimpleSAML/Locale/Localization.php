@@ -12,12 +12,13 @@ namespace SimpleSAML\Locale;
 
 use Exception;
 use Gettext\Generator\ArrayGenerator;
-use Gettext\Loader\MoLoader;
 use Gettext\Loader\PoLoader;
 use Gettext\{Translations, Translator, TranslatorFunctions};
 use SimpleSAML\{Configuration, Logger};
 use SimpleSAML\Locale\Translate;
 use Symfony\Component\HttpFoundation\File\File;
+
+use function explode;
 
 class Localization
 {
@@ -123,8 +124,8 @@ class Localization
      * (We're assuming that each domain only exists in one place)
      *
      * @param string $module Module name
-     * @param string $localeDir Absolute path if the module is housed elsewhere
-     * @param string $domain Translation domain within module; defaults to module name
+     * @param string|null $localeDir Absolute path if the module is housed elsewhere
+     * @param string|null $domain Translation domain within module; defaults to module name
      */
     public function addModuleDomain(string $module, ?string $localeDir = null, ?string $domain = null): void
     {
@@ -250,33 +251,35 @@ class Localization
             }
         }
 
-        $file = new File($langPath . $domain . '.mo', false);
+        $file = new File($langPath . $domain . '.po', false);
         if ($file->getRealPath() !== false && $file->isReadable()) {
-            $translations = (new MoLoader())->loadFile($file->getRealPath());
+            $translations = (new PoLoader())->loadFile($file->getRealPath());
+            if (empty($translations->getDomain())) {
+                $translations->setDomain($domain);
+            }
+
+            $themeConfig = $this->configuration->getOptionalString('theme.use', null);
+            $theme = ($themeConfig === null) ? null : explode(':', $themeConfig, 2)[0];
+
+            if ($domain !== $translations->getDomain() && $domain !== $theme) {
+                Logger::warning(sprintf(
+                    "The translation file at %s has domain %s but is expected to have a domain %s",
+                    $file->getPath(),
+                    $translations->getDomain(),
+                    $domain,
+                ));
+            }
             $arrayGenerator = new ArrayGenerator();
             $this->translator->addTranslations(
                 $arrayGenerator->generateArray($translations),
             );
         } else {
-            $file = new File($langPath . $domain . '.po', false);
-            if ($file->getRealPath() !== false && $file->isReadable()) {
-                $translations = (new PoLoader())->loadFile($file->getRealPath());
-                if (empty($translations->getDomain())) {
-                    $translations->setDomain($domain);
-                }
-
-                $arrayGenerator = new ArrayGenerator();
-                $this->translator->addTranslations(
-                    $arrayGenerator->generateArray($translations),
-                );
-            } else {
-                Logger::debug(sprintf(
-                    "%s - Localization file '%s' not found or not readable in '%s', falling back to default",
-                    $_SERVER['PHP_SELF'],
-                    $file->getfileName(),
-                    $langPath,
-                ));
-            }
+            Logger::debug(sprintf(
+                "%s - Localization file '%s' not found or not readable in '%s', falling back to default",
+                $_SERVER['PHP_SELF'],
+                $file->getfileName(),
+                $langPath,
+            ));
         }
     }
 

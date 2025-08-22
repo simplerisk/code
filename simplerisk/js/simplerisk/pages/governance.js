@@ -147,6 +147,18 @@ $.fn.extend({
             onLoadSuccess: function(){
                 // Run the resize logic when the data is loaded
                 $(_this).treegrid('resize');
+
+                // Set custom placeholders
+                const filterRow = $('.datagrid-filter-row');
+
+                filterRow.find('input[name="document_name"]').attr('placeholder', _lang['DocumentName']);
+                filterRow.find('input[name="document_type"]').attr('placeholder', _lang['DocumentType']);
+                filterRow.find('input[name="framework_names"]').attr('placeholder', _lang['ControlFrameworks']);
+                filterRow.find('input[name="control_names"]').attr('placeholder', _lang['Controls']);
+                filterRow.find('input[name="creation_date"]').attr('placeholder', _lang['CreationDate']);
+                filterRow.find('input[name="approval_date"]').attr('placeholder', _lang['ApprovalDate']);
+                filterRow.find('input[name="status"]').attr('placeholder', _lang['Status']);
+
             },
             onCollapse: function() {
                 // Run the resize logic when the data is loaded
@@ -180,12 +192,126 @@ $.fn.extend({
             return;
         }
 
+        let _this = this;
         this.treegrid({
             iconCls: 'icon-ok',
             animate: false,
             fitColumns: true,
             nowrap: true,
             url: BASE_URL + `/api/exceptions/tree?type=${type}`,
+            method: 'get',
+            idField: 'value',
+            treeField: 'name',
+            scrollbarSize: 0,
+            remoteFilter: true,
+            onResize: function() {
+                // After rendering the datagrid filter head row, reduce the editable filter inputs' width by 30px
+                // so that could make the datagrid table filter head row have the same width as the datagrid table body
+                $('.datagrid-htable .datagrid-filter-row .datagrid-filter', this).each((i, e) => {
+                    $(e).css('width', (parseInt($(e).css('width'))-30) + 'px');
+                });
+            },
+            loadFilter: function(data, parentId) {
+                return data.data
+            },
+            onLoadSuccess: function(row, data){
+                // Run the resize logic when the data is loaded
+                $(_this).treegrid('resize');
+
+                // fixTreeGridCollapsableColumn();
+
+                // Set custom placeholders
+                const filterRow = $('.datagrid-filter-row');
+
+                filterRow.find('input[name="name"]').attr('placeholder', _lang['ExceptionName']);
+                filterRow.find('input[name="description"]').attr('placeholder', _lang['Description']);
+                filterRow.find('input[name="justification"]').attr('placeholder', _lang['Justification']);
+                filterRow.find('input[name="next_review_date"]').attr('placeholder', _lang['NextReviewDate']);
+
+                // Set the max length of the text inputs in the filter row
+                filterRow.find('input[name="name"]').attr('maxlength', 100);
+                filterRow.find('input[name="description"]').attr('maxlength', 100);
+                filterRow.find('input[name="justification"]').attr('maxlength', 100);
+                filterRow.find('input[name="next_review_date"]').attr('maxlength', 100);
+
+                // Refresh exception counts in the tabs
+                var totalCount = 0;
+                data = Array.isArray(data) ? data : data.rows;
+                if((data && data.length))
+                {
+                    for(var i = 0; i < data.length; i++)
+                    {
+                        var parent = data[i];
+                        if((parent.children && parent.children.length))
+                        {
+                            totalCount += parent.children.length;
+                        }
+                    }
+                }
+
+                $(`#${type}-exceptions-count`).text(totalCount);
+
+                if (typeof wireActionButtons === 'function') {
+                    wireActionButtons(type);
+                }
+            }
+        }).treegrid('enableFilter', [
+            {
+                field: 'status',
+                type: 'select',
+                options: {
+                    name: 'status',
+                    url: BASE_URL + '/api/v2/exceptions/status',
+                    defaultOption: {value: '', name: _lang['All']},
+                    onChange: function(value){
+                        if (value == '') {
+                            _this.treegrid('removeFilterRule', 'status_value');
+                        } else {
+                            _this.treegrid('addFilterRule', {
+                                field: 'status_value',
+                                op: 'equal',
+                                value: value
+                            });
+                        }
+                        _this.treegrid('doFilter');
+                    }
+                }
+            },
+            {
+                field:'actions',
+                type:'label'
+            }
+        ]);
+
+        $(this).data('initialized', true);
+    },
+    
+    initAsAssociatedExceptionTreegrid: function(type=false) {
+
+        // Can't initialize it twice
+        if (this.data('initialized')) {
+            this.treegrid("resize");
+            return;
+        }
+
+        let tabs = this.parents('.tab-pane');
+        let activeTabs = this.parents('.tab-pane.active');
+
+        // Can't initialize if not all of the parent tabs(if there's any) active
+        // because the treegrid doesn't properly initialize in the background
+        if (tabs.length != activeTabs.length) {
+            return;
+        }
+
+        var tabContainer = $(this).parents('.tab-data');
+        var risk_id = $('.risk-id', tabContainer).html();
+
+        this.treegrid({
+            iconCls: 'icon-ok',
+            animate: false,
+            fitColumns: true,
+            nowrap: true,
+            url: BASE_URL + `/api/v2/associated-exceptions/tree?type=${type}&id=${risk_id}`,
             method: 'get',
             idField: 'value',
             treeField: 'name',
@@ -249,6 +375,52 @@ jQuery(document).ready(function($){
             $(modal).modal('show');
           });
 
+            // Event handler when clicking 
+            // the edit framework button on Governance > Define Framework Controls page
+            // and the framework name link on the Compliance > Initiate Audits page
+            $("body").on("click", ".framework-block--edit, .framework-name", function() {
+
+                event.preventDefault();
+                resetForm('#framework--update form');
+                var framework_id = $(this).data("id");
+
+                $.ajax({
+                    url: BASE_URL + '/api/governance/framework?framework_id=' + framework_id,
+                    type: 'GET',
+                    success : function (res){
+                        var data = res.data;
+                        $.ajax({
+                            url: BASE_URL + '/api/governance/selected_parent_frameworks_dropdown?child_id=' + framework_id,
+                            type: 'GET',
+                            success : function (res){
+                                $("#framework--update .parent_frameworks_container").html(res.data.html)
+                            }
+                        });
+                        $("#framework--update [name=framework_id]").val(framework_id);
+                        $("#framework--update [name=framework_name]").val(data.framework.name);
+                        $("#framework--update [name=framework_description]").val(data.framework.description);
+        
+                        setEditorContent("update_framework_description", data.framework.description);
+        
+                        if(data.framework.custom_values){
+                            var custom_values = data.framework.custom_values;
+                            for (var i=0; i<custom_values.length; i++) {
+                                var field_value = custom_values[i].value;
+                                var element = $("#framework--update [name^='custom_field[" + custom_values[i].field_id + "]']");
+                                if (field_value && custom_values[i].field_type == 'multidropdown' || custom_values[i].field_type == 'user_multidropdown') {
+                                    element.multiselect('select', field_value);
+                                } else {
+                                    element.val(field_value ? field_value : '');
+                                }
+                            }
+                        }
+
+                        $("#framework--update").modal("show");
+
+                    }
+                });
+            });
+
           $(document).on('click', '.framework-block--delete', function(event) {
             event.preventDefault();
             //$(this).parents('.framework-block').fadeOut('400').delay('500').remove();
@@ -266,7 +438,10 @@ jQuery(document).ready(function($){
             $(modal).modal('show');
           });
 
-          $(document).on('click', '.control-block--edit', function(event) {
+          // Event handler when clicking
+          // the edit control button on Governance > Define Framework Controls page and 
+          // the control name link on the Compliance > Initiate Audits page
+          $(document).on('click', '.control-block--edit, .control-name', function(event) {
 
             event.preventDefault();
             resetForm('#control--update form');
@@ -342,8 +517,8 @@ jQuery(document).ready(function($){
                       }
                     }
 
-                    tinyMCE.get("update_control_description").setContent(control.description);
-                    tinyMCE.get("update_supplemental_guidance").setContent(control.supplemental_guidance);
+                    setEditorContent("update_control_description", control.description);
+                    setEditorContent("update_supplemental_guidance", control.supplemental_guidance);
 
                     $(modal).modal('show');
                 }
@@ -398,8 +573,8 @@ jQuery(document).ready(function($){
                       }
                     }
 
-                    tinyMCE.get("add_control_description").setContent(control.description);
-                    tinyMCE.get("add_supplemental_guidance").setContent(control.supplemental_guidance);
+                    setEditorContent("add_control_description", control.description);
+                    setEditorContent("add_supplemental_guidance", control.supplemental_guidance);
 
                     $(modal).modal('show');
                     $(".mapping_framework_table tbody", modal).html(data.mapped_frameworks)
@@ -454,11 +629,10 @@ jQuery(document).ready(function($){
           $(document).on('change', '[name*=map_framework_id]', function(event) {
               var cur_select = this;
               if(!$(cur_select).val()) return true;
-              var existing_mappings = $("#existing_mappings").val();
               $("[name*=map_framework_id]").each(function(index){
                 if(this != cur_select && $(this).val() == $(cur_select).val()){
                     $(cur_select).find("option:eq(0)").prop('selected', true);
-                    showAlertFromMessage(existing_mappings, false);
+                    showAlertFromMessage(_lang['ExistingMappings'], false);
                     return false;
                 }
               });
@@ -507,11 +681,10 @@ jQuery(document).ready(function($){
               var cur_select = this;
               if(!$(cur_select).val()) return true;
               var form = $(this).closest('form');
-              var existing_mappings = $("#existing_mappings").val();
               $("[name*=asset_maturity]", form).each(function(index){
                 if(this != cur_select && $(this).val() == $(cur_select).val()){
                     $(cur_select).find("option:eq(0)").prop('selected', true);
-                    showAlertFromMessage(existing_mappings, false);
+                    showAlertFromMessage(_lang['ExistingMappings'], false);
                     return false;
                 }
               });
@@ -684,17 +857,16 @@ function rebuild_filter(obj,new_options){
     });
     
 //    var selected_classes = $(obj).val();
-    var unassigned_label = $("#unassigned_label").val();
     $(obj).find("option").remove();
     if(unselected_classes.indexOf(-1) >= 0){
         var $option = $("<option/>", {
             value: "-1",
-            text: unassigned_label,
+            text: _lang['Unassigned'],
         });
     } else {
         var $option = $("<option/>", {
             value: "-1",
-            text: unassigned_label,
+            text: _lang['Unassigned'],
             selected: true,
         });
     }
@@ -793,7 +965,11 @@ $(function(){
         });
         return false;
     });
+
     // Update control form event
+    // This can be used for the following pages
+    // the Governance > Define Framework Controls page and 
+    // the Compliance > Initiate Audits page
     $(document).on('submit', '#update-control-form', function(event) {
 		event.preventDefault();
 
@@ -806,6 +982,13 @@ $(function(){
         if (!checkAndSetValidation(this)) {
             return;
         }
+
+        // Variable for indicating where the update control form is submitted from
+        // It can be either the Governance > Define Framework Controls page or the Compliance > Initiate Audits page
+        // The value of the variable is used to determine whether to redraw the controls table or refresh the total page
+        // If the page is the Governance > Define Framework Controls page, the value is "governance"
+        // If the page is the Compliance > Initiate Audits page, the value is "audit_initiation"
+        let where = $('[name=where]', this).val();
 
         var form = new FormData($("#update-control-form")[0]);
         
@@ -826,10 +1009,19 @@ $(function(){
                 }
 
                 $('#control--update').modal('hide');
-                controlDatatable.ajax.reload(null, false);
+
+                // If the page is the Governance > Define Framework Controls page, we need to redraw the controls table
+                if (where == 'governance') {
+                    controlDatatable.ajax.reload(null, false);
+                }
 
                 // the response is received
                 loading = false;
+
+                // If the page is the Compliance > Initiate Audits page, we need to refresh the total page
+                if (where == 'audit_initiation') {
+                    location.reload();
+                }
             }
         })
         .fail(function(xhr, textStatus){
@@ -873,27 +1065,69 @@ $(function(){
     });
 
     // Add framework form event
-    $(document).on('submit', '#framework-update-form', function(event) {
+    $(document).on('submit', '#update-framework-form', function(event) {
 
-		event.preventDefault();
+        event.preventDefault();
+
+        // if not received ajax response, don't submit again
+        if (loading) {
+            return
+        }
 
         // Check empty/trimmed empty valiation for the required fields 
         if (!checkAndSetValidation(this)) {
             return;
         }
 
-        // Add the submit button's name and value as a hidden field 
-        // since the name and value of the submit button aren't included in the form data when triggering the submit event programmatically
-        const hiddenInput = $('<input>')
-            .attr('type', 'hidden')
-            .attr('name', 'update_framework') // The submit button's name
-            .attr('value', 'true'); // The submit button's value
+        // Variable for indicating where the update control form is submitted from
+        // It can be either the Governance > Define Framework Controls page or the Compliance > Initiate Audits page
+        // The value of the variable is not used yet but it would be better to left it
+        // If the page is the Governance > Define Framework Controls page, the value is "governance"
+        // If the page is the Compliance > Initiate Audits page, the value is "audit_initiation"
+        let where = $('[name=where]', this).val();
 
-        $(this).append(hiddenInput);
+        var form = new FormData($("#update-framework-form")[0]);
+        
+        // the ajax request is sent
+        loading = true;
 
-        // Submit the form using the native Javascript submit method not using jQuery submit method 
-        // to prevent the form from submitting infinitely
-        this.submit();
+        $.ajax({
+            type: "POST",
+            url: BASE_URL + "/api/governance/update_framework",
+            data: form,
+            async: true,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function(result){
+                if(result.status_message){
+                    showAlertsFromArray(result.status_message);
+                }
+
+                $('#framework--update').modal('hide');
+
+                // the response is received
+                loading = false;
+
+                location.reload();
+
+            }
+        })
+        .fail(function(xhr, textStatus){
+            if(!retryCSRF(xhr, this))
+            {
+                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                    showAlertsFromArray(xhr.responseJSON.status_message);
+                }
+            }
+
+            // the response is received
+            loading = false;
+
+        });
+        
+        return false;
+
     });
 
     // timer identifier

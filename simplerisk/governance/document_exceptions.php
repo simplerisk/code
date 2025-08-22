@@ -5,7 +5,7 @@
 
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['easyui:treegrid', 'WYSIWYG', 'multiselect', 'datatables', 'datetimerangepicker', 'CUSTOM:common.js', 'CUSTOM:pages/governance.js', 'tabs:logic'], ['check_governance' => true]);
+render_header_and_sidebar(['easyui:treegrid', 'easyui:filter', 'WYSIWYG', 'multiselect', 'datetimerangepicker', 'CUSTOM:common.js', 'CUSTOM:pages/governance.js', 'tabs:logic'], ['check_governance' => true]);
 
 // Include required functions file
 require_once(realpath(__DIR__ . '/../includes/permissions.php'));
@@ -67,10 +67,10 @@ function display($display = "")
         <?php if (check_permission_exception('create')) { ?>
                         <a href="#" title="Settings" role="button" class="btn btn-primary project--add" id="exception-add-btn"><i class="fa fa-plus"></i></a>
         <?php } ?>
-                        <a data-bs-target="#policy-exceptions" data-bs-toggle="tab" class="nav-link active" data-type="policy"><?php echo $escaper->escapeHtml($lang['PolicyExceptions']); ?> (<span id="policy-exceptions-count">-</span>)</a>
-                        <a data-bs-target="#control-exceptions" data-bs-toggle="tab" class="nav-link" data-type="control"><?php echo $escaper->escapeHtml($lang['ControlExceptions']); ?> (<span id="control-exceptions-count">-</span>)</a>
+                        <a data-bs-target="#policy-exceptions" data-bs-toggle="tab" class="nav-link active" data-type="policy"><?= $escaper->escapeHtml($lang['PolicyExceptions']); ?> (<span id="policy-exceptions-count">-</span>)</a>
+                        <a data-bs-target="#control-exceptions" data-bs-toggle="tab" class="nav-link" data-type="control"><?= $escaper->escapeHtml($lang['ControlExceptions']); ?> (<span id="control-exceptions-count">-</span>)</a>
         <?php if (check_permission_exception('approve')) { ?>
-                        <a data-bs-target="#unapproved-exceptions" data-bs-toggle="tab" class="nav-link" data-type="unapproved"><?php echo $escaper->escapeHtml($lang['UnapprovedExceptions']); ?> (<span id="unapproved-exceptions-count">-</span>)</a>
+                        <a data-bs-target="#unapproved-exceptions" data-bs-toggle="tab" class="nav-link" data-type="unapproved"><?= $escaper->escapeHtml($lang['UnapprovedExceptions']); ?> (<span id="unapproved-exceptions-count">-</span>)</a>
         <?php } ?>
                     </nav>
                 </div>
@@ -128,10 +128,20 @@ function display($display = "")
 </div>
 <script>
 
-	// Have to init the treegrid when the tab is first displayed, because it's rendered incorrectly when initialized in the background
-    $(document).on('shown.bs.tab', 'nav a[data-bs-toggle=\"tab\"][data-type]', function (e) {
-        let type = $(this).data('type');
-        $(`#exception-table-${type}`).initAsExceptionTreegrid(type);
+    $(function () {
+
+        // Have to init the treegrid when the tab is first displayed, because it's rendered incorrectly when initialized in the background
+        $(document).on('shown.bs.tab', 'nav a[data-bs-toggle=\"tab\"][data-type]', function (e) {
+            let type = $(this).data('type');
+            $(`#exception-table-${type}`).initAsExceptionTreegrid(type);
+        });
+
+        // Initialize the treegrid after the first tab is shown completely when the page loads
+        setTimeout(() => {
+            // Trigger the event manually for the first visible tab since the above event won't be triggered on page load
+            $('a[data-bs-toggle="tab"].active').trigger('shown.bs.tab');
+        }, 0);
+
     });
 
     function wireActionButtons(tab) {
@@ -175,9 +185,9 @@ function display($display = "")
                     $("#exception-update-form [name=description]").val(data.description);
                     $("#exception-update-form [name=justification]").val(data.justification);
 
-                    // set contents into tinymce editor dynamically.
-                    tinymce.get('update_description').setContent(data.description);
-                    tinymce.get('update_justification').setContent(data.justification);
+                    // set contents into the WYSIWYG editor dynamically.
+                    setEditorContent("update_description", data.description);
+                    setEditorContent("update_justification", data.justification);
 
                     if (data.file_name) {
                         $("#exception-update-form input.readonly").val(data.file_name);
@@ -335,7 +345,7 @@ function display($display = "")
     }
 
     function displayFileSize(label, size) {
-        if (<?php echo $escaper->escapeHtml(get_setting('max_upload_size')); ?> > size)
+        if (<?= $escaper->escapeHtml(get_setting('max_upload_size')); ?> > size)
             label.attr("class","text-success");
         else
             label.attr("class","text-danger");
@@ -346,18 +356,18 @@ function display($display = "")
             if (((iSize / 1024) / 1024) > 1)
             {
                 iSize = (Math.round(((iSize / 1024) / 1024) * 100) / 100);
-                label.html("<?php echo $escaper->escapeHtml($lang['FileSize'] . ": ") ?>" + iSize + "Gb");
+                label.html("<?= $escaper->escapeHtml($lang['FileSize'] . ": ") ?>" + iSize + "Gb");
             }
             else
             {
                 iSize = (Math.round((iSize / 1024) * 100) / 100)
-                label.html("<?php echo $escaper->escapeHtml($lang['FileSize'] . ": ") ?>" + iSize + "Mb");
+                label.html("<?= $escaper->escapeHtml($lang['FileSize'] . ": ") ?>" + iSize + "Mb");
             }
         }
         else
         {
             iSize = (Math.round(iSize * 100) / 100)
-            label.html("<?php echo $escaper->escapeHtml($lang['FileSize'] . ": ") ?>" + iSize  + "kb");
+            label.html("<?= $escaper->escapeHtml($lang['FileSize'] . ": ") ?>" + iSize  + "kb");
         }
     }
     function load_framework_controls(obj){
@@ -388,8 +398,8 @@ function display($display = "")
 
         $("#add_exception").click(function(event) {
             event.preventDefault();
-            if ($('#file-upload')[0].files[0] && <?php echo $escaper->escapeHtml(get_setting('max_upload_size')); ?> <= $('#file-upload')[0].files[0].size) {
-                toastr.error("<?php echo $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
+            if ($('#file-upload')[0].files[0] && <?= $escaper->escapeHtml(get_setting('max_upload_size')); ?> <= $('#file-upload')[0].files[0].size) {
+                showAlertFromMessage("<?= $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
                 return false;
             }
             $.ajax({
@@ -437,8 +447,8 @@ function display($display = "")
 
         $("#update_exception").click(function(event) {
             event.preventDefault();
-            if ($('#file-upload-update')[0].files[0] && <?php echo $escaper->escapeHtml(get_setting('max_upload_size')); ?> <= $('#file-upload-update')[0].files[0].size) {
-                toastr.error("<?php echo $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
+            if ($('#file-upload-update')[0].files[0] && <?= $escaper->escapeHtml(get_setting('max_upload_size')); ?> <= $('#file-upload-update')[0].files[0].size) {
+                showAlertFromMessage("<?= $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
                 return false;
             }
 
@@ -462,23 +472,84 @@ function display($display = "")
                     $('#exception-update-form #file-size').text("");
                     $("#exception-update-form [name='additional_stakeholders[]']").multiselect('select', []);
                     $("#exception-update-form [name='associated_risks[]']").multiselect('select', []);
-                    var tree = $('#exception-table-' + data.data.type);
+
+                    // Reload the treegrid for the current type
+                    // type_1: policy, type_2: control
+                    var tab_type = "";
+                    if (data.data.type === 'type_1') {
+                        tab_type = 'policy';
+                    } else if (data.data.type === 'type_2') {
+                        tab_type = 'control';
+                    }
+
+                    var tree = $('#exception-table-' + tab_type);
                     tree.treegrid('options').animate = false;
                     tree.treegrid('reload');
 
                     // If exception_update_resets_approval we have to refresh after an update
-                    if (<?php if (get_setting('exception_update_resets_approval')) echo "true || ";  ?>!data.data.approved) {
+                    if (<?php if (get_setting('exception_update_resets_approval')) echo "true || ";  ?>!data.data.approved_original) {
                         var tree = $('#exception-table-unapproved');
                         tree.treegrid('options').animate = false;
                         tree.treegrid('reload');
-                    }                    // If type is changed we have to refresh the tab of the old type as well
+                    }
 
+                    // If the original type is approved but the new type is not, we have to reload the treegrid for the unapproved exceptions
+                    if (data.data.approved_original && !data.data.approved) {
+                        var tree = $('#exception-table-unapproved');
+                        tree.treegrid('options').animate = false;
+                        tree.treegrid('reload');
+                    }
 
-                    if (data.data.type !== old_type) {
+                    // If type is changed we have to refresh the tab of the old type as well
+                    if (tab_type !== old_type) {
                         var tree = $('#exception-table-' + old_type);
                         tree.treegrid('options').animate = false;
                         tree.treegrid('reload');
                     }
+
+                    refreshAuditLogsIfOpen();
+                },
+                error: function(xhr,status,error){
+                    if(!retryCSRF(xhr, this))
+                    {
+                        if(xhr.responseJSON && xhr.responseJSON.status_message){
+                            showAlertsFromArray(xhr.responseJSON.status_message);
+                        }
+                    }
+                }
+            });
+            return false;
+        });
+
+
+        $("#unapprove_exception").click(function(event) {
+
+            $.ajax({
+                type: "POST",
+                url: BASE_URL + "/api/exceptions/unapprove",
+                data: new FormData($('#exception-update-form')[0]),
+                async: true,
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function(data){
+                    if(data.status_message){
+                        showAlertsFromArray(data.status_message);
+                    }
+
+                    $('#exception--update').modal('hide');
+                    $('#exception-update-form')[0].reset();
+                    $('#exception-update-form #file-size').text("");
+                    $("#exception-update-form [name='additional_stakeholders[]']").multiselect('select', []);
+                    $("#exception-update-form [name='associated_risks[]']").multiselect('select', []);
+
+                    // Reload the treegrids
+                    let tab_types = ["policy", "control", "unapproved"];
+                    tab_types.forEach(function(tab_type) {
+                        let tree = $('#exception-table-' + tab_type);
+                        tree.treegrid('options').animate = false;
+                        tree.treegrid('reload');
+                    });
 
                     refreshAuditLogsIfOpen();
                 },
@@ -595,7 +666,7 @@ function display($display = "")
                     $('#exception-batch--delete').modal('hide');
 
                     var tree = $('#exception-table-' + $("#exception-batch-delete-form [name='type']").val());
-                    tree.treegrid('options').animate = false;
+                    tree.treegrid('options').animate = false; 
                     tree.treegrid('reload');
                    
                     if (!$("#exception-batch-delete-form #all-approved").prop('checked')) {
@@ -722,36 +793,36 @@ function display($display = "")
     <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['ExceptionAdd']); ?></h4>
+                <h4 class="modal-title"><?= $escaper->escapeHtml($lang['ExceptionAdd']); ?></h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="exception-new-form" action="#" method="POST" autocomplete="off">
                     <div class="row">
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['ExceptionName']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['ExceptionName']); ?>:</label>
                             <input type="text" required name="name" value="" class="form-control" autocomplete="off">
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['ExceptionStatus']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['ExceptionStatus']); ?>:</label>
                             <?php create_dropdown("document_exceptions_status", NULL, "document_exceptions_status", false); ?>
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['Policy']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['Policy']); ?>:</label>
                             <?php create_dropdown("policies", NULL, "policy", true); ?>
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['Framework']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['Framework']); ?>:</label>
                             <?php create_dropdown("frameworks", NULL, "framework", true); ?>
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['Control']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['Control']); ?>:</label>
                             <select id="control" name="control" class="form-field form-select">
                                 <option value="0">--</option>
                             </select>
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['AssociatedRisks']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['AssociatedRisks']); ?>:</label>
                             <select name="associated_risks[]" multiple="true" class="form-select">
                             <?php 
                                 foreach ($risks as $risk) {
@@ -764,51 +835,51 @@ function display($display = "")
                             </select>
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['ExceptionOwner']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['ExceptionOwner']); ?>:</label>
                             <?php create_dropdown("enabled_users", NULL, "owner", false, false, false); ?>
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['AdditionalStakeholders']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['AdditionalStakeholders']); ?>:</label>
                             <?php create_multiple_dropdown("enabled_users", NULL, "additional_stakeholders"); ?>
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['CreationDate']); ?>:</label>
-                            <input type="text" name="creation_date" value="<?php echo $escaper->escapeHtml(date(get_default_date_format())); ?>" class="form-control datepicker">
+                            <label for="" ><?= $escaper->escapeHtml($lang['CreationDate']); ?>:</label>
+                            <input type="text" name="creation_date" value="<?= $escaper->escapeHtml(date(get_default_date_format())); ?>" class="form-control datepicker">
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['ReviewFrequency']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['ReviewFrequency']); ?>:</label>
                             <div class="input-group">
                                 <input type="number" min="0" name="review_frequency" value="0" class="form-control">
-                                <span class="input-group-text">(<?php echo $escaper->escapeHtml($lang['days']); ?>) </span>
+                                <span class="input-group-text">(<?= $escaper->escapeHtml($lang['days']); ?>) </span>
                             </div> 
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['NextReviewDate']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['NextReviewDate']); ?>:</label>
                             <input type="text" name="next_review_date" value="" class="form-control datepicker">
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['ApprovalDate']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['ApprovalDate']); ?>:</label>
                             <input type="text" name="approval_date" value="" class="form-control datepicker">
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['Approver']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['Approver']); ?>:</label>
                             <?php create_dropdown("enabled_users", NULL, "approver", true); ?>
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['Description']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['Description']); ?>:</label>
                             <textarea name="description" value="" class="form-control" rows="6"  id="add_description"  style="width:100%;"></textarea>
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['Justification']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['Justification']); ?>:</label>
                             <textarea name="justification" value="" class="form-control"  id="add_justification" rows="6" style="width:100%;"></textarea>
                         </div>
                         <div class="col-12">
                             <div class="file-uploader">
-                                <label for="" ><?php echo $escaper->escapeHtml($lang['File']); ?>:</label>
+                                <label for="" ><?= $escaper->escapeHtml($lang['File']); ?>:</label>
                                 <div class="input-group">
                                     <input type="text" class="form-control readonly"/>
-                                    <label for="file-upload" class="btn btn-submit m-r-10"><?php echo $escaper->escapeHtml($lang['ChooseFile']) ?></label>
-                                    <label class="text-dark align-self-center">Max <?php echo $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)); ?> Mb</label>
+                                    <label for="file-upload" class="btn btn-submit m-r-10"><?= $escaper->escapeHtml($lang['ChooseFile']) ?></label>
+                                    <label class="text-dark align-self-center">Max <?= $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)); ?> Mb</label>
                                 </div>
                                 <input type="file" id="file-upload" name="file[]" class="d-none" />
                                 <label id="file-size" for="" class="d-none"></label>
@@ -818,8 +889,8 @@ function display($display = "")
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                <button type="button" id="add_exception" class="btn btn-submit"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                <button type="button" id="add_exception" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Add']); ?></button>
             </div> 
         </div>
     </div>
@@ -832,7 +903,7 @@ function display($display = "")
     <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['ExceptionUpdate']); ?></h4>
+                <h4 class="modal-title"><?= $escaper->escapeHtml($lang['ExceptionUpdate']); ?></h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -842,30 +913,30 @@ function display($display = "")
                     <input type="checkbox" name="approved_original" style="display:none;" />
                     <div class="row">
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['ExceptionName']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['ExceptionName']); ?>:</label>
                             <input type="text" required name="name" value="" class="form-control" autocomplete="off">
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['ExceptionStatus']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['ExceptionStatus']); ?>:</label>
                             <?php create_dropdown("document_exceptions_status", NULL, "document_exceptions_status", false); ?>
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['Policy']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['Policy']); ?>:</label>
                             <?php create_dropdown("policies", NULL, "policy", true, false, false, "", "--", "0"); ?>
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['Framework']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['Framework']); ?>:</label>
                             <?php create_dropdown("frameworks", NULL, "framework", true); ?>
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['Control']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['Control']); ?>:</label>
                             <select id="control" name="control" class="form-field form-control">
                                 <option value="0">--</option>
                             </select>
                             <input type="hidden" value="" class="selected_control_values">
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['AssociatedRisks']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['AssociatedRisks']); ?>:</label>
                             <select name="associated_risks[]" multiple="true">
                             <?php 
                                 foreach ($risks as $risk) {
@@ -877,51 +948,51 @@ function display($display = "")
                             </select>
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['ExceptionOwner']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['ExceptionOwner']); ?>:</label>
                             <?php create_dropdown("enabled_users", NULL, "owner", false, false, false); ?>
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['AdditionalStakeholders']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['AdditionalStakeholders']); ?>:</label>
                             <?php create_multiple_dropdown("enabled_users", NULL, "additional_stakeholders"); ?>
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['CreationDate']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['CreationDate']); ?>:</label>
                             <input type="text" name="creation_date" value="" class="form-control datepicker">
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['ReviewFrequency']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['ReviewFrequency']); ?>:</label>
                             <div class="input-group">
                                 <input type="number" min="0" name="review_frequency" value="" class="form-control"> 
-                                <span class="input-group-text">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span> 
+                                <span class="input-group-text">(<?= $escaper->escapeHtml($lang['days']); ?>)</span> 
                             </div>
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['NextReviewDate']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['NextReviewDate']); ?>:</label>
                             <input type="text" name="next_review_date" value="" class="form-control datepicker">
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['ApprovalDate']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['ApprovalDate']); ?>:</label>
                             <input type="text" name="approval_date" value="" class="form-control datepicker">
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['Approver']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['Approver']); ?>:</label>
                             <?php create_dropdown("enabled_users", NULL, "approver", true, false, false, "", "--", "0"); ?>
                         </div>
                         <div class="col-12 form-group">
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['Description']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['Description']); ?>:</label>
                             <textarea name="description" value="" class="form-control"  id="update_description" rows="6" style="width:100%;"></textarea>
                         </div>
                         <div class="col-12 form-group" >
-                            <label for="" ><?php echo $escaper->escapeHtml($lang['Justification']); ?>:</label>
+                            <label for="" ><?= $escaper->escapeHtml($lang['Justification']); ?>:</label>
                             <textarea name="justification" value=""  id="update_justification" class="form-control" rows="6" style="width:100%;"></textarea>
                         </div>
                         <div class="col-12">
                             <div class="file-uploader">
-                                <label for="" ><?php echo $escaper->escapeHtml($lang['File']); ?>:</label>
+                                <label for="" ><?= $escaper->escapeHtml($lang['File']); ?>:</label>
                                 <div class="input-group">
                                     <input type="text" class="form-control readonly"/>
-                                    <label for="file-upload-update" class="btn btn-submit m-r-10"><?php echo $escaper->escapeHtml($lang['ChooseFile']) ?></label>
-                                    <label class="text-dark align-self-center">Max <?php echo $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)); ?> Mb</label>
+                                    <label for="file-upload-update" class="btn btn-submit m-r-10"><?= $escaper->escapeHtml($lang['ChooseFile']) ?></label>
+                                    <label class="text-dark align-self-center">Max <?= $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)); ?> Mb</label>
                                 </div>
                                 <input type="file" id="file-upload-update" name="file[]" class="d-none" />
                                 <label id="file-size" for="" class="d-none"></label>
@@ -931,8 +1002,9 @@ function display($display = "")
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                <button type="submit" id="update_exception" class="btn btn-submit"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
+                <button type="button" id="unapprove_exception" class="btn btn-dark"><?= $escaper->escapeHtml($lang['Unapprove']); ?></button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                <button type="button" id="update_exception" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Update']); ?></button>
             </div>
         </div>
     </div>
@@ -948,82 +1020,82 @@ function display($display = "")
         </div>
         <div class="modal-body">
             <div class="form-group">
-                <label><?php echo $escaper->escapeHtml($lang['ExceptionType']); ?>:</label>
+                <label><?= $escaper->escapeHtml($lang['ExceptionType']); ?>:</label>
                 <span id="type" class="exception-data d-block"></span>
             </div>
             <div class="form-group">
-                <label><?php echo $escaper->escapeHtml($lang['PolicyName']); ?>:</label>
+                <label><?= $escaper->escapeHtml($lang['PolicyName']); ?>:</label>
                 <span id="policy" class="exception-data d-block"></span>
             </div>
             <div class="form-group">
-                <label><?php echo $escaper->escapeHtml($lang['FrameworkName']); ?>:</label>
+                <label><?= $escaper->escapeHtml($lang['FrameworkName']); ?>:</label>
                 <span id="framework" class="exception-data d-block"></span>
             </div>
             <div class="form-group">
-                <label><?php echo $escaper->escapeHtml($lang['ControlName']); ?>:</label>
+                <label><?= $escaper->escapeHtml($lang['ControlName']); ?>:</label>
                 <span id="control" class="exception-data d-block"></span>
             </div>
             <div class="form-group">
-                <label><?php echo $escaper->escapeHtml($lang['ExceptionStatus']); ?>:</label>
+                <label><?= $escaper->escapeHtml($lang['ExceptionStatus']); ?>:</label>
                 <span id="document_exceptions_status" class="exception-data d-block"></span>
             </div>
             <div class="form-group">
-                <label><?php echo $escaper->escapeHtml($lang['AssociatedRisks']); ?>:</label>
+                <label><?= $escaper->escapeHtml($lang['AssociatedRisks']); ?>:</label>
                 <span id="associated_risks" class="exception-data d-block"></span>
             </div>
             <div class="form-group">
-                <label><?php echo $escaper->escapeHtml($lang['ExceptionOwner']); ?>:</label>
+                <label><?= $escaper->escapeHtml($lang['ExceptionOwner']); ?>:</label>
                 <span id="owner" class="exception-data d-block"></span>
             </div>
             <div class="form-group">
-                <label><?php echo $escaper->escapeHtml($lang['AdditionalStakeholders']); ?>:</label>
+                <label><?= $escaper->escapeHtml($lang['AdditionalStakeholders']); ?>:</label>
                 <span id="additional_stakeholders" class="exception-data d-block"></span>
             </div>
             <div class="form-group">
-                <label><?php echo $escaper->escapeHtml($lang['CreationDate']); ?>:</label>
+                <label><?= $escaper->escapeHtml($lang['CreationDate']); ?>:</label>
                 <span id="creation_date" class="exception-data d-block"></span>
             </div>
             <div class="form-group">
-                <label><?php echo $escaper->escapeHtml($lang['ReviewFrequency']); ?>:</label>
+                <label><?= $escaper->escapeHtml($lang['ReviewFrequency']); ?>:</label>
                 <div>
-                    <span id="review_frequency" class="exception-data"></span><span style="margin-left: 5px;" class="white-labels"><?php echo $escaper->escapeHtml($lang['days']); ?></span>
+                    <span id="review_frequency" class="exception-data"></span><span style="margin-left: 5px;" class="white-labels"><?= $escaper->escapeHtml($lang['days']); ?></span>
                 </div>
             </div>
             <div class="form-group">
-                <label><?php echo $escaper->escapeHtml($lang['NextReviewDate']); ?>:</label>
+                <label><?= $escaper->escapeHtml($lang['NextReviewDate']); ?>:</label>
                 <span id="next_review_date" class="exception-data d-block"></span>
             </div>
             <div class="form-group">
-                <label><?php echo $escaper->escapeHtml($lang['ApprovalDate']); ?>:</label>
+                <label><?= $escaper->escapeHtml($lang['ApprovalDate']); ?>:</label>
                 <span id="approval_date" class="exception-data d-block"></span>
             </div>
             <div class="form-group">
-                <label><?php echo $escaper->escapeHtml($lang['Approver']); ?>:</label>
+                <label><?= $escaper->escapeHtml($lang['Approver']); ?>:</label>
                 <span id="approver" class="exception-data d-block"></span>
             </div>
             <div class="form-group">
-                <label><?php echo $escaper->escapeHtml($lang['Description']); ?>:</label>
+                <label><?= $escaper->escapeHtml($lang['Description']); ?>:</label>
                 <div id="description" class="exception-data d-block"></div>
             </div>
             <div class="form-group">
-                <label><?php echo $escaper->escapeHtml($lang['Justification']); ?>:</label>
+                <label><?= $escaper->escapeHtml($lang['Justification']); ?>:</label>
                 <div id="justification" class="exception-data d-block"></div>
             </div>
             <div>
-                <label><?php echo $escaper->escapeHtml($lang['File']); ?>:</label>
+                <label><?= $escaper->escapeHtml($lang['File']); ?>:</label>
                 <div id="file_download" class="exception-data d-block"></div>
             </div>
         </div>
         <div class="modal-footer info-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $escaper->escapeHtml($lang['Close']); ?></button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Close']); ?></button>
         </div>
         <?php if (check_permission_exception('approve')) { ?>
             <div class="modal-footer approve-footer">
                 <form class="" id="exception-approve-form" action="" method="post">
                     <input type="hidden" name="exception_id" value="" />
                     <input type="hidden" name="type" value="" />
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                    <button type="submit" name="approve_exception" class="btn btn-submit"><?php echo $escaper->escapeHtml($lang['Approve']); ?></button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                    <button type="submit" name="approve_exception" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Approve']); ?></button>
                 </form>
             </div>
         <?php } ?>
@@ -1039,15 +1111,15 @@ function display($display = "")
             <div class="modal-body">
                 <form class="" id="exception-delete-form" action="" method="post">
                     <div class="form-group text-center">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisException']); ?></label>
+                        <label for=""><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisException']); ?></label>
                         <input type="hidden" name="exception_id" value="" />
                         <input type="hidden" name="type" value="" />
                         <input type="checkbox" id="approved" style="display:none;" />
                     </div>
 
                     <div class="form-group text-center project-delete-actions">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                        <button type="submit" name="delete_exception" class="delete_project btn btn-submit"><?php echo $escaper->escapeHtml($lang['Yes']); ?></button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                        <button type="submit" name="delete_exception" class="delete_project btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
                     </div>
                 </form>
             </div>
@@ -1062,15 +1134,15 @@ function display($display = "")
             <div class="modal-body">
                 <form class="" id="exception-batch-delete-form" action="" method="post">
                     <div class="form-group text-center">
-                        <label for=""><?php echo $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteTheseExceptions']); ?></label>
+                        <label for=""><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteTheseExceptions']); ?></label>
                         <input type="hidden" name="parent_id" value="" />
                         <input type="hidden" name="type" value="" />
                         <input type="checkbox" name="approved" style="display:none;" />
                         <input type="checkbox" id="all-approved" style="display:none;" />
                     </div>
                     <div class="form-group text-center project-delete-actions">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-                        <button type="submit" name="delete_exception" class="delete_project btn btn-submit"><?php echo $escaper->escapeHtml($lang['Yes']); ?></button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                        <button type="submit" name="delete_exception" class="delete_project btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
                     </div>
                 </form>
             </div>

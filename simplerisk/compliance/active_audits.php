@@ -5,7 +5,7 @@
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'CUSTOM:pages/compliance.js', 'CUSTOM:common.js'], ['check_compliance' => true]);
+    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'datetimerangepicker', 'CUSTOM:pages/compliance.js', 'CUSTOM:common.js'], ['check_compliance' => true]);
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/compliance.php'));

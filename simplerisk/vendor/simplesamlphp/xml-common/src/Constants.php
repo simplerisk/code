@@ -12,12 +12,12 @@ namespace SimpleSAML\XML;
 class Constants
 {
     /**
-     * The namespace fox XML.
+     * The namespace for XML.
      */
     public const NS_XML = 'http://www.w3.org/XML/1998/namespace';
 
     /**
-     * The namespace fox XML schema.
+     * The namespace for XML schema.
      */
     public const NS_XS = 'http://www.w3.org/2001/XMLSchema';
 
@@ -37,18 +37,55 @@ class Constants
      */
     public const XPATH10_URI = 'http://www.w3.org/TR/1999/REC-xpath-19991116';
 
-    /**
-     * The namespace for the XML Path Language 2.0
-     */
-    public const XPATH20_URI = 'http://www.w3.org/TR/2010/REC-xpath20-20101214/';
+    /** @var array<string> */
+    public const DEFAULT_ALLOWED_AXES = [
+        'ancestor',
+        'ancestor-or-self',
+        'attribute',
+        'child',
+        'descendant',
+        'descendant-or-self',
+        'following',
+        'following-sibling',
+        // 'namespace', // By default, we do not allow using the namespace axis
+        'parent',
+        'preceding',
+        'preceding-sibling',
+        'self',
+    ];
 
-    /**
-     * The namespace for the XML Path Language 3.0
-     */
-    public const XPATH30_URI = 'https://www.w3.org/TR/2014/REC-xpath-30-20140408/';
+    /** @var array<string> */
+    public const DEFAULT_ALLOWED_FUNCTIONS = [
+        // 'boolean',
+        // 'ceiling',
+        // 'concat',
+        // 'contains',
+        // 'count',
+        // 'false',
+        // 'floor',
+        // 'id',
+        // 'lang',
+        // 'last',
+        // 'local-name',
+        // 'name',
+        // 'namespace-uri',
+        // 'normalize-space',
+        'not',
+        // 'number',
+        // 'position',
+        // 'round',
+        // 'starts-with',
+        // 'string',
+        // 'string-length',
+        // 'substring',
+        // 'substring-after',
+        // 'substring-before',
+        // 'sum',
+        // 'text',
+        // 'translate',
+        // 'true',
+    ];
 
-    /**
-     * The namespace for the XML Path Language 3.1
-     */
-    public const XPATH31_URI = 'https://www.w3.org/TR/2017/REC-xpath-31-20170321/';
+    /** @var int */
+    public const XPATH_FILTER_MAX_LENGTH = 100;
 }

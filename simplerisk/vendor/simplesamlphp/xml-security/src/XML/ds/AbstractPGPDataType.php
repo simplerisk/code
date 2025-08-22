@@ -37,6 +37,7 @@ abstract class AbstractPGPDataType extends AbstractDsElement implements SchemaVa
      * @param \SimpleSAML\XMLSecurity\XML\ds\PGPKeyID|null $pgpKeyId
      * @param \SimpleSAML\XMLSecurity\XML\ds\PGPKeyPacket|null $pgpKeyPacket
      * @param array<\SimpleSAML\XML\SerializableElementInterface> $children
+     * @throws \SimpleSAML\XML\Exception\SchemaViolationException
      */
     final public function __construct(
         protected ?PGPKeyID $pgpKeyId = null,

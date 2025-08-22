@@ -1778,7 +1778,7 @@ function display_accept_mitigation_view($risk_id, $panel_name = "")
                     var risk_id = $('span.risk-id', tabContainer).text();
                     var self = $(this);
                     self.prop('disabled', true);
-                    self.html($('#_lang_accepting').val());
+                    self.html('{$escaper->escapeHtml($lang['Accepting'])}');
                     
                     $.ajax({
                         type: 'POST',
@@ -1798,7 +1798,7 @@ function display_accept_mitigation_view($risk_id, $panel_name = "")
                             }
 
                             self.prop('disabled', false);
-                            self.html($('#_lang_accept_mitigation').val());
+                            self.html('{$escaper->escapeHtml($lang['AcceptMitigation'])}');
                         },
                         error: function(xhr,status,error){
                             if(!retryCSRF(xhr, this))
@@ -1807,7 +1807,7 @@ function display_accept_mitigation_view($risk_id, $panel_name = "")
                                     showAlertsFromArray(xhr.responseJSON.status_message);
                                 }
                                 self.prop('disabled', false);
-                                self.html($('#_lang_accept_mitigation').val());
+                                self.html('{$escaper->escapeHtml($lang['AcceptMitigation'])}');
                             }
                         }
                     })
@@ -1820,7 +1820,7 @@ function display_accept_mitigation_view($risk_id, $panel_name = "")
                     var risk_id = $('.risk-id', tabContainer).html();
                     var self = $(this);
                     self.prop('disabled', true);
-                    self.html($('#_lang_rejecting').val());
+                    self.html('{$escaper->escapeHtml($lang['Rejecting'])}');
                     
                     $.ajax({
                         type: 'POST',
@@ -1839,7 +1839,7 @@ function display_accept_mitigation_view($risk_id, $panel_name = "")
                                 $('.accept_mitigation_text', tabContainer).parent().hide();
                             }
                             self.prop('disabled', false);
-                            self.html($('#_lang_reject_mitigation').val());
+                            self.html('{$escaper->escapeHtml($lang['RejectMitigation'])}');
                         },
                         error: function(xhr,status,error){
                             if(!retryCSRF(xhr, this))
@@ -1848,7 +1848,7 @@ function display_accept_mitigation_view($risk_id, $panel_name = "")
                                     showAlertsFromArray(xhr.responseJSON.status_message);
                                 }
                                 self.prop('disabled', false);
-                                self.html($('#_lang_reject_mitigation').val());
+                                self.html('{$escaper->escapeHtml($lang['RejectMitigation'])}');
                             }
                         }
                     })

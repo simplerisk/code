@@ -24,7 +24,7 @@
         
         if (!is_user_allowed_to_access($_SESSION['uid'], $test_audit_id, 'audit')) {
             set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForThisAudit']));
-            refresh($_SESSION['base_url']."/compliance/active_audits.php");
+            refresh(build_url("compliance/active_audits.php"));
         }
     }
 
@@ -43,7 +43,7 @@
             $closed_audit_status = get_setting("closed_audit_status");
 
             if ($_POST['status'] == $closed_audit_status) {
-                refresh($_SESSION['base_url']."/compliance/active_audits.php");
+                refresh(build_url("compliance/active_audits.php"));
             } else {
                 refresh();
             }

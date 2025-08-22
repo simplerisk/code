@@ -57,7 +57,9 @@ nav:
     - Writers: 'usage/writers.md'
   - Credits: 'credits.md'
   - Releases:
-      - '0.1.0 (WIP)': 'changes/0.1.0.md'
+      - '0.3.0 (WIP)': 'changes/0.3.0.md'
+      - '0.2.0': 'changes/0.2.0.md'
+      - '0.1.0': 'changes/0.1.0.md'
   - Developers:
     - 'Coveralls': 'https://coveralls.io/github/PHPOffice/Math'
     - 'Code Coverage': 'coverage/index.html'

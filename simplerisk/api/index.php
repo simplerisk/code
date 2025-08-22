@@ -126,6 +126,7 @@
         app()->get('/governance/selected_parent_frameworks_dropdown', 'getSelectedParentFrameworksDropdownResponse');
         app()->get('/governance/control', 'getControlResponse');
         app()->get('/governance/framework', 'getFrameworkResponse');
+        app()->post('/governance/update_framework', 'updateFrameworkResponse');
         app()->get('/governance/parent_documents_dropdown', 'getParentDocumentsDropdownResponse');
         app()->get('/governance/documents', 'getDocumentsResponse');
         app()->get('/governance/document', 'getDocumentResponse');
@@ -199,11 +200,13 @@
         app()->post('/exceptions/update', 'update_exception_api');
         app()->post('/exceptions/delete', 'delete_exception_api');
         app()->post('/exceptions/approve', 'approve_exception_api');
+        app()->post('/exceptions/unapprove', 'unapprove_exception_api');
         app()->post('/exceptions/batch-delete', 'batch_delete_exception_api');
         app()->get('/exceptions/tree', 'get_exceptions_as_treegrid_api');
         app()->get('/exceptions/exception', 'get_exception_api');
         app()->get('/exceptions/info', 'get_exception_for_display_api');
         app()->get('/exceptions/audit_log', 'get_exceptions_audit_log_api');
+        app()->get('/exceptions/status', 'get_exceptions_status_api');
         /***********************************************************/
 
         app()->get('/management/tag_options_of_type', 'getTagOptionsOfType');

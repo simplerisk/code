@@ -41,6 +41,26 @@ class MathML implements WriterInterface
         $tagName = $this->getElementTagName($element);
 
         // Element\AbstractGroupElement
+        if ($element instanceof Element\Semantics) {
+            $this->output->startElement($tagName);
+            // Write elements
+            foreach ($element->getElements() as $childElement) {
+                $this->writeElementItem($childElement);
+            }
+
+            // Write annotations
+            foreach ($element->getAnnotations() as $encoding => $annotation) {
+                $this->output->startElement('annotation');
+                $this->output->writeAttribute('encoding', $encoding);
+                $this->output->text($annotation);
+                $this->output->endElement();
+            }
+            $this->output->endElement();
+
+            return;
+        }
+
+        // Element\AbstractGroupElement
         if ($element instanceof Element\AbstractGroupElement) {
             $this->output->startElement($tagName);
             foreach ($element->getElements() as $childElement) {
@@ -120,6 +140,9 @@ class MathML implements WriterInterface
         }
         if ($element instanceof Element\Operator) {
             return 'mo';
+        }
+        if ($element instanceof Element\Semantics) {
+            return 'semantics';
         }
 
         throw new NotImplementedException(sprintf(

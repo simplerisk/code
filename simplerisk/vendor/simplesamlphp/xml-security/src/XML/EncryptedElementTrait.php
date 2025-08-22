@@ -67,9 +67,9 @@ trait EncryptedElementTrait
     /**
      * Get the encrypted key used to encrypt the current element.
      *
-     * @return \SimpleSAML\XMLSecurity\XML\xenc\EncryptedKey
+     * @return \SimpleSAML\XMLSecurity\XML\xenc\EncryptedKey|null
      */
-    public function getEncryptedKey(): EncryptedKey
+    public function getEncryptedKey(): ?EncryptedKey
     {
         return $this->encryptedKey;
     }

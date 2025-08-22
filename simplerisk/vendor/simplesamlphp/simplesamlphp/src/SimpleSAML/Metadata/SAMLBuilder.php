@@ -6,6 +6,7 @@ namespace SimpleSAML\Metadata;
 
 use DOMElement;
 use SAML2\Constants;
+use SAML2\XML\idpdisc\DiscoveryResponse;
 use SAML2\XML\md\AttributeAuthorityDescriptor;
 use SAML2\XML\md\AttributeConsumingService;
 use SAML2\XML\md\ContactPerson;
@@ -28,7 +29,6 @@ use SAML2\XML\saml\AttributeValue;
 use SAML2\XML\shibmd\Scope;
 use SimpleSAML\{Configuration, Module, Logger, Utils};
 use SimpleSAML\Assert\{Assert, AssertionFailedException};
-use SimpleSAML\Module\adfs\SAML2\XML\fed\SecurityTokenServiceType;
 
 /**
  * Class for generating SAML 2.0 metadata from SimpleSAMLphp metadata arrays.
@@ -124,28 +124,6 @@ class SAMLBuilder
 
 
     /**
-     * Add a SecurityTokenServiceType for ADFS metadata.
-     *
-     * @param array $metadata The metadata with the information about the SecurityTokenServiceType.
-     */
-    public function addSecurityTokenServiceType(array $metadata): void
-    {
-        Assert::notNull($metadata['entityid']);
-        Assert::notNull($metadata['metadata-set']);
-
-        $metadata = Configuration::loadFromArray($metadata, $metadata['entityid']);
-        $defaultEndpoint = $metadata->getDefaultEndpoint('SingleSignOnService');
-
-        $e = new SecurityTokenServiceType();
-        $e->setLocation($defaultEndpoint['Location']);
-
-        $this->addCertificate($e, $metadata);
-
-        $this->entityDescriptor->addRoleDescriptor($e);
-    }
-
-
-    /**
      * Add extensions to the metadata.
      *
      * @param \SimpleSAML\Configuration    $metadata The metadata to get extensions from.
@@ -222,6 +200,14 @@ class SAMLBuilder
             }
             $this->entityDescriptor->setExtensions(
                 array_merge($this->entityDescriptor->getExtensions(), [$ri]),
+            );
+        }
+
+        if ($metadata->hasValue('DiscoveryResponse')) {
+            $discoResponse = self::createEndpoints($metadata->getArray('DiscoveryResponse'), true);
+
+            $e->setExtensions(
+                array_merge($e->getExtensions(), $discoResponse),
             );
         }
 
@@ -346,7 +332,16 @@ class SAMLBuilder
 
         foreach ($endpoints as &$ep) {
             if ($indexed) {
-                $t = new IndexedEndpointType();
+                if ($ep['Binding'] === Constants::NS_IDPDISC) {
+                    $t = new DiscoveryResponse();
+                } else {
+                    $t = new IndexedEndpointType();
+                }
+
+                if (isset($ep['isDefault'])) {
+                    $t->setIsDefault($ep['isDefault']);
+                }
+
                 if (!isset($ep['index'])) {
                     // Find the maximum index
                     $maxIndex = -1;

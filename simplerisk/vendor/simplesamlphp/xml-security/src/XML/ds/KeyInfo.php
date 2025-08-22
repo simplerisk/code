@@ -7,8 +7,8 @@ namespace SimpleSAML\XMLSecurity\XML\ds;
 use DOMElement;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\XML\Exception\InvalidDOMElementException;
-use SimpleSAML\XML\SchemaValidatableElementInterface;
-use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XML\{SchemaValidatableElementInterface, SchemaValidatableElementTrait};
+use SimpleSAML\XMLSecurity\XML\dsig11\DEREncodedKeyValue;
 
 use function array_merge;
 
@@ -44,6 +44,7 @@ final class KeyInfo extends AbstractKeyInfoType implements SchemaValidatableElem
         $pgpData = PGPData::getChildrenOfClass($xml);
         $spkiData = SPKIData::getChildrenOfClass($xml);
         $mgmtData = MgmtData::getChildrenOfClass($xml);
+        $derEncodedKeyValue = DEREncodedKeyValue::getChildrenOfClass($xml);
         $other = self::getChildElementsFromXML($xml);
 
         $info = array_merge(
@@ -54,6 +55,7 @@ final class KeyInfo extends AbstractKeyInfoType implements SchemaValidatableElem
             $pgpData,
             $spkiData,
             $mgmtData,
+            $derEncodedKeyValue,
             $other,
         );
 

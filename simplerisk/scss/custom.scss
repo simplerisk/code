@@ -224,7 +224,11 @@ input[type=number]::-webkit-outer-spin-button {
 
 				&>div.datagrid-cell {
 					display: flex;
-                    flex-direction: column;
+
+					// Prevent the WYSIWYG content from displaying in a single line
+					&:not(.tree-node) {
+						flex-direction: column;
+					}
 
 					.tree-indent, 
 					.tree-hit {
@@ -578,6 +582,9 @@ input#dollarsign {
 // CONFIGURE / EXTRAS PAGE / NOTIFICATION EXTRA PAGE
 .specified_time_holder {
 	display: none;
+	select {
+		min-width: 100px;
+	}
 }
 
 .schedule-form-group {
@@ -1177,23 +1184,17 @@ a.open-in-new-tab {
 
 .modal .selectize-dropdown { z-index: 9999 !important; }
 
-// a#risk_detail {
-//     width: 200px;
-//     white-space: nowrap;
-//     overflow: hidden;
-//     text-overflow: ellipsis;
-// }
-
-
-
 .prevent-select {
   -webkit-user-select: none; /* Safari */
   -ms-user-select: none; /* IE 10 and IE 11 */
   user-select: none; /* Standard syntax */
 }
 
-
-
+//**************************** DATATABLE BEGIN ****************************//
+.multiselect-container {
+    will-change: transform;
+}
+//***************************** DATATABLE END *****************************//
 
 
 @import "modules/treegrid";

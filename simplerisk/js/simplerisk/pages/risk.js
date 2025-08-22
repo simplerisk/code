@@ -130,13 +130,12 @@ function addRisk($this){
         */
         $(".multiselect", tabContainer).multiselect({enableFiltering: true, buttonWidth: '100%', enableCaseInsensitiveFiltering: true,});
 
-        // init tinyMCE WYSIWYG editor
-        tinymce.remove();
+        // destroy all WYSIWYG editors
+        destroy_all_editors()
 
         // If there're template tabs we have to separately initialize the WYSIWYG editors
         if ($("#template_group_id").length > 0) {
-            // Since tinymce stores the editor instances indexed by the textarea's id we have to make sure it's unique(which it is NOT by default)
-            // so we're appending the template's id to the textarea's ID to make it unique 
+            // We have to make sure the IDs are unique so we're appending the template's ID to the textarea's ID to make it unique
     
             $("[name='assessment']").each(function() {
                 let template_group_id = $(this).closest('form').find('#template_group_id').val();
@@ -174,7 +173,7 @@ function addRisk($this){
                 init_minimun_editor("#comments_" + template_group_id);
             });
         } else {
-            // init tinyMCE WYSIWYG editor
+            // init WYSIWYG editors
             init_minimun_editor("#assessment");
             init_minimun_editor("#notes");
             init_minimun_editor('#current_solution');
@@ -1136,9 +1135,9 @@ $(document).ready(function(){
         
         var getForm = $this.parents('form', tabContainer);
         var form = new FormData($(getForm)[0]);
-        $('#comment').parents('.well').block({
+        $('#comment').parents('.comment-wrapper').block({
             message: 'Processing',
-            css: { border: '1px solid black', background: '#ffffff' }
+            css: { border: '1px solid black', background: '#ffffff', color: '#000000' },
         });
 
         $.ajax({
@@ -1156,7 +1155,7 @@ $(document).ready(function(){
                 if(data.status_message){
                     showAlertsFromArray(data.status_message);
                 }
-                $('#comment').parents('.well').unblock();
+                $('#comment').parents('.comment-wrapper').unblock();
             }
         })
         .fail(function(xhr, textStatus){
@@ -1914,8 +1913,7 @@ $(document).ready(function(){
 
     // If there're template tabs we have to separately initialize the WYSIWYG editors
     if ($("#template_group_id").length > 0) {
-        // Since tinymce stores the editor instances indexed by the textarea's id we have to make sure it's unique(which it is NOT by default)
-        // so we're appending the template's id to the textarea's ID to make it unique 
+        // We have to make sure the IDs are unique so we're appending the template's ID to the textarea's ID to make it unique
 
         $("[name='assessment']").each(function() {
             let template_group_id = $(this).closest('form').find('#template_group_id').val();
@@ -1930,7 +1928,7 @@ $(document).ready(function(){
         });
 
     } else {
-        // init tinyMCE WYSIWYG editor
+        // init WYSIWYG editor
         init_minimun_editor("#tab-content-container [name=assessment]");
         init_minimun_editor("#tab-content-container [name=notes]");
     }

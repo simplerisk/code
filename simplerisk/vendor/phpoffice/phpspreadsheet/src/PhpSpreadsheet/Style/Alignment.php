@@ -98,6 +98,11 @@ class Alignment extends Supervisor
     protected ?string $horizontal = self::HORIZONTAL_GENERAL;
 
     /**
+     * Justify Last Line alignment.
+     */
+    protected ?bool $justifyLastLine = null;
+
+    /**
      * Vertical alignment.
      */
     protected ?string $vertical = self::VERTICAL_BOTTOM;
@@ -163,6 +168,10 @@ class Alignment extends Supervisor
 
     /**
      * Build style array from subcomponents.
+     *
+     * @param mixed[] $array
+     *
+     * @return array{alignment: mixed[]}
      */
     public function getStyleArray(array $array): array
     {
@@ -183,7 +192,7 @@ class Alignment extends Supervisor
      * );
      * </code>
      *
-     * @param array $styleArray Array containing style information
+     * @param mixed[] $styleArray Array containing style information
      *
      * @return $this
      */
@@ -193,8 +202,12 @@ class Alignment extends Supervisor
             $this->getActiveSheet()->getStyle($this->getSelectedCells())
                 ->applyFromArray($this->getStyleArray($styleArray));
         } else {
+            /** @var array{horizontal?: string, vertical?: string, justifyLastLine?: bool, textRotation?: int, wrapText?: bool, shrinkToFit?: bool, readOrder?: int, indent?: int} $styleArray */
             if (isset($styleArray['horizontal'])) {
                 $this->setHorizontal($styleArray['horizontal']);
+            }
+            if (isset($styleArray['justifyLastLine'])) {
+                $this->setJustifyLastLine($styleArray['justifyLastLine']);
             }
             if (isset($styleArray['vertical'])) {
                 $this->setVertical($styleArray['vertical']);
@@ -250,6 +263,35 @@ class Alignment extends Supervisor
             $this->getActiveSheet()->getStyle($this->getSelectedCells())->applyFromArray($styleArray);
         } else {
             $this->horizontal = $horizontalAlignment;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get Justify Last Line.
+     */
+    public function getJustifyLastLine(): ?bool
+    {
+        if ($this->isSupervisor) {
+            return $this->getSharedComponent()->getJustifyLastLine();
+        }
+
+        return $this->justifyLastLine;
+    }
+
+    /**
+     * Set Justify Last Line.
+     *
+     * @return $this
+     */
+    public function setJustifyLastLine(bool $justifyLastLine): static
+    {
+        if ($this->isSupervisor) {
+            $styleArray = $this->getStyleArray(['justifyLastLine' => $justifyLastLine]);
+            $this->getActiveSheet()->getStyle($this->getSelectedCells())->applyFromArray($styleArray);
+        } else {
+            $this->justifyLastLine = $justifyLastLine;
         }
 
         return $this;
@@ -475,6 +517,7 @@ class Alignment extends Supervisor
 
         return md5(
             $this->horizontal
+            . (($this->justifyLastLine === null) ? 'null' : ($this->justifyLastLine ? 't' : 'f'))
             . $this->vertical
             . $this->textRotation
             . ($this->wrapText ? 't' : 'f')
@@ -485,10 +528,12 @@ class Alignment extends Supervisor
         );
     }
 
+    /** @return mixed[] */
     protected function exportArray1(): array
     {
         $exportedArray = [];
         $this->exportArray2($exportedArray, 'horizontal', $this->getHorizontal());
+        $this->exportArray2($exportedArray, 'justifyLastLine', $this->getJustifyLastLine());
         $this->exportArray2($exportedArray, 'indent', $this->getIndent());
         $this->exportArray2($exportedArray, 'readOrder', $this->getReadOrder());
         $this->exportArray2($exportedArray, 'shrinkToFit', $this->getShrinkToFit());

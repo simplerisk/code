@@ -25,7 +25,7 @@ Then, to load and initialise DataTables in your code use:
 import DataTable from 'datatables.net-dt';
 
 new DataTable('#myTable', {
-    // initalisation options
+    // initialisation options
 });
 ```
 
@@ -35,7 +35,7 @@ If you are using an old version of Node or a CommonJS loader, you might need to 
 const DataTable = require('datatables.net-dt');
 
 new DataTable('#myTable', {
-    // initalisation options
+    // initialisation options
 });
 ```
 

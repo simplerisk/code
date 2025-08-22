@@ -80,6 +80,35 @@ class MathMLTest extends WriterTestCase
         $this->assertIsSchemaMathMLValid($output);
     }
 
+    public function testWriteSemantics(): void
+    {
+        $opTimes = new Element\Operator('&InvisibleTimes;');
+
+        $math = new Math();
+
+        $semantics = new Element\Semantics();
+        $semantics->add(new Element\Identifier('y'));
+        $semantics->addAnnotation('application/x-tex', ' y ');
+
+        $math->add($semantics);
+
+        $writer = new MathML();
+        $output = $writer->write($math);
+
+        $expected = '<?xml version="1.0" encoding="UTF-8"?>'
+            . PHP_EOL
+            . '<!DOCTYPE math PUBLIC "-//W3C//DTD MathML 2.0//EN" "http://www.w3.org/Math/DTD/mathml2/mathml2.dtd">'
+            . '<math xmlns="http://www.w3.org/1998/Math/MathML">'
+            . '<semantics>'
+            . '<mi>y</mi>'
+            . '<annotation encoding="application/x-tex"> y </annotation>'
+            . '</semantics>'
+            . '</math>'
+            . PHP_EOL;
+        $this->assertEquals($expected, $output);
+        $this->assertIsSchemaMathMLValid($output);
+    }
+
     public function testWriteNotImplemented(): void
     {
         $this->expectException(NotImplementedException::class);

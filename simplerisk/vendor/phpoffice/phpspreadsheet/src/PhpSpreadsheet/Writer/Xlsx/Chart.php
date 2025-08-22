@@ -13,6 +13,7 @@ use PhpOffice\PhpSpreadsheet\Chart\Properties;
 use PhpOffice\PhpSpreadsheet\Chart\Title;
 use PhpOffice\PhpSpreadsheet\Chart\TrendLine;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx\Namespaces;
+use PhpOffice\PhpSpreadsheet\Shared\StringHelper;
 use PhpOffice\PhpSpreadsheet\Shared\XMLWriter;
 use PhpOffice\PhpSpreadsheet\Style\Font;
 use PhpOffice\PhpSpreadsheet\Writer\Exception as WriterException;
@@ -96,11 +97,9 @@ class Chart extends WriterPart
         $objWriter->writeAttribute('val', (string) (int) $chart->getPlotVisibleOnly());
         $objWriter->endElement();
 
-        if ($chart->getDisplayBlanksAs() !== '') {
-            $objWriter->startElement('c:dispBlanksAs');
-            $objWriter->writeAttribute('val', $chart->getDisplayBlanksAs());
-            $objWriter->endElement();
-        }
+        $objWriter->startElement('c:dispBlanksAs');
+        $objWriter->writeAttribute('val', $chart->getDisplayBlanksAs());
+        $objWriter->endElement();
 
         $objWriter->startElement('c:showDLblsOverMax');
         $objWriter->writeAttribute('val', '0');
@@ -118,7 +117,7 @@ class Chart extends WriterPart
             $this->writeColor($objWriter, $fillColor);
         }
         $borderLines = $chart->getBorderLines();
-        $this->writeLineStyles($objWriter, $borderLines);
+        $this->writeLineStyles($objWriter, $borderLines, $chart->getNoBorder());
         $this->writeEffects($objWriter, $borderLines);
         $objWriter->endElement(); // c:spPr
 
@@ -156,31 +155,29 @@ class Chart extends WriterPart
 
         $objWriter->startElement('c:title');
         $caption = $title->getCaption();
-        if ($caption !== null) {
-            $objWriter->startElement('c:tx');
-            $objWriter->startElement('c:rich');
+        $objWriter->startElement('c:tx');
+        $objWriter->startElement('c:rich');
 
-            $objWriter->startElement('a:bodyPr');
-            $objWriter->endElement(); // a:bodyPr
+        $objWriter->startElement('a:bodyPr');
+        $objWriter->endElement(); // a:bodyPr
 
-            $objWriter->startElement('a:lstStyle');
-            $objWriter->endElement(); // a:lstStyle
+        $objWriter->startElement('a:lstStyle');
+        $objWriter->endElement(); // a:lstStyle
 
-            $objWriter->startElement('a:p');
-            $objWriter->startElement('a:pPr');
-            $objWriter->startElement('a:defRPr');
-            $objWriter->endElement(); // a:defRPr
-            $objWriter->endElement(); // a:pPr
+        $objWriter->startElement('a:p');
+        $objWriter->startElement('a:pPr');
+        $objWriter->startElement('a:defRPr');
+        $objWriter->endElement(); // a:defRPr
+        $objWriter->endElement(); // a:pPr
 
-            if (is_array($caption)) {
-                $caption = $caption[0] ?? '';
-            }
-            $this->getParentWriter()->getWriterPartstringtable()->writeRichTextForCharts($objWriter, $caption, 'a');
-
-            $objWriter->endElement(); // a:p
-            $objWriter->endElement(); // c:rich
-            $objWriter->endElement(); // c:tx
+        if (is_array($caption)) {
+            $caption = $caption[0] ?? '';
         }
+        $this->getParentWriter()->getWriterPartstringtable()->writeRichTextForCharts($objWriter, $caption, 'a');
+
+        $objWriter->endElement(); // a:p
+        $objWriter->endElement(); // c:rich
+        $objWriter->endElement(); // c:tx
 
         $this->writeLayout($objWriter, $title->getLayout());
 
@@ -638,27 +635,25 @@ class Chart extends WriterPart
         if ($xAxisLabel !== null) {
             $objWriter->startElement('c:title');
             $caption = $xAxisLabel->getCaption();
-            if ($caption !== null) {
-                $objWriter->startElement('c:tx');
-                $objWriter->startElement('c:rich');
+            $objWriter->startElement('c:tx');
+            $objWriter->startElement('c:rich');
 
-                $objWriter->startElement('a:bodyPr');
-                $objWriter->endElement(); // a:bodyPr
+            $objWriter->startElement('a:bodyPr');
+            $objWriter->endElement(); // a:bodyPr
 
-                $objWriter->startElement('a:lstStyle');
-                $objWriter->endElement(); // a::lstStyle
+            $objWriter->startElement('a:lstStyle');
+            $objWriter->endElement(); // a::lstStyle
 
-                $objWriter->startElement('a:p');
+            $objWriter->startElement('a:p');
 
-                if (is_array($caption)) {
-                    $caption = $caption[0];
-                }
-                $this->getParentWriter()->getWriterPartstringtable()->writeRichTextForCharts($objWriter, $caption, 'a');
-
-                $objWriter->endElement(); // a:p
-                $objWriter->endElement(); // c:rich
-                $objWriter->endElement(); // c:tx
+            if (is_array($caption)) {
+                $caption = $caption[0];
             }
+            $this->getParentWriter()->getWriterPartstringtable()->writeRichTextForCharts($objWriter, $caption, 'a');
+
+            $objWriter->endElement(); // a:p
+            $objWriter->endElement(); // c:rich
+            $objWriter->endElement(); // c:tx
 
             $layout = $xAxisLabel->getLayout();
             $this->writeLayout($objWriter, $layout);
@@ -860,27 +855,27 @@ class Chart extends WriterPart
         if ($yAxisLabel !== null) {
             $objWriter->startElement('c:title');
             $caption = $yAxisLabel->getCaption();
-            if ($caption !== null) {
-                $objWriter->startElement('c:tx');
-                $objWriter->startElement('c:rich');
+            $objWriter->startElement('c:tx');
+            $objWriter->startElement('c:rich');
 
-                $objWriter->startElement('a:bodyPr');
-                $objWriter->endElement(); // a:bodyPr
+            $objWriter->startElement('a:bodyPr');
+            $objWriter->endElement(); // a:bodyPr
 
-                $objWriter->startElement('a:lstStyle');
-                $objWriter->endElement(); // a:lstStyle
+            $objWriter->startElement('a:lstStyle');
+            $objWriter->endElement(); // a:lstStyle
 
-                $objWriter->startElement('a:p');
+            $objWriter->startElement('a:p');
 
-                if (is_array($caption)) {
-                    $caption = $caption[0];
-                }
-                $this->getParentWriter()->getWriterPartstringtable()->writeRichTextForCharts($objWriter, $caption, 'a');
-
-                $objWriter->endElement(); // a:p
-                $objWriter->endElement(); // c:rich
-                $objWriter->endElement(); // c:tx
+            if (is_array($caption)) {
+                $caption = $caption[0];
             }
+            $this->getParentWriter()
+                ->getWriterPartstringtable()
+                ->writeRichTextForCharts($objWriter, $caption, 'a');
+
+            $objWriter->endElement(); // a:p
+            $objWriter->endElement(); // c:rich
+            $objWriter->endElement(); // c:tx
 
             if ($groupType !== DataSeries::TYPE_BUBBLECHART) {
                 $layout = $yAxisLabel->getLayout();
@@ -1124,8 +1119,8 @@ class Chart extends WriterPart
             $objWriter->endElement();
         }
 
-        $plotGroupingType = $plotGroup->getPlotGrouping();
-        if ($plotGroupingType !== null && $groupType !== DataSeries::TYPE_SURFACECHART && $groupType !== DataSeries::TYPE_SURFACECHART_3D) {
+        $plotGroupingType = (string) $plotGroup->getPlotGrouping();
+        if ($plotGroupingType !== '' && $groupType !== DataSeries::TYPE_SURFACECHART && $groupType !== DataSeries::TYPE_SURFACECHART_3D) {
             $objWriter->startElement('c:grouping');
             $objWriter->writeAttribute('val', $plotGroupingType);
             $objWriter->endElement();
@@ -1318,12 +1313,12 @@ class Chart extends WriterPart
                     }
                     if ($trendLineType == TrendLine::TRENDLINE_POLYNOMIAL) {
                         $objWriter->startElement('c:order');
-                        $objWriter->writeAttribute('val', $order);
+                        $objWriter->writeAttribute('val', "$order");
                         $objWriter->endElement(); // order
                     }
                     if ($trendLineType == TrendLine::TRENDLINE_MOVING_AVG) {
                         $objWriter->startElement('c:period');
-                        $objWriter->writeAttribute('val', $period);
+                        $objWriter->writeAttribute('val', "$period");
                         $objWriter->endElement(); // period
                     }
                     $objWriter->startElement('c:dispRSqr');
@@ -1440,6 +1435,7 @@ class Chart extends WriterPart
         $objWriter->endElement();
 
         foreach (($plotSeriesLabel->getDataValues() ?? []) as $plotLabelKey => $plotLabelValue) {
+            /** @var string $plotLabelValue */
             $objWriter->startElement('c:pt');
             $objWriter->writeAttribute('idx', $plotLabelKey);
 
@@ -1482,6 +1478,7 @@ class Chart extends WriterPart
                 $objWriter->startElement('c:lvl');
 
                 foreach (($plotSeriesValues->getDataValues() ?? []) as $plotSeriesKey => $plotSeriesValue) {
+                    /** @var string[] $plotSeriesValue */
                     if (isset($plotSeriesValue[$level])) {
                         $objWriter->startElement('c:pt');
                         $objWriter->writeAttribute('idx', $plotSeriesKey);
@@ -1509,7 +1506,7 @@ class Chart extends WriterPart
             $count = $plotSeriesValues->getPointCount();
             $source = $plotSeriesValues->getDataSource();
             $values = $plotSeriesValues->getDataValues();
-            if ($count > 1 || ($count === 1 && is_array($values) && array_key_exists(0, $values) && "=$source" !== (string) $values[0])) {
+            if ($count > 1 || ($count === 1 && is_array($values) && array_key_exists(0, $values) && "=$source" !== StringHelper::convertToString($values[0], false))) {
                 $objWriter->startElement('c:' . $dataType . 'Cache');
 
                 if (($groupType != DataSeries::TYPE_PIECHART) && ($groupType != DataSeries::TYPE_PIECHART_3D) && ($groupType != DataSeries::TYPE_DONUTCHART)) {
@@ -1524,6 +1521,7 @@ class Chart extends WriterPart
                 $objWriter->writeAttribute('val', (string) $plotSeriesValues->getPointCount());
                 $objWriter->endElement();
 
+                /** @var array<string, string> */
                 $dataValues = $plotSeriesValues->getDataValues();
                 if (!empty($dataValues)) {
                     foreach ($dataValues as $plotSeriesKey => $plotSeriesValue) {
@@ -1729,7 +1727,7 @@ class Chart extends WriterPart
         if (empty($xAxis->getShadowProperty('effect'))) {
             return;
         }
-        /** @var string $effect */
+        /** @var non-falsy-string $effect */
         $effect = $xAxis->getShadowProperty('effect');
         $objWriter->startElement("a:$effect");
 
@@ -1912,19 +1910,23 @@ class Chart extends WriterPart
             $this->writeEffects($objWriter, $axisText);
         }
         if ($labelFont !== null) {
-            if (!empty($labelFont->getLatin())) {
+            $defaultFont = ($labelFont->getName() !== Font::DEFAULT_FONT_NAME) ? $labelFont->getName() : '';
+            $fontName = $labelFont->getLatin() ?: $defaultFont;
+            if (!empty($fontName)) {
                 $objWriter->startElement('a:latin');
-                $objWriter->writeAttribute('typeface', $labelFont->getLatin());
+                $objWriter->writeAttribute('typeface', $fontName);
                 $objWriter->endElement();
             }
-            if (!empty($labelFont->getEastAsian())) {
+            $fontName = $labelFont->getEastAsian() ?: $defaultFont;
+            if (!empty($fontName)) {
                 $objWriter->startElement('a:eastAsian');
-                $objWriter->writeAttribute('typeface', $labelFont->getEastAsian());
+                $objWriter->writeAttribute('typeface', $fontName);
                 $objWriter->endElement();
             }
-            if (!empty($labelFont->getComplexScript())) {
+            $fontName = $labelFont->getComplexScript() ?: $defaultFont;
+            if (!empty($fontName)) {
                 $objWriter->startElement('a:complexScript');
-                $objWriter->writeAttribute('typeface', $labelFont->getComplexScript());
+                $objWriter->writeAttribute('typeface', $fontName);
                 $objWriter->endElement();
             }
         }

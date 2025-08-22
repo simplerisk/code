@@ -24,7 +24,7 @@
         
         if (!is_user_allowed_to_access($_SESSION['uid'], $test_audit_id, 'audit')) {
             set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForThisAudit']));
-            refresh($_SESSION['base_url']."/compliance/past_audits.php");
+            refresh(build_url("compliance/past_audits.php"));
         }
     }
 
@@ -188,8 +188,7 @@
 
         // If there're template tabs we have to separately initialize the WYSIWYG editors
         if ($("#template_group_id").length > 0) {
-            // Since tinymce stores the editor instances indexed by the textarea's id we have to make sure it's unique(which it is NOT by default)
-            // so we're appending the template's id to the textarea's ID to make it unique 
+            // Have to make sure that the IDs are unique
 
             $("[name='assessment']").each(function() {
                 let template_group_id = $(this).closest('form').find('#template_group_id').val();
@@ -204,7 +203,7 @@
             });
 
         } else {
-            // init tinyMCE WYSIWYG editor
+            // init WYSIWYG editor
             init_minimun_editor("#risk-submit-form [name=assessment]");
             init_minimun_editor("#risk-submit-form [name=notes]");
         }

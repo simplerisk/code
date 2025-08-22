@@ -6,7 +6,7 @@
 
 use OpenApi\Annotations as OA;
 
-define('SIMPLERISK_BASE_URL', get_setting("simplerisk_base_url"));
+define('SIMPLERISK_BASE_URL', rtrim(get_setting("simplerisk_base_url"), '/'));
 define('API_PATH', "/api/v2");
 define('SIMPLERISK_API_URL', SIMPLERISK_BASE_URL.API_PATH);
 

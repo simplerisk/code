@@ -9,7 +9,7 @@ require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 $breadcrumb_title_key = "RiskDetails";
 $active_sidebar_menu ="RiskManagement";
 $active_sidebar_submenu = isset($_GET['active']) ? $_GET['active'] : "ReviewRisksRegularly";
-render_header_and_sidebar(['blockUI', 'tabs:logic', 'selectize', 'datatables', 'chart.js', 'WYSIWYG', 'multiselect', 'CUSTOM:common.js', 'CUSTOM:pages/risk.js', 'CUSTOM:cve_lookup.js', 'datetimerangepicker', 'JSLocalization'], ['check_riskmanagement' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu, required_localization_keys: ['MitigationPlanned']);
+render_header_and_sidebar(['blockUI', 'tabs:logic', 'selectize', 'datatables', 'chart.js', 'WYSIWYG', 'multiselect', 'CUSTOM:common.js', 'CUSTOM:pages/risk.js', 'CUSTOM:cve_lookup.js', 'datetimerangepicker', 'JSLocalization', 'CUSTOM:pages/governance.js', 'easyui:treegrid'], ['check_riskmanagement' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu, required_localization_keys: ['MitigationPlanned']);
 
 // Check if a risk ID was sent
 if (isset($_GET['id']))

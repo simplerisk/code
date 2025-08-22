@@ -23,6 +23,7 @@ use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Const_;
 use PhpParser\Node\Stmt\Else_;
 use PhpParser\Node\Stmt\ElseIf_;
 use PhpParser\Node\Stmt\Enum_;
@@ -735,6 +736,33 @@ abstract class ParserAbstract implements Parser {
         return Double::KIND_DOUBLE;
     }
 
+    protected function getIntCastKind(string $cast): int {
+        $cast = strtolower($cast);
+        if (strpos($cast, 'integer') !== false) {
+            return Expr\Cast\Int_::KIND_INTEGER;
+        }
+
+        return Expr\Cast\Int_::KIND_INT;
+    }
+
+    protected function getBoolCastKind(string $cast): int {
+        $cast = strtolower($cast);
+        if (strpos($cast, 'boolean') !== false) {
+            return Expr\Cast\Bool_::KIND_BOOLEAN;
+        }
+
+        return Expr\Cast\Bool_::KIND_BOOL;
+    }
+
+    protected function getStringCastKind(string $cast): int {
+        $cast = strtolower($cast);
+        if (strpos($cast, 'binary') !== false) {
+            return Expr\Cast\String_::KIND_BINARY;
+        }
+
+        return Expr\Cast\String_::KIND_STRING;
+    }
+
     /** @param array<string, mixed> $attributes */
     protected function parseLNumber(string $str, array $attributes, bool $allowInvalidOctal = false): Int_ {
         try {
@@ -975,7 +1003,7 @@ abstract class ParserAbstract implements Parser {
     }
 
     protected function fixupArrayDestructuring(Array_ $node): Expr\List_ {
-        $this->createdArrays->detach($node);
+        $this->createdArrays->offsetUnset($node);
         return new Expr\List_(array_map(function (Node\ArrayItem $item) {
             if ($item->value instanceof Expr\Error) {
                 // We used Error as a placeholder for empty elements, which are legal for destructuring.
@@ -1199,6 +1227,13 @@ abstract class ParserAbstract implements Parser {
             $this->emitError(new Error(
                 'Cannot use the ' . Modifiers::toString($b) . ' modifier on a property hook',
                 $this->getAttributesAt($modifierPos)));
+        }
+    }
+
+    protected function checkConstantAttributes(Const_ $node): void {
+        if ($node->attrGroups !== [] && count($node->consts) > 1) {
+            $this->emitError(new Error(
+                'Cannot use attributes on multiple constants at once', $node->getAttributes()));
         }
     }
 

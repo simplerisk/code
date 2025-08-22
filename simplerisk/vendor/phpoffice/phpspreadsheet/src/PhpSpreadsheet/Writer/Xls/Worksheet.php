@@ -2,6 +2,7 @@
 
 namespace PhpOffice\PhpSpreadsheet\Writer\Xls;
 
+use Composer\Pcre\Preg;
 use GdImage;
 use PhpOffice\PhpSpreadsheet\Cell\Cell;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
@@ -66,6 +67,8 @@ class Worksheet extends BIFFwriter
 
     /**
      * Array containing format information for columns.
+     *
+     * @var array<array{int, int, float, int, int, int}>
      */
     private array $columnInfo;
 
@@ -108,11 +111,15 @@ class Worksheet extends BIFFwriter
 
     /**
      * Reference to the array containing all the unique strings in the workbook.
+     *
+     * @var array<string, int>
      */
     private array $stringTable;
 
     /**
      * Color cache.
+     *
+     * @var mixed[]
      */
     private array $colors;
 
@@ -148,6 +155,8 @@ class Worksheet extends BIFFwriter
 
     /**
      * Array of font hashes associated to FONT records index.
+     *
+     * @var array<int|string>
      */
     public array $fontHashIndex;
 
@@ -162,8 +171,8 @@ class Worksheet extends BIFFwriter
      *
      * @param int $str_total Total number of strings
      * @param int $str_unique Total number of unique strings
-     * @param array $str_table String Table
-     * @param array $colors Colour Table
+     * @param array<string, int> $str_table String Table
+     * @param mixed[] $colors Colour Table
      * @param Parser $parser The formula parser created for the Workbook
      * @param bool $preCalculateFormulas Flag indicating whether formulas should be calculated or just written
      * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $phpSheet The worksheet to write
@@ -372,11 +381,25 @@ class Worksheet extends BIFFwriter
                         if ($getFont !== null) {
                             $str_fontidx = $this->fontHashIndex[$getFont->getHashCode()];
                         }
+                    } else {
+                        $styleArray = $this->phpSheet
+                            ->getParent()
+                            ?->getCellXfCollection();
+                        if ($styleArray !== null) {
+                            $font = $styleArray[$xfIndex - 15] ?? null;
+                            if ($font !== null) {
+                                $font = $font->getFont();
+                            }
+                            if ($font !== null) {
+                                $str_fontidx = $this->fontHashIndex[$font->getHashCode()];
+                            }
+                        }
                     }
                     $arrcRun[] = ['strlen' => $str_pos, 'fontidx' => $str_fontidx];
                     // Position FROM
                     $str_pos += StringHelper::countCharacters($element->getText(), 'UTF-8');
                 }
+                /** @var array<int, array{strlen: int, fontidx: int}> $arrcRun */
                 $this->writeRichTextString($row, $column, $cVal->getPlainText(), $xfIndex, $arrcRun);
             } else {
                 switch ($cell->getDatatype()) {
@@ -457,15 +480,16 @@ class Worksheet extends BIFFwriter
             [$column, $row] = Coordinate::indexesFromString($coordinate);
 
             $url = $hyperlink->getUrl();
-
-            if (str_contains($url, 'sheet://')) {
+            if ($url[0] === '#') {
+                $url = "internal:$url";
+            } elseif (str_starts_with($url, 'sheet://')) {
                 // internal to current workbook
                 $url = str_replace('sheet://', 'internal:', $url);
-            } elseif (preg_match('/^(http:|https:|ftp:|mailto:)/', $url)) {
+            } elseif (Preg::isMatch('/^(http:|https:|ftp:|mailto:)/', $url)) {
                 // URL
-            } elseif (!empty($hyperlinkbase) && preg_match('~^([A-Za-z]:)?[/\\\\]~', $url) !== 1) {
+            } elseif (!empty($hyperlinkbase) && !Preg::isMatch('~^([A-Za-z]:)?[/\\\]~', $url)) {
                 $url = "$hyperlinkbase$url";
-                if (preg_match('/^(http:|https:|ftp:|mailto:)/', $url) !== 1) {
+                if (!Preg::isMatch('/^(http:|https:|ftp:|mailto:)/', $url)) {
                     $url = 'external:' . $url;
                 }
             } else {
@@ -489,6 +513,31 @@ class Worksheet extends BIFFwriter
         $this->storeEof();
     }
 
+    public const MAX_XLS_COLUMN = 256;
+    public const MAX_XLS_COLUMN_STRING = 'IV';
+    public const MAX_XLS_ROW = 65536;
+
+    private static function limitRange(string $exploded): string
+    {
+        $retVal = '';
+        $ranges = Coordinate::getRangeBoundaries($exploded);
+        $firstCol = Coordinate::columnIndexFromString($ranges[0][0]);
+        $firstRow = (int) $ranges[0][1];
+        if ($firstCol <= self::MAX_XLS_COLUMN && $firstRow <= self::MAX_XLS_ROW) {
+            $retVal = $exploded;
+            if (str_contains($exploded, ':')) {
+                $lastCol = Coordinate::columnIndexFromString($ranges[1][0]);
+                $ranges[1][1] = min(self::MAX_XLS_ROW, (int) $ranges[1][1]);
+                if ($lastCol > self::MAX_XLS_COLUMN) {
+                    $ranges[1][0] = self::MAX_XLS_COLUMN_STRING;
+                }
+                $retVal = "{$ranges[0][0]}{$ranges[0][1]}:{$ranges[1][0]}{$ranges[1][1]}";
+            }
+        }
+
+        return $retVal;
+    }
+
     private function writeConditionalFormatting(): void
     {
         $conditionalFormulaHelper = new ConditionalHelper($this->parser);
@@ -497,7 +546,10 @@ class Worksheet extends BIFFwriter
         foreach ($this->phpSheet->getConditionalStylesCollection() as $key => $value) {
             $keyExplode = explode(',', Coordinate::resolveUnionAndIntersection($key));
             foreach ($keyExplode as $exploded) {
-                $arrConditionalStyles[$exploded] = $value;
+                $range = self::limitRange($exploded);
+                if ($range !== '') {
+                    $arrConditionalStyles[$range] = $value;
+                }
             }
         }
         if (!empty($arrConditionalStyles)) {
@@ -539,12 +591,22 @@ class Worksheet extends BIFFwriter
 
         // extract first cell, e.g. 'A1'
         $firstCell = $explodes[0];
+        if (ctype_alpha($firstCell)) {
+            $firstCell .= '1';
+        } elseif (ctype_digit($firstCell)) {
+            $firstCell = "A$firstCell";
+        }
 
         // extract last cell, e.g. 'B6'
         if (count($explodes) == 1) {
             $lastCell = $firstCell;
         } else {
             $lastCell = $explodes[1];
+        }
+        if (ctype_alpha($lastCell)) {
+            $lastCell .= (string) self::MAX_XLS_ROW;
+        } elseif (ctype_digit($lastCell)) {
+            $lastCell = self::MAX_XLS_COLUMN_STRING . $lastCell;
         }
 
         $firstCellCoordinates = Coordinate::indexesFromString($firstCell); // e.g. [0, 1]
@@ -646,7 +708,7 @@ class Worksheet extends BIFFwriter
      * @param int $col Column index (0-based)
      * @param string $str The string
      * @param int $xfIndex The XF format index for the cell
-     * @param array $arrcRun Index to Font record and characters beginning
+     * @param array<int, array{strlen: int, fontidx: int}> $arrcRun Index to Font record and characters beginning
      */
     private function writeRichTextString(int $row, int $col, string $str, int $xfIndex, array $arrcRun): void
     {
@@ -905,14 +967,13 @@ class Worksheet extends BIFFwriter
     private function writeUrlRange(int $row1, int $col1, int $row2, int $col2, string $url): void
     {
         // Check for internal/external sheet links or default to web link
-        if (preg_match('[^internal:]', $url)) {
+        if (Preg::isMatch('[^internal:]', $url)) {
             $this->writeUrlInternal($row1, $col1, $row2, $col2, $url);
-        }
-        if (preg_match('[^external:]', $url)) {
+        } elseif (Preg::isMatch('[^external:]', $url)) {
             $this->writeUrlExternal($row1, $col1, $row2, $col2, $url);
+        } else {
+            $this->writeUrlWeb($row1, $col1, $row2, $col2, $url);
         }
-
-        $this->writeUrlWeb($row1, $col1, $row2, $col2, $url);
     }
 
     /**
@@ -941,8 +1002,7 @@ class Worksheet extends BIFFwriter
 
         // Convert URL to a null terminated wchar string
 
-        /** @phpstan-ignore-next-line */
-        $url = implode("\0", preg_split("''", $url, -1, PREG_SPLIT_NO_EMPTY));
+        $url = implode("\0", Preg::split("''", $url, -1, PREG_SPLIT_NO_EMPTY));
         $url = $url . "\0\0\0";
 
         // Pack the length of the URL
@@ -975,7 +1035,7 @@ class Worksheet extends BIFFwriter
         $record = 0x01B8; // Record identifier
 
         // Strip URL type
-        $url = (string) preg_replace('/^internal:/', '', $url);
+        $url = Preg::replace('/^internal:/', '', $url);
 
         // Pack the undocumented parts of the hyperlink stream
         $unknown1 = pack('H*', 'D0C9EA79F9BACE118C8200AA004BA90B02000000');
@@ -1022,7 +1082,7 @@ class Worksheet extends BIFFwriter
     {
         // Network drives are different. We will handle them separately
         // MS/Novell network drives and shares start with \\
-        if (preg_match('[^external:\\\\]', $url)) {
+        if (Preg::isMatch('[^external:\\\]', $url)) {
             return;
         }
 
@@ -1030,7 +1090,7 @@ class Worksheet extends BIFFwriter
 
         // Strip URL type and change Unix dir separator to Dos style (if needed)
         //
-        $url = (string) preg_replace(['/^external:/', '/\//'], ['', '\\'], $url);
+        $url = Preg::replace(['/^external:/', '/\//'], ['', '\\'], $url);
 
         // Determine if the link is relative or absolute:
         //   relative if link contains no dir separator, "somefile.xls"
@@ -1038,7 +1098,7 @@ class Worksheet extends BIFFwriter
         //   otherwise, absolute
 
         $absolute = 0x00; // relative path
-        if (preg_match('/^[A-Z]:/', $url)) {
+        if (Preg::isMatch('/^[A-Z]:/', $url)) {
             $absolute = 0x02; // absolute path on Windows, e.g. C:\...
         }
         $link_type = 0x01 | $absolute;
@@ -1047,7 +1107,7 @@ class Worksheet extends BIFFwriter
         // parameters accordingly.
         // Split the dir name and sheet name (if it exists)
         $dir_long = $url;
-        if (preg_match('/\\#/', $url)) {
+        if (Preg::isMatch('/\#/', $url)) {
             $link_type |= 0x08;
         }
 
@@ -1055,11 +1115,11 @@ class Worksheet extends BIFFwriter
         $link_type = pack('V', $link_type);
 
         // Calculate the up-level dir count e.g.. (..\..\..\ == 3)
-        $up_count = preg_match_all('/\\.\\.\\\\/', $dir_long, $useless);
+        $up_count = Preg::isMatchAll('/\.\.\\\/', $dir_long, $useless);
         $up_count = pack('v', $up_count);
 
         // Store the short dos dir name (null terminated)
-        $dir_short = (string) preg_replace('/\\.\\.\\\\/', '', $dir_long) . "\0";
+        $dir_short = Preg::replace('/\.\.\\\/', '', $dir_long) . "\0";
 
         // Store the long dir name as a wchar string (non-null terminated)
         //$dir_long = $dir_long . "\0";
@@ -1263,7 +1323,7 @@ class Worksheet extends BIFFwriter
      * Note: The SDK says the record length is 0x0B but Excel writes a 0x0C
      * length record.
      *
-     * @param array $col_array This is the only parameter received and is composed of the following:
+     * @param array{?int, ?int, ?float, ?int, ?int, ?int} $col_array This is the only parameter received and is composed of the following:
      *                0 => First formatted column,
      *                1 => Last formatted column,
      *                2 => Col width (8.43 is Excel default),
@@ -2128,6 +2188,10 @@ class Worksheet extends BIFFwriter
             ? $this->processBitmapGd($bitmap)
             : $this->processBitmap($bitmap);
         [$width, $height, $size, $data] = $bitmap_array;
+        /** @var int $width */
+        /** @var int $height */
+        /** @var int $size */
+        /** @var string $data */
 
         // Scale the frame of the image.
         $width *= $scale_x;
@@ -2334,7 +2398,7 @@ class Worksheet extends BIFFwriter
      *
      * @param GdImage $image The image to process
      *
-     * @return array Array with data and properties of the bitmap
+     * @return array{0: float, 1: float, 2: int, 3: string} Data and properties of the bitmap
      */
     public function processBitmapGd(GdImage $image): array
     {
@@ -2344,9 +2408,9 @@ class Worksheet extends BIFFwriter
         $data = pack('Vvvvv', 0x000C, $width, $height, 0x01, 0x18);
         for ($j = $height; --$j;) {
             for ($i = 0; $i < $width; ++$i) {
-                /** @phpstan-ignore-next-line */
-                $color = imagecolorsforindex($image, imagecolorat($image, $i, $j));
-                if ($color !== false) {
+                $colorAt = imagecolorat($image, $i, $j);
+                if ($colorAt !== false) {
+                    $color = imagecolorsforindex($image, $colorAt);
                     foreach (['red', 'green', 'blue'] as $key) {
                         $color[$key] = $color[$key] + (int) round((255 - $color[$key]) * $color['alpha'] / 127);
                     }
@@ -2368,7 +2432,7 @@ class Worksheet extends BIFFwriter
      *
      * @param string $bitmap The bitmap to process
      *
-     * @return array Array with data and properties of the bitmap
+     * @return mixed[] Array with data and properties of the bitmap
      */
     public function processBitmap(string $bitmap): array
     {
@@ -2400,6 +2464,7 @@ class Worksheet extends BIFFwriter
         // the data size at offset 0x22.
         //
         $size_array = unpack('Vsa', substr($data, 0, 4)) ?: [];
+        /** @var int */
         $size = $size_array['sa'];
         $data = substr($data, 4);
         $size -= 0x36; // Subtract size of bitmap header.
@@ -2574,7 +2639,14 @@ class Worksheet extends BIFFwriter
     private function writeDataValidity(): void
     {
         // Datavalidation collection
-        $dataValidationCollection = $this->phpSheet->getDataValidationCollection();
+        $dataValidationCollection1 = $this->phpSheet->getDataValidationCollection();
+        $dataValidationCollection = [];
+        foreach ($dataValidationCollection1 as $key => $dataValidation) {
+            $keyParts = explode(' ', $key);
+            foreach ($keyParts as $keyPart) {
+                $dataValidationCollection[$keyPart] = $dataValidation;
+            }
+        }
 
         // Write data validations?
         if (!empty($dataValidationCollection)) {
@@ -2609,7 +2681,7 @@ class Worksheet extends BIFFwriter
                 $options |= $errorStyle << 4;
 
                 // explicit formula?
-                if ($type == 0x03 && preg_match('/^\".*\"$/', $dataValidation->getFormula1())) {
+                if ($type == 0x03 && Preg::isMatch('/^\".*\"$/', $dataValidation->getFormula1())) {
                     $options |= 0x01 << 7;
                 }
 
@@ -2844,9 +2916,9 @@ class Worksheet extends BIFFwriter
             $bFormatBorder = 0;
         }
         // Pattern
-        $bFillStyle = ($conditional->getStyle()->getFill()->getFillType() === null ? 0 : 1);
-        $bFillColor = ($conditional->getStyle()->getFill()->getStartColor()->getARGB() === null ? 0 : 1);
-        $bFillColorBg = ($conditional->getStyle()->getFill()->getEndColor()->getARGB() === null ? 0 : 1);
+        $bFillStyle = $conditional->getStyle()->getFill()->getFillType() ? 1 : 0;
+        $bFillColor = $conditional->getStyle()->getFill()->getStartColor()->getARGB() ? 1 : 0;
+        $bFillColorBg = $conditional->getStyle()->getFill()->getEndColor()->getARGB() ? 1 : 0;
         if ($bFillStyle == 1 || $bFillColor == 1 || $bFillColorBg == 1) {
             $bFormatFill = 1;
         } else {

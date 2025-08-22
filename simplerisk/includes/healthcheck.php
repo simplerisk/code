@@ -724,11 +724,8 @@ function check_api_connectivity()
 	}
 	else
 	{
-		// Get the SimpleRisk base URL
-		$simplerisk_base_url = get_setting("simplerisk_base_url");
-
 		// Create the whoami URL
-		$url = $simplerisk_base_url . "/api/whoami";
+		$url = build_url("/api/whoami");
 
 		// Set the HTTP options
 		$http_options = [

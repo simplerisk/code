@@ -126,7 +126,9 @@ $junction_config = array(
             'risk_to_team' => 'risk_id',
             'risk_to_technology' => 'risk_id',
             'risks_to_asset_groups' => 'risk_id',
-            'risks_to_assets' => 'risk_id'
+            'risks_to_assets' => 'risk_id',
+            'risk_catalog_mappings' => 'risk_id', 
+            'threat_catalog_mappings' => 'risk_id'
         )
     ),    
     'location' => array(
@@ -204,6 +206,7 @@ $junction_config = array(
             'mitigation_to_controls' => 'control_id',
             'control_to_assets' => 'control_id',
             'control_to_asset_groups' => 'control_id',
+            'document_control_mappings' => 'control_id',
         )
     ),
     'questionnaire_questions' => array(
@@ -215,7 +218,8 @@ $junction_config = array(
     'frameworks' => array(
         'id_field' => 'value',
         'junctions' => array(
-            'framework_control_mappings' => 'framework'
+            'framework_control_mappings' => 'framework',
+            'document_framework_mappings' => 'framework_id',
         )
     ),
     'business_unit' => array(
@@ -262,6 +266,25 @@ $junction_config = array(
         'junctions' => array(
             'incident_management_incident_to_assets' => 'incident_id',
             'incident_management_incident_to_asset_groups' => 'incident_id',
+        )
+    ],
+    'risk_catalog' => [
+        'id_field' => 'id',
+        'junctions' => array(
+            'risk_catalog_mappings' => 'risk_catalog_id',
+        )
+    ],
+    'threat_catalog' => [
+        'id_field' => 'id',
+        'junctions' => array(
+            'threat_catalog_mappings' => 'threat_catalog_id',
+        )
+    ],
+    'documents' => [
+        'id_field' => 'id',
+        'junctions' => array(
+            'document_framework_mappings' => 'document_id',
+            'document_control_mappings' => 'document_id'
         )
     ],
 );
@@ -1078,7 +1101,7 @@ $field_settings = [
             'customization_field_name' => 'TestDate',
             'localization_key' => 'TestDate',
             'technical_field' => true,
-            'custom_column_style' => 'min-width:150px;',
+            'custom_column_style' => 'min-width:235px;',
             'encrypted' => false,
             'searchable' => true,
             'orderable' => true,
@@ -2073,7 +2096,7 @@ $field_settings_display_groups = [
         'field_type' => 'framework_control_test_audit',
         'fields' => [
             "test_name",
-            "audit_date",
+            "test_date",
             "control_name",
             "framework_name",
             "tags",
@@ -2396,7 +2419,7 @@ $field_settings_views = [
         ],
         'default_enabled_columns' => [
             "test_name",
-            "audit_date",
+            "test_date",
             "control_name",
             "framework_name",
             "tags",
@@ -2543,6 +2566,23 @@ $field_settings_views = [
             'recovery_average'
         ],
     ],
+    'documents_to_controls' => [
+        'view_type' => 'documents_to_controls',
+        'datatable_ajax_uri' => '/api/v2/governance/documents/controls',
+        'datatable_data_type' => 'list',
+        'groups' => [
+            'document_columns',
+            'control_columns',
+            'matching_columns'
+        ],
+        'default_enabled_columns' => [
+            'document',
+            'control',
+            'selected',
+            'matching',
+            'recommendation'
+        ],
+    ],
 ];
 
 /**
@@ -2598,6 +2638,22 @@ $ui_layout_widget_config = [
             'h' => 3,
             'minW' => 8,
             'minH' => 3,
+        ],
+        '' => '',
+    ],
+    /* Custom widgets
+     * These will be displayed in a separae dropdown when the 'Create a custom widget' option is selected in the main widget dropdown.*/
+    'WYSIWYG' => [
+        'custom' => true,
+        'localization_key' => 'RichText',
+        'type' => 'editable_widget',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 4,
+            'h' => 2,
+            'minW' => 1,
+            'minH' => 1,
+            'data' => 'Add your own text here!'
         ],
         '' => '',
     ],
@@ -2749,7 +2805,10 @@ $ui_layout_config = [
             'chart_open_vs_closed',
             'chart_mitigation_planned_vs_unplanned',
             'chart_reviewed_vs_unreviewed',
-            'table_risks_by_month'
+            'table_risks_by_month',
+        ],
+        'available_custom_widgets' => [
+            'WYSIWYG'
         ],
         'default_layout' => [
             [
@@ -2812,6 +2871,9 @@ $ui_layout_config = [
             'open_owner',
             'open_owners_manager',
             'open_risk_scoring_method'
+        ],
+        'available_custom_widgets' => [
+            'WYSIWYG'
         ],
         'default_layout' => [
             [
@@ -2931,6 +2993,9 @@ $ui_layout_config = [
         'required_permission' =>'', //???
         'available_widgets' => [
             'close_reason'
+        ],
+        'available_custom_widgets' => [
+            'WYSIWYG'
         ],
         'default_layout' => [
             [
@@ -4593,63 +4658,108 @@ function get_risk_level_display_name($name)
 /****************************
  * FUNCTION: CALCULATE RISK *
  ****************************/
-function calculate_risk($impact, $likelihood)
-{
-    if(empty($GLOBALS['count_of_impacts'])){
+function calculate_risk($impact, $likelihood) {
+
+    if (empty($GLOBALS['count_of_impacts'])) {
         $GLOBALS['count_of_impacts'] = count(get_table("impact"));
         $GLOBALS['count_of_likelihoods'] = count(get_table("likelihood"));
     }
 
     // If the impact or likelihood is valid
-    if(!empty($GLOBALS['count_of_impacts']) && !empty($GLOBALS['count_of_likelihoods']) && in_array($impact, range(1, $GLOBALS['count_of_impacts'])) && in_array($likelihood, range(1,$GLOBALS['count_of_likelihoods'])))
-    {
+    if (!empty($GLOBALS['count_of_impacts']) && !empty($GLOBALS['count_of_likelihoods']) && in_array($impact, range(1, $GLOBALS['count_of_impacts'])) && in_array($likelihood, range(1,$GLOBALS['count_of_likelihoods']))) {
+
         // Get risk_model
         $risk_model = get_setting("risk_model");
 
         // Pick the risk formula
-        if ($risk_model == 1)
-        {
-            // $max_risk = 35;
-            $max_risk = ($GLOBALS['count_of_likelihoods'] * $GLOBALS['count_of_impacts']) + (2 * $GLOBALS['count_of_impacts']);
+        if ($risk_model == 1) {
+
             $risk = ($likelihood * $impact) + (2 * $impact);
-        }
-        else if ($risk_model == 2)
-        {
-            // $max_risk = 30;
-            $max_risk = ($GLOBALS['count_of_likelihoods'] * $GLOBALS['count_of_impacts']) + $GLOBALS['count_of_impacts'];
+
+        } else if ($risk_model == 2) {
+
             $risk = ($likelihood * $impact) + $impact;
-        }
-        else if ($risk_model == 3)
-        {
-            // $max_risk = 25;
-            $max_risk = $GLOBALS['count_of_likelihoods'] * $GLOBALS['count_of_impacts'];
+
+        } else if ($risk_model == 3) {
+
             $risk = $likelihood * $impact;
-        }
-        else if ($risk_model == 4)
-        {
-            // $max_risk = 30;
-            $max_risk = $GLOBALS['count_of_likelihoods'] * $GLOBALS['count_of_impacts'] + $GLOBALS['count_of_likelihoods'];
+
+        } else if ($risk_model == 4) {
+
             $risk = ($likelihood * $impact) + $likelihood;
-        }
-        else if ($risk_model == 5)
-        {
-            // $max_risk = 35;
-            $max_risk = ($GLOBALS['count_of_likelihoods'] * $GLOBALS['count_of_impacts']) + (2 * $GLOBALS['count_of_likelihoods']);
+
+        } else if ($risk_model == 5) {
+
             $risk = ($likelihood * $impact) + (2 * $likelihood);
-        }
-        else if ($risk_model == 6)
-        {
-            $max_risk = 10;
+
+        } else if ($risk_model == 6) {
+
             $risk = get_stored_risk_score($impact, $likelihood);
+
         }
 
-        // This puts it on a 1 to 10 scale similar to CVSS
-        $risk = round($risk * (10 / $max_risk), 2);
-    }
+        // If the risk score normalization is enabled
+        if (get_setting('need_risk_score_normalization', default: 'true') === 'true') {
+
+            // Calculate the maximum risk score based on the current risk model
+            $max_risk = calculate_maximum_risk_score();
+
+            // This puts it on a 1 to 10 scale similar to CVSS
+            $risk = round($risk * (10 / $max_risk), 2);
+
+        }
+        
     // If the impact or likelihood were not specified risk is 10
-    else $risk = get_setting('default_risk_score');
+    } else {
+        $risk = get_setting('default_risk_score');
+    }
 
     return $risk ? $risk : 0;
+}
+
+/**********************************************
+ * FUNCTION: GET IMPACT AND LIKELIHOOD COUNTS *
+ **********************************************/
+function get_impact_and_likelihood_counts() {
+
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT  
+            (SELECT COUNT(1) FROM `impact`) AS impact_count,
+            (SELECT COUNT(1) FROM `likelihood`) AS likelihood_count
+    ");
+    $stmt->execute();
+
+    // Fetch a single row instead of all rows
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    return [$result['impact_count'], $result['likelihood_count']];
+}
+
+/******************************************
+ * FUNCTION: CALCULATE MAXIMUM RISK SCORE *
+ ******************************************/
+function calculate_maximum_risk_score() {
+
+    // If the counts are not set, get them
+    if(empty($GLOBALS['count_of_impacts']) || empty($GLOBALS['count_of_likelihoods'])) {
+        [$GLOBALS['count_of_impacts'], $GLOBALS['count_of_likelihoods']] = get_impact_and_likelihood_counts();
+    }
+
+    switch(get_setting("risk_model")) {
+        case 1: return ($GLOBALS['count_of_likelihoods'] * $GLOBALS['count_of_impacts']) + (2 * $GLOBALS['count_of_impacts']);
+        case 2: return ($GLOBALS['count_of_likelihoods'] * $GLOBALS['count_of_impacts']) + $GLOBALS['count_of_impacts'];
+        case 3: return $GLOBALS['count_of_likelihoods'] * $GLOBALS['count_of_impacts'];
+        case 4: return ($GLOBALS['count_of_likelihoods'] * $GLOBALS['count_of_impacts']) + $GLOBALS['count_of_likelihoods'];
+        case 5: return ($GLOBALS['count_of_likelihoods'] * $GLOBALS['count_of_impacts']) + (2 * $GLOBALS['count_of_likelihoods']);
+        // Default also acts as 'case 6'
+        default: return 10;
+    }
 }
 
 /****************************
@@ -6137,12 +6247,16 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
 
     $custom_reviewregularly_display_settings = '{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["days_open","1"],["closure_date","0"],["reference_id","0"],["regulation","0"],["control_number","0"],["location","0"],["source","0"],["category","0"],["team","0"],["additional_stakeholders","0"],["technology","0"],["owner","0"],["manager","0"],["submitted_by","0"],["risk_tags","0"],["scoring_method","0"],["residual_risk","0"],["submission_date","0"],["project","0"],["affected_assets","0"],["risk_assessment","0"],["additional_notes","0"],["risk_mapping","0"],["threat_mapping","0"]],"mitigation_colums":[["mitigation_planned","0"],["planning_strategy","0"],["planning_date","0"],["mitigation_effort","0"],["mitigation_cost","0"],["mitigation_owner","0"],["mitigation_team","0"],["mitigation_accepted","0"],["mitigation_date","0"],["mitigation_controls","0"],["current_solution","0"],["security_recommendations","0"],["security_requirements","0"]],"review_colums":[["management_review","0"],["review_date","0"],["next_step","0"],["next_review_date","1"],["comments","0"]]}';
 
+    $custom_questionnaire_results_display_settings = '{"questionnaire_columns":[["questionnaire_name","1"],["date_sent","1"],["questionnaire_status","1"],["approval_status","1"],["last_comment","1"]],"contact_columns":[["contact_company","1"],["contact_name","1"]]}';
+
     // If we require MFA for all users
     if (get_setting("mfa_required"))
     {
         // Set the multi_factor value to enabled regardless of the value passed
         $multi_factor = 1;
     }
+
+    $custom_questionnaire_results_display_settings_exists = field_exists_in_table('custom_questionnaire_results_display_settings', 'user');
 
     // Open the database connection
     $db = db_open();
@@ -6166,7 +6280,8 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
                 `custom_plan_mitigation_display_settings`,
                 `custom_perform_reviews_display_settings`,
                 `custom_reviewregularly_display_settings`,
-                `lang`
+                `lang`" . 
+                ($custom_questionnaire_results_display_settings_exists ? ", `custom_questionnaire_results_display_settings`" : '') . "
             )
         VALUES (
             :type,
@@ -6184,7 +6299,8 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
             :custom_plan_mitigation_display_settings,
             :custom_perform_reviews_display_settings,
             :custom_reviewregularly_display_settings,
-            ''
+            ''" . 
+            ($custom_questionnaire_results_display_settings_exists ? ", :custom_questionnaire_results_display_settings" : '') . "
         );
     ");
     $stmt->bindParam(":type", $type, PDO::PARAM_STR);
@@ -6202,6 +6318,10 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
     $stmt->bindParam(":custom_plan_mitigation_display_settings", $custom_plan_mitigation_display_settings, PDO::PARAM_STR);
     $stmt->bindParam(":custom_perform_reviews_display_settings", $custom_perform_reviews_display_settings, PDO::PARAM_STR);
     $stmt->bindParam(":custom_reviewregularly_display_settings", $custom_reviewregularly_display_settings, PDO::PARAM_STR);
+
+    if ($custom_questionnaire_results_display_settings_exists) {
+        $stmt->bindParam(":custom_questionnaire_results_display_settings", $custom_questionnaire_results_display_settings, PDO::PARAM_STR);
+    }
 
     $stmt->execute();
     
@@ -6614,11 +6734,8 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     // Set numeric null to 0
     if ($location == NULL) $location = "";
 
-    $risk_catalog_mapping = count($risk_catalog_mapping)?implode(",", $risk_catalog_mapping):"";
-    $threat_catalog_mapping = count($threat_catalog_mapping)?implode(",", $threat_catalog_mapping):"";
-
     // Add the risk
-    $sql = "INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `source`, `category`, `owner`, `manager`, `assessment`, `notes`, `project_id`, `submitted_by`, `submission_date`, `last_update`, `risk_catalog_mapping`, `threat_catalog_mapping`, `template_group_id`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :source, :category, :owner, :manager, :assessment, :notes, :project_id, :submitted_by, :submission_date, :last_update, :risk_catalog_mapping, :threat_catalog_mapping, :template_group_id)";
+    $sql = "INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `source`, `category`, `owner`, `manager`, `assessment`, `notes`, `project_id`, `submitted_by`, `submission_date`, `last_update`, `template_group_id`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :source, :category, :owner, :manager, :assessment, :notes, :project_id, :submitted_by, :submission_date, :last_update, :template_group_id)";
     
     $try_encrypt_assessment = try_encrypt($assessment);
     $try_encrypt_notes = try_encrypt($notes);
@@ -6642,8 +6759,6 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     $stmt->bindParam(":submitted_by", $submitted_by, PDO::PARAM_INT);
     $stmt->bindParam(":submission_date", $submission_date, PDO::PARAM_STR);
     $stmt->bindParam(":last_update", $submission_date, PDO::PARAM_STR);
-    $stmt->bindParam(":risk_catalog_mapping", $risk_catalog_mapping, PDO::PARAM_STR);
-    $stmt->bindParam(":threat_catalog_mapping", $threat_catalog_mapping, PDO::PARAM_STR);
     $stmt->bindParam(":template_group_id", $template_group_id, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -6658,6 +6773,10 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     save_junction_values("risk_to_technology", "risk_id", $last_insert_id, "technology_id", $technology);
     // Save additional stakeholders
     save_junction_values("risk_to_additional_stakeholder", "risk_id", $last_insert_id, "user_id", $additional_stakeholders);
+    // Save risk_catalogs
+    save_junction_values("risk_catalog_mappings", "risk_id", $last_insert_id, "risk_catalog_id", $risk_catalog_mapping);
+    // Save threat_catalogs
+    save_junction_values("threat_catalog_mappings", "risk_id", $last_insert_id, "threat_catalog_id", $threat_catalog_mapping);
 
     // Audit log
     $risk_id = (int)$last_insert_id + 1000;
@@ -6692,6 +6811,9 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
 
         create_subject_order(isset($_SESSION['encrypted_pass']) && $_SESSION['encrypted_pass'] ? base64_decode($_SESSION['encrypted_pass']) : fetch_key());
     }
+
+    $risk_catalog_mapping = count($risk_catalog_mapping)?implode(",", $risk_catalog_mapping):"";
+    $threat_catalog_mapping = count($threat_catalog_mapping)?implode(",", $threat_catalog_mapping):"";
 
     $insert_fields = array(
         "status"                    => $status,
@@ -8419,10 +8541,8 @@ function update_risk($risk_id, $is_api = false)
         } else $submission_date = $current_datetime;
     }
     $risk_catalog_mapping = get_param("post", "risk_catalog_mapping", []);
-	$risk_catalog_mapping = count($risk_catalog_mapping)?implode(",", $risk_catalog_mapping):"";
 
     $threat_catalog_mapping = get_param("post", "threat_catalog_mapping", []);
-    $threat_catalog_mapping = count($threat_catalog_mapping)?implode(",", $threat_catalog_mapping):"";
 
     $data = array(
         "reference_id"      =>$reference_id,
@@ -8435,9 +8555,7 @@ function update_risk($risk_id, $is_api = false)
         "assessment"        =>$assessment,
         "notes"             =>$notes,
         "last_update"       =>$current_datetime,
-        "submission_date"   =>$submission_date,
-        "risk_catalog_mapping"   =>$risk_catalog_mapping,
-        "threat_catalog_mapping"   =>$threat_catalog_mapping
+        "submission_date"   =>$submission_date
     );
 
     // Open the database connection
@@ -8509,6 +8627,10 @@ function update_risk($risk_id, $is_api = false)
     save_junction_values("risk_to_technology", "risk_id", $id, "technology_id", $technology);
     // Save additional stakeholders
     save_junction_values("risk_to_additional_stakeholder", "risk_id", $id, "user_id", $additional_stakeholders);
+    // Save additional stakeholders
+    save_junction_values("risk_catalog_mappings", "risk_id", $id, "risk_catalog_id", $risk_catalog_mapping);
+    // Save additional stakeholders
+    save_junction_values("threat_catalog_mappings", "risk_id", $id, "threat_catalog_id", $threat_catalog_mapping);
 
     updateTagsOfType($id, 'risk', $tags);
 
@@ -8802,7 +8924,9 @@ function get_risk_by_id($id)
             group_concat(distinct rttg.technology_id) technology,
             group_concat(distinct technology.name) technology_names,
             group_concat(distinct rtas.user_id) additional_stakeholders,
-            group_concat(distinct adsh.name) additional_stakeholder_names
+            group_concat(distinct adsh.name) additional_stakeholder_names,
+            group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+            group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
         FROM
             risk_scoring a
             INNER JOIN risks b on a.id = b.id
@@ -8823,6 +8947,10 @@ function get_risk_by_id($id)
             LEFT JOIN technology on rttg.technology_id=technology.value
             LEFT JOIN risk_to_additional_stakeholder rtas on b.id=rtas.risk_id
             LEFT JOIN user adsh on rtas.user_id=adsh.value
+            LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+            LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+            LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+            LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
         WHERE
             b.id=:id
             " . $separation_query . "
@@ -9277,7 +9405,9 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                         "security_recommendations",
                         "security_requirements",
                         "team",
-                        "technology"
+                        "technology",
+                        "risk_catalog_mapping",
+                        "threat_catalog_mapping",
                     ];
     
                     // TODO if sorting on a field isn't working then it should be considered to add above or add the whole table to the list in the below query 
@@ -9319,7 +9449,9 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             $stmt = $db->prepare("
                 SELECT
                     a.calculated_risk, b.*, c.next_review
-                    , ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+                    , ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -9327,6 +9459,10 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
                     LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
                     LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
                 WHERE
                     b.status != \"Closed\"
                 GROUP BY b.id
@@ -9344,7 +9480,9 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             // Query the database
             $stmt = $db->prepare("
                 SELECT
-                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -9354,6 +9492,10 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
                     LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
                     LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
                 WHERE
                     b.status != \"Closed\"  " . $separation_query . "
                 GROUP BY b.id
@@ -9481,7 +9623,9 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     p.mitigation_percent,
                     m.name AS next_step,
                     l.comments,
-                    n.name AS reviewer
+                    n.name AS reviewer,
+                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -9507,6 +9651,10 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
                     LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
                     LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
+                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
                 WHERE
                     b.mitigation_id = 0 and b.status != \"Closed\"
                 GROUP BY b.id
@@ -9625,7 +9773,9 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     p.mitigation_percent,
                     m.name AS next_step,
                     l.comments,
-                    n.name AS reviewer
+                    n.name AS reviewer,
+                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -9651,6 +9801,10 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
                     LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
                     LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
+                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
                 WHERE
                     b.mitigation_id = 0 and b.status != \"Closed\"  " . $separation_query . "
                 GROUP BY b.id
@@ -9779,7 +9933,9 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     p.mitigation_percent,
                     m.name AS next_step,
                     l.comments,
-                    n.name AS reviewer
+                    n.name AS reviewer,
+                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -9805,6 +9961,10 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
                     LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
                     LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
+                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
                 WHERE
                     b.mgmt_review = 0 and b.status != \"Closed\"
                 GROUP BY
@@ -9924,7 +10084,9 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     p.mitigation_percent,
                     m.name AS next_step,
                     l.comments,
-                    n.name AS reviewer
+                    n.name AS reviewer,
+                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -9950,6 +10112,10 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
                     LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
                     LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
+                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
                 WHERE
                     b.mgmt_review = 0 and b.status != \"Closed\"  {$separation_query}
                 GROUP BY
@@ -10087,7 +10253,9 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                 p.mitigation_percent,
                 m.name AS next_step,
                 l.comments,
-                n.name AS reviewer
+                n.name AS reviewer,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
             FROM
                 risk_scoring a
                 LEFT JOIN risks b ON a.id = b.id
@@ -10113,6 +10281,10 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                 LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
                 LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
                 LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
+                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
 
             WHERE b.status != \"Closed\" {$separation_query}
             GROUP BY b.id
@@ -10134,7 +10306,9 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             // Query the database
             $stmt = $db->prepare("
                 SELECT
-                    a.calculated_risk, b.*, c.next_review, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+                    a.calculated_risk, b.*, c.next_review, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -10142,6 +10316,10 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
                     LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
                     LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
                 WHERE
                     b.status = \"Closed\"
                 GROUP BY b.id
@@ -10163,7 +10341,9 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             $stmt = $db->prepare("
                 SELECT
-                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -10173,6 +10353,10 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
                     LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
                     LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
                 WHERE
                     b.status = \"Closed\"  {$separation_query}
                 GROUP BY b.id
@@ -10198,11 +10382,17 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         {
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
             FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, c1.next_review, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id
                 LEFT JOIN mitigations mg ON b.id = mg.risk_id
                 LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
                 LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
             WHERE b.status != \"Closed\"
             GROUP BY b.id
             ORDER BY calculated_risk DESC");
@@ -10217,7 +10407,9 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
             FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id
                 LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
                 LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
@@ -10225,6 +10417,10 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                 LEFT JOIN mitigations mg ON b.id = mg.risk_id
                 LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
                 LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
             WHERE b.status != \"Closed\" " . $separation_query . "
             GROUP BY b.id
             ORDER BY calculated_risk DESC");
@@ -10244,13 +10440,19 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         {
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*, c.next_review
+            SELECT a.calculated_risk, b.*, c.next_review,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
             FROM risk_scoring a
                 LEFT JOIN risks b ON a.id = b.id
                 RIGHT JOIN (SELECT c1.risk_id, c1.next_review, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 1) AS c ON a.id = c.risk_id
                 LEFT JOIN mitigations mg ON b.id = mg.risk_id
                 LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
                 LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
             WHERE b.status != \"Closed\"
             GROUP BY b.id
             ORDER BY calculated_risk DESC");
@@ -10265,7 +10467,9 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*, c.next_review
+            SELECT a.calculated_risk, b.*, c.next_review,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
             FROM risk_scoring a
                 LEFT JOIN risks b ON a.id = b.id
                 LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
@@ -10274,6 +10478,10 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                 LEFT JOIN mitigations mg ON b.id = mg.risk_id
                 LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
                 LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
             WHERE b.status != \"Closed\" " . $separation_query . "
             GROUP BY b.id
             ORDER BY calculated_risk DESC");
@@ -10293,11 +10501,17 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         {
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
             FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, c1.next_review, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 3) AS c ON a.id = c.risk_id
                 LEFT JOIN mitigations mg ON b.id = mg.risk_id
                 LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
                 LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
             WHERE b.status != \"Closed\"
             GROUP BY b.id
             ORDER BY calculated_risk DESC; ");
@@ -10312,7 +10526,9 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+            group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+            group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
             FROM risk_scoring a
                 LEFT JOIN risks b ON a.id = b.id 
                 LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
@@ -10321,6 +10537,10 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                 LEFT JOIN mitigations mg ON b.id = mg.risk_id
                 LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
                 LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
             WHERE b.status != \"Closed\" " . $separation_query . "
             GROUP BY b.id
             ORDER BY calculated_risk DESC; ");
@@ -10340,13 +10560,19 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         {
             // Query the database
             $stmt = $db->prepare("
-                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
                 FROM risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
                     LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
                     LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
                 WHERE
                     b.status != \"Closed\" AND (owner = :uid OR manager = :uid)
                 GROUP BY b.id
@@ -10363,7 +10589,9 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             // Query the database
             $stmt = $db->prepare("
-                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
                 FROM risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
@@ -10372,6 +10600,10 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
                     LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
                     LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
                 WHERE
                     b.status != \"Closed\" AND (owner = :uid OR manager = :uid) " . $separation_query . "
                 GROUP BY b.id
@@ -10395,7 +10627,17 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         {
         // Query the database
         $stmt = $db->prepare("
-        SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id WHERE b.status != \"Closed\" AND a.scoring_method = 2 ORDER BY calculated_risk DESC");
+        SELECT a.calculated_risk, b.*,
+            group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+            group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
+        FROM risk_scoring a JOIN risks b ON a.id = b.id 
+            LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+            LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+            LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+            LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+        WHERE b.status != \"Closed\" AND a.scoring_method = 2 
+        GROUP BY b.id
+        ORDER BY calculated_risk DESC");
         }
         else
         {
@@ -10407,9 +10649,16 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id                 
+            SELECT a.calculated_risk, b.*,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
+            FROM risk_scoring a JOIN risks b ON a.id = b.id                 
                 LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
                 LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
+                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
  WHERE b.status != \"Closed\" AND a.scoring_method = 2 " . $separation_query . " GROUP BY b.id ORDER BY calculated_risk DESC");
         }
 
@@ -10427,7 +10676,16 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         {
             // Query the database
     $stmt = $db->prepare("
-    SELECT a.calculated_risk, a.CLASSIC_likelihood, a.CLASSIC_impact, b.*, mit.mitigation_percent FROM risk_scoring a JOIN risks b ON a.id = b.id LEFT JOIN mitigations mit ON b.mitigation_id = mit.id WHERE b.status != \"Closed\" AND a.scoring_method = 1 ORDER BY calculated_risk DESC, mitigation_percent ASC");
+    SELECT a.calculated_risk, a.CLASSIC_likelihood, a.CLASSIC_impact, b.*, mit.mitigation_percent,
+        group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+        group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
+    FROM risk_scoring a JOIN risks b ON a.id = b.id 
+        LEFT JOIN mitigations mit ON b.mitigation_id = mit.id 
+        LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+        LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+        LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+        LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+        WHERE b.status != \"Closed\" AND a.scoring_method = 1 GROUP BY b.id ORDER BY calculated_risk DESC, mitigation_percent ASC");
         }
         else
         {
@@ -10439,11 +10697,18 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.calculated_risk, a.CLASSIC_likelihood, a.CLASSIC_impact, b.*, mit.mitigation_percent FROM risk_scoring a 
+            SELECT a.calculated_risk, a.CLASSIC_likelihood, a.CLASSIC_impact, b.*, mit.mitigation_percent,
+                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
+            FROM risk_scoring a 
                     JOIN risks b ON a.id = b.id 
                     LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
                     LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
                     LEFT JOIN mitigations mit ON b.mitigation_id = mit.id
+                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
                 WHERE b.status != \"Closed\" AND a.scoring_method = 1 " . $separation_query . " GROUP BY b.id ORDER BY calculated_risk DESC, mitigation_percent ASC");
         }
 
@@ -10461,7 +10726,15 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         {
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.id, b.subject, b.status, b.submission_date, group_concat(distinct d.name) AS team, c.name FROM risk_scoring a JOIN risks b ON a.id = b.id LEFT JOIN user c ON b.submitted_by = c.value LEFT JOIN risk_to_team rtt ON b.id=rtt.risk_id LEFT JOIN team d ON rtt.team_id=d.value GROUP BY b.id ORDER BY DATE(b.submission_date) DESC ; ");
+            SELECT a.calculated_risk, b.id, b.subject, b.status, b.submission_date, group_concat(distinct d.name) AS team, c.name,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
+            FROM risk_scoring a JOIN risks b ON a.id = b.id LEFT JOIN user c ON b.submitted_by = c.value LEFT JOIN risk_to_team rtt ON b.id=rtt.risk_id LEFT JOIN team d ON rtt.team_id=d.value 
+                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+            GROUP BY b.id ORDER BY DATE(b.submission_date) DESC ; ");
         }
         else
         {
@@ -10473,7 +10746,20 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.id, b.subject, b.status, b.submission_date, group_concat(DISTINCT d.name SEPARATOR ', ') AS team, c.name FROM risk_scoring a JOIN risks b ON a.id = b.id LEFT JOIN user c ON b.submitted_by = c.value LEFT JOIN risk_to_team rtt ON b.id=rtt.risk_id LEFT JOIN team d ON rtt.team_id=d.value LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id " . $separation_query . " GROUP BY b.id ORDER BY DATE(b.submission_date) DESC ; ");
+            SELECT a.calculated_risk, b.id, b.subject, b.status, b.submission_date, group_concat(DISTINCT d.name SEPARATOR ', ') AS team, c.name,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
+            FROM risk_scoring a 
+                JOIN risks b ON a.id = b.id 
+                LEFT JOIN user c ON b.submitted_by = c.value 
+                LEFT JOIN risk_to_team rtt ON b.id=rtt.risk_id 
+                LEFT JOIN team d ON rtt.team_id=d.value 
+                LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
+                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id " . $separation_query . " 
+            GROUP BY b.id ORDER BY DATE(b.submission_date) DESC ; ");
         }
 
         $stmt->execute();
@@ -10502,10 +10788,15 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.subject, a.id, b.submission_date, c.name, d.name AS review, e.name AS next_step FROM risks a 
+            SELECT a.subject, a.id, b.submission_date, c.name, d.name AS review, e.name AS next_step 
+            FROM risks a 
                 LEFT JOIN risk_to_team rtt ON a.id = rtt.risk_id
                 LEFT JOIN risk_to_additional_stakeholder rtas ON a.id = rtas.risk_id
-                JOIN mgmt_reviews b ON a.id = b.risk_id JOIN user c ON b.reviewer = c.value LEFT JOIN review d ON b.review = d.value LEFT JOIN next_step e ON b.next_step = e.value " . $separation_query . " GROUP BY a.id ORDER BY DATE(b.submission_date) DESC");
+                JOIN mgmt_reviews b ON a.id = b.risk_id 
+                JOIN user c ON b.reviewer = c.value 
+                LEFT JOIN review d ON b.review = d.value 
+                LEFT JOIN next_step e ON b.next_step = e.value " . $separation_query . " 
+            GROUP BY a.id ORDER BY DATE(b.submission_date) DESC");
         }
 
         $stmt->execute();
@@ -10534,10 +10825,18 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.subject, a.id, b.submission_date, c.name, d.name AS planning_strategy, e.name AS mitigation_effort, b.mitigation_cost, f.name AS mitigation_owner, group_concat(distinct g.name) AS mitigation_team FROM risks a 
+            SELECT a.subject, a.id, b.submission_date, c.name, d.name AS planning_strategy, e.name AS mitigation_effort, b.mitigation_cost, f.name AS mitigation_owner, group_concat(distinct g.name) AS mitigation_team 
+            FROM risks a 
                 LEFT JOIN risk_to_team rtt ON a.id = rtt.risk_id
                 LEFT JOIN risk_to_additional_stakeholder rtas ON a.id = rtas.risk_id
-                JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value LEFT JOIN mitigation_to_team mtt ON b.id=mtt.mitigation_id LEFT JOIN team g ON mtt.team_id=g.value " . $separation_query . " GROUP BY a.id ORDER BY DATE(b.submission_date) DESC; ");
+                JOIN mitigations b ON a.id = b.risk_id 
+                JOIN user c ON b.submitted_by = c.value 
+                LEFT JOIN planning_strategy d ON b.planning_strategy = d.value 
+                LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value 
+                LEFT JOIN user f ON b.mitigation_owner = f.value 
+                LEFT JOIN mitigation_to_team mtt ON b.id=mtt.mitigation_id 
+                LEFT JOIN team g ON mtt.team_id=g.value " . $separation_query . " 
+            GROUP BY a.id ORDER BY DATE(b.submission_date) DESC; ");
         }
 
         $stmt->execute();
@@ -10554,7 +10853,15 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             {
                 // Query the database
                 $stmt = $db->prepare("
-                SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 3 ORDER BY calculated_risk DESC");
+                SELECT a.calculated_risk, b.*,
+                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
+                FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id 
+                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+                WHERE b.status != \"Closed\" AND c.scoring_method = 3 GROUP BY b.id ORDER BY calculated_risk DESC");
             }
             else
             {
@@ -10566,10 +10873,18 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
                 // Query the database
                 $stmt = $db->prepare("
-                SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id
+                SELECT a.calculated_risk, b.*,
+                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
+                FROM risk_scoring a JOIN risks b ON a.id = b.id
                     LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
                     LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                    JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 3 " . $separation_query . " 
+                    JOIN risk_scoring c on b.id = c.id
+                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+                    WHERE b.status != \"Closed\" AND c.scoring_method = 3 " . $separation_query . " 
                     GROUP BY b.id 
                     ORDER BY calculated_risk DESC");
             }
@@ -10588,7 +10903,15 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             {
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 4 ORDER BY calculated_risk DESC");
+            SELECT a.calculated_risk, b.*,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
+            FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id
+            LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+            LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+            LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+            LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+            WHERE b.status != \"Closed\" AND c.scoring_method = 4 GROUP BY b.id ORDER BY calculated_risk DESC");
             }
             else
             {
@@ -10600,10 +10923,18 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
                 // Query the database
                 $stmt = $db->prepare("
-                SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id
+                SELECT a.calculated_risk, b.*,
+                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
+                FROM risk_scoring a JOIN risks b ON a.id = b.id
                     LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
                     LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                    JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 4 " . $separation_query . "
+                    JOIN risk_scoring c on b.id = c.id
+                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+                    WHERE b.status != \"Closed\" AND c.scoring_method = 4 " . $separation_query . "
                     GROUP BY b.id
                     ORDER BY calculated_risk DESC");
             }
@@ -10622,7 +10953,15 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         {
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id WHERE b.status != \"Closed\" AND a.scoring_method = 5 ORDER BY calculated_risk DESC");
+            SELECT a.calculated_risk, b.*,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
+            FROM risk_scoring a JOIN risks b ON a.id = b.id
+            LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+            LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+            LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+            LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+            WHERE b.status != \"Closed\" AND a.scoring_method = 5 GROUP BY b.id ORDER BY calculated_risk DESC");
         }
         else
         {
@@ -10634,9 +10973,16 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id 
+            SELECT a.calculated_risk, b.*,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
+            FROM risk_scoring a JOIN risks b ON a.id = b.id 
                 LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
                 LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
+                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
                 WHERE b.status != \"Closed\" AND a.scoring_method = 5 " . $separation_query . " GROUP BY b.id 
                 ORDER BY calculated_risk DESC;");
         }
@@ -10667,9 +11013,19 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.id, a.subject, group_concat(DISTINCT c.name SEPARATOR ', ') AS team, d.name AS user, b.closure_date, e.name AS close_reason, f.calculated_risk FROM risks a LEFT JOIN closures b ON a.close_id = b.id LEFT JOIN risk_to_team rtt ON a.id=rtt.risk_id LEFT JOIN team c ON rtt.team_id=c.value 
-            LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-            LEFT JOIN user d ON b.user_id = d.value LEFT JOIN close_reason e ON b.close_reason = e.value LEFT JOIN risk_scoring f ON a.id = f.id WHERE a.status='Closed' " . $separation_query . " GROUP BY a.id ORDER BY b.closure_date DESC; ");
+            SELECT a.id, a.subject, 
+                group_concat(DISTINCT c.name SEPARATOR ', ') AS team, 
+                d.name AS user, b.closure_date, e.name AS close_reason, f.calculated_risk 
+            FROM risks a 
+                LEFT JOIN closures b ON a.close_id = b.id 
+                LEFT JOIN risk_to_team rtt ON a.id=rtt.risk_id 
+                LEFT JOIN team c ON rtt.team_id=c.value 
+                LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
+                LEFT JOIN user d ON b.user_id = d.value 
+                LEFT JOIN close_reason e ON b.close_reason = e.value 
+                LEFT JOIN risk_scoring f ON a.id = f.id 
+            WHERE a.status='Closed' " . $separation_query . " 
+            GROUP BY a.id ORDER BY b.closure_date DESC; ");
         }
 
         $stmt->execute();
@@ -10698,7 +11054,16 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.id, a.subject, group_concat(DISTINCT c.name SEPARATOR ', ') AS team, a.submission_date, b.calculated_risk FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN risk_to_team rtt ON a.id=rtt.risk_id LEFT JOIN team c ON rtt.team_id=c.value LEFT JOIN risk_to_additional_stakeholder rtas ON a.id = rtas.risk_id WHERE status != 'Closed' " . $separation_query . " GROUP BY a.id ORDER BY team, b.calculated_risk DESC; ");
+            SELECT a.id, a.subject, 
+                group_concat(DISTINCT c.name SEPARATOR ', ') AS team, 
+                a.submission_date, b.calculated_risk 
+            FROM risks a 
+                LEFT JOIN risk_scoring b ON a.id = b.id 
+                LEFT JOIN risk_to_team rtt ON a.id=rtt.risk_id 
+                LEFT JOIN team c ON rtt.team_id=c.value 
+                LEFT JOIN risk_to_additional_stakeholder rtas ON a.id = rtas.risk_id 
+            WHERE status != 'Closed' " . $separation_query . " 
+            GROUP BY a.id ORDER BY team, b.calculated_risk DESC; ");
         }
 
         $stmt->execute();
@@ -10730,7 +11095,11 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             SELECT a.id, a.subject, c.name AS technology, a.submission_date, b.calculated_risk FROM risks a 
                 LEFT JOIN risk_to_team rtt ON a.id = rtt.risk_id
                 LEFT JOIN risk_to_additional_stakeholder rtas ON a.id = rtas.risk_id
-                LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN risk_to_technology rttg ON a.id=rttg.risk_id LEFT JOIN technology c ON rttg.technology_id = c.value WHERE status != 'Closed' " . $separation_query . " GROUP BY a.id, c.value ORDER BY c.value, b.calculated_risk DESC");
+                LEFT JOIN risk_scoring b ON a.id = b.id 
+                LEFT JOIN risk_to_technology rttg ON a.id=rttg.risk_id 
+                LEFT JOIN technology c ON rttg.technology_id = c.value 
+            WHERE status != 'Closed' " . $separation_query . " 
+            GROUP BY a.id, c.value ORDER BY c.value, b.calculated_risk DESC");
         }
 
         $stmt->execute();
@@ -10753,7 +11122,9 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         {
             // Query the database
             $stmt = $db->prepare("
-                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -10761,6 +11132,10 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
                     LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
                     LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
                 WHERE
                     b.status != \"Closed\" AND a.calculated_risk >= :high
                 GROUP BY
@@ -10777,7 +11152,9 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             // Query the database
             $stmt = $db->prepare("
-                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk
+                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
                 FROM risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
@@ -10786,6 +11163,10 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
                     LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
                     LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
                 WHERE
                     b.status != \"Closed\" AND a.calculated_risk >= :high " . $separation_query . "
                 GROUP BY
@@ -10820,9 +11201,16 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 
             // Query the database
             $stmt = $db->prepare("
-            SELECT a.* FROM risks a 
+            SELECT a.*,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
+            FROM risks a 
                     LEFT JOIN risk_to_team rtt ON a.id = rtt.risk_id
                     LEFT JOIN risk_to_additional_stakeholder rtas ON a.id = rtas.risk_id
+                    LEFT JOIN risk_catalog_mappings rcm on a.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on a.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
                     " . $separation_query . " GROUP BY a.id ORDER BY a.id ASC;
             ");
         }
@@ -10842,7 +11230,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             $row['assessment'] = isset($row['assessment']) ? try_decrypt($row['assessment']) : "";
             $row['notes'] = isset($row['notes']) ? try_decrypt($row['notes']) : "";
         }
-        unset($row);
+        unset($row); 
     }
 
     return $array;
@@ -13471,6 +13859,18 @@ function update_mitigation($risk_id, $post)
     // Get current datetime for last_update
     $current_datetime = date("Y-m-d H:i:s");
 
+    // Update the risk status to "Mitigation Planned"
+    $stmt = $db->prepare("
+        UPDATE 
+            risks 
+        SET 
+            status='Mitigation Planned' 
+        WHERE 
+            id = :id;
+    ");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
     // Update the risk
     $stmt = $db->prepare("
         UPDATE
@@ -14617,6 +15017,10 @@ function upload_file($risk_id, $file, $view_type = 1)
                     // Close the database connection
                     db_close($db);
 
+                    // Audit log entry for uploading a file
+                    $message = "File \"" . $file['name'] . "\" was uploaded by username \"" . $_SESSION['user'] . "\".";
+                    write_log($risk_id + 1000, $_SESSION['uid'], $message, 'risk');
+
                     // Return a success
                     return 1;
 
@@ -14669,6 +15073,25 @@ function delete_db_file($unique_name)
     // Open the database connection
     $db = db_open();
 
+    // Get the file from the database
+    $stmt = $db->prepare("SELECT * FROM files WHERE unique_name=:unique_name");
+    $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
+    $stmt->execute();
+    // Store the results in an array
+    $file = $stmt->fetch();
+    // If the array is empty
+    if (empty($file))
+    {
+        // Do nothing
+        return 0;
+    }
+    else
+    {
+        // Audit log entry for deleting a file
+        $message = "File \"" . $file['name'] . "\" was deleted by username \"" . $_SESSION['user'] . "\".";
+        write_log($file['risk_id'] + 1000, $_SESSION['uid'], $message, 'risk');
+    }
+
     // Delete the file from the database
     $stmt = $db->prepare("DELETE FROM files WHERE unique_name=:unique_name");
     $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
@@ -14697,12 +15120,19 @@ function refresh_files_for_risk($unique_names, $risk_id, $view_type = 1)
     $stmt->execute();
     $array = $stmt->fetchAll();
     $deleteIds = array();
+    $delete_files = [];
     foreach($array as $row){
         if(!in_array($row['unique_name'], $unique_names)){
             $deleteIds[] = $row['id'];
+            $delete_files[] = $row;
         }
     }
-    foreach($deleteIds as $deleteId){
+    foreach($deleteIds as $key => $deleteId){
+
+        // Audit log entry for deleting a file
+        $message = "File \"" . $delete_files[$key]['name'] . "\" was deleted by username \"" . $_SESSION['user'] . "\".";
+        write_log($delete_files[$key]['risk_id'] + 1000, $_SESSION['uid'], $message, 'risk');
+
         // Delete the file from the database
         $stmt = $db->prepare("DELETE FROM files WHERE id=:id");
         $stmt->bindParam(":id", $deleteId, PDO::PARAM_INT);
@@ -15191,7 +15621,7 @@ function write_debug_log_cli($value)
 
             // Call the SimpleRisk debug log endpoint to write out the message
             $endpoint = "api/v2/admin/write_debug_log";
-            call_simplerisk_api_endpoint($endpoint, "GET", $token);
+            @call_simplerisk_api_endpoint($endpoint, "GET", $token, 1);
         }
         // If the value is an array
         else
@@ -15556,7 +15986,51 @@ function update_risk_status($risk_id, $status)
             set_alert(true, "bad", $lang['NoPermissionForClosingRisks']);
             return;
         }
+    } else if ($status == "New" && check_risk_by_id($risk_id)) { 
         
+        // Delete related mitigation_to_controls
+        $stmt = $db->prepare("
+            DELETE 
+                m2c 
+            FROM 
+                mitigation_to_controls m2c 
+            JOIN
+                    mitigations m
+                ON
+                    m2c.mitigation_id = m.id
+            WHERE 
+                m.risk_id = :risk_id;
+        ");
+        $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Delete related mitigation_to_team
+        $stmt = $db->prepare("
+            DELETE 
+                m2t 
+            FROM 
+                mitigation_to_team m2t 
+            JOIN
+                    mitigations m
+                ON
+                    m2t.mitigation_id = m.id
+            WHERE 
+                m.risk_id = :risk_id;
+        ");
+        $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Delete existing mitigation by risk ID
+        $stmt = $db->prepare("DELETE FROM mitigations WHERE risk_id = :risk_id");
+        $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Update the risk status to New and reset mitigation_id
+        $stmt = $db->prepare("UPDATE risks SET `status`=:status, `mitigation_id`=0 WHERE `id`=:id");
+        $stmt->bindParam(":status", $status, PDO::PARAM_STR, 50);
+        $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+
     } else {
         $stmt = $db->prepare("UPDATE risks SET `status`=:status WHERE `id`=:id");
         $stmt->bindParam(":status", $status, PDO::PARAM_STR, 50);
@@ -15748,7 +16222,7 @@ function get_base_url() {
     }
 
     // Return the base_url value
-    return $base_url;
+    return rtrim($base_url, '/');
     
 }
 
@@ -18430,6 +18904,18 @@ function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1)
                         $stmt->execute();
                         
                         $file_ids[] = $db->lastInsertId();
+
+                        $log_type = $ref_type;
+                        if ($ref_type == 'documents') {
+                            $log_type = 'document';
+                        } else if ($ref_type == 'exceptions') {
+                            $log_type = 'exception';
+                        }
+
+                        // Audit log entry for uploading a file
+                        $message = "File \"" . $file['name'] . "\" was uploaded by username \"" . $_SESSION['user'] . "\".";
+                        write_log($test_audit_id + 1000, $_SESSION['uid'], $message, $log_type);
+
                     }
                     // Otherwise
                     else
@@ -20329,7 +20815,7 @@ function include_csrf_magic() {
 
     //function csrf_startup() {
         global $escaper;
-        csrf_conf('rewrite-js', $escaper->escapeHtml(get_setting('simplerisk_base_url')).'/vendor/simplerisk/csrf-magic/csrf-magic.js');
+        csrf_conf('rewrite-js', $escaper->escapeHtml(build_url('/vendor/simplerisk/csrf-magic/csrf-magic.js')));
     //}
     csrf_init();
 }
@@ -21467,6 +21953,79 @@ function cleanup_after_delete($deleted_item_table) {
     }
     
     db_close($db);
+}
+
+/*********************************************
+ * FUNCTION: RECURSIVE URL DECODE            *
+ * Decodes all layers of URL encoding       *
+ * e.g. %2520 -> %20 -> (space)             *
+ *********************************************/
+function recursive_urldecode($str) {
+    $prev = '';
+    while ($prev !== $str) {
+        $prev = $str;
+        $str = urldecode($str);
+    }
+    return $str;
+}
+
+/*******************************************************
+ * FUNCTION: BUILD SIMPLERISK BASED URL FROM ARGUMENTS *
+ * Takes any number of arguments and                   *
+ * builds a URL from them.                             *
+ * Romove any double slashes in a url                  *
+ * but preserve the double slash                       *
+ * after the protocol                                  *
+ * (http:// or https:// and so on)                     *
+ *******************************************************/
+function build_url(...$args) {
+
+    // Get Base URL
+    $simplerisk_base_url = !empty($_SESSION['base_url']) ? $_SESSION['base_url'] : get_base_url();
+
+    $safe_segments = [];
+
+    foreach ($args as $part) {
+
+        // Trim whitespace from the part
+        $part = trim($part);
+
+        // Fully decode all layers of URL encoding
+        $decoded = recursive_urldecode($part);
+
+        // Normalize slashes (replace backslash with forward slash)
+        $decoded = str_replace('\\', '/', $decoded);
+
+        // Split into segments
+        $segments = explode('/', $decoded);
+
+        foreach ($segments as $segment) {
+            // Reject empty, '.', or '..' segments (path traversal)
+            if ($segment === '' || $segment === '.' || $segment === '..') {
+                continue;
+            }
+
+            // Reject control characters or null bytes inside segments
+            if (preg_match('/[\x00-\x1F\x7F]/u', $segment)) {
+                continue;
+            }
+
+            $safe_segments[] = $segment;
+        }
+    }
+
+    // Join safe segments with slash
+    $url_path = implode('/', $safe_segments);
+
+    // Combine with base URL (remove trailing slash from base, leading slash from path)
+    $url = rtrim($simplerisk_base_url, '/') . '/' . ltrim($url_path, '/');
+
+    // Remove multiple slashes except after protocol (e.g. 'http://')
+    $url = preg_replace('#(?<!:)//+#', '/', $url);
+
+    // Return the cleaned URL
+    return rtrim($url, '/');
+
 }
 
 /*************************************
@@ -22643,6 +23202,27 @@ $change_audit_log_localization_config = [
         'teams' => 'Teams',
         'permissions' => 'UserResponsibilities'
     ],
+
+    'incident' => [ // as fields returned by the get_incident() function
+        'details' => 'Details',
+        'direction_id' => 'Direction',
+        'attack_vector_id' => 'AttackVector',
+        'source_id' => 'DetectedBy',
+        'detection_date' => 'DetectedOn',
+        'start_date' => 'BeganOn',
+        'reporter_id' => 'ReportedBy',
+        'owner_id' => 'OwnedBy',
+        'additional_stakeholder_ids' => 'AdditionalStakeholders',
+        'team_ids' => 'Teams',
+        'source_tags' => 'IncidentTags_source',
+        'destination_tags' => 'IncidentTags_destination',
+        'region_ids' => 'Regions',
+        'country_ids' => 'Countries',
+        'city_ids' => 'Cities',
+        'related_risk_ids' => 'RelatedRisks',
+        'related_incident_ids' => 'RelatedIncidents',
+        'affected_asset_ids' => 'AffectedAssets'
+    ],
 ];
 
 /**
@@ -22678,7 +23258,7 @@ function get_changes($type, $before, $after, $return_type = 1) {
         if (isset($before[$field]) && isset($after[$field]) && $before[$field] !== $after[$field]) {
 
             // These can be handled together as the fields with the same name hold the same type of values
-            if ($type === 'audit' || $type === 'test' || $type === 'document' || $type === 'user') {
+            if (in_array($type,['audit', 'test', 'document', 'user', 'incident'])) {
                 switch($field) {
                     case 'last_date':
                     case 'next_date':
@@ -22697,6 +23277,8 @@ function get_changes($type, $before, $after, $return_type = 1) {
                     case 'created_at':
                     case 'submission_date':
                     case 'creation_date':
+                    case 'detection_date':
+                    case 'start_date':
                         if ($before[$field]) {
                             $before[$field] = format_datetime($before[$field]);
                         }
@@ -22711,6 +23293,8 @@ function get_changes($type, $before, $after, $return_type = 1) {
                     case 'document_owner':
                     case 'approver':
                     case 'manager':
+                    case 'reporter_id':
+                    case 'owner_id':
                         if ($before[$field]) {
                             $before[$field] = get_name_by_value('user', $before[$field]);
                         }
@@ -22723,6 +23307,7 @@ function get_changes($type, $before, $after, $return_type = 1) {
                     break;
 
                     case 'additional_stakeholders':
+                    case 'additional_stakeholder_ids':
                         if ($before[$field]) {
                             $before[$field] = get_names_by_multi_values('user', $before[$field]);
                         }
@@ -22741,6 +23326,33 @@ function get_changes($type, $before, $after, $return_type = 1) {
                         }
                     break;
 
+                    case 'region_ids':
+                        if ($before[$field]) {
+                            $before[$field] = get_names_by_multi_values('incident_management_incident_region', $before[$field]);
+                        }
+                        if ($after[$field]) {
+                            $after[$field] = get_names_by_multi_values('incident_management_incident_region', $after[$field]);
+                        }
+                    break;
+
+                    case 'country_ids':
+                        if ($before[$field]) {
+                            $before[$field] = get_names_by_multi_values('incident_management_country', $before[$field]);
+                        }
+                        if ($after[$field]) {
+                            $after[$field] = get_names_by_multi_values('incident_management_country', $after[$field]);
+                        }
+                    break;
+
+                    case 'city_ids':
+                        if ($before[$field]) {
+                            $before[$field] = get_names_by_multi_values('incident_management_city', $before[$field]);
+                        }
+                        if ($after[$field]) {
+                            $after[$field] = get_names_by_multi_values('incident_management_city', $after[$field]);
+                        }
+                    break;
+                    
                     case 'status':
                         if ($before[$field]) {
                             $before[$field] = get_name_by_value('test_status', $before[$field]);
@@ -22759,6 +23371,33 @@ function get_changes($type, $before, $after, $return_type = 1) {
                         }
                     break;
 
+                    case 'direction_id':
+                        if ($before[$field]) {
+                            $before[$field] = get_name_by_value('incident_management_incident_direction', $before[$field]);
+                        }
+                        if ($after[$field]) {
+                            $after[$field] = get_name_by_value('incident_management_incident_direction', $after[$field]);
+                        }
+                    break;
+                    
+                    case 'attack_vector_id':
+                        if ($before[$field]) {
+                            $before[$field] = get_name_by_value('incident_management_attack_vectors', $before[$field]);
+                        }
+                        if ($after[$field]) {
+                            $after[$field] = get_name_by_value('incident_management_attack_vectors', $after[$field]);
+                        }
+                    break;                    
+                    
+                    case 'source_id':
+                        if ($before[$field]) {
+                            $before[$field] = get_name_by_value('incident_management_sources', $before[$field]);
+                        }
+                        if ($after[$field]) {
+                            $after[$field] = get_name_by_value('incident_management_sources', $after[$field]);
+                        }
+                    break;
+
                     case 'parent':
                         if ($before[$field]) {
                             // Get the document name
@@ -22772,6 +23411,18 @@ function get_changes($type, $before, $after, $return_type = 1) {
                             $document = get_document_by_id($after[$field]);
                             $after[$field] = $document['document_name'];
                                     }
+                        else $after[$field] = "--";
+                    break;
+
+                    case 'framework_ids':
+                        if ($before[$field]) {
+                            $before[$field] = get_names_by_multi_values('frameworks', $before[$field]);
+                        }
+                        else $before[$field] = "--";
+
+                        if ($after[$field]) {
+                            $after[$field] = get_names_by_multi_values('frameworks', $after[$field]);
+                        }
                         else $after[$field] = "--";
                     break;
 
@@ -22911,6 +23562,115 @@ function get_changes($type, $before, $after, $return_type = 1) {
                             }
                             $after[$field] = implode(', ', $permission_names);
                         } else $after[$field] = '-';
+                    break;
+
+                    case 'source_tags':
+                    case 'destination_tags':
+                        if ($before[$field]) {
+                            $before[$field] = str_replace("|", ",", $before[$field]);
+                        }
+                        if ($after[$field]) {
+                            $after[$field] = str_replace("|", ",", $after[$field]);
+                        }
+                    break;
+                    
+                    case 'related_risk_ids':
+                        if (isset($before[$field])) {
+                            // Open the database connection
+                            $db = db_open();
+
+                            // Update user
+                            $stmt = $db->prepare("SELECT `id`, `subject` FROM `risks` WHERE FIND_IN_SET(`id`, :ids);");
+                            $stmt->bindParam(':ids', $before[$field], PDO::PARAM_STR);
+                            $stmt->execute();
+
+                            // Store the list in the array
+                            $risks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                            $before[$field] = [];
+                            foreach ($risks as $risk) {
+                                $before[$field][] = "[" . ($risk['id'] + 1000) . "] " . try_decrypt($risk['subject']);
+                            }
+                            $before[$field] = implode(", ", $before[$field]);
+
+                            // Close the database connection
+                            db_close($db);
+                        }
+                        if (isset($after[$field])) {
+                            // Open the database connection
+                            $db = db_open();
+
+                            $stmt = $db->prepare("SELECT `id`, `subject` FROM `risks` WHERE FIND_IN_SET(`id`, :ids);");
+                            $stmt->bindParam(':ids', $after[$field], PDO::PARAM_STR);
+                            $stmt->execute();
+
+                            // Store the list in the array
+                            $risks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                            $after[$field] = [];
+                            foreach ($risks as $risk) {
+                                $after[$field][] = "[" . ($risk['id'] + 1000) . "] " . try_decrypt($risk['subject']);
+                            }
+                            $after[$field] = implode(", ", $after[$field]);
+
+                            // Close the database connection
+                            db_close($db);
+                        }
+                    break;
+
+                    case "related_incident_ids":
+                        if (isset($before[$field])) {
+                            // Open the database connection
+                            $db = db_open();
+
+                            $stmt = $db->prepare("SELECT `id`, `summary` FROM `incident_management_incidents` WHERE FIND_IN_SET(`id`, :ids);");
+                            $stmt->bindParam(':ids', $before[$field], PDO::PARAM_STR);
+                            $stmt->execute();
+
+                            // Store the list in the array
+                            $incidents = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                            $before[$field] = [];
+                            foreach ($incidents as $incident) {
+                                $before[$field][] = "[" . ($incident['id'] + 1000) . "] " . $incident['summary'];
+                            }
+                            $before[$field] = implode(", ", $before[$field]);
+
+                            // Close the database connection
+                            db_close($db);
+                        }
+
+                        if (isset($after[$field])) {
+                            // Open the database connection
+                            $db = db_open();
+
+                            $stmt = $db->prepare("SELECT `id`, `summary` FROM `incident_management_incidents` WHERE FIND_IN_SET(`id`, :ids);");
+                            $stmt->bindParam(':ids', $after[$field], PDO::PARAM_STR);
+                            $stmt->execute();
+
+                            // Store the list in the array
+                            $incidents = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                            $after[$field] = [];
+                            foreach ($incidents as $incident) {
+                                $after[$field][] = "[" . ($incident['id'] + 1000) . "] " . $incident['summary'];
+                            }
+                            $after[$field] = implode(", ", $after[$field]);
+
+                            // Close the database connection
+                            db_close($db);
+                        }
+                    break;
+
+                    case "affected_asset_ids":
+                        if ($before[$field]) {
+                            $before[$field] = get_names_by_multi_values('assets', $before[$field], use_id: true);
+                        }
+                        else $before[$field] = "--";
+
+                        if ($after[$field]) {
+                            $after[$field] = get_names_by_multi_values('assets', $after[$field], use_id: true);
+                        }
+                        else $after[$field] = "--";
                     break;
                 }
             }
@@ -25295,17 +26055,17 @@ function display_settings_get_display_settings_for_view($view) {
     } else {
         // For this we only need the list of names in the 'display_settings' field
         $settings = $settings['display_settings'];
-        
-        // validate it against the currently setup valid fields for this view(if the customization is activated there might be fields that are disabled since the selection was saved)
-        $settings = array_values(array_intersect($settings, display_settings_get_valid_field_keys($view)));
-        
-        // if after the validation the settings are empty
-        if (empty($settings)) {
-            // then we load the list of default selected fields
-            $settings = field_settings_get_display_defaults($view);
-        }
     }
-    
+
+    // validate it against the currently setup valid fields for this view(if the customization is activated there might be fields that are disabled since the selection was saved)
+    $settings = array_values(array_intersect($settings, display_settings_get_valid_field_keys($view)));
+
+    // if after the validation the settings are empty
+    if (empty($settings)) {
+        // then we load the list of default selected fields
+        $settings = field_settings_get_display_defaults($view);
+    }
+
     return $settings;
 }
 
@@ -25487,7 +26247,7 @@ function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 1
                     }
 
                     // Get custom formatting
-                    list($value, $display) = get_custom_formatting_data($view, $selected_field_name, $value, $display, $item);
+                    list($value, $display) = get_custom_formatting_data_for_view($view, $selected_field_name, $value, $display, $item);
 
                 }
 
@@ -25603,7 +26363,7 @@ function get_wheres_for_view($view) {
 /****************************************
  * FUNCTION: GET CUSTOM FORMATTING DATA *
  ****************************************/
-function get_custom_formatting_data($view, $selected_field_name, $value = '', $display = '', $item = []) {
+function get_custom_formatting_data_for_view($view, $selected_field_name, $value = '', $display = '', $item = []) {
 
     if ($view == 'active_audits') {
         $result = get_custom_formatting_data_for_active_audits($selected_field_name, $value, $display, $item);
@@ -25629,7 +26389,7 @@ function get_custom_formatting_data_for_active_audits($selected_field_name, $val
     // For fields that need custom formatting
     switch($selected_field_name) {
         case "test_name":
-             $value = "<a href='{$_SESSION['base_url']}/compliance/testing.php?id={$item['id']}' class='text-left'>{$escaper->escapeHtml($value)}</a>";
+             $value = "<a href='" . build_url("compliance/testing.php?id={$item['id']}") . "' class='text-left'>{$escaper->escapeHtml($value)}</a>";
             break;
         case 'test_frequency':
             $value = (int)$value . " " .$escaper->escapeHtml($value > 1 ? $lang['days'] : $lang['Day']);
@@ -25670,7 +26430,7 @@ function get_custom_formatting_data_for_past_audits($selected_field_name, $value
     // For fields that need custom formatting
     switch($selected_field_name) {
         case "test_name":
-             $value = "<a href='{$_SESSION['base_url']}/compliance/view_test.php?id={$item['id']}' class='text-left'>{$escaper->escapeHtml($value)}</a>";
+             $value = "<a href='" . build_url("compliance/view_test.php?id={$item['id']}") . "' class='text-left'>{$escaper->escapeHtml($value)}</a>";
             break;
         case 'tags':
             if ($value) {
@@ -25706,7 +26466,7 @@ function get_custom_formatting_data_for_dynamic_audit_report($selected_field_nam
     // For fields that need custom formatting
     switch($selected_field_name) {
         case "id":
-            $value = "<a href='{$_SESSION['base_url']}/compliance/testing.php?id={$item['id']}' class='text-left open-in-new-tab' target='_blank'>{$escaper->escapeHtml($value)}</a>";
+            $value = "<a href='" . build_url("compliance/testing.php?id={$item['id']}") . "' class='text-left open-in-new-tab' target='_blank'>{$escaper->escapeHtml($value)}</a>";
             break;
         case 'test_frequency':
             $value = (int)$value . " " .$escaper->escapeHtml($value > 1 ? $lang['days'] : $lang['Day']);
@@ -25849,6 +26609,36 @@ function process_selected_field_filter_for_active_audits($selected_field_name, $
         } else {
             $filter_result = true;
         }
+    } else if ($selected_field_name == 'test_date') {
+        $item_filter_value = $item['test_date'];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            $start_date = get_standard_date_from_default_format(explode(" - ", $search_value)[0]);
+            $end_date = get_standard_date_from_default_format(explode(" - ", $search_value)[1] ?? '');
+            if ($start_date && $end_date) {
+                if (strtotime($item_filter_value) >= strtotime($start_date) && strtotime($item_filter_value) <= strtotime($end_date)) {
+                    $filter_result = false;
+                } else {
+                    $filter_result = true;
+                }
+            } else if ($start_date) {
+                if (strtotime($item_filter_value) >= strtotime($start_date)) {
+                    $filter_result = false;
+                } else {
+                    $filter_result = true;
+                }
+            } else if ($end_date) {
+                if (strtotime($item_filter_value) <= strtotime($end_date)) {
+                    $filter_result = false;
+                } else {
+                    $filter_result = true;
+                }
+            } else {
+                $filter_result = true;
+            }
+        } else {
+            $filter_result = false;
+        }
     } else {
         if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
             $filter_result = true;
@@ -25986,6 +26776,36 @@ function process_selected_field_filter_for_past_audits($selected_field_name, $fi
         } else {
             // unselect all
             $filter_result = true;
+        }
+    } else if ($selected_field_name == 'test_date') {
+        $item_filter_value = $item['test_date'];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            $start_date = get_standard_date_from_default_format(explode(" - ", $search_value)[0]);
+            $end_date = get_standard_date_from_default_format(explode(" - ", $search_value)[1] ?? '');
+            if ($start_date && $end_date) {
+                if (strtotime($item_filter_value) >= strtotime($start_date) && strtotime($item_filter_value) <= strtotime($end_date)) {
+                    $filter_result = false;
+                } else {
+                    $filter_result = true;
+                }
+            } else if ($start_date) {
+                if (strtotime($item_filter_value) >= strtotime($start_date)) {
+                    $filter_result = false;
+                } else {
+                    $filter_result = true;
+                }
+            } else if ($end_date) {
+                if (strtotime($item_filter_value) <= strtotime($end_date)) {
+                    $filter_result = false;
+                } else {
+                    $filter_result = true;
+                }
+            } else {
+                $filter_result = true;
+            }
+        } else {
+            $filter_result = false;
         }
     } else {
         if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
@@ -26249,6 +27069,12 @@ function get_filter_field_for_active_audits($field_name, $localizations) {
 
         $filter_field = create_multiple_dropdown("test_status", "all", "status", null, true, $escaper->escapeHtml($lang['Unassigned']), "0", true, "", 0, true, "");
         
+    } else if ($field_name == 'test_date') {
+
+        $filter_field = "
+            <input type='text' name='test_date' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control datepicker' style='max-width: unset;'>
+        ";
+
     } else {
         $filter_field = "
             <input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control' style='max-width: unset;'>
@@ -26311,6 +27137,12 @@ function get_filter_field_for_past_audits($field_name, $localizations) {
             <input type='text' name='audit_date' placeholder='{$localizations[$field_name]}' autocomplete='off' class='datepicker form-control cursor-pointer' style='max-width: unset;'/>
         ";
         
+    } else if ($field_name == 'test_date') {
+
+        $filter_field = "
+            <input type='text' name='test_date' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control datepicker' style='max-width: unset;'>
+        ";
+
     } else {
         $filter_field = "
             <input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control' style='max-width: unset;'>
@@ -27025,6 +27857,11 @@ function get_layout_for_user($layout_name, $user_id = null) {
         $is_custom = false;
     } else {
         $layout = $result['layout'];
+        
+        
+        
+        
+        
         $is_custom = true;
     }
 
@@ -27067,16 +27904,17 @@ function delete_layout_for_user($layout_name, $user_id = null) {
  * @param string $layout_name
  * @return ['<widget name>' => [widget configuration], '<widget name 2>' => [widget configuration 2], ...]
  */
-function get_widget_configuration_for_layout_name($layout_name) {
+function get_widget_configuration_for_layout_name($layout_name, $is_custom = false) {
     global $lang, $escaper, $ui_layout_config, $ui_layout_widget_config;
 
     $widget_configurations = [];
 
-    foreach ($ui_layout_config[$layout_name]['available_widgets'] as $widget_name) {
+    foreach ($ui_layout_config[$layout_name][$is_custom ? 'available_custom_widgets' : 'available_widgets'] as $widget_name) {
         $widget_config = $ui_layout_widget_config[$widget_name];
 
         $widget_config['name'] = $widget_name;
         $widget_config['localization'] = $escaper->escapeHtml($lang[$widget_config['localization_key']]);
+        $widget_config['layout'] = $layout_name;
         $defaults = $widget_config['defaults'];
 
         unset($widget_config['localization_key']);
@@ -27090,6 +27928,70 @@ function get_widget_configuration_for_layout_name($layout_name) {
 
     return $widget_configurations;
 }
+
+
+/**
+ * Creates a new custom widget or updates an existing one.
+ * If a user tries to update a widget that wasn't created by them, a new one will be created.
+ * 
+ * @param int $user_id ID of the user who submitted the data
+ * @param int $id ID of the widget. Only used if it's not a new widget
+ * @param string $type Type of the widget.
+ * @param bool $new Whether it's a new widget or an update to an existing one
+ * @param string $data Data of the widget that needs to be saved
+ * 
+ * @return int ID of the custom widget
+ */
+function save_custom_ui_widget_data($user_id, $id, $type, $new, $data) {
+
+    $db = db_open();
+    
+    // Only check this if it's a pre-existing widget
+    if (!$new) {
+
+        // Check if the custom widget with the provided ID exists and was created by the user
+        $stmt = $db->prepare("SELECT 5 FROM `custom_ui_widgets` WHERE `id` = :id AND `created_by` = :user_id;");
+        $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+        $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+        $stmt->execute();
+    
+        $result = $stmt->fetchColumn();
+        
+        // If it doesn't exist or wasn't created by the user then it can't be updated, a new one will be created for the user
+        $can_update_widget = !empty($result) && (int)$result === 5;
+    
+    } else {
+        // If it's a new widget, it can't be updated, have to create a new one
+        $can_update_widget = false;
+    }
+
+    if ($can_update_widget) {
+        // update the widget's data
+        $stmt = $db->prepare("UPDATE `custom_ui_widgets` SET `data` = :data WHERE `id` = :id AND `created_by` = :user_id;");
+        $stmt->bindParam(":data", $data, PDO::PARAM_STR);
+        $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+        $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+        $stmt->execute();
+    } else {
+        // create a new entry for the widget's data
+        $stmt = $db->prepare("INSERT INTO `custom_ui_widgets`(`type`, `data`, `created_by`) VALUES (:type, :data, :created_by);");
+        $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+        $stmt->bindParam(":data", $data, PDO::PARAM_STR);
+        $stmt->bindParam(":created_by", $user_id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Get the new widget's ID so we can return it
+        $id = $db->lastInsertId();
+    }
+
+    // Close the database connection
+    db_close($db);
+
+    // Return the new or existing widget's ID
+    return $id;
+}
+
+
 
 /*
  * Sanitize and clean JSON response (from Claude)

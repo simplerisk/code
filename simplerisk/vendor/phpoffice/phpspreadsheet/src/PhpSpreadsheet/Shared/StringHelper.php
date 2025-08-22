@@ -2,6 +2,11 @@
 
 namespace PhpOffice\PhpSpreadsheet\Shared;
 
+use Composer\Pcre\Preg;
+use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
+use PhpOffice\PhpSpreadsheet\Exception as SpreadsheetException;
+use Stringable;
+
 class StringHelper
 {
     /**
@@ -13,28 +18,30 @@ class StringHelper
 
     /**
      * SYLK Characters array.
+     *
+     * @var string[]
      */
     private static array $SYLKCharacters = [];
 
     /**
      * Decimal separator.
      */
-    private static ?string $decimalSeparator;
+    private static ?string $decimalSeparator = null;
 
     /**
      * Thousands separator.
      */
-    private static ?string $thousandsSeparator;
+    private static ?string $thousandsSeparator = null;
 
     /**
      * Currency code.
      */
-    private static ?string $currencyCode;
+    private static ?string $currencyCode = null;
 
     /**
      * Is iconv extension avalable?
      */
-    private static ?bool $isIconvEnabled;
+    private static ?bool $isIconvEnabled = null;
 
     /**
      * iconv options.
@@ -310,8 +317,7 @@ class StringHelper
         $textValue = str_replace(["\xef\xbf\xbe", "\xef\xbf\xbf"], "\xef\xbf\xbd", $textValue);
         $subst = mb_substitute_character(); // default is question mark
         mb_substitute_character(65533); // Unicode substitution character
-        // Phpstan does not think this can return false.
-        $returnValue = mb_convert_encoding($textValue, 'UTF-8', 'UTF-8');
+        $returnValue = (string) mb_convert_encoding($textValue, 'UTF-8', 'UTF-8');
         mb_substitute_character($subst);
 
         return $returnValue;
@@ -404,7 +410,7 @@ class StringHelper
             }
         }
 
-        return mb_convert_encoding($textValue, $to, $from);
+        return (string) mb_convert_encoding($textValue, $to, $from);
     }
 
     /**
@@ -481,14 +487,16 @@ class StringHelper
 
     /**
      * Splits a UTF-8 string into an array of individual characters.
+     *
+     * @return string[]
      */
     public static function mbStrSplit(string $string): array
     {
         // Split at all position not after the start: ^
         // and not before the end: $
-        $split = preg_split('/(?<!^)(?!$)/u', $string);
+        $split = Preg::split('/(?<!^)(?!$)/u', $string);
 
-        return ($split === false) ? [] : $split;
+        return $split;
     }
 
     /**
@@ -511,6 +519,25 @@ class StringHelper
         return implode('', $characters);
     }
 
+    private static function useAlt(string $altValue, string $default, bool $trimAlt): string
+    {
+        return ($trimAlt ? trim($altValue) : $altValue) ?: $default;
+    }
+
+    private static function getLocaleValue(string $key, string $altKey, string $default, bool $trimAlt = false): string
+    {
+        /** @var string[] */
+        $localeconv = localeconv();
+        $rslt = $localeconv[$key];
+        // win-1252 implements Euro as 0x80 plus other symbols
+        // Not suitable for Composer\Pcre\Preg
+        if (preg_match('//u', $rslt) !== 1) {
+            $rslt = '';
+        }
+
+        return $rslt ?: self::useAlt($localeconv[$altKey], $default, $trimAlt);
+    }
+
     /**
      * Get the decimal separator. If it has not yet been set explicitly, try to obtain number
      * formatting information from locale.
@@ -518,14 +545,7 @@ class StringHelper
     public static function getDecimalSeparator(): string
     {
         if (!isset(self::$decimalSeparator)) {
-            $localeconv = localeconv();
-            self::$decimalSeparator = ($localeconv['decimal_point'] != '')
-                ? $localeconv['decimal_point'] : $localeconv['mon_decimal_point'];
-
-            if (self::$decimalSeparator == '') {
-                // Default to .
-                self::$decimalSeparator = '.';
-            }
+            self::$decimalSeparator = self::getLocaleValue('decimal_point', 'mon_decimal_point', '.');
         }
 
         return self::$decimalSeparator;
@@ -549,14 +569,7 @@ class StringHelper
     public static function getThousandsSeparator(): string
     {
         if (!isset(self::$thousandsSeparator)) {
-            $localeconv = localeconv();
-            self::$thousandsSeparator = ($localeconv['thousands_sep'] != '')
-                ? $localeconv['thousands_sep'] : $localeconv['mon_thousands_sep'];
-
-            if (self::$thousandsSeparator == '') {
-                // Default to .
-                self::$thousandsSeparator = ',';
-            }
+            self::$thousandsSeparator = self::getLocaleValue('thousands_sep', 'mon_thousands_sep', ',');
         }
 
         return self::$thousandsSeparator;
@@ -577,22 +590,10 @@ class StringHelper
      *    Get the currency code. If it has not yet been set explicitly, try to obtain the
      *        symbol information from locale.
      */
-    public static function getCurrencyCode(): string
+    public static function getCurrencyCode(bool $trimAlt = false): string
     {
-        if (!empty(self::$currencyCode)) {
-            return self::$currencyCode;
-        }
-        self::$currencyCode = '$';
-        $localeconv = localeconv();
-        if (!empty($localeconv['currency_symbol'])) {
-            self::$currencyCode = $localeconv['currency_symbol'];
-
-            return self::$currencyCode;
-        }
-        if (!empty($localeconv['int_curr_symbol'])) {
-            self::$currencyCode = $localeconv['int_curr_symbol'];
-
-            return self::$currencyCode;
+        if (!isset(self::$currencyCode)) {
+            self::$currencyCode = self::getLocaleValue('currency_symbol', 'int_curr_symbol', '$', $trimAlt);
         }
 
         return self::$currencyCode;
@@ -646,5 +647,58 @@ class StringHelper
         $v = (float) $textValue;
 
         return (is_numeric(substr($textValue, 0, strlen((string) $v)))) ? $v : $textValue;
+    }
+
+    public static function strlenAllowNull(?string $string): int
+    {
+        return strlen("$string");
+    }
+
+    /** @param bool $convertBool If true, convert bool to locale-aware TRUE/FALSE rather than 1/null-string */
+    public static function convertToString(mixed $value, bool $throw = true, string $default = '', bool $convertBool = false): string
+    {
+        if ($convertBool && is_bool($value)) {
+            return $value ? Calculation::getTRUE() : Calculation::getFALSE();
+        }
+        if (is_float($value)) {
+            $string = (string) $value;
+            // look out for scientific notation
+            if (!Preg::isMatch('/[^-+0-9.]/', $string)) {
+                $minus = $value < 0 ? '-' : '';
+                $positive = abs($value);
+                $floor = floor($positive);
+                $oldFrac = (string) ($positive - $floor);
+                $frac = Preg::replace('/^0[.](\d+)$/', '$1', $oldFrac);
+                if ($frac !== $oldFrac) {
+                    return "$minus$floor.$frac";
+                }
+            }
+
+            return $string;
+        }
+        if ($value === null || is_scalar($value) || $value instanceof Stringable) {
+            return (string) $value;
+        }
+
+        if ($throw) {
+            throw new SpreadsheetException('Unable to convert to string');
+        }
+
+        return $default;
+    }
+
+    /**
+     * Assist with POST items when samples are run in browser.
+     * Never run as part of unit tests, which are command line.
+     *
+     * @codeCoverageIgnore
+     */
+    public static function convertPostToString(string $index, string $default = ''): string
+    {
+        if (isset($_POST[$index])) {
+            return htmlentities(self::convertToString($_POST[$index], false, $default));
+        }
+
+        return $default;
     }
 }

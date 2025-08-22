@@ -170,4 +170,24 @@ class OpenApiAdminTagsDelete {}
  */
 class OpenApiAdminAllTagsDelete {}
 
+/**
+ * @OA\Get(
+ *     path="/admin/governance/documents/maptocontrols",
+ *     summary="Initiate an analysis of all document content to controls",
+ *     operationId="mapDocumentsToControls",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Response(
+ *       response=200,
+ *       description="Mapped documents",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The user does not having admin privileges.",
+ *     ),
+ * )
+ */
+
+class OpenApiAdminMapDocumentsToControls {}
+
 ?>

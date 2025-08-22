@@ -133,23 +133,19 @@
     <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
             <form id="file-upload-form" action="#" method="POST" autocomplete="off" enctype="multipart/form-data">
+                <input type="hidden" name="token"  value="<?php if (check_questionnaire_get_token()) { echo $escaper->escapeHtml($_GET['token']); } else { echo ''; } ?>" />
                 <div class="modal-header">
                     <h4 class="modal-title"><?= $escaper->escapeHtml($lang['FileUpload']); ?></h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class='row mt-2 attachment-container'>
-                        <div class='col-4'>
-                            <div class='form-group'>
-                                <div class='pull-left'>
-                                    <div class='file-uploader'>
-                                        <label for='file-upload' class='btn btn-dark'>Choose File</label>
-                                        <span class='file-count-html'> <span class='file-count'>0</span> File Added</span>
-                                        <p><font size='2'><strong>Max <?= $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)) ?> Mb</strong></font></p>
-                                        <input type='file' id='file-upload' name='file[]' class='hidden-file-upload hide active' />
-                                        <input type="hidden" name="token"  value="<?= isset($_GET['token']) ? $escaper->escapeHtml($_GET['token']) : '' ?>" />
-                                    </div>
-                                </div>
+                    <div class='attachment-container'>
+                        <div>
+                            <div class='file-uploader'>
+                                <label for='file-upload' class='btn btn-dark'><?= $escaper->escapeHtml($lang['ChooseFile']); ?></label>
+                                <span class='file-count-html'><span class='file-count me-2'>0</span><?= $escaper->escapeHtml($lang['FileAdded']); ?></span>
+                                <p class='mb-0'><strong>Max <?= $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)) ?> Mb</strong></p>
+                                <input type='file' id='file-upload' name='file[]' class='hidden-file-upload hide active' />
                             </div>
                         </div>
                     </div>

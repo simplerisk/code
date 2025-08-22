@@ -29,6 +29,12 @@ class ClaudeAPIClient {
         $maxRetries = 5;
         $success = false;
 
+        // Convert malformed text into valid UTF-8
+        foreach ($messages as &$message) {
+            $message['content'] = mb_convert_encoding($message['content'], 'UTF-8', 'UTF-8');
+        }
+        unset($message); // important to avoid variable reference issues
+
         $data = [
             'model' => $this->model,
             'max_tokens' => $max_tokens,
@@ -37,10 +43,18 @@ class ClaudeAPIClient {
             'messages' => $messages
         ];
 
+        // Ensure that the json encoding works before sending the data
+        $json_data = json_encode($data);
+        if ($json_data === false) {
+            error_log('JSON encode error: ' . json_last_error_msg());
+        } else {
+            error_log('JSON payload being sent: ' . $json_data);
+        }
+
         $ch = curl_init($this->url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Content-Type: application/json',
             'x-api-key: ' . $this->api_key,
@@ -74,6 +88,8 @@ class ClaudeAPIClient {
                         if (!empty($message))
                         {
                             // Log the error
+                            write_debug_log("Full API Response on 400 error: " . print_r($response, true));
+                            write_debug_log("Request Payload: " . json_encode($data, JSON_PRETTY_PRINT));
                             write_debug_log("Anthropic API Error: 400 - {$message}");
                         }
                         // Otherwise, just display a generic message and the whole response

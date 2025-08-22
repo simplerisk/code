@@ -41,13 +41,33 @@ class Path
     }
 
     /**
+     * Prepend a part to the path and return a chained instance
+     * @param string $part
+     * @return Path
+     */
+    public function prepend($part): Path
+    {
+        return new Path($part . DIRECTORY_SEPARATOR . $this->pathToParse);
+    }
+
+    /**
+     * Append a part to the path and return a chained instance
+     * @param string $part
+     * @return Path
+     */
+    public function append($part): Path
+    {
+        return new Path($this->pathToParse . DIRECTORY_SEPARATOR . $part);
+    }
+
+    /**
      * Join multiple path parts using the correct directory separator
-     * @param array $paths
+     * @param string $paths
      * @return string
      */
     public function join(...$paths)
     {
-        return (new Path($this->pathToParse . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $paths)))->normalize();
+        return $this->append(implode(DIRECTORY_SEPARATOR, $paths))->normalize();
     }
 
     /**

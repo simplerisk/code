@@ -5,11 +5,12 @@ require_once(realpath(__DIR__ .'/head.php'));
 // In the script and the page using it you will be able to use _lang['localization_key'] in javascript.
 $localization_required_by_scripts = [
     'CUSTOM:common.js' => ['Yes', 'Cancel', 'FieldRequired'],
-    'EXTRA:JS:assessments:questionnaire_templates.js' => ['SelectedOnAnotherTab', 'ID', 'SelectedQuestions', 'SearchForQuestion', 'ConfirmDisableTabbedExperience', 'ConfirmDeleteTab', 'NewTab', 'Default', 'Actions'],
+    'EXTRA:JS:assessments:questionnaire_templates.js' => ['SelectedOnAnotherTab', 'ID', 'SelectedQuestions', 'SearchForQuestion', 'ConfirmDisableTabbedExperience', 'ConfirmDeleteTab', 'NewTab', 'Default', 'Actions', 'Required'],
     'CUSTOM:pages/plan-project.js' => ['AreYouSureYouWantToDeleteThisProject'],
     'datatables' => ['All', 'datatables_ShowAll', 'datatables_ShowLess', 'First', 'Previous', 'Next', 'Last'],
     'blockUI' => ['ProcessingPleaseWait'],
-    'UILayoutWidget' => ['WidgetType_chart', 'WidgetType_table'],
+    'UILayoutWidget' => ['WidgetType_chart', 'WidgetType_table', 'WidgetType_WYSIWYG'],
+    'CUSTOM:pages/governance.js' => ['ExistingMappings', 'Unassigned', 'DocumentName', 'DocumentType', 'ControlFrameworks', 'Controls', 'CreationDate', 'ApprovalDate', 'Status', 'All', 'ExceptionName', 'Description', 'Justification', 'NextReviewDate'],
 ];
 
 ?>
@@ -33,7 +34,7 @@ $localization_required_by_scripts = [
     <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?= $current_app_version ?>">
 
   	<script type="text/javascript">
-        var BASE_URL = '<?= $escaper->escapeHtml($_SESSION['base_url'] ?? get_setting("simplerisk_base_url"))?>';
+        var BASE_URL = '<?= $escaper->escapeHtml(rtrim(($_SESSION['base_url'] ?? get_setting("simplerisk_base_url")), '/'))?>';
   	</script>
 
     <!-- All Jquery -->
@@ -66,7 +67,7 @@ if (!empty($required_scripts_or_css)) {
     // Later we could build a kind of dependency management, but right now it's not really needed
     // so I decided to not waste the time on it
     if (in_array('UILayoutWidget', $required_scripts_or_css)) {
-        foreach (['gridstack', 'CUSTOM:common.js'] as $script_dependency) {
+        foreach (['gridstack', 'CUSTOM:common.js', 'WYSIWYG'] as $script_dependency) {
             if (!in_array($script_dependency, $required_scripts_or_css)) {
                 $required_scripts_or_css []= $script_dependency;
             }
@@ -308,26 +309,29 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
 	<script src="../vendor/node_modules/datatables.net-rowreorder/js/dataTables.rowReorder.min.js?<?= $current_app_version ?>" id="script_datatables_rowreorder" defer></script>
 	<script src="../vendor/node_modules/datatables.net-rowreorder-bs5/js/rowReorder.bootstrap5.min.js?<?= $current_app_version ?>" id="script_datatables_rowreorder-bs5" defer></script>
 	<link rel="stylesheet" href="../vendor/node_modules/datatables.net-rowreorder-bs5/css/rowReorder.bootstrap5.min.css?<?= $current_app_version ?>">
-<?php 
+<?php
             break;
         case 'WYSIWYG':
 ?>
-    <script src="../vendor/node_modules/tinymce/tinymce.min.js?<?= $current_app_version ?>" id="script_tinymce" defer></script>
+    <script src="../vendor/node_modules/hugerte/hugerte.min.js?<?= $current_app_version ?>" id="script_wysiwyg" defer></script>
 	<script src="../js/WYSIWYG/editor.js?<?= $current_app_version ?>" id="script_wysiwyg_editor" defer></script>
+	<script src="../js/WYSIWYG/helpers.js?<?= $current_app_version ?>" id="script_wysiwyg_helpers" defer></script>
 	<link rel="stylesheet" href="../css/WYSIWYG/editor.css?<?= $current_app_version ?>">
-<?php 
+<?php
             break;
         case 'WYSIWYG:Assessments':
 ?>
-    <script src="../vendor/node_modules/tinymce/tinymce.min.js?<?= $current_app_version ?>" id="script_tinymce" defer></script>
+    <script src="../vendor/node_modules/hugerte/hugerte.min.js?<?= $current_app_version ?>" id="script_wysiwyg" defer></script>
 	<script src="../extras/assessments/js/editor.js?<?= $current_app_version ?>" id="script_wysiwyg_editor" defer></script>
-<?php 
+	<script src="../js/WYSIWYG/helpers.js?<?= $current_app_version ?>" id="script_wysiwyg_helpers" defer></script>
+<?php
             break;
         case 'WYSIWYG:Notification':
 ?>
-    <script src="../vendor/node_modules/tinymce/tinymce.min.js?<?= $current_app_version ?>" id="script_tinymce" defer></script>
+    <script src="../vendor/node_modules/hugerte/hugerte.min.js?<?= $current_app_version ?>" id="script_wysiwyg" defer></script>
 	<script src="../extras/notification/js/editor.js?<?= $current_app_version ?>" id="script_wysiwyg_editor" defer></script>
-<?php 
+	<script src="../js/WYSIWYG/helpers.js?<?= $current_app_version ?>" id="script_wysiwyg_helpers" defer></script>
+<?php
             break;
 
         // make a "select2" that is a searchable select element.
@@ -342,12 +346,105 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
 	<script src="../vendor/node_modules/bootstrap-multiselect/dist/js/bootstrap-multiselect.min.js?<?= $current_app_version ?>" id="script_multiselect" defer></script>
 	<link rel="stylesheet" href="../vendor/node_modules/bootstrap-multiselect/dist/css/bootstrap-multiselect.min.css?<?= $current_app_version ?>">
 	<script>
-      // Initialize the defaults when the script is loaded
-      $('#script_multiselect').on('load', function () {
-        // A supposed workaround to make the multiselect widget work with bootstrap 5
-        // (it only supports bootstrap versions up to bootstrap 3)
-        $.fn.multiselect.Constructor.prototype.defaults.buttonClass = 'form-select';
-        $.fn.multiselect.Constructor.prototype.defaults.templates.button = '<button type="button" class="multiselect dropdown-toggle form-control" data-bs-toggle="dropdown"><span class="multiselect-selected-text"></span></button>';
+        // Initialize the defaults when the script is loaded
+        $('#script_multiselect').on('load', function () {
+            // A supposed workaround to make the multiselect widget work with bootstrap 5
+            // (it only supports bootstrap versions up to bootstrap 3)
+            $.fn.multiselect.Constructor.prototype.defaults.buttonClass = 'form-select';
+            $.fn.multiselect.Constructor.prototype.defaults.templates.button = '<button type="button" class="multiselect dropdown-toggle form-control" data-bs-toggle="dropdown"><span class="multiselect-selected-text"></span></button>';
+
+            // Move the dropdown of a multiselect in the datatable filter part to outside of the datatable scrollable container so that it doesn't get cut off when there isn't any row in the datatable
+            // We should implement this in a way that we can have a global and page-specific settings for the multiselect and we should be able to override the global settings with the page-specific ones
+            const globalSettings = {
+                onDropdownShown: function (event) {
+
+                    // Global logic for showing the dropdown
+
+                    // Check if the multiselect is inside `.header_filter` of a datatables
+                    if (!$(event.target).closest('.header_filter').length) {
+                        return; // Skip if not in `.header_filter`
+                    }
+
+                    var _dropdown = $(event.target).next('.multiselect-container');
+
+                    // Check if the dropdown is already moved
+                    if (!_dropdown.attr('data-associated')) {
+                        // Assign a unique identifier to track the dropdown
+                        var dropdownId = 'dropdown-' + Math.random().toString(36).substr(2, 9);
+                        _dropdown.attr('data-associated', dropdownId);
+                        $(event.target).attr('data-dropdown-id', dropdownId);
+                    }
+
+                    // Move the dropdown to the `.dt-layout-full` container that contains the datatable and multiselect
+                    // This is to prevent the dropdown from being cut off by the datatable scrollable container
+                    
+                    $(event.target).closest('.dt-layout-full').append(_dropdown);
+
+                    // Adjust position
+                    var offset = $(event.target).offset();
+                    _dropdown.css({
+                        top: offset.top + $(event.target).outerHeight(),
+                        left: offset.left,
+                        position: 'absolute',
+                        zIndex: 1050
+                    });
+                    
+                },
+                onDropdownHidden: function (event) {
+
+                    // Global logic for hiding the dropdown
+
+                    // Check if the multiselect is inside `.header_filter` of a datatables
+                    if (!$(event.target).closest('.header_filter').length) {
+                        return; // Skip if not in `.header_filter`
+                    }
+
+                    // Get the dropdown ID from the target element
+                    var dropdownId = $(event.target).attr('data-dropdown-id');
+
+                    if (dropdownId) {
+                        // Find the corresponding dropdown by its `data-associated` attribute
+                        var _dropdown = $(event.target).closest('.dt-layout-full').find('.multiselect-container[data-associated="' + dropdownId + '"]');
+
+                        // Move it back to the original position
+                        if (_dropdown.length) {
+                            $(event.target).after(_dropdown);
+                        }
+                    }
+                }
+            };
+
+            // Wrapper function for initializing multiselect with combined settings
+            window.initializeMultiselect = function (selector, pageSettings = {}) {
+
+                // Combine global settings with page-specific settings
+                const finalSettings = {
+                    ...globalSettings,
+                    ...pageSettings,
+                    onDropdownShown: function (event) {
+                        // Call both global and page-specific handlers
+                        if (typeof globalSettings.onDropdownShown === 'function') {
+                            globalSettings.onDropdownShown.call(this, event);
+                        }
+                        if (typeof pageSettings.onDropdownShown === 'function') {
+                            pageSettings.onDropdownShown.call(this, event);
+                        }
+                    },
+                    onDropdownHidden: function (event) {
+                        // Call both global and page-specific handlers
+                        if (typeof globalSettings.onDropdownHidden === 'function') {
+                            globalSettings.onDropdownHidden.call(this, event);
+                        }
+                        if (typeof pageSettings.onDropdownHidden === 'function') {
+                            pageSettings.onDropdownHidden.call(this, event);
+                        }
+                    }
+                };
+
+                // Initialize the multiselect
+                $(selector).multiselect(finalSettings);
+                
+            };
 
 <?php // Using PHP comments so it's not rendered into the page
     		// Please don't remove the commented part yet, we'll see if it'll be needed for making the multiselect work
@@ -396,7 +493,69 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
             break;
         case 'easyui:filter':
 ?>
-	<script src="../vendor/simplerisk/jeasyui/plugins/datagrid-filter.js?<?= $current_app_version ?>" defer></script>
+	<script src="../vendor/simplerisk/jeasyui/plugins/datagrid-filter.js?<?= $current_app_version ?>"  id="script_easyui_filter" defer></script>
+    <script>
+        $(function () {
+            $.fn.datagrid.defaults.filters.select = {
+                init: function(container, options){
+
+                    // Remove old select if exists
+                    container.empty();
+
+                    var select = $('<select class="form-select" style="width:100%;" name="' + options.name + '"></select>').appendTo(container)
+                        .on('change', function () {
+                            if (typeof options.onChange === 'function') {
+                                options.onChange($(this).val());
+                            }
+                        });
+
+                    if (options.url) {
+                        $.ajax({
+                            url: options.url,
+                            method: 'GET',
+                            dataType: 'json',
+                            success: function(data) {
+                                let items = data.data;
+                                select.empty();
+                        
+                                if (options.defaultOption) {
+                                    $('<option>', {
+                                        value: options.defaultOption.value,
+                                        text: options.defaultOption.name
+                                    }).appendTo(select);
+                                }
+                        
+                                $.each(items, function(_, item){
+                                    $('<option>', {
+                                        value: item.value,
+                                        text: item.name
+                                    }).appendTo(select);
+                                });
+                            }
+                        });
+                    } else if (options.data) {
+                        $.each(options.data, function(_, item){
+                            $('<option>', {
+                                value: item.value,
+                                text: item.name
+                            }).appendTo(select);
+                        });
+                    }
+
+                    return select;
+                },
+                getValue: function(target){
+                    return $(target).val();
+                },
+                setValue: function(target, value){
+                    $(target).val(value);
+                },
+                resize: function(target, width){
+                    $(target).width(width);
+                }
+            };
+        });
+    </script>
 <?php 
             break;
         case 'datetimerangepicker':
@@ -737,7 +896,7 @@ if (!advanced_search_extra()) { ?>
                   <li><a class="dropdown-item" href="https://help.simplerisk.com/index.php?page=<?=get_request_uri();?>" target="_blank"><i class="fas fa-info-circle me-1 ms-1"></i><?= $escaper->escapeHtml($lang['AboutThisPage']);?></a></li>
 
                   <!-- API Documentation -->
-                  <li><a class="dropdown-item" href="<?php echo $_SESSION['base_url'];?>/api/v2/documentation.php" target="_blank"><i class="fas fa-info-circle me-1 ms-1"></i><?= $escaper->escapeHtml($lang['APIDocumentation']);?></a></li>
+                  <li><a class="dropdown-item" href="<?php echo build_url("api/v2/documentation.php");?>" target="_blank"><i class="fas fa-info-circle me-1 ms-1"></i><?= $escaper->escapeHtml($lang['APIDocumentation']);?></a></li>
                   
                   <!-- How-To Videos -->
                   <li><a class="dropdown-item" href="https://simplerisk.freshdesk.com/a/solutions/folders/6000228831" target="_blank"><i class="fas fa-video me-1 ms-1"></i><?= $escaper->escapeHtml($lang['HowToVideos']);?></a></li>

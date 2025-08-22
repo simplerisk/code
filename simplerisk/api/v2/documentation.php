@@ -18,22 +18,19 @@
     
     // Include the CSRF Magic library
     include_csrf_magic();
-    
-    // It's saved safe so we're assuming it IS safe so dislaying it raw
-    $base_url = get_setting('simplerisk_base_url');
 ?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
         <title>SimpleRisk API Documentation</title>
-        <link rel="stylesheet" type="text/css" href="<?= $base_url ?>/vendor/swagger-api/swagger-ui/dist/swagger-ui.css">
-        <script src="<?= $base_url ?>/vendor/swagger-api/swagger-ui/dist/swagger-ui-bundle.js"></script>
-        <script src="<?= $base_url ?>/vendor/swagger-api/swagger-ui/dist/swagger-ui-standalone-preset.js"></script>
+        <link rel="stylesheet" type="text/css" href="<?= build_url("vendor/swagger-api/swagger-ui/dist/swagger-ui.css") ?>"/>
+        <script src="<?= build_url("vendor/swagger-api/swagger-ui/dist/swagger-ui-bundle.js") ?>"></script>
+        <script src="<?= build_url("vendor/swagger-api/swagger-ui/dist/swagger-ui-standalone-preset.js") ?>"></script>
         <script>
           	window.onload = function() {
             	const ui = SwaggerUIBundle({
-              		url: "<?= $base_url ?>/api/v2/documentation/index.php",
+              		url: "<?= build_url("api/v2/documentation/index.php") ?>",
               		dom_id: '#swagger-ui',
               		requestInterceptor: function(request) {
               			// Add the CSRF token to the request header if it's a POST

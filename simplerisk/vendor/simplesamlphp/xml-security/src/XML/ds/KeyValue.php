@@ -6,14 +6,20 @@ namespace SimpleSAML\XMLSecurity\XML\ds;
 
 use DOMElement;
 use SimpleSAML\Assert\Assert;
-use SimpleSAML\XML\ElementInterface;
+use SimpleSAML\XML\Chunk;
 use SimpleSAML\XML\Exception\InvalidDOMElementException;
 use SimpleSAML\XML\Exception\SchemaViolationException;
 use SimpleSAML\XML\Exception\TooManyElementsException;
 use SimpleSAML\XML\ExtendableElementTrait;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XML\SerializableElementInterface;
 use SimpleSAML\XML\XsNamespace as NS;
+use SimpleSAML\XMLSecurity\Constants as C;
+use SimpleSAML\XMLSecurity\XML\dsig11\ECKeyValue;
+
+use function array_merge;
+use function array_pop;
 
 /**
  * Class representing a ds:KeyValue element.
@@ -22,7 +28,11 @@ use SimpleSAML\XML\XsNamespace as NS;
  */
 final class KeyValue extends AbstractDsElement implements SchemaValidatableElementInterface
 {
-    use ExtendableElementTrait;
+    // We use our own getter instead of the trait's one, so we prevent their use by marking them private
+    use ExtendableElementTrait {
+        getElements as private;
+        setElements as private;
+    }
     use SchemaValidatableElementTrait;
 
 
@@ -33,21 +43,24 @@ final class KeyValue extends AbstractDsElement implements SchemaValidatableEleme
     /**
      * Initialize an KeyValue.
      *
-     * @param \SimpleSAML\XMLSecurity\XML\ds\RSAKeyValue|null $RSAKeyValue
-     * @param \SimpleSAML\XML\SerializableElementInterface|null $element
+     * @param \SimpleSAML\XML\SerializableElementInterface $keyValue
      */
     final public function __construct(
-        protected ?RSAKeyValue $RSAKeyValue,
-        ?ElementInterface $element = null,
+        protected RSAKeyValue|DSAKeyValue|ECKeyValue|SerializableElementInterface $keyValue,
     ) {
-        Assert::false(
-            is_null($RSAKeyValue) && is_null($element),
-            'A <ds:KeyValue> requires either a RSAKeyValue or an element in namespace ##other',
-            SchemaViolationException::class,
-        );
-
-        if ($element !== null) {
-            $this->setElements([$element]);
+        /** @var \SimpleSAML\XML\AbstractElement|\SimpleSAML\XML\Chunk $keyValue */
+        if (
+            !($keyValue instanceof RSAKeyValue
+            || $keyValue instanceof DSAKeyValue
+            || $keyValue instanceof ECKeyValue)
+        ) {
+            Assert::true(
+                (($keyValue instanceof Chunk) ? $keyValue->getNamespaceURI() : $keyValue::getNameSpaceURI())
+                !== C::NS_XDSIG,
+                'A <ds:KeyValue> requires either a RSAKeyValue, DSAKeyValue, ECKeyValue '
+                . 'or an element in namespace ##other',
+                SchemaViolationException::class,
+            );
         }
     }
 
@@ -55,11 +68,14 @@ final class KeyValue extends AbstractDsElement implements SchemaValidatableEleme
     /**
      * Collect the value of the RSAKeyValue-property
      *
-     * @return \SimpleSAML\XMLSecurity\XML\ds\RSAKeyValue|null
+     * @return (\SimpleSAML\XMLSecurity\XML\ds\RSAKeyValue|
+     *         \SimpleSAML\XMLSecurity\XML\ds\DSAKeyValue|
+     *         \SimpleSAML\XMLSecurity\XML\dsig11\ECKeyValue|
+     *         \SimpleSAML\XML\SerializableElementInterface)
      */
-    public function getRSAKeyValue(): ?RSAKeyValue
+    public function getKeyValue(): RSAKeyValue|DSAKeyValue|ECKeyValue|SerializableElementInterface
     {
-        return $this->RSAKeyValue;
+        return $this->keyValue;
     }
 
 
@@ -77,23 +93,20 @@ final class KeyValue extends AbstractDsElement implements SchemaValidatableEleme
         Assert::same($xml->localName, 'KeyValue', InvalidDOMElementException::class);
         Assert::same($xml->namespaceURI, KeyValue::NS, InvalidDOMElementException::class);
 
-        $RSAKeyValue = RSAKeyValue::getChildrenOfClass($xml);
-        Assert::maxCount(
-            $RSAKeyValue,
+        $keyValue = array_merge(
+            RSAKeyValue::getChildrenOfClass($xml),
+            DSAKeyValue::getChildrenOfClass($xml),
+            self::getChildElementsFromXML($xml),
+        );
+
+        Assert::count(
+            $keyValue,
             1,
-            'A <ds:KeyValue> can contain exactly one <ds:RSAKeyValue>',
+            'A <ds:KeyValue> must contain exactly one child element',
             TooManyElementsException::class,
         );
 
-        $elements = self::getChildElementsFromXML($xml);
-        Assert::maxCount(
-            $elements,
-            1,
-            'A <ds:KeyValue> can contain exactly one element in namespace ##other',
-            TooManyElementsException::class,
-        );
-
-        return new static(array_pop($RSAKeyValue), array_pop($elements));
+        return new static(array_pop($keyValue));
     }
 
 
@@ -107,13 +120,7 @@ final class KeyValue extends AbstractDsElement implements SchemaValidatableEleme
     {
         $e = $this->instantiateParentElement($parent);
 
-        $this->getRSAKeyValue()?->toXML($e);
-
-        foreach ($this->elements as $elt) {
-            if (!$elt->isEmptyElement()) {
-                $elt->toXML($e);
-            }
-        }
+        $this->getKeyValue()->toXML($e);
 
         return $e;
     }

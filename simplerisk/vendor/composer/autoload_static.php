@@ -91,6 +91,8 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
             'Spatie\\Async\\' => 13,
             'SimpleSAML\\XML\\' => 15,
             'SimpleSAML\\XMLSecurity\\' => 23,
+            'SimpleSAML\\SOAP\\' => 16,
+            'SimpleSAML\\SAML2\\' => 17,
             'SimpleSAML\\Module\\saml\\' => 23,
             'SimpleSAML\\Module\\multiauth\\' => 28,
             'SimpleSAML\\Module\\exampleauth\\' => 30,
@@ -129,6 +131,10 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         array (
             'OpenSpout\\' => 10,
             'OpenApi\\' => 8,
+        ),
+        'N' => 
+        array (
+            'Nyholm\\Psr7\\' => 12,
         ),
         'M' => 
         array (
@@ -334,6 +340,14 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         array (
             0 => __DIR__ . '/..' . '/simplesamlphp/xml-security/src',
         ),
+        'SimpleSAML\\SOAP\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/simplesamlphp/xml-soap/src',
+        ),
+        'SimpleSAML\\SAML2\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/simplesamlphp/saml2/src',
+        ),
         'SimpleSAML\\Module\\saml\\' => 
         array (
             0 => __DIR__ . '/..' . '/simplesamlphp/simplesamlphp/modules/saml/src',
@@ -376,7 +390,7 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         ),
         'SAML2\\' => 
         array (
-            0 => __DIR__ . '/..' . '/simplesamlphp/saml2/src/SAML2',
+            0 => __DIR__ . '/..' . '/simplesamlphp/saml2-legacy/src/SAML2',
         ),
         'RobRichards\\XMLSecLibs\\' => 
         array (
@@ -451,6 +465,10 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         array (
             0 => __DIR__ . '/..' . '/zircote/swagger-php/src',
         ),
+        'Nyholm\\Psr7\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/nyholm/psr7/src',
+        ),
         'Matrix\\' => 
         array (
             0 => __DIR__ . '/..' . '/markbaker/matrix/classes/src',
@@ -521,6 +539,13 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
     );
 
     public static $prefixesPsr0 = array (
+        'S' => 
+        array (
+            'Smalot\\PdfParser\\' => 
+            array (
+                0 => __DIR__ . '/..' . '/smalot/pdfparser/src',
+            ),
+        ),
         'P' => 
         array (
             'Parsedown' => 

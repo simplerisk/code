@@ -30,7 +30,34 @@ if (!function_exists('_env')) {
     function _env($key, $default = null)
     {
         $env = array_merge(getenv() ?? [], $_ENV ?? []);
+        $value = $env[$key] ??= null;
 
-        return $env[$key] ??= $default;
+        if ($value === null) {
+            return $default;
+        }
+
+        switch (strtolower($value)) {
+            case 'true':
+            case '(true)':
+                return true;
+
+            case 'false':
+            case '(false)':
+                return false;
+
+            case 'empty':
+            case '(empty)':
+                return '';
+
+            case 'null':
+            case '(null)':
+                return;
+        }
+
+        if (strpos($value, '"') === 0 && strpos($value, '"') === strlen($value) - 1) {
+            return substr($value, 1, -1);
+        }
+
+        return $value;
     }
 }

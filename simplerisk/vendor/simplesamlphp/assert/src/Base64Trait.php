@@ -10,7 +10,6 @@ use function base64_decode;
 use function base64_encode;
 use function filter_var;
 use function sprintf;
-use function strlen;
 
 /**
  * @package simplesamlphp/assert
@@ -42,8 +41,6 @@ trait Base64Trait
         $result = true;
 
         if (filter_var($value, FILTER_VALIDATE_REGEXP, ['options' => ['regexp' => self::$base64_regex]]) === false) {
-            $result = false;
-        } elseif (strlen($value) % 4 !== 0) {
             $result = false;
         } else {
             $decoded = base64_decode($value, true);

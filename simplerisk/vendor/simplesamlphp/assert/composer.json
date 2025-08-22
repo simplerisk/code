@@ -19,13 +19,13 @@
         "ext-pcre": "*",
         "ext-spl": "*",
 
-        "guzzlehttp/psr7": "~2.7.0",
+        "guzzlehttp/psr7": "~2.7.1",
         "webmozart/assert": "~1.11.0"
     },
     "require-dev": {
         "ext-intl": "*",
 
-        "simplesamlphp/simplesamlphp-test-framework": "~1.8.0"
+        "simplesamlphp/simplesamlphp-test-framework": "~1.9.2"
     },
     "autoload": {
         "psr-4": {

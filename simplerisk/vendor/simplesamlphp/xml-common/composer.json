@@ -34,12 +34,12 @@
         "ext-pcre": "*",
         "ext-spl": "*",
 
-        "simplesamlphp/assert": "~1.8.0",
-        "simplesamlphp/composer-xmlprovider-installer": "~1.0.0",
-        "symfony/finder": "^6.4"
+        "simplesamlphp/assert": "~1.8.1",
+        "simplesamlphp/composer-xmlprovider-installer": "~1.0.2",
+        "symfony/finder": "~6.4.0"
     },
     "require-dev": {
-        "simplesamlphp/simplesamlphp-test-framework": "^1.7"
+        "simplesamlphp/simplesamlphp-test-framework": "~1.9.2"
     },
     "support": {
         "issues": "https://github.com/simplesamlphp/xml-common/issues",

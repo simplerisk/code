@@ -7,6 +7,7 @@ namespace Tests\PhpOffice\Math\Reader;
 use PhpOffice\Math\Element;
 use PhpOffice\Math\Exception\InvalidInputException;
 use PhpOffice\Math\Exception\NotImplementedException;
+use PhpOffice\Math\Exception\SecurityException;
 use PhpOffice\Math\Math;
 use PhpOffice\Math\Reader\MathML;
 use PHPUnit\Framework\TestCase;
@@ -290,6 +291,17 @@ class MathMLTest extends TestCase
                 <mi> a </mi>
             </mnotexisting>
         </math>';
+
+        $reader = new MathML();
+        $math = $reader->read($content);
+    }
+
+    public function testReadSecurity(): void
+    {
+        $this->expectException(SecurityException::class);
+        $this->expectExceptionMessage('Detected use of ENTITY in XML, loading aborted to prevent XXE/XEE attacks');
+
+        $content = '<?xml version="1.0" encoding="UTF-8"?>     <!DOCTYPE x SYSTEM "php://filter/convert.base64-decode/zlib.inflate/resource=data:,7Ztdb9owFIbv%2bRVZJ9armNjOZ2k7QUaL%2bRYO2nqFUnBFNQaMptP272cnNFuTsBbSskg1iATZzvGxn/ccX3A4fdfoecS7UsrK1A98hV5Rr9FVjlaz1UmlcnM7D9i6MlkufrB1AK79O2bqKltMllMWt96KL6ADwci7sJ4Yu0vr9/tlwKbqan27CPzrOXvevFGrbRvOGIseaCa7TAxok1x44xahXzQEcdKPKZPevap3RZw920I0VscWGLlU1efPsy0c5cbV1AoI7ZuOMCZW12nkcP9Q2%2bQObBNmL6ajg8s6xJqmJTrq5NIArX6zVk8Zcwwt4fPuLvHnbeBSvpdIQ6g93MvUv3CHqKNrmtEW4EYmCr5gDT5QzyNWE4x6xO1/aqQmgMhGYgaVDFUnScKltbFnaJoKHRuHK0L1pIkuaYselMe9cPUqRmm5C51u00kkhy1S3aBougkl7e4d6RGaTYeSehdCjAG/O/p%2bYfKyQsoLmgdlmsFYQFDjh6GWJyGE0ZfMX08EZtwNTdAYud7nLcksnwppA2UnqpCzgyDo1QadAU3vLOQZ82EHMxAi0KVcq7rzas5xD6AQoeqkYkgk02abukkJ/z%2bNvkj%2bjUy16Ba5d/S8anhBLwt44EgGkoFkIBlIBpKBZCAZSAaSgWQgGUgGkoFkIBlIBpKBZCAZSAaSgWQgGUgGxWOwW2nF7kt%2by7/Kb3ag2GUTUgBvXAAxiKxt4Is3sB4WniVrOvhwzB0CXerg5GN9esGRQv7RgQdMmMO9sIwtc/sIJUOCsY4ee7f7FIWu2Si4euKan8wg58nFsEIXxYGntgZqMog3Z2FrgPhgyzIOlsmijowqwb0jyMqMoGEbarqdOpP/iqFISMkSVFG1Z5p8f3OK%2bxAZ7gClpgUPg70rq0T2RIkcup/0newQ7NbcUXv/DPl4LL/N7hdfn2dp07pmd8v79YSdVVgwqcyWd8HC/8aOzkunf6r%2b2c8bpSxK/6uPmlf%2br/nSnyrHcduH99iqKiz7HwLxTLMgEM0QWUDjb3ji8NdHPslZmV%2bqR%2bfH56Xyxni1VGbV0m8=" []><foo></foo>M';
 
         $reader = new MathML();
         $math = $reader->read($content);

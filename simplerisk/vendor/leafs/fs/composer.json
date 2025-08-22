@@ -1,6 +1,6 @@
 {
     "name": "leafs/fs",
-    "description": "Leaf PHP session + flash modules",
+    "description": "Leaf file system module",
     "keywords": [
         "fs",
         "filesystem",
@@ -30,9 +30,6 @@
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "require": {
-        "symfony/finder": "^5.3|^6.0"
-    },
     "require-dev": {
         "pestphp/pest": "^1.21",
         "leafs/alchemy": "^2.1",

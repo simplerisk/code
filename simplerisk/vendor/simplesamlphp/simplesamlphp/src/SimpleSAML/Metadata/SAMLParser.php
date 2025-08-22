@@ -13,6 +13,7 @@ use SAML2\DOMDocumentFactory;
 use SAML2\SignedElementHelper;
 use SAML2\XML\ds\X509Certificate;
 use SAML2\XML\ds\X509Data;
+use SAML2\XML\idpdisc\DiscoveryResponse;
 use SAML2\XML\md\AttributeAuthorityDescriptor;
 use SAML2\XML\md\AttributeConsumingService;
 use SAML2\XML\md\ContactPerson;
@@ -300,11 +301,12 @@ class SAMLParser
      * instance.
      *
      * @param string $file The path to the file which contains the EntityDescriptor or EntitiesDescriptor element.
+     * @param array $context The connection context to pass to file_get_contents()
      *
      * @return SAMLParser[] An array of SAMLParser instances.
      * @throws \Exception If the file does not parse as XML.
      */
-    public static function parseDescriptorsFile(string $file): array
+    public static function parseDescriptorsFile(string $file, array $context = []): array
     {
         if (empty($file)) {
             throw new Exception('Cannot open file; file name not specified.');
@@ -312,7 +314,7 @@ class SAMLParser
 
         /** @var string $data */
         $httpUtils = new Utils\HTTP();
-        $data = $httpUtils->fetch($file);
+        $data = $httpUtils->fetch($file, $context);
 
         try {
             $doc = DOMDocumentFactory::fromString($data);
@@ -358,7 +360,7 @@ class SAMLParser
      *     be the entity id.
      * @throws \Exception if the document is empty or the root is an unexpected node.
      */
-    public static function parseDescriptorsElement(DOMElement $element = null): array
+    public static function parseDescriptorsElement(?DOMElement $element = null): array
     {
         if ($element === null) {
             throw new Exception('Document was empty.');
@@ -504,6 +506,10 @@ class SAMLParser
             if (Utils\Config\Metadata::isHiddenFromDiscovery($metadata)) {
                 $metadata['hide.from.discovery'] = true;
             }
+        }
+
+        if (!empty($roleDescriptor['DiscoveryResponse'])) {
+            $metadata['DiscoveryResponse'] = $roleDescriptor['DiscoveryResponse'];
         }
 
         if (!empty($roleDescriptor['UIInfo'])) {
@@ -736,6 +742,7 @@ class SAMLParser
         $ext = self::processExtensions($element);
         $ret['scope'] = $ext['scope'];
         $ret['EntityAttributes'] = $ext['EntityAttributes'];
+        $ret['DiscoveryResponse'] = $ext['DiscoveryResponse'];
         $ret['UIInfo'] = $ext['UIInfo'];
         $ret['DiscoHints'] = $ext['DiscoHints'];
 
@@ -768,7 +775,6 @@ class SAMLParser
 
         // find all ArtifactResolutionService elements
         $sd['ArtifactResolutionService'] = self::extractEndpoints($element->getArtifactResolutionService());
-
 
         // process NameIDFormat elements
         $sd['nameIDFormats'] = $element->getNameIDFormat();
@@ -872,11 +878,12 @@ class SAMLParser
     private static function processExtensions(mixed $element, array $parentExtensions = []): array
     {
         $ret = [
-            'scope'            => [],
-            'EntityAttributes' => [],
-            'RegistrationInfo' => [],
-            'UIInfo'           => [],
-            'DiscoHints'       => [],
+            'scope'             => [],
+            'EntityAttributes'  => [],
+            'RegistrationInfo'  => [],
+            'DiscoveryResponse' => [],
+            'UIInfo'            => [],
+            'DiscoHints'        => [],
         ];
 
         // Some extensions may get inherited from a parent element
@@ -951,6 +958,13 @@ class SAMLParser
                             $ret['EntityAttributes'][$name] = $values;
                         }
                     }
+                }
+            }
+
+            // DiscoveryResponse elements only make sense at SPSSODescriptor level extensions
+            if ($element instanceof SPSSODescriptor) {
+                if ($e instanceof DiscoveryResponse) {
+                    $ret['DiscoveryResponse'] = array_merge($ret['DiscoveryResponse'], self::extractEndpoints([$e]));
                 }
             }
 

@@ -177,7 +177,7 @@ class Date
             throw new Exception("Invalid string $value supplied for datatype Date");
         }
 
-        if (preg_match('/^\\s*\\d?\\d:\\d\\d(:\\d\\d([.]\\d+)?)?\\s*(am|pm)?\\s*$/i', $value) == 1) {
+        if (preg_match('/^\s*\d?\d:\d\d(:\d\d([.]\d+)?)?\s*(am|pm)?\s*$/i', $value) == 1) {
             $newValue = fmod($newValue, 1.0);
         }
 
@@ -214,6 +214,13 @@ class Date
             $baseDate = new DateTime('1899-12-30', $timeZone);
         }
 
+        if (is_int($excelTimestamp)) {
+            if ($excelTimestamp >= 0) {
+                return $baseDate->modify("+ $excelTimestamp days");
+            }
+
+            return $baseDate->modify("$excelTimestamp days");
+        }
         $days = floor($excelTimestamp);
         $partDay = $excelTimestamp - $days;
         $hms = 86400 * $partDay;
@@ -464,7 +471,7 @@ class Date
         if (strlen($dateValue) < 2) {
             return false;
         }
-        if (!preg_match('/^(\d{1,4}[ \.\/\-][A-Z]{3,9}([ \.\/\-]\d{1,4})?|[A-Z]{3,9}[ \.\/\-]\d{1,4}([ \.\/\-]\d{1,4})?|\d{1,4}[ \.\/\-]\d{1,4}([ \.\/\-]\d{1,4})?)( \d{1,2}:\d{1,2}(:\d{1,2})?)?$/iu', $dateValue)) {
+        if (!preg_match('/^(\d{1,4}[ \.\/\-][A-Z]{3,9}([ \.\/\-]\d{1,4})?|[A-Z]{3,9}[ \.\/\-]\d{1,4}([ \.\/\-]\d{1,4})?|\d{1,4}[ \.\/\-]\d{1,4}([ \.\/\-]\d{1,4})?)( \d{1,2}:\d{1,2}(:\d{1,2}([.]\d+)?)?)?$/iu', $dateValue)) {
             return false;
         }
 
@@ -537,11 +544,16 @@ class Date
         return $dtobj->format($format);
     }
 
+    /**
+     * Round the given DateTime object to seconds.
+     */
     public static function roundMicroseconds(DateTime $dti): void
     {
         $microseconds = (int) $dti->format('u');
-        if ($microseconds >= 500000) {
-            $dti->modify('+1 second');
+        $rounded = (int) round($microseconds, -6);
+        $modify = $rounded - $microseconds;
+        if ($modify !== 0) {
+            $dti->modify(($modify > 0 ? '+' : '') . $modify . ' microseconds');
         }
     }
 }

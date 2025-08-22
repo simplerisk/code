@@ -57,7 +57,7 @@ class Generator
      *
      * If set, it will override the version set in the <code>OpenApi</code> annotation.
      *
-     * Due to the order of processing any conditional code using this (via <code>Context::$version</code>)
+     * Due to the order of processing, any conditional code using this (via <code>Context::$version</code>)
      * must come only after the analysis is finished.
      */
     protected ?string $version = null;
@@ -122,7 +122,11 @@ class Generator
 
     public function getAnalyser(): AnalyserInterface
     {
-        $this->analyser = $this->analyser ?: new ReflectionAnalyser([new AttributeAnnotationFactory(), new DocBlockAnnotationFactory()]);
+        $generatorConfig = $this->getConfig()['generator'];
+        $this->analyser = $this->analyser ?: new ReflectionAnalyser([
+            new AttributeAnnotationFactory($generatorConfig['ignoreOtherAttributes']),
+            new DocBlockAnnotationFactory(),
+        ]);
         $this->analyser->setGenerator($this);
 
         return $this->analyser;
@@ -138,6 +142,9 @@ class Generator
     public function getDefaultConfig(): array
     {
         return [
+            'generator' => [
+                'ignoreOtherAttributes' => false,
+            ],
             'operationId' => [
                 'hash' => true,
             ],
@@ -230,7 +237,7 @@ class Generator
         }
 
         $config = $this->getConfig();
-        $walker = function (callable $pipe) use ($config) {
+        $walker = function (callable $pipe) use ($config): void {
             $rc = new \ReflectionClass($pipe);
 
             // apply config
@@ -260,11 +267,19 @@ class Generator
      *
      * @param callable $with callable with the current processor pipeline passed in
      */
-    public function withProcessor(callable $with): Generator
+    public function withProcessorPipeline(callable $with): Generator
     {
         $with($this->getProcessorPipeline());
 
         return $this;
+    }
+
+    /**
+     * @deprecated use `withProcessorPipeline()` instead
+     */
+    public function withProcessor(callable $with): Generator
+    {
+        return $this->withProcessorPipeline($with);
     }
 
     public function getLogger(): ?LoggerInterface
@@ -284,6 +299,9 @@ class Generator
         return $this;
     }
 
+    /**
+     * @deprecated use non-static `generate()` instead
+     */
     public static function scan(iterable $sources, array $options = []): ?OA\OpenApi
     {
         // merge with defaults

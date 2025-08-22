@@ -293,7 +293,7 @@ function assets_view_action_API() {
                             if ($value && $encryption && !empty($field_setting['encrypted']) && $field_setting['encrypted']) {
                                 $value = try_decrypt($value);
                             }
-                            //asdasdasd
+
                             // For fields that need custom formatting
                             switch($field_name) {
                                 case "teams":
@@ -375,7 +375,7 @@ function assets_update_asset_API() {
     // Only serving asset type views. Also check if the required fields have proper values
     if ($view && !empty($field_settings_views[$view]['view_type']) && $field_settings_views[$view]['view_type'] === 'asset' && isset($_POST['id']) && ctype_digit((string)$_POST['id'])) {
 
-        if (!asset_exists_by_id((int)$_POST['id'])) {
+        if (!asset_exists_by_id((int)$_POST['id']) || !check_access_for_asset((int)$_POST['id'])) {
             api_v2_json_result(204, "NO CONTENT: Unable to find an asset with the specified id.", NULL);
         }
 

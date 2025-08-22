@@ -102,7 +102,7 @@ $current_app_version = current_version("app");
 	<script src="../vendor/node_modules/chart.js/dist/chart.umd.js?20240603-001" id="script_chartjs" defer></script>
 
   	<script type="text/javascript">
-        var BASE_URL = '<?= $escaper->escapeHtml($_SESSION['base_url'] ?? get_setting("simplerisk_base_url"))?>';
+        var BASE_URL = '<?= $escaper->escapeHtml(rtrim(($_SESSION['base_url'] ?? get_setting("simplerisk_base_url")), '/'))?>';
   	</script>
     </head>
     <body>

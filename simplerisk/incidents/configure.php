@@ -7,16 +7,12 @@
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 
     $breadcrumb_title_key="";
-    $active_sidebar_menu ="";
-    $active_sidebar_submenu ="";
+    $active_sidebar_menu ="IncidentManagement";
+    $active_sidebar_submenu ="IM_Configure";
+    $active_sidebar_forthmenu = '';
 
     // If a menu was provided
     if (isset($_GET['menu'])) {
-            
-        $active_sidebar_menu = "IncidentManagement";
-
-        // If the pages in the third level was displayed, assigned the value for its parent page, configure page to $active_sidebar_submenu
-        $active_sidebar_submenu = "IM_Configure";
 
         // If the page for the menu was displayed
         switch ($_GET['menu']) {
@@ -24,21 +20,25 @@
             // If the setting page was displayed
             case "settings":
                 $breadcrumb_title_key = 'Settings';
+                $active_sidebar_thirdmenu ="Settings";
                 break;
 
             // If the add and remove values page was displayed
             case "add_remove_values":
                 $breadcrumb_title_key = 'AddAndRemoveValues';
+                $active_sidebar_thirdmenu ="AddAndRemoveValues";
                 break;
 
             // If the playbook page was displayed
             case "playbooks":
                 $breadcrumb_title_key = 'Playbooks';
+                $active_sidebar_thirdmenu ="Playbooks";
                 break;
 
             // IF the setting page was displayed by default
             default:
                 $breadcrumb_title_key = 'Settings';
+                $active_sidebar_thirdmenu ="Settings";
                 break;
 
         }
@@ -50,7 +50,7 @@
 
     }
 
-    render_header_and_sidebar(['tabs:logic', 'multiselect', 'CUSTOM:common.js', 'JSLocalization'], ['check_im_configure' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu, required_localization_keys: ['TheNameOfAPlaybookActionCannotBeEmpty']);
+    render_header_and_sidebar(['tabs:logic', 'multiselect', 'CUSTOM:common.js', 'JSLocalization'], ['check_im_configure' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu, $active_sidebar_thirdmenu, $active_sidebar_forthmenu, required_localization_keys: ['TheNameOfAPlaybookActionCannotBeEmpty']);
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/permissions.php'));

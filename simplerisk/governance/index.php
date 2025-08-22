@@ -5,7 +5,7 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'datetimerangepicker', 'WYSIWYG', 'multiselect', 'easyui:treegrid', 'easyui:dnd', 'tabs:logic', 'CUSTOM:pages/governance.js', 'CUSTOM:common.js'], ['check_governance' => true]);
+    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'datetimerangepicker', 'WYSIWYG', 'multiselect', 'easyui:treegrid', 'easyui:dnd', 'tabs:logic', 'CUSTOM:pages/governance.js', 'CUSTOM:common.js', 'JSLocalization'], ['check_governance' => true]);
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/permissions.php'));
@@ -50,25 +50,6 @@
 
         refresh();
         
-    }
-
-    // Check if a framework was updated
-    if (isset($_POST['update_framework'])) {
-        $framework_id = get_param("POST", "framework_id", "");
-        $name         = get_param("POST", "framework_name", "");
-        $descripiton  = get_param("POST", "framework_description", "");
-        $parent       = get_param("POST", "parent", "");
-
-        // Check if user has a permission to modify framework
-        if(has_permission('modify_frameworks')) {
-            if (update_framework($framework_id, $name, $descripiton, $parent)) {
-                set_alert(true, "good", $lang['FrameworkUpdated']);
-            }
-        } else {
-            set_alert(true, "bad", $lang['NoModifyFrameworkPermission']);
-        }
-
-        refresh();
     }
 
     // Delete if a new framework was submitted
@@ -275,7 +256,7 @@
         $("#framework--update [name=framework_description]").attr("id", "update_framework_description");
         init_minimun_editor('#update_framework_description');
 
-        // Add tinymce editor to control modal
+        // Add WYSIWYG editor to control modal
         $("#control--add [name=description]").attr("id", "add_control_description");
         init_minimun_editor('#add_control_description');
         $("#control--add [name=supplemental_guidance]").attr("id", "add_supplemental_guidance");
@@ -301,54 +282,32 @@
     $("body").on("click", "#confirm_delete_controls", function() {
     	document.controls_form.submit();
     });
-        
-    $("body").on("click", ".framework-block--edit", function() {
-    	resetForm('#framework--update form');
-        var framework_id = $(this).data("id");
-        $.ajax({
-            url: BASE_URL + '/api/governance/framework?framework_id=' + framework_id,
-            type: 'GET',
-            success : function (res){
-                var data = res.data;
-                $.ajax({
-                    url: BASE_URL + '/api/governance/selected_parent_frameworks_dropdown?child_id=' + framework_id,
-                    type: 'GET',
-                    success : function (res){
-                        $("#framework--update .parent_frameworks_container").html(res.data.html)
-                    }
-                });
-                $("#framework--update [name=framework_id]").val(framework_id);
-                $("#framework--update [name=framework_name]").val(data.framework.name);
-                $("#framework--update [name=framework_description]").val(data.framework.description);
-                tinyMCE.get("update_framework_description").setContent(data.framework.description);
-                if(data.framework.custom_values){
-                  	var custom_values = data.framework.custom_values;
-                  	for (var i=0; i<custom_values.length; i++) {
-                    	var field_value = custom_values[i].value;
-                    	var element = $("#framework--update [name^='custom_field[" + custom_values[i].field_id + "]']");
-                        if (field_value && custom_values[i].field_type == 'multidropdown' || custom_values[i].field_type == 'user_multidropdown') {
-                            element.multiselect('select', field_value);
-                        } else {
-                            element.val(field_value ? field_value : '');
-                        }
-                  	}
-
-                }
-            	$("#framework--update").modal("show");
-        	}
-        });
-    });
 
     $("body").on("click", "#active-controls .checkbox-in-div input[type=checkbox]", function(){
     	// enable/disable the delete controls button based on whether there's any controls selected
 		$('#delete-controls-btn').attr('disabled', $('#active-controls .checkbox-in-div input[type=checkbox]:checked').length == 0);
     });
+
 	// Not initializing the treegrid in a static call, but rather initializing it when its tab is activated
 	// because it's not initialized properly while it's in the background
     $(document).on('shown.bs.tab', 'nav a[data-bs-toggle="tab"][data-status]', function (e) {
         let status = $(this).data('status');
         $('.framework-table-'+ status).initAsFrameworkTreegrid(status, <?= has_permission('modify_frameworks') ? 'true' : 'false' ?>);
+
+        // Need to trigger a resize event to make the treegrid visible
+        $(window).trigger('resize');
     });
+
+    // When the frameworks tab is shown, initialize the treegrid for the table of the active tab
+    $(document).on('shown.bs.tab', 'nav a[data-bs-toggle="tab"][data-bs-target="#frameworks-tab-content"]', function (e) {
+        let activeTab = $(this).find('nav a[data-bs-toggle="tab"].active');
+        let status = $(activeTab).data('status');
+        $('.framework-table-'+ status).initAsFrameworkTreegrid(status, <?= has_permission('modify_frameworks') ? 'true' : 'false' ?>);
+
+        // Need to trigger a resize event to make the treegrid visible
+        $(window).trigger('resize');
+    });
+
 </script>
 <div class="row">
     <div class="col-12 mt-2">
@@ -520,9 +479,6 @@
                 <!-- h4 class="mt-4 mb-4"><?= $escaper->escapeHtml($lang['Controls']); ?> <span id="controls_count"></span></h4-->
                 <form action="" name="controls_form" method="POST" id="controls-form" style="margin-top: -0.5rem">
                     <input type="hidden" name="delete_controls" value="1">
-                    <input type="hidden" id="unassigned_label" value="<?= $escaper->escapeHtml($lang['Unassigned']);?>">
-                    <input type="hidden" id="existing_mappings" value="<?= $escaper->escapeHtml($lang["ExistingMappings"]);?>">
-            
                     <div data-sr-role="dt-settings" data-sr-target="active-controls" class="text-end" >
                         <button type="button" id="delete-controls-btn" class="btn btn-secondary" disabled data-bs-toggle="modal" data-bs-target="#controls--delete"><?= $escaper->escapeHtml($lang['DeleteSelectedControls']) ?></button>
                         <a href="#control--add" role="button" data-bs-toggle="modal" data-bs-target="#control--add" class="btn btn-primary control--add"><?= $escaper->escapeHtml($lang['CreateControl']) ?></i></a>
@@ -567,28 +523,9 @@
 </div>
 
 <!-- MODEL WINDOW FOR EDITING FRAMEWORK -->
-<div class="modal fade" id="framework--update" tabindex="-1" aria-labelledby="framework--update" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title"><?= $escaper->escapeHtml($lang['EditFramework']); ?></h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="framework-update-form" action="#" method="post" autocomplete="off">
-                    <input type="hidden" class="framework_id" name="framework_id" value="" /> 
-    <?php 
-                    display_add_framework();
-    ?>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
-                <button type="submit" form="framework-update-form" name="update_framework" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Update']); ?></button>
-            </div>
-        </div>
-    </div>
-</div>
+<?php
+    display_update_framework_modal('governance');
+?>
 
 <!-- MODEL WINDOW FOR FRAMEWORK DELETE CONFIRM -->
 <div class="modal fade" id="framework--delete" tabindex="-1" aria-labelledby="framework--delete" aria-hidden="true">
@@ -655,7 +592,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form class="control-edit" id="add-control-form" action="#controls-tab" method="post" autocomplete="off">
+                <form id="add-control-form" action="#controls-tab" method="post" autocomplete="off">
     <?php 
                     display_add_control();
     ?>
@@ -670,63 +607,15 @@
 </div>
 
 <!-- MODEL WINDOW FOR UPDATING CONTROL -->
-<div class="modal fade" id="control--update" tabindex="-1" aria-labelledby="control--update" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title"><?= $escaper->escapeHtml($lang['EditControl']); ?></h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form class="control-edit" id="update-control-form" action="#controls-tab" method="post" autocomplete="off">
-                    <input type="hidden" class="control_id" name="control_id" value="">
-    <?php 
-                    display_add_control();
-    ?>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
-                <button type="submit" id="update_control" form="update-control-form" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Update']); ?></button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="add_mapping_row" class="hide">
-    <table>
-        <tr>
-            <td>
-    <?php 
-                create_dropdown("frameworks", NULL,"map_framework_id[]", true, false, false, "required title='{$escaper->escapeHtml($lang['Framework'])}'"); 
-    ?>
-            </td>
-            <td>
-                <input type="text" name="reference_name[]" value="" class="form-control" maxlength="100" required title="<?= $escaper->escapeHtml($lang["Control"]);?>">
-            </td>
-            <td class="text-center">
-                <a href="javascript:void(0);" class="control-block--delete-mapping" title="<?= $escaper->escapeHtml($lang["Delete"]);?>"><i class="fa fa-trash"></i></a>
-            </td>
-        </tr>
-    </table>
-</div>
-<div id="add_asset_row" class="hide">
-    <table>
-        <tr>
-            <td>
-    <?php 
-                create_dropdown("control_maturity", "", "asset_maturity[]", true, false, false, "required title='{$escaper->escapeHtml($lang['CurrentMaturity'])}'"); 
-    ?>
-            </td>
-            <td>
-                <select class="assets-asset-groups-select" name="assets_asset_groups[]" multiple placeholder="<?= $escaper->escapeHtml($lang['AffectedAssetsWidgetPlaceholder']);?>" required title="<?= $escaper->escapeHtml($lang["Asset"]);?>"></select>
-            </td>
-            <td class="text-center">
-                <a href="javascript:void(0);" class="control-block--delete-asset" title="<?= $escaper->escapeHtml($lang["Delete"]);?>"><i class="fa fa-trash"></i></a>
-            </td>
-        </tr>
-    </table>
-</div>
+<?php
+    display_update_control_modal('governance');
+?>
+<?php
+    // Display the add mapping and asset rows
+    // These are used in the control add and update modals
+    display_add_mapping_row();
+    display_add_asset_row();
+?>
 <script>
     <?php prevent_form_double_submit_script(['framework-delete-form', 'control--delete-form']); ?>
 </script>

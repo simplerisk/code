@@ -1,4 +1,36 @@
 //************************ ASSET MANAGEMENT > MANAGE ASSET GROUPS BEGIN ************************//
+#create_popup_modal-asset_verified {
+    #create_popup-asset_verified {
+        .multiselect-native-select {
+            .multiselect-container.dropdown-menu {
+                button.dropdown-item {
+                    label.form-check-label {
+                        white-space: normal;
+                        word-break: break-word;
+                    }
+                }
+            }
+        }
+    }
+}
+
+#edit_popup_modal-asset_verified {
+    #edit_popup-asset_verified {
+        .multiselect-native-select {
+            .multiselect-container.dropdown-menu {
+                button.dropdown-item {
+                    label.form-check-label {
+                        white-space: normal;
+                        word-break: break-word;
+                    }
+                }
+            }
+        }
+    }
+}
+//************************* ASSET MANAGEMENT > MANAGE ASSET GROUPS END *************************//
+
+//************************ ASSET MANAGEMENT > MANAGE ASSET GROUPS BEGIN ************************//
 .manage-asset-groups-table-container {
     table {
         td[field=actions] {

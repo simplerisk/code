@@ -12,6 +12,7 @@ require_once(realpath(__DIR__ . '/reporting.php'));
 require_once(realpath(__DIR__ . '/assets.php'));
 require_once(realpath(__DIR__ . '/governance.php'));
 require_once(realpath(__DIR__ . '/permissions.php'));
+require_once(realpath(__DIR__ . '/worddoc.php'));
 
 // Include the language file
 // Ignoring detections related to language files
@@ -185,6 +186,7 @@ $releases = [
     "20241209-001",
     "20250326-001",
     "20250411-001",
+    "20250731-001",
 ];
 
 /*************************
@@ -8148,6 +8150,366 @@ function upgrade_from_20250326001($db) {
     $version_upgrading_to = '20250411-001';
 
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20250411-001 *
+ ***************************************/
+function upgrade_from_20250411001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20250411-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20250731-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Created the `questionnaire_to_control_type` table
+    if (!table_exists("questionnaire_to_control_type")) {
+        echo "Creating the `questionnaire_to_control_type` table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `questionnaire_to_control_type` (
+                `questionnaire_id` INT(11) NOT NULL,
+                `control_type_id` INT(11) NOT NULL,
+                CONSTRAINT `questionnaire_control_type_unique` UNIQUE (`questionnaire_id`, `control_type_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $stmt->execute();
+    }
+
+    // Creating junction table for risk <-> risk catalog associations and doing the migration
+    if (field_exists_in_table('risk_catalog_mapping', 'risks')) {
+        if (!table_exists('risk_catalog_mappings')) {
+            echo "Creating `risk_catalog_mappings` table.<br />\n";
+            $stmt = $db->prepare("
+                CREATE TABLE IF NOT EXISTS `risk_catalog_mappings` (
+                    `risk_id` int(11) NOT NULL,
+                    `risk_catalog_id` int(11) NOT NULL,
+                    PRIMARY KEY(`risk_id`, `risk_catalog_id`),
+                    INDEX(`risk_catalog_id`, `risk_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            ");
+            $stmt->execute();
+        }
+
+        echo "Migrating risk_catalog_mapping field in risks table to new table.<br />\n";
+        $stmt = $db->prepare("
+            SELECT DISTINCT t1.id risk_id, t2.id risk_catalog_id FROM `risks` t1, `risk_catalog` t2 WHERE FIND_IN_SET(t2.id, t1.risk_catalog_mapping);
+        ");
+        $stmt->execute();
+        $array = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+
+        foreach($array as $risk_id => $risk_catalogs) {
+            $sql = "INSERT INTO `risk_catalog_mappings`(risk_id, risk_catalog_id) values";
+            foreach($risk_catalogs as $risk_catalog) {
+                $sql .= "('{$risk_id}', '{$risk_catalog['risk_catalog_id']}'),";
+            }
+            $sql = trim($sql, ",");
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+        }
+
+        echo "Deleting `risk_catalog_mapping` field from the `risks` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` DROP `risk_catalog_mapping`; ");
+        $stmt->execute();
+    }
+
+    // Creating junction table for risk <-> threat catalog associations and doing the migration
+    if (field_exists_in_table('threat_catalog_mapping', 'risks')) {
+        if (!table_exists('threat_catalog_mappings')) {
+            echo "Creating `threat_catalog_mappings` table.<br />\n";
+            $stmt = $db->prepare("
+                CREATE TABLE IF NOT EXISTS `threat_catalog_mappings` (
+                    `risk_id` int(11) NOT NULL,
+                    `threat_catalog_id` int(11) NOT NULL,
+                    PRIMARY KEY(`risk_id`, `threat_catalog_id`),
+                    INDEX(`threat_catalog_id`, `risk_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            ");
+            $stmt->execute();
+        }
+
+        echo "Migrating threat_catalog_mapping field in risks table to new table.<br />\n";
+        $stmt = $db->prepare("
+            SELECT DISTINCT t1.id risk_id, t2.id threat_catalog_id FROM `risks` t1, `threat_catalog` t2 WHERE FIND_IN_SET(t2.id, t1.threat_catalog_mapping);
+        ");
+        $stmt->execute();
+        $array = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+
+        foreach($array as $risk_id => $threat_catalogs) {
+            $sql = "INSERT INTO `threat_catalog_mappings`(risk_id, threat_catalog_id) values";
+            foreach($threat_catalogs as $threat_catalog) {
+                $sql .= "('{$risk_id}', '{$threat_catalog['threat_catalog_id']}'),";
+            }
+            $sql = trim($sql, ",");
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+        }
+
+        echo "Deleting `threat_catalog_mapping` field from the `risks` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` DROP `threat_catalog_mapping`; ");
+        $stmt->execute();
+    }
+
+    // Creating junction table for document <-> framework associations and doing the migration
+    if (field_exists_in_table('framework_ids', 'documents')) {
+        if (!table_exists('document_framework_mappings')) {
+            echo "Creating `document_framework_mappings` table.<br />\n";
+            $stmt = $db->prepare("
+                CREATE TABLE IF NOT EXISTS `document_framework_mappings` (
+                    `document_id` int(11) NOT NULL,
+                    `framework_id` int(11) NOT NULL,
+                    PRIMARY KEY(`document_id`, `framework_id`),
+                    INDEX(`framework_id`, `document_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            ");
+            $stmt->execute();
+        }
+
+        echo "Migrating framework_ids field in documents table to new table.<br />\n";
+        $stmt = $db->prepare("
+            SELECT DISTINCT t1.id document_id, t2.value framework_id FROM `documents` t1, `frameworks` t2 WHERE FIND_IN_SET(t2.value, t1.framework_ids);
+        ");
+        $stmt->execute();
+        $array = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+
+        foreach($array as $document_id => $frameworks) {
+            $sql = "INSERT INTO `document_framework_mappings`(document_id, framework_id) values";
+            foreach($frameworks as $framework) {
+                $sql .= "('{$document_id}', '{$framework['framework_id']}'),";
+            }
+            $sql = trim($sql, ",");
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+        }
+
+        echo "Deleting `framework_ids` field from the `documents` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` DROP `framework_ids`; ");
+        $stmt->execute();
+    }
+
+    // Creating junction table for document <-> framework_control associations and doing the migration
+    if (field_exists_in_table('control_ids', 'documents')) {
+        if (!table_exists('document_control_mappings')) {
+            echo "Creating `document_control_mappings` table.<br />\n";
+            $stmt = $db->prepare("
+                CREATE TABLE IF NOT EXISTS `document_control_mappings` (
+                    `document_id` int(11) NOT NULL,
+                    `control_id` int(11) NOT NULL,
+                    `score` FLOAT DEFAULT 0,
+                    `tfidf_similarity` FLOAT DEFAULT 0,
+                    `keyword_match` INT(11) DEFAULT 0,
+                    `ai_run` BOOL DEFAULT 0,
+                    `ai_match` BOOL DEFAULT 0,
+                    `ai_confidence` INT(11) DEFAULT 0,
+                    `ai_reasoning` TEXT DEFAULT NULL,
+                    `selected` BOOL DEFAULT 0,
+                    `timestamp` TIMESTAMP DEFAULT NOW(),
+                    PRIMARY KEY(`document_id`, `control_id`),
+                    INDEX(`control_id`, `document_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            ");
+            $stmt->execute();
+        }
+
+        echo "Adding existing document to control mappings to the `document_control_mappings` table.<br />\n";
+
+        // Get the list of all current documents and selected controls
+        $stmt = $db->query("SELECT id, control_ids FROM documents;");
+
+        // Prepare the insert/update statement
+        $insertStmt = $db->prepare("
+    INSERT INTO document_control_mappings(document_id, control_id, selected)
+    VALUES (:document_id, :control_id, 1)
+    ON DUPLICATE KEY UPDATE selected = 1
+  ");
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $documentId = (int)$row['id'];
+            $controlIds = array_filter(array_map('trim', explode(',', $row['control_ids'])));
+
+            foreach ($controlIds as $controlId) {
+                $controlId = (int)$controlId;
+                $insertStmt->execute([
+                    ':document_id' => $documentId ,
+                    ':control_id' => $controlId
+                ]);
+            }
+        }
+
+/*
+        echo "Migrating control_ids field in documents table to new table.<br />\n";
+        $stmt = $db->prepare("
+            SELECT DISTINCT t1.id document_id, t2.id control_id FROM `documents` t1, `framework_controls` t2 WHERE FIND_IN_SET(t2.id, t1.control_ids);
+        ");
+        $stmt->execute();
+        $array = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+
+        foreach($array as $document_id => $controls) {
+            $sql = "INSERT INTO `document_control_mappings`(document_id, control_id) values";
+            foreach($controls as $control) {
+                $sql .= "('{$document_id}', '{$control['control_id']}'),";
+            }
+            $sql = trim($sql, ",");
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+        }
+ */
+
+        echo "Deleting `control_ids` field from the `documents` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` DROP `control_ids`; ");
+        $stmt->execute();
+    }
+
+    // If the compliance_files table exists
+    if (table_exists('compliance_files'))
+    {
+        // If the keywords column does not exist
+        if (!field_exists_in_table('keywords', 'compliance_files'))
+        {
+            echo "Adding the keywords column to the compliance_files table.<br />\n";
+            $stmt = $db->prepare("
+                ALTER TABLE `compliance_files`
+                ADD COLUMN `keywords` TEXT DEFAULT NULL;
+            ");
+            $stmt->execute();
+        }
+
+        // If the keyword_count column does not exist
+        if (!field_exists_in_table('keyword_count', 'compliance_files'))
+        {
+            echo "Adding the keyword_count column to the compliance_files table.<br />\n";
+            $stmt = $db->prepare("
+                ALTER TABLE `compliance_files`
+                ADD COLUMN `keyword_count` INT DEFAULT 0;
+            ");
+            $stmt->execute();
+        }
+
+        // Populate the keywords and keyword_count columns
+        echo "Populating the keywords and keyword_count columns for documents.<br />\n";
+        $stmt = $db->prepare("SELECT `id` FROM `documents`;");
+        $stmt->execute();
+        $documents = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($documents as $document_id)
+        {
+            // Set the keywords for the document
+            echo "Populating keywords for document ID: " . $document_id . "<br />\n";
+            $result = get_keywords_for_document($document_id);
+            echo $result['status_message'] . "<br />\n";
+        }
+    }
+
+    // If the framework_controls table exists
+    if (table_exists('framework_controls'))
+    {
+        // If the keywords column does not exist
+        if (!field_exists_in_table('keywords', 'framework_controls'))
+        {
+            echo "Adding the keywords column to the framework_controls table.<br />\n";
+            $stmt = $db->prepare("
+                ALTER TABLE `framework_controls`
+                ADD COLUMN `keywords` TEXT DEFAULT NULL;
+            ");
+            $stmt->execute();
+        }
+
+        // If the keyword_count column does not exist
+        if (!field_exists_in_table('keyword_count', 'framework_controls'))
+        {
+            echo "Adding the keyword_count column to the framework_controls table.<br />\n";
+            $stmt = $db->prepare("
+                ALTER TABLE `framework_controls`
+                ADD COLUMN `keyword_count` INT DEFAULT 0;
+            ");
+            $stmt->execute();
+        }
+
+        // Populate the keywords and keyword_count columns
+        echo "Populating the keywords and keyword_count columns for controls.<br />\n";
+        $stmt = $db->prepare("SELECT `id` FROM `framework_controls`;");
+        $stmt->execute();
+        $controls = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($controls as $control_id)
+        {
+            // Set the keywords for the document
+            echo "Populating keywords for control ID: " . $control_id . "<br />\n";
+            $result = get_keywords_for_control($control_id);
+            echo $result['status_message'] . "<br />\n";
+        }
+    }
+
+/*
+    // Add columns to document_control_mappings table for document analysis
+    echo "Adding document analysis fields to the document_control_mappings table.<br />\n";
+    $columns = [
+        ['score',            'FLOAT DEFAULT 0'],
+        ['tfidf_similarity', 'FLOAT DEFAULT 0'],
+        ['keyword_match',    'INT(11) DEFAULT 0'],
+        ['ai_run',           'BOOL DEFAULT 0'],
+        ['ai_match',         'BOOL DEFAULT 0'],
+        ['ai_confidence',    'INT(11) DEFAULT 0'],
+        ['ai_reasoning',     'TEXT DEFAULT NULL'],
+        ['selected',         'BOOL DEFAULT 0'],
+        ['timestamp',        'TIMESTAMP DEFAULT CURRENT_TIMESTAMP']
+    ];
+    foreach ($columns as [$name, $definition]) {
+        if (!field_exists_in_table($name, 'document_control_mappings')) {
+            $stmt = $db->prepare(
+                "ALTER TABLE `document_control_mappings` ADD COLUMN `$name` $definition;"
+            );
+            $stmt->execute();
+        }
+    }
+
+    // Set current document to control mappings as selected
+    echo "Setting current document to control mappings as selected.<br />\n";
+    $stmt = $db->prepare("
+        UPDATE `document_control_mappings` SET `selected` = 1;
+    ");
+    $stmt->execute();
+*/
+
+    // Add a custom_documents_to_controls_display_settings field to user table
+    if (!field_exists_in_table('custom_documents_to_controls_display_settings', 'user')) {
+        echo "Adding a custom_documents_to_controls_display_settings field to user table.<br />\n";
+        $stmt = $db->prepare('ALTER TABLE `user` ADD `custom_documents_to_controls_display_settings` VARCHAR(2000) NULL DEFAULT \'{"document_columns":[["document_id","0"],["document","1"]],"control_columns":[["control_id","1"]],["control_number","1"],["selected","1"]],"matching_columns":[["score","0"],["tfidf_similarity","0"],["keyword_match","0"],["ai_match","0"],["ai_confidence","0"],["ai_reasoning","0"],["matching","1"],["recommendation","1"]]}\';');
+        $stmt->execute();
+    }
+  
+    // Set need_risk_score_normalization to true by default in the settings table
+    echo "Set need_risk_score_normalization to true by default in the settings table.<br />\n";
+    $stmt = $db->prepare("INSERT IGNORE INTO `settings` (`name` ,`value`) VALUES ('need_risk_score_normalization', 'true');");
+    $stmt->execute();
+
+    // Update the document to control mappings for all documents but don't care about the response
+    $endpoint = "/api/v2/admin/governance/documents/maptocontrols";
+    @call_simplerisk_api_endpoint($endpoint, "GET", false, 1);
+
+    // Compile the list of unnecessary directories
+    echo "Removing unnecessary directories.<br />\n";
+    $remove_directories = [
+        realpath(__DIR__ . '/vendor/node_modules/tinymce'),
+    ];
+    
+    // Remove the unnecessary directories
+    foreach ($remove_directories as $directory)
+    {
+        // If the directory exists
+        if (is_dir($directory))
+        {
+            // Remove the directory
+            delete_dir($directory);
+        }
+    }
 
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic

@@ -41,6 +41,7 @@ if (api_v2_is_authenticated())
     app()->get('/admin/write_debug_log', 'api_v2_admin_write_debug_log');
     app()->delete('/admin/tag', 'api_v2_admin_tag_delete');
     app()->delete('/admin/tag/all', 'api_v2_admin_tag_delete_all');
+    app()->get('/admin/governance/documents/maptocontrols', 'api_v2_update_all_document_control_mappings');
 
     // SimpleRisk Assets Routes
     app()->get('/assets', 'api_v2_assets');
@@ -54,9 +55,16 @@ if (api_v2_is_authenticated())
     app()->get('/governance/frameworks/associations', 'api_v2_governance_frameworks_associations');
     app()->get('/governance/controls', 'api_v2_governance_controls');
     app()->get('/governance/controls/associations', 'api_v2_governance_controls_associations');
+    app()->get('/governance/controls/topdocuments', 'api_v2_governance_controls_top_documents');
     app()->get('/governance/documents', 'api_v2_governance_documents');
     app()->delete('/governance/documents', 'api_v2_governance_documents_delete');
+    app()->get('/governance/documents/controls', 'api_v2_governance_documents_to_controls');
+    app()->post('/governance/documents/controls', 'getDocumentsToControlsDatatableResponse');
     app()->get('/governance/documents/associations', 'api_v2_governance_documents_associations');
+    app()->get('/governance/documents/terms', 'api_v2_governance_documents_significant_terms');
+    app()->get('/governance/documents/topcontrols', 'api_v2_governance_documents_top_controls');
+    app()->get('/governance/keywords', 'api_v2_governance_keywords');
+    app()->post('/governance/save_custom_documents_to_controls_display_settings', 'saveCustomDocumentsToControlsDisplaySettingsAPI');
 
     // SimpleRisk Risk Routes
     app()->get('/risks', 'api_v2_risks');
@@ -176,6 +184,7 @@ if (api_v2_is_authenticated())
     app()->get('/governance/selected_parent_frameworks_dropdown', 'getSelectedParentFrameworksDropdownResponse');
     app()->get('/governance/control', 'getControlResponse');
     app()->get('/governance/framework', 'getFrameworkResponse');
+    app()->post('/governance/update_framework', 'updateFrameworkResponse');
     app()->get('/governance/parent_documents_dropdown', 'getParentDocumentsDropdownResponse');
     app()->get('/governance/documents', 'getDocumentsResponse');
     app()->get('/governance/document', 'getDocumentResponse');
@@ -252,11 +261,14 @@ if (api_v2_is_authenticated())
     app()->post('/exceptions/update', 'update_exception_api');
     app()->post('/exceptions/delete', 'delete_exception_api');
     app()->post('/exceptions/approve', 'approve_exception_api');
+    app()->post('/exceptions/unapprove', 'unapprove_exception_api');
     app()->post('/exceptions/batch-delete', 'batch_delete_exception_api');
     app()->get('/exceptions/tree', 'get_exceptions_as_treegrid_api');
     app()->get('/exceptions/exception', 'get_exception_api');
     app()->get('/exceptions/info', 'get_exception_for_display_api');
     app()->get('/exceptions/audit_log', 'get_exceptions_audit_log_api');
+    app()->get('/exceptions/status', 'get_exceptions_status_api');
+    app()->get('/associated-exceptions/tree', 'get_associated_exceptions_as_treegrid_api');
     /***********************************************************/
 
     app()->get('/management/tag_options_of_type', 'getTagOptionsOfType');

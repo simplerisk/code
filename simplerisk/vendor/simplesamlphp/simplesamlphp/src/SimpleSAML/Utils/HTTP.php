@@ -108,11 +108,14 @@ class HTTP
      */
     private function getServerHost(): string
     {
+        $current = null;
         if (array_key_exists('HTTP_HOST', $_SERVER)) {
             $current = $_SERVER['HTTP_HOST'];
         } elseif (array_key_exists('SERVER_NAME', $_SERVER)) {
             $current = $_SERVER['SERVER_NAME'];
-        } else {
+        }
+
+        if (is_null($current)) {
             // almost certainly not what you want, but...
             $current = 'localhost';
         }
@@ -357,7 +360,7 @@ class HTTP
      * Check if a URL is valid and is in our list of allowed URLs.
      *
      * @param string $url The URL to check.
-     * @param string[] $trustedSites An optional white list of domains. If none specified, the 'trusted.url.domains'
+     * @param string[]|null $trustedSites An optional white list of domains. If none specified, the 'trusted.url.domains'
      * configuration directive will be used.
      *
      * @return string The normalized URL itself if it is allowed. An empty string if the $url parameter is empty as
@@ -611,7 +614,7 @@ class HTTP
             return '/';
         }
         // get the name of the current script
-        $path = explode('/', $_SERVER['SCRIPT_FILENAME']);
+        $path = explode(DIRECTORY_SEPARATOR, $_SERVER['SCRIPT_FILENAME']);
         $script = array_pop($path);
 
         // get the portion of the URI up to the script, i.e.: /simplesaml/some/directory/script.php
@@ -619,7 +622,7 @@ class HTTP
             return '/';
         }
         $uri_s = explode('/', $matches[0]);
-        $file_s = explode('/', $_SERVER['SCRIPT_FILENAME']);
+        $file_s = explode(DIRECTORY_SEPARATOR, $_SERVER['SCRIPT_FILENAME']);
 
         // compare both arrays from the end, popping elements matching out of them
         while ($uri_s[count($uri_s) - 1] === $file_s[count($file_s) - 1]) {
@@ -998,7 +1001,7 @@ class HTTP
      * - The rest: Relative to the base path.
      *
      * @param string $url The relative URL.
-     * @param string $base The base URL. Defaults to the base URL of this installation of SimpleSAMLphp.
+     * @param string|null $base The base URL. Defaults to the base URL of this installation of SimpleSAMLphp.
      *
      * @return string An absolute URL for the given relative URL.
      * @throws \InvalidArgumentException If the base URL cannot be parsed into a valid URL, or the given parameters
@@ -1071,8 +1074,8 @@ class HTTP
      * Set a cookie.
      *
      * @param string      $name The name of the cookie.
-     * @param string|NULL $value The value of the cookie. Set to NULL to delete the cookie.
-     * @param array|NULL  $params Cookie parameters.
+     * @param string|null $value The value of the cookie. Set to NULL to delete the cookie.
+     * @param array|null  $params Cookie parameters.
      * @param bool        $throw Whether to throw exception if setcookie() fails.
      *
      * @throws \InvalidArgumentException If any parameter has an incorrect type.

@@ -10,13 +10,27 @@
     // Check if the risk formula update was submitted
     if (isset($_POST['update_risk_formula'])) {
         
+        global $lang, $escaper;
+
         $risk_model = (int)$_POST['risk_models'];
+        $need_risk_score_normalization = !empty($_POST['need_risk_score_normalization']) ? 'true' : 'false';
 
         // Check if risk model value is integer
         if (is_int($risk_model)) {
 
             // Risk model should be between 1 and 5
             if ((1 <= $risk_model) && ($risk_model <= 6)) {
+
+                $current_need_risk_score_normalization = get_setting('need_risk_score_normalization', 'true');
+                if ($need_risk_score_normalization != $current_need_risk_score_normalization) {
+
+                    //Update the need_risk_score_normalization setting
+                    update_setting('need_risk_score_normalization', $need_risk_score_normalization);
+
+                    // Display an alert
+                    set_alert(true, "good", $escaper->escapeHtml($lang['TheRiskScoreNormalizationSettingWasUpdatedSuccessfully_TheScoresOfExistingRisksWereRecalculatedBasedOnTheNewSetting']));
+
+                }
 
                 // Update the risk model
                 update_risk_model($risk_model);

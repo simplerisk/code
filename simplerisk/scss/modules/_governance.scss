@@ -18,7 +18,7 @@
 }
 
 #framework-create-form,
-#framework-update-form,
+#update-framework-form,
 #add-control-form,
 #update-control-form {
     .form-group {
@@ -119,40 +119,8 @@
         cursor: pointer;
     }
 
-    #control-exceptions {
-        .datagrid-htable {
-            td[field='actions'] {
-                text-align: center;
-            }
-        }
-
-        .datagrid-btable {
-            td[field='actions'] {
-                .datagrid-cell {
-                    justify-content: center;
-                    align-items: center;
-                }
-            }
-        }
-    }
-
-    #policy-exceptions {
-        .datagrid-htable {
-            td[field='actions'] {
-                text-align: center;
-            }
-        }
-
-        .datagrid-btable {
-            td[field='actions'] {
-                .datagrid-cell {
-                    justify-content: center;
-                    align-items: center;
-                }
-            }
-        }
-    }
-
+    #control-exceptions,
+    #policy-exceptions,
     #unapproved-exceptions {
         .datagrid-htable {
             td[field='actions'] {
@@ -167,6 +135,10 @@
                     align-items: center;
                 }
             }
+        }
+
+        .datagrid-editable-input {
+            border-color: var(--bs-border-color) !important;
         }
     }
 }

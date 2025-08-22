@@ -164,26 +164,20 @@ function asset_exists($name)
  */
 function asset_exists_by_id($id) {
 
-    // If the user has access to the asset id
-    if (check_access_for_asset($id))
-    {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // Check if the asset name is in the database
-        $stmt = $db->prepare("SELECT 5 FROM `assets` WHERE id=:id;");
-        $stmt->bindParam(":id", $id, PDO::PARAM_INT);
-        $stmt->execute();
+    // Check if the asset name is in the database
+    $stmt = $db->prepare("SELECT 5 FROM `assets` WHERE id=:id;");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
 
-        $result = $stmt->fetchColumn();
+    $result = $stmt->fetchColumn();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        return !empty($result) && (int)$result === 5;
-    }
-    // Otherwise return false
-    else return false;
+    return !empty($result) && (int)$result === 5;
 }
 
 /**********************************
@@ -354,6 +348,118 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
         return false;
     }
 }
+
+
+function update_asset($asset_id, $ip, $name, $value=null, $location=null, $teams=null, $details=null, $tags=null, $verified=null, $mapped_controls=[], $associated_risks=[], $skip_name_order_update = false) {
+    global $escaper, $lang;
+
+    // Return false if the asset we try to update doesn't exist
+    if (!asset_exists_by_id($asset_id)) {
+        return false;
+    }
+
+    // Make sure we're not updating something that doesn't need updating
+    /*$risk_association_unchanged = array_equal($associated_risks, get_associated_risks_for_asset($asset_id));
+    if (asset_exists_exact($ip, $name, $value, $location, $teams, $details, $verified) && areTagsEqual($asset_id, 'asset', $tags) && asset_control_mapping_exact_match($asset_id, $mapped_controls) && $risk_association_unchanged) {
+        return false;
+    }*/
+
+    // Check if the name we want to update TO already exists
+    // and that it's not on THIS asset
+    $existing_assets_id = asset_exists($name);
+    if($existing_assets_id && $existing_assets_id != $asset_id){
+        return false;
+    }
+
+    $encryption_extra = encryption_extra();
+    $notification_extra = notification_extra();
+
+
+
+    // Store the original asset for later, but only if we'll actually use it
+    if ($encryption_extra && !$skip_name_order_update) {
+        $original_asset = get_asset_by_id($asset_id);
+    }
+
+    $ip = is_null($ip)?null:try_encrypt($ip);
+    $details = is_null($details)?null:try_encrypt($details);
+
+    $data = array(
+        "ip"                    => $ip,
+        "name"                  => try_encrypt($name),
+        "value"                 => $value,
+        "location"              => $location,
+        "teams"                 => $teams,
+        "details"               => $details,
+        "verified"              => $verified,
+    );
+
+    $sql = "UPDATE assets SET ";
+    foreach($data as $key => $val){
+        if(!is_null($val))
+            $sql .= " {$key}=:{$key}, ";
+    }
+    $sql = trim($sql, ", ");
+    $sql .= " WHERE id = :id ";
+
+    // Open the database connection
+    $db = db_open();
+
+    // Update the risk
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
+    foreach($data as $key => $val){
+        if(!is_null($val)){
+            $stmt->bindParam(":{$key}", $data[$key]);
+        }
+        unset($val);
+    }
+
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+
+    if(!is_null($mapped_controls)) {
+        save_asset_to_controls($asset_id, $mapped_controls);
+    }
+
+    updateTagsOfType($asset_id, 'asset', $tags);
+
+    // Storing the current list of associated risks, so we can calculate the list of risk changes for the risk update notification
+    $associated_risks_original = get_associated_risks_for_asset($asset_id);
+
+    if (!array_equal($associated_risks, $associated_risks_original)) {
+        update_asset_risks_associations($asset_id, $associated_risks);
+
+        if ($notification_extra) {
+            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+
+            // Get what risks were removed or added for the notification. We can ignore those that weren't changed
+            $associated_risks_need_notified = array_unique(array_merge(array_diff($associated_risks, $associated_risks_original), array_diff($associated_risks_original, $associated_risks)));
+
+            // Only send the notification about the updated risks that were changed on the asset
+            if (!empty($associated_risks_need_notified)) {
+                foreach ($associated_risks_need_notified as $risk_id) {
+                    notify_risk_update($risk_id);
+                }
+            }
+        }
+    }
+
+    // If the encryption extra is enabled, updates order_by_name
+    if (!$skip_name_order_update && $encryption_extra && isset($original_asset) && $original_asset['name'] !== $name) {
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+        update_name_order_for_asset($asset_id, $name);
+    }
+
+
+    $message = "Asset \"" . $name . "\" was modified by user \"" . $_SESSION['user'] . "\".";
+    write_log($asset_id, $_SESSION['uid'], $message, "asset");
+
+    return true;
+}
+
 /**
 * Returns the list of risk ids that are associated to the asset
 */
@@ -488,6 +594,24 @@ function save_asset_to_controls($asset_id, $control_mappings)
     db_close($db);
     return; 
 }
+
+/**
+ * Get the existing control mapping for an asset
+ * In the response control ids are grouped by the maturity ids.
+ *
+ * @param int $asset_id
+ * @return array
+ */
+function get_existing_mapped_controls_for_asset(int $asset_id): array
+{
+    $db = db_open();
+    // Get the existing mapped controls for this asset grouped by maturity
+    $stmt = $db->prepare("SELECT `control_maturity`, `control_id` FROM `control_to_assets` WHERE `asset_id`=:asset_id");
+    $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_GROUP | PDO::FETCH_COLUMN);
+}
+
 /*********************************************
  * FUNCTION: GET EXIST MAPPING ASSET CONTROL *
  *********************************************/
@@ -548,16 +672,26 @@ function get_control_to_assets($control_id)
     $db = db_open();
 
     $stmt = $db->prepare("
-        SELECT t1.value control_maturity, t1.name control_maturity_name, GROUP_CONCAT(DISTINCT t2.asset_id), GROUP_CONCAT(DISTINCT assets.name) asset_name,
-        GROUP_CONCAT(DISTINCT t3.asset_group_id), GROUP_CONCAT(DISTINCT ag.name) asset_group_name
-        FROM control_maturity t1 
-        LEFT JOIN control_to_assets t2 ON t1.value = t2.control_maturity
-        LEFT JOIN assets ON assets.id = t2.asset_id
-        LEFT JOIN control_to_asset_groups t3 ON t1.value = t3.control_maturity
-        LEFT JOIN asset_groups ag ON ag.id = t3.asset_group_id
-        WHERE t2.control_id=:control_id OR t3.control_id=:control_id
-        GROUP BY t2.control_maturity ORDER BY t2.id;
-        ");
+        SELECT
+            cm.value control_maturity,
+            cm.name control_maturity_name,
+            GROUP_CONCAT(DISTINCT c2a.asset_id),
+            GROUP_CONCAT(DISTINCT assets.name) asset_name,
+            GROUP_CONCAT(DISTINCT c2ag.asset_group_id),
+            GROUP_CONCAT(DISTINCT ag.name) asset_group_name
+        FROM control_maturity cm 
+            LEFT JOIN control_to_assets c2a ON cm.value = c2a.control_maturity AND c2a.control_id=:control_id
+            LEFT JOIN assets ON assets.id = c2a.asset_id
+            LEFT JOIN control_to_asset_groups c2ag ON cm.value = c2ag.control_maturity AND c2ag.control_id=:control_id
+            LEFT JOIN asset_groups ag ON ag.id = c2ag.asset_group_id
+        WHERE
+            c2a.control_id=:control_id
+            OR c2ag.control_id=:control_id
+        GROUP BY
+            c2a.control_maturity
+        ORDER BY
+            c2a.id;
+    ");
     $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -2484,7 +2618,7 @@ function get_asset_groups_table() {
                 pagination: true,
                 pageSize: 10,
                 pageList: [5,10,20,100],
-                url: '{$_SESSION['base_url']}/api/asset-group/tree',
+                url: '" . build_url("api/asset-group/tree") . "',
                 method: 'GET',
                 idField: 'id',
                 treeField: 'name',
@@ -2635,7 +2769,7 @@ function get_assets_of_asset_group_for_treegrid($id){
         $asset['teams'] = $asset['teams'] ? $escaper->escapeHtml(get_name_by_value("team", $asset['teams'])) : "N/A";
         $asset['value'] = $escaper->escapeHtml(get_asset_value_by_id($asset['value']));
 
-        $asset['details'] = $escaper->escapeHtml(try_decrypt($asset['details']));
+        $asset['details'] = $escaper->purifyHtml(try_decrypt($asset['details']));
         $asset['tags'] = $escaper->escapeHtml($asset['tags']);
 
         $asset['actions'] = "
@@ -3510,8 +3644,9 @@ function update_asset_API_v2($view) {
             ];
         }
     }
-    
-    
+
+    $original = get_asset_for_change_checking($id);
+
     if ($encryption = encryption_extra()) {
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
     }
@@ -3526,6 +3661,7 @@ function update_asset_API_v2($view) {
 
     $update_parts = [];
     $params = [":$id_field" => $id];
+
     // Do the field validation(like required fields not having a value) and collect the data for the update
     foreach (field_settings_get_localization($view, false, false) as $field_name => $field_text) {
 
@@ -3640,15 +3776,21 @@ function update_asset_API_v2($view) {
     }
 
     //TODO only do this if the name changed
-    if ($encryption) {
+    if ($encryption && $original['name'] !== $asset_name) {
         update_name_order_for_asset($id, $asset_name);
     }
 
+    $updated = get_asset_for_change_checking($id);
+
+    $changes = get_changes_in_asset($original, $updated);
+
+    if (!empty($changes)) {
+        write_log($id, $_SESSION['uid'], _lang('AssetAuditLogUpdate', array('asset_name' => $asset_name, 'user' => $_SESSION['user'], 'changes' => implode(', ', $changes)), false), 'asset');
+    }
+    
     set_alert(true, "good", $escaper->escapeHtml($lang['AssetWasUpdatedSuccessfully']));
     api_v2_json_result(200, get_alert(true), NULL);
 
-    $message = _lang("UpdateSuccess_{$view_type}", ['name' => $asset_name, 'user' => $_SESSION['user']]);
-    write_log($id, $_SESSION['uid'], $message, "asset");
 }
 
 
@@ -3814,11 +3956,12 @@ function create_asset_API_v2($view) {
         update_name_order_for_asset($id, $asset_name);
     }
 
+    $message = _lang("CreateSuccess_{$view_type}", ['name' => $asset_name, 'user' => $_SESSION['user']]);
+    write_log($id, $_SESSION['uid'], $message, "asset");
+
     set_alert(true, "good", $escaper->escapeHtml($lang['SavedSuccess']));
     api_v2_json_result(200, get_alert(true), NULL);
     
-    $message = _lang("CreateSuccess_{$view_type}", ['name' => $asset_name, 'user' => $_SESSION['user']]);
-    write_log($id, $_SESSION['uid'], $message, "asset");
 }
 
 /**
@@ -3872,6 +4015,151 @@ function validate_asset_control_mapping($mapped_controls) {
         $used_control_ids = array_values(array_unique([...$used_control_ids, ...$control_ids]));
     }
     return true;
+}
+
+function get_asset_for_change_checking($id) {
+    
+    // it's ok to use either the asset_verified view or the asset_unverified view here 
+    // as the view_type and the group of the asset_verified view and the asset_unverified view are the same
+    $view = 'asset_verified';
+
+    $where = "
+    WHERE `a`.`id` = :id";
+
+    if (team_separation_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $where .= get_user_teams_query_for_assets("a", false, true);
+    }
+
+    $encryption = encryption_extra();
+    $customization = customization_extra();
+
+    $active_field_names = display_settings_get_valid_field_keys($view);
+
+    // We have to get the join parts for all the active fields and not just for the selected ones
+    list($select_parts, $join_parts) = field_settings_get_join_parts($view, $active_field_names);
+
+    $db = db_open();
+
+    $sql = "
+        SELECT
+            " . implode(',', $select_parts) . "
+        FROM
+            `assets` a
+            " . implode(' ', $join_parts) . "
+        {$where}
+        GROUP BY
+            `a`.`id`;
+    ";
+
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $asset = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    db_close($db);
+
+    global $field_settings, $field_settings_views, $escaper;
+    $id_field = $field_settings_views[$view]['id_field'];
+
+    $data = [];
+    foreach ($asset as $field_name => $value) {
+        $field_setting = !empty($field_settings['asset'][$field_name]) ? $field_settings['asset'][$field_name] : false;
+        
+        // Only run this logic if it's not a custom field(has a valid field setting)
+        if ($field_setting && !empty($value) && ($field_setting['editable'] || $id_field === $field_name)) {
+            
+            if ($value && $encryption && !empty($field_setting['encrypted']) && $field_setting['encrypted']) {
+                $value = try_decrypt($value);
+            }
+            //asdasdasd
+            // For fields that need custom formatting
+            switch($field_name) {
+                case "teams":
+                case "location":
+                    $data[$field_name] = array_map('intval', explode(',', (string)$value));
+                    break;
+                case "details":
+                    $data[$field_name] = $escaper->purifyHtml($value);
+                    break;
+                case 'tags':
+                    if ($value) {
+                        $tags = [];
+                        foreach(explode("|", $value) as $tag) {
+                            // We're not escaping the tags here on purpose as the way it's used on the UI needs no escaping
+                            $tags []= $tag;
+                        }
+                        $data[$field_name] = $tags;
+                    }
+                    break;
+                case 'associated_risks':
+                    $data[$field_name] = [];
+                    // If the data returned isn't empty
+                    if (!empty($value) && $value !== '[]') {
+                        // Decode the json list, iterate through it and gather the ids
+                        foreach (json_decode($value, true) as $associated_risk) {
+                            $data[$field_name] []= (int)$associated_risk['value'];
+                        }
+                    }
+                    break;
+                case "mapped_controls":
+                    if (!empty($value) && $value !== '[]') {
+                        $data[$field_name] = array_map(function($mapping) {
+                            return array(
+                                'control_maturity' => (int)$mapping['control_maturity'],
+                                'control_id' => explode(',', $mapping['control_id']),
+                            );
+                        }, json_decode($value, true));
+                    } else {
+                        $data[$field_name] = [];
+                    }
+                    break;
+                default:
+                    // Only have to escape non-custom fields as those are already escaped
+                    $data[$field_name] = $escaper->escapeHtml($value);
+            }
+        }
+    }
+    
+    if ($customization && !empty($asset['field_data']) && $asset['field_data'] !== '[]') {
+             // extract it as normal fields, but only the values, we don't need the _display fields here
+        foreach (json_decode($asset['field_data'], true) as $field_data) {
+            if (in_array($field_data['type'], ["multidropdown", "user_multidropdown"])) {
+                $data["custom_field_{$field_data['field_id']}"] = array_map('intval', explode(',', (string)$field_data['value']));
+            } elseif ((int)$field_data['encryption']) {
+                $data["custom_field_{$field_data['field_id']}"] = $escaper->escapeHtml(try_decrypt($field_data['value']));
+            } elseif($field_data['type'] === 'date') {
+                $data["custom_field_{$field_data['field_id']}"] = format_date($field_data['value']);
+            } else {
+                $data["custom_field_{$field_data['field_id']}"] = $escaper->escapeHtml($field_data['value']);
+            }
+        }
+    }
+
+    return $data ? $data : [];
+
+}
+
+// This function is used to get the changes in the asset for the audit log
+function get_changes_in_asset($original, $updated) {
+    $changes = [];
+
+    // it's ok to use either the asset_verified view or the asset_unverified view here 
+    // as the view_type and the group of the asset_verified view and the asset_unverified view are the same
+    $active_field_names = display_settings_get_valid_field_keys('asset_verified');
+
+    foreach($active_field_names as $key) {
+        if (is_array($original[$key] ?? [])) {
+            $original[$key] = json_encode($original[$key] ?? []);
+        }
+        if (is_array($updated[$key] ?? [])) {
+            $updated[$key] = json_encode($updated[$key] ?? []);
+        }
+        if ($original[$key] !== $updated[$key]) {
+            $changes[] = _lang('AssetAuditLogUpdateChange', array('key' => $key, 'value' => $original[$key], 'new_value' => $updated[$key]), false);
+        }
+    }
+    return $changes;
 }
 
 ?>

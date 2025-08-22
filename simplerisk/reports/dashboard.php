@@ -27,18 +27,6 @@
         }
     }
 
-    // Get the risk pie array
-    $pie_array = get_pie_array(null, $teams);
-
-    // Get the risk location pie array
-    $pie_location_array = get_pie_array("location", $teams);
-
-    // Get the risk team pie array
-    $pie_team_array = get_pie_array("team", $teams);
-
-    // Get the risk technology pie array
-    $pie_technology_array = get_pie_array("technology", $teams);
-
 ?>
 <div class="card-body border my-2">
     <div class="row">
@@ -48,7 +36,7 @@
     </div>
     <div class="row">
         <div class="col-4">
-            <lable><strong><?= $escaper->escapeHtml($lang['Teams']); ?> :</strong></lable>
+            <label><strong><?= $escaper->escapeHtml($lang['Teams']); ?> :</strong></label>
     <?php 
             create_multiple_dropdown("teams", $teams, NULL, $teamOptions); 
     ?>
@@ -62,7 +50,7 @@
     </div>
     <div class="mt-2">
     <?php 
-        // Render the 'overview' layout
+        // Render the 'dashboard_open' layout
         (new \includes\Widgets\UILayout('dashboard_open'))->render();
     ?>
     </div>
@@ -75,7 +63,7 @@
     </div>
     <div class="mt-2">
     <?php 
-        // Render the 'overview' layout
+        // Render the 'dashboard_close' layout
         (new \includes\Widgets\UILayout('dashboard_close'))->render();
     ?>
     </div>

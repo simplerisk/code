@@ -5,16 +5,88 @@
 This document lists the changes between versions of SimpleSAMLphp.
 See the [upgrade notes](https://simplesamlphp.org/docs/stable/simplesamlphp-upgrade-notes.html) for specific information about upgrading.
 
-## Version 2.3.8
+## Version 2.4.2
 
-Released TBD
+Released 2025-06-04
+
+* Fixed a bug where metadata-endpoints with isDefault set would not yield the expected metadata (#2439)
+* Fixed a backwards incompatibility that would throw an exception on an invalid entityID.
+  The exception was downgraded to a warning in the log (#2448)
+* Fixed a security-issue where cron-jobs could be executed using the default key,
+  even if a different one was set (#2453)
+
+`memcacheMonitor`
+
+* Fixed an issue that prevented the latest version of this module from being installed on SSP 2.4.x
+
+`negotiate`
+
+* Fixed an issue that prevented the latest version of this module from being installed on SSP 2.4.x
+
+## Version 2.4.1
+
+Released 2025-05-14
+
+* Reverted #2278 because of a regression in SLO when using SSP as a bridge (#2436)
+* Fixed a dependency on a dev-version of the saml2-library
+
+## Version 2.4.0
+
+Released 2025-04-16
+
+* Added a new feature flag `encryption.optional` to allow unencrypted assertions if the SP does
+  not provide an encryption certificate (#2208)
+* Make translations tool theme-aware (#2315)
+* Fix deprecation of Twig spaceless-filter (#2229)
+* Add possibility to provide connection context to XML storage-handler (#2332)
+* Throw user-friendly exception with the proper HTTP statuscode for incorrect HTTP-method (#2234)
+* Fixed build-workflow to only re-build the website once
+* Bugfix: Use entityID from state to allow overriding the issuer (#2345)
+* When only a single IdP is in scope, skip discovery screen (#2355)
+* Downgrade simplesamlphp/composer-module-installer to 1.3.x to keep things working with older (OS-supplied)
+  versions of composer
+* Skip test if xdebug.mode does not contain develop (#2419)
+* Add a console-script to clear cache (#2410)
+* PHP 8.4 Deprecation fixes (#2413)
+* Warn if a module has an unexpected translation-domain in its po file.
+* Add configuration that enables/disables twig template debug mode (#2406)
+* Add support for IDP Discovery protocol (#2402)
+* Destroy session cookies on logout (#2278)
+* A new module to allow debugging SP logins (#2381)
+* When only a single IdP is in scope, skip discovery screen (#2355)
+* Add authproc-filter to manipulate the Assertion's Issuer (#2346)
+* Many improvements to docs and translations
+* Updated dependencies
+
+`adfs`
+
+* The ADFS-module has been disconnected from the SSP release. To continue to use it, the module has to be manually installed.
+* The ADFS-module was completely rewritten and now uses our own XML-libraries for building, signing and encrypting XML (v3.0.0)
+
+`discopower`
+
+* Create discopower.po for italian locale (#22)
+* Hide tab list when there's only one tab
+* Fix for tags containing uppercase letters
+* Updated jQuery
+
+`ldap`
+
+* Add SASL-support (v2.4.0). Note that this required a newer version of symfony/ldap than the one packaged (v2.4.3)
+
+`metarefresh`
+
+* Fixed parsing of large metadata files (v1.2.4)
+
+`saml`
+
+* Stricter regexp to verify SubjectID/PairwiseID: disallow trailing spaces.
 
 ## Version 2.3.7
 
-Released 2025-03-11
+Released TBD
 
 * Fixed loading translations for themes where there is no explicit X-Domain set in the po file.
-* Bumped vulnerable saml2-library to v4.17.0
 
 ## Version 2.3.6
 
@@ -22,86 +94,44 @@ Released 2025-02-17
 
 * Fixed PHP 8.4 deprecation notices
 * Fixed infinite recursion (#2367)
+* Added a new feature flag `encryption.optional` to allow unencrypted assertions if the SP does
+  not provide an encryption certificate (#2208)
+* Make translations tool theme-aware (#2315)
+* Fixed build-workflow to only re-build the website once
+* Bugfix: Use entityID from state to allow overriding the issuer (#2345)
+* When only a single IdP is in scope, skip discovery screen (#2355)
 * Fixed "Undefined array key" warning in RequestedAuthnContextSelector if no RAC is present in the request
-* Fixed an unintended BC-break in `simplesamlphp/assert` that caused composer dependency issues
-* Updated several dependencies
-* Started testing on PHP 8.4
+* SimpleSAMLAuthToken cookie is now removed during an SLO
 
-`ldap`
+`adfs`
 
-* Verify attribute value is a string before calling strlen (simplesamlphp/simplesamlphp-module-ldap#64) (v2.4.4)
+* PHP 8.4 support
+* The ADFS-module has been disconnected from the SSP release. To continue to use it, the module has to be manually installed.
+* The ADFS-module was completely rewritten and now uses our own XML-libraries for building, signing and encrypting XML (v3.0.0)
 
-## Version 2.3.5
+`authcrypt`
 
-Released 2024-12-02
-
-* Fix a regression that would cause the translations for modules to revert to English
-
-## Version 2.3.4
-
-Released 2024-12-02
-
-`Security`
-
-* A security bug was patched in the `saml2-library` that allowed for XXE during the parsing
-  of SAML2-messages (CVE-2024-52596)
-
-`Other fixes`
-
-* Attributes translations are now in the "attributes" domain (#2328).
-* Add `index` directive to Nginx example configuration (#2329).
-* Better error message when using legacy endpoints format (#2335).
-* Some minor improvements to the changes in 2.3.3.
-
-## Version 2.3.3
-
-Released 2024-11-16
-
-* Fix `st`-language by updating the ICU-files (#2305)
-* Fix docs and configuration examples regarding SSO-endpoints.
-
-`admin`
-
-* Fix regression in metadata converter clipboard-button (#2253)
-* Fix typo that caused the metadata file-upload to be hidden (#2271)
+* PHP 8.4 support
 
 `discopower`
 
-* Throw a meaningful exception when tags contain illegal characters (v1.4.1)
+* Hide tab list when there's only one tab (simplesamlphp/simplesamlphp-module-discopower#27) (v1.5.0)
+* Bugfix: Use jquery-assets repo to work around symlink-issue (simplesamlphp/simplesamlphp-module-discopower#28) (v1.5.1)
 
 `ldap`
 
-* Fix a missing negation that rendered multi-ldap broken (v2.3.7)
+* Add SASL-support (v2.4.0). Note that this required a newer version of symfony/ldap than the one packaged (v2.4.3)
 
-## Version 2.3.2
+`saml`
 
-Released 2024-09-06
+* Stricter regexp to verify SubjectID/PairwiseID: disallow trailing spaces.
+* Feature: Add authproc-filter to be able to manipulate the Assertion's Issuer (#2346)
 
-* Fixed a regression that led to fonts & icons not being loaded correctly (#2237)
-* Fixed a regression that caused the languages in the language-bar to be all in English.
+`debugsp`
 
-`admin`
-
-* Only load metadata-converter.js when file-upload is enabled.
-
-## Version 2.3.1
-
-Released 2024-09-05
-
-* Fixed accidental backwards incompatibility for plain-text admin passwords (#2212)
-* Fixed support for `pt-br` and `zh-tw` dialects (#2216)
-* Run ob_end_clean() on configuration file parsing error (#2219)
-* Fixed an incorrect exception message when string-style endpoints are used.
-* Reduced all of the overhead logging related to HEAD/OPTIONS requests (#2234).
-
-`admin`
-
-* Fix metadata-viewer to output a valid PHP array
-* Fix text-overflow of the metadata-converter output-box
-
-Chores:
-
-* Solved deprecation notices in CI regarding the use of the Twig spaceless-filter (#2229)
+* Added module to allow testing the SP you have in your installation without needing admin login
+  This is similar to the admin/test page but can more easily be used by an IdP who may not have admin
+  privileges on your site.
 
 ## Version 2.3.0
 

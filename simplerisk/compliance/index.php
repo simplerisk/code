@@ -581,7 +581,7 @@
             enableCaseInsensitiveFiltering: true,
         });
 
-        // init tinyMCE WYSIWYG editor
+        // init WYSIWYG editor
         init_minimun_editor('#add_objective');
         init_minimun_editor('#add_test_steps');
         init_minimun_editor('#add_expected_results');

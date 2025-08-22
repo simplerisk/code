@@ -5114,11 +5114,14 @@ function view_reporting_menu($active)
         echo "</li>\n";
     } 
 
-    // If User has permission for governance menu, show Control Gap Analysis report
+    // If User has permission for governance menu, show Governance reports
     if(!empty($_SESSION['governance']))
     {
         echo ($active == "ControlGapAnalysis" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"control_gap_analysis.php\">" . $escaper->escapeHtml($lang['ControlGapAnalysis']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "DocumentControlMapping" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"documents_to_controls.php\">" . $escaper->escapeHtml($lang['DocumentControlMapping']) . "</a>\n";
         echo "</li>\n";
     }
 
@@ -5392,7 +5395,7 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $risk_column
             </h2>
             <div id='group-selections-accordion-body' class='accordion-collapse collapse show'>
                 <div class='accordion-body card-body'>
-                    <form id='get_risks_by' name='get_risks_by' method='post' action='{$_SESSION['base_url']}{$encoded_request_uri}'>
+                    <form id='get_risks_by' name='get_risks_by' method='post' action='" . build_url($encoded_request_uri) . "'>
                         <div class='row'>
                             <!-- Risk Status Selection -->
                             <div class='col-4'>
@@ -7487,6 +7490,7 @@ function create_risk_formula_table() {
     }
 
     $risk_model = get_setting("risk_model");
+    $need_risk_score_normalization = get_setting("need_risk_score_normalization", default: 'true');
 
     echo "
         <h4 class='page-title'>{$escaper->escapeHtml($lang['MyClassicRiskFormulaIs'])} :</h4>
@@ -7498,6 +7502,14 @@ function create_risk_formula_table() {
     ";
                         create_dropdown("risk_models", $risk_model, null, false);
     echo "
+                    </div>
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-md-4'>
+                    <div class='form-group'>
+                        <input class='form-check-input me-3' type='checkbox' id='need_risk_score_normalization' name='need_risk_score_normalization' " . ($need_risk_score_normalization == "true" ? "checked" : "") . " value='1'>
+                        <label class='mb-0'>{$escaper->escapeHtml($lang['NormalizeScoringOnA0_10Scale'])}</label>
                     </div>
                 </div>
             </div>
@@ -9090,7 +9102,7 @@ function get_audit_trail_html($id = NULL, $days = 7, $log_type=NULL) {
             $date = date(get_default_datetime_format("g:i A T"), strtotime($log['timestamp']));
 
             echo "
-                <p>{$escaper->escapeHtml($date)} > {$escaper->escapeHtml($log['message'])}</p>
+                <p>{$escaper->escapeHtml($date)} > {$escaper->purifyHtml($log['message'])}</p>
             ";
         }
 
@@ -10012,18 +10024,10 @@ function display_contributing_risks_impact_table_list(){
 }
 
 function display_datetimepicker_javascript($initialize = false) {
-    // Get the SimpleRisk Base URL
-    $simplerisk_base_url = get_setting('simplerisk_base_url');
-
-    // If the last character is not a /
-    if (substr($simplerisk_base_url, -1) != "/") {
-        // Append a / to the SimpleRisk Base URL
-        $simplerisk_base_url .= "/";
-    }
 
     $app_version = current_version("app");
-    echo "<script src='{$simplerisk_base_url}/js/jquery.datetimepicker.full.min.js?{$app_version}'></script>\n";
-    echo "<link rel='stylesheet' href='{$simplerisk_base_url}/css/jquery.datetimepicker.min.css?{$app_version}'/>\n";
+    echo "<script src='" . build_url("js/jquery.datetimepicker.full.min.js?{$app_version}") . "'></script>\n";
+    echo "<link rel='stylesheet' href='" . build_url("css/jquery.datetimepicker.min.css?{$app_version}") . "'/>\n";
 
     if ($initialize) {
         // Initialize if needed
@@ -10724,7 +10728,7 @@ function render_field_edit_popup_modal($view) {
                     echo "
                                             <script>
                                                 $(function() {
-                                                    $('#edit_popup-{$view} #{$field_name}.multiselect').multiselect({buttonWidth: '100%', enableFiltering: true, enableCaseInsensitiveFiltering: true,});
+                                                    $('#edit_popup-{$view} #{$field_name}.multiselect').multiselect({buttonWidth: '100%', enableFiltering: true, enableCaseInsensitiveFiltering: true, maxHeight: 250});
                                                 });
                                             </script>
                     ";
@@ -11062,7 +11066,7 @@ function render_create_modal($view) {
                     echo "
                                             <script>
                                                 $(function() {
-                                                    $('#create_popup-{$view} #{$field_name}.multiselect').multiselect({buttonWidth: '100%', enableFiltering: true, enableCaseInsensitiveFiltering: true,});
+                                                    $('#create_popup-{$view} #{$field_name}.multiselect').multiselect({buttonWidth: '100%', enableFiltering: true, enableCaseInsensitiveFiltering: true, maxHeight: 250});
                                                 });
                                             </script>
                     ";
@@ -11679,6 +11683,548 @@ function display_generic_dropdown($select_name, $select_array = [], $selected_va
 
     // Output the text
     echo $text;
+}
+
+/*************************************************
+ * FUNCTION: DISPLAY DOCUMENTS TO CONTROLS TABLE *
+ *************************************************/
+function display_document_to_controls()
+{
+
+    global $lang, $escaper;
+
+    $user = get_user_by_id($_SESSION['uid']);
+    $settings = json_decode($user["custom_documents_to_controls_display_settings"] ?? '', true);
+    $document_columns_setting = isset($settings["document_columns"])?$settings["document_columns"]:[];
+    $control_columns_setting = isset($settings["control_columns"])?$settings["control_columns"]:[];
+    $matching_columns_setting = isset($settings["matching_columns"])?$settings["matching_columns"]:[];
+    $columns_setting = array_merge($document_columns_setting, $control_columns_setting, $matching_columns_setting);
+    $columns = [];
+
+    foreach($columns_setting as $column) {
+        if(stripos($column[0], "custom_field_") !== false) {
+            if(customization_extra() && $column[1] == 1) $columns[] = $column[0];
+        } else if($column[1] == 1) {
+            $columns[] = $column[0];
+        }
+    }
+    if(!count($columns)) {
+        $columns = array("document","control_number","selected","matching","recommendation");
+    }
+
+    $tr = "";
+    $index = 0;
+    $order_index = 0;
+    $order_dir = "asc";
+
+    // If the Customization Extra exists
+    $file = realpath(__DIR__ . '/../extras/customization/index.php');
+    if (file_exists($file)) {
+        // Load it
+        require_once($file);
+    }
+
+    foreach($columns as $column) {
+
+        if($column == "document_id") {
+            $order_index = $index;
+            $order_dir = "asc";
+        }
+        if($column == "ai_reasoning") {
+            $style = "min-width:250px;";
+        } else {
+            $style = "min-width:100px;";
+        }
+
+        if(($pos = stripos($column, "custom_field_")) !== false) {
+            if(customization_extra()) {
+                $field_id = str_replace("custom_field_", "", $column);
+                $custom_field = get_field_by_id($field_id);
+                $label = $escaper->escapeHtml($custom_field['name']);
+                $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
+                $index++;
+            }
+        } else {
+            $label = get_label_by_document_field_name($column);
+            $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
+            $index++;
+        }
+    }
+
+    $tableID = "documents-to-controls";
+    echo "
+        <table id='{$tableID}' width='100%' class='document-control-datatable table table-bordered table-striped table-condensed'>
+            <thead >
+                <tr>{$tr}</tr> 
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <script>
+            $(function(){
+                var pageLength = 10;
+                var form = $('#{$tableID}').parents('form');
+                $('#{$tableID} thead tr').clone(true).appendTo( '#{$tableID} thead');
+                $('#{$tableID} thead tr:eq(1) th').each( function (i) {
+                    var title = $(this).text();
+                    var data_name = $(this).attr('data-name');
+                    if(data_name == 'selected') {
+                        $(this).html( '<select name=\"selected\" class= \"form-control\"><option value=\"\">--</option><option value=\"" . $escaper->escapeHtml($lang['Yes']) . "\">" . $escaper->escapeHtml($lang['Yes']) . "</option><option value=\"" . $escaper->escapeHtml($lang['No']) . "\">" . $escaper->escapeHtml($lang['No']) . "</option></select>' );
+                    } else if(data_name == 'ai_match') {
+                        $(this).html( '<select name=\"ai_match\" class= \"form-control\"><option value=\"\">--</option><option value=\"" . $escaper->escapeHtml($lang['Yes']) . "\">" . $escaper->escapeHtml($lang['Yes']) . "</option><option value=\"" . $escaper->escapeHtml($lang['No']) . "\">" . $escaper->escapeHtml($lang['No']) . "</option></select>' );
+                    } else if(data_name == 'matching') {
+                        $(this).html( '<select name=\"recommendation\" class= \"form-control\"><option value=\"\">--</option><option value=\"DefiniteMatch\">" . $escaper->escapeHtml($lang['DefiniteMatch']) . "</option><option value=\"LikelyMatch\">" . $escaper->escapeHtml($lang['LikelyMatch']) . "</option><option value=\"PossibleMatch\">" . $escaper->escapeHtml($lang['PossibleMatch']) . "</option><option value=\"UnlikelyMatch\">" . $escaper->escapeHtml($lang['UnlikelyMatch']) . "</option><option value=\"NotAMatch\">" . $escaper->escapeHtml($lang['NotAMatch']) . "</option></select>' );
+                    } else if(data_name == 'recommendation') {
+                        $(this).html( '<select name=\"recommendation\" class= \"form-control\"><option value=\"\">--</option><option value=\"AddControlToPolicy\">" . $escaper->escapeHtml($lang['AddControlToPolicy']) . "</option><option value=\"ConsiderAddingControl\">" . $escaper->escapeHtml($lang['ConsiderAddingControl']) . "</option><option value=\"RemoveControlFromPolicy\">" . $escaper->escapeHtml($lang['RemoveControlFromPolicy']) . "</option><option value=\"NoActionRequired\">" . $escaper->escapeHtml($lang['NoActionRequired']) . "</option></select>' );
+                    } else {
+                        $(this).html(''); // To clear the title out of the header cell
+                        $('<input type=\"text\" class= \"form-control\">').attr('name', title).attr('placeholder', title).appendTo($(this));
+                    }
+
+                    $( 'input, select', this ).on( 'change', function () {
+                        if ( datatableInstance.column(i).search() !== this.value ) {
+                            datatableInstance.column(i).search( this.value ).draw();
+                        }
+                    });
+                });
+                var datatableInstance = $('#{$tableID}').DataTable({
+                    bFilter: true,
+                    bSort: true,
+                    orderCellsTop: true,
+                    scrollX: true,
+                    createdRow: function(row, data, index){
+                        var background = $('.background-class', $(row)).data('background');
+                        $(row).find('td').addClass(background)
+                    },
+                    order: [[{$order_index}, '{$order_dir}']],
+                    ajax: {
+                        url: BASE_URL + '/api/v2/governance/documents/controls',
+                        type: 'post',
+                        data: function(d){
+                        },
+                        complete: function(response){
+                        }
+                    },
+                });
+                
+                $(document).ready(function(){
+                    $('.sortable-document').sortable({
+                        connectWith: '.sortable-document'
+                    });
+                    $('.sortable-control').sortable({
+                        connectWith: '.sortable-control'
+                    });
+                    $('.sortable-matching').sortable({
+                        connectWith: '.sortable-matching'
+                    });
+                    $('#save_display_settings').click(function(){
+                        var document_checkboxes = $('.sortable-document .hidden-checkbox');
+                        var documentColumns = [];
+                        document_checkboxes.each(function(){
+                            var check_val = $(this).is(':checked')?1:0;
+                            documentColumns.push([$(this).attr('name'),check_val]);
+                        });
+                        var control_checkboxes = $('.sortable-control .hidden-checkbox');
+                        var controlColumns = [];
+                        control_checkboxes.each(function(){
+                            var check_val = $(this).is(':checked')?1:0;
+                            controlColumns.push([$(this).attr('name'),check_val]);
+                        });
+                        var matching_checkboxes = $('.sortable-matching .hidden-checkbox');
+                        var matchingColumns = [];
+                        matching_checkboxes.each(function(){
+                            var check_val = $(this).is(':checked')?1:0;
+                            matchingColumns.push([$(this).attr('name'),check_val]);
+                        });
+                        $.ajax({
+                            type: 'POST',
+                            url: BASE_URL + '/api/v2/governance/save_custom_documents_to_controls_display_settings',
+                            data:{
+                                document_columns: documentColumns,
+                                control_columns: controlColumns,
+                                matching_columns: matchingColumns,
+                            },
+                            success: function(res){
+                                $('#setting_modal').modal('hide');
+                                showAlertsFromArray(res.status_message);
+                                document.location.reload();
+                            },
+                            error: function(xhr,status,error){
+                                if(!retryCSRF(xhr, this)){
+                                    if(xhr.responseJSON && xhr.responseJSON.status_message) {
+                                        showAlertsFromArray(xhr.responseJSON.status_message);
+                                    }
+                                }
+                            }
+                        });
+                        return false;
+                    });
+                });
+            });
+            
+        </script>
+    ";
+}
+
+/*******************************************************
+ * FUNCTION: DISPLAY CUSTOMER DOCUMENT CONTROL COLUMNS *
+ *******************************************************/
+function display_custom_document_control_columns($custom_setting_field = "custom_documents_to_controls_display_settings") {
+
+    global $escaper, $lang;
+    $user = get_user_by_id($_SESSION['uid']);
+    $settings = json_decode($user[$custom_setting_field], true);
+
+    $document_columns_setting = isset($settings["document_columns"])?$settings["document_columns"]:[];
+    $document_setting = [];
+    foreach ($document_columns_setting as $column) {
+        $document_setting[$column[0]] = $column[1];
+    }
+
+    $control_columns_setting = isset($settings["control_columns"])?$settings["control_columns"]:[];
+    $control_setting = [];
+    foreach ($control_columns_setting as $column) {
+        $control_setting[$column[0]] = $column[1];
+    }
+
+    $matching_columns_setting = isset($settings["matching_columns"])?$settings["matching_columns"]:[];
+    $matching_setting = [];
+    foreach ($matching_columns_setting as $column) {
+        $matching_setting[$column[0]] = $column[1];
+    }
+
+    $columns_setting = array_merge($document_columns_setting, $control_columns_setting, $matching_columns_setting);
+    $columns = [];
+    foreach ($columns_setting as $column) {
+        if (stripos($column[0], "custom_field_") !== false) {
+            if (customization_extra() && $column[1] == 1) {
+                $columns[] = $column[0];
+            }
+        } else if ($column[1] == 1) {
+            $columns[] = $column[0];
+        }
+    }
+
+    if (!count($columns)) {
+        if ($custom_setting_field == "custom_documents_to_controls_display_settings") {
+            $document_setting = ["document_id" => 0, "document" => 1];
+            $control_setting = ["control_id" => 0, "control_number" => 1, "control_short_name" => 0, "selected" => 1];
+            $matching_setting = ["score" => 0, "tfidf_similarity" => 0, "keyword_match" => 0, "ai_match" => 0, "ai_confidence" => 0, "ai_reasoning" => 0, "matching" => 1, "recommendation" => 1];
+        } else {
+            $document_setting = ["document_id" => 0, "document" => 1];
+            $control_setting = ["control_id" => 0, "control_number" => 1, "control_short_name" => 0, "selected" => 1];
+            $matching_setting = ["score" => 0, "tfidf_similarity" => 0, "keyword_match" => 0, "ai_match" => 0, "ai_confidence" => 0, "ai_reasoning" => 0, "matching" => 1, "recommendation" => 1];
+        }
+    }
+
+    $str = "
+        <style>
+            #column-selections-container label{color:#000;}
+            ul.sortable{list-style:none;margin:0;}
+            ul.sortable li{border: 1px dotted #cccccc;margin:2px 0;padding:5px;}
+        </style>
+        <div class='well accordion' id='column-selections-container'>
+    ";
+
+    // Names of document columns
+    $document_columns = [
+        'document_id' => $escaper->escapeHtml($lang['DocumentID']),
+        'document' => $escaper->escapeHtml($lang['Document']),
+    ];
+
+    // Names of control columns
+    $control_columns = [
+        'control_id' => $escaper->escapeHtml($lang['ControlID']),
+        'control_number' => $escaper->escapeHtml($lang['ControlNumber']),
+        'control_short_name' => $escaper->escapeHtml($lang['ControlShortName']),
+        'selected' => $escaper->escapeHtml($lang['Selected']),
+    ];
+
+    // Names of matching columns
+    $matching_columns = [
+        'score' => $escaper->escapeHtml($lang['Score']),
+        'tfidf_similarity' => $escaper->escapeHtml($lang['TFIDFSimilarity']),
+        'keyword_match' => $escaper->escapeHtml($lang['MatchingKeywords']),
+        'ai_match' => $escaper->escapeHtml($lang['AIMatch']),
+        'ai_confidence' => $escaper->escapeHtml($lang['AIConfidence']),
+        'ai_reasoning' => $escaper->escapeHtml($lang['AIReasoning']),
+        'matching' => $escaper->escapeHtml($lang['Matching']),
+        'recommendation' => $escaper->escapeHtml($lang['Recommendation']),
+    ];
+
+    $document_columns_keys = array_values(array_unique(array_merge(array_keys($document_setting),array_keys($document_columns))));
+    $control_columns_keys = array_values(array_unique(array_merge(array_keys($control_setting),array_keys($control_columns))));
+    $matching_columns_keys = array_values(array_unique(array_merge(array_keys($matching_setting),array_keys($matching_columns))));
+
+    // Document columns
+    $str .= "
+            <div class='accordion-item'>
+                <h2 class='accordion-header'>
+                    <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#DocumentColumns_container'>{$escaper->escapeHtml($lang['DocumentColumns'])}</button>
+                </h2>
+                <div id='DocumentColumns_container' class='accordion-collapse collapse'>
+                    <div class='accordion-body card-body'>
+                        <div class='row'>
+                            <div class='col-6'>
+                                <div class='p-3 h-100 border'>
+                                    <ul class='sortable sortable-document mb-0 ps-0'>
+    ";
+
+    // variable to store the custom display settings
+    $custom_display_settings = [];
+
+    $half_num = ceil(count($document_columns_keys)/2);
+    for ($i = 0; $i < $half_num ; $i++) {
+
+        $field = $document_columns_keys[$i];
+        $elem_id = "checkbox_" . $field;
+        $check_val = isset($document_setting[$field]) ? $document_setting[$field] : 0;
+        $checked = $check_val ? "checked='yes'" : "";
+
+        // if the field is checked, add it to the custom display settings
+        if ($check_val) {
+            $custom_display_settings[] = $field;
+        }
+
+        if (isset($document_columns[$field])) {
+            $str .= "
+                                        <li>
+                                            <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
+                                            <label class='ms-2' for='{$elem_id}'>{$document_columns[$field]}</label>
+                                        </li>
+            ";
+        }
+    }
+
+    $str .= "
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class='col-6'>
+                                <div class='p-3 h-100 border'>
+                                    <ul class='sortable sortable-document mb-0 ps-0'>
+    ";
+
+    for ($i ; $i < count($document_columns_keys) ; $i++) {
+
+        $field = $document_columns_keys[$i];
+        $elem_id = "checkbox_" . $field;
+        $check_val = isset($document_setting[$field]) ? $document_setting[$field] : 0;
+        $checked = $check_val ? "checked='yes'" : "";
+
+        // if the field is checked, add it to the custom display settings
+        if ($check_val) {
+            $custom_display_settings[] = $field;
+        }
+
+        if (isset($document_columns[$field])) {
+            $str .= "
+                                        <li>
+                                            <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
+                                            <label for='{$elem_id}'>{$document_columns[$field]}</label>
+                                        </li>
+            ";
+        }
+    }
+
+    $str .= "
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    ";
+
+    // Control columns
+    $str .= "
+            <div class='accordion-item'>
+                <h2 class='accordion-header'>
+                    <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#ControlColumns_container'>{$escaper->escapeHtml($lang['ControlColumns'])}</button>
+                </h2>
+                <div id='ControlColumns_container' class='accordion-collapse collapse'>
+                    <div class='accordion-body card-body'>
+                        <div class='row'>
+                            <div class='col-6'>
+                                <div class='p-3 h-100 border'>
+                                    <ul class='sortable sortable-control mb-0 ps-0'>
+    ";
+
+    $half_num = ceil(count($control_columns_keys)/2);
+    for ($i = 0; $i < $half_num ; $i++) {
+
+        $field = $control_columns_keys[$i];
+        $check_val = isset($control_setting[$field]) ? $control_setting[$field] : 0;
+        $elem_id = "checkbox_" . $field;
+        $checked = $check_val ? "checked='yes'" : "";
+
+        // if the field is checked, add it to the custom display settings
+        if ($check_val) {
+            $custom_display_settings[] = $field;
+        }
+
+        if (isset($control_columns[$field])) {
+            $str .= "
+                                        <li>
+                                            <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
+                                            <label class='ms-2' for='{$elem_id}'>{$control_columns[$field]}</label>
+                                        </li>
+            ";
+        }
+    }
+
+    $str .= "
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class='col-6'>
+                                <div class='p-3 h-100 border'>
+                                    <ul class='sortable sortable-control mb-0 ps-0'>
+    ";
+
+    for ($i ; $i < count($control_columns_keys) ; $i++) {
+
+        $field = $control_columns_keys[$i];
+        $elem_id = "checkbox_" . $field;
+        $check_val = isset($control_setting[$field]) ? $control_setting[$field] : 0;
+        $checked = $check_val ? "checked='yes'" : "";
+
+        // if the field is checked, add it to the custom display settings
+        if ($check_val) {
+            $custom_display_settings[] = $field;
+        }
+
+        if (isset($control_columns[$field])) {
+            $str .= "
+                                        <li>
+                                            <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
+                                            <label for='{$elem_id}'>{$control_columns[$field]}</label>
+                                        </li>
+            ";
+        }
+    }
+
+    $str .= "
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    ";
+
+    // Matching columns
+    $str .= "
+            <div class='accordion-item'>
+                <h2 class='accordion-header'>
+                    <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#MatchingColumns_container'>{$escaper->escapeHtml($lang['MatchingColumns'])}</button>
+                </h2>
+                <div id='MatchingColumns_container' class='accordion-collapse collapse'>
+                    <div class='accordion-body card-body'>
+                        <div class='row'>
+                            <div class='col-6'>
+                                <div class='p-3 h-100 border'>
+                                    <ul class='sortable sortable-matching mb-0 ps-0'>
+    ";
+
+    $half_num = ceil(count($matching_columns_keys)/2);
+    for ($i = 0; $i < $half_num ; $i++) {
+
+        $field = $matching_columns_keys[$i];
+        $check_val = isset($matching_setting[$field]) ? $matching_setting[$field] : 0;
+        $elem_id = "checkbox_" . $field;
+        $checked = $check_val ? "checked='yes'" : "";
+
+        // if the field is checked, add it to the custom display settings
+        if ($check_val) {
+            $custom_display_settings[] = $field;
+        }
+
+        if (isset($matching_columns[$field])) {
+            $str .= "
+                                        <li>
+                                            <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
+                                            <label class='ms-2' for='{$elem_id}'>{$matching_columns[$field]}</label>
+                                        </li>
+            ";
+        }
+    }
+    $str .= "
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class='col-6'>
+                                <div class='p-3 h-100 border'>
+                                    <ul class='sortable sortable-matching mb-0 ps-0'>
+    ";
+
+    for ($i ; $i < count($matching_columns_keys) ; $i++) {
+
+        $field = $matching_columns_keys[$i];
+        $elem_id = "checkbox_" . $field;
+        $check_val = isset($matching_setting[$field]) ? $matching_setting[$field] : 0;
+        $checked = $check_val ? "checked='yes'" : "";
+
+        // if the field is checked, add it to the custom display settings
+        if ($check_val) {
+            $custom_display_settings[] = $field;
+        }
+
+        if (isset($matching_columns[$field])) {
+            $str .= "
+                                        <li>
+                                            <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
+                                            <label for='{$elem_id}'>{$matching_columns[$field]}</label>
+                                        </li>
+            ";
+        }
+    }
+
+    $str .= "
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    ";
+    echo $str;
+
+    echo "
+        <script>
+
+            // variable to store the custom display settings
+            var custom_display_settings = JSON.parse('" . json_encode($custom_display_settings) . "');
+
+        </script>
+    ";
+}
+
+function get_label_by_document_field_name($field){
+    global $lang, $escaper;
+    // List of document to control mapping columns
+    $columns = [
+        'document_id' => js_string_escape($lang['DocumentID']),
+        'document' => js_string_escape($lang['Document']),
+        'control_id' => js_string_escape($lang['ControlID']),
+        'control_number' => js_string_escape($lang['ControlNumber']),
+        'control_short_name' => js_string_escape($lang['ControlShortName']),
+        'selected' => js_string_escape($lang['Selected']),
+        'score' => js_string_escape($lang['Score']),
+        'tfidf_similarity' => js_string_escape($lang['TFIDFSimilarity']),
+        'keyword_match' => js_string_escape($lang['MatchingKeywords']),
+        'ai_match' => js_string_escape($lang['AIMatch']),
+        'ai_confidence' => js_string_escape($lang['AIConfidence']),
+        'ai_reasoning' => js_string_escape($lang['AIReasoning']),
+        'matching' => js_string_escape($lang['Matching']),
+        'recommendation' => js_string_escape($lang['Recommendation']),
+    ];
+
+    return $columns[$field];
 }
 
 ?>

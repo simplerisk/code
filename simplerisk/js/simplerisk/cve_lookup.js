@@ -88,11 +88,11 @@ function process_nvd_cve_info(cve_info_json, parent)
     let template_group_id_suffix = $("#template_group_id").length > 0 ? '_' + parent.find('#template_group_id').val() : '';
 
     if (assessment && $("[name=assessment]", parent).length) {
-        tinymce.get(`assessment${template_group_id_suffix}`).setContent(assessment);
+        setEditorContent(`assessment${template_group_id_suffix}`, assessment);
     }
 
     if (notes && $("[name=notes]", parent).length) {
-        tinymce.get(`notes${template_group_id_suffix}`).setContent(notes);
+        setEditorContent(`notes${template_group_id_suffix}`, notes);
     }
 
     $("[name=AccessVector]", parent).val(AV);

@@ -28,7 +28,7 @@ class XMLProviderInstaller extends LibraryInstaller
         $result = parent::ensureBinariesPresence($package);
 
         $downloadPath = $this->getInstallPath($package);
-        $registry = $downloadPath . '/src/XML/element.registry.php';
+        $registry = $downloadPath . '/classes/element.registry.php';
 
         if (file_exists($registry) === true) {
             $classesDir = $this->vendorDir . '/simplesamlphp/composer-xmlprovider-installer/classes/';
@@ -50,7 +50,7 @@ class XMLProviderInstaller extends LibraryInstaller
         $result = parent::uninstall($repo, $package);
 
         $downloadPath = $this->getInstallPath($package);
-        $registry = $downloadPath . '/src/XML/element.registry.php';
+        $registry = $downloadPath . '/classes/element.registry.php';
         if (file_exists($registry) === true) {
             $classesDir = $this->vendorDir . '/simplesamlphp/composer-xmlprovider-installer/classes/';
             $target = $classesDir . 'element.registry.' . sha1($registry) . '.php';

@@ -6,7 +6,7 @@ namespace SimpleSAML\XML;
 
 use DOMDocument;
 use SimpleSAML\Assert\Assert;
-use SimpleSAML\XML\Exception\IOException;
+use SimpleSAML\XML\Exception\{IOException, RuntimeException};
 use SimpleSAML\XML\Exception\SchemaViolationException;
 
 use function array_unique;
@@ -75,9 +75,10 @@ trait SchemaValidatableElementTrait
      */
     public static function getSchemaFile(): string
     {
-        if (defined('static::SCHEMA')) {
-            $schemaFile = static::SCHEMA;
+        if (!defined('static::SCHEMA')) {
+            throw new RuntimeException('A SCHEMA-constant was not set on this class.');
         }
+        $schemaFile = static::SCHEMA;
 
         Assert::true(file_exists($schemaFile), sprintf("File not found: %s", $schemaFile), IOException::class);
         return $schemaFile;

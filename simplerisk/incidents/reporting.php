@@ -7,38 +7,39 @@
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 
     $breadcrumb_title_key="";
-    $active_sidebar_menu ="";
-    $active_sidebar_submenu ="";
+    $active_sidebar_menu ="IncidentManagement";
+    $active_sidebar_submenu ="Reporting";
+    $active_sidebar_forthmenu = '';
 
     // If a menu was provided
     if (isset($_GET['menu'])) {
-
-        $active_sidebar_menu = "IncidentManagement";
-
-        // If the pages in the third level was displayed, assigned the value for its parent page, reporting page to $active_sidebar_submenu
-        $active_sidebar_submenu = "Reporting";
 
         // If the page for the menu was displayed
         switch ($_GET['menu']) {
             // If the overview page was displayed
             case "overview":
                 $breadcrumb_title_key = 'Overview';
+                $active_sidebar_thirdmenu ="Overview";
                 break;
             // If the incident trend page was displayed
             case "incident_trend":
                 $breadcrumb_title_key = 'IncidentTrend';
+                $active_sidebar_thirdmenu ="IncidentTrend";
                 break;
             // If the dynamic incident report page was displayed
             case "dynamic_incident_report":
                 $breadcrumb_title_key = 'DynamicIncidentReport';
+                $active_sidebar_thirdmenu ="DynamicIncidentReport";
                 break;
             // If the lessons learned page was displayed
             case "lessons_learned":
                 $breadcrumb_title_key = 'LessonsLearned';
+                $active_sidebar_thirdmenu ="IM_Reporting_LessonsLearned";
                 break;
             // IF the overview page was displayed by default
             default:
                 $breadcrumb_title_key = 'Overview';
+                $active_sidebar_thirdmenu ="Overview";
                 break;
         }
         
@@ -46,7 +47,7 @@
     } else {
         $breadcrumb_title_key = "Reporting";
     }
-    render_header_and_sidebar(['datatables', 'tabs:logic', 'multiselect', 'blockUI', 'datetimerangepicker', 'chart.js'], ['check_im_reporting' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
+    render_header_and_sidebar(['datatables', 'tabs:logic', 'multiselect', 'blockUI', 'datetimerangepicker', 'chart.js'], ['check_im_reporting' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu, $active_sidebar_thirdmenu, $active_sidebar_forthmenu);
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/permissions.php'));

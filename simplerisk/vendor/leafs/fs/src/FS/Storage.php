@@ -7,6 +7,19 @@ class Storage
     protected static $errorsArray = [];
 
     /**
+     * Add storage bucket connections
+     *
+     * @param array $connections The connections to buckets
+     * @param string $default The default connection to use
+     *
+     * @return void
+     */
+    public static function connections(array $connections, string $default = 's3')
+    {
+        Bucket::connections($connections, $default);
+    }
+
+    /**
      * Create a new file
      *
      * @param string $filePath The path of the new file

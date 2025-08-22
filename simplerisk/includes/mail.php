@@ -46,110 +46,268 @@ function get_mail_settings()
 /**********************************
  * FUNCTION: UPDATE MAIL SETTINGS *
  **********************************/
-function update_mail_settings($transport, $from_email, $from_name, $replyto_email, $replyto_name, $host, $smtpautotls, $smtpauth, $username, $password, $encryption, $port, $prepend)
-{
+function update_mail_settings($transport, $from_email, $from_name, $replyto_email, $replyto_name, $host, $smtpautotls, $smtpauth, $username, $password, $encryption, $port, $prepend) {
+
     // Open the database connection
     $db = db_open();
 
     // If the transport is sendmail or smtp
-    if ($transport == "sendmail" || $transport == "smtp")
-    {
-        // Update the transport
-        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_transport'");
-        $stmt->bindParam(":value", $transport, PDO::PARAM_STR, 200);
-        $stmt->execute();
+    if ($transport == "sendmail" || $transport == "smtp") {
+
+        $current_transport = get_setting("phpmailer_transport");
+
+        // If the current transport is not the same as the new transport
+        if ($current_transport != $transport) {
+
+            // Update the transport
+            $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_transport'");
+            $stmt->bindParam(":value", $transport, PDO::PARAM_STR, 200);
+            $stmt->execute();
+
+            // Add an audit log entry for the change
+            $risk_id = 1000;
+            $message = "A setting value named \"phpmailer_transport\" was updated by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+
+        }
     }
 
 	// If the from_email is valid
-	if (preg_match("/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/", $from_email))
-	{
-        // Update the from_email
-        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_from_email'");
-        $stmt->bindParam(":value", $from_email, PDO::PARAM_STR, 200);
-        $stmt->execute();
+	if (preg_match("/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/", $from_email)) {
+
+        $current_from_email = get_setting("phpmailer_from_email");
+
+        // If the current from_email is not the same as the new from_email
+        if ($current_from_email != $from_email) {
+
+            // Update the from_email
+            $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_from_email'");
+            $stmt->bindParam(":value", $from_email, PDO::PARAM_STR, 200);
+            $stmt->execute();
+
+            // Add an audit log entry for the change
+            $risk_id = 1000;
+            $message = "A setting value named \"phpmailer_from_email\" was updated by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+
+        }
 	}
 
-    // Update the from_name
-    $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_from_name'");
-    $stmt->bindParam(":value", $from_name, PDO::PARAM_STR, 200);
-    $stmt->execute();
+    $current_from_name = get_setting("phpmailer_from_name");
 
-        // If the replyto_email is valid
-	if (preg_match("/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/", $replyto_email))
-    {
-        // Update the replyto_email
-        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_replyto_email'");
-        $stmt->bindParam(":value", $replyto_email, PDO::PARAM_STR, 200);
+    // If the current from_name is not the same as the new from_name
+    if ($current_from_name != $from_name) {
+        
+        // Update the from_name
+        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_from_name'");
+        $stmt->bindParam(":value", $from_name, PDO::PARAM_STR, 200);
         $stmt->execute();
+        
+        // Add an audit log entry for the change
+        $risk_id = 1000;
+        $message = "A setting value named \"phpmailer_from_name\" was updated by the \"" . $_SESSION['user'] . "\" user.";
+        write_log($risk_id, $_SESSION['uid'], $message);
+
+    }
+
+    // If the replyto_email is valid
+	if (preg_match("/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/", $replyto_email)) {
+
+        $current_replyto_email = get_setting("phpmailer_replyto_email");
+
+        // If the current replyto_email is not the same as the new replyto_email
+        if ($current_replyto_email != $replyto_email) {
+
+            // Update the replyto_email
+            $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_replyto_email'");
+            $stmt->bindParam(":value", $replyto_email, PDO::PARAM_STR, 200);
+            $stmt->execute();
+
+            // Add an audit log entry for the change
+            $risk_id = 1000;
+            $message = "A setting value named \"phpmailer_replyto_email\" was updated by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+
+        }
 	}
 
-    // Update the replyto_name
-    $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_replyto_name'");
-    $stmt->bindParam(":value", $replyto_name, PDO::PARAM_STR, 200);
-    $stmt->execute();
+    $current_replyto_name = get_setting("phpmailer_replyto_name");
 
-    // Update the host
-    $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_host'");
-    $stmt->bindParam(":value", $host, PDO::PARAM_STR, 200);
-    $stmt->execute();
+    // If the current replyto_name is not the same as the new replyto_name
+    if ($current_replyto_name != $replyto_name) {
+
+        // Update the replyto_name
+        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_replyto_name'");
+        $stmt->bindParam(":value", $replyto_name, PDO::PARAM_STR, 200);
+        $stmt->execute();
+
+        // Add an audit log entry for the change
+        $risk_id = 1000;
+        $message = "A setting value named \"phpmailer_replyto_name\" was updated by the \"" . $_SESSION['user'] . "\" user.";
+        write_log($risk_id, $_SESSION['uid'], $message);
+
+    }
+
+    $current_host = get_setting("phpmailer_host");
+    
+    // If the current host is not the same as the new host
+    if ($current_host != $host) {
+
+        // Update the host
+        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_host'");
+        $stmt->bindParam(":value", $host, PDO::PARAM_STR, 200);
+        $stmt->execute();
+        
+        // Add an audit log entry for the change
+        $risk_id = 1000;
+        $message = "A setting value named \"phpmailer_host\" was updated by the \"" . $_SESSION['user'] . "\" user.";
+        write_log($risk_id, $_SESSION['uid'], $message);
+
+    }
+
 
 	// If the SMTP Auto TLS is either true or false
-	if ($smtpautotls == "true" || $smtpautotls == "false")
-	{
-		// Update the SMTP Auto TLS
-		$stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_smtpautotls'");
-		$stmt->bindParam(":value", $smtpautotls, PDO::PARAM_STR, 5);
-		$stmt->execute();
+	if ($smtpautotls == "true" || $smtpautotls == "false") {
+
+        $current_smtpautotls = get_setting("phpmailer_smtpautotls");
+
+        // If the current SMTP Auto TLS is not the same as the new SMTP Auto TLS
+        if ($current_smtpautotls != $smtpautotls) {
+
+            // Update the SMTP Auto TLS
+            $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_smtpautotls'");
+            $stmt->bindParam(":value", $smtpautotls, PDO::PARAM_STR, 5);
+            $stmt->execute();
+
+            // Add an audit log entry for the change
+            $risk_id = 1000;
+            $message = "A setting value named \"phpmailer_smtpautotls\" was updated by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+
+        }
 	}
 
 	// If the SMTP Authentication is either true or false
-	if ($smtpauth == "true" || $smtpauth == "false")
-	{
-		// Update the smtp authentication
-		$stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_smtpauth'");
-		$stmt->bindParam(":value", $smtpauth, PDO::PARAM_STR, 5);
-		$stmt->execute();
+	if ($smtpauth == "true" || $smtpauth == "false") {
+
+        $current_smtpauth = get_setting("phpmailer_smtpauth");
+
+        // If the current SMTP Authentication is not the same as the new SMTP Authentication
+        if ($current_smtpauth != $smtpauth) {
+
+            // Update the smtp authentication
+            $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_smtpauth'");
+            $stmt->bindParam(":value", $smtpauth, PDO::PARAM_STR, 5);
+            $stmt->execute();
+
+            // Add an audit log entry for the change
+            $risk_id = 1000;
+            $message = "A setting value named \"phpmailer_smtpauth\" was updated by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+
+        }
 	}
 
-    // Update the username
-    $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_username'");
-    $stmt->bindParam(":value", $username, PDO::PARAM_STR, 200);
-    $stmt->execute();
+    $current_username = get_setting("phpmailer_username");
+
+    // If the current username is not the same as the new username
+    if ($current_username != $username) {
+
+        // Update the username
+        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_username'");
+        $stmt->bindParam(":value", $username, PDO::PARAM_STR, 200);
+        $stmt->execute();
+
+        // Add an audit log entry for the change
+        $risk_id = 1000;
+        $message = "A setting value named \"phpmailer_username\" was updated by the \"" . $_SESSION['user'] . "\" user.";
+        write_log($risk_id, $_SESSION['uid'], $message);
+
+    }
 
     // If the password is not empty
-    if ($password != "")
-    {
-        // Update the value
-        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_password'");
-        $stmt->bindParam(":value", $password, PDO::PARAM_STR, 200);
-        $stmt->execute();
+    if ($password != "") {
+
+        $current_password = get_setting("phpmailer_password");
+
+        // If the current password is not the same as the new password
+        if ($current_password != $password) {
+
+            // Update the value
+            $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_password'");
+            $stmt->bindParam(":value", $password, PDO::PARAM_STR, 200);
+            $stmt->execute();
+
+            // Add an audit log entry for the change
+            $risk_id = 1000;
+            $message = "A setting value named \"phpmailer_password\" was updated by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+
+        }
     }
 
     // If the encryption is none or tls or ssl
-    if ($encryption == "none" || $encryption == "tls" || $encryption == "ssl")
-    {
-        // Update the encryption
-        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_smtpsecure'");
-        $stmt->bindParam(":value", $encryption, PDO::PARAM_STR, 200);
-        $stmt->execute();
+    if ($encryption == "none" || $encryption == "tls" || $encryption == "ssl") {
+
+        $current_encryption = get_setting("phpmailer_smtpsecure");
+
+        // If the current encryption is not the same as the new encryption
+        if ($current_encryption != $encryption) {
+
+            // Update the encryption
+            $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_smtpsecure'");
+            $stmt->bindParam(":value", $encryption, PDO::PARAM_STR, 200);
+            $stmt->execute();
+
+            // Add an audit log entry for the change
+            $risk_id = 1000;
+            $message = "A setting value named \"phpmailer_smtpsecure\" was updated by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+
+        }
     }
 
     // If the port is an integer value
-    if (is_numeric($port))
-    {
-        // Update the port
-        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_port'");
-        $stmt->bindParam(":value", $port, PDO::PARAM_STR, 200);
-        $stmt->execute();
+    if (is_numeric($port)) {
+
+        $current_port = get_setting("phpmailer_port");
+
+        // If the current port is not the same as the new port
+        if ($current_port != $port) {
+
+            // Update the port
+            $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_port'");
+            $stmt->bindParam(":value", $port, PDO::PARAM_STR, 200);
+            $stmt->execute();
+
+            // Add an audit log entry for the change
+            $risk_id = 1000;
+            $message = "A setting value named \"phpmailer_port\" was updated by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+
+        }
     }
 
-    // Update the prepend
-    $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_prepend'");
-    $stmt->bindParam(":value", $prepend, PDO::PARAM_STR);
-    $stmt->execute();
+    $current_prepend = get_setting("phpmailer_prepend");
+
+    // If the current prepend is not the same as the new prepend
+    if ($current_prepend != $prepend) {
+
+        // Update the prepend
+        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_prepend'");
+        $stmt->bindParam(":value", $prepend, PDO::PARAM_STR);
+        $stmt->execute();
+
+        // Add an audit log entry for the change
+        $risk_id = 1000;
+        $message = "A setting value named \"phpmailer_prepend\" was updated by the \"" . $_SESSION['user'] . "\" user.";
+        write_log($risk_id, $_SESSION['uid'], $message);
+
+    }
 
     // Close the database connection
     db_close($db);
+
 }
 
 /************************

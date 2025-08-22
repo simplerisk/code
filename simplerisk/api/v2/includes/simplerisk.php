@@ -268,4 +268,59 @@ function api_v2_admin_upgrade_db()
     api_v2_json_result($status_code, $status_message, $data);
 }
 
+/*********************************************************
+ * FUNCTION: API V2 UPDATE ALL DOCUMENT CONTROL MAPPINGS *
+ *********************************************************/
+function api_v2_update_all_document_control_mappings()
+{
+    // Allow this to run as long as it needs
+    ini_set('max_execution_time', 0);
+
+    // Check that this is an admin user
+    api_v2_check_admin();
+
+    // Open the database connection
+    $db = db_open();
+
+    // Get the list of all document ids
+    $stmt = $db->prepare("SELECT `id` FROM `documents`");
+    $stmt->execute();
+    $documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Create an array to store the list of updated documents
+    $updated_documents = [];
+
+    // For each document in the results
+    foreach ($documents as $document)
+    {
+        // Get the document id
+        $document_id = $document['id'];
+
+        write_debug_log("Updating control mapping suggestions for document id: " . $document_id);
+
+        // Update the document to control mappings for the document
+        $mappings = get_document_to_control_mappings($document_id, true);
+
+        // If we successfully processed mappings
+        if ($mappings !== false)
+        {
+            // Add the document id to the list of updated documents
+            $updated_documents[] = (int)$document_id;
+        }
+    }
+
+    // Close the database connection
+    db_close($db);
+
+    // Create the result
+    $status_code = 200;
+    $status_message = "Update successful";
+    $data = [
+        'updated_documents' => $updated_documents
+    ];
+
+    // Return the result
+    api_v2_json_result($status_code, $status_message, $data);
+}
+
 ?>

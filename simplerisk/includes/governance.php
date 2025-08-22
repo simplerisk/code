@@ -9,6 +9,7 @@ require_once(realpath(__DIR__ . '/config.php'));
 require_once(realpath(__DIR__ . '/cvss.php'));
 require_once(realpath(__DIR__ . '/services.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
+require_once(realpath(__DIR__ . '/tf_idf_enrichment.php'));
 
 // Include the language file
 // Ignoring detections related to language files
@@ -476,11 +477,10 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
     // Open the database connection
     $db = db_open();
     $sql = "
-        SELECT t1.*, GROUP_CONCAT(DISTINCT f.value) framework_ids, GROUP_CONCAT(DISTINCT f.name) framework_names, t2.name control_class_name, t3.name control_phase_name, t4.name control_priority_name, t5.name family_short_name, t6.name control_owner_name, t7.name control_maturity_name, t8.name desired_maturity_name, group_concat(distinct ctype.value) control_type_ids, GROUP_CONCAT(DISTINCT m_1.reference_name) reference_name
+        SELECT t1.*, GROUP_CONCAT(DISTINCT f.value) framework_ids, GROUP_CONCAT(DISTINCT f.name) framework_names, t2.name control_class_name, t3.name control_phase_name, t4.name control_priority_name, t5.name family_short_name, t6.name control_owner_name, t7.name control_maturity_name, t8.name desired_maturity_name, group_concat(distinct ctype.value) control_type_ids, GROUP_CONCAT(DISTINCT m.reference_name) reference_name
         FROM `framework_controls` t1 
             LEFT JOIN `framework_control_mappings` m on t1.id=m.control_id
             LEFT JOIN `frameworks` f on m.framework=f.value AND f.status=1
-            LEFT JOIN `framework_control_mappings` m_1 on t1.id=m_1.control_id
             LEFT JOIN `control_class` t2 on t1.control_class=t2.value
             LEFT JOIN `control_phase` t3 on t1.control_phase=t3.value
             LEFT JOIN `control_priority` t4 on t1.control_priority=t4.value
@@ -667,7 +667,7 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
             }
         }
         if (!empty($where_or_ids)) {
-            $where[] = "m_1.framework IN (".implode(",", $where_or_ids).")";
+            $where[] = "m.framework IN (".implode(",", $where_or_ids).")";
         }
         
         $sql .= " AND (". implode(" OR ", $where) . ")";
@@ -1133,16 +1133,6 @@ function add_framework_control($control){
     // Open the database connection
     $db = db_open();
 
-    // Check if the control exists
-    $stmt = $db->prepare("SELECT COUNT(*) FROM `framework_controls` where short_name=:short_name");
-    $stmt->bindParam(":short_name", $short_name);
-    $stmt->execute();
-    $count = (int)$stmt->fetchColumn();
-    if($count > 0){
-        set_alert(true, "bad", $escaper->escapeHtml($lang['TheControlAlreadyExists']));
-        return false;
-    }
-
     // Create a framework
     $stmt = $db->prepare("INSERT INTO `framework_controls` (`short_name`, `long_name`, `description`, `supplemental_guidance`, `control_owner`, `control_class`, `control_phase`, `control_number`, `control_maturity`, `desired_maturity`, `control_priority`, `family`, `mitigation_percent`, `control_status`) VALUES (:short_name, :long_name, :description, :supplemental_guidance, :control_owner, :control_class, :control_phase, :control_number, :control_current_maturity, :control_desired_maturity, :control_priority, :family, :mitigation_percent, :control_status)");
     $stmt->bindParam(":short_name", $short_name, PDO::PARAM_STR, 1000);
@@ -1162,6 +1152,13 @@ function add_framework_control($control){
     $stmt->execute();
     
     $control_id = $db->lastInsertId();
+
+    // Update the control keywords
+    get_keywords_for_control($control_id, true);
+
+    // Update the control to document mappings for the control but don't care about the response
+    $endpoint = "/api/v2/governance/controls/topdocuments?id={$control_id}&refresh=true";
+    @call_simplerisk_api_endpoint($endpoint, "GET", false, 1);
 
     if(count($control_type) > 0) {
         foreach ($control_type as $type) {
@@ -1247,6 +1244,13 @@ function update_framework_control($control_id, $control){
     $stmt = $db->prepare("DELETE FROM `framework_control_type_mappings` WHERE `control_id` = :control_id");
     $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
     $stmt->execute();
+
+    // Update the control keywords
+    get_keywords_for_control($control_id, true);
+
+    // Update the control to document mappings for the control but don't care about the response
+    $endpoint = "/api/v2/governance/controls/topdocuments?id={$control_id}&refresh=true";
+    @call_simplerisk_api_endpoint($endpoint, "GET", false, 1);
 
     if(count($control_type) > 0) {
         foreach ($control_type as $type) {
@@ -1893,11 +1897,18 @@ function get_document_by_id($id)
     } else $where = " 1";
 
     $sql = "
-        SELECT t1.*, t2.version file_version, t2.unique_name, t2.name file_name, t2.size file_size, t3.value as status
+        SELECT t1.*, t2.version file_version, t2.unique_name, t2.name file_name, t2.size file_size, t3.value as status,
+            GROUP_CONCAT(DISTINCT f.value) framework_ids, 
+            GROUP_CONCAT(DISTINCT fc.id) control_ids
         FROM `documents` t1 
             LEFT JOIN `compliance_files` t2 ON t1.file_id=t2.id
             LEFT JOIN `document_status` t3 ON t1.document_status=t3.value
+            LEFT JOIN `document_framework_mappings` dfm ON t1.id=dfm.document_id
+            LEFT JOIN `frameworks` f ON dfm.framework_id=f.value
+            LEFT JOIN `document_control_mappings` dcm ON t1.id=dcm.document_id AND dcm.selected=1
+            LEFT JOIN `framework_controls` fc ON dcm.control_id=fc.id
         WHERE t1.id=:id AND {$where}
+        GROUP BY t1.id
         ;
     ";
     $stmt = $db->prepare($sql);
@@ -1920,10 +1931,16 @@ function get_documents($type="")
     $db = db_open();
 
     $sql = "
-        SELECT t1.*, t2.version file_version, t2.unique_name, t3.value as status
+        SELECT t1.*, t2.version file_version, t2.unique_name, t3.value as status,
+            GROUP_CONCAT(DISTINCT f.value) framework_ids, 
+            GROUP_CONCAT(DISTINCT fc.id) control_ids
         FROM `documents` t1 
-	    LEFT JOIN `compliance_files` t2 ON t1.file_id=t2.id
+	        LEFT JOIN `compliance_files` t2 ON t1.file_id=t2.id
             LEFT JOIN `document_status` t3 ON t1.document_status=t3.value
+            LEFT JOIN `document_framework_mappings` dfm ON t1.id=dfm.document_id
+            LEFT JOIN `frameworks` f ON dfm.framework_id=f.value
+            LEFT JOIN `document_control_mappings` dcm ON t1.id=dcm.document_id AnD dcm.selected=1
+            LEFT JOIN `framework_controls` fc ON dcm.control_id=fc.id
     ";
     if(team_separation_extra()){
         require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
@@ -1934,7 +1951,7 @@ function get_documents($type="")
     } else {
          $sql .= $where;
     }
-    $sql .= " ORDER BY t1.document_type, t1.document_name";
+    $sql .= " GROUP BY t1.id ORDER BY t1.document_type, t1.document_name";
 
     $stmt = $db->prepare($sql);
     if($type) $stmt->bindParam(":type", $type, PDO::PARAM_STR);
@@ -1986,12 +2003,10 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
         return false;
     }
     // Create a document
-    $stmt = $db->prepare("INSERT INTO `documents` (`submitted_by`, `document_type`, `document_name`, `control_ids`, `framework_ids`, `parent`, `document_status`, `file_id`, `creation_date`, `last_review_date`, `review_frequency`, `next_review_date`, `approval_date`, `document_owner`, `additional_stakeholders`, `approver`, `team_ids`) VALUES (:submitted_by, :document_type, :document_name, :control_ids, :framework_ids, :parent, :status, :file_id, :creation_date, :last_review_date, :review_frequency, :next_review_date, :approval_date, :document_owner, :additional_stakeholders, :approver, :team_ids)");
+    $stmt = $db->prepare("INSERT INTO `documents` (`submitted_by`, `document_type`, `document_name`, `parent`, `document_status`, `file_id`, `creation_date`, `last_review_date`, `review_frequency`, `next_review_date`, `approval_date`, `document_owner`, `additional_stakeholders`, `approver`, `team_ids`) VALUES (:submitted_by, :document_type, :document_name, :parent, :status, :file_id, :creation_date, :last_review_date, :review_frequency, :next_review_date, :approval_date, :document_owner, :additional_stakeholders, :approver, :team_ids)");
     $stmt->bindParam(":submitted_by", $submitted_by, PDO::PARAM_INT);
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
-    $stmt->bindParam(":control_ids", $control_ids, PDO::PARAM_STR);
-    $stmt->bindParam(":framework_ids", $framework_ids, PDO::PARAM_STR);
     $stmt->bindParam(":parent", $parent, PDO::PARAM_INT);
     $stmt->bindParam(":status", $status, PDO::PARAM_STR);
     $init_file_id = 0;
@@ -2010,8 +2025,29 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
 
     $document_id = $db->lastInsertId();
 
+    // Split the control_ids string into an array
+    $ids = array_map('trim', explode(',', $control_ids));
+
+    // Loop and insert each mapped control id into the document_control_mappings table
+    foreach ($ids as $control_id)
+    {
+        if (is_numeric($control_id))
+        {
+            $stmt = $db->prepare("INSERT INTO `document_control_mappings` (`document_id`, `control_id`, `selected`) VALUES (:document_id, :control_id, 1)");
+            $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
+            $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+            $stmt->execute();
+        }
+    }
+
     // Close the database connection
     db_close($db);
+
+    // Save document frameworks
+    save_junction_values("document_framework_mappings", "document_id", $document_id, "framework_id", $framework_ids);
+
+    // Save document framework controls
+    save_junction_values("document_control_mappings", "document_id", $document_id, "control_id", $control_ids);
 
     // If submitted files are existing, save files
     if(!empty($_FILES['file'])){
@@ -2045,6 +2081,13 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
         $submitted_by_name = get_user_name($submitted_by);
         $message = _lang('AuditLog_DocumentCreate', array('document_name' => $document_name, 'user_name' => $submitted_by_name), false);
         write_log(1000, $submitted_by, $message, "document");
+
+        // Update the document keywords
+        get_keywords_for_document($document_id, true);
+
+        // Update the document to control mappings for the document but don't care about the response
+        $endpoint = "/api/v2/governance/documents/topcontrols?id={$document_id}&refresh=true";
+        @call_simplerisk_api_endpoint($endpoint, "GET", false, 1);
 
         // If notification is enabled
         if (notification_extra()) {
@@ -2098,12 +2141,8 @@ function update_document($document_id, $updated_by, $document_type, $document_na
         return false;
     }
 
-
     // Get the existing values for this document
-    $stmt = $db->prepare("SELECT * FROM `documents` where id=:id;");
-    $stmt->bindParam(":id", $document_id, PDO::PARAM_INT);
-    $stmt->execute();
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $row = get_document_by_id($document_id);
 
     // Create an array of before values
     $before = [
@@ -2130,8 +2169,8 @@ function update_document($document_id, $updated_by, $document_type, $document_na
         'updated_by' => (int)$updated_by,
         'document_type' => $document_type,
         'document_name' => $document_name,
-        'control_ids' => $control_ids,
-        'framework_ids' => $framework_ids,
+        'control_ids' => implode(',', $control_ids),
+        'framework_ids' => implode(',', $framework_ids),
         'parent' => (int)$parent,
         'document_status' => $status,
         'creation_date' => $creation_date,
@@ -2153,13 +2192,11 @@ function update_document($document_id, $updated_by, $document_type, $document_na
     }
 
     // Update a document
-    $stmt = $db->prepare("UPDATE `documents` SET `updated_by` = :updated_by, `document_type`=:document_type, `document_name`=:document_name, `control_ids`=:control_ids, `framework_ids`=:framework_ids, `parent`=:parent, `document_status`=:document_status, `creation_date`=:creation_date, `last_review_date`=:last_review_date, `review_frequency`=:review_frequency, `next_review_date`=:next_review_date, `approval_date`=:approval_date, `document_owner`=:document_owner, `additional_stakeholders`=:additional_stakeholders , `approver`=:approver, `team_ids`=:team_ids WHERE id=:document_id; ");
+    $stmt = $db->prepare("UPDATE `documents` SET `updated_by` = :updated_by, `document_type`=:document_type, `document_name`=:document_name, `parent`=:parent, `document_status`=:document_status, `creation_date`=:creation_date, `last_review_date`=:last_review_date, `review_frequency`=:review_frequency, `next_review_date`=:next_review_date, `approval_date`=:approval_date, `document_owner`=:document_owner, `additional_stakeholders`=:additional_stakeholders , `approver`=:approver, `team_ids`=:team_ids WHERE id=:document_id; ");
     $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
     $stmt->bindParam(":updated_by", $updated_by, PDO::PARAM_INT);
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
-    $stmt->bindParam(":control_ids", $control_ids, PDO::PARAM_STR);
-    $stmt->bindParam(":framework_ids", $framework_ids, PDO::PARAM_STR);
     $stmt->bindParam(":parent", $parent, PDO::PARAM_INT);
     $stmt->bindParam(":document_status", $status, PDO::PARAM_STR);
     $stmt->bindParam(":creation_date", $creation_date, PDO::PARAM_STR);
@@ -2173,8 +2210,45 @@ function update_document($document_id, $updated_by, $document_type, $document_na
     $stmt->bindParam(":team_ids", $team_ids, PDO::PARAM_STR);
     $stmt->execute();
 
+    // Deselect existing mappings for this document
+    $stmt = $db->prepare("UPDATE `document_control_mappings` SET `selected`=0, `ai_run` = 0 WHERE `document_id`=:document_id;");
+    $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Split the control_ids string into an array
+    $ids = array_map('trim', explode(',', $control_ids));
+
+    // Loop and insert each mapped control id into the document_control_mappings table
+    foreach ($ids as $control_id)
+    {
+        if (is_numeric($control_id))
+        {
+            $stmt = $db->prepare("
+                INSERT INTO `document_control_mappings` (`document_id`, `control_id`, `selected`)
+                VALUES (:document_id, :control_id, 1)
+                ON DUPLICATE KEY UPDATE `selected` = 1
+            ");
+            $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
+            $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+            $stmt->execute();
+        }
+    }
+
     // Close the database connection
     db_close($db);
+
+    // Update the document keywords
+    get_keywords_for_document($document_id, true);
+
+    // Update the document to control mappings for the document but don't care about the response
+    $endpoint = "/api/v2/governance/documents/topcontrols?id={$document_id}&refresh=true";
+    @call_simplerisk_api_endpoint($endpoint, "GET", false, 1);
+
+    // Save document frameworks
+    save_junction_values("document_framework_mappings", "document_id", $document_id, "framework_id", $framework_ids);
+
+    // Save document framework controls
+    save_junction_values("document_control_mappings", "document_id", $document_id, "control_id", $control_ids);
 
     // If submitted files are existing, save files
     if(!empty($_FILES['file'])){
@@ -2254,6 +2328,11 @@ function delete_document($document_id, $version=null)
         $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
         $stmt->bindParam(":version", $version, PDO::PARAM_INT);
         $stmt->execute();
+
+        // Run AI on this document again
+        $stmt = $db->prepare("UPDATE `document_control_mappings` SET `ai_run` = 0 WHERE document_id=:document_id; ");
+        $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
+        $stmt->execute();
     }
     // Deletes all documents by document ID
     else
@@ -2265,6 +2344,12 @@ function delete_document($document_id, $version=null)
         $stmt = $db->prepare("DELETE FROM documents WHERE id=:document_id; ");
         $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
         $stmt->execute();
+
+        $stmt = $db->prepare("DELETE FROM `document_control_mappings` WHERE document_id=:document_id; ");
+        $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        cleanup_after_delete("documents");
     }
 
     $message = "The existing document ID \"".$document_id."\" was deleted by the \"" . $_SESSION['user'] . "\" user.";
@@ -2332,12 +2417,12 @@ function get_documents_as_treegrid($type){
     $filtered_documents = array();
     $documents = get_documents($type);
     foreach($documents as &$document){
-        $frameworks = get_frameworks_by_ids($document["framework_ids"]);
+        $frameworks = get_frameworks_by_ids($document["framework_ids"] ?? "");
         $framework_names = implode(", ", array_map(function($framework){
             return $framework['name'];
         }, $frameworks));
 
-        $control_ids = explode(",", $document["control_ids"]);
+        $control_ids = explode(",", $document["control_ids"] ?? "");
         $controls = get_framework_controls_by_filter("all", "all", "all", "all", "all", "all", "all", "all", "", $control_ids);
         $control_names = implode(", ", array_map(function($control){
             return $control['short_name'];
@@ -2389,7 +2474,7 @@ function get_documents_as_treegrid($type){
 
         $document['value'] = $document['id'];
         $document['document_type'] = $escaper->escapeHtml($document['document_type']);
-        $document['document_name'] = "<a class='text-info' href='".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."' >".$escaper->escapeHtml($document['document_name'])."</a>";
+        $document['document_name'] = "<a class='text-info' href='" . build_url("governance/download.php?id=" . $document['unique_name']) . "' >".$escaper->escapeHtml($document['document_name'])."</a>";
         $document['framework_ids'] = $escaper->escapeHtml($document['framework_ids']);
         $document['framework_names'] = $escaper->escapeHtml($framework_names);
         $document['control_ids'] = $escaper->escapeHtml($document['control_ids']);
@@ -2514,6 +2599,31 @@ function get_exception($id){
     return $exception;
 }
 
+/**********************************
+ * FUNCTION: GET EXCEPTION STATUS *
+ **********************************/
+function get_exceptions_status() {
+
+    // Open the database connection
+    $db = db_open();
+    $sql = "
+        SELECT 
+            des.*
+        FROM 
+            `document_exceptions_status` des;
+    ";
+
+    // Query the database
+    $stmt = $db->prepare($sql);
+    $stmt->execute();
+    $exceptions_status = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    return $exceptions_status;
+
+}
 
 /********************************
  * FUNCTION: GET EXCEPTION DATA *
@@ -2586,6 +2696,31 @@ function get_exceptions_as_treegrid($type){
 
     global $lang, $escaper;
 
+    // Set filter rules if they are set and not too long
+    if (isset($_GET["filterRules"]) && strlen($_GET["filterRules"]) <= 10000) {
+
+        // Set the json_decode depth to 10 to avoid issues with deeply nested structures
+        $filterRules = json_decode($_GET["filterRules"], true, 10);
+
+        if (!is_array($filterRules)) {
+            $filterRules = [];
+        }
+
+        // Limit total rules: at most 5 rules
+        $filterRules = array_slice($filterRules, 0, 5);
+
+        // Limit per-rule value length
+        foreach ($filterRules as &$rule) {
+            if (isset($rule['value']) && is_string($rule['value'])) {
+                $rule['value'] = substr($rule['value'], 0, 100);
+            }
+        }
+        unset($rule);
+        
+    } else {
+        $filterRules = [];
+    }
+
     // Open the database connection
     $db = db_open();
 
@@ -2651,6 +2786,163 @@ function get_exceptions_as_treegrid($type){
 
         $all_approved = true;
         $branch_type = false;
+        $parent_name = "";
+
+        foreach($group as $row){
+
+            if (count($filterRules) > 0) {
+                foreach ($filterRules as $filter) {
+                    $value = $filter['value'];
+                    switch ($filter['field']) {
+                        case "name":
+                            if (stripos($row['name'], $value) === false) {
+                                continue 3;
+                            }
+                            break;
+                        case "description":
+                            if (stripos(strip_tags_and_extra_whitespace($row['description']), $value) === false) {
+                                continue 3;
+                            }
+                            break;
+                        case "justification":
+                            if (stripos(strip_tags_and_extra_whitespace($row['justification']), $value) === false) {
+                                continue 3;
+                            }
+                            break;
+                        case "next_review_date":
+                            if( stripos(format_date($row['next_review_date']), $value) === false ){
+                                continue 3;
+                            }
+                            break;
+                        case "status":
+                            if (!empty($value) && ($row['status'] != $value)) {
+                                continue 3;
+                            }
+                            break;
+                        default: 
+                            break;
+                    }
+                }
+            }
+            
+            $parent_name = $row['parent_name'];
+            $row['children'] = [];
+
+            $row['name'] = "<span class='exception-name'><a class='text-info' href='#' data-id='".((int)$row['value'])."' data-type='{$row['type']}'>{$escaper->escapeHtml($row['name'])}</a></span>";
+
+            // The variable to be used in treegrid filtering for status
+            $row['status_value'] = $row['status'];
+            $row['status'] = $escaper->escapeHtml($row['document_exceptions_status']);
+
+            if ($type === "unapproved" && $approve)
+                $approve_action = "<a class='exception--approve' data-id='".((int)$row['value'])."' data-type='{$row['type']}'><i class='fa fa-check'></i></a>&nbsp;&nbsp;&nbsp;";
+            else $approve_action = "";
+
+            if ($update)
+                $updateAction = "<a class='exception--edit' data-id='".((int)$row['value'])."' data-type='{$row['type']}'><i class='fa fa-edit'></i></a>&nbsp;&nbsp;&nbsp;";
+            else $updateAction = "";
+
+            if ($delete)
+                $deleteAction = "<a class='exception--delete' data-id='".((int)$row['value'])."' data-type='{$row['type']}' data-approved='" . ($row['approved'] ? 'true' : 'false') . "'><i class='fa fa-trash'></i></a>"; 
+            else $deleteAction = "";
+
+            $row['actions'] = "<div class='text-center'>{$approve_action}{$updateAction}{$deleteAction}</div>";
+
+            if (!$branch_type)
+                $branch_type = $row['type'];
+
+            $all_approved &= $row['approved'];
+
+            $branch[] = $row;
+        }
+        if ($delete)
+            $parentAction = "<div class='text-center'><a class='exception-batch--delete' data-id='".((int)$id)."' data-type='{$branch_type}' data-all-approved='" . ($all_approved ? 'true' : 'false') . "' data-approved='" . ($type !== "unapproved" ? 'true' : 'false') . "'><i class='fa fa-trash'></i></a></div>";
+        else $parentAction = "";
+
+        $exception_tree[] = array('value' => $type . "-" . $id, 'name' => $escaper->escapeHtml($parent_name) . " (" . count($branch) . ")", 'children' => $branch, 'actions' => $parentAction);
+    }
+
+    return $exception_tree;
+}
+
+/**********************************************************
+ * FUNCTION: GET ASSOCIATED EXCEPTION DATA IN TREE FORMAT *
+ **********************************************************/
+function get_associated_exceptions_as_treegrid($risk_id, $type) {
+
+    global $lang, $escaper;
+
+    $risk_id = (int)$risk_id - 1000; // Convert the risk ID to the original ID by removing the 1000 offset
+
+    // Open the database connection
+    $db = db_open();
+
+    $policy_sql_base = "
+        select
+            p.id as id,
+            p.document_name as parent_name,
+            'policy' as type,
+            de.*,
+            des.name as document_exceptions_status
+        from document_exceptions de
+            left join documents p on de.policy_document_id = p.id
+            left join document_exceptions_status des on de.status = des.value
+        where
+            p.document_type = 'policies'
+        and 
+            FIND_IN_SET({$risk_id}, de.associated_risks) > 0";
+
+    $control_sql_base = "
+        select
+            c.id as id,
+            c.short_name as parent_name,
+            'control' as type,
+            de.*,
+            des.name as document_exceptions_status
+        from document_exceptions de
+            left join framework_controls c on de.control_framework_id = c.id
+            left join document_exceptions_status des on de.status = des.value
+        where
+            c.id is not null
+        and 
+            FIND_IN_SET({$risk_id}, de.associated_risks) > 0";
+
+    if(team_separation_extra()){
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $where = get_user_teams_query_for_documents("p", false);
+    } else $where = " 1";
+
+    $policy_sql_base .= " AND ".$where;
+
+    if ($type == 'policy') {
+        $sql = "{$policy_sql_base} and de.approved = 1 order by p.document_name, de.name;";
+    } elseif ($type == 'control') {
+        $sql = "{$control_sql_base} and de.approved = 1 order by c.short_name, de.name;";
+    } else {
+        $sql = "select * from ({$policy_sql_base} union all {$control_sql_base}) u where u.approved = 0 order by u.parent_name, u.name;";
+    }
+
+    // Query the database
+    $stmt = $db->prepare($sql);
+
+    $stmt->execute();
+
+    $exceptions = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    $exception_tree = [];
+
+    $update = check_permission_exception('update');
+    $approve = check_permission_exception('approve');
+    $delete = check_permission_exception('delete');
+
+    foreach($exceptions as $id => $group){
+        $branch = [];
+
+        $all_approved = true;
+        $branch_type = false;
         foreach($group as $row){
             $parent_name = $row['parent_name'];
             $row['children'] = [];
@@ -2667,7 +2959,7 @@ function get_exceptions_as_treegrid($type){
             else $updateAction = "";
 
             if ($delete)
-                $deleteAction = "<a class='exception--delete' data-id='".((int)$row['value'])."' data-type='{$row['type']}' data-approved='" . ($row['approved'] ? 'true' : 'false') . "'><i class='fa fa-trash'></i></a>";
+                $deleteAction = "<a class='exception--delete' data-id='".((int)$row['value'])."' data-type='{$row['type']}' data-approved='" . ($row['approved'] ? 'true' : 'false') . "'><i class='fa fa-trash'></i></a>"; 
             else $deleteAction = "";
 
             $row['actions'] = "<div class='text-center'>{$approve_action}{$updateAction}{$deleteAction}</div>";
@@ -2707,6 +2999,27 @@ function get_exception_tabs($type)
             </thead>
         </table>
     ";
+}
+
+/*******************************************
+ * FUNCTION: GET ASSOCIATED EXCEPTION TABS *
+ *******************************************/
+function get_associated_exception_tabs($type) {
+
+    global $lang, $escaper;
+
+    echo "
+        <table id='associated-exception-table-{$type}' class='easyui-treegrid exception-table'>
+            <thead>
+                <th data-options=\"field:'name'\" width='25%'>{$escaper->escapeHtml($lang[ucfirst ($type) . "ExceptionName"])}</th>
+                <th data-options=\"field:'status'\" width='8%'>{$escaper->escapeHtml($lang['Status'])}</th>
+                <th data-options=\"field:'description'\" width='25%'>{$escaper->escapeHtml($lang['Description'])}</th>
+                <th data-options=\"field:'justification'\" width='24%'>{$escaper->escapeHtml($lang['Justification'])}</th>
+                <th data-options=\"field:'next_review_date', align: 'center'\" width='18%'>{$escaper->escapeHtml($lang['NextReviewDate'])}</th>
+            </thead>
+        </table>
+    ";
+
 }
 
 function create_exception($name, $status, $policy, $framework, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification, $associated_risks) {
@@ -2900,27 +3213,34 @@ function getExceptionForChangeChecking($id) {
     $db = db_open();
 
     $sql = "
-        select
+        SELECT
             (CASE
-                WHEN de.policy_document_id > 0 THEN (select p.document_name from documents p where de.policy_document_id = p.id)
-                WHEN de.control_framework_id > 0 THEN (select c.short_name from framework_controls c where de.control_framework_id = c.id)
-            END)  as parent_name,
+                WHEN de.policy_document_id > 0 THEN (SELECT p.document_name FROM documents p WHERE de.policy_document_id = p.id)
+                WHEN de.control_framework_id > 0 THEN (SELECT c.short_name FROM framework_controls c WHERE de.control_framework_id = c.id)
+            END)  AS parent_name,
             de.name,
-            o.name as owner,
+            des.name AS status,
+            GROUP_CONCAT(r.subject SEPARATOR ', ') AS associated_risks,
+            o.name AS owner,
             de.additional_stakeholders,
             de.creation_date,
             de.review_frequency,
             de.next_review_date,
             de.approval_date,
-            a.name as approver,
+            a.name AS approver,
             de.description,
             de.justification
-        from
+        FROM
             document_exceptions de
-            left join user o on o.value = de.owner
-            left join user a on a.value = de.approver
-        where
-            de.value=:id;";
+            LEFT JOIN user o ON o.value = de.owner
+            LEFT JOIN user a ON a.value = de.approver
+            LEFT JOIN document_exceptions_status des ON des.value = de.status
+            LEFT JOIN risks r ON FIND_IN_SET(r.id, de.associated_risks) > 0
+        WHERE
+            de.value=:id
+        GROUP BY
+            de.value
+    ;";
 
     // Query the database
     $stmt = $db->prepare($sql);
@@ -2983,6 +3303,27 @@ function approve_exception($id) {
     db_close($db);
 
     write_log($approved_exception['value'], $_SESSION['uid'], _lang('ExceptionAuditLogApprove', array('exception_name' => $approved_exception['name'], 'user' => $_SESSION['user'])), 'exception');
+}
+
+function unapprove_exception($id) {
+
+    $db = db_open(); 
+    
+    $stmt = $db->prepare("select name, value from `document_exceptions` where `value`=:id;");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $unapproved_exception = $stmt->fetch();
+
+    // unapprove the exception
+    $stmt = $db->prepare("UPDATE `document_exceptions` SET `approved`=0, `approver` = 0, `approval_date`='' where `value`=:id;");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+
+    write_log($unapproved_exception['value'], $_SESSION['uid'], _lang('ExceptionAuditLogUnapprove', array('exception_name' => $unapproved_exception['name'], 'user' => $_SESSION['user'])), 'exception');
 }
 
 function delete_exception($id) {
@@ -4607,6 +4948,1131 @@ function get_frameworks_by_control_id($control_id)
 
     // Return the array of frameworks for the control
     return $frameworks;
+}
+
+/**********************************************
+ * FUNCTION: GET DOCUMENT TO CONTROL MAPPINGS *
+ **********************************************/
+function get_document_to_control_mappings($document_id, $refresh = false)
+{
+    // Get the document
+    $document = get_document_by_id($document_id);
+
+    // If the document doesn't exist, return false
+    if (empty($document))
+    {
+        write_debug_log("Document ID $document_id not found. Exiting.");
+        return false;
+    }
+
+    try
+    {
+        // Open the database connection
+        $db = db_open();
+
+        // Check if existing mappings exist
+        $stmt = $db->prepare("SELECT * FROM `document_control_mappings` WHERE `document_id` = :document_id ORDER BY `score` DESC");
+        $stmt->bindParam(':document_id', $document_id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Fetch the results
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // If there are no results or we want to refresh
+        if (empty($results) || $refresh)
+        {
+            write_debug_log("Refreshing mappings for Document ID: {$document_id}");
+
+            // Get document keywords
+            $document_keywords = get_keywords_for_document($document_id);
+
+            if (empty($document_keywords)) {
+                write_debug_log("No keywords found for document ID: {$document_id}");
+                return false;
+            }
+
+            $docKeywords = $document_keywords['data']['keywords'];
+
+            // Get the list of control ids
+            $stmt = $db->prepare("SELECT `id` FROM `framework_controls`;");
+            $stmt->execute();
+            $controlIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+            // Initialize TF-IDF variables
+            $tfidfMatrix = [];
+            $documentFrequency = [];
+            $numDocuments = 0;
+
+            // First pass: collect document frequency data from all controls
+            write_debug_log("Collecting document frequency data from all controls");
+            $validControlIds = [];
+            $controlKeywordsCollection = [];
+
+            foreach ($controlIds as $control_id) {
+                $control_keywords = get_keywords_for_control($control_id);
+
+                if (empty($control_keywords) || empty($control_keywords['data']['keywords'])) {
+                    write_debug_log("No keywords found for control ID: {$control_id}");
+                    continue;
+                }
+
+                $controlKeywords = $control_keywords['data']['keywords'];
+                $controlKeywordsCollection[$control_id] = $controlKeywords;
+                $validControlIds[] = $control_id;
+
+                // Count document frequency
+                foreach (array_keys($controlKeywords) as $term) {
+                    $documentFrequency[$term] = ($documentFrequency[$term] ?? 0) + 1;
+                }
+
+                $numDocuments++;
+            }
+
+            // Add document to the collection for IDF calculation
+            foreach (array_keys($docKeywords) as $term) {
+                $documentFrequency[$term] = ($documentFrequency[$term] ?? 0) + 1;
+            }
+            $numDocuments++; // Include the document itself
+
+            write_debug_log("Found $numDocuments total documents (including controls) for IDF calculation");
+
+            // Build document TF-IDF vector
+            $docVector = [];
+            foreach ($docKeywords as $term => $tf) {
+                $idf = log($numDocuments / ($documentFrequency[$term] ?? 1));
+                $docVector[$term] = $tf * $idf;
+            }
+
+            // Match against each control
+            $keywordMatches = [];
+            $tfIdfScores = [];
+            $maxKeywordMatch = 0;
+
+            foreach ($validControlIds as $control_id) {
+                $controlKeywords = $controlKeywordsCollection[$control_id];
+
+                // Calculate keyword match count
+                $keyword_match = 0;
+                foreach ($docKeywords as $keyword => $count) {
+                    if (isset($controlKeywords[$keyword])) {
+                        $keyword_match += min($count, $controlKeywords[$keyword]);
+                    }
+                }
+
+                $keywordMatches[$control_id] = $keyword_match;
+                if ($keyword_match > $maxKeywordMatch) {
+                    $maxKeywordMatch = $keyword_match;
+                }
+
+                // Build control TF-IDF vector
+                $controlVector = [];
+                foreach ($controlKeywords as $term => $tf) {
+                    $idf = log($numDocuments / ($documentFrequency[$term] ?? 1));
+                    $controlVector[$term] = $tf * $idf;
+                }
+
+                // Calculate TF-IDF similarity
+                $tfidf_similarity = cosineSimilarity($docVector, $controlVector);
+                $tfIdfScores[$control_id] = $tfidf_similarity;
+
+                write_debug_log("Control ID {$control_id}: Keyword match: {$keyword_match}, TF-IDF similarity: {$tfidf_similarity}");
+            }
+
+            // Update database with scores
+            foreach ($validControlIds as $control_id) {
+                // Get scores for this control
+                $tfidf_similarity = $tfIdfScores[$control_id];
+                $keyword_match = $keywordMatches[$control_id];
+
+                // Normalize keyword match
+                $normalized_keyword_score = $maxKeywordMatch > 0 ? $keyword_match / $maxKeywordMatch : 0;
+
+                // Calculate final score as average of TF-IDF and normalized keyword match
+                $final_score = ($tfidf_similarity + $normalized_keyword_score) / 2;
+
+                $stmt = $db->prepare("
+                    INSERT INTO `document_control_mappings`
+                        (`document_id`, `control_id`, `score`, `tfidf_similarity`, `keyword_match`)
+                    VALUES
+                        (:document_id, :control_id, :score, :tfidf_similarity, :keyword_match)
+                    ON DUPLICATE KEY UPDATE
+                        score = :score, tfidf_similarity = :tfidf_similarity, 
+                        keyword_match = :keyword_match, timestamp = NOW()");
+
+                $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
+                $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+                $stmt->bindParam(":score", $final_score, PDO::PARAM_STR);
+                $stmt->bindParam(":tfidf_similarity", $tfidf_similarity, PDO::PARAM_STR);
+                $stmt->bindParam(":keyword_match", $keyword_match, PDO::PARAM_INT);
+                $stmt->execute();
+
+                write_debug_log("Scoring Control ID $control_id: TF-IDF Similarity = $tfidf_similarity, Keyword Match = $keyword_match, Final Score = $final_score");
+            }
+
+            // Retrieve updated results
+            $stmt = $db->prepare("SELECT * FROM `document_control_mappings` WHERE `document_id` = :document_id ORDER BY `score` DESC;");
+            $stmt->bindParam(':document_id', $document_id, PDO::PARAM_INT);
+            $stmt->execute();
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } else {
+            write_debug_log("Cached mappings found for Document ID $document_id. Returning cached results.");
+        }
+
+        write_debug_log("Finished processing for Document ID $document_id. Returning " . count($results) . " mappings.");
+        return $results;
+    } catch (Exception $e) {
+        write_debug_log("Error in get_document_to_control_mappings: " . $e->getMessage());
+        return false;
+    } finally {
+        db_close($db);
+    }
+}
+
+/**********************************************
+ * FUNCTION: GET CONTROL TO DOCUMENT MAPPINGS *
+ **********************************************/
+function get_control_to_document_mappings($control_id, $refresh = false)
+{
+    // Get the control
+    $control = get_framework_control($control_id);
+
+    // If the control doesn't exist, return false
+    if (empty($control))
+    {
+        write_debug_log("Control ID $control_id not found. Exiting.");
+        return false;
+    }
+    // If the control exists
+    else
+    {
+        write_debug_log("Starting get_control_to_document_mappings for Control ID: " . $control_id);
+
+        try
+        {
+            // Open the database connection
+            $db = db_open();
+
+            // Query the database
+            $stmt = $db->prepare("SELECT * FROM `document_control_mappings` WHERE `control_id` = :control_id ORDER BY `score` DESC");
+            $stmt->bindParam(':control_id', $control_id, PDO::PARAM_INT);
+            $stmt->execute();
+
+            // Fetch the results
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // If there are no results or we want to refresh
+            if (empty($results) || $refresh)
+            {
+                // Get the keywords for the control
+                $control_keywords_data = get_keywords_for_control($control_id);
+                $controlKeywords = $control_keywords_data['data']['keywords'];
+                $controlKeywordCount = $control_keywords_data['data']['keyword_count'];
+
+                // Get the list of all governance documents
+                $stmt = $db->prepare("SELECT `id`, `keywords`, `keyword_count` FROM `compliance_files`;");
+                $stmt->execute();
+                $files = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                // If there are no files
+                if (empty($files))
+                {
+                    // Set the results to an empty array
+                    $results = [];
+                }
+                else
+                {
+                    // Initialize function values
+                    $tfidfMatrix = [];
+                    $documentFrequency = [];
+                    $keywordMatches = [];
+                    $maxKeywordMatch = 0;
+                    $numDocuments = 0;
+
+                    // Iterate through each file
+                    foreach ($files as $file)
+                    {
+                        // Get the Document ID and keywords
+                        $document_id = $file['id'];
+                        $docKeywords = json_decode($file['keywords'], true) ?? [];
+
+                        if (empty($docKeywords))
+                        {
+                            write_debug_log("Document ID $document_id has no keywords. Skipping.");
+                            continue;
+                        }
+
+                        $keyword_match = 0;
+                        foreach ($controlKeywords as $keyword => $count)
+                        {
+                            if (isset($docKeywords[$keyword]))
+                            {
+                                $keyword_match += min($count, $docKeywords[$keyword]);
+                            }
+                        }
+
+                        $keywordMatches[$document_id] = $keyword_match;
+                        if ($keyword_match > $maxKeywordMatch)
+                        {
+                            $maxKeywordMatch = $keyword_match;
+                        }
+
+                        foreach ($docKeywords as $term => $tf)
+                        {
+                            $tfidfMatrix[$document_id][$term] = $tf;
+                            $documentFrequency[$term] = ($documentFrequency[$term] ?? 0) + 1;
+                        }
+
+                        $numDocuments++;
+                    }
+
+                    // Apply IDF to document vectors
+                    foreach ($tfidfMatrix as $document_id => &$vector) {
+                        foreach ($vector as $term => &$tf) {
+                            $idf = log($numDocuments / ($documentFrequency[$term] ?? 1));
+                            $tf *= $idf;
+                        }
+                    }
+
+                    // Build control TF-IDF vector
+                    $controlVector = [];
+                    foreach ($controlKeywords as $term => $tf) {
+                        $idf = log($numDocuments / ($documentFrequency[$term] ?? 1));
+                        $controlVector[$term] = $tf * $idf;
+                    }
+
+                    // Compute similarity scores
+                    $scores = [];
+                    foreach ($tfidfMatrix as $document_id => $docVector) {
+                        $tfidf_similarity = cosineSimilarity($docVector, $controlVector);
+                        $keyword_match = $keywordMatches[$document_id];
+                        $normalized_keyword_score = $maxKeywordMatch > 0 ? $keyword_match / $maxKeywordMatch : 0;
+                        $final_score = ($tfidf_similarity + $normalized_keyword_score) / 2;
+
+                        $scores[] = [
+                            'document_id' => $document_id,
+                            'control_id' => $control_id,
+                            'tfidf_similarity' => $tfidf_similarity,
+                            'keyword_match' => $keyword_match,
+                            'score' => $final_score
+                        ];
+
+                        $stmt = $db->prepare("
+                            INSERT INTO `document_control_mappings` 
+                            (`document_id`, `control_id`, `score`, `tfidf_similarity`, `keyword_match`) 
+                            VALUES (:document_id, :control_id, :score, :tfidf_similarity, :keyword_match) 
+                            ON DUPLICATE KEY UPDATE 
+                            score = :score, 
+                            tfidf_similarity = :tfidf_similarity, 
+                            keyword_match = :keyword_match, 
+                            timestamp = NOW()");
+                        $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
+                        $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+                        $stmt->bindParam(":score", $final_score, PDO::PARAM_STR);
+                        $stmt->bindParam(":tfidf_similarity", $tfidf_similarity, PDO::PARAM_STR);
+                        $stmt->bindParam(":keyword_match", $keyword_match, PDO::PARAM_INT);
+                        $stmt->execute();
+
+                        write_debug_log("Scoring Document ID $document_id: TF-IDF Similarity = $tfidf_similarity, Keyword Match = $keyword_match, Final Score = $final_score");
+                    }
+
+                    // Reload updated mappings
+                    $stmt = $db->prepare("SELECT * FROM `document_control_mappings` WHERE `control_id` = :control_id ORDER BY `score` DESC;");
+                    $stmt->bindParam(':control_id', $control_id, PDO::PARAM_INT);
+                    $stmt->execute();
+                    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                }
+            } else {
+                write_debug_log("Cached mappings found for Control ID $control_id. Returning cached results.");
+            }
+
+            db_close($db);
+            write_debug_log("Finished processing for Control ID $control_id. Returning " . count($results) . " mappings.");
+            return $results;
+        } catch (Exception $e) {
+            write_debug_log("Error in get_document_to_control_mappings: " . $e->getMessage());
+            return false;
+        } finally {
+            db_close($db);
+        }
+    }
+}
+
+/***************************************
+ * FUNCTION: GET KEYWORDS FOR DOCUMENT *
+ ***************************************/
+function get_keywords_for_document($document_id, $refresh = false)
+{
+    // Get the document
+    $document = get_document_by_id($document_id);
+
+    // If the document doesn't exist
+    if (empty($document))
+    {
+        // Create a result
+        $result = [
+            'status_code' => 404,
+            'status_message' => 'Document not found',
+            'data' => []
+        ];
+    }
+    // If the document exists but the user doesn't have access
+    else if (!check_access_for_document($document_id))
+    {
+        // Create a result
+        $result = [
+            'status_code' => 403,
+            'status_message' => 'FORBIDDEN: The user does not have the required permission to perform this action.',
+            'data' => []
+        ];
+    }
+    // If the document exists and we have access to it
+    else
+    {
+        // Open the database connection
+        $db = db_open();
+
+        // If we want to refresh the keywords
+        if ($refresh)
+        {
+            // Reset the keywords and keyword count for the control
+            $stmt = $db->prepare("UPDATE compliance_files SET `keywords` = null, `keyword_count` = 0 WHERE BINARY unique_name=:unique_name");
+            $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
+            $stmt->execute();
+        }
+
+        // Get the file from the database
+        $unique_name = $document['unique_name'];
+        $stmt = $db->prepare("SELECT `content`, `keywords`, `keyword_count` FROM compliance_files WHERE BINARY unique_name=:unique_name");
+        $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
+        $stmt->execute();
+
+        // Store the results in an array
+        $file = $stmt->fetch();
+
+        // If the file doesn't exist
+        if (empty($file))
+        {
+            // Create a result
+            $result = [
+                'status_code' => 404,
+                'status_message' => 'File not found',
+                'data' => []
+            ];
+        }
+        // If the file exists and already has keywords calculated for it
+        else if (!empty($file['keywords']))
+        {
+            // Create a result
+            $result = [
+                'status_code' => 200,
+                'status_message' => 'Keywords already exist.  Returning cached values.',
+                'data' => [
+                    'keywords' => json_decode($file['keywords'], true),
+                    'keyword_count' => $file['keyword_count']
+                ]
+            ];
+        }
+        // If the file exists but does not have keywords calculated for it
+        else
+        {
+            try
+            {
+                write_debug_log("Analyzing the contents of Document ID: " . $document_id);
+
+                // Get the file content
+                $content = $file['content'];
+
+                // Convert the content to text
+                $document_text = get_text_from_document_content($content);
+
+                // Get the significant terms for the document
+                write_debug_log("Calculating significant terms from the document.  This may take a while.");
+                $keywords = extractSignificantTerms($document_text, 150);
+                write_debug_log("Significant Terms: " . json_encode($keywords));
+
+                // Get the keyword matches for the document
+                $keyword_occurrences = countKeywordOccurrencesPerKeyword($document_text, $keywords);
+                $keyword_occurrences_json = json_encode($keyword_occurrences);
+                write_debug_log("Keyword matches for Document ID {$document_id}: " . $keyword_occurrences_json);
+
+                // Get the keyword count for the document
+                $keyword_count = array_sum($keyword_occurrences);
+                write_debug_log("Keyword count for Document ID {$document_id}: " . $keyword_count);
+
+                // Update the file with the keywords and keyword count
+                $stmt = $db->prepare("UPDATE compliance_files SET keywords = :keywords, keyword_count = :keyword_count WHERE BINARY unique_name = :unique_name");
+                $stmt->bindParam(":keywords", $keyword_occurrences_json, PDO::PARAM_STR);
+                $stmt->bindParam(":keyword_count", $keyword_count, PDO::PARAM_INT);
+                $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
+                $stmt->execute();
+
+                // Create a result
+                $result = [
+                    'status_code' => 200,
+                    'status_message' => 'New keywords created successfully.',
+                    'data' => [
+                        'keywords' => $keyword_occurrences,
+                        'keyword_count' => $keyword_count
+                    ]
+                ];
+            } catch (Exception $e)
+            {
+                write_debug_log("Error in get_keywords_for_document: " . $e->getMessage());
+
+                // Create a result
+                $result = [
+                    'status_code' => 500,
+                    'status_message' => 'Error processing document.',
+                    'data' => []
+                ];
+            } finally {
+                // Close the database connection
+                db_close($db);
+            }
+        }
+
+        // Close the database connection
+        db_close($db);
+    }
+
+    // Return the result
+    return $result;
+}
+
+/**************************************
+ * FUNCTION: GET KEYWORDS FOR CONTROL *
+ **************************************/
+function get_keywords_for_control($control_id, $refresh = false)
+{
+    // Get the control
+    $control = get_framework_control($control_id);
+
+    // If the control doesn't exist
+    if (empty($control))
+    {
+        // Create a result
+        $result = [
+            'status_code' => 404,
+            'status_message' => 'Control not found',
+            'data' => []
+        ];
+    }
+    // If the control exists
+    else
+    {
+        // Open the database connection
+        $db = db_open();
+
+        // If we want to refresh the keywords
+        if ($refresh)
+        {
+            // Reset the keywords and keyword count for the control
+            $stmt = $db->prepare("UPDATE framework_controls SET keywords = null, keyword_count = 0 WHERE id = :control_id");
+            $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+            $stmt->execute();
+        }
+
+        // If the control exists and already has keywords calculated for it
+        if (!empty($control['keywords']))
+        {
+            // Create a result
+            $result = [
+                'status_code' => 200,
+                'status_message' => 'Keywords already exist.  Returning cached values.',
+                'data' => [
+                    'keywords' => json_decode($control['keywords'], true),
+                    'keyword_count' => $control['keyword_count']
+                ]
+            ];
+        }
+        // If the control exists but does not have keywords calculated for it
+        else
+        {
+            try
+            {
+                write_debug_log("Analyzing the contents of Control ID: " . $control_id);
+
+                // Get the control text and calculate the control term frequency
+                $control_text = $control['short_name'] . ': ' . $control['description'];
+                write_debug_log("Calculating significant terms from the control.  This may take a while.");
+                $keywords = extractSignificantTerms($control_text, 150);
+                write_debug_log("Significant Terms: " . json_encode($keywords));
+
+                // Get the keyword matches for the control
+                $keyword_occurrences = countKeywordOccurrencesPerKeyword($control_text, $keywords);
+                $keyword_occurrences_json = json_encode($keyword_occurrences);
+                write_debug_log("Keyword matches for Control ID {$control_id}: " . $keyword_occurrences_json);
+
+                // Get the keyword count for the control
+                $keyword_count = array_sum($keyword_occurrences);
+                write_debug_log("Keyword count for Control ID {$control_id}: " . $keyword_count);
+
+                // Update the control with the keywords and keyword count
+                $stmt = $db->prepare("UPDATE framework_controls SET keywords = :keywords, keyword_count = :keyword_count WHERE id = :control_id");
+                $stmt->bindParam(":keywords", $keyword_occurrences_json, PDO::PARAM_STR);
+                $stmt->bindParam(":keyword_count", $keyword_count, PDO::PARAM_INT);
+                $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+                $stmt->execute();
+
+                // Create a result
+                $result = [
+                    'status_code' => 200,
+                    'status_message' => 'New keywords created successfully.',
+                    'data' => [
+                        'keywords' => $keyword_occurrences,
+                        'keyword_count' => $keyword_count
+                    ]
+                ];
+            } catch (Exception $e)
+            {
+                write_debug_log("Error in get_keywords_for_control: " . $e->getMessage());
+
+                // Create a result
+                $result = [
+                    'status_code' => 500,
+                    'status_message' => 'Error processing control.',
+                    'data' => []
+                ];
+            }
+        }
+
+        // Close the database connection
+        db_close($db);
+    }
+
+    // Return the result
+    return $result;
+}
+
+/********************************************
+ * FUNCTION: GET TEXT FROM DOCUMENT CONTENT *
+ ********************************************/
+function get_text_from_document_content($content)
+{
+    try
+    {
+        // Write the content to a temporary file
+        $temp_file = tempnam(sys_get_temp_dir(), 'doc_');
+        file_put_contents($temp_file, $content);
+
+        // Get the mime type of the file
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime_type = finfo_file($finfo, $temp_file);
+
+        // If this is a text file
+        if (strpos($mime_type, 'text') !== false)
+        {
+            write_debug_log("Determined that the file is a text file.");
+
+            // Just use the text
+            $document_text = file_get_contents($temp_file);
+        }
+        // If it is not a text file
+        else
+        {
+            // Try to process the file as a Word document
+            try
+            {
+                write_debug_log("Attempting to process as a Word document...");
+
+                // Read the Word document
+                $phpWord = PhpOffice\PhpWord\IOFactory::load($temp_file, 'Word2007');
+
+                // Extract the text from the Word document
+                $document_text = extract_text_content($phpWord);
+            } catch (\Exception $e)
+            {
+                write_debug_log("Error: " . $e->getMessage());
+
+                // If the file is not a Word document, try to process it as a PDF
+                try
+                {
+                    write_debug_log("Attempting to process as PDF...");
+
+                    // Read the PDF document
+                    $pdf = new \Smalot\PdfParser\Parser();
+                    $pdfDocument = $pdf->parseFile($temp_file);
+
+                    // Extract the text from the PDF document
+                    $document_text = $pdfDocument->getText();
+                } catch (\Exception $e)
+                {
+                    // If the file is not a PDF document, set the document text to null
+                    $document_text = null;
+                    write_debug_log("Error: " . $e->getMessage());
+                    write_debug_log("Unable to process the file.  Leaving the text as null.");
+                }
+            }
+        }
+
+        // Delete the temporary file
+        unlink($temp_file);
+    } catch (Exception $e)
+    {
+        write_debug_log("Error in get_text_from_document_content: " . $e->getMessage());
+
+        // Set the document text to null
+        $document_text = null;
+    }
+
+    write_debug_log("Extracted Text: " . $document_text);
+
+    // Return the document text
+    return $document_text;
+}
+
+/*************************************************
+ * FUNCTION: GET DOCUMENT CONTENT BY DOCUMENT ID *
+ *************************************************/
+function get_document_content_by_document_id($document_id)
+{
+    // Open the database connection
+    $db = db_open();
+    if(team_separation_extra()){
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $where = get_user_teams_query_for_documents("t1" , false);
+    } else $where = " 1";
+
+    $sql = "
+        SELECT t2.content AS content
+        FROM `documents` t1 
+            LEFT JOIN `compliance_files` t2 ON t1.file_id=t2.id
+        WHERE t1.id=:document_id AND {$where}
+        ;
+    ";
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    return $result;
+}
+
+/***************************************
+ * FUNCTION: GET DOCUMENTS TO CONTROLS *
+ ***************************************/
+function get_documents_to_controls($sort_order = 0, $order_field = false, $order_dir = false, $start = false, $length = false, $column_filters = [], $document_id = null)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $sort_query = ' ORDER BY cf.name ASC'; // Default fallback
+
+    // If sort_field is defined, set sort query
+    if ($order_field)
+    {
+        $order_dir = $order_dir == "asc" ? "asc" : "desc";
+        switch ($order_field)
+        {
+            case "document_id":
+                $sort_query = " ORDER BY dtc.document_id {$order_dir} ";
+                break;
+            case "document":
+                $sort_query = " ORDER BY cf.name {$order_dir} ";
+                break;
+            case "control_id":
+                $sort_query = " ORDER BY dtc.control_id {$order_dir} ";
+                break;
+            case "control_number":
+                $sort_query = " ORDER BY fc.control_number {$order_dir}";
+                break;
+            case "control_short_name":
+                $sort_query = " ORDER BY fc.short_name {$order_dir}";
+                break;
+            case "selected":
+                $sort_query = " ORDER BY dtc.selected {$order_dir} ";
+                break;
+            case "score":
+                $sort_query = " ORDER BY dtc.score {$order_dir} ";
+                break;
+            case "tfidf_similarity":
+                $sort_query = " ORDER BY dtc.tfidf_similarity {$order_dir} ";
+                break;
+            case "keyword_match":
+                $sort_query = " ORDER BY dtc.keyword_match {$order_dir} ";
+                break;
+            case "ai_match":
+                $sort_query = " ORDER BY dtc.ai_match {$order_dir} ";
+                break;
+            case "ai_confidence":
+                $sort_query = " ORDER BY dtc.ai_confidence {$order_dir} ";
+                break;
+            case "ai_reasoning":
+                $sort_query = " ORDER BY dtc.ai_reasoning {$order_dir} ";
+                break;
+            default:
+                $sort_query = ' ORDER BY cf.name ASC';
+        }
+    }
+
+    // If the document_id is not null
+    if ($document_id !== null)
+    {
+        $where_query = "WHERE `dtc`.`document_id` = :document_id";
+    }
+    else $where_query = "WHERE `dtc`.`document_id` IS NOT NULL";
+
+    // Add column filters to WHERE clause
+    $filter_params = [];
+    if (!empty($column_filters))
+    {
+        foreach ($column_filters as $column_name => $val)
+        {
+            $param_name = str_replace('.', '_', $column_name) . '_filter';
+
+            switch ($column_name)
+            {
+                case "document":
+                    $where_query .= " AND `d`.`document_name` LIKE :{$param_name}";
+                    $filter_params[$param_name] = "%{$val}%";
+                    break;
+                case "control_number":
+                    $where_query .= " AND `fc`.`control_number` LIKE :{$param_name}";
+                    $filter_params[$param_name] = "%{$val}%";
+                    break;
+                case "control_short_name":
+                    $where_query .= " AND `fc`.`short_name` LIKE :{$param_name}";
+                    $filter_params[$param_name] = "%{$val}%";
+                    break;
+                case "selected":
+                    $selected_val = (strtolower($val) == "yes") ? 1 : 0;
+                    $where_query .= " AND `dtc`.`selected` = :{$param_name}";
+                    $filter_params[$param_name] = $selected_val;
+                    break;
+                case "ai_match":
+                    $ai_match_val = (strtolower($val) == "yes") ? 1 : 0;
+                    $where_query .= " AND `dtc`.`ai_match` = :{$param_name}";
+                    $filter_params[$param_name] = $ai_match_val;
+                    break;
+                case "ai_confidence":
+                    // Remove % sign if present for numeric comparison
+                    $numeric_val = str_replace('%', '', $val);
+                    $where_query .= " AND `dtc`.`ai_confidence` LIKE :{$param_name}";
+                    $filter_params[$param_name] = "%{$numeric_val}%";
+                    break;
+                case "ai_reasoning":
+                    $where_query .= " AND `dtc`.`ai_reasoning` LIKE :{$param_name}";
+                    $filter_params[$param_name] = "%{$val}%";
+                    break;
+                case "matching":
+                    if (stripos("DefiniteMatch", $val) !== false)
+                    {
+                        $where_query .= " AND ((dtc.ai_run = 1 AND dtc.ai_match = 1) OR (dtc.ai_run = 0 AND dtc.score >= 0.9))";
+                    }
+                    else if (stripos("LikelyMatch", $val) !== false)
+                    {
+                        $where_query .= " AND (dtc.ai_run = 0 AND dtc.score >= 0.7 AND dtc.score < 0.9)";
+                    }
+                    else if (stripos("PossibleMatch", $val) !== false)
+                    {
+                        $where_query .= " AND (dtc.ai_run = 0 AND dtc.score >= 0.4 AND dtc.score < 0.7)";
+                    }
+                    else if (stripos("UnlikelyMatch", $val) !== false)
+                    {
+                        $where_query .= " AND (dtc.ai_run = 0 AND dtc.score >= 0.3 AND dtc.score < 0.4)";
+                    }
+                    else if (stripos("NotAMatch", $val) !== false)
+                    {
+                        $where_query .= " AND ((dtc.ai_run = 1 AND dtc.ai_match = 0) OR (dtc.ai_run = 0 AND dtc.score < 0.3))";
+                    }
+                    else if (stripos("ReviewManually", $val) !== false)
+                    {
+                        $where_query .= " AND NOT (
+                            (dtc.ai_run = 1 AND dtc.ai_match = 1) OR
+                            (dtc.ai_run = 1 AND dtc.ai_match = 0) OR
+                            (dtc.ai_run = 0 AND dtc.score >= 0.9) OR
+                            (dtc.ai_run = 0 AND dtc.score >= 0.7) OR
+                            (dtc.ai_run = 0 AND dtc.score >= 0.4) OR
+                            (dtc.ai_run = 0 AND dtc.score >= 0.3) OR
+                            (dtc.ai_run = 0 AND dtc.score < 0.3)
+                        )";
+                    }
+                    break;
+                case "recommendation":
+                    if (stripos("AddControlToPolicy", $val) !== false)
+                    {
+                        $where_query .= " AND ((dtc.ai_run = 1 AND dtc.selected = 0 AND dtc.ai_match = 1) 
+                           OR (dtc.ai_run = 0 AND dtc.selected = 0 AND dtc.score >= 0.9))";
+                    }
+                    else if (stripos("ConsiderAddingControl", $val) !== false)
+                    {
+                        $where_query .= " AND (dtc.ai_run = 0 AND dtc.selected = 0 AND dtc.score >= 0.3 AND dtc.score < 0.9)";
+                    }
+                    else if (stripos("RemoveControlFromPolicy", $val) !== false)
+                    {
+                        $where_query .= " AND ((dtc.ai_run = 1 AND dtc.selected = 1 AND dtc.ai_match = 0) 
+                           OR (dtc.ai_run = 0 AND dtc.selected = 1 AND dtc.score < 0.3))";
+                    }
+                    else if (stripos("NoActionRequired", $val) !== false)
+                    {
+                        $where_query .= " AND NOT (
+                            (dtc.ai_run = 1 AND dtc.selected = 0 AND dtc.ai_match = 1) OR
+                            (dtc.ai_run = 1 AND dtc.selected = 1 AND dtc.ai_match = 0) OR
+                            (dtc.ai_run = 0 AND dtc.selected = 0 AND dtc.score >= 0.9) OR
+                            (dtc.ai_run = 0 AND dtc.selected = 0 AND dtc.score >= 0.3) OR
+                            (dtc.ai_run = 0 AND dtc.selected = 1 AND dtc.score < 0.3)
+                        )";
+                    }
+                    break;
+                default:
+                    // Handle other column filters if needed
+                    break;
+            }
+        }
+    }
+
+    // If team separation is enabled
+    if (team_separation_extra())
+    {
+        // Load the team separation functions
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+        // Get the user teams query for documents
+        $where_query .= " AND " . get_user_teams_query_for_documents("d", false);
+    }
+
+    // Initialize limit query
+    $limit_query = "";
+
+    // If a start and length are specified
+    if ($start !== false && $length !== false)
+    {
+        $limit_query = " LIMIT :start, :length";
+    }
+
+    // Get the count query with filters but without limits
+    $stmt = $db->prepare("
+        SELECT COUNT(*)
+        FROM `document_control_mappings` dtc
+        INNER JOIN `documents` `d` ON `dtc`.`document_id` = `d`.`id`
+        INNER JOIN (
+            SELECT ref_id, MAX(version) AS max_version
+            FROM compliance_files
+            WHERE ref_type = 'documents'
+            GROUP BY ref_id
+        ) cf_latest ON d.id = cf_latest.ref_id
+        INNER JOIN compliance_files cf
+            ON cf.ref_id = cf_latest.ref_id
+            AND cf.version = cf_latest.max_version
+            AND cf.ref_type = 'documents'
+        INNER JOIN `framework_controls` `fc` ON `dtc`.`control_id` = `fc`.`id`
+        {$where_query};
+    ");
+
+    // Bind document_id parameter if needed
+    if ($document_id !== null)
+    {
+        $stmt->bindValue(':document_id', (int)$document_id, PDO::PARAM_INT);
+    }
+
+    // Bind filter parameters
+    foreach ($filter_params as $param => $value)
+    {
+        $stmt->bindValue(":{$param}", $value, is_numeric($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+    }
+
+    $stmt->execute();
+    $total = $stmt->fetchColumn();
+
+    // The rest of the function remains the same, just add binding for filter parameters
+    $stmt = $db->prepare("
+        SELECT `dtc`.*, `d`.`document_name`, `cf`.`unique_name`, `cf`.`name`, `fc`.`control_number`, `fc`.`short_name` AS control_short_name,
+        CASE
+            WHEN `dtc`.`ai_run` = 1 AND `dtc`.`ai_match` = 1 THEN 'DefiniteMatch'
+            WHEN `dtc`.`ai_run` = 1 AND `dtc`.`ai_match` = 0 THEN 'NotAMatch'
+            when `dtc`.`ai_run` = 0 AND `dtc`.`score` >= 0.9 THEN 'DefiniteMatch'
+            WHEN `dtc`.`ai_run` = 0 AND `dtc`.`score` >= 0.7 THEN 'LikelyMatch'
+            WHEN `dtc`.`ai_run` = 0 AND `dtc`.`score` >= 0.4 THEN 'PossibleMatch'
+            WHEN `dtc`.`ai_run` = 0 AND `dtc`.`score` >= 0.3 THEN 'UnlikelyMatch'
+            WHEN `dtc`.`ai_run` = 0 AND `dtc`.`score` < 0.3 THEN 'NotAMatch'
+            ELSE 'ReviewManually'
+        END AS matching,
+        CASE
+            WHEN `dtc`.`ai_run` = 1 AND `dtc`.`selected` = 0 AND `dtc`.`ai_match` = 1 THEN 'AddControlToPolicy'
+            WHEN `dtc`.`ai_run` = 1 AND `dtc`.`selected` = 1 AND `dtc`.`ai_match` = 0 THEN 'RemoveControlFromPolicy'
+            WHEN `dtc`.`ai_run` = 0 AND `dtc`.`selected` = 0 AND `dtc`.`score` >= 0.9 THEN 'AddControlToPolicy'
+            WHEN `dtc`.`ai_run` = 0 AND `dtc`.`selected` = 0 AND `dtc`.`score` >= 0.3 THEN 'ConsiderAddingControl'
+            WHEN `dtc`.`ai_run` = 0 AND `dtc`.`selected` = 1 AND `dtc`.`score` < 0.3 THEN 'RemoveControlFromPolicy'
+            ELSE 'NoActionRequired'
+        END AS recommendation
+        FROM `document_control_mappings` dtc
+        INNER JOIN `documents` `d` ON `dtc`.`document_id` = `d`.`id`
+        INNER JOIN (
+            SELECT ref_id, MAX(version) AS max_version
+            FROM compliance_files
+            WHERE ref_type = 'documents'
+            GROUP BY ref_id
+        ) cf_latest ON d.id = cf_latest.ref_id
+        INNER JOIN compliance_files cf
+            ON cf.ref_id = cf_latest.ref_id
+            AND cf.version = cf_latest.max_version
+            AND cf.ref_type = 'documents'
+        INNER JOIN `framework_controls` `fc` ON `dtc`.`control_id` = `fc`.`id`
+        {$where_query} {$sort_query} {$limit_query};
+    ");
+
+    // If a start and length are specified
+    if ($start !== false && $length !== false)
+    {
+        $stmt->bindValue(':start', (int)$start, PDO::PARAM_INT);
+        $stmt->bindValue(':length', (int)$length, PDO::PARAM_INT);
+    }
+
+    // If the document_id is not null
+    if ($document_id !== null)
+    {
+        $stmt->bindValue(':document_id', (int)$document_id, PDO::PARAM_INT);
+    }
+
+    // Bind filter parameters
+    foreach ($filter_params as $param => $value)
+    {
+        $stmt->bindValue(":{$param}", $value, is_numeric($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+    }
+
+    $stmt->execute();
+    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    // Return the results
+    return [
+        'data' => $data,
+        'total' => $total
+    ];
+}
+
+/******************************************
+ * FUNCTION: DISPLAY UPDATE FRAMEWORK MODAL *
+ ******************************************/
+function display_update_framework_modal($where = "governance") {
+
+    global $lang, $escaper;
+
+    echo "
+        <div id='framework--update' class='modal fade' tabindex='-1' aria-labelledby='risk-catalog--add' aria-hidden='true'>
+            <div class='modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable'>
+                <div class='modal-content'>
+                    <form id='update-framework-form' class='' action='#' method='post' autocomplete='off'>
+                        <input type='hidden' class='framework_id' name='framework_id' value=''> 
+                        <input type='hidden' name='update_framework' value='true'>
+                        <input type='hidden' name='where' value='{$escaper->escapeHtml($where)}'>
+                        <div class='modal-header'>
+                            <h4 class='modal-title'>{$escaper->escapeHtml($lang['FrameworkEditHeader'])}</h4>
+                            <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                        </div>
+                        <div class='modal-body'>
+    ";
+                            display_add_framework();
+    echo "
+                        </div>
+                        <div class='modal-footer'>
+                            <button type='button' class='btn btn-secondary' data-bs-dismiss='modal' aria-label='Close'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+                            <button type='submit' id='update_framework' class='btn btn-submit'>{$escaper->escapeHtml($lang['Update'])}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    ";
+
+}
+
+/******************************************
+ * FUNCTION: DISPLAY UPDATE CONTROL MODAL *
+ ******************************************/
+function display_update_control_modal($where = "governance") {
+
+    global $lang, $escaper;
+
+    echo "
+        <div id='control--update' class='modal fade' tabindex='-1' aria-labelledby='control--update' aria-hidden='true'>
+            <div class='modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered'>
+                <div class='modal-content'>
+                    <form class='' id='update-control-form' method='post' autocomplete='off'>
+                        <input type='hidden' class='control_id' name='control_id' value=''> 
+                        <input type='hidden' name='update_control' value='true'> 
+                        <input type='hidden' name='where' value='{$escaper->escapeHtml($where)}'>
+                        <div class='modal-header'>
+                            <h4 class='modal-title'>{$escaper->escapeHtml($lang['ControlEditHeader'])}</h4>
+                            <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                        </div>
+                        <div class='modal-body'>
+    ";
+                            display_add_control();
+    echo "
+                        </div>
+                        <div class='modal-footer'>
+                            <button type='button' class='btn btn-secondary' data-bs-dismiss='modal' aria-label='Close'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+                            <button type='submit' id='update_control' class='btn btn-submit'>{$escaper->escapeHtml($lang['Update'])}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    ";
+}
+
+/******************************************
+ * FUNCTION: DISPLAY ADD MAPPING ROW      *
+ ******************************************/
+function display_add_mapping_row() {
+
+    global $lang, $escaper;
+
+    echo "
+        <div id='add_mapping_row' class='hide'>
+            <table>
+                <tr>
+                    <td>
+    ";
+                        create_dropdown("frameworks", NULL,"map_framework_id[]", true, false, false, "required title='{$escaper->escapeHtml($lang['Framework'])}'"); 
+    echo "
+                    </td>
+                    <td>
+                        <input type='text' name='reference_name[]' value='' class='form-control' maxlength='100' required title='{$escaper->escapeHtml($lang["Control"])}'>
+                    </td>
+                    <td class='text-center'>
+                        <a href='javascript:void(0);' class='control-block--delete-mapping' title='{$escaper->escapeHtml($lang["Delete"])}'><i class='fa fa-trash'></i></a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    ";
+
+}
+
+/******************************************
+ * FUNCTION: DISPLAY ADD ASSET ROW        *
+ ******************************************/
+function display_add_asset_row() {
+
+    global $lang, $escaper;
+
+    echo "
+        <div id='add_asset_row' class='hide'>
+            <table>
+                <tr>
+                    <td>
+    ";
+                        create_dropdown("control_maturity", "", "asset_maturity[]", true, false, false, "required title='{$escaper->escapeHtml($lang['CurrentMaturity'])}'"); 
+    echo "
+                    </td>
+                    <td>
+                        <select class='assets-asset-groups-select' name='assets_asset_groups[]' multiple placeholder='{$escaper->escapeHtml($lang['AffectedAssetsWidgetPlaceholder'])}' required title='{$escaper->escapeHtml($lang["Asset"])}'></select>
+                    </td>
+                    <td class='text-center'>
+                        <a href='javascript:void(0);' class='control-block--delete-asset' title='{$escaper->escapeHtml($lang["Delete"])}'><i class='fa fa-trash'></i></a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    ";
+
 }
 
 ?>

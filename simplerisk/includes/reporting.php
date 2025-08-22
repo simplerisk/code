@@ -2227,11 +2227,11 @@ function open_mitigation_pie($title = null) {
         switch($row['label']) {
 
             case "Planned":
-                $array[$index]['color'] = '#FF0000';
+                $array[$index]['color'] = '#66CC00';
                 $array[$index]['url'] = 'dynamic_risk_report.php?status=2&group=2&sort=0';
                 break;
             case "Unplanned":
-                $array[$index]['color'] = '#66CC00';
+                $array[$index]['color'] = '#FF0000';
                 $array[$index]['url'] = 'dynamic_risk_report.php?status=2&group=2&sort=0';
                 break;
             default:
@@ -2338,11 +2338,11 @@ function open_review_pie($title = null) {
         switch($row['label']) {
 
             case "Reviewed":
-                $array[$index]['color'] = '#FF0000';
+                $array[$index]['color'] = '#66CC00';
                 $array[$index]['url'] = 'dynamic_risk_report.php?status=2&group=2&sort=0';
                 break;
             case "Unreviewed":
-                $array[$index]['color'] = '#66CC00';
+                $array[$index]['color'] = '#FF0000';
                 $array[$index]['url'] = 'dynamic_risk_report.php?status=2&group=2&sort=0';
                 break;
             default:
@@ -3773,6 +3773,25 @@ function get_risks_by_table($status, $sort=0, $group=0, $table_columns=[]) {
         $risks = get_risks_only_dynamic($need_total_count=false, $status, $sort, 0, [], $rowCount, 0, -1);
         $displayed_group_names = [];
 
+        // If the group name is risk_level, we should display the risk groups tables in descending order
+        // so that the most critical risks are on top (Very High -> Insignificant).
+        if ($group_name == "risk_level") {
+
+            usort($risks, function($a, $b) {
+
+                $calculated_risk_a = $a['calculated_risk'];
+                $calculated_risk_b = $b['calculated_risk'];
+
+                // Compare the risk levels
+                if ($calculated_risk_a == $calculated_risk_b) {
+                    return 0;
+                }
+                
+                return ($calculated_risk_a < $calculated_risk_b) ? 1 : -1;
+
+            });
+        }
+
         // For each risk in the risks array
         foreach ($risks as $risk) {
 
@@ -4822,7 +4841,8 @@ function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName
             LEFT JOIN asset_values s ON p.mitigation_cost = s.id
             LEFT JOIN user t ON p.mitigation_owner = t.value
             LEFT JOIN source v ON a.source = v.value
-            LEFT JOIN threat_catalog tc ON FIND_IN_SET(tc.id, a.threat_catalog_mapping) > 0
+            LEFT JOIN threat_catalog_mappings tcm ON a.id = tcm.risk_id
+            LEFT JOIN threat_catalog tc ON tcm.threat_catalog_id = tc.id
             LEFT JOIN `temp_associated_risk_catalog_entries` associated_rc_entries ON `associated_rc_entries`.`risk_id` = `a`.`id`
     ";
 
@@ -5244,7 +5264,8 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
             GROUP_CONCAT(DISTINCT CONCAT(`rf`.`name`, '{$delimiter}', `rf`.`value`)  SEPARATOR '|') AS risk_mapping_function
         FROM
             `risks` rsk
-            LEFT JOIN `risk_catalog` rc ON FIND_IN_SET(`rc`.`id`, `rsk`.`risk_catalog_mapping`)
+            LEFT JOIN `risk_catalog_mappings` rcm ON rcm.risk_id = rsk.id
+            LEFT JOIN `risk_catalog` rc ON rc.id = rcm.risk_catalog_id
             LEFT JOIN `risk_grouping` rg ON `rc`.`grouping` = `rg`.`value`
             LEFT JOIN `risk_function` rf ON `rc`.`function` = `rf`.`value`
         GROUP BY
@@ -5266,7 +5287,8 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
             `risk_catalog` rc
             LEFT JOIN `risk_grouping` rg ON `rc`.`grouping` = `rg`.`value`
             LEFT JOIN `risk_function` rf ON `rc`.`function` = `rf`.`value`
-            LEFT JOIN `risks` rsk ON FIND_IN_SET(`rc`.`id`, `rsk`.`risk_catalog_mapping`)
+            LEFT JOIN `risk_catalog_mappings` rcm ON rcm.risk_catalog_id = rc.id
+            LEFT JOIN `risks` rsk ON rsk.id = rcm.risk_id
         GROUP BY
             `rsk`.`id`;
         ";
@@ -5679,32 +5701,37 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                         else $wheres[] = " FIND_IN_SET(o.user_id, :{$bind_param_name}) ";
                         $bind_params[$bind_param_name] = $column_filter;
                     break;
+
                     case "threat_mapping":
-                        if($empty_filter) $wheres[] = "(FIND_IN_SET(tc.id, :{$bind_param_name}) OR tc.id IS NULL)";
-                        else $wheres[] = " FIND_IN_SET(tc.id, :{$bind_param_name}) ";
+                        if($empty_filter) $wheres[] = "(FIND_IN_SET(tcm.threat_catalog_id, :{$bind_param_name}) OR tcm.threat_catalog_id IS NULL)";
+                        else $wheres[] = " FIND_IN_SET(tcm.threat_catalog_id, :{$bind_param_name}) ";
                         $bind_params[$bind_param_name] = $column_filter;
                     break;
-
                     /*
                      * Had to solve the filtering for the Risk Category fields this way as they're trying to find multiple IDs in a list of IDs.
                      * Probably can be reworked once the risk's 'risk_catalog_mapping' field will be replaced by a junction table.
                      **/
                     case "risk_mapping":
+                        if($empty_filter) $wheres[] = "(FIND_IN_SET(rcm.risk_catalog_id, :{$bind_param_name}) OR rcm.risk_catalog_id IS NULL)";
+                        else $wheres[] = " FIND_IN_SET(rcm.risk_catalog_id, :{$bind_param_name}) ";
+                        $bind_params[$bind_param_name] = $column_filter;
+                    break;
                     case "risk_mapping_risk":
-                        $wheres[] = "(" . ($empty_filter ? "`a`.`risk_catalog_mapping` IS NULL OR `a`.`risk_catalog_mapping` = '' OR " : "") . "
+                        $wheres[] = "(" . ($empty_filter ? "`a`.`id` NOT IN (SELECT DISTINCT `risk_id` FROM `risk_catalog_mappings`) OR " : "") . "
                             (
                                 SELECT
                                     COUNT(5)
                                 FROM `risk_catalog` rc
+                                INNER JOIN `risk_catalog_mappings` rcm ON rc.id = rcm.risk_catalog_id
                                 WHERE
                                     `rc`.`id` IN (" . implode(',', array_map('intval', explode(',', $column_filter))) . ")
-                                    AND FIND_IN_SET(`rc`.`id`, `a`.`risk_catalog_mapping`)
+                                    AND rcm.risk_id = `a`.`id`
                             ) > 0)";
                     break;
 
                     case "risk_mapping_risk_grouping":
                         
-                        $wheres[] = "(" . ($empty_filter ? "`a`.`risk_catalog_mapping` IS NULL OR `a`.`risk_catalog_mapping` = '' OR " : "") . "
+                        $wheres[] = "(" . ($empty_filter ? "`a`.`id` NOT IN (SELECT DISTINCT `risk_id` FROM `risk_catalog_mappings`) OR " : "") . "
                             (
                                 SELECT
                                     COUNT(5)
@@ -5716,7 +5743,7 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                     break;
                         
                     case "risk_mapping_function":
-                        $wheres[] = "(" . ($empty_filter ? "`a`.`risk_catalog_mapping` IS NULL OR `a`.`risk_catalog_mapping` = '' OR " : "") . "
+                        $wheres[] = "(" . ($empty_filter ? "`a`.`id` NOT IN (SELECT DISTINCT `risk_id` FROM `risk_catalog_mappings`) OR " : "") . "
                             (
                                 SELECT
                                     COUNT(5)

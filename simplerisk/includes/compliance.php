@@ -45,7 +45,7 @@ function display_framework_controls_in_compliance()
                     scrollX: true,
                     ajax: {
                         type: 'post',
-                        url: '".$_SESSION['base_url']."/api/compliance/define_tests',
+                        url: BASE_URL + '/api/compliance/define_tests',
                         data: function(d){
                             d.control_framework = $('#filter_by_control_framework').val();
                             d.control_family = $('#filter_by_control_family').val();
@@ -120,10 +120,10 @@ function display_framework_controls_in_compliance()
                             var selectize = select[0].selectize;
                             selectize.setValue(data['tags']);
                             $('#test--edit').modal('show');
-                            tinyMCE.get('edit_objective').setContent(data['objective']);
-                            tinyMCE.get('edit_test_steps').setContent(data['test_steps']);
-                            tinyMCE.get('edit_expected_results').setContent(data['expected_results']);
 
+                            setEditorContent('edit_objective', data['objective']);
+                            setEditorContent('edit_test_steps', data['test_steps']);
+                            setEditorContent('edit_expected_results', data['expected_results']);
                         },
                         error: function(xhr,status,error){
                             if(xhr.responseJSON && xhr.responseJSON.status_message){
@@ -662,16 +662,17 @@ function display_active_audits() {
 				</div>
 			</div>
 		</div>
-
         <script>
             $(function () {
-                $('.header_filter .multiselect').multiselect({
-					allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
+                initializeMultiselect('.header_filter .multiselect', {
+                    allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
 					includeSelectAllOption: true,
 					buttonWidth: '100%',
                     maxHeight: 400,
 					enableCaseInsensitiveFiltering: true,
 				});
+
+                $('.header_filter [name=test_date].datepicker').initAsDateRangePicker();
 
                 $('body').on('click', '.delete-btn', function() {
                     confirm('{$escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisTest'])}', () => {
@@ -863,6 +864,16 @@ function initiate_test_audit($test_id, $initiated_audit_status, $tags=[]) {
 
     // Close the database connection
     db_close($db);
+
+    // If notification is enabled
+    if (notification_extra())
+    {
+        // Include the notification extra
+        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+
+        // Send the notification
+        notify_audit_initiate($audit_id);
+    }  
 
     $message = "An active audit for \"{$test["name"]}\" was initiated by username \"" . $_SESSION['user'] . "\".";
     write_log((int)$test_id + 1000, $_SESSION['uid'], $message, "test");
@@ -1483,7 +1494,7 @@ function display_compliance_files($ref_id, $ref_type){
     foreach($files as $file){
         $html .= "
             <li>            
-                <div class=\"file-name\"><a href=\"".$_SESSION['base_url']."/compliance/download.php?id=".$escaper->escapeHtml($file['unique_name'])."\">".$escaper->escapeHtml($file['name'])."</a></div>
+                <div class=\"file-name\"><a href=\"".build_url("compliance/download.php?id=".$escaper->escapeHtml($file['unique_name']))."\">".$escaper->escapeHtml($file['name'])."</a></div>
                 <a href=\"#\" class=\"remove-file\" data-id=\"file-upload-0\"><i class=\"fa fa-times\"></i></a>
                 <input name=\"unique_names[]\" value=\"". $escaper->escapeHtml($file['unique_name']) ."\" type=\"hidden\">
             </li>            
@@ -1964,6 +1975,25 @@ function delete_compliance_file($file_id){
     // Open the database connection
     $db = db_open();
 
+    // Get the file from the database
+    $stmt = $db->prepare("SELECT * FROM compliance_files WHERE id=:file_id; ");
+    $stmt->bindParam(":file_id", $file_id, PDO::PARAM_INT);
+    $stmt->execute();
+    // Store the results in an array
+    $file = $stmt->fetch();
+    // If the array is empty
+    if (!empty($file)) {
+        // Audit log entry for deleting a file
+        $message = "File \"" . $file['name'] . "\" was deleted by username \"" . $_SESSION['user'] . "\".";
+        $log_type = $file['ref_type'];
+        if ($ref_type == 'documents') {
+            $log_type = 'document';
+        } else if ($ref_type == 'exceptions') {
+            $log_type = 'exception';
+        }
+        write_log($file['ref_id'] + 1000, $_SESSION['uid'], $message, $log_type);
+    }
+
     // Delete a compliance file by file ID
     $stmt = $db->prepare("DELETE FROM `compliance_files` WHERE id=:file_id; ");
     $stmt->bindParam(":file_id", $file_id, PDO::PARAM_INT);
@@ -2161,16 +2191,15 @@ function display_past_audits() {
 
         <script>
             $(function () {
-                $('.header_filter .multiselect').multiselect({
+                initializeMultiselect('.header_filter .multiselect', {
                     allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
-                    includeSelectAllOption: true,
-                    buttonWidth: '100%',
+					includeSelectAllOption: true,
+					buttonWidth: '100%',
                     maxHeight: 400,
-                    enableCaseInsensitiveFiltering: true,
-                    maxHeight: 400,
-                });
+					enableCaseInsensitiveFiltering: true,
+				});
 
-                $('.datepicker').initAsDateRangePicker();
+                $('.header_filter [name=test_date].datepicker').initAsDateRangePicker();
 
                 $('body').on('click', '.reopen', function(){
                     var id = $(this).data('id');
@@ -2316,9 +2345,15 @@ function display_detail_test() {
     ";
     if ($files) {
         foreach ($files as $file) {
+            
+            // Validate the unique_name to prevent directory traversal attacks
+            if (!preg_match('/^[A-Za-z0-9_-]+$/', $file['unique_name'])) {
+                continue; // skip invalid entries
+            }
+
             echo  "
                         <p>            
-                            <a href='{$_SESSION['base_url']}/compliance/download.php?id={$file['unique_name']}' >{$escaper->escapeHtml($file['name'])}</a>
+                            <a href='" . build_url("compliance/download.php?id={$escaper->escapeHtml($file['unique_name'])}") . "' >{$escaper->escapeHtml($file['name'])}</a>
                         </p>
             ";
         }

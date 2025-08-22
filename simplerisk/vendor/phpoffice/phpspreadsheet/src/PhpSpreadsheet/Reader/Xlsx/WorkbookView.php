@@ -14,6 +14,7 @@ class WorkbookView
         $this->spreadsheet = $spreadsheet;
     }
 
+    /** @param array<int, ?int> $mapSheetId */
     public function viewSettings(SimpleXMLElement $xmlWorkbook, string $mainNS, array $mapSheetId, bool $readDataOnly): void
     {
         // Default active sheet index to the first loaded worksheet from the file
@@ -25,7 +26,7 @@ class WorkbookView
             // active sheet index
             $activeTab = (int) $workbookViewAttributes->activeTab; // refers to old sheet index
             // keep active sheet index if sheet is still loaded, else first sheet is set as the active worksheet
-            if (isset($mapSheetId[$activeTab]) && $mapSheetId[$activeTab] !== null) {
+            if (isset($mapSheetId[$activeTab])) {
                 $this->spreadsheet->setActiveSheetIndex($mapSheetId[$activeTab]);
             }
 

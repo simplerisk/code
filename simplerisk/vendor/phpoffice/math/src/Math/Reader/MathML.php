@@ -10,6 +10,7 @@ use PhpOffice\Math\Element;
 use PhpOffice\Math\Exception\InvalidInputException;
 use PhpOffice\Math\Exception\NotImplementedException;
 use PhpOffice\Math\Math;
+use PhpOffice\Math\Reader\Security\XmlScanner;
 
 class MathML implements ReaderInterface
 {
@@ -22,8 +23,17 @@ class MathML implements ReaderInterface
     /** @var DOMXPath */
     private $xpath;
 
+    /** @var XmlScanner */
+    private $xmlScanner;
+
+    public function __construct()
+    {
+        $this->xmlScanner = XmlScanner::getInstance();
+    }
+
     public function read(string $content): ?Math
     {
+        $content = $this->xmlScanner->scan($content);
         $content = str_replace(
             [
                 '&InvisibleTimes;',
@@ -35,7 +45,7 @@ class MathML implements ReaderInterface
         );
 
         $this->dom = new DOMDocument();
-        $this->dom->loadXML($content, LIBXML_DTDLOAD);
+        $this->dom->loadXML($content);
 
         $this->math = new Math();
         $this->parseNode(null, $this->math);

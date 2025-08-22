@@ -429,6 +429,15 @@ export declare const RadarController: ChartComponent & {
   prototype: RadarController;
   new (chart: Chart, datasetIndex: number): RadarController;
 };
+
+interface ChartMetaClip {
+  left: number | boolean;
+  top: number | boolean;
+  right: number | boolean;
+  bottom: number | boolean;
+  disabled: boolean;
+}
+
 interface ChartMetaCommon<TElement extends Element = Element, TDatasetElement extends Element = Element> {
   type: string;
   controller: DatasetController;
@@ -462,6 +471,7 @@ interface ChartMetaCommon<TElement extends Element = Element, TDatasetElement ex
   _sorted: boolean;
   _stacked: boolean | 'single';
   _parsed: unknown[];
+  _clip: ChartMetaClip;
 }
 
 export type ChartMeta<
@@ -1070,9 +1080,10 @@ export interface Plugin<TType extends ChartType = ChartType, O = AnyObject> exte
    * @param {ChartEvent} args.event - The event object.
    * @param {boolean} args.replay - True if this event is replayed from `Chart.update`
    * @param {boolean} args.inChartArea - The event position is inside chartArea
+   * @param {boolean} [args.changed] - Set to true if the plugin needs a render. Should only be changed to true, because this args object is passed through all plugins.
    * @param {object} options - The plugin options.
    */
-  beforeEvent?(chart: Chart<TType>, args: { event: ChartEvent, replay: boolean, cancelable: true, inChartArea: boolean }, options: O): boolean | void;
+  beforeEvent?(chart: Chart<TType>, args: { event: ChartEvent, replay: boolean, changed?: boolean; cancelable: true, inChartArea: boolean }, options: O): boolean | void;
   /**
    * @desc Called after the `event` has been consumed. Note that this hook
    * will not be called if the `event` has been previously discarded.
@@ -1508,7 +1519,7 @@ export declare const Ticks: {
      * @param ticks the list of ticks being converted
      * @return string representation of the tickValue parameter
      */
-    numeric(tickValue: number, index: number, ticks: { value: number }[]): string;
+    numeric(this: Scale, tickValue: number, index: number, ticks: { value: number }[]): string;
     /**
      * Formatter for logarithmic ticks
      * @param tickValue the value to be formatted
@@ -1516,7 +1527,7 @@ export declare const Ticks: {
      * @param ticks the list of ticks being converted
      * @return string representation of the tickValue parameter
      */
-    logarithmic(tickValue: number, index: number, ticks: { value: number }[]): string;
+    logarithmic(this: Scale, tickValue: number, index: number, ticks: { value: number }[]): string;
   };
 };
 
@@ -1837,6 +1848,12 @@ export interface ArcBorderRadius {
 }
 
 export interface ArcOptions extends CommonElementOptions {
+  /**
+   * If true, Arc can take up 100% of a circular graph without any visual split or cut. This option doesn't support borderRadius and borderJoinStyle miter
+   * @default true
+   */
+  selfJoin: boolean;
+
   /**
    * Arc stroke alignment.
    */

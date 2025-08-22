@@ -67,7 +67,7 @@ section.gridstack {
                     transition: background-position .15s ease-in-out !important;
 
                     &:checked {
-                        background-color: seagreen;
+                        background-color: var(--sr-success);
                     }
 
                     &:not(:checked) + label.on {
@@ -89,8 +89,52 @@ section.gridstack {
 
     .layout_panel {
 
+        // Generic styling for the layout panel
         .grid-stack {
             min-height: 50px;
+            
+            .grid-stack-item {
+
+                .grid-stack-item-content {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background-color: var(--bs-body-bg);
+                    text-align: center;
+                    flex-direction: row;
+                    overflow-x: unset !important;
+                    overflow-y: unset !important;
+
+                    &.chart {
+                        align-items: flex-start !important;
+
+                        .save_as_image{
+                            position: absolute;
+                            bottom: 0px;
+                            left: 0.5em;
+                            cursor: pointer;
+                        }
+                    }
+
+                    &.editable_widget {
+                        & > .edit {
+                            position: absolute;
+                            top: .25em;
+                            right: .5em;
+                            cursor: pointer;
+                        }
+                        
+                        & > .custom-WYSIWYG-content {
+                            height: 100%;
+                            width: 100%;
+                            margin: 10px 10px;
+                            padding: 10px 0px;
+                            text-align: start;
+                            overflow: hidden;
+                        }
+                    }
+                }
+            }
         }
 
         // Styling specific for the editable layout panel
@@ -114,31 +158,28 @@ section.gridstack {
                     &.chart .save_as_image{
                         pointer-events: none;
                     }
+                    
+                    &.editable_widget {
+                        & > .edit {
+                            position: absolute;
+                            top: .25em;
+                            right: .5em;
+                            cursor: pointer;
+                        }
+                    }
+                    
                 }
             }
         }
 
-        .grid-stack-item {
-
-            .grid-stack-item-content {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background-color: var(--bs-body-bg);
-                text-align: center;
-                flex-direction: row;
-
-                overflow-x: unset !important;
-                overflow-y: unset !important;
-
-                &.chart {
-                    align-items: flex-start !important;
-
-                    .save_as_image{
-                        position: absolute;
-                        bottom: 0px;
-                        left: 0.5em;
-                        cursor: pointer;
+        // Styling specific for the NOT editable layout panel
+        &:has(.grid-stack.grid-stack-static) {
+            .grid-stack-item {
+                .grid-stack-item-content {
+                    &.editable_widget {
+                        & > .edit {
+                            display: none;
+                        }
                     }
                 }
             }

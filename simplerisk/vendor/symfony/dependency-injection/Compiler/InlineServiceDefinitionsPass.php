@@ -73,6 +73,9 @@ class InlineServiceDefinitionsPass extends AbstractRecursivePass
                     if (!$this->graph->hasNode($id)) {
                         continue;
                     }
+                    if ($definition->isPublic()) {
+                        $this->connectedIds[$id] = true;
+                    }
                     foreach ($this->graph->getNode($id)->getOutEdges() as $edge) {
                         if (isset($notInlinedIds[$edge->getSourceNode()->getId()])) {
                             $this->currentId = $id;
@@ -141,7 +144,7 @@ class InlineServiceDefinitionsPass extends AbstractRecursivePass
             return $value;
         }
 
-        $this->container->log($this, sprintf('Inlined service "%s" to "%s".', $id, $this->currentId));
+        $this->container->log($this, \sprintf('Inlined service "%s" to "%s".', $id, $this->currentId));
         $this->inlinedIds[$id] = $definition->isPublic() || !$definition->isShared();
         $this->notInlinedIds[$this->currentId] = true;
 
@@ -189,17 +192,13 @@ class InlineServiceDefinitionsPass extends AbstractRecursivePass
             return true;
         }
 
-        if ($definition->isPublic()) {
+        if ($definition->isPublic()
+            || $this->currentId === $id
+            || !$this->graph->hasNode($id)
+        ) {
             return false;
         }
 
-        if (!$this->graph->hasNode($id)) {
-            return true;
-        }
-
-        if ($this->currentId === $id) {
-            return false;
-        }
         $this->connectedIds[$id] = true;
 
         $srcIds = [];

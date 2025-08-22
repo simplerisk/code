@@ -7,6 +7,7 @@ namespace SimpleSAML\XMLSecurity\XML\ds;
 use DOMElement;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\XML\Exception\InvalidDOMElementException;
+use SimpleSAML\XML\Exception\MissingElementException;
 use SimpleSAML\XML\Exception\SchemaViolationException;
 use SimpleSAML\XML\Exception\TooManyElementsException;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
@@ -153,7 +154,7 @@ abstract class AbstractDSAKeyValueType extends AbstractDsElement implements Sche
         Assert::same($xml->namespaceURI, static::NS, InvalidDOMElementException::class);
 
         $y = Y::getChildrenOfClass($xml);
-        Assert::minCount($y, 1, TooManyElementsException::class);
+        Assert::minCount($y, 1, MissingElementException::class);
         Assert::maxCount($y, 1, TooManyElementsException::class);
 
         $g = G::getChildrenOfClass($xml);
