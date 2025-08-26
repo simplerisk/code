@@ -58,7 +58,7 @@ class Spreadsheet implements JsonSerializable
     /**
      * Calculation Engine.
      */
-    private ?Calculation $calculationEngine;
+    private Calculation $calculationEngine;
 
     /**
      * Active sheet index.
@@ -477,7 +477,7 @@ class Spreadsheet implements JsonSerializable
     public function __destruct()
     {
         $this->disconnectWorksheets();
-        $this->calculationEngine = null;
+        unset($this->calculationEngine);
         $this->cellXfCollection = [];
         $this->cellStyleXfCollection = [];
         $this->definedNames = [];
@@ -499,8 +499,22 @@ class Spreadsheet implements JsonSerializable
     /**
      * Return the calculation engine for this worksheet.
      */
-    public function getCalculationEngine(): ?Calculation
+    public function getCalculationEngine(): Calculation
     {
+        return $this->calculationEngine;
+    }
+
+    /**
+     * Intended for use only via a destructor.
+     *
+     * @internal
+     */
+    public function getCalculationEngineOrNull(): ?Calculation
+    {
+        if (!isset($this->calculationEngine)) { //* @phpstan-ignore-line
+            return null;
+        }
+
         return $this->calculationEngine;
     }
 
@@ -691,10 +705,10 @@ class Spreadsheet implements JsonSerializable
      */
     public function getSheetByName(string $worksheetName): ?Worksheet
     {
-        $worksheetCount = count($this->workSheetCollection);
-        for ($i = 0; $i < $worksheetCount; ++$i) {
-            if (strcasecmp($this->workSheetCollection[$i]->getTitle(), trim($worksheetName, "'")) === 0) {
-                return $this->workSheetCollection[$i];
+        $trimWorksheetName = trim($worksheetName, "'");
+        foreach ($this->workSheetCollection as $worksheet) {
+            if (strcasecmp($worksheet->getTitle(), $trimWorksheetName) === 0) {
+                return $worksheet;
             }
         }
 
@@ -1120,21 +1134,19 @@ class Spreadsheet implements JsonSerializable
 
         $oldCalc = $this->calculationEngine;
         $this->calculationEngine = new Calculation($this);
-        if ($oldCalc !== null) {
-            $this->calculationEngine
-                ->setSuppressFormulaErrors(
-                    $oldCalc->getSuppressFormulaErrors()
-                )
-                ->setCalculationCacheEnabled(
-                    $oldCalc->getCalculationCacheEnabled()
-                )
-                ->setBranchPruningEnabled(
-                    $oldCalc->getBranchPruningEnabled()
-                )
-                ->setInstanceArrayReturnType(
-                    $oldCalc->getInstanceArrayReturnType()
-                );
-        }
+        $this->calculationEngine
+            ->setSuppressFormulaErrors(
+                $oldCalc->getSuppressFormulaErrors()
+            )
+            ->setCalculationCacheEnabled(
+                $oldCalc->getCalculationCacheEnabled()
+            )
+            ->setBranchPruningEnabled(
+                $oldCalc->getBranchPruningEnabled()
+            )
+            ->setInstanceArrayReturnType(
+                $oldCalc->getInstanceArrayReturnType()
+            );
         $usedKeys['calculationEngine'] = true;
 
         $currentCollection = $this->cellStyleXfCollection;
@@ -1783,5 +1795,36 @@ class Spreadsheet implements JsonSerializable
                 }
             }
         }
+    }
+
+    /**
+     * Excel will sometimes replace user's formatting choice
+     * with a built-in choice that it thinks is equivalent.
+     * Its choice is often not equivalent after all.
+     * Such treatment is astonishingly user-hostile.
+     * This function will undo such changes.
+     */
+    public function replaceBuiltinNumberFormat(int $builtinFormatIndex, string $formatCode): void
+    {
+        foreach ($this->cellXfCollection as $style) {
+            $numberFormat = $style->getNumberFormat();
+            if ($numberFormat->getBuiltInFormatCode() === $builtinFormatIndex) {
+                $numberFormat->setFormatCode($formatCode);
+            }
+        }
+    }
+
+    public function returnArrayAsArray(): void
+    {
+        $this->calculationEngine->setInstanceArrayReturnType(
+            Calculation::RETURN_ARRAY_AS_ARRAY
+        );
+    }
+
+    public function returnArrayAsValue(): void
+    {
+        $this->calculationEngine->setInstanceArrayReturnType(
+            Calculation::RETURN_ARRAY_AS_VALUE
+        );
     }
 }

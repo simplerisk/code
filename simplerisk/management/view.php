@@ -5,6 +5,7 @@
 
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+require_once(realpath(__DIR__ . '/../includes/artificial_intelligence.php'));
 
 $breadcrumb_title_key = "RiskDetails";
 $active_sidebar_menu ="RiskManagement";

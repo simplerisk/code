@@ -207,10 +207,7 @@ class Calculation extends CalculationLocale
     public static function getInstance(?Spreadsheet $spreadsheet = null): self
     {
         if ($spreadsheet !== null) {
-            $instance = $spreadsheet->getCalculationEngine();
-            if (isset($instance)) {
-                return $instance;
-            }
+            return $spreadsheet->getCalculationEngine();
         }
 
         if (!self::$instance) {
@@ -218,6 +215,20 @@ class Calculation extends CalculationLocale
         }
 
         return self::$instance;
+    }
+
+    /**
+     * Intended for use only via a destructor.
+     *
+     * @internal
+     */
+    public static function getInstanceOrNull(?Spreadsheet $spreadsheet = null): ?self
+    {
+        if ($spreadsheet !== null) {
+            return $spreadsheet->getCalculationEngineOrNull();
+        }
+
+        return null;
     }
 
     /**
@@ -852,15 +863,15 @@ class Calculation extends CalculationLocale
             if ($matrix2Columns < $matrix1Columns) {
                 for ($i = 0; $i < $matrix2Rows; ++$i) {
                     /** @var mixed[][] $matrix2 */
-                    $x = $matrix2[$i][$matrix2Columns - 1];
+                    $x = ($matrix2Columns === 1) ? $matrix2[$i][0] : null;
                     for ($j = $matrix2Columns; $j < $matrix1Columns; ++$j) {
                         $matrix2[$i][$j] = $x;
                     }
                 }
             }
             if ($matrix2Rows < $matrix1Rows) {
-                $x = $matrix2[$matrix2Rows - 1];
-                for ($i = 0; $i < $matrix1Rows; ++$i) {
+                $x = ($matrix2Rows === 1) ? $matrix2[0] : array_fill(0, $matrix2Columns, null);
+                for ($i = $matrix2Rows; $i < $matrix1Rows; ++$i) {
                     $matrix2[$i] = $x;
                 }
             }
@@ -870,15 +881,15 @@ class Calculation extends CalculationLocale
             if ($matrix1Columns < $matrix2Columns) {
                 for ($i = 0; $i < $matrix1Rows; ++$i) {
                     /** @var mixed[][] $matrix1 */
-                    $x = $matrix1[$i][$matrix1Columns - 1];
+                    $x = ($matrix1Columns === 1) ? $matrix1[$i][0] : null;
                     for ($j = $matrix1Columns; $j < $matrix2Columns; ++$j) {
                         $matrix1[$i][$j] = $x;
                     }
                 }
             }
             if ($matrix1Rows < $matrix2Rows) {
-                $x = $matrix1[$matrix1Rows - 1];
-                for ($i = 0; $i < $matrix2Rows; ++$i) {
+                $x = ($matrix1Rows === 1) ? $matrix1[0] : array_fill(0, $matrix1Columns, null);
+                for ($i = $matrix1Rows; $i < $matrix2Rows; ++$i) {
                     $matrix1[$i] = $x;
                 }
             }
@@ -1999,6 +2010,9 @@ class Calculation extends CalculationLocale
                             $this->debugLog->writeDebugLog('Evaluating Cell %s in worksheet %s', $cellRef, $matches[2]);
                             if ($pCellParent !== null && $this->spreadsheet !== null) {
                                 $cellSheet = $this->spreadsheet->getSheetByName($matches[2]);
+                                if ($cellSheet && !$cellSheet->cellExists($cellRef)) {
+                                    $cellSheet->setCellValue($cellRef, null);
+                                }
                                 if ($cellSheet && $cellSheet->cellExists($cellRef)) {
                                     $cellValue = $this->extractCellRange($cellRef, $this->spreadsheet->getSheetByName($matches[2]), false);
                                     $cell->attach($pCellParent);
@@ -2375,7 +2389,7 @@ class Calculation extends CalculationLocale
             for ($row = 0; $row < $rows; ++$row) {
                 for ($column = 0; $column < $columns; ++$column) {
                     /** @var mixed[][] $operand1 */
-                    if ($operand1[$row][$column] === null) {
+                    if (($operand1[$row][$column] ?? null) === null) {
                         $operand1[$row][$column] = 0;
                     } elseif (!self::isNumericOrBool($operand1[$row][$column])) {
                         $operand1[$row][$column] = self::makeError($operand1[$row][$column]);
@@ -2383,7 +2397,7 @@ class Calculation extends CalculationLocale
                         continue;
                     }
                     /** @var mixed[][] $operand2 */
-                    if ($operand2[$row][$column] === null) {
+                    if (($operand2[$row][$column] ?? null) === null) {
                         $operand2[$row][$column] = 0;
                     } elseif (!self::isNumericOrBool($operand2[$row][$column])) {
                         $operand1[$row][$column] = self::makeError($operand2[$row][$column]);
@@ -2503,7 +2517,7 @@ class Calculation extends CalculationLocale
      *
      * @return mixed[] Array of values in range if range contains more than one element. Otherwise, a single value is returned.
      */
-    public function extractCellRange(string &$range = 'A1', ?Worksheet $worksheet = null, bool $resetLog = true): array
+    public function extractCellRange(string &$range = 'A1', ?Worksheet $worksheet = null, bool $resetLog = true, bool $createCell = false): array
     {
         // Return value
         /** @var mixed[][] */
@@ -2525,6 +2539,9 @@ class Calculation extends CalculationLocale
             if (!isset($aReferences[1])) {
                 //    Single cell in range
                 sscanf($aReferences[0], '%[A-Z]%d', $currentCol, $currentRow);
+                if ($createCell && $worksheet !== null && !$worksheet->cellExists($aReferences[0])) {
+                    $worksheet->setCellValue($aReferences[0], null);
+                }
                 if ($worksheet !== null && $worksheet->cellExists($aReferences[0])) {
                     $temp = $worksheet->getCell($aReferences[0])->getCalculatedValue($resetLog);
                     if ($this->getInstanceArrayReturnType() === self::RETURN_ARRAY_AS_ARRAY) {
@@ -2541,6 +2558,9 @@ class Calculation extends CalculationLocale
                 foreach ($aReferences as $reference) {
                     // Extract range
                     sscanf($reference, '%[A-Z]%d', $currentCol, $currentRow);
+                    if ($createCell && $worksheet !== null && !$worksheet->cellExists($reference)) {
+                        $worksheet->setCellValue($reference, null);
+                    }
                     if ($worksheet !== null && $worksheet->cellExists($reference)) {
                         $temp = $worksheet->getCell($reference)->getCalculatedValue($resetLog);
                         if ($this->getInstanceArrayReturnType() === self::RETURN_ARRAY_AS_ARRAY) {

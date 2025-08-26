@@ -449,6 +449,12 @@ class Xlsx extends BaseReader
                 $relTarget = substr($relTarget, 4);
             }
             switch ($rel['Type']) {
+                case "$xmlNamespaceBase/sheetMetadata":
+                    if ($this->fileExistsInArchive($zip, "xl/{$relTarget}")) {
+                        $excel->returnArrayAsArray();
+                    }
+
+                    break;
                 case "$xmlNamespaceBase/theme":
                     if (!$this->fileExistsInArchive($zip, "xl/{$relTarget}")) {
                         break; // issue3770
@@ -1508,7 +1514,7 @@ class Xlsx extends BaseReader
                                                         );
                                                         if (isset($images[$linkImageKey])) {
                                                             $url = str_replace('xl/drawings/', '', $images[$linkImageKey]);
-                                                            $objDrawing->setPath($url, false);
+                                                            $objDrawing->setPath($url, false, allowExternal: $this->allowExternalImages);
                                                         }
                                                         if ($objDrawing->getPath() === '') {
                                                             continue;
@@ -1612,7 +1618,7 @@ class Xlsx extends BaseReader
                                                         );
                                                         if (isset($images[$linkImageKey])) {
                                                             $url = str_replace('xl/drawings/', '', $images[$linkImageKey]);
-                                                            $objDrawing->setPath($url, false);
+                                                            $objDrawing->setPath($url, false, allowExternal: $this->allowExternalImages);
                                                         }
                                                         if ($objDrawing->getPath() === '') {
                                                             continue;

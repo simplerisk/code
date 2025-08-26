@@ -10,7 +10,6 @@ use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx\Namespaces;
 use PhpOffice\PhpSpreadsheet\RichText\RichText;
-use PhpOffice\PhpSpreadsheet\Settings;
 use PhpOffice\PhpSpreadsheet\Shared\StringHelper;
 use PhpOffice\PhpSpreadsheet\Shared\XMLWriter;
 use PhpOffice\PhpSpreadsheet\Style\Conditional;
@@ -69,7 +68,6 @@ class Worksheet extends WriterPart
 
         // Worksheet
         $objWriter->startElement('worksheet');
-        $objWriter->writeAttribute('xml:space', 'preserve');
         $objWriter->writeAttribute('xmlns', Namespaces::MAIN);
         $objWriter->writeAttribute('xmlns:r', Namespaces::SCHEMA_OFFICE_DOCUMENT);
 
@@ -1437,16 +1435,16 @@ class Worksheet extends WriterPart
         $objWriter->writeAttribute('t', $mappedType);
         if (!$cellValue instanceof RichText) {
             $objWriter->startElement('is');
-            $objWriter->writeElement(
-                't',
-                StringHelper::controlCharacterPHP2OOXML(
-                    htmlspecialchars(
-                        $cellValue,
-                        Settings::htmlEntityFlags()
-                    )
-                )
+            $objWriter->startElement('t');
+            $textToWrite = StringHelper::controlCharacterPHP2OOXML(
+                $cellValue
             );
-            $objWriter->endElement();
+            if ($textToWrite !== trim($textToWrite)) {
+                $objWriter->writeAttribute('xml:space', 'preserve');
+            }
+            $objWriter->writeRawData($textToWrite);
+            $objWriter->endElement(); // t
+            $objWriter->endElement(); // is
         } else {
             $objWriter->startElement('is');
             $this->getParentWriter()

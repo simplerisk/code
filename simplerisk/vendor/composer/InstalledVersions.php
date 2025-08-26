@@ -341,18 +341,6 @@ class InstalledVersions
     }
 
     /**
-     * @return string
-     */
-    private static function getSelfDir()
-    {
-        if (self::$selfDir === null) {
-            self::$selfDir = strtr(__DIR__, '\\', '/');
-        }
-
-        return self::$selfDir;
-    }
-
-    /**
      * @return array[]
      * @psalm-return list<array{root: array{name: string, pretty_version: string, version: string, reference: string|null, type: string, install_path: string, aliases: string[], dev: bool}, versions: array<string, array{pretty_version?: string, version?: string, reference?: string|null, type?: string, install_path?: string, aliases?: string[], dev_requirement: bool, replaced?: string[], provided?: string[]}>}>
      */

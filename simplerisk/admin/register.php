@@ -58,8 +58,17 @@ if (get_setting('registration_registered') == 0)
 		$phone = $_POST['phone'];
 		$email = $_POST['email'];
 
+        // If this is not a hosted instance
+        if (get_setting('hosting_tier') == false)
+        {
+            // Download the Upgrade Extra with the registration
+            $download_upgrade_extra = true;
+        }
+        // Otherwise, do not download the Upgrade Extra
+        else $download_upgrade_extra = false;
+
 		// Add the registration
-		$result = add_registration($name, $company, $title, $phone, $email, $fname, $lname);
+		$result = add_registration($name, $company, $title, $phone, $email, $fname, $lname, $download_upgrade_extra);
 
 		// If the registration failed
 		if ($result == 0)

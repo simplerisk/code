@@ -15657,7 +15657,7 @@ function write_debug_log_cli($value)
 /******************************
  * FUNCTION: ADD REGISTRATION *
  ******************************/
-function add_registration($name="", $company="", $title="", $phone="", $email="", $fname="", $lname="")
+function add_registration($name="", $company="", $title="", $phone="", $email="", $fname="", $lname="", $download_upgrade_extra = true)
 {
     global $lang;
 
@@ -15721,8 +15721,12 @@ function add_registration($name="", $company="", $title="", $phone="", $email=""
                 add_setting("services_api_key", $services_api_key);
                 update_or_insert_setting("registration_registered", 1);
 
-                // Download the upgrade extra
-                $result = download_extra("upgrade");
+                // If we should download the upgrade extra
+                if ($download_upgrade_extra)
+                {
+                    // Download the upgrade extra
+                    $result = download_extra("upgrade");
+                }
 
                 // Close the database connection
                 db_close($db);
