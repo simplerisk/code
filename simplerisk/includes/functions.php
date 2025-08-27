@@ -15727,6 +15727,7 @@ function add_registration($name="", $company="", $title="", $phone="", $email=""
                     // Download the upgrade extra
                     $result = download_extra("upgrade");
                 }
+                else $result = true;
 
                 // Close the database connection
                 db_close($db);

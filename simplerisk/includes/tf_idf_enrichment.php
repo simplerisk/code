@@ -55,7 +55,7 @@ function extractSignificantTerms($policyText, $maxTerms = 100) {
     ];
 
     // Clean the text
-    $text = strtolower($policyText);
+    $text = strtolower($policyText ?? '');
     $text = preg_replace('/[^\w\s]/', ' ', $text);
 
     // Extract words
@@ -189,7 +189,7 @@ function countKeywordOccurrences($text, $keywords) {
  */
 function countKeywordOccurrencesPerKeyword($text, $keywords) {
     // Strip HTML tags
-    $text = strip_tags($text);
+    $text = strip_tags($text ?? '');
 
     // Decode HTML entities like &nbsp;, &amp;, etc.
     $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
