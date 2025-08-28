@@ -5,12 +5,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required configuration files
+require_once(realpath(__DIR__ . '/functions.php'));
+require_once(realpath(__DIR__ . '/display.php'));
+
+// Include required configuration files
 // Ignoring detections related to language files
 // @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-require_once(realpath(__DIR__ . '/functions.php'));
-require_once(realpath(__DIR__ . '/display.php'));
 
 class ClaudeAPIClient {
     private $api_key;
