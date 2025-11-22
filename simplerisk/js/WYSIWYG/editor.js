@@ -1,9 +1,13 @@
 
-function init_default_editor(selector) {
+function init_default_editor(selector, resizeable=false) {
 
 	hugerte.init({
 	    selector: selector,
-	    statusbar: false,
+
+        // Make the editor resizeable based on the parameter passed
+        statusbar: resizeable ? true : false,
+        resize: resizeable ? true : false,
+
 	    // Tip! To make HugeRTE leaner, only include the plugins you actually need.
         plugins: 'searchreplace directionality visualblocks visualchars image link table charmap advlist lists help charmap quickbars',
 

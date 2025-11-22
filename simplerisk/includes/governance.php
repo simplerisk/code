@@ -10,12 +10,14 @@ require_once(realpath(__DIR__ . '/cvss.php'));
 require_once(realpath(__DIR__ . '/services.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
 require_once(realpath(__DIR__ . '/tf_idf_enrichment.php'));
+require_once(realpath(__DIR__ . '/Components/DocumentTextHandler.php'));
+require_once(realpath(__DIR__ . '/queues.php'));
 
 // Include the language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
+
+use SimpleRisk\DocumentHandlers\DocumentTextExtractor;
 
 /****************************
  * FUNCTION: GET FRAMEWORKS *
@@ -1153,12 +1155,13 @@ function add_framework_control($control){
     
     $control_id = $db->lastInsertId();
 
-    // Update the control keywords
-    get_keywords_for_control($control_id, true);
-
-    // Update the control to document mappings for the control but don't care about the response
-    $endpoint = "/api/v2/governance/controls/topdocuments?id={$control_id}&refresh=true";
-    @call_simplerisk_api_endpoint($endpoint, "GET", false, 1);
+    // Update the control to document mappings for the control
+    $queue_task_payload = [
+        'triggered_at'  => time(),
+        'control_id'    => (int)$control_id,
+        'refresh'       => true,
+    ];
+    queue_task('core_control_update', $queue_task_payload, 100);
 
     if(count($control_type) > 0) {
         foreach ($control_type as $type) {
@@ -1245,12 +1248,13 @@ function update_framework_control($control_id, $control){
     $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
     $stmt->execute();
 
-    // Update the control keywords
-    get_keywords_for_control($control_id, true);
-
-    // Update the control to document mappings for the control but don't care about the response
-    $endpoint = "/api/v2/governance/controls/topdocuments?id={$control_id}&refresh=true";
-    @call_simplerisk_api_endpoint($endpoint, "GET", false, 1);
+    // Update the control to document mappings for the control
+    $queue_task_payload = [
+        'triggered_at'  => time(),
+        'control_id'    => (int)$control_id,
+        'refresh'       => true,
+    ];
+    queue_task('core_control_update', $queue_task_payload, 100);
 
     if(count($control_type) > 0) {
         foreach ($control_type as $type) {
@@ -1698,8 +1702,8 @@ function getAvailableControlFrameworkList($alphabetical_order=false){
 /*******************************************************
  * FUNCTION: GET HAS BEEN AUDIT FRAMEWORK CONTROL LIST *
  *******************************************************/
-function getHasBeenAuditFrameworkControlList()
-{
+function getHasBeenAuditFrameworkControlList($type = "test_audit") {
+
     // Open the database connection
     $db = db_open();
     
@@ -1707,7 +1711,23 @@ function getHasBeenAuditFrameworkControlList()
         SELECT t1.id value, t1.short_name name
         FROM 
             `framework_controls` t1 
+    ";
+
+    if ($type == "test_audit") {
+
+        $sql .= "
             LEFT JOIN `framework_control_test_audits` t2 ON t1.id=t2.framework_control_id
+        ";
+
+    } else if ($type == "test") {
+
+        $sql .= "
+            LEFT JOIN `framework_control_tests` t2 ON t1.id=t2.framework_control_id
+        ";
+
+    }
+
+    $sql .= "  
         WHERE
              t2.id IS NOT NULL
         GROUP BY 
@@ -1731,21 +1751,38 @@ function getHasBeenAuditFrameworkControlList()
 /***********************************************
  * FUNCTION: GET HAS BEEN AUDIT FRAMEWORK LIST *
  ***********************************************/
-function getHasBeenAuditFrameworkList(){
+function getHasBeenAuditFrameworkList($type = "test_audit") {
+
     // Open the database connection
     $db = db_open();
     
     $sql = "
         SELECT t1.value, t1.name, t1.description
-        FROM `frameworks` t1
+        FROM 
+            `frameworks` t1
             LEFT JOIN `framework_control_mappings` m ON t1.value=m.framework
             LEFT JOIN `framework_controls` t2 ON m.control_id=t2.id AND t2.deleted=0
+    ";
+
+    if ($type == "test_audit") {
+
+        $sql .= "
             LEFT JOIN `framework_control_test_audits` t3 ON t2.id=t3.framework_control_id
+        ";
+
+    } else if ($type == "test") {
+
+        $sql .= "
+            LEFT JOIN `framework_control_tests` t3 ON t2.id=t3.framework_control_id
+        ";
+
+    }
+
+    $sql .= "            
         WHERE
-             t3.id IS NOT NULL
+            t3.id IS NOT NULL
         GROUP BY 
-            t1.value
-        ;
+            t1.value;
     ";
 
     // Get available framework list
@@ -1756,9 +1793,11 @@ function getHasBeenAuditFrameworkList(){
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Try decrypt
-    foreach($results as &$result){
+    foreach ($results as &$result) {
+
         $result['name'] = try_decrypt($result['name']);
         $result['description'] = try_decrypt($result['description']);
+        
     }
     
     // Close the database connection
@@ -1983,15 +2022,20 @@ function make_tree_options_html($options, $parent, &$html, $indent="", $selected
     }
 }
 
-/******************************
- * FUNCTION: ADD NEW DOCUMENT *
- ******************************/
-function add_document($submitted_by, $document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, $additional_stakeholders, $approver, $team_ids){
+/**************************
+ * FUNCTION: ADD DOCUMENT *
+ **************************/
+function add_document($submitted_by, $document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, $additional_stakeholders, $approver, $team_ids, $user=null){
     global $lang, $escaper;
+
+    // If no user was specified, try the session uid, otherwise default to 0
+    if (!$user) {
+        $user = $_SESSION['uid'] ?? 0;
+    }
 
     // Open the database connection
     $db = db_open();
-    
+
     // Check if the framework exists
     $stmt = $db->prepare("SELECT * FROM `documents` where document_name=:document_name AND document_type=:document_type ; ");
     $stmt->bindParam(":document_name", $document_name);
@@ -2025,8 +2069,24 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
 
     $document_id = $db->lastInsertId();
 
-    // Split the control_ids string into an array
-    $ids = array_map('trim', explode(',', $control_ids));
+    // Normalize control_ids to array
+    if (is_array($control_ids)) {
+        $ids = $control_ids;
+    } elseif (is_string($control_ids) && $control_ids !== '') {
+        $ids = array_map('trim', explode(',', $control_ids));
+    } else {
+        $ids = [];
+    }
+
+    // Normalize framework_ids to array
+    if (is_array($framework_ids)) {
+        $frameworks = $framework_ids;
+    } elseif (is_string($framework_ids) && $framework_ids !== '') {
+        $frameworks = array_map('trim', explode(',', $framework_ids));
+    } else {
+        $frameworks = [];
+    }
+
 
     // Loop and insert each mapped control id into the document_control_mappings table
     foreach ($ids as $control_id)
@@ -2047,12 +2107,13 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
     save_junction_values("document_framework_mappings", "document_id", $document_id, "framework_id", $framework_ids);
 
     // Save document framework controls
-    save_junction_values("document_control_mappings", "document_id", $document_id, "control_id", $control_ids);
+    // We don't need to do this because we already saved the mappings above when inserting the document_control_mappings records
+    // save_junction_values("document_control_mappings", "document_id", $document_id, "control_id", $control_ids);
 
     // If submitted files are existing, save files
     if(!empty($_FILES['file'])){
         $files = $_FILES['file'];
-        list($status, $file_ids, $errors) = upload_compliance_files($document_id, "documents", $files);
+        list($status, $file_ids, $errors) = upload_compliance_files($document_id, "documents", $files, 1, $user);
         if($file_ids){
             $file_id = $file_ids[0];
         }
@@ -2082,12 +2143,13 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
         $message = _lang('AuditLog_DocumentCreate', array('document_name' => $document_name, 'user_name' => $submitted_by_name), false);
         write_log(1000, $submitted_by, $message, "document");
 
-        // Update the document keywords
-        get_keywords_for_document($document_id, true);
-
-        // Update the document to control mappings for the document but don't care about the response
-        $endpoint = "/api/v2/governance/documents/topcontrols?id={$document_id}&refresh=true";
-        @call_simplerisk_api_endpoint($endpoint, "GET", false, 1);
+        // Queue the core document add task
+        $queue_task_payload = [
+            'triggered_at'  => time(),
+            'document_id'   => (int)$document_id,
+            'refresh'       => true,
+        ];
+        queue_task('core_document_update', $queue_task_payload, 100);
 
         // If notification is enabled
         if (notification_extra()) {
@@ -2135,8 +2197,8 @@ function update_document($document_id, $updated_by, $document_type, $document_na
     $stmt = $db->prepare($sql);
     $stmt->bindParam(":id", $document_id, PDO::PARAM_INT);
     $stmt->execute();
-    $row = $stmt->fetch();
-    if(!$row[0]){
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if(!$row){
         set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyDocumentationPermission']));
         return false;
     }
@@ -2146,6 +2208,7 @@ function update_document($document_id, $updated_by, $document_type, $document_na
 
     // Create an array of before values
     $before = [
+        'submitted_by' => (int)$row['submitted_by'],
         'updated_by' => (int)$row['updated_by'],
     	'document_type' => $row['document_type'],
     	'document_name' => $row['document_name'],
@@ -2166,6 +2229,7 @@ function update_document($document_id, $updated_by, $document_type, $document_na
 
     // Create an array of after values
     $after = [
+        'submitted_by' => (int)$row['submitted_by'],
         'updated_by' => (int)$updated_by,
         'document_type' => $document_type,
         'document_name' => $document_name,
@@ -2216,7 +2280,7 @@ function update_document($document_id, $updated_by, $document_type, $document_na
     $stmt->execute();
 
     // Split the control_ids string into an array
-    $ids = array_map('trim', explode(',', $control_ids));
+    $ids = array_map('trim', $control_ids);
 
     // Loop and insert each mapped control id into the document_control_mappings table
     foreach ($ids as $control_id)
@@ -2237,18 +2301,20 @@ function update_document($document_id, $updated_by, $document_type, $document_na
     // Close the database connection
     db_close($db);
 
-    // Update the document keywords
-    get_keywords_for_document($document_id, true);
-
-    // Update the document to control mappings for the document but don't care about the response
-    $endpoint = "/api/v2/governance/documents/topcontrols?id={$document_id}&refresh=true";
-    @call_simplerisk_api_endpoint($endpoint, "GET", false, 1);
+    // Queue the core document add task
+    $queue_task_payload = [
+        'triggered_at'  => time(),
+        'document_id'   => (int)$document_id,
+        'refresh'       => true,
+    ];
+    queue_task('core_document_update', $queue_task_payload, 100);
 
     // Save document frameworks
     save_junction_values("document_framework_mappings", "document_id", $document_id, "framework_id", $framework_ids);
 
     // Save document framework controls
-    save_junction_values("document_control_mappings", "document_id", $document_id, "control_id", $control_ids);
+    // We don't need to do this as we are just updating the existing mappings above
+    // save_junction_values("document_control_mappings", "document_id", $document_id, "control_id", $control_ids);
 
     // If submitted files are existing, save files
     if(!empty($_FILES['file'])){
@@ -2256,7 +2322,7 @@ function update_document($document_id, $updated_by, $document_type, $document_na
         $version = $document['file_version'] + 1;
 
         $files = $_FILES['file'];
-        list($status, $file_ids, $errors) = upload_compliance_files($document_id, "documents", $files, $version);
+        list($status, $file_ids, $errors) = upload_compliance_files($document_id, "documents", $files, $version, (int)$updated_by);
         if($file_ids){
             $file_id = $file_ids[0];
         }
@@ -3473,7 +3539,7 @@ function save_control_to_framework_by_ids($control_id, $framework_ids)
     db_close($db);  
 }
 
-function add_control_to_framework($control_id, $framework_id, $reference_name=null)
+function add_framework_control_to_framework($control_id, $framework_id, $reference_name=null)
 {
     if($framework_id > 0 && $control_id > 0)
     {
@@ -4955,171 +5021,140 @@ function get_frameworks_by_control_id($control_id)
  **********************************************/
 function get_document_to_control_mappings($document_id, $refresh = false)
 {
-    // Get the document
     $document = get_document_by_id($document_id);
-
-    // If the document doesn't exist, return false
-    if (empty($document))
-    {
+    if (empty($document)) {
         write_debug_log("Document ID $document_id not found. Exiting.");
         return false;
     }
 
-    try
-    {
-        // Open the database connection
-        $db = db_open();
+    $db = db_open();
 
-        // Check if existing mappings exist
-        $stmt = $db->prepare("SELECT * FROM `document_control_mappings` WHERE `document_id` = :document_id ORDER BY `score` DESC");
-        $stmt->bindParam(':document_id', $document_id, PDO::PARAM_INT);
-        $stmt->execute();
-
-        // Fetch the results
-        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // If there are no results or we want to refresh
-        if (empty($results) || $refresh)
-        {
-            write_debug_log("Refreshing mappings for Document ID: {$document_id}");
-
-            // Get document keywords
-            $document_keywords = get_keywords_for_document($document_id);
-
-            if (empty($document_keywords)) {
-                write_debug_log("No keywords found for document ID: {$document_id}");
-                return false;
-            }
-
-            $docKeywords = $document_keywords['data']['keywords'];
-
-            // Get the list of control ids
-            $stmt = $db->prepare("SELECT `id` FROM `framework_controls`;");
-            $stmt->execute();
-            $controlIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-            // Initialize TF-IDF variables
-            $tfidfMatrix = [];
-            $documentFrequency = [];
-            $numDocuments = 0;
-
-            // First pass: collect document frequency data from all controls
-            write_debug_log("Collecting document frequency data from all controls");
-            $validControlIds = [];
-            $controlKeywordsCollection = [];
-
-            foreach ($controlIds as $control_id) {
-                $control_keywords = get_keywords_for_control($control_id);
-
-                if (empty($control_keywords) || empty($control_keywords['data']['keywords'])) {
-                    write_debug_log("No keywords found for control ID: {$control_id}");
-                    continue;
-                }
-
-                $controlKeywords = $control_keywords['data']['keywords'];
-                $controlKeywordsCollection[$control_id] = $controlKeywords;
-                $validControlIds[] = $control_id;
-
-                // Count document frequency
-                foreach (array_keys($controlKeywords) as $term) {
-                    $documentFrequency[$term] = ($documentFrequency[$term] ?? 0) + 1;
-                }
-
-                $numDocuments++;
-            }
-
-            // Add document to the collection for IDF calculation
-            foreach (array_keys($docKeywords) as $term) {
-                $documentFrequency[$term] = ($documentFrequency[$term] ?? 0) + 1;
-            }
-            $numDocuments++; // Include the document itself
-
-            write_debug_log("Found $numDocuments total documents (including controls) for IDF calculation");
-
-            // Build document TF-IDF vector
-            $docVector = [];
-            foreach ($docKeywords as $term => $tf) {
-                $idf = log($numDocuments / ($documentFrequency[$term] ?? 1));
-                $docVector[$term] = $tf * $idf;
-            }
-
-            // Match against each control
-            $keywordMatches = [];
-            $tfIdfScores = [];
-            $maxKeywordMatch = 0;
-
-            foreach ($validControlIds as $control_id) {
-                $controlKeywords = $controlKeywordsCollection[$control_id];
-
-                // Calculate keyword match count
-                $keyword_match = 0;
-                foreach ($docKeywords as $keyword => $count) {
-                    if (isset($controlKeywords[$keyword])) {
-                        $keyword_match += min($count, $controlKeywords[$keyword]);
-                    }
-                }
-
-                $keywordMatches[$control_id] = $keyword_match;
-                if ($keyword_match > $maxKeywordMatch) {
-                    $maxKeywordMatch = $keyword_match;
-                }
-
-                // Build control TF-IDF vector
-                $controlVector = [];
-                foreach ($controlKeywords as $term => $tf) {
-                    $idf = log($numDocuments / ($documentFrequency[$term] ?? 1));
-                    $controlVector[$term] = $tf * $idf;
-                }
-
-                // Calculate TF-IDF similarity
-                $tfidf_similarity = cosineSimilarity($docVector, $controlVector);
-                $tfIdfScores[$control_id] = $tfidf_similarity;
-
-                write_debug_log("Control ID {$control_id}: Keyword match: {$keyword_match}, TF-IDF similarity: {$tfidf_similarity}");
-            }
-
-            // Update database with scores
-            foreach ($validControlIds as $control_id) {
-                // Get scores for this control
-                $tfidf_similarity = $tfIdfScores[$control_id];
-                $keyword_match = $keywordMatches[$control_id];
-
-                // Normalize keyword match
-                $normalized_keyword_score = $maxKeywordMatch > 0 ? $keyword_match / $maxKeywordMatch : 0;
-
-                // Calculate final score as average of TF-IDF and normalized keyword match
-                $final_score = ($tfidf_similarity + $normalized_keyword_score) / 2;
-
-                $stmt = $db->prepare("
-                    INSERT INTO `document_control_mappings`
-                        (`document_id`, `control_id`, `score`, `tfidf_similarity`, `keyword_match`)
-                    VALUES
-                        (:document_id, :control_id, :score, :tfidf_similarity, :keyword_match)
-                    ON DUPLICATE KEY UPDATE
-                        score = :score, tfidf_similarity = :tfidf_similarity, 
-                        keyword_match = :keyword_match, timestamp = NOW()");
-
-                $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
-                $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-                $stmt->bindParam(":score", $final_score, PDO::PARAM_STR);
-                $stmt->bindParam(":tfidf_similarity", $tfidf_similarity, PDO::PARAM_STR);
-                $stmt->bindParam(":keyword_match", $keyword_match, PDO::PARAM_INT);
-                $stmt->execute();
-
-                write_debug_log("Scoring Control ID $control_id: TF-IDF Similarity = $tfidf_similarity, Keyword Match = $keyword_match, Final Score = $final_score");
-            }
-
-            // Retrieve updated results
-            $stmt = $db->prepare("SELECT * FROM `document_control_mappings` WHERE `document_id` = :document_id ORDER BY `score` DESC;");
-            $stmt->bindParam(':document_id', $document_id, PDO::PARAM_INT);
-            $stmt->execute();
+    try {
+        // Fetch existing mappings if not refreshing
+        if (!$refresh) {
+            $stmt = $db->prepare("SELECT * FROM document_control_mappings WHERE document_id = :document_id ORDER BY score DESC");
+            $stmt->execute([':document_id' => $document_id]);
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } else {
-            write_debug_log("Cached mappings found for Document ID $document_id. Returning cached results.");
+
+            if (!empty($results)) {
+                write_debug_log("Cached mappings found for Document ID $document_id. Returning cached results.");
+                return $results;
+            }
         }
 
-        write_debug_log("Finished processing for Document ID $document_id. Returning " . count($results) . " mappings.");
+        write_debug_log("Refreshing mappings for Document ID: {$document_id}");
+
+        // Fetch document keywords
+        $docKeywordsData = get_keywords_for_document($document_id);
+        if (empty($docKeywordsData) || empty($docKeywordsData['data']['keywords'])) {
+            write_debug_log("No keywords found for document ID: {$document_id}");
+            return false;
+        }
+        $docKeywords = $docKeywordsData['data']['keywords'];
+
+        // Fetch control IDs
+        $stmt = $db->prepare("SELECT id FROM framework_controls");
+        $stmt->execute();
+        $controlIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        // Cache control keywords and TF-IDF vectors in memory
+        $validControlIds = [];
+        $controlKeywordsCollection = [];
+        $controlVectors = [];
+        $documentFrequency = [];
+        $numDocuments = 0;
+
+        foreach ($controlIds as $control_id) {
+            $controlKeywordsData = get_keywords_for_control($control_id);
+            if (empty($controlKeywordsData) || empty($controlKeywordsData['data']['keywords'])) continue;
+
+            $controlKeywords = $controlKeywordsData['data']['keywords'];
+            $controlKeywordsCollection[$control_id] = $controlKeywords;
+            $validControlIds[] = $control_id;
+
+            // Count document frequency
+            foreach (array_keys($controlKeywords) as $term) {
+                $documentFrequency[$term] = ($documentFrequency[$term] ?? 0) + 1;
+            }
+            $numDocuments++;
+        }
+
+        // Add document to document frequency
+        foreach (array_keys($docKeywords) as $term) {
+            $documentFrequency[$term] = ($documentFrequency[$term] ?? 0) + 1;
+        }
+        $numDocuments++;
+
+        // Precompute TF-IDF vector for document
+        $docVector = [];
+        foreach ($docKeywords as $term => $tf) {
+            $idf = log($numDocuments / ($documentFrequency[$term] ?? 1));
+            $docVector[$term] = $tf * $idf;
+        }
+        unset($docKeywords); // free memory
+
+        // Compute TF-IDF vectors for controls once
+        foreach ($validControlIds as $control_id) {
+            $controlVector = [];
+            foreach ($controlKeywordsCollection[$control_id] as $term => $tf) {
+                $idf = log($numDocuments / ($documentFrequency[$term] ?? 1));
+                $controlVector[$term] = $tf * $idf;
+            }
+            $controlVectors[$control_id] = $controlVector;
+        }
+        unset($controlKeywordsCollection); // free memory
+
+        // Compute keyword matches and final scores
+        $maxKeywordMatch = 0;
+        $keywordMatches = [];
+        $tfIdfScores = [];
+
+        foreach ($validControlIds as $control_id) {
+            $keyword_match = 0;
+            foreach ($docVector as $term => $tfidf) {
+                if (isset($controlVectors[$control_id][$term])) $keyword_match++;
+            }
+            $keywordMatches[$control_id] = $keyword_match;
+            $maxKeywordMatch = max($maxKeywordMatch, $keyword_match);
+
+            $tfIdfScores[$control_id] = cosineSimilarity($docVector, $controlVectors[$control_id]);
+        }
+        unset($docVector, $controlVectors); // free memory
+
+        // Update database with scores
+        foreach ($validControlIds as $control_id) {
+            $tfidf_similarity = $tfIdfScores[$control_id];
+            $keyword_match = $keywordMatches[$control_id];
+            $normalized_keyword_score = $maxKeywordMatch > 0 ? $keyword_match / $maxKeywordMatch : 0;
+            $final_score = ($tfidf_similarity + $normalized_keyword_score) / 2;
+
+            $stmt = $db->prepare("
+                INSERT INTO document_control_mappings
+                    (document_id, control_id, score, tfidf_similarity, keyword_match)
+                VALUES
+                    (:document_id, :control_id, :score, :tfidf_similarity, :keyword_match)
+                ON DUPLICATE KEY UPDATE
+                    score = :score, tfidf_similarity = :tfidf_similarity, 
+                    keyword_match = :keyword_match, timestamp = NOW()
+            ");
+
+            $stmt->execute([
+                ':document_id' => $document_id,
+                ':control_id' => $control_id,
+                ':score' => $final_score,
+                ':tfidf_similarity' => $tfidf_similarity,
+                ':keyword_match' => $keyword_match
+            ]);
+        }
+
+        // Fetch updated mappings
+        $stmt = $db->prepare("SELECT * FROM document_control_mappings WHERE document_id = :document_id ORDER BY score DESC");
+        $stmt->execute([':document_id' => $document_id]);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        write_debug_log("Finished TF-IDF processing for document {$document_id}, " . count($results) . " mappings stored.");
         return $results;
+
     } catch (Exception $e) {
         write_debug_log("Error in get_document_to_control_mappings: " . $e->getMessage());
         return false;
@@ -5297,11 +5332,43 @@ function get_control_to_document_mappings($control_id, $refresh = false)
     }
 }
 
+/**
+ * FUNCTION: UPDATE DOCUMENT KEYWORDS
+ * Update the keywords and keyword count for a document in the database
+ */
+function update_document_keywords($document_id, array $keywords) {
+    $document = get_document_by_id($document_id);
+    if (empty($document)) return false;
+
+    $unique_name = $document['unique_name'];
+    $db = db_open();
+    try {
+        $keyword_json = json_encode($keywords);
+        $keyword_count = array_sum($keywords);
+
+        $stmt = $db->prepare("UPDATE compliance_files SET keywords = :keywords, keyword_count = :keyword_count WHERE BINARY unique_name = :unique_name");
+        $stmt->bindParam(":keywords", $keyword_json, PDO::PARAM_STR);
+        $stmt->bindParam(":keyword_count", $keyword_count, PDO::PARAM_INT);
+        $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
+        $stmt->execute();
+
+        return true;
+    } catch (Exception $e) {
+        write_debug_log("Error in update_document_keywords: " . $e->getMessage());
+        return false;
+    } finally {
+        db_close($db);
+    }
+}
+
 /***************************************
  * FUNCTION: GET KEYWORDS FOR DOCUMENT *
  ***************************************/
 function get_keywords_for_document($document_id, $refresh = false)
 {
+    // Allow this to run as long as necessary
+    ini_set('max_execution_time', 0);
+
     // Get the document
     $document = get_document_by_id($document_id);
 
@@ -5342,7 +5409,7 @@ function get_keywords_for_document($document_id, $refresh = false)
 
         // Get the file from the database
         $unique_name = $document['unique_name'];
-        $stmt = $db->prepare("SELECT `content`, `keywords`, `keyword_count` FROM compliance_files WHERE BINARY unique_name=:unique_name");
+        $stmt = $db->prepare("SELECT `content`, `name`, `type`, `keywords`, `keyword_count` FROM compliance_files WHERE BINARY unique_name=:unique_name");
         $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
         $stmt->execute();
 
@@ -5381,13 +5448,15 @@ function get_keywords_for_document($document_id, $refresh = false)
 
                 // Get the file content
                 $content = $file['content'];
+                $mimeType = $file['type'];
+                $fileName = $file['name'];
 
-                // Convert the content to text
-                $document_text = get_text_from_document_content($content);
+                // Use WordHandler to convert content to text
+                $document_text = DocumentTextExtractor::extractText($content, $mimeType, $fileName);
 
                 // Get the significant terms for the document
                 write_debug_log("Calculating significant terms from the document.  This may take a while.");
-                $keywords = extractSignificantTerms($document_text, 150);
+                $keywords = extractSignificantTerms($document_text);
                 write_debug_log("Significant Terms: " . json_encode($keywords));
 
                 // Get the keyword matches for the document
@@ -5495,7 +5564,7 @@ function get_keywords_for_control($control_id, $refresh = false)
                 // Get the control text and calculate the control term frequency
                 $control_text = $control['short_name'] . ': ' . $control['description'];
                 write_debug_log("Calculating significant terms from the control.  This may take a while.");
-                $keywords = extractSignificantTerms($control_text, 150);
+                $keywords = extractSignificantTerms($control_text);
                 write_debug_log("Significant Terms: " . json_encode($keywords));
 
                 // Get the keyword matches for the control
@@ -5634,7 +5703,7 @@ function get_document_content_by_document_id($document_id)
     } else $where = " 1";
 
     $sql = "
-        SELECT t2.content AS content
+        SELECT t2.content AS content, t2.type, t2.name
         FROM `documents` t1 
             LEFT JOIN `compliance_files` t2 ON t1.file_id=t2.id
         WHERE t1.id=:document_id AND {$where}
@@ -5694,6 +5763,9 @@ function get_documents_to_controls($sort_order = 0, $order_field = false, $order
             case "keyword_match":
                 $sort_query = " ORDER BY dtc.keyword_match {$order_dir} ";
                 break;
+            case "tfidf_match":
+                $sort_query = " ORDER BY dtc.tfidf_match {$order_dir} ";
+                break;
             case "ai_match":
                 $sort_query = " ORDER BY dtc.ai_match {$order_dir} ";
                 break;
@@ -5741,6 +5813,11 @@ function get_documents_to_controls($sort_order = 0, $order_field = false, $order
                     $selected_val = (strtolower($val) == "yes") ? 1 : 0;
                     $where_query .= " AND `dtc`.`selected` = :{$param_name}";
                     $filter_params[$param_name] = $selected_val;
+                    break;
+                case "tfidf_match":
+                    $tfidf_match_val = (strtolower($val) == "yes") ? 1 : 0;
+                    $where_query .= " AND `dtc`.`tfidf_match` = :{$param_name}";
+                    $filter_params[$param_name] = $tfidf_match_val;
                     break;
                 case "ai_match":
                     $ai_match_val = (strtolower($val) == "yes") ? 1 : 0;
@@ -5837,8 +5914,12 @@ function get_documents_to_controls($sort_order = 0, $order_field = false, $order
     // Initialize limit query
     $limit_query = "";
 
-    // If a start and length are specified
-    if ($start !== false && $length !== false)
+    // Check if length is valid (not -1 for "Show All")
+    // DataTables sends -1 when "Show All" is selected
+    $use_limit = ($start !== false && $length !== false && $length > 0);
+
+    // If a start and length are specified and valid
+    if ($use_limit)
     {
         $limit_query = " LIMIT :start, :length";
     }
@@ -5914,8 +5995,8 @@ function get_documents_to_controls($sort_order = 0, $order_field = false, $order
         {$where_query} {$sort_query} {$limit_query};
     ");
 
-    // If a start and length are specified
-    if ($start !== false && $length !== false)
+    // Only bind limit parameters if we're using them
+    if ($use_limit)
     {
         $stmt->bindValue(':start', (int)$start, PDO::PARAM_INT);
         $stmt->bindValue(':length', (int)$length, PDO::PARAM_INT);

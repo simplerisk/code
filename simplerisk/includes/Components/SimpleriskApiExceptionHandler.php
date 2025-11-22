@@ -17,7 +17,7 @@ class SimpleriskApiExceptionHandler extends Handler
     {
         $this->handler = is_callable($handler) ? $handler : function (\Throwable $e) {
             global $escaper;
-            error_log(Formatter::formatExceptionPlain($this->getInspector()));
+            write_debug_log(Formatter::formatExceptionPlain($this->getInspector()), 'error');
             
             // Although in certain cases this message gets escaped again,
             // I'd prefer to have a message that's double-escaped than one that gets through without escaping

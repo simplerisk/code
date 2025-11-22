@@ -17,8 +17,6 @@ require_once(realpath(__DIR__ . '/extras.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 // Include the language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file(true));
 
 // Include Laminas Escaper for HTML Output Encoding
@@ -6126,7 +6124,7 @@ function get_tooltip_api()
         $calculated_risk = $risk['calculated_risk'];
         $color = get_risk_color($calculated_risk);
         
-        $tooltip_html .=  '<a href="'. build_url('management/view.php?id=' . $escaper->escapeHtml(convert_id($risk['id']))) .'" style="" ><b>' . $escaper->escapeHtml(try_decrypt($risk['subject'])) . '</b></a><hr>';
+        $tooltip_html .=  '<a href="'. build_url('management/view.php?id=' . $escaper->escapeHtml(convert_to_risk_id($risk['id']))) .'" style="" ><b>' . $escaper->escapeHtml(try_decrypt($risk['subject'])) . '</b></a><hr>';
     }
 
     json_response(200, "result", $tooltip_html);
@@ -6296,8 +6294,8 @@ function getPlanMitigationsDatatableResponse()
                 $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels, false);
             }
             $submission_date = date(get_default_datetime_format("g:i A T"), strtotime($risk['submission_date']));
-            $mitigation_planned = planned_mitigation(convert_id($risk['id']), $risk['mitigation_id'], "PlanYourMitigations");
-            $management_review = management_review(convert_id($risk['id']), $risk['mgmt_review'], $next_review, true, "PlanYourMitigations");
+            $mitigation_planned = planned_mitigation(convert_to_risk_id($risk['id']), $risk['mitigation_id'], "PlanYourMitigations");
+            $management_review = management_review(convert_to_risk_id($risk['id']), $risk['mgmt_review'], $next_review, true, "PlanYourMitigations");
             $data_row = [];
             // Storing the data in a different format for filtering
             // no html - so filtering on 'div' won't return items with <div> in it
@@ -6310,7 +6308,7 @@ function getPlanMitigationsDatatableResponse()
                         if(($pos = stripos($column, "custom_field_")) !== false){
                             if(customization_extra()){
                                 $field_id = str_replace("custom_field_", "", $column);
-                                $custom_values = getCustomFieldValuesByRiskId(convert_id($risk['id']));
+                                $custom_values = getCustomFieldValuesByRiskId(convert_to_risk_id($risk['id']));
                                 $text = "";
                                 // Get value of custom filed
                                 foreach($custom_values as $custom_value)
@@ -6331,7 +6329,7 @@ function getPlanMitigationsDatatableResponse()
                         }
                         break;
                     case "id":
-                        $id = convert_id($risk['id']);
+                        $id = convert_to_risk_id($risk['id']);
                         $data_row[] = "<div data-id='{$id}' class='open-risk'><a class='open-in-new-tab' href='../management/view.php?id={$id}&active=PlanYourMitigations#mitigation'>{$id}</a></div>";
                         $filter_data[$column] = $id;
                         break;
@@ -6348,11 +6346,11 @@ function getPlanMitigationsDatatableResponse()
                         $filter_data[$column] = $submission_date;
                         break;
                     case "mitigation_planned":
-                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_id($risk['id'])) ." class=\"text-center open-mitigation mitigation active-cell\" >".$mitigation_planned."</div>";
+                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_to_risk_id($risk['id'])) ." class=\"text-center open-mitigation mitigation active-cell\" >".$mitigation_planned."</div>";
                         $filter_data[$column] = $mitigation_planned;
                         break;
                     case "management_review":
-                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_id($risk['id'])) ." class=\"text-center open-review management active-cell\">".$management_review."</div>";
+                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_to_risk_id($risk['id'])) ." class=\"text-center open-review management active-cell\">".$management_review."</div>";
                         $filter_data[$column] = $management_review;
                         break;
                     case "closure_date":
@@ -6503,7 +6501,8 @@ function getPlanMitigationsDatatableResponse()
             foreach($column_filters as $column_name => $val){
                 switch ($column_name) {
                     default :
-                        if(stripos($filter_data[$column_name], $val) === false){
+                        // Passing null to parameter 1 of type string in stripos is deprecated.
+                        if(stripos($filter_data[$column_name] ?? "", $val) === false){
                             $success = false;
                         }
                         break;
@@ -6731,8 +6730,8 @@ function getManagementReviewsDatatableResponse()
                 $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
             }
             $submission_date = date(get_default_datetime_format("g:i A T"), strtotime($risk['submission_date']));
-            $mitigation_planned = planned_mitigation(convert_id($risk['id']), $risk['mitigation_id'], "PerformManagementReviews");
-            $management_review = management_review(convert_id($risk['id']), $risk['mgmt_review'], $next_review, true, "PerformManagementReviews");
+            $mitigation_planned = planned_mitigation(convert_to_risk_id($risk['id']), $risk['mitigation_id'], "PerformManagementReviews");
+            $management_review = management_review(convert_to_risk_id($risk['id']), $risk['mgmt_review'], $next_review, true, "PerformManagementReviews");
             $data_row = [];
             // Storing the data in a different format for filtering
             // no html - so filtering on 'div' won't return items with <div> in it
@@ -6745,7 +6744,7 @@ function getManagementReviewsDatatableResponse()
                         if(($pos = stripos($column, "custom_field_")) !== false){
                             if(customization_extra()){
                                 $field_id = str_replace("custom_field_", "", $column);
-                                $custom_values = getCustomFieldValuesByRiskId(convert_id($risk['id']));
+                                $custom_values = getCustomFieldValuesByRiskId(convert_to_risk_id($risk['id']));
                                 $text = "";
                                 // Get value of custom filed
                                 foreach($custom_values as $custom_value)
@@ -6766,7 +6765,7 @@ function getManagementReviewsDatatableResponse()
                         }
                         break;
                     case "id":
-                        $id = convert_id($risk['id']);
+                        $id = convert_to_risk_id($risk['id']);
                         $data_row[] = "<div data-id='{$id}' class='open-risk'><a class='open-in-new-tab' href='../management/view.php?id={$id}&active=PerformManagementReviews#review' target='_blank'>{$id}</a></div>";
                         $filter_data[$column] = $id;
                         break;
@@ -6783,11 +6782,11 @@ function getManagementReviewsDatatableResponse()
                         $filter_data[$column] = $submission_date;
                         break;
                     case "mitigation_planned":
-                        $data_row[] = "<div data-id=" . $escaper->escapeHtml(convert_id($risk['id'])) . " class='text-center open-mitigation mitigation active-cell' >" . $mitigation_planned . "</div>";
+                        $data_row[] = "<div data-id=" . $escaper->escapeHtml(convert_to_risk_id($risk['id'])) . " class='text-center open-mitigation mitigation active-cell' >" . $mitigation_planned . "</div>";
                         $filter_data[$column] = $mitigation_planned;
                         break;
                     case "management_review":
-                        $data_row[] = "<div data-id=" . $escaper->escapeHtml(convert_id($risk['id'])) . " class='text-center open-review management active-cell'>" . $management_review . "</div>";
+                        $data_row[] = "<div data-id=" . $escaper->escapeHtml(convert_to_risk_id($risk['id'])) . " class='text-center open-review management active-cell'>" . $management_review . "</div>";
                         $filter_data[$column] = $management_review;
                         break;
                     case "closure_date":
@@ -6937,7 +6936,8 @@ function getManagementReviewsDatatableResponse()
             foreach($column_filters as $column_name => $val){
                 switch ($column_name) {
                     default :
-                        if(stripos($filter_data[$column_name], $val) === false){
+                        // Passing null to parameter 1 of type string in stripos is deprecated.
+                        if(stripos($filter_data[$column_name] ?? "", $val) === false){
                             $success = false;
                         }
                         break;
@@ -7181,8 +7181,8 @@ function getReviewRisksDatatableResponse()
             $next_review = $review['next_review'];
             $next_review_html = $review['next_review_html'];
             $submission_date = date(get_default_datetime_format("g:i A T"), strtotime($risk['submission_date']));
-            $mitigation_planned = planned_mitigation(convert_id($risk['id']), $risk['mitigation_id'],"ReviewRisksRegularly");
-            $management_review = management_review(convert_id($risk['id']), $risk['mgmt_review'], $next_review, true, "ReviewRisksRegularly");
+            $mitigation_planned = planned_mitigation(convert_to_risk_id($risk['id']), $risk['mitigation_id'],"ReviewRisksRegularly");
+            $management_review = management_review(convert_to_risk_id($risk['id']), $risk['mgmt_review'], $next_review, true, "ReviewRisksRegularly");
             $data_row = [];
             // Storing the data in a different format for filtering
             // no html - so filtering on 'div' won't return items with <div> in it
@@ -7195,7 +7195,7 @@ function getReviewRisksDatatableResponse()
                         if(($pos = stripos($column, "custom_field_")) !== false){
                             if(customization_extra()){
                                 $field_id = str_replace("custom_field_", "", $column);
-                                $custom_values = getCustomFieldValuesByRiskId(convert_id($risk['id']));
+                                $custom_values = getCustomFieldValuesByRiskId(convert_to_risk_id($risk['id']));
                                 $text = "";
                                 // Get value of custom filed
                                 foreach($custom_values as $custom_value)
@@ -7216,7 +7216,7 @@ function getReviewRisksDatatableResponse()
                         }
                         break;
                     case "id":
-                        $id = convert_id($risk_id);
+                        $id = convert_to_risk_id($risk_id);
                         $data_row[] = "<div data-id='{$id}' class='open-risk'><a target='_blank' class='open-in-new-tab' href='../management/view.php?id={$id}&active=ReviewRisksRegularly#review'>{$id}</a></div>";
                         $filter_data[$column] = $id;
                         break;
@@ -7237,11 +7237,11 @@ function getReviewRisksDatatableResponse()
                         $filter_data[$column] = $submission_date;
                         break;
                     case "mitigation_planned":
-                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_id($risk['id'])) ." class=\"text-center open-mitigation mitigation active-cell\" >".$mitigation_planned."</div>";
+                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_to_risk_id($risk['id'])) ." class=\"text-center open-mitigation mitigation active-cell\" >".$mitigation_planned."</div>";
                         $filter_data[$column] = $mitigation_planned;
                         break;
                     case "management_review":
-                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_id($risk['id'])) ." class=\"text-center open-review management active-cell\">".$management_review."</div>";
+                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_to_risk_id($risk['id'])) ." class=\"text-center open-review management active-cell\">".$management_review."</div>";
                         $filter_data[$column] = $management_review;
                         break;
                     case "closure_date":
@@ -7329,7 +7329,7 @@ function getReviewRisksDatatableResponse()
                         $data_row[] = $escaper->escapeHtml($filter_data[$column]);
                         break;
                     case "next_review_date":
-                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_id($risk_id)) ." class=\"text-center open-review\" >".$next_review_html."</div>";
+                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_to_risk_id($risk_id)) ." class=\"text-center open-review\" >".$next_review_html."</div>";
                         $filter_data[$column] = $next_review;
                         break;
                     case "risk_tags":
@@ -7393,7 +7393,8 @@ function getReviewRisksDatatableResponse()
             foreach($column_filters as $column_name => $val){
                 switch ($column_name) {
                     default :
-                        if(stripos($risk[$column_name], $val) === false){
+                        // Passing null to parameter 1 of type string in stripos is deprecated.
+                        if(stripos($risk[$column_name] ?? "", $val) === false){
                             $success = false;
                         }
                         break;
@@ -7486,9 +7487,9 @@ function getReviewsWithDateIssuesDatatableResponse()
             $select .= "</select>";
 
             $data[] = [
-                "<div data-id=". $escaper->escapeHtml(convert_id($risk_id)) ." class='open-risk'><a target=\"_blank\" href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></div>",
+                "<div data-id=". $escaper->escapeHtml(convert_to_risk_id($risk_id)) ." class='open-risk'><a target=\"_blank\" href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></div>",
                 $escaper->escapeHtml($subject),
-                "<div data-id=". $escaper->escapeHtml(convert_id($risk_id)) ." class=\"text-center\" >".$escaper->escapeHtml($next_review)."</div>",
+                "<div data-id=". $escaper->escapeHtml(convert_to_risk_id($risk_id)) ." class=\"text-center\" >".$escaper->escapeHtml($next_review)."</div>",
                 $select,
                 $review_id = $escaper->escapeHtml($review['review_id']),
             ];
@@ -7933,7 +7934,7 @@ function create_document_api() {
     else
     {
         // Insert a new document
-        $document_id = add_document($submitter, $document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver, implode(',', $team_ids));
+        $document_id = add_document($submitter, $document_type, $document_name, implode(',', $control_ids), $framework_ids, $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver, implode(',', $team_ids));
         if($document_id)
         {
             // Display an alert
@@ -7965,19 +7966,59 @@ function update_document_api() {
     $framework_ids              = empty($_POST['framework_ids']) ? [] : $_POST['framework_ids'];
     $control_ids                = empty($_POST['control_ids']) ? [] : $_POST['control_ids'];
 
-    $framework_ids_str = implode(',', array_map('intval', $framework_ids));
-    $control_ids_str   = implode(',', array_map('intval', $control_ids));
+    // Normalize the framework and control ids to be integers
+    $framework_ids = array_map('intval', $framework_ids);
+    $control_ids   = array_map('intval', $control_ids);
 
     // Open the database connection
     $db = db_open();
 
+    $where_parts = [];
+    $params = [];
+
+    // Add the framework filter if framework ids are provided
+    if (!empty($framework_ids)) {
+
+        // Create a string of placeholders for the IN clause
+        $placeholders = implode(',', array_fill(0, count($framework_ids), '?'));
+        $where_parts[] = "framework IN ($placeholders)";
+
+        // bind as ints
+        foreach ($framework_ids as $framework_id) {
+            $params[] = $framework_id;
+        }
+    }
+
+    // Add the control filter if control ids are provided
+    if (!empty($control_ids)) {
+
+        // Create a string of placeholders for the IN clause
+        $placeholders = implode(',', array_fill(0, count($control_ids), '?'));
+        $where_parts[] = "control_id IN ($placeholders)";
+
+        // bind as ints
+        foreach ($control_ids as $control_id) {
+            $params[] = $control_id;
+        }
+    }
+
     $sql = "
-        SELECT DISTINCT control_id
-        FROM framework_control_mappings
-        WHERE framework IN ($framework_ids_str)
-        AND control_id IN ($control_ids_str)
+        SELECT 
+            DISTINCT control_id
+        FROM 
+            framework_control_mappings
+        WHERE 
+            1=1
     ";
-    $stmt = $db->query($sql);
+
+    if (!empty($where_parts)) {
+        $sql .= "
+            AND " . implode(" AND ", $where_parts);
+    }
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+
     $control_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
     // Close the database connection
@@ -8161,7 +8202,7 @@ function create_exception_api() {
     try {
         $id = create_exception($name, $status, $policy, $framework, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification, $associated_risks);
     } catch(Exception $e) {
-        error_log($e);
+        write_debug_log($e, 'error');
         set_alert(true, "bad", $lang['ThereWasAProblemCreatingTheException']);
         json_response(400, get_alert(true), NULL);
         return;
@@ -10769,7 +10810,7 @@ function getFilesWithEncodingIssuesDatatableResponse() {
             $row = [];
             switch ($type) {
                 case 'risk':
-                    $row['id'] = "<div class='open-risk'><a target=\"_blank\" href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($file['risk_id'])) . "\">" . $escaper->escapeHtml(convert_id($file['risk_id'])) . "</a></div>";
+                    $row['id'] = "<div class='open-risk'><a target=\"_blank\" href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($file['risk_id'])) . "\">" . $escaper->escapeHtml(convert_to_risk_id($file['risk_id'])) . "</a></div>";
                     $row['subject'] = $escaper->escapeHtml(try_decrypt($file['subject']));
                     $row['view_type'] = $escaper->escapeHtml($lang[(int)$file['view_type'] === 1 ? 'Risk' : 'Mitigation']);
                 break;

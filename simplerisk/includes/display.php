@@ -414,8 +414,8 @@ function add_risk_details($template_group_id = "") {
     echo "
             <div class='row'>
                 <div class='col-12'>
-                    <div class='actions risk-form-actions d-flex justify-content-between align-items-center'>
-                        <span class='m-r-20'>" . $escaper->escapeHtml($lang['NewRiskInstruction']) . "</span>
+                    <p>" . $escaper->escapeHtml($lang['NewRiskInstruction']) . "</p>
+                    <div class='actions risk-form-actions d-flex justify-content-end align-items-center'>
                         <div>
                             <button type='button' name='submit' class='btn btn-submit text-end save-risk-form'>" . $escaper->escapeHtml($lang['SubmitRisk']) . "</button>
                             <button class='btn btn-secondary' id='reset_form' type='reset'>" . $escaper->escapeHtml($lang['ClearForm']) . " </button>
@@ -519,7 +519,6 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
         ";
                 display_main_detail_fields_by_panel_view('left', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping);
         echo "
-                &nbsp;
             </div>
         ";
 
@@ -529,7 +528,6 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
         ";
                 display_main_detail_fields_by_panel_view('right', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping);
         echo "
-                &nbsp;
             </div>
         </div>
         ";
@@ -541,7 +539,6 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
         ";
                 display_main_detail_fields_by_panel_view('bottom', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping);
         echo "
-                &nbsp;
             </div>
         </div>
         ";
@@ -942,148 +939,191 @@ function view_print_risk_details($id, $submission_date, $subject, $reference_id,
 /****************************************
 * FUNCTION: VIEW PRINT RISK SCORE FORMS *
 *****************************************/
-function risk_score_method_html($panel_name="", $scoring_method="1", $CLASSIC_likelihood="", $CLASSIC_impact="", $AccessVector="N", $AccessComplexity="L", $Authentication="N", $ConfImpact="C", $IntegImpact="C", $AvailImpact="C", $Exploitability="ND", $RemediationLevel="ND", $ReportConfidence="ND", $CollateralDamagePotential="ND", $TargetDistribution="ND", $ConfidentialityRequirement="ND", $IntegrityRequirement="ND", $AvailabilityRequirement="ND", $DREADDamagePotential="10", $DREADReproducibility="10", $DREADExploitability="10", $DREADAffectedUsers="10", $DREADDiscoverability="10", $OWASPSkillLevel="10", $OWASPMotive="10", $OWASPOpportunity="10", $OWASPSize="10", $OWASPEaseOfDiscovery="10", $OWASPEaseOfExploit="10", $OWASPAwareness="10", $OWASPIntrusionDetection="10", $OWASPLossOfConfidentiality="10", $OWASPLossOfIntegrity="10", $OWASPLossOfAvailability="10", $OWASPLossOfAccountability="10", $OWASPFinancialDamage="10", $OWASPReputationDamage="10", $OWASPNonCompliance="10", $OWASPPrivacyViolation="10", $custom=false, $ContributingLikelihood="", $ContributingImpacts=[]){
-
+function risk_score_method_html(
+    $panel_name = "",
+    $scoring_method = "1",
+    $CLASSIC_likelihood = "",
+    $CLASSIC_impact = "",
+    $AccessVector = "N",
+    $AccessComplexity = "L",
+    $Authentication = "N",
+    $ConfImpact = "C",
+    $IntegImpact = "C",
+    $AvailImpact = "C",
+    $Exploitability = "ND",
+    $RemediationLevel = "ND",
+    $ReportConfidence = "ND",
+    $CollateralDamagePotential = "ND",
+    $TargetDistribution = "ND",
+    $ConfidentialityRequirement = "ND",
+    $IntegrityRequirement = "ND",
+    $AvailabilityRequirement = "ND",
+    $DREADDamagePotential = "10",
+    $DREADReproducibility = "10",
+    $DREADExploitability = "10",
+    $DREADAffectedUsers = "10",
+    $DREADDiscoverability = "10",
+    $OWASPSkillLevel = "10",
+    $OWASPMotive = "10",
+    $OWASPOpportunity = "10",
+    $OWASPSize = "10",
+    $OWASPEaseOfDiscovery = "10",
+    $OWASPEaseOfExploit = "10",
+    $OWASPAwareness = "10",
+    $OWASPIntrusionDetection = "10",
+    $OWASPLossOfConfidentiality = "10",
+    $OWASPLossOfIntegrity = "10",
+    $OWASPLossOfAvailability = "10",
+    $OWASPLossOfAccountability = "10",
+    $OWASPFinancialDamage = "10",
+    $OWASPReputationDamage = "10",
+    $OWASPNonCompliance = "10",
+    $OWASPPrivacyViolation = "10",
+    $custom = false,
+    $ContributingLikelihood = "",
+    $ContributingImpacts = []
+) {
     global $escaper, $lang;
-    
-    if($custom === false) {
+
+    if ($custom === false) {
         $custom = get_setting("default_risk_score");
     }
-    if($panel_name=="top" || $panel_name=="bottom") {
-        $span1 = "col-2";
-        $span2 = "col-10";
-    } else {
-        $span1 = "col-4";
-        $span2 = "col-8";
-    }
 
+    $span1 = ($panel_name == "top" || $panel_name == "bottom") ? "col-2" : "col-4";
+    $span2 = ($panel_name == "top" || $panel_name == "bottom") ? "col-10" : "col-8";
+
+    // Start building HTML
     $html = "
-        <div class='row mb-2' >
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
-                <label>" . $escaper->escapeHtml($lang['RiskScoringMethod']) . ":</label>
-            </div>
-            <div class='{$span2}'>" . 
-                create_dropdown("scoring_methods", $scoring_method, "scoring_method", false, false, true) . "
-            </div>
-        </div>
-        <div id='classic' class='classic-holder' style='display:" . ($scoring_method == 1 ? "block" : "none") . "'>
-            <div class='row mb-2'>
-                <div class='{$span1} d-flex align-items-center justify-content-end'>
-                    <label>" . $escaper->escapeHtml($lang['CurrentLikelihood']) . ":</label>
-                </div>
-                <div class='{$span2}'>" . 
-                    create_dropdown('likelihood', $CLASSIC_likelihood, NULL, true, false, true) . "
-                </div>
-            </div>
-            <div class='row mb-2'>
-                <div class='{$span1} d-flex align-items-center justify-content-end'>
-                    <label>" . $escaper->escapeHtml($lang['CurrentImpact']) . ":</label>
-                </div>
-                <div class='{$span2}'>" . 
-                    create_dropdown('impact', $CLASSIC_impact, NULL, true, false, true) . "
-                </div>
-            </div>
-        </div>
+<div class='row mb-2 risk-details-edit-container'>
+    <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
+        <label>" . $escaper->escapeHtml($lang['RiskScoringMethod']) . ":</label>
+    </div>
+    <div class='{$span2} risk-details-edit'>" .
+        create_dropdown("scoring_methods", $scoring_method, "scoring_method", false, false, true) . "
+    </div>
+</div>
+";
 
-        <div id='cvss' style='display: " . ($scoring_method == 2 ? "block" : "none") . ";' class='cvss-holder'>
-            <div class='row mb-2'>
-                <div class='{$span1}'>
-                    &nbsp;
-                </div>
-                <div class='{$span2}'>
-                    <input type='button' class='btn btn-primary' name='cvssSubmit' id='cvssSubmit' value='Score Using CVSS' />
-                </div>
-            </div>
-            <input type='hidden' name='AccessVector' id='AccessVector' value='{$AccessVector}' />
-            <input type='hidden' name='AccessComplexity' id='AccessComplexity' value='{$AccessComplexity}' />
-            <input type='hidden' name='Authentication' id='Authentication' value='{$Authentication}' />
-            <input type='hidden' name='ConfImpact' id='ConfImpact' value='{$ConfImpact}' />
-            <input type='hidden' name='IntegImpact' id='IntegImpact' value='{$IntegImpact}' />
-            <input type='hidden' name='AvailImpact' id='AvailImpact' value='{$AvailImpact}' />
-            <input type='hidden' name='Exploitability' id='Exploitability' value='{$Exploitability}' />
-            <input type='hidden' name='RemediationLevel' id='RemediationLevel' value='{$RemediationLevel}' />
-            <input type='hidden' name='ReportConfidence' id='ReportConfidence' value='{$ReportConfidence}' />
-            <input type='hidden' name='CollateralDamagePotential' id='CollateralDamagePotential' value='{$CollateralDamagePotential}' />
-            <input type='hidden' name='TargetDistribution' id='TargetDistribution' value='{$TargetDistribution}' />
-            <input type='hidden' name='ConfidentialityRequirement' id='ConfidentialityRequirement' value='{$ConfidentialityRequirement}' />
-            <input type='hidden' name='IntegrityRequirement' id='IntegrityRequirement' value='{$IntegrityRequirement}' />
-            <input type='hidden' name='AvailabilityRequirement' id='AvailabilityRequirement' value='{$AvailabilityRequirement}' />
+    // --- Classic scoring ---
+    $html .= "
+<div id='classic' class='classic-holder' style='display:" . ($scoring_method == 1 ? "block" : "none") . "'>
+    <div class='row mb-2 risk-details-edit-container'>
+        <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
+            <label>" . $escaper->escapeHtml($lang['CurrentLikelihood']) . ":</label>
         </div>
-        <div id='dread' style='display: " . ($scoring_method == 3 ? "block" : "none") . ";' class='dread-holder'>
-            <div class='row mb-2'>
-                <div class='{$span1}'>
-                    &nbsp;
-                </div>
-                <div class='{$span2}'>
-                    <input type='button' class='btn btn-primary' name='dreadSubmit' id='dreadSubmit' value='Score Using DREAD' onclick='javascript: popupdread();' />
-                </div>
-            </div>
-            <input type='hidden' name='DREADDamage' id='DREADDamage' value='{$DREADDamagePotential}' />
-            <input type='hidden' name='DREADReproducibility' id='DREADReproducibility' value='{$DREADReproducibility}' />
-            <input type='hidden' name='DREADExploitability' id='DREADExploitability' value='{$DREADExploitability}' />
-            <input type='hidden' name='DREADAffectedUsers' id='DREADAffectedUsers' value='{$DREADAffectedUsers}' />
-            <input type='hidden' name='DREADDiscoverability' id='DREADDiscoverability' value='{$DREADDiscoverability}' />
+        <div class='{$span2} risk-details-edit'>" .
+        create_dropdown('likelihood', $CLASSIC_likelihood, NULL, true, false, true) . "
         </div>
-        <div id='owasp' style='display: " . ($scoring_method == 4 ? "block" : "none") . ";' class='owasp-holder'>
-            <div class='row mb-2'>
-                <div class='{$span1}'>
-                    &nbsp;
-                </div>
-                <div class='{$span2}'>
-                    <input type='button' class='btn btn-primary' name='owaspSubmit' id='owaspSubmit' value='Score Using OWASP'  />
-                </div>
-            </div>
-            <input type='hidden' name='OWASPSkillLevel' id='OWASPSkillLevel' value='{$OWASPSkillLevel}' />
-            <input type='hidden' name='OWASPMotive' id='OWASPMotive' value='{$OWASPMotive}' />
-            <input type='hidden' name='OWASPOpportunity' id='OWASPOpportunity' value='{$OWASPOpportunity}' />
-            <input type='hidden' name='OWASPSize' id='OWASPSize' value='{$OWASPSize}' />
-            <input type='hidden' name='OWASPEaseOfDiscovery' id='OWASPEaseOfDiscovery' value='{$OWASPEaseOfDiscovery}' />
-            <input type='hidden' name='OWASPEaseOfExploit' id='OWASPEaseOfExploit' value='{$OWASPEaseOfExploit}' />
-            <input type='hidden' name='OWASPAwareness' id='OWASPAwareness' value='{$OWASPAwareness}' />
-            <input type='hidden' name='OWASPIntrusionDetection' id='OWASPIntrusionDetection' value='{$OWASPIntrusionDetection}' />
-            <input type='hidden' name='OWASPLossOfConfidentiality' id='OWASPLossOfConfidentiality' value='{$OWASPLossOfConfidentiality}' />
-            <input type='hidden' name='OWASPLossOfIntegrity' id='OWASPLossOfIntegrity' value='{$OWASPLossOfIntegrity}' />
-            <input type='hidden' name='OWASPLossOfAvailability' id='OWASPLossOfAvailability' value='{$OWASPLossOfAvailability}' />
-            <input type='hidden' name='OWASPLossOfAccountability' id='OWASPLossOfAccountability' value='{$OWASPLossOfAccountability}' />
-            <input type='hidden' name='OWASPFinancialDamage' id='OWASPFinancialDamage' value='{$OWASPFinancialDamage}' />
-            <input type='hidden' name='OWASPReputationDamage' id='OWASPReputationDamage' value='{$OWASPReputationDamage}' />
-            <input type='hidden' name='OWASPNonCompliance' id='OWASPNonCompliance' value='{$OWASPNonCompliance}' />
-            <input type='hidden' name='OWASPPrivacyViolation' id='OWASPPrivacyViolation' value='{$OWASPPrivacyViolation}' />
+    </div>
+    <div class='row mb-2 risk-details-edit-container'>
+        <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
+            <label>" . $escaper->escapeHtml($lang['CurrentImpact']) . ":</label>
         </div>
-        <div id='custom' style='display: " . ($scoring_method == 5 ? "block" : "none") . ";' class='custom-holder'>
-            <div class='row mb-2'>
-                <div class='{$span1} d-flex align-items-center justify-content-end'>
-                    <label>" . $escaper->escapeHtml($lang['CustomValue']) . ":</label>
-                </div>
-                <div class='{$span2} d-flex align-items-center'>
-                    <input class='form-control m-r-10' style='width: 70px;' type='number' min='0' step='0.1' max='10' name='Custom' id='Custom' value='{$custom}' />
-                    <small>(Must be a numeric value between 0 and 10)</small>
-                </div>
-            </div>
+        <div class='{$span2} risk-details-edit'>" .
+        create_dropdown('impact', $CLASSIC_impact, NULL, true, false, true) . "
         </div>
-        <div id='contributing-risk' style='display: " . ($scoring_method == 6 ? "block" : "none") . ";' class='contributing-risk-holder'>
-            <div class='row mb-2'>
-                <div class='{$span1}'>
-                    &nbsp;
-                </div>
-                <div class='{$span2}'>
-                    <input type='button' class='btn btn-primary' name='contributingRiskSubmit' id='contributingRiskSubmit' value='" . $escaper->escapeHtml($lang["ScoreUsingContributingRisk"]) ."' />
-                </div>
-            </div>
-            <input type='hidden' name='ContributingLikelihood' id='contributing_likelihood' value='" . ($ContributingLikelihood ? $ContributingLikelihood : count(get_table("likelihood"))) . "' />";
-            
-            $max_impact_value = count(get_table("impact"));
-            $contributing_risks = get_contributing_risks();
+    </div>
+</div>
+";
 
-            foreach($contributing_risks as $contributing_risk) {
-                $html .= "
-            <input type='hidden' class='contributing-impact' name='ContributingImpacts[{$contributing_risk['id']}]' id='contributing_impact_{$contributing_risk['id']}' value='" . $escaper->escapeHtml(empty($ContributingImpacts[ $contributing_risk['id'] ]) ? $max_impact_value : $ContributingImpacts[ $contributing_risk['id'] ]) . "' />
-                ";
-            }
-            
-            $html .= "
+    // --- CVSS modal button & hidden inputs ---
+    $html .= "
+<div id='cvss' style='display:" . ($scoring_method == 2 ? "block" : "none") . "' class='cvss-holder'>
+    <div class='row mb-2'>
+        <div class='{$span1}'>&nbsp;</div>
+        <div class='{$span2}'>
+            <button type='button' id='cvssOpenModalBtn' class='btn btn-primary' data-bs-toggle='modal' data-bs-target='#cvssModal'>
+                Score Using CVSS
+            </button>
         </div>
-            ";
+    </div>
+</div>
+";
+
+    // Include the modal itself
+    ob_start();
+    require_once realpath(__DIR__ . '/../management/partials/cvss_modal_content.php');
+    $cvss_modal_html = ob_get_clean();
+    $html .= $cvss_modal_html;
+
+    // --- DREAD ---
+    $html .= "
+<div id='dread' style='display:" . ($scoring_method == 3 ? "block" : "none") . "' class='dread-holder'>
+    <div class='row mb-2'>
+        <div class='{$span1}'>&nbsp;</div>
+        <div class='{$span2}'>
+            <input type='button' class='btn btn-primary' name='dreadSubmit' id='dreadSubmit' value='Score Using DREAD' onclick='javascript: popupdread();' />
+        </div>
+    </div>
+    <input type='hidden' name='DREADDamage' id='DREADDamage' value='{$escaper->escapeHtml($DREADDamagePotential)}' />
+    <input type='hidden' name='DREADReproducibility' id='DREADReproducibility' value='{$escaper->escapeHtml($DREADReproducibility)}' />
+    <input type='hidden' name='DREADExploitability' id='DREADExploitability' value='{$escaper->escapeHtml($DREADExploitability)}' />
+    <input type='hidden' name='DREADAffectedUsers' id='DREADAffectedUsers' value='{$escaper->escapeHtml($DREADAffectedUsers)}' />
+    <input type='hidden' name='DREADDiscoverability' id='DREADDiscoverability' value='{$escaper->escapeHtml($DREADDiscoverability)}' />
+</div>
+";
+
+    // --- OWASP ---
+    $html .= "
+<div id='owasp' style='display:" . ($scoring_method == 4 ? "block" : "none") . "' class='owasp-holder'>
+    <div class='row mb-2'>
+        <div class='{$span1}'>&nbsp;</div>
+        <div class='{$span2}'>
+            <input type='button' class='btn btn-primary' name='owaspSubmit' id='owaspSubmit' value='Score Using OWASP' />
+        </div>
+    </div>
+    <input type='hidden' name='OWASPSkillLevel' id='OWASPSkillLevel' value='{$escaper->escapeHtml($OWASPSkillLevel)}' />
+    <input type='hidden' name='OWASPMotive' id='OWASPMotive' value='{$escaper->escapeHtml($OWASPMotive)}' />
+    <input type='hidden' name='OWASPOpportunity' id='OWASPOpportunity' value='{$escaper->escapeHtml($OWASPOpportunity)}' />
+    <input type='hidden' name='OWASPSize' id='OWASPSize' value='{$escaper->escapeHtml($OWASPSize)}' />
+    <input type='hidden' name='OWASPEaseOfDiscovery' id='OWASPEaseOfDiscovery' value='{$escaper->escapeHtml($OWASPEaseOfDiscovery)}' />
+    <input type='hidden' name='OWASPEaseOfExploit' id='OWASPEaseOfExploit' value='{$escaper->escapeHtml($OWASPEaseOfExploit)}' />
+    <input type='hidden' name='OWASPAwareness' id='OWASPAwareness' value='{$escaper->escapeHtml($OWASPAwareness)}' />
+    <input type='hidden' name='OWASPIntrusionDetection' id='OWASPIntrusionDetection' value='{$escaper->escapeHtml($OWASPIntrusionDetection)}' />
+    <input type='hidden' name='OWASPLossOfConfidentiality' id='OWASPLossOfConfidentiality' value='{$escaper->escapeHtml($OWASPLossOfConfidentiality)}' />
+    <input type='hidden' name='OWASPLossOfIntegrity' id='OWASPLossOfIntegrity' value='{$escaper->escapeHtml($OWASPLossOfIntegrity)}' />
+    <input type='hidden' name='OWASPLossOfAvailability' id='OWASPLossOfAvailability' value='{$escaper->escapeHtml($OWASPLossOfAvailability)}' />
+    <input type='hidden' name='OWASPLossOfAccountability' id='OWASPLossOfAccountability' value='{$escaper->escapeHtml($OWASPLossOfAccountability)}' />
+    <input type='hidden' name='OWASPFinancialDamage' id='OWASPFinancialDamage' value='{$escaper->escapeHtml($OWASPFinancialDamage)}' />
+    <input type='hidden' name='OWASPReputationDamage' id='OWASPReputationDamage' value='{$escaper->escapeHtml($OWASPReputationDamage)}' />
+    <input type='hidden' name='OWASPNonCompliance' id='OWASPNonCompliance' value='{$escaper->escapeHtml($OWASPNonCompliance)}' />
+    <input type='hidden' name='OWASPPrivacyViolation' id='OWASPPrivacyViolation' value='{$escaper->escapeHtml($OWASPPrivacyViolation)}' />
+</div>
+";
+
+    // --- Custom ---
+    $html .= "
+<div id='custom' style='display:" . ($scoring_method == 5 ? "block" : "none") . "' class='custom-holder'>
+    <div class='row mb-2'>
+        <div class='{$span1} d-flex align-items-center justify-content-end'>
+            <label>" . $escaper->escapeHtml($lang['CustomValue']) . ":</label>
+        </div>
+        <div class='{$span2} d-flex align-items-center'>
+            <input class='form-control m-r-10' style='width: 70px;' type='number' min='0' step='0.1' max='10' name='Custom' id='Custom' value='{$escaper->escapeHtml($custom)}' />
+            <small>(Must be a numeric value between 0 and 10)</small>
+        </div>
+    </div>
+</div>
+";
+
+    // --- Contributing Risk ---
+    $html .= "
+<div id='contributing-risk' style='display:" . ($scoring_method == 6 ? "block" : "none") . "' class='contributing-risk-holder'>
+    <div class='row mb-2'>
+        <div class='{$span1}'>&nbsp;</div>
+        <div class='{$span2}'>
+            <input type='button' class='btn btn-primary' name='contributingRiskSubmit' id='contributingRiskSubmit' value='" . $escaper->escapeHtml($lang["ScoreUsingContributingRisk"]) ."' />
+        </div>
+    </div>
+    <input type='hidden' name='ContributingLikelihood' id='contributing_likelihood' value='" . ($ContributingLikelihood ? $escaper->escapeHtml($ContributingLikelihood) : count(get_table("likelihood"))) . "' />";
+
+    $max_impact_value = count(get_table("impact"));
+    $contributing_risks = get_contributing_risks();
+    foreach ($contributing_risks as $contributing_risk) {
+        $html .= "
+    <input type='hidden' class='contributing-impact' name='ContributingImpacts[{$contributing_risk['id']}]' id='contributing_impact_{$contributing_risk['id']}' value='" . $escaper->escapeHtml(empty($ContributingImpacts[$contributing_risk['id']]) ? $max_impact_value : $ContributingImpacts[$contributing_risk['id']]) . "' />";
+    }
+    $html .= "</div>";
 
     echo $html;
 }
@@ -5188,6 +5228,9 @@ function view_configure_menu($active)
     echo ($active == "AuditTrail" ? "<li class=\"active\">\n" : "<li>\n");
     echo "<a href=\"audit_trail.php\">" . $escaper->escapeHtml($lang['AuditTrail']) . "</a>\n";
     echo "</li>\n";
+    echo ($active == "QueueMonitor" ? "<li class=\"active\">\n" : "<li>\n");
+    echo "<a href=\"queue_monitor.php\">" . $escaper->escapeHtml($lang['QueueMonitor']) . "</a>\n";
+    echo "</li>\n";
 
     // If the Import/Export Extra is enabled
     if (import_export_extra())
@@ -7286,171 +7329,187 @@ function get_data_risk_level( $risk_level , $y , $x , $f){
 }
 
 /********************************************************
-* FUNCTION: VIEW PRINT RISK SCORE FORMS IN PENDING RISK *
-*********************************************************/
-function display_score_html_from_pending_risk($scoring_method="5", $custom=false, $CLASSIC_likelihood="", $CLASSIC_impact="", $AccessVector="N", $AccessComplexity="L", $Authentication="N", $ConfImpact="C", $IntegImpact="C", $AvailImpact="C", $Exploitability="ND", $RemediationLevel="ND", $ReportConfidence="ND", $CollateralDamagePotential="ND", $TargetDistribution="ND", $ConfidentialityRequirement="ND", $IntegrityRequirement="ND", $AvailabilityRequirement="ND", $DREADDamagePotential="10", $DREADReproducibility="10", $DREADExploitability="10", $DREADAffectedUsers="10", $DREADDiscoverability="10", $OWASPSkillLevel="10", $OWASPMotive="10", $OWASPOpportunity="10", $OWASPSize="10", $OWASPEaseOfDiscovery="10", $OWASPEaseOfExploit="10", $OWASPAwareness="10", $OWASPIntrusionDetection="10", $OWASPLossOfConfidentiality="10", $OWASPLossOfIntegrity="10", $OWASPLossOfAvailability="10", $OWASPLossOfAccountability="10", $OWASPFinancialDamage="10", $OWASPReputationDamage="10", $OWASPNonCompliance="10", $OWASPPrivacyViolation="10", $ContributingLikelihood="", $ContributingImpacts=[], $display_type = 1) {
-
-    global $escaper;
-    global $lang;
+ * FUNCTION: VIEW PRINT RISK SCORE FORMS IN PENDING RISK *
+ *********************************************************/
+function display_score_html_from_pending_risk(
+    $scoring_method="5",
+    $custom=false,
+    $CLASSIC_likelihood="",
+    $CLASSIC_impact="",
+    $AccessVector="N",
+    $AccessComplexity="L",
+    $Authentication="N",
+    $ConfImpact="C",
+    $IntegImpact="C",
+    $AvailImpact="C",
+    $Exploitability="ND",
+    $RemediationLevel="ND",
+    $ReportConfidence="ND",
+    $CollateralDamagePotential="ND",
+    $TargetDistribution="ND",
+    $ConfidentialityRequirement="ND",
+    $IntegrityRequirement="ND",
+    $AvailabilityRequirement="ND",
+    $DREADDamagePotential="10",
+    $DREADReproducibility="10",
+    $DREADExploitability="10",
+    $DREADAffectedUsers="10",
+    $DREADDiscoverability="10",
+    $OWASPSkillLevel="10",
+    $OWASPMotive="10",
+    $OWASPOpportunity="10",
+    $OWASPSize="10",
+    $OWASPEaseOfDiscovery="10",
+    $OWASPEaseOfExploit="10",
+    $OWASPAwareness="10",
+    $OWASPIntrusionDetection="10",
+    $OWASPLossOfConfidentiality="10",
+    $OWASPLossOfIntegrity="10",
+    $OWASPLossOfAvailability="10",
+    $OWASPLossOfAccountability="10",
+    $OWASPFinancialDamage="10",
+    $OWASPReputationDamage="10",
+    $OWASPNonCompliance="10",
+    $OWASPPrivacyViolation="10",
+    $ContributingLikelihood="",
+    $ContributingImpacts=[],
+    $display_type = 1
+) {
+    global $escaper, $lang;
 
     if ($custom === false) {
         $custom = get_setting("default_risk_score");
     }
-
     if (!$scoring_method) {
         $scoring_method = 5;
     }
 
-    if ($display_type === 2) {
-        $html = "
-            <div class='risk-scoring-container'>
-                <div class='row mb-2'>
-                    <div class='col-2 d-flex align-items-center justify-content-start'>
-                        <label>{$escaper->escapeHtml($lang['RiskScoringMethod'])} :</label>
-                    </div>
-                    <div class='col-10'>" . 
-                        create_dropdown("scoring_methods", $scoring_method, "scoring_method[]", false, false, true, 'form-select') . "
-                    </div>
-                </div>
-                <div id='classic' class='classic-holder' style='display:" . ($scoring_method == 1 ? "block" : "none") . "'>
-                    <div class='row mb-2'>
-                        <div class='col-2 d-flex align-items-center justify-content-start'>
-                            <label>{$escaper->escapeHtml($lang['CurrentLikelihood'])} :</label>
-                        </div>
-                        <div class='col-10'>" . 
-                            create_dropdown('likelihood', $CLASSIC_likelihood, 'likelihood[]', true, false, true, 'form-select') . "
-                        </div>
-                    </div>
-                    <div class='row mb-2'>
-                        <div class='col-2 d-flex align-items-center justify-content-start'>
-                            <label>{$escaper->escapeHtml($lang['CurrentImpact'])} :</label>
-                        </div>
-                        <div class='col-10'>" . 
-                            create_dropdown('impact', $CLASSIC_impact, 'impact[]', true, false, true, 'form-select') . "
-                        </div>
-                    </div>
-                </div>
-        ";
-    } else {
-        $html = "
-            <div class='risk-scoring-container'>
-                <div class='mb-3'>
-                    <label>{$escaper->escapeHtml($lang['RiskScoringMethod'])} :</label>" . 
+    // Determine container classes based on display type
+    $containerClass = ($display_type === 2) ? "row mb-2" : "mb-3";
+    $labelClass = ($display_type === 2) ? "col-2 d-flex align-items-center justify-content-start" : "";
+    $inputClass = ($display_type === 2) ? "col-10" : "";
+
+    $html = "
+        <div class='risk-scoring-container'>
+            <div class='{$containerClass}'>
+                " . ($labelClass ? "<div class='{$labelClass}'><label>{$escaper->escapeHtml($lang['RiskScoringMethod'])} :</label></div>" : "") . "
+                <div class='{$inputClass}'>" .
                     create_dropdown("scoring_methods", $scoring_method, "scoring_method[]", false, false, true, 'form-select') . "
                 </div>
-                <div id='classic' class='classic-holder' style='display:" . ($scoring_method == 1 ? "block" : "none") . "'>
-                    <div class='mb-3'>
-                        <label>{$escaper->escapeHtml($lang['CurrentLikelihood'])} :</label>" . 
+            </div>
+    ";
+
+    // Classic scoring
+    $html .= "
+            <div id='classic' class='classic-holder' style='display:" . ($scoring_method == 1 ? "block" : "none") . "'>
+                <div class='{$containerClass}'>
+                    " . ($labelClass ? "<div class='{$labelClass}'><label>{$escaper->escapeHtml($lang['CurrentLikelihood'])} :</label></div>" : "") . "
+                    <div class='{$inputClass}'>" .
                         create_dropdown('likelihood', $CLASSIC_likelihood, 'likelihood[]', true, false, true, 'form-select') . "
                     </div>
-                    <div class='mb-3'>
-                        <label>{$escaper->escapeHtml($lang['CurrentImpact'])} :</label>" . 
+                </div>
+                <div class='{$containerClass}'>
+                    " . ($labelClass ? "<div class='{$labelClass}'><label>{$escaper->escapeHtml($lang['CurrentImpact'])} :</label></div>" : "") . "
+                    <div class='{$inputClass}'>" .
                         create_dropdown('impact', $CLASSIC_impact, 'impact[]', true, false, true, 'form-select') . "
                     </div>
                 </div>
+            </div>
+    ";
+
+    // CVSS scoring with modal integration
+    // --- CVSS modal button & hidden inputs ---
+    $html .= "
+            <div id='cvss' style='display:" . ($scoring_method == 2 ? "block" : "none") . "' class='cvss-holder'>
+                <div class='{$containerClass}'>
+                    <button type='button' id='cvssOpenModalBtn' class='btn btn-primary' data-bs-toggle='modal' data-bs-target='#cvssModal'>
+                        Score Using CVSS
+                    </button>
+                </div>
+            </div>
+    ";
+
+    // Include the modal itself
+    ob_start();
+    require_once realpath(__DIR__ . '/../management/partials/cvss_modal_content.php');
+    $cvss_modal_html = ob_get_clean();
+    $html .= $cvss_modal_html;
+
+    // DREAD scoring
+    $html .= "
+            <div id='dread' style='display: " . ($scoring_method == 3 ? "block" : "none") . ";' class='dread-holder'>
+                <div class='{$containerClass}'>
+                    <button type='button' class='btn btn-primary' id='dreadSubmit' onclick='popupdread();'>Score Using DREAD</button>
+                    <input type='hidden' name='DREADDamage[]' id='DREADDamage' value='{$escaper->escapeHtml($DREADDamagePotential)}' />
+                    <input type='hidden' name='DREADReproducibility[]' id='DREADReproducibility' value='{$escaper->escapeHtml($DREADReproducibility)}' />
+                    <input type='hidden' name='DREADExploitability[]' id='DREADExploitability' value='{$escaper->escapeHtml($DREADExploitability)}' />
+                    <input type='hidden' name='DREADAffectedUsers[]' id='DREADAffectedUsers' value='{$escaper->escapeHtml($DREADAffectedUsers)}' />
+                    <input type='hidden' name='DREADDiscoverability[]' id='DREADDiscoverability' value='{$escaper->escapeHtml($DREADDiscoverability)}' />
+                </div>
+            </div>
+    ";
+
+    // OWASP scoring
+    $html .= "
+            <div id='owasp' style='display: " . ($scoring_method == 4 ? "block" : "none") . ";' class='owasp-holder'>
+                <div class='{$containerClass}'>
+                    <button type='button' class='btn btn-primary' id='owaspSubmit'>Score Using OWASP</button>
+    ";
+
+    $owasp_fields = [
+        "OWASPSkillLevel","OWASPMotive","OWASPOpportunity","OWASPSize","OWASPEaseOfDiscovery",
+        "OWASPEaseOfExploit","OWASPAwareness","OWASPIntrusionDetection","OWASPLossOfConfidentiality",
+        "OWASPLossOfIntegrity","OWASPLossOfAvailability","OWASPLossOfAccountability","OWASPFinancialDamage",
+        "OWASPReputationDamage","OWASPNonCompliance","OWASPPrivacyViolation"
+    ];
+    foreach ($owasp_fields as $field) {
+        $value = $$field ?? "";
+        $html .= "
+                    <input type='hidden' name='{$field}[]' id='{$field}' value='{$escaper->escapeHtml($value)}' />
         ";
     }
-
     $html .= "
-                <div id='cvss' style='display: " . ($scoring_method == 2 ? "block" : "none") . ";' class='cvss-holder'>
-                    <div class='mb-3'>
-                        <p><input type='button' class='btn btn-primary' name='cvssSubmit' id='cvssSubmit' value='Score Using CVSS' /></p>
-                        <!-- Additional hidden inputs for CVSS -->
-                        <input type='hidden' name='AccessVector[]' id='AccessVector' value='{$AccessVector}' />
-                        <input type='hidden' name='AccessComplexity[]' id='AccessComplexity' value='{$AccessComplexity}' />
-                        <input type='hidden' name='Authentication[]' id='Authentication' value='{$Authentication}' />
-                        <input type='hidden' name='ConfImpact[]' id='ConfImpact' value='{$ConfImpact}' />
-                        <input type='hidden' name='IntegImpact[]' id='IntegImpact' value='{$IntegImpact}' />
-                        <input type='hidden' name='AvailImpact[]' id='AvailImpact' value='{$AvailImpact}' />
-                        <input type='hidden' name='Exploitability[]' id='Exploitability' value='{$Exploitability}' />
-                        <input type='hidden' name='RemediationLevel[]' id='RemediationLevel' value='{$RemediationLevel}' />
-                        <input type='hidden' name='ReportConfidence[]' id='ReportConfidence' value='{$ReportConfidence}' />
-                        <input type='hidden' name='CollateralDamagePotential[]' id='CollateralDamagePotential' value='{$CollateralDamagePotential}' />
-                        <input type='hidden' name='TargetDistribution[]' id='TargetDistribution' value='{$TargetDistribution}' />
-                        <input type='hidden' name='ConfidentialityRequirement[]' id='ConfidentialityRequirement' value='{$ConfidentialityRequirement}' />
-                        <input type='hidden' name='IntegrityRequirement[]' id='IntegrityRequirement' value='{$IntegrityRequirement}' />
-                        <input type='hidden' name='AvailabilityRequirement[]' id='AvailabilityRequirement' value='{$AvailabilityRequirement}' />
-                    </div>
                 </div>
-                <div id='dread' style='display: " . ($scoring_method == 3 ? "block" : "none") . ";' class='dread-holder'>
-                    <div class='mb-3'>
-                        <p><input type='button' class = 'btn btn-primary' name='dreadSubmit' id='dreadSubmit' value='Score Using DREAD' onclick='javascript: popupdread();' /></p>
-                        <!-- Additional hidden inputs for DREAD -->
-                        <input type='hidden' name='DREADDamage[]' id='DREADDamage' value='{$DREADDamagePotential}' />
-                        <input type='hidden' name='DREADReproducibility[]' id='DREADReproducibility' value='{$DREADReproducibility}' />
-                        <input type='hidden' name='DREADExploitability[]' id='DREADExploitability' value='{$DREADExploitability}' />
-                        <input type='hidden' name='DREADAffectedUsers[]' id='DREADAffectedUsers' value='{$DREADAffectedUsers}' />
-                        <input type='hidden' name='DREADDiscoverability[]' id='DREADDiscoverability' value='{$DREADDiscoverability}' />
-                    </div>
-                </div>
-                <div id='owasp' style='display: " . ($scoring_method == 4 ? "block" : "none") . ";' class='owasp-holder'>
-                    <div class='mb-3'>
-                        <p><input type='button' class = 'btn btn-primary' name='owaspSubmit' id='owaspSubmit' value='Score Using OWASP'  /></p>
-                        <!-- Additional hidden inputs for OWASP -->
-                        <input type='hidden' name='OWASPSkillLevel[]' id='OWASPSkillLevel' value='{$OWASPSkillLevel}' />
-                        <input type='hidden' name='OWASPMotive[]' id='OWASPMotive' value='{$OWASPMotive}' />
-                        <input type='hidden' name='OWASPOpportunity[]' id='OWASPOpportunity' value='{$OWASPOpportunity}' />
-                        <input type='hidden' name='OWASPSize[]' id='OWASPSize' value='{$OWASPSize}' />
-                        <input type='hidden' name='OWASPEaseOfDiscovery[]' id='OWASPEaseOfDiscovery' value='{$OWASPEaseOfDiscovery}' />
-                        <input type='hidden' name='OWASPEaseOfExploit[]' id='OWASPEaseOfExploit' value='{$OWASPEaseOfExploit}' />
-                        <input type='hidden' name='OWASPAwareness[]' id='OWASPAwareness' value='{$OWASPAwareness}' />
-                        <input type='hidden' name='OWASPIntrusionDetection[]' id='OWASPIntrusionDetection' value='{$OWASPIntrusionDetection}' />
-                        <input type='hidden' name='OWASPLossOfConfidentiality[]' id='OWASPLossOfConfidentiality' value='{$OWASPLossOfConfidentiality}' />
-                        <input type='hidden' name='OWASPLossOfIntegrity[]' id='OWASPLossOfIntegrity' value='{$OWASPLossOfIntegrity}' />
-                        <input type='hidden' name='OWASPLossOfAvailability[]' id='OWASPLossOfAvailability' value='{$OWASPLossOfAvailability}' />
-                        <input type='hidden' name='OWASPLossOfAccountability[]' id='OWASPLossOfAccountability' value='{$OWASPLossOfAccountability}' />
-                        <input type='hidden' name='OWASPFinancialDamage[]' id='OWASPFinancialDamage' value='{$OWASPFinancialDamage}' />
-                        <input type='hidden' name='OWASPReputationDamage[]' id='OWASPReputationDamage' value='{$OWASPReputationDamage}' />
-                        <input type='hidden' name='OWASPNonCompliance[]' id='OWASPNonCompliance' value='{$OWASPNonCompliance}' />
-                        <input type='hidden' name='OWASPPrivacyViolation[]' id='OWASPPrivacyViolation' value='{$OWASPPrivacyViolation}' />
-                    </div>
-                </div>
+            </div>
     ";
-    
-    if ($display_type === 2) {
-        $html .= "
-                <div id='custom' style='display: " . ($scoring_method == 5 ? "block" : "none") . ";' class='custom-holder'>
-                    <div class='row mb-2'>
-                        <div class='col-2 d-flex align-items-center justify-content-start'>
-                            <label>{$escaper->escapeHtml($lang['CustomValue'])} :</label>
-                        </div>
-                        <div class='col-10 d-flex align-items-center'>
-                            <input type='number' min='0' step='0.1' max='10' name='Custom[]' id='Custom' value='{$custom}' class='form-control m-r-10' style='width: 70px;'/>
-                            <small class='form-text text-muted'>(Must be a numeric value between 0 and 10)</small>
-                        </div>
-                    </div>
-                </div>          
-                                    
-        ";
-    } else {
-        $html .= "
-                <div id='custom' style='display: " . ($scoring_method == 5 ? "block" : "none") . ";' class='custom-holder'>
-                    <div class='mb-3'>
-                        <label>{$escaper->escapeHtml($lang['CustomValue'])} :</label>
-                        <input type='number' min='0' step='0.1' max='10' name='Custom[]' id='Custom' value='{$custom}' class='form-control' />
+
+    // Custom scoring
+    $html .= "
+            <div id='custom' style='display: " . ($scoring_method == 5 ? "block" : "none") . ";' class='custom-holder'>
+                <div class='{$containerClass}'>
+                    " . ($labelClass ? "<div class='{$labelClass}'><label>{$escaper->escapeHtml($lang['CustomValue'])} :</label></div>" : "") . "
+                    <div class='{$inputClass}'>
+                        <input type='number' min='0' step='0.1' max='10' name='Custom[]' id='Custom' value='{$escaper->escapeHtml($custom)}' class='form-control' />
                         <small class='form-text text-muted'>(Must be a numeric value between 0 and 10)</small>
                     </div>
                 </div>
-        ";
-    }
-                            
-    $html .= "
-                <div id='contributing-risk' style='display: " . ($scoring_method == 6 ? "block" : "none") . ";' class='contributing-risk-holder'>
-                    <div class='mb-3'>
-                        <p><input type='button' class = 'btn btn-primary' name='contributingRiskSubmit' id='contributingRiskSubmit' value='{$escaper->escapeHtml($lang["ScoreUsingContributingRisk"])}' /></p>
-                        <input type='hidden' name='ContributingLikelihood[]' id='contributing_likelihood' value='" . ($ContributingLikelihood ? $ContributingLikelihood : count(get_table("likelihood"))) . "' />
+            </div>
     ";
+
+    // Contributing risk
+    $html .= "
+            <div id='contributing-risk' style='display: " . ($scoring_method == 6 ? "block" : "none") . ";' class='contributing-risk-holder'>
+                <div class='{$containerClass}'>
+                    <button type='button' class='btn btn-primary' id='contributingRiskSubmit'>{$escaper->escapeHtml($lang["ScoreUsingContributingRisk"])}</button>
+                    <input type='hidden' name='ContributingLikelihood[]' id='contributing_likelihood' value='" . ($ContributingLikelihood ? $escaper->escapeHtml($ContributingLikelihood) : count(get_table("likelihood"))) . "' />
+    ";
+
     $max_impact_value = count(get_table("impact"));
     $contributing_risks = get_contributing_risks();
-    foreach ($contributing_risks as $contributing_risk) {
+    foreach ($contributing_risks as $cr) {
+        $impact_value = empty($ContributingImpacts[$cr['id']]) ? $max_impact_value : $ContributingImpacts[$cr['id']];
         $html .= "
-                        <input type='hidden' class='contributing-impact' name='ContributingImpacts[{$contributing_risk['id']}][]' id='contributing_impact_{$escaper->escapeHtml($contributing_risk['id'])}' value='{$escaper->escapeHtml(empty($ContributingImpacts[ $contributing_risk['id'] ]) ? $max_impact_value : $ContributingImpacts[ $contributing_risk['id'] ])}' />
+                    <input type='hidden' class='contributing-impact' name='ContributingImpacts[{$cr['id']}][]' id='contributing_impact_{$cr['id']}' value='{$escaper->escapeHtml($impact_value)}' />
         ";
     }
     $html .= "
-                    </div>
                 </div>
             </div>
+    ";
+
+    // close risk-scoring-container
+    $html .= "
+        </div>
     ";
 
     echo $html;
@@ -8895,67 +8954,62 @@ function display_audit_timeline() {
     // If User has permission for complicance menu, shows Audit Timeline report
     if(!empty($_SESSION['compliance'])) {
 
-        $tableID = "audit-timeline";
-        
         echo "
-            <table id='{$tableID}' width='100%' class='risk-datatable table table-bordered table-striped table-condensed'>
-                <thead >
-                    <tr >
-                        <th data-name='actions' align='left' width='200px' valign='top'>{$escaper->escapeHtml($lang['Actions'])}</th>
-                        <th data-name='test_name' align='left' width='200px' valign='top'>{$escaper->escapeHtml($lang['TestName'])}</th>
-                        <th data-name='associated_frameworks' align='left' valign='top'>{$escaper->escapeHtml($lang['AssociatedFrameworks'])}</th>
-                        <th data-name='last_test_date' align='left' width='150px' valign='top'>{$escaper->escapeHtml($lang['LastTestDate'])}</th>
-                        <th data-name='last_test_result' align='left' width='150px' valign='top'>{$escaper->escapeHtml($lang['LastTestResult'])}</th>
-                        <th data-name='next_test_date' align='center' width='150px' valign='top'>{$escaper->escapeHtml($lang['NextTestDate'])}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
+            <div class='card-body border my-2'>
+                <div class='row'>
+                    <div class='col-10'></div>
+                    <div class='col-2'>
+                        <div style='float: right;'>
+        ";
+                            render_column_selection_widget('audit_timeline');
+        echo "
+                        </div>
+                    </div>
+                </div>
+                <div class='row'>
+                    <div class='col-12'>
+        ";
+                        render_view_table('audit_timeline');
+        echo "
+                    </div>
+                </div>
+            </div>
             
             <script>
                 $(function () {
-                    var form = $('#{$tableID}').parents('form');
-                    var datatableInstance = $('#{$tableID}').DataTable({
-                        bSort: true,
-                        createdRow: function(row, data, index){
-                            var background = $('.background-class', $(row)).data('background');
-                            $(row).find('td').addClass(background)
-                        },
-                        order: [[3, 'asc']],
-                        ajax: {
-                            url: BASE_URL + '/api/compliance/audit_timeline',
-                            data: function(d){
-                            },
-                            complete: function(response){
-                            }
-                        }
+
+                    initializeMultiselect('.header_filter .multiselect', {
+                        allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
+                        includeSelectAllOption: true,
+                        buttonWidth: '100%',
+                        maxHeight: 400,
+                        enableCaseInsensitiveFiltering: true,
                     });
 
-                    // Initiate Audit
-                    datatableInstance.on('draw', function() {
-                        $('.btn-initiate-audit').on('click', function() {
-                            // alert($(this).attr('id')); return;
-                            $.ajax({
-                                url: BASE_URL + '/api/compliance/audit_initiation/initiate',
-                                type: 'POST',
-                                data: {
-                                    type: 'test',
-                                    id: $(this).attr('id')
-                                },
-                                success: function(res) {
-                                    if (res.status_message) {
-                                        showAlertsFromArray(res.status_message);
-                                    }
-                                },
-                                error: function(xhr, status, error) {
-                                    if (!retryCSRF(xhr, this)) {
-                                        if (xhr.responseJSON && xhr.responseJSON.status_message) {
-                                            showAlertsFromArray(xhr.responseJSON.status_message);
-                                        }
+                    $('.header_filter [name=last_date].datepicker').initAsDatePicker();
+                    $('.header_filter [name=next_date].datepicker').initAsDatePicker();
+
+                    // Initiate Audit Button Click Event
+                    $('body').on('click', '.btn-initiate-audit', function() {
+                        $.ajax({
+                            url: BASE_URL + '/api/compliance/audit_initiation/initiate',
+                            type: 'POST',
+                            data: {
+                                type: 'test',
+                                id: $(this).attr('id')
+                            },
+                            success: function(res) {
+                                if (res.status_message) {
+                                    showAlertsFromArray(res.status_message);
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                if (!retryCSRF(xhr, this)) {
+                                    if (xhr.responseJSON && xhr.responseJSON.status_message) {
+                                        showAlertsFromArray(xhr.responseJSON.status_message);
                                     }
                                 }
-                            });
+                            }
                         });
                     });
                 });    
@@ -9230,7 +9284,7 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
 
     global $escaper, $lang;
     $user = get_user_by_id($_SESSION['uid']);
-    $settings = json_decode($user[$custom_setting_field], true);
+    $settings = json_decode($user[$custom_setting_field] ?? "", true);
 
     $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
     $risk_setting = [];
@@ -11770,6 +11824,8 @@ function display_document_to_controls()
                     var data_name = $(this).attr('data-name');
                     if(data_name == 'selected') {
                         $(this).html( '<select name=\"selected\" class= \"form-control\"><option value=\"\">--</option><option value=\"" . $escaper->escapeHtml($lang['Yes']) . "\">" . $escaper->escapeHtml($lang['Yes']) . "</option><option value=\"" . $escaper->escapeHtml($lang['No']) . "\">" . $escaper->escapeHtml($lang['No']) . "</option></select>' );
+                    } else if(data_name == 'tfidf_match') {
+                        $(this).html( '<select name=\"tfidf_match\" class= \"form-control\"><option value=\"\">--</option><option value=\"" . $escaper->escapeHtml($lang['Yes']) . "\">" . $escaper->escapeHtml($lang['Yes']) . "</option><option value=\"" . $escaper->escapeHtml($lang['No']) . "\">" . $escaper->escapeHtml($lang['No']) . "</option></select>' );
                     } else if(data_name == 'ai_match') {
                         $(this).html( '<select name=\"ai_match\" class= \"form-control\"><option value=\"\">--</option><option value=\"" . $escaper->escapeHtml($lang['Yes']) . "\">" . $escaper->escapeHtml($lang['Yes']) . "</option><option value=\"" . $escaper->escapeHtml($lang['No']) . "\">" . $escaper->escapeHtml($lang['No']) . "</option></select>' );
                     } else if(data_name == 'matching') {
@@ -11909,11 +11965,11 @@ function display_custom_document_control_columns($custom_setting_field = "custom
         if ($custom_setting_field == "custom_documents_to_controls_display_settings") {
             $document_setting = ["document_id" => 0, "document" => 1];
             $control_setting = ["control_id" => 0, "control_number" => 1, "control_short_name" => 0, "selected" => 1];
-            $matching_setting = ["score" => 0, "tfidf_similarity" => 0, "keyword_match" => 0, "ai_match" => 0, "ai_confidence" => 0, "ai_reasoning" => 0, "matching" => 1, "recommendation" => 1];
+            $matching_setting = ["score" => 0, "tfidf_similarity" => 0, "keyword_match" => 0, "tfidf_match" => 0, "ai_match" => 0, "ai_confidence" => 0, "ai_reasoning" => 0, "matching" => 1, "recommendation" => 1];
         } else {
             $document_setting = ["document_id" => 0, "document" => 1];
             $control_setting = ["control_id" => 0, "control_number" => 1, "control_short_name" => 0, "selected" => 1];
-            $matching_setting = ["score" => 0, "tfidf_similarity" => 0, "keyword_match" => 0, "ai_match" => 0, "ai_confidence" => 0, "ai_reasoning" => 0, "matching" => 1, "recommendation" => 1];
+            $matching_setting = ["score" => 0, "tfidf_similarity" => 0, "keyword_match" => 0, "tfidf_match" => 0, "ai_match" => 0, "ai_confidence" => 0, "ai_reasoning" => 0, "matching" => 1, "recommendation" => 1];
         }
     }
 
@@ -11945,6 +12001,7 @@ function display_custom_document_control_columns($custom_setting_field = "custom
         'score' => $escaper->escapeHtml($lang['Score']),
         'tfidf_similarity' => $escaper->escapeHtml($lang['TFIDFSimilarity']),
         'keyword_match' => $escaper->escapeHtml($lang['MatchingKeywords']),
+        'tfidf_match' => $escaper->escapeHtml($lang['TFIDFMatch']),
         'ai_match' => $escaper->escapeHtml($lang['AIMatch']),
         'ai_confidence' => $escaper->escapeHtml($lang['AIConfidence']),
         'ai_reasoning' => $escaper->escapeHtml($lang['AIReasoning']),
@@ -12217,6 +12274,7 @@ function get_label_by_document_field_name($field){
         'score' => js_string_escape($lang['Score']),
         'tfidf_similarity' => js_string_escape($lang['TFIDFSimilarity']),
         'keyword_match' => js_string_escape($lang['MatchingKeywords']),
+        'tfidf_match' => js_string_escape($lang['TFIDFMatch']),
         'ai_match' => js_string_escape($lang['AIMatch']),
         'ai_confidence' => js_string_escape($lang['AIConfidence']),
         'ai_reasoning' => js_string_escape($lang['AIReasoning']),
@@ -12225,6 +12283,256 @@ function get_label_by_document_field_name($field){
     ];
 
     return $columns[$field];
+}
+
+/*****************************************
+ * FUNCTION: DISPLAY QUEUE MONITOR TABLE *
+ *****************************************/
+function display_queue_monitor_table()
+{
+    $columns = ["id", "task_type", "status", "created_at", "updated_at", "attempts", "priority", "payload"];
+    $tableID = "queue-table";
+
+    echo "
+    <table id='{$tableID}' width='100%' class='table table-bordered table-striped table-condensed'>
+        <thead>
+            <tr>";
+    foreach ($columns as $column) {
+        $label = ucwords(str_replace('_', ' ', $column));
+        echo "<th data-name='{$column}'>{$label}</th>";
+    }
+    // Add new 'Promise' column
+    echo "<th>Promise</th>";
+    echo "</tr>
+        <tr>";
+    foreach ($columns as $column) {
+        if ($column === 'status') {
+            echo "<th>
+                <select class='form-control' id='filter_status' multiple='multiple'>
+                    <option value='pending' selected>Pending</option>
+                    <option value='in_progress' selected>In Progress</option>
+                    <option value='completed' selected>Completed</option>
+                    <option value='failed' selected>Failed</option>
+                </select>
+            </th>";
+        } elseif ($column === 'task_type') {
+            echo "<th><input type='text' class='form-control' id='filter_task_type' placeholder='Search Task Type'></th>";
+        } else {
+            echo "<th></th>";
+        }
+    }
+    // Empty header for Promise column filter (optional)
+    echo "<th></th>";
+    echo "</tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+<!-- Modal HTML -->
+<div class='modal fade' id='promiseModal' tabindex='-1' aria-hidden='true'>
+  <div class='modal-dialog modal-xl modal-dialog-centered'>
+    <div class='modal-content'>
+      <div class='modal-header'>
+        <h5 class='modal-title'>Promises for Queue Task</h5>
+        <button type='button' class='btn-close' data-bs-dismiss='modal'></button>
+      </div>
+      <div class='modal-body p-0'>
+        <div class='table-responsive' style='max-height:70vh; overflow-y:auto;'>
+          <table id='promise-table' class='table table-striped table-bordered table-condensed mb-0' style='width:100%'>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Promise Type</th>
+                <th>Reference ID</th>
+                <th>Current Stage</th>
+                <th>Status</th>
+                <th>State</th>
+                <th>Depends On</th>
+                <th>Payload</th>
+                <th>Description</th>
+                <th>Created At</th>
+                <th>Updated At</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class='modal-footer'>
+        <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+#{$tableID} pre {
+    white-space: pre;
+    overflow-x: auto;
+    max-width: 400px;
+    padding: 5px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+</style>
+
+<script>
+$(function(){
+    // Initialize the status filter as a multiselect
+    function initStatusFilter() {
+        if ($('#filter_status').data('multiselect-initialized')) return;
+
+        $('#filter_status').multiselect({
+            includeSelectAllOption: true,
+            enableFiltering: true,
+            buttonClass: 'form-select',
+            nonSelectedText: 'Select status',
+            allSelectedText: 'All selected',
+            buttonWidth: 'auto',
+            dropdownAlign: 'auto',
+            maxHeight: 200
+        });
+
+        $('#filter_status').data('multiselect-initialized', true);
+        $('#filter_status').multiselect('selectAll', false);
+        $('#filter_status').multiselect('updateButtonText');
+    }
+
+    initStatusFilter();
+
+    var datatableInstance = $('#queue-table').DataTable({
+        serverSide: true,
+        processing: true,
+        scrollX: true,
+        orderCellsTop: true,
+        order: [[3, 'desc']],
+        ajax: {
+            url: BASE_URL + '/api/v2/admin/queue',
+            type: 'GET',
+            data: function(d) {
+                d.task_type = $('#filter_task_type').val();
+                var selectedStatuses = $('#filter_status').val();
+                d.status = selectedStatuses && selectedStatuses.length ? selectedStatuses.join(',') : 'all';
+            },
+            dataSrc: function(json) {
+                json.recordsTotal = json.data.recordsTotal || 0;
+                json.recordsFiltered = json.data.recordsFiltered || 0;
+                return json.data.data || [];
+            }
+        },
+        columns: [
+            { data: 'id' },
+            { data: 'task_type' },
+            { data: 'status' },
+            { data: 'created_at' },
+            { data: 'updated_at' },
+            { data: 'attempts' },
+            { data: 'priority' },
+            { 
+                data: 'payload',
+                render: function (data) {
+                    function escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+                    try { var obj = JSON.parse(data); return '<pre>' + escapeHtml(JSON.stringify(obj, null, 2)) + '</pre>'; }
+                    catch (e) { return '<pre>' + escapeHtml(data) + '</pre>'; }
+                }
+            },
+            // New 'Promise' column
+            {
+                data: 'id',
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row) {
+                    return '<button class=\"btn btn-sm btn-outline-primary view-promises\" data-queue-id=\"' + data + '\">' +
+                           '<i class=\"fas fa-search\"></i>' +
+                           '</button>';
+                }
+            }
+        ]
+    });
+
+    $('#filter_task_type, #filter_status').on('change keyup', function() {
+        datatableInstance.ajax.reload();
+    });
+
+    // Click handler for Promise buttons
+    $('#queue-table tbody').on('click', '.view-promises', function() {
+        var queueId = $(this).data('queue-id');
+        $('#promiseModal').modal('show');
+
+        if ($.fn.DataTable.isDataTable('#promise-table')) {
+            $('#promise-table').DataTable().destroy();
+            $('#promise-table tbody').empty();
+        }
+
+        $('#promise-table tbody').html(
+            '<tr class=\"modal-loading-row\"><td colspan=\"11\" class=\"text-center py-5\">' +
+            '<div class=\"spinner-border text-primary\" role=\"status\"><span class=\"visually-hidden\">Loading...</span></div>' +
+            '</td></tr>'
+        );
+        $('.modal-loading-row').hide().fadeIn(200);
+
+        $('#promise-table').DataTable({
+            ajax: {
+                url: BASE_URL + '/api/v2/admin/queue/promises',
+                type: 'GET',
+                data: { queue_task_id: queueId },
+                dataSrc: function(json) {
+                    $('.modal-loading-row').fadeOut(200, function() { $(this).remove(); });
+
+                    if (json.status === 404 || !json.data || json.data.length === 0) {
+                        $('#promise-table tbody').html(
+                            '<tr class=\"modal-no-data-row\"><td colspan=\"11\" class=\"text-center py-3\">No promises found for this queue task</td></tr>'
+                        );
+                        $('.modal-no-data-row').hide().fadeIn(200);
+                        return [];
+                    }
+
+                    setTimeout(function() { $('#promise-table tbody tr').hide().fadeIn(200); }, 50);
+
+                    var modalBody = $('#promiseModal .modal-body .table-responsive');
+                    modalBody.css('max-height', Math.min($(window).height() * 0.7, json.data.length * 50 + 60) + 'px');
+
+                    return json.data;
+                }
+            },
+            columns: [
+                { data: 'id' },
+                { data: 'promise_type' },
+                { data: 'reference_id' },
+                { data: 'current_stage' },
+                { data: 'status' },
+                { data: 'state' },
+                { data: 'depends_on' },
+                { 
+                    data: 'payload',
+                    render: function(data) {
+                        function escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+                        try { return '<pre>' + escapeHtml(JSON.stringify(JSON.parse(data), null, 2)) + '</pre>'; }
+                        catch(e) { return '<pre>' + escapeHtml(data) + '</pre>'; }
+                    }
+                },
+                { data: 'description' },
+                { data: 'created_at' },
+                { data: 'updated_at' }
+            ],
+            searching: false,
+            paging: false,
+            info: false,
+            responsive: true
+        });
+    });
+});
+</script>
+    ";
+}
+
+/**************************************************************
+ * FUNCTION: DISPLAY CUSTOM QUEUE MONITOR COLUMNS (MODAL)     *
+ **************************************************************/
+function display_custom_queue_monitor_columns($custom_setting_field = "custom_queue_display_settings")
+{
+    // For now, we can return an empty container or allow future custom columns
+    echo "<p>Currently no custom columns available.</p>";
 }
 
 ?>

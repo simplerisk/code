@@ -11,8 +11,6 @@ require_once(realpath(__DIR__ . '/services.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
 
 // Include the language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
@@ -97,8 +95,56 @@ function display_framework_controls_in_compliance()
                             $('[name=\'team[]\']', form).multiselect('select', data['teams']);
 
                             $('[name=test_frequency]', form).val(data['test_frequency']);
+
+                            // If the audit_initiation_offset is not null, auto_audit_initiation is true
+                            if (data['audit_initiation_offset'] != null) {
+
+                                // Check the auto_audit_initiation true radio button
+                                $('[name=auto_audit_initiation][value=\"1\"]', form).prop('checked', true);
+
+                                // Enable and require the audit_initiation_offset input
+                                $('[name=audit_initiation_offset]', form).prop('disabled', false);
+                                $('[name=audit_initiation_offset]', form).prop('required', true);
+
+                                // Show the required mark
+                                $('.audit-initiation .audit-initiation-offset-container span.required', form).removeClass('d-none');
+
+                                // Set the audit_initiation_offset value
+                                $('[name=audit_initiation_offset]', form).val(data['audit_initiation_offset']);
+
+                            // If the audit_initiation_offset is null, auto_audit_initiation is false
+                            } else {
+
+                                // Check the auto_audit_initiation false radio button
+                                $('[name=auto_audit_initiation][value=\"0\"]', form).prop('checked', true);
+
+                                // Disable and not require the audit_initiation_offset input
+                                $('[name=audit_initiation_offset]', form).prop('disabled', true);
+                                $('[name=audit_initiation_offset]', form).prop('required', false);
+
+                                // Hide the required mark
+                                $('.audit-initiation .audit-initiation-offset-container span.required', form).addClass('d-none');
+
+                                // Clear the audit_initiation_offset value
+                                $('[name=audit_initiation_offset]', form).val('');
+                            }
                             $('[name=last_date]', form).val(data['last_date']);
-                            $('[name=next_date]', form).val(data['next_date']);
+                            if (!data['last_date']) {
+                                if (!data['next_date'] || data['next_date'] <= '" . date("Y-m-d") . "') {
+                                    $('[name=next_date]', form).val('" . date("Y-m-d") . "');
+                                } else {
+                                    $('[name=next_date]', form).val(data['next_date']);
+                                }
+                            } else {
+                                let date_obj = new Date(data['last_date']);
+                                date_obj.setDate(date_obj.getDate() + data['test_frequency']);
+                                let calc_next_date = date_obj.toISOString().split('T')[0];
+                                if (calc_next_date < '" . date("Y-m-d") . "') {
+                                    $('[name=next_date]', form).val('" . date("Y-m-d") . "');
+                                } else {
+                                    $('[name=next_date]', form).val(calc_next_date);
+                                }
+                            }
                             $('[name=name]', form).val(data['name']);
                             $('[name=objective]', form).val(data['objective']);
                             $('[name=test_steps]', form).val(data['test_steps']);
@@ -140,7 +186,7 @@ function display_framework_controls_in_compliance()
 /*****************************************
  * FUNCTION: ADD FRAMEWORK CONTROLS TEST *
  *****************************************/
-function add_framework_control_test($tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $framework_control_id, $additional_stakeholders = "", $last_date="0000-00-00", $next_date=false, $teams=[], $tags=[]){
+function add_framework_control_test($tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $framework_control_id, $additional_stakeholders = "", $last_date="0000-00-00", $next_date=false, $teams=[], $tags=[], $audit_initiation_offset = null){
     if($next_date === false) {
         if (!$last_date || $last_date === "0000-00-00") {
             $next_date = date("Y-m-d");
@@ -160,7 +206,7 @@ function add_framework_control_test($tester, $test_frequency, $name, $objective,
     $created_at = date("Y-m-d");
 
     // Create test
-    $stmt = $db->prepare("INSERT INTO `framework_control_tests` (`tester`, `test_frequency`, `last_date`, `next_date`, `name`, `objective`, `test_steps`, `approximate_time`, `expected_results`, `framework_control_id`, `created_at`, `additional_stakeholders`) VALUES (:tester, :test_frequency, :last_date, :next_date, :name, :objective, :test_steps, :approximate_time, :expected_results, :framework_control_id, :created_at, :additional_stakeholders)");
+    $stmt = $db->prepare("INSERT INTO `framework_control_tests` (`tester`, `test_frequency`, `last_date`, `next_date`, `name`, `objective`, `test_steps`, `approximate_time`, `expected_results`, `framework_control_id`, `created_at`, `additional_stakeholders`, `audit_initiation_offset`) VALUES (:tester, :test_frequency, :last_date, :next_date, :name, :objective, :test_steps, :approximate_time, :expected_results, :framework_control_id, :created_at, :additional_stakeholders, :audit_initiation_offset)");
     
     $stmt->bindParam(":tester", $tester, PDO::PARAM_INT);
     $stmt->bindParam(":test_frequency", $test_frequency, PDO::PARAM_INT);
@@ -174,6 +220,7 @@ function add_framework_control_test($tester, $test_frequency, $name, $objective,
     $stmt->bindParam(":framework_control_id", $framework_control_id, PDO::PARAM_INT);
     $stmt->bindParam(":created_at", $created_at);
     $stmt->bindParam(":additional_stakeholders", $additional_stakeholders, PDO::PARAM_STR, 500);
+    $stmt->bindValue(":audit_initiation_offset", $audit_initiation_offset, $audit_initiation_offset === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
 
     $stmt->execute();
 
@@ -187,7 +234,6 @@ function add_framework_control_test($tester, $test_frequency, $name, $objective,
     $message = _lang('TestCreatedAuditLogMessage', array('test_name' => $name, 'test_id' => $test_id, 'user' => $_SESSION['user']), false);
     write_log((int)$test_id + 1000, $_SESSION['uid'], $message, "test");
 
-
     // Close the database connection
     db_close($db);
 
@@ -197,7 +243,7 @@ function add_framework_control_test($tester, $test_frequency, $name, $objective,
 /********************************************
  * FUNCTION: UPDATE FRAMEWORK CONTROLS TEST *
  ********************************************/
-function update_framework_control_test($test_id, $tester=false, $test_frequency=false, $name=false, $objective=false, $test_steps=false, $approximate_time=false, $expected_results=false, $last_date=false, $next_date=false, $framework_control_id=false, $additional_stakeholders=false, $teams=false, $tags=[]){
+function update_framework_control_test($test_id, $tester=false, $test_frequency=false, $name=false, $objective=false, $test_steps=false, $approximate_time=false, $expected_results=false, $last_date=false, $next_date=false, $framework_control_id=false, $additional_stakeholders=false, $teams=false, $tags=[], $audit_initiation_offset = false){
 
     // Get test by test ID
     $test = get_framework_control_test_by_id($test_id);
@@ -214,12 +260,13 @@ function update_framework_control_test($test_id, $tester=false, $test_frequency=
     if($framework_control_id === false) $framework_control_id = $test['framework_control_id'];
     if($additional_stakeholders === false) $additional_stakeholders = $test['additional_stakeholders'];
     if($teams === false) $teams = $test['teams'];
+    if($audit_initiation_offset === false) $audit_initiation_offset = $test['audit_initiation_offset'];
 
     // Open the database connection
     $db = db_open();
 
     // Get the risk levels
-    $stmt = $db->prepare("UPDATE `framework_control_tests` SET `tester`=:tester, `test_frequency`=:test_frequency, `last_date`=:last_date, `next_date`=:next_date, `name`=:name, `objective`=:objective, `test_steps`=:test_steps, `approximate_time`=:approximate_time, `expected_results`=:expected_results, `framework_control_id`=:framework_control_id, `additional_stakeholders`=:additional_stakeholders WHERE id=:test_id; ");
+    $stmt = $db->prepare("UPDATE `framework_control_tests` SET `tester`=:tester, `test_frequency`=:test_frequency, `last_date`=:last_date, `next_date`=:next_date, `name`=:name, `objective`=:objective, `test_steps`=:test_steps, `approximate_time`=:approximate_time, `expected_results`=:expected_results, `framework_control_id`=:framework_control_id, `additional_stakeholders`=:additional_stakeholders, `audit_initiation_offset` = :audit_initiation_offset WHERE id=:test_id; ");
 
     $stmt->bindParam(":test_id", $test_id, PDO::PARAM_INT);
     $stmt->bindParam(":tester", $tester, PDO::PARAM_INT);
@@ -233,6 +280,7 @@ function update_framework_control_test($test_id, $tester=false, $test_frequency=
     $stmt->bindParam(":expected_results", $expected_results, PDO::PARAM_STR, 1000);
     $stmt->bindParam(":framework_control_id", $framework_control_id, PDO::PARAM_INT);
     $stmt->bindParam(":additional_stakeholders", $additional_stakeholders, PDO::PARAM_STR, 500);
+    $stmt->bindValue(":audit_initiation_offset", $audit_initiation_offset, $audit_initiation_offset === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
     $stmt->execute();
 
     // Close the database connection
@@ -334,6 +382,7 @@ function get_framework_control_test_by_id($test_id){
     $stmt = $db->prepare("
         SELECT
             `t1`.*,
+            IF(t1.audit_initiation_offset IS NULL, 0, 1) AS auto_audit_initiation,
             `t2`.`name` tester_name,
             GROUP_CONCAT(DISTINCT `itt`.`team_id`) teams,
             GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag) as tags
@@ -405,7 +454,8 @@ function get_framework_control_test_audit_by_id($test_audit_id){
             results.submission_date,
             tests.additional_stakeholders,
             GROUP_CONCAT(DISTINCT `itt`.`team_id`) teams,
-            GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag) as tags
+            GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag) as tags,
+            tests.audit_initiation_offset
         FROM `framework_control_test_audits` audits
             LEFT JOIN `user` u ON audits.tester = u.value
             LEFT JOIN `framework_controls` ctrl ON audits.framework_control_id = ctrl.id 
@@ -808,7 +858,7 @@ function initiate_framework_control_tests($type, $id, $tags=[]){
     return $name;
 }
 
-function initiate_test_audit($test_id, $initiated_audit_status, $tags=[]) {
+function initiate_test_audit($test_id, $initiated_audit_status, $tags=[], $requested_from_ui=true) {
 
     $test = get_framework_control_test_by_id($test_id);
     $name = $test['name'];
@@ -872,11 +922,23 @@ function initiate_test_audit($test_id, $initiated_audit_status, $tags=[]) {
         require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
         // Send the notification
-        notify_audit_initiate($audit_id);
+        notify_audit_initiate($audit_id, $requested_from_ui);
     }  
 
-    $message = "An active audit for \"{$test["name"]}\" was initiated by username \"" . $_SESSION['user'] . "\".";
-    write_log((int)$test_id + 1000, $_SESSION['uid'], $message, "test");
+    // If the initiate test audit was requested from the UI
+    if ($requested_from_ui) {
+
+        $message = "An active audit for \"{$test["name"]}\" was initiated by username \"" . $_SESSION['user'] . "\".";
+        write_log((int)$test_id + 1000, $_SESSION['uid'], $message, "test");
+
+    // If the initiate test audit was requested from an automated process
+    } else {
+
+        $message = "An active audit for \"{$test["name"]}\" was initiated.";
+        write_debug_log($message, "info");
+        write_log((int)$test_id + 1000, 0, $message, "test");
+
+    }
     
     return $name;
 }
@@ -3081,4 +3143,117 @@ function close_risks_by_test_result_id($result_id, $test_result) {
 
     return true;
 }
+
+/**************************************************
+ * FUNCTION: CHECK PERMISSION FOR COMPLIANCE FILE *
+ **************************************************/
+function check_permission_for_compliance_file($unique_name) {
+
+    // If team separation is enabled
+    if (team_separation_extra()) {
+
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+        // Open the database connection
+        $db = db_open();
+
+        $sql = "
+            SELECT 
+                cf.id
+            FROM 
+                compliance_files cf
+                JOIN framework_control_test_audits a ON cf.ref_id = a.id
+                LEFT JOIN `framework_controls` fc ON a.framework_control_id = fc.id
+                LEFT JOIN `framework_control_tests` fct ON fct.id = a.test_id   
+                LEFT JOIN `items_to_teams` i2t ON i2t.item_id = a.id and i2t.type = 'audit'
+            WHERE 
+                cf.unique_name = :unique_name 
+                AND cf.ref_type = 'test_audit'" . 
+                get_user_teams_query_for_tests_and_audits("a", false, true) . "
+            LIMIT 1;
+        ";
+        
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // Close the database connection
+        db_close($db);
+
+        // Check if the user has permission to access the file
+        if ($result) {
+
+            return true; // User has permission to access the file
+
+        } else {
+
+            return false; // User does not have permission to access the file
+
+        }
+
+    } else {
+
+        return true; // If team separation is not enabled, allow access by default
+        
+    }
+}
+
+/*********************************************
+ * FUNCTION: GET TESTS TO AUTO INITIATE      *
+ *********************************************/
+function get_tests_to_auto_initiate() {
+    
+    // Open the database connection
+    $db = db_open();
+
+    $today = date('Y-m-d');
+
+    $sql = "
+        SELECT t1.*
+        FROM 
+            `framework_control_tests` t1
+        WHERE 
+            t1.audit_initiation_offset IS NOT NULL 
+            AND t1.next_date IS NOT NULL 
+            AND DATE_SUB(t1.next_date, INTERVAL t1.audit_initiation_offset DAY) <= :today 
+            AND t1.next_date >= :today
+            AND NOT EXISTS (
+                SELECT 1 
+                FROM 
+                    `framework_control_test_audits` ta 
+                WHERE 
+                    ta.test_id = t1.id 
+                    AND ta.created_at BETWEEN DATE_SUB(t1.next_date, INTERVAL t1.audit_initiation_offset DAY) AND t1.next_date
+            );
+    ";
+
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(":today", $today, PDO::PARAM_STR);
+    $stmt->execute();
+
+    $tests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // closed the database connection
+    db_close($db);
+
+    return $tests;
+}
+
+/*********************************************
+ * FUNCTION: RUN AUTO INITIATE TEST CRON JOB *
+ *********************************************/
+function run_auto_initiate_test_cron() {
+    
+    $initiated_audit_status = get_setting("initiated_audit_status") ? get_setting("initiated_audit_status") : 0;
+
+    // get all tests that need to be initiated automatically 
+    // which have audit_initiation_offset not null and today should be between next_audit_date - audit_initiation_offset and next_audit_date and there is no initiated audit between next-audit_date - audit_initiation_offset and next_audit_date
+    $tests = get_tests_to_auto_initiate(); 
+    foreach ($tests as $test) {
+        initiate_test_audit($test['id'], $initiated_audit_status, [], false);
+    }
+}
+
 ?>

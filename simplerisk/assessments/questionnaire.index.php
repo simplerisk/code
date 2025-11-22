@@ -38,9 +38,10 @@
         session_start();
     }
 
+    // Include the CSRF Magic library
+    include_csrf_magic();
+
     // Include the language file
-    // Ignoring detections related to language files
-    // @phan-suppress-next-line SecurityCheck-PathTraversal
     require_once(language_file());
 
     csrf_init();
@@ -143,6 +144,8 @@
 
         <script src="../js/simplerisk/pages/assessment.js?<?= $current_app_version ?>" defer></script>
         <script src="../js/simplerisk/common.js?<?= $current_app_version ?>" defer></script>
+
+        <script src="../vendor/node_modules/block-ui/jquery.blockUI.js?<?= $current_app_version ?>" id="script_blockui" defer></script>
 
         <script type="text/javascript">
             var BASE_URL = '<?= $escaper->escapeHtml(rtrim(($_SESSION['base_url'] ?? get_setting("simplerisk_base_url")), '/')) ?>';

@@ -5,6 +5,8 @@
 
 // Include required functions file
 require_once(realpath(__DIR__ . '/api.php'));
+require_once(realpath(__DIR__ . '/../../../includes/queues.php'));
+require_once(realpath(__DIR__ . '/../../../includes/promises.php'));
 require_once(realpath(__DIR__ . '/../../../includes/upgrade.php'));
 
 /**********************************
@@ -321,6 +323,113 @@ function api_v2_update_all_document_control_mappings()
 
     // Return the result
     api_v2_json_result($status_code, $status_message, $data);
+}
+
+/********************************
+ * FUNCTION: API V2 ADMIN QUEUE *
+ ********************************/
+function api_v2_admin_queue()
+{
+    // Check that this is an admin user
+    api_v2_check_admin();
+
+    // DataTables server-side parameters
+    $start = isset($_GET['start']) ? (int)$_GET['start'] : 0;
+    $length = isset($_GET['length']) ? (int)$_GET['length'] : 10;
+    $order_column_index = isset($_GET['order'][0]['column']) ? (int)$_GET['order'][0]['column'] : 3; // Default to created_at
+    $order_dir = isset($_GET['order'][0]['dir']) && in_array(strtolower($_GET['order'][0]['dir']), ['asc','desc']) ? $_GET['order'][0]['dir'] : 'desc';
+
+    // Columns mapping
+    $columns = ["id", "task_type", "status", "created_at", "updated_at", "attempts", "priority", "payload"];
+    $order_column = $columns[$order_column_index] ?? 'created_at';
+
+    // Filters
+    $task_type = isset($_GET['task_type']) && $_GET['task_type'] !== '' ? trim($_GET['task_type']) : null;
+
+    // Normalize status input (string, comma-separated, or array)
+    $status = null;
+    if (isset($_GET['status']) && $_GET['status'] !== '') {
+        if (is_array($_GET['status'])) {
+            // Remove empty strings
+            $status = array_filter($_GET['status'], fn($s) => $s !== '');
+            if (in_array('all', $status, true)) {
+                $status = null; // 'all' means no filtering
+            }
+        } else {
+            // Split comma-separated string into array
+            $status_list = array_map('trim', explode(',', $_GET['status']));
+            if (in_array('all', $status_list, true)) {
+                $status = null; // 'all' means no filtering
+            } else {
+                $status = $status_list;
+            }
+        }
+    }
+
+    // Get all queue items with filters applied
+    $queue_items = get_queue_items($task_type, $status);
+
+    // Total records before filtering
+    $records_total = count(get_queue_items());
+
+    // Total records after filtering
+    $records_filtered = count($queue_items);
+
+    // Apply sorting
+    usort($queue_items, function($a, $b) use ($order_column, $order_dir) {
+        if ($a[$order_column] == $b[$order_column]) return 0;
+        if ($order_dir === 'asc') {
+            return ($a[$order_column] < $b[$order_column]) ? -1 : 1;
+        } else {
+            return ($a[$order_column] > $b[$order_column]) ? -1 : 1;
+        }
+    });
+
+    // Apply paging
+    $queue_items_page = array_slice($queue_items, $start, $length);
+
+    // Build response for DataTables
+    $response = [
+        "draw" => isset($_GET['draw']) ? (int)$_GET['draw'] : 0,
+        "recordsTotal" => $records_total,
+        "recordsFiltered" => $records_filtered,
+        "data" => $queue_items_page,
+    ];
+
+    api_v2_json_result(200, "SUCCESS", $response);
+}
+
+function api_v2_admin_queue_promises()
+{
+    // Check that this is an admin user
+    api_v2_check_admin();
+
+    // Get the queue_task_id from the query
+    if (!isset($_GET['queue_task_id']) || !is_numeric($_GET['queue_task_id'])) {
+        api_v2_json_result(400, "Missing or invalid queue_task_id", []);
+        return;
+    }
+    $queue_task_id = (int)$_GET['queue_task_id'];
+
+    // Open the database connection
+    $db = db_open();
+
+    // Fetch all promises associated with this queue_task_id
+    $stmt = $db->prepare("SELECT * FROM promises WHERE queue_task_id = :queue_task_id ORDER BY created_at ASC");
+    $stmt->execute(['queue_task_id' => $queue_task_id]);
+    $promises = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    // Check if any promises were found
+    if (empty($promises)) {
+        api_v2_json_result(404, "No promises found for queue_task_id {$queue_task_id}", []);
+        return;
+    }
+
+    // Return promises as JSON array
+    api_v2_json_result(200, "SUCCESS", $promises);
 }
 
 ?>

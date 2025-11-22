@@ -10,8 +10,6 @@ require_once(realpath(__DIR__ . '/../includes/artificial_intelligence.php'));
 render_header_and_sidebar(['multiselect'], ['check_admin' => true]);
 
 // Include the language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
 // If the extra directory exists

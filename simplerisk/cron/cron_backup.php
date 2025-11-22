@@ -16,7 +16,7 @@ if (php_sapi_name() == "cli")
 	if (get_setting('backup_auto') == "true") {
 
 	    $message = "Automatic backup requested.";
-	    write_debug_log_cli($message);
+	    write_debug_log($message, "info");
 	    write_log(0, 0, $message, 'backup');
 
 	    do_backup();
@@ -53,7 +53,7 @@ function do_backup($requested_from_ui=false) {
             if ($requested_from_ui) {
                 set_alert(true, "bad", $message);
             } else {
-                write_debug_log_cli($message);
+                write_debug_log($message, "error");
             }
         }
     }
@@ -77,7 +77,7 @@ function do_backup($requested_from_ui=false) {
             if ($requested_from_ui) {
                 set_alert(true, "bad", $message);
             } else {
-                write_debug_log_cli($message);
+                write_debug_log($message, "error");
             }
         }
     }
@@ -90,7 +90,7 @@ function do_backup($requested_from_ui=false) {
         if ($requested_from_ui) {
             set_alert(true, "bad", $message);
         } else {
-            write_debug_log_cli($message);
+            write_debug_log($message, "error");
         }
 
         return;
@@ -151,7 +151,7 @@ function do_backup($requested_from_ui=false) {
         if ($requested_from_ui) {
             set_alert(true, "good", $message);
         } else {
-            write_debug_log_cli($message);
+            write_debug_log($message, "info");
         }
 
         // Iterate through the list of expired backups and clean them up
@@ -166,7 +166,7 @@ function do_backup($requested_from_ui=false) {
     if ($requested_from_ui) {
         set_alert(true, "good", $message);
     } else {
-        write_debug_log_cli($message);
+        write_debug_log($message, "info");
     }
 }
 

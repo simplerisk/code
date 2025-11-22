@@ -56,24 +56,6 @@ function escapeHtml(text) {
 
     return text.replace(/[&<>"']/g, function (m) { return map[m]; });
 }
-/**
-* popup when click "Score Using CVSS"
-* 
-* @param parent
-*/
-function popupcvss(parent) {
-    parentOfScores = parent;
-
-    var cve_id = $("#reference_id", parent).val();
-    var pattern = /cve\-\d{4}-\d{4}/i;
-
-    // If the field is a CVE ID
-    if (cve_id !== undefined && cve_id.match(pattern)) {
-        my_window = window.open(BASE_URL + '/management/cvss_rating.php?cve_id=' + cve_id, 'popupwindow', 'width=850,height=680,menu=0,status=0');
-    }
-    else my_window = window.open(BASE_URL + '/management/cvss_rating.php', 'popupwindow', 'width=850,height=680,menu=0,status=0');
-
-}
 
 /**
 * popup when click "Score Using DREAD"
@@ -255,7 +237,7 @@ $(document).ready(function () {
         $('.score-overtime-container', tabContainer).show();
         $('.hide-score-overtime', tabContainer).show();
         $('.show-score-overtime', tabContainer).hide();
-    })
+    });
 
     $('body').on('click', '.hide-score-overtime', function (e) {
         e.preventDefault();
@@ -263,7 +245,12 @@ $(document).ready(function () {
         $('.score-overtime-container', tabContainer).hide();
         $('.hide-score-overtime', tabContainer).hide();
         $('.show-score-overtime', tabContainer).show();
-    })
+    });
+
+    // Refresh the file numbers on page load
+    $('input[type=file].active').each(function() {
+        refreshFilelist($(this).closest(".file-uploader"));
+    });
 })
 
 // A function to properly reset a form.

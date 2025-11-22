@@ -23,8 +23,6 @@ if (isset($_POST['change_language'])) {
         update_language($_SESSION['uid'], get_name_by_value("languages", $language));
 
         // Use the new language file
-        // Ignoring detections related to language files
-        // @phan-suppress-next-line SecurityCheck-PathTraversal
         require_once(language_file());
 
         // Display an alert

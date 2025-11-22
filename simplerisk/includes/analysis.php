@@ -252,7 +252,7 @@ function risk_distribution_analysis() {
             $mitigation_effort = $risk['mitigation_effort'];
             $inherent_color = $escaper->escapeHtml(get_risk_color($inherent_risk));
             $residual_color = $escaper->escapeHtml(get_risk_color($residual_risk));
-            $risk_id = convert_id($id);
+            $risk_id = convert_to_risk_id($id);
 
             // If the counter is less than or equal to 10
             if ($counter <= 10 || ($old_residual_risk==$residual_risk && $old_mitigation_effort==$mitigation_effort)) {

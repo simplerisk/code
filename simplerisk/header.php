@@ -11,6 +11,7 @@ $localization_required_by_scripts = [
     'blockUI' => ['ProcessingPleaseWait'],
     'UILayoutWidget' => ['WidgetType_chart', 'WidgetType_table', 'WidgetType_WYSIWYG'],
     'CUSTOM:pages/governance.js' => ['ExistingMappings', 'Unassigned', 'DocumentName', 'DocumentType', 'ControlFrameworks', 'Controls', 'CreationDate', 'ApprovalDate', 'Status', 'All', 'ExceptionName', 'Description', 'Justification', 'NextReviewDate'],
+    'CUSTOM:pages/compliance.js' => ['AuditInitiationOffsetMustBeANonNegativeValue', 'AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency'],
 ];
 
 ?>
@@ -153,15 +154,20 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
 		    var _original_blockui = $.blockUI;
 
 			// Redefine the blockUI function call, so we can have different 'defaults' for it than for the block() function
-            $.blockUI = function(arguments){
-				_original_blockui({
-					css: {
+            $.blockUI = function(options = {}){
+
+                // Merge the defaults with the options provided in the function call
+                const settings = $.extend(true, {
+                    css: {
     					padding: 5,
     					border: '3px solid var(--sr-default)',
     					backgroundColor: 'var(--sr-dark)',
     				},
     				message: "<i class='fa fa-spinner fa-spin' style='font-size:24px; padding-right: 10px;'></i>" + _lang['ProcessingPleaseWait'],
-    			});
+                }, options);
+
+                // Call the original blockUI function with the merged settings
+				_original_blockui(settings);
             };
 
             // Assign the properties of the original to the new implementation

@@ -25,7 +25,7 @@
 
         } else {
 
-            $tester = (int)$_POST['tester'];
+            $tester = (int)($_POST['tester'] ?? 0);
             $additional_stakeholders = empty($_POST['additional_stakeholders_add']) ? "" : implode(",", $_POST['additional_stakeholders_add']);
             $test_frequency = (int)$_POST['test_frequency'];
             $last_date = get_standard_date_from_default_format($_POST['last_date']);
@@ -38,10 +38,22 @@
             $teams = isset($_POST['team']) ? array_filter($_POST['team'], 'ctype_digit') : [];
             $tags = empty($_POST['tags']) ? [] : $_POST['tags'];
 
+            // There's no separate fields for marking auto audit initiation enabled and another for the offset.
+            // Simply setting `audit_initiation_offset` to null means it's disabled
+            $auto_audit_initiation = (int)$_POST['auto_audit_initiation'];
+            $audit_initiation_offset = isset($_POST['audit_initiation_offset']) ? $_POST['audit_initiation_offset'] : null;
+
             if (!$name) {
 
                 $error = true;
                 $error_msg = _lang('FieldRequired', array("field"=>$lang['TestName']));
+
+            }
+
+            if (!$tester) {
+
+                $error = true;
+                $error_msg = _lang('FieldRequired', array("field"=>$lang['Tester']));
 
             }
 
@@ -59,6 +71,23 @@
                 $error_msg = $lang['InvalidTestFrequency'];
             }
 
+            if ($auto_audit_initiation == 1) {
+                if ($audit_initiation_offset === "") {
+                    $error = true;
+                    $error_msg = _lang('FieldRequired', array("field"=>$lang['AuditInitiationOffset']));
+                } else if ((int)$audit_initiation_offset < 0) {
+                    $error = true;
+                    $error_msg = $lang['AuditInitiationOffsetMustBeANonNegativeValue'];
+                } else if ($test_frequency > 0 && (int)$audit_initiation_offset > $test_frequency) {
+                    $error = true;
+                    $error_msg = $lang['AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency'];
+                } else {
+                    $audit_initiation_offset = (int)$audit_initiation_offset;
+                }
+            } else {
+                $audit_initiation_offset = null;
+            }
+
             if ($approximate_time < 0) {
                 $error = true;
                 $error_msg = $lang['InvalidApproximateTime'];
@@ -67,7 +96,7 @@
             if($error !== true) {
 
                 // Add a framework control test
-                add_framework_control_test($tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $framework_control_id, $additional_stakeholders, $last_date, false, $teams, $tags);
+                add_framework_control_test($tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $framework_control_id, $additional_stakeholders, $last_date, false, $teams, $tags, $audit_initiation_offset);
 
                 // display an alert
                 set_alert(true, "good", $lang['TestSuccessCreated']);
@@ -123,6 +152,12 @@
             $expected_results = $_POST['expected_results'];
             $tags = empty($_POST['tags']) ? [] : $_POST['tags'];
 
+            
+            // There's no separate fields for marking auto audit initiation enabled and another for the offset.
+            // Simply setting `audit_initiation_offset` to null means it's disabled
+            $auto_audit_initiation = (int)$_POST['auto_audit_initiation'];
+            $audit_initiation_offset = isset($_POST['audit_initiation_offset']) ? $_POST['audit_initiation_offset'] : null;
+
             if (!$name) {
 
                 $error = true;
@@ -130,9 +165,33 @@
 
             }
 
+            if (!$tester) {
+
+                $error = true;
+                $error_msg = _lang('FieldRequired', array("field"=>$lang['Tester']));
+
+            }
+
             if ($test_frequency < 0) {
                 $error = true;
                 $error_msg = $lang['InvalidTestFrequency'];
+            }
+
+            if ($auto_audit_initiation == 1) {
+                if ($audit_initiation_offset === "") {
+                    $error = true;
+                    $error_msg = _lang('FieldRequired', array("field"=>$lang['AuditInitiationOffset']));
+                } else if ((int)$audit_initiation_offset < 0) {
+                    $error = true;
+                    $error_msg = $lang['AuditInitiationOffsetMustBeANonNegativeValue'];
+                } else if ($test_frequency > 0 && (int)$audit_initiation_offset > $test_frequency) {
+                    $error = true;
+                    $error_msg = $lang['AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency'];
+                } else {
+                    $audit_initiation_offset = (int)$audit_initiation_offset;
+                }
+            } else {
+                $audit_initiation_offset = null;
             }
 
             if ($approximate_time < 0) {
@@ -157,18 +216,31 @@
     //                $error_msg = $lang['InvalidNextTestDate'];
     //            }
             }
-            
+
             if ($last_date && $next_date && strtotime($next_date) < strtotime($last_date)) {
 
                 $error = true;
                 $error_msg = $lang['InvalidNextTestDateLastTestDateOrder'];
 
             }
+            
+            if (!$last_date || $last_date === "0000-00-00") {
+                if (!$next_date || $next_date === "0000-00-00" || strtotime($next_date) < $today_dt) {
+                    $next_date = date("Y-m-d");
+                }
+            } else {
+                $calc_next_date = date("Y-m-d", strtotime($last_date) + $test_frequency*24*60*60);
+                if($calc_next_date < date("Y-m-d")){
+                    $next_date = date("Y-m-d");
+                } else {
+                    $next_date = $calc_next_date;
+                }
+            }
 
             if ($error !== true) {
 
                 // Update a framework control test
-                update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date, false, $additional_stakeholders, $teams, $tags);
+                update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date, false, $additional_stakeholders, $teams, $tags, $audit_initiation_offset);
                 
                 // display an alert
                 set_alert(true, "good", $lang['TestSuccessUpdated']);
@@ -348,9 +420,9 @@
                             <input type="text" name="name" required value="" class="form-control" maxlength="1000" title="<?= $escaper->escapeHtml($lang['TestName']); ?>">
                         </div>
                         <div class="col-6">
-                            <label for=""><?= $escaper->escapeHtml($lang['Tester']); ?> :</label>
+                            <label for=""><?= $escaper->escapeHtml($lang['Tester']); ?><span class="required">*</span> :</label>
     <?php 
-                            create_dropdown("enabled_users", NULL, "tester", false, false, false); 
+                            create_dropdown("enabled_users", NULL, "tester", false, false, false, "required title='{$escaper->escapeHtml($lang['Tester'])}'"); 
     ?>
                         </div>
                     </div>
@@ -376,6 +448,21 @@
                         <div class="col-6">
                             <label for=""><?= $escaper->escapeHtml($lang['LastTestDate']); ?> :</label>
                             <input type="text" name="last_date" value="" class="form-control datepicker">
+                        </div>
+                    </div>
+                    <div class="row form-group audit-initiation">
+                        <div class="col-6">
+                            <label><?= $escaper->escapeHtml($lang['AutoInitiateAudit']); ?> :</label>
+                            <div class="mt-1">
+                                <input type='radio' name='auto_audit_initiation' value='1' id='add_audit_auto_init_yes' class='form-check-input cursor-pointer'/>
+                                <label for='add_audit_auto_init_yes' class='cursor-pointer'><?= $escaper->escapeHtml($lang['Yes']) ?></label>
+                                <input type='radio' name='auto_audit_initiation' value='0' id='add_audit_auto_init_no' class='form-check-input ms-3 cursor-pointer' checked/>
+                                <label for='add_audit_auto_init_no' class='cursor-pointer'><?= $escaper->escapeHtml($lang['No']) ?></label>
+                            </div>
+                        </div>
+                        <div class="col-6 audit-initiation-offset-container">
+                            <label for="add_audit_initiation_offset"><?= $escaper->escapeHtml($lang['AuditInitiationOffset']); ?><small class="text-dark ms-1">(<?= $escaper->escapeHtml($lang['AuditInitiationOffset_explanation']); ?>)</small><span class="required d-none">*</span> :</label>
+                            <input type="number" name="audit_initiation_offset" id="add_audit_initiation_offset" class="form-control" disabled title="<?= $escaper->escapeHtml($lang['AuditInitiationOffset']); ?>" min="0">
                         </div>
                     </div>
                     <div class="row form-group">
@@ -438,9 +525,9 @@
                             <input type="text" name="name" required value="" class="form-control" maxlength="1000" title="<?= $escaper->escapeHtml($lang['TestName']); ?>">
                         </div>
                         <div class="col-6">
-                            <label for=""><?= $escaper->escapeHtml($lang['Tester']); ?> :</label>
+                            <label for=""><?= $escaper->escapeHtml($lang['Tester']); ?><span class="required">*</span> :</label>
     <?php 
-                            create_dropdown("enabled_users", NULL, "tester", false, false, false); 
+                            create_dropdown("enabled_users", NULL, "tester", false, false, false, "required title='{$escaper->escapeHtml($lang['Tester'])}'"); 
     ?>
                         </div>
                     </div>
@@ -472,6 +559,21 @@
                         <div class="col-12">
                             <label for=""><?= $escaper->escapeHtml($lang['NextTestDate']); ?> :</label>
                             <input type="text" name="next_date" value="" class="form-control datepicker"> 
+                        </div>
+                    </div>
+                    <div class="row form-group audit-initiation">
+                        <div class="col-6">
+                            <label><?= $escaper->escapeHtml($lang['AutoInitiateAudit']); ?> :</label>
+                            <div class="mt-1">
+                                <input type='radio' name='auto_audit_initiation' value='1' id='edit_audit_auto_init_yes' class='form-check-input cursor-pointer'/>
+                                <label for='edit_audit_auto_init_yes' class='cursor-pointer'><?= $escaper->escapeHtml($lang['Yes']) ?></label>
+                                <input type='radio' name='auto_audit_initiation' value='0' id='edit_audit_auto_init_no' class='form-check-input ms-3 cursor-pointer' checked/>
+                                <label for='edit_audit_auto_init_no' class='cursor-pointer'><?= $escaper->escapeHtml($lang['No']) ?></label>
+                            </div>
+                        </div>
+                        <div class="col-6 audit-initiation-offset-container">
+                            <label for="edit_audit_initiation_offset"><?= $escaper->escapeHtml($lang['AuditInitiationOffset']); ?><small class="text-dark ms-1">(<?= $escaper->escapeHtml($lang['AuditInitiationOffset_explanation']); ?>)</small><span class="required d-none">*</span> :</label>
+                            <input type="number" name="audit_initiation_offset" id="edit_audit_initiation_offset" class="form-control" disabled title="<?= $escaper->escapeHtml($lang['AuditInitiationOffset']); ?>" min="0">
                         </div>
                     </div>
                     <div class="row form-group">
@@ -589,24 +691,6 @@
         init_minimun_editor('#edit_test_steps');
         init_minimun_editor('#edit_expected_results');
 
-        $("#add_test").on("click", function() {
-
-            // Check if the required fields have empty / trimmed empty values
-            if (!checkAndSetValidation("#test-new-form")) {
-                return false;
-            }
-
-        });
-
-        $("#update_test").on("click", function() {
-
-            // Check if the required fields have empty / trimmed empty values
-            if (!checkAndSetValidation("#test-edit-form")) {
-                return false;
-            }
-
-        });
-        
     });
 
     if ( window.history.replaceState ) {

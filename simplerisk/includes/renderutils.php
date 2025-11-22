@@ -39,7 +39,7 @@ function render_header_and_sidebar($required_scripts_or_css = [], $permissions =
     foreach (array_keys(get_defined_vars()) as $key) {
         if (!in_array($key, $local_variables) && !isset($GLOBALS[$key])) {
             // TODO Leave it here as this message should only be seen during development. A variable name detected by this logic should either be added to the above list as something that doesn't need to have a global scope or declared as global
-            error_log("'{$key}' isn't defined as a global variable");
+            write_debug_log("'{$key}' isn't defined as a global variable", 'warning');
         }
     }
 }

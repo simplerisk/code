@@ -459,7 +459,7 @@ final class Run implements RunInterface
             $exception = new ErrorException($message, /*code*/ $level, /*severity*/ $level, $file, $line);
             $app = \Leaf\Config::get('app');
 
-            if ($app && $app->config('log.enabled')) {
+            if ($app && $app->config('log.enabled') && class_exists('Leaf\Log')) {
                 $app->logger()->error($exception);
             }
 

@@ -26,9 +26,9 @@ add_session_check($permissions);
 include_csrf_magic();
 
 // Include the SimpleRisk language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
+
+global $escaper, $lang;
 
     // Check if a file id was sent
     if (isset($_GET['id']) || isset($_POST['id']))
@@ -42,6 +42,22 @@ require_once(language_file());
         {
             // Set the id to the post parameter
             $id = $_POST['id'];
+        }
+        
+        if (team_separation_extra()) {
+
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+    
+            if (!should_skip_test_and_audit_permission_check()) {
+                if (!check_permission_for_compliance_file($id)) {
+
+                    set_alert(true, "bad",  $escaper->escapeHtml($lang['DownloadFilePermissionMessage']));
+
+                    header("Location: ".$_SERVER['HTTP_REFERER']);
+                    exit();
+
+                }
+            }
         }
 
         // Get the file for the submitted file id

@@ -60,7 +60,19 @@
         $default_timezone = $_POST['default_timezone'];
         $current_default_timezone = get_setting("default_timezone");
         if ($default_timezone != $current_default_timezone) {
-            update_setting("default_timezone", $default_timezone);
+
+            // Get the list of timezones
+            $timezones = timezone_list();
+
+            // If the selected timezone is not valid
+            if (!array_key_exists($default_timezone, $timezones)) {
+                // Display an alert
+                set_alert(true, "bad", $escaper->escapeHtml($lang['PleaseEnterAValidTimezone']));
+                $error = true;
+            // If the selected timezone is valid
+            } else {
+                update_setting("default_timezone", $default_timezone);
+            }
         }
 
         // Update the default date format setting
@@ -250,10 +262,16 @@
 
         // Verify value is an integer
         if (is_int($value)) {
+
+            // Delete the file type
             delete_value("file_types", $value);
 
+            // Cleanup any references to the deleted file type
+            cleanup_after_delete("file_types");
+
             // Display an alert
-            set_alert(true, "good", "An existing upload file type was removed successfully.");
+            set_alert(true, "good", $escaper->escapeHtml($lang['AnExistingUploadFileTypeWasRemovedSuccessfully']));
+            
         }
     }
 
@@ -275,10 +293,16 @@
 
         // Verify value is an integer
         if (is_int($value)) {
+
+            // Delete the file type extension
             delete_value("file_type_extensions", $value);
 
+            // Cleanup any references to the deleted file type extension
+            cleanup_after_delete("file_type_extensions");
+
             // Display an alert
-            set_alert(true, "good", "An existing upload file extension was removed successfully.");
+            set_alert(true, "good", $escaper->escapeHtml($lang['AnExistingUploadFileExtensionWasRemovedSuccessfully']));
+
         }
     }
 
@@ -358,7 +382,7 @@
         // Set limit the frequency of test mail to 5 minutes.
         if((isset($_SESSION['test_mail_sent']) && $now - intval($_SESSION['test_mail_sent']) > 300) || !isset($_SESSION['test_mail_sent'])) {
             // Send the e-mail
-            send_email($name, $email, $subject, $full_message);
+            send_email_immediate($name, $email, $subject, $full_message);
 
             $_SESSION['test_mail_sent'] = time();
 
@@ -634,11 +658,46 @@
         // Set the error to false
         $error = false;
 
+        // Update the critical logging
+        $logging_critical = isset($_POST['logging_critical']) ? 1 : 0;
+        $current_logging_critical = get_setting("logging_critical");
+        if ($logging_critical != $current_logging_critical) {
+            update_setting("logging_critical", $logging_critical);
+        }
+
+        // Update the error logging
+        $logging_error = isset($_POST['logging_error']) ? 1 : 0;
+        $current_logging_error = get_setting("logging_error");
+        if ($logging_error != $current_logging_error) {
+            update_setting("logging_error", $logging_error);
+        }
+
+        // Update the warning logging
+        $logging_warning = isset($_POST['logging_warning']) ? 1 : 0;
+        $current_logging_warning = get_setting("logging_warning");
+        if ($logging_warning != $current_logging_warning) {
+            update_setting("logging_warning", $logging_warning);
+        }
+
+        // Update the notice logging
+        $logging_notice = isset($_POST['logging_notice']) ? 1 : 0;
+        $current_logging_notice = get_setting("logging_notice");
+        if ($logging_notice != $current_logging_notice) {
+            update_setting("logging_notice", $logging_notice);
+        }
+
+        // Update the info logging
+        $logging_info = isset($_POST['logging_info']) ? 1 : 0;
+        $current_logging_info = get_setting("logging_info");
+        if ($logging_info != $current_logging_info) {
+            update_setting("logging_info", $logging_info);
+        }
+
         // Update the debug logging
-        $debug_logging = isset($_POST['debug_logging']) ? 1 : 0;
-        $current_debug_logging = get_setting("debug_logging");
-        if ($debug_logging != $current_debug_logging) {
-            update_setting("debug_logging", $debug_logging);
+        $logging_debug = isset($_POST['logging_debug']) ? 1 : 0;
+        $current_logging_debug = get_setting("logging_debug");
+        if ($logging_debug != $current_logging_debug) {
+            update_setting("logging_debug", $logging_debug);
         }
 
         // If all setting values were saved successfully
@@ -672,7 +731,7 @@
                     <?= $escaper->escapeHtml($lang['Security']); ?>
                 </a>
                 <a class="nav-link" id="debug-tab" data-bs-toggle="tab" data-bs-target="#debug" type="button" role="tab" aria-controls="debug" aria-selected="false">
-                    <?= $escaper->escapeHtml($lang['Debugging']); ?>
+                    <?= $escaper->escapeHtml($lang['Logging']); ?>
                 </a>
             </nav>
         </div>
@@ -981,7 +1040,7 @@
                                 <div class="row" style="align-items:flex-end">
                                     <div class="col-8">
                                         <div class="">
-                                            <label><?= $escaper->escapeHtml($lang['DeleteCurrentExtensionOf']); ?> :</label>
+                                            <label><?= $escaper->escapeHtml($lang['DeleteCurrentExtensionOf']); ?><span class="required">*</span> :</label>
     <?php 
                                             create_dropdown("file_type_extensions", display_empty_name: false); 
     ?>
@@ -1495,17 +1554,37 @@
             <div class="tab-pane" id="debug" role="tabpanel" aria-labelledby="debug-tab">
                 <form name="debug_settings" method="post" action="">
                     <div class="card-body my-2 border">
-                        <h4 class="page-title"><?= $escaper->escapeHtml($lang['Debugging']); ?></h4>
+                        <h4 class="page-title"><?= $escaper->escapeHtml($lang['Logging']); ?></h4>
                         <div class="row">
-                            <div class="col-6 form-group">
+                            <div class="col-8 form-group">
                                 <div class="form-check mr-sm-4">
-                                    <input <?php if($escaper->escapeHtml(get_setting('debug_logging')) == 1){ echo "checked"; } ?> name="debug_logging" id="debug_logging" type="checkbox"  class="form-check-input" size="2" value="90">
-                                    <label class="form-check-label mb-0 ms-2"  for="debug_logging"><?= $escaper->escapeHtml($lang['EnableDebugLogging']); ?></label>
+                                    <input <?php if($escaper->escapeHtml(get_setting('logging_critical')) == 1){ echo "checked"; } ?> name="logging_critical" id="logging_critical" type="checkbox"  class="form-check-input" size="2" value="90">
+                                    <label class="form-check-label mb-0 ms-2"  for="logging_critical"><?= $escaper->escapeHtml($lang['EnableLoggingCritical']); ?></label>
+                                </div>
+                                <div class="form-check mr-sm-4">
+                                    <input <?php if($escaper->escapeHtml(get_setting('logging_error')) == 1){ echo "checked"; } ?> name="logging_error" id="logging_error" type="checkbox"  class="form-check-input" size="2" value="90">
+                                    <label class="form-check-label mb-0 ms-2"  for="logging_error"><?= $escaper->escapeHtml($lang['EnableLoggingError']); ?></label>
+                                </div>
+                                <div class="form-check mr-sm-4">
+                                    <input <?php if($escaper->escapeHtml(get_setting('logging_warning')) == 1){ echo "checked"; } ?> name="logging_warning" id="logging_warning" type="checkbox"  class="form-check-input" size="2" value="90">
+                                    <label class="form-check-label mb-0 ms-2"  for="logging_warning"><?= $escaper->escapeHtml($lang['EnableLoggingWarning']); ?></label>
+                                </div>
+                                <div class="form-check mr-sm-4">
+                                    <input <?php if($escaper->escapeHtml(get_setting('logging_notice')) == 1){ echo "checked"; } ?> name="logging_notice" id="logging_notice" type="checkbox"  class="form-check-input" size="2" value="90">
+                                    <label class="form-check-label mb-0 ms-2"  for="logging_notice"><?= $escaper->escapeHtml($lang['EnableLoggingNotice']); ?></label>
+                                </div>
+                                <div class="form-check mr-sm-4">
+                                    <input <?php if($escaper->escapeHtml(get_setting('logging_info')) == 1){ echo "checked"; } ?> name="logging_info" id="logging_info" type="checkbox"  class="form-check-input" size="2" value="90">
+                                    <label class="form-check-label mb-0 ms-2"  for="logging_info"><?= $escaper->escapeHtml($lang['EnableLoggingInfo']); ?></label>
+                                </div>
+                                <div class="form-check mr-sm-4">
+                                    <input <?php if($escaper->escapeHtml(get_setting('logging_debug')) == 1){ echo "checked"; } ?> name="logging_debug" id="logging_debug" type="checkbox"  class="form-check-input" size="2" value="90">
+                                    <label class="form-check-label mb-0 ms-2"  for="logging_debug"><?= $escaper->escapeHtml($lang['EnableLoggingDebug']); ?></label>
                                 </div>
                             </div>
                         </div>
                         <div class="row">
-                            <p><strong>Note: </strong>We no longer configure a debug log file location and all debug logs will go into the error log with a "[SIMPLERISK:DEBUG]" value appended to the message.</p>
+                            <p><strong>Note: </strong>We no longer configure log file location and all logs will go into /var/log/simplerisk.log, if the file system permissions allow it, and the Apache error_log file if they do not.</p>
                         </div>
                         <div class="row">
                             <div class="col-6">

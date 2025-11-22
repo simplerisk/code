@@ -150,6 +150,21 @@ function display($display = "")
         $("#"+ tab + "-exceptions .exception--edit").click(function(){
             var exception_id = $(this).data("id");
             var type = $(this).data("type");
+
+            // When editing an unapproved exception
+            if (tab == "unapproved") {
+
+                // Hide the unapprove button
+                $("#exception--update #unapprove_exception").hide();
+
+            // When editing an approved exception
+            } else {
+
+                // Show the unapprove button
+                $("#exception--update #unapprove_exception").show();
+
+            }
+
             $("#exception-update-form [name='additional_stakeholders[]']").multiselect('deselectAll', false);
             $("#exception-update-form [name='associated_risks[]']").multiselect('deselectAll', false);
             $("#exception-update-form .file-uploader input").val("");

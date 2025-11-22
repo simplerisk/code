@@ -190,4 +190,118 @@ class OpenApiAdminAllTagsDelete {}
 
 class OpenApiAdminMapDocumentsToControls {}
 
+/**
+ * @OA\Get(
+ *     path="/admin/queue",
+ *     summary="List queued tasks with optional filters for task type and status",
+ *     operationId="listQueueTasks",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="task_type",
+ *         in="query",
+ *         description="Filter results by the task type (e.g., 'ai_document_to_control_chunker', 'send_email', etc.)",
+ *         required=false,
+ *         @OA\Schema(type="string", example="")
+ *     ),
+ *     @OA\Parameter(
+ *         name="status",
+ *         in="query",
+ *         description="Filter results by task status. Use 'all' (default) to return all statuses. For multiple statuses, provide a comma-separated list (e.g., 'pending,in_progress').",
+ *         required=false,
+ *         @OA\Schema(type="string", example="all"),
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="List of queue tasks (optionally filtered)",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status_code", type="integer", example=200),
+ *             @OA\Property(property="status_message", type="string", example="SUCCESS"),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(property="count", type="integer", example=5),
+ *                 @OA\Property(
+ *                     property="filters",
+ *                     type="object",
+ *                     @OA\Property(property="task_type", type="string", example="ai_document_to_control_chunker"),
+ *                     @OA\Property(property="status", type="string", example="pending,in_progress")
+ *                 ),
+ *                 @OA\Property(
+ *                     property="items",
+ *                     type="array",
+ *                     @OA\Items(
+ *                         type="object",
+ *                         @OA\Property(property="id", type="integer", example=42),
+ *                         @OA\Property(property="task_type", type="string", example="ai_document_to_control_chunker"),
+ *                         @OA\Property(property="status", type="string", example="pending"),
+ *                         @OA\Property(property="created_at", type="string", format="date-time", example="2025-11-06T15:32:00Z"),
+ *                         @OA\Property(property="updated_at", type="string", format="date-time", example="2025-11-06T16:05:00Z")
+ *                     )
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have admin privileges."
+ *     ),
+ * )
+ */
+
+class OpenApiAdminQueue {}
+
+/**
+ * @OA\Get(
+ *     path="/admin/queue/promises",
+ *     summary="List all promises associated with a specific queue task",
+ *     operationId="listPromisesByQueueTask",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="queue_task_id",
+ *         in="query",
+ *         description="The ID of the queue task to retrieve promises for",
+ *         required=true,
+ *         @OA\Schema(type="integer", example=123)
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="List of promises associated with the given queue_task_id",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(
+ *                 type="object",
+ *                 @OA\Property(property="id", type="integer", example=42),
+ *                 @OA\Property(property="promise_type", type="string", example="document_review"),
+ *                 @OA\Property(property="reference_id", type="integer", example=10),
+ *                 @OA\Property(property="current_stage", type="string", example="finalize"),
+ *                 @OA\Property(property="status", type="string", example="pending"),
+ *                 @OA\Property(property="state", type="string", example="active"),
+ *                 @OA\Property(property="queue_task_id", type="integer", example=123),
+ *                 @OA\Property(property="depends_on", type="string", example="41,40"),
+ *                 @OA\Property(property="payload", type="object", example={"document_id":174, "triggered_at":1762621556}),
+ *                 @OA\Property(property="description", type="string", example="Promise to finalize document review"),
+ *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-11-06T15:32:00Z"),
+ *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-11-06T16:05:00Z")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request: Missing or invalid queue_task_id"
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="No promises found for the specified queue_task_id"
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have admin privileges."
+ *     )
+ * )
+ */
+class OpenApiAdminPromisesByTask {}
+
 ?>

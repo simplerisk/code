@@ -80,6 +80,7 @@ return array(
     'OpenSpout\\' => array($vendorDir . '/openspout/openspout/src'),
     'OpenApi\\' => array($vendorDir . '/zircote/swagger-php/src'),
     'Nyholm\\Psr7\\' => array($vendorDir . '/nyholm/psr7/src'),
+    'Monolog\\' => array($vendorDir . '/monolog/monolog/src/Monolog'),
     'Matrix\\' => array($vendorDir . '/markbaker/matrix/classes/src'),
     'Leaf\\Http\\' => array($vendorDir . '/leafs/http/src'),
     'Leaf\\' => array($vendorDir . '/leafs/logger/src', $vendorDir . '/leafs/leaf/src', $vendorDir . '/leafs/exception/src', $vendorDir . '/leafs/date/src', $vendorDir . '/leafs/form/src', $vendorDir . '/leafs/fs/src', $vendorDir . '/leafs/anchor/src'),

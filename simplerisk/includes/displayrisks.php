@@ -24,11 +24,11 @@ function display_submission_date_view($submission_date, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['SubmissionDate']) . ":</label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} risk-details-view'>" . 
                 $escaper->escapeHtml($submission_date) . "
             </div>
         </div>
@@ -52,11 +52,11 @@ function display_category_view($category, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['Category']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} risk-details-view'>" . 
                 $escaper->escapeHtml(get_name_by_value("category", $category)) . "
             </div>
         </div>
@@ -80,11 +80,11 @@ function display_site_location_view($location, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['SiteLocation']) . ":</label> 
             </div>
-            <div class='{$span2}'>" .
+            <div class='{$span2} risk-details-view'>" .
                 $escaper->escapeHtml(get_names_by_multi_values("location", $location, false, "; ")) . "
             </div>
         </div>
@@ -108,11 +108,11 @@ function display_external_reference_id_view($reference_id, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='wrap-text {$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='wrap-text {$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['ExternalReferenceId']) . ":</label>
             </div>
-            <div class='{$span2}'>" .
+            <div class='{$span2} risk-details-view'>" .
                 $escaper->escapeHtml($reference_id) . "
             </div>
         </div>
@@ -136,11 +136,11 @@ function display_control_regulation_view($regulation, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['ControlRegulation']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} risk-details-view'>" . 
                 $escaper->escapeHtml(get_name_by_value("frameworks", $regulation)) . "
             </div>
         </div>
@@ -164,11 +164,11 @@ function display_control_number_view($control_number, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['ControlNumber']) . ":</label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} risk-details-view'>" . 
                 $escaper->escapeHtml($control_number) . "
             </div>
         </div>
@@ -192,11 +192,11 @@ function display_affected_assets_view($risk_id, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['AffectedAssets']) . ":</label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-view'>
     ";
 
     $data = get_assets_and_asset_groups_of_type($risk_id, 'risk', true);
@@ -243,11 +243,11 @@ function display_technology_view($technology, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['Technology']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} risk-details-view'>" . 
                 $escaper->escapeHtml(get_technology_names($technology)) . "
             </div>
         </div>
@@ -271,11 +271,11 @@ function display_team_view($team, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['Team']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} risk-details-view'>" . 
                 $escaper->escapeHtml(get_names_by_multi_values("team", $team)) . "
             </div>
         </div>
@@ -299,11 +299,11 @@ function display_additional_stakeholders_view($additional_stakeholders, $panel_n
     }
     
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['AdditionalStakeholders']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} risk-details-view'>" . 
                 $escaper->escapeHtml(get_stakeholder_names($additional_stakeholders)) . "
             </div>
         </div>
@@ -327,11 +327,11 @@ function display_owner_view($owner, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['Owner']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} risk-details-view'>" . 
                 $escaper->escapeHtml(get_name_by_value("user", $owner)) . "
             </div>
         </div>
@@ -355,11 +355,11 @@ function display_owner_manager_view($manager, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['OwnersManager']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} risk-details-view'>" . 
                 $escaper->escapeHtml(get_name_by_value("user", $manager)) . "
             </div>
         </div>
@@ -383,11 +383,11 @@ function display_submitted_by_view($submitted_by, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['SubmittedBy']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} risk-details-view'>" . 
                 $escaper->escapeHtml(get_name_by_value("user", $submitted_by)) . "
             </div>
         </div>
@@ -411,11 +411,11 @@ function display_risk_source_view($source, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['RiskSource']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} risk-details-view'>" . 
                 $escaper->escapeHtml(get_name_by_value("source", $source)) . "
             </div>
         </div>
@@ -439,11 +439,11 @@ function display_risk_scoring_method_view($scoring_method, $CLASSIC_likelihood="
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['RiskScoringMethod']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} risk-details-view'>" . 
                 $escaper->escapeHtml(get_name_by_value("scoring_methods", $scoring_method)) . "
             </div>
         </div>
@@ -490,11 +490,11 @@ function display_risk_assessment_view($assessment , $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['RiskAssessment']) . ": </label>
             </div>
-            <div class='{$span2} rich-text-container risk-details-assessment'>" . 
+            <div class='{$span2} risk-details-view rich-text-container risk-details-assessment'>" . 
                 $escaper->purifyHtml($assessment) . "
             </div>
         </div>
@@ -518,11 +518,11 @@ function display_additional_notes_view($notes, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['AdditionalNotes']) . ": </label>
             </div>
-            <div class='{$span2} rich-text-container risk-details-additional-notes'>" . 
+            <div class='{$span2} risk-details-view rich-text-container risk-details-additional-notes'>" . 
                 $escaper->purifyHtml($notes) . "
             </div>
         </div>
@@ -555,11 +555,11 @@ function display_jira_issue_key_view($jira_issue_key, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['JiraIssueKey']) . ": </label>
             </div>
-            <div class='{$span2}' style='margin-top: 5px;'>
+            <div class='{$span2} risk-details-view' style='margin-top: 5px;'>
                 <strong style='cursor: default;'>" . $escaper->escapeHtml($jira_issue_key) . "</strong>
     ";
 
@@ -592,11 +592,11 @@ function display_supporting_documentation_view($risk_id, $view_type, $panel_name
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 " . ($view_type == 1 ? "risk-details-view-container" : "mitigation-details-view-container") . "'>
+            <div class='{$span1} " . ($view_type == 1 ? "risk-details-view-title" : "mitigation-details-view-title") . " d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['SupportingDocumentation']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} " . ($view_type == 1 ? "risk-details-view" : "mitigation-details-view") . "'>
     ";
                 supporting_documentation($risk_id, "view", $view_type);
     echo "  
@@ -620,11 +620,11 @@ function display_risk_mapping_view($risk_catalog_mapping, $panel_name="") {
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['RiskMapping']) . ":</label>
             </div>
-            <div class='{$span2}'>" .
+            <div class='{$span2} risk-details-view'>" .
                 $escaper->escapeHtml(get_names_by_multi_values("risk_catalog", $risk_catalog_mapping, false, ", ", true)) . "
             </div>
         </div>
@@ -647,11 +647,11 @@ function display_threat_mapping_view($threat_catalog_mapping, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['ThreatMapping']) . ":</label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} risk-details-view'>" . 
                 $escaper->escapeHtml(get_names_by_multi_values("threat_catalog", $threat_catalog_mapping, false, ", ", true)) . "
             </div>
         </div>
@@ -801,11 +801,11 @@ function display_submission_date_edit($submission_date, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['SubmissionDate']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-edit'>
                 <input style='cursor: default;' type='text' name='submission_date'  size='50' value='" . $escaper->escapeHtml($submission_date) . "' title='" . $escaper->escapeHtml($submission_date) . "' class='datepicker form-control' />
             </div>
         </div>
@@ -829,11 +829,11 @@ function display_category_edit($category, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['Category']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-edit'>
     ";
                 create_dropdown("category", $category);
     echo "
@@ -859,11 +859,11 @@ function display_location_edit($location, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['SiteLocation']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-edit'>
     ";
 
     if($location) {
@@ -896,11 +896,11 @@ function display_external_reference_id_edit($reference_id, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['ExternalReferenceId']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-edit'>
                 <input type='text' name='reference_id' id='reference_id' class='form-control' size='20' value='" . $escaper->escapeHtml($reference_id) . "' maxlength='20'/>
             </div>
         </div>
@@ -924,11 +924,11 @@ function display_control_regulation_edit($regulation, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['ControlRegulation']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-edit'>
     ";
                 create_dropdown("frameworks", $regulation, "regulation");
     echo "
@@ -954,11 +954,11 @@ function display_control_number_edit($control_number, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['ControlNumber']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-edit'>
                 <input type='text' class='form-control' name='control_number' id='control_number' size='20' value='" . $escaper->escapeHtml($control_number) . "' maxlength='50'/>
             </div>
         </div>
@@ -982,11 +982,11 @@ function display_affected_assets_edit($risk_id, $panel_name="")
     }
 
     echo "
-        <div class='row'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['AffectedAssets']) . ": </label>
             </div>
-            <div class='{$span2} affected-assets'>
+            <div class='{$span2} risk-details-edit affected-assets'>
                 <select class='assets-asset-groups-select' name='assets_asset_groups[]' multiple placeholder='" . $escaper->escapeHtml($lang['AffectedAssetsWidgetPlaceholder']) . "'>
                 </select>
             </div>
@@ -1017,11 +1017,11 @@ function display_technology_edit($technology, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['Technology']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-edit'>
     ";
 
     $technology_values = ":" . implode(":", explode(",", (string)$technology)) . ":";
@@ -1050,11 +1050,11 @@ function display_team_edit($team, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['Team']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-edit'>
     ";
 
     $team = ":" . implode(":", explode(",", (string)$team)) . ":";
@@ -1084,11 +1084,11 @@ function display_additional_stakeholders_edit($additional_stakeholders, $panel_n
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['AdditionalStakeholders']) . ": </label>
             </div>
-            <div class='{$span2} multiselect-holder'>
+            <div class='{$span2} risk-details-edit multiselect-holder'>
     ";
                 create_multiusers_dropdown("additional_stakeholders", $additional_stakeholders);
     echo "
@@ -1114,11 +1114,11 @@ function display_owner_edit($owner, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['Owner']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-edit'>
     ";
                 create_selectize_dropdown("enabled_users", $owner, ['name' => 'owner']);
     echo "
@@ -1144,11 +1144,11 @@ function display_owners_manager_edit($manager, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['OwnersManager']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-edit'>
     ";
                 create_selectize_dropdown("enabled_users", $manager, ['name' => 'manager']);
     echo "
@@ -1174,11 +1174,11 @@ function display_risk_source_edit($source, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'> 
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-edit-container'> 
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['RiskSource']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-edit'>
     ";
                  create_dropdown("source", $source);
     echo "
@@ -1204,11 +1204,11 @@ function display_risk_assessment_title_edit($assessment, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <label id='RiskAssessmentTitle'>" . $escaper->escapeHtml($lang['RiskAssessment']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-edit'>
                 <textarea class='form-control' name='assessment' cols='50' rows='5' id='assessment'>" . $escaper->escapeHtml($assessment) . "</textarea>
             </div>
         </div>
@@ -1232,11 +1232,11 @@ function display_additional_notes_edit($notes, $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <label id='NotesTitle'>" . $escaper->escapeHtml($lang['AdditionalNotes']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-edit'>
                 <textarea name='notes' class='form-control' cols='50' rows='3' id='notes'>" . $escaper->escapeHtml($notes) . "</textarea>
             </div>
         </div>
@@ -1263,11 +1263,11 @@ function display_jira_issue_key_edit($jira_issue_key, $panel_name="") {
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['JiraIssueKey']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-edit'>
                 <input type='text' class='form-control' name='jira_issue_key' id='jira_issue_key' size='20' value='" . $escaper->escapeHtml($jira_issue_key) . "' />
             </div>
         </div>
@@ -1291,11 +1291,11 @@ function display_supporting_documentation_edit($risk_id, $view_type, $panel_name
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 " . ($view_type == 1 ? "risk-details-edit-container" : "mitigation-details-edit-container") . "'>
+            <div class='{$span1} " . ($view_type == 1 ? "risk-details-edit-title" : "mitigation-details-edit-title") . " d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['SupportingDocumentation']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} " . ($view_type == 1 ? "risk-details-edit" : "mitigation-details-edit") . "'>
     ";
                 supporting_documentation($risk_id, "edit", $view_type);
     echo "
@@ -1328,11 +1328,11 @@ function display_risk_mapping_edit($risk_catalog_mapping=[], $panel_name="") {
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['RiskMapping']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-edit'>
     ";
                 create_selectize_dropdown('risk_catalog', $risk_catalog_mapping);
     echo "
@@ -1365,11 +1365,11 @@ function display_threat_mapping_edit($threat_catalog_mapping=[], $panel_name="")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['ThreatMapping']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-edit'>
     ";
                 create_selectize_dropdown('threat_catalog', $threat_catalog_mapping);
     echo "
@@ -1512,11 +1512,11 @@ function display_mitigation_submission_date_view($mitigation_date, $panel_name =
     }
     
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-view-container'>
+            <div class='{$span1} mitigation-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['MitigationDate']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} mitigation-details-view'>" . 
                 $escaper->escapeHtml($mitigation_date) . "
             </div>
         </div>
@@ -1540,11 +1540,11 @@ function display_mitigation_planning_date_view($planning_date, $panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-view-container'>
+            <div class='{$span1} mitigation-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['MitigationPlanning']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} mitigation-details-view'>" . 
                 $escaper->escapeHtml($planning_date) . "
             </div>
         </div>
@@ -1568,11 +1568,11 @@ function display_mitigation_planning_strategy_view($planning_strategy, $panel_na
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-view-container'>
+            <div class='{$span1} mitigation-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['PlanningStrategy'])  .": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} mitigation-details-view'>" . 
                 $escaper->escapeHtml(get_name_by_value("planning_strategy", $planning_strategy)) . "
             </div>
         </div>
@@ -1596,11 +1596,11 @@ function display_mitigation_effort_view($mitigation_effort, $panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-view-container'>
+            <div class='{$span1} mitigation-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['MitigationEffort']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} mitigation-details-view'>" . 
                 $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "
             </div>
         </div>
@@ -1624,11 +1624,11 @@ function display_mitigation_cost_view($mitigation_cost, $panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-view-container'>
+            <div class='{$span1} mitigation-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['MitigationCost']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} mitigation-details-view'>" . 
                 $escaper->escapeHtml(get_asset_value_by_id($mitigation_cost)) . "
             </div>
         </div>
@@ -1652,11 +1652,11 @@ function display_mitigation_owner_view($mitigation_owner, $panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-view-container'>
+            <div class='{$span1} mitigation-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['MitigationOwner']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} mitigation-details-view'>" . 
                 $escaper->escapeHtml(get_name_by_value("user", $mitigation_owner)) . "
             </div>
         </div>
@@ -1680,11 +1680,11 @@ function display_mitigation_team_view($mitigation_team, $panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-view-container'>
+            <div class='{$span1} mitigation-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['MitigationTeam']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} mitigation-details-view'>" . 
                 $escaper->escapeHtml(get_names_by_multi_values("team", $mitigation_team)) . "
             </div>
         </div>
@@ -1708,11 +1708,11 @@ function display_mitigation_percent_view($mitigation_percent, $panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-view-container'>
+            <div class='{$span1} mitigation-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['MitigationPercent']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} mitigation-details-view'>" . 
                 $escaper->escapeHtml($mitigation_percent) . "
             </div>
         </div>
@@ -1876,11 +1876,11 @@ function display_current_solution_view($current_solution, $panel_name = "")
     }
 
     echo "
-        <div class='row mb-2 align-items-center'>
-            <div class='{$span1} d-flex align-items-center justify-content-end' id='CurrentSolutionTitle'>
+        <div class='row mb-2 mitigation-details-view-container'>
+            <div class='{$span1} mitigation-details-view-title d-flex align-items-center justify-content-end' id='CurrentSolutionTitle'>
                 <label>" . $escaper->escapeHtml($lang['CurrentSolution']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} mitigation-details-view rich-text-container'>" . 
                 $escaper->purifyHtml($current_solution) . "
             </div>
         </div>
@@ -1904,11 +1904,11 @@ function display_security_requirements_view($security_requirements, $panel_name 
     }
 
     echo "
-        <div class='row mb-2 align-items-center'>
-            <div class='{$span1} d-flex align-items-center justify-content-end' >
+        <div class='row mb-2 mitigation-details-view-container'>
+            <div class='{$span1} mitigation-details-view-title d-flex align-items-center justify-content-end' >
                 <label>" . $escaper->escapeHtml($lang['SecurityRequirements']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} mitigation-details-view rich-text-container'>" . 
                 $escaper->purifyHtml($security_requirements) . "
             </div>
         </div>
@@ -1932,11 +1932,11 @@ function display_security_recommendations_view($security_recommendations, $panel
     }
 
     echo "
-        <div class='row mb-2 align-items-center'>
-            <div class='{$span1} d-flex align-items-center justify-content-end' >
+        <div class='row mb-2 mitigation-details-view-container'>
+            <div class='{$span1} mitigation-details-view-title d-flex align-items-center justify-content-end' >
                 <label>" . $escaper->escapeHtml($lang['SecurityRecommendations']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} mitigation-details-view rich-text-container'>" . 
                 $escaper->purifyHtml($security_recommendations) . "
             </div>
         </div>
@@ -2080,11 +2080,11 @@ function display_mitigation_submission_date_edit($mitigation_date, $panel_name="
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-edit-container'>
+            <div class='{$span1} mitigation-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['MitigationDate']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} mitigation-details-edit'>
                 <input class='form-control' title='" . $escaper->escapeHtml($lang['MitigationDate']) . "' type='text' name='mitigation_date' id='mitigation_date' size='50' value='" . $escaper->escapeHtml($mitigation_date) . "' title='" . $escaper->escapeHtml($mitigation_date) . "' disabled='disabled' />
             </div>
         </div>
@@ -2112,11 +2112,11 @@ function display_mitigation_planning_date_edit($planning_date, $panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-edit-container'>
+            <div class='{$span1} mitigation-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['MitigationPlanning']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} mitigation-details-edit'>
                 <input title='" . $escaper->escapeHtml($lang['MitigationPlanning']) . "' type='text' name='planning_date'  size='50' value='" . $escaper->escapeHtml($planning_date) . "' class='datepicker form-control' />
             </div>
         </div>
@@ -2139,11 +2139,11 @@ function display_mitigation_planning_strategy_edit($planning_strategy, $panel_na
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-edit-container'>
+            <div class='{$span1} mitigation-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['PlanningStrategy']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} mitigation-details-edit'>" . 
                 create_dropdown("planning_strategy", $planning_strategy, NULL, true, false, true, $customHtml="title='" . $escaper->escapeHtml($lang['PlanningStrategy']) . "'") . "
             </div>
         </div>
@@ -2166,11 +2166,11 @@ function display_mitigation_effort_edit($mitigation_effort, $panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-edit-container'>
+            <div class='{$span1} mitigation-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['MitigationEffort']) . ":</label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} mitigation-details-edit'>" . 
                 create_dropdown("mitigation_effort", $mitigation_effort, NULL, true, false, true, $customHtml="title='" . $escaper->escapeHtml($lang['MitigationEffort']) . "'") . "
             </div>
         </div>
@@ -2193,11 +2193,11 @@ function display_mitigation_cost_edit($mitigation_cost, $panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-edit-container'>
+            <div class='{$span1} mitigation-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['MitigationCost']) . ":</label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} mitigation-details-edit'>
     ";
                 create_asset_valuation_dropdown("mitigation_cost", $mitigation_cost, NULL, "title='" . $escaper->escapeHtml($lang['MitigationCost']) . "'");
     echo "
@@ -2222,11 +2222,11 @@ function display_mitigation_owner_edit($mitigation_owner, $panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-edit-container'>
+            <div class='{$span1} mitigation-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['MitigationOwner']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} mitigation-details-edit'>" . 
                 create_dropdown("enabled_users", $mitigation_owner, "mitigation_owner", true, $help = false, $returnHtml=true, $customHtml="title='" . $escaper->escapeHtml($lang['MitigationOwner']) . "'") . "
             </div>
         </div>
@@ -2249,11 +2249,11 @@ function display_mitigation_team_edit($mitigation_team, $panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-edit-container'>
+            <div class='{$span1} mitigation-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['MitigationTeam']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} mitigation-details-edit'>
     ";
                 $mitigation_team_values = ":" . implode(":", explode(",", (string)$mitigation_team)) . ":";
                 //create_dropdown("team", $mitigation_team, "mitigation_team", true);
@@ -2280,11 +2280,11 @@ function display_mitigation_percent_edit($mitigation_percent, $panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-edit-container'>
+            <div class='{$span1} mitigation-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['MitigationPercent']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} mitigation-details-edit'>
                 <input type='number' min='0' max='100' name='mitigation_percent' title='" . $escaper->escapeHtml($lang['MitigationPercent']) . "' id='mitigation_percent' size='50' value='" . $escaper->escapeHtml($mitigation_percent) . "' class='percent form-control' />
             </div>
         </div>
@@ -2308,11 +2308,11 @@ function display_mitigation_controls_edit($mitigation_controls, $panel_name = ""
     }
     
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-edit-container'>
+            <div class='{$span1} mitigation-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['MitigationControls']) . ": </label>
             </div>
-            <div class='{$span2}'>";
+            <div class='{$span2} mitigation-details-edit'>";
                 mitigation_controls_dropdown($mitigation_controls, "mitigation_controls[]", true, true);
     echo "
             </div>
@@ -2336,11 +2336,11 @@ function display_current_solution_edit($current_solution, $panel_name = "")
     }
     
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-edit-container'>
+            <div class='{$span1} mitigation-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['CurrentSolution']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} mitigation-details-edit'>
                 <textarea  class='form-control' title='" . $escaper->escapeHtml($lang['CurrentSolution']) . "' name='current_solution' cols='50' rows='3' id='current_solution' tabindex='1'>" . $escaper->escapeHtml($current_solution) . "</textarea>
             </div>
         </div>
@@ -2363,11 +2363,11 @@ function display_security_requirements_edit($security_requirements, $panel_name=
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-edit-container'>
+            <div class='{$span1} mitigation-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['SecurityRequirements']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} mitigation-details-edit'>
                 <textarea class='form-control' title='" . $escaper->escapeHtml($lang['SecurityRequirements']) ."' name='security_requirements' cols='50' rows='3' id='security_requirements' tabindex='1'>" . $escaper->escapeHtml($security_requirements) . "</textarea>
             </div>
         </div>
@@ -2390,11 +2390,11 @@ function display_security_recommendations_edit($security_recommendations, $panel
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 mitigation-details-edit-container'>
+            <div class='{$span1} mitigation-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['SecurityRecommendations']) . ": </label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} mitigation-details-edit'>
                 <textarea class='form-control' title='" . $escaper->escapeHtml($lang['SecurityRecommendations']) . "' name='security_recommendations' cols='50' rows='3' id='security_recommendations' tabindex='1'>" . $escaper->escapeHtml($security_recommendations) . "</textarea>
             </div>
         </div>
@@ -2516,11 +2516,11 @@ function display_review_date_view($review_date, $panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 review-details-view-container'>
+            <div class='{$span1} review-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['ReviewDate']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} review-details-view'>" . 
                 $escaper->escapeHtml($review_date) . "
             </div>
         </div>
@@ -2545,11 +2545,11 @@ function display_reviewer_view($reviewer, $panel_name = "")
     $reviewer_name = get_name_by_value("user", $reviewer);
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 review-details-view-container'>
+            <div class='{$span1}  review-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['Reviewer']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} review-details-view'>" . 
                 $escaper->escapeHtml($reviewer_name) . "
             </div>
         </div>
@@ -2575,11 +2575,11 @@ function display_review_view($review, $panel_name = "")
     $review_value = get_name_by_value("review", $review);
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 review-details-view-container'>
+            <div class='{$span1} review-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['Review']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} review-details-view'>" . 
                 $escaper->escapeHtml($review_value) . "
             </div>
         </div>
@@ -2605,11 +2605,11 @@ function display_next_step_view($next_step_value, $risk_id, $panel_name = "")
     $next_step = get_name_by_value("next_step", $next_step_value);
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 review-details-view-container'>
+            <div class='{$span1} review-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['NextStep']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} review-details-view'>" . 
                 $escaper->escapeHtml($next_step) . "
             </div>
         </div>
@@ -2657,11 +2657,11 @@ function display_next_review_date_view($next_review, $panel_name = "")
     }
     
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 review-details-view-container'>
+            <div class='{$span1} review-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['NextReviewDate']) . ": </label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} review-details-view'>" . 
                 $escaper->escapeHtml($next_review) . "
             </div>
         </div>
@@ -2685,11 +2685,11 @@ function display_comments_view($comment, $panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 review-details-view-container'>
+            <div class='{$span1} review-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['Comment']) . ": </label>
             </div>
-            <div class='{$span2} rich-text-container'>" . 
+            <div class='{$span2} review-details-view rich-text-container'>" . 
                 $escaper->purifyHtml($comment) . "
             </div>
         </div>
@@ -2779,11 +2779,11 @@ function display_review_date_edit($panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 review-details-edit-container'>
+            <div class='{$span1} review-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['ReviewDate']) . ":</label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} review-details-edit'>
     ";
     echo        date(get_default_date_format());
     echo "
@@ -2809,11 +2809,11 @@ function display_reviewer_name_edit($panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 review-details-edit-container'>
+            <div class='{$span1} review-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['Reviewer']) . ":</label>
             </div>
-            <div class='{$span2}'>" . 
+            <div class='{$span2} review-details-edit'>" . 
                 $escaper->escapeHtml($_SESSION['name']) . "
             </div>
         </div>
@@ -2837,11 +2837,11 @@ function display_review_edit($review, $panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 review-details-edit-container'>
+            <div class='{$span1} review-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['Review']) . ":</label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} review-details-edit'>
     ";
                 create_dropdown("review", $review, NULL, true);
     echo "
@@ -2867,11 +2867,11 @@ function display_next_step_edit($next_step, $panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 review-details-edit-container'>
+            <div class='{$span1} review-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['NextStep']) . ":</label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} review-details-edit'>
     ";
                 create_dropdown("next_step", $next_step, NULL, true);
     echo "
@@ -2886,25 +2886,25 @@ function display_next_step_edit($next_step, $panel_name = "")
     // If Next Step is Consider for Project (value=2), show project list
     if($next_step == 2) {
         echo "
-        <div class='row mb-2 project-holder'>
+        <div class='row mb-2 review-details-edit-container project-holder'>
         ";
     } else {
         echo "
-        <div class='row mb-2 project-holder' style='display:none;'>
+        <div class='row mb-2 review-details-edit-container project-holder' style='display:none;'>
         ";
     }
     
     echo "
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+            <div class='{$span1} review-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['ProjectName']) . ":</label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} review-details-edit'>
     ";
                 create_dropdown("projects", $project_id, "project", false);
     echo "
             </div>
             <div class='{$span1}'></div>
-            <div class='{$span2}'>
+            <div class='{$span2} review-details-edit'>
                 <div class='project-instructions'>
                     {$escaper->escapeHtml($lang['ReviewProjectSelectionInstructions'])}
                 </div>
@@ -2959,11 +2959,11 @@ function display_comments_edit($comments, $panel_name = "")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 review-details-edit-container'>
+            <div class='{$span1} review-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['Comments']) . ":</label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} review-details-edit'>
                 <textarea class='form-control' name='comments' cols='50' rows='3' id='comments'>" . $escaper->escapeHtml($comments) . "</textarea>
             </div>
         </div>
@@ -2987,7 +2987,7 @@ function display_set_next_review_date_edit($default_next_review, $panel_name = "
     }
 
     echo "
-        <div class='row mb-2'>
+        <div class='row mb-2 review-details-edit-container'>
             <div class='{$span1}'>&nbsp;</div>
             <div class='{$span2}'>
                 <strong class='small-text'>" . 
@@ -3008,11 +3008,11 @@ function display_set_next_review_date_edit($default_next_review, $panel_name = "
             </div>
         </div>
         
-        <div id='nextreview' class='nextreview row mb-2' style='display:none;'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div id='nextreview' class='nextreview row mb-2 review-details-edit-container' style='display:none;'>
+            <div class='{$span1} review-details-edit-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['NextReviewDate']) . ":</label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} review-details-edit'>
                 <input type='text' class='datepicker form-control' name='next_review' id='nextreviewvalue' value='" . $escaper->escapeHtml($default_next_review) . "' />
             </div>
         </div>
@@ -3100,11 +3100,11 @@ function display_supporting_documentation_add($panel_name="", $template_group_id
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex justify-content-end'>
+        <div class='row mb-2 risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['SupportingDocumentation']) . ":</label>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-edit'>
                 <div class='file-uploader'>
                 
                     <script>
@@ -3144,11 +3144,11 @@ function display_risk_tags_edit($tags = "", $panel_name = "bottom")
     $tags_placeholder = $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);
 
     echo "
-        <div class='row'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row risk-details-edit-container'>
+            <div class='{$span1} risk-details-edit-title d-flex align-items-center justify-content-end'>
                 <strong>" . $escaper->escapeHtml($lang['Tags']) . ":</strong>
             </div>
-            <div class='{$span2}'>
+            <div class='{$span2} risk-details-edit'>
                 <select readonly id='tags' class='tags' name='tags[]' multiple placeholder='{$tags_placeholder}'>
     ";
 
@@ -3221,8 +3221,8 @@ function display_risk_tags_view($tags, $panel_name = "bottom")
     }
 
     echo "
-        <div class='row mb-2'>
-            <div class='{$span1} d-flex align-items-center justify-content-end'>
+        <div class='row mb-2 risk-details-view-container'>
+            <div class='{$span1} risk-details-view-title d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['Tags']) . ":</label>
             </div>
             <div class='{$span2}'>

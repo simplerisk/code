@@ -15,29 +15,29 @@
  */
 function fetch_url_content($connection = "curl", $http_options = [], $validate_ssl = true, $url = null, $parameters = [])
 {
-    write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: URL: {$url}");
-    write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: HTTP Options:");
+    write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: URL: {$url}", "info");
+    write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: HTTP Options:", "debug");
     write_debug_log($http_options);
 
     // If validate_ssl is true
     if ($validate_ssl)
     {
-        write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: Validating SSL certificates");
+        write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: Validating SSL certificates", "debug");
     }
-    else write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: SSL certificate validation is disabled");
+    else write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: SSL certificate validation is disabled", "debug");
 
-    write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: Parameters");
-    write_debug_log($parameters);
+    write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: Parameters", "debug");
+    write_debug_log($parameters, "debug");
 
     // Call the proper function based on the specified connection
     switch ($connection)
     {
         case "curl":
-            write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: Fetching URL content via curl");
+            write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: Fetching URL content via curl", "debug");
             $results = fetch_url_content_via_curl($http_options, $validate_ssl, $url, $parameters);
             break;
         case "stream":
-            write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: Fetching URL content via stream");
+            write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: Fetching URL content via stream", "debug");
             $results = fetch_url_content_via_stream($http_options, $validate_ssl, $url, $parameters);
             break;
         default:
@@ -48,239 +48,162 @@ function fetch_url_content($connection = "curl", $http_options = [], $validate_s
     return $results;
 }
 
-function fetch_url_content_via_curl($http_options, $validate_ssl, $url, $parameters)
+function fetch_url_content_via_curl($http_options, $validate_ssl, $url, $parameters, $max_retries = 3)
 {
-    // Get the http request method
-    $request_method = $http_options['method'];
+    $request_method = $http_options['method'] ?? 'GET';
+    $header = $http_options['header'] ?? [];
+    $timeout = $http_options['timeout'] ?? 600;
 
-    // Get the http header
-    $header = $http_options['header'];
+    $response = false;
+    $attempt = 0;
+    $return_code = false;
 
-    // Initialize a curl request
-    $ch = curl_init();
+    while ($attempt < $max_retries && $response === false) {
+        $ch = curl_init();
 
-    // Set the curl header
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        // Common curl options
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3); // slightly longer for network retries
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
 
-    // Configure the curl for proxy if one exists
-    configure_curl_proxy($ch);
+        // SSL validation
+        if ($validate_ssl) {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        } else {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        }
 
-    // Follow Location headers that the server sends
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        // Configure proxy if needed
+        configure_curl_proxy($ch);
 
-    // Return the transfer as a string of the return value instead of outputting it directly
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        // Encode parameters
+        $fields = http_build_query($parameters, '', '&');
 
-    // If a timeout is set
-    if (isset($http_options['timeout'])) {
-        // If the timeout is set to 0
-        if ($http_options['timeout'] === 0) {
-            // Allow this to run for an unlimited amount of time
-            curl_setopt($ch, CURLOPT_TIMEOUT, 0);
-        } // If the timeout is set to 1, this is an asynchronous call
-        else if ($http_options['timeout'] === 1) {
-            // Set a 1 second timeout
-            curl_setopt($ch, CURLOPT_TIMEOUT, 1);
-        } // Otherwise
-        else {
-            // Set the specified timeout
-            curl_setopt($ch, CURLOPT_TIMEOUT, $http_options['timeout']);
+        if (strtoupper($request_method) === 'POST') {
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
+        } else {
+            $url_with_params = $url . (!empty($parameters) ? '?' . $fields : '');
+            curl_setopt($ch, CURLOPT_URL, $url_with_params);
+        }
+
+        // Set the URL
+        curl_setopt($ch, CURLOPT_URL, $url);
+
+        // Execute the request
+        $response = @curl_exec($ch);
+        $return_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        if (curl_errno($ch)) {
+            write_debug_log("CONNECTIVITY: Attempt " . ($attempt+1) . " failed for URL: $url. Curl Error: " . curl_error($ch), "warning");
+            $response = false;
+            $attempt++;
+            curl_close($ch);
+            sleep(1); // small delay before retry
+        } else {
+            curl_close($ch);
+            break;
         }
     }
-    // If a timeout is not set use the default value and expect the result returned
-    else curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-    // Do not include the header in the output
-    curl_setopt($ch, CURLOPT_HEADER, false);
-
-    // If we are supposed to validate SSL certificates
-    if ($validate_ssl)
-    {
-        // Verify the SSL host and peer
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-    }
-    else
-    {
-        // Do not verify the SSL host and peer
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    // If response is still false, return empty array to avoid breaking foreach
+    if ($response === false) {
+        write_debug_log("CONNECTIVITY: Failed to fetch URL after $max_retries attempts: $url", "error");
+        $response = [];
     }
 
-    // Time out after 1 second of trying to connect
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
+    write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content_via_curl]: Return code: {$return_code}", "debug");
+    write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content_via_curl]: Response: " . (is_array($response) ? '[]' : $response), "debug");
 
-    // Turn the parameters into an HTTP query
-    $fields = http_build_query($parameters, '', '&');
-
-    // If this is a POST request
-    if ($request_method == "POST")
-    {
-        // Set the POST curl options
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
-    }
-
-    // Add the fields to the URL regardless of GET or POST
-    $url .= "?" . $fields;
-
-    // Set the URL
-    curl_setopt($ch, CURLOPT_URL,$url);
-
-    // Make the curl request
-    $response = curl_exec($ch);
-
-    // Get the return code
-    $return_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-    write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content_via_curl]: Return code: {$return_code}");
-    write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content_via_curl]:  Response: {$response}");
-
-    // If there was a curl error
-    if(curl_errno($ch))
-    {
-        write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content_via_curl]: Curl Error: " . curl_error($ch));
-    }
-
-    // Close the curl session
-    curl_close($ch);
-
-    // Create an array with the response and return code
-    $result = [
-      'return_code' => (int)$return_code,
-      'response' => $response,
+    return [
+        'return_code' => $return_code,
+        'response' => $response,
     ];
-
-    // Return the result
-    return $result;
 }
 
-function fetch_url_content_via_stream($http_options, $validate_ssl, $url, $parameters)
+function fetch_url_content_via_stream($http_options, $validate_ssl, $url, $parameters, $max_retries = 3)
 {
-    // Create the default options array
     $opts = [];
 
-    // Add the HTTP options to the options array
-    $opts['http']['method'] = (isset($http_options['method']) ? $http_options['method'] : "GET");
-    $opts['http']['timeout'] = (isset($http_options['timeout']) ? $http_options['timeout'] : 600);
-
-    // Create an empty header string
-    $opts['http']['header'] = "";
-
-    // Fetch the content even on failure status codes.
+    // HTTP options
+    $opts['http']['method'] = $http_options['method'] ?? 'GET';
+    $opts['http']['timeout'] = $http_options['timeout'] ?? 600;
     $opts['http']['ignore_errors'] = true;
+    $opts['http']['header'] = '';
 
-    // If a header is sent
-    if (isset($http_options['header']))
-    {
-        // Create the header as a string
-        $header = $http_options['header'];
-        foreach ($header as $option)
-        {
+    if (!empty($http_options['header']) && is_array($http_options['header'])) {
+        foreach ($http_options['header'] as $option) {
             $opts['http']['header'] .= $option . "\r\n";
         }
     }
 
-    // If we are supposed to validate SSL certificates
-    if ($validate_ssl)
-    {
-        // Verify the SSL host and peer
-        $opts['ssl'] = array(
-            'verify_peer' => true,
-            'verify_peer_name' => true,
-            'allow_self_signed' => false,
-        );
-    }
-    else
-    {
-        // Do not verify the SSL host and peer
-        $opts['ssl'] = array(
-            'verify_peer' => false,
-            'verify_peer_name' => false,
-            'allow_self_signed' => true,
-        );
-    }
+    // SSL options
+    $opts['ssl'] = [
+        'verify_peer' => $validate_ssl,
+        'verify_peer_name' => $validate_ssl,
+        'allow_self_signed' => !$validate_ssl,
+    ];
 
-    // If there are parameters provided
-    if (!empty($parameters))
-    {
-        // Turn the parameters into an HTTP query
+    // POST/PUT parameters
+    if (!empty($parameters)) {
         $opts['http']['content'] = http_build_query($parameters);
     }
 
-
-    // If proxy web requests is set
-    if (get_setting("proxy_web_requests"))
-    {
-        write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content_via_stream]: Proxy web requests is enabled");
-
-        // Get the proxy configuration
-        $proxy_verify_ssl_certificate = get_setting("proxy_verify_ssl_certificate");
+    // Proxy settings
+    if (get_setting("proxy_web_requests")) {
         $proxy_host = get_setting("proxy_host");
         $proxy_port = get_setting("proxy_port");
-        $proxy_authenticated = get_setting("proxy_authenticated");
-
-        // Add the proxy to the HTTP context
         $opts['http']['proxy'] = "tcp://$proxy_host:$proxy_port";
-        $opts['http']['ignore_errors'] = true;
         $opts['http']['request_fulluri'] = true;
 
-        // If we want to turn off ssl verification
-        if (!$proxy_verify_ssl_certificate)
-        {
+        if (!get_setting("proxy_verify_ssl_certificate")) {
             $opts['ssl']['verify_peer'] = false;
             $opts['ssl']['verify_peer_name'] = false;
             $opts['ssl']['allow_self_signed'] = true;
         }
 
-        // If this is an authenticated proxy
-        if ($proxy_authenticated)
-        {
-            write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content_via_stream]: We are using an authenticated proxy");
-
-            // Create the BASE64 encoded credentials
-            $proxy_user = get_setting("proxy_user");
-            $proxy_pass = get_setting("proxy_pass");
-            $auth = base64_encode("$proxy_user:$proxy_pass");
-
-            // If a HTTP header is already set
-            if (isset($opts['http']['header']))
-            {
-                // Append the proxy authentication to the header
-                $opts['http']['header'] .= "\r\nProxy-Authorization: Basic $auth";
-            }
-            // Otherwise add the authenticated header to the http_context
-            else $opts['http']['header'] = "Proxy-Authorization: Basic $auth";
+        if (get_setting("proxy_authenticated")) {
+            $auth = base64_encode(get_setting("proxy_user") . ":" . get_setting("proxy_pass"));
+            $opts['http']['header'] .= "Proxy-Authorization: Basic $auth\r\n";
         }
     }
 
-    // Create the stream context
     $context = stream_context_create($opts);
 
-    // Fetch the data
-    $response = file_get_contents($url, false, $context);
+    $response = false;
+    $attempt = 0;
+    $return_code = false;
 
-    // If a response was provided
-    if ($response != false)
-    {
-        // Get the return code
-        preg_match('{HTTP\/\S*\s(\d{3})}', $http_response_header[0], $match);
+    // Retry loop
+    while ($attempt < $max_retries && $response === false) {
+        $response = @file_get_contents($url, false, $context);
+        if ($response === false) {
+            $attempt++;
+            write_debug_log("CONNECTIVITY: Attempt {$attempt} failed for URL: $url", "warning");
+            sleep(1); // small delay before retry
+        }
+    }
+
+    // Determine HTTP response code if available
+    if (!empty($http_response_header) && preg_match('{HTTP\/\S*\s(\d{3})}', $http_response_header[0], $match)) {
         $return_code = (int)$match[1];
     }
-    else $return_code = false;
 
-    write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content_via_stream]: Return code: {$return_code}");
-    write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content_via_stream]:  Response: {$response}");
+    // Ensure we always return an array for downstream foreach()
+    if ($response === false) {
+        write_debug_log("CONNECTIVITY: Failed to fetch URL: $url", "error");
+        $response = [];
+    }
 
-    // Create an array with the response and return code
-    $result = [
+    return [
         'return_code' => $return_code,
         'response' => $response,
     ];
-
-    // Return the result
-    return $result;
 }
-
 
 ?>

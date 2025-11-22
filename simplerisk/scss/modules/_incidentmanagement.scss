@@ -24,6 +24,11 @@
                 width: inherit;
             }
         }
+
+        .teams-dropdown-container,
+        .related-risks-dropdown-container {
+            width: 1px;
+        }
     }
 
     #containment,

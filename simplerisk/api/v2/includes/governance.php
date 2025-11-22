@@ -7,7 +7,7 @@
 require_once(realpath(__DIR__ . '/api.php'));
 require_once(realpath(__DIR__ . '/../../../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../../../includes/governance.php'));
-require_once (realpath(__DIR__ . '/../../../includes/worddoc.php'));
+require_once (realpath(__DIR__ . '/../../../includes/Components/WordHandler.php'));
 require_once (realpath(__DIR__ . '/../../../includes/tf_idf_enrichment.php'));
 
 require_once(language_file());
@@ -498,7 +498,7 @@ function api_v2_governance_documents_significant_terms()
                         write_debug_log("Extracted Text: " . $document_text);
 
                         // Get the significant terms for the document
-                        $significant_terms = extractSignificantTerms($document_text, 150);
+                        $significant_terms = extractSignificantTerms($document_text);
                         write_debug_log("Significant Terms: " . json_encode($significant_terms));
 
                         // Set the status
@@ -528,257 +528,6 @@ function api_v2_governance_documents_significant_terms()
             $status_code = 403;
             $status_message = "FORBIDDEN: The user does not have the required permission to perform this action.";
             $data = null;
-        }
-    }
-    // Otherwise, return an empty data array
-    else
-    {
-        // Create the data array
-        $data = [];
-
-        // Set the status
-        $status_code = 200;
-        $status_message = "SUCCESS";
-    }
-
-    // Return the result
-    api_v2_json_result($status_code, $status_message, $data);
-}
-
-/*******************************************
- * FUNCTION: API V2 DOCUMENTS TOP CONTROLS *
- *******************************************/
-function api_v2_governance_documents_top_controls()
-{
-    write_debug_log("FUNCTION: API V2 GOVERNANCE DOCUMENTS TOP CONTROLS");
-
-    // Check that this user has the ability to view risks
-    api_v2_check_permission("governance");
-
-    // Get the document id
-    $document_id = get_param("GET", "id", null);
-
-    // Get the minimum score
-    $minimum_score = get_param("GET", "minimum_score", 0.3);
-
-    // If refresh is set to true
-    if (isset($_GET['refresh']) && $_GET['refresh'] == 'true')
-    {
-        $refresh = true;
-    }
-    // If refresh is not set or is set to something other than true
-    else
-    {
-        $refresh = false;
-    }
-
-    // If we received an id
-    if (!empty($document_id))
-    {
-        // If the user should have access to this document id
-        if (check_access_for_document($document_id))
-        {
-            try
-            {
-                // Get the document to control mappings for the selected document ID
-                $mappings = get_document_to_control_mappings($document_id, $refresh);
-
-                // If the mappings returned false
-                if ($mappings === false)
-                {
-                    // Return a 204 response
-                    $status_code = 204;
-                    $status_message = "NOT FOUND: The requested document was not found.";
-                    $data = [];
-                    api_v2_json_result($status_code, $status_message, []);
-                }
-                // If we have mappings
-                else
-                {
-                    // Take only the mappings with a score higher than the minimum score
-                    $filtered = array_filter($mappings, function ($item) use ($minimum_score) {
-                        return isset($item['score']) && $item['score'] >= $minimum_score;
-                    });
-
-                    // Get the controls that we want to return
-                    $controls = array_map(function ($item) {
-                        return [
-                            'control_id' => $item['control_id'] ?? null,
-                            'score' => $item['score'] ?? 0,
-                            'tfidf_similarity' => $item['tfidf_similarity'] ?? 0,
-                            'keyword_matches' => $item['keyword_match'] ?? 0
-                        ];
-                    }, $filtered);
-
-                    // Set the status
-                    $status_code = 200;
-                    $status_message = "SUCCESS";
-
-                    // Get the data that we want to return
-                    $data = [
-                        'document_id' => $document_id,
-                        'controls' => $controls
-                    ];
-
-                    // If the AI Extra is enabled
-                    if (artificial_intelligence_extra())
-                    {
-                        // Required file
-                        $required_file = realpath(__DIR__ . '/../../../extras/artificial_intelligence/includes/api.php');
-
-                        // If the file exists
-                        if (file_exists($required_file))
-                        {
-                            // Include the required file
-                            require_once($required_file);
-
-                            // Get the AI document to control recommendations
-                            $endpoint = "/api/v2/ai/document/enhance?document_id={$document_id}";
-                            @call_simplerisk_api_endpoint($endpoint, "GET", false, 1);
-                        }
-                    }
-                }
-            } catch (\Exception $e) {
-                write_debug_log("Error processing document: " . $e->getMessage());
-                // Return a 500 response
-                $status_code = 500;
-                $status_message = "Error processing document.";
-                $data = [];
-                api_v2_json_result($status_code, $status_message, $data);
-            }
-        }
-        // If the user should not have access to this document id
-        else
-        {
-            // Set the status
-            $status_code = 403;
-            $status_message = "FORBIDDEN: The user does not have the required permission to perform this action.";
-            $data = null;
-        }
-    }
-    // Otherwise, return an empty data array
-    else
-    {
-        // Create the data array
-        $data = [];
-
-        // Set the status
-        $status_code = 200;
-        $status_message = "SUCCESS";
-    }
-
-    // Return the result
-    api_v2_json_result($status_code, $status_message, $data);
-}
-
-/*******************************************
- * FUNCTION: API V2 CONTROLS TOP DOCUMENTS *
- *******************************************/
-function api_v2_governance_controls_top_documents()
-{
-    write_debug_log("FUNCTION: API V2 GOVERNANCE CONTROLS TOP DOCUMENTS");
-
-    // Check that this user has the ability to view risks
-    api_v2_check_permission("governance");
-
-    // Get the control id
-    $control_id = get_param("GET", "id", null);
-
-    // Get the minimum score
-    $minimum_score = get_param("GET", "minimum_score", 0.3);
-
-    // If refresh is set to true
-    if (isset($_GET['refresh']) && $_GET['refresh'] == 'true')
-    {
-        $refresh = true;
-    }
-    // If refresh is not set or is set to something other than true
-    else
-    {
-        $refresh = false;
-    }
-
-    // If we received an id
-    if (!empty($control_id))
-    {
-        try
-        {
-            // Get the document to control mappings for the selected control ID
-            $mappings = get_control_to_document_mappings($control_id, $refresh);
-
-            // If the mappings returned false
-            if ($mappings === false)
-            {
-                // Return a 204 response
-                $status_code = 204;
-                $status_message = "NOT FOUND: The requested control was not found.";
-                $data = [];
-                api_v2_json_result($status_code, $status_message, []);
-            }
-            // If we have mappings
-            else
-            {
-                // Take only the mappings with a score higher than the minimum score
-                $filtered = array_filter($mappings, function ($item) use ($minimum_score) {
-                    return isset($item['score']) && $item['score'] >= $minimum_score;
-                });
-
-                // Get the controls that we want to return
-                $documents = array_map(function ($item) {
-                    return [
-                        'document_id' => $item['document_id'] ?? null,
-                        'score' => $item['score'] ?? 0,
-                        'tfidf_similarity' => $item['tfidf_similarity'] ?? 0,
-                        'keyword_matches' => $item['keyword_match'] ?? 0
-                    ];
-                }, $filtered);
-
-                // If the AI Extra is enabled
-                if (artificial_intelligence_extra())
-                {
-                    // Required file
-                    $required_file = realpath(__DIR__ . '/../../../extras/artificial_intelligence/includes/api.php');
-
-                    // If the file exists
-                    if (file_exists($required_file))
-                    {
-                        // Include the required file
-                        require_once($required_file);
-
-                        // For each document
-                        foreach ($documents as $document)
-                        {
-                            // Get the document id
-                            $document_id = $document['document_id'];
-
-                            // If the document id is not empty
-                            if (!empty($document_id))
-                            {
-                                // Get the AI document to control recommendations
-                                $endpoint = "/api/v2/ai/document/enhance?document_id={$document_id}";
-                                @call_simplerisk_api_endpoint($endpoint, "GET", false, 1);
-                            }
-                        }
-                    }
-                }
-
-                // Set the status
-                $status_code = 200;
-                $status_message = "SUCCESS";
-
-                // Get the data that we want to return
-                $data = [
-                    'control_id' => $control_id,
-                    'documents' => $documents
-                ];
-            }
-        } catch (\Exception $e) {
-            write_debug_log("Error processing control: " . $e->getMessage());
-            // Return a 500 response
-            $status_code = 500;
-            $status_message = "Error processing control.";
-            $data = [];
-            api_v2_json_result($status_code, $status_message, $data);
         }
     }
     // Otherwise, return an empty data array
@@ -979,6 +728,9 @@ function getDocumentsToControlsDatatableResponse()
                         break;
                     case "selected":
                         $data_row[] = ($document['selected'] === 1 ? "Yes" : "No");
+                        break;
+                    case "tfidf_match":
+                        $data_row[] = ($document['tfidf_match'] === 1 ? "Yes" : "No");
                         break;
                     case "ai_match":
                         $data_row[] = ($document['ai_match'] === 1 ? "Yes" : "No");

@@ -4,7 +4,7 @@
     "main": "js/dataTables.rowGroup.js",
     "module": "js/dataTables.rowGroup.mjs",
     "types": "./types/types.d.ts",
-    "version": "1.5.2",
+    "version": "1.6.0",
     "files": [
         "js/**/*.js",
         "js/**/*.mjs",

@@ -12,11 +12,9 @@ require_once(realpath(__DIR__ . '/reporting.php'));
 require_once(realpath(__DIR__ . '/assets.php'));
 require_once(realpath(__DIR__ . '/governance.php'));
 require_once(realpath(__DIR__ . '/permissions.php'));
-require_once(realpath(__DIR__ . '/worddoc.php'));
+require_once(realpath(__DIR__ . '/Components/WordHandler.php'));
 
 // Include the language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
@@ -189,6 +187,7 @@ $releases = [
     "20250731-001",
     "20250826-001",
     "20250828-001",
+    "20251118-001",
 ];
 
 /*************************
@@ -7051,7 +7050,7 @@ function upgrade_from_20230331001($db)
             }
 
             // Log the data needed to be cleaned up
-            error_log("[Simplerisk Upgrade] Data needed to be purified for framework(ID: {$data['value']}): " . json_encode($decrypted_data));
+            write_debug_log("[Simplerisk Upgrade] Data needed to be purified for framework(ID: {$data['value']}): " . json_encode($decrypted_data), 'warning');
 
             // Save the sanitized data back to where it came from
             $stmt = $db->prepare("
@@ -8347,25 +8346,6 @@ function upgrade_from_20250411001($db) {
             }
         }
 
-/*
-        echo "Migrating control_ids field in documents table to new table.<br />\n";
-        $stmt = $db->prepare("
-            SELECT DISTINCT t1.id document_id, t2.id control_id FROM `documents` t1, `framework_controls` t2 WHERE FIND_IN_SET(t2.id, t1.control_ids);
-        ");
-        $stmt->execute();
-        $array = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
-
-        foreach($array as $document_id => $controls) {
-            $sql = "INSERT INTO `document_control_mappings`(document_id, control_id) values";
-            foreach($controls as $control) {
-                $sql .= "('{$document_id}', '{$control['control_id']}'),";
-            }
-            $sql = trim($sql, ",");
-            $stmt = $db->prepare($sql);
-            $stmt->execute();
-        }
- */
-
         echo "Deleting `control_ids` field from the `documents` table.<br />\n";
         $stmt = $db->prepare("ALTER TABLE `documents` DROP `control_ids`; ");
         $stmt->execute();
@@ -8483,7 +8463,7 @@ function upgrade_from_20250411001($db) {
     // Add a custom_documents_to_controls_display_settings field to user table
     if (!field_exists_in_table('custom_documents_to_controls_display_settings', 'user')) {
         echo "Adding a custom_documents_to_controls_display_settings field to user table.<br />\n";
-        $stmt = $db->prepare('ALTER TABLE `user` ADD `custom_documents_to_controls_display_settings` VARCHAR(2000) NULL DEFAULT \'{"document_columns":[["document_id","0"],["document","1"]],"control_columns":[["control_id","1"]],["control_number","1"],["selected","1"]],"matching_columns":[["score","0"],["tfidf_similarity","0"],["keyword_match","0"],["ai_match","0"],["ai_confidence","0"],["ai_reasoning","0"],["matching","1"],["recommendation","1"]]}\';');
+        $stmt = $db->prepare('ALTER TABLE `user` ADD `custom_documents_to_controls_display_settings` VARCHAR(2000) NULL DEFAULT \'{"document_columns":[["document_id","0"],["document","1"]],"control_columns":[["control_id","1"]],["control_number","1"],["selected","1"]],"matching_columns":[["score","0"],["tfidf_similarity","0"],["keyword_match","0"],["tfidf_match", "0"],["ai_match","0"],["ai_confidence","0"],["ai_reasoning","0"],["matching","1"],["recommendation","1"]]}\';');
         $stmt->execute();
     }
   
@@ -8554,6 +8534,347 @@ function upgrade_from_20250826001($db) {
     $version_upgrading_to = '20250828-001';
 
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20250828-001 *
+ ***************************************/
+function upgrade_from_20250828001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20250828-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20251118-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Add settings for logging of critical, error, warning and notice events
+    echo "Adding logging for critical, error, warning and notice events.<br />\n";
+    update_setting("logging_critical", 1);
+    update_setting("logging_error", 1);
+    update_setting("logging_warning", 1);
+    update_setting("logging_notice", 1);
+
+    // Get the setting for the debug logging
+    $debug_logging = get_setting("debug_logging");
+
+    // Check if debug logging is enabled
+    if ($debug_logging)
+    {
+        // Add setting for logging of info and debug
+        echo "Adding logging for info and debug events.<br />\n";
+        update_setting("logging_info", 1);
+        update_setting("logging_debug", 1);
+    }
+
+    // Remove the old debug_logging setting
+    echo "Removing the legacy debug_logging setting.<br />\n";
+    delete_setting("debug_logging");
+    delete_setting("debug_log_file");
+
+    // Adding the `audit_initiation_offset` field to table `framework_control_tests`
+    if (!field_exists_in_table('audit_initiation_offset', 'framework_control_tests')) {
+        echo "Adding the `audit_initiation_offset` field to table `framework_control_tests`.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `framework_control_tests` ADD `audit_initiation_offset` INT DEFAULT NULL;");
+        $stmt->execute();
+    }
+
+    // Add more precision to the CVSS_scoring values
+    echo "Adding more precision to the CVSS scoring values.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE CVSS_scoring MODIFY COLUMN numeric_value DECIMAL(6,4);");
+    $stmt->execute();
+
+    // Add a queue_tasks table
+    if (!table_exists("queue_tasks"))
+    {
+        echo "Adding a queue_tasks table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE queue_tasks (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                task_type VARCHAR(100) NOT NULL,  -- e.g., 'document_analyzer', 'control_matcher', 'email_sender'
+                payload JSON NOT NULL,             -- arbitrary task-specific data
+                status ENUM('pending','in_progress','completed','failed') DEFAULT 'pending',
+                attempts INT DEFAULT 0,
+                priority INT DEFAULT 0,            -- optional for prioritization
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            );
+        ");
+        $stmt->execute();
+
+        if (!index_exists_on_table('idx_queue_status_type', 'queue_tasks')){
+            // Create an index to quickly find tasks by status + type
+            $stmt = $db->prepare("CREATE INDEX idx_queue_status_type ON queue_tasks (status, task_type);");
+            $stmt->execute();
+        }
+
+        if (!index_exists_on_table('idx_queue_status_priority_created', 'queue_tasks')){
+            // Create an index for ordering by status + priority + created_at
+            $stmt = $db->prepare("CREATE INDEX idx_queue_status_priority_created ON queue_tasks (status, priority, created_at);");
+            $stmt->execute();
+        }
+
+        if (!index_exists_on_table('idx_queue_priority_created', 'queue_tasks')) {
+            // Create an index for ordering by priority + created_at
+            $stmt = $db->prepare("CREATE INDEX idx_queue_priority_created ON queue_tasks (priority, created_at);");
+            $stmt->execute();
+        }
+    }
+
+    // Add a promises table
+    if (!table_exists("promises"))
+    {
+        echo "Adding a promises table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE promises (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                promise_type VARCHAR(100),        -- 'ai_enhancement', 'risk_analysis', etc.
+                reference_id INT NULL,
+                current_stage VARCHAR(100),
+                status VARCHAR(50),               -- current status (pending, in_progress, completed)
+                state VARCHAR(50),                -- used by workers for logic (failed, completed, etc.)
+                stages JSON,                      -- stages metadata for multi-stage workflows
+                payload JSON,                     -- workflow-specific data
+                depends_on VARCHAR(255) DEFAULT NULL, -- optional: track promise dependencies
+                description TEXT DEFAULT NULL,    -- optional: human-readable description
+                queue_task_id INT DEFAULT NULL,
+                created_at DATETIME DEFAULT NOW(),
+                updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            );
+        ");
+        $stmt->execute();
+
+        if (!index_exists_on_table('idx_promises_type_ref', 'promises')) {
+            $stmt = $db->prepare("CREATE INDEX idx_promises_type_ref ON promises (promise_type, reference_id);");
+            $stmt->execute();
+        }
+
+        if (!index_exists_on_table('idx_promises_created_at', 'promises'))
+        {
+            $stmt = $db->prepare("CREATE INDEX idx_promises_created_at ON promises (created_at);");
+            $stmt->execute();
+        }
+
+        if (!index_exists_on_table('idx_promises_type', 'promises')) {
+            $stmt = $db->prepare("CREATE INDEX idx_promises_type ON promises (promise_type);");
+            $stmt->execute();
+        }
+
+        if (!index_exists_on_table('idx_promises_stage', 'promises')) {
+            $stmt = $db->prepare("CREATE INDEX idx_promises_stage ON promises (current_stage);");
+            $stmt->execute();
+        }
+
+        if (!index_exists_on_table('idx_promises_status', 'promises')) {
+            $stmt = $db->prepare("CREATE INDEX idx_promises_status ON promises (status);");
+            $stmt->execute();
+        }
+
+        if (!index_exists_on_table('idx_promises_state', 'promises')) {
+            $stmt = $db->prepare("CREATE INDEX idx_promises_state ON promises (state);");
+            $stmt->execute();
+        }
+
+        if (!index_exists_on_table('idx_promises_depends_on', 'promises')) {
+            $stmt = $db->prepare("CREATE INDEX idx_promises_depends_on ON promises (depends_on);");
+            $stmt->execute();
+        }
+    }
+
+    // Add an index to the document_control_mappings table
+    if (table_exists("document_control_mappings"))
+    {
+        // If the tfidf_match field does not exist
+        if (!field_exists_in_table("tfidf_match", "document_control_mappings"))
+        {
+            // Add the tfidf_match field
+            echo "Adding the tfidf_match field to the document_control_mappings table.<br />\n";
+            $stmt = $db->prepare("
+                ALTER TABLE `document_control_mappings`
+                ADD COLUMN `tfidf_match` BOOL DEFAULT 0
+                AFTER `keyword_match`;
+            ");
+            $stmt->execute();
+        }
+
+        if (!index_exists_on_table('idx_document_control_id', 'document_control_mappings')) {
+            echo "Adding an index to the document_control_mappings table.<br />\n";
+            $stmt = $db->prepare("CREATE INDEX idx_document_control_id ON document_control_mappings (document_id, control_id);");
+            $stmt->execute();
+        }
+    }
+
+    // Compile the list of unnecessary files
+    echo "Removing unnecessary files.<br />\n";
+    $remove_files = array(
+        realpath(__DIR__ . '/../js/cvss_scoring.js'),
+        realpath(__DIR__ . '/../management/cvss_rating.php'),
+        realpath(__dIR__ . '/../cron/cron_ai.php'),
+        realpath(__DIR__ . '/../cron/cron_ping.php'),
+        realpath(__DIR__ . '/worddoc.php'),
+    );
+
+    foreach ($remove_files as $file)
+    {
+        // If the file exists
+        if (file_exists($file))
+        {
+            // Remove the file
+            unlink($file);
+        }
+    }
+    
+    // Truncated the file_types table if it exists
+    if (table_exists("file_types")) {
+        echo "Truncating the `file_types` table.<br />\n";
+        $stmt = $db->prepare("TRUNCATE TABLE `file_types`;");
+        $stmt->execute();
+    }
+
+    // Truncated the file_type_extensions table if it exists
+    if (table_exists("file_type_extensions")) {
+        echo "Truncating the `file_type_extensions` table.<br />\n";
+        $stmt = $db->prepare("TRUNCATE TABLE `file_type_extensions`;");
+        $stmt->execute();
+    }
+
+    // Created the `file_type_extension_mappings` table
+    if (!table_exists("file_type_extension_mappings")) {
+        echo "Creating the `file_type_extension_mappings` table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `file_type_extension_mappings` (
+                `file_type_id` INT(11) NOT NULL,
+                `file_type_extension_id` INT(11) NOT NULL,
+                PRIMARY KEY(`file_type_id`, `file_type_extension_id`),
+                INDEX(`file_type_extension_id`, `file_type_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $stmt->execute();
+    }
+
+    // Added default file types, extensions and their mappings
+    echo "Adding default file types, extensions and their mappings.<br />\n";
+    $default_file_type_extensions = [
+        ['extension' => 'jpg', 'file_type' => 'image/jpeg'],
+        ['extension' => 'jpeg', 'file_type' => 'image/jpeg'],
+        ['extension' => 'png', 'file_type' => 'image/png'],
+        ['extension' => 'gif', 'file_type' => 'image/gif'],
+        ['extension' => 'bmp', 'file_type' => 'image/bmp'],
+        ['extension' => 'webp', 'file_type' => 'image/webp'],
+        ['extension' => 'tiff', 'file_type' => 'image/tiff'],
+        ['extension' => 'svg', 'file_type' => 'image/svg+xml'],
+        ['extension' => 'pdf', 'file_type' => 'application/pdf'],
+        ['extension' => 'doc', 'file_type' => 'application/msword'],
+        ['extension' => 'docx', 'file_type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        ['extension' => 'xls', 'file_type' => 'application/vnd.ms-excel'],
+        ['extension' => 'xlsx', 'file_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+        ['extension' => 'ppt', 'file_type' => 'application/vnd.ms-powerpoint'],
+        ['extension' => 'pptx', 'file_type' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation'],
+        ['extension' => 'txt', 'file_type' => 'text/plain'],
+        ['extension' => 'csv', 'file_type' => 'text/csv'],
+        ['extension' => 'rtf', 'file_type' => 'application/rtf'],
+        ['extension' => 'odt', 'file_type' => 'application/vnd.oasis.opendocument.text'],
+        ['extension' => 'ods', 'file_type' => 'application/vnd.oasis.opendocument.spreadsheet'],
+        ['extension' => 'odp', 'file_type' => 'application/vnd.oasis.opendocument.presentation'],
+        ['extension' => 'dot', 'file_type' => 'application/msword'],
+        ['extension' => 'dotx', 'file_type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.template'],
+        ['extension' => 'xml', 'file_type' => 'application/xml'],
+        ['extension' => 'xml', 'file_type' => 'text/xml'],
+        ['extension' => 'xlt', 'file_type' => 'application/vnd.ms-excel'],
+        ['extension' => 'xla', 'file_type' => 'application/vnd.ms-excel'],
+        ['extension' => 'zip', 'file_type' => 'application/zip'],
+        ['extension' => 'rar', 'file_type' => 'application/x-rar-compressed'],
+        ['extension' => '7z',  'file_type' => 'application/x-7z-compressed'],
+        ['extension' => 'gz',  'file_type' => 'application/gzip'],
+    ];
+
+    foreach ($default_file_type_extensions as $item) {
+
+        $file_type = $item['file_type'];
+        $file_type_extension = $item['extension'];
+
+        // Insert an extension into 'file_type_extensions' table and get file_type_extension_id (value)
+        $stmt = $db->prepare("
+            INSERT INTO file_type_extensions 
+                (name)
+            VALUES
+                (:name)
+            ON DUPLICATE KEY UPDATE value = LAST_INSERT_ID(value);
+        ");
+        $stmt->execute([':name' => $file_type_extension]);
+        $file_type_extension_id = $db->lastInsertId();
+
+        // Insert a file type into 'file_types' table and get file_type_id (value)
+        $stmt = $db->prepare("
+            INSERT INTO file_types 
+                (name)
+            VALUES
+                (:name)
+            ON DUPLICATE KEY UPDATE value = LAST_INSERT_ID(value);
+        ");
+        $stmt->execute([':name' => $file_type]);
+        $file_type_id = $db->lastInsertId();
+
+        // Insert a mapping into 'file_type_extension_mappings' table
+        $stmt = $db->prepare("
+            INSERT IGNORE INTO file_type_extension_mappings 
+                (file_type_id, file_type_extension_id)
+            VALUES
+                (:file_type_id, :file_type_extension_id);
+        ");
+        $stmt->execute([
+            ':file_type_id' => $file_type_id,
+            ':file_type_extension_id' => $file_type_extension_id
+        ]);
+    }
+
+    // Delete the schedule_cron_ping setting
+    echo "Removing the old ping cron job.<br />\n";
+    delete_setting('schedule_cron_ping');
+
+    // If the compliance_files table exists and the keyword_processing_error field hasn't been added yet
+    if (table_exists("compliance_files") && !field_exists_in_table("keyword_processing_error", "compliance_files"))
+    {
+        // Add the field
+        echo "Adding the keyword_processing_error field to the compliance_files table.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE compliance_files
+            ADD COLUMN keyword_processing_error BOOL DEFAULT 0;
+        ");
+        $stmt->execute();
+    }
+
+    // If the framework_controls table exists and the keyword_processing_error field hasn't been added yet
+    if (table_exists("framework_controls") && !field_exists_in_table("keyword_processing_error", "framework_controls"))
+    {
+        // Add the field
+        echo "Adding the keyword_processing_error field to the framework_controls table.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE framework_controls
+            ADD COLUMN keyword_processing_error BOOL DEFAULT 0;
+        ");
+        $stmt->execute();
+    }
+
+    // Allow for longer unique_name in the tmp_files table
+    if (table_exists("tmp_files") && field_exists_in_table("unique_name", "tmp_files"))
+    {
+        // Update the field
+        echo "Updating the unique_name field in the tmp_files table to be 64 characters.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE tmp_files
+            MODIFY COLUMN unique_name VARCHAR(64);
+        ");
+        $stmt->execute();
+    }
 
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic

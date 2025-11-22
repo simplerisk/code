@@ -6,9 +6,6 @@
 
 // Include required configuration files
 require_once(realpath(__DIR__ . '/functions.php'));
-
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
@@ -2617,7 +2614,7 @@ function get_review_needed_table() {
         if (!preg_match('/\d{4}/', $next_review)) {
             echo "
                         <tr>
-                            <td align='left' width='50px'><a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml(convert_id($risk_id))}'>{$escaper->escapeHtml(convert_id($risk_id))}</a></td>
+                            <td align='left' width='50px'><a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml(convert_to_risk_id($risk_id))}'>{$escaper->escapeHtml(convert_to_risk_id($risk_id))}</a></td>
                             <td align='left' width='150px'>{$escaper->escapeHtml($status)}</td>
                             <td align='left' width='300px'>{$escaper->escapeHtml($subject)}</td>
                             <td align='center' class='risk-cell' bgcolor='{$escaper->escapeHtml($color)}' width='100px'>
@@ -2888,7 +2885,7 @@ function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projec
                 $risk_html .= "
                     <tr>
                         <td style='width: 100px; min-width: 100px;' align='left'>
-                            <a class='open-in-new-tab' target='_blank' href='../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "'>" . $escaper->escapeHtml(convert_id($risk_id)) . "</a>
+                            <a class='open-in-new-tab' target='_blank' href='../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "'>" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a>
                         </td>
                         <td align='left' width='150px'>" . $escaper->escapeHtml($status) . "</td>
                         <td align='left' width='300px'>" . $escaper->escapeHtml($subject) . "</td>
@@ -3006,7 +3003,7 @@ function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projec
                             <th style='background-color:" . $escaper->escapeHtml($color) . "' bgcolor='" . $escaper->escapeHtml($color) . "' colspan='7'>
                                 <center>
                                     <font color='#000000'>
-                                        " . $escaper->escapeHtml($lang['RiskId']) . ":&nbsp;&nbsp;<a class='open-in-new-tab' target='_blank' href='../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "' style='color:#000000'>" . $escaper->escapeHtml(convert_id($risk_id)) . "</a>
+                                        " . $escaper->escapeHtml($lang['RiskId']) . ":&nbsp;&nbsp;<a class='open-in-new-tab' target='_blank' href='../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "' style='color:#000000'>" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a>
                                         <br />" . $escaper->escapeHtml($lang['Subject']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($subject) . "
                                         <br />" . $escaper->escapeHtml($lang['InherentRisk']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($calculated_risk) . "&nbsp;&nbsp;(" . $escaper->escapeHtml($level_name) . ")
                                     </font>
@@ -5929,7 +5926,7 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                 $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
             }         
             
-            $management_review = management_review(convert_id($risk['id']), $risk['mgmt_review'], $next_review, $is_html = false);
+            $management_review = management_review(convert_to_risk_id($risk['id']), $risk['mgmt_review'], $next_review, $is_html = false);
             
             $risk['management_review_text'] = $management_review;
         }
@@ -6037,7 +6034,7 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                     $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
                 }         
                 
-                $management_review = management_review(convert_id($risk['id']), $risk['mgmt_review'], $next_review, $is_html = false);
+                $management_review = management_review(convert_to_risk_id($risk['id']), $risk['mgmt_review'], $next_review, $is_html = false);
                 
                 $available_review_texts = [
                     "0" => $lang['Unassigned'],
@@ -6898,7 +6895,7 @@ function risks_and_control_table($report, $sort_by, $projects, $status) {
 
             foreach ($risks as $risk) {
 
-                $risk_id = convert_id($risk['id']);
+                $risk_id = convert_to_risk_id($risk['id']);
                 $status = $risk['status'];
                 $subject = try_decrypt($risk['subject']);
                 $location = (!empty($risk['location']) ? $risk['location'] : "N/A");
@@ -6939,7 +6936,7 @@ function risks_and_control_table($report, $sort_by, $projects, $status) {
 
             // Get the variables for the row
             $origin_risk_id = $risks[0]['id'];
-            $risk_id = convert_id($origin_risk_id);
+            $risk_id = convert_to_risk_id($origin_risk_id);
             $status = $risks[0]['status'];
             $subject = try_decrypt($risks[0]['subject']);
             $calculated_risk = $risks[0]['calculated_risk'];
@@ -8521,7 +8518,9 @@ function connectivity_visualizer_associations_asset($id)
         // Get the associations for the risk
         $endpoint = "/api/v2/assets/associations?id={$id}";
         $associations = call_simplerisk_api_endpoint($endpoint);
-        $risk_associations = $associations['risks'];
+        if (!empty($associations['risks'])) {
+            $risk_associations = $associations['risks'];
+        }
     }
 
     // For each risk association
@@ -8533,7 +8532,9 @@ function connectivity_visualizer_associations_asset($id)
         // Get the associations for the control
         $endpoint = "/api/v2/risks/associations?id={$risk_id}";
         $associations = call_simplerisk_api_endpoint($endpoint);
-        $control_associations = array_merge((array)$control_associations, (array)$associations['controls']);
+        if (!empty($associations['controls'])) {
+            $control_associations = array_merge((array)$control_associations, (array)$associations['controls']);
+        }
     }
 
     // For each control association
@@ -8545,9 +8546,15 @@ function connectivity_visualizer_associations_asset($id)
         // Get the associations for the control
         $endpoint = "/api/v2/governance/controls/associations?id={$control_id}";
         $associations = call_simplerisk_api_endpoint($endpoint);
-        $framework_associations = array_merge((array)$framework_associations, (array)$associations['frameworks']);
-        $test_associations = array_merge((array)$test_associations, (array)$associations['tests']);
-        $document_associations = array_merge((array)$document_associations, (array)$associations['documents']);
+        if (!empty($associations['frameworks'])) {
+            $framework_associations = array_merge((array)$framework_associations, (array)$associations['frameworks']);
+        }
+        if (!empty($associations['tests'])) {
+            $test_associations = array_merge((array)$test_associations, (array)$associations['tests']);
+        }
+        if (!empty($associations['documents'])) {
+            $document_associations = array_merge((array)$document_associations, (array)$associations['documents']);
+        }
     }
 
     // For each test association
@@ -8559,7 +8566,9 @@ function connectivity_visualizer_associations_asset($id)
         // Get the associations for the test result
         $endpoint = "/api/v2/compliance/tests/associations?id={$test_id}";
         $associations = call_simplerisk_api_endpoint($endpoint);
-        $test_result_associations = array_merge((array)$test_result_associations, (array)$associations['test_results']);
+        if (!empty($associations['test_results'])) {
+            $test_result_associations = array_merge((array)$test_result_associations, (array)$associations['test_results']);
+        }
     }
 
     // Merge the association arrays
@@ -8607,9 +8616,15 @@ function connectivity_visualizer_associations_framework($id)
         // Get the associations for the control
         $endpoint = "/api/v2/governance/controls/associations?id={$control_id}";
         $associations = call_simplerisk_api_endpoint($endpoint);
-        $test_associations = array_merge((array)$test_associations, (array)$associations['tests']);
-        $document_associations = array_merge((array)$document_associations, (array)$associations['documents']);
-        $risk_associations = array_merge((array)$risk_associations, (array)$associations['risks']);
+        if (!empty($associations['tests'])) {
+            $test_associations = array_merge((array)$test_associations, (array)$associations['tests']);
+        }
+        if (!empty($associations['documents'])) {
+            $document_associations = array_merge((array)$document_associations, (array)$associations['documents']);
+        }
+        if (!empty($associations['risks'])) {
+            $risk_associations = array_merge((array)$risk_associations, (array)$associations['risks']);
+        }
     }
 
     // For each test association
@@ -8669,10 +8684,18 @@ function connectivity_visualizer_associations_control($id)
         // Get the associations for the control
         $endpoint = "/api/v2/governance/controls/associations?id={$id}";
         $associations = call_simplerisk_api_endpoint($endpoint);
-        $framework_associations = $associations['frameworks'];
-        $test_associations = $associations['tests'];
-        $document_associations = $associations['documents'];
-        $risk_associations = $associations['risks'];
+        if (!empty($associations['frameworks'])) {
+            $framework_associations = $associations['frameworks'];
+        }
+        if (!empty($associations['tests'])) {
+            $test_associations = $associations['tests'];
+        }
+        if (!empty($associations['documents'])) {
+            $document_associations = $associations['documents'];
+        }
+        if (!empty($associations['risks'])) {
+            $risk_associations = $associations['risks'];
+        }
     }
 
     // For each test association
@@ -8684,7 +8707,9 @@ function connectivity_visualizer_associations_control($id)
         // Get the associations for the test result
         $endpoint = "/api/v2/compliance/tests/associations?id={$test_id}";
         $associations = call_simplerisk_api_endpoint($endpoint);
-        $test_result_associations = array_merge((array)$test_result_associations, (array)$associations['test_results']);
+        if (!empty($associations['test_results'])) {
+            $test_result_associations = array_merge((array)$test_result_associations, (array)$associations['test_results']);
+        }
     }
 
     // For each risk association
@@ -8696,7 +8721,9 @@ function connectivity_visualizer_associations_control($id)
         // Get the associations for the risk
         $endpoint = "/api/v2/risks/associations?id={$risk_id}";
         $associations = call_simplerisk_api_endpoint($endpoint);
-        $asset_associations = array_merge((array)$asset_associations, (array)$associations['assets']);
+        if (!empty($associations['assets'])) {
+            $asset_associations = array_merge((array)$asset_associations, (array)$associations['assets']);
+        }
     }
 
     // Merge the association arrays
@@ -8732,8 +8759,12 @@ function connectivity_visualizer_associations_test($id)
         // Get the associations for the test
         $endpoint = "/api/v2/compliance/tests/associations?id={$id}";
         $associations = call_simplerisk_api_endpoint($endpoint);
-        $test_result_associations = $associations['test_results'];
-        $control_associations = $associations['controls'];
+        if (!empty($associations['test_results'])) {
+            $test_result_associations = $associations['test_results'];
+        }
+        if (!empty($associations['controls'])) {
+            $control_associations = $associations['controls'];
+        }
     }
 
     // For each control association
@@ -8745,9 +8776,15 @@ function connectivity_visualizer_associations_test($id)
         // Get the associations for the control
         $endpoint = "/api/v2/governance/controls/associations?id={$control_id}";
         $associations = call_simplerisk_api_endpoint($endpoint);
-        $framework_associations = array_merge((array)$framework_associations, (array)$associations['frameworks']);
-        $document_associations = array_merge((array)$document_associations, (array)$associations['documents']);
-        $risk_associations = array_merge((array)$risk_associations, (array)$associations['risks']);
+        if (!empty($associations['frameworks'])) {
+            $framework_associations = array_merge((array)$framework_associations, (array)$associations['frameworks']);
+        }
+        if (!empty($associations['documents'])) {
+            $document_associations = array_merge((array)$document_associations, (array)$associations['documents']);
+        }
+        if (!empty($associations['risks'])) {
+            $risk_associations = array_merge((array)$risk_associations, (array)$associations['risks']);
+        }
     }
 
     // For each risk association
@@ -8759,7 +8796,9 @@ function connectivity_visualizer_associations_test($id)
         // Get the associations for the risk
         $endpoint = "/api/v2/risks/associations?id={$risk_id}";
         $associations = call_simplerisk_api_endpoint($endpoint);
-        $asset_associations = array_merge((array)$asset_associations, (array)$associations['assets']);
+        if (!empty($associations['assets'])) {
+            $asset_associations = array_merge((array)$asset_associations, (array)$associations['assets']);
+        }
     }
 
     // Merge the association arrays
@@ -8795,7 +8834,9 @@ function connectivity_visualizer_associations_document($id)
         // Get the associations for the document
         $endpoint = "/api/v2/governance/documents/associations?id={$id}";
         $associations = call_simplerisk_api_endpoint($endpoint);
-        $control_associations = $associations['controls'];
+        if (!empty($associations['controls'])) {
+            $control_associations = $associations['controls'];
+        }
     }
 
     // For each control association
@@ -8807,9 +8848,15 @@ function connectivity_visualizer_associations_document($id)
         // Get the associations for the control
         $endpoint = "/api/v2/governance/controls/associations?id={$control_id}";
         $associations = call_simplerisk_api_endpoint($endpoint);
-        $framework_associations = array_merge((array)$framework_associations, (array)$associations['frameworks']);
-        $test_associations = array_merge((array)$test_associations, (array)$associations['tests']);
-        $risk_associations = array_merge((array)$risk_associations, (array)$associations['risks']);
+        if (!empty($associations['frameworks'])) {
+            $framework_associations = array_merge((array)$framework_associations, (array)$associations['frameworks']);
+        }
+        if (!empty($associations['tests'])) {
+            $test_associations = array_merge((array)$test_associations, (array)$associations['tests']);
+        }
+        if (!empty($associations['risks'])) {
+            $risk_associations = array_merge((array)$risk_associations, (array)$associations['risks']);
+        }
     }
 
     // For each risk association
@@ -8821,7 +8868,9 @@ function connectivity_visualizer_associations_document($id)
         // Get the associations for the risk
         $endpoint = "/api/v2/risks/associations?id={$risk_id}";
         $associations = call_simplerisk_api_endpoint($endpoint);
-        $asset_associations = array_merge((array)$asset_associations, (array)$associations['assets']);
+        if (!empty($associations['assets'])) {
+            $asset_associations = array_merge((array)$asset_associations, (array)$associations['assets']);
+        }
     }
 
     // For each test association
@@ -8833,7 +8882,9 @@ function connectivity_visualizer_associations_document($id)
         // Get the associations for the test result
         $endpoint = "/api/v2/compliance/tests/associations?id={$test_id}";
         $associations = call_simplerisk_api_endpoint($endpoint);
-        $test_result_associations = array_merge((array)$test_result_associations, (array)$associations['test_results']);
+        if (!empty($associations['test_results'])) {
+            $test_result_associations = array_merge((array)$test_result_associations, (array)$associations['test_results']);
+        }
     }
 
     // Merge the association arrays

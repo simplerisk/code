@@ -138,6 +138,7 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         ),
         'M' => 
         array (
+            'Monolog\\' => 8,
             'Matrix\\' => 7,
         ),
         'L' => 
@@ -468,6 +469,10 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         'Nyholm\\Psr7\\' => 
         array (
             0 => __DIR__ . '/..' . '/nyholm/psr7/src',
+        ),
+        'Monolog\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
         ),
         'Matrix\\' => 
         array (

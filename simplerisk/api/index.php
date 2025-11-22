@@ -16,8 +16,6 @@
     add_security_headers(true, true, true, true, false);
 
     // Include the language file
-    // Ignoring detections related to language files
-    // @phan-suppress-next-line SecurityCheck-PathTraversal
     require_once(language_file());
 
     // Handle older Epiphany getRoute function calls

@@ -157,11 +157,11 @@ function simplerisk_installation()
  ************************************/
 function display_install_header()
 {
-?>
+    ?>
 
-<!DOCTYPE html>
-<html dir="ltr" lang="en" xml:lang="en">
-	<head>
+    <!DOCTYPE html>
+    <html dir="ltr" lang="en" xml:lang="en">
+    <head>
         <title>SimpleRisk: Enterprise Risk Management Simplified</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -174,47 +174,47 @@ function display_install_header()
         <!-- Bootstrap tether Core JavaScript -->
         <script src="vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js" defer></script>
 
-    	<script>
-        	$(function() {
-        		// Fading out the preloader once everything is done rendering
-        		$(".preloader").fadeOut();
+        <script>
+            $(function() {
+                // Fading out the preloader once everything is done rendering
+                $(".preloader").fadeOut();
             });
-    	</script>
+        </script>
     </head>
     <body>
-        <div class="preloader">
-            <div class="lds-ripple">
-                <div class="lds-pos"></div>
-                <div class="lds-pos"></div>
-            </div>
+    <div class="preloader">
+        <div class="lds-ripple">
+            <div class="lds-pos"></div>
+            <div class="lds-pos"></div>
         </div>
-        <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="none" data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full" data-function="assessment">
-            <header class="topbar" data-navbarbg="skin5">
-                <nav class="navbar top-navbar navbar-expand-md navbar-dark">
-                    <div class="navbar-header">
-                        <a class="navbar-brand" href="https://www.simplerisk.com">
-                            <img src="images/logo@2x.png" alt="homepage" class="logo"/>
-                        </a>
-                    </div>
-              		<div class="navbar-collapse collapse show" id="navbarSupportedContent" data-navbarbg="skin5">
-                        <!-- Right side toggle and nav items -->
-						<ul class="navbar-nav float-end ms-auto">
-			  				<li class="nav-item dropdown">
-                				<a href="index.php" style='color: var(--sr-light)'>Install SimpleRisk</a>
-              				</li>
-            			</ul>
-          			</div>
-                </nav>
-            </header>
-            <!-- ============================================================== -->
-            <!-- Page wrapper  -->
-            <div class="page-wrapper">
-            	<div class="scroll-content">
-            		<div class="content-wrapper">
-                        <!-- container - It's the direct container of all the -->
-                        <div class="content container-fluid">
+    </div>
+    <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="none" data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full" data-function="assessment">
+    <header class="topbar" data-navbarbg="skin5">
+        <nav class="navbar top-navbar navbar-expand-md navbar-dark">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="https://www.simplerisk.com">
+                    <img src="images/logo@2x.png" alt="homepage" class="logo"/>
+                </a>
+            </div>
+            <div class="navbar-collapse collapse show" id="navbarSupportedContent" data-navbarbg="skin5">
+                <!-- Right side toggle and nav items -->
+                <ul class="navbar-nav float-end ms-auto">
+                    <li class="nav-item dropdown">
+                        <a href="index.php" style='color: var(--sr-light)'>Install SimpleRisk</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <!-- ============================================================== -->
+    <!-- Page wrapper  -->
+    <div class="page-wrapper">
+    <div class="scroll-content">
+    <div class="content-wrapper">
+    <!-- container - It's the direct container of all the -->
+    <div class="content container-fluid">
 
-<?php
+    <?php
 }
 
 /*************************************
@@ -222,32 +222,32 @@ function display_install_header()
  *************************************/
 function display_install_trailer()
 {
-?>
+    ?>
 
-                        </div>
-                        <!-- End of content -->
-                        <footer class="footer text-center">
-                  			Copyright 2025 SimpleRisk, Inc. All rights reserved.
-                		</footer>
-                	</div>
-                	<!-- End of content-wrapper -->
-        		</div>
-        		<!-- End of scroll-content -->
-          	</div>
-          <!-- End Page wrapper  -->
-        </div>
-        <!-- End Wrapper -->
+    </div>
+    <!-- End of content -->
+    <footer class="footer text-center">
+        Copyright 2025 SimpleRisk, Inc. All rights reserved.
+    </footer>
+    </div>
+    <!-- End of content-wrapper -->
+    </div>
+    <!-- End of scroll-content -->
+    </div>
+    <!-- End Page wrapper  -->
+    </div>
+    <!-- End Wrapper -->
 
-    	<script>
-        	$(function() {
-        		// Fading out the preloader once everything is done rendering
-        		$(".preloader").fadeOut();
-            });
-    	</script>
+    <script>
+        $(function() {
+            // Fading out the preloader once everything is done rendering
+            $(".preloader").fadeOut();
+        });
+    </script>
     </body>
-</html>
+    </html>
 
-<?php
+    <?php
 }
 
 /*********************************
@@ -433,7 +433,7 @@ function verify_step_3_database_credentials()
             $result['error_message'] = null;
         }
     }
-    // If there was an issue connecting to the database
+        // If there was an issue connecting to the database
     catch (PDOException $e)
     {
         //die("Database Connection Failed: " . $e->getMessage());
@@ -844,214 +844,101 @@ function verify_step_5_default_admin_account()
  ********************************************/
 function step_6_simplerisk_installation()
 {
-    // Get the POSTed Information
-    $db_host = addslashes($_POST['db_host']);
-    $db_port = addslashes($_POST['db_port']);
-    $db_user = addslashes($_POST['db_user']);
-    $db_pass = addslashes($_POST['db_pass']);
-    $sr_host = addslashes($_POST['sr_host']);
-    $sr_db = addslashes($_POST['sr_db']);
-    $sr_user = addslashes($_POST['sr_user']);
-    $default_language = $_POST['default_language'];
-    $db_sessions = $_POST['db_sessions'] == "false" ? "false" : "true";
-    $db_ssl_cert_path = $_POST['db_ssl_cert_path'];
-    $username = $_POST['username'];
-    $full_name = $_POST['full_name'];
-    $email = $_POST['email'];
-    $password = $_POST['password'];
-    $mailing_list = isset($_POST['mailing_list']) ? "true" : "false";
+    // Helper to sanitize input
+    $sanitize = fn($value) => str_replace('`', '', addslashes(trim($value)));
 
-    // Remove any backticks from DB connection information
-    $pattern = '/`/';
-    $replacement = '';
-    $db_host = preg_replace($pattern, $replacement, $db_host);
-    $db_port = preg_replace($pattern, $replacement, $db_port);
-    $db_user = preg_replace($pattern, $replacement, $db_user);
-    $db_pass = preg_replace($pattern, $replacement, $db_pass);
-    $sr_host = preg_replace($pattern, $replacement, $sr_host);
-    $sr_db = preg_replace($pattern, $replacement, $sr_db);
-    $sr_user = preg_replace($pattern, $replacement, $sr_user);
+    // Get POSTed information
+    $db_host = $sanitize($_POST['db_host'] ?? '');
+    $db_port = $sanitize($_POST['db_port'] ?? '');
+    $db_user = $sanitize($_POST['db_user'] ?? '');
+    $db_pass = $sanitize($_POST['db_pass'] ?? '');
+    $sr_host = $sanitize($_POST['sr_host'] ?? '');
+    $sr_db = $sanitize($_POST['sr_db'] ?? '');
+    $sr_user = $sanitize($_POST['sr_user'] ?? '');
+    $default_language = $_POST['default_language'] ?? 'en';
+    $db_sessions = ($_POST['db_sessions'] ?? 'false') === 'false' ? 'false' : 'true';
+    $db_ssl_cert_path = $_POST['db_ssl_cert_path'] ?? '';
+    $username = $_POST['username'] ?? '';
+    $full_name = $_POST['full_name'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
+    $mailing_list = isset($_POST['mailing_list']) ? 'true' : 'false';
 
-    // Generate a password for the SimpleRisk user
+    // Generate password for SimpleRisk user
     $sr_pass = installer_generate_token(20);
 
-    // Connect to the mysql database
-    $db = installer_db_open($db_host, $db_port, $db_user, $db_pass, "mysql");
+    // Connect to MySQL
+    $db = installer_db_open($db_host, $db_port, $db_user, $db_pass, 'mysql');
 
-    // Create the grantee
-    $grantee = "'" . $db_user . "'@'" . $db_host . "'";
-
-    // Check if the grantees privileges include Super
-    $stmt = $db->prepare("SELECT * FROM `information_schema`.`USER_PRIVILEGES` WHERE `GRANTEE`=:grantee AND `PRIVILEGE_TYPE`='SUPER';");
-    $stmt->bindParam(":grantee", $grantee, PDO::PARAM_STR);
+    // Check super privileges
+    $grantee = "'{$db_user}'@'{$db_host}'";
+    $stmt = $db->prepare("SELECT * FROM information_schema.USER_PRIVILEGES WHERE GRANTEE=:grantee AND PRIVILEGE_TYPE='SUPER'");
+    $stmt->bindParam(':grantee', $grantee, PDO::PARAM_STR);
     $stmt->execute();
     $privileges = $stmt->fetchAll();
 
-    // If the grantee has the super privilege
-    if (count($privileges) > 0)
-    {
-        // Disable STRICT_TRANS_TABLES sql_mode
-        $stmt = $db->prepare("SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'STRICT_TRANS_TABLES',''));");
-        $stmt->execute();
-
-        // Disable NO_ZERO_DATE sql_mode
-        $stmt = $db->prepare("SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'NO_ZERO_DATE',''));");
-        $stmt->execute();
-
-        // Disable ONLY_FULL_GROUP_BY sql_mode
-        $stmt = $db->prepare("SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
-        $stmt->execute();
+    if (count($privileges) > 0) {
+        $db->exec("SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'STRICT_TRANS_TABLES',''))");
+        $db->exec("SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'NO_ZERO_DATE',''))");
+        $db->exec("SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))");
     }
 
-    // Create the SimpleRisk database
-    // Ignoring next line detection as it does not describe the reason for the tainted argument
-    // @phan-suppress-next-line SecurityCheck-SQLInjection
-    $stmt = $db->prepare("CREATE DATABASE `" . $sr_db . "`");
-    $stmt->execute();
+    // Create database safely
+    if (!validate_mysql_identifier($sr_db)) throw new Exception("Invalid database name.");
+    $sr_db_q = quote_identifier($sr_db);
+    $db->exec("CREATE DATABASE {$sr_db_q}");
 
-    // Turn the comma-separated sr_host string into an array
-    $sr_host_array = explode(",", $sr_host);
+    // Handle multiple hosts
+    $sr_host_array = array_map('trim', explode(',', $sr_host));
 
-    // For each sr_host value
-    foreach ($sr_host_array as $sr_host)
-    {
-        // Remove any white space from the string
-        $sr_host = str_replace(" ", "", $sr_host);
+    if (!validate_mysql_identifier($sr_user)) throw new Exception("Invalid database username.");
+    $sr_user_safe = str_replace("'", '', $sr_user);
 
-        // If the resulting sr_host value is a valid domain or IP
-        if (filter_var($sr_host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) || filter_var($sr_host, FILTER_VALIDATE_IP))
-        {
-            // Create the SimpleRisk user
-            // Ignoring next line detection as it does not describe the reason for the tainted argument
-            // @phan-suppress-next-line SecurityCheck-SQLInjection
-            $stmt = $db->prepare("CREATE USER '" . $sr_user . "'@'" . $sr_host . "' IDENTIFIED BY '" . $sr_pass . "'");
-            $stmt->execute();
-
-            // Grant the SimpleRisk user permissions
-            // Ignoring next line detection as it does not describe the reason for the tainted argument
-            // @phan-suppress-next-line SecurityCheck-SQLInjection
-            $stmt = $db->prepare("GRANT SELECT,INSERT,UPDATE,ALTER,DELETE,CREATE,DROP,INDEX,REFERENCES ON `" . $sr_db . "`.* TO '" . $sr_user . "'@'" . $sr_host . "'");
-            $stmt->execute();
+    foreach ($sr_host_array as $host) {
+        if (filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) || filter_var($host, FILTER_VALIDATE_IP)) {
+            $sr_pass_quoted = $db->quote($sr_pass);
+            $db->exec("CREATE USER '{$sr_user_safe}'@'{$host}' IDENTIFIED BY {$sr_pass_quoted}");
+            $db->exec("GRANT SELECT,INSERT,UPDATE,ALTER,DELETE,CREATE,DROP,INDEX,REFERENCES ON {$sr_db_q}.* TO '{$sr_user_safe}'@'{$host}'");
         }
     }
 
-    // Reload the privileges
-    $stmt = $db->prepare("FLUSH PRIVILEGES");
-    $stmt->execute();
-
-    // Close the mysql database
+    $db->exec("FLUSH PRIVILEGES");
     installer_db_close($db);
 
-    // Get the current application version
+    // Determine schema file
     $app_version = installer_get_current_version();
+    $file_map = ['en' => "simplerisk-en-$app_version.sql", 'es' => "simplerisk-es-$app_version.sql", 'bp' => "simplerisk-bp-$app_version.sql"];
+    $file = $file_map[$default_language] ?? $file_map['en'];
+    $branch = defined('DB_BRANCH') ? DB_BRANCH : 'master';
+    $file_url = "https://raw.githubusercontent.com/simplerisk/database/{$branch}/{$file}";
 
-    // Depending on the schema selected
-    switch ($default_language)
-    {
-        // Default - English
-        case "en":
-            $file = "simplerisk-en-" . $app_version . ".sql";
-            break;
-        // Spanish
-        case "es":
-            $file = "simplerisk-es-" . $app_version . ".sql";
-            break;
-        // Brazilian Portuguese
-        case "bp":
-            $file = "simplerisk-bp-" . $app_version . ".sql";
-            break;
-        // Use the English language file by default
-        default:
-            $file = "simplerisk-en-" . $app_version . ".sql";
-            break;
+    $web_file = @fopen($file_url, 'r');
+    if (!$web_file) { echo "ERROR: Unable to obtain file from {$file_url}"; exit;
     }
 
-    // Check if we want to use a custom branch
-    $branch = defined('DB_BRANCH') ? DB_BRANCH : "master";
-
-    try {
-        // Download the database schema file to memory
-        $file_url = "https://raw.githubusercontent.com/simplerisk/database/" . $branch . "/" . $file;
-        $web_file = fopen($file_url, "r");
-    }
-    catch (Exception $e) {
-        echo "ERROR: Unable to obtain file from {$file_url}";
-        exit(0);
-    }
-
-    // If we did not successfully open the file handle
-    if ($web_file === false)
-    {
-        echo "ERROR: Unable to obtain file from {$file_url}";
-        exit(0);
-    }
-
-    $memory_file = fopen("php://memory", "rw");
-
-    // If we did not successfully open the file handle
-    if ($memory_file === false)
-    {
-        echo "ERROR: Unable to open a file handle to memory.";
-        exit(0);
-    }
-
-    // Copy the data from the web file to the memory file
-    $stream_copy_to_stream_result = stream_copy_to_stream($web_file, $memory_file);
+    $memory_file = fopen('php://memory', 'rw');
+    stream_copy_to_stream($web_file, $memory_file);
     rewind($memory_file);
-
-    // Close the web file
     fclose($web_file);
 
-    // If we did not successfully copy from the URL to memory
-    if ($stream_copy_to_stream_result === false)
-    {
-        echo "ERROR: Unable to copy file to memory.";
-        exit(0);
-    }
-
-    // Load the database file
     load_file($db_host, $db_port, $db_user, $db_pass, $sr_db, $memory_file);
-
-    // Close the memory file
     fclose($memory_file);
 
-    // Get any existing users
-    $stmt = $db->prepare("SELECT count(*) FROM `user`;");
-    $stmt->execute();
-    $number_of_users = (int)$stmt->fetchColumn();
+    $db = installer_db_open($db_host, $db_port, $db_user, $db_pass, $sr_db);
 
-    // If there are no users
-    if ($number_of_users == 0)
-    {
-        // Ensure that the AUTO_INCREMENT value is set to 1 for the first user
-        $stmt = $db->prepare("ALTER TABLE `user` AUTO_INCREMENT=1;");
-        $stmt->execute();
-    }
+    $stmt = $db->query("SELECT COUNT(*) FROM user");
+    if ((int)$stmt->fetchColumn() === 0) $db->exec("ALTER TABLE user AUTO_INCREMENT = 1");
 
-    // Add the default admin user
     installer_add_admin_user($username, $email, $full_name, $password);
 
-    // Get the SimpleRisk Base URL
     $simplerisk_base_url = get_simplerisk_base_url();
+    $stmt = $db->prepare("INSERT INTO settings (name,value) VALUES ('simplerisk_base_url', ?) ON DUPLICATE KEY UPDATE value=VALUES(value)");
+    $stmt->execute([$simplerisk_base_url]);
 
-    // Update the simplerisk base url
-    // Ignoring next line detection as it does not describe the reason for the tainted argument
-    // @phan-suppress-next-line SecurityCheck-SQLInjection
-    $stmt = $db->prepare("INSERT INTO `" . $sr_db . "`.`settings` (`name`,`value`) VALUES ('simplerisk_base_url', :simplerisk_base_url)");
-    $stmt->bindParam(":simplerisk_base_url", $simplerisk_base_url, PDO::PARAM_STR);
-    $stmt->execute();
-
-    // If the SimpleRisk Base URL is using https
-    $parse_url = parse_url($simplerisk_base_url);
-    if ($parse_url['scheme'] == 'https')
-    {
-        // Create a cookie string with the current session ID
+    if (($parse_url = parse_url($simplerisk_base_url)) && ($parse_url['scheme'] ?? '') === 'https') {
         $strCookie = 'SimpleRisk=' . session_id() . '; path=/';
-
-        // Check if we have a valid SSL certificate
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $simplerisk_base_url);
-        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
         curl_setopt($curl, CURLOPT_COOKIE, $strCookie);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
@@ -1059,88 +946,37 @@ function step_6_simplerisk_installation()
         $json_array = json_decode($json_result, true);
         curl_close($curl);
 
-        // If the call was successful
-        if ($json_result == true && $json_array['status'] === 200)
-        {
-            // Enable SSL certificate checks
-            // @phan-suppress-next-line SecurityCheck-SQLInjection
-            $stmt = $db->prepare("INSERT INTO `" . $sr_db . "`.`settings` (`name`,`value`) VALUES ('ssl_certificate_check_simplerisk', '1') ON DUPLICATE KEY UPDATE `value`='1';");
-            $stmt->execute();
-        }
-        else
-        {
-            // Disable SSL certificate checks
-            // @phan-suppress-next-line SecurityCheck-SQLInjection
-            $stmt = $db->prepare("INSERT INTO `" . $sr_db . "`.`settings` (`name`,`value`) VALUES ('ssl_certificate_check_simplerisk', '0') ON DUPLICATE KEY UPDATE `value`='0';");
-            $stmt->execute();
-        }
+        $ssl_ok = ($json_result && ($json_array['status'] ?? 0) === 200) ? '1' : '0';
+        $stmt = $db->prepare("INSERT INTO settings (name,value) VALUES ('ssl_certificate_check_simplerisk', ?) ON DUPLICATE KEY UPDATE value=VALUES(value)");
+        $stmt->execute([$ssl_ok]);
     }
 
-    // Set the default language
-    // Ignoring next line detection as it does not describe the reason for the tainted argument
-    // @phan-suppress-next-line SecurityCheck-SQLInjection
-    $stmt = $db->prepare("UPDATE `" . $sr_db . "`.`settings` SET `value`=:default_language WHERE `name`='default_language'");
-    $stmt->bindParam(":default_language", $default_language, PDO::PARAM_STR, 5);
-    $stmt->execute();
+    $stmt = $db->prepare("UPDATE settings SET value=? WHERE name='default_language'");
+    $stmt->execute([$default_language]);
 
-    // Create a random instance id
     $instance_id = installer_generate_token(50);
-    // Ignoring next line detection as it does not describe the reason for the tainted argument
-    // @phan-suppress-next-line SecurityCheck-SQLInjection
-    $stmt = $db->prepare("INSERT INTO `" . $sr_db . "`.`settings` (`name`,`value`) VALUES ('instance_id', :instance_id)");
-    $stmt->bindParam(":instance_id", $instance_id, PDO::PARAM_STR, 50);
-    $stmt->execute();
+    $stmt = $db->prepare("INSERT INTO settings (name,value) VALUES ('instance_id', ?) ON DUPLICATE KEY UPDATE value=VALUES(value)");
+    $stmt->execute([$instance_id]);
 
-    // Delete any existing cron ping schedule
-    $stmt = $db->prepare("DELETE FROM `" . $sr_db . "`.`settings` WHERE `name`='schedule_cron_ping'");
+    $stmt = $db->prepare("DELETE FROM settings WHERE name='schedule_cron_ping'");
     $stmt->execute();
+    $schedule = rand(0,59) . ' ' . rand(0,23) . ' * * *';
+    $stmt = $db->prepare("INSERT INTO settings (name,value) VALUES ('schedule_cron_ping', ?) ON DUPLICATE KEY UPDATE value=VALUES(value)");
+    $stmt->execute([$schedule]);
 
-    // Generate a random hour (0-23) and minute (0-59) to create the cron ping schedule
-    $hour = rand(0, 23);
-    $minute = rand(0, 59);
-    $schedule = "{$minute} {$hour} * * *";
-    $stmt = $db->prepare("INSERT INTO `" . $sr_db . "`.`settings` (`name`,`value`) VALUES ('schedule_cron_ping', :schedule)");
-    $stmt->bindParam(":schedule", $schedule, PDO::PARAM_STR);
-    $stmt->execute();
-
-    // Register the instance
     installer_instance_registration($instance_id, $full_name, $email, $mailing_list);
 
-    // This should be the path to the config.php file
     $file = realpath(__DIR__ . '/config.php');
-
     $config_file = create_config_file($db_host, $db_port, $sr_user, $sr_pass, $sr_db, $db_sessions, $db_ssl_cert_path);
 
-    // If the config.php file exists where we expect it
-    if (file_exists($file))
-    {
-        // If the config.php file is writable
-        if (is_writable($file))
-        {
-            // Open the config file for writing
-            $fh = fopen($file, 'w');
-            fwrite($fh, $config_file);
-            fclose($fh);
-
-            echo "Configuration file has been updated successfully.<br /><br />\n";
-            echo "SimpleRisk should now be communicating with the database.<br /><br />\n";
-            echo "<input type=\"button\" value=\"GO TO SIMPLERISK\" onclick=\"window.location.reload(true)\" />\n";
-        }
-        else
-        {
-            echo "Found a config.php file located at {$file} but it is not writeable.  Replace the file with the content below to get SimpleRisk to work properly.<br /><br />\n";
-        }
+    if ($file && file_exists($file) && is_writable($file)) {
+        file_put_contents($file, $config_file);
+        echo "Configuration file has been updated successfully.<br><br>";
+        echo "SimpleRisk should now be communicating with the database.<br><br>";
+        echo "<input type=\"button\" value=\"GO TO SIMPLERISK\" onclick=\"window.location.reload(true)\" />";
+    } else {
+        echo nl2br(htmlentities($config_file, ENT_QUOTES, 'UTF-8'));
     }
-    else
-    {
-        echo "I couldn't find a config.php file located at {$file}.  The contents that the config.php file needs to contain are printed out below so you can update it yourself.<br /><br />\n";
-    }
-
-    echo "</form>\n";
-    echo "<hr><br />\n";
-    echo "<form name=\"display_config\" method=\"post\" action=\"\" class=\"loginForm\">\n";
-    echo nl2br(htmlentities($config_file, ENT_QUOTES, 'utf-8'));
-    echo "</form>\n";
 }
 
 /****************************************************
@@ -1519,9 +1355,9 @@ function installer_instance_registration($instance_id, $full_name, $email, $mail
  *******************************************/
 function installer_get_current_version()
 {
-        require_once(realpath(__DIR__ . '/version.php'));
+    require_once(realpath(__DIR__ . '/version.php'));
 
-        return APP_VERSION;
+    return APP_VERSION;
 }
 
 /******************************************
@@ -1846,6 +1682,13 @@ function installer_add_admin_user($user, $email, $name, $password)
         'mitigation_planned',
         'management_review'
     ));
+
+    $custom_plan_mitigation_display_settings = '{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["submission_date","1"],["closure_date","0"],["reference_id","0"],["regulation","0"],["control_number","0"],["location","0"],["source","0"],["category","0"],["team","0"],["additional_stakeholders","0"],["technology","0"],["owner","0"],["manager","0"],["submitted_by","0"],["risk_tags","0"],["scoring_method","0"],["residual_risk","0"],["project","0"],["days_open","0"],["affected_assets","0"],["risk_assessment","0"],["additional_notes","0"],["risk_mapping","0"],["threat_mapping","0"]],"mitigation_colums":[["mitigation_planned","1"],["planning_strategy","0"],["planning_date","0"],["mitigation_effort","0"],["mitigation_cost","0"],["mitigation_owner","0"],["mitigation_team","0"],["mitigation_accepted","0"],["mitigation_date","0"],["mitigation_controls","0"],["current_solution","0"],["security_recommendations","0"],["security_requirements","0"]],"review_colums":[["management_review","1"],["review_date","0"],["next_review_date","0"],["next_step","0"],["comments","0"]]}';
+
+    $custom_perform_reviews_display_settings = '{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["submission_date","1"],["closure_date","0"],["reference_id","0"],["regulation","0"],["control_number","0"],["location","0"],["source","0"],["category","0"],["team","0"],["additional_stakeholders","0"],["technology","0"],["owner","0"],["manager","0"],["submitted_by","0"],["risk_tags","0"],["scoring_method","0"],["residual_risk","0"],["project","0"],["days_open","0"],["affected_assets","0"],["risk_assessment","0"],["additional_notes","0"],["risk_mapping","0"],["threat_mapping","0"]],"mitigation_colums":[["mitigation_planned","1"],["planning_strategy","0"],["planning_date","0"],["mitigation_effort","0"],["mitigation_cost","0"],["mitigation_owner","0"],["mitigation_team","0"],["mitigation_accepted","0"],["mitigation_date","0"],["mitigation_controls","0"],["current_solution","0"],["security_recommendations","0"],["security_requirements","0"]],"review_colums":[["management_review","1"],["review_date","0"],["next_review_date","0"],["next_step","0"],["comments","0"]]}';
+
+    $custom_reviewregularly_display_settings = '{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["days_open","1"],["closure_date","0"],["reference_id","0"],["regulation","0"],["control_number","0"],["location","0"],["source","0"],["category","0"],["team","0"],["additional_stakeholders","0"],["technology","0"],["owner","0"],["manager","0"],["submitted_by","0"],["risk_tags","0"],["scoring_method","0"],["residual_risk","0"],["submission_date","0"],["project","0"],["affected_assets","0"],["risk_assessment","0"],["additional_notes","0"],["risk_mapping","0"],["threat_mapping","0"]],"mitigation_colums":[["mitigation_planned","0"],["planning_strategy","0"],["planning_date","0"],["mitigation_effort","0"],["mitigation_cost","0"],["mitigation_owner","0"],["mitigation_team","0"],["mitigation_accepted","0"],["mitigation_date","0"],["mitigation_controls","0"],["current_solution","0"],["security_recommendations","0"],["security_requirements","0"]],"review_colums":[["management_review","0"],["review_date","0"],["next_step","0"],["next_review_date","1"],["comments","0"]]}';
+
     $type = "simplerisk";
     $role_id = 1;
     $admin = 1;
@@ -1904,7 +1747,10 @@ function installer_add_admin_user($user, $email, $name, $password)
                 `multi_factor`,
                 `change_password`,
                 `manager`,
-                `custom_display_settings`
+                `custom_display_settings`,
+                `custom_plan_mitigation_display_settings`,
+                `custom_perform_reviews_display_settings`,
+                `custom_reviewregularly_display_settings`
             )
         VALUES (
             :type,
@@ -1918,7 +1764,10 @@ function installer_add_admin_user($user, $email, $name, $password)
             :multi_factor,
             :change_password,
             :manager,
-            :custom_display_settings
+            :custom_display_settings,
+            :custom_plan_mitigation_display_settings,
+            :custom_perform_reviews_display_settings,
+            :custom_reviewregularly_display_settings
         );
     ");
     $stmt->bindParam(":type", $type, PDO::PARAM_STR);
@@ -1933,6 +1782,9 @@ function installer_add_admin_user($user, $email, $name, $password)
     $stmt->bindParam(":change_password", $change_password, PDO::PARAM_INT);
     $stmt->bindParam(":manager", $manager, PDO::PARAM_INT);
     $stmt->bindParam(":custom_display_settings", $custom_display_settings, PDO::PARAM_STR);
+    $stmt->bindParam(":custom_plan_mitigation_display_settings", $custom_plan_mitigation_display_settings, PDO::PARAM_STR);
+    $stmt->bindParam(":custom_perform_reviews_display_settings", $custom_perform_reviews_display_settings, PDO::PARAM_STR);
+    $stmt->bindParam(":custom_reviewregularly_display_settings", $custom_reviewregularly_display_settings, PDO::PARAM_STR);
     $stmt->execute();
 
     $user_id = $db->lastInsertId();
@@ -1975,6 +1827,37 @@ function installer_add_admin_user($user, $email, $name, $password)
 
     // Close the database connection
     installer_db_close($db);
+}
+
+/**
+ * Validate a MySQL identifier we control with a strict whitelist.
+ * Allows letters, numbers, underscore and hyphen. Adjust as needed.
+ */
+function validate_mysql_identifier(string $ident): bool {
+    // Prevent empty, leading/trailing whitespace, or backticks
+    if ($ident === '' || preg_match('/`/', $ident)) {
+        return false;
+    }
+    // Allow a conservative set of characters only
+    return (bool) preg_match('/^[A-Za-z0-9_-]+$/', $ident);
+}
+
+/**
+ * Safe-quote a validated identifier by surrounding with backticks.
+ * Assumes validate_mysql_identifier() already returned true.
+ */
+function quote_identifier(string $ident): string {
+    // extra safety: strip any backticks that might have slipped through
+    $safe = str_replace('`', '', $ident);
+    return "`" . $safe . "`";
+}
+
+/**
+ * Safe-quote user/host parts used in user@host strings.
+ * Only called after host/user validated.
+ */
+function quote_string_literal(PDO $db, string $val): string {
+    return $db->quote($val); // returns quoted string including surrounding single quotes
 }
 
 ?>

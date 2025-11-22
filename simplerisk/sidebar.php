@@ -644,6 +644,11 @@ require_once(realpath(__DIR__ .'/header.php'));
                                 <span class="hide-menu"><?= $escaper->escapeHtml($lang['AuditTrail']);?></span>
                             </a>
                         </li>
+                        <li class="sidebar-item <?= ($active_sidebar_submenu =='QueueMonitor')?'active':''; ?>">
+                            <a href="../admin/queue_monitor.php" class="sidebar-link">
+                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['QueueMonitor']);?></span>
+                            </a>
+                        </li>
     <?php
         if (import_export_extra()) { 
     ?>

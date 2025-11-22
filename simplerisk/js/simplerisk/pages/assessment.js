@@ -110,15 +110,6 @@ $(document).ready(function () {
     })
 
     /**
-    * events in clicking Score Using CVSS button of edit details page, muti tabs case
-    */
-    $(document).on('click', '[name=cvssSubmit]', function (e) {
-        e.preventDefault();
-        var form = $(this).parents('.risk-scoring-container');
-        popupcvss(form);
-    })
-
-    /**
     * events in clicking Score Using DREAD button of edit details page, muti tabs case
     */
     $(document).on('click', '[name=dreadSubmit]', function (e) {

@@ -1,4 +1,4 @@
-/*! RowGroup 1.5.2
+/*! RowGroup 1.6.0
  * © SpryMedia Ltd - datatables.net/license
  */
 
@@ -52,7 +52,7 @@ var DataTable = $.fn.dataTable;
 /**
  * @summary     RowGroup
  * @description RowGrouping for DataTables
- * @version     1.5.2
+ * @version     1.6.0
  * @author      SpryMedia Ltd (www.sprymedia.co.uk)
  * @contact     datatables.net
  * @copyright   SpryMedia Ltd.
@@ -68,9 +68,9 @@ var DataTable = $.fn.dataTable;
  */
 
 var RowGroup = function (dt, opts) {
-	// Sanity check that we are using DataTables 1.10 or newer
-	if (!DataTable.versionCheck || !DataTable.versionCheck('1.11')) {
-		throw 'RowGroup requires DataTables 1.11 or newer';
+	// Sanity check
+	if (!DataTable.versionCheck || !DataTable.versionCheck('2')) {
+		throw new Error('RowGroup requires DataTables 2 or newer');
 	}
 
 	// User and defaults configuration object
@@ -202,9 +202,15 @@ $.extend(RowGroup.prototype, {
 	 * @private
 	 */
 	_adjustColspan: function () {
-		$('tr.' + this.c.className, this.s.dt.table().body())
-			.find('th:visible, td:visible')
-			.attr('colspan', this._colspan());
+		let cells = $('tr.' + this.c.className, this.s.dt.table().body())
+			.find('th:visible, td:visible');
+
+		// Only perform the adjust if there is a single cell. If there is more the renderer must
+		// have returned multiple cells and it is the responsibility of the rendering function to
+		// get the number of cells right.
+		if (cells.length === 1) {
+			cells.attr('colspan', this._colspan());
+		}
 	},
 
 	/**
@@ -228,6 +234,15 @@ $.extend(RowGroup.prototype, {
 	 */
 	_draw: function () {
 		var dt = this.s.dt;
+
+		// Don't do anything if there is no data source
+		if (
+			this.c.dataSrc === null ||
+			(Array.isArray(this.c.dataSrc) && this.c.dataSrc.length === 0)
+		) {
+			return;
+		}
+
 		var groupedRows = this._group(0, dt.rows({ page: 'current' }).indexes());
 
 		this._groupDisplay(0, groupedRows);
@@ -439,7 +454,7 @@ RowGroup.defaults = {
 	}
 };
 
-RowGroup.version = '1.5.2';
+RowGroup.version = '1.6.0';
 
 $.fn.dataTable.RowGroup = RowGroup;
 $.fn.DataTable.RowGroup = RowGroup;
@@ -472,13 +487,16 @@ DataTable.Api.register('rowGroup().enabled()', function () {
 
 DataTable.Api.register('rowGroup().dataSrc()', function (val) {
 	if (val === undefined) {
-		return this.context[0].rowGroup.dataSrc();
+		let s = this.context[0].rowGroup;
+		return s ? s.dataSrc() : [];
 	}
 
 	return this.iterator('table', function (ctx) {
-		if (ctx.rowGroup) {
-			ctx.rowGroup.dataSrc(val);
+		if (! ctx.rowGroup) {
+			new RowGroup(this.context[0]);
 		}
+		
+		ctx.rowGroup.dataSrc(val);
 	});
 });
 

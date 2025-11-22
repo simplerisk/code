@@ -680,11 +680,6 @@ function send_reset_email($username, $name, $email, $token) {
         $body .= "</ul>\n";
     }
     
-    //$base_url = get_current_url();
-    //$pattern[0] = "/\/(\w)*\.php$/";
-    //$pattern[1] = "/\/admin\/(\w)*\.php$/";
-    //$base_url = preg_replace($pattern, "/reset.php", $base_url);
-    
     $body .= "<b>Username:</b>&nbsp;&nbsp;{$escaper->escapeHtml($username)}<br/>\n";
     $body .= "<b>Reset Token:</b>&nbsp;&nbsp;".$token."<br/>\n";
     if(get_setting('simplerisk_base_url') != false) {
@@ -696,14 +691,12 @@ function send_reset_email($username, $name, $email, $token) {
     }
     $body .= "<p>This is an automated message and responses will be ignored or rejected.</p>\n";
     $body .= "</body></html>\n";
-    
-    //mail($to, $subject, $body, $headers);
 
     // Require the mail functions
     require_once(realpath(__DIR__ . '/mail.php'));
 
     // Send the e-mail
-    send_email($name, $email, $subject, $body);
+    send_email_immediate($name, $email, $subject, $body);
 }
 
 /*************************************
@@ -901,17 +894,17 @@ function expire_reset_token_for_username($username)
  *******************************/
 function add_session_check($permissions = [])
 {
-	write_debug_log("SCRIPT NAME: " . $_SERVER['SCRIPT_NAME']);
+	write_debug_log("SCRIPT NAME: " . $_SERVER['SCRIPT_NAME'], "debug");
 
 	// If a session is not currently started and active
 	if (session_status() === PHP_SESSION_NONE)
 	{
-		write_debug_log("A session is not currently started and active.");
+		write_debug_log("A session is not currently started and active.", "debug");
 
 		// If we are using the database for sessions
 		if (USE_DATABASE_FOR_SESSIONS == "true")
 		{
-			write_debug_log("We are using the database for sessions.");
+			write_debug_log("We are using the database for sessions.", "debug");
 
 			// Set the custom session save handler
 			session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
@@ -920,8 +913,8 @@ function add_session_check($permissions = [])
 		// If we are running an old version of PHP
 		if (PHP_VERSION_ID < 70300)
 		{
-			write_debug_log("We are running a version of PHP < 7.3 (" . PHP_VERSION_ID . ").");
-			write_debug_log("Setting the session cookie parameters.");
+			write_debug_log("We are running a version of PHP < 7.3 (" . PHP_VERSION_ID . ").", "debug");
+			write_debug_log("Setting the session cookie parameters.", "debug");
 
 			// Set the session cookie parameters
             $parameters = [
@@ -952,16 +945,16 @@ function add_session_check($permissions = [])
 		}
 
 		// Set the current session name
-		write_debug_log("Setting the current session name.");
+		write_debug_log("Setting the current session name.", "debug");
 		session_name('SimpleRisk');
 
 		// Start the session
-		write_debug_log("Starting the session.");
+		write_debug_log("Starting the session.", "debug");
 		session_start();
 	}
 
 	// Check for session timeout or renegotiation
-	write_debug_log("Checking for session timeout or renegotiation.");
+	write_debug_log("Checking for session timeout or renegotiation.", "debug");
 	session_check();
 
 	// Enforcing the access permission by default
@@ -977,51 +970,51 @@ function add_session_check($permissions = [])
 			switch ($permission)
 			{
                 case "check_admin":
-					write_debug_log("Admin permission is required.");
+					write_debug_log("Admin permission is required.", "debug");
 					enforce_permission("admin");
                     break;
                 case "check_assessments":
-					write_debug_log("Assessments permission is required.");
+					write_debug_log("Assessments permission is required.", "debug");
 					enforce_permission("assessments");
                     break;
                 case "check_assets":
-					write_debug_log("Assets permission is required.");
+					write_debug_log("Assets permission is required.", "debug");
 					enforce_permission("asset");
                     break;
                 case "check_compliance":
-					write_debug_log("Compliance permission is required.");
+					write_debug_log("Compliance permission is required.", "debug");
 					enforce_permission("compliance");
                     break;
                 case "check_governance":
-					write_debug_log("Governance permission is required.");
+					write_debug_log("Governance permission is required.", "debug");
 					enforce_permission("governance");
                     break;
                 case "check_riskmanagement":
-					write_debug_log("Risk management permission is required.");
+					write_debug_log("Risk management permission is required.", "debug");
 					enforce_permission("riskmanagement");
                     break;
 				case "check_im":
-					write_debug_log("Incident Management Incidents permission is required.");
+					write_debug_log("Incident Management Incidents permission is required.", "debug");
 					enforce_permission("im_incidents");
 					break;
 				case "check_im_reporting":
-					write_debug_log("Incident Management Reporting permission is required.");
+					write_debug_log("Incident Management Reporting permission is required.", "debug");
 					enforce_permission("im_reporting");
 					break;
 				case "check_im_configure":
-					write_debug_log("Incident Management Configure permission is required.");
+					write_debug_log("Incident Management Configure permission is required.", "debug");
 					enforce_permission("im_configure");
 					break;
 				case "check_vm_vulnerabilities":
-				    write_debug_log("Vulnerability Management 'Vulnerabilities' permission is required.");
+				    write_debug_log("Vulnerability Management 'Vulnerabilities' permission is required.", "debug");
 				    enforce_permission("vm_vulnerabilities");
 				    break;
 				case "check_vm_configure":
-				    write_debug_log("Vulnerability Management 'Configure' permission is required.");
+				    write_debug_log("Vulnerability Management 'Configure' permission is required.", "debug");
 				    enforce_permission("vm_configure");
 				    break;
                 case "check_ai":
-                    write_debug_log("Artificial Intelligence permission is required.");
+                    write_debug_log("Artificial Intelligence permission is required.", "debug");
                     enforce_permission("ai_access");
                     break;
 			}

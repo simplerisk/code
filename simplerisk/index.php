@@ -62,8 +62,6 @@ else {
     }
 
     // Include the language file
-    // Ignoring detections related to language files
-    // @phan-suppress-next-line SecurityCheck-PathTraversal
     require_once(language_file());
 
     // If the database has been installed but there are no users

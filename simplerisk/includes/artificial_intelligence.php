@@ -5,14 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required configuration files
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/display.php'));
-
-// Include required configuration files
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
+require_once(realpath(__DIR__ . '/queues.php'));
 require_once(language_file());
-require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 class ClaudeAPIClient {
     private $api_key;
@@ -25,15 +22,48 @@ class ClaudeAPIClient {
         $this->api_key = $api_key;
     }
 
-    public function callClaudeAPI($messages, $max_tokens = 300, $system = null) {
+    /**
+     * Call Claude API with support for documents
+     *
+     * @param array $messages Array of messages (can include document content blocks)
+     * @param int $max_tokens Maximum tokens for response
+     * @param string|null $system System prompt
+     * @return array API response
+     */
+    public function callClaudeAPI($messages, $max_tokens = 300, $system = null)
+    {
         $baseDelay = 10; // Initial delay in seconds
         $retries = 0;
         $maxRetries = 5;
         $success = false;
 
-        // Convert malformed text into valid UTF-8
+        // Process messages to handle both text and document content
         foreach ($messages as &$message) {
-            $message['content'] = mb_convert_encoding($message['content'], 'UTF-8', 'UTF-8');
+            // If content is a string, sanitize it
+            if (is_string($message['content'])) {
+                $message['content'] = $this->ensureValidUtf8($message['content']);
+            }
+            // If content is an array (for multi-part content with documents), process text blocks
+            elseif (is_array($message['content'])) {
+                foreach ($message['content'] as &$content_block) {
+                    if ($content_block['type'] === 'text') {
+                        $original = $content_block['text'];
+                        $content_block['text'] = $this->ensureValidUtf8($content_block['text']);
+
+                        // Debug logging if sanitization changed the content
+                        if ($original !== $content_block['text']) {
+                            $originalLength = strlen($original);
+                            $cleanedLength = strlen($content_block['text']);
+                            write_debug_log(
+                                "UTF-8 sanitization modified text block: {$originalLength} bytes -> {$cleanedLength} bytes",
+                                'debug'
+                            );
+                        }
+                    }
+                    // Document blocks don't need UTF-8 conversion as they're base64
+                }
+                unset($content_block);
+            }
         }
         unset($message); // important to avoid variable reference issues
 
@@ -45,13 +75,36 @@ class ClaudeAPIClient {
             'messages' => $messages
         ];
 
+        // Validate UTF-8 before JSON encoding
+        $this->validateUtf8InData($data);
+
         // Ensure that the json encoding works before sending the data
-        $json_data = json_encode($data);
+        $json_data = json_encode($data, JSON_UNESCAPED_UNICODE);
+
         if ($json_data === false) {
-            error_log('JSON encode error: ' . json_last_error_msg());
-        } else {
-            error_log('JSON payload being sent: ' . $json_data);
+            $error = json_last_error_msg();
+            write_debug_log('JSON encode error: ' . $error, 'error');
+
+            // Additional debugging: try to find the problematic content
+            $this->debugJsonEncodeFailure($data);
+
+            // Throw exception instead of continuing with invalid data
+            throw new Exception("Failed to JSON encode API request: {$error}");
         }
+
+        // Verify the JSON is not empty
+        if (trim($json_data) === '' || $json_data === 'null') {
+            write_debug_log('JSON encoding resulted in empty/null data', 'error');
+            write_debug_log('Original data structure: ' . print_r($this->truncateBase64ForLogging($data), true), 'debug');
+            throw new Exception("JSON encoding produced empty result");
+        }
+
+        // Log the payload size
+        write_debug_log('JSON payload size: ' . strlen($json_data) . ' bytes', 'debug');
+
+        // Only log a truncated version if it contains large base64 data
+        $log_data = $this->truncateBase64ForLogging($data);
+        write_debug_log('JSON payload being sent: ' . json_encode($log_data), 'debug');
 
         $ch = curl_init($this->url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -63,73 +116,62 @@ class ClaudeAPIClient {
             'anthropic-version: 2023-06-01'
         ]);
 
-        while (!$success && $retries < $maxRetries)
-        {
-            try
-            {
+        while (!$success && $retries < $maxRetries) {
+            try {
                 $response = curl_exec($ch);
                 $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
                 if (curl_errno($ch)) {
                     throw new Exception('Curl error: ' . curl_error($ch));
                 }
+
                 curl_close($ch);
 
-                if ($http_status !== 200)
-                {
-                    write_debug_log("Curl returned an HTTP status of {$http_status}");
+                if ($http_status !== 200) {
+                    write_debug_log("Curl returned an HTTP status of {$http_status}", "debug");
 
                     // If the HTTP code is 400 a bad request was made
-                    if ($http_status === 400)
-                    {
+                    if ($http_status === 400) {
                         // Attempt to get the actual error message
                         $data = json_decode($response, true);
-                        $message = $data['error']['message'];
+                        $message = $data['error']['message'] ?? 'Unknown error';
 
                         // If we were able to get the error message
-                        if (!empty($message))
-                        {
+                        if (!empty($message)) {
                             // Log the error
-                            write_debug_log("Full API Response on 400 error: " . print_r($response, true));
-                            write_debug_log("Request Payload: " . json_encode($data, JSON_PRETTY_PRINT));
-                            write_debug_log("Anthropic API Error: 400 - {$message}");
+                            write_debug_log("Full API Response on 400 error: " . print_r($response, true), "debug");
+                            write_debug_log("Anthropic API Error: 400 - {$message}", "error");
                         }
                         // Otherwise, just display a generic message and the whole response
-                        else
-                        {
-                            write_debug_log("Anthropic API Error: 400 - Bad request for Anthropic API");
+                        else {
+                            write_debug_log("Anthropic API Error: 400 - Bad request for Anthropic API", "error");
                             write_debug_log($response);
                         }
                     }
                     // If the HTTP code is 402 a payment is required
-                    if ($http_status === 402)
-                    {
+                    if ($http_status === 402) {
                         // Display an alert
                         $message = "Payment required: Please add credits to your Anthropic API account.";
                         set_alert(true, "bad", $message);
 
                         // Log the error
-                        write_debug_log("Anthropic API Error: 402 - Payment required for Anthropic API");
+                        write_debug_log("Anthropic API Error: 402 - Payment required for Anthropic API", "error");
 
                         // Throw an exception
                         throw new Exception('Anthropic API Error: 402 - Payment required for Anthropic API');
                     }
                     // If the HTTP code is 429 a rate limit has been hit
-                    else if ($http_status === 429)
-                    {
+                    else if ($http_status === 429) {
                         // We will try again with a backoff delay so no need to display an alert
-
                         // Log the error
-                        write_debug_log("Anthropic API Error: 429 - Rate limit hit for Anthropic API");
+                        write_debug_log("Anthropic API Error: 429 - Rate limit hit for Anthropic API", "warning");
 
                         // Throw an exception
                         throw new Exception("Anthropic API Error: 429 - Rate limit hit for Anthropic API");
                     }
                     // If the HTTP code is 529 anthropic is experiencing capacity issues
-                    else if ($http_status === 529)
-                    {
+                    else if ($http_status === 529) {
                         // We will try again with a backoff delay so no need to display an alert
-
                         // Log the error
                         write_debug_log("Anthropic API Error: 529 - The Anthropic API is overloaded");
 
@@ -137,15 +179,13 @@ class ClaudeAPIClient {
                         throw new Exception("Anthropic API Error: 529 - The Anthropic API is overloaded");
                     }
                     // If it's not an expected HTTP status code
-                    else
-                    {
+                    else {
                         // Throw an exception
                         throw new Exception("API error: {$http_status}");
                     }
                 }
                 // The request was successful
-                else
-                {
+                else {
                     $result = json_decode($response, true);
                     $success = true;
                 }
@@ -154,17 +194,235 @@ class ClaudeAPIClient {
                 if ($http_status === 429 || $http_status === 529) {
                     // Exponential backoff
                     $delay = $baseDelay * (2 ** $retries);
-                    write_debug_log("Waiting {$delay} seconds before retry.");
+                    write_debug_log("Waiting {$delay} seconds before retry.", "info");
                     sleep($delay);
                     $retries++;
-                }
-                else {
+                } else {
                     throw $e;
                 }
             }
         }
 
         return $result;
+    }
+
+    /**
+     * Ensure text is valid UTF-8, using multiple fallback strategies
+     *
+     * @param string $text Text that may contain malformed UTF-8
+     * @return string Valid UTF-8 text
+     */
+    private function ensureValidUtf8($text)
+    {
+        if (!is_string($text)) {
+            return '';
+        }
+
+        if ($text === '') {
+            return '';
+        }
+
+        // Check if already valid UTF-8
+        if (mb_check_encoding($text, 'UTF-8')) {
+            return $text;
+        }
+
+        write_debug_log('Detected invalid UTF-8, attempting to sanitize', 'warning');
+
+        // Strategy 1: Try common encodings
+        $encodings = ['UTF-8', 'ISO-8859-1', 'Windows-1252', 'CP1252'];
+        foreach ($encodings as $encoding) {
+            $converted = @mb_convert_encoding($text, 'UTF-8', $encoding);
+            if ($converted !== false && mb_check_encoding($converted, 'UTF-8')) {
+                write_debug_log("Successfully converted from {$encoding} to UTF-8", 'debug');
+                return $converted;
+            }
+        }
+
+        // Strategy 2: Use iconv with IGNORE to strip invalid sequences
+        $cleaned = @iconv('UTF-8', 'UTF-8//IGNORE', $text);
+        if ($cleaned !== false && mb_check_encoding($cleaned, 'UTF-8')) {
+            write_debug_log('Used iconv //IGNORE to sanitize UTF-8', 'debug');
+            return $cleaned;
+        }
+
+        // Strategy 3: Use iconv with TRANSLIT to transliterate problematic characters
+        $cleaned = @iconv('UTF-8', 'UTF-8//TRANSLIT//IGNORE', $text);
+        if ($cleaned !== false && mb_check_encoding($cleaned, 'UTF-8')) {
+            write_debug_log('Used iconv //TRANSLIT//IGNORE to sanitize UTF-8', 'debug');
+            return $cleaned;
+        }
+
+        // Strategy 4: Remove control characters and non-printable bytes
+        $cleaned = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x80-\x9F]/u', '', $text);
+        if ($cleaned !== null && $cleaned !== false && mb_check_encoding($cleaned, 'UTF-8')) {
+            write_debug_log('Used regex to remove control characters', 'debug');
+            return $cleaned;
+        }
+
+        // Strategy 5: Keep only ASCII-safe characters (most aggressive)
+        write_debug_log('Falling back to ASCII-only sanitization', 'warning');
+        $cleaned = preg_replace('/[^\x20-\x7E\x0A\x0D\t]/u', '', $text);
+
+        if ($cleaned !== null && $cleaned !== false) {
+            return $cleaned;
+        }
+
+        // Last resort: return empty string
+        write_debug_log('All UTF-8 sanitization strategies failed, returning empty string', 'error');
+        return '';
+    }
+
+    /**
+     * Validate that all text content in the data structure is valid UTF-8
+     *
+     * @param array $data Data structure to validate
+     * @return void
+     */
+    private function validateUtf8InData($data)
+    {
+        if (isset($data['messages']) && is_array($data['messages'])) {
+            foreach ($data['messages'] as $index => $message) {
+                if (is_string($message['content'])) {
+                    if (!mb_check_encoding($message['content'], 'UTF-8')) {
+                        write_debug_log("Message {$index} content has invalid UTF-8", 'error');
+                    }
+                } elseif (is_array($message['content'])) {
+                    foreach ($message['content'] as $blockIndex => $block) {
+                        if ($block['type'] === 'text' && isset($block['text'])) {
+                            if (!mb_check_encoding($block['text'], 'UTF-8')) {
+                                write_debug_log(
+                                    "Message {$index}, block {$blockIndex} has invalid UTF-8",
+                                    'error'
+                                );
+                                // Log a sample of the problematic text
+                                $sample = substr($block['text'], 0, 100);
+                                write_debug_log("Sample text: " . bin2hex($sample), 'debug');
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Debug helper to identify what's causing JSON encoding to fail
+     *
+     * @param array $data Data that failed to encode
+     * @return void
+     */
+    private function debugJsonEncodeFailure($data)
+    {
+        write_debug_log('Debugging JSON encode failure...', 'debug');
+
+        // Try encoding just the structure without content
+        $structure = [
+            'model' => $data['model'] ?? 'unknown',
+            'max_tokens' => $data['max_tokens'] ?? 0,
+            'message_count' => count($data['messages'] ?? [])
+        ];
+
+        if (json_encode($structure) !== false) {
+            write_debug_log('Basic structure encodes successfully', 'debug');
+
+            // Test each message individually
+            if (isset($data['messages']) && is_array($data['messages'])) {
+                write_debug_log('Testing ' . count($data['messages']) . ' messages...', 'debug');
+
+                foreach ($data['messages'] as $index => $message) {
+                    // Test role
+                    $test = json_encode(['role' => $message['role'] ?? 'unknown']);
+                    if ($test === false) {
+                        write_debug_log("Message {$index} role fails to encode", 'error');
+                    } else {
+                        write_debug_log("Message {$index} role: OK", 'debug');
+                    }
+
+                    // Test content
+                    if (is_string($message['content'])) {
+                        write_debug_log("Message {$index} has string content, length: " . strlen($message['content']), 'debug');
+                        $test = json_encode(['content' => $message['content']]);
+                        if ($test === false) {
+                            write_debug_log("Message {$index} content (string) FAILS to encode", 'error');
+
+                            // Check UTF-8 validity
+                            if (!mb_check_encoding($message['content'], 'UTF-8')) {
+                                write_debug_log("Message {$index} content is NOT valid UTF-8", 'error');
+                                // Show hex dump of first 100 bytes
+                                $hex = bin2hex(substr($message['content'], 0, 100));
+                                write_debug_log("First 100 bytes (hex): {$hex}", 'debug');
+                            } else {
+                                write_debug_log("Message {$index} content IS valid UTF-8 but still fails JSON encode", 'error');
+                            }
+                        } else {
+                            write_debug_log("Message {$index} string content: OK", 'debug');
+                        }
+                    } elseif (is_array($message['content'])) {
+                        write_debug_log("Message {$index} has array content with " . count($message['content']) . " blocks", 'debug');
+
+                        foreach ($message['content'] as $blockIndex => $block) {
+                            $blockType = $block['type'] ?? 'unknown';
+                            write_debug_log("Message {$index}, block {$blockIndex}: type={$blockType}", 'debug');
+
+                            $test = json_encode($block);
+                            if ($test === false) {
+                                write_debug_log(
+                                    "Message {$index}, block {$blockIndex} (type: {$blockType}) FAILS to encode",
+                                    'error'
+                                );
+
+                                // If it's a text block, check the text
+                                if ($blockType === 'text' && isset($block['text'])) {
+                                    write_debug_log("Text block length: " . strlen($block['text']), 'debug');
+
+                                    if (!mb_check_encoding($block['text'], 'UTF-8')) {
+                                        write_debug_log("Text block is NOT valid UTF-8", 'error');
+                                        // Show hex dump of first 100 bytes
+                                        $hex = bin2hex(substr($block['text'], 0, 100));
+                                        write_debug_log("First 100 bytes (hex): {$hex}", 'debug');
+                                    } else {
+                                        write_debug_log("Text block IS valid UTF-8 but still fails JSON encode", 'error');
+                                    }
+                                }
+                            } else {
+                                write_debug_log("Message {$index}, block {$blockIndex}: OK", 'debug');
+                            }
+                        }
+                    } else {
+                        write_debug_log("Message {$index} has unexpected content type: " . gettype($message['content']), 'error');
+                    }
+                }
+            } else {
+                write_debug_log('No messages array found in data', 'error');
+            }
+        } else {
+            write_debug_log('Even basic structure fails to encode', 'error');
+        }
+    }
+
+    /**
+     * Truncate base64 data in messages for logging purposes
+     */
+    private function truncateBase64ForLogging($data) {
+        $log_data = $data;
+
+        if (isset($log_data['messages'])) {
+            foreach ($log_data['messages'] as &$message) {
+                if (is_array($message['content'])) {
+                    foreach ($message['content'] as &$content_block) {
+                        if ($content_block['type'] === 'document' && isset($content_block['source']['data'])) {
+                            $original_length = strlen($content_block['source']['data']);
+                            $content_block['source']['data'] = substr($content_block['source']['data'], 0, 50) . '... [truncated, original length: ' . $original_length . ' bytes]';
+                        }
+                    }
+                    unset($content_block);
+                }
+            }
+            unset($message);
+        }
+
+        return $log_data;
     }
 
     private function rateLimit() {
@@ -1498,9 +1756,6 @@ function ask_anthropic_for_recommendations($context_content)
                 $result = $client->callClaudeAPI($messages, 8192);
             }
 
-            // Update the ai_display_recommendations setting with the result
-            update_setting("ai_display_recommendations", $result['content'][0]['text']);
-
             // Return the result
             return $result['content'][0]['text'];
         }
@@ -1540,6 +1795,110 @@ function display_artificial_intelligence_icon($type, $id)
             // Display the AI Extra icon
             artificial_intelligence_display_icon($type, $id);
         }
+    }
+}
+
+/**********************************************************
+ * FUNCTION: CHECK ARTIFICIAL INTELLIGENCE CONTEXT UPDATE *
+ **********************************************************/
+function check_artificial_intelligence_context_update()
+{
+    write_debug_log("Artificial Intelligence: Checking for context updates.", "info");
+
+    // Get timestamps
+    $last_saved = get_setting("ai_context_last_saved");
+    $last_updated = get_setting("ai_context_last_updated");
+
+    write_debug_log("Artificial Intelligence: Context last saved at " . date("Y-m-d H:i:s", $last_saved), "debug");
+    write_debug_log("Artificial Intelligence: Context last updated: " . date("Y-m-d H:i:s", $last_updated), "debug");
+
+    // If it's time to update
+    if ($last_updated < $last_saved || !$last_updated) {
+        $message = "Artificial Intelligence: Context updated. Queueing for new recommendations.";
+        write_debug_log($message, "notice");
+        write_log(0, 0, $message, 'artificial_intelligence');
+
+        // Queue the AI update job
+        $queue_task_payload = [
+            'triggered_at' => time(),
+        ];
+        queue_task('core_ai_context_update', $queue_task_payload, 50);
+
+        // Update the timestamp to prevent repeated queuing
+        update_setting("ai_context_last_updated", time());
+    } else {
+        write_debug_log("Artificial Intelligence: Context has not been updated.", "info");
+    }
+}
+
+/************************************************************
+ * FUNCTION: PROCESS ARTIFICIAL INTELLIGENCE CONTEXT UPDATE *
+ ************************************************************/
+function process_artificial_intelligence_context_update_task()
+{
+    try {
+        write_debug_log("Artificial Intelligence: Starting context update.", "info");
+
+        $context_content = generate_anthropic_message_context();
+        $advice = ask_anthropic_for_recommendations($context_content);
+
+        // If successful
+        update_setting("ai_context_last_updated", time());
+        write_debug_log("Artificial Intelligence: Context update completed successfully.", "info");
+        write_log(0, 0, "AI context successfully updated via queue.", 'artificial_intelligence');
+
+        return true;
+
+    } catch (Exception $e) {
+        write_debug_log("Artificial Intelligence: Context update failed: " . $e->getMessage(), "error");
+        throw $e; // allows queue retry mechanism to kick in
+    }
+}
+
+/**************************************************************************
+ * FUNCTION: PROCESS ARTIFICIAL INTELLIGENCE DOCUMENT TO CONTROL MATCHING *
+ **************************************************************************/
+function process_artificial_intelligence_document_to_control_matching_task($db, $task)
+{
+    $payload = json_decode($task['payload'] ?? '', true);
+    if (!is_array($payload) || !isset($payload['document_id'])) {
+        write_debug_log("Invalid AI task payload: " . json_encode($task), 'error');
+        $db->prepare("UPDATE queue_tasks SET status='failed', attempts=attempts+1, updated_at=NOW() WHERE id=?")
+            ->execute([$task['id']]);
+        return;
+    }
+
+    $document_id = $payload['document_id'];
+    $promise_id = create_promise('ai_document_enhance', $document_id, $payload);
+    update_promise_status($promise_id, 'running');
+
+    try {
+        $result = ai_document_enhance($document_id, false);
+
+        if ($result['status_code'] == 200) {
+            update_promise_status($promise_id, 'completed', $result);
+            $db->prepare("UPDATE queue_tasks SET status='completed', updated_at=NOW() WHERE id=?")
+                ->execute([$task['id']]);
+            write_debug_log("Document ID {$document_id} enhanced successfully.", "info");
+        } else {
+            increment_promise_attempts($promise_id);
+            update_promise_status($promise_id, 'failed', $result);
+            $db->prepare("
+                UPDATE queue_tasks 
+                SET status='failed', attempts=attempts+1, updated_at=NOW() 
+                WHERE id=?
+            ")->execute([$task['id']]);
+            write_debug_log("Error processing document ID {$document_id}: {$result['status_message']}", "warning");
+        }
+    } catch (Exception $e) {
+        increment_promise_attempts($promise_id);
+        update_promise_status($promise_id, 'failed', ['error' => $e->getMessage()]);
+        $db->prepare("
+            UPDATE queue_tasks 
+            SET status='failed', attempts=attempts+1, updated_at=NOW() 
+            WHERE id=?
+        ")->execute([$task['id']]);
+        write_debug_log("AI document enhance failed: " . $e->getMessage(), 'error');
     }
 }
 

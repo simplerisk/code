@@ -284,67 +284,7 @@ $.fn.extend({
         ]);
 
         $(this).data('initialized', true);
-    },
-    
-    initAsAssociatedExceptionTreegrid: function(type=false) {
-
-        // Can't initialize it twice
-        if (this.data('initialized')) {
-            this.treegrid("resize");
-            return;
-        }
-
-        let tabs = this.parents('.tab-pane');
-        let activeTabs = this.parents('.tab-pane.active');
-
-        // Can't initialize if not all of the parent tabs(if there's any) active
-        // because the treegrid doesn't properly initialize in the background
-        if (tabs.length != activeTabs.length) {
-            return;
-        }
-
-        var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.risk-id', tabContainer).html();
-
-        this.treegrid({
-            iconCls: 'icon-ok',
-            animate: false,
-            fitColumns: true,
-            nowrap: true,
-            url: BASE_URL + `/api/v2/associated-exceptions/tree?type=${type}&id=${risk_id}`,
-            method: 'get',
-            idField: 'value',
-            treeField: 'name',
-            scrollbarSize: 0,
-            loadFilter: function(data, parentId) {
-                return data.data;
-            },
-            onLoadSuccess: function(row, data){
-                fixTreeGridCollapsableColumn();
-                // Refresh exception counts in the tabs
-                var totalCount = 0;
-                if((data && data.length))
-                {
-                    for(var i = 0; i < data.length; i++)
-                    {
-                        var parent = data[i];
-                        if((parent.children && parent.children.length))
-                        {
-                            totalCount += parent.children.length;
-                        }
-                    }
-                }
-                
-                $(`#${type}-exceptions-count`).text(totalCount);
-
-                if (typeof wireActionButtons === 'function') {
-                    wireActionButtons(type);
-                }
-            }
-        });
-
-        $(this).data('initialized', true);
-    },
+    }
 });
 
 
@@ -735,102 +675,105 @@ jQuery(document).ready(function($){
         });
     }
 
-    /**************** Start get AI document create **********/
-
+    /**************** Start AI document create **********/
     $('body').on('click', '.ai-document--create', function(e){
         e.preventDefault();
-        var document_type  = $(this).attr('data-type');
-        var document_name  = $(this).attr('data-name');
 
-        var createButton = $(this); // Reference to the clicked button
-        var deleteButton = $('input.ai-document--delete[data-type="' + document_type + '"][data-name="' + document_name + '"]');
+        var createButton = $(this);
+        var row = createButton.closest('tr');
+        var deleteButton = row.find('.ai-document--delete');
+        var queuedButton = row.find('.ai-document--queued');
 
-        // Show spinner before API call
+        var document_type = createButton.attr('data-type');
+        var document_name = createButton.attr('data-name');
+
         $.blockUI({
-            message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>',
-            baseZ:'10001'
+            message: '<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>',
+            baseZ: '10001'
         });
 
         $.ajax({
             url: BASE_URL + '/api/v2/ai/document/create?document_type=' + document_type + '&document_name=' + document_name,
             type: 'GET',
             dataType: 'json',
-            success : function (res){
-                // If there are any status messages, show them
+            complete: function() {
+                $.unblockUI();
+            },
+            success: function(res, textStatus, xhr) {
+                var statusCode = xhr.status;
+
+                if (statusCode === 202 || statusCode === 409) {
+                    // Show Queued button
+                    createButton.hide();
+                    queuedButton.show().prop('disabled', true);
+
+                    deleteButton.hide().prop('disabled', true);
+                } else {
+                    // Unexpected success, leave Install enabled
+                    createButton.val('Install').prop('disabled', false).show();
+                }
+
                 if(res && res.status_message){
                     showAlertsFromArray(res.status_message, true);
                 }
-
-                // Get the document id that was created
-                var data = res.data;
-                document_id = data.document_id;
-
-                // Hide the create button and disable it
-                createButton.hide().prop('disabled', true);
-
-                // Show the delete button and enable it
-                deleteButton.show().prop('disabled', false).attr('data-id', document_id);
             },
-            complete: function(){
-                $.unblockUI();
-            },
-            error: function(res) {
-                // If there are any status messages, show them
-                if(res && res.status_message){
-                    showAlertsFromArray(res.status_message);
+            error: function(xhr) {
+                createButton.val('Install').prop('disabled', false).show();
+
+                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         });
     });
+    /**************** End AI document create **********/
 
-    /**************** End get AI document create **********/
-
-    /**************** Start get AI document delete **********/
-
+    /**************** Start AI document delete **********/
     $('body').on('click', '.ai-document--delete', function(e){
         e.preventDefault();
-        var document_id  = $(this).attr('data-id');
-        var document_type = $(this).attr('data-type');
-        var document_name  = $(this).attr('data-name');
 
-        var deleteButton = $(this); // Reference to the clicked button
-        var createButton = $('input.ai-document--create[data-type="' + document_type + '"][data-name="' + document_name + '"]');
+        var deleteButton = $(this);
+        var row = deleteButton.closest('tr');
+        var createButton = row.find('.ai-document--create');
+        var queuedButton = row.find('.ai-document--queued');
 
-        // Show spinner before API call
+        var document_id = deleteButton.attr('data-id');
+
         $.blockUI({
-            message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>',
-            baseZ:'10001'
+            message: '<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>',
+            baseZ: '10001'
         });
 
         $.ajax({
             type: "DELETE",
             url: BASE_URL + "/api/v2/governance/documents?document_id=" + document_id,
             dataType: 'json',
-            success : function (res){
-                // If there are any status messages, show them
+            success: function(res){
                 if(res && res.status_message){
                     showAlertsFromArray(res.status_message, true);
                 }
 
-                // Hide the delete button and disable it
-                deleteButton.hide().prop('disabled', true);
-
-                // Show the create button and enable it
-                createButton.show().prop('disabled', false);
+                // Hide Delete and Queued, show Install
+                deleteButton.hide();
+                queuedButton.hide();
+                createButton
+                    .val('Install')
+                    .prop('disabled', false)
+                    .removeClass('hidden')
+                    .show();
             },
             complete: function(){
                 $.unblockUI();
             },
-            error: function(res) {
-                // If there are any status messages, show them
+            error: function(res){
                 if(res && res.status_message){
                     showAlertsFromArray(res.status_message);
                 }
             }
         });
     });
+    /**************** End AI document delete **********/
 
-    /**************** End get AI document delete **********/
 });
 
 function rebuild_filters()

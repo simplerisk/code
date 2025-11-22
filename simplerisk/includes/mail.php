@@ -6,14 +6,13 @@
 
 // Include required configuration files
 require_once(realpath(__DIR__ . '/config.php'));
+require_once(realpath(__DIR__ . '/queues.php'));
 
 // Require the composer autoload file
 // This loads the PHPMailer library
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 // Include the language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
 /*******************************
@@ -310,147 +309,150 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
 
 }
 
-/************************
- * FUNCTION: SEND EMAIL *
- ************************/
+/*********************************
+ * FUNCTION: SEND EMAIL          *
+ * Will queue emails for sending *
+ *********************************/
 function send_email($name, $email, $subject, $body)
 {
-	// Get the mail settings
-	$mail = get_mail_settings();
-    $transport = $mail['phpmailer_transport'];
-    $from_email = $mail['phpmailer_from_email'];
-    $from_name = $mail['phpmailer_from_name'];
-    $replyto_email = $mail['phpmailer_replyto_email'];
-    $replyto_name = $mail['phpmailer_replyto_name'];
-    $prepend = $mail['phpmailer_prepend'];
-    $host = $mail['phpmailer_host'];
-	$smtpautotls = $mail['phpmailer_smtpautotls'];
-	$smtpauth = $mail['phpmailer_smtpauth'];
-    $username = $mail['phpmailer_username'];
-    $encryption = $mail['phpmailer_smtpsecure'];
-    $port = $mail['phpmailer_port'];
+    $queue_task_payload = [
+        'triggered_at'    => time(),
+        'recipient_name'  => $name,
+        'recipient_email' => $email,
+        'subject'         => $subject,
+        'body'            => $body
+    ];
 
-    // Get a Management Extra IV from the settings table
-    $management_extra_iv = get_setting("management_extra_iv");
-
-    // If we have a value, that means this is a hosted instance with SMTP email
-    if ($management_extra_iv !== false)
-    {
-        // Load the Management Extra
-        require_once(realpath(__DIR__ . "/../extras/management/index.php"));
-
-        // We need to base64 decode the IV
-        $iv = base64_decode($management_extra_iv);
-
-        // Decrypt the phpmailer password
-        $phpmailer_password = $mail['phpmailer_password'];
-        $password = openssl_decrypt($phpmailer_password, 'aes-256-cbc', MANAGEMENT_EXTRA_ENCRYPTION_KEY, 0, $iv);
+    if (!queue_task('core_email_send', $queue_task_payload, 100)) {
+        write_debug_log("Failed to queue email to {$email}", 'error');
     }
-    // Otherwise use the phpmailer_password value
-    else $password = $mail['phpmailer_password'];
+}
 
+/**********************************
+ * FUNCTION: SEND EMAIL IMMEDIATE *
+ * Don't queue email, send now    *
+ **********************************/
+function send_email_immediate($name, $email, $subject, $body)
+{
+    $mail_settings = get_mail_settings();
+    $transport = $mail_settings['phpmailer_transport'] ?? 'mail';
+    $from_email = $mail_settings['phpmailer_from_email'] ?? '';
+    $from_name = $mail_settings['phpmailer_from_name'] ?? '';
+    $replyto_email = $mail_settings['phpmailer_replyto_email'] ?? $from_email;
+    $replyto_name = $mail_settings['phpmailer_replyto_name'] ?? $from_name;
+    $prepend = $mail_settings['phpmailer_prepend'] ?? '';
+    $host = $mail_settings['phpmailer_host'] ?? '';
+    $smtpautotls = $mail_settings['phpmailer_smtpautotls'] ?? 'true';
+    $smtpauth = $mail_settings['phpmailer_smtpauth'] ?? 'false';
+    $username = $mail_settings['phpmailer_username'] ?? '';
+    $encryption = $mail_settings['phpmailer_smtpsecure'] ?? '';
+    $port = $mail_settings['phpmailer_port'] ?? 25;
 
-	// Create a new PHPMailer instance
-	$mail = new PHPMailer\PHPMailer\PHPMailer;
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        write_debug_log("Invalid email: $email", "error");
+        return false;
+    }
 
-	// If SMTP auto TLS is disabled
-	if ($smtpautotls == "false")
-	{
-		// Disable SMTP auto TLS
-		$mail->SMTPAutoTLS = false;
-	}
+    if (empty($subject) || empty($body)) {
+        write_debug_log("Empty subject or body for email to $email", "error");
+        return false;
+    }
 
-	// Set the character set to UTF-8
-	$mail->CharSet = 'UTF-8';
+    // Decrypt password if Management Extra is enabled
+    $password = $mail_settings['phpmailer_password'] ?? '';
+    $management_extra_iv = get_setting("management_extra_iv");
+    if ($management_extra_iv !== false && !empty($password)) {
+        try {
+            require_once(realpath(__DIR__ . "/../extras/management/index.php"));
+            $iv = base64_decode($management_extra_iv);
+            $password = openssl_decrypt($password, 'aes-256-cbc', MANAGEMENT_EXTRA_ENCRYPTION_KEY, 0, $iv);
+            if (!$password) {
+                write_debug_log("Failed to decrypt SMTP password for $username", "error");
+                return false;
+            }
+        } catch (Exception $e) {
+            write_debug_log("Exception decrypting SMTP password: " . $e->getMessage(), "error");
+            return false;
+        }
+    }
 
-	// Set who the message is to be sent from
-	$mail->setFrom($from_email, $from_name);
+    $mail = new PHPMailer\PHPMailer\PHPMailer(true);
 
-	// Set an alternative reply-to address
-	$mail->addReplyTo($replyto_email, $replyto_name);
+    try {
+        $mail->CharSet = 'UTF-8';
+        $mail->setFrom($from_email, $from_name);
+        $mail->addReplyTo($replyto_email, $replyto_name);
+        $mail->addAddress($email, $name);
+        $mail->Subject = ($prepend ? $prepend . ' ' : '') . $subject;
+        $mail->isHTML(true);
+        $mail->Body = $body;
+        $mail->AltBody = strip_tags($body);
 
-	// Add a recipient
-	$mail->addAddress($email, $name);
+        // Configure transport
+        if ($transport === 'sendmail') {
+            $mail->isSendmail();
+        } elseif ($transport === 'smtp') {
+            $mail->isSMTP();
+            $mail->Host = $host;
+            $mail->Port = $port;
+            $mail->SMTPAutoTLS = ($smtpautotls !== 'false');
+            $mail->SMTPKeepAlive = false;
 
-	// Add a CC
-	// $mail->addCC('cc@example.com');
+            if ($smtpauth === 'true') {
+                $mail->SMTPAuth = true;
+                $mail->Username = $username;
+                $mail->Password = $password;
+                if ($encryption === 'tls') $mail->SMTPSecure = 'tls';
+                elseif ($encryption === 'ssl') $mail->SMTPSecure = 'ssl';
+            }
+        }
 
-	// Add a BCC
-	// $mail->addBCC('bcc@example.com');
+        $mail->send();
+        write_debug_log("Email successfully sent to $email with subject '$subject'", "info");
+        return true;
 
-	// Set the subject line
-    $mail->Subject = ($prepend && strlen($prepend) > 0 ? $prepend . " " : "") . $subject;
+    } catch (PHPMailer\PHPMailer\Exception $e) {
+        write_debug_log("PHPMailer Exception sending email to $email: " . $e->getMessage(), "error");
+        return false;
+    } catch (Exception $e) {
+        write_debug_log("General Exception sending email to $email: " . $e->getMessage(), "error");
+        return false;
+    }
+}
 
-	// Set the email format to HTML
-	$mail->isHTML(true);
+/********************************
+ * FUNCTION: PROCESS EMAIL TASK *
+ ********************************/
+function process_email_task($db, $task) {
+    $payload = json_decode($task['payload'] ?? '', true);
+    if (!is_array($payload) || !isset($payload['recipient_email'], $payload['recipient_name'])) {
+        write_debug_log("Invalid email task payload: " . json_encode($task), 'error');
+        $db->prepare("UPDATE queue_tasks SET status='failed', attempts=attempts+1, updated_at=NOW() WHERE id=?")
+            ->execute([$task['id']]);
+        return;
+    }
 
-	// Message body in HTML
-	$mail->Body = $body;
+    try {
+        // Use the existing email logic, but move the PHPMailer creation here.
+        send_email_immediate(
+            $payload['recipient_name'],
+            $payload['recipient_email'],
+            $payload['subject'],
+            $payload['body']
+        );
 
-	// Message body in plain text for non-HTML mail clients
-	//$mail->AltBody = 'This is a plain-text message body';
+        $db->prepare("UPDATE queue_tasks SET status='completed', updated_at=NOW() WHERE id=?")
+            ->execute([$task['id']]);
 
-	// Read an HTML message body from an external file, convert referenced images to embedded
-	// convert HTML into basic plain-text alternative body
-	// $mail->msgHTML(file_get_contents('contents.html'), dirname(__FILE__));
+    } catch (Exception $e) {
+        $db->prepare("
+            UPDATE queue_tasks 
+            SET status='failed', attempts=attempts+1, updated_at=NOW() 
+            WHERE id=?
+        ")->execute([$task['id']]);
 
-	// Attach an image file
-	// $mail->addAttachment('images/phpmailer_mini.png');
-	// Add attachments with an optional name
-	// $mail->addAttachment('/tmp/image.jpg', 'new.jpg');
-
-	// If the transport is sendmail
-	if ($transport == "sendmail")
-	{
-		// Set PHPMailer to use the sendmail transport
-		$mail->isSendmail();
-	}
-	// If the transport is smtp
-	else if ($transport == "smtp")
-	{
-		// Set PHPMailer to use the smtp transport
-		$mail->isSMTP();
-
-		// Specify the main SMTP server
-		// Could be a semi-colon separated list
-		$mail->Host = $host;
-
-		// TCP port to connect to
-		$mail->Port = $port;
-
-		// If SMTP authentication is enabled
-		if ($smtpauth == "true")
-		{
-			// Enable SMTP authentication
-			$mail->SMTPAuth = true;
-
-			// SMTP username
-			$mail->Username = $username;
-
-			// SMTP password
-			$mail->Password = $password;
-
-			// If the encryption is tls
-			if ($encryption == "tls")
-			{
-				// Enable TLS encryption
-				$mail->SMTPSecure = 'tls';
-			}
-			// Otherwise, if the encryption is ssl
-			else if ($encryption == "ssl")
-			{
-				// Enable SSL encryption
-				$mail->SMTPSecure = 'ssl';
-			}
-		}
-	}
-
-	// Send the message, check for errors
-	if (!$mail->send())
-	{
-		// Log any errors to the debug log
-		write_debug_log("Mailer Error: " . $mail->ErrorInfo);
-	}
+        write_debug_log("Email task failed: " . $e->getMessage(), 'error');
+    }
 }
 
 ?>

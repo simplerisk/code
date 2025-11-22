@@ -49,3 +49,18 @@
     }
 }
 //************************ REPORTING > DYNAMIC AUDIT REPORT END ***********************//
+
+//************************** REPORTING > AUDIT TIMELINE BEGIN *************************//
+#audit_timeline_datatable_wrapper {
+    .multiselect-native-select {
+        .multiselect-container.dropdown-menu {
+            width: auto;
+        }
+    }
+
+    // When multiselect dropdown is moved to the outside of the datatable's header filter scrollable container so that it can't be cut off by the scrollable container
+    .multiselect-container.dropdown-menu {
+        width: auto;
+    }
+}
+//*************************** REPORTING > AUDIT TIMELINE END **************************//

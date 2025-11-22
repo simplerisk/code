@@ -9,8 +9,6 @@ require_once(realpath(__DIR__ . '/config.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
 
 // Include the language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
@@ -64,12 +62,12 @@ function check_permission($permission) {
 	// Check if the permission is authorized
 	if (!isset($_SESSION[$permission]) || $_SESSION[$permission] != 1) {
 
-		write_debug_log("{$message} does not have the '{$permission}' permission.");
+		write_debug_log("{$message} does not have the '{$permission}' permission.", "notice");
 		return false;
 
 	} else {
 
-		write_debug_log("{$message} has the '{$permission}' permission.");
+		write_debug_log("{$message} has the '{$permission}' permission.", "debug");
 		return true;
 
 	}

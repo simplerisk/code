@@ -6,8 +6,6 @@
 
 // Include required configuration files
 require_once(realpath(__DIR__ . '/functions.php'));
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/displayassets.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
@@ -846,7 +844,7 @@ function delete_all_assets($verified = false) {
         return true;
     } catch (Exception $e) {
         // Log the exception and return false
-        error_log($e);
+        write_debug_log($e, 'error');
         return false;
     }}
 

@@ -26,8 +26,6 @@ require_once(realpath(__DIR__ . '/../../includes/Components/SimpleriskApiExcepti
 add_security_headers(true, true, true, true, false);
 
 // Include the language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 
 // If access is authenticated
@@ -42,6 +40,8 @@ if (api_v2_is_authenticated())
     app()->delete('/admin/tag', 'api_v2_admin_tag_delete');
     app()->delete('/admin/tag/all', 'api_v2_admin_tag_delete_all');
     app()->get('/admin/governance/documents/maptocontrols', 'api_v2_update_all_document_control_mappings');
+    app()->get('/admin/queue', 'api_v2_admin_queue');
+    app()->get('/admin/queue/promises', 'api_v2_admin_queue_promises');
 
     // SimpleRisk Assets Routes
     app()->get('/assets', 'api_v2_assets');
@@ -55,14 +55,12 @@ if (api_v2_is_authenticated())
     app()->get('/governance/frameworks/associations', 'api_v2_governance_frameworks_associations');
     app()->get('/governance/controls', 'api_v2_governance_controls');
     app()->get('/governance/controls/associations', 'api_v2_governance_controls_associations');
-    app()->get('/governance/controls/topdocuments', 'api_v2_governance_controls_top_documents');
     app()->get('/governance/documents', 'api_v2_governance_documents');
     app()->delete('/governance/documents', 'api_v2_governance_documents_delete');
     app()->get('/governance/documents/controls', 'api_v2_governance_documents_to_controls');
     app()->post('/governance/documents/controls', 'getDocumentsToControlsDatatableResponse');
     app()->get('/governance/documents/associations', 'api_v2_governance_documents_associations');
     app()->get('/governance/documents/terms', 'api_v2_governance_documents_significant_terms');
-    app()->get('/governance/documents/topcontrols', 'api_v2_governance_documents_top_controls');
     app()->get('/governance/keywords', 'api_v2_governance_keywords');
     app()->post('/governance/save_custom_documents_to_controls_display_settings', 'saveCustomDocumentsToControlsDisplaySettingsAPI');
 
@@ -70,6 +68,7 @@ if (api_v2_is_authenticated())
     app()->get('/risks', 'api_v2_risks');
     app()->get('/risks/associations', 'api_v2_risks_associations');
     app()->get('/risks/tags', 'api_v2_risks_tags_get');
+    app()->post('/risks/submit', 'api_v2_risk_submit');
 
     //SimpleRisk Compliance Routes
     app()->get('/compliance/tests', 'api_v2_compliance_tests');

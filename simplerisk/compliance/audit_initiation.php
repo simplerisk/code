@@ -152,7 +152,7 @@
             $('[name=id]', modal).val($(this).data('id'));
 
             // Clear tags selectize in the tags edit modal
-            let select = $('[name=\'tags[]\']', modal).selectize();
+            let select = $('[name="tags[]"]', modal).selectize();
             let selectize = select[0].selectize;
             selectize.clear();
 
@@ -160,8 +160,8 @@
 
         });
 
-        // Event when clicks Initiate Framework, Control, Test Audit button
-        $("#tags--edit").on("click", "[name=continue_add_tags], [name=cancel_add_tags]", function(){
+        // Event when clicks Continue button on the Tags Edit modal
+        $("#tags--edit").on("click", "[name=continue_add_tags]", function(){
             var type = $("#tags--edit [name=audit_type]").val();
             var id = $("#tags--edit [name=id]").val();
             var tags = $("#tags--edit [name='tags[]']").val();
@@ -329,8 +329,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" name="cancel_add_tags" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
-                    <button type="button" id="update_test" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Update']); ?></button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                    <button type="submit" id="update_test" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Update']); ?></button>
                 </div>
             </form>
         </div>
@@ -351,7 +351,7 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label for=""><?= $escaper->escapeHtml($lang['Tags']); ?> :</label>
-                        <select class="test_tags" readonly name="tags[]" multiple placeholder="<?= $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);?>"></select>
+                        <select class="test_audit_test_tags" readonly name="tags[]" multiple placeholder="<?= $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);?>"></select>
                         <div class="tag-max-length-warning"><?= $escaper->escapeHtml($lang['MaxTagLengthWarning']);?></div>
                     </div>
                 </div>

@@ -65,13 +65,16 @@ function upload_tmp_spreadsheet($file, $first_line, $unique_name = null)
         // DO NOT TRUST $file['mime'] VALUE !!
         // Check MIME Type by yourself.
         $finfo = new finfo(FILEINFO_MIME_TYPE);
-        $allowed_types = get_file_types();
-        if (false === $ext = array_search(
-                $finfo->file($file['tmp_name']),
-                $allowed_types,
-                true
-            )) {
-            throw new RuntimeException(_lang("UploadingFileTypeNoSupport", ['file_type' => $finfo->file($file['tmp_name'])]));
+
+        $file_type_name = $finfo->file($file['tmp_name']);
+        $file_type_extension_name = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+        // Check if the file type and extension are allowed
+        $file_type_extension_mapping_exists = check_file_type_and_extension_exists($file_type_name, $file_type_extension_name);
+
+        // If the file type and extension combination is appropriate
+        if (!$file_type_extension_mapping_exists) {
+            throw new RuntimeException(_lang("UploadingFileTypeAndExtensionNoSupport", ['file_type_name' => $file_type_name, 'file_type_extension_name' => $file_type_extension_name]));
         }
 
         if (is_null($unique_name))
@@ -89,7 +92,7 @@ function upload_tmp_spreadsheet($file, $first_line, $unique_name = null)
         set_alert(true, "bad", $escaper->escapeHtml($e->getMessage()));
 
         // Log the message to the error log
-        error_log($e->getMessage());
+        write_debug_log($e->getMessage(), 'error');
 
         // Return false
         return false;
@@ -250,24 +253,6 @@ function download_tmp_file($unique_name)
     else return false;
 }
 
-/*******************************
- * FUNCTION: DELETE TMP FILE *
- *******************************/
-function delete_tmp_file($unique_name)
-{
-    // Open the database connection
-    $db = db_open();
-
-    // Delete the file with the unique name and matching user from the database
-    $stmt = $db->prepare("DELETE FROM `tmp_files` WHERE `unique_name` = :unique_name AND `user` = :user;");
-    $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
-    $stmt->bindParam(":user", $_SESSION['uid'], PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Close the database connection
-    db_close($db);
-}
-
 /****************************************
  * FUNCTION: GET TMP SPREADSHEET HEADER *
  ****************************************/
@@ -335,18 +320,24 @@ function get_data_from_tmp_spreadsheet($unique_name, $header = false)
 /********************************
  * FUNCTION: UPLOAD IMPORT FILE *
  ********************************/
-function upload_tmp_import_file($file, $unique_name = null)
-{
+function upload_tmp_import_file($file, $unique_name = null) {
+
     global $escaper, $lang;
     
-    // Allowed file types
-    $allowed_types = get_file_types();
-    
     // If a file was submitted and the name isn't blank
-    if (isset($file) && $file['name'] != "")
-    {
-        if (in_array($file['type'], $allowed_types))
-        {
+    if (isset($file) && $file['name'] != "") {
+
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+
+        $file_type_name = $finfo->file($file['tmp_name']);
+        $file_type_extension_name = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+        // Check if the file type and extension are allowed
+        $file_type_extension_mapping_exists = check_file_type_and_extension_exists($file_type_name, $file_type_extension_name);
+
+        // If the file type and extension combination is appropriate
+        if ($file_type_extension_mapping_exists) {
+
             // Get the maximum upload file size
             $max_upload_size = get_setting("max_upload_size");
             
@@ -395,7 +386,7 @@ function upload_tmp_import_file($file, $unique_name = null)
         else
         {
             // Display an alert
-            set_alert(true, "bad", _lang("UploadingFileTypeNoSupport", ['file_type' => $file['type']]));
+            set_alert(true, "bad", _lang("UploadingFileTypeAndExtensionNoSupport", ['file_type_name' => $file_type_name, 'file_type_extension_name' => $file_type_extension_name]));
             return false;
         }
     }
@@ -407,4 +398,73 @@ function upload_tmp_import_file($file, $unique_name = null)
         return false;
     }
 }
+
+/**
+ * FUNCTION: SAVE TMP FILE
+ * @param PDO $db
+ * @param string $name
+ * @param string $binaryContent
+ * @param string $type
+ * @param string $extension
+ * @param int $user
+ * @param string|null $header_json
+ * @param string|null $content_json
+ * @return string
+ * @throws \Random\RandomException
+ */
+function save_tmp_file(
+    PDO $db,
+    string $name,
+    string $binaryContent,
+    string $type,
+    string $extension,
+    int $user,
+    ?string $header_json = null,
+    ?string $content_json = null
+): string {
+    $unique_name = bin2hex(random_bytes(16)); // 32-char unique ID
+    $size = strlen($binaryContent);
+
+    $stmt = $db->prepare("
+        INSERT INTO tmp_files (unique_name, name, type, extension, size, user, content, header_json, content_json)
+        VALUES (:unique_name, :name, :type, :extension, :size, :user, :content, :header_json, :content_json)
+    ");
+    $stmt->execute([
+        ':unique_name' => $unique_name,
+        ':name' => $name,
+        ':type' => $type,
+        ':extension' => $extension,
+        ':size' => $size,
+        ':user' => $user,
+        ':content' => $binaryContent,
+        ':header_json' => $header_json,
+        ':content_json' => $content_json
+    ]);
+
+    return $unique_name;
+}
+
+/**
+ * FUNCTION: LOAD TMP FILE
+ * @param PDO $db
+ * @param string $unique_name
+ * @return array|null
+ */
+function load_tmp_file(PDO $db, string $unique_name): ?array
+{
+    $stmt = $db->prepare("SELECT * FROM tmp_files WHERE unique_name = :unique_name LIMIT 1");
+    $stmt->execute([':unique_name' => $unique_name]);
+    $file = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    return $file ?: null;
+}
+
+/*****************************
+ * FUNCTION: DELETE TMP FILE *
+ *****************************/
+function delete_tmp_file(PDO $db, string $unique_name): bool {
+    $stmt = $db->prepare("DELETE FROM tmp_files WHERE unique_name = :unique_name");
+    return $stmt->execute([':unique_name' => $unique_name]);
+}
+
 ?>

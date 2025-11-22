@@ -296,6 +296,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
     });
 </script>
+
 <?php  
 // Render the footer of the page. Please don't put code after this part.
 render_footer();

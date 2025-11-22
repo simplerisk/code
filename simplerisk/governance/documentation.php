@@ -5,7 +5,7 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['datetimerangepicker', 'easyui:treegrid', 'easyui:filter', 'multiselect', 'tabs:logic', 'CUSTOM:common.js', 'CUSTOM:pages/governance.js', 'datatables'], ['check_governance' => true]);
+    render_header_and_sidebar(['datetimerangepicker', 'easyui:treegrid', 'easyui:filter', 'multiselect', 'tabs:logic', 'blockUI', 'CUSTOM:common.js', 'CUSTOM:pages/governance.js', 'datatables'], ['check_governance' => true]);
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/permissions.php'));
@@ -567,6 +567,13 @@
                     showAlertFromMessage("<?= $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
                     return false;
                 }
+
+                // Show spinner before API call
+                $.blockUI({
+                    message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>',
+                    baseZ: 1100,
+                });
+
                 $.ajax({
                     type: "POST",
                     url: BASE_URL + "/api/documents/create",
@@ -589,13 +596,20 @@
                         $("#add-document-form [name='document_owner[]']").multiselect('select', []);
                         $("#add-document-form [name='team_ids[]']").multiselect('select', []);
 
+                        // Hide spinner after API call
+                        $.unblockUI();
+
                         var tree = $('#document-hierachy-content #document-hierarchy-table');
-                        tree.treegrid('options').animate = false;
-                        tree.treegrid('reload');
+                        if (tree.data('treegrid')) {
+                            tree.treegrid('options').animate = false;
+                            tree.treegrid('reload');
+                        }
 
                         var tree = $('#' + data.data.type + '-table');
-                        tree.treegrid('options').animate = false;
-                        tree.treegrid('reload');
+                        if (tree.data('treegrid')) {
+                            tree.treegrid('options').animate = false;
+                            tree.treegrid('reload');
+                        }
                     },
                     error: function(xhr,status,error){
                         if(!retryCSRF(xhr, this))
@@ -604,6 +618,10 @@
                                 showAlertsFromArray(xhr.responseJSON.status_message);
                             }
                         }
+                        
+                        // Hide spinner after API call
+                        $.unblockUI();
+
                     }
                 });
                 return false;
@@ -615,6 +633,13 @@
                     showAlertFromMessage("<?= $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
                     return false;
                 }
+
+                // Show spinner before API call
+                $.blockUI({
+                    message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>',
+                    baseZ: 1100,
+                });
+
                 $.ajax({
                     type: "POST",
                     url: BASE_URL + "/api/documents/update",
@@ -637,13 +662,20 @@
                         $("#update-document-form [name='document_owner[]']").multiselect('select', []);
                         $("#update-document-form [name='team_ids[]']").multiselect('select', []);
 
+                        // Hide spinner after API call
+                        $.unblockUI();
+
                         var tree = $('#document-hierachy-content #document-hierarchy-table');
-                        tree.treegrid('options').animate = false;
-                        tree.treegrid('reload');
+                        if (tree.data('treegrid')) {
+                            tree.treegrid('options').animate = false;
+                            tree.treegrid('reload');
+                        }
 
                         var tree = $('#' + data.data.type + '-table');
-                        tree.treegrid('options').animate = false;
-                        tree.treegrid('reload');
+                        if (tree.data('treegrid')) {
+                            tree.treegrid('options').animate = false;
+                            tree.treegrid('reload');
+                        }
                     },
                     error: function(xhr,status,error){
                         if(!retryCSRF(xhr, this))
@@ -652,6 +684,10 @@
                                 showAlertsFromArray(xhr.responseJSON.status_message);
                             }
                         }
+
+                        // Hide spinner after API call
+                        $.unblockUI();
+                        
                     }
                 });
                 return false;
@@ -687,12 +723,16 @@
                         loading = false;
 
                         var tree = $('#document-hierachy-content #document-hierarchy-table');
-                        tree.treegrid('options').animate = false;
-                        tree.treegrid('reload');
+                        if (tree.data('treegrid')) {
+                            tree.treegrid('options').animate = false;
+                            tree.treegrid('reload');
+                        }
 
                         var tree = $('#' + data.data.type + '-table');
-                        tree.treegrid('options').animate = false;
-                        tree.treegrid('reload');
+                        if (tree.data('treegrid')) {
+                            tree.treegrid('options').animate = false;
+                            tree.treegrid('reload');
+                        }
                     },
                     error: function(xhr,status,error){
                         if(!retryCSRF(xhr, this))

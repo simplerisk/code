@@ -58,7 +58,97 @@ function createTagsInstance(tag, tag_type, options) {
 
     tag.selectize(selectize_setup);
 }
-jQuery(document).ready(function($){
+
+$(function() {
+
+    // Display the test type tags as selectize
     if($('select.test_tags').length > 0) createTagsInstance($('select.test_tags'));
+
+    // Display the test_audit type tags as selectize
     if($('select.test_audit_tags').length > 0) createTagsInstance($('select.test_audit_tags'), 'test_audit');
+    
+    // Display the test and test_audit type tags as selectize
+    if($('select.test_audit_test_tags').length > 0) createTagsInstance($('select.test_audit_test_tags'), 'test,test_audit');
+    
 })
+
+$(function(){
+    
+    // Enable or disable the 'audit_initiation_offset' field based on whether the automatic audit initiation is enabled or disabled
+    $("[name='auto_audit_initiation']").on("change", function() {
+        let $this = $(this);
+        $this.closest('.audit-initiation').find("input[type='number'][name='audit_initiation_offset']").attr("disabled", $this.val() === '0').attr("required", $this.val() === '1');
+
+        if ($this.val() === '0') {
+
+            // Clear the value of the 'audit_initiation_offset' field if automatic audit initiation is disabled
+            $this.closest('.audit-initiation').find("input[type='number'][name='audit_initiation_offset']").val('');
+
+            // Hide the required mark if automatic audit initiation is disabled
+            $this.closest('.audit-initiation').find(".audit-initiation-offset-container span.required").addClass('d-none');
+
+        } else {
+
+            // Show the required mark if automatic audit initiation is enabled
+            $this.closest('.audit-initiation').find(".audit-initiation-offset-container span.required").removeClass('d-none');
+
+        }
+    });
+
+    
+    $("#add_test").on("click", function() {
+
+        $form = $("#test-new-form");
+
+        // Check if the required fields have empty / trimmed empty values
+        if (!checkAndSetValidation("#test-new-form")) {
+            return false;
+        }
+
+        if ($("[name='auto_audit_initiation']:checked", $form).val() === '1') {
+
+            let audit_initiation_offset = $("[name='audit_initiation_offset']", $form).val();
+            let test_frequency = $("[name='test_frequency']", $form).val();
+
+            if (audit_initiation_offset === '' || audit_initiation_offset < 0) {
+
+                showAlertFromMessage(_lang["AuditInitiationOffsetMustBeANonNegativeValue"]);
+                return false;
+
+            } else if (test_frequency !== '' && Number(audit_initiation_offset) > Number(test_frequency)) {
+
+                showAlertFromMessage(_lang["AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency"]);
+                return false;
+
+            }
+        }
+    });
+
+    $("#update_test").on("click", function() {
+
+        $form = $("#test-edit-form");
+
+        // Check if the required fields have empty / trimmed empty values
+        if (!checkAndSetValidation("#test-edit-form")) {
+            return false;
+        }
+
+        if ($("[name='auto_audit_initiation']:checked", $form).val() === '1') {
+
+            let audit_initiation_offset = $("[name='audit_initiation_offset']", $form).val();
+            let test_frequency = $("[name='test_frequency']", $form).val();
+
+            if (audit_initiation_offset === '' || audit_initiation_offset < 0) {
+
+                showAlertFromMessage(_lang["AuditInitiationOffsetMustBeANonNegativeValue"]);
+                return false;
+
+            } else if (test_frequency !== '' && Number(audit_initiation_offset) > Number(test_frequency)) {
+
+                showAlertFromMessage(_lang["AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency"]);
+                return false;
+
+            }
+        }
+    });
+});

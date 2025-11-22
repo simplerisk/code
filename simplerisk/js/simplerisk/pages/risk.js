@@ -1,3 +1,65 @@
+$.fn.extend({
+    initAsAssociatedExceptionTreegrid: function(type=false) {
+
+        // Can't initialize it twice
+        if (this.data('initialized')) {
+            this.treegrid("resize");
+            return;
+        }
+
+        let tabs = this.parents('.tab-pane');
+        let activeTabs = this.parents('.tab-pane.active');
+
+        // Can't initialize if not all of the parent tabs(if there's any) active
+        // because the treegrid doesn't properly initialize in the background
+        if (tabs.length != activeTabs.length) {
+            return;
+        }
+
+        var tabContainer = $(this).parents('.tab-data');
+        var risk_id = $('.risk-id', tabContainer).html();
+
+        this.treegrid({
+            iconCls: 'icon-ok',
+            animate: false,
+            fitColumns: true,
+            nowrap: true,
+            url: BASE_URL + `/api/v2/associated-exceptions/tree?type=${type}&id=${risk_id}`,
+            method: 'get',
+            idField: 'value',
+            treeField: 'name',
+            scrollbarSize: 0,
+            loadFilter: function(data, parentId) {
+                return data.data;
+            },
+            onLoadSuccess: function(row, data){
+                // fixTreeGridCollapsableColumn();
+                // Refresh exception counts in the tabs
+                var totalCount = 0;
+                if((data && data.length))
+                {
+                    for(var i = 0; i < data.length; i++)
+                    {
+                        var parent = data[i];
+                        if((parent.children && parent.children.length))
+                        {
+                            totalCount += parent.children.length;
+                        }
+                    }
+                }
+                
+                $(`#${type}-exceptions-count`).text(totalCount);
+
+                if (typeof wireActionButtons === 'function') {
+                    wireActionButtons(type);
+                }
+            }
+        });
+
+        $(this).data('initialized', true);
+    }
+});
+
 var current_tab_close_object;
 
 // Variable to be used to prevent the form from being submitted multiple times
@@ -1221,15 +1283,6 @@ $(document).ready(function(){
     */
     $('body').on('click', '.radio-buttons-holder input[type=radio]~label', function(){
         $(this).parent().find('input[type=radio]').click()
-    })
-
-    /**
-    * events in clicking Score Using CVSS button of edit details page, muti tabs case
-    */
-    $('body').on('click', '[name=cvssSubmit]', function(e){
-        e.preventDefault();
-        var form = $(this).parents('form');
-        popupcvss(form);
     })
     
     /**

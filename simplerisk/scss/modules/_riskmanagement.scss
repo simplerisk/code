@@ -1,3 +1,186 @@
+//****************************** RISK MANAGEMENT > RISK DETAILS BEGIN *******************************//
+.risk-session {
+	.risk-subject {
+		word-break: break-word;
+	}
+}
+
+.risk-details {
+	word-break: break-word;
+
+	.rich-text-container {
+		&>:last-child {
+			margin-bottom: 0;
+		}
+	}
+
+	.risk-details-assessment,
+	.risk-details-additional-notes {
+		word-break: break-word;
+	}
+}
+
+.risk-details-edit-container {
+	.risk-details-edit-title {
+		label {
+			text-align: right;
+			word-break: normal;
+		}
+	}
+
+	.risk-details-edit {
+		display: flex;
+		align-items: center;
+
+		.selectize-control,
+		.multiselect-native-select {
+			width: 1px;
+			flex-grow: 1;
+		}
+	}
+}
+
+.mitigation-details-edit-container {
+	.mitigation-details-edit-title {
+		label {
+			text-align: right;
+			word-break: normal;
+		}
+	}
+
+	.mitigation-details-edit {
+		display: flex;
+		align-items: center;
+
+		.selectize-control,
+		.multiselect-native-select {
+			width: 1px;
+			flex-grow: 1;
+		}
+	}
+}
+
+.review-details-edit-container {
+	.review-details-edit-title {
+		label {
+			text-align: right;
+			word-break: normal;
+		}
+	}
+
+	.review-details-edit {
+		display: flex;
+		align-items: center;
+
+		.selectize-control,
+		.multiselect-native-select {
+			width: 1px;
+			flex-grow: 1;
+		}
+	}
+}
+
+.custom-field-edit-container {
+	.custom-field-edit-title {
+		label {
+			text-align: right;
+			word-break: normal;
+		}
+	}
+
+	.custom-field-edit {
+		display: flex;
+		align-items: center;
+
+		.selectize-control,
+		.multiselect-native-select {
+			width: 1px;
+			flex-grow: 1;
+		}
+	}
+}
+
+.risk-details-view-container {
+	.risk-details-view-title {
+		label {
+			text-align: right;
+			word-break: normal;
+		}
+	}
+
+	.risk-details-view {
+		display: flex;
+		align-items: center;
+	}
+}
+
+.mitigation-details-view-container {
+	.mitigation-details-view-title {
+		label {
+			text-align: right;
+			word-break: normal;
+		}
+	}
+
+	.mitigation-details-view {
+		display: flex;
+		align-items: center;
+	}
+}
+
+.review-details-view-container {
+	.review-details-view-title {
+		label {
+			text-align: right;
+			word-break: normal;
+		}
+	}
+
+	.review-details-view {
+		display: flex;
+		align-items: center;
+	}
+}
+
+.custom-field-view-container {
+	.custom-field-view-title {
+		label {
+			text-align: right;
+			word-break: normal;
+		}
+	}
+
+	.custom-field-view {
+		display: flex;
+		align-items: center;
+	}
+}
+
+[name=update_cvss] {
+	table {
+		tr:last-of-type {
+			.cal-text {
+				padding-bottom: .5rem;
+				border-bottom: 1px solid #d1d3d4;
+			}
+		}
+	}
+}
+
+#score-container-accordion-body {
+	table {
+		td, th {
+			padding: 5px;
+		}
+	}
+}
+
+.tabs--action {
+	margin-top: 1.25rem;
+	margin-right: 1.25rem;
+}
+//******************************* RISK MANAGEMENT > RISK DETAILS END ********************************//
+
 //***************************** RISK MANAGEMENT > PLAN PROJECTS BEGIN *******************************//
 div.plan-projects {
 	div.row {

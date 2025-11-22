@@ -5,7 +5,7 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['datatables'], active_sidebar_submenu: 'Reporting_Compliance', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'AuditTimeline');
+    render_header_and_sidebar(['blockUI', 'datatables', 'multiselect', 'datetimerangepicker'], active_sidebar_submenu: 'Reporting_Compliance', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'AuditTimeline');
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));
@@ -20,11 +20,9 @@
 ?>
 <div class="row bg-white">
     <div class="col-12">
-        <div class="card-body border my-2">
     <?php 
-            display_audit_timeline(); 
+        display_audit_timeline(); 
     ?>
-        </div>
     </div>
 </div>
 <?php

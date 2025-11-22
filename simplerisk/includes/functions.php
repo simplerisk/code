@@ -18,10 +18,13 @@ require_once(realpath(__DIR__ . '/Widgets/AssetAssetGroupDropdown.php'));
 require_once(realpath(__DIR__ . '/renderutils.php'));
 
 // Include the language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
+
+// Add Monolog logger
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use Monolog\Formatter\LineFormatter;
 
 // Include Escaper for HTML Output Encoding
 $escaper = new simpleriskEscaper();
@@ -128,7 +131,8 @@ $junction_config = array(
             'risks_to_asset_groups' => 'risk_id',
             'risks_to_assets' => 'risk_id',
             'risk_catalog_mappings' => 'risk_id', 
-            'threat_catalog_mappings' => 'risk_id'
+            'threat_catalog_mappings' => 'risk_id',
+            'vulnmgmt_tenable_vulnerabilities' => 'simplerisk_risk_id',
         )
     ),    
     'location' => array(
@@ -285,6 +289,18 @@ $junction_config = array(
         'junctions' => array(
             'document_framework_mappings' => 'document_id',
             'document_control_mappings' => 'document_id'
+        )
+    ],
+    'file_types' => [
+        'id_field' => 'value',
+        'junctions' => array(
+            'file_type_extension_mappings' => 'file_type_id',
+        )
+    ],
+    'file_type_extensions' => [
+        'id_field' => 'value',
+        'junctions' => array(
+            'file_type_extension_mappings' => 'file_type_extension_id',
         )
     ],
 );
@@ -1216,6 +1232,373 @@ $field_settings = [
             ],
         ], 
     ],
+    //all the fields in the 'framework_control_test_audit' need to be set as technical fields
+    //since they must be displayed regardless of whether customiztion extra is true or not.
+    //if it's possible to customize framework_control_test_audit fields, we can unset some from being technical fields but for now it's best to keep them as technical fields.
+    "framework_control_test" => [
+        'actions' => [
+            'customization_field_name' => '',
+            'localization_key' => 'Actions',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:220px;',
+            'searchable' => false,
+            'orderable' => false,
+            'editable' => false,
+            'select_parts' => [],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        'id' => [
+            'customization_field_name' => 'ID',
+            'localization_key' => 'ID',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "a.id",
+            'editable' => false,
+            'select_parts' => ["
+                a.id
+            "],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],     
+        'test_name' => [
+            'customization_field_name' => 'TestName',
+            'localization_key' => 'TestName',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "test_name",
+            'editable' => false,
+            'select_parts' => [
+                "a.name as test_name",
+                "a.id as test_name_filter"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ], 
+        "test_frequency" => [
+            'customization_field_name' => 'TestFrequency',
+            'localization_key' => 'TestFrequency',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "test_frequency",
+            'editable' => false,
+            'select_parts' => [
+                "a.test_frequency"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "tester" => [
+            'customization_field_name' => 'Tester',
+            'localization_key' => 'Tester',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "tester_display",
+            'editable' => false,
+            'select_parts' => [
+                "a.tester",
+                "u.name tester_display"
+            ],
+            'has_display_field' => true,
+            'join_parts' => [
+                "LEFT JOIN `user` u ON a.tester = u.value"
+            ],
+        ],
+        "additional_stakeholders" => [
+            'customization_field_name' => 'AdditionalStakeholders',
+            'localization_key' => 'AdditionalStakeholders',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "additional_stakeholders_display",
+            'editable' => false,
+            'select_parts' => [
+                "a.additional_stakeholders", 
+                "GROUP_CONCAT(DISTINCT uu.name ORDER BY uu.name SEPARATOR ', ') additional_stakeholders_display"
+            ],
+            'has_display_field' => true,
+            'join_parts' => [
+                "LEFT JOIN `user` uu ON FIND_IN_SET(uu.value, a.additional_stakeholders)"
+            ],
+        ],
+        "objective" => [
+            'customization_field_name' => 'Objective',
+            'localization_key' => 'Objective',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "objective",
+            'editable' => false,
+            'select_parts' => [
+                "a.objective", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "test_steps" => [
+            'customization_field_name' => 'TestSteps',
+            'localization_key' => 'TestSteps',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "test_steps",
+            'editable' => false,
+            'select_parts' => [
+                "a.test_steps", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "expected_results" => [
+            'customization_field_name' => 'ExpectedResults',
+            'localization_key' => 'ExpectedResults',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "expected_results",
+            'editable' => false,
+            'select_parts' => [
+                "a.expected_results", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "approximate_time" => [
+            'customization_field_name' => 'ApproximateTime',
+            'localization_key' => 'ApproximateTime',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "approximate_time",
+            'editable' => false,
+            'select_parts' => [
+                "a.approximate_time"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "control_name" => [
+            'customization_field_name' => 'ControlName',
+            'localization_key' => 'ControlName',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "control_name",
+            'editable' => false,
+            'select_parts' => [
+                "fc.short_name control_name", 
+                "fc.id control_name_filter"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "control_description" => [
+            'customization_field_name' => 'ControlDescription',
+            'localization_key' => 'ControlDescription',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => true,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "control_description",
+            'editable' => false,
+            'select_parts' => [
+                "fc.description control_description"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "control_owner" => [
+            'customization_field_name' => 'ControlOwner',
+            'localization_key' => 'ControlOwner',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "control_owner_display",
+            'editable' => false,
+            'select_parts' => [
+                "fc.control_owner",
+                "uuu.name control_owner_display"
+            ],
+            'has_display_field' => true,
+            'join_parts' => [
+                "LEFT JOIN `user` uuu ON fc.control_owner = uuu.value"
+            ],
+        ],
+        "framework_name" => [
+            'customization_field_name' => 'AssociatedFrameworks',
+            'localization_key' => 'AssociatedFrameworks',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => true,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "framework_name",
+            'editable' => false,
+            'select_parts' => [
+                "IFNULL(GROUP_CONCAT(DISTINCT f.name ORDER BY f.name ASC), '') framework_name",
+                "IFNULL(GROUP_CONCAT(DISTINCT f.value ORDER BY f.name ASC), '') framework_name_filter"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "mapped_control_number" => [
+            'customization_field_name' => 'MappedControlNumbers',
+            'localization_key' => 'MappedControlNumbers',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "mapped_control_number",
+            'editable' => false,
+            'select_parts' => [
+                "IFNULL(GROUP_CONCAT(DISTINCT CASE WHEN fcm.reference_name != '' THEN fcm.reference_name END ORDER BY fcm.reference_name ASC), '') mapped_control_number",
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "tags" => [
+            'customization_field_name' => 'Tags',
+            'localization_key' => 'Tags',
+            'technical_field' => true,
+            'renderer' => "DataTable.render.tags('test')",
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "tags",
+            'editable' => false,
+            'select_parts' => [
+                "GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag ASC SEPARATOR '|') as tags", 
+                "IFNULL(GROUP_CONCAT(DISTINCT tg.id ORDER BY tg.tag ASC SEPARATOR '|'), '') as tags_filter"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN `tags_taggees` tt ON tt.taggee_id = a.id AND tt.type = 'test_audit'", 
+                "LEFT JOIN `tags` tg on tg.id = tt.tag_id"
+            ],
+        ],
+        "last_test_result" => [
+            'customization_field_name' => 'LastTestResult',
+            'localization_key' => 'LastTestResult',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "last_test_result_filter",
+            'editable' => false,
+            'select_parts' => [
+                "(
+                    SELECT fctr.test_result
+                    FROM framework_control_test_audits fcta
+                        LEFT JOIN framework_control_test_results fctr ON fcta.id = fctr.test_audit_id
+                    WHERE fcta.test_id = a.id
+                    ORDER BY fctr.last_updated DESC
+                    LIMIT 1
+                ) AS last_test_result",
+                "(
+                    SELECT tr.value
+                    FROM framework_control_test_audits fcta
+                        LEFT JOIN framework_control_test_results fctr ON fcta.id = fctr.test_audit_id
+                        LEFT JOIN test_results tr ON tr.name = fctr.test_result
+                    WHERE fcta.test_id = a.id
+                    ORDER BY fctr.last_updated DESC
+                    LIMIT 1
+                ) AS last_test_result_filter",
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "next_date" => [
+            'customization_field_name' => 'NextTestDate',
+            'localization_key' => 'NextTestDate',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:150px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "next_date",
+            'editable' => false,
+            'select_parts' => [
+                "a.next_date", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "last_date" => [
+            'customization_field_name' => 'LastTestDate',
+            'localization_key' => 'LastTestDate',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:150px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "last_date",
+            'editable' => false,
+            'select_parts' => [
+                "a.last_date", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "teams" => [
+            'customization_field_name' => 'Teams',
+            'localization_key' => '',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => false,
+            'orderable' => false,
+            'order_column' => "teams",
+            'editable' => false,
+            'select_parts' => [
+                "GROUP_CONCAT(DISTINCT `i2t`.`team_id`) teams", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "test_result_background_class" => [
+            'customization_field_name' => '',
+            'localization_key' => '',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => false,
+            'orderable' => false,
+            'editable' => false,
+            'select_parts' => [
+                "(
+                    SELECT tr.background_class
+                    FROM framework_control_test_audits fcta
+                        LEFT JOIN framework_control_test_results fctr ON fcta.id = fctr.test_audit_id
+                        LEFT JOIN test_results tr ON tr.name = fctr.test_result
+                    WHERE fcta.test_id = a.id
+                    ORDER BY fctr.last_updated DESC
+                    LIMIT 1
+                ) AS test_result_background_class", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ], 
+    ],
     //all the fields in 'incident' need to be set as technical fields
     //since they must be displayed regardless of whether customiztion extra is true or not.
     //if it's possible to customize incident fields, we can unset some from being technical fields but for now it's best to keep them as technical fields.
@@ -2127,6 +2510,29 @@ $field_settings_display_groups = [
             "teams"
         ],
     ],
+    'audit_timeline' => [
+        'header_key' => '',
+        'field_type' => 'framework_control_test',
+        'fields' => [
+            'test_name',
+            'framework_name',
+            'control_name',
+            'control_description',
+            'control_owner',
+            'mapped_control_number',
+            'test_frequency',
+            'tester',
+            'additional_stakeholders',
+            'objective',
+            'test_steps',
+            'expected_results',
+            'approximate_time',
+            'tags',
+            'last_date',
+            'last_test_result',
+            'next_date',
+        ],
+    ],
     'incident_detection' => [
         'header_key' => 'Detection',
         'field_type' => 'incident_management_incident',
@@ -2462,6 +2868,34 @@ $field_settings_views = [
             "status",
             "test_result"
         ]
+    ],
+    'audit_timeline' => [
+        'view_type' => 'framework_control_test',
+        'join_parts' => [
+            "LEFT JOIN `framework_controls` fc ON a.framework_control_id = fc.id",
+            "LEFT JOIN `framework_control_mappings` fcm ON fc.id=fcm.control_id",
+            "LEFT JOIN `frameworks` f ON fcm.framework=f.value",
+            "LEFT JOIN `items_to_teams` i2t ON i2t.`item_id` = `a`.`id` and i2t.`type` = 'test'",
+        ],
+        'id_field' => 'id',
+        'datatable_ajax_uri' => '/api/v2/get/datatable?view=audit_timeline',
+        'datatable_data_type' => 'associative',
+        'datatable_filter_submit_delay' => 600,
+        'groups' => [
+            'audit_timeline'
+        ],
+        'default_enabled_columns' => [
+            'test_name',
+            'framework_name',
+            'control_name',
+            'last_date',
+            'last_test_result',
+            'next_date',
+        ],
+        'actions_column' => [
+            'field_name' => 'actions',
+            'position' => 'first'
+        ],
     ],
     'dynamic_incident_report' => [
         'view_type' => 'incident_management_incident',
@@ -3066,7 +3500,27 @@ function db_open() {
         $default_timezone = $stmt->fetch(PDO::FETCH_COLUMN);
 
         // If no timezone is set, set it to CST
-        if (!$default_timezone) $default_timezone = "America/Chicago";
+        if (!$default_timezone) {
+
+            $default_timezone = "America/Chicago";
+            
+            update_setting("default_timezone", $default_timezone);
+
+        // otherwise, validate the timezone
+        } else {
+            
+            // Get the list of timezones
+            $timezones = timezone_list();
+    
+            // If the selected timezone is not valid, set it to CST
+            if (!array_key_exists($default_timezone, $timezones)) {
+
+                $default_timezone = "America/Chicago";
+
+                update_setting("default_timezone", $default_timezone);
+                
+            }
+        }
 
         // Set the timezone for PHP date functions
         date_default_timezone_set($default_timezone);
@@ -4326,41 +4780,25 @@ function create_cvss_dropdown($name, $selected = NULL, $blank = true)
 {
     global $escaper;
 
-    echo "
-        <select id='" . $escaper->escapeHtml($name) . "' name='" . $escaper->escapeHtml($name) . "' class='form-select' onclick=\"javascript:showHelp('" . $escaper->escapeHtml($name) . "Help');updateScore();\">
-    ";
+    // Start the select element without any inline JS
+    echo "<select id='" . $escaper->escapeHtml($name) . "' name='" . $escaper->escapeHtml($name) . "' class='form-select'>";
 
-    // If the blank is true
-    if ($blank == true) {
-        echo "
-            <option value=''>--</option>
-        ";
+    // Optional blank option
+    if ($blank) {
+        echo "<option value=''>--</option>";
     }
 
-    // Get the list of options
+    // Get the list of options from your custom table
     $options = get_custom_table($name);
 
-    // For each option
+    // Loop through options
     foreach ($options as $option) {
-
-        // Create the CVSS metric value
         $value = $option['abrv_metric_value'];
-
-        // If the option is selected
-        if ($selected == $value) {
-            $text = " selected";
-        } else {
-            $text = "";
-        }
-
-        echo "
-            <option value='" . $escaper->escapeHtml($value) . "'" . $text . ">" . $escaper->escapeHtml($option['metric_value']) . "</option>
-        ";
+        $text = ($selected == $value) ? " selected" : "";
+        echo "<option value='" . $escaper->escapeHtml($value) . "'" . $text . ">" . $escaper->escapeHtml($option['metric_value']) . "</option>";
     }
 
-    echo "
-        </select>
-    ";
+    echo "</select>";
 }
 
 /*************************************
@@ -5157,59 +5595,59 @@ function update_or_insert_setting($name, $value)
 /****************************
  * FUNCTION: UPDATE SETTING *
  ****************************/
-function update_setting($name, $value)
+function update_setting($name, $value): bool
 {
+    // If setting value is not changed will be return;
     $old_value = get_setting($name);
-    // if setting value is not changed will be return;
-    if($old_value == $value) return;
-    // Open the database connection
-    $db = db_open();
-
-    // Delete existing setting value before adding.
-    $stmt = $db->prepare("DELETE FROM `settings` WHERE name=:name");
-    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
-    $stmt->execute();
-
-    // Update the setting
-    $stmt = $db->prepare("INSERT IGNORE INTO settings (`name`,`value`) VALUES (:name, :value);");
-    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
-    $stmt->bindParam(":value", $value, PDO::PARAM_STR, 200);
-    $stmt->execute();
-    
-    $key = 'setting_'.$name;
-    $GLOBALS[$key] = $value;
-
-    // If a setting is being updated outside of a session
-    if (!isset($_SESSION['user']))
-    {
-        // Use the "System User"
-        $_SESSION["user"] = "System User";
+    if ($old_value == $value) {
+        write_debug_log("Setting {$name} was not changed.  Nothing to do.", "debug");
+        return false; // Nothing updated
     }
 
-    // If a setting is being updated outside of a session
-    if (!isset($_SESSION['uid']))
-    {
-        // Use the "System User"
-        $_SESSION["uid"] = -1;
-    }
+    try {
+        // Open the database connection
+        $db = db_open();
 
-    // Audit log
-    switch ($name)
-    {
-        case "max_upload_size":
-            $risk_id = 1000;
-            $message = "The maximum upload file size was updated by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
-            break;
-        default:
-            $risk_id = 1000;
-            $message = "A setting value named \"".$name."\" was updated by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
-            break;
-    }
+        // Insert new value or update existing
+        $stmt = $db->prepare("
+            INSERT INTO settings (`name`, `value`) 
+            VALUES (:name, :value)
+            ON DUPLICATE KEY UPDATE `value` = :value_update
+        ");
+        $stmt->bindParam(":name", $name, PDO::PARAM_STR, 100);
+        $stmt->bindParam(":value", $value, PDO::PARAM_STR);
+        $stmt->bindParam(":value_update", $value, PDO::PARAM_STR);
+        $stmt->execute();
 
-    // Close the database connection
-    db_close($db);
+        $GLOBALS['setting_'.$name] = $value;
+
+        // If a setting is being updated outside of a session use the "System" user
+        if (!isset($_SESSION['user'])) $_SESSION['user'] = "System User";
+        if (!isset($_SESSION['uid'])) $_SESSION['uid'] = -1;
+
+        // Audit log
+        switch ($name)
+        {
+            case "max_upload_size":
+                $risk_id = 1000;
+                $message = "The maximum upload file size was updated by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+                break;
+            default:
+                $risk_id = 1000;
+                $message = "A setting value named \"".$name."\" was updated by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+                break;
+        }
+
+        return true; // Successfully updated
+    } catch (Exception $e) {
+        write_debug_log("Error updating setting '{$name}': " . $e->getMessage(), "error");
+        return false;
+    } finally {
+        // Close the database connection
+        db_close($db);
+    }
 }
 
 /****************************
@@ -6882,6 +7320,11 @@ function get_cvss_numeric_value($abrv_metric_name, $abrv_metric_value)
  *********************************/
 function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_likelihood="", $CLASSIC_impact="", $AccessVector="N", $AccessComplexity="L", $Authentication="N", $ConfImpact="C", $IntegImpact="C", $AvailImpact="C", $Exploitability="ND", $RemediationLevel="ND", $ReportConfidence="ND", $CollateralDamagePotential="ND", $TargetDistribution="ND", $ConfidentialityRequirement="ND", $IntegrityRequirement="ND", $AvailabilityRequirement="ND", $DREADDamage="10", $DREADReproducibility="10", $DREADExploitability="10", $DREADAffectedUsers="10", $DREADDiscoverability="10", $OWASPSkill="10", $OWASPMotive="10", $OWASPOpportunity="10", $OWASPSize="10", $OWASPDiscovery="10", $OWASPExploit="10", $OWASPAwareness="10", $OWASPIntrusionDetection="10", $OWASPLossOfConfidentiality="10", $OWASPLossOfIntegrity="10", $OWASPLossOfAvailability="10", $OWASPLossOfAccountability="10", $OWASPFinancialDamage="10", $OWASPReputationDamage="10", $OWASPNonCompliance="10", $OWASPPrivacyViolation="10", $custom="10", $ContributingLikelihood="", $ContributingImpacts=[])
 {
+
+
+    error_log("Submitting risk scoring with parameters: last_insert_id=$last_insert_id, scoring_method=$scoring_method, CLASSIC_likelihood=$CLASSIC_likelihood, CLASSIC_impact=$CLASSIC_impact, AccessVector=$AccessVector, AccessComplexity=$AccessComplexity, Authentication=$Authentication, ConfImpact=$ConfImpact, IntegImpact=$IntegImpact, AvailImpact=$AvailImpact, Exploitability=$Exploitability, RemediationLevel=$RemediationLevel, ReportConfidence=$ReportConfidence, CollateralDamagePotential=$CollateralDamagePotential, TargetDistribution=$TargetDistribution, ConfidentialityRequirement=$ConfidentialityRequirement, IntegrityRequirement=$IntegrityRequirement, AvailabilityRequirement=$AvailabilityRequirement, DREADDamage=$DREADDamage, DREADReproducibility=$DREADReproducibility, DREADExploitability=$DREADExploitability, DREADAffectedUsers=$DREADAffectedUsers, DREADDiscoverability=$DREADDiscoverability, OWASPSkill=$OWASPSkill, OWASPMotive=$OWASPMotive, OWASPOpportunity=$OWASPOpportunity, OWASPSize=$OWASPSize, OWASPDiscovery=$OWASPDiscovery, OWASPExploit=$OWASPExploit, OWASPAwareness=$OWASPAwareness, OWASPIntrusionDetection=$OWASPIntrusionDetection, OWASPLossOfConfidentiality=$OWASPLossOfConfidentiality, OWASPLossOfIntegrity=$OWASPLossOfIntegrity, OWASPLossOfAvailability=$OWASPLossOfAvailability, OWASPLossOfAccountability=$OWASPLossOfAccountability, OWASPFinancialDamage=$OWASPFinancialDamage, OWASPReputationDamage=$OWASPReputationDamage, OWASPNonCompliance=$OWASPNonCompliance, OWASPPrivacyViolation=$OWASPPrivacyViolation, custom=$custom, ContributingLikelihood=$ContributingLikelihood, ContributingImpacts=" . json_encode($ContributingImpacts));
+
+
     // Open the database connection
     $db = db_open();
 
@@ -8819,7 +9262,7 @@ function update_risk_subject($risk_id, $subject)
 /************************
  * FUNCTION: CONVERT ID *
  ************************/
-function convert_id($id) {
+function convert_to_risk_id($id) {
 
     // Add 1000 to any id to make it at least 4 digits
     $id = (int)$id + 1000;
@@ -11319,13 +11762,13 @@ function get_risk_table($sort_order=0, $activecol="")
         // Get the risk color
         $color = get_risk_color_from_levels($risk['calculated_risk'], $risk_levels);
 
-        echo "<tr data-id='" . $escaper->escapeHtml(convert_id($risk['id'])) . "'>\n";
+        echo "<tr data-id='" . $escaper->escapeHtml(convert_to_risk_id($risk['id'])) . "'>\n";
 
         // if this is All Open Risks by Team by Risk Level page
         if($sort_order == 22){
-            echo "<td align=\"left\" width=\"50px\" class='open-risk'><a target=\"blank\" href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
+            echo "<td align=\"left\" width=\"50px\" class='open-risk'><a target=\"blank\" href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk['id'])) . "</a></td>\n";
         }else{
-            echo "<td align=\"left\" width=\"50px\" class='open-risk'><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
+            echo "<td align=\"left\" width=\"50px\" class='open-risk'><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk['id'])) . "</a></td>\n";
         }
 
         echo "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($risk['status']) . "</td>\n";
@@ -11374,8 +11817,8 @@ function get_risk_table($sort_order=0, $activecol="")
         }
 
 
-        echo "<td align=\"center\" width=\"100px\" class=\"text-center open-mitigation mitigation ".$mitigation."\">" . planned_mitigation(convert_id($risk['id']), $risk['mitigation_id']) . "</td>\n";
-        echo "<td align=\"center\" width=\"100px\" class=\"text-center open-review management ".$management."\">" . management_review(convert_id($risk['id']), $risk['mgmt_review'], $next_review) . "</td>\n";
+        echo "<td align=\"center\" width=\"100px\" class=\"text-center open-mitigation mitigation ".$mitigation."\">" . planned_mitigation(convert_to_risk_id($risk['id']), $risk['mitigation_id']) . "</td>\n";
+        echo "<td align=\"center\" width=\"100px\" class=\"text-center open-review management ".$management."\">" . management_review(convert_to_risk_id($risk['id']), $risk['mgmt_review'], $next_review) . "</td>\n";
         echo "</tr>\n";
     }
 
@@ -11475,7 +11918,7 @@ function get_submitted_risks_table() {
         echo "
                 <tr>
                     <td align='left' width='50px'>
-                        <a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml(convert_id($risk['id']))}'>{$escaper->escapeHtml(convert_id($risk['id']))}</a>
+                        <a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml(convert_to_risk_id($risk['id']))}'>{$escaper->escapeHtml(convert_to_risk_id($risk['id']))}</a>
                     </td>
                     <td align='left' width='300px'>{$escaper->escapeHtml($risk['subject'])}</td>
                     <td align='center' width='150px' sorttable_customkey='{$escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date'])))}'>{$escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date'])))}</td>
@@ -11559,7 +12002,7 @@ function get_mitigations_table() {
         echo "
                 <tr>
                     <td align='left' width='50px'>
-                        <a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml(convert_id($risk['id']))}'>{$escaper->escapeHtml(convert_id($risk['id']))}</a>
+                        <a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml(convert_to_risk_id($risk['id']))}'>{$escaper->escapeHtml(convert_to_risk_id($risk['id']))}</a>
                     </td>
                     <td align='left' width='300px'>{$escaper->escapeHtml($risk['subject'])}</td>
                     <td align='center' width='150px' sorttable_customkey='{$escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date'])))}'>{$escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date'])))}</td>
@@ -11637,7 +12080,7 @@ function get_reviewed_risk_table($sort_order=12) {
         echo "
                 <tr>
                     <td align='left' width='50px'>
-                        <a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml(convert_id($risk['id']))}'>{$escaper->escapeHtml(convert_id($risk['id']))}</a>
+                        <a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml(convert_to_risk_id($risk['id']))}'>{$escaper->escapeHtml(convert_to_risk_id($risk['id']))}</a>
                     </td>
                     <td align='left' width='300px'>{$escaper->escapeHtml($risk['subject'])}</td>
                     <td align='center' width='150px' sorttable_customkey='{$escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date'])))}'>{$escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date'])))}</td>
@@ -11717,7 +12160,7 @@ function get_closed_risks_table($sort_order=17) {
         echo "
                 <tr>
                     <td align='left' width='50px'>
-                        <a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml(convert_id($risk['id']))}'>{$escaper->escapeHtml(convert_id($risk['id']))}</a>
+                        <a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml(convert_to_risk_id($risk['id']))}'>{$escaper->escapeHtml(convert_to_risk_id($risk['id']))}</a>
                     </td>
                     <td align='left' width='300px'>{$escaper->escapeHtml($risk['subject'])}</td>
                     <td class='risk-cell' align='center' bgcolor='{$escaper->escapeHtml($color)}' width='150px'>
@@ -11836,7 +12279,7 @@ function get_risk_teams_table()
 
         // Display the risk information
                 echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
                 echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
                 echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
@@ -11911,7 +12354,7 @@ function get_risk_technologies_table($sort_order=19)
 
         // Display the risk information
         echo "<tr>\n";
-        echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+        echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
         echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
         echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
         echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
@@ -11953,7 +12396,7 @@ function get_risk_scoring_table()
                 $color = get_risk_color($risk['calculated_risk']);
 
                 echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
                 echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
                 echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
@@ -11990,7 +12433,7 @@ function get_risk_scoring_table()
                 $color = get_risk_color($risk['calculated_risk']);
 
                 echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
                 echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
         echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
@@ -12027,7 +12470,7 @@ function get_risk_scoring_table()
                 $color = get_risk_color($risk['calculated_risk']);
 
                 echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
                 echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
         echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
@@ -12064,7 +12507,7 @@ function get_risk_scoring_table()
                 $color = get_risk_color($risk['calculated_risk']);
 
                 echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
                 echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
         echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
@@ -12101,7 +12544,7 @@ function get_risk_scoring_table()
                 $color = get_risk_color($risk['calculated_risk']);
 
                 echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
                 echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
         echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
@@ -12163,7 +12606,7 @@ function get_projects_and_risks_table()
                 if ($id == $project_id)
                 {
                     echo "<tr>\n";
-                    echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                    echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                     echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
                     echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
                     echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
@@ -12642,7 +13085,7 @@ function get_project_tabs($status, $template_group_id="") {
                             <div class='col-11 bg-secondary my-1 p-2 text-light d-flex justify-content-between align-items-center'>
                                 <div class='d-flex align-items-center'>
                                     <span class='grippy'></span>
-                                    <a class='risk-content d-flex align-items-center text-light' href='../management/view.php?id={$escaper->escapeHtml(convert_id($risk_id))}' target='_blank'>
+                                    <a class='risk-content d-flex align-items-center text-light' href='../management/view.php?id={$escaper->escapeHtml(convert_to_risk_id($risk_id))}' target='_blank'>
                                         <span class='risk-number me-2'>#{$risk_number}</span>
                                         <span class='risk-subject'>{$escaper->escapeHtml($subject)}</span>
                                     </a>
@@ -12806,7 +13249,7 @@ function get_delete_risk_table() {
                         <input type='checkbox' class='form-check-input' name='risks[]' value='{$escaper->escapeHtml($risk['id'])}' />
                     </td>
                     <td align='left' width='50px'>
-                        <a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml(convert_id($risk_id))}'>{$escaper->escapeHtml(convert_id($risk_id))}</a>
+                        <a class='open-in-new-tab' href='../management/view.php?id={$escaper->escapeHtml(convert_to_risk_id($risk_id))}'>{$escaper->escapeHtml(convert_to_risk_id($risk_id))}</a>
                     </td>
                     <td align='left' width='150px'>{$escaper->escapeHtml($status)}</td>
                     <td align='left' width='300px'>{$escaper->escapeHtml($subject)}</td>
@@ -13354,7 +13797,7 @@ function next_review($risk_level, $id, $next_review, $html = true, $review_level
     if ($html == true)
     {
         // Convert the database ID to a risk ID
-        $risk_id = convert_id($id);
+        $risk_id = convert_to_risk_id($id);
 
         // Add the href tag to make it HTML
         $html = "<a href='../management/view.php?id={$escaper->escapeHtml($risk_id)}&type=2&action=editreview#review' target='_blank' class='open-in-new-tab'>{$escaper->escapeHtml($text)}</a>";
@@ -14385,51 +14828,87 @@ function get_announcements()
  ***************************/
 function language_file($force_default=false)
 {
+    // Define allowed languages (WHITELIST)
+    $allowed_languages = ['af', 'ar', 'bg', 'bp', 'ca', 'cs', 'cu', 'da', 'de', 'el', 'en', 'es', 'fi', 'fr', 'he', 'hi', 'hu', 'it', 'ja', 'ko', 'mn', 'nl', 'no', 'pl', 'pt', 'ro', 'ru', 'si', 'sk', 'sr', 'sv', 'tr', 'uk', 'vi', 'zh-CN', 'zh-TW'];
+
     // If the session hasn't been defined yet
-    // Making it fall through if called from the command line to load the default
     if (!isset($_SESSION) && PHP_SAPI !== 'cli' && !$force_default)
     {
-        // Return an empty language file
         return realpath(__DIR__ . '/../languages/empty.php');
     }
     // If the language is set for the user
     elseif (isset($_SESSION['lang']) && $_SESSION['lang'] != "")
     {
-        // Use the users language
-        return realpath(__DIR__ . '/../languages/' . $_SESSION['lang'] . '/lang.' . $_SESSION['lang'] . '.php');
+        $safe_lang = validate_language($_SESSION['lang'], $allowed_languages);
+
+        // If validation fails, fall through to default
+        if ($safe_lang !== null) {
+            $lang_file = realpath(__DIR__ . '/../languages/' . $safe_lang . '/lang.' . $safe_lang . '.php');
+
+            // Verify the file exists and is in the correct directory
+            $languages_dir = realpath(__DIR__ . '/../languages');
+            if ($lang_file !== false && strpos($lang_file, $languages_dir) === 0 && file_exists($lang_file)) {
+                return $lang_file;
+            }
+        }
+        // If validation or file check fails, fall through to default
     }
-    else
+
+    // Default language logic
+    $default_language = null;
+
+    try
     {
-        // Set the default language to null
-        $default_language = null;
-
-        // Try connecting to the database
-        try
-        {
-            $db = new PDO("mysql:charset=UTF8;dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
-        }
-        catch (PDOException $e)
-        {
-            $default_language = "en";
-        }
-
-        // If we can connect to the database
-        if (is_null($default_language))
-        {
-            // Get the default language
-            $default_language = get_setting("default_language");
-            if (!$default_language) $default_language = "en";
-        }
-
-        // If the default language is set
-        if ($default_language != false)
-        {
-            // Use the default language
-            return realpath(__DIR__ . '/../languages/' . $default_language . '/lang.' . $default_language . '.php');
-        }
-        // Otherwise, use english
-        else return realpath(__DIR__ . '/../languages/en/lang.en.php');
+        $db = new PDO("mysql:charset=UTF8;dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
     }
+    catch (PDOException $e)
+    {
+        $default_language = "en";
+    }
+
+    if (is_null($default_language))
+    {
+        $default_language = get_setting("default_language");
+        if (!$default_language) $default_language = "en";
+    }
+
+    // Validate default language
+    $safe_default = validate_language($default_language, $allowed_languages);
+    if ($safe_default === null) {
+        $safe_default = "en"; // Ultimate fallback
+    }
+
+    $lang_file = realpath(__DIR__ . '/../languages/' . $safe_default . '/lang.' . $safe_default . '.php');
+
+    // Final verification
+    $languages_dir = realpath(__DIR__ . '/../languages');
+    if ($lang_file !== false && strpos($lang_file, $languages_dir) === 0 && file_exists($lang_file)) {
+        return $lang_file;
+    }
+
+    // Ultimate fallback
+    return realpath(__DIR__ . '/../languages/en/lang.en.php');
+}
+
+/*******************************
+ * FUNCTION: VALIDATE LANGUAGE *
+ *******************************/
+// Helper function to validate and sanitize language code
+function validate_language($lang, $allowed_languages) {
+    if (empty($lang)) {
+        return null;
+    }
+
+    // Remove any path traversal attempts
+    $lang = basename($lang);
+    $lang = str_replace(['..', '/', '\\', "\0"], '', $lang);
+
+    // Check against whitelist
+    if (!in_array($lang, $allowed_languages, true)) {
+        return null;
+    }
+
+    return $lang;
 }
 
 /*****************************************
@@ -14945,54 +15424,33 @@ function encryption_extra() {
 /*************************
  * FUNCTION: UPLOAD FILE *
  *************************/
-function upload_file($risk_id, $file, $view_type = 1)
-{
-    // Open the database connection
-    $db = db_open();
+function upload_file($risk_id, $file, $view_type = 1) {
 
-    // Get the list of allowed file types
-    $stmt = $db->prepare("SELECT `name` FROM `file_types`");
-    $stmt->execute();
-    $file_types = $stmt->fetchAll();
-
-    // Get the list of allowed file extensions
-    $stmt = $db->prepare("SELECT `name` FROM `file_type_extensions`");
-    $stmt->execute();
-    $file_type_extensions = $stmt->fetchAll();
-
-    // Close the database connection
-    db_close($db);
-
-    // Create an array of allowed types
-    foreach ($file_types as $key => $row)
-    {
-        $allowed_types[] = $row['name'];
-    }
-
-    // Create an array of allowed extensions
-    foreach ($file_type_extensions as $key => $row)
-    {
-        $allowed_extensions[] = $row['name'];
-    }
+    global $escaper;
 
     // If a file was submitted and the name isn't blank
-    if (isset($file) && $file['name'] != "")
-    {
-        // If the file type is appropriate
-        if (in_array($file['type'], $allowed_types))
-        {
-            // If the file extension is appropriate
-            if (in_array(strtolower(pathinfo($file['name'], PATHINFO_EXTENSION)), array_map('strtolower', $allowed_extensions)))
-            {
+    if (isset($file) && $file['name'] != "") {
+
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+
+        $file_type_name = $finfo->file($file['tmp_name']);
+        $file_type_extension_name = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+        // Check if the file type and extension are allowed
+        $file_type_extension_mapping_exists = check_file_type_and_extension_exists($file_type_name, $file_type_extension_name);
+
+        // If the file type and extension combination is appropriate
+        if ($file_type_extension_mapping_exists) {
+
             // Get the maximum upload file size
             $max_upload_size = get_setting("max_upload_size");
 
             // If the file size is less than 5MB
-            if ($file['size'] < $max_upload_size)
-            {
+            if ($file['size'] < $max_upload_size) {
+
                 // If there was no error with the upload
-                if ($file['error'] == 0)
-                {
+                if ($file['error'] == 0) {
+
                     // Read the file
                     $content = fopen($file['tmp_name'], 'rb');
 
@@ -15024,12 +15482,10 @@ function upload_file($risk_id, $file, $view_type = 1)
                     // Return a success
                     return 1;
 
-                }
                 // Otherwise
-                else
-                {
-                    switch ($file['error'])
-                    {
+                } else {
+
+                    switch ($file['error']) {
                         case 1:
                             return "The uploaded file exceeds the upload_max_filesize directive in php.ini.";
                             break;
@@ -15055,14 +15511,19 @@ function upload_file($risk_id, $file, $view_type = 1)
                             return "There was an error with the file upload.";
                     }
                 }
+            } else {
+
+                return "The uploaded file was too big to store in the database.  A SimpleRisk administrator can modify the maximum file upload size under \"File Upload Settings\" under the \"Configure\" menu.  You may also need to modify the 'upload_max_filesize' and 'post_max_size' values in your php.ini file.";
+
             }
-            else return "The uploaded file was too big to store in the database.  A SimpleRisk administrator can modify the maximum file upload size under \"File Upload Settings\" under the \"Configure\" menu.  You may also need to modify the 'upload_max_filesize' and 'post_max_size' values in your php.ini file.";
-            }
-            else return "The file extension of the uploaded file (" . pathinfo($file['name'], PATHINFO_EXTENSION) . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
+        } else {
+            
+            return "The file type and extension combination ('{$escaper->escapeHtml($file_type_name)}', '{$escaper->escapeHtml($file_type_extension_name)}') is not supported. A SimpleRisk administrator can add it under 'File Upload Settings' under the 'Configure' menu.";
+
         }
-        else return "The file type of the uploaded file (" . $file['type'] . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
+    } else {
+        return 1;
     }
-    else return 1;
 }
 
 /*************************
@@ -15526,131 +15987,88 @@ function incomplete_project($project_id)
     }
 }
 
-/*****************************
- * FUNCTION: WRITE DEBUG LOG *
- *****************************/
-function write_debug_log($value) {
+/*****************************************************************************
+ * FUNCTION: WRITE DEBUG LOG                                                 *
+ * LOG LEVELS                                                                *
+ * 1. debug: Detailed diagnostic information for developers.                 *
+ * 2. info: General informational messages that highlight normal operations. *
+ * 3. notice: Normal but significant events that deserve attention.          *
+ * 4. warning: Something unexpected happened, but the app is still running.  *
+ * 5. error: Runtime errors that require attention but don’t crash the app.  *
+ * 6. critical: Critical conditions that may require immediate action.       *
+ *****************************************************************************/
+function write_debug_log($value, $level = 'info') {
+    static $log_settings = null;
+    static $log = null;
+    $logFile = '/var/log/simplerisk/simplerisk.log';
 
-    // If a global variable for debug logging is not already set
-    if (!isset($GLOBALS['debug_logging'])) {
-
-        // Get the current debug setting from the database
-        $GLOBALS['debug_logging'] = get_setting("debug_logging");
-
+    // Load logging settings once
+    if ($log_settings === null) {
+        $log_settings = [
+            'critical' => get_setting('logging_critical'),
+            'error'    => get_setting('logging_error'),
+            'warning'  => get_setting('logging_warning'),
+            'notice'   => get_setting('logging_notice'),
+            'info'     => get_setting('logging_info'),
+            'debug'    => get_setting('logging_debug'),
+        ];
     }
 
-    // Set debug logging to the global variable
-    $debug_logging = $GLOBALS['debug_logging'];
+    // Normalize level name (e.g. uppercase or lowercase input)
+    $level = strtolower($level);
 
-    // If DEBUG is enabled
-    if ($debug_logging == 1) {
+    // Exit early if this level is not enabled
+    if (empty($log_settings[$level])) {
+        return;
+    }
 
-        // If the value is not an array
-        if (!is_array($value)) {
+    // Initialize logger once
+    if ($log === null) {
+        $log = new Logger('simplerisk');
 
-            // Write to the error log
-            $return = error_log("[SIMPLERISK:DEBUG] ".$value);
-            
-        // If the value is an array
+        try {
+            // Ensure the log file exists and is writable
+            if (!file_exists($logFile)) {
+                @touch($logFile);
+                @chmod($logFile, 0664);
+            }
+
+            // StreamHandler with append mode and file lock
+            $handler = new StreamHandler($logFile, Logger::DEBUG, true, null, true);
+
+            // Custom format: includes SAPI for Apache vs CLI
+            $formatter = new LineFormatter(
+                "[%datetime%] %level_name% (" . php_sapi_name() . "): %message%\n",
+                "Y-m-d H:i:s",
+                true,
+                true
+            );
+            $handler->setFormatter($formatter);
+            $log->pushHandler($handler);
+        } catch (Exception $e) {
+            // Failsafe: log to PHP error_log
+            error_log("[SimpleRisk:LOGGING FAILSAFE] Could not initialize logger: " . $e->getMessage());
+            $log = null;
+            return;
+        }
+    }
+
+    // Convert arrays/objects to readable strings
+    if (is_array($value) || is_object($value)) {
+        $value = print_r($value, true);
+    }
+
+    // Write the log safely
+    try {
+        if ($log && method_exists($log, $level)) {
+            $log->$level($value);
+        } elseif ($log) {
+            $log->info($value);
         } else {
-
-            // For each key value pair in the array
-            foreach ($value as $key => $newvalue) {
-
-                // If the newvalue is an array
-                if (is_array($newvalue)) {
-
-                    write_debug_log("Array key: " . $key);
-
-                    // Recursively call the write_debug_log function on it
-                    write_debug_log($newvalue);
-
-                // If the newvalue is not an array
-                } else {
-
-                    // Call the write_debug_log function on the key value pair
-                    write_debug_log($key . " => " . $newvalue);
-
-                }
-            }
+            error_log("[SimpleRisk:LOGGING FAILSAFE] " . $value);
         }
-        
-    // DEBUG is disabled
-    } else {
-
-        // Set a global variable for debug_logging
-        $GLOBALS['debug_logging'] = false;
-
-    }
-}
-
-/*********************************
- * FUNCTION: WRITE DEBUG LOG CLI *
- *********************************/
-function write_debug_log_cli($value)
-{
-    // If a global variable for debug logging is not already set
-    if (!isset($GLOBALS['debug_logging']))
-    {
-        // Get the current debug setting from the database
-        $GLOBALS['debug_logging'] = get_setting("debug_logging");
-    }
-
-    // Set debug logging to the global variable
-    $debug_logging = $GLOBALS['debug_logging'];
-
-    // If DEBUG is enabled
-    if ($debug_logging == 1)
-    {
-        // If the value is not an array
-        if (!is_array($value))
-        {
-            // Open the database connection
-            $db = db_open();
-
-            // Write to the debug_log table in the database
-            $stmt = $db->prepare("INSERT INTO `debug_log` (`message`) VALUES (:message);");
-            $stmt->bindParam(":message", $value, PDO::PARAM_STR);
-            $stmt->execute();
-
-            // Close the database connection
-            db_close($db);
-
-            // Get a system token
-            $token = get_system_token();
-
-            // Call the SimpleRisk debug log endpoint to write out the message
-            $endpoint = "api/v2/admin/write_debug_log";
-            @call_simplerisk_api_endpoint($endpoint, "GET", $token, 1);
-        }
-        // If the value is an array
-        else
-        {
-            // For each key value pair in the array
-            foreach ($value as $key => $newvalue)
-            {
-                // If the newvalue is an array
-                if (is_array($newvalue))
-                {
-                    write_debug_log_cli("Array key: " . $key);
-
-                    // Recursively call the write_debug_log function on it
-                    write_debug_log_cli($newvalue);
-                }
-                // If the newvalue is not an array
-                else
-                {
-                    // Call the write_debug_log function on the key value pair
-                    write_debug_log_cli($key . " => " . $newvalue);
-                }
-            }
-        }
-    }
-    // DEBUG is disabled
-    else
-    {
-        // Set a global variable for debug_logging
-        $GLOBALS['debug_logging'] = false;
+    } catch (Exception $e) {
+        error_log("[SimpleRisk:LOGGING FAILSAFE] Log write failed: " . $e->getMessage() . " | Original: " . $value);
     }
 }
 
@@ -17019,6 +17437,42 @@ function get_file_types()
     return $allowed_types;
 }
 
+/*****************************************************
+ * FUNCTION: CHECK IF FILE TYPE AND EXTENSION EXISTS *
+ *****************************************************/
+function check_file_type_and_extension_exists($file_type_name, $file_type_extension_name) {
+
+    // Open the database connection
+    $db = db_open();
+
+    // Check if the file type with the extension exists
+    $stmt = $db->prepare("
+        SELECT 1
+        FROM 
+            file_type_extension_mappings ftem
+            JOIN file_types ft ON ft.value = ftem.file_type_id
+            JOIN file_type_extensions fte ON fte.value = ftem.file_type_extension_id
+        WHERE 
+            ft.name = :file_type_name
+            AND fte.name = :file_type_extension_name
+        LIMIT 1;
+    ");
+    $stmt->bindParam(":file_type_name", $file_type_name, PDO::PARAM_STR, 250);
+    $stmt->bindParam(":file_type_extension_name", $file_type_extension_name, PDO::PARAM_STR, 10);
+    $stmt->execute();
+
+    $mapping_exists = $stmt->fetchColumn();
+
+    // Close the database connection
+    db_close($db);
+
+    if ($mapping_exists) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 /***********************************
  * FUNCTION: GET AVERAGE SCORE OVER TIME *
  ***********************************/
@@ -17302,19 +17756,6 @@ function get_names_by_values($table, $values, $limit=4, $escape=true, $force_id=
     return implode(", ", $names) . ($limit && count($results) > $limit ? ", ...": "");
 }
 
-/****************************************
- * FUNCTION: PING SERVER ASYNCHRONOUSLY *
- ****************************************/
-function ping_server_asynchronously()
-{
-    // Asynchronously ping the server
-    $pool = Spatie\Async\Pool::create();
-    $pool->add(function() {
-        ping_server();
-    });
-    await($pool);
-}
-
 /*************************
  * FUNCTION: PING SERVER *
  *************************/
@@ -17327,6 +17768,9 @@ function ping_server()
 
     // Create the SimpleRisk instance ID if it doesn't already exist
     $instance_id = create_simplerisk_instance_id();
+
+    // Get the services API key
+    $services_api_key = get_setting("services_api_key");
 
     // Get the timezone
     $timezone = date_default_timezone_get();
@@ -17345,6 +17789,12 @@ function ping_server()
     $stmt->execute();
     $array = $stmt->fetchAll();
     $users = $array[0][0];
+
+    // Get the last login date
+    $stmt = $db->prepare("SELECT last_login FROM user ORDER BY last_login desc");
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $last_login = $row['last_login'];
 
     // Get the application version
     $app_version = $escaper->escapeHtml(current_version("app"));
@@ -17439,11 +17889,13 @@ function ping_server()
     // Create the parameters
     $parameters = [
         'instance_id' => $instance_id,
+        'api_key' => $services_api_key,
         'timezone' => $timezone,
         'risks' => $risks,
         'users' => $users,
         'app_version' => $app_version,
         'db_version' => $db_version,
+        'last_login' => $last_login,
         'total_logins_last_90' => $result['total_logins_last_90'],
         'unique_days_last_90' => $result['unique_days_last_90'],
         'unique_users_last_90' => $result['unique_users_last_90'],
@@ -17556,7 +18008,7 @@ function ping_server()
 
     // Set the HTTP options
     $http_options = [
-        'method' => 'GET',
+        'method' => 'POST',
         'header' => [
             "Content-Type: application/x-www-form-urlencoded",
         ],
@@ -17579,7 +18031,10 @@ function ping_server()
     else $url = 'https://ping.simplerisk.com';
 
     // Make the https request
-    fetch_url_content("curl", $http_options, $validate_ssl, $url, $parameters);
+    $results = fetch_url_content("curl", $http_options, $validate_ssl, $url, $parameters);
+
+    // Return the results
+    return $results;
 }
 
 /*******************************************
@@ -18359,8 +18814,8 @@ function accept_mitigation_by_risk_id($risk_id, $accept)
         $stmt->bindParam(":created_at", $today, PDO::PARAM_STR);
         $stmt->execute();
 
-        $message = "Mitigation for risk ID ". convert_id($risk_id) ." accepted by \"" . $_SESSION['user'] . "\" user.";
-        write_log(convert_id($risk_id), $_SESSION['uid'], $message);
+        $message = "Mitigation for risk ID ". convert_to_risk_id($risk_id) ." accepted by \"" . $_SESSION['user'] . "\" user.";
+        write_log(convert_to_risk_id($risk_id), $_SESSION['uid'], $message);
     }
     // If decline mitigation, delete a record
     else
@@ -18370,8 +18825,8 @@ function accept_mitigation_by_risk_id($risk_id, $accept)
         $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
         $stmt->execute();
 
-        $message = "Mitigation for risk ID ". convert_id($risk_id) ." rejected by \"" . $_SESSION['user'] . "\" user.";
-        write_log(convert_id($risk_id), $_SESSION['uid'], $message);
+        $message = "Mitigation for risk ID ". convert_to_risk_id($risk_id) ." rejected by \"" . $_SESSION['user'] . "\" user.";
+        write_log(convert_to_risk_id($risk_id), $_SESSION['uid'], $message);
     }
     // Close the database connection
     db_close($db);
@@ -18475,7 +18930,27 @@ function set_simplerisk_timezone()
     $default_timezone = get_setting("default_timezone");
 
     // If no timezone is set, set it to CST
-    if (!$default_timezone) $default_timezone = "America/Chicago";
+    if (!$default_timezone) {
+
+        $default_timezone = "America/Chicago";
+        
+        update_setting("default_timezone", $default_timezone);
+
+    // otherwise, validate the timezone
+    } else {
+        
+        // Get the list of timezones
+        $timezones = timezone_list();
+
+        // If the selected timezone is not valid, set it to CST
+        if (!array_key_exists($default_timezone, $timezones)) {
+
+            $default_timezone = "America/Chicago";
+
+            update_setting("default_timezone", $default_timezone);
+            
+        }
+    }
 
     // Set the timezone for PHP date functions
     date_default_timezone_set($default_timezone);
@@ -18484,7 +18959,7 @@ function set_simplerisk_timezone()
 /**********************************
  * FUNCTION: ADD SECURITY HEADERS *
  **********************************/
-function add_security_headers($x_frame_options = true, $x_xss_protection = true, $x_content_type_options = true, $content_type = true, $content_security_policy = true)
+function add_security_headers($x_frame_options = true, $x_xss_protection = true, $x_content_type_options = true, $content_type = true, $content_security_policy = true, $referrer_policy = 'origin')
 {
 	// If we want to send a X-Frame-Options header
 	if ($x_frame_options)
@@ -18509,6 +18984,16 @@ function add_security_headers($x_frame_options = true, $x_xss_protection = true,
 	{
 		header("Content-Type: text/html; charset=utf-8");
 	}
+
+    // Send a Referrer-Policy that never includes URL parameters (path/query)
+    // Valid options that avoid parameters are: 'no-referrer', 'origin', 'strict-origin'
+    if ($referrer_policy) {
+        $valid_policies = array('no-referrer', 'origin', 'strict-origin');
+        if (!in_array($referrer_policy, $valid_policies, true)) {
+            $referrer_policy = 'origin';
+        }
+        header("Referrer-Policy: " . $referrer_policy);
+    }
 
 	// If we want to send a Content-Security-Policy header
 	if ($content_security_policy)
@@ -18827,34 +19312,17 @@ function is_admin($id = false) {
 /*************************************
  * FUNCTION: UPLOAD COMPLIANCE FILES *
  *************************************/
-function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1)
+function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1, $user=null)
 {
-    $user = $_SESSION['uid'];
-    
+    global $escaper;
+
+    // If no user was specified, try the session uid, otherwise default to 0
+    if (!$user) {
+        $user = $_SESSION['uid'] ?? 0;
+    }
+
     // Open the database connection
     $db = db_open();
-    
-    // Get the list of allowed file types
-    $stmt = $db->prepare("SELECT `name` FROM `file_types`");
-    $stmt->execute();
-    $file_types = $stmt->fetchAll();
-
-    // Get the list of allowed file extensions
-    $stmt = $db->prepare("SELECT `name` FROM `file_type_extensions`");
-    $stmt->execute();
-    $file_type_extensions = $stmt->fetchAll();
-
-    // Create an array of allowed types
-    foreach ($file_types as $key => $row)
-    {
-        $allowed_types[] = $row['name'];
-    }
-
-    // Create an array of allowed extensions
-    foreach ($file_type_extensions as $key => $row)
-    {
-        $allowed_extensions[] = $row['name'];
-    }
     
     $errors = array();
 
@@ -18873,13 +19341,18 @@ function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1)
         );
         
         if (strlen($file['name']) <= 100) {
-        
-            // If the file type is appropriate
-            if (in_array($file['type'], $allowed_types))
-            {
-                // If the file extension is appropriate
-                if (in_array(strtolower(pathinfo($file['name'], PATHINFO_EXTENSION)), array_map('strtolower', $allowed_extensions)))
-                {
+
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+
+            $file_type_name = $finfo->file($file['tmp_name']);
+            $file_type_extension_name = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    
+            // Check if the file type and extension are allowed
+            $file_type_extension_mapping_exists = check_file_type_and_extension_exists($file_type_name, $file_type_extension_name);
+    
+            // If the file type and extension combination is appropriate
+            if ($file_type_extension_mapping_exists) {
+
                 // Get the maximum upload file size
                 $max_upload_size = get_setting("max_upload_size");
     
@@ -18954,10 +19427,11 @@ function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1)
                     }
                 }
                 else $errors[] = "The uploaded file was too big to store in the database.  A SimpleRisk administrator can modify the maximum file upload size under \"File Upload Settings\" under the \"Configure\" menu.  You may also need to modify the 'upload_max_filesize' and 'post_max_size' values in your php.ini file.";
-                }
-                else $errors[] = "The file extension of the uploaded file (" . pathinfo($file['name'], PATHINFO_EXTENSION) . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
+            } else {
+
+                $errors[] = "The file type and extension combination ('{$escaper->escapeHtml($file_type_name)}', '{$escaper->escapeHtml($file_type_extension_name)}') is not supported. A SimpleRisk administrator can add it under 'File Upload Settings' under the 'Configure' menu.";
+
             }
-            else $errors[] = "The file type of the uploaded file (" . $file['type'] . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
         } else $errors[] = "The uploaded file name is longer than the allowed maximum (100 characters).";
     }
 
@@ -18970,37 +19444,19 @@ function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1)
         return [true, $file_ids, []];
     }
 }
+
 /*************************************
  * FUNCTION: UPLOAD EXCEPTION FILES *
  *************************************/
 function upload_exception_files($test_audit_id, $ref_type, $files, $version=1)
 {
+
+    global $escaper;
+
     $user = $_SESSION['uid'];
     
     // Open the database connection
     $db = db_open();
-    
-    // Get the list of allowed file types
-    $stmt = $db->prepare("SELECT `name` FROM `file_types`");
-    $stmt->execute();
-    $file_types = $stmt->fetchAll();
-
-    // Get the list of allowed file extensions
-    $stmt = $db->prepare("SELECT `name` FROM `file_type_extensions`");
-    $stmt->execute();
-    $file_type_extensions = $stmt->fetchAll();
-
-    // Create an array of allowed types
-    foreach ($file_types as $key => $row)
-    {
-        $allowed_types[] = $row['name'];
-    }
-
-    // Create an array of allowed extensions
-    foreach ($file_type_extensions as $key => $row)
-    {
-        $allowed_extensions[] = $row['name'];
-    }
     
     $errors = array();
 
@@ -19020,12 +19476,17 @@ function upload_exception_files($test_audit_id, $ref_type, $files, $version=1)
         
         if (strlen($file['name']) <= 100) {
         
-            // If the file type is appropriate
-            if (in_array($file['type'], $allowed_types))
-            {
-                // If the file extension is appropriate
-                if (in_array(strtolower(pathinfo($file['name'], PATHINFO_EXTENSION)), array_map('strtolower', $allowed_extensions)))
-                {
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+
+            $file_type_name = $finfo->file($file['tmp_name']);
+            $file_type_extension_name = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    
+            // Check if the file type and extension are allowed
+            $file_type_extension_mapping_exists = check_file_type_and_extension_exists($file_type_name, $file_type_extension_name);
+    
+            // If the file type and extension combination is appropriate
+            if ($file_type_extension_mapping_exists) {
+
                 // Get the maximum upload file size
                 $max_upload_size = get_setting("max_upload_size");
     
@@ -19088,10 +19549,11 @@ function upload_exception_files($test_audit_id, $ref_type, $files, $version=1)
                     }
                 }
                 else $errors[] = "The uploaded file was too big to store in the database.  A SimpleRisk administrator can modify the maximum file upload size under \"File Upload Settings\" under the \"Configure\" menu.  You may also need to modify the 'upload_max_filesize' and 'post_max_size' values in your php.ini file.";
-                }
-                else $errors[] = "The file extension of the uploaded file (" . pathinfo($file['name'], PATHINFO_EXTENSION) . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
+            } else {
+                
+                $errors[] = "The file type and extension combination ('{$escaper->escapeHtml($file_type_name)}', '{$escaper->escapeHtml($file_type_extension_name)}') is not supported. A SimpleRisk administrator can add it under 'File Upload Settings' under the 'Configure' menu.";
+
             }
-            else $errors[] = "The file type of the uploaded file (" . $file['type'] . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
         } else $errors[] = "The uploaded file name is longer than the allowed maximum (100 characters).";
     }
 
@@ -19672,26 +20134,38 @@ function large_extra($extra_name)
 /***************************
  * FUNCTION: ADD FILE TYPE *
  ***************************/
-function add_file_type($name, $extension)
-{
+function add_file_type($name, $extension) {
 
     global $lang, $escaper;
 
     // If no name was provided
-    if (!$name || $name == "")
-    {
+    if (!$name) {
+
         // Display an alert
         set_alert(false, "bad", "Please provide a valid file type name.");
 
         // Return false
         return false;
+
     }
 
     // If no extension was provided
-    if (!$extension || $extension == "")
-    {
+    if (!$extension) {
+
         // Display an alert
         set_alert(false, "bad", "Please provide a valid file extension.");
+
+        // Return false
+        return false;
+
+    }
+
+    // Check if the file type with the extension already exists
+    $mapping_exists = check_file_type_and_extension_exists($name, $extension);
+
+    if ($mapping_exists) {
+        // Display an alert
+        set_alert(false, "bad", $escaper->escapeHtml($lang['TheFileTypeWithThisExtensionAlreadyExists']));
 
         // Return false
         return false;
@@ -19700,45 +20174,43 @@ function add_file_type($name, $extension)
     // Open the database connection
     $db = db_open();
 
-    // Check if the file type already exists
-    $stmt = $db->prepare("SELECT COUNT(`name`) FROM `file_types` WHERE `name` = :name;");
-    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 250);
-    $stmt->execute();
-
-    $file_type_count = $stmt->fetchColumn();
-
-    if ($file_type_count > 0) {
-        // Display an alert
-        set_alert(false, "bad", $escaper->escapeHtml($lang['TheFileTypeAlreadyExists']));
-
-        // Return false
-        return false;
-    }
-
-    // Check if the file type extension already exists
-    $stmt = $db->prepare("SELECT COUNT(`name`) FROM `file_type_extensions` WHERE `name` = :extension;");
-    $stmt->bindParam(":extension", $extension, PDO::PARAM_STR, 10);
-    $stmt->execute();
-
-    $file_type_extension_count = $stmt->fetchColumn();
-
-    if ($file_type_extension_count > 0) {
-        // Display an alert
-        set_alert(false, "bad", $escaper->escapeHtml($lang['TheFileTypeExtensionAlreadyExists']));
-
-        // Return false
-        return false;
-    }
-
-
     // Insert the new file type
-    $stmt = $db->prepare("INSERT IGNORE INTO `file_types` (`name`) VALUES (:name);");
+    $stmt = $db->prepare("
+        INSERT INTO `file_types` 
+            (`name`) 
+        VALUES 
+            (:name)
+        ON DUPLICATE KEY UPDATE value = LAST_INSERT_ID(value);
+    ");
     $stmt->bindParam(":name", $name, PDO::PARAM_STR, 250);
     $stmt->execute();
+
+    // Get the inserted file type id
+    $file_type_id = $db->lastInsertId();
 
     // Insert the new file type extension
-    $stmt = $db->prepare("INSERT IGNORE INTO `file_type_extensions` (`name`) VALUES (:extension);");
+    $stmt = $db->prepare("
+        INSERT INTO `file_type_extensions` 
+            (`name`) 
+        VALUES 
+            (:extension)
+        ON DUPLICATE KEY UPDATE value = LAST_INSERT_ID(value);
+    ");
     $stmt->bindParam(":extension", $extension, PDO::PARAM_STR, 10);
+    $stmt->execute();
+
+    // Get the inserted file type extension id
+    $file_type_extension_id = $db->lastInsertId();
+
+    // Insert the new file type to extension mapping
+    $stmt = $db->prepare("
+        INSERT INTO `file_type_extension_mappings` 
+            (`file_type_id`, `file_type_extension_id`) 
+        VALUES 
+            (:file_type_id, :file_type_extension_id);
+    ");
+    $stmt->bindParam(":file_type_id", $file_type_id, PDO::PARAM_INT);
+    $stmt->bindParam(":file_type_extension_id", $file_type_extension_id, PDO::PARAM_INT);
     $stmt->execute();
 
     // Write an audit log entry
@@ -19751,6 +20223,7 @@ function add_file_type($name, $extension)
 
     // Return true
     return true;
+    
 }
 
 /************************************
@@ -23144,6 +23617,8 @@ $change_audit_log_localization_config = [
         'additional_stakeholders' => 'AdditionalStakeholders',
         'tester_name' => 'Tester',
         'teams' => 'Teams',
+        'auto_audit_initiation' => 'AutoInitiateAudit',
+        'audit_initiation_offset' => 'AuditInitiationOffset',
     ],
     
     'audit' => [ // as fields returned by the get_framework_control_test_audit_by_id() function
@@ -23203,7 +23678,7 @@ $change_audit_log_localization_config = [
         'multi_factor' => 'MultiFactorAuthentication',
         'change_password' => 'RequirePasswordChangeOnLogin',
         'manager' => 'Manager',
-        'selected_business_unit' => 'BusinessUnit',
+        //'selected_business_unit' => 'BusinessUnit', // Only needed if the Organizational Hierarchy extra is enabled, as it can cause issues if it's not
         'teams' => 'Teams',
         'permissions' => 'UserResponsibilities'
     ],
@@ -23230,6 +23705,11 @@ $change_audit_log_localization_config = [
     ],
 ];
 
+// Only needed if the Organizational Hierarchy extra is enabled, as it can cause issues if it's not
+if (organizational_hierarchy_extra()) {
+    $change_audit_log_localization_config['user']['selected_business_unit'] = 'BusinessUnit';
+}
+
 /**
  * Function: GET CHANGES
  * The function is used to get the list of changes of two objects(arrays) of `before` and `after` states 
@@ -23250,6 +23730,8 @@ $change_audit_log_localization_config = [
 // because they're just added to the differences as they are(if changed)
 function get_changes($type, $before, $after, $return_type = 1) {
 
+    global $escaper, $lang;
+
     if (!$before || !$after || !is_array($before) || !is_array($after)) {
         return '';
     }
@@ -23260,7 +23742,7 @@ function get_changes($type, $before, $after, $return_type = 1) {
     $diff_str = [];
 
     foreach ($change_audit_log_localization_config[$type] as $field => $key) {
-        if (isset($before[$field]) && isset($after[$field]) && $before[$field] !== $after[$field]) {
+        if ($before[$field] !== $after[$field]) {
 
             // These can be handled together as the fields with the same name hold the same type of values
             if (in_array($type,['audit', 'test', 'document', 'user', 'incident'])) {
@@ -23331,6 +23813,28 @@ function get_changes($type, $before, $after, $return_type = 1) {
                         }
                     break;
 
+                    case 'auto_audit_initiation': 
+                        if ($before[$field]) {
+                            $before[$field] = $escaper->escapeHtml($lang['Yes']);
+                        } else {
+                            $before[$field] = $escaper->escapeHtml($lang['No']);
+                        }
+                        if ($after[$field]) {
+                            $after[$field] = $escaper->escapeHtml($lang['Yes']);
+                        } else {
+                            $after[$field] = $escaper->escapeHtml($lang['No']);
+                        }
+                    break;
+
+                    case 'audit_initiation_offset':
+                        if (is_null($before[$field])) {
+                            $before[$field] = "--";
+                        }
+                        if (is_null($after[$field])) {
+                            $after[$field] = "--";
+                        }
+                    break;
+                    
                     case 'region_ids':
                         if ($before[$field]) {
                             $before[$field] = get_names_by_multi_values('incident_management_incident_region', $before[$field]);
@@ -23416,18 +23920,6 @@ function get_changes($type, $before, $after, $return_type = 1) {
                             $document = get_document_by_id($after[$field]);
                             $after[$field] = $document['document_name'];
                                     }
-                        else $after[$field] = "--";
-                    break;
-
-                    case 'framework_ids':
-                        if ($before[$field]) {
-                            $before[$field] = get_names_by_multi_values('frameworks', $before[$field]);
-                        }
-                        else $before[$field] = "--";
-
-                        if ($after[$field]) {
-                            $after[$field] = get_names_by_multi_values('frameworks', $after[$field]);
-                        }
                         else $after[$field] = "--";
                     break;
 
@@ -24117,43 +24609,24 @@ function check_if_url_responds($url)
  ************************************/
 function upload_validation_file($mitigation_id, $control_id, $file)
 {
-    // Open the database connection
-    $db = db_open();
 
-    // Get the list of allowed file types
-    $stmt = $db->prepare("SELECT `name` FROM `file_types`");
-    $stmt->execute();
-    $file_types = $stmt->fetchAll();
-
-    // Get the list of allowed file extensions
-    $stmt = $db->prepare("SELECT `name` FROM `file_type_extensions`");
-    $stmt->execute();
-    $file_type_extensions = $stmt->fetchAll();
-
-    // Close the database connection
-    db_close($db);
-
-    // Create an array of allowed types
-    foreach ($file_types as $key => $row)
-    {
-        $allowed_types[] = $row['name'];
-    }
-
-    // Create an array of allowed extensions
-    foreach ($file_type_extensions as $key => $row)
-    {
-        $allowed_extensions[] = $row['name'];
-    }
+    global $escaper;
 
     // If a file was submitted and the name isn't blank
     if (isset($file) && $file['name'] != "")
     {
-        // If the file type is appropriate
-        if (in_array($file['type'], $allowed_types))
-        {
-            // If the file extension is appropriate
-            if (in_array(strtolower(pathinfo($file['name'], PATHINFO_EXTENSION)), array_map('strtolower', $allowed_extensions)))
-            {
+
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+
+        $file_type_name = $finfo->file($file['tmp_name']);
+        $file_type_extension_name = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+        // Check if the file type and extension are allowed
+        $file_type_extension_mapping_exists = check_file_type_and_extension_exists($file_type_name, $file_type_extension_name);
+
+        // If the file type and extension combination is appropriate
+        if ($file_type_extension_mapping_exists) {
+
             // Get the maximum upload file size
             $max_upload_size = get_setting("max_upload_size");
 
@@ -24224,10 +24697,11 @@ function upload_validation_file($mitigation_id, $control_id, $file)
                 }
             }
             else return "The uploaded file was too big to store in the database.  A SimpleRisk administrator can modify the maximum file upload size under \"File Upload Settings\" under the \"Configure\" menu.  You may also need to modify the 'upload_max_filesize' and 'post_max_size' values in your php.ini file.";
-            }
-            else return "The file extension of the uploaded file (" . pathinfo($file['name'], PATHINFO_EXTENSION) . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
+        } else {
+            
+            return "The file type and extension combination ('{$escaper->escapeHtml($file_type_name)}', '{$escaper->escapeHtml($file_type_extension_name)}') is not supported. A SimpleRisk administrator can add it under 'File Upload Settings' under the 'Configure' menu.";
+
         }
-        else return "The file type of the uploaded file (" . $file['type'] . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
     }
     else return 1;
 }
@@ -26143,6 +26617,8 @@ function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 1
 
         if (in_array($view, ['active_audits', 'past_audits', 'dynamic_audit_report'])) {
             $where .= get_user_teams_query_for_tests_and_audits("a", false, true);
+        } else if ($view == 'audit_timeline') {
+            $where .= get_user_teams_query_for_tests("a", false, true);
         }
     }
     
@@ -26357,6 +26833,10 @@ function get_wheres_for_view($view) {
 
         $where = "where fc.deleted = 0 ";
         
+    } else if ($view == "audit_timeline") {
+        
+        $where = "where f.status = 1";
+
     } else {
         $where = "where 1";
     }
@@ -26376,6 +26856,8 @@ function get_custom_formatting_data_for_view($view, $selected_field_name, $value
         $result = get_custom_formatting_data_for_past_audits($selected_field_name, $value, $display, $item);
     } else if ($view == 'dynamic_audit_report') {
         $result = get_custom_formatting_data_for_dynamic_audit_report($selected_field_name, $value, $display, $item);
+    } else if ($view == 'audit_timeline') {
+        $result = get_custom_formatting_data_for_audit_timeline($selected_field_name, $value, $display, $item);
     } else {
         $result = [$value, $display];
     }
@@ -26505,6 +26987,51 @@ function get_custom_formatting_data_for_dynamic_audit_report($selected_field_nam
 
 }
 
+/***********************************************************
+ * FUNCTION: GET CUSTOM FORMATTING DATA FOR AUDIT TIMELINE *
+ ***********************************************************/
+function get_custom_formatting_data_for_audit_timeline($selected_field_name, $value, $display, $item) {
+
+    global $lang, $escaper;
+
+    // For fields that need custom formatting
+    switch($selected_field_name) {
+        case 'test_frequency':
+            $value = (int)$value . " " .$escaper->escapeHtml($value > 1 ? $lang['days'] : $lang['Day']);
+            break;
+        case 'objective': 
+        case 'test_steps':
+        case 'expected_results':    
+            $value = $escaper->purifyHtml($value);
+            break;
+        case 'approximate_time':
+            $value = (int)$value . " " .$escaper->escapeHtml($value > 1 ? $lang['minutes'] : $lang['minute']);
+            break;
+        case 'tags':
+            if ($value) {
+                $tags = [];
+                foreach(explode("|", $value) as $tag) {
+                    $tags []= $escaper->escapeHtml($tag);
+                }
+                $value = $tags;
+            }
+            break;
+        case 'last_test_result':
+            $value = $escaper->escapeHtml($value ? $value : "--");
+            break;
+        case 'last_date':
+        case 'next_date':
+            $value = $escaper->escapeHtml(format_date($value));
+            break;
+        default:
+            // Only have to escape non-custom fields as those are already escaped
+            $value = $escaper->escapeHtml($value);
+    }
+
+    return [$value, $display];
+
+}
+
 /*****************************************************
  * FUNCTION: PROCESS SELECTED FIELD FILTER FOR VIEWS *
  *****************************************************/
@@ -26515,6 +27042,8 @@ function process_selected_field_filter_for_views($view, $selected_field_name, $f
         $filter_result = process_selected_field_filter_for_past_audits($selected_field_name, $filter_value, $column_filters, $item);
     } else if ($view == 'dynamic_audit_report') {
         $filter_result = process_selected_field_filter_for_dynamic_audit_report($selected_field_name, $filter_value, $column_filters, $item);
+    } else if ($view == 'audit_timeline') {
+        $filter_result = process_selected_field_filter_for_audit_timeline($selected_field_name, $filter_value, $column_filters, $item);
     } else {
         if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
             $filter_result = true;
@@ -26944,6 +27473,118 @@ function process_selected_field_filter_for_dynamic_audit_report($selected_field_
 
 }
 
+/**************************************************************
+ * FUNCTION: PROCESS SELECTED FIELD FILTER FOR AUDIT TIMELINE *
+ **************************************************************/
+function process_selected_field_filter_for_audit_timeline($selected_field_name, $filter_value, $column_filters, $item) {
+    if ($selected_field_name == 'test_name') {
+        $item_filter_value = $item['test_name_filter'];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                $filter_result = true;
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if (in_array($selected_field_name, ['tester', 'additional_stakeholders', 'control_owner'])) {
+        $item_filter_value = $item[$selected_field_name];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                $filter_result = true;
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'framework_name') {
+        $item_filter_value = $item['framework_name_filter'];
+        $item_filter_value_array = explode(",", $item_filter_value);
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (array_intersect($item_filter_value_array, $search_value)) {
+                $filter_result = false;
+            } else {
+                $filter_result = true;
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'control_name') {
+        $item_filter_value = $item['control_name_filter'];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                $filter_result = true;
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'tags') {
+        $item_filter_value = $item['tags_filter'];
+
+        if ($item_filter_value) {
+            $item_filter_value_array = explode("|", $item_filter_value);
+        } else {
+            $item_filter_value_array = [];
+        }
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (array_intersect($item_filter_value_array, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(-1, $search_value)) {
+                    if (empty($item_filter_value_array)) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'last_test_result') {
+        $item_filter_value = $item['last_test_result_filter'];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(0, $search_value)) {
+                    if (!$item_filter_value) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            // unselect all
+            $filter_result = true;
+        }
+    } else {
+        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
+            $filter_result = true;
+        } else {
+            $filter_result = false;
+        }
+    }
+
+    return $filter_result;
+
+}
+
 /*************************************
  * FUNCTION: GET CUSTOM ITEM ACTIONS *
  *************************************/
@@ -26953,6 +27594,8 @@ function get_custom_item_actions($view, $actions_tooltips, $item) {
         $result = get_custom_item_actions_for_active_audits($view, $actions_tooltips, $item);
     } else if ($view == 'past_audits') {
         $result = get_custom_item_actions_for_past_audits($view, $actions_tooltips, $item);
+    } else if ($view == 'audit_timeline') {
+        $result = get_custom_item_actions_for_audit_timeline($view, $actions_tooltips, $item);
     } else {
         $result = [];
     }
@@ -27010,6 +27653,36 @@ function get_custom_item_actions_for_past_audits($view, $actions_tooltips, $item
 
 }
 
+/********************************************************
+ * FUNCTION: GET CUSTOM ITEM ACTIONS FOR AUDIT TIMELINE *
+ ********************************************************/
+function get_custom_item_actions_for_audit_timeline($view, $actions_tooltips, $item) {
+
+    global $lang, $escaper;
+
+    $item_actions = [];
+
+    if(isset($_SESSION["initiate_audits"]) && $_SESSION["initiate_audits"] == 1) {
+
+        $initiate_button = "<button class='btn btn-primary btn-initiate-audit' style='width:100%' id='{$item['id']}' data-id='{$item['id']}' >{$escaper->escapeHtml($lang['InitiateAudit'])}</button>";
+
+        $item_actions[] = $initiate_button;
+
+    }
+
+    $active_audits_url = build_url('compliance/active_audits.php?test_id='.$item['id']);
+    $past_audits_url = build_url('compliance/past_audits.php?test_id='.$item['id']);
+
+    $active_audits_button = "<a class='btn btn-secondary my-1' style='width:100%' type='button' href='{$active_audits_url}' target='_blank'><i class='mdi mdi-open-in-new mx-2'></i>{$escaper->escapeHtml($lang['ViewActiveAudits'])}</a>";
+    $past_audits_button = "<a class='btn btn-secondary' style='width:100%' type='button' href='{$past_audits_url}' target='_blank'><i class='mdi mdi-open-in-new mx-2'></i>{$escaper->escapeHtml($lang['ViewPastAudits'])}</a>";
+
+    $item_actions[] = $active_audits_button;
+    $item_actions[] = $past_audits_button;
+
+    return $item_actions;
+
+}
+
 /****************************************
  * FUNCTION: GET FILTER FIELD FOR VIEWS *
  ****************************************/
@@ -27020,6 +27693,8 @@ function get_filter_field_for_views($view, $field_name, $localizations) {
         $filter_field = get_filter_field_for_past_audits($field_name, $localizations);
     } else if ($view == 'dynamic_audit_report') {
         $filter_field = get_filter_field_for_dynamic_audit_report($field_name, $localizations);
+    } else if ($view == 'audit_timeline') {
+        $filter_field = get_filter_field_for_audit_timeline($field_name, $localizations);
     } else {
         $filter_field = "
             <input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control' style='max-width: unset;'>
@@ -27210,6 +27885,74 @@ function get_filter_field_for_dynamic_audit_report($field_name, $localizations) 
         $filter_field = "
             <input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control' style='max-width: unset;'>
         ";
+    }
+
+    return $filter_field;
+
+}
+
+/************************************************
+ * FUNCTION: GET FILTER FIELD FOR AUDIT TIMELINE *
+ ************************************************/
+function get_filter_field_for_audit_timeline($field_name, $localizations) {
+
+    global $lang, $escaper;
+
+    if ($field_name == 'test_name') {
+
+        $filter_field = create_multiple_dropdown("framework_control_tests", "all", "test_name", null, false, "--", "", true, "", 0, true, "");
+
+    } else if ($field_name == 'tester' || $field_name == 'control_owner' || $field_name == 'additional_stakeholders') {
+
+        $filter_field = create_multiple_dropdown("enabled_users", "all", $field_name, null, false, "--", "", true, "", 0, true, "");
+
+    } else if ($field_name == 'framework_name') {
+        $filter_field = "
+            <select name='framework_name[]' id='framework_name' class='multiselect' multiple=''>
+        ";
+
+        $options = getHasBeenAuditFrameworkList("test");
+        is_array($options) || $options = array();
+        foreach ($options as $option) {
+            $filter_field .= "
+                <option selected value='{$escaper->escapeHtml($option['value'])}'>{$escaper->escapeHtml($option['name'])}</option>
+            ";
+        }
+
+        $filter_field .= "
+            </select>
+        ";
+
+    } else if ($field_name == 'control_name') {
+
+        $options = getHasBeenAuditFrameworkControlList("test");
+
+        $filter_field = create_multiple_dropdown("framework_controls", "all", "control_name", $options, false, "--", "", true, "", 0, true, ""); 
+
+    } else if ($field_name == 'tags') {
+        
+        $tags = [];
+        foreach (getTagsOfType("test") as $tag) {
+            $tags[] = array('name' => $escaper->escapeHtml($tag['tag']), 'value' => (int)$tag['id']);
+        }
+        $filter_field = create_multiple_dropdown("tags", "all", "tags", $tags, true, $escaper->escapeHtml($lang['Unassigned']), "-1", true, "", 0, true, "");
+        
+    } else if ($field_name == 'last_test_result') {
+
+        $filter_field = create_multiple_dropdown("test_results_filter", "all", "last_test_result", null, true, $escaper->escapeHtml($lang['Unassigned']), "0", true, "", 0, true, "");
+        
+    } else if ($field_name == 'next_date' || $field_name == 'last_date') {
+
+        $filter_field = "
+            <input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control datepicker' style='max-width: unset;'>
+        ";
+
+    } else {
+        
+        $filter_field = "
+            <input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control' style='max-width: unset;'>
+        ";
+
     }
 
     return $filter_field;
@@ -27566,66 +28309,80 @@ function getSpreadsheetData($filePath) {
 /*****************************
  * FUNCTION: FETCH COUNTRIES *
  *****************************/
-function fetchCountries()
+function fetchCountries(): array
 {
-    // Set the HTTP options
+    $setting = get_setting('countries_cache');
+    $cache = $setting ? json_decode($setting, true) : null;
+    $cache_valid = $cache && isset($cache['fetched_at'], $cache['countries']);
+
+    if ($cache_valid) {
+        $age = time() - $cache['fetched_at'];
+        if ($age >= 24 * 60 * 60) { // cache older than 1 day
+            // Only queue if no pending or in-progress task exists
+            $existing_tasks = get_queue_items('core_countries_update', ['pending', 'in_progress']);
+            if (empty($existing_tasks)) {
+                //Create the queue task to update countries
+                $queue_task_payload = [
+                    'triggered_at'      => time(),
+                ];
+                queue_task('core_countries_update', $queue_task_payload, 25);
+                write_debug_log("Queued core_countries_update task", "info");
+            } else {
+                write_debug_log("core_countries_update task already queued or in progress", "info");
+            }
+        }
+
+        // Return cached countries immediately
+        return $cache['countries'];
+    }
+
+    // Cache missing or invalid — fetch immediately
+    $countries = fetchCountriesFromAPI(); // your existing API logic
+    update_setting('countries_cache', json_encode([
+        'fetched_at' => time(),
+        'countries' => $countries
+    ]));
+
+    return $countries;
+}
+
+/**************************************
+ * FUNCTION: FETCH COUNTRIES FROM API *
+ **************************************/
+function fetchCountriesFromAPI(): array
+{
     $http_options = [
         'method' => 'GET',
-        'header' => [
-            "Content-Type: application/json",
-        ],
+        'header' => ["Content-Type: application/json"],
         'timeout' => 5,
     ];
 
-    // If SSL certificate checks are enabled for external requests
-    if (get_setting('ssl_certificate_check_external') == 1)
-    {
-        // Verify the SSL host and peer
-        $validate_ssl = true;
-    }
-    else $validate_ssl = false;
+    $validate_ssl = get_setting('ssl_certificate_check_external') == 1;
 
-    // URL for API to get a list of countries
     $url = 'https://restcountries.com/v3.1/all?fields=name,region';
 
-    // Make the services call
     $response = fetch_url_content("stream", $http_options, $validate_ssl, $url);
-    $return_code = $response['return_code'];
-
-    // If we were unable to connect to the URL
-    if ($return_code !== 200)
-    {
-        write_debug_log("SimpleRisk was unable to connect to " . $url);
-
-        return []; // Return empty array if API call fails
+    if ($response['return_code'] !== 200) {
+        write_debug_log("SimpleRisk was unable to connect to " . $url, "error");
+        return [];
     }
-    // We were able to connect to the URL
-    else
-    {
-        write_debug_log("SimpleRisk successfully connected to " . $url);
 
-        $countries = json_decode($response['response'], true);
+    $countries = json_decode($response['response'], true);
 
-        // Group countries by region
-        $grouped_countries = [];
-        foreach ($countries as $country)
-        {
-            // Get the region and country name
-            $region = $country['region'];
-            $name = $country['name']['common'];
-
-            // Add it to the countries array
-            $grouped_countries[$region][] = $name;
-        }
-
-        // Sort regions and countries alphabetically
-        ksort($grouped_countries);
-        foreach ($grouped_countries as &$region_countries) {
-            sort($region_countries);
-        }
-
-        return $grouped_countries;
+    $grouped_countries = [];
+    foreach ($countries as $country) {
+        $region = $country['region'] ?? 'Unknown';
+        $name = $country['name']['common'] ?? 'Unknown';
+        $grouped_countries[$region][] = $name;
     }
+
+    // Sort regions and countries alphabetically
+    ksort($grouped_countries);
+    foreach ($grouped_countries as &$region_countries) {
+        sort($region_countries);
+    }
+
+    return $grouped_countries;
 }
 
 /*******************************************************************************************
@@ -27675,10 +28432,14 @@ function update_posted_settings_values($parameter_array, $settings_prefix)
         else
         {
             // Retrieve the existing value from the settings table
-            $value = (isset($settings[$setting_name]) ? $settings[$setting_name] : null);
+            $value = $settings[$setting_name] ?? null;
 
-            // JSON decode the value
-            $value = json_decode($value);
+            // Decode only if a value exists
+            if ($value !== null && $value !== '') {
+                $decoded = json_decode($value, true); // return arrays
+                $value = (json_last_error() === JSON_ERROR_NONE) ? $decoded : $value;
+            }
+
         }
 
         // Add the value to the parameter array
@@ -28165,9 +28926,121 @@ function delete_backup($backup_to_delete, $called_from_ui = false) {
     if ($called_from_ui) {
         set_alert(true, $success ? "good" : "bad", $message);
     } else {
-        write_debug_log_cli($message);
+        write_debug_log($message, "info");
         write_log(0, 0, $message, 'backup');
     }
+}
+
+/********************************
+ * FUNCTION: IS PROCESS RUNNING *
+ * Cross-platform PID check     *
+ ********************************/
+function isProcessRunning(int $pid): bool {
+    if ($pid <= 0) return false;
+    if (stripos(PHP_OS, 'WIN') === 0) {
+        exec("tasklist /FI \"PID eq $pid\" 2>NUL", $output);
+        return count($output) > 1;
+    } else {
+        return posix_kill($pid, 0);
+    }
+}
+
+/***************************
+ * FUNCTION: SAVE TMP DATA *
+ ***************************/
+function save_tmp_data(PDO $db, string $name, mixed $data, int $user_id = 0): string {
+    $unique_name = uniqid('data_', true);
+
+    // Debugging: warn if data is not an array or string
+    if (!is_array($data) && !is_string($data)) {
+        write_debug_log("save_tmp_data: Unexpected data type for '$name': " . gettype($data) . ". Raw data: " . var_export($data, true), "warning");
+    }
+
+    // Recursive sanitization to remove invalid UTF-8 characters
+    $sanitize = function($item) use (&$sanitize) {
+        if (is_array($item)) {
+            return array_map($sanitize, $item);
+        } elseif (is_string($item)) {
+            // Ensure UTF-8
+            $item = mb_convert_encoding($item, 'UTF-8', 'UTF-8');
+
+            // Replace common problematic characters
+            $replacements = [
+                "\x92" => "'",   // ’
+                "\x93" => '"',  // “
+                "\x94" => '"',  // ”
+                "\x96" => '-',  // –
+                "\x97" => '—',  // —
+                "\x85" => '...',// …
+                "\x91" => "'",   // ‘
+                "\x95" => '*',  // •
+            ];
+
+            return strtr($item, $replacements);
+        } else {
+            return $item;
+        }
+    };
+
+    $data = $sanitize($data);
+
+    // Convert array to JSON if needed, leave strings as-is
+    if (is_array($data)) {
+        $data_to_save = json_encode($data, JSON_UNESCAPED_UNICODE);
+        if ($data_to_save === false) {
+            $err = json_last_error_msg();
+            write_debug_log("save_tmp_data: Failed to json_encode '$name': $err. Raw data: " . var_export($data, true), "error");
+            $data_to_save = '';
+        }
+    } else {
+        $data_to_save = (string) $data;
+    }
+
+    $size = strlen($data_to_save);
+
+    // Debugging: warn if content is empty
+    if ($size === 0) {
+        write_debug_log("save_tmp_data: Saving empty content for '$name'. Raw data: " . var_export($data, true), "warning");
+    }
+
+    $stmt = $db->prepare("
+        INSERT INTO tmp_files (unique_name, name, user, content)
+        VALUES (:unique_name, :name, :user, :content)
+    ");
+
+    $stmt->execute([
+        ':unique_name' => $unique_name,
+        ':name' => $name,
+        ':user' => $user_id,
+        ':content' => $data_to_save
+    ]);
+
+    return $unique_name;
+}
+
+/***************************
+ * FUNCTION: LOAD TMP DATA *
+ ***************************/
+function load_tmp_data(PDO $db, string $unique_name): mixed {
+    $stmt = $db->prepare("SELECT content FROM tmp_files WHERE unique_name = :unique_name");
+    $stmt->execute([':unique_name' => $unique_name]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$row) return null;
+
+    $content = $row['content'];
+
+    // If content is JSON (from an array), decode it; else return string
+    $decoded = json_decode($content, true);
+    return (json_last_error() === JSON_ERROR_NONE) ? $decoded : $content;
+}
+
+/*****************************
+ * FUNCTION: DELETE TMP DATA *
+ *****************************/
+function delete_tmp_data(PDO $db, string $unique_name): bool {
+    $stmt = $db->prepare("DELETE FROM tmp_files WHERE unique_name = :unique_name");
+    return $stmt->execute([':unique_name' => $unique_name]);
 }
 
 ?>

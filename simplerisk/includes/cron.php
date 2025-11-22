@@ -9,12 +9,16 @@ require_once('functions.php');
 
 // Array containing the crons to run
 $cron_jobs = array(
+    'cron_queue_loader',
+    'cron_queue_worker',
+    'cron_promise_worker',
 	'cron_backup',
 	'cron_vulnmgmt',
 	'cron_notification',
 	'cron_assessments',
-    'cron_ai',
-    'cron_ping',
+    'cron_audit',
+    'cron_tfidf_recalculation',
+    'cron_temporary_cleanup',
 );
 
 /***************************
@@ -31,7 +35,7 @@ function get_cron_jobs()
 	// For each cron job
 	foreach ($cron_jobs as $cron_job)
 	{
-		write_debug_log_cli("Cron Job: {$cron_job}");
+		write_debug_log("Cron Job: {$cron_job}", "info");
 
 		// Get the script name for the cron job
 		$script_name = $cron_job . '.php';
@@ -42,7 +46,7 @@ function get_cron_jobs()
 		// Create the command to run the script via PHP
 		$command = PHP_BINARY . ' -f ' . $cron_script;
 
-		write_debug_log_cli("Cron Command: {$command}");
+		write_debug_log("Cron Command: {$command}", "debug");
 
 		// If both a function and script exist for that cron job
 		if (function_exists($cron_job) && is_file($cron_script))
@@ -50,7 +54,7 @@ function get_cron_jobs()
 			// Call the script to get the schedule
 			$schedule = call_user_func($cron_job);
 
-			write_debug_log_cli("Cron Schedule: {$schedule}");
+			write_debug_log("Cron Schedule: {$schedule}", "info");
 
 			// Create an array with the cron job info
 			$cron_job_info = [
@@ -92,6 +96,9 @@ function cron_schedule($cron_schedule)
             case "monthly":
 				$schedule = '0 0 1 * *';
 				break;
+            case "every_five_minutes":
+                $schedule = '*/5 * * * *';
+                break;
             default:
 				$schedule = '0 0 * * *';
         }
@@ -141,46 +148,80 @@ function cron_notification()
  ******************************/
 function cron_assessments()
 {
-	// Get the notification schedule
+	// Get the assessments schedule
 	$schedule = cron_schedule("daily");
 
 	// Return the schedule
 	return $schedule;
 }
 
-/*********************
- * FUNCTION: CRON AI *
- *********************/
-function cron_ai()
+/************************
+ * FUNCTION: CRON AUDIT *
+ ************************/
+function cron_audit()
 {
-    // Get the backup schedule
+	// Get the audit schedule
+	$schedule = cron_schedule("hourly");
+
+	// Return the schedule
+	return $schedule;
+}
+
+/*******************************
+ * FUNCTION: CRON QUEUE WORKER *
+ *******************************/
+function cron_queue_loader()
+{
+    // Get the queue worker schedule
     $schedule = cron_schedule("minutely");
 
     // Return the schedule
     return $schedule;
 }
 
-/***********************
- * FUNCTION: CRON PING *
- ***********************/
-function cron_ping()
+/*******************************
+ * FUNCTION: CRON QUEUE WORKER *
+ *******************************/
+function cron_queue_worker()
 {
-    // Get the backup schedule
-    $schedule = get_setting("schedule_cron_ping");
+    // Get the queue worker schedule
+    $schedule = cron_schedule("minutely");
 
-    // If the schedule does not exist
-    if ($schedule === false)
-    {
-        // Generate a random hour (0-23) and minute (0-59)
-        $hour = rand(0, 23);
-        $minute = rand(0, 59);
+    // Return the schedule
+    return $schedule;
+}
 
-        // Create the cron schedule line
-        $schedule = "{$minute} {$hour} * * *";
+/*********************************
+ * FUNCTION: CRON PROMISE WORKER *
+ *********************************/
+function cron_promise_worker()
+{
+    // Get the promise schedule
+    $schedule = cron_schedule("minutely");
 
-        // Save the schedule
-        add_setting("schedule_cron_ping", $schedule);
-    }
+    // Return the schedule
+    return $schedule;
+}
+
+/************************************
+ * FUNCTION: CRON TEMPORARY CLEANUP *
+ ************************************/
+function cron_temporary_cleanup()
+{
+    // Get the promise schedule
+    $schedule = cron_schedule("hourly");
+
+    // Return the schedule
+    return $schedule;
+}
+
+/**************************************
+ * FUNCTION: CRON TFIDF RECALCULATION *
+ **************************************/
+function cron_tfidf_recalculation()
+{
+    // Get the promise schedule
+    $schedule = cron_schedule("weekly");
 
     // Return the schedule
     return $schedule;

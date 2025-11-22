@@ -68,7 +68,7 @@ class General extends \Exception
         } catch (\Throwable $th) {
             $app = \Leaf\Config::get('app');
 
-            if ($app && $app->config('log.enabled')) {
+            if ($app && $app->config('log.enabled') && class_exists('Leaf\Log')) {
                 $app->logger()->error($th);
             }
 
@@ -245,7 +245,7 @@ class General extends \Exception
         if ($e) {
             $app = \Leaf\Config::get('app');
 
-            if ($app && $app->config('log.enabled')) {
+            if ($app && $app->config('log.enabled') && class_exists('Leaf\Log')) {
                 $app->logger()->error($e);
             }
         }

@@ -871,68 +871,6 @@ table tr.ui-sortable-helper {
     position: relative;
 }
 
-// RISK MANAGEMENT / RISK DETAILS
-.risk-session {
-	.risk-subject {
-		word-break: break-word;
-	}
-}
-
-.risk-details {
-	word-break: break-all;
-
-	label {
-		white-space: nowrap;
-	}
-
-	.rich-text-container {
-		&>:last-child {
-			margin-bottom: 0;
-		}
-	}
-
-	.risk-details-assessment,
-	.risk-details-additional-notes {
-		word-break: break-word;
-	}
-}
-
-[name=update_cvss] {
-	table {
-		tr:last-of-type {
-			.cal-text {
-				padding-bottom: .5rem;
-				border-bottom: 1px solid #d1d3d4;
-			}
-		}
-	}
-}
-
-#score-container-accordion-body {
-	table {
-		td, th {
-			padding: 5px;
-		}
-	}
-}
-
-.tabs--action {
-	margin-top: 1.25rem;
-	margin-right: 1.25rem;
-}
-
-// RISK MANAGEMENT / SUBMIT RISK
-#tab-content-container {
-	.left-panel, 
-	.right-panel, 
-	.top-panel, 
-	.bottom-panel {
-		label {
-			white-space: nowrap;
-		}
-	}
-}
-
 // RISK MANAGEMENT / SUBMIT RISK PAGE / CVSS
 html:has(.score-method-page) {
 	background-color: #e8e9eb;
@@ -1196,6 +1134,13 @@ a.open-in-new-tab {
 }
 //***************************** DATATABLE END *****************************//
 
+//**************************** SELECTIZE BEGIN ****************************//
+.selectize-control {
+    .selectize-input {
+		padding-right: 30px;
+	}
+}
+//***************************** SELECTIZE END *****************************//
 
 @import "modules/treegrid";
 @import "modules/colorpicker";

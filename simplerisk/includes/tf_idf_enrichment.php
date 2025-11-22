@@ -38,24 +38,23 @@ function calculateIDF($term, $documents) {
 }
 
 /**
- * Extract significant terms from the policy document
+ * Extract significant terms from text
  *
- * @param string $policyText The policy document text
- * @param int $maxTerms Maximum number of terms to extract
- * @return array The extracted terms
+ * @param string $text The text to extract terms from
+ * @return array The extracted terms and their term counts
  */
-function extractSignificantTerms($policyText, $maxTerms = 100) {
+function extractSignificantTerms($text) {
     // Remove common words and special characters
     $stopWords = [
         'the', 'and', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'of', 'with',
         'by', 'as', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have',
         'has', 'had', 'do', 'does', 'did', 'but', 'or', 'if', 'because', 'as',
         'until', 'while', 'that', 'which', 'who', 'whom', 'this', 'these', 'those',
-        'shall', 'should', 'may', 'might', 'must', 'can', 'could', 'would'
+        'shall', 'should', 'may', 'might', 'must', 'can', 'could', 'would', 'nbsp'
     ];
 
     // Clean the text
-    $text = strtolower($policyText ?? '');
+    $text = strtolower($text ?? '');
     $text = preg_replace('/[^\w\s]/', ' ', $text);
 
     // Extract words
@@ -72,8 +71,8 @@ function extractSignificantTerms($policyText, $maxTerms = 100) {
     // Sort by frequency
     arsort($wordCounts);
 
-    // Take top terms
-    return array_slice(array_keys($wordCounts), 0, $maxTerms);
+    // Return all terms with their counts
+    return $wordCounts;
 }
 
 /**
@@ -99,45 +98,6 @@ function calculateTfIdf($documents, $terms) {
     }
 
     return $tfidfVectors;
-}
-
-/**
- * Calculate cosine similarity between two vectors
- *
- * @param array $vectorA First vector
- * @param array $vectorB Second vector
- * @return float Similarity score (0-1)
- */
-function cosineSimilarity($vectorA, $vectorB) {
-    $dotProduct = 0;
-    $magnitudeA = 0;
-    $magnitudeB = 0;
-
-    // For each term in vector A
-    foreach ($vectorA as $term => $weightA) {
-        // If term exists in vector B, add to dot product
-        if (isset($vectorB[$term])) {
-            $dotProduct += $weightA * $vectorB[$term];
-        }
-
-        $magnitudeA += $weightA * $weightA;
-    }
-
-    // Calculate magnitude of vector B
-    foreach ($vectorB as $weightB) {
-        $magnitudeB += $weightB * $weightB;
-    }
-
-    // Calculate magnitudes
-    $magnitudeA = sqrt($magnitudeA);
-    $magnitudeB = sqrt($magnitudeB);
-
-    // Avoid division by zero
-    if ($magnitudeA == 0 || $magnitudeB == 0) {
-        return 0;
-    }
-
-    return $dotProduct / ($magnitudeA * $magnitudeB);
 }
 
 /**
@@ -216,7 +176,7 @@ function countKeywordOccurrencesPerKeyword($text, $keywords) {
     foreach ($normalizedKeywords as $keyword) {
         $count = $wordFrequency[$keyword] ?? 0;
         if ($count > 0) {
-            $counts[$keyword] = $count;
+            $counts[$keyword] = (int)$count;
         }
     }
 
@@ -268,6 +228,200 @@ function countKeywordMatches($docKeywords, $controlKeywords) {
     // You can return either the simple count or the weighted score
     // depending on your preference
     return $matchCount; // or return $weightedMatchScore;
+}
+
+/**************************************************************
+ * FUNCTION: COMPUTE DOCUMENT CONTROL SCORES                  *
+ * Call with a single document (new/updated) and all controls *
+ * OR                                                         *
+ * Call with a single control (new/updated) and all documents *
+ **************************************************************/
+function compute_document_control_scores($documentIds = [], $controlIds = []) {
+    $db = db_open();
+
+    write_debug_log(
+        "Starting compute_document_control_scores. Document IDs: " . json_encode($documentIds) .
+        ", Control IDs: " . json_encode($controlIds),
+        "debug"
+    );
+
+    // 1. Compute global document frequency (IDF)
+    $allDocuments = $db->query("SELECT `keywords` FROM `compliance_files`")->fetchAll();
+    $numDocuments = count($allDocuments);
+    write_debug_log("Loaded $numDocuments documents for IDF calculation.", "debug");
+
+    $documentFrequency = [];
+    foreach ($allDocuments as $doc) {
+        $keywords = json_decode($doc['keywords'], true) ?: [];
+        foreach ($keywords as $term => $count) {
+            $term = strtolower(trim($term));
+            $documentFrequency[$term] = ($documentFrequency[$term] ?? 0) + 1;
+        }
+    }
+    write_debug_log("Computed document frequency for " . count($documentFrequency) . " terms.", "debug");
+
+    // 2. Load documents
+    $documentQuery = "SELECT `ref_id` AS `id`, `keywords` FROM `compliance_files`";
+    if (!empty($documentIds)) {
+        $placeholders = implode(',', array_fill(0, count($documentIds), '?'));
+        $documentQuery .= " WHERE ref_id IN ($placeholders)";
+    }
+    $stmt = $db->prepare($documentQuery);
+    $stmt->execute($documentIds);
+    $documents = $stmt->fetchAll();
+    write_debug_log("Loaded " . count($documents) . " documents to process.", "debug");
+
+    // 3. Load controls
+    $controlQuery = "SELECT `id`, `keywords` FROM `framework_controls`";
+    if (!empty($controlIds)) {
+        $placeholders = implode(',', array_fill(0, count($controlIds), '?'));
+        $controlQuery .= " WHERE id IN ($placeholders)";
+    }
+    $stmt = $db->prepare($controlQuery);
+    $stmt->execute($controlIds);
+    $controls = $stmt->fetchAll();
+    write_debug_log("Loaded " . count($controls) . " controls to process.", "debug");
+
+    // 4. Precompute normalized TF-IDF vectors
+    $docVectors = [];
+    foreach ($documents as &$doc) {
+        $keywords = json_decode($doc['keywords'], true) ?: [];
+        $normalizedKeywords = [];
+        foreach ($keywords as $term => $count) $normalizedKeywords[strtolower(trim($term))] = $count;
+
+        $doc['_keywords_array'] = array_keys($normalizedKeywords);
+        $totalCount = array_sum($normalizedKeywords) ?: 1;
+
+        $vector = [];
+        foreach ($normalizedKeywords as $term => $count) {
+            $tf = $count / $totalCount;
+            $idf = log(1 + $numDocuments / ($documentFrequency[$term] ?? 0.5));
+            $vector[$term] = $tf * $idf;
+        }
+        $docVectors[$doc['id']] = normalizeVector($vector);
+    }
+    unset($doc);
+
+    $controlVectors = [];
+    foreach ($controls as &$control) {
+        $keywords = json_decode($control['keywords'], true) ?: [];
+        $normalizedKeywords = [];
+        foreach ($keywords as $term => $count) $normalizedKeywords[strtolower(trim($term))] = $count;
+
+        $control['_keywords_array'] = array_keys($normalizedKeywords);
+        $totalCount = array_sum($normalizedKeywords) ?: 1;
+
+        $vector = [];
+        foreach ($normalizedKeywords as $term => $count) {
+            $tf = $count / $totalCount;
+            $idf = log(1 + $numDocuments / ($documentFrequency[$term] ?? 0.5));
+            $vector[$term] = $tf * $idf;
+        }
+        $controlVectors[$control['id']] = normalizeVector($vector);
+    }
+    unset($control);
+
+    // 5. Compute scores and store in memory
+    $scoreMap = [];
+    $allScores = [];
+    foreach ($documents as $doc) {
+        $docId = $doc['id'];
+        $docVector = $docVectors[$docId];
+        $docKeywords = $doc['_keywords_array'] ?? [];
+
+        foreach ($controls as $control) {
+            $controlId = $control['id'];
+            $controlVector = $controlVectors[$controlId];
+            $controlKeywords = $control['_keywords_array'] ?? [];
+
+            $tfidf_similarity = cosineSimilarity($docVector, $controlVector);
+            $keyword_match_count = count(array_intersect($docKeywords, $controlKeywords));
+            $normalized_keyword_score = $keyword_match_count / (min(count($docKeywords), count($controlKeywords)) ?: 1);
+            $final_score = 0.8 * $tfidf_similarity + 0.2 * $normalized_keyword_score;
+
+            if ($keyword_match_count < 2) {
+                $final_score = 0; // ignore matches with too few overlapping keywords
+            }
+
+            $scoreMap["$docId-$controlId"] = [
+                'final_score' => $final_score,
+                'tfidf_similarity' => $tfidf_similarity,
+                'keyword_match' => $keyword_match_count
+            ];
+            $allScores[] = $final_score;
+        }
+    }
+
+    // 6. Adaptive threshold
+    // Higher standard deviation multiplier above the mean means fewer matching results
+    $std_dev_multiplier = 2.0;
+    $mean = array_sum($allScores) / count($allScores);
+    $stdDev = sqrt(array_sum(array_map(fn($s) => pow($s - $mean, 2), $allScores)) / count($allScores));
+    $adaptiveThreshold = min(1.0, $mean + $std_dev_multiplier * $stdDev);
+    write_debug_log("Adaptive threshold: $adaptiveThreshold (mean: $mean, stdDev: $stdDev)", "debug");
+
+    // 7. Insert results into DB & collect matched pairs
+    $stmt = $db->prepare("
+        INSERT INTO document_control_mappings
+            (document_id, control_id, score, tfidf_similarity, keyword_match, tfidf_match)
+        VALUES
+            (:document_id, :control_id, :score, :tfidf_similarity, :keyword_match, :tfidf_match)
+        ON DUPLICATE KEY UPDATE
+            score = :score,
+            tfidf_similarity = :tfidf_similarity,
+            keyword_match = :keyword_match,
+            tfidf_match = :tfidf_match,
+            timestamp = NOW()
+    ");
+
+    $matchedPairs = [];
+    $pairsProcessed = 0;
+    foreach ($scoreMap as $key => $data) {
+        [$docId, $controlId] = explode('-', $key);
+        $tfidf_match = $data['final_score'] >= $adaptiveThreshold ? 1 : 0;
+
+        $stmt->execute([
+            ':document_id' => $docId,
+            ':control_id' => $controlId,
+            ':score' => $data['final_score'],
+            ':tfidf_similarity' => $data['tfidf_similarity'],
+            ':keyword_match' => $data['keyword_match'],
+            ':tfidf_match' => $tfidf_match
+        ]);
+
+        if ($tfidf_match) {
+            $matchedPairs[] = ['document_id' => $docId, 'control_id' => $controlId];
+        }
+
+        $pairsProcessed++;
+    }
+
+    write_debug_log("Completed compute_document_control_scores. Total pairs processed: $pairsProcessed", "info");
+    db_close($db);
+
+    return $matchedPairs; // <-- return only matched pairs
+}
+
+/**
+ * Compute cosine similarity for normalized sparse vectors
+ */
+function cosineSimilarity($vecA, $vecB) {
+    $dot = 0.0;
+    if (count($vecA) > count($vecB)) [$vecA, $vecB] = [$vecB, $vecA];
+    foreach ($vecA as $term => $val) {
+        if (isset($vecB[$term])) $dot += $val * $vecB[$term];
+    }
+    return $dot; // normalized vectors
+}
+
+/**
+ * Normalize a vector to unit length
+ */
+function normalizeVector($vec) {
+    $mag = sqrt(array_sum(array_map(fn($v) => $v * $v, $vec)));
+    if ($mag == 0.0) return $vec;
+    foreach ($vec as $k => $v) $vec[$k] = $v / $mag;
+    return $vec;
 }
 
 ?>

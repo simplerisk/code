@@ -16,7 +16,7 @@ if (php_sapi_name() == "cli")
 	if (vulnmgmt_extra())
 	{
 	    $message = "Vulnerability management update requested.";
-	    write_debug_log_cli($message);
+	    write_debug_log($message, "info");
 	    write_log(0, 0, $message, 'vulnmgmt');
 
 	    // Load the vulnerability management extra

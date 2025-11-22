@@ -250,4 +250,303 @@ function api_v2_risks_tags_get()
     api_v2_json_result($status_code, $status_message, $data);
 }
 
+/**
+ * FUNCTION: MANAGEMENT-LIKE RISK SUBMIT (API)
+ * Mirrors the submit behavior used by the management risk submission form.
+ * - Reads the richer set of POST params (mappings, template group, assets_asset_groups, files, associate_test)
+ * - Validates tags and optional Jira issue key
+ * - Submits the risk, scoring, assets/groups, tags, Jira association
+ * - Uploads files; on upload error, deletes the risk and returns error
+ * - Sends notification after successful creation
+ * - Returns JSON with risk_id and associate_test
+ */
+function api_v2_risk_submit()
+{
+    global $lang, $escaper;
+
+    // Permission check
+    if (!isset($_SESSION["submit_risks"]) || $_SESSION["submit_risks"] != 1) {
+        api_v2_json_result(401, $escaper->escapeHtml($lang['RiskAddPermissionMessage']), null);
+        return;
+    }
+
+    // Subject validation (non-empty)
+    $subject = get_param("POST", 'subject', "");
+    if (!trim($subject)) {
+        api_v2_json_result(400, $escaper->escapeHtml($lang['SubjectRiskCannotBeEmpty']), null);
+        return;
+    }
+
+    // Tags validation
+    $risk_tags = get_param("POST", "tags", []);
+    foreach ($risk_tags as $tag) {
+        if (strlen($tag) > 255) {
+            api_v2_json_result(400, $escaper->escapeHtml($lang['MaxTagLengthWarning']), null);
+            return;
+        }
+    }
+
+    // Jira validation (if enabled)
+    if (jira_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
+        $issue_key = isset($_POST['jira_issue_key']) ? strtoupper(trim($_POST['jira_issue_key'])) : "";
+        if ($issue_key && !jira_validate_issue_key($issue_key)) {
+            api_v2_json_result(400, get_alert(true), null);
+            return;
+        }
+    } else {
+        $issue_key = "";
+    }
+
+    // Gather core fields
+    $status                  = "New";
+    $risk_catalog_mapping    = get_param("POST", 'risk_catalog_mapping', []);
+    $threat_catalog_mapping  = get_param("POST", 'threat_catalog_mapping', []);
+    $reference_id            = get_param("POST", 'reference_id', "");
+    $regulation              = (int)get_param("POST", 'regulation', 0);
+    $control_number          = get_param("POST", 'control_number', "");
+    $location                = implode(",", get_param("POST", "location", []));
+    $source                  = (int)get_param("POST", 'source', 0);
+    $category                = (int)get_param("POST", 'category', 0);
+    $team                    = get_param("POST", 'team', []);
+    $technology              = get_param("POST", 'technology', []);
+    $owner                   = (int)get_param("POST", "owner", 0);
+    $manager                 = (int)get_param("POST", "manager", 0);
+    $assessment              = get_param("POST", "assessment", "");
+    $notes                   = get_param("POST", "notes", "");
+    $assets_asset_groups     = get_param("POST", "assets_asset_groups", []);
+    $additional_stakeholders = get_param("POST", "additional_stakeholders", []);
+    $associate_test          = (int)get_param("POST", "associate_test", 0);
+
+    // Template group (Customization Extra)
+    if (customization_extra()) {
+        $template_group_id = get_param("POST", "template_group_id", "");
+    } else {
+        $template_group_id = "";
+    }
+
+    // Scoring method and fields
+    // 1 = Classic, 2 = CVSS, 3 = DREAD, 4 = OWASP, 5 = Custom, 6 = Contributing Risk
+    $scoring_method = (int)get_param("POST", "scoring_method", 0);
+
+    // Classic
+    $CLASSIClikelihood = (int)get_param("POST", "likelihood", 0);
+    $CLASSICimpact     = (int)get_param("POST", "impact", 0);
+
+    // CVSS
+    $CVSSAccessVector                = get_param("POST", "AccessVector", "");
+    $CVSSAccessComplexity            = get_param("POST", "AccessComplexity", "");
+    $CVSSAuthentication              = get_param("POST", "Authentication", "");
+    $CVSSConfImpact                  = get_param("POST", "ConfImpact", "");
+    $CVSSIntegImpact                 = get_param("POST", "IntegImpact", "");
+    $CVSSAvailImpact                 = get_param("POST", "AvailImpact", "");
+    $CVSSExploitability              = get_param("POST", "Exploitability", "");
+    $CVSSRemediationLevel            = get_param("POST", "RemediationLevel", "");
+    $CVSSReportConfidence            = get_param("POST", "ReportConfidence", "");
+    $CVSSCollateralDamagePotential   = get_param("POST", "CollateralDamagePotential", "");
+    $CVSSTargetDistribution          = get_param("POST", "TargetDistribution", "");
+    $CVSSConfidentialityRequirement  = get_param("POST", "ConfidentialityRequirement", "");
+    $CVSSIntegrityRequirement        = get_param("POST", "IntegrityRequirement", "");
+    $CVSSAvailabilityRequirement     = get_param("POST", "AvailabilityRequirement", "");
+
+    // DREAD
+    $DREADDamage            = (int)get_param("POST", "DREADDamage", 0);
+    $DREADReproducibility   = (int)get_param("POST", "DREADReproducibility", 0);
+    $DREADExploitability    = (int)get_param("POST", "DREADExploitability", 0);
+    $DREADAffectedUsers     = (int)get_param("POST", "DREADAffectedUsers", 0);
+    $DREADDiscoverability   = (int)get_param("POST", "DREADDiscoverability", 0);
+
+    // OWASP
+    $OWASPSkillLevel            = (int)get_param("POST", "OWASPSkillLevel", 0);
+    $OWASPMotive                = (int)get_param("POST", "OWASPMotive", 0);
+    $OWASPOpportunity           = (int)get_param("POST", "OWASPOpportunity", 0);
+    $OWASPSize                  = (int)get_param("POST", "OWASPSize", 0);
+    $OWASPEaseOfDiscovery       = (int)get_param("POST", "OWASPEaseOfDiscovery", 0);
+    $OWASPEaseOfExploit         = (int)get_param("POST", "OWASPEaseOfExploit", 0);
+    $OWASPAwareness             = (int)get_param("POST", "OWASPAwareness", 0);
+    $OWASPIntrusionDetection    = (int)get_param("POST", "OWASPIntrusionDetection", 0);
+    $OWASPLossOfConfidentiality = (int)get_param("POST", "OWASPLossOfConfidentiality", 0);
+    $OWASPLossOfIntegrity       = (int)get_param("POST", "OWASPLossOfIntegrity", 0);
+    $OWASPLossOfAvailability    = (int)get_param("POST", "OWASPLossOfAvailability", 0);
+    $OWASPLossOfAccountability  = (int)get_param("POST", "OWASPLossOfAccountability", 0);
+    $OWASPFinancialDamage       = (int)get_param("POST", "OWASPFinancialDamage", 0);
+    $OWASPReputationDamage      = (int)get_param("POST", "OWASPReputationDamage", 0);
+    $OWASPNonCompliance         = (int)get_param("POST", "OWASPNonCompliance", 0);
+    $OWASPPrivacyViolation      = (int)get_param("POST", "OWASPPrivacyViolation", 0);
+
+    // Custom score
+    $custom = (float)get_param("POST", "Custom", 0);
+
+    // Contributing risk
+    $ContributingLikelihood = (int)get_param("POST", "ContributingLikelihood", 0);
+    $ContributingImpacts    = get_param("POST", "ContributingImpacts", []);
+
+    // Submit risk
+    $last_insert_id = submit_risk(
+        $status,
+        $subject,
+        $reference_id,
+        $regulation,
+        $control_number,
+        $location,
+        $source,
+        $category,
+        $team,
+        $technology,
+        $owner,
+        $manager,
+        $assessment,
+        $notes,
+        0,                // mitigation_id
+        0,                // mgmt_review
+        false,            // user_submitted
+        $additional_stakeholders,
+        $risk_catalog_mapping,
+        $threat_catalog_mapping,
+        $template_group_id
+    );
+
+    if (!$last_insert_id) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['ThereAreUnexpectedProblems']));
+        api_v2_json_result(400, get_alert(true), null);
+        return;
+    }
+
+    // Encryption extra hook (no-op unless needed)
+    if (encryption_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+        // create_subject_order(...) intentionally omitted
+    }
+
+    // Submit scoring
+    if (!$scoring_method) {
+        submit_risk_scoring($last_insert_id);
+    } else {
+        submit_risk_scoring(
+            $last_insert_id,
+            $scoring_method,
+            $CLASSIClikelihood,
+            $CLASSICimpact,
+            $CVSSAccessVector,
+            $CVSSAccessComplexity,
+            $CVSSAuthentication,
+            $CVSSConfImpact,
+            $CVSSIntegImpact,
+            $CVSSAvailImpact,
+            $CVSSExploitability,
+            $CVSSRemediationLevel,
+            $CVSSReportConfidence,
+            $CVSSCollateralDamagePotential,
+            $CVSSTargetDistribution,
+            $CVSSConfidentialityRequirement,
+            $CVSSIntegrityRequirement,
+            $CVSSAvailabilityRequirement,
+            $DREADDamage,
+            $DREADReproducibility,
+            $DREADExploitability,
+            $DREADAffectedUsers,
+            $DREADDiscoverability,
+            $OWASPSkillLevel,
+            $OWASPMotive,
+            $OWASPOpportunity,
+            $OWASPSize,
+            $OWASPEaseOfDiscovery,
+            $OWASPEaseOfExploit,
+            $OWASPAwareness,
+            $OWASPIntrusionDetection,
+            $OWASPLossOfConfidentiality,
+            $OWASPLossOfIntegrity,
+            $OWASPLossOfAvailability,
+            $OWASPLossOfAccountability,
+            $OWASPFinancialDamage,
+            $OWASPReputationDamage,
+            $OWASPNonCompliance,
+            $OWASPPrivacyViolation,
+            $custom,
+            $ContributingLikelihood,
+            $ContributingImpacts
+        );
+    }
+
+    // Process assets & asset groups (widget payload)
+    if (!empty($assets_asset_groups)) {
+        process_selected_assets_asset_groups_of_type($last_insert_id, $assets_asset_groups, 'risk');
+    }
+
+    // Tags
+    updateTagsOfType($last_insert_id, 'risk', $risk_tags);
+
+    // Jira association
+    if (jira_extra()) {
+        if ($issue_key) {
+            if (jira_update_risk_issue_connection($last_insert_id, $issue_key)) {
+                jira_push_changes($issue_key, $last_insert_id);
+            }
+        } else {
+            CreateIssueForRisk($last_insert_id);
+        }
+    }
+
+    // File uploads (if any). On error -> delete risk and return error.
+    $uploadError = 1;
+    if (!empty($_FILES) && isset($_FILES['file'])) {
+        // Normalize to an array of files
+        $isMulti = is_array($_FILES['file']['name']);
+        $count   = $isMulti ? count($_FILES['file']['name']) : 1;
+
+        for ($i = 0; $i < $count; $i++) {
+            $file = $isMulti
+                ? [
+                    'name'     => $_FILES['file']['name'][$i],
+                    'type'     => $_FILES['file']['type'][$i],
+                    'tmp_name' => $_FILES['file']['tmp_name'][$i],
+                    'size'     => $_FILES['file']['size'][$i],
+                    'error'    => $_FILES['file']['error'][$i],
+                ]
+                : [
+                    'name'     => $_FILES['file']['name'],
+                    'type'     => $_FILES['file']['type'],
+                    'tmp_name' => $_FILES['file']['tmp_name'],
+                    'size'     => $_FILES['file']['size'],
+                    'error'    => $_FILES['file']['error'],
+                ];
+
+            // Skip errored entries silently; treat as upload failure
+            if (!empty($file['error'])) {
+                $uploadError = $file['error'];
+                break;
+            }
+
+            $uploadError = upload_file($last_insert_id, $file, 1);
+            if ($uploadError != 1) {
+                break;
+            }
+        }
+    }
+
+    if ($uploadError != 1) {
+        // Rollback risk if any upload failed
+        delete_risk($last_insert_id);
+        set_alert(true, "bad", $escaper->escapeHtml(is_string($uploadError) ? $uploadError : $lang['ThereAreUnexpectedProblems']));
+        api_v2_json_result(400, get_alert(true), null);
+        return;
+    }
+
+    // Notify after successful creation
+    if (notification_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+        notify_new_risk($last_insert_id);
+    }
+
+    $risk_id = (int)$last_insert_id + 1000;
+
+    // Compose response
+    set_alert(true, "good", _lang("RiskSubmitSuccess", ["subject" => $subject], false));
+    api_v2_json_result(
+        200,
+        $associate_test ? get_alert(true) : null,
+        ["risk_id" => $risk_id, "associate_test" => $associate_test]
+    );
+}
+
 ?>

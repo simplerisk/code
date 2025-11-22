@@ -122,7 +122,7 @@ if ($metadata_xml !== false && $xml->isValid($metadata_xml, 'saml-schema-metadat
     }
     catch(Exception $e)
     {
-        error_log($e);
+        write_debug_log($e, 'error');
     }
 }
 // Otherwise, if the metadata XML is not valid

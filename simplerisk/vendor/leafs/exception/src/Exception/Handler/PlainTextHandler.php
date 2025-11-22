@@ -336,7 +336,7 @@ class PlainTextHandler extends Handler
     {
         $response = $this->generateResponse();
 
-        if ($this->getLogger()) {
+        if ($this->getLogger() && class_exists('Leaf\Log')) {
             $this->getLogger()->error($response);
         }
 

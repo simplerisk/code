@@ -6,9 +6,6 @@
 
 // Include required configuration files
 require_once(realpath(__DIR__ . '/functions.php'));
-
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 

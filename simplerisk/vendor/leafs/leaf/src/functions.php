@@ -61,3 +61,49 @@ if (!function_exists('_env')) {
         return $value;
     }
 }
+
+if (!function_exists('make')) {
+    /**
+     * Cache and use a class
+     *
+     * @template T of object
+     * @param class-string<T>|T $service
+     * @return T
+     */
+    function make($service)
+    {
+        if (is_string($service)) {
+            $serviceName = $service;
+            $service = (new $service());
+        } else {
+            $serviceName = get_class($service);
+        }
+
+        if (!\Leaf\Config::getStatic("classes.$serviceName")) {
+            \Leaf\Config::singleton("classes.$serviceName", function () use ($service) {
+                return $service;
+            });
+        }
+
+        return \Leaf\Config::get("classes.$serviceName");
+    }
+}
+
+if (!function_exists('rescue')) {
+    /**
+     * Run the given callback and return its result. If an exception occurs, report it and return the default value.
+     *
+     * @template T
+     * @param  callable  $callback
+     * @param  mixed  $default
+     * @return T|mixed
+     */
+    function rescue(callable $callback, $default = null)
+    {
+        try {
+            return $callback();
+        } catch (Throwable $e) {
+            return $default instanceof Closure ? $default($e) : $default;
+        }
+    }
+}

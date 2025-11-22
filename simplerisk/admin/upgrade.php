@@ -31,8 +31,6 @@
     }
 
     // Include the language file
-    // Ignoring detections related to language files
-    // @phan-suppress-next-line SecurityCheck-PathTraversal
     require_once(language_file());
     
     // Set a global variable for the current app version, so we don't have to call a function every time

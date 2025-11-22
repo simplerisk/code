@@ -10,8 +10,6 @@ require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/services.php'));
 
 // Include the language file
-// Ignoring detections related to language files
-// @phan-suppress-next-line SecurityCheck-PathTraversal
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 

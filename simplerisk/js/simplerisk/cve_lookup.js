@@ -2,319 +2,330 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/**************************
- * FUNCTION: CHECK CVE ID *
- **************************/
-function check_cve_id(fieldName, parent)
-{
-    var cve = $("[name="+ fieldName +"]", parent).val();
-	var pattern = /cve\-\d{4}-\d{4}/i;
-
-	// If the field is a CVE ID
-	if (cve.match(pattern))
-	{
-		// Select the CVSS Scoring Method
-		select_cvss(parent);
-
-		// Get the NVD CVE info
-		get_nvd_cve_info(cve, parent);
-
-		// Get the CVE info
-		//get_cve_info(cve, parent);
-
-		// Get the CVSS info
-		//get_cvss_info(cve, parent);
-
-		// Get the Nessus info
-		//get_nessus_info(cve, parent);
-	}
-}
-
 /******************************
  * FUNCTION: GET NVD CVE INFO *
  ******************************/
-function get_nvd_cve_info(cve, parent)
-{
-    var url = 'https://olbat.github.io/nvdcve/'+cve.toUpperCase()+'.json';
+function get_nvd_cve_info(cve, parent) {
+    if (!cve) return;
+
+    // 1. STRICT VALIDATION: Anchored regex - must match EXACTLY
+    const cvePattern = /^CVE-\d{4}-\d{4,7}$/i;
+
+    if (!cvePattern.test(cve)) {
+        console.error("Invalid CVE format. Must be CVE-YYYY-NNNN:", cve);
+        return;
+    }
+
+    // 2. SANITIZATION: Remove all non-alphanumeric except hyphen
+    const sanitizedCVE = cve.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+
+    // 3. RE-VALIDATE after sanitization
+    if (!cvePattern.test(sanitizedCVE)) {
+        console.error("CVE failed post-sanitization validation:", sanitizedCVE);
+        return;
+    }
+
+    // 4. WHITELIST: Only allow specific trusted domain
+    const ALLOWED_DOMAIN = 'olbat.github.io';
+    const ALLOWED_PROTOCOL = 'https:';
+    const ALLOWED_PATH_PREFIX = '/nvdcve/';
+
+    // 5. CONSTRUCT URL with validated components
+    const url = `${ALLOWED_PROTOCOL}//${ALLOWED_DOMAIN}${ALLOWED_PATH_PREFIX}${sanitizedCVE}.json`;
+
+    // 6. VERIFY constructed URL (defense in depth)
+    let parsedUrl;
+    try {
+        parsedUrl = new URL(url);
+    } catch (e) {
+        console.error("Failed to parse constructed URL:", e);
+        return;
+    }
+
+    // 7. STRICT URL VALIDATION
+    if (parsedUrl.protocol !== ALLOWED_PROTOCOL) {
+        console.error("Invalid protocol:", parsedUrl.protocol);
+        return;
+    }
+
+    if (parsedUrl.hostname !== ALLOWED_DOMAIN) {
+        console.error("Invalid hostname:", parsedUrl.hostname);
+        return;
+    }
+
+    if (!parsedUrl.pathname.startsWith(ALLOWED_PATH_PREFIX)) {
+        console.error("Invalid path:", parsedUrl.pathname);
+        return;
+    }
+
+    // 8. Ensure no query parameters or fragments that could be exploited
+    if (parsedUrl.search || parsedUrl.hash) {
+        console.error("Unexpected URL components detected");
+        return;
+    }
+
+    // 9. Final length check (prevent extremely long CVE IDs)
+    if (sanitizedCVE.length > 20) {
+        console.error("CVE ID too long:", sanitizedCVE);
+        return;
+    }
+
+    // 10. Make the request with additional security options
     $.ajax({
-        type:'GET',
-        url:url,
-        processData: true,
-        cache: true,
-        data: '',
+        type: 'GET',
+        url: url,
         dataType: 'json',
-        success: function (data) {
-		//console.log(data);
-                process_nvd_cve_info(data, parent);
+        cache: true,
+        timeout: 10000, // 10 second timeout
+        // Ensure credentials are not sent
+        xhrFields: {
+            withCredentials: false
+        },
+        success: function(data) {
+            process_nvd_cve_info(data, parent);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error("Error fetching CVE data:", textStatus, errorThrown);
+            // Don't expose detailed error info to user
+            alert("Failed to fetch CVE information. Please check the CVE ID and try again.");
         }
     });
-}
-
-/**********************************
- * FUNCTION: PROCESS NVD CVE INFO *
- **********************************/
-function process_nvd_cve_info(cve_info_json, parent)
-{
-    var reference_id = cve_info_json['cve']['CVE_data_meta']['ID'];
-    var assessment = cve_info_json['cve']['description']['description_data'][0]['value'];
-    
-    if (assessment.includes(". "))
-    {
-        var subject = assessment.substring(0, assessment.indexOf(". ")+1);
-    }
-    else var subject = assessment;
-
-    var notes = 'http://cve.mitre.org/cgi-bin/cvename.cgi?name='+reference_id;
-    var CVSS_v2_vector = cve_info_json['impact']['baseMetricV2']['cvssV2']['vectorString'];
-    var CVSS_v2_vector_array = CVSS_v2_vector.split("/");
-
-    for (var i=0; i < CVSS_v2_vector_array.length; i++)
-    {
-        CVSS_v2 = CVSS_v2_vector_array[i].split(":");
-        var name = CVSS_v2[0];
-        var value = CVSS_v2[1];
-        this[name] = value;
-    }
-
-    if (reference_id) {
-       $("[name=reference_id]", parent).val(reference_id);
-    }
-    if (subject) {
-        $("[name=subject]", parent).val(subject);
-    }
-
-	// If there're templates then have to add the template group id
-	// so the logic is targeting the right editor instance
-    let template_group_id_suffix = $("#template_group_id").length > 0 ? '_' + parent.find('#template_group_id').val() : '';
-
-    if (assessment && $("[name=assessment]", parent).length) {
-        setEditorContent(`assessment${template_group_id_suffix}`, assessment);
-    }
-
-    if (notes && $("[name=notes]", parent).length) {
-        setEditorContent(`notes${template_group_id_suffix}`, notes);
-    }
-
-    $("[name=AccessVector]", parent).val(AV);
-    $("[name=AccessComplexity]", parent).val(AC);
-    $("[name=Authentication]", parent).val(Au);
-    $("[name=ConfImpact]", parent).val(C);
-    $("[name=IntegImpact]", parent).val(I);
-    $("[name=AvailImpact]", parent).val(A);
-    
 }
 
 /**************************
- * FUNCTION: GET CVE INFO *
+ * FUNCTION: CHECK CVE ID *
  **************************/
-function get_cve_info(cve, parent)
-{
-	$.ajax({
-	    type:'GET',
-	    url:'https://olbat.github.io/nvdcve/'+cve+'.json',
-	    processData: true,
-	    cache: true,
-	    data: {},
-	    dataType: 'json',
-	    success: function (data) {
-		    process_cve_info(data, parent);
-	    }
-	});
-}
+function check_cve_id(fieldName, parent) {
+    const cve = $("[name=" + fieldName + "]", parent).val();
 
-/*******************************
- * FUNCTION: PROCESS CVE INFO *
- *******************************/
-function process_cve_info(cve_info_json, parent)
-{
-    if (cve_info_json && cve_info_json[0]) {
-        // Parse out the JSON values and process them
+    // Strict validation with anchored regex
+    const pattern = /^CVE-\d{4}-\d{4,7}$/i;
 
-        if ('url' in cve_info_json[0])
-            $("[name=notes]", parent).val(cve_info_json[0]['url']);
+    // Trim whitespace
+    const trimmedCVE = cve ? cve.trim() : '';
 
-        if ('summary' in cve_info_json[0])
-            $("[name=assessment]").val(cve_info_json[0]['summary']);
-    }
-}
+    // Only validate and fetch if it matches the complete pattern
+    if (trimmedCVE && pattern.test(trimmedCVE)) {
+        // Select CVSS scoring method and show modal
+        select_cvss(parent);
 
-/***************************
- * FUNCTION: GET CVSS INFO *
- ***************************/
-function get_cvss_info(cve, parent)
-{
-    $.ajax({
-        type:'GET',
-        url:'https://olbat.github.io/nvdcve/'+cve+'.json',
-        processData: true,
-        cache: true,
-        data: {},
-        dataType: 'json',
-        success: function (data) {
-            process_cvss_info(data, parent);
-        }
-    });
-}
-
-/*******************************
- * FUNCTION: PROCESS CVSS INFO *
- *******************************/
-function process_cvss_info(cvss_info_json, parent)
-{
-    if (cvss_info_json && cvss_info_json[0]) {
-        // Parse out the JSON values and process them
-
-        if ('Access Complexity' in cvss_info_json[0])
-            process_access_complexity(cvss_info_json[0]['Access Complexity'], parent);
-
-        if ('Access Vector' in cvss_info_json[0])
-            process_access_vector(cvss_info_json[0]['Access Vector'], parent);
-
-        if ('Authentication' in cvss_info_json[0])
-            process_authentication(cvss_info_json[0]['Authentication'], parent);
-
-        if ('Availability Impact' in cvss_info_json[0])
-            process_availability_impact(cvss_info_json[0]['Availability Impact'], parent);
-
-        if ('Confidentiality Impact' in cvss_info_json[0])
-            process_confidentiality_impact(cvss_info_json[0]['Confidentiality Impact'], parent);
-
-        if ('Integrity Impact' in cvss_info_json[0])
-            process_integrity_impact(cvss_info_json[0]['Integrity Impact'], parent);
-    }
-}
-
-/***************************************
- * FUNCTION: PROCESS ACCESS COMPLEXITY *
- ***************************************/
-function process_access_complexity(access_complexity, parent)
-{
-	switch (access_complexity)
-	{
-		case "high":
-            $("[name=AccessComplexity]", parent).val("H");
-			break;
-		case "medium":
-            $("[name=AccessComplexity]", parent).val("M");
-			break;
-		case "low":
-            $("[name=AccessComplexity]", parent).val("L");
-			break;
-	}
-}
-
-/***********************************
- * FUNCTION: PROCESS ACCESS VECTOR *
- ***********************************/
-function process_access_vector(access_vector, parent)
-{
-    switch (access_vector)
-    {
-        case "local":
-            $("[name=AccessVector]", parent).val("L");
-            break;
-        case "adjacent network":
-            $("[name=AccessVector]", parent).val("A");
-            break;
-        case "network":
-            $("[name=AccessVector]", parent).val("N");
-            break;
-    }
-}
-
-/************************************
- * FUNCTION: PROCESS AUTHENTICATION *
- ************************************/
-function process_authentication(authentication, parent)
-{
-    switch (authentication)
-    {
-        case "none":
-            $("[name=Authentication]", parent).val("N");
-            break;
-        case "single instance":
-            $("[name=Authentication]", parent).val("S");
-            break;
-        case "multiple instances":
-            $("[name=Authentication]", parent).val("M");
-            break;
-    }
-}
-
-/********************************************
- * FUNCTION: PROCESS CONFIDENTIALITY IMPACT *
- ********************************************/
-function process_confidentiality_impact(confidentiality_impact, parent)
-{
-    switch (confidentiality_impact)
-    {
-        case "none":
-            $("[name=ConfImpact]", parent).val("N");
-            break;
-        case "partial":
-            $("[name=ConfImpact]", parent).val("P");
-            break;
-        case "complete":
-            $("[name=ConfImpact]", parent).val("C");
-            break;
-    }
-}
-
-/**************************************
- * FUNCTION: PROCESS INTEGRITY IMPACT *
- **************************************/
-function process_integrity_impact(integrity_impact, parent)
-{
-    switch (integrity_impact)
-    {
-        case "none":
-            $("[name=IntegImpact]", parent).val("N");
-            break;
-        case "partial":
-            $("[name=IntegImpact]", parent).val("P");
-            break;
-        case "complete":
-            $("[name=IntegImpact]", parent).val("C");
-            break;
-    }
-}
-
-/*****************************************
- * FUNCTION: PROCESS AVAILABILITY IMPACT *
- *****************************************/
-function process_availability_impact(availability_impact, parent)
-{
-    switch (availability_impact)
-    {
-        case "none":
-            $("[name=AvailImpact]", parent).val("N");
-            break;
-        case "partial":
-            $("[name=AvailImpact]", parent).val("P");
-            break;
-        case "complete":
-            $("[name=AvailImpact]", parent).val("C");
-            break;
+        // Fetch CVE data and populate modal selects
+        get_nvd_cve_info(trimmedCVE, parent);
     }
 }
 
 /*************************
  * FUNCTION: SELECT CVSS *
  *************************/
-function select_cvss(parent)
-{
-	// Select CVSS from the Scoring Method dropdown
-    var ddl = $("[name=scoring_method]", parent);
-    ddl.val(2);
+function select_cvss(parent) {
+    // Set the scoring method to CVSS (value 2)
+    const ddl = $("[name=scoring_method]", parent);
+    ddl.val(2).trigger('change');
 
-	// Show the CVSS scoring div
+    // Show CVSS scoring div
     $(".cvss-holder", parent).show();
 
-	// Hide the other scoring divs
-    $(".classic-holder", parent).hide();
-    $(".dread-holder", parent).hide();
-    $(".owasp-holder", parent).hide();
-    $(".custom-holder", parent).hide();
+    // Hide other scoring divs
+    $(".classic-holder, .dread-holder, .owasp-holder, .custom-holder, .contributing-risk-holder", parent).hide();
+
+    // Open the modal if present
+    const modalEl = parent.find('#cvssModal');
+    if (modalEl.length) {
+        const modal = new bootstrap.Modal(modalEl[0]);
+        modal.show();
+
+        // Recalculate whenever any select changes
+        modalEl.on('change', 'select', function() {
+            if (typeof calculateCVSS === "function") calculateCVSS();
+        });
+    }
+}
+
+/**********************************
+ * FUNCTION: PROCESS NVD CVE INFO *
+ * Updated for CVSS modal with hidden fields
+ **********************************/
+function process_nvd_cve_info(cve_info_json) {
+    let cve = cve_info_json.cve || cve_info_json;
+    let reference_id = cve.id || (cve.CVE_data_meta ? cve.CVE_data_meta.ID : '');
+
+    // Description
+    let assessment = "";
+    if (cve.descriptions && cve.descriptions.length > 0) {
+        assessment = cve.descriptions[0].value;
+    } else if (cve.description && cve.description.description_data) {
+        assessment = cve.description.description_data[0].value;
+    }
+
+    let subject = assessment.includes(". ") ? assessment.substring(0, assessment.indexOf(". ") + 1) : assessment;
+    let notes = 'https://nvd.nist.gov/vuln/detail/' + reference_id;
+
+    // CVSS v2 vector
+    let cvssV2 = null;
+    if (cve_info_json.metrics && cve_info_json.metrics.cvssMetricV2 && cve_info_json.metrics.cvssMetricV2.length > 0) {
+        cvssV2 = cve_info_json.metrics.cvssMetricV2[0].cvssData.vectorString;
+    } else if (cve_info_json.impact && cve_info_json.impact.baseMetricV2) {
+        cvssV2 = cve_info_json.impact.baseMetricV2.cvssV2.vectorString;
+    }
+
+    // Parse v2
+    let metricsV2 = parseCVSSVector(cvssV2);
+
+    // Helper function to set both modal select and hidden field
+    function setCVSSValue(fieldName, value) {
+        // Set modal select
+        $("#" + fieldName).val(value);
+        // Set hidden field
+        $("#" + fieldName + "_hidden").val(value);
+    }
+
+    // Populate Base Metrics (both modal and hidden fields)
+    setCVSSValue("AccessVector", metricsV2.AccessVector || 'N');
+    setCVSSValue("AccessComplexity", metricsV2.AccessComplexity || 'L');
+    setCVSSValue("Authentication", metricsV2.Authentication || 'N');
+    setCVSSValue("ConfImpact", metricsV2.ConfImpact || 'C');
+    setCVSSValue("IntegImpact", metricsV2.IntegImpact || 'C');
+    setCVSSValue("AvailImpact", metricsV2.AvailImpact || 'C');
+
+    // Populate Temporal Metrics (both modal and hidden fields)
+    setCVSSValue("Exploitability", metricsV2.Exploitability || 'ND');
+    setCVSSValue("RemediationLevel", metricsV2.RemediationLevel || 'ND');
+    setCVSSValue("ReportConfidence", metricsV2.ReportConfidence || 'ND');
+
+    // Populate Environmental Metrics (both modal and hidden fields)
+    setCVSSValue("CollateralDamagePotential", metricsV2.CollateralDamagePotential || 'ND');
+    setCVSSValue("TargetDistribution", metricsV2.TargetDistribution || 'ND');
+    setCVSSValue("ConfidentialityRequirement", metricsV2.ConfidentialityRequirement || 'ND');
+    setCVSSValue("IntegrityRequirement", metricsV2.IntegrityRequirement || 'ND');
+    setCVSSValue("AvailabilityRequirement", metricsV2.AvailabilityRequirement || 'ND');
+
+    // CVSS v3 (optional)
+    let cvssV3 = null;
+    if (cve_info_json.metrics) {
+        if (cve_info_json.metrics.cvssMetricV31 && cve_info_json.metrics.cvssMetricV31.length > 0) {
+            cvssV3 = cve_info_json.metrics.cvssMetricV31[0].cvssData;
+        } else if (cve_info_json.metrics.cvssMetricV30 && cve_info_json.metrics.cvssMetricV30.length > 0) {
+            cvssV3 = cve_info_json.metrics.cvssMetricV30[0].cvssData;
+        }
+    }
+
+    if (cvssV3) {
+        $("#CVSS3_Vector").val(cvssV3.vectorString || '');
+        $("#CVSS3_BaseScore").val(cvssV3.baseScore || '');
+        $("#CVSS3_AttackVector").val(cvssV3.attackVector || '');
+        $("#CVSS3_AttackComplexity").val(cvssV3.attackComplexity || '');
+        $("#CVSS3_PrivilegesRequired").val(cvssV3.privilegesRequired || '');
+        $("#CVSS3_UserInteraction").val(cvssV3.userInteraction || '');
+        $("#CVSS3_Scope").val(cvssV3.scope || '');
+        $("#CVSS3_ConfImpact").val(cvssV3.confidentialityImpact || '');
+        $("#CVSS3_IntegImpact").val(cvssV3.integrityImpact || '');
+        $("#CVSS3_AvailImpact").val(cvssV3.availabilityImpact || '');
+    } else {
+        $("#CVSS3_Vector, #CVSS3_BaseScore, #CVSS3_AttackVector, #CVSS3_AttackComplexity, #CVSS3_PrivilegesRequired, #CVSS3_UserInteraction, #CVSS3_Scope, #CVSS3_ConfImpact, #CVSS3_IntegImpact, #CVSS3_AvailImpact").val('');
+    }
+
+    // Reference & subject
+    if (reference_id) $("#reference_id").val(reference_id);
+    if (subject) $("#subject").val(subject);
+
+    // Helper function to set editor content with retries
+    function setEditorWithRetry(editorName, content, attempts = 0) {
+        if (attempts > 10) {
+            console.warn("Failed to set editor content after 10 attempts:", editorName);
+            return;
+        }
+
+        // ALSO set the underlying textarea directly
+        const textarea = document.getElementById(editorName) ||
+            document.querySelector('textarea[name="' + editorName + '"]');
+        if (textarea) {
+            textarea.value = content;
+        }
+
+        // Try setEditorContent function first
+        if (typeof setEditorContent === "function") {
+            try {
+                setEditorContent(editorName, content);
+                return;
+            } catch(e) {
+                // Continue to TinyMCE fallback
+            }
+        }
+
+        // Try TinyMCE/HugeRTE API
+        if (typeof tinymce !== "undefined" || typeof hugerte !== "undefined") {
+            var mce = typeof hugerte !== "undefined" ? hugerte : tinymce;
+            var editor = mce.get(editorName + '_1') || mce.get(editorName);
+
+            if (editor) {
+                try {
+                    editor.setContent(content);
+                    return;
+                } catch(e) {
+                    console.warn("Error setting editor content:", e);
+                }
+            }
+        }
+
+        // Editor not ready, try again in 100ms
+        setTimeout(function() {
+            setEditorWithRetry(editorName, content, attempts + 1);
+        }, 100);
+    }
+
+    // Assessment & notes
+    if (assessment) {
+        setEditorWithRetry('assessment', assessment);
+    }
+
+    if (notes) {
+        setEditorWithRetry('notes', notes);
+    }
+
+    // Trigger CVSS recalculation
+    if (typeof calculateCVSS === "function") calculateCVSS();
+}
+
+/************************************
+ * FUNCTION: PARSE CVSS VECTOR STRING *
+ * Supports CVSS v2 only (v3 handled separately) *
+ ************************************/
+function parseCVSSVector(vector) {
+    let result = {};
+
+    if (!vector) return result;
+
+    // Strip CVSS:2.0/ prefix if present
+    vector = vector.replace(/^CVSS:\d+\.\d+\//i, '');
+
+    // Split each metric
+    vector.split("/").forEach(pair => {
+        let [key, value] = pair.split(":");
+        if (!key || !value) return;
+
+        switch (key) {
+            case "AV": result.AccessVector = value; break;
+            case "AC": result.AccessComplexity = value; break;
+            case "Au": result.Authentication = value; break;
+            case "C":  result.ConfImpact = value; break;
+            case "I":  result.IntegImpact = value; break;
+            case "A":  result.AvailImpact = value; break;
+
+            // Optional: fallback for future metrics
+            case "E":  result.Exploitability = value; break;
+            case "RL": result.RemediationLevel = value; break;
+            case "RC": result.ReportConfidence = value; break;
+            case "CDP": result.CollateralDamagePotential = value; break;
+            case "TD":  result.TargetDistribution = value; break;
+            case "CR":  result.ConfidentialityRequirement = value; break;
+            case "IR":  result.IntegrityRequirement = value; break;
+            case "AR":  result.AvailabilityRequirement = value; break;
+
+            default: result[key] = value; break;
+        }
+    });
+
+    return result;
 }
 
 /*************************
@@ -368,35 +379,5 @@ function handleSelection(choice, parent) {
         $(".owasp-holder", parent).hide();
         $(".custom-holder", parent).hide();
         $(".contributing-risk-holder", parent).show();
-    }
-}
-
-/*****************************
- * FUNCTION: GET NESSUS INFO *
- *****************************/
-function get_nessus_info(cve, parent)
-{
-    $.ajax({
-        type:'GET',
-        url:'https://olbat.github.io/nvdcve/'+cve+'.json',
-        processData: true,
-        cache: true,
-        data: {},
-        dataType: 'json',
-        success: function (data) {
-                process_nessus_info(data, parent);
-        }
-    });
-}
-
-/*********************************
- * FUNCTION: PROCESS NESSUS INFO *
- *********************************/
-function process_nessus_info(cve_info_json, parent)
-{
-    if (cve_info_json && cve_info_json[0]) {
-        // Parse out the JSON values and process them
-        if ('name' in cve_info_json[0])
-            $("[name=subject]").val(cve_info_json[0]['name']);
     }
 }

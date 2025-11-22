@@ -24,17 +24,17 @@ function calculate_cvss_score($CVSS_AccessVector, $CVSS_AccessComplexity, $CVSS_
 	// Calculate the adjusted temporal score
 	$adjustedTemporalScore = adjusted_temporal_score($adjustedBaseScore, $CVSS_Exploitability, $CVSS_RemediationLevel, $CVSS_ReportConfidence);
 
-	$adjustedTemporalScore = round($adjustedTemporalScore, 2);
+	$adjustedTemporalScore = round_up_1_decimal($adjustedTemporalScore);
 
 	// Calculate the environmental score
 	$environmentalScore = environmental_score($adjustedTemporalScore, $CVSS_CollateralDamagePotential, $CVSS_TargetDistribution);
 
-	$environmentalScore = round($environmentalScore, 2);
+	$environmentalScore = round_up_1_decimal($environmentalScore);
 
 	// Calculate the impact
 	$impact = impact($CVSS_ConfImpact, $CVSS_IntegImpact, $CVSS_AvailImpact);
 
-	$impact = round($impact, 2);
+	$impact = round_up_1_decimal($impact);
 
 	// Calculate the impact function
 	$impactFunction = impact_function($impact);
@@ -42,12 +42,12 @@ function calculate_cvss_score($CVSS_AccessVector, $CVSS_AccessComplexity, $CVSS_
 	// Calculate the base score
 	$baseScore = base_score($impact,$exploitabilitySubScore,$impactFunction);
 
-	$baseScore = round($baseScore, 2);
+	$baseScore = round_up_1_decimal($baseScore);
 
 	// Calculate the temporal score
 	$temporalScore = temporal_score($baseScore, $CVSS_Exploitability, $CVSS_RemediationLevel, $CVSS_ReportConfidence);
 
-	$temporalScore = round($temporalScore, 2);
+	$temporalScore = round_up_1_decimal($temporalScore);
 
 	// Identify the score type
 	$scoreType = score_type($CVSS_Exploitability, $CVSS_RemediationLevel, $CVSS_ReportConfidence, $CVSS_CollateralDamagePotential, $CVSS_TargetDistribution);
@@ -225,6 +225,13 @@ function temporal_score($baseScore,$exploitability,$remediationLevel,$reportConf
 	$temporalScore = $baseScore*$exploitability*$remediationLevel*$reportConfidence;
 
 	return $temporalScore;
+}
+
+/********************************
+ * FUNCTION: ROUND UP 1 DECIMAL *
+ ********************************/
+function round_up_1_decimal($value) {
+    return ceil($value * 10) / 10;
 }
 
 ?>
