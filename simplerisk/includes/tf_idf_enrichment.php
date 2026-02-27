@@ -355,9 +355,18 @@ function compute_document_control_scores($documentIds = [], $controlIds = []) {
     // 6. Adaptive threshold
     // Higher standard deviation multiplier above the mean means fewer matching results
     $std_dev_multiplier = 2.0;
-    $mean = array_sum($allScores) / count($allScores);
-    $stdDev = sqrt(array_sum(array_map(fn($s) => pow($s - $mean, 2), $allScores)) / count($allScores));
-    $adaptiveThreshold = min(1.0, $mean + $std_dev_multiplier * $stdDev);
+
+    if (count($allScores) === 0) {
+        // No scores computed — avoid division by zero. Use safe defaults and log.
+        $mean = 0.0;
+        $stdDev = 0.0;
+        $adaptiveThreshold = 1.0; // be strict when there are no scores
+        write_debug_log("No scores available for adaptive threshold calculation. Using defaults.", "debug");
+    } else {
+        $mean = array_sum($allScores) / count($allScores);
+        $stdDev = sqrt(array_sum(array_map(fn($s) => pow($s - $mean, 2), $allScores)) / count($allScores));
+        $adaptiveThreshold = min(1.0, $mean + $std_dev_multiplier * $stdDev);
+    }
     write_debug_log("Adaptive threshold: $adaptiveThreshold (mean: $mean, stdDev: $stdDev)", "debug");
 
     // 7. Insert results into DB & collect matched pairs

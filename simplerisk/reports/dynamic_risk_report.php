@@ -244,6 +244,7 @@
         // Names list of Review columns
         $review_fields = array(
             'management_review',
+            'review',
             'reviewer',
             'review_date',
             'next_step',

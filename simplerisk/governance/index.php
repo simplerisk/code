@@ -58,22 +58,38 @@
 
         // Verify value is an integer
         if (is_int($value)) {
-            
+
             // If user has no permission for modify frameworks
             if (empty($_SESSION['delete_frameworks'])) {
-            
+
                 set_alert(true, "bad", $lang['NoDeleteFrameworkPermission']);
-            
+
             // If the framework ID is 0 (ie. Unassigned Risks)
             } elseif ($value == 0) {
 
                 // Display an alert
                 set_alert(true, "bad", $lang['CantDeleteUnassignedFramework']);
 
-            } elseif ((complianceforge_scf_extra() ? (int)get_setting('complianceforge_scf_framework_id', 0) : 0) === $value) {
+            } elseif (complianceforge_scf_extra()) {
 
-                set_alert(true, "bad", $lang['CantDeleteComplianceForgeSCFFramework']);
+                // Include the SCF extra
+                require_once(realpath(__DIR__ . '/../extras/complianceforgescf/index.php'));
 
+                // Get the latest ID of the SCF framework
+                $latest_id = (int) get_scf_framework_id(null, true);
+
+                // If we are trying to delete the latest SCF framework
+                if ($latest_id === (int) $value)
+                {
+                    // Set an alert so that we don't delete it
+                    set_alert(true, "bad", $lang['CantDeleteComplianceForgeSCFFramework']);
+                }
+                // If it's not the latest SCF framework
+                else
+                {
+                    // Have SCF handle the framework deletion
+                    disable_scf_frameworks($value);
+                }
             } else {
 
                 // If the ucf extra is enabled
@@ -87,17 +103,6 @@
 
                 }
 
-                // If the complianceforge_scf extra is enabled
-                if (complianceforge_scf_extra()) {
-                    
-                    // Include the ucf extra
-                    require_once(realpath(__DIR__ . '/../extras/complianceforgescf/index.php'));
-
-                    // Disable the UCF framework
-                    disable_scf_frameworks($value);
-
-                }
-
                 // Delete the framework
                 delete_frameworks($value);
 
@@ -105,13 +110,13 @@
                 set_alert(true, "good", "An existing framework was deleted successfully.");
 
             }
-            
+
         // We should never get here as we bound the variable as an int
         } else {
 
             // Display an alert
             set_alert(true, "bad", "The framework ID was not a valid value.  Please try again.");
-            
+
         }
 
         refresh();
@@ -380,7 +385,7 @@
                 <h4>Try one of the following ways to load frameworks into SimpleRisk:</h4>
                 <ol>
                     <li>Click the plus (+) icon above to manually create a new framework.</li>
-                    <li><a href="../admin/register.php">Register</a> your SimpleRisk instance to download the free Secure Controls Framework (SCF) Extra and <a href="../admin/complianceforge_scf.php">select from over 200 different frameworks</a> that have been expertly mapped against over 1000 security and privacy controls.</li>
+                    <li><a href="../admin/register.php">Register</a> your SimpleRisk instance to download the free Secure Controls Framework (SCF) Extra and <a href="../admin/securecontrolsframework.php">select from over 200 different frameworks</a> that have been expertly mapped against over 1000 security and privacy controls.</li>
                     <li>Use the licensed <a href="../admin/content.php">Import-Export Extra</a> to instantly install any of the following frameworks or import your own:
                         <ol style="list-style-type: disc;">
     <?php

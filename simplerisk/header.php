@@ -10,7 +10,7 @@ $localization_required_by_scripts = [
     'datatables' => ['All', 'datatables_ShowAll', 'datatables_ShowLess', 'First', 'Previous', 'Next', 'Last'],
     'blockUI' => ['ProcessingPleaseWait'],
     'UILayoutWidget' => ['WidgetType_chart', 'WidgetType_table', 'WidgetType_WYSIWYG'],
-    'CUSTOM:pages/governance.js' => ['ExistingMappings', 'Unassigned', 'DocumentName', 'DocumentType', 'ControlFrameworks', 'Controls', 'CreationDate', 'ApprovalDate', 'Status', 'All', 'ExceptionName', 'Description', 'Justification', 'NextReviewDate'],
+    'CUSTOM:pages/governance.js' => ['ExistingMappings', 'Unassigned', 'DocumentName', 'DocumentType', 'ControlFrameworks', 'Controls', 'CreationDate', 'ApprovalDate', 'Status', 'All', 'ExceptionName', 'ID', 'Description', 'Justification', 'NextReviewDate'],
     'CUSTOM:pages/compliance.js' => ['AuditInitiationOffsetMustBeANonNegativeValue', 'AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency'],
 ];
 
@@ -468,6 +468,12 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
 		});
 	</script>
 <?php 
+            break;
+        case 'bootstrap-table':
+?>
+            <script src="../vendor/node_modules/bootstrap-table/dist/bootstrap-table.min.js?<?= $current_app_version ?>" id="script_bootstrap_table" defer></script>
+            <link rel="stylesheet" href="../vendor/node_modules/bootstrap-table/dist/bootstrap-table.min.css?<?= $current_app_version ?>">
+<?php
             break;
         case 'cve_lookup':
 ?>

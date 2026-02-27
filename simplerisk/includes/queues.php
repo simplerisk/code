@@ -18,6 +18,7 @@ require_once(realpath(__DIR__ . '/functions.php'));
  * 0 = Lowest possible priority (No Examples)                *
  *************************************************************/
 function queue_task(
+    PDO $db,
     string $task_type,
     array $payload = [],
     int $priority = 0,
@@ -25,8 +26,6 @@ function queue_task(
     int $maxDelay = 3600
 ): bool {
     try {
-        $db = db_open();
-
         // Initialize retry metadata in payload
         $payload['retry_attempts'] = $payload['retry_attempts'] ?? 0;
         $payload['next_retry_at'] = $payload['next_retry_at'] ?? date('Y-m-d H:i:s');
@@ -45,12 +44,10 @@ function queue_task(
 
         write_debug_log("Queued task '{$task_type}' with priority {$priority} successfully.", 'info');
 
-        db_close($db);
         return true;
 
     } catch (Exception $e) {
         write_debug_log("Failed to queue task '{$task_type}': " . $e->getMessage(), 'error');
-        if (isset($db)) db_close($db);
         return false;
     }
 }
@@ -62,35 +59,59 @@ function load_all_jobs(): array
 {
     $jobs = [];
 
-    // --- Load Core Jobs ---
-    $coreDir = realpath(__DIR__ . '/jobs');
-    if (is_dir($coreDir)) {
-        foreach (glob($coreDir . '/*.php') as $file) {
-            $job_def = include($file);
-            if (is_array($job_def)) {
-                $jobs[] = $job_def;
-                write_debug_log("Loaded core job module: " . basename($file), "debug");
-            } else {
-                write_debug_log("Skipped invalid core job module: " . basename($file), "warning");
-            }
+    // Helper function to load jobs from a directory
+    $load_jobs_from_dir = function(string $dir, string $label) use (&$jobs) {
+        $index_file = $dir . '/index.php';
+        if (!file_exists($index_file)) {
+            write_debug_log("{$label} jobs index file not found: " . basename($index_file), "warning");
+            return;
         }
-    }
 
-    // --- Load AI Extra Jobs (if enabled) ---
-    if (function_exists('artificial_intelligence_extra') && artificial_intelligence_extra()) {
-        require_once(realpath(__DIR__ . '/../extras/artificial_intelligence/index.php'));
-        $aiDir = realpath(__DIR__ . '/../extras/artificial_intelligence/jobs');
-        if (is_dir($aiDir)) {
-            foreach (glob($aiDir . '/*.php') as $file) {
+        $job_list = include($index_file);
+        if (!is_array($job_list)) {
+            write_debug_log("Invalid {$label} jobs index format in: " . basename($index_file), "warning");
+            return;
+        }
+
+        foreach ($job_list as $job_name => $enabled) {
+            if (!$enabled) {
+                write_debug_log("Skipping disabled {$label} job: {$job_name}", "debug");
+                continue;
+            }
+
+            $file = $dir . '/' . $job_name . '.php';
+            if (file_exists($file)) {
                 $job_def = include($file);
                 if (is_array($job_def)) {
                     $jobs[] = $job_def;
-                    write_debug_log("Loaded AI extra job module: " . basename($file), "debug");
+                    write_debug_log("Loaded {$label} job module: {$job_name}", "debug");
                 } else {
-                    write_debug_log("Skipped invalid AI extra job module: " . basename($file), "warning");
+                    write_debug_log("Skipped invalid {$label} job module: {$job_name}", "warning");
                 }
+            } else {
+                write_debug_log("{$label} job module file not found: " . basename($file), "warning");
             }
         }
+    };
+
+    // --- Load Core Jobs ---
+    $coreDir = realpath(__DIR__ . '/jobs');
+    if (is_dir($coreDir)) {
+        $load_jobs_from_dir($coreDir, 'Core');
+    }
+
+    // --- Load AI Extra Jobs ---
+    $aiDir = realpath(__DIR__ . '/../extras/artificial_intelligence/jobs');
+    if (is_dir($aiDir)) {
+        require_once(realpath(__DIR__ . '/../extras/artificial_intelligence/index.php'));
+        $load_jobs_from_dir($aiDir, 'AI Extra');
+    }
+
+    // --- Load SCF Extra Jobs ---
+    $scfDir = realpath(__DIR__ . '/../extras/complianceforgescf/jobs');
+    if (is_dir($scfDir)) {
+        require_once(realpath(__DIR__ . '/../extras/complianceforgescf/index.php'));
+        $load_jobs_from_dir($scfDir, 'SCF Extra');
     }
 
     write_debug_log("Loaded " . count($jobs) . " total job definitions.", "debug");
@@ -102,9 +123,8 @@ function load_all_jobs(): array
  * FUNCTION: GET QUEUE ITEMS                                                                                      *
  * Get a list of items currently in the queue, optionally filtered by task type and/or status(es).                *
  ******************************************************************************************************************/
-function get_queue_items(string|array|null $task_type = null, string|array|null $status = null): array
+function get_queue_items(PDO $db, string|array|null $task_type = null, string|array|null $status = null): array
 {
-    $db = db_open();
     if (!$db) {
         write_debug_log("GET_QUEUE_ITEMS: Failed to open DB connection.", "error");
         return [];
@@ -145,13 +165,12 @@ function get_queue_items(string|array|null $task_type = null, string|array|null 
         $stmt->execute($params);
 
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
         return $results ?: [];
 
     } catch (Exception $e) {
         write_debug_log("GET_QUEUE_ITEMS: Error retrieving queue items: " . $e->getMessage(), "error");
         return [];
-    } finally {
-        db_close($db);
     }
 }
 
@@ -159,11 +178,10 @@ function get_queue_items(string|array|null $task_type = null, string|array|null 
  * FUNCTION: QUEUE UPDATE STATUS
  * Update the status of a queue task and log the result.
  */
-function queue_update_status($task_id, $status): bool {
+function queue_update_status($task_id, $status, PDO $db): bool {
     write_debug_log("queue_update_status called for task #{$task_id} with status '{$status}'", "debug");
 
     try {
-        $db = db_open();
         $stmt = $db->prepare("UPDATE queue_tasks SET status = :status, updated_at = NOW() WHERE id = :id");
         $stmt->execute([':status' => $status, ':id' => $task_id]);
 
@@ -171,6 +189,7 @@ function queue_update_status($task_id, $status): bool {
 
         if ($affected > 0) {
             write_debug_log("queue_update_status successfully updated task #{$task_id} (rows affected: {$affected})", "debug");
+            if ($should_close) db_close($db);
             return true;
         } else {
             $check = $db->prepare("SELECT status FROM queue_tasks WHERE id = :id");
@@ -179,17 +198,17 @@ function queue_update_status($task_id, $status): bool {
 
             if ($row) {
                 write_debug_log("queue_update_status: task #{$task_id} already had status '{$status}'", "debug");
+                if ($should_close) db_close($db);
                 return true;
             } else {
                 write_debug_log("queue_update_status: task #{$task_id} does not exist", "error");
+                if ($should_close) db_close($db);
                 return false;
             }
         }
     } catch (Exception $e) {
         write_debug_log("queue_update_status failed for task #{$task_id}: " . $e->getMessage(), "error");
         return false;
-    } finally {
-        if (isset($db)) db_close($db);
     }
 }
 
@@ -220,7 +239,7 @@ function handle_queue_task_failure(PDO $db, array $task, string $errorMessage, i
         ]);
     } else {
         write_debug_log("Task #{$task['id']} failed after {$retryAttempts} attempts, marking as failed.", "error");
-        queue_update_status($task['id'], 'failed');
+        queue_update_status($task['id'], 'failed', $db);
     }
 }
 

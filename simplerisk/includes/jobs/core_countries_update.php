@@ -12,10 +12,10 @@
 return [
     'type' => 'core_countries_update',
 
-    'queue_check' => function(array $task) {
+    'queue_check' => function(array $task, PDO $db) {
         write_debug_log("QUEUE_CHECK: Updating countries cache (task #{$task['id']})", "info");
 
-        queue_update_status($task['id'], 'in_progress');
+        queue_update_status($task['id'], 'in_progress', $db);
 
         try {
             // Fetch latest countries
@@ -23,7 +23,7 @@ return [
 
             if (empty($countries)) {
                 write_debug_log("QUEUE_CHECK: Failed to fetch countries for task #{$task['id']}", "error");
-                queue_update_status($task['id'], 'failed');
+                queue_update_status($task['id'], 'failed', $db);
                 return false;
             }
 
@@ -31,15 +31,15 @@ return [
             update_setting('countries_cache', json_encode([
                 'fetched_at' => time(),
                 'countries' => $countries
-            ]));
+            ]), db: $db);
 
-            queue_update_status($task['id'], 'completed');
+            queue_update_status($task['id'], 'completed', $db);
             write_debug_log("QUEUE_CHECK: Countries cache successfully updated for task #{$task['id']}", "info");
             return true;
 
         } catch (Exception $e) {
             write_debug_log("QUEUE_CHECK: Exception updating countries cache for task #{$task['id']}: " . $e->getMessage(), "error");
-            queue_update_status($task['id'], 'failed');
+            queue_update_status($task['id'], 'failed', $db);
             return false;
         }
     },

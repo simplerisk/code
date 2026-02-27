@@ -18,6 +18,11 @@ use SimpleRisk\DocumentHandlers\SpreadsheetHandler;
 use SimpleRisk\DocumentHandlers\TextHandler;
 use SimpleRisk\DocumentHandlers\WordHandler;
 
+/**
+ * Exception thrown when a document type is not supported for text extraction
+ */
+class UnsupportedDocumentException extends \RuntimeException {}
+
 class DocumentTextExtractor
 {
     /**
@@ -28,7 +33,7 @@ class DocumentTextExtractor
      * @param string|null $fileName
      * @param array $options Optional flags (e.g., ['preserveLayout' => true] for PDFs)
      * @return string
-     * @throws \RuntimeException
+     * @throws UnsupportedDocumentException
      */
     public static function extractText(
         string $content,
@@ -64,7 +69,7 @@ class DocumentTextExtractor
                 return SpreadsheetHandler::extractTextFromSpreadsheet($content);
 
             default:
-                throw new \RuntimeException("Unsupported document. Unable to extract text. [Mime Type = {$mimeType}, File Name = [$fileName}]");
+                throw new UnsupportedDocumentException("Unsupported document. Unable to extract text. [Mime Type = {$mimeType}, File Name = [{$fileName}]");
         }
     }
 

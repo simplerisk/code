@@ -162,7 +162,7 @@
 
 <!-- MODEL WINDOW FOR ASSOCIATE RISK CONFIRM -->
 <div id="associate-risk" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="associate-risk" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-body">
                 <div class="form-group text-center">

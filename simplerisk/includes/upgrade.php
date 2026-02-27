@@ -188,6 +188,7 @@ $releases = [
     "20250826-001",
     "20250828-001",
     "20251118-001",
+    "20260224-001",
 ];
 
 /*************************
@@ -664,7 +665,7 @@ function upgrade_from_20141013001($db)
 
     // Set the default value for the mitigation_id field in the risks table
     echo "Setting a default value for the mitigation_id field in the risks table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `risks` MODIFY `mitigation_id` int(11) DEFAULT NULL;");
+    $stmt = $db->prepare("ALTER TABLE `risks` MODIFY `mitigation_id` INT DEFAULT NULL;");
     $stmt->execute();
 
     // Make sure that the Unassigned Risks project is ID 0
@@ -720,7 +721,7 @@ function upgrade_from_20141129001($db)
 
         // Set the default value for the mitigation_id field in the risks table
         echo "Setting a default value for the mitigation_id field in the risks table.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `risks` MODIFY `mitigation_id` int(11) DEFAULT 0;");
+        $stmt = $db->prepare("ALTER TABLE `risks` MODIFY `mitigation_id` INT DEFAULT 0;");
         $stmt->execute();
 
         // Correct any mitigation_id values of null
@@ -761,17 +762,17 @@ function upgrade_from_20141214001($db)
 
     // Add the asset tracking table
     echo "Adding the table to track assets.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `assets` (id int(11) AUTO_INCREMENT PRIMARY KEY, ip VARCHAR(15), name VARCHAR(200) NOT NULL UNIQUE, created TIMESTAMP DEFAULT NOW()) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `assets` (id INT AUTO_INCREMENT PRIMARY KEY, ip VARCHAR(15), name VARCHAR(200) NOT NULL UNIQUE, created TIMESTAMP DEFAULT NOW()) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add table to track risk to asset tagging
     echo "Adding table to track risk to asset tagging.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `risks_to_assets` (risk_id int(11), asset VARCHAR(200) NOT NULL, UNIQUE(risk_id,asset)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `risks_to_assets` (risk_id INT, asset VARCHAR(200) NOT NULL, UNIQUE(risk_id,asset)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add a table for scoring methods
     echo "Adding a table for scoring methods.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `scoring_methods` (value int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `scoring_methods` (value INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add scoring methods to table
@@ -810,7 +811,7 @@ function upgrade_from_20150202001($db)
 
         // Set the default value for the mitigation_id field in the risks table to 0 instead of null
         echo "Setting the default value for the mitigation_id field in the risks table to 0.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `risks` MODIFY `mitigation_id` int(11) DEFAULT 0;");
+        $stmt = $db->prepare("ALTER TABLE `risks` MODIFY `mitigation_id` INT DEFAULT 0;");
         $stmt->execute();
 
     // Update risks with mitigation_id of null to 0
@@ -874,7 +875,7 @@ function upgrade_from_20150321001($db)
     // Add an id column to the review levels table
     if (!field_exists_in_table('id', 'review_levels')) {
         echo "Adding an id column to the review levels table.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `review_levels` ADD id int(11) DEFAULT 0 NOT NULL FIRST;");
+        $stmt = $db->prepare("ALTER TABLE `review_levels` ADD id INT DEFAULT 0 NOT NULL FIRST;");
         $stmt->execute();
     }
 
@@ -943,7 +944,7 @@ function upgrade_from_20150531001($db)
 
     // Create a new file type table
     echo "Creating a new table to track upload file types.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `file_types` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(100) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `file_types` (`value` INT NOT NULL AUTO_INCREMENT, `name` varchar(100) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add default file types
@@ -964,7 +965,7 @@ function upgrade_from_20150531001($db)
     // Add a mitigation_team field to the mitigations table
     if (!field_exists_in_table('mitigation_team', 'mitigations')) {
         echo "Adding a mitigation_team field to the mitigations table.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `mitigations` ADD mitigation_team int(11) NOT NULL AFTER mitigation_effort;");
+        $stmt = $db->prepare("ALTER TABLE `mitigations` ADD mitigation_team INT NOT NULL AFTER mitigation_effort;");
         $stmt->execute();
     }
 
@@ -984,7 +985,7 @@ function upgrade_from_20150531001($db)
     // Add a value column to the assets table
     if (!field_exists_in_table('value', 'assets')) {
         echo "Adding a value column to the assets table.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `assets` ADD value int(11) DEFAULT 5 AFTER name;");
+        $stmt = $db->prepare("ALTER TABLE `assets` ADD value INT DEFAULT 5 AFTER name;");
         $stmt->execute();
     }
 
@@ -1049,12 +1050,12 @@ function upgrade_from_20150729001($db)
 
     // Set the mgmt_review field default value to null
     echo "Setting the mgmt_review field's default value to null.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `risks` MODIFY `mgmt_review` int(11) DEFAULT NULL;");
+    $stmt = $db->prepare("ALTER TABLE `risks` MODIFY `mgmt_review` INT DEFAULT NULL;");
     $stmt->execute();
 
     // Set the close_id field default value to null
     echo "Setting the close_id field's default value to null.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `risks` MODIFY `close_id` int(11) DEFAULT NULL;");
+    $stmt = $db->prepare("ALTER TABLE `risks` MODIFY `close_id` INT DEFAULT NULL;");
     $stmt->execute();
 
     // Update the database version
@@ -1078,7 +1079,7 @@ function upgrade_from_20150920001($db)
 
         // Set the mgmt_review field default value to null
         echo "Setting the mgmt_review field's default value to null.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `risks` MODIFY `mgmt_review` int(11) DEFAULT 0;");
+        $stmt = $db->prepare("ALTER TABLE `risks` MODIFY `mgmt_review` INT DEFAULT 0;");
         $stmt->execute();
 
     // Correct for bug in setting of mgmt_review in previous release
@@ -1126,7 +1127,7 @@ function upgrade_from_20150930001($db)
 
     // Set the user_id field default value to 0
     echo "Setting the user_id field's default value to null.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `audit_log` MODIFY `user_id` int(11) DEFAULT 0 NOT NULL;");
+    $stmt = $db->prepare("ALTER TABLE `audit_log` MODIFY `user_id` INT DEFAULT 0 NOT NULL;");
     $stmt->execute();
 
     // Increase the size of the subject field to 300
@@ -1137,14 +1138,14 @@ function upgrade_from_20150930001($db)
     // Add a location field for assets
     if (!field_exists_in_table('location', 'assets')) {
         echo "Adding a location field for assets.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `assets` ADD location int(11) NOT NULL AFTER value;");
+        $stmt = $db->prepare("ALTER TABLE `assets` ADD location INT NOT NULL AFTER value;");
         $stmt->execute();
     }
 
     // Add a team field for assets
     if (!field_exists_in_table('team', 'assets')) {
         echo "Adding a team field for assets.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `assets` ADD team int(11) NOT NULL AFTER location;");
+        $stmt = $db->prepare("ALTER TABLE `assets` ADD team INT NOT NULL AFTER location;");
         $stmt->execute();
     }
 
@@ -1176,7 +1177,7 @@ function upgrade_from_20150930001($db)
 
     // Create the asset values table
     echo "Creating the asset values table.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `asset_values` (`id` int(11) NOT NULL, `min_value` int(11) NOT NULL, `max_value` int(11) DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `asset_values` (`id` INT NOT NULL, `min_value` INT NOT NULL, `max_value` INT DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add initial asset values
@@ -1192,14 +1193,14 @@ function upgrade_from_20150930001($db)
     // Add a mitigation_owner field to the mitigations table
     if (!field_exists_in_table('mitigation_owner', 'mitigations')) {
         echo "Adding a mitigation_owner field to the mitigations table.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `mitigations` ADD mitigation_owner int(11) NOT NULL AFTER mitigation_effort;");
+        $stmt = $db->prepare("ALTER TABLE `mitigations` ADD mitigation_owner INT NOT NULL AFTER mitigation_effort;");
         $stmt->execute();
     }
 
     // Add a mitigation_cost field to the mitigations table
     if (!field_exists_in_table('mitigation_cost', 'mitigations')) {
         echo "Adding a mitigation_cost field to the mitigations table.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `mitigations` ADD mitigation_cost int(11) NOT NULL DEFAULT 1 AFTER mitigation_effort;");
+        $stmt = $db->prepare("ALTER TABLE `mitigations` ADD mitigation_cost INT NOT NULL DEFAULT 1 AFTER mitigation_effort;");
         $stmt->execute();
     }
 
@@ -1225,7 +1226,7 @@ function upgrade_from_20151108001($db)
     // Add an asset_id field to the risks_to_assets table
     if (!field_exists_in_table('asset_id', 'risks_to_assets')) {
         echo "Adding an asset_id field to the risks_to_assets table.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `risks_to_assets` ADD COLUMN `asset_id` int(11) NOT NULL AFTER risk_id;");
+        $stmt = $db->prepare("ALTER TABLE `risks_to_assets` ADD COLUMN `asset_id` INT NOT NULL AFTER risk_id;");
         $stmt->execute();
     }
 
@@ -1241,19 +1242,19 @@ function upgrade_from_20151108001($db)
 
     // Set the file table default risk_id to 0
     echo "Setting the file table default risk_id to 0.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `files` MODIFY `risk_id` int(11) DEFAULT 0;");
+    $stmt = $db->prepare("ALTER TABLE `files` MODIFY `risk_id` INT DEFAULT 0;");
     $stmt->execute();
 
     // Add a type field to the file table
     if (!field_exists_in_table('view_type', 'files')) {
         echo "Adding a type field to the file table.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `files` ADD COLUMN `view_type` int(11) DEFAULT 1 AFTER `risk_id`;");
+        $stmt = $db->prepare("ALTER TABLE `files` ADD COLUMN `view_type` INT DEFAULT 1 AFTER `risk_id`;");
         $stmt->execute();
     }
 
     // Add a new status table
     echo "Adding a new status table.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `status` (value int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `status` (value INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add new custom statuses
@@ -1308,7 +1309,7 @@ function upgrade_from_20151219001($db)
 
     // Add a risk source table
     echo "Adding a new risk source table.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `source` (value int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `source` (value INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         $stmt->execute();
 
         // Add new custom statuses
@@ -1341,7 +1342,7 @@ function upgrade_from_20151219001($db)
         // Add a source column to the risks table
         if (!field_exists_in_table('source', 'risks')) {
             echo "Adding a source column to the risks table.<br />\n";
-            $stmt = $db->prepare("ALTER TABLE `risks` ADD source int(11) NOT NULL AFTER location;");
+            $stmt = $db->prepare("ALTER TABLE `risks` ADD source INT NOT NULL AFTER location;");
             $stmt->execute();
         }
 
@@ -1389,22 +1390,22 @@ function upgrade_from_20160124001($db)
 
     // Add the assessment tracking table
     echo "Adding the table to track assessments.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `assessments` (id int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(200) NOT NULL, created TIMESTAMP DEFAULT NOW()) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `assessments` (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(200) NOT NULL, created TIMESTAMP DEFAULT NOW()) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add the assessment questions table
     echo "Adding the table to track assessment questions.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `assessment_questions` (`id` int(11) AUTO_INCREMENT PRIMARY KEY, `assessment_id` int(11) NOT NULL, `question` VARCHAR(1000) NOT NULL, `order` int(11) NOT NULL DEFAULT '999999') ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `assessment_questions` (`id` INT AUTO_INCREMENT PRIMARY KEY, `assessment_id` INT NOT NULL, `question` VARCHAR(1000) NOT NULL, `order` INT NOT NULL DEFAULT '999999') ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add the assessment answers table
     echo "Adding the table to track assessment answers.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `assessment_answers` (`id` int(11) AUTO_INCREMENT PRIMARY KEY, `assessment_id` int(11) NOT NULL, `question_id` int(11) NOT NULL, `answer` VARCHAR(200) NOT NULL, `submit_risk` tinyint(1) DEFAULT 0 NOT NULL, `risk_subject` VARCHAR(200) NOT NULL, `risk_score` int(11) NOT NULL, `risk_owner` int(11), `assets` VARCHAR(200), `order` int(11) NOT NULL DEFAULT '999999') ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `assessment_answers` (`id` INT AUTO_INCREMENT PRIMARY KEY, `assessment_id` INT NOT NULL, `question_id` INT NOT NULL, `answer` VARCHAR(200) NOT NULL, `submit_risk` tinyint(1) DEFAULT 0 NOT NULL, `risk_subject` VARCHAR(200) NOT NULL, `risk_score` INT NOT NULL, `risk_owner` INT, `assets` VARCHAR(200), `order` INT NOT NULL DEFAULT '999999') ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add the pending risks table
     echo "Adding the table to track pending risks.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `pending_risks` (`id` int(11) AUTO_INCREMENT PRIMARY KEY, `assessment_id` int(11) NOT NULL, `subject` varchar(300) NOT NULL, `score` int(11) NOT NULL, `owner` int(11), `asset` varchar(200), `submission_date` TIMESTAMP DEFAULT NOW()) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `pending_risks` (`id` INT AUTO_INCREMENT PRIMARY KEY, `assessment_id` INT NOT NULL, `subject` varchar(300) NOT NULL, `score` INT NOT NULL, `owner` INT, `asset` varchar(200), `submission_date` TIMESTAMP DEFAULT NOW()) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add the Critical Security Controls assessment
@@ -1619,12 +1620,12 @@ function upgrade_from_20161122001($db)
 
     // Add a table to track password re-use
     echo "Adding the table to track password re-use.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `user_pass_history` (`id` int(11) AUTO_INCREMENT PRIMARY KEY, `user_id` int(11) NOT NULL, `salt` varchar(20) NOT NULL, `password` binary(60) NOT NULL, `add_date` TIMESTAMP DEFAULT NOW()) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `user_pass_history` (`id` INT AUTO_INCREMENT PRIMARY KEY, `user_id` INT NOT NULL, `salt` varchar(20) NOT NULL, `password` binary(60) NOT NULL, `add_date` TIMESTAMP DEFAULT NOW()) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add a table to track failed login attempts
     echo "Adding the table to track failed login attempts.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `failed_login_attempts` (`id` int(11) AUTO_INCREMENT PRIMARY KEY, `expired` TINYINT DEFAULT 0, `user_id` int(11) NOT NULL, `ip` VARCHAR(15) DEFAULT '0.0.0.0', `date` TIMESTAMP DEFAULT NOW()) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `failed_login_attempts` (`id` INT AUTO_INCREMENT PRIMARY KEY, `expired` TINYINT DEFAULT 0, `user_id` INT NOT NULL, `ip` VARCHAR(15) DEFAULT '0.0.0.0', `date` TIMESTAMP DEFAULT NOW()) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Added last_password_change_date to user table:
@@ -1666,8 +1667,8 @@ function upgrade_from_20170102001($db){
     // Added a new table to track risk score.
     echo "Adding the table to track risk score.<br />\n";
     $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `risk_scoring_history` (
-                          `id` int(11) NOT NULL,
-                          `risk_id` int(11) NOT NULL,
+                          `id` INT NOT NULL,
+                          `risk_id` INT NOT NULL,
                           `calculated_risk` float NOT NULL,
                           `last_update` datetime NOT NULL
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -1681,7 +1682,7 @@ function upgrade_from_20170102001($db){
     }
 
     // Set a primary key to auto increment.
-    $stmt = $db->prepare("ALTER TABLE `risk_scoring_history` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;");
+    $stmt = $db->prepare("ALTER TABLE `risk_scoring_history` MODIFY `id` INT NOT NULL AUTO_INCREMENT;");
     $stmt->execute();
 
     // Add current risks to the risk_scoring_history table
@@ -1822,10 +1823,10 @@ function upgrade_from_20170416001($db){
     echo "Adding a table to track password history reused.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `user_pass_reuse_history` (
-          `id` int(11) NOT NULL AUTO_INCREMENT,
-          `user_id` int(11) NOT NULL,
+          `id` INT NOT NULL AUTO_INCREMENT,
+          `user_id` INT NOT NULL,
           `password` binary(60) NOT NULL,
-          `counts` int(11) NOT NULL DEFAULT '1', 
+          `counts` INT NOT NULL DEFAULT '1', 
           PRIMARY KEY(id)
 
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -1993,7 +1994,7 @@ function upgrade_from_20170724001($db){
 
     // Create the table to track control frameworks
     echo "Creating the new frameworks table.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `frameworks` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` blob NOT NULL, `description` blob NOT NULL, `status` int(11) NOT NULL DEFAULT 1, PRIMARY KEY(value))");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `frameworks` (`value` INT NOT NULL AUTO_INCREMENT, `name` blob NOT NULL, `description` blob NOT NULL, `status` INT NOT NULL DEFAULT 1, PRIMARY KEY(value))");
     $stmt->execute();
 
     // Add some common control frameworks
@@ -2030,7 +2031,7 @@ function upgrade_from_20170724001($db){
 
     // Add the field tracking table
     echo "Adding a field tracking table.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `fields` (id int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100) NOT NULL UNIQUE, type VARCHAR(20) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `fields` (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100) NOT NULL UNIQUE, type VARCHAR(20) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add assessment_answer_id field to pending_risks table.
@@ -2052,12 +2053,12 @@ function upgrade_from_20170724001($db){
           `description` BLOB ,
           `supplemental_guidance` BLOB,
           `framework_ids` VARCHAR(255) ,
-          `control_owner` INT(11) ,
-          `control_class` INT(11) ,
-          `control_phase` INT(11) ,
+          `control_owner` INT ,
+          `control_class` INT ,
+          `control_phase` INT ,
           `control_number` VARCHAR(20) ,
-          `control_priority` INT(11) ,
-          `family` INT(11),
+          `control_priority` INT ,
+          `family` INT,
           `submission_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     ");
@@ -2127,14 +2128,14 @@ function upgrade_from_20170724001($db){
     // Add auto increment to control class table
     echo "Add auto increment to control class table.<br />\n";
     $stmt = $db->prepare("
-        ALTER TABLE `control_class` CHANGE `value` `value` INT(11) NOT NULL AUTO_INCREMENT; 
+        ALTER TABLE `control_class` CHANGE `value` `value` INT NOT NULL AUTO_INCREMENT; 
     ");
     $stmt->execute();
     
     // Add auto increment to control priority table
     echo "Add auto increment to control priority table.<br />\n";
     $stmt = $db->prepare("
-        ALTER TABLE `control_priority` CHANGE `value` `value` INT(11) NOT NULL AUTO_INCREMENT;
+        ALTER TABLE `control_priority` CHANGE `value` `value` INT NOT NULL AUTO_INCREMENT;
     ");
     $stmt->execute();
     
@@ -2156,19 +2157,19 @@ function upgrade_from_20170724001($db){
     echo "Creating framework controls test table.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `framework_control_tests` (
-          `id` int(11) NOT NULL AUTO_INCREMENT,
-          `tester` int(11) NOT NULL,
-          `test_frequency` int(11) NOT NULL DEFAULT '0',
+          `id` INT NOT NULL AUTO_INCREMENT,
+          `tester` INT NOT NULL,
+          `test_frequency` INT NOT NULL DEFAULT '0',
           `last_date` date NOT NULL,
           `next_date` date NOT NULL,
           `name` MEDIUMTEXT NOT NULL,
           `objective` MEDIUMTEXT NOT NULL,
           `test_steps` MEDIUMTEXT NOT NULL,
-          `approximate_time` int(11) NOT NULL,
+          `approximate_time` INT NOT NULL,
           `expected_results` MEDIUMTEXT NOT NULL,
-          `framework_control_id` int(11) NOT NULL,
-          `desired_frequency` int(11) DEFAULT NULL,
-          `status` int(11) NOT NULL DEFAULT '1',
+          `framework_control_id` INT NOT NULL,
+          `desired_frequency` INT DEFAULT NULL,
+          `status` INT NOT NULL DEFAULT '1',
           `created_at` DATE NULL DEFAULT NULL,
           PRIMARY KEY (`id`),
           UNIQUE KEY `id` (`id`)
@@ -2226,20 +2227,20 @@ function upgrade_from_20170724001($db){
     echo "Creating `framework_control_test_audits` table.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `framework_control_test_audits` (
-          `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-          `test_id` int(11) NOT NULL,
-          `tester` int(11) NOT NULL,
-          `test_frequency` int(11) NOT NULL DEFAULT '0',
+          `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+          `test_id` INT NOT NULL,
+          `tester` INT NOT NULL,
+          `test_frequency` INT NOT NULL DEFAULT '0',
           `last_date` date NOT NULL,
           `next_date` date NOT NULL,
           `name` mediumtext NOT NULL,
           `objective` mediumtext NOT NULL,
           `test_steps` mediumtext NOT NULL,
-          `approximate_time` int(11) NOT NULL,
+          `approximate_time` INT NOT NULL,
           `expected_results` mediumtext NOT NULL,
-          `framework_control_id` int(11) NOT NULL,
-          `desired_frequency` int(11) DEFAULT NULL,
-          `status` int(11) NOT NULL DEFAULT '1',
+          `framework_control_id` INT NOT NULL,
+          `desired_frequency` INT DEFAULT NULL,
+          `status` INT NOT NULL DEFAULT '1',
           `created_at` datetime NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     ;");
@@ -2249,12 +2250,12 @@ function upgrade_from_20170724001($db){
     echo "Create a framework_control_test_results table.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `framework_control_test_results` (
-          `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-          `test_audit_id` int(11) NOT NULL,
+          `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+          `test_audit_id` INT NOT NULL,
           `test_result` varchar(50) NOT NULL,
           `summary` text NOT NULL,
           `test_date` date NOT NULL,
-          `submitted_by` int(11) NOT NULL,
+          `submitted_by` INT NOT NULL,
           `submission_date` datetime NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     ");
@@ -2264,15 +2265,15 @@ function upgrade_from_20170724001($db){
     echo "Create a compliance files table.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `compliance_files` (
-          `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-          `ref_id` int(11) DEFAULT '0',
+          `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+          `ref_id` INT DEFAULT '0',
           `ref_type` varchar(100) DEFAULT '',
           `name` varchar(100) NOT NULL,
           `unique_name` varchar(30) NOT NULL,
           `type` varchar(30) NOT NULL,
-          `size` int(11) NOT NULL,
+          `size` INT NOT NULL,
           `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          `user` int(11) NOT NULL,
+          `user` INT NOT NULL,
           `content` longblob NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     ");
@@ -2282,10 +2283,10 @@ function upgrade_from_20170724001($db){
     echo "Create a test comments table.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `framework_control_test_comments` (
-          `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-          `test_audit_id` int(11) NOT NULL,
+          `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+          `test_audit_id` INT NOT NULL,
           `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          `user` int(11) NOT NULL,
+          `user` INT NOT NULL,
           `comment` mediumtext NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
     ");
@@ -2312,8 +2313,8 @@ function upgrade_from_20170724001($db){
     echo "Creating assessment_scoring table.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `assessment_scoring` (
-          `id` int(11) NOT NULL AUTO_INCREMENT,
-          `scoring_method` int(11) NOT NULL,
+          `id` INT NOT NULL AUTO_INCREMENT,
+          `scoring_method` INT NOT NULL,
           `calculated_risk` float NOT NULL,
           `CLASSIC_likelihood` float NOT NULL DEFAULT '5',
           `CLASSIC_impact` float NOT NULL DEFAULT '5',
@@ -2331,27 +2332,27 @@ function upgrade_from_20170724001($db){
           `CVSS_ConfidentialityRequirement` varchar(3) NOT NULL DEFAULT 'ND',
           `CVSS_IntegrityRequirement` varchar(3) NOT NULL DEFAULT 'ND',
           `CVSS_AvailabilityRequirement` varchar(3) NOT NULL DEFAULT 'ND',
-          `DREAD_DamagePotential` int(11) DEFAULT '10',
-          `DREAD_Reproducibility` int(11) DEFAULT '10',
-          `DREAD_Exploitability` int(11) DEFAULT '10',
-          `DREAD_AffectedUsers` int(11) DEFAULT '10',
-          `DREAD_Discoverability` int(11) DEFAULT '10',
-          `OWASP_SkillLevel` int(11) DEFAULT '10',
-          `OWASP_Motive` int(11) DEFAULT '10',
-          `OWASP_Opportunity` int(11) DEFAULT '10',
-          `OWASP_Size` int(11) DEFAULT '10',
-          `OWASP_EaseOfDiscovery` int(11) DEFAULT '10',
-          `OWASP_EaseOfExploit` int(11) DEFAULT '10',
-          `OWASP_Awareness` int(11) DEFAULT '10',
-          `OWASP_IntrusionDetection` int(11) DEFAULT '10',
-          `OWASP_LossOfConfidentiality` int(11) DEFAULT '10',
-          `OWASP_LossOfIntegrity` int(11) DEFAULT '10',
-          `OWASP_LossOfAvailability` int(11) DEFAULT '10',
-          `OWASP_LossOfAccountability` int(11) DEFAULT '10',
-          `OWASP_FinancialDamage` int(11) DEFAULT '10',
-          `OWASP_ReputationDamage` int(11) DEFAULT '10',
-          `OWASP_NonCompliance` int(11) DEFAULT '10',
-          `OWASP_PrivacyViolation` int(11) DEFAULT '10',
+          `DREAD_DamagePotential` INT DEFAULT '10',
+          `DREAD_Reproducibility` INT DEFAULT '10',
+          `DREAD_Exploitability` INT DEFAULT '10',
+          `DREAD_AffectedUsers` INT DEFAULT '10',
+          `DREAD_Discoverability` INT DEFAULT '10',
+          `OWASP_SkillLevel` INT DEFAULT '10',
+          `OWASP_Motive` INT DEFAULT '10',
+          `OWASP_Opportunity` INT DEFAULT '10',
+          `OWASP_Size` INT DEFAULT '10',
+          `OWASP_EaseOfDiscovery` INT DEFAULT '10',
+          `OWASP_EaseOfExploit` INT DEFAULT '10',
+          `OWASP_Awareness` INT DEFAULT '10',
+          `OWASP_IntrusionDetection` INT DEFAULT '10',
+          `OWASP_LossOfConfidentiality` INT DEFAULT '10',
+          `OWASP_LossOfIntegrity` INT DEFAULT '10',
+          `OWASP_LossOfAvailability` INT DEFAULT '10',
+          `OWASP_LossOfAccountability` INT DEFAULT '10',
+          `OWASP_FinancialDamage` INT DEFAULT '10',
+          `OWASP_ReputationDamage` INT DEFAULT '10',
+          `OWASP_NonCompliance` INT DEFAULT '10',
+          `OWASP_PrivacyViolation` INT DEFAULT '10',
           `Custom` float DEFAULT '10',
           PRIMARY KEY (`id`),
           UNIQUE KEY `id` (`id`)
@@ -2428,7 +2429,7 @@ function upgrade_from_20180104001($db){
     echo "Creating a table, test_status.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `test_status` (
-          `value` int(11) NOT NULL AUTO_INCREMENT,
+          `value` INT NOT NULL AUTO_INCREMENT,
           `name` varchar(100) NOT NULL, 
           PRIMARY KEY(value)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -2507,8 +2508,8 @@ function upgrade_from_20180301001($db){
     echo "Creating a table to store residual risk score history.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `residual_risk_scoring_history` (
-          `id` int(11) NOT NULL AUTO_INCREMENT,
-          `risk_id` int(11) NOT NULL,
+          `id` INT NOT NULL AUTO_INCREMENT,
+          `risk_id` INT NOT NULL,
           `residual_risk` float NOT NULL,
           `last_update` datetime NOT NULL, 
           PRIMARY KEY(id)
@@ -2575,7 +2576,7 @@ function upgrade_from_20180301001($db){
     echo "Creating role table.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `role` (
-          `value` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+          `value` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
           `name` varchar(100) NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     ");
@@ -2585,7 +2586,7 @@ function upgrade_from_20180301001($db){
     echo "Creating role_responsibilities table.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `role_responsibilities` (
-          `role_id` int(11) NOT NULL,
+          `role_id` INT NOT NULL,
           `responsibility_name` varchar(100) NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     ");
@@ -2624,9 +2625,9 @@ function upgrade_from_20180301001($db){
     echo "Creating a mitigation_accept_users table.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `mitigation_accept_users` (
-          `id` int(11) NOT NULL AUTO_INCREMENT,
-          `risk_id` int(11) NOT NULL,
-          `user_id` int(11) NOT NULL,
+          `id` INT NOT NULL AUTO_INCREMENT,
+          `risk_id` INT NOT NULL,
+          `user_id` INT NOT NULL,
           `created_at` datetime NOT NULL,
           PRIMARY KEY(id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -2766,12 +2767,12 @@ function upgrade_from_20180627001($db){
     echo "Creating documents table.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `documents` (
-          `id` int(11) NOT NULL AUTO_INCREMENT,
+          `id` INT NOT NULL AUTO_INCREMENT,
           `document_type` varchar(50) COLLATE utf8_bin NOT NULL,
           `document_name` text COLLATE utf8_bin NOT NULL,
-          `parent` int(11) NOT NULL,
+          `parent` INT NOT NULL,
           `status` enum('Draft','InReview','Approved','') COLLATE utf8_bin NOT NULL,
-          `file_id` int(11) NOT NULL,
+          `file_id` INT NOT NULL,
           `creation_date` date NOT NULL,
           PRIMARY KEY(id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -2948,7 +2949,7 @@ function upgrade_from_20180916001($db){
     echo "Adding a new table to track the upload file type extensions.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `file_type_extensions` (
-          `value` int(11) NOT NULL AUTO_INCREMENT,
+          `value` INT NOT NULL AUTO_INCREMENT,
           `name` varchar(10) NOT NULL UNIQUE,
           PRIMARY KEY(value)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -3030,10 +3031,10 @@ function upgrade_from_20181103001($db){
     echo "Creating risk_scoring_contributing_impacts table.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `risk_scoring_contributing_impacts` (
-          `id` int(11) NOT NULL AUTO_INCREMENT,
-          `risk_scoring_id` int(11) NOT NULL,
-          `contributing_risk_id` int(11) NOT NULL,
-          `impact` int(11) NOT NULL,
+          `id` INT NOT NULL AUTO_INCREMENT,
+          `risk_scoring_id` INT NOT NULL,
+          `contributing_risk_id` INT NOT NULL,
+          `impact` INT NOT NULL,
           PRIMARY KEY(id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     ");
@@ -3052,10 +3053,10 @@ function upgrade_from_20181103001($db){
     echo "Creating assessment_scoring_contributing_impacts table.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `assessment_scoring_contributing_impacts` (
-          `id` int(11) NOT NULL AUTO_INCREMENT,
-          `assessment_scoring_id` int(11) NOT NULL,
-          `contributing_risk_id` int(11) NOT NULL,
-          `impact` int(11) NOT NULL,
+          `id` INT NOT NULL AUTO_INCREMENT,
+          `assessment_scoring_id` INT NOT NULL,
+          `contributing_risk_id` INT NOT NULL,
+          `impact` INT NOT NULL,
           PRIMARY KEY(id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     ");
@@ -3434,7 +3435,7 @@ function upgrade_from_20190210001($db){
         echo "Creating the test_results table.<br />\n";
         $stmt = $db->prepare("
             CREATE TABLE IF NOT EXISTS `test_results` (
-              `value` INT(11) NOT NULL AUTO_INCREMENT,
+              `value` INT NOT NULL AUTO_INCREMENT,
               `name` VARCHAR(20) NOT NULL,
               `background_class` VARCHAR(100) NOT NULL,
               PRIMARY KEY(value),
@@ -3452,7 +3453,7 @@ function upgrade_from_20190210001($db){
     echo "Creating the tags table.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `tags` (
-            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `id` INT NOT NULL AUTO_INCREMENT,
             `tag` VARCHAR(50) NOT NULL,
             PRIMARY KEY(`id`),
             CONSTRAINT `tag_unique` UNIQUE (`tag`)
@@ -3464,8 +3465,8 @@ function upgrade_from_20190210001($db){
     echo "Creating the tags_taggees table.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `tags_taggees` (
-            `tag_id` INT(11) NOT NULL,
-            `taggee_id` INT(11) NOT NULL,
+            `tag_id` INT NOT NULL,
+            `taggee_id` INT NOT NULL,
             `type` VARCHAR(20) NOT NULL,
             CONSTRAINT `tag_taggee_unique` UNIQUE (`tag_id`, `taggee_id`, `type`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -3496,17 +3497,17 @@ function upgrade_from_20190210001($db){
     echo "Creating the document_exceptions table.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `document_exceptions` (
-            `value` INT(11) NOT NULL AUTO_INCREMENT,
+            `value` INT NOT NULL AUTO_INCREMENT,
             `name` VARCHAR(100) NOT NULL,
-            `policy_document_id` INT(11),
-            `control_framework_id` INT(11),
-            `owner` INT(11),
+            `policy_document_id` INT,
+            `control_framework_id` INT,
+            `owner` INT,
             `additional_stakeholders` VARCHAR(500) NOT NULL,
             `creation_date` DATE NOT NULL DEFAULT '0000-00-00',
-            `review_frequency` int(11) NOT NULL DEFAULT '0',
+            `review_frequency` INT NOT NULL DEFAULT '0',
             `next_review_date` DATE NOT NULL DEFAULT '0000-00-00',
             `approval_date` DATE NOT NULL DEFAULT '0000-00-00',
-            `approver` INT(11),
+            `approver` INT,
             `approved` tinyint(1) NOT NULL DEFAULT '0',
             `description` blob NOT NULL,
             `justification` blob NOT NULL,
@@ -3619,7 +3620,7 @@ function upgrade_from_20190331001($db){
         echo "Creating the asset_groups table.<br />\n";
         $stmt = $db->prepare("
             CREATE TABLE IF NOT EXISTS `asset_groups` (
-                `id` INT(11) NOT NULL AUTO_INCREMENT,
+                `id` INT NOT NULL AUTO_INCREMENT,
                 `name` VARCHAR(100) NOT NULL,
                 PRIMARY KEY(id),
                 CONSTRAINT `name_unique` UNIQUE (`name`)
@@ -3633,8 +3634,8 @@ function upgrade_from_20190331001($db){
         echo "Creating the assets_asset_groups table.<br />\n";
         $stmt = $db->prepare("
             CREATE TABLE IF NOT EXISTS `assets_asset_groups` (
-                `asset_id` INT(11) NOT NULL,
-                `asset_group_id` INT(11) NOT NULL,
+                `asset_id` INT NOT NULL,
+                `asset_group_id` INT NOT NULL,
                 CONSTRAINT `asset_asset_group_unique` UNIQUE (`asset_id`, `asset_group_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         ");
@@ -3645,8 +3646,8 @@ function upgrade_from_20190331001($db){
         echo "Creating the risks_to_asset_groups table.<br />\n";
         $stmt = $db->prepare("
             CREATE TABLE IF NOT EXISTS `risks_to_asset_groups` (
-                `risk_id` INT(11) NOT NULL,
-                `asset_group_id` INT(11) NOT NULL,
+                `risk_id` INT NOT NULL,
+                `asset_group_id` INT NOT NULL,
                 CONSTRAINT `risk_asset_group_unique` UNIQUE (`risk_id`, `asset_group_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         ");
@@ -3671,8 +3672,8 @@ function upgrade_from_20190331001($db){
         echo "Creating the assessment_answers_to_assets table.<br />\n";
         $stmt = $db->prepare("
             CREATE TABLE IF NOT EXISTS `assessment_answers_to_assets` (
-                `assessment_answer_id` INT(11) NOT NULL,
-                `asset_id` INT(11) NOT NULL,
+                `assessment_answer_id` INT NOT NULL,
+                `asset_id` INT NOT NULL,
                 CONSTRAINT `assessment_answer_asset_unique` UNIQUE (`assessment_answer_id`, `asset_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         ");
@@ -3683,8 +3684,8 @@ function upgrade_from_20190331001($db){
         echo "Creating the assessment_answers_to_asset_groups table.<br />\n";
         $stmt = $db->prepare("
             CREATE TABLE IF NOT EXISTS `assessment_answers_to_asset_groups` (
-                `assessment_answer_id` INT(11) NOT NULL,
-                `asset_group_id` INT(11) NOT NULL,
+                `assessment_answer_id` INT NOT NULL,
+                `asset_group_id` INT NOT NULL,
                 CONSTRAINT `assessment_answer_asset_group_unique` UNIQUE (`assessment_answer_id`, `asset_group_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         ");
@@ -3759,8 +3760,8 @@ function upgrade_from_20190331001($db){
         echo "Creating the `items_to_teams` table.<br />\n";
         $stmt = $db->prepare("
             CREATE TABLE IF NOT EXISTS `items_to_teams` (
-                `item_id` INT(11) NOT NULL,
-                `team_id` INT(11) NOT NULL,
+                `item_id` INT NOT NULL,
+                `team_id` INT NOT NULL,
                 `type` VARCHAR(20) NOT NULL,
                 CONSTRAINT `item_team_unique` UNIQUE (`item_id`, `team_id`, `type`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -3780,8 +3781,8 @@ function upgrade_from_20190331001($db){
         echo "Creating the `custom_risk_model_values` table.<br />\n";
         $stmt = $db->prepare("
             CREATE TABLE IF NOT EXISTS `custom_risk_model_values` (
-                `impact` INT(11) NOT NULL,
-                `likelihood` INT(11) NOT NULL,
+                `impact` INT NOT NULL,
+                `likelihood` INT NOT NULL,
                 `value` DOUBLE(3,1) NOT NULL,
                 CONSTRAINT `impact_likelihood_unique` UNIQUE (`impact`, `likelihood`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -3842,8 +3843,8 @@ function upgrade_from_20190630001($db)
     echo "Creating dynamic_saved_selections table.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `dynamic_saved_selections` (
-          `value` int(11) NOT NULL AUTO_INCREMENT,
-          `user_id` int(11) NOT NULL,
+          `value` INT NOT NULL AUTO_INCREMENT,
+          `user_id` INT NOT NULL,
           `type` enum('private','public') NOT NULL,
           `name` varchar(100) NOT NULL,
           `custom_display_settings` varchar(1000) DEFAULT NULL,
@@ -3908,8 +3909,8 @@ function upgrade_from_20191130001($db)
             echo "Creating mitigation_to_controls table.<br />\n";
             $stmt = $db->prepare("
                 CREATE TABLE IF NOT EXISTS `mitigation_to_controls` (
-                    `mitigation_id` int(11) NOT NULL,
-                    `control_id` int(11) NOT NULL,
+                    `mitigation_id` INT NOT NULL,
+                    `control_id` INT NOT NULL,
                     PRIMARY KEY(`mitigation_id`, `control_id`),
                     INDEX(`control_id`, `mitigation_id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -3944,8 +3945,8 @@ function upgrade_from_20191130001($db)
             echo "Creating `framework_control_to_framework` table.<br />\n";
             $stmt = $db->prepare("
                 CREATE TABLE IF NOT EXISTS `framework_control_to_framework` (
-                    `control_id` int(11) NOT NULL,
-                    `framework_id` int(11) NOT NULL,
+                    `control_id` INT NOT NULL,
+                    `framework_id` INT NOT NULL,
                     PRIMARY KEY(`control_id`, `framework_id`),
                     INDEX(`framework_id`, `control_id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -3980,8 +3981,8 @@ function upgrade_from_20191130001($db)
             echo "Creating `risk_to_location` table.<br />\n";
             $stmt = $db->prepare("
                 CREATE TABLE IF NOT EXISTS `risk_to_location` (
-                    `risk_id` int(11) NOT NULL,
-                    `location_id` int(11) NOT NULL,
+                    `risk_id` INT NOT NULL,
+                    `location_id` INT NOT NULL,
                     PRIMARY KEY(`risk_id`, `location_id`),
                     INDEX(`location_id`, `risk_id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -4017,8 +4018,8 @@ function upgrade_from_20191130001($db)
             echo "Creating `risk_to_team` table.<br />\n";
             $stmt = $db->prepare("
                 CREATE TABLE IF NOT EXISTS `risk_to_team` (
-                    `risk_id` int(11) NOT NULL,
-                    `team_id` int(11) NOT NULL,
+                    `risk_id` INT NOT NULL,
+                    `team_id` INT NOT NULL,
                     PRIMARY KEY(`risk_id`, `team_id`),
                     INDEX(`team_id`, `risk_id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -4054,8 +4055,8 @@ function upgrade_from_20191130001($db)
             echo "Creating `risk_to_technology` table.<br />\n";
             $stmt = $db->prepare("
                 CREATE TABLE IF NOT EXISTS `risk_to_technology` (
-                    `risk_id` int(11) NOT NULL,
-                    `technology_id` int(11) NOT NULL,
+                    `risk_id` INT NOT NULL,
+                    `technology_id` INT NOT NULL,
                     PRIMARY KEY(`risk_id`, `technology_id`),
                     INDEX(`technology_id`, `risk_id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -4091,8 +4092,8 @@ function upgrade_from_20191130001($db)
             echo "Creating `risk_to_additional_stakeholder` table.<br />\n";
             $stmt = $db->prepare("
                 CREATE TABLE IF NOT EXISTS `risk_to_additional_stakeholder` (
-                    `risk_id` int(11) NOT NULL,
-                    `user_id` int(11) NOT NULL,
+                    `risk_id` INT NOT NULL,
+                    `user_id` INT NOT NULL,
                     PRIMARY KEY(`risk_id`, `user_id`),
                     INDEX(`user_id`, `risk_id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -4128,8 +4129,8 @@ function upgrade_from_20191130001($db)
             echo "Creating `mitigation_to_team` table.<br />\n";
             $stmt = $db->prepare("
                 CREATE TABLE IF NOT EXISTS `mitigation_to_team` (
-                    `mitigation_id` int(11) NOT NULL,
-                    `team_id` int(11) NOT NULL,
+                    `mitigation_id` INT NOT NULL,
+                    `team_id` INT NOT NULL,
                     PRIMARY KEY(`mitigation_id`, `team_id`),
                     INDEX(`team_id`, `mitigation_id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -4166,8 +4167,8 @@ function upgrade_from_20191130001($db)
             echo "Creating `user_to_team` table.<br />\n";
             $stmt = $db->prepare("
                 CREATE TABLE IF NOT EXISTS `user_to_team` (
-                    `user_id` int(11) NOT NULL,
-                    `team_id` int(11) NOT NULL,
+                    `user_id` INT NOT NULL,
+                    `team_id` INT NOT NULL,
                     PRIMARY KEY(`user_id`, `team_id`),
                     INDEX(`team_id`, `user_id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -4525,7 +4526,7 @@ function upgrade_from_20200401001($db)
 
     // Add a table for framework control mappings
     echo "Adding a table for framework control mappings.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `framework_control_mappings` (`id` int(11) NOT NULL AUTO_INCREMENT,`control_id` int(11) NOT NULL,`framework` int(11) NOT NULL,`reference_name` varchar(200) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `framework_control_mappings` (`id` INT NOT NULL AUTO_INCREMENT,`control_id` INT NOT NULL,`framework` INT NOT NULL,`reference_name` varchar(200) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Migrate every framework and control into new mapping table
@@ -4538,7 +4539,7 @@ function upgrade_from_20200401001($db)
 
     // Add a table for risk grouping
     echo "Adding a table for risk grouping.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `risk_grouping` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(50) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `risk_grouping` (`value` INT NOT NULL AUTO_INCREMENT, `name` varchar(50) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add new group to risk grouping table
@@ -4554,7 +4555,7 @@ function upgrade_from_20200401001($db)
 
     // Add a table for risk function
     echo "Adding a table for risk function.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `risk_function` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(50) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `risk_function` (`value` INT NOT NULL AUTO_INCREMENT, `name` varchar(50) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add new rows to risk function table
@@ -4569,7 +4570,7 @@ function upgrade_from_20200401001($db)
 
     // Add a table for risk catalog
     echo "Adding a table for risk catalog.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `risk_catalog` ( `id` int(11) NOT NULL AUTO_INCREMENT, `number` varchar(20) NOT NULL, `grouping` int(11) NOT NULL, `name` varchar(1000) NOT NULL, `description` text NOT NULL, `function` int(11) NOT NULL, `order` int(11) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `risk_catalog` ( `id` INT NOT NULL AUTO_INCREMENT, `number` varchar(20) NOT NULL, `grouping` INT NOT NULL, `name` varchar(1000) NOT NULL, `description` text NOT NULL, `function` INT NOT NULL, `order` INT NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add new rows to risk catalog table
@@ -4939,7 +4940,7 @@ function upgrade_from_20200711001($db)
         echo "Creating `permissions` table.<br />\n";
         $stmt = $db->prepare("
             CREATE TABLE IF NOT EXISTS `permissions` (
-                `id` int(11) NOT NULL AUTO_INCREMENT,
+                `id` INT NOT NULL AUTO_INCREMENT,
                 `key` varchar(100) NOT NULL UNIQUE,
                 `name` varchar(200) NOT NULL,
                 `description` blob NOT NULL,
@@ -4953,8 +4954,8 @@ function upgrade_from_20200711001($db)
         echo "Creating `permission_to_user` table.<br />\n";
         $stmt = $db->prepare("
             CREATE TABLE IF NOT EXISTS `permission_to_user` (
-                `permission_id` int(11) NOT NULL ,
-                `user_id` int(11) NOT NULL,
+                `permission_id` INT NOT NULL ,
+                `user_id` INT NOT NULL,
                 PRIMARY KEY(`permission_id`, `user_id`),
                 INDEX(`user_id`, `permission_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -4966,7 +4967,7 @@ function upgrade_from_20200711001($db)
         echo "Creating `permission_groups` table.<br />\n";
         $stmt = $db->prepare("
             CREATE TABLE IF NOT EXISTS `permission_groups` (
-                `id` int(11) NOT NULL AUTO_INCREMENT,
+                `id` INT NOT NULL AUTO_INCREMENT,
                 `name` varchar(200) NOT NULL UNIQUE,
                 `description` blob NOT NULL,
                 `order` int NOT NULL,
@@ -4980,8 +4981,8 @@ function upgrade_from_20200711001($db)
         echo "Creating `permission_to_permission_group` table.<br />\n";
         $stmt = $db->prepare("
             CREATE TABLE IF NOT EXISTS `permission_to_permission_group` (
-                `permission_id` int(11) NOT NULL,
-                `permission_group_id` int(11) NOT NULL,
+                `permission_id` INT NOT NULL,
+                `permission_group_id` INT NOT NULL,
                 PRIMARY KEY(`permission_id`, `permission_group_id`),
                 INDEX(`permission_group_id`, `permission_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -5141,7 +5142,7 @@ function upgrade_from_20200711001($db)
         
         // Add the `permission_id` column
         echo "Adding the `permission_id` column to the `role_responsibilities` table.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `role_responsibilities` ADD `permission_id` INT(11);");
+        $stmt = $db->prepare("ALTER TABLE `role_responsibilities` ADD `permission_id` INT;");
         $stmt->execute();
         
         // Populate the `permission_id` column
@@ -5161,7 +5162,7 @@ function upgrade_from_20200711001($db)
         
         // Modify the `permission_id` column to be mandatory
         echo "Modifying the `permission_id` column of the `role_responsibilities` table to be mandatory.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `role_responsibilities` MODIFY `permission_id` INT(11) NOT NULL;");
+        $stmt = $db->prepare("ALTER TABLE `role_responsibilities` MODIFY `permission_id` INT NOT NULL;");
         $stmt->execute();
         
         // Drop the `responsibility_name` column as it's not needed anymore
@@ -5500,7 +5501,7 @@ WHERE number = 'R-GV-5';");
     {
         // Add a table for threat grouping
         echo "Adding a table for threat grouping.<br />\n";
-        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `threat_grouping` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(50) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `threat_grouping` (`value` INT NOT NULL AUTO_INCREMENT, `name` varchar(50) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         $stmt->execute();
 
         // Add new group to threat grouping table
@@ -5516,7 +5517,7 @@ WHERE number = 'R-GV-5';");
     {
         // Add a table for threat catalog
         echo "Adding a table for threat catalog.<br />\n";
-        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `threat_catalog` ( `id` int(11) NOT NULL AUTO_INCREMENT, `number` varchar(20) NOT NULL, `grouping` int(11) NOT NULL, `name` varchar(1000) NOT NULL, `description` text NOT NULL, `order` int(11) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `threat_catalog` ( `id` INT NOT NULL AUTO_INCREMENT, `number` varchar(20) NOT NULL, `grouping` INT NOT NULL, `name` varchar(1000) NOT NULL, `description` text NOT NULL, `order` INT NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         $stmt->execute();
 
         // Add new rows to threat catalog table
@@ -5589,7 +5590,7 @@ function upgrade_from_20210305001($db)
     if (!table_exists('contributing_risks_likelihood')) {
 
         echo "Adding a table for contributing risks likelihood.<br />\n";
-        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `contributing_risks_likelihood` (`id` int(11) NOT NULL AUTO_INCREMENT, `value` int(11) NOT NULL, `name` varchar(100) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `contributing_risks_likelihood` (`id` INT NOT NULL AUTO_INCREMENT, `value` INT NOT NULL, `name` varchar(100) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         $stmt->execute();
 
         echo "Adding current levels from the existing Classic Risk Likelihood to 'contributing_risks_likelihood'.<br />\n";
@@ -5608,7 +5609,7 @@ function upgrade_from_20210305001($db)
     if (!table_exists('contributing_risks_impact')) {
 
         echo "Adding a table for contributing risks impact.<br />\n";
-        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `contributing_risks_impact` (`id` int(11) NOT NULL AUTO_INCREMENT, `contributing_risks_id` int(11) NOT NULL, `value` int(11) NOT NULL, `name` varchar(100) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `contributing_risks_impact` (`id` INT NOT NULL AUTO_INCREMENT, `contributing_risks_id` INT NOT NULL, `value` INT NOT NULL, `name` varchar(100) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         $stmt->execute();
 
         echo "Adding current levels from the existing Classic Risk Impact to 'contributing_risks_impact'.<br />\n";
@@ -5659,7 +5660,7 @@ function upgrade_from_20210305001($db)
     if (!table_exists('backups')) {
 
         echo "Adding a table for tracking backups.<br />\n";
-        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `backups` (`id` int(11) NOT NULL AUTO_INCREMENT, `random_id` varchar(50) NOT NULL, `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, `app_zip_file_name` TEXT NOT NULL, `db_zip_file_name` TEXT NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `backups` (`id` INT NOT NULL AUTO_INCREMENT, `random_id` varchar(50) NOT NULL, `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, `app_zip_file_name` TEXT NOT NULL, `db_zip_file_name` TEXT NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         $stmt->execute();
     }
 
@@ -5684,24 +5685,15 @@ function upgrade_from_20210305001($db)
 
     // Remove unnecessary files
     echo "Removing unnecessary files.<br />\n";
-    $remove_files = array(
-            realpath(__DIR__ . '/../composer.json'),
-            realpath(__DIR__ . '/../package.json'),
-            realpath(__DIR__ . '/../config.rb'),
-            realpath(__DIR__ . '/../Gemfile'),
+    $remove_files = [
+        realpath(__DIR__ . '/../composer.json'),
+        realpath(__DIR__ . '/../package.json'),
+        realpath(__DIR__ . '/../config.rb'),
+        realpath(__DIR__ . '/../Gemfile'),
 	    realpath(__DIR__ . '/../management/plan-projects.php'),
 	    realpath(__DIR__ . '/../js/min/plan-project-min.js'),
-    );
-
-    foreach ($remove_files as $file)
-    {
-        // If the file exists
-        if (file_exists($file))
-        {
-            // Remove the file
-            unlink($file);
-        }
-    }
+    ];
+    remove_files($remove_files);
 
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic
@@ -5727,9 +5719,9 @@ function upgrade_from_20210625001($db)
 
     // Remove unnecessary files
     echo "Removing unnecessary files.<br />\n";
-    $remove_files = array(
+    $remove_files = [
 	    realpath(__DIR__ . '/../includes/PHPMailer'),
-    );
+    ];
 
     foreach ($remove_files as $directory)
     {
@@ -5791,28 +5783,19 @@ function upgrade_from_20210713001($db)
 
     // Remove unnecessary files
     echo "Removing unnecessary files.<br />\n";
-    $remove_files = array(
-      realpath(__DIR__ . '/../js/jquery-3.3.1.min.js'),
+    $remove_files = [
+        realpath(__DIR__ . '/../js/jquery-3.3.1.min.js'),
 	    realpath(__DIR__ . '/../js/jquery.min.js'),
 	    realpath(__DIR__ . '/../js/jquery-ui.js'),
 	    realpath(__DIR__ . '/../js/jquery-ui.min.js'),
-    );
-
-    foreach ($remove_files as $file)
-    {
-        // If the file exists
-        if (file_exists($file))
-        {
-            // Remove the file
-            unlink($file);
-        }
-    }
+    ];
+    remove_files($remove_files);
 
     // Add the document_status table
     if (!table_exists('document_status'))
     {
         echo "Adding a table for document status.<br />\n";
-	      $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `document_status` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(100) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+	      $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `document_status` (`value` INT NOT NULL AUTO_INCREMENT, `name` varchar(100) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 	      $stmt->execute();
 
 	      echo "Adding values to the document status table.<br />\n";
@@ -5824,7 +5807,7 @@ function upgrade_from_20210713001($db)
     if (!field_exists_in_table('document_status', 'documents'))
     {
         echo "Adding a document_status field to the documents table.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `documents` ADD `document_status` int(11) DEFAULT 1 AFTER `status`;");
+        $stmt = $db->prepare("ALTER TABLE `documents` ADD `document_status` INT DEFAULT 1 AFTER `status`;");
         $stmt->execute();
 
         echo "Copying values from status to document status.<br />\n";
@@ -5911,7 +5894,7 @@ function upgrade_from_20210806001($db)
     // Add a status field to the document_exceptions table
     if (!field_exists_in_table('status', 'document_exceptions')) {
         echo "Adding a status field to the document_exceptions table.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `document_exceptions` ADD `status` INT(11) NOT NULL DEFAULT 1 AFTER `associated_risks`;");
+        $stmt = $db->prepare("ALTER TABLE `document_exceptions` ADD `status` INT NOT NULL DEFAULT 1 AFTER `associated_risks`;");
         $stmt->execute();
     }
 
@@ -5919,7 +5902,7 @@ function upgrade_from_20210806001($db)
     if (!table_exists('document_exceptions_status'))
     {
         echo "Adding a table for document exceptions status.<br />\n";
-        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `document_exceptions_status` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(100) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `document_exceptions_status` (`value` INT NOT NULL AUTO_INCREMENT, `name` varchar(100) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         $stmt->execute();
 
         echo "Adding values to the document exceptions status table.<br />\n";
@@ -5932,14 +5915,14 @@ function upgrade_from_20210806001($db)
     {
         echo "Adding a table for validation files.<br />\n";
         $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `validation_files` (
-          `id` int(11) NOT NULL AUTO_INCREMENT,
-          `mitigation_id` int(11) NOT NULL,
-          `control_id` int(11) NOT NULL,
+          `id` INT NOT NULL AUTO_INCREMENT,
+          `mitigation_id` INT NOT NULL,
+          `control_id` INT NOT NULL,
           `name` varchar(100) NOT NULL,
           `type` varchar(30) NOT NULL,
-          `size` int(11) NOT NULL,
+          `size` INT NOT NULL,
           `timestamp` timestamp NOT NULL DEFAULT current_timestamp(),
-          `user` int(11) NOT NULL,
+          `user` INT NOT NULL,
           `content` longblob NOT NULL,
           PRIMARY KEY(id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
@@ -5950,7 +5933,7 @@ function upgrade_from_20210806001($db)
     if (!table_exists('control_type')) {
         echo "Creating the control type table.<br />\n";
         $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `control_type` (
-          `value` int(11) NOT NULL AUTO_INCREMENT,
+          `value` INT NOT NULL AUTO_INCREMENT,
           `name` mediumtext NOT NULL,
           PRIMARY KEY(value)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
@@ -5967,9 +5950,9 @@ function upgrade_from_20210806001($db)
     if (!table_exists('framework_control_type_mappings')) {
         echo "Creating the framework_control_type_mappings table.<br />\n";
         $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `framework_control_type_mappings` (
-          `id` int(11) NOT NULL AUTO_INCREMENT,
-          `control_id` int(11) NOT NULL,
-          `control_type_id` int(11) NOT NULL,
+          `id` INT NOT NULL AUTO_INCREMENT,
+          `control_id` INT NOT NULL,
+          `control_type_id` INT NOT NULL,
           PRIMARY KEY(id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         $stmt->execute();
@@ -5997,9 +5980,9 @@ function upgrade_from_20210806001($db)
     if (!table_exists('data_classification')) {
         echo "Creating the data_classification table.<br />\n";
         $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `data_classification` (
-          `id` int(11) NOT NULL AUTO_INCREMENT,
+          `id` INT NOT NULL AUTO_INCREMENT,
           `name` MEDIUMTEXT NOT NULL,
-          `order` int(11) NOT NULL,
+          `order` INT NOT NULL,
           PRIMARY KEY(id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         $stmt->execute();
@@ -6020,19 +6003,19 @@ function upgrade_from_20210806001($db)
     // Add a consultant field to the projects table
     if (!field_exists_in_table('consultant', 'projects')) {
         echo "Adding a consultant field to the projects table.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `projects` ADD `consultant` int(11) DEFAULT NULL AFTER `due_date`;");
+        $stmt = $db->prepare("ALTER TABLE `projects` ADD `consultant` INT DEFAULT NULL AFTER `due_date`;");
         $stmt->execute();
     }
     // Add a business_owner field to the projects table
     if (!field_exists_in_table('business_owner', 'projects')) {
         echo "Adding a business_owner field to the projects table.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `projects` ADD `business_owner` int(11) DEFAULT NULL AFTER `consultant`;");
+        $stmt = $db->prepare("ALTER TABLE `projects` ADD `business_owner` INT DEFAULT NULL AFTER `consultant`;");
         $stmt->execute();
     }
     // Add a data_classification field to the projects table
     if (!field_exists_in_table('data_classification', 'projects')) {
         echo "Adding a data_classification field to the projects table.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `projects` ADD `data_classification` int(11) DEFAULT NULL AFTER `business_owner`;");
+        $stmt = $db->prepare("ALTER TABLE `projects` ADD `data_classification` INT DEFAULT NULL AFTER `business_owner`;");
         $stmt->execute();
     }
 
@@ -6042,20 +6025,11 @@ function upgrade_from_20210806001($db)
 
     // Remove unnecessary files
     echo "Removing unnecessary files.<br />\n";
-    $remove_files = array(
+    $remove_files = [
 	    realpath(__DIR__ . '/../.htaccess'),
 	    realpath(__DIR__ . '/../js/bootstrap.min.js'),
-    );
-
-    foreach ($remove_files as $file)
-    {
-        // If the file exists
-        if (file_exists($file))
-        {
-            // Remove the file
-            unlink($file);
-        }
-    }
+    ];
+    remove_files($remove_files);
 
     echo "Adding the default value of 300 characters for the 'Maximum risk subject length' setting.<br />\n";
     update_or_insert_setting('maximum_risk_subject_length', 300);
@@ -6114,9 +6088,9 @@ function upgrade_from_20211010001($db)
     if (!table_exists('framework_control_test_results_to_risks')) {
         //echo "Creating the framework_control_test_results_to_risks table.<br />\n";
         $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `framework_control_test_results_to_risks` (
-          `id` int(11) NOT NULL AUTO_INCREMENT,
-          `test_results_id` int(11) DEFAULT NULL,
-          `risk_id` int(11) DEFAULT NULL,
+          `id` INT NOT NULL AUTO_INCREMENT,
+          `test_results_id` INT DEFAULT NULL,
+          `risk_id` INT DEFAULT NULL,
           PRIMARY KEY(id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         $stmt->execute();
@@ -6212,7 +6186,7 @@ function upgrade_from_20211115001($db)
 
         // Add the field for storing the risk group order
         echo "Adding column for storing the order of 'risk_grouping' items.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `risk_grouping` ADD `order` INT(11) NOT NULL AFTER `default`;");
+        $stmt = $db->prepare("ALTER TABLE `risk_grouping` ADD `order` INT NOT NULL AFTER `default`;");
         $stmt->execute();
 
         // Add the default group
@@ -6264,7 +6238,7 @@ function upgrade_from_20211115001($db)
 
         // Add the field for storing the threat group order
         echo "Adding column for storing the order of 'threat_grouping' items.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `threat_grouping` ADD `order` INT(11) NOT NULL AFTER `name`;");
+        $stmt = $db->prepare("ALTER TABLE `threat_grouping` ADD `order` INT NOT NULL AFTER `name`;");
         $stmt->execute();
 
         // Set the order of the groups
@@ -6387,8 +6361,8 @@ function upgrade_from_20220122001($db)
         echo "Adding the table to graphical saved selections.<br />\n";
         $stmt = $db->prepare("
             CREATE TABLE `graphical_saved_selections` (
-              `value` int(11) NOT NULL AUTO_INCREMENT,
-              `user_id` int(11) NOT NULL,
+              `value` INT NOT NULL AUTO_INCREMENT,
+              `user_id` INT NOT NULL,
               `type` enum('private','public') NOT NULL,
               `name` varchar(100) NOT NULL,
               `graphical_display_settings` varchar(1000) NOT NULL,
@@ -6401,14 +6375,14 @@ function upgrade_from_20220122001($db)
     if (!field_exists_in_table('submitted_by', 'documents')) {
         // Adding the submitted_by field to the documents table to be able to track who submitted the document
         echo "Adding the submitted_by field to the documents table to be able to track who submitted the document.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `documents` ADD `submitted_by` INT(11) DEFAULT 0 NOT NULL AFTER `id`;");
+        $stmt = $db->prepare("ALTER TABLE `documents` ADD `submitted_by` INT DEFAULT 0 NOT NULL AFTER `id`;");
         $stmt->execute();
     }
     
     if (!field_exists_in_table('updated_by', 'documents')) {
         // Adding the updated_by field to the documents table to be able to track who updated the document
         echo "Adding the updated_by field to the documents table to be able to track who updated the document.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `documents` ADD `updated_by` INT(11) DEFAULT 0 NOT NULL AFTER `submitted_by`;");
+        $stmt = $db->prepare("ALTER TABLE `documents` ADD `updated_by` INT DEFAULT 0 NOT NULL AFTER `submitted_by`;");
         $stmt->execute();
     }
 
@@ -6739,7 +6713,7 @@ function upgrade_from_20220909001($db)
 
     // Compile the list of unnecessary files
     echo "Removing unnecessary files.<br />\n";
-    $remove_files = array(
+    $remove_files = [
         realpath(__DIR__ . '/../assessments/risks.php'),
         realpath(__DIR__ . '/../js/selectize.min.js'),
         realpath(__DIR__ . '/../js/adapters/mootools-adapter.js'),
@@ -6779,17 +6753,8 @@ function upgrade_from_20220909001($db)
         realpath(__DIR__ . '/../js/pages/compliance.js'),
         realpath(__DIR__ . '/../js/pages/governance.js'),
         realpath(__DIR__ . '/../js/pages/risk.js'),
-    );
-
-    foreach ($remove_files as $file)
-    {
-        // If the file exists
-        if (file_exists($file))
-        {
-            // Remove the file
-            unlink($file);
-        }
-    }
+    ];
+    remove_files($remove_files);
 
     // Compile the list of unnecessary directories
     echo "Removing unnecessary directories.<br />\n";
@@ -6853,7 +6818,7 @@ function upgrade_from_20221013001($db)
     if (!table_exists("user_mfa"))
     {
         echo "Creating a table for user MFA data.<br />\n";
-        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `user_mfa` (`uid` int(11) NOT NULL PRIMARY KEY, `verified` INT(1) DEFAULT 0, `secret` VARCHAR(16) DEFAULT null) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `user_mfa` (`uid` INT NOT NULL PRIMARY KEY, `verified` INT(1) DEFAULT 0, `secret` VARCHAR(16) DEFAULT null) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         $stmt->execute();
     }
 
@@ -6881,8 +6846,8 @@ function upgrade_from_20221013001($db)
         echo "Creating a table for saved datatable display settings.<br />\n";
         $stmt = $db->prepare("
             CREATE TABLE `saved_table_display_settings` (
-                `id` INT(11) NOT NULL AUTO_INCREMENT,
-                `user_id` INT(11) NOT NULL COMMENT 'ID of the user who created the save',
+                `id` INT NOT NULL AUTO_INCREMENT,
+                `user_id` INT NOT NULL COMMENT 'ID of the user who created the save',
                 `view` VARCHAR(100) NOT NULL COMMENT 'Name of the view like plan_mitigation or asset_edit to be able to get it for the table where it is used',
                 `visibility` ENUM('private','public') DEFAULT 'private' COMMENT 'Visibility of the save. Only used if there are multiple saves for the same view.',
                 `name` VARCHAR(100) COMMENT 'Name of the save. Only used if there are multiple saves for the same view.',
@@ -6930,12 +6895,12 @@ function upgrade_from_20230106001($db)
 
     // Add a table for control to asset mappings
     echo "Adding a table for control to asset mappings.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `control_to_assets` (`id` int(11) NOT NULL AUTO_INCREMENT, `control_id` int(11) NOT NULL, `asset_id` int(11) NOT NULL, `control_maturity` int(11) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `control_to_assets` (`id` INT NOT NULL AUTO_INCREMENT, `control_id` INT NOT NULL, `asset_id` INT NOT NULL, `control_maturity` INT NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add a table for control to asset group mappings
     echo "Adding a table for control to asset group mappings.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `control_to_asset_groups` (`id` int(11) NOT NULL AUTO_INCREMENT, `control_id` int(11) NOT NULL, `asset_group_id` int(11) NOT NULL, `control_maturity` int(11) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `control_to_asset_groups` (`id` INT NOT NULL AUTO_INCREMENT, `control_id` INT NOT NULL, `asset_group_id` INT NOT NULL, `control_maturity` INT NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
     
     echo "Refreshing number of files that have an encoding issue.<br />\n";
@@ -6965,23 +6930,14 @@ function upgrade_from_20230331001($db)
 
     // Compile the list of unnecessary files
     echo "Removing unnecessary files.<br />\n";
-    $remove_files = array(
+    $remove_files = [
         realpath(__DIR__ . '/../css/jquery-ui.css'),
         realpath(__DIR__ . '/../css/jquery-ui.min.css'),
         realpath(__DIR__ . '/../css/jquery-ui.structure.min.css'),
         realpath(__DIR__ . '/../css/jquery-ui.theme.css'),
         realpath(__DIR__ . '/../css/jquery-ui.theme.min.css'),
-    );
-
-    foreach ($remove_files as $file)
-    {
-        // If the file exists
-        if (file_exists($file))
-        {
-            // Remove the file
-            unlink($file);
-        }
-    }
+    ];
+    remove_files($remove_files);
 
     if (!index_exists_on_table('risk_scoring_method_idx', 'risk_scoring')) {
         echo "Adding index 'risk_scoring_method_idx' to table 'risk_scoring'.<br />\n";
@@ -7197,7 +7153,7 @@ function upgrade_from_20240205001($db) {
     if (!field_exists_in_table("timestamp", "user_mfa"))
     {
         echo "Adding a field to track the MFA timestamp in the user_mfa table.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `user_mfa` ADD timestamp int(11) DEFAULT NULL;");
+        $stmt = $db->prepare("ALTER TABLE `user_mfa` ADD timestamp INT DEFAULT NULL;");
         $stmt->execute();
 
         echo "Adding a field to track the last used MFA token in the user_mfa table.<br />\n";
@@ -7211,8 +7167,8 @@ function upgrade_from_20240205001($db) {
         echo "Creating a table to track MFA attempts.<br />\n";
         $stmt = $db->prepare("
             CREATE TABLE IF NOT EXISTS `user_mfa_attempts` (
-                `id` INT(11) NOT NULL AUTO_INCREMENT,
-                `userid` INT(11) NOT NULL,
+                `id` INT NOT NULL AUTO_INCREMENT,
+                `userid` INT NOT NULL,
                 `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY(id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -7432,16 +7388,7 @@ function upgrade_from_20240603001($db)
         realpath(__DIR__ . '/js/select2.min.js'),
         realpath(__DIR__ . '/css/select2.min.css'),
     ];
-
-    foreach ($remove_files as $file)
-    {
-        // If the file exists
-        if (file_exists($file))
-        {
-            // Remove the file
-            unlink($file);
-        }
-    }
+    remove_files($remove_files);
 
     // Compile the list of unnecessary directories
     echo "Removing unnecessary directories.<br />\n";
@@ -7551,16 +7498,7 @@ function upgrade_from_20240819001($db)
     $remove_files = [
         realpath(__DIR__ . '/js/colorpicker.js'),
     ];
-
-    foreach ($remove_files as $file)
-    {
-        // If the file exists
-        if (file_exists($file))
-        {
-            // Remove the file
-            unlink($file);
-        }
-    }
+    remove_files($remove_files);
 
     // Compile the list of unnecessary directories
     echo "Removing unnecessary directories.<br />\n";
@@ -7610,7 +7548,7 @@ function upgrade_from_20240819001($db)
     echo "Creating a debug_log table.<br />\n";
     $stmt = $db->prepare("
         CREATE TABLE IF NOT EXISTS `debug_log` (
-            `id` INT(11) NOT NULL AUTO_INCREMENT,
+            `id` INT NOT NULL AUTO_INCREMENT,
             `message` TEXT,
             PRIMARY KEY (`id`),
             UNIQUE KEY `id` (`id`)
@@ -7680,16 +7618,7 @@ function upgrade_from_20240909001($db)
         realpath(__DIR__ . '/vendor/simplesamlphp/simplesamlphp/lib/_autoload.php'),
         realpath(__DIR__ . '/vendor/simplesamlphp/simplesamlphp/templates/status.twig')
     ];
-
-    foreach ($remove_files as $file)
-    {
-        // If the file exists
-        if (file_exists($file))
-        {
-            // Remove the file
-            unlink($file);
-        }
-    }
+    remove_files($remove_files);
 
     // Compile the list of unnecessary directories
     echo "Removing unnecessary directories.<br />\n";
@@ -7955,16 +7884,7 @@ function upgrade_from_20240930001($db)
     $remove_files = [
         realpath(__DIR__ . '/images/question-mark.png'),
     ];
-
-    foreach ($remove_files as $file)
-    {
-        // If the file exists
-        if (file_exists($file))
-        {
-            // Remove the file
-            unlink($file);
-        }
-    }
+    remove_files($remove_files);
 
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic
@@ -8059,16 +7979,7 @@ function upgrade_from_20241209001($db) {
     $remove_files = [
         realpath(__DIR__ . '/scss/modules/_plan-projects.scss'),
     ];
-
-    foreach ($remove_files as $file)
-    {
-        // If the file exists
-        if (file_exists($file))
-        {
-            // Remove the file
-            unlink($file);
-        }
-    }                                                                                                                                                                                                                                                                         
+    remove_files($remove_files);
 
     // Update empty strings or null value to the default value for the custom_display_settings field in the user table
     if (field_exists_in_table('custom_display_settings', 'user')) {
@@ -8128,7 +8039,7 @@ function upgrade_from_20241209001($db) {
 
     // Add a table to track user logins
     echo "Adding the table to track user logins.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `user_login_history` (`id` int(11) AUTO_INCREMENT PRIMARY KEY, `user_id` int(11) NOT NULL, `timestamp` TIMESTAMP DEFAULT NOW(), `users` INT(11) NOT NULL, `risks` INT(11) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `user_login_history` (`id` INT AUTO_INCREMENT PRIMARY KEY, `user_id` INT NOT NULL, `timestamp` TIMESTAMP DEFAULT NOW(), `users` INT NOT NULL, `risks` INT NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
     
     // To make sure page loads won't fail after the upgrade
@@ -8173,27 +8084,14 @@ function upgrade_from_20250411001($db) {
 
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
-    // Created the `questionnaire_to_control_type` table
-    if (!table_exists("questionnaire_to_control_type")) {
-        echo "Creating the `questionnaire_to_control_type` table.<br />\n";
-        $stmt = $db->prepare("
-            CREATE TABLE IF NOT EXISTS `questionnaire_to_control_type` (
-                `questionnaire_id` INT(11) NOT NULL,
-                `control_type_id` INT(11) NOT NULL,
-                CONSTRAINT `questionnaire_control_type_unique` UNIQUE (`questionnaire_id`, `control_type_id`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-        ");
-        $stmt->execute();
-    }
-
     // Creating junction table for risk <-> risk catalog associations and doing the migration
     if (field_exists_in_table('risk_catalog_mapping', 'risks')) {
         if (!table_exists('risk_catalog_mappings')) {
             echo "Creating `risk_catalog_mappings` table.<br />\n";
             $stmt = $db->prepare("
                 CREATE TABLE IF NOT EXISTS `risk_catalog_mappings` (
-                    `risk_id` int(11) NOT NULL,
-                    `risk_catalog_id` int(11) NOT NULL,
+                    `risk_id` INT NOT NULL,
+                    `risk_catalog_id` INT NOT NULL,
                     PRIMARY KEY(`risk_id`, `risk_catalog_id`),
                     INDEX(`risk_catalog_id`, `risk_id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -8229,8 +8127,8 @@ function upgrade_from_20250411001($db) {
             echo "Creating `threat_catalog_mappings` table.<br />\n";
             $stmt = $db->prepare("
                 CREATE TABLE IF NOT EXISTS `threat_catalog_mappings` (
-                    `risk_id` int(11) NOT NULL,
-                    `threat_catalog_id` int(11) NOT NULL,
+                    `risk_id` INT NOT NULL,
+                    `threat_catalog_id` INT NOT NULL,
                     PRIMARY KEY(`risk_id`, `threat_catalog_id`),
                     INDEX(`threat_catalog_id`, `risk_id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -8266,8 +8164,8 @@ function upgrade_from_20250411001($db) {
             echo "Creating `document_framework_mappings` table.<br />\n";
             $stmt = $db->prepare("
                 CREATE TABLE IF NOT EXISTS `document_framework_mappings` (
-                    `document_id` int(11) NOT NULL,
-                    `framework_id` int(11) NOT NULL,
+                    `document_id` INT NOT NULL,
+                    `framework_id` INT NOT NULL,
                     PRIMARY KEY(`document_id`, `framework_id`),
                     INDEX(`framework_id`, `document_id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -8303,14 +8201,14 @@ function upgrade_from_20250411001($db) {
             echo "Creating `document_control_mappings` table.<br />\n";
             $stmt = $db->prepare("
                 CREATE TABLE IF NOT EXISTS `document_control_mappings` (
-                    `document_id` int(11) NOT NULL,
-                    `control_id` int(11) NOT NULL,
+                    `document_id` INT NOT NULL,
+                    `control_id` INT NOT NULL,
                     `score` FLOAT DEFAULT 0,
                     `tfidf_similarity` FLOAT DEFAULT 0,
-                    `keyword_match` INT(11) DEFAULT 0,
+                    `keyword_match` INT DEFAULT 0,
                     `ai_run` BOOL DEFAULT 0,
                     `ai_match` BOOL DEFAULT 0,
-                    `ai_confidence` INT(11) DEFAULT 0,
+                    `ai_confidence` INT DEFAULT 0,
                     `ai_reasoning` TEXT DEFAULT NULL,
                     `selected` BOOL DEFAULT 0,
                     `timestamp` TIMESTAMP DEFAULT NOW(),
@@ -8435,10 +8333,10 @@ function upgrade_from_20250411001($db) {
     $columns = [
         ['score',            'FLOAT DEFAULT 0'],
         ['tfidf_similarity', 'FLOAT DEFAULT 0'],
-        ['keyword_match',    'INT(11) DEFAULT 0'],
+        ['keyword_match',    'INT DEFAULT 0'],
         ['ai_run',           'BOOL DEFAULT 0'],
         ['ai_match',         'BOOL DEFAULT 0'],
-        ['ai_confidence',    'INT(11) DEFAULT 0'],
+        ['ai_confidence',    'INT DEFAULT 0'],
         ['ai_reasoning',     'TEXT DEFAULT NULL'],
         ['selected',         'BOOL DEFAULT 0'],
         ['timestamp',        'TIMESTAMP DEFAULT CURRENT_TIMESTAMP']
@@ -8714,23 +8612,14 @@ function upgrade_from_20250828001($db) {
 
     // Compile the list of unnecessary files
     echo "Removing unnecessary files.<br />\n";
-    $remove_files = array(
+    $remove_files = [
         realpath(__DIR__ . '/../js/cvss_scoring.js'),
         realpath(__DIR__ . '/../management/cvss_rating.php'),
         realpath(__dIR__ . '/../cron/cron_ai.php'),
         realpath(__DIR__ . '/../cron/cron_ping.php'),
         realpath(__DIR__ . '/worddoc.php'),
-    );
-
-    foreach ($remove_files as $file)
-    {
-        // If the file exists
-        if (file_exists($file))
-        {
-            // Remove the file
-            unlink($file);
-        }
-    }
+    ];
+    remove_files($remove_files);
     
     // Truncated the file_types table if it exists
     if (table_exists("file_types")) {
@@ -8751,8 +8640,8 @@ function upgrade_from_20250828001($db) {
         echo "Creating the `file_type_extension_mappings` table.<br />\n";
         $stmt = $db->prepare("
             CREATE TABLE IF NOT EXISTS `file_type_extension_mappings` (
-                `file_type_id` INT(11) NOT NULL,
-                `file_type_extension_id` INT(11) NOT NULL,
+                `file_type_id` INT NOT NULL,
+                `file_type_extension_id` INT NOT NULL,
                 PRIMARY KEY(`file_type_id`, `file_type_extension_id`),
                 INDEX(`file_type_extension_id`, `file_type_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -8875,6 +8764,360 @@ function upgrade_from_20250828001($db) {
         ");
         $stmt->execute();
     }
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20251118-001 *
+ ***************************************/
+function upgrade_from_20251118001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20251118-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20260224-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Compile the list of unnecessary files
+    echo "Removing unnecessary files.<br />\n";
+    $remove_files = [
+        realpath(__DIR__ . '/../admin/complianceforge_scf.php'),
+    ];
+    remove_files($remove_files);
+
+    // Add a canceled status to the queue_tasks table
+    if (table_exists('queue_tasks'))
+    {
+        echo "Adding a 'canceled' status to the queue_tasks table.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE `queue_tasks`
+            MODIFY `status` ENUM(
+                'pending',
+                'in_progress',
+                'completed',
+                'failed',
+                'canceled'
+            ) DEFAULT 'pending';
+        ");
+        $stmt->execute();
+    }
+
+    // If the reference_text column does not exist in the framework_control_mappings table
+    if (table_exists('framework_control_mappings') && !field_exists_in_table('reference_text', 'framework_control_mappings'))
+    {
+        echo "Adding the reference_text column to the framework_control_mappings table.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE `framework_control_mappings`
+            ADD COLUMN `reference_text` TEXT DEFAULT NULL;
+        ");
+        $stmt->execute();
+    }
+
+    // If the uniq_family_name index does not already exist
+    if (!index_exists_on_table('uniq_family_name', 'family'))
+    {
+        echo "Normalizing duplicate names in family table.<br />\n";
+
+        // Step 1: Update duplicates in framework_controls
+        $stmt = $db->prepare("
+            UPDATE framework_controls fc
+            INNER JOIN family f1 ON fc.family = f1.value
+            INNER JOIN family f2 ON f1.name = f2.name AND f1.value > f2.value
+            SET fc.family = f2.value;
+        ");
+        $stmt->execute();
+
+        // Step 2: Delete duplicate family rows (keep the row with the smallest value)
+        $stmt = $db->prepare("
+            DELETE f1 FROM family f1
+            INNER JOIN family f2 
+            WHERE f1.value > f2.value 
+            AND f1.name = f2.name;
+        ");
+        $stmt->execute();
+
+        // Step 3: Make the name field in the family table unique
+        echo "Making the name field in the family table unique.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `family` ADD UNIQUE INDEX `uniq_family_name` (`name`);");
+        $stmt->execute();
+    }
+
+    // If the uniq_risk_grouping_name index does not already exist
+    if (!index_exists_on_table('uniq_risk_grouping_name', 'risk_grouping'))
+    {
+        echo "Normalizing duplicate names in risk_grouping table.<br />\n";
+
+        // Step 1: Update referencing records to point to the kept grouping
+        $stmt = $db->prepare("
+            UPDATE risk_catalog rc
+            INNER JOIN risk_grouping rg1 ON rc.grouping = rg1.value
+            INNER JOIN risk_grouping rg2 
+                ON rg1.name = rg2.name
+                AND rg1.value > rg2.value
+            SET rc.grouping = rg2.value;
+        ");
+        $stmt->execute();
+
+        // Step 2: Delete duplicate rows (keep smallest value)
+        $stmt = $db->prepare("
+            DELETE rg1
+            FROM risk_grouping rg1
+            INNER JOIN risk_grouping rg2
+                ON rg1.name = rg2.name
+                AND rg1.value > rg2.value;
+        ");
+        $stmt->execute();
+
+        // Step 3: Add unique index
+        echo "Making the name field in risk_grouping unique.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE `risk_grouping`
+            ADD UNIQUE INDEX `uniq_risk_grouping_name` (`name`);
+        ");
+        $stmt->execute();
+    }
+
+    // If the uniq_risk_function_name index does not already exist
+    if (!index_exists_on_table('uniq_risk_function_name', 'risk_function'))
+    {
+        echo "Normalizing duplicate names in risk_function table.<br />\n";
+
+        // Step 1: Update referencing records
+        $stmt = $db->prepare("
+            UPDATE risk_catalog rc
+            INNER JOIN risk_function rf1 ON rc.function = rf1.value
+            INNER JOIN risk_function rf2
+                ON rf1.name = rf2.name
+                AND rf1.value > rf2.value
+            SET rc.function = rf2.value;
+        ");
+        $stmt->execute();
+
+        // Step 2: Delete duplicates
+        $stmt = $db->prepare("
+            DELETE rf1
+            FROM risk_function rf1
+            INNER JOIN risk_function rf2
+                ON rf1.name = rf2.name
+                AND rf1.value > rf2.value;
+        ");
+        $stmt->execute();
+
+        // Step 3: Add unique index
+        echo "Making the name field in risk_function unique.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE `risk_function`
+            ADD UNIQUE INDEX `uniq_risk_function_name` (`name`);
+        ");
+        $stmt->execute();
+    }
+
+    // If the uniq_risk_catalog_number_name index does not already exist
+    if (!index_exists_on_table('uniq_risk_catalog_number_name', 'risk_catalog'))
+    {
+        echo "Normalizing duplicate risks in risk_catalog table.<br />\n";
+
+        // Step 1: Update risk_catalog_mappings to point to the kept risk_catalog.id
+        $stmt = $db->prepare("
+            UPDATE risk_catalog_mappings rcm
+            INNER JOIN risk_catalog rc1 ON rcm.risk_catalog_id = rc1.id
+            INNER JOIN risk_catalog rc2
+                ON rc1.number = rc2.number
+                AND rc1.name = rc2.name
+                AND rc1.id > rc2.id
+            SET rcm.risk_catalog_id = rc2.id;
+        ");
+        $stmt->execute();
+
+        // Step 2: Delete duplicate risk_catalog rows (keep smallest id)
+        $stmt = $db->prepare("
+            DELETE rc1
+            FROM risk_catalog rc1
+            INNER JOIN risk_catalog rc2
+                ON rc1.number = rc2.number
+                AND rc1.name = rc2.name
+                AND rc1.id > rc2.id;
+        ");
+        $stmt->execute();
+
+        // Step 3: Add unique index on (number, name)
+        echo "Making (number, name) unique in risk_catalog.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE `risk_catalog`
+            ADD UNIQUE INDEX `uniq_risk_catalog_number_name` (`number`, `name`(191));
+        ");
+        $stmt->execute();
+    }
+
+    // If the uniq_threat_grouping_name index does not already exist
+    if (!index_exists_on_table('uniq_threat_grouping_name', 'threat_grouping'))
+    {
+        echo "Normalizing duplicate names in threat_grouping table.<br />\n";
+
+        // Step 1: Update referencing records to point to the kept grouping
+        $stmt = $db->prepare("
+            UPDATE threat_catalog tc
+            INNER JOIN threat_grouping tg1 ON tc.grouping = tg1.value
+            INNER JOIN threat_grouping tg2 
+                ON tg1.name = tg2.name
+                AND tg1.value > tg2.value
+            SET tc.grouping = tg2.value;
+        ");
+        $stmt->execute();
+
+        // Step 2: Delete duplicate rows (keep smallest value)
+        $stmt = $db->prepare("
+            DELETE tg1
+            FROM threat_grouping tg1
+            INNER JOIN threat_grouping tg2
+                ON tg1.name = tg2.name
+                AND tg1.value > tg2.value;
+        ");
+        $stmt->execute();
+
+        // Step 3: Add unique index
+        echo "Making the name field in threat_grouping unique.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE `threat_grouping`
+            ADD UNIQUE INDEX `uniq_threat_grouping_name` (`name`);
+        ");
+        $stmt->execute();
+    }
+
+    // If the uniq_threat_catalog_number_name index does not already exist
+    if (!index_exists_on_table('uniq_threat_catalog_number_name', 'threat_catalog'))
+    {
+        echo "Normalizing duplicate threats in threat_catalog table.<br />\n";
+
+        // Step 1: Update threat_catalog_mappings to point to the kept threat_catalog.id
+        $stmt = $db->prepare("
+            UPDATE threat_catalog_mappings tcm
+            INNER JOIN threat_catalog tc1 ON tcm.threat_catalog_id = tc1.id
+            INNER JOIN threat_catalog tc2
+                ON tc1.number = tc2.number
+                AND tc1.name = tc2.name
+                AND tc1.id > tc2.id
+            SET tcm.threat_catalog_id = tc2.id;
+        ");
+        $stmt->execute();
+
+        // Step 2: Delete duplicate threat_catalog rows (keep smallest id)
+        $stmt = $db->prepare("
+            DELETE tc1
+            FROM threat_catalog tc1
+            INNER JOIN threat_catalog tc2
+                ON tc1.number = tc2.number
+                AND tc1.name = tc2.name
+                AND tc1.id > tc2.id;
+        ");
+        $stmt->execute();
+
+        // Step 3: Add unique index on (number, name)
+        echo "Making (number, name) unique in threat_catalog.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE `threat_catalog`
+            ADD UNIQUE INDEX `uniq_threat_catalog_number_name` (`number`, `name`(191));
+        ");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('uniq_framework_control_mappings_control_framework_reference', 'framework_control_mappings'))
+    {
+        echo "Adding unique index to framework_control_mappings table.<br />\n";
+
+        // Step 1: Delete duplicate rows (keep smallest id)
+        $stmt = $db->prepare("
+            DELETE fc1
+            FROM framework_control_mappings fc1
+            INNER JOIN framework_control_mappings fc2
+                ON fc1.control_id = fc2.control_id
+                AND fc1.framework = fc2.framework
+                AND fc1.reference_name = fc2.reference_name
+                AND fc1.id > fc2.id;
+        ");
+        $stmt->execute();
+
+        // Step 2: Separate reference_name into unique row entries
+        $stmt = $db->prepare("
+            INSERT INTO framework_control_mappings (control_id, framework, reference_name)
+            WITH RECURSIVE split_refs AS (
+                -- Anchor: take rows that contain newlines
+                SELECT
+                    id,
+                    control_id,
+                    framework,
+                    TRIM(
+                        SUBSTRING_INDEX(reference_name, '\n', 1)
+                    ) AS reference_name,
+                    SUBSTRING(reference_name, LENGTH(SUBSTRING_INDEX(reference_name, '\n', 1)) + 2) AS rest
+                FROM framework_control_mappings
+                WHERE reference_name REGEXP '\r|\n'
+
+                UNION ALL
+
+                -- Recursive step: peel off one line at a time
+                SELECT
+                    id,
+                    control_id,
+                    framework,
+                    TRIM(
+                        SUBSTRING_INDEX(rest, '\n', 1)
+                    ) AS reference_name,
+                    SUBSTRING(rest, LENGTH(SUBSTRING_INDEX(rest, '\n', 1)) + 2)
+                FROM split_refs
+                WHERE rest IS NOT NULL
+                    AND rest <> ''
+            )
+            SELECT
+                control_id,
+                framework,
+                reference_name
+            FROM split_refs
+            WHERE reference_name <> '';
+        ");
+        $stmt->execute();
+
+        // Step 3: Remove original rows that had multiple references
+        $stmt = $db->prepare("
+            DELETE FROM framework_control_mappings
+            WHERE reference_name REGEXP '\r|\n';
+        ");
+        $stmt->execute();
+
+        // Step 4: Reduce the reference_name field length to 255 characters
+        $stmt = $db->prepare("
+            ALTER TABLE framework_control_mappings
+            MODIFY reference_name VARCHAR(255) NOT NULL;
+        ");
+        $stmt->execute();
+
+        // Step 5: Add unique index
+        $stmt = $db->prepare("
+            ALTER TABLE `framework_control_mappings`
+            ADD UNIQUE KEY `uniq_framework_control_mappings_control_framework_reference` (
+                control_id,
+                framework,
+                reference_name
+            );
+        ");
+        $stmt->execute();
+    }
+
+    // Fix families with extra whitespace at the end
+    echo "Fixing family table entries with extra whitespace.<br />\n";
+    $stmt = $db->prepare("
+        UPDATE family
+        SET name = TRIM(name);
+    ");
+    $stmt->execute();
 
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic

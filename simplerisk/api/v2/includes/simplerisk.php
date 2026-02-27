@@ -171,10 +171,14 @@ function api_v2_admin_write_debug_log()
         }
 
         // Commit the transaction
-        $db->commit();
+        if ($db->inTransaction()) {
+            $db->commit();
+        }
     } catch (Exception $e) {
         // If an error occurs, rollback the transaction
-        $db->rollBack();
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
         write_debug_log("Error in api_v2_admin_write_debug_log: " . $e->getMessage());
     } finally {
         // Close the database connection
@@ -192,20 +196,27 @@ function api_v2_admin_upgrade_db()
     // Check that this is an admin user
     api_v2_check_admin();
 
-    // Get the raw POST data
-    $requestBody = file_get_contents("php://input");
+    // Get version from POST parameters
+    $version = $_POST['version'] ?? null;
 
-    // Decode JSON into an associative array
-    $data = json_decode($requestBody, true);
+    // If no version is provided, use the most recent release
+    if (!$version)
+    {
+        if (empty($releases))
+        {
+            api_v2_json_result(500, "No releases available", null);
+            return;
+        }
+
+        // Use the latest release (last element)
+        $version = end($releases);
+    }
 
     // If the version provided is in the correct format
-    if (isset($data['version']) && preg_match('/^\d{8}-\d{3}$/', $data['version']))
+    if ($version && preg_match('/^\d{8}-\d{3}$/', $version))
     {
-        // Extract the version number
-        $version = $data['version'];
-
         // If the version is not in the releases array, return an error
-        if (!in_array($version, $releases))
+        if (!in_array($version, $releases, true))
         {
             // Create the result
             $status_code = 400;
@@ -218,7 +229,7 @@ function api_v2_admin_upgrade_db()
             $release_function_name = get_database_upgrade_function_for_release($version);
 
             // If a release function name was found
-            if ($release_function_name != false)
+            if ($release_function_name !== false)
             {
 
                 // If the release function exists
@@ -366,11 +377,17 @@ function api_v2_admin_queue()
         }
     }
 
+    // Open the database connection
+    $db = db_open();
+
     // Get all queue items with filters applied
-    $queue_items = get_queue_items($task_type, $status);
+    $queue_items = get_queue_items($db, $task_type, $status);
+
+    // Close the database connection
+    db_close($db);
 
     // Total records before filtering
-    $records_total = count(get_queue_items());
+    $records_total = count(get_queue_items($db));
 
     // Total records after filtering
     $records_filtered = count($queue_items);
@@ -406,7 +423,7 @@ function api_v2_admin_queue_promises()
 
     // Get the queue_task_id from the query
     if (!isset($_GET['queue_task_id']) || !is_numeric($_GET['queue_task_id'])) {
-        api_v2_json_result(400, "Missing or invalid queue_task_id", []);
+        api_v2_json_result(200, "Missing or invalid queue_task_id", []);
         return;
     }
     $queue_task_id = (int)$_GET['queue_task_id'];
@@ -424,7 +441,7 @@ function api_v2_admin_queue_promises()
 
     // Check if any promises were found
     if (empty($promises)) {
-        api_v2_json_result(404, "No promises found for queue_task_id {$queue_task_id}", []);
+        api_v2_json_result(200, "No promises found for queue_task_id {$queue_task_id}", []);
         return;
     }
 

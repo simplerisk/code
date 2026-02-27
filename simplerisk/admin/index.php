@@ -564,6 +564,20 @@
             set_alert(true, "bad", "The session absolute timeout should be more than the session activity timeout.");
         }
 
+        // Update the password reset token expiration period setting
+        $password_reset_token_expiration = (int)$_POST['password_reset_token_expiration'];
+
+        // If the password_reset_token_expiration value is at least 5 minutes
+        if ($password_reset_token_expiration >= 5) {
+            $current_password_reset_token_expiration = get_setting("password_reset_token_expiration");
+            if ($password_reset_token_expiration != $current_password_reset_token_expiration) {
+                update_setting("password_reset_token_expiration", $password_reset_token_expiration);
+            }
+        } else {
+            $error = true;
+            set_alert(true, "bad", $escaper->escapeHtml($lang['APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes']));
+        }
+        
         // Update the content security policy
         $content_security_policy = isset($_POST['content_security_policy']) ? 1 : 0;
         $current_content_security_policy = get_setting("content_security_policy");
@@ -1449,6 +1463,14 @@
                                         <div class="form-group">
                                             <label><?= $escaper->escapeHtml($lang['SessionAbsoluteTimeout']) . " (" . $escaper->escapeHtml($lang["seconds"]) . ")"; ?> :</label>
                                             <input name="session_absolute_timeout" id="session_absolute_timeout" type="number" min="0" size="20px" value="<?= $escaper->escapeHtml(get_setting("session_absolute_timeout")); ?>" class="form-control"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <label><?= $escaper->escapeHtml($lang['PasswordResetTokenExpirationPeriod']) . " (" . $escaper->escapeHtml($lang["minutes"]) . ")"; ?> :</label>
+                                            <input name="password_reset_token_expiration" id="password_reset_token_expiration" type="number" min="5" size="20px" value="<?= $escaper->escapeHtml(get_setting("password_reset_token_expiration") ?: 15); ?>" class="form-control"/>
                                         </div>
                                     </div>
                                 </div>

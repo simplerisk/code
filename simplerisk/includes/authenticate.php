@@ -788,9 +788,13 @@ function is_valid_reset_token($username, $token)
 	// Open the database connection
 	$db = db_open();
 
-    // Delete tokens older than 15 minutes
-    $stmt = $db->prepare("DELETE FROM password_reset WHERE timestamp < DATE_SUB(NOW(), INTERVAL 15 MINUTE)");
-    $stmt->execute();
+    // Get the password reset token expiration period (default 15 minutes)
+    $password_reset_token_expiration = get_setting("password_reset_token_expiration") ?: 15;
+
+    // Delete tokens older than the expiration period
+    $delete_stmt = $db->prepare("DELETE FROM password_reset WHERE timestamp < DATE_SUB(NOW(), INTERVAL :expiration MINUTE)");
+    $delete_stmt->bindParam(":expiration", $password_reset_token_expiration, PDO::PARAM_INT);
+    $delete_stmt->execute();
 
 	// If strict user validation is disabled
 	if (get_setting('strict_user_validation') == 0)

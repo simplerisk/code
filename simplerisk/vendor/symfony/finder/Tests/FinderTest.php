@@ -13,6 +13,7 @@ namespace Symfony\Component\Finder\Tests;
 
 use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 class FinderTest extends Iterator\RealIteratorTestCase
 {
@@ -1296,9 +1297,112 @@ class FinderTest extends Iterator\RealIteratorTestCase
         $this->assertIterator($this->toAbsolute(['foo', 'foo/bar.tmp', 'toto']), $finder->getIterator());
     }
 
+    public function testAppendStandardizesItemsToBeSymfonySplFileInfo()
+    {
+        $finder1 = $this->buildFinder();
+        $finder1->files()->in(self::$tmpDir.\DIRECTORY_SEPARATOR.'foo');
+
+        $finder2 = $this->buildFinder();
+        $finder2->directories()->in(self::$tmpDir);
+
+        $finder1->append($finder2);
+        $finder1->append($this->toAbsolute(['foo']));
+        $finder1->append(array_map(static fn ($item) => new \SplFileInfo($item), $this->toAbsolute(['toto'])));
+
+        foreach ($finder1 as $item) {
+            $this->assertInstanceOf(SplFileInfo::class, $item);
+        }
+    }
+
+    public function testRelativePathWithoutAppend()
+    {
+        $this->setupVfsProvider([
+            'a' => [
+                'a1' => '',
+                'a2' => '',
+                'b' => [
+                    'b1' => '',
+                    'b2' => '',
+                    'c' => [
+                        'c1' => '',
+                        'c2' => '',
+                    ],
+                ],
+            ],
+        ]);
+
+        $formatForAssert = static function (Finder $finder) {
+            $data = [];
+            foreach ($finder as $key => $value) {
+                $data[] = ['key' => $key, 'relativePathname' => $value->getRelativePathname()];
+            }
+
+            return $data;
+        };
+
+        $dir = $this->vfsScheme.'://';
+
+        $finder = Finder::create()->sortByName()->in($dir.'a/b');
+        $this->assertSame(
+            [
+                ['key' => $dir.'a/b'.\DIRECTORY_SEPARATOR.'b1', 'relativePathname' => 'b1'],
+                ['key' => $dir.'a/b'.\DIRECTORY_SEPARATOR.'b2', 'relativePathname' => 'b2'],
+                ['key' => $dir.'a/b'.\DIRECTORY_SEPARATOR.'c', 'relativePathname' => 'c'],
+                ['key' => $dir.'a/b'.\DIRECTORY_SEPARATOR.'c'.\DIRECTORY_SEPARATOR.'c1', 'relativePathname' => 'c'.\DIRECTORY_SEPARATOR.'c1'],
+                ['key' => $dir.'a/b'.\DIRECTORY_SEPARATOR.'c'.\DIRECTORY_SEPARATOR.'c2', 'relativePathname' => 'c'.\DIRECTORY_SEPARATOR.'c2'],
+            ],
+            $formatForAssert($finder),
+        );
+    }
+
+    public function testRelativePathWithAppendedOnEmptyFinder()
+    {
+        $this->setupVfsProvider([
+            'a' => [
+                'a1' => '',
+                'a2' => '',
+                'b' => [
+                    'b1' => '',
+                    'b2' => '',
+                    'c' => [
+                        'c1' => '',
+                        'c2' => '',
+                    ],
+                ],
+            ],
+        ]);
+
+        $formatForAssert = static function (Finder $finder) {
+            $data = [];
+            foreach ($finder as $key => $value) {
+                $data[] = ['key' => $key, 'relativePathname' => $value->getRelativePathname()];
+            }
+
+            return $data;
+        };
+
+        $dir = $this->vfsScheme.'://';
+
+        $finder = Finder::create()->sortByName();
+        $finder->append([$dir.'a/a1']);
+        $this->assertSame(
+            [
+                ['key' => $dir.'a/a1', 'relativePathname' => $dir.'a/a1'],
+            ],
+            $formatForAssert($finder),
+        );
+    }
+
     public function testAppendReturnsAFinder()
     {
         $this->assertInstanceOf(Finder::class, Finder::create()->append([]));
+    }
+
+    public function testAppendEmptyIterableAllowsIteration()
+    {
+        $finder = Finder::create()->files()->name('*.php')->append([]);
+
+        $this->assertSame([], iterator_to_array($finder->getIterator()));
     }
 
     public function testAppendDoesNotRequireIn()

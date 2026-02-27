@@ -755,17 +755,6 @@ div#main-wrapper[data-function="reset_password"] {
 	}
 }
 
-// CONFIGURE / EXTRAS / SECURE CONTROLS FRAMEWORK(SCF) PAGE 
-#complianceforge_scf_controls_disabled,
-#complianceforge_scf_controls_enabled {
-	height: 20rem;
-    padding: .25rem 0px;
-
-    option {
-        padding-left: .5rem;
-    }
-}
-
 // CONFIGURE / REGISTER PAGE
 .registration-table-edit,
 .registration-table {
@@ -906,6 +895,27 @@ html:has(.score-method-page) {
     font-weight: normal;
     font-size: .75rem;
     color: var(--sr-danger);
+}
+
+// RISK MANAGEMENT / SUBMIT RISK / CVSS MODAL
+#cvssModal {
+	.score-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+
+		label {
+			width: 170px;
+			min-width: 170px;
+		}
+
+		.score-value {
+			width: 80px;
+			text-align: right;
+			background-color: var(--bs-secondary-bg);
+		}
+    }
 }
 
 // RISK MANAGEMENT / PLAN PROJECT PAGE
@@ -1081,6 +1091,17 @@ a.open-in-new-tab {
     z-index: 10001 !important;
 }
 
+// Updated the hugerte editor styles to remove border-radius so that it matches with other form controls
+.tox-hugerte {
+	border-radius: 0!important;
+}
+
+.tox {
+	.tox-edit-area::before {
+		border-radius: 0!important;
+	}
+}
+
 // COMPLIANCE / PAST AUDITS PAGE
 #framework-controls {
 	td.sorting_1 {
@@ -1128,6 +1149,17 @@ a.open-in-new-tab {
   user-select: none; /* Standard syntax */
 }
 
+.collapse-caret {
+    display: inline-block;
+    transition: transform 0.25s ease-in-out; /* smooth rotation */
+}
+
+/* rotate when expanded */
+.collapse.show + .collapse-caret,
+.collapse-caret.rotate {
+    transform: rotate(90deg); /* points down */
+}
+
 //**************************** DATATABLE BEGIN ****************************//
 .multiselect-container {
     will-change: transform;
@@ -1141,6 +1173,14 @@ a.open-in-new-tab {
 	}
 }
 //***************************** SELECTIZE END *****************************//
+
+// Bullets used by questionnaire answers
+.answer-bullets li {
+  display: list-item;
+  list-style-type: disc;
+  list-style-position: outside;
+  margin-bottom: 0.4em;
+}
 
 @import "modules/treegrid";
 @import "modules/colorpicker";

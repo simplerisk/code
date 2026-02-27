@@ -1,5 +1,8 @@
 <?php
 
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 declare(strict_types=1);
 
 if (php_sapi_name() !== "cli") {
@@ -10,6 +13,7 @@ require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/mail.php'));
 require_once(realpath(__DIR__ . '/../includes/queues.php'));
 require_once(realpath(__DIR__ . '/../includes/promises.php'));
+require_once(realpath(__DIR__ . '/../includes/workers.php'));
 require_once(realpath(__DIR__ . '/../includes/files.php'));
 require_once(realpath(__DIR__ . '/../includes/Components/DocumentTextHandler.php'));
 require_once(realpath(__DIR__ . '/../includes/Components/CsvHandler.php'));
@@ -18,11 +22,15 @@ require_once(realpath(__DIR__ . '/../includes/Components/SpreadsheetHandler.php'
 require_once(realpath(__DIR__ . '/../includes/Components/WordHandler.php'));
 
 // === CONFIGURATION ===
-$pidFile = sys_get_temp_dir() . '/simplerisk_queue_worker.pid';
-$stalePidThreshold = 24 * 3600;
+$workerName = 'cron_queue_worker';
+$stalePidThreshold = 24 * 3600; // 24 hours
 $loopDelaySeconds = 3;
-$idleRestartMinutes = 60;
+$maxRuntimeMinutes = 60;
+$maxIdleMinutes = 60;
+$memoryLimitBytes = 400 * 1024 * 1024;
 $stuckThresholdMinutes = 30;
+
+$startTime = time();
 
 // === SYSTEM SETTINGS ===
 ini_set('max_execution_time', 0);
@@ -30,129 +38,175 @@ set_time_limit(0);
 ini_set('memory_limit', '512M');
 ob_implicit_flush(true);
 
-// === SINGLE INSTANCE CHECK ===
-if (file_exists($pidFile)) {
-    $pid = (int) trim(file_get_contents($pidFile));
-    $pidAge = time() - filemtime($pidFile);
-
-    if ($pid && isProcessRunning($pid)) {
-        echo "Worker already running (PID $pid)\n";
-        exit;
-    } else {
-        write_debug_log("Removing stale/non-running PID file (PID $pid, age {$pidAge}s)...", "info");
-        unlink($pidFile);
-    }
-}
-
-file_put_contents($pidFile, getmypid());
-
-$cleanupPidFile = function() use ($pidFile) {
-    if (file_exists($pidFile)) {
-        unlink($pidFile);
-        write_debug_log("PID file removed.", "info");
-    }
-};
-register_shutdown_function($cleanupPidFile);
-
-// Shutdown & signal handling
-$shutdownRequested = false;
-if (function_exists('pcntl_signal')) {
-    $signalHandler = function($signo) use (&$shutdownRequested) {
-        if (in_array($signo, [SIGTERM, SIGINT, SIGHUP, SIGQUIT])) {
-            $shutdownRequested = true;
-            write_debug_log("Shutdown signal received (signal $signo), exiting gracefully...", "notice");
-        }
-    };
-    pcntl_signal(SIGTERM, $signalHandler);
-    pcntl_signal(SIGINT, $signalHandler);
-    pcntl_signal(SIGHUP, $signalHandler);
-    pcntl_signal(SIGQUIT, $signalHandler);
-}
-
 write_debug_log("Queue worker started (PID " . getmypid() . ")", "info");
 
-// === DATABASE CONNECTION ===
+// === CHECK FOR ZOMBIE WORKERS ===
+$zombies = list_zombie_workers($workerName, $stalePidThreshold);
+foreach ($zombies as $zombie) {
+    write_debug_log(
+        "Zombie worker detected: PID {$zombie['pid']} on host {$zombie['host']}, last heartbeat {$zombie['last_heartbeat']}",
+        "warning"
+    );
+}
+
+// === ACQUIRE LOCK ===
+if (!acquire_worker_lock($workerName, $stalePidThreshold)) {
+    write_debug_log("$workerName lock not acquired, exiting.", "info");
+    exit(0);
+}
+
+// === REGISTER SIGNAL HANDLERS ===
+register_worker_signal_handlers($workerName);
+
+// === SHUTDOWN FUNCTION ===
+register_shutdown_function(function () use ($workerName) {
+    $error = error_get_last();
+    if ($error && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE])) {
+        write_debug_log("Fatal worker error: {$error['message']} in {$error['file']}:{$error['line']}", "error");
+        record_worker_restart($workerName, 'fatal_error: ' . $error['message']);
+    }
+    release_worker_lock($workerName);
+});
+
+// === OPEN DB CONNECTION ===
 $db = db_open();
-$startTime = time();
-$jobs = load_all_jobs();
+if (!$db) {
+    write_debug_log("Failed to open database connection, exiting.", "error");
+    exit(1);
+}
 
+// === MAIN WORKER LOOP ===
 while (true) {
-    if (function_exists('pcntl_signal_dispatch')) pcntl_signal_dispatch();
-    if ($shutdownRequested) break;
+    // Dispatch signals
+    if (function_exists('pcntl_signal_dispatch')) {
+        pcntl_signal_dispatch();
+    }
 
-    if ((time() - $startTime) > ($idleRestartMinutes * 60)) break;
-    if (memory_get_usage(true) > 400 * 1024 * 1024) break;
+    $now = time();
 
-    // Recover stuck tasks
-    $db->exec("
-        UPDATE queue_tasks
-        SET status='pending', updated_at=NOW()
-        WHERE status='in_progress' AND updated_at < NOW() - INTERVAL {$stuckThresholdMinutes} MINUTE
-    ");
+    // === SHUTDOWN & RELOAD CHECKS ===
+    if (worker_should_shutdown()) {
+        write_debug_log("Shutdown requested, exiting main loop...", "info");
+        break;
+    }
 
-    // Ensure DB connection
-    try { $db->query("SELECT 1"); } catch (\Throwable $t) { db_close($db); $db = db_open(); }
+    if (worker_should_reload()) {
+        write_debug_log("Reload requested, resetting worker metrics...", "info");
+        reset_worker_metrics($workerName);
+        worker_clear_reload_flag();
+    }
 
-    // Fetch pending tasks
-    $db->beginTransaction();
-    $stmt = $db->prepare("
-        SELECT * FROM queue_tasks
-        WHERE status = 'pending'
-        ORDER BY priority DESC, created_at ASC
-        LIMIT 10
-        FOR UPDATE
-    ");
-    $stmt->execute();
-    $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $db->commit();
+    // === METRICS: memory usage ===
+    worker_metric_set($workerName, 'memory_bytes', memory_get_usage(true));
+    worker_metric_set($workerName, 'peak_memory_bytes', memory_get_peak_usage(true));
 
-    $task = null;
-    foreach ($tasks as $t) {
-        $payload = json_decode($t['payload'] ?? '{}', true);
-        $nextRetryAt = isset($payload['next_retry_at']) ? strtotime($payload['next_retry_at']) : null;
-        if ($nextRetryAt === null || $nextRetryAt <= time()) {
-            $task = $t;
+    // === RESOURCE / TIME CHECKS ===
+    if (($now - $startTime) > ($maxRuntimeMinutes * 60)) {
+        record_worker_restart($workerName, 'max_runtime_exceeded');
+        break;
+    }
+
+    if (($now - $startTime) > ($maxIdleMinutes * 60)) {
+        record_worker_restart($workerName, 'max_idle_exceeded');
+        break;
+    }
+
+    if (memory_get_usage(true) > $memoryLimitBytes) {
+        record_worker_restart($workerName, 'memory_limit_exceeded');
+        break;
+    }
+
+    // === ENSURE DB CONNECTION ===
+    try {
+        $db->query("SELECT 1");
+    } catch (\Throwable $t) {
+        write_debug_log("Reconnecting to DB after connection loss...", "warning");
+        db_close($db);
+        $db = db_open();
+        if (!$db) {
+            write_debug_log("Failed to reconnect to database, exiting.", "error");
             break;
         }
     }
 
+    // === RECOVER STUCK TASKS ===
+    try {
+        $stmt = $db->prepare("
+            UPDATE queue_tasks
+            SET status='pending', updated_at=NOW()
+            WHERE status='in_progress' AND updated_at < NOW() - INTERVAL :mins MINUTE
+        ");
+        $stmt->execute([':mins' => $stuckThresholdMinutes]);
+        if ($stmt->rowCount() > 0) {
+            write_debug_log("Recovered {$stmt->rowCount()} stuck tasks.", "warning");
+        }
+    } catch (\Throwable $t) {
+        write_debug_log("Error recovering stuck tasks: " . $t->getMessage(), "error");
+    }
+
+    // === FETCH NEXT PENDING TASK ===
+    $task = null;
+    try {
+        $db->beginTransaction();
+        $stmt = $db->prepare("
+            SELECT * FROM queue_tasks
+            WHERE status = 'pending'
+            ORDER BY priority DESC, created_at ASC
+            LIMIT 1
+            FOR UPDATE
+        ");
+        $stmt->execute();
+        $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if ($db->inTransaction()) {
+            $db->commit();
+        }
+
+        foreach ($tasks as $t) {
+            $payload = json_decode($t['payload'] ?? '{}', true);
+            $nextRetryAt = isset($payload['next_retry_at']) ? strtotime($payload['next_retry_at']) : null;
+            if ($nextRetryAt === null || $nextRetryAt <= $now) {
+                $task = $t;
+                break;
+            }
+        }
+    } catch (\Throwable $t) {
+        if ($db->inTransaction()) $db->rollBack();
+        write_debug_log("Error fetching tasks: " . $t->getMessage(), "error");
+        worker_interruptible_sleep($loopDelaySeconds);
+        continue;
+    }
+
     if (!$task) {
-        sleep($loopDelaySeconds);
+        worker_interruptible_sleep($loopDelaySeconds);
         continue;
     }
 
     $taskType = $task['task_type'];
     write_debug_log("Fetched task #{$task['id']} with type '{$taskType}'", "info");
 
-    // Find job definition
-    $job_def = null;
-    foreach ($jobs as $job) {
-        if ($job['type'] === $taskType) {
-            $job_def = $job;
-            break;
-        }
+    // === TASK LOOKUP USING KEYED JOB MAP ===
+    $job_def = worker_get_job_definition($taskType);
+    if (!$job_def) {
+        handle_queue_task_failure($db, $task, "No job definition");
+        worker_interruptible_sleep($loopDelaySeconds);
+        continue;
     }
 
+    // === TASK HANDLER EXECUTION ===
     try {
-        if (!$job_def) throw new \RuntimeException("No job definition for task type '{$taskType}'");
-
         $handler = $job_def['queue_check'] ?? $job_def['task_check'] ?? null;
         if (!is_callable($handler)) throw new \RuntimeException("No valid handler for task #{$task['id']}");
 
-        $result = $handler($task);
+        $result = $handler($task, $db);
         write_debug_log("Task #{$task['id']} handler returned: " . var_export($result, true), "info");
 
         if ($result === false) {
-            // Task failed
             handle_queue_task_failure($db, $task, "Handler returned false");
         } else {
-            // Determine if this task has promise stages
             if (!empty($job_def['stages']) && is_array($job_def['stages'])) {
-                // Task has stages → leave in_progress for promise scheduler
-                queue_update_status($task['id'], 'in_progress');
+                queue_update_status($task['id'], 'in_progress', $db);
             } else {
-                // Standalone task → mark completed
-                queue_update_status($task['id'], 'completed');
+                queue_update_status($task['id'], 'completed', $db);
             }
         }
     } catch (\Throwable $t) {
@@ -160,10 +214,13 @@ while (true) {
         handle_queue_task_failure($db, $task, $t->getMessage(), 5, 5, 3600);
     }
 
-    sleep($loopDelaySeconds);
+    // === WORKER TICK ===
+    worker_tick($workerName, $db);
+
+    worker_interruptible_sleep($loopDelaySeconds);
 }
 
+// === CLEANUP ===
 db_close($db);
 write_debug_log("Queue worker exited.", "info");
-
 ?>

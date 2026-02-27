@@ -109,7 +109,7 @@
 	}
 
 	.risk-details-view {
-		display: flex;
+		display: block;
 		align-items: center;
 	}
 }
@@ -123,7 +123,7 @@
 	}
 
 	.mitigation-details-view {
-		display: flex;
+		display: block;
 		align-items: center;
 	}
 }
@@ -137,7 +137,7 @@
 	}
 
 	.review-details-view {
-		display: flex;
+		display: block;
 		align-items: center;
 	}
 }

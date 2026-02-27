@@ -288,7 +288,7 @@ function setupQuestionnaireContactUserWidget(select_tag) {
             var originEl = $(self.$input[0]);
             var selectedItems = originEl.data('items') ? originEl.data('items') : [];
             $.ajax({
-                url: BASE_URL + '/api/assessment/contacts-users/options',
+                url: BASE_URL + '/api/v2/assessments/contacts-users/options',
                 type: 'GET',
                 dataType: 'json',
                 error: function () {
@@ -403,7 +403,7 @@ function redraw_control() {
     });
     $.ajax({
         type: "POST",
-        url: BASE_URL + "/api/assessment/questionnaire/template/controls",
+        url: BASE_URL + "/api/v2/assessments/questionnaire/template/controls",
         data: {
             template_framework: template_framework
         },

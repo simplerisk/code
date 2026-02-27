@@ -512,7 +512,7 @@ function check_web_connectivity()
 	set_proxy_stream_context($method, $header);
 
 	// URLs to check
-	$urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://scf.simplerisk.com", "https://olbat.github.io", "https://github.com", "https://raw.githubusercontent.com", "https://simplerisk-downloads.s3.amazonaws.com");
+	$urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://scf.simplerisk.com", "https://services.nvd.nist.gov", "https://github.com", "https://raw.githubusercontent.com", "https://simplerisk-downloads.s3.amazonaws.com");
 
 	// Create an empty array
 	$array = array();

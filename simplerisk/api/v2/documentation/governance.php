@@ -12,38 +12,45 @@
  *     tags={"governance"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\Parameter(
- *       parameter="id",
- *       in="query",
- *       name="id",
- *       description="The id of the control framework you would like to retrieve details for. Will return all control frameworks if no id is specified.",
- *       required=false,
- *       @OA\Schema(
- *         type="integer",
- *       ),
+ *         parameter="id",
+ *         in="query",
+ *         name="id",
+ *         description="The id of the control framework you would like to retrieve details for. Will return all control frameworks if no id is specified.",
+ *         required=false,
+ *         @OA\Schema(type="integer")
  *     ),
  *     @OA\Parameter(
- *       parameter="status",
- *       in="query",
- *       name="status",
- *       description="Use a status of 1 for enabled or 2 for disabled. Will default to enabled.",
- *       required=false,
- *       @OA\Schema(
- *         type="integer",
- *         enum={"1", "2"},
- *       ),
+ *         parameter="status",
+ *         in="query",
+ *         name="status",
+ *         description="Use a status of 1 for enabled or 2 for disabled. Will default to enabled.",
+ *         required=false,
+ *         @OA\Schema(type="integer", enum={"1", "2"})
  *     ),
  *     @OA\Response(
- *       response=200,
- *       description="SimpleRisk control frameworks",
+ *         response=200,
+ *         description="SimpleRisk control frameworks",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=200),
+ *             @OA\Property(property="message", type="string", example="Success"),
+ *             @OA\Property(property="data", type="array", @OA\Items(type="object", additionalProperties=true))
+ *         )
  *     ),
  *     @OA\Response(
- *       response=204,
- *       description="NO CONTENT: Unable to find a control framework with the specified id.",
+ *         response=204,
+ *         description="NO CONTENT: Unable to find a control framework with the specified id."
  *     ),
  *     @OA\Response(
- *       response=403,
- *       description="FORBIDDEN: The user does not have the required permission to perform this action.",
- *     ),
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=403),
+ *             @OA\Property(property="message", type="string", example="Forbidden"),
+ *             @OA\Property(property="data", type="object", nullable=true, additionalProperties=true)
+ *         )
+ *     )
  * )
  */
 class OpenApiGovernanceFrameworks {}
@@ -56,27 +63,35 @@ class OpenApiGovernanceFrameworks {}
  *     tags={"governance"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\Parameter(
- *       parameter="id",
- *       in="query",
- *       name="id",
- *       description="The id of the framework you would like to retrieve associations for.",
- *       required=true,
- *       @OA\Schema(
- *         type="integer",
- *       ),
+ *         parameter="id",
+ *         in="query",
+ *         name="id",
+ *         description="The id of the framework you would like to retrieve associations for.",
+ *         required=true,
+ *         @OA\Schema(type="integer")
  *     ),
  *     @OA\Response(
- *       response=200,
- *       description="SimpleRisk framework associations",
+ *         response=200,
+ *         description="SimpleRisk framework associations",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(type="object", additionalProperties=true)
+ *         )
  *     ),
  *     @OA\Response(
- *       response=204,
- *       description="NO CONTENT: Unable to find a framework with the specified id.",
+ *         response=204,
+ *         description="NO CONTENT: Unable to find a framework with the specified id."
  *     ),
  *     @OA\Response(
- *       response=403,
- *       description="FORBIDDEN: The user does not have the required permission to perform this action.",
- *     ),
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=403),
+ *             @OA\Property(property="message", type="string", example="Forbidden"),
+ *             @OA\Property(property="data", type="object", nullable=true, additionalProperties=true)
+ *         )
+ *     )
  * )
  */
 class OpenApiFrameworksAssociations {}
@@ -89,27 +104,35 @@ class OpenApiFrameworksAssociations {}
  *     tags={"governance"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\Parameter(
- *       parameter="id",
- *       in="query",
- *       name="id",
- *       description="The id of the control you would like to retrieve details for. Will return all controls if no id is specified.",
- *       required=false,
- *       @OA\Schema(
- *         type="integer",
- *       ),
+ *         parameter="id",
+ *         in="query",
+ *         name="id",
+ *         description="The id of the control you would like to retrieve details for. Will return all controls if no id is specified.",
+ *         required=false,
+ *         @OA\Schema(type="integer")
  *     ),
  *     @OA\Response(
- *       response=200,
- *       description="SimpleRisk controls",
+ *         response=200,
+ *         description="SimpleRisk controls",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(type="object", additionalProperties=true)
+ *         )
  *     ),
  *     @OA\Response(
- *       response=204,
- *       description="NO CONTENT: Unable to find a control with the specified id.",
+ *         response=204,
+ *         description="NO CONTENT: Unable to find a control with the specified id."
  *     ),
  *     @OA\Response(
- *       response=403,
- *       description="FORBIDDEN: The user does not have the required permission to perform this action.",
- *     ),
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=403),
+ *             @OA\Property(property="message", type="string", example="Forbidden"),
+ *             @OA\Property(property="data", type="object", nullable=true, additionalProperties=true)
+ *         )
+ *     )
  * )
  */
 class OpenApiGovernanceControls {}
@@ -122,30 +145,120 @@ class OpenApiGovernanceControls {}
  *     tags={"governance"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\Parameter(
- *       parameter="id",
- *       in="query",
- *       name="id",
- *       description="The id of the control you would like to retrieve associations for.",
- *       required=true,
- *       @OA\Schema(
- *         type="integer",
- *       ),
+ *         parameter="id",
+ *         in="query",
+ *         name="id",
+ *         description="The id of the control you would like to retrieve associations for.",
+ *         required=true,
+ *         @OA\Schema(type="integer")
  *     ),
  *     @OA\Response(
- *       response=200,
- *       description="SimpleRisk control associations",
+ *         response=200,
+ *         description="SimpleRisk control associations",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(type="object", additionalProperties=true)
+ *         )
  *     ),
  *     @OA\Response(
- *       response=204,
- *       description="NO CONTENT: Unable to find a control with the specified id.",
+ *         response=204,
+ *         description="NO CONTENT: Unable to find a control with the specified id."
  *     ),
  *     @OA\Response(
- *       response=403,
- *       description="FORBIDDEN: The user does not have the required permission to perform this action.",
- *     ),
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=403),
+ *             @OA\Property(property="message", type="string", example="Forbidden"),
+ *             @OA\Property(property="data", type="object", nullable=true, additionalProperties=true)
+ *         )
+ *     )
  * )
  */
 class OpenApiControlsAssociations {}
+
+/**
+ * @OA\Get(
+ *     path="/governance/controls/mapped-frameworks",
+ *     summary="Get mapped framework controls for a governance control",
+ *     description="Returns a list of framework control references mapped to a given governance control ID.",
+ *     operationId="getControlMappedFrameworks",
+ *     tags={"governance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="control_id",
+ *         in="query",
+ *         description="The ID of the governance control",
+ *         required=true,
+ *         @OA\Schema(type="integer", example=42)
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Successfully retrieved mapped controls",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="string", example="success"),
+ *             @OA\Property(property="message", type="string", example="Successfully retrieved mapped controls."),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(property="framework_name", type="string", example="NIST CSF"),
+ *                     @OA\Property(property="reference_name", type="string", example="ID.AM-1"),
+ *                     @OA\Property(property="reference_text", type="string", example="Physical devices and systems within the organization are inventoried")
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="User does not have governance permissions",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="string", example="error"),
+ *             @OA\Property(property="message", type="string", example="No permission for governance"),
+ *             @OA\Property(property="data", type="object", nullable=true, additionalProperties=true)
+ *         )
+ *     )
+ * )
+ */
+class OpenApiGovernanceControlsMappings {}
+
+/**
+ * @OA\Get(
+ *     path="/governance/controls/mapped-frameworks/count",
+ *     summary="Get the count of mapped frameworks for a specific control",
+ *     tags={"governance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="control_id",
+ *         in="query",
+ *         description="ID of the control to retrieve the mapped frameworks count for",
+ *         required=true,
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Successfully retrieved mapped frameworks count",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="control_id", type="integer", example=123),
+ *             @OA\Property(property="count", type="integer", example=12)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="User does not have governance permissions or invalid input",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="message", type="string", example="No permission for governance")
+ *         )
+ *     )
+ * )
+ */
+class OpenApiGovernanceControlsMappingsCount {}
 
 /**
  * @OA\Get(
@@ -155,27 +268,35 @@ class OpenApiControlsAssociations {}
  *     tags={"governance"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\Parameter(
- *       parameter="id",
- *       in="query",
- *       name="id",
- *       description="The id of the document you would like to retrieve details for. Will return all documents if no id is specified.",
- *       required=false,
- *       @OA\Schema(
- *         type="integer",
- *       ),
+ *         parameter="id",
+ *         in="query",
+ *         name="id",
+ *         description="The id of the document you would like to retrieve details for. Will return all documents if no id is specified.",
+ *         required=false,
+ *         @OA\Schema(type="integer")
  *     ),
  *     @OA\Response(
- *       response=200,
- *       description="SimpleRisk documents",
+ *         response=200,
+ *         description="SimpleRisk documents",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(type="object", additionalProperties=true)
+ *         )
  *     ),
  *     @OA\Response(
- *       response=204,
- *       description="NO CONTENT: Unable to find a document with the specified id.",
+ *         response=204,
+ *         description="NO CONTENT: Unable to find a document with the specified id."
  *     ),
  *     @OA\Response(
- *       response=403,
- *       description="FORBIDDEN: The user does not have the required permission to perform this action.",
- *     ),
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=403),
+ *             @OA\Property(property="message", type="string", example="Forbidden"),
+ *             @OA\Property(property="data", type="object", nullable=true, additionalProperties=true)
+ *         )
+ *     )
  * )
  */
 class OpenApiGovernanceDocuments {}
@@ -188,37 +309,45 @@ class OpenApiGovernanceDocuments {}
  *     tags={"governance"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\Parameter(
- *        parameter="document_id",
- *        in="query",
- *        name="document_id",
- *        description="The id of the document you would like to delete.",
- *        required=true,
- *        @OA\Schema(
- *          type="integer",
- *        ),
+ *         parameter="document_id",
+ *         in="query",
+ *         name="document_id",
+ *         description="The id of the document you would like to delete.",
+ *         required=true,
+ *         @OA\Schema(type="integer")
  *     ),
  *     @OA\Parameter(
  *         parameter="version",
  *         in="query",
  *         name="version",
- *         description="The versionof the document you would like to delete.",
+ *         description="The version of the document you would like to delete.",
  *         required=false,
- *         @OA\Schema(
- *           type="integer",
- *         ),
- *      ),
- *     @OA\Response(
- *       response=200,
- *       description="SimpleRisk documents delete successful",
+ *         @OA\Schema(type="integer")
  *     ),
  *     @OA\Response(
- *       response=204,
- *       description="NO CONTENT: Unable to find a document with the specified id.",
+ *         response=200,
+ *         description="SimpleRisk documents delete successful",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="string", example="success"),
+ *             @OA\Property(property="message", type="string", example="Document deleted successfully"),
+ *             @OA\Property(property="data", type="object", nullable=true, additionalProperties=true)
+ *         )
  *     ),
  *     @OA\Response(
- *       response=403,
- *       description="FORBIDDEN: The user does not have the required permission to perform this action.",
+ *         response=204,
+ *         description="NO CONTENT: Unable to find a document with the specified id."
  *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=403),
+ *             @OA\Property(property="message", type="string", example="Forbidden"),
+ *             @OA\Property(property="data", type="object", nullable=true, additionalProperties=true)
+ *         )
+ *     )
  * )
  */
 class OpenApiGovernanceDocumentsDelete {}
@@ -231,27 +360,35 @@ class OpenApiGovernanceDocumentsDelete {}
  *     tags={"governance"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\Parameter(
- *       parameter="document_id",
- *       in="query",
- *       name="document_id",
- *       description="The id of the document you would like to retrieve the controls mappings for.",
- *       required=false,
- *       @OA\Schema(
- *         type="integer",
- *       ),
+ *         parameter="document_id",
+ *         in="query",
+ *         name="document_id",
+ *         description="The id of the document you would like to retrieve the controls mappings for.",
+ *         required=false,
+ *         @OA\Schema(type="integer")
  *     ),
  *     @OA\Response(
- *       response=200,
- *       description="SimpleRisk document controls",
+ *         response=200,
+ *         description="SimpleRisk document controls",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(type="object", additionalProperties=true)
+ *         )
  *     ),
  *     @OA\Response(
- *       response=204,
- *       description="NO CONTENT: Unable to find a document with the specified id.",
+ *         response=204,
+ *         description="NO CONTENT: Unable to find a document with the specified id."
  *     ),
  *     @OA\Response(
- *       response=403,
- *       description="FORBIDDEN: The user does not have the required permission to perform this action.",
- *     ),
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=403),
+ *             @OA\Property(property="message", type="string", example="Forbidden"),
+ *             @OA\Property(property="data", type="object", nullable=true, additionalProperties=true)
+ *         )
+ *     )
  * )
  */
 class OpenApiDocumentsToControls {}
@@ -264,27 +401,35 @@ class OpenApiDocumentsToControls {}
  *     tags={"governance"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\Parameter(
- *       parameter="id",
- *       in="query",
- *       name="id",
- *       description="The id of the document you would like to retrieve associations for.",
- *       required=true,
- *       @OA\Schema(
- *         type="integer",
- *       ),
+ *         parameter="id",
+ *         in="query",
+ *         name="id",
+ *         description="The id of the document you would like to retrieve associations for.",
+ *         required=true,
+ *         @OA\Schema(type="integer")
  *     ),
  *     @OA\Response(
- *       response=200,
- *       description="SimpleRisk document associations",
+ *         response=200,
+ *         description="SimpleRisk document associations",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(type="object", additionalProperties=true)
+ *         )
  *     ),
  *     @OA\Response(
- *       response=204,
- *       description="NO CONTENT: Unable to find a document with the specified id.",
+ *         response=204,
+ *         description="NO CONTENT: Unable to find a document with the specified id."
  *     ),
  *     @OA\Response(
- *       response=403,
- *       description="FORBIDDEN: The user does not have the required permission to perform this action.",
- *     ),
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=403),
+ *             @OA\Property(property="message", type="string", example="Forbidden"),
+ *             @OA\Property(property="data", type="object", nullable=true, additionalProperties=true)
+ *         )
+ *     )
  * )
  */
 class OpenApiDocumentsAssociations {}
@@ -297,27 +442,35 @@ class OpenApiDocumentsAssociations {}
  *     tags={"governance"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\Parameter(
- *       parameter="id",
- *       in="query",
- *       name="id",
- *       description="The id of the document you would like to retrieve terms for.",
- *       required=true,
- *       @OA\Schema(
- *         type="integer",
- *       ),
+ *         parameter="id",
+ *         in="query",
+ *         name="id",
+ *         description="The id of the document you would like to retrieve terms for.",
+ *         required=true,
+ *         @OA\Schema(type="integer")
  *     ),
  *     @OA\Response(
- *       response=200,
- *       description="SimpleRisk document terms",
+ *         response=200,
+ *         description="SimpleRisk document terms",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(type="object", additionalProperties=true)
+ *         )
  *     ),
  *     @OA\Response(
- *       response=204,
- *       description="NO CONTENT: Unable to find a document with the specified id.",
+ *         response=204,
+ *         description="NO CONTENT: Unable to find a document with the specified id."
  *     ),
  *     @OA\Response(
- *       response=403,
- *       description="FORBIDDEN: The user does not have the required permission to perform this action.",
- *     ),
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=403),
+ *             @OA\Property(property="message", type="string", example="Forbidden"),
+ *             @OA\Property(property="data", type="object", nullable=true, additionalProperties=true)
+ *         )
+ *     )
  * )
  */
 class OpenApiDocumentsTerms {}
@@ -335,33 +488,38 @@ class OpenApiDocumentsTerms {}
  *         name="type",
  *         description="The type of Governance keywords you would like to retrieve.",
  *         required=true,
- *         @OA\Schema(
- *             type="string",
- *             enum={"document", "control"},
- *         ),
+ *         @OA\Schema(type="string", enum={"document", "control"})
  *     ),
  *     @OA\Parameter(
- *       parameter="id",
- *       in="query",
- *       name="id",
- *       description="The id you would like to retrieve keywords for.",
- *       required=true,
- *       @OA\Schema(
- *         type="integer",
- *       ),
+ *         parameter="id",
+ *         in="query",
+ *         name="id",
+ *         description="The id you would like to retrieve keywords for.",
+ *         required=true,
+ *         @OA\Schema(type="integer")
  *     ),
  *     @OA\Response(
- *       response=200,
- *       description="SimpleRisk Governance keywords retrieved",
+ *         response=200,
+ *         description="SimpleRisk Governance keywords retrieved",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(type="object", additionalProperties=true)
+ *         )
  *     ),
  *     @OA\Response(
- *       response=204,
- *       description="NO CONTENT: Unable to find a document with the specified id.",
+ *         response=204,
+ *         description="NO CONTENT: Unable to find a document with the specified id."
  *     ),
  *     @OA\Response(
- *       response=403,
- *       description="FORBIDDEN: The user does not have the required permission to perform this action.",
- *     ),
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=403),
+ *             @OA\Property(property="message", type="string", example="Forbidden"),
+ *             @OA\Property(property="data", type="object", nullable=true, additionalProperties=true)
+ *         )
+ *     )
  * )
  */
 class OpenApiKeywords {}

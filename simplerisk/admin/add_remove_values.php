@@ -199,7 +199,7 @@ $tableConfig = array(
     ),
     'control_class' => array(
         'headerKey' => 'ControlClass',
-        'lengthLimit' => 20, //can be more
+        'lengthLimit' => 200, //can be more
     ),
     'control_phase' => array(
         'headerKey' => 'ControlPhase',

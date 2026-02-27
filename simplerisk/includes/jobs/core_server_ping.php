@@ -11,11 +11,11 @@ return [
      * FUNCTION: task_check
      * Ensures only one ping task runs at a time.
      ************************************************************/
-    'task_check' => function() {
+    'task_check' => function(PDO $db) {
         write_debug_log("Ping Server: Checking for existing ping tasks.", "debug");
 
         // Get the timestamp of the last ping check
-        $last_ping = get_setting('queue_timestamp_last_ping');
+        $last_ping = get_setting('queue_timestamp_last_ping', false, false, db: $db);
         $now = time();
         write_debug_log("Ping Server: Last updated at " . date("Y-m-d H:i:s", $last_ping), "debug");
 
@@ -23,7 +23,7 @@ return [
         if (!$last_ping || ($now - $last_ping) >= 24 * 60 * 60)
         {
             // Check if one is already queued or in progress
-            $existing = get_queue_items('core_server_ping', ['pending', 'in_progress']);
+            $existing = get_queue_items($db, 'core_server_ping', ['pending', 'in_progress']);
 
             // If there is not an existing ping queued
             if (empty($existing))
@@ -32,7 +32,7 @@ return [
                 $queue_task_payload = [
                     'triggered_at' => time(),
                 ];
-                $success = queue_task('core_server_ping', $queue_task_payload, 50);
+                $success = queue_task($db, 'core_server_ping', $queue_task_payload, 50, 5, 3600);
 
                 // If the task was successfully queued
                 if ($success)
@@ -60,7 +60,7 @@ return [
      * FUNCTION: queue_check
      * Runs the actual ping operation.
      ************************************************************/
-    'queue_check' => function(array $task) {
+    'queue_check' => function(array $task, PDO $db) {
         write_debug_log("Ping Server: Starting ping operation...", "info");
 
         try {
@@ -71,18 +71,18 @@ return [
 
             if ($return_code === 200) {
                 // Mark the queue task as completed
-                queue_update_status($task['id'], 'completed');
+                queue_update_status($task['id'], 'completed', $db);
                 $now = time();
-                update_setting('queue_timestamp_last_ping', $now);
-                write_debug_log("Ping Server: Ping successful.", "notice");
+                update_or_insert_setting('queue_timestamp_last_ping', $now, db: $db);
+                write_debug_log("Ping Server: Ping successful.", "info");
                 return true;
             } else {
-                queue_update_status($task['id'], 'failed');
+                queue_update_status($task['id'], 'failed', $db);
                 write_debug_log("Ping Server: Ping failed.  Return code {$return_code}. - {$response}", "warning");
                 return false;
             }
         } catch (Exception $e) {
-            queue_update_status($task['id'], 'failed');
+            queue_update_status($task['id'], 'failed', $db);
             write_debug_log("Ping Server: Exception during ping — " . $e->getMessage(), "error");
             return false;
         }

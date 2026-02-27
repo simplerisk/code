@@ -772,4 +772,49 @@ function getDocumentsToControlsDatatableResponse()
     }
 }
 
+function api_v2_get_control_mapped_frameworks()
+{
+    global $lang;
+    global $escaper;
+
+    // If the user has governance permissions
+    if (check_permission("governance"))
+    {
+        // Get the control ID
+        $control_id = (int) $_GET['control_id'];
+
+        // Get the mappings for this framework control ID
+        $data = get_mapping_control_frameworks($control_id);
+
+        // Return the successful response
+        json_response(200, "Successfully retreived mapped controls.", $data);
+    }
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
+    }
+}
+
+function api_v2_get_control_mapped_frameworks_count()
+{
+    global $lang;
+    global $escaper;
+
+    if (!check_permission("governance")) {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
+        return;
+    }
+
+    $control_id = isset($_GET['control_id']) ? (int) $_GET['control_id'] : 0;
+    if (!$control_id) {
+        json_response(400, "Invalid control ID.", NULL);
+        return;
+    }
+
+    // Get the count for the specified control ID
+    $data = get_control_framework_mappings_counts($control_id);
+
+    json_response(200, "Successfully retrieved mapped frameworks count.", $data);
+}
+
 ?>

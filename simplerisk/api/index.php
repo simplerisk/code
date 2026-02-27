@@ -165,6 +165,10 @@
         app()->post('/assets/delete', 'delete_asset_api');
         /********************************************************************************/
 
+        /********************* CVE LOOKUP API (to avoid CORS) **********************/
+        app()->get('/cve/lookup', 'cve_lookup_api');
+        /********************************************************************************/
+
         /********************* RISK FORMULA API ***************************/
         app()->post('/riskformula/add_impact', 'add_impact_api');
         app()->post('/riskformula/delete_impact', 'delete_impact_api');

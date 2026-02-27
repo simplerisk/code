@@ -1,6 +1,6 @@
 {
 	"name": "hugerte/hugerte",
-	"version": "1.0.9",
+	"version": "1.0.10",
 	"description": "Web based JavaScript HTML WYSIWYG editor control.",
 	"license": [
 		"MIT"
@@ -21,6 +21,12 @@
 	],
 	"homepage": "https://hugerte.org/",
 	"type": "component",
+	"funding": [
+		{
+			"type": "opencollective",
+			"url": "https://opencollective.com/hugerte"
+		}
+	],
 	"extra": {
 		"component": {
 			"scripts": [

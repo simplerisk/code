@@ -33,11 +33,22 @@
               		url: "<?= build_url("api/v2/documentation/index.php") ?>",
               		dom_id: '#swagger-ui',
               		requestInterceptor: function(request) {
-              			// Add the CSRF token to the request header if it's a POST
-              			if (request.method && request.method.toUpperCase() == 'POST') { 
-              				request.headers['CSRF-TOKEN'] = csrfMagicToken;
-              			}
-        				return request;
+                        // Add the CSRF token to the request body if it's a POST
+                        if (request.method && request.method.toUpperCase() == 'POST') {
+                            // For form-urlencoded content
+                            if (request.headers['Content-Type'] === 'application/x-www-form-urlencoded') {
+                                // Parse existing body or start with empty string
+                                const existingBody = request.body || '';
+                                // Add CSRF token as a parameter
+                                const csrfParam = '__csrf_magic=' + encodeURIComponent(csrfMagicToken);
+                                request.body = existingBody ? existingBody + '&' + csrfParam : csrfParam;
+                            }
+                            // For multipart/form-data, you might need different handling
+                            else if (request.headers['Content-Type'] && request.headers['Content-Type'].includes('multipart/form-data')) {
+                                // FormData handling would go here if needed
+                            }
+                        }
+                        return request;
            	  		},
               		presets: [
                 		SwaggerUIBundle.presets.apis,

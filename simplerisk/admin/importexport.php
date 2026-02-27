@@ -5,7 +5,7 @@
 
 	// Render the header and sidebar
 	require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-	render_header_and_sidebar(['tabs:logic'], ['check_admin' => true]);
+	render_header_and_sidebar(['tabs:logic', 'multiselect'], ['check_admin' => true]);
 
 	checkUploadedFileSizeErrors();
 
@@ -220,6 +220,17 @@
 		setTimeout(function(){ toastr.info(message); }, 1);
 	}
 	$(document).ready(function() {
+
+		// Initialize a control framework multiselect
+		$('select[multiple]').multiselect({
+            allSelectedText: '<?= $escaper->escapeHtml($lang['ALL']); ?>',
+            enableFiltering: true,
+            maxHeight: 250,
+            buttonWidth: '100%',
+            includeSelectAllOption: true,
+            enableCaseInsensitiveFiltering: true
+		});
+
 		$("#delete_mapping").click(function(e){
 			e.preventDefault();
 			var mapping_id = $("#import_export_mappings").val();

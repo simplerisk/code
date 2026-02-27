@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Rowspan Search Fix</title>
+  <link href="https://unpkg.com/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="dist/bootstrap-table.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <h1>Test Rowspan Search Fix (Issue #5475)</h1>
+    <p>Search for "623" - the Name column should still show "bootstrap-table"</p>
+
+    <table
+      data-toggle="table"
+      data-search="true"
+      data-show-columns="true">
+      <thead>
+        <tr class="tr-class-1">
+          <th data-field="name" rowspan="2" data-valign="middle">Name</th>
+          <th colspan="3">Detail</th>
+        </tr>
+        <tr class="tr-class-2">
+          <th data-field="star">Stars</th>
+          <th data-field="forks">Forks</th>
+          <th data-field="description">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr id="tr-id-1" class="tr-class-1" data-title="bootstrap table" data-object='{"key": "value"}'>
+          <td id="td-id-1" class="td-class-1" data-title="bootstrap table" rowspan="2">
+            <a href="https://github.com/wenzhixin/bootstrap-table" target="_blank">bootstrap-table</a>
+          </td>
+          <td data-value="526">8827</td>
+          <td data-text="122">3603</td>
+          <td data-i18n="Description">An extended Bootstrap table with radio, checkbox, sort, pagination, and other added features. (supports twitter bootstrap v2 and v3)
+          </td>
+        </tr>
+        <tr id="tr-id-2" class="tr-class-2">
+          <td>1615</td>
+          <td>623</td>
+          <td>A jQuery plugin to select multiple elements with checkboxes :)
+          </td>
+        </tr>
+        <tr id="tr-id-3" class="tr-class-3">
+          <td id="td-id-3" class="td-class-3">
+            <a href="https://github.com/wenzhixin/bootstrap-show-password" target="_blank">bootstrap-show-password</a>
+          </td>
+          <td>220</td>
+          <td>85</td>
+          <td>Show/hide password for twitter bootstrap.
+          </td>
+        </tr>
+        <tr id="tr-id-4" class="tr-class-4">
+          <td id="td-id-4" class="td-class-4">
+            <a href="https://github.com/wenzhixin/bootstrap-table-examples" target="_blank">bootstrap-table-examples</a>
+          </td>
+          <td>1734</td>
+          <td>1532</td>
+          <td>Bootstrap Table Examples</td>
+        </tr>
+        <tr id="tr-id-5" class="tr-class-5">
+          <td id="td-id-5" class="td-class-5">
+            <a href="https://github.com/wenzhixin/scutech-redmine" target="_blank">scutech-redmine</a>
+          <td>24</td>
+          <td>18</td>
+          <td>Redmine notification tools for chrome extension.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script src="https://unpkg.com/jquery@3.7.1/dist/jquery.min.js"></script>
+  <script src="https://unpkg.com/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="dist/bootstrap-table.min.js"></script>
+</body>
+</html>

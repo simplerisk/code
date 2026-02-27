@@ -22,22 +22,31 @@
         }
     }
 ?>
-<div class="row">
+<div class="row my-2">
     <div class="col-12" id="selections">
-        <div class="well card-body my-2 border">
-            <form id="graphical_risk_analysis" name="graphical_risk_analysis" action="" method="POST">
+        <div class="accordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapse_settings"><?= $escaper->escapeHtml($lang['Settings']) ?></button>
+                </h2>
+                <div id="collapse_settings" class="accordion-collapse collapse show">
+                    <div class="accordion-body card-body">
+                        <form id="graphical_risk_analysis" name="graphical_risk_analysis" action="" method="POST">
     <?php 
-                display_graphic_type_dropdown($settings);
-                display_y_axis($settings); 
-                display_x_axis($settings); 
-                display_save_graphic_selection(); 
+                            display_graphic_type_dropdown($settings);
+                            display_y_axis($settings); 
+                            display_x_axis($settings); 
+                            display_save_graphic_selection(); 
     ?>
-                <div class="row">
-                    <div class="col-6">
-                        <input type="submit" name="generate_report" value="Generate Report" class="btn btn-submit"/>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="submit" name="generate_report" value="Generate Report" class="btn btn-submit"/>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
     <div class="col-12">

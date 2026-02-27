@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use SimpleRisk\DocumentHandlers\DocumentTextExtractor;
+use SimpleRisk\DocumentHandlers\UnsupportedDocumentException;
 
 return [
     'type' => 'core_document_update',
@@ -27,8 +28,7 @@ return [
         if ($document_id) write_debug_log("Document Update: Successfully processed document #{$document_id}", "info");
     },
 
-    'task_check' => function() {
-        $db = db_open();
+    'task_check' => function(PDO $db) {
         $stmt = $db->prepare("
             SELECT DISTINCT cf.ref_id
             FROM compliance_files cf
@@ -43,7 +43,6 @@ return [
         ");
         $stmt->execute();
         $document_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
-        db_close($db);
 
         foreach ($document_ids as $document_id) {
             $queue_task_payload = [
@@ -51,13 +50,13 @@ return [
                 'document_id' => (int)$document_id,
                 'refresh' => true,
             ];
-            queue_task('core_document_update', $queue_task_payload, 100);
+            queue_task($db, 'core_document_update', $queue_task_payload, 100, 5, 3600);
         }
 
         return true;
     },
 
-    'queue_check' => function(array $task) {
+    'queue_check' => function(array $task, PDO $db) {
         $payload = json_decode($task['payload'], true) ?? [];
         $document_id = $payload['document_id'] ?? null;
         if (!$document_id) return false;
@@ -67,9 +66,17 @@ return [
             'convert_document_to_text',
             'calculate_keywords',
             'calculate_tfidf',
-            'check_and_launch_ai',
-            'clean_tmp',
         ];
+
+        // If the Artificial Intelligence Extra is active
+        if (artificial_intelligence_extra())
+        {
+            // Add it to the stage
+            $stages[] = 'check_and_launch_ai';
+        }
+
+        // Add the final clean_tmp stage
+        $stages[] = 'clean_tmp';
 
         $prev_promise_id = null;
         foreach ($stages as $stage_name) {
@@ -79,24 +86,23 @@ return [
                 $payload,
                 $prev_promise_id,
                 $document_id,
-                $task['id']
+                $task['id'],
+                $db
             );
         }
 
-        queue_update_status($task['id'], 'in_progress');
+        queue_update_status($task['id'], 'in_progress', $db);
         return true;
     },
 
     'stages' => [
 
-        'fetch_document' => function(array $promise) {
+        'fetch_document' => function(array $promise, PDO $db) {
             $payload = json_decode($promise['payload'], true) ?? [];
             $document_id = $payload['document_id'] ?? null;
             if (!$document_id) throw new Exception("Missing document_id");
 
-            try
-            {
-                $db = db_open();
+            try {
                 $stmt = $db->prepare("SELECT name, content, type FROM compliance_files WHERE ref_id = :id");
                 $stmt->execute([':id' => $document_id]);
                 $document = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -108,25 +114,21 @@ return [
 
                 $payload['unique_name'] = $unique_name;
                 write_debug_log("Document Update: Fetched and saved document {$document_id} as tmp file {$unique_name}", "debug");
-            }  catch (Exception $e) {
-                write_debug_log("Control Update: Failed to fetch document for #{$promise['id']}: " . $e->getMessage(), "error");
+            } catch (Exception $e) {
+                write_debug_log("Document Update: Failed to fetch document for #{$promise['id']}: " . $e->getMessage(), "error");
                 throw $e;
-            } finally {
-                // Close the database connection
-                db_close($db);
             }
 
             return $payload;
         },
 
-        'convert_document_to_text' => function(array $promise) {
+        'convert_document_to_text' => function(array $promise, PDO $db) {
             $payload = json_decode($promise['payload'], true) ?? [];
             $unique_name = $payload['unique_name'] ?? null;
+            $document_id = $payload['document_id'] ?? null;
             if (!$unique_name) throw new Exception("Missing unique_name");
 
-            try
-            {
-                $db = db_open();
+            try {
                 $file = load_tmp_file($db, $unique_name);
                 $content = $file['content'];
                 $mimeType = $file['type'];
@@ -134,31 +136,35 @@ return [
 
                 if (!$file) throw new Exception("Temporary file not found: {$unique_name}");
 
-                $text = DocumentTextExtractor::extractText($content, $mimeType, $fileName);
-                unset($file); // free memory
-                $payload['extracted_text_ref'] = save_tmp_data($db, "text_{$document_id}", $text);
-                write_debug_log("Document Update: Extracted text for {$unique_name}", "debug");
-            }  catch (Exception $e) {
-                write_debug_log("Control Update: Failed to convert document to text for #{$promise['id']}: " . $e->getMessage(), "error");
+                try {
+                    $text = DocumentTextExtractor::extractText($content, $mimeType, $fileName);
+                    unset($file); // free memory
+                    $payload['extracted_text_ref'] = save_tmp_data($db, "text_{$document_id}", $text);
+                    write_debug_log("Document Update: Extracted text for {$unique_name}", "debug");
+                } catch (UnsupportedDocumentException $e) {
+                    // Mark this document as having a processing error and don't retry
+                    write_debug_log("Document Update: Unsupported document type for document {$document_id}: " . $e->getMessage(), "warning");
+
+                    $stmt = $db->prepare("UPDATE compliance_files SET keyword_processing_error = 1 WHERE ref_id = :id");
+                    $stmt->execute([':id' => $document_id]);
+
+                    // Throw exception to stop processing this document
+                    throw new Exception("Unsupported document type - marked for skipping: " . $e->getMessage());
+                }
+            } catch (Exception $e) {
+                write_debug_log("Document Update: Failed to convert document to text for #{$promise['id']}: " . $e->getMessage(), "error");
                 throw $e;
-            } finally {
-                // Close the database connection
-                db_close($db);
             }
 
             return $payload;
         },
 
-        'calculate_keywords' => function(array $promise) {
+        'calculate_keywords' => function(array $promise, PDO $db) {
             $payload = json_decode($promise['payload'], true) ?? [];
             $document_id = $payload['document_id'] ?? null;
             $extracted_text_ref = $payload['extracted_text_ref'] ?? '';
 
-            try
-            {
-                // Open the database connection
-                $db = db_open();
-
+            try {
                 $text = load_tmp_data($db, $extracted_text_ref);
                 $keywordsWithCounts = $text ? extractSignificantTerms($text) : [];
 
@@ -177,18 +183,15 @@ return [
 
                 write_debug_log("Keywords with counts: " . var_dump($keywordsWithCounts), "debug");
                 write_debug_log("Document Update: Calculated keywords for document {$document_id}", "debug");
-            }  catch (Exception $e) {
-                write_debug_log("Control Update: Failed to calculate keywords for #{$promise['id']}: " . $e->getMessage(), "error");
+            } catch (Exception $e) {
+                write_debug_log("Document Update: Failed to calculate keywords for #{$promise['id']}: " . $e->getMessage(), "error");
                 throw $e;
-            } finally {
-                // Close the database connection
-                db_close($db);
             }
 
             return $payload;
         },
 
-        'calculate_tfidf' => function(array $promise) {
+        'calculate_tfidf' => function(array $promise, PDO $db) {
             $payload = json_decode($promise['payload'], true) ?? [];
             $document_id = $payload['document_id'] ?? null;
             if (!$document_id) throw new Exception("Missing document_id");
@@ -201,7 +204,7 @@ return [
             return $payload;
         },
 
-        'check_and_launch_ai' => function(array $promise) {
+        'check_and_launch_ai' => function(array $promise, PDO $db) {
             $payload = json_decode($promise['payload'], true) ?? [];
             $document_id = $payload['document_id'] ?? null;
 
@@ -216,20 +219,19 @@ return [
                     'document_id' => $document_id,
                     'update_document' => false,
                 ];
-                queue_task('ai_document_to_control_chunker', $queue_task_payload, 25);
+                queue_task($db, 'ai_document_to_control_chunker', $queue_task_payload, 25, 5, 3600);
             }
             else write_debug_log("Artificial Intelligence Extra is disabled.", "debug");
 
             return $payload;
         },
 
-        'clean_tmp' => function(array $promise) {
+        'clean_tmp' => function(array $promise, PDO $db) {
             $payload = json_decode($promise['payload'], true) ?? [];
             $unique_name = $payload['unique_name'] ?? null;
             $extracted_text_ref = $payload['extracted_text_ref'] ?? null;
 
             try {
-                $db = db_open();
                 $unique_name ? delete_tmp_file($db, $unique_name) : false;
                 $extracted_text_ref ? delete_tmp_data($db, $extracted_text_ref) : false;
                 unset($payload['unique_name']);
@@ -237,9 +239,6 @@ return [
             } catch (Exception $e) {
                 write_debug_log("Document Update: Failed to clean tmp for #{$promise['id']}: " . $e->getMessage(), "error");
                 throw $e;
-            } finally {
-                // Close the database connection
-                db_close($db);
             }
 
             return $payload;

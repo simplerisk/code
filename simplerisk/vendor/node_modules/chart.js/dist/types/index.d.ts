@@ -2678,10 +2678,23 @@ export interface Tooltip extends Plugin {
 
 export declare const Tooltip: Tooltip;
 
-export interface TooltipCallbacks<
+export interface TooltipDatasetCallbacks<
   TType extends ChartType,
   Model = TooltipModel<TType>,
   Item = TooltipItem<TType>> {
+  beforeLabel(this: Model, tooltipItem: Item): string | string[] | void;
+  label(this: Model, tooltipItem: Item): string | string[] | void;
+  afterLabel(this: Model, tooltipItem: Item): string | string[] | void;
+
+  labelColor(this: Model, tooltipItem: Item): TooltipLabelStyle | void;
+  labelTextColor(this: Model, tooltipItem: Item): Color | void;
+  labelPointStyle(this: Model, tooltipItem: Item): { pointStyle: PointStyle; rotation: number } | void;
+}
+
+export interface TooltipCallbacks<
+  TType extends ChartType,
+  Model = TooltipModel<TType>,
+  Item = TooltipItem<TType>> extends TooltipDatasetCallbacks<TType, Model, Item> {
 
   beforeTitle(this: Model, tooltipItems: Item[]): string | string[] | void;
   title(this: Model, tooltipItems: Item[]): string | string[] | void;
@@ -2913,6 +2926,10 @@ export interface TooltipOptions<TType extends ChartType = ChartType> extends Cor
   callbacks: TooltipCallbacks<TType>;
 }
 
+export interface TooltipDatasetOptions<TType extends ChartType = ChartType> {
+  callbacks: TooltipDatasetCallbacks<TType>;
+}
+
 export interface TooltipItem<TType extends ChartType> {
   /**
    * The chart the tooltip is being shown on
@@ -2958,6 +2975,10 @@ export interface TooltipItem<TType extends ChartType> {
    * The chart element (point, arc, bar, etc.) for this tooltip item
    */
   element: Element;
+}
+
+export interface PluginDatasetOptionsByType<TType extends ChartType> {
+  tooltip: TooltipDatasetOptions<TType>;
 }
 
 export interface PluginOptionsByType<TType extends ChartType> {
@@ -3606,6 +3627,7 @@ export type RadialLinearScaleOptions = CoreScaleOptions & {
 export interface RadialLinearScale<O extends RadialLinearScaleOptions = RadialLinearScaleOptions> extends Scale<O> {
   xCenter: number;
   yCenter: number;
+  readonly drawingArea: number;
   setCenterPoint(leftMovement: number, rightMovement: number, topMovement: number, bottomMovement: number): void;
   getIndexAngle(index: number): number;
   getDistanceFromCenterForValue(value: number): number;
@@ -3800,6 +3822,8 @@ export type ChartDataset<
   TData = DefaultDataPoint<TType>
 > = DeepPartial<
 { [key in ChartType]: { type: key } & ChartTypeRegistry[key]['datasetOptions'] }[TType]
+> & DeepPartial<
+PluginDatasetOptionsByType<TType>
 > & ChartDatasetProperties<TType, TData>;
 
 export type ChartDatasetCustomTypesPerDataset<
@@ -3807,6 +3831,8 @@ export type ChartDatasetCustomTypesPerDataset<
   TData = DefaultDataPoint<TType>
 > = DeepPartial<
 { [key in ChartType]: { type: key } & ChartTypeRegistry[key]['datasetOptions'] }[TType]
+> & DeepPartial<
+PluginDatasetOptionsByType<TType>
 > & ChartDatasetPropertiesCustomTypesPerDataset<TType, TData>;
 
 /**

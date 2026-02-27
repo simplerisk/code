@@ -14,7 +14,7 @@ require_once(language_file());
 class ClaudeAPIClient {
     private $api_key;
     private $url = 'https://api.anthropic.com/v1/messages';
-    private $model = 'claude-3-7-sonnet-20250219';
+    private $model = 'claude-sonnet-4-20250514';
     private $last_request_time = 0;
     private $rate_limit_delay = 1; // Delay between requests in seconds
 
@@ -30,7 +30,7 @@ class ClaudeAPIClient {
      * @param string|null $system System prompt
      * @return array API response
      */
-    public function callClaudeAPI($messages, $max_tokens = 300, $system = null)
+    public function callClaudeAPI($messages, $max_tokens = 300, $system = null, $tools = null)
     {
         $baseDelay = 10; // Initial delay in seconds
         $retries = 0;
@@ -74,6 +74,12 @@ class ClaudeAPIClient {
             'system' => is_null($system) ? "You are an expert on Governance, Risk Management and Compliance (GRC) and have been hired by an organization to help them improve their program using SimpleRisk as the GRC tool of choice. You are working with some people who are new to working with GRC." : $system,
             'messages' => $messages
         ];
+
+        // Add tools to the request if provided
+        if (!is_null($tools) && is_array($tools) && !empty($tools)) {
+            $data['tools'] = $tools;
+            write_debug_log('Tools added to API request: ' . json_encode($tools), 'debug');
+        }
 
         // Validate UTF-8 before JSON encoding
         $this->validateUtf8InData($data);
@@ -1805,9 +1811,12 @@ function check_artificial_intelligence_context_update()
 {
     write_debug_log("Artificial Intelligence: Checking for context updates.", "info");
 
+    // Open the database connection
+    $db = db_open();
+
     // Get timestamps
-    $last_saved = get_setting("ai_context_last_saved");
-    $last_updated = get_setting("ai_context_last_updated");
+    $last_saved = get_setting("ai_context_last_saved", db: $db);
+    $last_updated = get_setting("ai_context_last_updated", db: $db);
 
     write_debug_log("Artificial Intelligence: Context last saved at " . date("Y-m-d H:i:s", $last_saved), "debug");
     write_debug_log("Artificial Intelligence: Context last updated: " . date("Y-m-d H:i:s", $last_updated), "debug");
@@ -1822,13 +1831,16 @@ function check_artificial_intelligence_context_update()
         $queue_task_payload = [
             'triggered_at' => time(),
         ];
-        queue_task('core_ai_context_update', $queue_task_payload, 50);
+        queue_task($db, 'core_ai_context_update', $queue_task_payload, 50, 5, 3600);
 
         // Update the timestamp to prevent repeated queuing
-        update_setting("ai_context_last_updated", time());
+        update_setting("ai_context_last_updated", time(), db: $db);
     } else {
         write_debug_log("Artificial Intelligence: Context has not been updated.", "info");
     }
+
+    // Close the database connection
+    db_close($db);
 }
 
 /************************************************************

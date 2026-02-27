@@ -1121,6 +1121,7 @@ function dynamicriskUniqueColumnDataAPI()
                 case "planning_strategy":
                 case "close_reason":
                 case "next_step":
+                case "review":
                 case "risk_status":
                 case "source":
                 case "category":
@@ -3860,7 +3861,10 @@ function getMitigationControlsDatatable(){
                                 </tr>
                             </table>
             ";
-            
+
+            $html .= display_mapping_framework_view($control['id']);
+
+            /*
             $mapped_frameworks = get_mapping_control_frameworks($control['id']);
             $html .= "
                             <div class='mt-3'>
@@ -3888,6 +3892,7 @@ function getMitigationControlsDatatable(){
                             </div>
                         </div>
             ";
+            */
 
             $validation = get_mitigation_to_controls($mitigation_id,$control['id']);
             $control_status_names = get_names_by_multi_values("control_type", $control['control_type_ids']);
@@ -4187,10 +4192,12 @@ function addControlResponse()
     );
     $map_framework_ids = isset($_POST['map_framework_id'])?$_POST['map_framework_id']:array();
     $reference_names = isset($_POST['reference_name'])?$_POST['reference_name']:array();
+    $reference_texts = isset($_POST['reference_text'])?$_POST['reference_text']:array();
     $map_frameworks = array();
     foreach($map_framework_ids as $index=>$frameworks){
         $reference_name = isset($reference_names[$index])?$reference_names[$index]:"";
-        $map_frameworks[] = array($frameworks,$reference_name);
+        $reference_text = isset($reference_texts[$index])?$reference_texts[$index]:"";
+        $map_frameworks[] = array($frameworks,$reference_name,$reference_text);
     }
     $control["map_frameworks"] = $map_frameworks;
     $asset_maturity  = isset($_POST['asset_maturity']) ? $_POST['asset_maturity'] : [];
@@ -4271,10 +4278,12 @@ function updateControlResponse()
         );
         $map_framework_ids = isset($_POST['map_framework_id'])?$_POST['map_framework_id']:array();
         $reference_names = isset($_POST['reference_name'])?$_POST['reference_name']:array();
+        $reference_texts = isset($_POST['reference_text'])?$_POST['reference_text']:array();
         $map_frameworks = array();
         foreach($map_framework_ids as $index=>$frameworks){
             $reference_name = isset($reference_names[$index])?$reference_names[$index]:"";
-            $map_frameworks[] = array($frameworks,$reference_name);
+            $reference_text = isset($reference_texts[$index])?$reference_texts[$index]:"";
+            $map_frameworks[] = array($frameworks,$reference_name,$reference_text);
         }
         $control["map_frameworks"] = $map_frameworks;
         $asset_maturity  = isset($_POST['asset_maturity']) ? $_POST['asset_maturity'] : [];
@@ -4705,6 +4714,7 @@ function getControlResponse()
             $frameworks_html .= "<tr>\n";
                 $frameworks_html .= "<td>".create_dropdown('frameworks', $framework['framework'],'map_framework_id[]', true, false, true, 'required')."</td>\n";
                 $frameworks_html .= "<td><input type='text' name='reference_name[]' value='".$escaper->escapeHtml($framework['reference_name'])."' class='form-control' maxlength='100' required></td>\n";
+                $frameworks_html .= "<td><textarea rows='3' cols='50' name='reference_text[]' class='form-control'>".$escaper->escapeHtml($framework['reference_text'])."</textarea>\n";
                 $frameworks_html .= "<td class='text-center'><a href='javascript:void(0);' class='control-block--delete-mapping' title='".$escaper->escapeHtml($lang["Delete"])."'><i class='fa fa-trash'></i></a></td>\n";
             $frameworks_html .= "</tr>\n";
         }
@@ -4814,56 +4824,43 @@ function getDefineTestsResponse()
             }
 
             $tests = get_framework_control_tests_by_control_id($control['id']);
-            $html = "<div class='control-block item-block clearfix'>\n";
-                $html .= "<div class='control-block--header clearfix' data-project=''>\n";
-                    $html .= "<br>\n";
-                    $html .= "<div class='control-block--row'>\n";
-                        $html .= "<table class='table table-borderless'>\n";
-                            $html .= "<tr>\n";
-                                $html .= "<td width='20%' align='right'><strong>".$escaper->escapeHtml($lang['ControlLongName'])."</strong>: </td>\n";
-                                $html .= "<td width='80%'>".$escaper->escapeHtml($control['long_name'])."</td>\n";
-                            $html .= "</tr>\n";
-                            $html .= "<tr>\n";
-                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['ControlOwner'])."</strong>: </td>\n";
-                                $html .= "<td>".$escaper->escapeHtml($control['control_owner_name'])."</td>\n";
-                            $html .= "</tr>\n";
-                            $html .= "<tr>\n";
-                                $html .= "<td align='right'><strong>". $escaper->escapeHtml($lang['Description']) ."</strong>: </td>\n";
-                                $html .= "<td>". $escaper->purifyHtml($control['description']) ."</td>\n";
-                            $html .= "</tr>\n";
-                            $mapped_frameworks = get_mapping_control_frameworks($control['id']);
-                            if(count($mapped_frameworks) > 0){
-                                $html .= "<tr><td colspan='2'>\n";
-                                    $html .= "<div class='container-fluid'>\n";
-                                        $html .= "<div class='well'>";
-                                            $html .= "<h5><span>".$escaper->escapeHtml($lang['MappedControlFrameworks'])."</span></h5>";
-                                            $html .= "<table width='100%' class='table table-bordered'>\n";
-                                                $html .= "<tr>\n";
-                                                    $html .= "<th width='50%'>".$escaper->escapeHtml($lang['Framework'])."</th>\n";
-                                                    $html .= "<th width='35%'>".$escaper->escapeHtml($lang['Control'])."</th>\n";
-                                                $html .= "</tr>\n";
-                                                foreach ($mapped_frameworks as $framework){
-                                                    $html .= "<tr>\n";
-                                                        $html .= "<td>".$escaper->escapeHtml($framework['framework_name'])."</td>\n";
-                                                        $html .= "<td>".$escaper->escapeHtml($framework['reference_name'])."</td>\n";
-                                                    $html .= "</tr>\n";
-                                                }
-                                            $html .= "</table>\n";
-                                        $html .= "</div>\n";
-                                    $html .= "</div>\n";
-                                $html .= "</td></tr>\n";
-                            }
-                        $html .= "</table>\n";
-                    $html .= "</div>\n";
+            $html = "<div class='card mb-4 border border-primary shadow-sm'>\n";
+            $html .= "  <div class='card-header d-flex justify-content-between align-items-center'>\n";
+            $html .= "    <div>\n";
+            $html .= "      <strong>" . $escaper->escapeHtml($control['control_number']) . "</strong>\n";
+            $html .= "      <div class='text-muted small'>" . $escaper->escapeHtml($control['short_name']) . "</div>\n";
+            $html .= "    </div>\n";
 
-                    if(isset($_SESSION["define_tests"]) && $_SESSION["define_tests"] == 1){
-                        $html .= "<div class='float-end mb-2'>\n";
-                            $html .= "<button type='button' data-control-id='". $control['id'] ."' class='btn btn-dark add-test'>".$escaper->escapeHtml($lang['AddTest'])."</button>";
-                        $html .= "</div>\n";
-                    }
-                    $html .= "<div class='framework-control-test-list'>\n";
-                        $html .= "<table width='100%' class='table table-bordered table-striped table-condensed sortable'>\n";
-                            $html .= "
+            // Only display the "Add Test" button if the user has permissions to
+            if(isset($_SESSION["define_tests"]) && $_SESSION["define_tests"] == 1)
+            {
+                $html .= "    <button data-control-id='" . $control['id'] . "' class='btn btn-sm btn-dark add-test'>" . $escaper->escapeHtml($lang['AddTest']) . "</button>\n";
+            }
+            $html .= "  </div>\n";
+
+            // BEGIN CARD  BODY
+            $html .= "  <div class='card-body'>\n";
+
+            // Description, mappings, etc goes here
+            $html .= "     <div class='row mb-2 top'>\n";
+            $html .= "        <div class='col-2 text-right'><label>" . $escaper->escapeHtml($lang['ControlLongName']) . ":</label></div>\n";
+            $html .= "        <div class='col-10'>" . $escaper->escapeHtml($control['long_name']) . "</div>\n";
+            $html .= "     </div>\n";
+            $html .= "     <div class='row mb-2 top'>\n";
+            $html .= "        <div class='col-2 text-right'><label>" . $escaper->escapeHtml($lang['ControlOwner']) . ":</label></div>\n";
+            $html .= "        <div class='col-10'>" . $escaper->escapeHtml($control['control_owner_name']) . "</div>\n";
+            $html .= "     </div>\n";
+            $html .= "     <div class='row mb-2 top'>\n";
+            $html .= "        <div class='col-2 text-right'><label>" . $escaper->escapeHtml($lang['Description']) . ":</label></div>\n";
+            $html .= "        <div class='col-10'>" . $escaper->escapeHtml($control['description']) . "</div>\n";
+            $html .= "     </div>\n";
+            $html .= "     <div class='row mb-2 top'>&nbsp;</div>\n";
+            $html .= display_mapping_framework_view($control['id']);
+            $html .= "     <div class='row mb-2 top'>&nbsp;</div>\n";
+
+            $html .= "<div class='framework-control-test-list'>\n";
+            $html .= "<table width='100%' class='table table-bordered table-striped table-condensed sortable'>\n";
+            $html .= "
                                 <thead class='table-active'>
                                     <tr>
                                         <th style='width: 100px; min-width: 100px'>".$escaper->escapeHtml($lang['ID'])."</th>
@@ -4879,33 +4876,33 @@ function getDefineTestsResponse()
                                     </tr>
                                 </thead>
                             ";
-                            $html .= "<tbody>";
-                                foreach($tests as $test){
-                                    if ($separation_enabled) {
-                                        if (!is_user_allowed_to_access($_SESSION['uid'], $test['id'], 'test')) {
-                                            continue;
-                                        }
-                                    }
-                                    $tags_view = "";
-                                    if ($test['tags']) {
-                                        foreach(str_getcsv($test['tags']) as $tag) {
-                                            $tags_view .= "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin-right:2px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
-                                        }
-                                    } else {
-                                        $tags_view .= "";
-                                    }
-                                    
-                                    $last_date = format_date($test['last_date']);
-                                    $next_date = format_date($test['next_date']);
-                                    if(isset($_SESSION["edit_tests"]) && $_SESSION["edit_tests"] == 1){
-                                        $edit_row = "<a class='edit-test mx-1' data-id=\"{$escaper->escapeHtml($test['id'])}\" role='button'><i class=\"fa fa-edit\"></i></a>";
-                                    } else $edit_row = "";
-                                    if(isset($_SESSION["delete_tests"]) && $_SESSION["delete_tests"] == 1){
-                                        $delete_row = "<a class='delete-row mx-1' data-toggle=\"modal\" data-id=\"{$escaper->escapeHtml($test['id'])}\" role='button'><i class=\"fa fa-trash\"></i></a>";
-                                    } else $delete_row = "";
+            $html .= "<tbody>";
+            foreach($tests as $test){
+                if ($separation_enabled) {
+                    if (!is_user_allowed_to_access($_SESSION['uid'], $test['id'], 'test')) {
+                        continue;
+                    }
+                }
+                $tags_view = "";
+                if ($test['tags']) {
+                    foreach(str_getcsv($test['tags']) as $tag) {
+                        $tags_view .= "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin-right:2px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
+                    }
+                } else {
+                    $tags_view .= "";
+                }
 
-                                    
-                                    $html .= "
+                $last_date = format_date($test['last_date']);
+                $next_date = format_date($test['next_date']);
+                if(isset($_SESSION["edit_tests"]) && $_SESSION["edit_tests"] == 1){
+                    $edit_row = "<a class='edit-test mx-1' data-id=\"{$escaper->escapeHtml($test['id'])}\" role='button'><i class=\"fa fa-edit\"></i></a>";
+                } else $edit_row = "";
+                if(isset($_SESSION["delete_tests"]) && $_SESSION["delete_tests"] == 1){
+                    $delete_row = "<a class='delete-row mx-1' data-toggle=\"modal\" data-id=\"{$escaper->escapeHtml($test['id'])}\" role='button'><i class=\"fa fa-trash\"></i></a>";
+                } else $delete_row = "";
+
+
+                $html .= "
                                         <tr>
                                             <td>".$escaper->escapeHtml($test['id'])."</td>
                                             <td>".$escaper->escapeHtml($test['name'])."</td>
@@ -4920,12 +4917,18 @@ function getDefineTestsResponse()
                                             </td>
                                         </tr>
                                     ";
-                                }
-                            $html .= "</tbody>";
-                        $html .= "</table>\n";
-                    $html .= "</div>\n";
-                $html .= "</div>\n";
+            }
+            $html .= "</tbody>";
+            $html .= "</table>\n";
             $html .= "</div>\n";
+            $html .= "</div>\n";
+            $html .= "</div>\n";
+
+            // END CARD BODY
+            $html .= "  </div>\n";
+            $html .= "</div>\n";
+
+
             $data[] = [$html];
         }
         $result = array(
@@ -6279,6 +6282,8 @@ function getPlanMitigationsDatatableResponse()
         foreach ($risks as $key=>$risk)
         {
             $color = get_risk_color($risk['calculated_risk']);
+            
+            $residual_color = get_risk_color($risk['residual_risk']);
 
             $risk_level = get_risk_level_name($risk['calculated_risk']);
             $residual_risk_level = get_risk_level_name($risk['residual_risk']);
@@ -6340,6 +6345,17 @@ function getPlanMitigationsDatatableResponse()
                     case "calculated_risk":
                         $data_row[] = "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder' style='position:relative;'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div>";
                         $filter_data[$column] = $risk['calculated_risk'];
+                        break;
+                    case "residual_risk":
+                        $data_row[] = "
+                            <div class='{$escaper->escapeHtml($residual_color)}'>
+                                <div class='risk-cell-holder' style='position:relative;'>
+                                    {$escaper->escapeHtml($risk['residual_risk'])}
+                                    <span class='risk-color' style='background-color:{$escaper->escapeHtml($residual_color)}'></span>
+                                </div>
+                            </div>
+                        ";
+                        $filter_data[$column] = $risk['residual_risk'];
                         break;
                     case "submission_date":
                         $data_row[] = $escaper->escapeHtml($submission_date);
@@ -6716,6 +6732,8 @@ function getManagementReviewsDatatableResponse()
         {
             $color = get_risk_color($risk['calculated_risk']);
 
+            $residual_color = get_risk_color($risk['residual_risk']);
+
             $risk_level = get_risk_level_name($risk['calculated_risk']);
             $residual_risk_level = get_risk_level_name($risk['residual_risk']);
 
@@ -6776,6 +6794,17 @@ function getManagementReviewsDatatableResponse()
                     case "calculated_risk":
                         $data_row[] = "<div class='" . $escaper->escapeHtml($color) . "'><div class='risk-cell-holder' style='position:relative;'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class='risk-color' style='background-color:" . $escaper->escapeHtml($color) . "'></span></div></div>";
                         $filter_data[$column] = $risk['calculated_risk'];
+                        break;
+                    case "residual_risk":
+                        $data_row[] = "
+                            <div class='{$escaper->escapeHtml($residual_color)}'>
+                                <div class='risk-cell-holder' style='position:relative;'>
+                                    {$escaper->escapeHtml($risk['residual_risk'])}
+                                    <span class='risk-color' style='background-color:{$escaper->escapeHtml($residual_color)}'></span>
+                                </div>
+                            </div>
+                        ";
+                        $filter_data[$column] = $risk['residual_risk'];
                         break;
                     case "submission_date":
                         $data_row[] = $escaper->escapeHtml($submission_date);
@@ -7177,6 +7206,7 @@ function getReviewRisksDatatableResponse()
             $status = $review['status'];
             $calculated_risk = $review['calculated_risk'];
             $color = $review['color'];
+            $residual_color = get_risk_color($risk['residual_risk']);
             $dayssince = $review['dayssince'];
             $next_review = $review['next_review'];
             $next_review_html = $review['next_review_html'];
@@ -7227,6 +7257,17 @@ function getReviewRisksDatatableResponse()
                     case "calculated_risk":
                         $data_row[] = "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder' style='position:relative;'>" . $escaper->escapeHtml($calculated_risk) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div>";
                         $filter_data[$column] = $calculated_risk;
+                        break;
+                    case "residual_risk":
+                        $data_row[] = "
+                            <div class='{$escaper->escapeHtml($residual_color)}'>
+                                <div class='risk-cell-holder' style='position:relative;'>
+                                    {$escaper->escapeHtml($risk['residual_risk'])}
+                                    <span class='risk-color' style='background-color:{$escaper->escapeHtml($residual_color)}'></span>
+                                </div>
+                            </div>
+                        ";
+                        $filter_data[$column] = $risk['residual_risk'];
                         break;
                     case "days_open":
                         $data_row[] = $escaper->escapeHtml($dayssince);
@@ -8615,6 +8656,68 @@ function get_audit_logs_api()
         return;
     }
 
+}
+
+/****************************
+ * FUNCTION: CVE LOOKUP API *
+ ****************************/
+function cve_lookup_api() {
+
+    global $escaper, $lang;
+
+    $cve_id = isset($_GET['cve_id']) ? trim($_GET['cve_id']) : '';
+    $cve_pattern = '/^CVE-\d{4}-\d{4,7}$/i';
+    if (!preg_match($cve_pattern, $cve_id)) {
+        json_response(400, 'Invalid CVE ID format.', NULL);
+        return;
+    }
+
+    $cve_id = strtoupper(preg_replace('/[^A-Z0-9-]/', '', $cve_id));
+    if (!preg_match($cve_pattern, $cve_id)) {
+        json_response(400, 'Invalid CVE ID.', NULL);
+        return;
+    }
+
+    $url = 'https://services.nvd.nist.gov/rest/json/cves/2.0?cveId=' . $cve_id;
+
+    // Set the HTTP options
+    $http_options = [
+        'method' => 'GET',
+        'header' => [
+            "Content-Type: application/x-www-form-urlencoded",
+        ],
+        'timeout' => 15,
+    ];
+
+    // If SSL certificate checks are enabled for external requests
+    if (get_setting('ssl_certificate_check_external') == 1)
+    {
+        // Verify the SSL host and peer
+        $validate_ssl = true;
+    } else {
+        $validate_ssl = false;
+    }
+
+    // Get the response
+    $response = fetch_url_content("curl", $http_options, $validate_ssl, $url);
+    $return_code = $response['return_code'];
+
+    $response_data = $response['response'] ?? '';
+
+    if ($return_code !== 200 || !is_string($response_data) || $response_data === '') {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['FailedToFetchCVEInformation']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    
+    $data = json_decode($response_data, true);
+    if ($data === null) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['FailedToFetchCVEInformation']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    json_response(200, null, $data);
 }
 
 function get_asset_options() {
@@ -11936,8 +12039,8 @@ function api_complianceforgescf_status()
     // If the user calling this is an admin
     if (is_admin())
     {
-        // If the ComplianceForge SCF is loading
-        if (get_setting("complianceforge_scf_loading") == true)
+        // If the SCF is loading
+        if (get_setting("scf_status") == "loading")
         {
             // Set the update status to loading
             $data["loading"] = true;
@@ -11968,9 +12071,6 @@ function api_complianceforgescf_enable()
             // Allow this to run as long as necessary
             ini_set('max_execution_time', 0);
 
-            // Set the status of loading to true
-            update_or_insert_setting("complianceforge_scf_loading", true);
-
             // Required file
             $required_file = realpath(__DIR__ . '/../extras/complianceforgescf/index.php');
 
@@ -11994,9 +12094,6 @@ function api_complianceforgescf_enable()
                     enable_complianceforge_scf_extra(true);
                 }
             }
-
-            // Delete the complianceforge_scf_loading setting
-            delete_setting("complianceforge_scf_loading");
 
             // Return a 200 response
             return json_response(200, "ComplianceForgeSCF Loading Complete", null);

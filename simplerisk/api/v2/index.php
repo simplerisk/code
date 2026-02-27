@@ -28,9 +28,11 @@ add_security_headers(true, true, true, true, false);
 // Include the language file
 require_once(language_file());
 
-// If access is authenticated
+// If access is authenticated via session or API key
 if (api_v2_is_authenticated())
 {
+    write_debug_log("[APIv2] Using session-based or API key-based authentication.", "debug");
+
     // SimpleRisk Admin Routes
     app()->get('/admin/version', 'api_v2_admin_version');
     app()->get('/admin/version/app', 'api_v2_admin_version_app');
@@ -54,6 +56,8 @@ if (api_v2_is_authenticated())
     app()->get('/governance/frameworks/treegrid', 'api_v2_governance_frameworks_treegrid');
     app()->get('/governance/frameworks/associations', 'api_v2_governance_frameworks_associations');
     app()->get('/governance/controls', 'api_v2_governance_controls');
+    app()->get('/governance/controls/mapped-frameworks', 'api_v2_get_control_mapped_frameworks');
+    app()->get('/governance/controls/mapped-frameworks/count', 'api_v2_get_control_mapped_frameworks_count');
     app()->get('/governance/controls/associations', 'api_v2_governance_controls_associations');
     app()->get('/governance/documents', 'api_v2_governance_documents');
     app()->delete('/governance/documents', 'api_v2_governance_documents_delete');
@@ -225,6 +229,10 @@ if (api_v2_is_authenticated())
     app()->get('/asset-group/options', 'get_asset_group_options');
     app()->post('/assets/create', 'create_asset_api');
     app()->post('/assets/delete', 'delete_asset_api');
+    /********************************************************************************/
+
+    /********************* CVE LOOKUP API (to avoid CORS) **********************/
+    app()->get('/cve/lookup', 'cve_lookup_api');
     /********************************************************************************/
 
     /********************* RISK FORMULA API ***************************/
@@ -433,8 +441,8 @@ if (api_v2_is_authenticated())
         }
     }
 
-    // If the ComplianceForge SCF Extra is enabled
-    if (complianceforge_scf_extra())
+    // If the Secure Controls Framework (SCF) Extra is installed (not enabled like the others)
+    if (is_extra_installed("complianceforgescf"))
     {
         // Required file
         $required_file = realpath(__DIR__ . '/../../extras/complianceforgescf/includes/api.php');
@@ -639,61 +647,67 @@ if (api_v2_is_authenticated())
 
     /**************************************************************************************/
 
-    // Set the error handling if the page is not found
-    app()->set404(function ()
-    {
-        $response['status'] = 404;
-        $response['status_message'] = "The Requested API Endpoint Was Not Found";
-        $response['data'] = null;
-        response()->json($response);
-    });
-
-    // Configure leaf logging to the error log
-    /*
-    Leaf\Config::set([
-        'log.enabled' => true,
-        'log.dir' => sys_get_temp_dir(),
-        'log.file' => 'simplerisk.log',
-    ]);
-    */
-
-    // Enable the debugging if needed. Default is false.
-    app()->config('debug', false);
-
-    // Add the custom Simplerisk API Exception Handler
-    app()->setErrorHandler(new SimpleriskApiExceptionHandler());
-
-    // Run the leaf route
-    app()->run();
-
 }
 // If this request uses the risk assessment questionnaire token
-elseif(check_questionnaire_get_token()) {
-    // Here's a separate section for when the request is not authenticated,
-    // but has a valid questionnaire token.
-    // This won't create an authenticated session, but allows questionnaires to
-    // serve some data to unauthenticated contacts
+else if (check_questionnaire_get_token()) {
+        write_debug_log("[APIv2] Using token-based authentication.", "debug");
 
-    app()->get('/asset-group/options', 'get_asset_group_options_noauth');
+        // Here's a separate section for when the request is not authenticated,
+        // but has a valid questionnaire token.
+        // This won't create an authenticated session, but allows questionnaires to
+        // serve some data to unauthenticated contacts
 
-    // Configure leaf logging to the error log
-    /*
-    Leaf\Config::set([
-        'log.enabled' => true,
-        'log.dir' => sys_get_temp_dir(),
-        'log.file' => 'simplerisk.log',
-    ]);
-    */
+        app()->get('/asset-group/options', 'get_asset_group_options_noauth');
 
-    // Enable the debugging if needed. Default is false.
-    app()->config('debug', false);
+        // If the Risk Assessment Extra is enabled
+        if (assessments_extra())
+        {
+            // Load the required file
+            require_once(realpath(__DIR__ . '/../../extras/assessments/includes/api.php'));
 
-    // Add the custom Simplerisk API Exception Handler
-    app()->setErrorHandler(new SimpleriskApiExceptionHandler());
+            // Endpoint for draft saves with race condition protection
+            app()->post('/assessments/questionnaire/draft/save', 'api_v2_assessment_questionnaire_draft_save');
+        }
+    }
+// If we are unauthenticated
+else
+{
+    write_debug_log("[APIv2] Unable to authenticate.", "debug");
 
-    // Run the leaf route
-    app()->run();
+    // Set the error message
+    $status_code = "401";
+    $status_message = "Unauthorized";
+    $data = null;
 
+    // Return the json result
+    api_v2_json_result($status_code, $status_message, $data);
 }
+
+// Set the error handling if the page is not found
+app()->set404(function ()
+{
+    $response['status'] = 404;
+    $response['status_message'] = "The Requested API Endpoint Was Not Found";
+    $response['data'] = null;
+    response()->json($response);
+});
+
+// Configure leaf logging to the error log
+/*
+Leaf\Config::set([
+    'log.enabled' => true,
+    'log.dir' => sys_get_temp_dir(),
+    'log.file' => 'simplerisk.log',
+]);
+*/
+
+// Enable the debugging if needed. Default is false.
+app()->config('debug', false);
+
+// Add the custom Simplerisk API Exception Handler
+app()->setErrorHandler(new SimpleriskApiExceptionHandler());
+
+// Run the leaf route
+app()->run();
 
 ?>

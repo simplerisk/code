@@ -6188,6 +6188,11 @@ function get_dynamic_names_by_main_field_name($field_name)
 //                'name' => "submission_date",
 //                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
 //            ],
+        'Review' => 
+            [
+                'name' => "review",
+                'text' => $escaper->escapeHtml($lang['Review']),
+            ],
         'NextReviewDate' => 
             [
                 'name' => "next_review_date",
@@ -8030,6 +8035,125 @@ function view_controls_filter_selections() {
 
 }
 
+/**************************************************
+* FUNCTION: VIEW ASSETS AND CONTROLS SELECTIONS *
+**************************************************/
+function view_assets_and_controls_selections($report, $sort_by) {
+
+    global $lang;
+    global $escaper;
+
+    echo "
+        <div class='row form-group'>
+            <div class='col-4'>
+                <label>{$escaper->escapeHtml($lang['Report'])} :</label>
+                <select class='form-select' id='report' name='report' onchange='javascript: submit()'>
+                    <option value='0'" . ($report == 0 ? " selected" : "") . ">{$escaper->escapeHtml($lang['AssetsByControl'])}</option>
+                    <option value='1'" . ($report == 1 ? " selected" : "") . ">{$escaper->escapeHtml($lang['ControlsByAsset'])}</option>
+                </select>
+            </div>
+    ";
+    if ($report == 0) {
+        echo "
+            <div class='col-4'>
+                <label>{$escaper->escapeHtml($lang['SortBy'])} :</label>
+                <select class='form-select' id='sortby' name='sort_by' onchange='javascript: submit()'>
+                    <option value='0'" . ($sort_by == 0 ? " selected" : "") . ">{$escaper->escapeHtml($lang['ControlShortName'])}</option>
+                    <option value='1'" . ($sort_by == 1 ? " selected" : "") . ">{$escaper->escapeHtml($lang['ControlNumber'])}</option>
+                </select>
+            </div>
+        ";
+    }
+    echo "
+        </div>
+    ";
+}
+
+/***************************************************
+* FUNCTION: VIEW CONTROLS FILTER SELECTIONS FOR ASSETS *
+****************************************************/
+function view_controls_filter_selections_for_assets() {
+
+    global $lang;
+    global $escaper;
+
+    if (count($_POST) > 1) {
+        $control_framework = isset($_POST['control_framework']) ? $_POST['control_framework'] : [];
+        $control_family = isset($_POST['control_family']) ? $_POST['control_family'] : [];
+        $control_class = isset($_POST['control_class']) ? $_POST['control_class'] : [];
+        $control_phase = isset($_POST['control_phase']) ? $_POST['control_phase'] : [];
+        $control_priority = isset($_POST['control_priority']) ? $_POST['control_priority'] : [];
+        $control_owner = isset($_POST['control_owner']) ? $_POST['control_owner'] : [];
+    } else {
+        $control_framework = "all";
+        $control_family = "all";
+        $control_class = "all";
+        $control_phase = "all";
+        $control_priority = "all";
+        $control_owner = "all";
+    }
+
+    echo   "
+        <div class='row form-group'>
+            <div class='col-4'>
+                <label>{$escaper->escapeHtml($lang['ControlFrameworks'])} :</label>
+    ";
+                create_multiple_dropdown("control_framework", $control_framework, null, getAvailableControlFrameworkList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
+    echo "
+            </div>
+            <div class='col-4'>
+                <label>{$escaper->escapeHtml($lang['ControlFamily'])} :</label>
+    ";
+                create_multiple_dropdown("control_family", $control_family, null, getAvailableControlFamilyList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
+    echo "
+            </div>
+            <div class='col-4'>
+                <label>{$escaper->escapeHtml($lang['ControlClass'])} :</label>
+    ";
+                create_multiple_dropdown("control_class", $control_class, null, getAvailableControlClassList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
+    echo "
+            </div>
+        </div>
+        <div class='row form-group'>
+            <div class='col-4'>
+                <label>{$escaper->escapeHtml($lang['ControlPhase'])} :</label>
+    ";
+                create_multiple_dropdown("control_phase", $control_phase, null, getAvailableControlPhaseList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
+    echo "
+            </div>
+            <div class='col-4'>
+                <label>{$escaper->escapeHtml($lang['ControlPriority'])} :</label>
+    ";
+                create_multiple_dropdown("control_priority", $control_priority, null, getAvailableControlPriorityList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
+    echo "
+            </div>
+            <div class='col-4'>
+                <label>{$escaper->escapeHtml($lang['ControlOwner'])} :</label>
+    ";
+                create_multiple_dropdown("control_owner", $control_owner, null, getAvailableControlOwnerList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
+    echo "
+            </div>
+        </div>
+        
+        <script>
+            $(document).ready( function(){
+                $('select[multiple]').multiselect({
+                    allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
+                    enableFiltering: true,
+                    maxHeight: 250,
+                    buttonWidth: '100%',
+                    includeSelectAllOption: true,
+                    enableCaseInsensitiveFiltering: true,
+                    onChange: function(){
+                        $('form[name=select_report]').submit();
+                    }
+                });
+            });
+        </script>
+    ";
+
+}
+
 /**********************************************
 * FUNCTION: DISPLAY CONTRIBUTING RISK FORMULA *
 **********************************************/
@@ -8780,6 +8904,11 @@ function display_review_risks()
             if(customization_extra()) {
                 $field_id = str_replace("custom_field_", "", $column);
                 $custom_field = get_field_by_id($field_id);
+
+                if (!$custom_field) {
+                    continue;
+                }
+
                 $label = $escaper->escapeHtml($custom_field['name']);
                 $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
                 $index++;
@@ -8910,6 +9039,7 @@ function display_dynamic_audit_report() {
     
 	echo "
 		<div class='card-body border my-2'>
+            <strong>{$escaper->escapeHtml($lang['DynamicAuditReportHelp'])}</strong>
 			<div class='row'>
 				<div class='col-10'></div>
 				<div class='col-2'>
@@ -9757,6 +9887,7 @@ function get_label_by_risk_field_name($field){
 		'security_requirements' => js_string_escape($lang['SecurityRequirements']),
 
 		'management_review' => js_string_escape($lang['ManagementReview']),
+        'review' => js_string_escape($lang['Review']),
         'review_date' => js_string_escape($lang['ReviewDate']),
         'reviewer' => js_string_escape($lang['ReviewedBy']),
 		'next_review_date' => js_string_escape($lang['NextReviewDate']),
@@ -12290,6 +12421,8 @@ function get_label_by_document_field_name($field){
  *****************************************/
 function display_queue_monitor_table()
 {
+    global $escaper, $lang;
+
     $columns = ["id", "task_type", "status", "created_at", "updated_at", "attempts", "priority", "payload"];
     $tableID = "queue-table";
 
@@ -12309,14 +12442,15 @@ function display_queue_monitor_table()
         if ($column === 'status') {
             echo "<th>
                 <select class='form-control' id='filter_status' multiple='multiple'>
-                    <option value='pending' selected>Pending</option>
-                    <option value='in_progress' selected>In Progress</option>
-                    <option value='completed' selected>Completed</option>
-                    <option value='failed' selected>Failed</option>
+                    <option value='pending' selected>" . $escaper->escapeHtml($lang['Pending']) . "</option>
+                    <option value='in_progress' selected>" . $escaper->escapeHtml($lang['InProgress']) . "</option>
+                    <option value='completed' selected>" . $escaper->escapeHtml($lang['Completed']) . "</option>
+                    <option value='failed' selected>" . $escaper->escapeHtml($lang['Failed']) . "</option>
+                    <option value='canceled' selected>" . $escaper->escapeHtml($lang['Canceled']) . "</option>
                 </select>
             </th>";
         } elseif ($column === 'task_type') {
-            echo "<th><input type='text' class='form-control' id='filter_task_type' placeholder='Search Task Type'></th>";
+            echo "<th><input type='text' class='form-control' id='filter_task_type' placeholder='" . $escaper->escapeHtml($lang['Search']) . "'></th>";
         } else {
             echo "<th></th>";
         }

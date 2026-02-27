@@ -313,7 +313,7 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
  * FUNCTION: SEND EMAIL          *
  * Will queue emails for sending *
  *********************************/
-function send_email($name, $email, $subject, $body)
+function send_email(PDO $db, $name, $email, $subject, $body)
 {
     $queue_task_payload = [
         'triggered_at'    => time(),
@@ -323,7 +323,7 @@ function send_email($name, $email, $subject, $body)
         'body'            => $body
     ];
 
-    if (!queue_task('core_email_send', $queue_task_payload, 100)) {
+    if (!queue_task($db, 'core_email_send', $queue_task_payload, 100, 5, 3600)) {
         write_debug_log("Failed to queue email to {$email}", 'error');
     }
 }
@@ -384,6 +384,7 @@ function send_email_immediate($name, $email, $subject, $body)
         $mail->addReplyTo($replyto_email, $replyto_name);
         $mail->addAddress($email, $name);
         $mail->Subject = ($prepend ? $prepend . ' ' : '') . $subject;
+        $mail->Sender = $from_email;
         $mail->isHTML(true);
         $mail->Body = $body;
         $mail->AltBody = strip_tags($body);

@@ -102,7 +102,7 @@ render_header_and_sidebar(permissions: ['check_admin' => true]);
 				<tr>
 					<th>Secure Controls Framework (SCF)</th>
 					<td>Adds the controls from the <a href="https://www.securecontrolsframework.com/" target="_blank">Secure Controls Framework (SCF)</a> into SimpleRisk for use with our Governance functionality.</td>
-					<td width="60px"><?php echo (complianceforge_scf_extra() ? '<a href="complianceforge_scf.php">Yes</a>' : '<a href="complianceforge_scf.php">No</a>'); ?></td>
+					<td width="60px"><?php echo (complianceforge_scf_extra() ? '<a href="securecontrolsframework.php">Yes</a>' : '<a href="securecontrolsframework.php">No</a>'); ?></td>
 				</tr>
 				<tr>
 					<th>Team-Based Separation</th>

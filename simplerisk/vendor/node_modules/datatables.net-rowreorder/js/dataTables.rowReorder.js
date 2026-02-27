@@ -1,4 +1,4 @@
-/*! RowReorder 1.5.0
+/*! RowReorder 1.5.1
  * © SpryMedia Ltd - datatables.net/license
  */
 
@@ -52,7 +52,7 @@ var DataTable = $.fn.dataTable;
 /**
  * @summary     RowReorder
  * @description Row reordering extension for DataTables
- * @version     1.5.0
+ * @version     1.5.1
  * @author      SpryMedia Ltd
  * @contact     datatables.net
  *
@@ -252,7 +252,7 @@ $.extend(RowReorder.prototype, {
 		// Need to pass the nodes through jQuery to get them in document order,
 		// not what DataTables thinks it is, since we have been altering the
 		// order
-		var nodes = $.unique(dt.rows({ page: 'current' }).nodes().toArray());
+		var nodes = $.uniqueSort(dt.rows({ page: 'current' }).nodes().toArray());
 		var middles = $.map(nodes, function (node, i) {
 			var top = $(node).position().top - headerHeight;
 
@@ -407,7 +407,7 @@ $.extend(RowReorder.prototype, {
 		start.left = this._eventToPage(e, 'X');
 		start.offsetTop = offset.top;
 		start.offsetLeft = offset.left;
-		start.nodes = $.unique(dt.rows({ page: 'current' }).nodes().toArray());
+		start.nodes = $.uniqueSort(dt.rows({ page: 'current' }).nodes().toArray());
 
 		this._cachePositions();
 		this._clone(target);
@@ -468,11 +468,9 @@ $.extend(RowReorder.prototype, {
 		if (cancelable) {
 			var bodyArea = this.s.bodyArea;
 			var cloneArea = this._calcCloneParentArea();
-			this.s.dropAllowed = this._rectanglesIntersect(bodyArea, cloneArea);
 
-			this.s.dropAllowed
-				? $(this.dom.cloneParent).removeClass('drop-not-allowed')
-				: $(this.dom.cloneParent).addClass('drop-not-allowed');
+			this.s.dropAllowed = this._rectanglesIntersect(bodyArea, cloneArea);
+			$(this.dom.cloneParent).toggleClass('drop-not-allowed', !this.s.dropAllowed);
 		}
 
 		// Transform the mouse position into a position in the table's body
@@ -529,7 +527,7 @@ $.extend(RowReorder.prototype, {
 
 		// Calculate the difference
 		var startNodes = this.s.start.nodes;
-		var endNodes = $.unique(dt.rows({ page: 'current' }).nodes().toArray());
+		var endNodes = $.uniqueSort(dt.rows({ page: 'current' }).nodes().toArray());
 		var idDiff = {};
 		var fullDiff = [];
 		var diffNodes = [];
@@ -646,7 +644,7 @@ $.extend(RowReorder.prototype, {
 
 		// Perform the DOM shuffle if it has changed from last time
 		if (this.s.lastInsert === null || this.s.lastInsert !== insertPoint) {
-			var nodes = $.unique(dt.rows({ page: 'current' }).nodes().toArray());
+			var nodes = $.uniqueSort(dt.rows({ page: 'current' }).nodes().toArray());
 			var insertPlacement = '';
 
 			if (insertPoint > this.s.lastInsert) {
@@ -841,7 +839,7 @@ $.extend(RowReorder.prototype, {
 		// position
 
 		var dt = this.s.dt;
-		var nodes = $.unique(dt.rows({ page: 'current' }).nodes().toArray());
+		var nodes = $.uniqueSort(dt.rows({ page: 'current' }).nodes().toArray());
 		var rowIndex = -1;
 		var headerHeight = $(dt.table().node()).find('thead').outerHeight();
 
@@ -1006,7 +1004,7 @@ Api.register('rowReorder.disable()', function () {
  * @name RowReorder.version
  * @static
  */
-RowReorder.version = '1.5.0';
+RowReorder.version = '1.5.1';
 
 $.fn.dataTable.RowReorder = RowReorder;
 $.fn.DataTable.RowReorder = RowReorder;

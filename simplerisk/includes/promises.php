@@ -10,9 +10,8 @@ require_once(realpath(__DIR__ . '/queues.php'));
 /****************************
  * FUNCTION: CREATE PROMISE *
  ****************************/
-function create_promise(string $promise_type, array $stages, array $payload = []): int
+function create_promise(string $promise_type, array $stages, array $payload = [], PDO $db): int
 {
-    $db = db_open();
     $stmt = $db->prepare("
         INSERT INTO promises (promise_type, current_stage, status, state, stages, payload, created_at, updated_at)
         VALUES (:promise_type, :current_stage, 'pending', 'pending', :stages, :payload, NOW(), NOW())
@@ -23,9 +22,7 @@ function create_promise(string $promise_type, array $stages, array $payload = []
         ':stages'        => json_encode($stages),
         ':payload'       => json_encode($payload),
     ]);
-    $id = (int) $db->lastInsertId();
-    db_close($db);
-    return $id;
+    return (int) $db->lastInsertId();
 }
 
 /***********************************************************
@@ -38,14 +35,9 @@ function create_stage_promise(
     array $payload = [],
     ?int $depends_on = null,
     ?int $reference_id = null,
-    ?int $queue_task_id = null
+    ?int $queue_task_id = null,
+    PDO $db
 ): int {
-    $db = db_open();
-    if (!$db) {
-        write_debug_log("CREATE_STAGE_PROMISE: Failed to open DB for stage '{$stage_name}'", "error");
-        return 0;
-    }
-
     try {
         $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
@@ -81,28 +73,23 @@ function create_stage_promise(
             write_debug_log("CREATE_STAGE_PROMISE: Insert succeeded but lastInsertId returned 0 for stage '{$stage_name}'", "error");
         }
 
-        db_close($db);
         return $id;
 
     } catch (PDOException $e) {
         write_debug_log("CREATE_STAGE_PROMISE: SQL error for stage '{$stage_name}': " . $e->getMessage(), "error");
-        db_close($db);
         return 0;
     } catch (Exception $e) {
         write_debug_log("CREATE_STAGE_PROMISE: General error for stage '{$stage_name}': " . $e->getMessage(), "error");
-        db_close($db);
         return 0;
     }
-
 }
 
 /*******************************************************
  * FUNCTION: UPDATE PROMISE STAGE                      *
  * Updates promise state and triggers completion logic *
  *******************************************************/
-function update_promise_stage(int $promise_id, ?string $current_stage = null, ?string $status = null, ?array $payload = null): bool
+function update_promise_stage(int $promise_id, ?string $current_stage = null, ?string $status = null, ?array $payload = null, PDO $db): bool
 {
-    $db = db_open();
     $parts = [];
     $params = [':pid' => $promise_id];
 
@@ -123,7 +110,6 @@ function update_promise_stage(int $promise_id, ?string $current_stage = null, ?s
     }
 
     if (empty($parts)) {
-        db_close($db);
         return false;
     }
 
@@ -144,7 +130,6 @@ function update_promise_stage(int $promise_id, ?string $current_stage = null, ?s
         fail_dependent_promises($db, $promise_id);
     }
 
-    db_close($db);
     return (bool)$result;
 }
 
@@ -256,9 +241,6 @@ function propagate_payload_to_next(PDO $db, int $completed_promise_id, array $pa
  * FUNCTION: HANDLE PROMISE FAILURE                                    *
  * Helper function to handle promise failures with exponential backoff *
  ***********************************************************************/
-/**
- * Handle promise failure with retry logic and custom failure handlers
- */
 function handle_promise_failure(
     PDO $db,
     array $promise,
@@ -283,7 +265,7 @@ function handle_promise_failure(
 
     if ($attempts >= $maxAttempts) {
         // Permanently fail the promise
-        update_promise_stage($promise_id, null, 'failed', $payload);
+        update_promise_stage($promise_id, null, 'failed', $payload, $db);
 
         write_debug_log(
             "Promise #{$promise_id} permanently failed after {$attempts} attempts: {$error_message}",
@@ -313,7 +295,7 @@ function handle_promise_failure(
         // Mark parent queue task as failed
         if (!empty($queue_task_id)) {
             write_debug_log("Calling queue_update_status for task #{$queue_task_id}", "debug");
-            queue_update_status($queue_task_id, 'failed');
+            queue_update_status($queue_task_id, 'failed', $db);
         }
         else
         {
@@ -339,8 +321,7 @@ function handle_promise_failure(
         $payload['_retry_available_at'] = time() + $delay;
 
         // Reset promise to pending with updated payload
-        update_promise_stage($promise_id, null, 'pending', $payload);
-
+        update_promise_stage($promise_id, null, 'pending', $payload, $db);
     }
 }
 
@@ -427,6 +408,147 @@ function check_and_finalize_task(PDO $db, array $completed_promise, array $job_d
         }
     } catch (Exception $e) {
         write_debug_log("Error checking task finalization: " . $e->getMessage(), "error");
+    }
+}
+
+/**
+ * Process a single promise with stage handling, retries, and logging.
+ *
+ * @param array $promise The promise row from DB
+ * @param array $jobDef The definition of the promise job
+ * @param PDO $db Database connection
+ * @param int $maxRetryAttempts Maximum retry attempts
+ * @param int $baseRetryDelay Base retry delay in seconds
+ * @param int $maxRetryDelay Maximum retry delay in seconds
+ */
+function process_promise(array $promise, array $jobDef, PDO $db, int $maxRetryAttempts, int $baseRetryDelay, int $maxRetryDelay): int
+{
+    $promiseId = $promise['id'];
+    $stageName = $promise['current_stage'] ?? 'N/A';
+    $payload = json_decode($promise['payload'] ?? '{}', true) ?: [];
+
+    $retryAttempts = $payload['_retry_attempts'] ?? 0;
+    $retryAvailableAt = $payload['_retry_available_at'] ?? 0;
+
+    // Respect backoff
+    if (time() < $retryAvailableAt) {
+        $sleepTime = $retryAvailableAt - time();
+        write_debug_log("Promise #{$promiseId} waiting for backoff: {$sleepTime}s remaining (attempt {$retryAttempts})", "debug");
+        return 0; // Not failed yet
+    }
+
+    write_debug_log("Processing promise #{$promiseId}: type={$jobDef['type']}, stage={$stageName}, retries={$retryAttempts}", "info");
+
+    // Mark in progress
+    update_promise_stage($promiseId, null, 'in_progress', null, $db);
+
+    // Find stage function
+    if (!isset($jobDef['stages'][$stageName])) {
+        $msg = "Stage '{$stageName}' not found for job type '{$jobDef['type']}'";
+        write_debug_log($msg, "error");
+        handle_promise_failure($db, $promise, $msg, $maxRetryAttempts, $baseRetryDelay, $maxRetryDelay);
+        return 1;
+    }
+
+    $stageFn = $jobDef['stages'][$stageName];
+
+    // Execute stage function safely
+    try {
+        $result = $stageFn($promise, $db);
+    } catch (\Throwable $t) {
+        $msg = "Stage '{$stageName}' threw error: {$t->getMessage()} in {$t->getFile()}:{$t->getLine()}";
+        write_debug_log($msg, "error");
+        handle_promise_failure($db, $promise, $msg, $maxRetryAttempts, $baseRetryDelay, $maxRetryDelay);
+        return 1;
+    }
+
+    $resultStr = is_array($result) ? json_encode($result) : var_export($result, true);
+    write_debug_log("Stage '{$stageName}' returned: {$resultStr}", "debug");
+
+    // Failure detection
+    if ($result === false || $result === null) {
+        handle_promise_failure($db, $promise, "Stage returned " . var_export($result, true), $maxRetryAttempts, $baseRetryDelay, $maxRetryDelay);
+        return 1;
+    }
+
+    // Success handling
+    if (is_array($result)) {
+        update_promise_stage($promiseId, null, 'completed', $result, $db);
+        propagate_payload_to_next($db, $promiseId, $result);
+    } else {
+        update_promise_stage($promiseId, null, 'completed', null, $db);
+    }
+
+    write_debug_log("Promise #{$promiseId} stage '{$stageName}' completed successfully", "info");
+    check_and_finalize_task($db, $promise, $jobDef);
+
+    return 0; // success
+}
+
+/*********************************
+ * FUNCTION: CANCEL CONTROL TASK *
+ *********************************/
+function cancel_control_task(PDO $db, array $promise, string $reason): bool
+{
+    try
+    {
+        // Get the task_id
+        $task_id = (int)$promise['task_id'];
+
+        write_debug_log(
+            "[cancel_control_task] Canceling task {$task_id} for deleted control: {$reason}",
+            "info"
+        );
+
+        // Cancel the task itself
+        $stmt = $db->prepare("
+            UPDATE queue_tasks
+            SET status = 'canceled'
+            WHERE id = :task_id
+        ");
+        $stmt->execute([':task_id' => $task_id]);
+
+        // Cancel all promises belonging to this task
+        $stmt = $db->prepare("
+            UPDATE promises
+            SET status = 'canceled'
+            WHERE queue_task_id = :task_id
+                AND status IN ('pending','in_progress')
+        ");
+        $stmt->execute([':task_id' => $task_id]);
+
+        // Clean the tmp_files
+        $payload = json_decode($promise['payload'], true) ?? [];
+        $control_ref = $payload['control_ref'] ?? null;
+        $matches_ref = $payload['matches_ref'] ?? [];
+
+        // Delete the control tmp data
+        if ($control_ref)
+        {
+            delete_tmp_data($db, $control_ref);
+            write_debug_log("[clean_tmp_files] Deleted tmp control_ref: {$control_ref}", "debug");
+        }
+
+        foreach ($matches_ref as $ref)
+        {
+            if ($ref)
+            {
+                delete_tmp_data($db, $ref);
+                write_debug_log("[clean_tmp_files] Deleted tmp matches_ref: {$ref}", "debug");
+            }
+        }
+
+        unset($payload['control_ref']);
+        unset($payload['matches_ref']);
+
+        return true;
+    } catch (Exception $e)
+    {
+        write_debug_log(
+            "[cancel_control_task] Error: " . $e->getMessage(),
+            "debug"
+        );
+        return false;
     }
 }
 

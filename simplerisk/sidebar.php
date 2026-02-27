@@ -507,6 +507,11 @@ require_once(realpath(__DIR__ .'/header.php'));
                             </a>
                         </li>
                         <li class="sidebar-item">
+                            <a href="../reports/compliance_dashboard.php" class="sidebar-link">
+                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['ComplianceDashboard']);?></span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
                             <a href="../reports/dynamic_audit_report.php" class="sidebar-link">
                                 <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['DynamicAuditReport']);?></span>
                             </a>
@@ -534,6 +539,11 @@ require_once(realpath(__DIR__ .'/header.php'));
                         <li class="sidebar-item">
                             <a href="../reports/documents_to_controls.php" class="sidebar-link">
                                 <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['DocumentControlMapping']);?></span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="../reports/assets_and_controls.php" class="sidebar-link">
+                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['AssetsAndControls']);?></span>
                             </a>
                         </li>
     <?php

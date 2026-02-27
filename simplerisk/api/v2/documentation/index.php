@@ -20,6 +20,7 @@ use OpenApi\Annotations\Property;
 use OpenApi\Annotations\Items;
 use OpenApi\Generator;
 use OpenApi\Annotations\OpenApi;
+use OpenApi\Annotations\Encoding;
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -90,6 +91,17 @@ $scan_directories = [
     realpath(__DIR__ . '/artificial_intelligence.php'),
     realpath(__DIR__ . '/reporting.php'),
 ];
+
+// If the Secure Controls Framework (SCF) Extra is installed
+if (is_extra_installed("complianceforgescf"))
+{
+    if (file_exists(realpath(__DIR__ . '/../../../extras/complianceforgescf/includes/api_documentation.php')))
+    {
+        // Add the SCF extra API documentation
+        require_once realpath(__DIR__ . '/../../../extras/complianceforgescf/includes/api_documentation.php');
+        $scan_directories[] = realpath(__DIR__ . '/../../../extras/complianceforgescf/includes/api_documentation.php');
+    }
+}
 
 // If the artificial intelligence extra is enabled
 if (artificial_intelligence_extra())
@@ -286,13 +298,17 @@ function create_asset_base_schema(&$openapi, $view) {
 
                 foreach ($path->post->requestBody->content as $content) {
                     if (isset($content->mediaType) && $content->mediaType === 'multipart/form-data') {
-                        
+
                         if (!is_array($content->encoding)) {
                             $content->encoding = [];
                         }
-                        
+
                         foreach ($explode_property_names as $property_name) {
-                            $content->encoding[$property_name] = ['explode' => true];
+                            $content->encoding[] = new Encoding([
+                                'property' => $property_name,
+                                'explode' => true,
+                                'style' => 'form',
+                            ]);
                         }
                     }
                 }

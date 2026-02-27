@@ -4,7 +4,7 @@
     "main": "js/dataTables.rowReorder.js",
     "module": "js/dataTables.rowReorder.mjs",
     "types": "./types/types.d.ts",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "files": [
         "js/**/*.js",
         "js/**/*.mjs",

@@ -199,7 +199,7 @@ function core_extra_activated_link($extra)
         case "authentication":
             return "<a class='text-info m-l-10' href='authentication.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
         case "complianceforgescf":
-            return "<a class='text-info m-l-10' href='complianceforge_scf.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
+            return "<a class='text-info m-l-10' href='securecontrolsframework.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
         case "customization":
             return "<a class='text-info m-l-10' href='customization.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
         case "encryption":
@@ -517,7 +517,7 @@ function core_get_action_button($extra_name, $purchased, $installed, $activated,
             break;
         case "complianceforgescf":
             $button_name = "get_complianceforge_scf_extra";
-            $action_link = "complianceforge_scf.php";
+            $action_link = "securecontrolsframework.php";
             break;
         case "authentication":
             $button_name = "get_authentication_extra";

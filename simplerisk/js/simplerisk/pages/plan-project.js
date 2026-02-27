@@ -222,10 +222,6 @@ var planProject = {
     },
 };
 
-
-
-
-
 $(function() {
     $('#project-new').on('submit', function(event) {
         event.preventDefault();
@@ -234,8 +230,8 @@ $(function() {
         let trim_flag = false;
 
         // check if the trimmed value is empty for the required fields
-        $(form_element).find("[required]").each(function() {
-            // Remove the spaces from the begining and the end from the input value.
+        $(form_element).find("input[required], textarea[required]").each(function() {
+            // Remove the spaces from the beginning and the end from the input value.
             let trimmed_value = $(this).val().trim();
 
             // Update the required field with the trimmed value
@@ -288,7 +284,7 @@ $(function() {
         let trim_flag = false;
 
         // check if the trimmed value is empty for the required fields
-        $(form_element).find("[required]").each(function() {
+        $(form_element).find("input[required], textarea[required]").each(function() {
             // Remove the spaces from the begining and the end from the input value.
             let trimmed_value = $(this).val().trim();
 

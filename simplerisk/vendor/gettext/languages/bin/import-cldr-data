@@ -173,14 +173,24 @@ class DocumentStorage
     private function fetch($path)
     {
         $url = $this->baseUrl . '/' . ltrim($path, '/');
+        if (defined('PHP_VERSION_ID') && \PHP_VERSION_ID >= 80400) {
+            http_clear_last_response_headers();
+        }
         set_error_handler(function () {}, -1);
         $content = file_get_contents($url, false, $this->context);
         restore_error_handler();
         if ($content === false) {
             $details = '';
-            /** @var array $http_response_header */
-            if (!empty($http_response_header)) {
-                $details = " - {$http_response_header[0]}";
+            if (defined('PHP_VERSION_ID') && \PHP_VERSION_ID >= 80400) {
+                $lastResponseHeaders = http_get_last_response_headers();
+            } elseif (!empty($http_response_header)) {
+                $varName = 'http_response_header';
+                $lastResponseHeaders = ${$varName};
+            } else {
+                $lastResponseHeaders = null;
+            }
+            if (!empty($lastResponseHeaders)) {
+                $details = " - {$lastResponseHeaders[0]}";
             }
             throw new RuntimeException("Failed to download from {$url}{$details}");
         }
@@ -380,11 +390,23 @@ class Plurals extends Processor
             'root' => '',
         );
         $unrecognizedLocaleCodes = array();
+        $m = null;
         foreach ($xPluralRulesList as $xPluralRules) {
             $locales = preg_split('/\s+/', (string) $xPluralRules->getAttribute('locales'), -1, PREG_SPLIT_NO_EMPTY);
             if ($locales === array()) {
                 throw new RuntimeException('No locales found in pluralRules element');
             }
+            $localesWithScript = array();
+            foreach ($locales as $locale) {
+                if (preg_match('/^([a-z]{2,3})[_\-][A-Z][a-z]{3}$/', $locale, $m)) {
+                    $localesWithScript[$locale] = $m[1];
+                }
+            }
+            $missingLocales = array_diff($localesWithScript, $locales);
+            if ($missingLocales !== array()) {
+                throw new RuntimeException("Found locales with script without matching locales without script:-\n" . implode("\n- ", $missingLocales));
+            }
+            $locales = array_diff($locales, array_keys($localesWithScript));
             $elements = array(
                 'pluralRule-count-zero' => null,
                 'pluralRule-count-one' => null,
@@ -487,12 +509,18 @@ abstract class LocaleDisplayName extends Processor
         $data = array();
         $xpath = new DOMXPath($doc);
         $xElementList = $xpath->query($this->getXPathSelector());
+        $expectedKeys = array();
         foreach ($xElementList as $xElement) {
             $type = (string) $xElement->getAttribute('type');
             if ($type === '') {
                 throw new RuntimeException('Missing type attribute');
             }
             $key = str_replace('_', '-', $type);
+            $menu = (string) $xElement->getAttribute('menu');
+            if ($menu !== '') {
+                $expectedKeys[] = $key;
+                continue;
+            }
             $alt = (string) $xElement->getAttribute('alt');
             if ($alt !== '') {
                 $key = "{$key}-alt-{$alt}";
@@ -501,6 +529,11 @@ abstract class LocaleDisplayName extends Processor
                 throw new RuntimeException("Duplicate key: {$key}");
             }
             $data[$key] = (string) $xElement->textContent;
+        }
+        foreach (array_unique($expectedKeys) as $expectedKey) {
+            if (!isset($data[$expectedKey])) {
+                throw new RuntimeException("Missing expected key {$expectedKey}");
+            }
         }
         if ($data === array()) {
             throw new RuntimeException('No elements found');

@@ -232,7 +232,7 @@
             $("#assessment-contact--edit [name=id]").val(contact_id);
 
             $.ajax({
-                url: BASE_URL + '/api/assessment/contacts/edit',
+                url: BASE_URL + '/api/v2/assessments/contacts/edit',
                 type: 'POST',
                 data: {id: contact_id},
                 success : function (result){

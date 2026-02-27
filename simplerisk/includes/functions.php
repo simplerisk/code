@@ -2471,7 +2471,9 @@ $field_settings_display_groups = [
             "test_date",
             "last_date",
             "next_date",
-            "teams"
+            "teams",
+            "test_result",
+            "test_result_background_class"
         ],
     ],
     'past_audits' => [
@@ -2796,7 +2798,8 @@ $field_settings_views = [
             "status",
             "test_date",
             "last_date",
-            "next_date"
+            "next_date",
+            "test_result"
         ],
         'actions_column' => [
             'field_name' => 'actions',
@@ -3453,22 +3456,14 @@ $ui_layout_config = [
 function db_open() {
 
     if (isset($GLOBALS['db_global']) && $GLOBALS['db_global']) {
-
         return $GLOBALS['db_global'];
-
     }
 
     // Connect to the database
     try {
 
         // Set the simplerisk timezone for any datetime functions
-        $now = new DateTime();
-        $mins = $now->getOffset() / 60;
-        $sgn = ($mins < 0 ? -1 : 1);
-        $mins = abs($mins);
-        $hrs = floor($mins / 60);
-        $mins -= $hrs * 60;
-        $offset = sprintf('%+d:%02d', $hrs*$sgn, $mins);
+        $offset = currentTimezoneOffset();
 
         // Set the default options array
         $options = array(
@@ -3518,12 +3513,18 @@ function db_open() {
                 $default_timezone = "America/Chicago";
 
                 update_setting("default_timezone", $default_timezone);
-                
+
             }
         }
 
         // Set the timezone for PHP date functions
         date_default_timezone_set($default_timezone);
+
+        // Set the simplerisk timezone for any datetime functions
+        $offset = currentTimezoneOffset();
+
+        // Setting the connection's timezone to the timezone set in the database
+        $GLOBALS['db_global']->exec("SET time_zone = " . $GLOBALS['db_global']->quote(currentTimezoneOffset()));
 
     	// FOR DEBUGGING DATABASE CONNECTIONS ONLY
     	/*
@@ -3556,6 +3557,53 @@ function db_open() {
     return null;
 
 }
+
+
+/**
+ * Returns the current UTC offset for a timezone.
+ *
+ * @param string|null $timezoneName IANA timezone name or null for PHP default
+ * @param bool $returnSeconds When true, returns offset in seconds; otherwise '+HH:MM'
+ * @return int|string
+ * @throws Exception If timezone name is invalid
+ *
+ *
+ *
+ * Examples:
+ *
+ * currentTimezoneOffset();
+ * // "+01:00" (depends on PHP default TZ)
+ *
+ * currentTimezoneOffset('Europe/Budapest');
+ * // "+01:00" or "+02:00"
+ *
+ * currentTimezoneOffset('Europe/Budapest', true);
+ * // 3600 or 7200
+ */
+function currentTimezoneOffset(?string $timezoneName = null, bool $returnSeconds = false) {
+    $tz = $timezoneName !== null
+            ? new DateTimeZone($timezoneName)
+            : new DateTimeZone(date_default_timezone_get());
+
+    $now = new DateTimeImmutable('now', $tz);
+    $seconds = $tz->getOffset($now);
+
+    if ($returnSeconds) {
+        return $seconds;
+    }
+
+    $sign = $seconds < 0 ? '-' : '+';
+    $seconds = abs($seconds);
+
+    return sprintf(
+            '%s%02d:%02d',
+            $sign,
+            intdiv($seconds, 3600),
+            intdiv($seconds % 3600, 60)
+    );
+}
+
+
 
 /*********************************
  * FUNCTION: DATABASE DISCONNECT *
@@ -5540,75 +5588,113 @@ function update_table_by_id($table, $name, $id, $length=50)
 /*************************
  * FUNCTION: ADD SETTING *
  *************************/
-function add_setting($name, $value) {
+function add_setting($name, $value, ?PDO $db = null): void
+{
+    $close_db = false;
 
-    // Open the database connection
-    $db = db_open();
+    if ($db === null)
+    {
+        $db = db_open();
+        $close_db = true;
+    }
 
-    $stmt = $db->prepare("
-        INSERT IGNORE INTO 
-            settings 
-        (
-            `name`,`value`
-        ) 
-        VALUES 
-        (
-            :name, :value
+    try {
+        $stmt = $db->prepare("
+            INSERT IGNORE INTO settings (`name`, `value`)
+            VALUES (:name, :value)
+        ");
+        $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+        $stmt->bindParam(":value", $value, PDO::PARAM_STR);
+        $stmt->execute();
+
+        $affectedRows = $stmt->rowCount();
+        if ($affectedRows === 1) {
+            write_debug_log("The setting '{$name}' was added with value '{$value}'.", "debug");
+        } else if ($affectedRows === 2) {
+            write_debug_log("The setting '{$name}' was updated to value '{$value}'.", "debug");
+        }
+
+        // Update cached value
+        $GLOBALS['setting_' . $name] = $value;
+
+    } catch (Exception $e) {
+        write_debug_log(
+                "[add_setting] DB error adding setting '{$name}': " . $e->getMessage(),
+                "error"
         );
-    ");
-    $stmt->bindParam(":name", $name, PDO::PARAM_STR);
-    $stmt->bindParam(":value", $value, PDO::PARAM_STR);
-    $stmt->execute();
-
-    // Close the database connection
-    db_close($db);
-
-    $key = 'setting_'.$name;
-    $GLOBALS[$key] = $value;
-
+    } finally {
+        if ($close_db) {
+            db_close($db);
+        }
+    }
 }
 
 /***************************************
  * FUNCTION: UPDATE OR INSERT SETTINGS *
  ***************************************/
-function update_or_insert_setting($name, $value)
+function update_or_insert_setting($name, $value, ?PDO $db = null): bool
 {
-    // Open the database connection
-    $db = db_open();
+    $close_db = false;
 
-    // Update the database version information
+    if ($db === null) {
+        $db = db_open();
+        $close_db = true;
+    }
 
-    $stmt = $db->prepare("REPLACE INTO `settings`(`name`, `value`) VALUES (:name, :value);");
-    $stmt->bindParam(":name", $name, PDO::PARAM_STR);
-    $stmt->bindParam(":value", $value, PDO::PARAM_STR);
-    $stmt->execute();
+    try {
+        $stmt = $db->prepare("
+            REPLACE INTO settings (`name`, `value`) 
+            VALUES (:name, :value)
+        ");
+        $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+        $stmt->bindParam(":value", $value, PDO::PARAM_STR);
+        $stmt->execute();
 
-    // Close the database connection
-    db_close($db);
+        $affectedRows = $stmt->rowCount();
+        if ($affectedRows === 1) {
+            write_debug_log("The setting '{$name}' was added with value '{$value}'.", "debug");
+        } else if ($affectedRows === 2) {
+            write_debug_log("The setting '{$name}' was updated to value '{$value}'.", "debug");
+        }
 
-    $key = 'setting_'.$name;
-    $GLOBALS[$key] = $value;
-    
-    return true;
+        // Update cached value
+        $GLOBALS['setting_' . $name] = $value;
+
+        return true;
+
+    } catch (Exception $e) {
+        write_debug_log(
+                "[update_or_insert_setting] DB error updating/inserting setting '{$name}': " . $e->getMessage(),
+                "error"
+        );
+        return false;
+    } finally {
+        if ($close_db) {
+            db_close($db);
+        }
+    }
 }
 
 /****************************
  * FUNCTION: UPDATE SETTING *
  ****************************/
-function update_setting($name, $value): bool
+function update_setting($name, $value, ?PDO $db = null): bool
 {
-    // If setting value is not changed will be return;
-    $old_value = get_setting($name);
+    $close_db = false;
+
+    if ($db === null) {
+        $db = db_open();
+        $close_db = true;
+    }
+
+    // Quick check: if value hasn't changed, return early
+    $old_value = get_setting($name, db: $db);
     if ($old_value == $value) {
-        write_debug_log("Setting {$name} was not changed.  Nothing to do.", "debug");
-        return false; // Nothing updated
+        write_debug_log("Setting {$name} was not changed. Nothing to do.", "debug");
+        return false;
     }
 
     try {
-        // Open the database connection
-        $db = db_open();
-
-        // Insert new value or update existing
         $stmt = $db->prepare("
             INSERT INTO settings (`name`, `value`) 
             VALUES (:name, :value)
@@ -5619,126 +5705,133 @@ function update_setting($name, $value): bool
         $stmt->bindParam(":value_update", $value, PDO::PARAM_STR);
         $stmt->execute();
 
-        $GLOBALS['setting_'.$name] = $value;
+        // Update cache
+        $GLOBALS['setting_' . $name] = $value;
 
-        // If a setting is being updated outside of a session use the "System" user
+        // Ensure session defaults for audit
         if (!isset($_SESSION['user'])) $_SESSION['user'] = "System User";
         if (!isset($_SESSION['uid'])) $_SESSION['uid'] = -1;
 
         // Audit log
-        switch ($name)
-        {
-            case "max_upload_size":
-                $risk_id = 1000;
-                $message = "The maximum upload file size was updated by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-                break;
-            default:
-                $risk_id = 1000;
-                $message = "A setting value named \"".$name."\" was updated by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-                break;
+        $risk_id = 1000;
+        if ($name === "max_upload_size") {
+            $message = "The maximum upload file size was updated by \"" . $_SESSION['user'] . "\" user.";
+        } else {
+            $message = "A setting value named \"{$name}\" was updated by \"" . $_SESSION['user'] . "\" user.";
         }
+        write_log($risk_id, $_SESSION['uid'], $message);
 
-        return true; // Successfully updated
+        return true;
+
     } catch (Exception $e) {
-        write_debug_log("Error updating setting '{$name}': " . $e->getMessage(), "error");
+        write_debug_log(
+                "[update_setting] Error updating setting '{$name}': " . $e->getMessage(),
+                "error"
+        );
         return false;
     } finally {
-        // Close the database connection
-        db_close($db);
+        if ($close_db) {
+            db_close($db);
+        }
     }
 }
 
 /****************************
  * FUNCTION: DELETE SETTING *
  ****************************/
-function delete_setting($name)
+function delete_setting($name, ?PDO $db = null): void
 {
-    // Open the database connection
-    $db = db_open();
+    $close_db = false;
 
-    // Update the setting
-    $stmt = $db->prepare("DELETE FROM `settings` WHERE name=:name;");
-    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
-    $stmt->execute();
+    if ($db === null) {
+        $db = db_open();
+        $close_db = true;
+    }
 
-    // Close the database connection
-    db_close($db);
-    
-    $key = 'setting_'.$name;
-    if(isset($GLOBALS[$key]))
-        unset($GLOBALS[$key]);
+    try {
+        $stmt = $db->prepare("
+            DELETE FROM settings
+            WHERE name = :name
+        ");
+        $stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
+        $stmt->execute();
+
+        // Clear cached value
+        $key = 'setting_' . $name;
+        if (isset($GLOBALS[$key])) {
+            unset($GLOBALS[$key]);
+        }
+    } catch (Exception $e) {
+        write_debug_log(
+                "[delete_setting] DB error deleting setting '{$name}': " . $e->getMessage(),
+                "debug"
+        );
+    } finally {
+        if ($close_db) {
+            db_close($db);
+        }
+    }
 }
 
 /*************************
  * FUNCTION: GET SETTING *
  *************************/
-function get_setting($setting, $default=false, $cached=true) {
+function get_setting($setting, $default = false, $cached = true, ?PDO $db = null)
+{
+    $close_db = false;
 
-    // If we want to cache the setting
-    if ($cached) {
-        $key = 'setting_' . $setting;
-        if (isset($GLOBALS[$key])) {
-            return $GLOBALS[$key];
+    if ($db === null) {
+        $db = db_open();
+        $close_db = true;
+    }
+
+    try
+    {
+        // If we want to cache the setting
+        if ($cached)
+        {
+            $key = 'setting_' . $setting;
+            if (isset($GLOBALS[$key]))
+            {
+                return $GLOBALS[$key];
+            }
         }
-    }
 
-    // Open the database connection
-    $db = db_open();
+        // Get the setting
+        $stmt = $db->prepare("
+            SELECT 
+                * 
+            FROM 
+                settings 
+            where 
+                name=:setting
+        ");
+        $stmt->bindParam(":setting", $setting, PDO::PARAM_STR, 100);
+        $stmt->execute();
 
-    // Get the setting
-    $stmt = $db->prepare("
-        SELECT 
-            * 
-        FROM 
-            settings 
-        where 
-            name=:setting
-    ");
-    $stmt->bindParam(":setting", $setting, PDO::PARAM_STR, 100);
-    $stmt->execute();
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+        $value = $array ? trim($array[0]['value']) : false;
+        $result = ($value === false) ? $default : $value;
 
-    // Store the list in the array
-    $array = $stmt->fetchAll();
-
-    // Close the database connection
-    db_close($db);
-
-    // If the array isn't empty
-    if ($array) {
-
-        // Set the value to the array value
-        $value = trim($array[0]['value']);
-
-    } else {
-
-        $value = false;
-
-    }
-
-    if($value === false) {
-
-        $result = $default;
-
-    } else {
-
-        $result = $value;
-
-    }
-
-    // If we want to cache the setting
-    if ($cached) {
-
-        // Put the setting in the global variable and then return it
-        $GLOBALS[$key] = $result;
-        return $GLOBALS[$key];
-
-    // Otherwise just return the result
-    } else {
+        // If we want to cache the setting
+        if ($cached)
+        {
+            // Put the setting in the global variable
+            $GLOBALS[$key] = $result;
+        }
 
         return $result;
-
+    } catch (Exception $e) {
+        write_debug_log(
+                "[get_setting] DB error retrieving setting '{$setting}': " . $e->getMessage(),
+                "debug"
+        );
+        return false;
+    } finally {
+        if ($close_db) {
+            db_close($db);
+        }
     }
 }
 
@@ -5748,54 +5841,164 @@ function get_setting($setting, $default=false, $cached=true) {
  * array where the key is the name of the setting and       *
  * the value is the actual value of said setting            *
  ************************************************************/
-function get_settings($settings) {
+function get_settings($settings, ?PDO $db = null)
+{
+    $close_db = false;
 
+    // Normalize settings list
     if (!is_array($settings)) {
         $settings = explode(',', $settings);
     }
 
-    $settings_in = [];
-    foreach ($settings as $i => $setting)
-    {
-        $key = ":param".$i;
-        $settings_in[] = $key;
+    $settings = array_map('trim', $settings);
+    if (empty($settings)) {
+        return [];
+    }
+
+    // Build placeholders
+    $params = [];
+    $placeholders = [];
+
+    foreach ($settings as $i => $setting) {
+        $key = ":param{$i}";
+        $placeholders[] = $key;
         $params[$key] = $setting;
     }
 
-    // making the comma separated list to be included in the sql
-    $settings_in = implode(", ", $settings_in);
+    $settings_in = implode(", ", $placeholders);
 
-    // Open the database connection
-    $db = db_open();
-
-    // Get the risk levels
-    $stmt = $db->prepare("
-        SELECT
-            `name`,
-            `value`
-        FROM
-            `settings`
-        WHERE
-            `name` IN ({$settings_in});
-    ");
-    $stmt->execute($params);
-
-    // Store the list in the array
-    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Close the database connection
-    db_close($db);
-
-    // If the array isn't empty
-    if ($array)
-    {
-        $results = [];
-        foreach($array as $setting) {
-            $results[$setting['name']] = $setting['value'];
-        }
-        return $results;
+    if ($db === null) {
+        $db = db_open();
+        $close_db = true;
     }
-    else return [];
+
+    try {
+        $stmt = $db->prepare("
+            SELECT
+                name,
+                value
+            FROM
+                settings
+            WHERE
+                name IN ({$settings_in})
+        ");
+
+        $stmt->execute($params);
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $results = [];
+        foreach ($rows as $row) {
+            $results[$row['name']] = $row['value'];
+        }
+
+        return $results;
+    } catch (Exception $e) {
+        write_debug_log(
+                "[get_settings] DB error retrieving settings: " . $e->getMessage(),
+                "debug"
+        );
+        return [];
+    } finally {
+        if ($close_db) {
+            db_close($db);
+        }
+    }
+}
+
+/*********************************************************
+ * FUNCTION: SETTING EXISTS                              *
+ * Check whether a setting exists in the settings table. *
+ *                                                       *
+ * @param PDO|null $db                                   *
+ * @param string $setting_name                           *
+ * @return bool                                          *
+ *********************************************************/
+function setting_exists(string $setting_name, ?PDO $db = null): bool
+{
+    $close_db = false;
+
+    if ($db === null) {
+        $db = db_open();
+        $close_db = true;
+    }
+
+    try {
+        $sql = "
+            SELECT 1
+            FROM settings
+            WHERE name = :name
+            LIMIT 1
+        ";
+
+        $stmt = $db->prepare($sql);
+        $stmt->bindValue(':name', $setting_name, PDO::PARAM_STR);
+        $stmt->execute();
+        $setting_exists = (bool) $stmt->fetchColumn();
+
+        // If the setting exists
+        if ($setting_exists)
+        {
+            write_debug_log("[setting_exists] Found the '{$setting_name}' setting name in the settings table.", "debug");
+        }
+        else
+        {
+            write_debug_log("[setting_exists] Unable to find the '{$setting_name}' setting name in the settings table.", "debug");
+        }
+
+        return $setting_exists;
+    } catch (Exception $e) {
+        write_debug_log(
+                "[setting_exists] DB error checking setting '{$setting_name}': " . $e->getMessage(),
+                "debug"
+        );
+        return false;
+    } finally {
+        if ($close_db) {
+            db_close($db);
+        }
+    }
+}
+
+/****************************
+ * FUNCTION: RENAME SETTING *
+ ****************************/
+function rename_setting($from_setting_name, $to_setting_name, $setting_value = false, ?PDO $db = null)
+{
+    $close_db = false;
+
+    if ($db === null) {
+        $db = db_open();
+        $close_db = true;
+    }
+
+    try {
+        // If a setting value was not provided
+        if ($setting_value === false)
+        {
+            // Get the value from the current setting
+            $setting_value = get_setting($from_setting_name, "", false);
+            write_debug_log ("[rename_setting] No setting value was provided. Using the value '{$setting_value}' from the '{$from_setting_name}' setting.", "debug");
+        }
+
+        // Add or update the new setting
+        update_or_insert_setting($to_setting_name, $setting_value);
+
+        // Delete the old setting
+        delete_setting($from_setting_name);
+
+        write_debug_log("[rename_setting] Renamed setting from '{$from_setting_name}' to '{$to_setting_name}'.", "info");
+    } catch (Exception $e) {
+        write_debug_log(
+                "[rename_setting] There was an error renaming the setting '{$from_setting_name}' to '{$to_setting_name}': " . $e->getMessage(),
+                "debug"
+        );
+        return false;
+    } finally {
+        if ($close_db) {
+            db_close($db);
+        }
+    }
 }
 
 /*******************************************************
@@ -5961,8 +6164,9 @@ function add_name($table, $name, $size=20)
         // Open the database connection
         $db = db_open();
 
-        // Get the risk levels
-        $stmt = $db->prepare("INSERT INTO {$table} (`name`) VALUES (:name); ");
+        // Add the name value pair into the table
+        $stmt = $db->prepare("INSERT IGNORE INTO {$table} (`name`) VALUES (:name); ");
+
         // If size is null, no set param length
         if ($size === null)
         {
@@ -10065,6 +10269,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     p.security_requirements,
                     p.mitigation_percent,
                     m.name AS next_step,
+                    rw.name AS review,
                     l.comments,
                     n.name AS reviewer,
                     group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
@@ -10093,6 +10298,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
                     LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
                     LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
+                    LEFT JOIN review rw FORCE INDEX(PRIMARY) ON l.review = rw.value
                     LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
                     LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
                     LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
@@ -10375,6 +10581,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     p.security_requirements,
                     p.mitigation_percent,
                     m.name AS next_step,
+                    rw.name AS review,
                     l.comments,
                     n.name AS reviewer,
                     group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
@@ -10403,6 +10610,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
                     LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
                     LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
+                    LEFT JOIN review rw FORCE INDEX(PRIMARY) ON l.review = rw.value
                     LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
                     LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
                     LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
@@ -10526,6 +10734,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     p.security_requirements,
                     p.mitigation_percent,
                     m.name AS next_step,
+                    rw.name AS review,
                     l.comments,
                     n.name AS reviewer,
                     group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
@@ -10554,6 +10763,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
                     LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
                     LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
+                    LEFT JOIN review rw FORCE INDEX(PRIMARY) ON l.review = rw.value
                     LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
                     LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
                     LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
@@ -10695,6 +10905,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                 p.security_requirements,
                 p.mitigation_percent,
                 m.name AS next_step,
+                rw.name AS review,
                 l.comments,
                 n.name AS reviewer,
                 group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
@@ -10723,6 +10934,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                 LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
                 LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
                 LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
+                LEFT JOIN review rw FORCE INDEX(PRIMARY) ON l.review = rw.value
                 LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
                 LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
                 LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
@@ -12169,7 +12381,7 @@ function get_closed_risks_table($sort_order=17) {
                         </div>
                     </td>
                     <td align='center' width='150px'>{$escaper->escapeHtml($risk['team'])}</td>
-                    <td align='center' width='150px' sorttable_customkey='" . (!$risk['closure_date'] ? "" : $escaper->escapeHtml(date("YmdHis", strtotime($risk['closure_date'])))) . "'>" . 
+                    <td align='center' width='150px' data-order='" . (!$risk['closure_date'] ? "" : $escaper->escapeHtml(date("YmdHis", strtotime($risk['closure_date'])))) . "'>" . 
                         ( !$risk['closure_date'] ? $lang["Unknown"] : $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['closure_date']))) ) . "
                     </td>
                     <td align='center' width='150px'>{$escaper->escapeHtml($risk['user'])}</td>
@@ -13341,7 +13553,8 @@ function get_value_by_name($table, $name, $return_name = false)
     $value = false;
     if(isset($GLOBALS[$table_key])){
         foreach($GLOBALS[$table_key] as $row){
-            if(strtolower($row['name']) == strtolower($name)){
+            if (strcasecmp(trim($row['name']), trim($name)) === 0)
+            {
                 $value = isset($row['value']) ? $row['value'] : $row['id'];
                 break;
             }
@@ -13371,7 +13584,8 @@ function get_value_by_name($table, $name, $return_name = false)
         }
 
         foreach($GLOBALS[$table_key] as &$row){
-            if(strtolower($row['name']) == strtolower($name)){
+            if (strcasecmp(trim($row['name']), trim($name)) === 0)
+            {
                 $value = isset($row['value']) ? $row['value'] : $row['id'];
                 break;
             }
@@ -14075,7 +14289,7 @@ function get_comments($id, $html = true) {
             if($text != null) {
                 echo "
                     <p class='comment-block'>
-                        <b>" . $escaper->escapeHtml($date) . " by " . $escaper->escapeHtml($user) . "</b><br />" . 
+                        <b>" . $escaper->escapeHtml($date) . " by " . $escaper->escapeHtml($user) . "</b><br />" .
                         $escaper->escapeHtml($text) . "
                     </p>
                 ";
@@ -15189,28 +15403,32 @@ function complianceforge_extra()
 /***************************************
  * FUNCTION: COMPLIANCEFORGE SCF EXTRA *
  ***************************************/
-function complianceforge_scf_extra()
+function complianceforge_scf_extra() : bool
 {
-    if(isset($GLOBALS['complianceforge_scf_extra'])){
-        return $GLOBALS['complianceforge_scf_extra'];
+    // 1. If we've already resolved it this request, return it
+    if (isset($GLOBALS['extra_scf'])) {
+        return (bool) $GLOBALS['extra_scf'];
     }
 
-    $setting = get_setting('complianceforge_scf');
-
-    // If the setting is not empty
-    if (!empty($setting))
-    {
-        // If the setting is true or "true" or 1
-        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
-        {
-            // The extra is enabled
-            $GLOBALS['complianceforge_scf_extra'] = true;
-        }
-        else $GLOBALS['complianceforge_scf_extra'] = false;
+    // 2. Check legacy global (older code paths)
+    if (isset($GLOBALS['complianceforge_scf'])) {
+        $GLOBALS['extra_scf'] = (bool) $GLOBALS['complianceforge_scf'];
+        return $GLOBALS['extra_scf'];
     }
-    else $GLOBALS['complianceforge_scf_extra'] = false;
 
-    return $GLOBALS['complianceforge_scf_extra'];
+    // 3. Pull both settings from storage
+    $new_setting = get_setting('extra_scf');
+    $old_setting = get_setting('complianceforge_scf');
+
+    // 4. Normalize both values
+    $is_enabled =
+            normalize_bool($new_setting)
+            || normalize_bool($old_setting);
+
+    // 5. Cache result under the new name
+    $GLOBALS['extra_scf'] = $is_enabled;
+
+    return $is_enabled;
 }
 
 /******************************
@@ -15375,6 +15593,19 @@ function vulnmgmt_extra() {
     else $GLOBALS['extra_vulnmgmt'] = false;
 
     return $GLOBALS['extra_vulnmgmt'];
+}
+
+/*********************************************************
+ * FUNCTION: NORMALIZE BOOL                              *
+ * Avoids repeating brittle checks like "true", "1", etc *
+ *********************************************************/
+function normalize_bool($value): bool
+{
+    return $value === true
+            || $value === 1
+            || $value === "1"
+            || $value === "true"
+            || $value === "TRUE";
 }
 
 /****************************************
@@ -18142,9 +18373,9 @@ function refresh($url = false){
     exit;
 }
 
-/****************************
- * FUNCTION: ADD NEW FAMILY *
- ****************************/
+/************************
+ * FUNCTION: ADD FAMILY *
+ ************************/
 function add_family($short_name){
     if(!$short_name){
         return false;
@@ -18169,9 +18400,9 @@ function add_family($short_name){
     return $insertedId;
 }
 
-/****************************
- * FUNCTION: ADD NEW FAMILY *
- ****************************/
+/***************************
+ * FUNCTION: UPDATE FAMILY *
+ ***************************/
 function update_family($value, $short_name){
     if(!$short_name){
         return false;
@@ -19014,7 +19245,7 @@ function add_security_headers($x_frame_options = true, $x_xss_protection = true,
 			if (filter_var($simplerisk_base_url, FILTER_VALIDATE_URL))
 			{
 				// Add the Content-Security-Policy header with the simplerisk base url
-				header("Content-Security-Policy: default-src 'self'; style-src-elem 'unsafe-inline' *.googleapis.com cdn.jsdelivr.net " . $simplerisk_base_url . "; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com cdn.jsdelivr.net; font-src cdn.jsdelivr.net " . $simplerisk_base_url . "; img-src 'self' *.googleapis.com " . $simplerisk_base_url . " data:; connect-src 'self' *.simplerisk.com olbat.github.io; frame-src 'self';");
+				header("Content-Security-Policy: default-src 'self'; style-src-elem 'unsafe-inline' *.googleapis.com cdn.jsdelivr.net " . $simplerisk_base_url . "; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com cdn.jsdelivr.net; font-src cdn.jsdelivr.net " . $simplerisk_base_url . "; img-src 'self' *.googleapis.com " . $simplerisk_base_url . " data:; connect-src 'self' *.simplerisk.com services.nvd.nist.gov; frame-src 'self';");
 			}
 			// Otherwise add the Content-Security-Policy header without it
 			else header("Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' data:");
@@ -27173,6 +27404,27 @@ function process_selected_field_filter_for_active_audits($selected_field_name, $
         } else {
             $filter_result = false;
         }
+    } else if ($selected_field_name == 'test_result') {
+        $item_filter_value = $item['test_result_filter'];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(0, $search_value)) {
+                    if (!$item_filter_value) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            // unselect all
+            $filter_result = true;
+        }
     } else {
         if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
             $filter_result = true;
@@ -27755,6 +28007,10 @@ function get_filter_field_for_active_audits($field_name, $localizations) {
             <input type='text' name='test_date' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control datepicker' style='max-width: unset;'>
         ";
 
+    } else if ($field_name == 'test_result') {
+        
+        $filter_field = create_multiple_dropdown("test_results_filter", "all", "test_result", null, true, $escaper->escapeHtml($lang['Unassigned']), "0", true, "", 0, true, "");
+        
     } else {
         $filter_field = "
             <input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control' style='max-width: unset;'>
@@ -28311,7 +28567,10 @@ function getSpreadsheetData($filePath) {
  *****************************/
 function fetchCountries(): array
 {
-    $setting = get_setting('countries_cache');
+    // Open the database connection
+    $db = db_open();
+
+    $setting = get_setting('countries_cache', db: $db);
     $cache = $setting ? json_decode($setting, true) : null;
     $cache_valid = $cache && isset($cache['fetched_at'], $cache['countries']);
 
@@ -28319,13 +28578,13 @@ function fetchCountries(): array
         $age = time() - $cache['fetched_at'];
         if ($age >= 24 * 60 * 60) { // cache older than 1 day
             // Only queue if no pending or in-progress task exists
-            $existing_tasks = get_queue_items('core_countries_update', ['pending', 'in_progress']);
+            $existing_tasks = get_queue_items($db, 'core_countries_update', ['pending', 'in_progress']);
             if (empty($existing_tasks)) {
                 //Create the queue task to update countries
                 $queue_task_payload = [
                     'triggered_at'      => time(),
                 ];
-                queue_task('core_countries_update', $queue_task_payload, 25);
+                queue_task($db, 'core_countries_update', $queue_task_payload, 25, 5, 3600);
                 write_debug_log("Queued core_countries_update task", "info");
             } else {
                 write_debug_log("core_countries_update task already queued or in progress", "info");
@@ -28341,7 +28600,10 @@ function fetchCountries(): array
     update_setting('countries_cache', json_encode([
         'fetched_at' => time(),
         'countries' => $countries
-    ]));
+    ]), db: $db);
+
+    // Close the database connection
+    db_close($db);
 
     return $countries;
 }
@@ -28931,20 +29193,6 @@ function delete_backup($backup_to_delete, $called_from_ui = false) {
     }
 }
 
-/********************************
- * FUNCTION: IS PROCESS RUNNING *
- * Cross-platform PID check     *
- ********************************/
-function isProcessRunning(int $pid): bool {
-    if ($pid <= 0) return false;
-    if (stripos(PHP_OS, 'WIN') === 0) {
-        exec("tasklist /FI \"PID eq $pid\" 2>NUL", $output);
-        return count($output) > 1;
-    } else {
-        return posix_kill($pid, 0);
-    }
-}
-
 /***************************
  * FUNCTION: SAVE TMP DATA *
  ***************************/
@@ -28986,7 +29234,7 @@ function save_tmp_data(PDO $db, string $name, mixed $data, int $user_id = 0): st
 
     // Convert array to JSON if needed, leave strings as-is
     if (is_array($data)) {
-        $data_to_save = json_encode($data, JSON_UNESCAPED_UNICODE);
+        $data_to_save = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
         if ($data_to_save === false) {
             $err = json_last_error_msg();
             write_debug_log("save_tmp_data: Failed to json_encode '$name': $err. Raw data: " . var_export($data, true), "error");
@@ -29041,6 +29289,123 @@ function load_tmp_data(PDO $db, string $unique_name): mixed {
 function delete_tmp_data(PDO $db, string $unique_name): bool {
     $stmt = $db->prepare("DELETE FROM tmp_files WHERE unique_name = :unique_name");
     return $stmt->execute([':unique_name' => $unique_name]);
+}
+
+/**
+ * Sanitize text to ensure valid UTF-8 encoding.
+ *
+ * PDFs can contain malformed UTF-8 sequences from corrupted encodings,
+ * special symbols, or embedded fonts. This method ensures the output
+ * is always valid UTF-8 that can be safely JSON-encoded.
+ *
+ * @param string $text Input text that may contain malformed UTF-8
+ * @return string Valid UTF-8 text
+ */
+function sanitizeUtf8(string $text): string
+{
+    // Return empty string if input is empty
+    if ($text === '') {
+        return '';
+    }
+
+    // Strategy 1: Try to fix the encoding by re-encoding
+    $cleaned = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
+
+    // Strategy 2: Verify it's actually valid UTF-8 now
+    if (!mb_check_encoding($cleaned, 'UTF-8')) {
+        // If still invalid, use iconv to strip problematic sequences
+        // The //IGNORE flag removes characters that cannot be converted
+        $cleaned = iconv('UTF-8', 'UTF-8//IGNORE', $text);
+
+        // If iconv also fails, fall back to a more aggressive approach
+        if ($cleaned === false) {
+            // Remove any non-UTF-8 bytes using a regex
+            $cleaned = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x80-\x9F]/u', '', $text);
+
+            // If even that fails, strip to ASCII-safe characters only
+            if ($cleaned === null || !mb_check_encoding($cleaned, 'UTF-8')) {
+                $cleaned = preg_replace('/[^\x20-\x7E\x0A\x0D\t]/u', '', $text);
+            }
+        }
+    }
+
+    // Final safety check: ensure we return a string, not false/null
+    return is_string($cleaned) ? $cleaned : '';
+}
+
+/*********************************
+ * FUNCTION: REQUIRE POST FIELDS *
+ *********************************/
+function require_post_fields(array $postData, array $requiredFields): bool
+{
+    foreach ($requiredFields as $field) {
+        if (!isset($postData[$field]) || $postData[$field] === '' || $postData[$field] === null) {
+            set_alert(true, "bad", "Missing required field: {$field}");
+            return false;
+        }
+    }
+    return true;
+}
+
+/*****************************
+ * FUNCTION: GET TABLE COUNT *
+ *****************************/
+function get_table_count(PDO $db, string $table): int
+{
+    $stmt = $db->prepare("SELECT COUNT(*) FROM `$table`;");
+    $stmt->execute();
+    return (int) $stmt->fetchColumn();
+}
+
+/**************************
+ * FUNCTION: REMOVE FILES *
+ **************************/
+function remove_files(array $files): int
+{
+    // Track the number of successful file removals
+    $files_removed = 0;
+
+    // If files is not an array
+    if (!is_array($files))
+    {
+        write_debug_log("[REMOVE FILES] Files parameter was not an array.", "error");
+        return $files_removed;
+    }
+
+    // Iterate through the files array
+    foreach ($files as $file)
+    {
+        // If the file does not exist
+        if (!file_exists($file))
+        {
+            write_debug_log("[REMOVE FILES] The file '{$file}' does not exist.", "warning");
+            continue;
+        }
+
+        // If the file is not writeable
+        if (!is_writeable($file))
+        {
+            write_debug_log("[REMOVE FILES] The file '{$file}' is not writeable.", "warning");
+            continue;
+        }
+
+        // The file exists and is writeable so try to remove it
+        $success = delete_file($file);
+
+        // If the removal failed
+        if (!$success)
+        {
+            write_debug_log("[REMOVE FILES] Failed to remove the file '{$file}'.", "warning");
+            continue;
+        }
+
+        // We successfully removed the file
+        write_debug_log("[REMOVE FILES] Successfully removed the file '{$file}'.", "info");
+        $files_removed++;
+    }
+
+    // Return the number of files removed
+    return $files_removed;
 }
 
 ?>

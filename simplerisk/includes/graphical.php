@@ -502,10 +502,18 @@ function get_graphical_risk_analysis_data() {
     }
 
     // Return the array of datasets
-    return [
-        "labels" => $opened_dates,
-        "datasets" => $datasets
-    ];
+    if ($risk_status == "open" || $risk_status == "closed") {
+        return [
+            "labels" => $dates,
+            "datasets" => $datasets
+        ];
+    } else {
+        return [
+            "labels" => $opened_dates,
+            "datasets" => $datasets
+        ];
+    }
+
 }
 /**************************************************************
  *  FUNCTION: DISPLAY GRAPHICAL RISK ANALYSIS AREARANGE CHART *

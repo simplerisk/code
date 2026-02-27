@@ -870,7 +870,7 @@ function initiate_test_audit($test_id, $initiated_audit_status, $tags=[], $reque
         INSERT INTO
             `framework_control_test_audits`(test_id, tester, test_frequency, last_date, next_date, name, objective, test_steps, approximate_time, expected_results, framework_control_id, desired_frequency, status, created_at)
         SELECT
-            t1.id as test_id, t1.tester, t1.test_frequency, t1.last_date, t1.next_date, t1.name, t1.objective, t1.test_steps, t1.approximate_time, t1.expected_results, t1.framework_control_id, t1.desired_frequency, {$initiated_audit_status} as status, '".date("Y-m-d H:i:s")."' as created_at
+            t1.id as test_id, t1.tester, t1.test_frequency, t1.last_date, t1.next_date, t1.name, t1.objective, t1.test_steps, t1.approximate_time, t1.expected_results, t1.framework_control_id, t1.desired_frequency, {$initiated_audit_status} as status, NOW() as created_at
         FROM framework_control_tests t1
         WHERE
             t1.id=:test_id;
@@ -1671,8 +1671,9 @@ function display_test_audit_framework_control($framework_control_id) {
                                 </div>
                             </div>
             ";
-            
+
             $mapped_frameworks = get_mapping_control_frameworks($control['id']);
+
             echo "
                             <div>
                                 <label>{$escaper->escapeHtml($lang['MappedControlFrameworks'])} :</label>
@@ -3208,8 +3209,6 @@ function get_tests_to_auto_initiate() {
     // Open the database connection
     $db = db_open();
 
-    $today = date('Y-m-d');
-
     $sql = "
         SELECT t1.*
         FROM 
@@ -3217,20 +3216,19 @@ function get_tests_to_auto_initiate() {
         WHERE 
             t1.audit_initiation_offset IS NOT NULL 
             AND t1.next_date IS NOT NULL 
-            AND DATE_SUB(t1.next_date, INTERVAL t1.audit_initiation_offset DAY) <= :today 
-            AND t1.next_date >= :today
+            AND DATE_SUB(t1.next_date, INTERVAL t1.audit_initiation_offset DAY) <= CURDATE() 
+            AND t1.next_date >= CURDATE()
             AND NOT EXISTS (
                 SELECT 1 
                 FROM 
                     `framework_control_test_audits` ta 
                 WHERE 
                     ta.test_id = t1.id 
-                    AND ta.created_at BETWEEN DATE_SUB(t1.next_date, INTERVAL t1.audit_initiation_offset DAY) AND t1.next_date
+                    AND DATE(ta.created_at) BETWEEN DATE_SUB(t1.next_date, INTERVAL t1.audit_initiation_offset DAY) AND t1.next_date
             );
     ";
 
     $stmt = $db->prepare($sql);
-    $stmt->bindParam(":today", $today, PDO::PARAM_STR);
     $stmt->execute();
 
     $tests = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -3254,6 +3252,57 @@ function run_auto_initiate_test_cron() {
     foreach ($tests as $test) {
         initiate_test_audit($test['id'], $initiated_audit_status, [], false);
     }
+}
+
+/**************************************************************
+ * FUNCTION: GET FRAMEWORK CONTROLS WITH TEST STATUS COUNTS   *
+ * Returns an array with framework names and counts of         *
+ * passing and failing controls based on their most recent    *
+ * test result                                                 *
+ **************************************************************/
+function get_framework_controls_test_status_counts() {
+    // Open the database connection
+    $db = db_open();
+    
+    // Query to get controls by framework with passing/failing test counts
+    // Uses the most recent test result for each control
+    $stmt = $db->prepare("
+        SELECT 
+            f.value as framework_id,
+            f.name as framework_name,
+            COUNT(DISTINCT fc.id) as total_controls,
+            COUNT(DISTINCT CASE WHEN latest_test.test_result = 'Pass' THEN fc.id END) as passing_controls,
+            COUNT(DISTINCT CASE WHEN latest_test.test_result = 'Fail' THEN fc.id END) as failing_controls
+        FROM frameworks f
+        INNER JOIN framework_control_mappings fcm ON f.value = fcm.framework
+        INNER JOIN framework_controls fc ON fcm.control_id = fc.id AND fc.deleted = 0
+        LEFT JOIN (
+            SELECT 
+                ta1.framework_control_id,
+                tr1.test_result
+            FROM framework_control_test_audits ta1
+            INNER JOIN framework_control_test_results tr1 ON ta1.id = tr1.test_audit_id
+            WHERE tr1.test_result IN ('Pass', 'Fail')
+            AND tr1.submission_date = (
+                SELECT MAX(tr2.submission_date)
+                FROM framework_control_test_audits ta2
+                INNER JOIN framework_control_test_results tr2 ON ta2.id = tr2.test_audit_id
+                WHERE ta2.framework_control_id = ta1.framework_control_id
+                AND tr2.test_result IN ('Pass', 'Fail')
+            )
+        ) latest_test ON fc.id = latest_test.framework_control_id
+        WHERE f.status = 1
+        GROUP BY f.value, f.name
+        ORDER BY f.name ASC
+    ");
+    
+    $stmt->execute();
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Close the database connection
+    db_close($db);
+    
+    return $results;
 }
 
 ?>

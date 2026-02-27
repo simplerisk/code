@@ -12,6 +12,7 @@ use OpenApi\Annotations as OA;
  *      description="Schema for Asset update",
  *      allOf={
  *          @OA\Schema(
+ *              type="object",
  *              required={"id", "edit_view"},
  *              @OA\Property(property="id", type="integer", example="5"),
  *              @OA\Property(property="edit_view", type="string", enum={"asset_verified", "asset_unverified"}),
@@ -25,10 +26,12 @@ class OpenApiAssetUpdateSchema {}
 /**
  *  @OA\Schema(
  *      schema="AssetControlMapping",
+ *      type="object",
  *      @OA\Property(property="control_maturity", type="integer"),
- *      @OA\Property(property="control_id", type="array", items={
- *              @OA\Items(type="integer"),
- *          }
+ *      @OA\Property(
+ *          property="control_id",
+ *          type="array",
+ *          @OA\Items(type="integer")
  *      )
  *  )
  */

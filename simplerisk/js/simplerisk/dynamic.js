@@ -507,7 +507,7 @@ $(document).ready(function(){
         document.get_risks_by.action = "";
         // $("#get_risks_by").attr('target', '');
     });
-    $("#export-risks-and-assets-report, #export-risks-and-controls-report").click(function(e){
+    $("#export-risks-and-assets-report, #export-risks-and-controls-report, #export-assets-and-controls-report").click(function(e){
         document.select_report.action += (document.select_report.action.indexOf('?') !== -1  ? "&" : "?") + "option=download";
         document.select_report.submit();
         document.select_report.action = "";

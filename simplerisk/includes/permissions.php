@@ -134,10 +134,20 @@ function enforce_permission_exception($function)
  ********************************************************************************/
 function check_questionnaire_get_token() {
 
-    if (!isset($_GET['token']))
-        return false;
+    // If the token is provided via GET
+    if (isset($_GET['token']))
+    {
+        $token = $_GET['token'];
+    }
+    // If the token is provided via POST
+    else if (isset($_POST['token']))
+    {
+        $token = $_POST['token'];
+    }
+    // No token was provided so fail the token check
+    else return false;
 
-    $global_var_name = 'is_valid_questionnaire_token_' . $_GET['token'];
+    $global_var_name = 'is_valid_questionnaire_token_' . $token;
 
     if (isset($GLOBALS[$global_var_name]))
         return $GLOBALS[$global_var_name];
@@ -145,7 +155,7 @@ function check_questionnaire_get_token() {
     if (assessments_extra()) {
         require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
 
-        $GLOBALS[$global_var_name] = is_valid_questionnaire_token($_GET['token']);
+        $GLOBALS[$global_var_name] = is_valid_questionnaire_token($token);
         return $GLOBALS[$global_var_name];
     }
 

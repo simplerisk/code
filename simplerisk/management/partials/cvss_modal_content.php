@@ -88,13 +88,10 @@ $current_app_version = current_version("app");
                 <h5 class="modal-title" id="cvssModalLabel"><?php echo $escaper->escapeHtml($lang['CVSS2Calculator']); ?></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-
             <div class="modal-body">
                 <div class="row">
-
                     <!-- Left Panel: CVSS Score + Help Desk -->
                     <div class="col-6 d-flex flex-column">
-
                         <!-- CVSS Scores -->
                         <div class="card-body border mb-2 flex-grow-0">
                             <h5><?php echo $escaper->escapeHtml($lang['CVSSScore']); ?></h5>
@@ -119,18 +116,14 @@ $current_app_version = current_version("app");
                                 <div class="score-value form-control text-end" id="EnvironmentalScore">0</div>
                             </div>
                         </div>
-
                         <!-- Help Desk -->
                         <div class="card-body border flex-grow-1">
                             <h5>Help Desk</h5>
                             <?php view_cvss_help(); ?>
                         </div>
-
                     </div>
-
                     <!-- Right Panel: Metrics -->
                     <div class="col-6 d-flex flex-column">
-
                         <!-- Base Score Metrics -->
                         <div class="card-body border mb-2 flex-grow-0">
                             <h5><?php echo $escaper->escapeHtml($lang['BaseScoreMetrics']); ?></h5>
@@ -150,7 +143,6 @@ $current_app_version = current_version("app");
                                 <?php create_cvss_dropdown("Authentication", $Authentication); ?>
                                 <img class="m-l-15" src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onclick="showHelp('AuthenticationHelp');">
                             </div>
-
                             <h6 class="text-decoration-underline"><?php echo $escaper->escapeHtml($lang['ImpactMetrics']); ?></h6>
                             <div class="score-item mb-2 d-flex align-items-center">
                                 <label><?php echo $escaper->escapeHtml($lang['ConfidentialityImpact']); ?>:</label>
@@ -168,7 +160,6 @@ $current_app_version = current_version("app");
                                 <img class="m-l-15" src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onclick="showHelp('AvailImpactHelp');">
                             </div>
                         </div>
-
                         <!-- Temporal Score Metrics -->
                         <div class="card-body border mb-2 flex-grow-0">
                             <h5><?php echo $escaper->escapeHtml($lang['TemporalScoreMetrics']); ?></h5>
@@ -188,7 +179,6 @@ $current_app_version = current_version("app");
                                 <img class="m-l-15" src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onclick="showHelp('ReportConfidenceHelp');">
                             </div>
                         </div>
-
                         <!-- Environmental Score Metrics -->
                         <div class="card-body border mb-2 flex-grow-0">
                             <h5><?php echo $escaper->escapeHtml($lang['EnvironmentalScoreMetrics']); ?></h5>
@@ -203,7 +193,6 @@ $current_app_version = current_version("app");
                                 <img class="m-l-15" src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onclick="showHelp('TargetDistributionHelp');">
                             </div>
                         </div>
-
                         <!-- Impact Subscore Modifiers -->
                         <div class="card-body border mb-2 flex-grow-0">
                             <h5><?php echo $escaper->escapeHtml($lang['ImpactSubscoreModifiers']); ?></h5>
@@ -223,15 +212,12 @@ $current_app_version = current_version("app");
                                 <img class="m-l-15" src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onclick="showHelp('AvailabilityRequirementHelp');">
                             </div>
                         </div>
-
-                        <div class="card-body border mb-2 flex-grow-1">
+                        <div class="card-body border flex-grow-1">
                             <button type="button" class="btn btn-primary w-100" id="cvssModalSaveBtn" data-bs-dismiss="modal">
                                 <?php echo $escaper->escapeHtml($lang['SaveCVSSScore']); ?>
                             </button>
                         </div>
-
                     </div>
-
                 </div>
             </div>
         </div>
@@ -240,20 +226,6 @@ $current_app_version = current_version("app");
 
 <!-- Optional inline CSS -->
 <style>
-    .score-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.5rem;
-    }
-    .score-value {
-        width: 80px;
-        text-align: right;
-        padding: 0.25rem 0.5rem;
-        border: 1px solid #ccc;
-        border-radius: 0.25rem;
-        background-color: #f8f9fa;
-    }
     .m-l-15 { margin-left: 0.5rem; }
 </style>
 

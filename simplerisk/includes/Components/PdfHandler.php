@@ -8,6 +8,7 @@ namespace SimpleRisk\DocumentHandlers;
 
 // Include required files
 require_once (realpath(__DIR__ . '/../../vendor/autoload.php'));
+require_once(realpath(__DIR__ . '/../functions.php'));
 
 use Smalot\PdfParser\Parser;
 use Smalot\PdfParser\Exception as PdfException;
@@ -115,48 +116,6 @@ class PdfHandler
             // --------------------------------------------
             @unlink($tempFile);
         }
-    }
-
-    /**
-     * Sanitize text to ensure valid UTF-8 encoding.
-     *
-     * PDFs can contain malformed UTF-8 sequences from corrupted encodings,
-     * special symbols, or embedded fonts. This method ensures the output
-     * is always valid UTF-8 that can be safely JSON-encoded.
-     *
-     * @param string $text Input text that may contain malformed UTF-8
-     * @return string Valid UTF-8 text
-     */
-    private static function sanitizeUtf8(string $text): string
-    {
-        // Return empty string if input is empty
-        if ($text === '') {
-            return '';
-        }
-
-        // Strategy 1: Try to fix the encoding by re-encoding
-        $cleaned = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
-
-        // Strategy 2: Verify it's actually valid UTF-8 now
-        if (!mb_check_encoding($cleaned, 'UTF-8')) {
-            // If still invalid, use iconv to strip problematic sequences
-            // The //IGNORE flag removes characters that cannot be converted
-            $cleaned = iconv('UTF-8', 'UTF-8//IGNORE', $text);
-
-            // If iconv also fails, fall back to a more aggressive approach
-            if ($cleaned === false) {
-                // Remove any non-UTF-8 bytes using a regex
-                $cleaned = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x80-\x9F]/u', '', $text);
-
-                // If even that fails, strip to ASCII-safe characters only
-                if ($cleaned === null || !mb_check_encoding($cleaned, 'UTF-8')) {
-                    $cleaned = preg_replace('/[^\x20-\x7E\x0A\x0D\t]/u', '', $text);
-                }
-            }
-        }
-
-        // Final safety check: ensure we return a string, not false/null
-        return is_string($cleaned) ? $cleaned : '';
     }
 }
 

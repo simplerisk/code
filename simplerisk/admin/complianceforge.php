@@ -96,17 +96,6 @@ function display() {
     }
 }
 
-?>
-<script type="text/javascript">
-$(function(){
-	$("#complianceforge_frameworks").multiselect({
-		allSelectedText: '<?php echo $escaper->escapeHtml($lang['AllFrameworks']); ?>',
-		includeSelectAllOption: true,
-		enableCaseInsensitiveFiltering: true,
-	});
-});
-</script>
-<?php
     display_license_check();
 ?>
 <div class="row bg-white">

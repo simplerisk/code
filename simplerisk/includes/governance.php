@@ -18,6 +18,7 @@ require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 use SimpleRisk\DocumentHandlers\DocumentTextExtractor;
+use SimpleRisk\DocumentHandlers\UnsupportedDocumentException;
 
 /****************************
  * FUNCTION: GET FRAMEWORKS *
@@ -96,7 +97,9 @@ function makeTree($olds, $parent, &$news, &$count=0){
 function get_frameworks_as_treegrid($status) {
     global $escaper;
 
-    $complianceforge_scf_framework_id = complianceforge_scf_extra() ? (int)get_setting('complianceforge_scf_framework_id', 0) : 0;
+    // Include the required file
+    require_once(realpath(__DIR__ . '/../extras/complianceforgescf/index.php'));
+    $scf_framework_id = complianceforge_scf_extra() ? (int)get_scf_framework_id(null,true) : 0;
 
     $frameworks = get_frameworks($status);
 
@@ -109,7 +112,7 @@ function get_frameworks_as_treegrid($status) {
                     <i class='fa fa-edit'></i>
                 </a>" .
         (  // The root complianceforge framework can't be deleted
-            $complianceforge_scf_framework_id && $complianceforge_scf_framework_id === $framework_value ? "" : "
+            $scf_framework_id && $scf_framework_id === $framework_value ? "" : "
                 <a class='framework-block--delete' data-id='{$framework_value}'>
                     <i class='fa fa-trash'></i>
                 </a>"
@@ -1161,7 +1164,7 @@ function add_framework_control($control){
         'control_id'    => (int)$control_id,
         'refresh'       => true,
     ];
-    queue_task('core_control_update', $queue_task_payload, 100);
+    queue_task($db, 'core_control_update', $queue_task_payload, 25, 5, 3600);
 
     if(count($control_type) > 0) {
         foreach ($control_type as $type) {
@@ -1254,7 +1257,7 @@ function update_framework_control($control_id, $control){
         'control_id'    => (int)$control_id,
         'refresh'       => true,
     ];
-    queue_task('core_control_update', $queue_task_payload, 100);
+    queue_task($db, 'core_control_update', $queue_task_payload, 25, 5, 3600);
 
     if(count($control_type) > 0) {
         foreach ($control_type as $type) {
@@ -1296,90 +1299,189 @@ function update_framework_control($control_id, $control){
 /***************************************************************
  * FUNCTION: ADD RESIDUAL RISK SCORING HISTORIES FOR A CONTROL *
  ***************************************************************/
-function add_residual_risk_scoring_histories_for_control($control_id)
+function add_residual_risk_scoring_histories_for_control(int $control_id): void
 {
-    // Open the database connection
+    add_residual_risk_scoring_histories_for_controls([$control_id]);
+}
+
+/**************************************************************
+ * FUNCTION: ADD RESIDUAL RISK SCORING HISTORIES FOR CONTROLS *
+ **************************************************************/
+function add_residual_risk_scoring_histories_for_controls(array $control_ids)
+{
+    if (empty($control_ids)) return;
+
     $db = db_open();
 
-    $stmt = $db->prepare("SELECT DISTINCT(risk_id) FROM `mitigations` m INNER JOIN `mitigation_to_controls` mtc ON m.id=mtc.mitigation_id WHERE mtc.control_id=:control_id; ");
-    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-    $stmt->execute();
-    $risk_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-    foreach($risk_ids as $risk_id){
-        // Add residual risk score
-        $residual_risk = get_residual_risk((int)$risk_id + 1000);
-        add_residual_risk_scoring_history($risk_id, $residual_risk);
-    }
+    try {
+        // Step 1: Get all distinct risk_ids for the given controls in a single query
+        $placeholders = implode(',', array_fill(0, count($control_ids), '?'));
+        $stmt = $db->prepare("
+            SELECT DISTINCT r.id AS risk_id
+            FROM mitigations m
+            INNER JOIN mitigation_to_controls mtc ON m.id = mtc.mitigation_id
+            INNER JOIN risks r ON r.id = m.risk_id
+            WHERE mtc.control_id IN ($placeholders)
+        ");
+        $stmt->execute($control_ids);
+        $risk_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
 
-    // Close the database connection
-    db_close($db);
+        // Step 2: Loop over the risk_ids and add residual risk scoring history
+        foreach ($risk_ids as $risk_id) {
+            // Adjust ID if needed (your +1000 logic)
+            $residual_risk = get_residual_risk((int)$risk_id + 1000);
+            add_residual_risk_scoring_history($risk_id, $residual_risk);
+        }
+
+    } finally {
+        db_close($db);
+    }
 }
 
 /**************************************
  * FUNCTION: DELETE FRAMEWORK CONTROL *
  **************************************/
-function delete_framework_control($control_id){
-    // Open the database connection
+function delete_framework_control(int $control_id)
+{
+    // Call the batch function passing a single control_id value
+    delete_framework_controls_batch([$control_id]);
+}
+
+/*********************************************
+ * FUNCTION: DELETE FRAMEWORK CONTROLS BATCH *
+ *********************************************/
+function delete_framework_controls_batch(array $control_ids)
+{
+    if (empty($control_ids)) return;
+
+    // Initialize controls lookup
+    $controls_lookup = [];
+
     $db = db_open();
-    $control = get_framework_control($control_id);
+    $db->beginTransaction();
 
-    // Check if test used this control
-    $stmt = $db->prepare("SELECT count(*) cnt FROM `framework_control_tests` WHERE framework_control_id=:control_id");
-    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-    $stmt->execute();
-    $test = $stmt->fetch(PDO::FETCH_ASSOC);
-    if($test["cnt"] > 0)
-    {
-        // Delete the table value
-        $stmt = $db->prepare("UPDATE `framework_controls` SET deleted=1 WHERE id=:id");
-        $stmt->bindParam(":id", $control_id, PDO::PARAM_INT);
-        $stmt->execute();
+    try {
+        // Step 1: Fetch all control info before deleting anything
+        $placeholders = implode(',', array_fill(0, count($control_ids), '?'));
+        $stmt = $db->prepare("
+            SELECT id, short_name,
+            EXISTS(SELECT 1 FROM framework_control_tests WHERE framework_control_id = fc.id) AS has_tests
+            FROM framework_controls AS fc
+            WHERE id IN ($placeholders)
+            FOR UPDATE
+        ");
+        $stmt->execute($control_ids);
+        $controls = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Build lookup for logging
+        foreach ($controls as $c) {
+            $controls_lookup[$c['id']] = $c['short_name'];
+        }
+
+        // Step 2: get related queue_tasks
+        $stmt = $db->prepare("
+            SELECT id, JSON_UNQUOTE(JSON_EXTRACT(payload, '$.control_id')) AS control_id
+            FROM queue_tasks
+            WHERE JSON_UNQUOTE(JSON_EXTRACT(payload, '$.control_id')) IN ($placeholders)
+              AND status IN ('in_progress', 'pending')
+        ");
+        $stmt->execute($control_ids);
+        $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $task_ids = array_column($tasks, 'id');
+        if (!empty($task_ids)) {
+            $in_tasks = implode(',', array_map('intval', $task_ids));
+
+            // Step 3: cancel promises in bulk
+            $db->exec("UPDATE promises SET status='canceled' WHERE queue_task_id IN ($in_tasks) AND status IN ('in_progress','pending')");
+
+            // Step 4: cancel the queue_tasks themselves
+            $db->exec("UPDATE queue_tasks SET status='canceled' WHERE id IN ($in_tasks)");
+        }
+
+        // Step 5: delete tmp_files for all control IDs using prepared placeholders
+        $names = [];
+        $params = [];
+
+        foreach ($control_ids as $id) {
+            $names[] = '?';
+            $params[] = "control_{$id}";
+
+            $names[] = '?';
+            $params[] = "matches_{$id}";
+        }
+
+        $placeholders = implode(',', $names);
+        $stmt = $db->prepare("DELETE FROM tmp_files WHERE name IN ($placeholders)");
+        $stmt->execute($params);
+
+        // Step 6: Delete the related framework_control_tests for all control IDs
+        $soft_delete_ids = [];
+        $hard_delete_ids = [];
+
+        foreach ($controls as $c) {
+            if ($c['has_tests']) {
+                $soft_delete_ids[] = $c['id'];
+            } else {
+                $hard_delete_ids[] = $c['id'];
+            }
+        }
+
+        // Soft delete
+        if ($soft_delete_ids) {
+            $placeholders = implode(',', array_fill(0, count($soft_delete_ids), '?'));
+            $stmt = $db->prepare("UPDATE framework_controls SET deleted=1 WHERE id IN ($placeholders)");
+            $stmt->execute($soft_delete_ids);
+        }
+
+        // Hard delete
+        if ($hard_delete_ids) {
+            $hard_placeholders = implode(',', array_fill(0, count($hard_delete_ids), '?'));
+
+            $stmt = $db->prepare("DELETE FROM framework_controls WHERE id IN ($hard_placeholders)");
+            $stmt->execute($hard_delete_ids);
+
+            // Cleanup relations for hard deleted controls
+            foreach (['framework_control_type_mappings','control_to_assets','control_to_asset_groups'] as $table) {
+                $stmt = $db->prepare("DELETE FROM `$table` WHERE control_id IN ($hard_placeholders)");
+                $stmt->execute($hard_delete_ids);
+            }
+        }
+
+        if (customization_extra() && !empty($control_ids)) {
+            delete_custom_data_by_row_ids($control_ids, "control");
+        }
+
+        // Commit the database changes
+        if ($db->inTransaction()) {
+            $db->commit();
+        }
+    } catch (Throwable $e) {
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
+        throw $e;
+    } finally {
+        db_close($db);
     }
-    else
-    {
-        // Delete the table value
-        $stmt = $db->prepare("DELETE FROM `framework_controls` WHERE id=:id");
-        $stmt->bindParam(":id", $control_id, PDO::PARAM_INT);
-        $stmt->execute();
-        
-        // Removing residual junction table entries
-        cleanup_after_delete("framework_controls");
+
+    // Preserve residual risk history for the deleted controls
+    add_residual_risk_scoring_histories_for_controls($control_ids);
+
+    // Remove residual junction table entries
+    cleanup_after_delete("framework_controls");
+
+    // Queue tasks, logging, and custom data cleanup
+    foreach ($control_ids as $id) {
+        $short_name = $controls_lookup[$id] ?? null;
+        $user = $_SESSION['user'] ?? "";
+        $uid = $_SESSION['uid'] ?? "";
+        $message = empty($short_name)
+            ? "A missing control (ID:{$id}) was cleaned up by user '{$user}'."
+            : "A control named '{$short_name}' was deleted by user '{$user}'.";
+        write_log((int)$id + 1000, $uid, $message, "control");
+        write_debug_log($message, "debug");
     }
-    
-    $stmt = $db->prepare("DELETE FROM `framework_control_type_mappings` WHERE `control_id` = :control_id");
-    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Delete all current control asset relations
-    $stmt = $db->prepare("DELETE FROM `control_to_assets` WHERE control_id=:control_id;");
-    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-    $stmt->execute();
-    // Delete all current control asset group relations
-    $stmt = $db->prepare("DELETE FROM `control_to_asset_groups` WHERE control_id=:control_id;");
-    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Close the database connection
-    db_close($db);
-
-    // If customization extra is enabled, delete custom_control_data related with framework ID
-    if(customization_extra())
-    {
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        delete_custom_data_by_row_id($control_id, "control");
-    }
-
-    $user = isset($_SESSION['user'])?$_SESSION['user']:"";
-    $uid = isset($_SESSION['uid'])?$_SESSION['uid']:"";
-    if (empty($control)) {
-        $message = "A missing control (ID:{$control_id}) was cleaned up by user '{$user}'.";
-    } else {
-        $message = "A control named '{$control['short_name']}' was deleted by user '{$user}'.";
-    }
-    write_log((int)$control_id + 1000, $uid, $message, "control");
-
-    // Add residual risk scoring history
-    add_residual_risk_scoring_histories_for_control($control_id);
 }
 
 /*****************************************
@@ -2087,7 +2189,6 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
         $frameworks = [];
     }
 
-
     // Loop and insert each mapped control id into the document_control_mappings table
     foreach ($ids as $control_id)
     {
@@ -2099,9 +2200,6 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
             $stmt->execute();
         }
     }
-
-    // Close the database connection
-    db_close($db);
 
     // Save document frameworks
     save_junction_values("document_framework_mappings", "document_id", $document_id, "framework_id", $framework_ids);
@@ -2127,12 +2225,12 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
         foreach ($errors as $error) {
             set_alert(true, "bad", $error);
         }
-        return false;
+        $return_value = false;
     } elseif(empty($file_id)) {
         // Delete added document if failed to upload a document file
         delete_document($document_id);
         set_alert(true, "bad", $lang['FailedToUploadFile']);
-        return false;
+        $return_value = false;
     } else {
         $stmt = $db->prepare("UPDATE `documents` SET file_id=:file_id WHERE id=:document_id ");
         $stmt->bindParam(":file_id", $file_id, PDO::PARAM_INT);
@@ -2149,7 +2247,7 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
             'document_id'   => (int)$document_id,
             'refresh'       => true,
         ];
-        queue_task('core_document_update', $queue_task_payload, 100);
+        queue_task($db, 'core_document_update', $queue_task_payload, 100, 5, 3600);
 
         // If notification is enabled
         if (notification_extra()) {
@@ -2160,8 +2258,14 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
             notify_new_document($document_id);
         }
 
-        return $document_id;
+        $return_value = $document_id;
     }
+
+    // Close the database connection
+    db_close($db);
+
+    // Return the return value
+    return $return_value;
 }
 
 /*****************************
@@ -2298,16 +2402,16 @@ function update_document($document_id, $updated_by, $document_type, $document_na
         }
     }
 
-    // Close the database connection
-    db_close($db);
-
     // Queue the core document add task
     $queue_task_payload = [
         'triggered_at'  => time(),
         'document_id'   => (int)$document_id,
         'refresh'       => true,
     ];
-    queue_task('core_document_update', $queue_task_payload, 100);
+    queue_task($db, 'core_document_update', $queue_task_payload, 100, 5, 3600);
+
+    // Close the database connection
+    db_close($db);
 
     // Save document frameworks
     save_junction_values("document_framework_mappings", "document_id", $document_id, "framework_id", $framework_ids);
@@ -2796,6 +2900,7 @@ function get_exceptions_as_treegrid($type){
             p.document_name as parent_name,
             'policy' as type,
             de.*,
+            de.value as exception_id,
             des.name as document_exceptions_status
         from document_exceptions de
             left join documents p on de.policy_document_id = p.id
@@ -2809,6 +2914,7 @@ function get_exceptions_as_treegrid($type){
             c.short_name as parent_name,
             'control' as type,
             de.*,
+            de.value as exception_id,
             des.name as document_exceptions_status
         from document_exceptions de
             left join framework_controls c on de.control_framework_id = c.id
@@ -2865,6 +2971,11 @@ function get_exceptions_as_treegrid($type){
                                 continue 3;
                             }
                             break;
+                        case "exception_id":
+                            if (stripos(($row['exception_id'] + 1000), $value) === false) {
+                                continue 3;
+                            }
+                            break;
                         case "description":
                             if (stripos(strip_tags_and_extra_whitespace($row['description']), $value) === false) {
                                 continue 3;
@@ -2895,6 +3006,8 @@ function get_exceptions_as_treegrid($type){
             $row['children'] = [];
 
             $row['name'] = "<span class='exception-name'><a class='text-info' href='#' data-id='".((int)$row['value'])."' data-type='{$row['type']}'>{$escaper->escapeHtml($row['name'])}</a></span>";
+
+            $row['exception_id'] = $escaper->escapeHtml($row['exception_id'] + 1000);
 
             // The variable to be used in treegrid filtering for status
             $row['status_value'] = $row['status'];
@@ -3056,12 +3169,13 @@ function get_exception_tabs($type)
     echo "
         <table id='exception-table-{$type}' class='easyui-treegrid exception-table'>
             <thead>
-                <th data-options=\"field:'name'\" width='25%'>".$escaper->escapeHtml($lang[ucfirst ($type) . "ExceptionName"])."</th>
-                <th data-options=\"field:'status'\" width='8%'>".$escaper->escapeHtml($lang['Status'])."</th>
-                <th data-options=\"field:'description'\" width='25%'>".$escaper->escapeHtml($lang['Description'])."</th>
-                <th data-options=\"field:'justification'\" width='24%'>".$escaper->escapeHtml($lang['Justification'])."</th>
-                <th data-options=\"field:'next_review_date', align: 'center'\" width='10%'>".$escaper->escapeHtml($lang['NextReviewDate'])."</th>
-                <th data-options=\"field:'actions'\" width='8%'>".$escaper->escapeHtml($lang['Actions'])."</th>
+                <th data-options=\"field:'name'\" width='24%'>{$escaper->escapeHtml($lang[ucfirst ($type) . "ExceptionName"])}</th>
+                <th data-options=\"field:'exception_id'\" width='7%'>{$escaper->escapeHtml($lang['ID'])}</th>
+                <th data-options=\"field:'status'\" width='7%'>{$escaper->escapeHtml($lang['Status'])}</th>
+                <th data-options=\"field:'description'\" width='23%'>{$escaper->escapeHtml($lang['Description'])}</th>
+                <th data-options=\"field:'justification'\" width='23%'>{$escaper->escapeHtml($lang['Justification'])}</th>
+                <th data-options=\"field:'next_review_date', align: 'center'\" width='9%'>{$escaper->escapeHtml($lang['NextReviewDate'])}</th>
+                <th data-options=\"field:'actions'\" width='7%'>{$escaper->escapeHtml($lang['Actions'])}</th>
             </thead>
         </table>
     ";
@@ -3470,111 +3584,156 @@ function save_control_to_frameworks($control_id, $map_frameworks)
     // Open the database connection
     $db = db_open();
 
-    // Delete all current control framework relations
-    $stmt = $db->prepare("DELETE FROM `framework_control_mappings` WHERE control_id=:control_id;");
-    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-    $stmt->execute();
+    $stmt = $db->prepare("
+        INSERT INTO framework_control_mappings (
+            control_id,
+            framework,
+            reference_name,
+            reference_text
+        )
+        VALUES (
+            :control_id,
+            :framework,
+            :reference_name,
+            :reference_text
+        )
+        ON DUPLICATE KEY UPDATE
+            reference_text = VALUES(reference_text)
+    ");
+
     foreach($map_frameworks as $row){
-        $framework_id = $row[0];
+        $framework = $row[0];
         $reference_name = $row[1];
-        if(!get_exist_mapping_control_framework($control_id, $framework_id)){
-            $stmt = $db->prepare("INSERT INTO `framework_control_mappings`(control_id, framework, reference_name) VALUES (:control_id, :framework_id, :reference_name)");
-            $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-            $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
-            $stmt->bindParam(":reference_name", $reference_name, PDO::PARAM_STR);
-            $stmt->execute();
+        $reference_text = $row[2];
+
+        // If there is no framework, continue to the next row
+        if (!$framework) {
+            continue;
         }
+
+        $stmt->execute([
+            ':control_id'     => $control_id,
+            ':framework'      => $framework,
+            ':reference_name' => $reference_name,
+            ':reference_text' => $reference_text
+        ]);
     }
     // Close the database connection
     db_close($db);  
 }
+
 /*********************************************
  * FUNCTION: SAVE CONTROL TO FRAMEWORK BY ID *
  *********************************************/
-function save_control_to_framework_by_ids($control_id, $framework_ids)
+function save_control_to_framework_by_ids($control_id, $framework_ids, $reference_name="", $reference_text="")
 {
     // Open the database connection
     $db = db_open();
 
-    // Delete all current control framework relations
-    $stmt = $db->prepare("DELETE FROM `framework_control_mappings` WHERE control_id=:control_id;");
-    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-    $stmt->execute();
+    // If no framework IDs were specified exit
+    if (!$framework_ids) {
+        return;
+    }
 
-    if($framework_ids)
-    {
-        // If framework_ids is not array, make it array value
-        if(!is_array($framework_ids))
-        {
-            $framework_ids = explode(",", $framework_ids);
+    // Create an array of framework IDs
+    if (!is_array($framework_ids)) {
+        $framework_ids = explode(",", $framework_ids);
+    }
+
+    // Get the control information
+    $control = get_framework_control($control_id);
+
+    // Set the reference name to the control number if one is not provided
+    if ($reference_name === "") {
+        $reference_name = $control['control_number'] ?? "";
+    }
+
+    $stmt = $db->prepare("
+        INSERT IGNORE INTO framework_control_mappings (
+            control_id,
+            framework,
+            reference_name,
+            reference_text
+        ) VALUES (
+            :control_id,
+            :framework_id,
+            :reference_name,
+            :reference_text
+        )
+        ON DUPLICATE KEY UPDATE
+            reference_name = VALUES(reference_name),
+            reference_text = VALUES(reference_text)
+    ");
+
+    foreach ($framework_ids as $framework_id) {
+        $framework_id = (int)$framework_id;
+        if (!$framework_id) {
+            continue;
         }
-        $control = get_framework_control($control_id);
-        $reference_name = isset($control['control_number'])?$control['control_number']:"";
 
-        $inserted = false;
-        $insert_query = "INSERT INTO `framework_control_mappings` (control_id, framework, reference_name) VALUES ";
-        foreach($framework_ids as $framework_id)
-        {
-            $framework_id = (int)$framework_id;
-            if($framework_id && !get_exist_mapping_control_framework($control_id, $framework_id))
-            {
-                $inserted = true;
-                $insert_query .= "(:control_id, {$framework_id}, :reference_name),";
-                write_debug_log("Adding SimpleRisk control id \"" . $control_id . "\" to framework id \"" . $framework_id . "\".");
-            }
+        $stmt->execute([
+            ':control_id' => $control_id,
+            ':framework_id' => $framework_id,
+            ':reference_name' => $reference_name,
+            ':reference_text' => $reference_text
+        ]);
+
+        // A rowcount of 1=insert, 2=update
+        if ($stmt->rowCount() > 0) {
+            write_debug_log(
+                "Saved mapping: control {$control_id}, framework {$framework}, reference '{$reference_name}'"
+            );
         }
-        $insert_query = trim($insert_query, ",");
-
-        if($inserted)
-        {
-            $stmt = $db->prepare($insert_query);
-            $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-            $stmt->bindParam(":reference_name", $reference_name, PDO::PARAM_STR);
-            $stmt->execute();
-        }
-
     }
 
     // Close the database connection
-    db_close($db);  
+    db_close($db);
 }
 
-function add_framework_control_to_framework($control_id, $framework_id, $reference_name=null)
+function add_framework_control_to_framework($control_id, $framework_id, $reference_name = null, $reference_text = "")
 {
-    if($framework_id > 0 && $control_id > 0)
-    {
-        // Open the database connection
-        $db = db_open();
-
-        // Delete all current control framework relations
-        $stmt = $db->prepare("DELETE FROM `framework_control_mappings` WHERE control_id=:control_id AND framework=:framework_id AND reference_name=:reference_name;");
-        $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-        $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
-        $stmt->bindParam(":reference_name", $reference_name, PDO::PARAM_STR);
-        $stmt->execute();
-        
-        $control = get_framework_control($control_id);
-
-        // If there wasn't a reference name
-        if ($reference_name === null)
-        {
-            // Set the control number
-            $control_number = isset($control['control_number'])?$control['control_number']:"";
-        }
-        else $control_number = $reference_name;
-        if(!get_exist_mapping_control_framework($control_id, $framework_id)){
-            $stmt = $db->prepare("INSERT INTO `framework_control_mappings`(control_id, framework, reference_name) VALUES (:control_id, :framework_id, :control_number); ");
-            $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-            $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
-            $stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR);
-            $stmt->execute();
-        }
-
-        write_debug_log("Adding SimpleRisk control id \"" . $control_id . "\" to framework id \"" . $framework_id . "\".");
-
-        // Close the database connection
-        db_close($db);  
+    if ($framework_id <= 0 || $control_id <= 0) {
+        return;
     }
+
+    $db = db_open();
+
+    $control = get_framework_control($control_id);
+
+    if ($reference_name === null) {
+        $reference_name = $control['control_number'] ?? "";
+    }
+
+    $stmt = $db->prepare("
+        INSERT INTO framework_control_mappings (
+            control_id,
+            framework,
+            reference_name,
+            reference_text
+        )
+        VALUES (
+            :control_id,
+            :framework,
+            :reference_name,
+            :reference_text
+        )
+        ON DUPLICATE KEY UPDATE
+            reference_text = VALUES(reference_text)
+    ");
+
+    $stmt->execute([
+        ':control_id'     => $control_id,
+        ':framework'      => $framework_id,
+        ':reference_name' => $reference_name,
+        ':reference_text' => $reference_text
+    ]);
+
+    write_debug_log(
+        "Saved SimpleRisk control ID '{$control_id}' to framework ID '{$framework_id}' with reference name '{$reference_name}'.",
+        "debug"
+    );
+
+    db_close($db);
 }
 
 /********************************************
@@ -3663,13 +3822,15 @@ function get_mapping_control_frameworks($control_id) {
     $db = db_open();
     $sql = "
         SELECT 
-            t1.*,
-            t2.name framework_name, 
-            t2.description framework_description 
+            fcm.*,
+            f.value framework_id,
+            f.name framework_name, 
+            f.description framework_description
         FROM 
-            `framework_control_mappings` t1
-        LEFT JOIN `frameworks` t2 ON t1.framework = t2.value
-        WHERE t1.control_id = :control_id 
+            `framework_control_mappings` fcm
+        JOIN `frameworks` f ON fcm.framework = f.value
+        WHERE fcm.control_id = :control_id
+        ORDER BY f.name, fcm.reference_name;
     ";
 
     $stmt = $db->prepare($sql);
@@ -3694,18 +3855,20 @@ function get_mapping_control_frameworks($control_id) {
     return $frameworks;
 
 }
+
 /*************************************************
  * FUNCTION: GET EXIST MAPPING CONTROL FRAMEWORK *
  *************************************************/
-function get_exist_mapping_control_framework($control_id, $framework_id)
+function get_exist_mapping_control_framework($control_id, $framework_id, $reference_name="")
 {
     // Open the database connection
     $db = db_open();
-    $sql = "SELECT * FROM `framework_control_mappings`  WHERE control_id = :control_id AND framework=:framework_id;";
+    $sql = "SELECT * FROM `framework_control_mappings`  WHERE control_id = :control_id AND framework=:framework_id AND reference_name=:reference_name;";
 
     $stmt = $db->prepare($sql);
     $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
     $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
+    $stmt->bindParam(":reference_name", $reference_name, PDO::PARAM_STR);
     $stmt->execute();
     $mappings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -4159,9 +4322,10 @@ function display_mapping_framework_edit($display = true) {
                 <table width='100%' class='table table-bordered mapping_framework_table mb-0'>
                     <thead>
                         <tr>
-                            <th width='60%'>{$escaper->escapeHtml($lang['Framework'])}<span class='mapping-framework-required-mark required d-none'>*</span></th>
-                            <th width='35%'>{$escaper->escapeHtml($lang['Control'])}<span class='mapping-framework-required-mark required d-none'>*</span></th>
-                            <th>{$escaper->escapeHtml($lang['Actions'])}</th>
+                            <th width='30%'>{$escaper->escapeHtml($lang['Framework'])}<span class='mapping-framework-required-mark required d-none'>*</span></th>
+                            <th width='20%'>{$escaper->escapeHtml($lang['Control'])}<span class='mapping-framework-required-mark required d-none'>*</span></th>
+                            <th width='40%'>{$escaper->escapeHtml($lang['ReferenceText'])}</th>
+                            <th width='10%'>{$escaper->escapeHtml($lang['Actions'])}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -4617,40 +4781,80 @@ function display_control_owner_view($control_owner_name, $panel_name="") {
 /**********************************************
 * FUNCTION: DISPLAY CONTROL MAPPING FRAMEWORK *
 ***********************************************/
-function display_mapping_framework_view($control_id, $panel_name="") {
+function display_mapping_framework_view($control_id) {
 
     global $lang, $escaper;
 
-    $mapped_frameworks = get_mapping_control_frameworks($control_id);
+    $collapse_id = "mapped-frameworks-collapse-" . (int)$control_id;
+    $table_id    = "mapped-frameworks-table-" . (int)$control_id;
 
-    $html = "
+    // Get the count of mapped frameworks
+    $count = get_control_framework_mappings_counts($control_id);
+
+    return "
         <div class='mb-2'>
-            <label>{$escaper->escapeHtml($lang['MappedControlFrameworks'])} : </label>
-            <div class='bg-light border p-3'>
-                <table width='100%' class='table table-bordered mb-0'>
-                    <tr>
-                        <th width='65%'>{$escaper->escapeHtml($lang['Framework'])}</th>
-                        <th width='35%'>{$escaper->escapeHtml($lang['Control'])}</th>
-                    </tr>
-    ";
+            <div class='d-flex align-items-center gap-2'
+                 role='button'
+                 data-bs-toggle='collapse'
+                 data-bs-target='#{$collapse_id}'
+                 data-control-id='{$control_id}'
+                 style='cursor:pointer'>
+                <i class='fa fa-chevron-right collapse-caret'></i>
+                {$escaper->escapeHtml($lang['MappedControlFrameworks'])}
+                <span class='badge bg-secondary ms-2 mapped-count'>Frameworks: {$count['frameworks']} | Controls: {$count['controls']}</span>
+            </div>
 
-    foreach ($mapped_frameworks as $framework) {
-        $html .= "
-                    <tr>
-                        <td>{$escaper->escapeHtml($framework['framework_name'])}</td>
-                        <td>{$escaper->escapeHtml($framework['reference_name'])}</td>
-                    </tr>
-        ";
-    }
-
-    $html .= "
-                </table>
+            <div id='{$collapse_id}' class='collapse mt-2'>
+                <div class='bg-light border p-3'>
+                    <div class='text-muted loading-placeholder'>
+                        Loading mapped frameworks…
+                    </div>
+                    
+                    <table id='{$table_id}'
+                           class='table table-bordered table-striped table-sm d-none'
+                           width='100%'>
+                        <thead>
+                            <tr>
+                                <th>{$escaper->escapeHtml($lang['Framework'])}</th>
+                                <th>{$escaper->escapeHtml($lang['Control'])}</th>
+                                <th>{$escaper->escapeHtml($lang['ReferenceText'])}</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     ";
+}
 
-    return $html;
+/**************************************************
+ * FUNCTION: GET CONTROL FRAMEWORK MAPPINGS COUNT *
+ * Return a count of framework mappings for a     *
+ * given control.                                 *
+ **************************************************/
+function get_control_framework_mappings_counts($control_id)
+{
+    $db = db_open();
 
+    $stmt = $db->prepare("
+        SELECT 
+            COUNT(DISTINCT framework) AS frameworks,
+            COUNT(DISTINCT reference_name) AS controls
+        FROM `framework_control_mappings`
+        WHERE control_id = :control_id;
+    ");
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    db_close($db);
+
+    return [
+        'control_id' => (int) $control_id,
+        'frameworks' => (int) $result['frameworks'],
+        'controls' => (int) $result['controls']
+    ];
 }
 
 /******************************************
@@ -5484,6 +5688,18 @@ function get_keywords_for_document($document_id, $refresh = false)
                         'keyword_count' => $keyword_count
                     ]
                 ];
+            } catch (UnsupportedDocumentException $e) {
+                // Mark this document as having a processing error
+                write_debug_log("Unsupported document type for document {$document_id}: " . $e->getMessage(), "warning");
+
+                $stmt = $db->prepare("UPDATE compliance_files SET keyword_processing_error = 1 WHERE ref_id = :id");
+                $stmt->execute([':id' => $document_id]);
+
+                $result = [
+                    'status_code' => 415,
+                    'status_message' => 'Unsupported document type.',
+                    'data' => []
+                ];
             } catch (Exception $e)
             {
                 write_debug_log("Error in get_keywords_for_document: " . $e->getMessage());
@@ -6116,6 +6332,9 @@ function display_add_mapping_row() {
                     </td>
                     <td>
                         <input type='text' name='reference_name[]' value='' class='form-control' maxlength='100' required title='{$escaper->escapeHtml($lang["Control"])}'>
+                    </td>
+                    <td>
+                        <textarea rows='3' cols='50' name='reference_text[]' class='form-control' title='{$escaper->escapeHtml($lang["ReferenceText"])}'></textarea>
                     </td>
                     <td class='text-center'>
                         <a href='javascript:void(0);' class='control-block--delete-mapping' title='{$escaper->escapeHtml($lang["Delete"])}'><i class='fa fa-trash'></i></a>

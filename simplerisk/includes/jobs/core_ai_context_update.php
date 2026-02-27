@@ -42,24 +42,23 @@ return [
      * Checks if a task should be queued. Can return true if a task
      * already exists, false if nothing to queue.
      ************************************************************/
-    'task_check' => function() {
+    'task_check' => function(PDO $db) {
         // If an Anthropic API key is not set
-        if (get_setting("anthropic_api_key") === false) {
+        if (get_setting("anthropic_api_key", false, false, db: $db) === false) {
             write_debug_log("Anthropic API Key not set.", "notice");
             return false;
         }
 
         write_debug_log("AI Context Update: Checking for pending updates.", "info");
 
-        $last_saved = get_setting("ai_context_last_saved");
-        $last_updated = get_setting("ai_context_last_updated");
+        $last_saved = get_setting("ai_context_last_saved", false, false, db: $db);
+        $last_updated = get_setting("ai_context_last_updated", false, false, db: $db);
 
         write_debug_log("AI Context Update: Last saved at " . date("Y-m-d H:i:s", $last_saved), "debug");
         write_debug_log("AI Context Update: Last updated at " . date("Y-m-d H:i:s", $last_updated), "debug");
 
         if (!$last_updated || $last_updated < $last_saved) {
             try {
-                $db = db_open();
                 $stmt = $db->prepare("
                     SELECT COUNT(*) 
                     FROM queue_tasks
@@ -68,18 +67,22 @@ return [
                 ");
                 $stmt->execute();
                 $running_count = (int)$stmt->fetchColumn();
+
+                // Check that we have context settings to process
+                $stmt = $db->prepare("SELECT COUNT(*) FROM `settings` WHERE name like 'ai_context_%';");
+                $stmt->execute();
+                $settings_count = (int)$stmt->fetchColumn();
             } catch (Exception $e) {
                 write_debug_log("AI Context Update: DB check failed: " . $e->getMessage(), "error");
                 return false;
-            } finally {
-                db_close($db);
             }
 
-            if ($running_count === 0) {
+            // If the task is not already running and we have settings we can process
+            if ($running_count === 0  && $settings_count > 0) {
                 $queue_task_payload = [
                     'triggered_at'      => time(),
                 ];
-                queue_task('core_ai_context_update', $queue_task_payload, 50);
+                queue_task($db, 'core_ai_context_update', $queue_task_payload, 50, 5, 3600);
                 write_debug_log("AI Context Update: Queued new task.", "notice");
                 return true;
             } else {
@@ -97,14 +100,13 @@ return [
      * Called when the task is pulled from the queue. Creates
      * promises for the staged AI work.
      ************************************************************/
-    'queue_check' => function(array $task) {
+    'queue_check' => function(array $task, PDO $db) {
         write_debug_log("AI Context Update: Creating promises for queued task #{$task['id']}.", "info");
 
         $payload = json_decode($task['payload'], true) ?? [];
         $triggered_at = $payload['triggered_at'] ?? time();
 
         try {
-            $db = db_open();
             $stmt = $db->prepare("
                 SELECT COUNT(*) FROM promises 
                 WHERE queue_task_id = :task_id 
@@ -116,8 +118,6 @@ return [
         } catch (Exception $e) {
             write_debug_log("AI Context Update: Failed to check for existing promises (task #{$task['id']}): " . $e->getMessage(), "error");
             return false;
-        } finally {
-            db_close($db);
         }
 
         if ($existing > 0) {
@@ -142,17 +142,18 @@ return [
                 $payload,
                 $prev_promise_id,
                 null, // no specific reference_id
-                $task['id']
+                $task['id'],
+                $db
             );
 
             if (!$prev_promise_id) {
                 write_debug_log("AI Context Update: Failed to create promise for stage '{$stage_name}' (task #{$task['id']})", "error");
-                queue_update_status($task['id'], 'failed');
+                queue_update_status($task['id'], 'failed', $db);
                 return false;
             }
         }
 
-        queue_update_status($task['id'], 'in_progress');
+        queue_update_status($task['id'], 'in_progress', $db);
         write_debug_log("AI Context Update: All promises created successfully for task #{$task['id']}", "info");
         return true;
     },
@@ -162,7 +163,7 @@ return [
      * Define each stage as a closure that accepts a $promise array.
      ************************************************************/
     'stages' => [
-        'generate_message_context' => function(array $promise) {
+        'generate_message_context' => function(array $promise, PDO $db) {
             write_debug_log("AI Context Update: Generating message context (promise #{$promise['id']}).", "info");
 
             $payload = json_decode($promise['payload'], true) ?? [];
@@ -186,7 +187,7 @@ return [
             }
         },
 
-        'ask_ai_for_recommendations' => function(array $promise) {
+        'ask_ai_for_recommendations' => function(array $promise, PDO $db) {
             write_debug_log("AI Context Update: Asking AI for recommendations (promise #{$promise['id']}).", "info");
 
             $payload = json_decode($promise['payload'], true) ?? [];
@@ -216,7 +217,7 @@ return [
             }
         },
 
-        'update_ai_recommendations' => function(array $promise) {
+        'update_ai_recommendations' => function(array $promise, PDO $db) {
             write_debug_log("AI Context Update: Updating AI recommendations setting (promise #{$promise['id']}).", "info");
 
             $payload = json_decode($promise['payload'], true) ?? [];

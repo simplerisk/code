@@ -21,11 +21,9 @@
 ?>
 <div class="row bg-white">
     <div class="col-12">
-        <div class="card-body border my-2">
     <?php 
-            display_dynamic_audit_report(); 
+        display_dynamic_audit_report(); 
     ?>
-        </div>
     </div>
 </div>
 <?php

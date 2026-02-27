@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use OpenApi\Annotations as OA;
+require_once(realpath(__DIR__ . '/../../../includes/upgrade.php'));
 
 /**
 * @OA\Get(
@@ -66,6 +67,10 @@ class OpenApiAdminVersionApp {}
 
 class OpenApiAdminVersionDB {}
 
+// Get the latest release version
+global $releases;
+$version = end($releases);
+define('CURRENT_DB_VERSION', $version);
 /**
  * @OA\Post(
  *      path="/admin/upgrade/db",
@@ -73,37 +78,38 @@ class OpenApiAdminVersionDB {}
  *      operationId="upgrade_db",
  *      tags={"Administrator Operations"},
  *      security={{"ApiKeyAuth":{}}},
+ *
  *      @OA\RequestBody(
- *          required=true,
- *          description="Upgrade the SimpleRisk database",
+ *          required=false,
+ *          description="Upgrade the SimpleRisk database. If no version is provided, the latest available release will be used.",
  *          @OA\MediaType(
- *              mediaType="application/json",
+ *              mediaType="application/x-www-form-urlencoded",
  *              @OA\Schema(
  *                  type="object",
- *                  required={"version"},
  *                  @OA\Property(
  *                      property="version",
- *                       type="string",
- *                       description="The target database version for the upgrade (format: YYYYMMDD-XXX)",
- *                       example="20241209-001",
- *                       pattern="^\\d{8}-\\d{3}$"
+ *                      type="string",
+ *                      description="Optional target database version for the upgrade (format: YYYYMMDD-XXX). If omitted, the most recent release is used.",
+ *                      example=CURRENT_DB_VERSION,
+ *                      pattern="^\\d{8}-\\d{3}$"
  *                  )
  *              )
  *          )
  *      ),
+ *
  *      @OA\Response(
  *          response=200,
- *          description="Upgrade successful",
+ *          description="Upgrade successful"
  *      ),
- *     @OA\Response(
+ *      @OA\Response(
  *          response=400,
- *          description="BAD REQUEST: A file and tracking_id value are required.",
- *     ),
+ *          description="BAD REQUEST: Invalid version format or version not found."
+ *      ),
  *      @OA\Response(
  *          response=403,
- *          description="FORBIDDEN: The user does not have the required permission to perform this action.",
- *      ),
- *  )
+ *          description="FORBIDDEN: The user does not have the required permission to perform this action."
+ *      )
+ * )
  */
 class OpenApiAdminUpgradeDB {}
 

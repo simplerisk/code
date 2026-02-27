@@ -495,6 +495,9 @@ function create_chartjs_line_code($title = "", $element_id = "", $labels = [], $
  ********************************************************************************/
 function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $datasets = [], $x_axis_title = null, $y_axis_title = null, $width = null, $height = null)
 {
+
+    global $lang, $escaper;
+
     // Escape the title for javascript display
     $title = str_replace("'", "\'", $title);
 
@@ -542,12 +545,22 @@ function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $d
             // Get the values for the dataset
             $label = $dataset['label'];
             $data = implode(",", $dataset['data']);
+            $backgroundColor = isset($dataset['backgroundColor']) ? $dataset['backgroundColor'] : null;
 
             echo "
                             {
-                                label: '{$label}',
-                                data: [{$data}],
+                                label: '{$escaper->escapeJS($label)}',
+                                data: [{$escaper->escapeJS($data)}],
                                 barThickness: 5,
+            ";
+
+            if ($backgroundColor) {
+                echo "
+                                backgroundColor: '{$escaper->escapeJS($backgroundColor)}',
+                ";
+            }
+            
+            echo "
                             },
             ";
         }
@@ -613,7 +626,7 @@ function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $d
         echo "
             <div class='d-flex flex-column text-center'>
                 <strong class='mb-3'>{$title}</strong>
-                <strong>No Data Available</strong>
+                <strong>{$escaper->escapeHtml($lang['NoDataAvailable'])}</strong>
             </div>
         ";
     }
@@ -3162,6 +3175,37 @@ function get_risks_and_assets_rows($report, $sort_by, $asset_tags_in_array, $pro
                     LEFT JOIN mgmt_reviews rr ON r.mgmt_review = rr.id
                 WHERE
                     status != 'Closed'
+                    UNION ALL
+                SELECT
+                    a.id AS id,
+                    r.id AS risk_id,
+                    a.id AS asset_id,
+                    a.name AS name,
+                    a.name AS asset_name,
+                    a.value AS asset_value,
+                    av.max_value AS max_value,
+                    a.location AS asst_location,
+                    a.teams AS asst_teams,
+                    r.status,
+                    r.subject,
+                    r.submission_date,
+                    r.project_id,
+                    rs.calculated_risk,
+                    rr.next_review,
+                    DATEDIFF(IF(r.status != 'Closed', NOW(), o.closure_date), r.submission_date) days_open,
+                    'asset' AS _type
+                FROM
+                    risks_to_asset_groups rtag
+                    INNER JOIN asset_groups ag ON ag.id = rtag.asset_group_id
+                    INNER JOIN assets_asset_groups aag ON aag.asset_group_id = ag.id
+                    INNER JOIN assets a ON aag.asset_id = a.id
+                    INNER JOIN asset_values av ON a.value = av.id
+                    LEFT JOIN risks r ON rtag.risk_id = r.id
+                    LEFT JOIN closures o ON r.close_id = o.id
+                    LEFT JOIN risk_scoring rs ON r.id = rs.id
+                    LEFT JOIN mgmt_reviews rr ON r.mgmt_review = rr.id
+                WHERE
+                    r.status != 'Closed'
                 UNION ALL
                 SELECT
                     ag.id AS id,
@@ -4560,7 +4604,8 @@ function risks_query_select($column_filters=[])
             WHEN 4 THEN '".$lang['CanceledProjects']."'
         END project_status,
         a.project_id,
-        lu.name AS reviewer, 
+        lu.name AS reviewer,
+        rw.name AS review, 
         l.next_review, 
         l.comments, 
         m.name AS next_step, 
@@ -4771,6 +4816,7 @@ function risks_unique_column_query_select()
 
         /*Review columns*/
         CONCAT(lu.name, '{$delimiter}', lu.value) AS reviewer_for_dropdown, 
+        CONCAT(rw.name, '{$delimiter}', rw.value) AS review_for_dropdown, 
         CONCAT(m.name, '{$delimiter}', m.value) AS next_step_for_dropdown, 
 
         /*Risk scoring columns*/
@@ -4827,6 +4873,7 @@ function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName
             LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id
             LEFT JOIN user lu ON l.reviewer = lu.value
             LEFT JOIN next_step m ON l.next_step = m.value
+            LEFT JOIN review rw ON l.review = rw.value
             LEFT JOIN closures o ON a.close_id = o.id
             LEFT JOIN user cu ON o.user_id = cu.value
             LEFT JOIN close_reason cr ON cr.value = o.close_reason
@@ -5583,6 +5630,11 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                         else $wheres[] = " FIND_IN_SET(l.{$name}, :{$bind_param_name}) ";
                         $bind_params[$bind_param_name] = $column_filter;
                     break;
+                    case "review":
+                        if($empty_filter) $wheres[] = " (FIND_IN_SET(l.{$name}, :{$bind_param_name}) OR l.{$name} IS NULL)";
+                        else $wheres[] = " FIND_IN_SET(l.{$name}, :{$bind_param_name}) ";
+                        $bind_params[$bind_param_name] = $column_filter;
+                    break;
                     case "next_step":
                         if($empty_filter) $wheres[] = " (FIND_IN_SET(l.{$name}, :{$bind_param_name}) OR l.{$name} IS NULL)";
                         else $wheres[] = " FIND_IN_SET(l.{$name}, :{$bind_param_name}) ";
@@ -6322,6 +6374,7 @@ function get_dynamicrisk_unique_column_data($status, $group, $group_value_from_d
             
             // Review columns
             "reviewer" => $risk["reviewer_for_dropdown"],
+            "review" => $risk["review_for_dropdown"],
             "next_step" => $risk["next_step_for_dropdown"],
             
             // Risk scoring columns
@@ -9638,6 +9691,650 @@ function get_group_name_from_value($group, $group_value)
             break;
     }
     return $group_name?$group_name:$lang['Unassigned'];
+}
+
+/************************************
+ * FUNCTION: ASSETS AND CONTROLS TABLE *
+ ************************************/
+function assets_and_controls_table($report, $sort_by) {
+
+    global $lang;
+    global $escaper;
+
+    if (count($_POST) > 2) {
+        $control_framework = isset($_POST['control_framework']) ? $_POST['control_framework'] : [];
+        $control_family = isset($_POST['control_family']) ? $_POST['control_family'] : [];
+        $control_class = isset($_POST['control_class']) ? $_POST['control_class'] : [];
+        $control_phase = isset($_POST['control_phase']) ? $_POST['control_phase'] : [];
+        $control_priority = isset($_POST['control_priority']) ? $_POST['control_priority'] : [];
+        $control_owner = isset($_POST['control_owner']) ? $_POST['control_owner'] : [];
+    } else {
+        $control_framework = "all";
+        $control_family = "all";
+        $control_class = "all";
+        $control_phase = "all";
+        $control_priority = "all";
+        $control_owner = "all";
+    }
+
+    $filters = array(
+        'control_framework' => $control_framework,
+        'control_family' => $control_family,
+        'control_class' => $control_class,
+        'control_phase' => $control_phase,
+        'control_priority' => $control_priority,
+        'control_owner' => $control_owner,
+    );
+
+    $rows = get_assets_and_controls_rows($report, $sort_by, $filters);
+
+    // Controls by Asset (report == 1)
+    if ($report == 1) {
+        foreach ($rows as $asset_id => $group) {
+            if (empty($group)) continue;
+
+            $asset = $group[0];
+            $asset_name = try_decrypt($asset['asset_name']);
+            $asset_tags = isset($asset['asset_tags']) ? $asset['asset_tags'] : "N/A";
+            $asset_value = isset($asset['asset_value']) ? get_asset_value_by_id($asset['asset_value']) : "N/A";
+            $asset_location = isset($asset['asset_location']) ? $asset['asset_location'] : "N/A";
+            $asset_teams = isset($asset['asset_teams']) ? $asset['asset_teams'] : "N/A";
+
+            echo "
+                <table class='table table-bordered table-condensed sortable mb-2'>
+                    <thead>
+                        <tr>
+                            <th style='background-color: #e3e3e3' colspan='4'>
+                                <center>
+                                    " . $escaper->escapeHtml($lang['AssetName']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($asset_name) . "<br />
+                                    " . $escaper->escapeHtml($lang['AssetTags']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($asset_tags) . "<br />
+                                    " . $escaper->escapeHtml($lang['AssetValue']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($asset_value) . "<br />
+                                    " . $escaper->escapeHtml($lang['AssetSiteLocation']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($asset_location) . "<br />
+                                    " . $escaper->escapeHtml($lang['AssetTeams']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($asset_teams) . "<br />
+                                </center>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th align='left' width='40%'>" . $escaper->escapeHtml($lang['Control']) . "</th>
+                            <th align='left' width='20%'>" . $escaper->escapeHtml($lang['CurrentMaturity']) . "</th>
+                            <th align='left' width='20%'>" . $escaper->escapeHtml($lang['CurrentControlMaturity']) . "</th>
+                            <th align='left' width='20%'>" . $escaper->escapeHtml($lang['DesiredControlMaturity']) . "</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            ";
+
+            foreach ($group as $control) {
+                $control_id = $control['control_id'];
+                $control_long_name = $control['control_long_name'];
+                $current_maturity = isset($control['current_maturity']) ? $control['current_maturity'] : "N/A";
+                $control_current_maturity = isset($control['control_maturity_name']) ? $control['control_maturity_name'] : "N/A";
+                $control_desired_maturity = isset($control['desired_maturity_name']) ? $control['desired_maturity_name'] : "N/A";
+
+                echo '
+                    <tr role="row">
+                        <td>
+                            <div class="control-block item-block clearfix">
+                                <div class="control-block--header clearfix">
+                                    <a href="#" id="show-asset-' . $escaper->escapeHtml($escaper->escapeJS($asset_id)) . '-' . $escaper->escapeHtml($escaper->escapeJS($control_id)) . '" class="show-control-score" data-control-id="'. $escaper->escapeHtml($escaper->escapeJS($control_id)) .'" data-asset-id="'. $escaper->escapeHtml($escaper->escapeJS($asset_id)) .'" style="color: #3f3f3f;"> 
+                                        <i class="fa fa-caret-right"></i>&nbsp; 
+                                        <strong>' . $escaper->escapeHtml($lang['ControlLongName']) . '</strong>: &nbsp; &nbsp;'. $escaper->escapeHtml($control_long_name) .'
+                                    </a>
+                                    <a href="#" id="hide-asset-' . $escaper->escapeHtml($asset_id) . '-' . $escaper->escapeHtml($control_id) . '" class="hide-control-score" style="display: none; color: #3f3f3f; float: left; padding-bottom: 10px;" data-control-id="'. $escaper->escapeHtml($control_id) .'" data-asset-id="'. (int)$asset_id .'"> 
+                                        <i class="fa fa-caret-down"></i> &nbsp; 
+                                        <strong>' . $escaper->escapeHtml($lang['ControlLongName']) . '</strong>: &nbsp; &nbsp; &nbsp;'. $escaper->escapeHtml($control_long_name) .'
+                                    </a>
+                                    <div class="control-block--row" id="control-content-asset-' . $escaper->escapeHtml($asset_id) . '-' . $escaper->escapeHtml($control_id) . '" style="display:none"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td align="left">' . $escaper->escapeHtml($current_maturity) . '</td>
+                        <td align="left">' . $escaper->escapeHtml($control_current_maturity) . '</td>
+                        <td align="left">' . $escaper->escapeHtml($control_desired_maturity) . '</td>
+                    </tr>
+                ';
+            }
+
+            echo "
+                    </tbody>
+                </table>
+            ";
+        }
+
+    // Assets by Control (report == 0)
+    } else {
+        foreach ($rows as $control_id => $group) {
+            if (empty($group)) continue;
+
+            $control = $group[0];
+            $control_long_name = $control['control_long_name'];
+            $control_short_name = $control['control_short_name'];
+            $control_number = $control['control_number'];
+            $control_current_maturity = isset($control['control_maturity_name']) ? $control['control_maturity_name'] : "N/A";
+            $control_desired_maturity = isset($control['desired_maturity_name']) ? $control['desired_maturity_name'] : "N/A";
+            
+            // Get control frameworks for the table
+            $control_frameworks = get_mapping_control_frameworks($control_id);
+            $cf_table = "";
+            if (count($control_frameworks)) {
+                $cf_table = "
+                    <table border='1px' class='table table-bordered mb-2' style='background-color:#e3e3e3'>
+                        <tr>
+                            <th width='50%' style='background-color:#e3e3e3'>{$escaper->escapeHtml($lang['Framework'])}</th>
+                            <th width='35%' style='background-color:#e3e3e3'>{$escaper->escapeHtml($lang['Control'])}</th>
+                        </tr>
+                ";
+                foreach ($control_frameworks as $framework) {
+                    $cf_table .= "
+                        <tr>
+                            <td style='background-color:#e3e3e3'>{$escaper->escapeHtml($framework['framework_name'])}</td>
+                            <td style='background-color:#e3e3e3'>{$escaper->escapeHtml($framework['reference_name'])}</td>
+                        </tr>
+                    ";
+                }
+                $cf_table .= "
+                    </table>
+                ";
+            }
+
+            $control_detail = "
+                <div class='moreellipses hide'>" . 
+                    $escaper->escapeHtml($lang['ControlNumber']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($control_number) . "</br>" . 
+                    $escaper->escapeHtml($lang['ControlFrameworks']) . ":&nbsp;&nbsp;" . $cf_table. "</br>" . 
+                    $escaper->escapeHtml($lang['ControlFamily']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($control['control_family_name']) . "</br>" . 
+                    $escaper->escapeHtml($lang['ControlClass']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($control['control_class_name']) . "</br>" . 
+                    $escaper->escapeHtml($lang['ControlPhase']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($control['control_phase_name']) . "</br>" . 
+                    $escaper->escapeHtml($lang['ControlPriority']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($control['control_priority_name']) . "</br>" . 
+                    $escaper->escapeHtml($lang['MitigationPercent']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($control['mitigation_percent']) . " %</br>" . 
+                    $escaper->escapeHtml($lang['ControlOwner']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($control['control_owner_name']) . "</br>" . 
+                    $escaper->escapeHtml($lang['Description']) . ":&nbsp;&nbsp;" . $escaper->purifyHtml($control['control_description']) . "</br>" . 
+                    $escaper->escapeHtml($lang['SupplementalGuidance']) . ":&nbsp;&nbsp;" . $escaper->purifyHtml($control['supplemental_guidance']) . "
+                </div>
+                </br><a href='javascript:void(0)' class='morelink'>" . $escaper->escapeHtml($lang['ShowMore']) . "</a>
+            ";
+
+            echo "
+                <table class='table table-bordered table-condensed sortable mb-2'>
+                    <thead>
+                        <tr>
+                            <th colspan='7' style='background-color: #e3e3e3'>
+                                <center>" . 
+                                    $escaper->escapeHtml($lang['ControlLongName']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($control_long_name) . "</br>" . 
+                                    $escaper->escapeHtml($lang['ControlShortName']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($control_short_name) . "</br>" . 
+                                    $escaper->escapeHtml($lang['ControlNumber']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($control_number) . "</br>" . 
+                                    $escaper->escapeHtml($lang['CurrentControlMaturity']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($control_current_maturity) . "</br>" . 
+                                    $escaper->escapeHtml($lang['DesiredControlMaturity']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($control_desired_maturity) . 
+                                    $control_detail . "
+                                </center>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th align='left' width='20%'>" . $escaper->escapeHtml($lang['AssetName']) . "</th>
+                            <th align='left' width='10%'>" . $escaper->escapeHtml($lang['IPAddress']) . "</th>
+                            <th align='left' width='15%'>" . $escaper->escapeHtml($lang['SiteLocation']) . "</th>
+                            <th align='left' width='15%'>" . $escaper->escapeHtml($lang['Teams']) . "</th>
+                            <th align='left' width='15%'>" . $escaper->escapeHtml($lang['AssetTags']) . "</th>
+                            <th align='left' width='10%'>" . $escaper->escapeHtml($lang['AssetValuation']) . "</th>
+                            <th align='left' width='15%'>" . $escaper->escapeHtml($lang['CurrentMaturity']) . "</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            ";
+
+            foreach ($group as $asset) {
+                $asset_name = try_decrypt($asset['asset_name']);
+                $asset_ip = (isset($asset['asset_ip']) ? try_decrypt($asset['asset_ip']) : "N/A");
+                $asset_ip = ($asset_ip != "" ? $asset_ip : "N/A");
+                $asset_location = isset($asset['asset_location']) ? $asset['asset_location'] : "N/A";
+                $asset_teams = isset($asset['asset_teams']) ? $asset['asset_teams'] : "N/A";
+                $asset_tags = isset($asset['asset_tags']) ? $asset['asset_tags'] : "N/A";
+                $asset_value = isset($asset['asset_value']) ? get_asset_value_by_id($asset['asset_value']) : "N/A";
+                $current_maturity = isset($asset['current_maturity']) ? $asset['current_maturity'] : "N/A";
+
+                echo "
+                    <tr>
+                        <td align='left'>" . $escaper->escapeHtml($asset_name) . "</td>
+                        <td align='left'>" . $escaper->escapeHtml($asset_ip) . "</td>
+                        <td align='left'>" . $escaper->escapeHtml($asset_location) . "</td>
+                        <td align='left'>" . $escaper->escapeHtml($asset_teams) . "</td>
+                        <td align='left'>" . $escaper->escapeHtml($asset_tags) . "</td>
+                        <td align='left'>" . $escaper->escapeHtml($asset_value) . "</td>
+                        <td align='left'>" . $escaper->escapeHtml($current_maturity) . "</td>
+                    </tr>
+                ";
+            }
+
+            echo "
+                    </tbody>
+                </table>
+            ";
+        }
+    }
+
+    echo '
+        <script>
+            var moretext = "' . $escaper->escapeHtml($lang['ShowMore']) . '";
+            var lesstext = "' . $escaper->escapeHtml($lang['ShowLess']) . '";
+            $(document).ready(function(){
+                $(".hide-control-score").css("display","none");
+                $(".show-control-score").click(function(e){
+                    e.preventDefault();
+                    var control_id = $(this).data("control-id");
+                    var asset_id = $(this).data("asset-id");
+                    showAssetControlDetails(control_id, asset_id);
+                });
+                
+                $(".hide-control-score").click(function(e){
+                    e.preventDefault();
+                    var control_id = $(this).data("control-id");
+                    var asset_id = $(this).data("asset-id");
+                    hideAssetControlDetails(control_id, asset_id);
+                });
+                $(".morelink").click(function(){
+                    if($(this).hasClass("less")) {
+                        $(this).removeClass("less");
+                        $(this).html(moretext);
+                    } else {
+                        $(this).addClass("less");
+                        $(this).html(lesstext);
+                    }
+                    $(this).parent().find(".moreellipses").toggle();
+                    return false;
+                });
+            });
+            
+            function showAssetControlDetails(control_id, asset_id){
+                $("#show-asset-"+asset_id + "-" +control_id).hide();
+                $("#hide-asset-"+asset_id + "-" +control_id).css("display","block");
+                $("#control-content-asset-"+asset_id + "-" +control_id).css("display","block");
+                var height = $(window).scrollTop();
+                
+                $.ajax({
+                    url: BASE_URL + "/api/mitigation_controls/get_mitigation_control_info",
+                    data: { "control_id": control_id, "scroll_top": height },
+                    success: function(response){
+                        $("#control-content-asset-"+asset_id + "-" +control_id).html(response.data["control_info"]);
+                    }
+                });
+            }
+            
+            function hideAssetControlDetails(control_id, asset_id){
+                $("#hide-asset-"+asset_id + "-" +control_id).css("display","none");
+                $("#show-asset-"+asset_id + "-" +control_id).show();
+                $("#control-content-asset-"+asset_id + "-" +control_id).css("display","none");
+            }
+        </script>
+    ';
+}
+
+/*****************************************************
+ * FUNCTION: BUILD IN CLAUSE FOR ASSETS AND CONTROLS *
+ *****************************************************/
+function build_in_clause(array $values, string $prefix, array &$params): string
+{
+    $placeholders = [];
+
+    foreach ($values as $i => $val) {
+        $key = ":{$prefix}_{$i}";
+        $placeholders[] = $key;
+        $params[$key] = (int)$val;
+    }
+
+    return implode(',', $placeholders);
+}
+
+/***********************************************
+ * FUNCTION: GET ASSETS AND CONTROLS ROWS SQL *
+ ***********************************************/
+function get_assets_and_controls_rows($report, $sort_by, $filters) {
+
+    $control_framework = $filters['control_framework'];
+    $control_family = $filters['control_family'];
+    $control_class = $filters['control_class'];
+    $control_phase = $filters['control_phase'];
+    $control_priority = $filters['control_priority'];
+    $control_owner = $filters['control_owner'];
+
+    // Open the database
+    $db = db_open();
+
+    $params = [];
+    $where_sql = " WHERE fc.deleted = 0 ";
+
+    // If control framework is requested
+    if ($control_framework && is_array($control_framework)) {
+
+        $ids = [];
+        $clauses = [];
+
+        foreach ($control_framework as $val) {
+            $val = (int)$val;
+            if ($val) {
+                if ($val == -1) {
+                    $clauses[] = "(fcm.framework IS NULL OR fcm.framework='')";
+                } else {
+                    $ids[] = $val;
+                }
+            }
+        }
+
+        if ($ids) {
+            $in = build_in_clause($ids, "control_framework", $params);
+            $clauses[] = "fcm.framework IN ($in)";
+        }
+
+        if ($clauses) {
+            $where_sql .= " AND (" . implode(" OR ", $clauses) . ")";
+        } else {
+            $where_sql .= " AND 0 ";
+        }
+    } elseif ($control_framework != "all") {
+        $where_sql .= " AND 0 ";
+    }
+
+    // If control class ID is requested
+    if ($control_class && is_array($control_class)) {
+
+        $ids = [];
+        $clauses = [];
+
+        foreach ($control_class as $val) {
+            $val = (int)$val;
+            if ($val) {
+                if ($val == -1) {
+                    $clauses[] = "(cc.value IS NULL OR cc.value='')";
+                } else {
+                    $ids[] = $val;
+                }
+            }
+        }
+
+        if ($ids) {
+            $in = build_in_clause($ids, "control_class", $params);
+            $clauses[] = "cc.value IN ($in)";
+        }
+
+        if ($clauses) {
+            $where_sql .= " AND (" . implode(" OR ", $clauses) . ")";
+        } else {
+            $where_sql .= " AND 0 ";
+        }
+
+    } elseif ($control_class != "all") {
+        $where_sql .= " AND 0 ";
+    }
+
+    // If control phase ID is requested
+    if ($control_phase && is_array($control_phase)) {
+
+        $ids = [];
+        $clauses = [];
+
+        foreach ($control_phase as $val) {
+            $val = (int)$val;
+            if ($val) {
+                if ($val == -1) {
+                    $clauses[] = "(cph.value IS NULL OR cph.value='')";
+                } else {
+                    $ids[] = $val;
+                }
+            }
+        }
+        
+        if ($ids) {
+            $in = build_in_clause($ids, "control_phase", $params);
+            $clauses[] = "cph.value IN ($in)";
+        }
+
+        if ($clauses) {
+            $where_sql .= " AND (" . implode(" OR ", $clauses) . ")";
+        } else {
+            $where_sql .= " AND 0 ";
+        }
+
+    } elseif ($control_phase != "all") {
+        $where_sql .= " AND 0 ";
+    }
+
+    // If control priority ID is requested
+    if ($control_priority && is_array($control_priority)) {
+
+        $ids = [];
+        $clauses = [];
+
+        foreach ($control_priority as $val) {
+            $val = (int)$val;
+            if ($val) {
+                if ($val == -1) {
+                    $clauses[] = "(cpr.value IS NULL OR cpr.value='')";
+                } else {
+                    $ids[] = $val;
+                }
+            }
+        }
+                
+        if ($ids) {
+            $in = build_in_clause($ids, "control_priority", $params);
+            $clauses[] = "cpr.value IN ($in)";
+        }
+
+        if ($clauses) {
+            $where_sql .= " AND (" . implode(" OR ", $clauses) . ")";
+        } else {
+            $where_sql .= " AND 0 ";
+        }
+
+    } elseif ($control_priority != "all") {
+        $where_sql .= " AND 0 ";
+    }
+
+    // If control family ID is requested
+    if ($control_family && is_array($control_family)) {
+
+        $ids = [];
+        $clauses = [];
+
+        foreach ($control_family as $val) {
+            $val = (int)$val;
+            if ($val) {
+                if ($val == -1) {
+                    $clauses[] = "(cf.value IS NULL OR cf.value='')";
+                } else {
+                    $ids[] = $val;
+                }
+            }
+        }
+                        
+        if ($ids) {
+            $in = build_in_clause($ids, "control_family", $params);
+            $clauses[] = "cf.value IN ($in)";
+        }
+
+        if ($clauses) {
+            $where_sql .= " AND (" . implode(" OR ", $clauses) . ")";
+        } else {
+            $where_sql .= " AND 0 ";
+        }
+
+    } elseif ($control_family != "all") {
+        $where_sql .= " AND 0 ";
+    }
+
+    // If control owner ID is requested
+    if ($control_owner && is_array($control_owner)) {
+
+        $ids = [];
+        $clauses = [];
+
+        foreach ($control_owner as $val) {
+            $val = (int)$val;
+            if ($val) {
+                if ($val == -1) {
+                    $clauses[] = "(cu.value IS NULL OR cu.value='')";
+                } else {
+                    $ids[] = $val;
+                }
+            }
+        }
+                                
+        if ($ids) {
+            $in = build_in_clause($ids, "control_owner", $params);
+            $clauses[] = "cu.value IN ($in)";
+        }
+
+        if ($clauses) {
+            $where_sql .= " AND (" . implode(" OR ", $clauses) . ")";
+        } else {
+            $where_sql .= " AND 0 ";
+        }
+
+    } elseif ($control_owner != "all") {
+        $where_sql .= " AND 0 ";
+    }
+
+    // Assets by Control (report == 0)
+    if ($report == 0) {
+        if ($sort_by == 0) {
+            $order = "fc.short_name ASC";
+        } else {
+            $order = "fc.control_number ASC";
+        }
+
+        $sql = "
+            SELECT 
+                fc.id AS control_id,
+                fc.short_name AS control_short_name,
+                fc.long_name AS control_long_name,
+                fc.control_number,
+                fc.description AS control_description,
+                fc.supplemental_guidance,
+                fc.mitigation_percent,
+                cm.name AS control_maturity_name,
+                dm.name AS desired_maturity_name,
+                cc.name AS control_class_name,
+                cph.name AS control_phase_name,
+                cpr.name AS control_priority_name,
+                cf.name AS control_family_name,
+                cu.name AS control_owner_name,
+                a.id AS asset_id,
+                a.name AS asset_name,
+                a.ip AS asset_ip,
+                a.value AS asset_value,
+                loc.name AS asset_location,
+                GROUP_CONCAT(DISTINCT t.name SEPARATOR ', ') AS asset_teams,
+                GROUP_CONCAT(DISTINCT tg.tag SEPARATOR ', ') AS asset_tags,
+                GROUP_CONCAT(DISTINCT cta_cm.name SEPARATOR ', ') AS current_maturity
+            FROM framework_controls fc
+                LEFT JOIN framework_control_mappings fcm ON fc.id = fcm.control_id
+                LEFT JOIN control_class cc ON fc.control_class = cc.value
+                LEFT JOIN control_phase cph ON fc.control_phase = cph.value
+                LEFT JOIN control_priority cpr ON fc.control_priority = cpr.value
+                LEFT JOIN family cf ON fc.family = cf.value
+                LEFT JOIN user cu ON fc.control_owner = cu.value
+                LEFT JOIN control_maturity cm ON fc.control_maturity = cm.value
+                LEFT JOIN control_maturity dm ON fc.desired_maturity = dm.value
+                INNER JOIN control_to_assets cta ON fc.id = cta.control_id
+                INNER JOIN assets a ON cta.asset_id = a.id
+                LEFT JOIN location loc ON a.location = loc.value
+                LEFT JOIN team t ON FIND_IN_SET(t.value, a.teams)
+                LEFT JOIN tags_taggees tt ON tt.taggee_id = a.id AND tt.type = 'asset'
+                LEFT JOIN tags tg ON tg.id = tt.tag_id
+                LEFT JOIN control_maturity cta_cm ON cta.control_maturity = cta_cm.value
+            {$where_sql}
+            GROUP BY fc.id, a.id
+            ORDER BY {$order}, a.name ASC
+        ";
+
+        $stmt = $db->prepare($sql);
+
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val, PDO::PARAM_INT);
+        }
+
+        $stmt->execute();
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Group by control_id
+        $rows = [];
+        foreach ($results as $row) {
+            $control_id = $row['control_id'];
+            if (!isset($rows[$control_id])) {
+                $rows[$control_id] = [];
+            }
+            $rows[$control_id][] = $row;
+        }
+
+    // Controls by Asset (report == 1)
+    } else {
+        $sql = "
+            SELECT 
+                a.id AS asset_id,
+                a.name AS asset_name,
+                a.ip AS asset_ip,
+                a.value AS asset_value,
+                loc.name AS asset_location,
+                GROUP_CONCAT(DISTINCT t.name SEPARATOR ', ') AS asset_teams,
+                GROUP_CONCAT(DISTINCT tg.tag SEPARATOR ', ') AS asset_tags,
+                fc.id AS control_id,
+                fc.short_name AS control_short_name,
+                fc.long_name AS control_long_name,
+                fc.control_number,
+                fc.description AS control_description,
+                fc.supplemental_guidance,
+                fc.mitigation_percent,
+                cm.name AS control_maturity_name,
+                dm.name AS desired_maturity_name,
+                cc.name AS control_class_name,
+                cph.name AS control_phase_name,
+                cpr.name AS control_priority_name,
+                cf.name AS control_family_name,
+                cu.name AS control_owner_name,
+                GROUP_CONCAT(DISTINCT cta_cm.name SEPARATOR ', ') AS current_maturity
+            FROM assets a
+                INNER JOIN control_to_assets cta ON a.id = cta.asset_id
+                INNER JOIN framework_controls fc ON cta.control_id = fc.id
+                LEFT JOIN framework_control_mappings fcm ON fc.id = fcm.control_id
+                LEFT JOIN control_class cc ON fc.control_class = cc.value
+                LEFT JOIN control_phase cph ON fc.control_phase = cph.value
+                LEFT JOIN control_priority cpr ON fc.control_priority = cpr.value
+                LEFT JOIN family cf ON fc.family = cf.value
+                LEFT JOIN user cu ON fc.control_owner = cu.value
+                LEFT JOIN control_maturity cm ON fc.control_maturity = cm.value
+                LEFT JOIN control_maturity dm ON fc.desired_maturity = dm.value
+                LEFT JOIN location loc ON a.location = loc.value
+                LEFT JOIN team t ON FIND_IN_SET(t.value, a.teams)
+                LEFT JOIN tags_taggees tt ON tt.taggee_id = a.id AND tt.type = 'asset'
+                LEFT JOIN tags tg ON tg.id = tt.tag_id
+                LEFT JOIN control_maturity cta_cm ON cta.control_maturity = cta_cm.value
+            {$where_sql}
+            GROUP BY a.id, fc.id
+            ORDER BY a.name ASC, fc.short_name ASC
+        ";
+
+        $stmt = $db->prepare($sql);
+
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val, PDO::PARAM_INT);
+        }
+
+        $stmt->execute();
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Group by asset_id
+        $rows = [];
+        foreach ($results as $row) {
+            $asset_id = $row['asset_id'];
+            if (!isset($rows[$asset_id])) {
+                $rows[$asset_id] = [];
+            }
+            $rows[$asset_id][] = $row;
+        }
+    }
+
+    // Close the database connection
+    db_close($db);
+
+    return $rows;
 }
 
 ?>

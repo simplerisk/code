@@ -81,19 +81,29 @@ function fetch_url_content_via_curl($http_options, $validate_ssl, $url, $paramet
         // Configure proxy if needed
         configure_curl_proxy($ch);
 
-        // Encode parameters
-        $fields = http_build_query($parameters, '', '&');
-
+        // Encode parameters only if it's an array and method is POST
         if (strtoupper($request_method) === 'POST') {
             curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
+
+            if (is_array($parameters)) {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($parameters, '', '&'));
+            } else {
+                // already a string (e.g., QPS XML)
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $parameters);
+            }
+
         } else {
-            $url_with_params = $url . (!empty($parameters) ? '?' . $fields : '');
-            curl_setopt($ch, CURLOPT_URL, $url_with_params);
+            // GET request
+            if (is_array($parameters) && !empty($parameters)) {
+                $url .= '?' . http_build_query($parameters);
+            }
+            curl_setopt($ch, CURLOPT_URL, $url);
         }
 
-        // Set the URL
-        curl_setopt($ch, CURLOPT_URL, $url);
+        // Set URL for POST too
+        if (strtoupper($request_method) === 'POST') {
+            curl_setopt($ch, CURLOPT_URL, $url);
+        }
 
         // Execute the request
         $response = @curl_exec($ch);

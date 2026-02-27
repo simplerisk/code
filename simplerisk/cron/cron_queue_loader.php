@@ -4,99 +4,126 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/**
- * Cron Queue Loader
- *
- * Periodically run via cron to call all task_check functions in job files.
- * Responsible for enqueueing tasks that need to run.
- */
-
 declare(strict_types=1);
 
 if (php_sapi_name() !== "cli") {
-    exit("This script must be run via the command line.\n");
+    exit("This script must be run from the command line.\n");
 }
 
 require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/queues.php'));
 require_once(realpath(__DIR__ . '/../includes/promises.php'));
+require_once(realpath(__DIR__ . '/../includes/workers.php'));
 
 // === CONFIGURATION ===
-$pidFile = sys_get_temp_dir() . '/simplerisk_queue_loader.pid';
+$workerName = 'cron_queue_loader';
 $stalePidThreshold = 24 * 3600; // 24 hours
+$maxRuntimeMinutes = 60;
+$maxIdleMinutes = 60;
+$memoryLimitBytes = 400 * 1024 * 1024;
 
-// === SINGLE INSTANCE CHECK WITH STALE PID CLEANUP ===
-if (file_exists($pidFile)) {
-    $pid = (int) trim(file_get_contents($pidFile));
-    $pidAge = time() - filemtime($pidFile);
+$startTime = time();
 
-    if ($pid && isProcessRunning($pid)) {
-        echo "Queue loader already running (PID $pid)\n";
-        exit;
-    } elseif ($pidAge > $stalePidThreshold) {
-        write_debug_log("Stale PID file detected (PID $pid, age {$pidAge}s), removing...", "warning");
-        unlink($pidFile);
-    } else {
-        write_debug_log("Removing PID file for non-running process (PID $pid, age {$pidAge}s)...", "info");
-        unlink($pidFile);
-    }
-}
-
-// Write current PID
-file_put_contents($pidFile, getmypid());
-
-// Function to safely remove PID file
-$cleanupPidFile = function() use ($pidFile) {
-    if (file_exists($pidFile)) {
-        unlink($pidFile);
-        write_debug_log("PID file removed.", "info");
-    }
-};
-
-// Ensure PID file is removed on normal shutdown
-register_shutdown_function($cleanupPidFile);
-
-// Handle fatal PHP errors to clean up PID file
-register_shutdown_function(function() use ($cleanupPidFile) {
-    $error = error_get_last();
-    if ($error && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE])) {
-        write_debug_log("Fatal error encountered: {$error['message']} in {$error['file']}:{$error['line']}", "error");
-        $cleanupPidFile();
-    }
-});
-
-// Global shutdown flag (in case we want to handle signals in the future)
-$shutdownRequested = false;
-
-// Setup signal handling if available
-if (function_exists('pcntl_signal')) {
-    $signalHandler = function($signo) use (&$shutdownRequested) {
-        switch ($signo) {
-            case SIGTERM:
-            case SIGINT:
-            case SIGHUP:
-            case SIGQUIT:
-                $shutdownRequested = true;
-                write_debug_log("Shutdown signal received (signal $signo), exiting gracefully...", "notice");
-                break;
-        }
-    };
-
-    pcntl_signal(SIGTERM, $signalHandler);
-    pcntl_signal(SIGINT, $signalHandler);
-    pcntl_signal(SIGHUP, $signalHandler);
-    pcntl_signal(SIGQUIT, $signalHandler);
-}
+// === SYSTEM SETTINGS ===
+ini_set('max_execution_time', 0);
+set_time_limit(0);
+ini_set('memory_limit', '512M');
+ob_implicit_flush(true);
 
 write_debug_log("Queue loader started (PID " . getmypid() . ")", "info");
 
+// === CHECK FOR ZOMBIE WORKERS ===
+$zombies = list_zombie_workers($workerName, $stalePidThreshold);
+foreach ($zombies as $zombie) {
+    write_debug_log(
+        "Zombie worker detected: PID {$zombie['pid']} on host {$zombie['host']}, last heartbeat {$zombie['last_heartbeat']}",
+        "warning"
+    );
+}
+
+// === ACQUIRE WORKER LOCK ===
+if (!acquire_worker_lock($workerName, $stalePidThreshold)) {
+    write_debug_log("Queue loader lock exists and is active; exiting.", "info");
+    exit(0);
+}
+
+// === REGISTER SIGNAL HANDLERS ===
+register_worker_signal_handlers($workerName);
+
+// === SHUTDOWN FUNCTION ===
+register_shutdown_function(function () use ($workerName) {
+    $error = error_get_last();
+    if ($error && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE])) {
+        write_debug_log("Fatal worker error: {$error['message']} in {$error['file']}:{$error['line']}", "error");
+        record_worker_restart($workerName, 'fatal_error: ' . $error['message']);
+    }
+    release_worker_lock($workerName);
+});
+
+// === OPEN DB CONNECTION ===
+$db = db_open();
+if (!$db) {
+    write_debug_log("Failed to open database connection, exiting.", "error");
+    exit(1);
+}
+
 // === LOAD JOB DEFINITIONS ===
 $jobs = load_all_jobs();
+$queuedTasks = 0;
 
+// === RUN JOBS ===
 foreach ($jobs as $job) {
-    if ($shutdownRequested) {
-        write_debug_log("Shutdown requested, exiting early...", "info");
+    // Dispatch signals
+    if (function_exists('pcntl_signal_dispatch')) {
+        pcntl_signal_dispatch();
+    }
+
+    $now = time();
+
+    // === SHUTDOWN & RELOAD CHECKS ===
+    if (worker_should_shutdown()) {
+        write_debug_log("Shutdown requested, exiting main loop...", "info");
         break;
+    }
+
+    if (worker_should_reload()) {
+        write_debug_log("Reload requested, resetting worker metrics...", "info");
+        worker_metric_set($workerName, 'last_queued_tasks', 0);
+        reset_worker_metrics($workerName);
+        worker_clear_reload_flag();
+    }
+
+    // === METRICS: memory usage ===
+    worker_metric_set($workerName, 'memory_bytes', memory_get_usage(true));
+    worker_metric_set($workerName, 'peak_memory_bytes', memory_get_peak_usage(true));
+
+    // === RESOURCE / TIME CHECKS ===
+    if (($now - $startTime) > ($maxRuntimeMinutes * 60)) {
+        record_worker_restart($workerName, 'max_runtime_exceeded');
+        break;
+    }
+
+    if (($now - $startTime) > ($maxIdleMinutes * 60)) {
+        record_worker_restart($workerName, 'max_idle_exceeded');
+        break;
+    }
+
+    if (memory_get_usage(true) > $memoryLimitBytes) {
+        record_worker_restart($workerName, 'memory_limit_exceeded');
+        break;
+    }
+
+    // === ENSURE DB CONNECTION ===
+    try {
+        $db->query("SELECT 1");
+    } catch (\Throwable $t) {
+        write_debug_log("Reconnecting to DB after connection loss...", "warning");
+        db_close($db);
+        $db = db_open();
+        if (!$db) {
+            write_debug_log("Failed to reconnect to database, exiting.", "error");
+            break;
+        }
     }
 
     $jobType = $job['type'] ?? '(unknown)';
@@ -104,9 +131,16 @@ foreach ($jobs as $job) {
     if (isset($job['task_check']) && is_callable($job['task_check'])) {
         try {
             write_debug_log("Running task_check for job type '{$jobType}'", "info");
-            $result = $job['task_check']();
+
+            // Check if task_check accepts $db
+            $reflection = new ReflectionFunction($job['task_check']);
+            $params = $reflection->getParameters();
+
+            $result = count($params) > 0 ? $job['task_check']($db) : $job['task_check']();
 
             if ($result === true) {
+                $queuedTasks++;
+                worker_metric_inc($workerName, 'last_queued_tasks', 1);
                 write_debug_log("task_check for '{$jobType}' queued tasks successfully.", "notice");
             } elseif ($result === false) {
                 write_debug_log("task_check for '{$jobType}' found no tasks to queue.", "info");
@@ -114,18 +148,21 @@ foreach ($jobs as $job) {
                 write_debug_log("task_check for '{$jobType}' returned unexpected value: " . var_export($result, true), "warning");
             }
 
-        } catch (Throwable $e) { // Catch all errors
+        } catch (Throwable $e) {
             write_debug_log("Error running task_check for '{$jobType}': " . $e->getMessage(), "error");
             write_debug_log("Stack trace: " . $e->getTraceAsString(), "debug");
-            // Continue to next job instead of dying
         }
     } else {
-        write_debug_log(
-            "Job type '{$jobType}' does not have an automated task_check — tasks must be queued manually via code.",
-            "info"
-        );
+        write_debug_log("Job type '{$jobType}' does not have an automated task_check; tasks must be queued manually.", "info");
     }
+
+    // === WORKER TICK ===
+    worker_tick($workerName, $db);
 }
 
-write_debug_log("Queue loader finished.", "info");
+// === CLOSE DATABASE CONNECTION ===
+db_close($db);
+
+write_debug_log("Queue loader finished. Tasks queued: {$queuedTasks}", "info");
+
 ?>
