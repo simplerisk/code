@@ -29408,4 +29408,12 @@ function remove_files(array $files): int
     return $files_removed;
 }
 
+/************************
+ * FUNCTION: SAFE ROUND *
+ ************************/
+function safe_round($value, $precision = 2)
+{
+    return is_numeric($value) ? round((float)$value, $precision) : null;
+}
+
 ?>

@@ -189,6 +189,7 @@ $releases = [
     "20250828-001",
     "20251118-001",
     "20260224-001",
+    "20260302-001",
 ];
 
 /*************************
@@ -9117,6 +9118,32 @@ function upgrade_from_20251118001($db) {
         UPDATE family
         SET name = TRIM(name);
     ");
+    $stmt->execute();
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20260224-001 *
+ ***************************************/
+function upgrade_from_20260224001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20260224-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20260302-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Add new language translations
+    echo "Adding new Thai language translation.<br />\n";
+    $stmt = $db->prepare("INSERT INTO `languages` (name, full) VALUES ('th','Thai');");
     $stmt->execute();
 
     // To make sure page loads won't fail after the upgrade
