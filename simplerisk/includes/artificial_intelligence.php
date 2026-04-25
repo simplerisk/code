@@ -11,15 +11,168 @@ require_once(realpath(__DIR__ . '/display.php'));
 require_once(realpath(__DIR__ . '/queues.php'));
 require_once(language_file());
 
-class ClaudeAPIClient {
-    private $api_key;
-    private $url = 'https://api.anthropic.com/v1/messages';
-    private $model = 'claude-sonnet-4-20250514';
-    private $last_request_time = 0;
-    private $rate_limit_delay = 1; // Delay between requests in seconds
+/*****************************
+ * AI PROVIDER DEFINITIONS   *
+ *****************************/
+global $AI_PROVIDERS;
+$AI_PROVIDERS = [
+    'anthropic' => [
+        'name'   => 'Anthropic',
+        'url'    => 'https://api.anthropic.com/v1/messages',
+        'models' => ['claude-sonnet-4-20250514', 'claude-opus-4-20250514', 'claude-haiku-4-5-20251001'],
+    ],
+    'openai' => [
+        'name'   => 'OpenAI',
+        'url'    => 'https://api.openai.com/v1/chat/completions',
+        'models' => ['gpt-4o', 'gpt-4o-mini', 'o1', 'o3-mini'],
+    ],
+    'gemini' => [
+        'name'   => 'Google Gemini',
+        'url'    => 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+        'models' => ['gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'],
+    ],
+    'mistral' => [
+        'name'   => 'Mistral',
+        'url'    => 'https://api.mistral.ai/v1/chat/completions',
+        'models' => ['mistral-large-latest', 'mistral-small-latest'],
+    ],
+    'grok' => [
+        'name'   => 'xAI Grok',
+        'url'    => 'https://api.x.ai/v1/chat/completions',
+        'models' => ['grok-3', 'grok-3-mini', 'grok-3-fast', 'grok-3-mini-fast'],
+    ],
+    'ollama' => [
+        'name'   => 'Ollama (Local)',
+        'url'    => 'http://localhost:11434/v1/chat/completions',
+        'models' => ['llama3', 'mistral', 'phi3', 'qwen2'],
+    ],
+    'custom' => [
+        'name'   => 'Custom',
+        'url'    => '',
+        'models' => [],
+    ],
+];
 
-    public function __construct($api_key) {
-        $this->api_key = $api_key;
+/*****************************************************
+ * AI PERSONA REGISTRY                               *
+ * Core defines only the personas it uses directly.  *
+ * Feature modules (e.g. AI Extra) register their    *
+ * own personas via register_ai_persona() when they  *
+ * load, so Core never carries Extra-only strings.   *
+ *****************************************************/
+global $AI_PERSONAS;
+$AI_PERSONAS = [
+    // Advisory calls: framework recommendations, risk analysis, FAIR
+    'grc_consultant' =>
+        "You are a senior Governance, Risk Management and Compliance (GRC) expert " .
+        "retained by an organization to improve their program using SimpleRisk. " .
+        "Draw on authoritative frameworks (NIST CSF, ISO 27001, SOC 2, CIS Controls, FAIR) " .
+        "and provide direct, actionable guidance appropriate for an experienced risk management team.",
+];
+
+/*****************************************************
+ * FUNCTION: REGISTER AI PERSONA                     *
+ * Lets feature modules add personas to the registry *
+ * without modifying Core. Call once at module load. *
+ *****************************************************/
+function register_ai_persona(string $name, string $persona): void
+{
+    global $AI_PERSONAS;
+    $AI_PERSONAS[$name] = $persona;
+}
+
+/*****************************************************
+ * FUNCTION: GET AI PERSONA                          *
+ * Returns the system-prompt persona string for the  *
+ * given named role. Falls back to grc_consultant if *
+ * the name is not registered.                       *
+ *****************************************************/
+function get_ai_persona(string $name): string
+{
+    global $AI_PERSONAS;
+
+    if (!isset($AI_PERSONAS[$name])) {
+        write_debug_log("get_ai_persona: unknown persona '{$name}', falling back to grc_consultant.", 'warning');
+        return $AI_PERSONAS['grc_consultant'];
+    }
+
+    return $AI_PERSONAS[$name];
+}
+
+class AIClient {
+    private string $provider;
+    private string $api_url;
+    private string $api_key;
+    private string $model;
+
+
+    /**
+     * Maximum output tokens per model. Used to cap $max_tokens requests so
+     * callers can request what they need without knowing each model's ceiling.
+     * Update this table when model limits change or new models are added.
+     */
+    private const MODEL_OUTPUT_TOKEN_LIMITS = [
+        // Anthropic
+        'claude-sonnet-4-20250514'  => 64000,
+        'claude-opus-4-20250514'    => 32000,
+        'claude-haiku-4-5-20251001' => 8192,
+        // OpenAI
+        'gpt-4o'                    => 16384,
+        'gpt-4o-mini'               => 16384,
+        'o1'                        => 65536,
+        'o3-mini'                   => 65536,
+        // xAI Grok
+        'grok-3'                    => 131072,
+        'grok-3-mini'               => 131072,
+        'grok-3-fast'               => 131072,
+        'grok-3-mini-fast'          => 131072,
+        // Google Gemini (via OpenAI-compatible endpoint)
+        'gemini-2.0-flash'          => 8192,
+        'gemini-1.5-pro'            => 8192,
+        'gemini-1.5-flash'          => 8192,
+        // Mistral
+        'mistral-large-latest'      => 32768,
+        'mistral-small-latest'      => 32768,
+        // Ollama and unknown models: conservative safe default
+    ];
+
+    /** Fallback output token limit for models not in the table above. */
+    private const DEFAULT_OUTPUT_TOKEN_LIMIT = 4096;
+
+    public function __construct(string $provider, string $api_url, string $api_key, string $model) {
+        $this->provider = $provider;
+        $this->api_url  = $api_url;
+        $this->api_key  = $api_key;
+        $this->model    = $model;
+    }
+
+    /**
+     * Return the maximum output tokens for the current model.
+     * Caps callers that request more than the model supports.
+     */
+    private function getOutputTokenLimit(): int
+    {
+        return self::MODEL_OUTPUT_TOKEN_LIMITS[$this->model] ?? self::DEFAULT_OUTPUT_TOKEN_LIMIT;
+    }
+
+    /**
+     * Call the configured AI provider.
+     * Dispatches to Anthropic-native or OpenAI-compatible format based on provider.
+     * Always returns response in Anthropic shape: ['content'][0]['text'].
+     */
+    public function call(array $messages, int $max_tokens = 300, ?string $system = null, ?array $tools = null, float $temperature = 1.0): array
+    {
+        // Cap to the model's known output token limit
+        $model_limit = $this->getOutputTokenLimit();
+        if ($max_tokens > $model_limit) {
+            write_debug_log("Requested max_tokens ({$max_tokens}) exceeds model limit ({$model_limit}) for '{$this->model}'. Capping.", 'warning');
+            $max_tokens = $model_limit;
+        }
+
+        if ($this->provider === 'anthropic') {
+            return $this->callAnthropicNative($messages, $max_tokens, $system, $tools, $temperature);
+        }
+        return $this->callOpenAICompatible($messages, $max_tokens, $system, $temperature);
     }
 
     /**
@@ -30,12 +183,11 @@ class ClaudeAPIClient {
      * @param string|null $system System prompt
      * @return array API response
      */
-    public function callClaudeAPI($messages, $max_tokens = 300, $system = null, $tools = null)
+    private function callAnthropicNative(array $messages, int $max_tokens = 300, ?string $system = null, ?array $tools = null, float $temperature = 1.0): array
     {
-        $baseDelay = 10; // Initial delay in seconds
-        $retries = 0;
+        $baseDelay  = 10; // Initial delay in seconds
+        $retries    = 0;
         $maxRetries = 5;
-        $success = false;
 
         // Process messages to handle both text and document content
         foreach ($messages as &$message) {
@@ -68,11 +220,12 @@ class ClaudeAPIClient {
         unset($message); // important to avoid variable reference issues
 
         $data = [
-            'model' => $this->model,
-            'max_tokens' => $max_tokens,
+            'model'       => $this->model,
+            'max_tokens'  => $max_tokens,
+            'temperature' => $temperature,
             // If a system is not specified, default to an expert on GRC
-            'system' => is_null($system) ? "You are an expert on Governance, Risk Management and Compliance (GRC) and have been hired by an organization to help them improve their program using SimpleRisk as the GRC tool of choice. You are working with some people who are new to working with GRC." : $system,
-            'messages' => $messages
+            'system'      => is_null($system) ? get_ai_persona('grc_consultant') : $system,
+            'messages'    => $messages,
         ];
 
         // Add tools to the request if provided
@@ -112,104 +265,82 @@ class ClaudeAPIClient {
         $log_data = $this->truncateBase64ForLogging($data);
         write_debug_log('JSON payload being sent: ' . json_encode($log_data), 'debug');
 
-        $ch = curl_init($this->url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json',
-            'x-api-key: ' . $this->api_key,
-            'anthropic-version: 2023-06-01'
-        ]);
+        while ($retries < $maxRetries) {
+            $response_headers = [];
 
-        while (!$success && $retries < $maxRetries) {
-            try {
-                $response = curl_exec($ch);
-                $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-                if (curl_errno($ch)) {
-                    throw new Exception('Curl error: ' . curl_error($ch));
+            // Security note: $this->api_url is admin-only configurable and restricted to
+            // http/https schemes (see CURLOPT_PROTOCOLS below and the scheme check in
+            // display_ai_provider_configuration). HTTP requests to private/internal hosts
+            // are intentionally permitted to support self-hosted AI providers such as
+            // Ollama (http://localhost:11434). IP-level allowlisting is therefore not
+            // applied here; the admin trust boundary is the accepted control.
+            $ch = curl_init($this->api_url);
+            curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+            curl_setopt($ch, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'x-api-key: ' . $this->api_key,
+                'anthropic-version: 2023-06-01'
+            ]);
+            curl_setopt($ch, CURLOPT_HEADERFUNCTION, function($ch, $header) use (&$response_headers) {
+                $parts = explode(':', $header, 2);
+                if (count($parts) === 2) {
+                    $response_headers[strtolower(trim($parts[0]))] = trim($parts[1]);
                 }
+                return strlen($header);
+            });
 
-                curl_close($ch);
+            $response    = curl_exec($ch);
+            $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curl_errno  = curl_errno($ch);
+            $curl_error  = $curl_errno ? curl_error($ch) : null;
+            curl_close($ch);
 
-                if ($http_status !== 200) {
-                    write_debug_log("Curl returned an HTTP status of {$http_status}", "debug");
-
-                    // If the HTTP code is 400 a bad request was made
-                    if ($http_status === 400) {
-                        // Attempt to get the actual error message
-                        $data = json_decode($response, true);
-                        $message = $data['error']['message'] ?? 'Unknown error';
-
-                        // If we were able to get the error message
-                        if (!empty($message)) {
-                            // Log the error
-                            write_debug_log("Full API Response on 400 error: " . print_r($response, true), "debug");
-                            write_debug_log("Anthropic API Error: 400 - {$message}", "error");
-                        }
-                        // Otherwise, just display a generic message and the whole response
-                        else {
-                            write_debug_log("Anthropic API Error: 400 - Bad request for Anthropic API", "error");
-                            write_debug_log($response);
-                        }
-                    }
-                    // If the HTTP code is 402 a payment is required
-                    if ($http_status === 402) {
-                        // Display an alert
-                        $message = "Payment required: Please add credits to your Anthropic API account.";
-                        set_alert(true, "bad", $message);
-
-                        // Log the error
-                        write_debug_log("Anthropic API Error: 402 - Payment required for Anthropic API", "error");
-
-                        // Throw an exception
-                        throw new Exception('Anthropic API Error: 402 - Payment required for Anthropic API');
-                    }
-                    // If the HTTP code is 429 a rate limit has been hit
-                    else if ($http_status === 429) {
-                        // We will try again with a backoff delay so no need to display an alert
-                        // Log the error
-                        write_debug_log("Anthropic API Error: 429 - Rate limit hit for Anthropic API", "warning");
-
-                        // Throw an exception
-                        throw new Exception("Anthropic API Error: 429 - Rate limit hit for Anthropic API");
-                    }
-                    // If the HTTP code is 529 anthropic is experiencing capacity issues
-                    else if ($http_status === 529) {
-                        // We will try again with a backoff delay so no need to display an alert
-                        // Log the error
-                        write_debug_log("Anthropic API Error: 529 - The Anthropic API is overloaded");
-
-                        // Throw an exception
-                        throw new Exception("Anthropic API Error: 529 - The Anthropic API is overloaded");
-                    }
-                    // If it's not an expected HTTP status code
-                    else {
-                        // Throw an exception
-                        throw new Exception("API error: {$http_status}");
-                    }
-                }
-                // The request was successful
-                else {
-                    $result = json_decode($response, true);
-                    $success = true;
-                }
-            } catch (Exception $e) {
-                // If the error message is "429 Rate Limit Exceeded" or "529 Overloaded"
-                if ($http_status === 429 || $http_status === 529) {
-                    // Exponential backoff
-                    $delay = $baseDelay * (2 ** $retries);
-                    write_debug_log("Waiting {$delay} seconds before retry.", "info");
-                    sleep($delay);
-                    $retries++;
-                } else {
-                    throw $e;
-                }
+            if ($curl_error) {
+                throw new Exception('Curl error: ' . $curl_error);
             }
+
+            if ($http_status === 200) {
+                return json_decode($response, true);
+            }
+
+            write_debug_log("Anthropic API returned HTTP {$http_status}", "debug");
+
+            if ($http_status === 400) {
+                $decoded       = json_decode($response, true);
+                $error_message = $decoded['error']['message'] ?? 'Unknown error';
+                write_debug_log("Full API response on 400: " . print_r($response, true), "debug");
+                write_debug_log("Anthropic API Error: 400 - {$error_message}", "error");
+                throw new Exception("Anthropic API Error: 400 - {$error_message}");
+            }
+
+            if ($http_status === 402) {
+                $msg = "Payment required: Please add credits to your API account.";
+                set_alert(true, "bad", $msg);
+                write_debug_log("AI API Error: 402 - Payment required", "error");
+                throw new Exception("AI API Error: 402 - Payment required");
+            }
+
+            // 429 Rate Limited / 529 Overloaded — retry with Retry-After or exponential backoff
+            if ($http_status === 429 || $http_status === 529) {
+                $retry_after = isset($response_headers['retry-after']) ? (int)$response_headers['retry-after'] : null;
+                $delay       = $retry_after ?? ($baseDelay * (2 ** $retries));
+                write_debug_log("Anthropic API {$http_status}: waiting {$delay}s before retry " . ($retries + 1) . "/{$maxRetries}.", 'warning');
+                sleep($delay);
+                $retries++;
+                continue;
+            }
+
+            $decoded       = json_decode($response, true);
+            $error_message = $decoded['error']['message'] ?? $response;
+            write_debug_log("Anthropic API error {$http_status}: {$error_message}", 'error');
+            throw new Exception("Anthropic API error {$http_status}: {$error_message}");
         }
 
-        return $result;
+        throw new Exception("Anthropic API: max retries ({$maxRetries}) exceeded after rate limiting.");
     }
 
     /**
@@ -431,150 +562,448 @@ class ClaudeAPIClient {
         return $log_data;
     }
 
-    private function rateLimit() {
-        $current_time = microtime(true);
-        $time_since_last_request = $current_time - $this->last_request_time;
+    /**
+     * Call an OpenAI-compatible API endpoint.
+     * Translates system prompt into the messages array and normalizes
+     * the response to Anthropic shape before returning.
+     */
+    private function callOpenAICompatible(array $messages, int $max_tokens = 300, ?string $system = null, float $temperature = 1.0): array
+    {
+        $baseDelay  = 10;
+        $retries    = 0;
+        $maxRetries = 5;
 
-        if ($time_since_last_request < $this->rate_limit_delay) {
-            usleep(($this->rate_limit_delay - $time_since_last_request) * 1000000);
+        $defaultSystem = get_ai_persona('grc_consultant');
+
+        $openai_messages = [
+            ['role' => 'system', 'content' => $system ?? $defaultSystem],
+        ];
+        foreach ($messages as $msg) {
+            $openai_messages[] = $msg;
         }
 
-        $this->last_request_time = microtime(true);
+        // Sanitize messages for valid UTF-8 (mirrors callAnthropicNative)
+        foreach ($openai_messages as &$msg) {
+            if (is_string($msg['content'])) {
+                $msg['content'] = $this->ensureValidUtf8($msg['content']);
+            }
+        }
+        unset($msg);
+
+        // OpenAI o-series reasoning models (o1, o3, o4-mini, etc.) require
+        // 'max_completion_tokens' instead of the deprecated 'max_tokens'.
+        $token_param = preg_match('/^o\d/', $this->model) ? 'max_completion_tokens' : 'max_tokens';
+
+        $data = [
+            'model'      => $this->model,
+            $token_param => $max_tokens,
+            'messages'   => $openai_messages,
+        ];
+
+        // OpenAI o-series reasoning models do not accept a temperature parameter
+        if (!preg_match('/^o\d/', $this->model)) {
+            $data['temperature'] = $temperature;
+        }
+
+        $json_data = json_encode($data, JSON_UNESCAPED_UNICODE);
+        if ($json_data === false) {
+            throw new \Exception("Failed to JSON encode OpenAI-compatible request: " . json_last_error_msg());
+        }
+
+        write_debug_log('OpenAI-compatible payload size: ' . strlen($json_data) . ' bytes', 'debug');
+
+        while ($retries < $maxRetries) {
+            $response_headers = [];
+
+            // Security note: see comment in callAnthropicNative() — HTTP requests to
+            // private/internal hosts are intentionally permitted for self-hosted providers.
+            $ch = curl_init($this->api_url);
+            curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+            curl_setopt($ch, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . $this->api_key,
+            ]);
+            curl_setopt($ch, CURLOPT_HEADERFUNCTION, function($ch, $header) use (&$response_headers) {
+                $parts = explode(':', $header, 2);
+                if (count($parts) === 2) {
+                    $response_headers[strtolower(trim($parts[0]))] = trim($parts[1]);
+                }
+                return strlen($header);
+            });
+
+            $response    = curl_exec($ch);
+            $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curl_errno  = curl_errno($ch);
+            $curl_error  = $curl_errno ? curl_error($ch) : null;
+            curl_close($ch);
+
+            if ($curl_error) {
+                throw new \Exception('Curl error: ' . $curl_error);
+            }
+
+            if ($http_status === 200) {
+                $decoded = json_decode($response, true);
+                $text    = $decoded['choices'][0]['message']['content'] ?? '';
+                write_debug_log('OpenAI-compatible API call succeeded.', 'debug');
+                return ['content' => [['type' => 'text', 'text' => $text]]];
+            }
+
+            // 429 Rate Limited / 503 Overloaded — retry with Retry-After or exponential backoff
+            if ($http_status === 429 || $http_status === 503) {
+                $retry_after = isset($response_headers['retry-after']) ? (int)$response_headers['retry-after'] : null;
+                $delay       = $retry_after ?? ($baseDelay * (2 ** $retries));
+                write_debug_log("OpenAI-compatible API {$http_status}: waiting {$delay}s before retry " . ($retries + 1) . "/{$maxRetries}.", 'warning');
+                sleep($delay);
+                $retries++;
+                continue;
+            }
+
+            $decoded = json_decode($response, true);
+            $message = $decoded['error']['message'] ?? $response;
+            write_debug_log("OpenAI-compatible API error {$http_status}: {$message}", 'error');
+            throw new \Exception("OpenAI-compatible API error {$http_status}: {$message}");
+        }
+
+        throw new \Exception("OpenAI-compatible API: max retries ({$maxRetries}) exceeded.");
     }
 
-    public function test() {
+    public function test(): bool
+    {
         try {
-            // Set a basic prompt
-            $prompt = "Hello, Claude";
-
-            $messages[] = [
-                "role" => "user",
-                "content" => "Hello, Claude"
-            ];
-
-            // Create the Claude client and call the API
-            $result = $this->callClaudeAPI($messages);
-
-            if (isset($result['content'][0]['text'])) {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (Exception $e) {
+            $messages = [['role' => 'user', 'content' => 'Hello']];
+            $result   = $this->call($messages);
+            return isset($result['content'][0]['text']);
+        } catch (\Exception $e) {
             return false;
         }
     }
 }
 
-/*********************************************
- * FUNCTION: DISPLAY ANTHROPIC API KEY INPUT *
- *********************************************/
-function display_anthropic_api_key_input()
+/****************************
+ * FUNCTION: GET AI CLIENT  *
+ ****************************/
+function get_ai_client(): AIClient
 {
-    global $lang, $escaper;
+    $provider = get_setting('ai_provider', false, false) ?: 'anthropic';
+    $api_url  = get_setting('ai_api_url',  false, false) ?: 'https://api.anthropic.com/v1/messages';
+    $api_key  = get_setting('ai_api_key',  false, false) ?: '';
+    $model    = get_setting('ai_model',    false, false) ?: 'claude-sonnet-4-20250514';
 
-    // Create an empty display key
-    $display_key = "";
+    return new AIClient($provider, $api_url, $api_key, $model);
+}
 
-    // Create the start of the row
-    echo "
-    <div class='row'>";
+/*****************************************************
+ * FUNCTION: DISPLAY AI PROVIDER CONFIGURATION       *
+ *****************************************************/
+function display_ai_provider_configuration()
+{
+    global $lang, $escaper, $AI_PROVIDERS;
 
-    // If the External tab was submitted
-    if (isset($_POST['update_anthropic_api_key']))
+    // ── POST: Save settings ────────────────────────────────────────────────
+    if (isset($_POST['update_ai_settings']))
     {
-        // If an Anthropic API key was sent
-        if (isset($_POST['anthropic_api_key']))
+        $provider = isset($_POST['ai_provider']) && array_key_exists($_POST['ai_provider'], $AI_PROVIDERS)
+            ? $_POST['ai_provider']
+            : 'anthropic';
+        $api_url  = trim($_POST['ai_api_url'] ?? '');
+        $api_key  = trim($_POST['ai_api_key'] ?? '');
+        $model    = trim($_POST['ai_model'] ?? '');
+
+        // Reject non-HTTP(S) URL schemes to prevent SSRF via file://, gopher://, etc.
+        $url_scheme = strtolower(parse_url($api_url, PHP_URL_SCHEME) ?? '');
+        if ($api_url !== '' && !in_array($url_scheme, ['http', 'https'], true))
         {
-            // Set this to the new display key
-            $display_key = $_POST['anthropic_api_key'];
-
-            // Test connectivity with the API key
-            $client = new ClaudeAPIClient($_POST['anthropic_api_key']);
+            set_alert(true, "bad", $lang['AIInvalidURL'] ?? "The API URL must use http:// or https://.");
+        }
+        elseif ($api_key !== '')
+        {
+            $client    = new AIClient($provider, $api_url, $api_key, $model);
             $connected = $client->test();
-
-            // If the connection was successful
             if ($connected)
             {
-                // Update the Anthropic API key with that value
-                update_setting("anthropic_api_key", $_POST['anthropic_api_key']);
+                update_setting('ai_provider', $provider);
+                update_setting('ai_api_url',  $api_url);
+                update_setting('ai_api_key',  $api_key);
+                update_setting('ai_model',    $model);
+                set_alert(true, "good", $lang['AISettingsSaved'] ?? "AI settings saved successfully.");
             }
-            // If the connection was not successful
             else
             {
-                echo "
-                <div class='col'>
-                    <div class='alert alert-danger mb-0'>
-                        " . $escaper->escapeHtml($lang['AnthropicConnectionWarning']) . "
-                    </div>
-                </div>";
-
-                // End the row and start a new one
-                echo "</div><div class='row'>&nbsp</div><div class='row'>";
+                set_alert(true, "bad", $lang['AIConnectionFailed'] ?? "Could not connect to the AI provider. Please check your settings.");
             }
         }
-    }
-
-    // If the reset Anthropic API key was submitted
-    if (isset($_POST['reset_anthropic_api_key']))
-    {
-        // Delete the Anthropic API key
-        delete_setting("anthropic_api_key");
-    }
-
-    // Check to see if we have an anthropic API key already
-    $anthropic_api_key = get_setting('anthropic_api_key', false, false);
-
-    // If the anthropic API key doesn't exist
-    if (!$anthropic_api_key)
-    {
-        // Display the input for the key
-        echo "
-            <div class='col'>
-                <input name='anthropic_api_key' id='anthropic_api_key' class='form-control' value='" . $escaper->escapeHtml($display_key) . "'/>
-            </div>
-            <div class='col'>
-                <button type='submit' name='update_anthropic_api_key' class='btn btn-submit'>" . $escaper->escapeHtml($lang['Submit']) . "</button>
-            </div>";
-    }
-    // If the anthropic API key exists
-    else
-    {
-        // Test connectivity with the API key
-        $client = new ClaudeAPIClient($anthropic_api_key);
-        $connected = $client->test();
-
-        // If we are connected
-        if ($connected)
-        {
-            echo "
-                <div class='col'>
-                    <div class='alert alert-success mb-0'>
-                        " . $escaper->escapeHtml($lang['AnthropicConnectionSuccess']) . "
-                    </div>
-                </div>
-                <div class='col'>
-                    <button type='submit' name='reset_anthropic_api_key' class='btn btn-submit'>" . $escaper->escapeHtml($lang['ResetAPIKey']) . "</button>
-                </div>";
-        }
-        // If we are not connected
         else
         {
-            echo "
-                <div class='col'>
-                    <div class='alert alert-danger mb-0'>
-                        " . $escaper->escapeHtml($lang['AnthropicConnectionWarning']) . "
-                    </div>
-                </div>
-                <div class='col'>
-                    <button type='submit' name='reset_anthropic_api_key' class='btn btn-submit'>" . $escaper->escapeHtml($lang['ResetAPIKey']) . "</button>
-                </div> ";
+            update_setting('ai_provider', $provider);
+            update_setting('ai_api_url',  $api_url);
+            update_setting('ai_model',    $model);
+            set_alert(true, "good", $lang['AISettingsSaved'] ?? "AI settings saved successfully.");
         }
     }
 
-    // Create the end of the row
+    // ── POST: Reset key ────────────────────────────────────────────────────
+    if (isset($_POST['reset_ai_key']))
+    {
+        delete_setting('ai_api_key');
+        set_alert(true, "good", $lang['APIKeyReset'] ?? "API key has been reset.");
+    }
+
+    // ── POST: Test connection ──────────────────────────────────────────────
+    // Use the POSTed form values so the user can test before saving.
+    // Fall back to the saved DB values for any field left blank.
+    $test_result = null;
+    if (isset($_POST['test_ai_connection']))
+    {
+        $saved_provider = get_setting('ai_provider', false, false) ?: 'anthropic';
+        $saved_api_url  = get_setting('ai_api_url',  false, false) ?: 'https://api.anthropic.com/v1/messages';
+        $saved_api_key  = get_setting('ai_api_key',  false, false) ?: '';
+        $saved_model    = get_setting('ai_model',    false, false) ?: 'claude-sonnet-4-20250514';
+
+        $test_provider  = (isset($_POST['ai_provider']) && array_key_exists($_POST['ai_provider'], $AI_PROVIDERS))
+                          ? $_POST['ai_provider'] : $saved_provider;
+        $test_api_url   = trim($_POST['ai_api_url'] ?? '') ?: $saved_api_url;
+        $posted_key     = trim($_POST['ai_api_key'] ?? '');
+        $test_api_key   = ($posted_key !== '') ? $posted_key : $saved_api_key;
+        $test_model     = trim($_POST['ai_model'] ?? '') ?: $saved_model;
+
+        // Reject non-HTTP(S) URL schemes to prevent SSRF via file://, gopher://, etc.
+        $test_url_scheme = strtolower(parse_url($test_api_url, PHP_URL_SCHEME) ?? '');
+        if (!in_array($test_url_scheme, ['http', 'https'], true))
+        {
+            $test_result = false;
+            set_alert(true, "bad", $lang['AIInvalidURL'] ?? "The API URL must use http:// or https://.");
+        }
+        else
+        {
+            $client      = new AIClient($test_provider, $test_api_url, $test_api_key, $test_model);
+            $test_result = $client->test();
+        }
+
+        // Re-populate the form with the values the user just tested so they
+        // can review and click Save without having to re-enter anything.
+        $current_provider = $test_provider;
+        $current_api_url  = $test_api_url;
+        $current_api_key  = $test_api_key;
+        $current_model    = $test_model;
+        $key_from_post    = ($posted_key !== '');
+    }
+
+    // ── Read current settings (skipped above if test connection was run) ───
+    if (!isset($current_provider))
+    {
+        $current_provider = get_setting('ai_provider', false, false) ?: 'anthropic';
+        $current_api_url  = get_setting('ai_api_url',  false, false) ?: 'https://api.anthropic.com/v1/messages';
+        $current_api_key  = get_setting('ai_api_key',  false, false) ?: '';
+        $current_model    = get_setting('ai_model',    false, false) ?: 'claude-sonnet-4-20250514';
+        $key_from_post    = false;
+    }
+
+    // ── Provider instruction HTML ──────────────────────────────────────────
+    $provider_instructions = [
+        'anthropic' => '
+            <strong>Getting started with Anthropic</strong>
+            <ol>
+                <li>Create an account <a class="open-in-new-tab" href="https://console.anthropic.com/" target="_blank">here</a>.</li>
+                <li>Add credits <a class="open-in-new-tab" href="https://console.anthropic.com/settings/billing" target="_blank">here</a>. We recommend at least $40 for Tier 2 limits.</li>
+                <li>Create an API key <a class="open-in-new-tab" href="https://console.anthropic.com/settings/keys" target="_blank">here</a>.</li>
+                <li>Enter your key below and click Save.</li>
+            </ol>',
+        'openai' => '
+            <strong>Getting started with OpenAI</strong>
+            <ol>
+                <li>Create an account at <a class="open-in-new-tab" href="https://platform.openai.com/" target="_blank">platform.openai.com</a>.</li>
+                <li>Add billing at <a class="open-in-new-tab" href="https://platform.openai.com/settings/organization/billing" target="_blank">platform.openai.com/settings/organization/billing</a>.</li>
+                <li>Create an API key at <a class="open-in-new-tab" href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a>.</li>
+                <li>Enter your key below and click Save.</li>
+            </ol>',
+        'gemini' => '
+            <strong>Getting started with Google Gemini</strong>
+            <ol>
+                <li>Get an API key at <a class="open-in-new-tab" href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com/app/apikey</a>.</li>
+                <li>Enter your key below and click Save.</li>
+            </ol>',
+        'mistral' => '
+            <strong>Getting started with Mistral</strong>
+            <ol>
+                <li>Create an account at <a class="open-in-new-tab" href="https://console.mistral.ai/" target="_blank">console.mistral.ai</a>.</li>
+                <li>Create an API key at <a class="open-in-new-tab" href="https://console.mistral.ai/api-keys/" target="_blank">console.mistral.ai/api-keys</a>.</li>
+                <li>Enter your key below and click Save.</li>
+            </ol>',
+        'grok' => '
+            <strong>Getting started with xAI Grok</strong>
+            <ol>
+                <li>Create an account at <a class="open-in-new-tab" href="https://console.x.ai/" target="_blank">console.x.ai</a>.</li>
+                <li>Create an API key at <a class="open-in-new-tab" href="https://console.x.ai/team/default/api-keys" target="_blank">console.x.ai/team/default/api-keys</a>.</li>
+                <li>Enter your key below and click Save.</li>
+            </ol>',
+        'ollama' => '
+            <strong>Getting started with Ollama (Local)</strong>
+            <ol>
+                <li>Install Ollama from <a class="open-in-new-tab" href="https://ollama.com/download" target="_blank">ollama.com/download</a>.</li>
+                <li>Pull a model, e.g.: <code>ollama pull llama3</code></li>
+                <li>No API key is required — leave the API Key field blank.</li>
+                <li>Confirm the API URL matches your Ollama instance (default: <code>http://localhost:11434/v1/chat/completions</code>).</li>
+            </ol>',
+        'custom' => '
+            <strong>Custom OpenAI-compatible endpoint</strong>
+            <p>Enter the full URL for any OpenAI-compatible <code>/v1/chat/completions</code> endpoint, your API key (leave blank if not required), and the model name.</p>',
+    ];
+
+    // Build JS data object (URLs, models, instructions per provider)
+    $js_providers = [];
+    foreach ($AI_PROVIDERS as $key => $data) {
+        $js_providers[$key] = [
+            'url'          => $data['url'],
+            'models'       => $data['models'],
+            'instructions' => $provider_instructions[$key] ?? '',
+        ];
+    }
+    $js_providers_json = json_encode($js_providers, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+
+    $is_local = in_array($current_provider, ['ollama', 'custom']);
+
     echo "
-    </div>";
+    <form name='ai_provider_settings' method='post' action=''>
+        <div class='row mb-2'>
+            <div class='col d-flex align-items-center gap-2'>
+                <label for='ai_provider' class='mb-0'>" . $escaper->escapeHtml($lang['AIProvider'] ?? 'AI Provider') . "</label>
+                <div class='position-relative' id='ai-info-wrap' tabindex='0' style='display:inline-block;'>
+                    <span id='ai-info-icon'
+                          style='display:inline-flex;align-items:center;justify-content:center;
+                                 width:18px;height:18px;border-radius:50%;background:#3a3a3a;
+                                 color:#fff;font-size:11px;font-weight:800;cursor:pointer;user-select:none;'>i</span>
+                    <div id='ai-info-popover'
+                         style='display:none;position:absolute;left:0;top:24px;width:380px;
+                                background:#fff;border:1px solid #ced4da;
+                                box-shadow:1px 0 20px rgba(0,0,0,.12);
+                                padding:14px 16px;z-index:100;font-size:13px;line-height:1.7;color:#3a3a3a;'>
+                        " . ($provider_instructions[$current_provider] ?? '') . "
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class='row mb-3'>
+            <div class='col'>
+                <select name='ai_provider' id='ai_provider' class='form-select'>";
+
+    foreach ($AI_PROVIDERS as $key => $data) {
+        $selected = ($key === $current_provider) ? ' selected' : '';
+        echo "<option value='" . $escaper->escapeHtml($key) . "'{$selected}>" . $escaper->escapeHtml($data['name']) . "</option>";
+    }
+
+    echo "
+                </select>
+            </div>
+        </div>
+
+        <div class='row mb-3'>
+            <div class='col'>
+                <label for='ai_api_url'>" . $escaper->escapeHtml($lang['APIURL'] ?? 'API URL') . "</label>
+                <input type='text' name='ai_api_url' id='ai_api_url' class='form-control'
+                       value='" . $escaper->escapeHtml($current_api_url) . "' />
+                <small class='form-text text-muted'>" . $escaper->escapeHtml($lang['AIAPIURLHint'] ?? 'Pre-filled for known providers. Edit if needed (e.g. for a proxy or custom endpoint).') . "</small>
+            </div>
+        </div>
+
+        <div class='row mb-3'>
+            <div class='col'>
+                <label for='ai_api_key'>" . $escaper->escapeHtml($lang['APIKey'] ?? 'API Key') . "
+                    <span class='text-muted' id='ai-key-hint'>" . ($is_local ? ' (' . ($lang['LeaveBlankForLocal'] ?? 'leave blank for local providers') . ')' : '') . "</span>
+                </label>
+                <div class='d-flex gap-2 align-items-center'>
+                    <input type='password' name='ai_api_key' id='ai_api_key' class='form-control'
+                           value='" . ($key_from_post ? $escaper->escapeHtmlAttr($current_api_key) : '') . "'
+                           placeholder='" . (!$key_from_post && $current_api_key ? $escaper->escapeHtmlAttr($lang['KeySavedLeaveBlank'] ?? 'Key saved — leave blank to keep') : '') . "' />
+                    <button type='submit' name='reset_ai_key' class='btn btn-default text-nowrap'>" . $escaper->escapeHtml($lang['ResetAPIKey'] ?? 'Reset Key') . "</button>
+                </div>
+                " . (!$key_from_post && !$current_api_key ? "<small class='form-text text-muted'>" . $escaper->escapeHtml($lang['AIAPIKeyHint'] ?? 'Enter your API key.') . "</small>" : '') . "
+            </div>
+        </div>
+
+        <div class='row mb-3'>
+            <div class='col'>
+                <label for='ai_model'>" . $escaper->escapeHtml($lang['AIModel'] ?? 'Model') . "</label>
+                <input list='ai_model_list' name='ai_model' id='ai_model' class='form-control'
+                       value='" . $escaper->escapeHtml($current_model) . "'
+                       placeholder='" . $escaper->escapeHtml($lang['AIModelPlaceholder'] ?? 'Type or select a model...') . "' />";
+
+    echo "<datalist id='ai_model_list'>";
+    foreach ($AI_PROVIDERS[$current_provider]['models'] as $mdl) {
+        echo "<option value='" . $escaper->escapeHtml($mdl) . "'></option>";
+    }
+    echo "</datalist>";
+
+    echo "
+                <small class='form-text text-muted'>" . $escaper->escapeHtml($lang['AIModelHint'] ?? 'Click to see known models for the selected provider, or type any model name.') . "</small>
+            </div>
+        </div>
+
+        <div class='row'>
+            <div class='col d-flex gap-2 align-items-center'>
+                <button type='submit' name='update_ai_settings' class='btn btn-submit'>" . $escaper->escapeHtml($lang['Save'] ?? 'Save Settings') . "</button>
+                <button type='submit' name='test_ai_connection' class='btn btn-primary'>" . $escaper->escapeHtml($lang['TestConnection'] ?? 'Test Connection') . "</button>";
+
+    if ($test_result === true) {
+        echo "<span class='text-success'>&#10003; " . $escaper->escapeHtml($lang['Connected'] ?? 'Connected') . "</span>";
+    } elseif ($test_result === false) {
+        echo "<span class='text-danger'>&#10007; " . $escaper->escapeHtml($lang['NotConnected'] ?? 'Not Connected') . "</span>";
+    }
+
+    echo "
+            </div>
+        </div>
+    </form>
+
+    <script>
+    (function() {
+        var providers = {$js_providers_json};
+        var selectEl   = document.getElementById('ai_provider');
+        var urlEl      = document.getElementById('ai_api_url');
+        var modelEl    = document.getElementById('ai_model');
+        var datalistEl = document.getElementById('ai_model_list');
+        var popoverEl  = document.getElementById('ai-info-popover');
+        var keyHintEl  = document.getElementById('ai-key-hint');
+        var infoWrap   = document.getElementById('ai-info-wrap');
+
+        var hideTimer = null;
+        function showPopover() { clearTimeout(hideTimer); popoverEl.style.display = 'block'; }
+        function scheduleHide() { hideTimer = setTimeout(function() { popoverEl.style.display = 'none'; }, 300); }
+
+        infoWrap.addEventListener('mouseenter', showPopover);
+        infoWrap.addEventListener('mouseleave', scheduleHide);
+        popoverEl.addEventListener('mouseenter', showPopover);
+        popoverEl.addEventListener('mouseleave', scheduleHide);
+        infoWrap.addEventListener('focus',      showPopover);
+        infoWrap.addEventListener('blur',       scheduleHide);
+
+        selectEl.addEventListener('change', function() {
+            var key  = this.value;
+            var data = providers[key];
+            if (!data) return;
+
+            urlEl.value = data.url;
+
+            datalistEl.innerHTML = '';
+            (data.models || []).forEach(function(m) {
+                var opt = document.createElement('option');
+                opt.value = m;
+                datalistEl.appendChild(opt);
+            });
+            modelEl.value = data.models.length > 0 ? data.models[0] : '';
+
+            popoverEl.innerHTML = data.instructions || '';
+
+            keyHintEl.textContent = (key === 'ollama' || key === 'custom')
+                ? ' (leave blank for local providers)'
+                : '';
+        });
+    })();
+    </script>";
 }
 
 /*********************************************************
@@ -1618,9 +2047,9 @@ function get_artificial_intelligence_context_parameter_array()
 /************************************************
  * FUNCTION: GENERATE ANTHROPIC MESSAGE CONTEXT *
  ************************************************/
-function generate_anthropic_message_context()
+function generate_ai_business_context()
 {
-    write_debug_log("CORE: FUNCTION[generate_anthropic_message_context]");
+    write_debug_log("CORE: FUNCTION[generate_ai_business_context]", "debug");
 
     // Get the list of context parameters
     $context_parameters = get_artificial_intelligence_context_parameter_array();
@@ -1665,7 +2094,7 @@ function generate_anthropic_message_context()
     }
 
     // Write the content to the debug log
-    write_debug_log($content);
+    write_debug_log($content, "debug");
 
     // Return the content
     return $content;
@@ -1674,7 +2103,7 @@ function generate_anthropic_message_context()
 /***********************************************
  * FUNCTION: ASK ANTHROPIC FOR RECOMMENDATIONS *
  ***********************************************/
-function ask_anthropic_for_recommendations($context_content)
+function ai_get_recommendations($context_content)
 {
     // Create the content asking for advice
     $content = "The organization you have been hired to assist has been asked a series of questions to determine which frameworks are relevant for their GRC program.  What follows is a list of questions they were asked and the answers that they provided.\n";
@@ -1705,14 +2134,11 @@ function ask_anthropic_for_recommendations($context_content)
 
     try
     {
-        // Get the anthropic API key
-        $anthropic_api_key = get_setting('anthropic_api_key', false, false);
+        // Create the AI client from current settings
+        $client = get_ai_client();
 
-        // Create the client
-        $client = new ClaudeAPIClient($anthropic_api_key);
-
-        // Call the Claude API with the messages
-        $result = $client->callClaudeAPI($messages, 8192);
+        // Call the AI provider with the messages
+        $result = $client->call($messages, 8192, get_ai_persona('grc_consultant'));
 
         // If we received a result
         if (isset($result['content'][0]['text']))
@@ -1726,11 +2152,11 @@ function ask_anthropic_for_recommendations($context_content)
             // Ask Claude to critique its results and determine how to improve them
             $messages[] = [
                 "role" => "user",
-                "content" => "Critique the above output, how could this be improved?"
+                "content" => "Critique the above output. Specifically: Are the framework recommendations justified with evidence from their answers? Is any advice too generic to act on? Is anything missing from the context they provided?"
             ];
 
             // Call the Claude API with the messages
-            $result = $client->callClaudeAPI($messages, 8192);
+            $result = $client->call($messages, 8192, get_ai_persona('grc_consultant'));
 
             // If we received a result
             if (isset($result['content'][0]['text']))
@@ -1743,15 +2169,15 @@ function ask_anthropic_for_recommendations($context_content)
 
                 // Ask Claude to action on the suggestions
                 $content = "
-                    I would like you to:
-                    * Improve the output by taking action on these suggestions
-                    * The results should include sections for Executive Summary, Key Insights and Data Points, Prioritized Activities for Improving GRC Program, Relevant Compliance Frameworks and Justifications, Concerns and Recommendations for Improvement and Conclusion
-                    * The Key Insights and Data Points should contain a table with columns for 'Data Point' and 'Implication'
-                    * The Relevant Compliance Frameworks and Justifications should contain a table with columns for 'Framework' and 'Justification'
-                    * Populate all data tables in the output and apply the class 'table table-bordered table-striped table-condensed' to the table tags
-                    * Apply the class 'card-title' to the h4 tags
-                    * Skip the preamble and provide just the output
-                    * Provide the output as HTML code, without the html, head or body tags, for display as content in an existing web page
+                    Rewrite the original output incorporating the critique above. Requirements:
+                    * Include sections for Executive Summary, Key Insights and Data Points, Prioritized Activities for Improving GRC Program, Relevant Compliance Frameworks and Justifications, Concerns and Recommendations for Improvement, and Conclusion
+                    * The Key Insights and Data Points section must contain a table with columns for 'Data Point' and 'Implication'
+                    * The Relevant Compliance Frameworks and Justifications section must contain a table with columns for 'Framework' and 'Justification'
+                    * Apply the class 'table table-bordered table-striped table-condensed' to all table tags
+                    * Apply the class 'card-title' to all h4 tags
+                    * IMPORTANT: Output only the final HTML. Do not include any explanation, commentary, reasoning, or preamble before or after the HTML. Do not include html, head, or body tags.
+                    * IMPORTANT: Every piece of text must be wrapped in a block-level HTML element. Never output bare text nodes outside of tags.
+                    * IMPORTANT: Use only ASCII-safe characters. Use straight double quotes and straight single quotes — never curly/smart quotes. Use a hyphen (-) instead of an em dash or en dash.
                 ";
                 $messages[] = [
                     "role" => "user",
@@ -1759,7 +2185,7 @@ function ask_anthropic_for_recommendations($context_content)
                 ];
 
                 // Call the Claude API with the messages
-                $result = $client->callClaudeAPI($messages, 8192);
+                $result = $client->call($messages, 8192, get_ai_persona('grc_consultant'));
             }
 
             // Return the result
@@ -1768,7 +2194,7 @@ function ask_anthropic_for_recommendations($context_content)
         else
         {
             // Write an error message to the debug log
-            write_debug_log("Unexpected response format: " . json_encode($result));
+            write_debug_log("Unexpected response format: " . json_encode($result), "error");
 
             // Return false
             return false;
@@ -1777,7 +2203,7 @@ function ask_anthropic_for_recommendations($context_content)
     catch (Exception $e)
     {
         // Write an error message to the debug log
-        write_debug_log("Error: " . $e->getMessage());
+        write_debug_log("Error: " . $e->getMessage(), "error");
 
         // Return false
         return false;
@@ -1809,7 +2235,7 @@ function display_artificial_intelligence_icon($type, $id)
  **********************************************************/
 function check_artificial_intelligence_context_update()
 {
-    write_debug_log("Artificial Intelligence: Checking for context updates.", "info");
+    write_debug_log("Artificial Intelligence: Checking for context updates.", "debug");
 
     // Open the database connection
     $db = db_open();
@@ -1824,7 +2250,7 @@ function check_artificial_intelligence_context_update()
     // If it's time to update
     if ($last_updated < $last_saved || !$last_updated) {
         $message = "Artificial Intelligence: Context updated. Queueing for new recommendations.";
-        write_debug_log($message, "notice");
+        write_debug_log($message, "info");
         write_log(0, 0, $message, 'artificial_intelligence');
 
         // Queue the AI update job
@@ -1836,7 +2262,7 @@ function check_artificial_intelligence_context_update()
         // Update the timestamp to prevent repeated queuing
         update_setting("ai_context_last_updated", time(), db: $db);
     } else {
-        write_debug_log("Artificial Intelligence: Context has not been updated.", "info");
+        write_debug_log("Artificial Intelligence: Context has not been updated.", "debug");
     }
 
     // Close the database connection
@@ -1851,8 +2277,8 @@ function process_artificial_intelligence_context_update_task()
     try {
         write_debug_log("Artificial Intelligence: Starting context update.", "info");
 
-        $context_content = generate_anthropic_message_context();
-        $advice = ask_anthropic_for_recommendations($context_content);
+        $context_content = generate_ai_business_context();
+        $advice = ai_get_recommendations($context_content);
 
         // If successful
         update_setting("ai_context_last_updated", time());

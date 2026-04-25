@@ -124,32 +124,184 @@ $(function(){
         }
     });
 
-    $("#update_test").on("click", function() {
-
-        $form = $("#test-edit-form");
+    // Update test form event
+    // This can be used for the following pages
+    // the Compliance > Define Tests page and 
+    // the Compliance > Initiate Audits page
+    $(document).on("submit", "#update-test-form", function(event) {
+        event.preventDefault();
 
         // Check if the required fields have empty / trimmed empty values
-        if (!checkAndSetValidation("#test-edit-form")) {
-            return false;
+        if (!checkAndSetValidation(this)) {
+            return;
         }
 
-        if ($("[name='auto_audit_initiation']:checked", $form).val() === '1') {
+        if ($("[name='auto_audit_initiation']:checked", this).val() === '1') {
 
-            let audit_initiation_offset = $("[name='audit_initiation_offset']", $form).val();
-            let test_frequency = $("[name='test_frequency']", $form).val();
+            let audit_initiation_offset = $("[name='audit_initiation_offset']", this).val();
+            let test_frequency = $("[name='test_frequency']", this).val();
 
             if (audit_initiation_offset === '' || audit_initiation_offset < 0) {
 
                 showAlertFromMessage(_lang["AuditInitiationOffsetMustBeANonNegativeValue"]);
-                return false;
+                return;
 
             } else if (test_frequency !== '' && Number(audit_initiation_offset) > Number(test_frequency)) {
 
                 showAlertFromMessage(_lang["AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency"]);
-                return false;
+                return;
 
             }
         }
+
+        // Variable for indicating where the update test form is submitted from
+        // It can be either the Compliance > Define Tests page or the Compliance > Initiate Audits page
+        // If the page is the Compliance > Define Tests page, the value is "define_tests"
+        // If the page is the Compliance > Initiate Audits page, the value is "audit_initiation"
+        let where = $('[name=where]', this).val();
+
+        let form = new FormData($(this)[0]);
+
+        $.ajax({
+            type: "POST",
+            url: BASE_URL + "/api/v2/compliance/update_test",
+            data: form,
+            async: true,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function(result){
+                if(result.status_message){
+                    showAlertsFromArray(result.status_message);
+                }
+
+                $('#test--update').modal('hide');
+
+                location.reload();
+            }
+        })
+        .fail(function(xhr, textStatus) {
+            if (!retryCSRF(xhr, this)) {
+                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                    showAlertsFromArray(xhr.responseJSON.status_message);
+                }
+            }
+        });
+    });
+
+    // Event handler when clicking
+    // the edit test button on Compliance > Define Tests page and 
+    // the test name link on the Compliance > Initiate Audits page
+    $(document).on('click', '.edit-test, .test-name', function(event) {
+        event.preventDefault();
+            
+        let test_id = $(this).data('id');
+
+        $.ajax({
+            type: "GET",
+            url: BASE_URL + "/api/compliance/test?id=" + test_id,
+            success: function(result) {
+                let data = result['data'];
+                let modal = $('#test--update');
+                
+                $('[name=test_id]', modal).val(data['id']);
+                $('[name=tester]', modal).val(data['tester']);
+                $('#additional_stakeholders', modal).multiselect('deselectAll', false);
+                $('#additional_stakeholders', modal).multiselect('select', data['additional_stakeholders']);
+
+                $("[name='team[]']", modal).multiselect('deselectAll', false);
+                $("[name='team[]']", modal).multiselect('select', data['teams']);
+
+                $('[name=test_frequency]', modal).val(data['test_frequency']);
+
+                // If the audit_initiation_offset is not null, auto_audit_initiation is true
+                if (data['audit_initiation_offset'] != null) {
+
+                    // Check the auto_audit_initiation true radio button
+                    $('[name=auto_audit_initiation][value=\"1\"]', modal).prop('checked', true);
+
+                    // Enable and require the audit_initiation_offset input
+                    $('[name=audit_initiation_offset]', modal).prop('disabled', false);
+                    $('[name=audit_initiation_offset]', modal).prop('required', true);
+
+                    // Show the required mark
+                    $('.audit-initiation .audit-initiation-offset-container span.required', modal).removeClass('d-none');
+
+                    // Set the audit_initiation_offset value
+                    $('[name=audit_initiation_offset]', modal).val(data['audit_initiation_offset']);
+
+                // If the audit_initiation_offset is null, auto_audit_initiation is false
+                } else {
+
+                    // Check the auto_audit_initiation false radio button
+                    $('[name=auto_audit_initiation][value=\"0\"]', modal).prop('checked', true);
+
+                    // Disable and not require the audit_initiation_offset input
+                    $('[name=audit_initiation_offset]', modal).prop('disabled', true);
+                    $('[name=audit_initiation_offset]', modal).prop('required', false);
+
+                    // Hide the required mark
+                    $('.audit-initiation .audit-initiation-offset-container span.required', modal).addClass('d-none');
+
+                    // Clear the audit_initiation_offset value
+                    $('[name=audit_initiation_offset]', modal).val('');
+                }
+
+                $('[name=last_date]', modal).val(data['last_date']);
+                $('[name=last_date]', modal).initAsDatePicker({maxDate: moment().format(default_date_format)});
+
+                if (!data['last_date']) {
+                    if (!data['next_date'] || (moment(data['next_date'], default_date_format)).isBefore(moment(), 'day')) {
+                        $('[name=next_date]', modal).val(moment().format(default_date_format));
+                    } else {
+                        $('[name=next_date]', modal).val(data['next_date']);
+                    }
+                } else {
+                    let next_date_obj = moment(data['last_date'], default_date_format).add(data['test_frequency'], 'days');
+                    if (next_date_obj.isBefore(moment(), 'day')) {
+                        $('[name=next_date]', modal).val(moment().format(default_date_format));
+                    } else {
+                        $('[name=next_date]', modal).val(next_date_obj.format(default_date_format));
+                    }
+                }
+
+                let min_next_date = null;
+                if(data['last_date'] != '') {
+                    min_next_date = data['last_date'];
+                } else {
+                    min_next_date = moment().format(default_date_format);
+                }
+                $('[name=next_date]', modal).initAsDatePicker({minDate: min_next_date});
+
+                $('[name=name]', modal).val(data['name']);
+                $('[name=objective]', modal).val(data['objective']);
+                $('[name=test_steps]', modal).val(data['test_steps']);
+                $('[name=approximate_time]', modal).val(data['approximate_time']);
+                $('[name=expected_results]', modal).val(data['expected_results']);
+
+                $.each(data['tags'], function (i, item) {
+                    $('[name=\'tags[]\']', modal).append($('<option>', { 
+                        value: item,
+                        text : item,
+                        selected : true,
+                    }));
+                });
+                var select = $('[name=\'tags[]\']', modal).selectize();
+                var selectize = select[0].selectize;
+                selectize.setValue(data['tags']);
+
+                setEditorContent("update_objective", data['objective']);
+                setEditorContent("update_test_steps", data['test_steps']);
+                setEditorContent("update_expected_results", data['expected_results']);
+
+                modal.modal("show");
+            },
+            error: function(xhr,status,error){
+                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                    showAlertsFromArray(xhr.responseJSON.status_message);
+                }
+            }
+        })
     });
 });
 
@@ -209,7 +361,7 @@ $(function(){
                     // Framework header row
                     const $headerRow = $(`
                         <tr class="fw-bold table-primary framework-header">
-                            <td colspan="3">${frameworkName}</td>
+                            <td colspan="3">${escapeHtml(frameworkName)}</td>
                         </tr>
                     `);
                     $tbody.append($headerRow);
@@ -217,9 +369,9 @@ $(function(){
                     rows.forEach(row => {
                         const $dataRow = $(`
                             <tr class="framework-row">
-                                <td>${row.framework_name || ''}</td>
-                                <td>${row.reference_name || ''}</td>
-                                <td>${row.reference_text || ''}</td>
+                                <td>${escapeHtml(row.framework_name || '')}</td>
+                                <td>${escapeHtml(row.reference_name || '')}</td>
+                                <td>${escapeHtml(row.reference_text || '')}</td>
                             </tr>
                         `);
                         $tbody.append($dataRow);

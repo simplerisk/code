@@ -237,6 +237,13 @@
                             if(view == 'asset_unverified') {
                             	setEditorContent("edit_details-asset_unverified-asset_fields", data.data['details']);
                         	}
+                        } else {
+                            if(view == 'asset_verified') { 
+                            	setEditorContent("edit_details-asset_verified-asset_fields", '');
+                            }
+                            if(view == 'asset_unverified') {
+                            	setEditorContent("edit_details-asset_unverified-asset_fields", '');
+                        	}
                         }
 
                         $.unblockUI();

@@ -119,6 +119,11 @@ render_header_and_sidebar(permissions: ['check_admin' => true]);
 					<td>Enables the integration of SimpleRisk with Rapid7 Nexpose, InsightVM, Qualys and Tenable.io.</td>
 					<td width="60px"><?php echo (vulnmgmt_extra() ? '<a href="vulnmgmt.php">Yes</a>' : '<a href="vulnmgmt.php">No</a>'); ?></td>
 				</tr>
+				<tr>
+					<th>Workflows</th>
+					<td>Enables a visual, event-driven workflow engine to automate risk management actions triggered by events within SimpleRisk.</td>
+					<td width="60px"><?php echo (workflows_extra() ? '<a href="workflows.php">Yes</a>' : '<a href="workflows.php">No</a>'); ?></td>
+				</tr>
 				<tbody>
 			</table>
 			<p>If you are interested in adding these or other custom functionality to your SimpleRisk installation, please send an e-mail to <a href="mailto:extras@simplerisk.com?Subject=Interest%20in%20SimpleRisk%20Extras" target="_top">extras@simplerisk.com</a>.</p>

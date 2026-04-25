@@ -189,7 +189,6 @@ function queue_update_status($task_id, $status, PDO $db): bool {
 
         if ($affected > 0) {
             write_debug_log("queue_update_status successfully updated task #{$task_id} (rows affected: {$affected})", "debug");
-            if ($should_close) db_close($db);
             return true;
         } else {
             $check = $db->prepare("SELECT status FROM queue_tasks WHERE id = :id");
@@ -198,11 +197,9 @@ function queue_update_status($task_id, $status, PDO $db): bool {
 
             if ($row) {
                 write_debug_log("queue_update_status: task #{$task_id} already had status '{$status}'", "debug");
-                if ($should_close) db_close($db);
                 return true;
             } else {
                 write_debug_log("queue_update_status: task #{$task_id} does not exist", "error");
-                if ($should_close) db_close($db);
                 return false;
             }
         }

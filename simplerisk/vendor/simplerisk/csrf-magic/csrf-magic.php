@@ -274,14 +274,15 @@ function csrf_callback($tokens) {
         $base_url = $_SESSION['base_url'];
     }
 
-    // If request comes from other host, reject the request
-    if(stripos($base_url, $referer_url) === false)
+    // If referer is absent or comes from another host, reject the request outright
+    if(empty($referer_url) || stripos($base_url, $referer_url) === false)
     {
         echo "<html><head><title>CSRF check failed</title></head>
             <body>
                 <p>Bad Request</p>
             </body>
         </html>";
+        exit;
     }
     // If request comes from this host, return retry html
     else
@@ -301,8 +302,14 @@ function csrf_callback($tokens) {
  */
 function get_referer_url()
 {
+    if (empty($_SERVER['HTTP_REFERER'])) {
+        return '';
+    }
     $urls = parse_url( $_SERVER['HTTP_REFERER'] );
-    $referer_url = $urls['scheme']."://".$urls['host']. (isset($urls['port'])?":".$urls['port']:"");
+    if (!is_array($urls)) {
+        return '';
+    }
+    $referer_url = ($urls['scheme'] ?? '')."://".($urls['host'] ?? ''). (isset($urls['port'])?":".$urls['port']:"");
     return $referer_url;
 }
 

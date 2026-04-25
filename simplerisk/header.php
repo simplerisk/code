@@ -12,6 +12,8 @@ $localization_required_by_scripts = [
     'UILayoutWidget' => ['WidgetType_chart', 'WidgetType_table', 'WidgetType_WYSIWYG'],
     'CUSTOM:pages/governance.js' => ['ExistingMappings', 'Unassigned', 'DocumentName', 'DocumentType', 'ControlFrameworks', 'Controls', 'CreationDate', 'ApprovalDate', 'Status', 'All', 'ExceptionName', 'ID', 'Description', 'Justification', 'NextReviewDate'],
     'CUSTOM:pages/compliance.js' => ['AuditInitiationOffsetMustBeANonNegativeValue', 'AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency'],
+    'CUSTOM:pages/assessment.js' => ['SimpleriskUsers', 'AssessmentContacts'],
+    'CUSTOM:dynamic.js' => ['Risk', 'Mitigation', 'Review', 'RiskScoring', 'Unassigned', 'RiskMapping', 'Remove', 'NoColumnsSelected'],
 ];
 
 ?>
@@ -36,6 +38,7 @@ $localization_required_by_scripts = [
 
   	<script type="text/javascript">
         var BASE_URL = '<?= $escaper->escapeHtml(rtrim(($_SESSION['base_url'] ?? get_setting("simplerisk_base_url")), '/'))?>';
+        var CURRENCY = '<?= $escaper->escapeHtml(get_setting("currency") ?: "") ?>';
   	</script>
 
     <!-- All Jquery -->
@@ -898,6 +901,9 @@ if (!advanced_search_extra()) { ?>
            
             <!-- Right side toggle and nav items -->
             <ul class="navbar-nav float-end">
+<?php if (!empty($permissions['show_ai_chat']) && artificial_intelligence_extra() && get_setting('ai_api_key')): ?>
+              <?php require_once(realpath(__DIR__ . '/extras/artificial_intelligence/includes/chat.php')); ai_render_chat_icon(); ?>
+<?php endif; ?>
 			  <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle waves-effect waves-dark" href="#" id="2" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="font-24 far fa-question-circle align-middle"></i>
@@ -911,10 +917,10 @@ if (!advanced_search_extra()) { ?>
                   <li><a class="dropdown-item" href="<?php echo build_url("api/v2/documentation.php");?>" target="_blank"><i class="fas fa-info-circle me-1 ms-1"></i><?= $escaper->escapeHtml($lang['APIDocumentation']);?></a></li>
                   
                   <!-- How-To Videos -->
-                  <li><a class="dropdown-item" href="https://simplerisk.freshdesk.com/a/solutions/folders/6000228831" target="_blank"><i class="fas fa-video me-1 ms-1"></i><?= $escaper->escapeHtml($lang['HowToVideos']);?></a></li>
+                  <li><a class="dropdown-item" href="https://support.simplerisk.com/kb/simplerisk-user-guides" target="_blank"><i class="fas fa-video me-1 ms-1"></i><?= $escaper->escapeHtml($lang['HowToVideos']);?></a></li>
                   
                   <!-- FAQs -->
-                  <li><a class="dropdown-item" href="https://simplerisk.freshdesk.com/a/solutions/folders/6000168810" target="_blank"><i class="fas fa-question-circle me-1 ms-1"></i><?= $escaper->escapeHtml($lang['FAQs']);?></a></li>
+                  <li><a class="dropdown-item" href="https://support.simplerisk.com/kb/faqs" target="_blank"><i class="fas fa-question-circle me-1 ms-1"></i><?= $escaper->escapeHtml($lang['FAQs']);?></a></li>
 
                   <!-- Whats New -->
                   <li><a class="dropdown-item" href="https://github.com/simplerisk/documentation/raw/master/SimpleRisk%20Release%20Notes%20<?= $escaper->escapeHtml(get_latest_app_version());?>.pdf" target="_blank"><i class="fas fa-link me-1 ms-1"></i><?= $escaper->escapeHtml($lang['WhatsNew']);?></a></li>
@@ -923,10 +929,10 @@ if (!advanced_search_extra()) { ?>
                   <li><a class="dropdown-item" href="https://simplerisk.atlassian.net/jira/discovery/share/views/ecc28d2f-82d4-444c-82ad-f16ea7e1a1c1" target="_blank"><i class="fas fa-map me-1 ms-1"></i><?= $escaper->escapeHtml($lang['Roadmap']);?></a></li>
 
                   <!-- Support Portal -->
-                  <li><a class="dropdown-item" href="https://simplerisk.freshdesk.com/support/solutions" target="_blank"><i class="fas fa-cloud me-1 ms-1"></i><?= $escaper->escapeHtml($lang['SupportPortal']);?></a></li>
+                  <li><a class="dropdown-item" href="https://support.simplerisk.com/kb" target="_blank"><i class="fas fa-cloud me-1 ms-1"></i><?= $escaper->escapeHtml($lang['SupportPortal']);?></a></li>
 
                   <!-- Web Support -->
-                  <li><a class="dropdown-item" href="https://simplerisk.freshdesk.com/support/tickets/new" target="_blank"><i class="fas fa-ticket-alt me-1 ms-1"></i><?= $escaper->escapeHtml($lang['WebSupport']);?></a></li>
+                  <li><a class="dropdown-item" href="https://support.simplerisk.com/tickets" target="_blank"><i class="fas fa-ticket-alt me-1 ms-1"></i><?= $escaper->escapeHtml($lang['WebSupport']);?></a></li>
                   
                   <!-- Email Support -->
                   <li><a class="dropdown-item" href="mailto: support@simplerisk.com" target="_blank"><i class="fas fa-envelope me-1 ms-1"></i><?= $escaper->escapeHtml($lang['EmailSupport']);?></a></li>
@@ -954,5 +960,8 @@ if (!advanced_search_extra()) { ?>
           </div>
         </nav>
       </header>
+<?php if (!empty($permissions['show_ai_chat']) && artificial_intelligence_extra() && get_setting('ai_api_key') && function_exists('ai_render_chat_panel')): ?>
+      <?php ai_render_chat_panel(); ?>
+<?php endif; ?>
 
       <div id="load" style="display:none;"><?=$escaper->escapeHtml($lang['SendingRequestPleaseWait'])?></div>

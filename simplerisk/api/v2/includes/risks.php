@@ -40,6 +40,9 @@ function api_v2_risks()
             $status_code = 200;
             $status_message = "SUCCESS";
 
+            // Convert the risk id
+            $risk['id'] = convert_to_risk_id($risk['id']);
+
             // Create the data array
             $data = [
                 "risk" => $risk,
@@ -51,6 +54,14 @@ function api_v2_risks()
     {
         // Get the risks array
         $risks = get_risks(0, "id", "asc");
+
+        if (!empty($risks)) {
+            // For each risk
+            foreach ($risks as &$risk) {
+                // Convert the risk id
+                $risk['id'] = convert_to_risk_id($risk['id']);
+            }
+        }
 
         // Create the data array
         $data = [
@@ -279,6 +290,14 @@ function api_v2_risk_submit()
 
     // Tags validation
     $risk_tags = get_param("POST", "tags", []);
+
+    if (!empty($risk_tags)) {
+        // Normalize: split by comma, trim whitespace, remove empties
+        $risk_tags = array_values(array_filter(array_map('trim', explode(",", $risk_tags))));
+    } else {
+        $risk_tags = [];
+    }
+
     foreach ($risk_tags as $tag) {
         if (strlen($tag) > 255) {
             api_v2_json_result(400, $escaper->escapeHtml($lang['MaxTagLengthWarning']), null);
@@ -288,7 +307,7 @@ function api_v2_risk_submit()
 
     // Jira validation (if enabled)
     if (jira_extra()) {
-        require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
+        require_once(realpath(__DIR__ . '/../../../extras/jira/index.php'));
         $issue_key = isset($_POST['jira_issue_key']) ? strtoupper(trim($_POST['jira_issue_key'])) : "";
         if ($issue_key && !jira_validate_issue_key($issue_key)) {
             api_v2_json_result(400, get_alert(true), null);
@@ -301,21 +320,77 @@ function api_v2_risk_submit()
     // Gather core fields
     $status                  = "New";
     $risk_catalog_mapping    = get_param("POST", 'risk_catalog_mapping', []);
+    
+    if (!empty($risk_catalog_mapping)) {
+        // Normalize: split by comma, trim whitespace, remove empties
+        $risk_catalog_mapping = array_values(array_filter(array_map('trim', explode(",", $risk_catalog_mapping))));
+    } else {
+        $risk_catalog_mapping = [];
+    }
+
     $threat_catalog_mapping  = get_param("POST", 'threat_catalog_mapping', []);
+        
+    if (!empty($threat_catalog_mapping)) {
+        // Normalize: split by comma, trim whitespace, remove empties
+        $threat_catalog_mapping = array_values(array_filter(array_map('trim', explode(",", $threat_catalog_mapping))));
+    } else {
+        $threat_catalog_mapping = [];
+    }
+
     $reference_id            = get_param("POST", 'reference_id', "");
     $regulation              = (int)get_param("POST", 'regulation', 0);
     $control_number          = get_param("POST", 'control_number', "");
-    $location                = implode(",", get_param("POST", "location", []));
+    $location                = get_param("POST", "location", []);
+        
+    if (!empty($location)) {
+        // Normalize: split by comma, trim whitespace, remove empties
+        $location = array_values(array_filter(array_map('trim', explode(",", $location))));
+    } else {
+        $location = [];
+    }
+
     $source                  = (int)get_param("POST", 'source', 0);
     $category                = (int)get_param("POST", 'category', 0);
     $team                    = get_param("POST", 'team', []);
+        
+    if (!empty($team)) {
+        // Normalize: split by comma, trim whitespace, remove empties
+        $team = array_values(array_filter(array_map('trim', explode(",", $team))));
+    } else {
+        $team = [];
+    }
+
     $technology              = get_param("POST", 'technology', []);
+        
+    if (!empty($technology)) {
+        // Normalize: split by comma, trim whitespace, remove empties
+        $technology = array_values(array_filter(array_map('trim', explode(",", $technology))));
+    } else {
+        $technology = [];
+    }
+
     $owner                   = (int)get_param("POST", "owner", 0);
     $manager                 = (int)get_param("POST", "manager", 0);
     $assessment              = get_param("POST", "assessment", "");
     $notes                   = get_param("POST", "notes", "");
     $assets_asset_groups     = get_param("POST", "assets_asset_groups", []);
+        
+    if (!empty($assets_asset_groups)) {
+        // Normalize: split by comma, trim whitespace, remove empties
+        $assets_asset_groups = array_values(array_filter(array_map('trim', explode(",", $assets_asset_groups))));
+    } else {
+        $assets_asset_groups = [];
+    }
+
     $additional_stakeholders = get_param("POST", "additional_stakeholders", []);
+        
+    if (!empty($additional_stakeholders)) {
+        // Normalize: split by comma, trim whitespace, remove empties
+        $additional_stakeholders = array_values(array_filter(array_map('trim', explode(",", $additional_stakeholders))));
+    } else {
+        $additional_stakeholders = [];
+    }
+
     $associate_test          = (int)get_param("POST", "associate_test", 0);
 
     // Template group (Customization Extra)
@@ -380,6 +455,14 @@ function api_v2_risk_submit()
     // Contributing risk
     $ContributingLikelihood = (int)get_param("POST", "ContributingLikelihood", 0);
     $ContributingImpacts    = get_param("POST", "ContributingImpacts", []);
+        
+    if (!empty($ContributingImpacts)) {
+        // Normalize: split by comma, trim whitespace, remove empties
+        $ContributingImpacts = array_values(array_filter(array_map('trim', explode(",", $ContributingImpacts))));
+    } else {
+        $ContributingImpacts = [];
+    }
+
 
     // Submit risk
     $last_insert_id = submit_risk(
@@ -414,7 +497,7 @@ function api_v2_risk_submit()
 
     // Encryption extra hook (no-op unless needed)
     if (encryption_extra()) {
-        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+        require_once(realpath(__DIR__ . '/../../../extras/encryption/index.php'));
         // create_subject_order(...) intentionally omitted
     }
 
@@ -534,7 +617,7 @@ function api_v2_risk_submit()
 
     // Notify after successful creation
     if (notification_extra()) {
-        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+        require_once(realpath(__DIR__ . '/../../../extras/notification/index.php'));
         notify_new_risk($last_insert_id);
     }
 

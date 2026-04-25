@@ -175,6 +175,15 @@
 }
 //************************ ASSESSMENT > QUESTIONNAIRE RESULTS END **********************//
 
+.questionnaire-risk-assessment-container {
+    #pending-risk-accordion-body {
+        div.assets-asset-groups-select {
+            .selectize-input {
+                width: 100% !important;
+            }
+        }
+    }
+}
 
 /* Automatic numbering for the questionnaire questions on the questionnaire, questionnaire results and the questionnaire result compare*/
 .questionnaire-result-container {

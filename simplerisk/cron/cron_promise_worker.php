@@ -34,6 +34,7 @@ $stuckThresholdMinutes = 30;
 $memoryLimitBytes = 400 * 1024 * 1024;
 
 $startTime = time();
+$lastWorkTime = time();
 
 // === SYSTEM SETTINGS ===
 ini_set('max_execution_time', 0);
@@ -109,7 +110,7 @@ while (true) {
         break;
     }
 
-    if (($now - $startTime) > ($maxIdleMinutes * 60)) {
+    if (($now - $lastWorkTime) > ($maxIdleMinutes * 60)) {
         record_worker_restart($workerName, 'max_idle_exceeded');
         break;
     }
@@ -192,6 +193,10 @@ while (true) {
         // Increment metrics
         worker_metric_inc($workerName, 'processed_promises', count($promises));
         worker_metric_inc($workerName, 'failed_promises', $failedCount);
+
+        if ($pendingCount > 0) {
+            $lastWorkTime = time();
+        }
     } catch (\Throwable $t) {
         write_debug_log("Error selecting ready promises: " . $t->getMessage(), "error");
     }

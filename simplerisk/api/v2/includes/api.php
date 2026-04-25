@@ -252,8 +252,15 @@ function api_get_ui_widget() {
         $widget_html = get_ui_widget_dashboard_open($widget_name);
     } else if ($layout_name == 'dashboard_close') {
         $widget_html = get_ui_widget_dashboard_close($widget_name);
+    } else {
+        // Generic fallback: extras register their own get_ui_widget_{layout_name}()
+        // via api/v2/index.php which loads each active extra's api.php at boot time.
+        $handler = 'get_ui_widget_' . preg_replace('/[^a-z0-9]/', '_', $layout_name);
+        if (function_exists($handler)) {
+            $widget_html = $handler($widget_name);
+        }
     }
-    
+
     api_v2_json_result(200, null, $widget_html);
 }
 
@@ -386,7 +393,27 @@ function get_ui_widget_dashboard_open($widget_name) {
             open_risk_owners_manager_pie($pie_array, js_string_escape($lang['OwnersManager'])); 
             break;
         case 'open_risk_scoring_method':
-            open_risk_scoring_method_pie($pie_array, js_string_escape($lang['RiskScoringMethod'])); 
+            open_risk_scoring_method_pie($pie_array, js_string_escape($lang['RiskScoringMethod']));
+            break;
+        case 'open_team_exposure':
+            open_risk_team_exposure_pie($teams, js_string_escape($lang['ExposureByTeam']));
+            break;
+        case 'open_category_exposure':
+            open_risk_category_exposure_pie($teams, js_string_escape($lang['ExposureByCategory']));
+            break;
+        case 'open_location_exposure':
+            open_risk_location_exposure_pie($teams, js_string_escape($lang['ExposureByLocation']));
+            break;
+        case 'open_risk_sla_status':
+            open_risk_sla_status($teams, $lang['SLABreachStatus']);
+            break;
+        // Organizational Hierarchy Extra widgets — only reachable when extra is enabled,
+        // because the widget is not registered in available_widgets otherwise.
+        case 'open_business_unit_exposure':
+            if (organizational_hierarchy_extra()) {
+                require_once(realpath(__DIR__ . '/../../../extras/organizational_hierarchy/index.php'));
+                open_risk_business_unit_exposure_pie($teams, js_string_escape($lang['ExposureByBusinessUnit']));
+            }
             break;
     }
 
@@ -433,4 +460,54 @@ function get_ui_widget_dashboard_close($widget_name) {
     return $widget_html;
 
 }
+
+/*******************************************************************************
+ * This function is used to get the compliance dashboard widget's html content *
+ *******************************************************************************/
+function get_ui_widget_compliance_dashboard($widget_name) {
+
+    ob_start();
+    
+    switch ($widget_name) {
+        case 'compliance_controls_by_framework_bar_chart':
+            compliance_controls_by_framework_bar_chart();
+            break;
+        case 'compliance_pass_rate_trend_line_chart': 
+            compliance_pass_rate_trend_line_chart();
+            break;
+        case 'compliance_pass_fail_pie_chart':
+            compliance_pass_fail_pie_chart();
+            break;
+    }
+
+    $widget_html = ob_get_contents();
+    ob_end_clean();
+
+    return $widget_html;
+
+}
+
+/*******************************************************************************
+ * This function is used to get the governance dashboard widget's html content *
+ *******************************************************************************/
+function get_ui_widget_governance_dashboard($widget_name) {
+
+    ob_start();
+    
+    switch ($widget_name) {
+        case 'governance_current_control_maturity_pie_chart':
+            governance_current_control_maturity_pie_chart();
+            break;
+        case 'governance_framework_maturity_stacked_bar_chart':
+            governance_framework_maturity_stacked_bar_chart();
+            break;
+    }
+
+    $widget_html = ob_get_contents();
+    ob_end_clean();
+
+    return $widget_html;
+
+}
+
 ?>

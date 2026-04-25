@@ -9,6 +9,8 @@ use PhpOffice\PhpSpreadsheet\Style\ConditionalFormatting\ConditionalColorScale;
 use PhpOffice\PhpSpreadsheet\Style\ConditionalFormatting\ConditionalDataBar;
 use PhpOffice\PhpSpreadsheet\Style\ConditionalFormatting\ConditionalFormattingRuleExtension;
 use PhpOffice\PhpSpreadsheet\Style\ConditionalFormatting\ConditionalFormatValueObject;
+use PhpOffice\PhpSpreadsheet\Style\ConditionalFormatting\ConditionalIconSet;
+use PhpOffice\PhpSpreadsheet\Style\ConditionalFormatting\IconSetValues;
 use PhpOffice\PhpSpreadsheet\Style\Style as Style;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use SimpleXMLElement;
@@ -69,6 +71,11 @@ class ConditionalStyles
             ksort($cfRules);
             // Priority is used as the key for sorting; but may not start at 0,
             // so we use array_values to reset the index after sorting.
+            $existing = $this->worksheet->getConditionalStylesCollection();
+            if (array_key_exists($conditionalRange, $existing)) {
+                $conditionalStyle = $existing[$conditionalRange];
+                $cfRules = array_merge($conditionalStyle, $cfRules);
+            }
             $this->worksheet->getStyle($conditionalRange)
                 ->setConditionalStyles(array_values($cfRules));
         }
@@ -131,6 +138,7 @@ class ConditionalStyles
         $conditionType = (string) $attributes->type;
         $operatorType = (string) $attributes->operator;
         $priority = (int) (string) $attributes->priority;
+        $stopIfTrue = (int) (string) $attributes->stopIfTrue;
 
         $operands = [];
         foreach ($cfRuleXml->children($this->ns['xm']) as $cfRuleOperandsXml) {
@@ -141,6 +149,7 @@ class ConditionalStyles
         $conditional->setConditionType($conditionType);
         $conditional->setOperatorType($operatorType);
         $conditional->setPriority($priority);
+        $conditional->setStopIfTrue($stopIfTrue === 1);
         if (
             $conditionType === Conditional::CONDITION_CONTAINSTEXT
             || $conditionType === Conditional::CONDITION_NOTCONTAINSTEXT
@@ -166,6 +175,9 @@ class ConditionalStyles
             }
             if ($styleXML->fill) {
                 $this->styleReader->readFillStyle($cfStyle->getFill(), $styleXML->fill);
+            }
+            if ($styleXML->font) {
+                $this->styleReader->readFontStyle($cfStyle->getFont(), $styleXML->font);
             }
         }
 
@@ -265,6 +277,8 @@ class ConditionalStyles
                 $objConditional->setColorScale(
                     $this->readColorScale($cfRule)
                 );
+            } elseif (isset($cfRule->iconSet)) {
+                $objConditional->setIconSet($this->readIconSet($cfRule));
             } elseif (isset($cfRule['dxfId'])) {
                 $objConditional->setStyle(clone $this->dxfs[(int) ($cfRule['dxfId'])]);
             }
@@ -347,6 +361,40 @@ class ConditionalStyles
         }
 
         return $colorScale;
+    }
+
+    private function readIconSet(SimpleXMLElement $cfRule): ConditionalIconSet
+    {
+        $iconSet = new ConditionalIconSet();
+
+        if (isset($cfRule->iconSet['iconSet'])) {
+            $iconSet->setIconSetType(IconSetValues::from($cfRule->iconSet['iconSet']));
+        }
+        if (isset($cfRule->iconSet['reverse'])) {
+            $iconSet->setReverse('1' === (string) $cfRule->iconSet['reverse']);
+        }
+        if (isset($cfRule->iconSet['showValue'])) {
+            $iconSet->setShowValue('1' === (string) $cfRule->iconSet['showValue']);
+        }
+        if (isset($cfRule->iconSet['custom'])) {
+            $iconSet->setCustom('1' === (string) $cfRule->iconSet['custom']);
+        }
+
+        $cfvos = [];
+        foreach ($cfRule->iconSet->cfvo as $cfvoXml) {
+            $type = (string) $cfvoXml['type'];
+            $value = (string) ($cfvoXml['val'] ?? '');
+            $cfvo = new ConditionalFormatValueObject($type, $value);
+            if (isset($cfvoXml['gte'])) {
+                $cfvo->setGreaterThanOrEqual('1' === (string) $cfvoXml['gte']);
+            }
+            $cfvos[] = $cfvo;
+        }
+        $iconSet->setCfvos($cfvos);
+
+        // TODO: The cfIcon element is not implemented yet.
+
+        return $iconSet;
     }
 
     /** @param ConditionalFormattingRuleExtension[] $conditionalFormattingRuleExtensions */

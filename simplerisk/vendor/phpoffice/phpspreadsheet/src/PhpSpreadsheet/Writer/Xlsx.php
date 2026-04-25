@@ -24,6 +24,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Drawing;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Rels;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\RelsRibbon;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\RelsVBA;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx\RichDataDrawing;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\StringTable;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Style;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Table;
@@ -146,6 +147,8 @@ class Xlsx extends BaseWriter
     // Default changed from null in PhpSpreadsheet 4.0.0.
     private ?bool $forceFullCalc = self::DEFAULT_FORCE_FULL_CALC;
 
+    protected bool $restrictMaxColumnWidth = false;
+
     /**
      * Create a new Xlsx Writer.
      */
@@ -153,6 +156,7 @@ class Xlsx extends BaseWriter
     {
         // Assign PhpSpreadsheet
         $this->setSpreadsheet($spreadsheet);
+        $spreadsheet->setUsesCheckboxStyle();
 
         $this->writerPartChart = new Chart($this);
         $this->writerPartComments = new Comments($this);
@@ -327,11 +331,28 @@ class Xlsx extends BaseWriter
 
         /** @var string[] */
         $zipContent = [];
+        $richDataCount = 0;
+
+        if ($this->spreadSheet->hasInCellDrawings()) {
+            $richDataDrawing = new RichDataDrawing();
+            $richDataFiles = $richDataDrawing->generateFiles($this->spreadSheet);
+            $richDataCount = count($richDataDrawing->getDrawings());
+
+            // Add all Rich Data files to ZIP
+            foreach ($richDataFiles as $path => $content) {
+                $zipContent[$path] = $content;
+            }
+        }
+
         // Add [Content_Types].xml to ZIP file
         $zipContent['[Content_Types].xml'] = $this->getWriterPartContentTypes()->writeContentTypes($this->spreadSheet, $this->includeCharts);
-        $metadataData = (new Xlsx\Metadata($this))->writeMetadata();
+        $metadataData = (new Xlsx\Metadata($this))->writeMetadata($richDataCount);
         if ($metadataData !== '') {
             $zipContent['xl/metadata.xml'] = $metadataData;
+        }
+        $propertyBagData = (new Xlsx\FeaturePropertyBag($this))->writeFeaturePropertyBag($this->spreadSheet);
+        if ($propertyBagData !== '') {
+            $zipContent['xl/featurePropertyBag/featurePropertyBag.xml'] = $propertyBagData;
         }
 
         //if hasMacros, add the vbaProject.bin file, Certificate file(if exists)
@@ -435,7 +456,9 @@ class Xlsx extends BaseWriter
             }
 
             // Add drawing and image relationship parts
-            if (($drawingCount > 0) || ($chartCount > 0)) {
+            /** @var bool $hasPassThroughDrawing */
+            $hasPassThroughDrawing = $unparsedSheet['drawingPassThroughEnabled'] ?? false;
+            if (($drawingCount > 0) || ($chartCount > 0) || $hasPassThroughDrawing) {
                 // Drawing relationships
                 $zipContent['xl/drawings/_rels/drawing' . ($i + 1) . '.xml.rels'] = $this->getWriterPartRels()->writeDrawingRelationships($this->spreadSheet->getSheet($i), $chartRef1, $this->includeCharts);
 
@@ -555,6 +578,9 @@ class Xlsx extends BaseWriter
                 $zipContent['xl/media/' . $this->getDrawingHashTable()->getByIndex($i)->getIndexedFilename()] = $imageContents;
             }
         }
+
+        // Add pass-through media files (original media that may not be in the drawing collection)
+        $this->addPassThroughMediaFiles($zipContent); // @phpstan-ignore argument.type
 
         Functions::setReturnDateType($saveDateReturnType);
         Calculation::getInstance($this->spreadSheet)->getDebugLog()->setWriteDebugLog($saveDebugLog);
@@ -817,5 +843,67 @@ class Xlsx extends BaseWriter
         $this->forceFullCalc = $forceFullCalc;
 
         return $this;
+    }
+
+    /**
+     * Excel has a nominal width limint of 255 for a column.
+     * Surprisingly, Xlsx can read and write larger values,
+     * and the file will appear as desired,
+     * but the User Interface does not allow you to set the width beyond 255,
+     * either directly or though auto-fit width.
+     * Xls sets its own value when the width is beyond 255.
+     * This method gets whether PhpSpreadsheet should restrict the
+     * column widths which it writes to the Excel limit, for formats
+     * which allow it to exceed 255.
+     */
+    public function setRestrictMaxColumnWidth(bool $restrictMaxColumnWidth): self
+    {
+        $this->restrictMaxColumnWidth = $restrictMaxColumnWidth;
+
+        return $this;
+    }
+
+    public function getRestrictMaxColumnWidth(): bool
+    {
+        return $this->restrictMaxColumnWidth;
+    }
+
+    /**
+     * Add pass-through media files from original spreadsheet.
+     * This copies media files that are referenced in pass-through drawing XML
+     * but may not be in the drawing collection (e.g., unsupported formats like SVG).
+     *
+     * @param string[] $zipContent
+     */
+    private function addPassThroughMediaFiles(array &$zipContent): void
+    {
+        /** @var array<string, array<string, mixed>> $sheets */
+        $sheets = $this->spreadSheet->getUnparsedLoadedData()['sheets'] ?? [];
+        foreach ($sheets as $sheetData) {
+            /** @var string[] $mediaFiles */
+            $mediaFiles = $sheetData['drawingMediaFiles'] ?? [];
+            /** @var ?string $sourceFile */
+            $sourceFile = $sheetData['drawingSourceFile'] ?? null;
+            if (($sheetData['drawingPassThroughEnabled'] ?? false) !== true || $mediaFiles === [] || !is_string($sourceFile) || !file_exists($sourceFile)) {
+                continue;
+            }
+
+            $sourceZip = new ZipArchive();
+            if ($sourceZip->open($sourceFile) !== true) {
+                continue; // @codeCoverageIgnore
+            }
+
+            foreach ($mediaFiles as $mediaPath) {
+                $zipPath = 'xl/media/' . basename($mediaPath);
+                if (!isset($zipContent[$zipPath])) {
+                    $mediaContent = $sourceZip->getFromName($mediaPath);
+                    if ($mediaContent !== false) {
+                        $zipContent[$zipPath] = $mediaContent;
+                    }
+                }
+            }
+
+            $sourceZip->close();
+        }
     }
 }

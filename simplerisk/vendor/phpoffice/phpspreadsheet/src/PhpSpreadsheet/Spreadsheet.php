@@ -2,6 +2,7 @@
 
 namespace PhpOffice\PhpSpreadsheet;
 
+use Composer\Pcre\Preg;
 use JsonSerializable;
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
 use PhpOffice\PhpSpreadsheet\Cell\IValueBinder;
@@ -17,7 +18,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class Spreadsheet implements JsonSerializable
 {
-    // Allowable values for workbook window visilbity
+    // Allowable values for workbook window visibility
     const VISIBILITY_VISIBLE = 'visible';
     const VISIBILITY_HIDDEN = 'hidden';
     const VISIBILITY_VERY_HIDDEN = 'veryHidden';
@@ -107,14 +108,14 @@ class Spreadsheet implements JsonSerializable
     private ?string $macrosCertificate = null;
 
     /**
-     * ribbonXMLData : null if workbook is'nt Excel 2007 or not contain a customized UI.
+     * ribbonXMLData : null if workbook isn't Excel 2007 or not contain a customized UI.
      *
      * @var null|array{target: string, data: string}
      */
     private ?array $ribbonXMLData = null;
 
     /**
-     * ribbonBinObjects : null if workbook is'nt Excel 2007 or not contain embedded objects (picture(s)) for Ribbon Elements
+     * ribbonBinObjects : null if workbook isn't Excel 2007 or not contain embedded objects (picture(s)) for Ribbon Elements
      * ignored if $ribbonXMLData is null.
      *
      * @var null|mixed[]
@@ -152,7 +153,7 @@ class Spreadsheet implements JsonSerializable
 
     /**
      * Specifies a boolean value that indicates whether to group dates
-     * when presenting the user with filtering optiomd in the user
+     * when presenting the user with filtering options in the user
      * interface.
      */
     private bool $autoFilterDateGrouping = true;
@@ -405,11 +406,26 @@ class Spreadsheet implements JsonSerializable
     }
 
     /**
-     * This workbook have additionnal object for the ribbon ?
+     * This workbook have additional object for the ribbon ?
      */
     public function hasRibbonBinObjects(): bool
     {
         return $this->ribbonBinObjects !== null;
+    }
+
+    /**
+     * This workbook has in cell images.
+     */
+    public function hasInCellDrawings(): bool
+    {
+        $sheetCount = $this->getSheetCount();
+        for ($i = 0; $i < $sheetCount; ++$i) {
+            if ($this->getSheet($i)->getInCellDrawingCollection()->count() > 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -705,9 +721,9 @@ class Spreadsheet implements JsonSerializable
      */
     public function getSheetByName(string $worksheetName): ?Worksheet
     {
-        $trimWorksheetName = trim($worksheetName, "'");
+        $trimWorksheetName = StringHelper::strToUpper(trim($worksheetName, "'"));
         foreach ($this->workSheetCollection as $worksheet) {
-            if (strcasecmp($worksheet->getTitle(), $trimWorksheetName) === 0) {
+            if (StringHelper::strToUpper($worksheet->getTitle()) === $trimWorksheetName) {
                 return $worksheet;
             }
         }
@@ -735,9 +751,8 @@ class Spreadsheet implements JsonSerializable
      */
     public function getIndex(Worksheet $worksheet, bool $noThrow = false): int
     {
-        $wsHash = $worksheet->getHashInt();
         foreach ($this->workSheetCollection as $key => $value) {
-            if ($value->getHashInt() === $wsHash) {
+            if ($value === $worksheet) {
                 return $key;
             }
         }
@@ -1031,13 +1046,34 @@ class Spreadsheet implements JsonSerializable
         if ($definedName !== '') {
             $definedName = StringHelper::strToUpper($definedName);
             // first look for global defined name
-            if (isset($this->definedNames[$definedName])) {
-                $returnValue = $this->definedNames[$definedName];
+            foreach ($this->definedNames as $dn) {
+                $upper = StringHelper::strToUpper($dn->getName());
+                if (
+                    !$dn->getLocalOnly()
+                    && $definedName === $upper
+                ) {
+                    $returnValue = $dn;
+
+                    break;
+                }
             }
 
             // then look for local defined name (has priority over global defined name if both names exist)
-            if (($worksheet !== null) && isset($this->definedNames[$worksheet->getTitle() . '!' . $definedName])) {
-                $returnValue = $this->definedNames[$worksheet->getTitle() . '!' . $definedName];
+            if ($worksheet !== null) {
+                $wsTitle = StringHelper::strToUpper($worksheet->getTitle());
+                $definedName = Preg::replace('/^.*!/', '', $definedName);
+                foreach ($this->definedNames as $dn) {
+                    $sheet = $dn->getScope() ?? $dn->getWorksheet();
+                    $upper = StringHelper::strToUpper($dn->getName());
+                    $upperTitle = StringHelper::strToUpper((string) $sheet?->getTitle());
+                    if (
+                        $dn->getLocalOnly()
+                        && $upper === $definedName
+                        && $upperTitle === $wsTitle
+                    ) {
+                        return $dn;
+                    }
+                }
             }
         }
 
@@ -1112,6 +1148,11 @@ class Spreadsheet implements JsonSerializable
 
     /**
      * Copy workbook (!= clone!).
+     *
+     * Uses serialize/unserialize which is broadly faster than clone across
+     * PHP versions and platforms, though clone uses less memory.
+     *
+     * @see \PhpOffice\PhpSpreadsheetBenchmarks\SpreadsheetCopyBenchmarkTest
      */
     public function copy(): self
     {
@@ -1120,13 +1161,18 @@ class Spreadsheet implements JsonSerializable
 
     /**
      * Implement PHP __clone to create a deep clone, not just a shallow copy.
+     *
+     * Clone uses less memory than serialize/unserialize but speed varies
+     * across PHP versions and platforms.
+     *
+     * @see \PhpOffice\PhpSpreadsheetBenchmarks\SpreadsheetCopyBenchmarkTest
      */
     public function __clone()
     {
         $this->uniqueID = uniqid('', true);
 
         $usedKeys = [];
-        // I don't now why new Style rather than clone.
+        // I don't know why new Style rather than clone.
         $this->cellXfSupervisor = new Style(true);
         //$this->cellXfSupervisor = clone $this->cellXfSupervisor;
         $this->cellXfSupervisor->bindParent($this);
@@ -1188,6 +1234,16 @@ class Spreadsheet implements JsonSerializable
                     $this->$key = [];
                     foreach ($currentCollection as $item) {
                         $clone = clone $item;
+                        $title = $clone->getWorksheet()?->getTitle();
+                        if ($title !== null) {
+                            $ws = $this->getSheetByName($title);
+                            $clone->setWorksheet($ws);
+                        }
+                        $title = $clone->getScope()?->getTitle();
+                        if ($title !== null) {
+                            $ws = $this->getSheetByName($title);
+                            $clone->setScope($ws);
+                        }
                         $this->{$key}[] = $clone;
                     }
 
@@ -1447,6 +1503,10 @@ class Spreadsheet implements JsonSerializable
 
     /**
      * Return the unique ID value assigned to this spreadsheet workbook.
+     *
+     * @deprecated 5.2.0 Serves no useful purpose. No replacement.
+     *
+     * @codeCoverageIgnore
      */
     public function getID(): string
     {
@@ -1535,7 +1595,7 @@ class Spreadsheet implements JsonSerializable
 
     /**
      * Return whether to group dates when presenting the user with
-     * filtering optiomd in the user interface.
+     * filtering options in the user interface.
      *
      * @return bool true if workbook window is minimized
      */
@@ -1546,7 +1606,7 @@ class Spreadsheet implements JsonSerializable
 
     /**
      * Set whether to group dates when presenting the user with
-     * filtering optiomd in the user interface.
+     * filtering options in the user interface.
      *
      * @param bool $autoFilterDateGrouping true if workbook window is minimized
      */
@@ -1814,6 +1874,37 @@ class Spreadsheet implements JsonSerializable
         }
     }
 
+    /**
+     * Change all 2-digit-year date styles to use 4-digit year;
+     * change all dd-mm-yyyy and mm-dd-yyyy styles to yyyy-mm-dd;
+     * dd-mmm-yyyy is unambiguous and left unchanged.
+     */
+    public function disambiguateDateStyles(): void
+    {
+        foreach ($this->cellXfCollection as $style) {
+            $numberFormat = $style->getNumberFormat();
+            $oldFormat = (string) $numberFormat->getFormatCode();
+            $newFormat = Preg::replace('/\byy\b/i', 'yyyy', $oldFormat);
+            $newFormat = Preg::replace(
+                '~\bdd?(-|/|"-"|"/")'
+                    . 'mm?(-|/|"-"|"/")'
+                    . 'yyyy~',
+                'yyyy-mm-dd',
+                $newFormat
+            );
+            $newFormat = Preg::replace(
+                '~\bmm?(-|/|"-"|"/")'
+                    . 'dd?(-|/|"-"|"/")'
+                    . 'yyyy~',
+                'yyyy-mm-dd',
+                $newFormat
+            );
+            if ($newFormat !== $oldFormat) {
+                $numberFormat->setFormatCode($newFormat);
+            }
+        }
+    }
+
     public function returnArrayAsArray(): void
     {
         $this->calculationEngine->setInstanceArrayReturnType(
@@ -1826,5 +1917,47 @@ class Spreadsheet implements JsonSerializable
         $this->calculationEngine->setInstanceArrayReturnType(
             Calculation::RETURN_ARRAY_AS_VALUE
         );
+    }
+
+    /** @var string[] */
+    private $domainWhiteList = [];
+
+    /**
+     * Currently used only by WEBSERVICE function.
+     *
+     * @param string[] $domainWhiteList
+     */
+    public function setDomainWhiteList(array $domainWhiteList): self
+    {
+        $this->domainWhiteList = $domainWhiteList;
+
+        return $this;
+    }
+
+    /** @return string[] */
+    public function getDomainWhiteList(): array
+    {
+        return $this->domainWhiteList;
+    }
+
+    private bool $usesCheckBoxStyle = false;
+
+    public function getUsesCheckBoxStyle(): bool
+    {
+        return $this->usesCheckBoxStyle;
+    }
+
+    public function setUsesCheckBoxStyle(): bool
+    {
+        $this->usesCheckBoxStyle = false;
+        foreach ($this->getCellXfCollection() as $cellXf) {
+            if ($cellXf->getCheckBox()) {
+                $this->usesCheckBoxStyle = true;
+
+                break;
+            }
+        }
+
+        return $this->usesCheckBoxStyle;
     }
 }

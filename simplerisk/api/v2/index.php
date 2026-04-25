@@ -38,10 +38,10 @@ if (api_v2_is_authenticated())
     app()->get('/admin/version/app', 'api_v2_admin_version_app');
     app()->get('/admin/version/db', 'api_v2_admin_version_db');
     app()->post('/admin/upgrade/db', 'api_v2_admin_upgrade_db');
-    app()->get('/admin/write_debug_log', 'api_v2_admin_write_debug_log');
+    app()->post('/admin/write_debug_log', 'api_v2_admin_write_debug_log');
     app()->delete('/admin/tag', 'api_v2_admin_tag_delete');
     app()->delete('/admin/tag/all', 'api_v2_admin_tag_delete_all');
-    app()->get('/admin/governance/documents/maptocontrols', 'api_v2_update_all_document_control_mappings');
+    app()->post('/admin/governance/documents/maptocontrols', 'api_v2_update_all_document_control_mappings');
     app()->get('/admin/queue', 'api_v2_admin_queue');
     app()->get('/admin/queue/promises', 'api_v2_admin_queue_promises');
 
@@ -49,6 +49,22 @@ if (api_v2_is_authenticated())
     app()->get('/assets', 'api_v2_assets');
     app()->get('/assets/associations', 'api_v2_assets_associations');
     app()->get('/assets/tags', 'api_v2_assets_tags_get');
+
+    /************************** ASSETS CRUD API *******************************/
+    app()->get('/assets/{id}', 'getAssetById');
+    app()->post('/assets', 'createAsset');
+    app()->patch('/assets/{id}', 'updateAssetById');
+    app()->delete('/assets/{id}', 'deleteAssetById');
+    app()->get('/assets/{id}/associations', 'getAssetAssociations');
+    app()->get('/asset-groups', 'listAssetGroups');
+    app()->post('/asset-groups', 'createAssetGroupCrud');
+    app()->get('/asset-groups/{id}', 'getAssetGroupById');
+    app()->patch('/asset-groups/{id}', 'updateAssetGroupById');
+    app()->delete('/asset-groups/{id}', 'deleteAssetGroupById');
+    app()->get('/asset-groups/{id}/assets', 'getAssetGroupAssets');
+    app()->post('/asset-groups/{id}/assets', 'addAssetsToAssetGroup');
+    app()->delete('/asset-groups/{id}/assets/{asset_id}', 'removeAssetFromAssetGroupById');
+    /************************* END ASSETS CRUD API ****************************/
 
     // SimpleRisk Governance Routes
 
@@ -68,6 +84,17 @@ if (api_v2_is_authenticated())
     app()->get('/governance/keywords', 'api_v2_governance_keywords');
     app()->post('/governance/save_custom_documents_to_controls_display_settings', 'saveCustomDocumentsToControlsDisplaySettingsAPI');
 
+    /************************** GOVERNANCE CRUD API *******************************/
+    app()->get('/governance/frameworks/{id}', 'getFrameworkById');
+    app()->post('/governance/frameworks', 'createFrameworkCrud');
+    app()->patch('/governance/frameworks/{id}', 'updateFrameworkById');
+    app()->delete('/governance/frameworks/{id}', 'deleteFrameworkById');
+    app()->get('/governance/controls/{id}', 'getControlById');
+    app()->post('/governance/controls', 'createControlCrud');
+    app()->patch('/governance/controls/{id}', 'updateControlById');
+    app()->delete('/governance/controls/{id}', 'deleteControlById');
+    /************************* END GOVERNANCE CRUD API ****************************/
+
     // SimpleRisk Risk Routes
     app()->get('/risks', 'api_v2_risks');
     app()->get('/risks/associations', 'api_v2_risks_associations');
@@ -79,6 +106,17 @@ if (api_v2_is_authenticated())
     app()->get('/compliance/tests/associations', 'api_v2_compliance_tests_associations');
     app()->get('/compliance/tests/tags', 'api_v2_compliance_tests_tags_get');
     app()->get('/compliance/audits/tags', 'api_v2_compliance_audits_tags_get');
+
+    /************************** COMPLIANCE CRUD API *******************************/
+    app()->get('/compliance/tests/{id}', 'getTestById');
+    app()->post('/compliance/tests', 'createTest');
+    app()->patch('/compliance/tests/{id}', 'updateTestById');
+    app()->delete('/compliance/tests/{id}', 'deleteTestById');
+    app()->get('/compliance/audits/{id}', 'getAuditById');
+    app()->post('/compliance/audits', 'createAudit');
+    app()->patch('/compliance/audits/{id}', 'updateAuditById');
+    app()->delete('/compliance/audits/{id}', 'deleteAuditById');
+    /************************* END COMPLIANCE CRUD API ****************************/
 
     // SimpleRisk Artificial Intelligence Routes
     app()->get('/ai/recommendations', 'api_v2_ai_recommendations');
@@ -99,6 +137,23 @@ if (api_v2_is_authenticated())
     app()->get('/management/mitigation/view', 'viewmitigation');
     app()->post('/management/review/add', 'saveReview');
     app()->get('/management/review/view', 'viewreview');
+
+    /************************** RISKS CRUD API *******************************/
+    app()->get('/risks/{id}', 'viewrisk');
+    app()->post('/risks', 'addRisk');
+    app()->patch('/risks/{id}', 'updateRisk');
+    app()->get('/risks/{id}/mitigations', 'viewmitigation');
+    app()->post('/risks/{id}/mitigations', 'saveMitigation');
+    app()->patch('/risks/{id}/mitigations', 'saveMitigation');
+    app()->get('/risks/{id}/reviews', 'viewreview');
+    app()->post('/risks/{id}/reviews', 'saveReview');
+    app()->get('/risks/{id}/scoring-history', 'scoringHistory');
+    app()->get('/risks/{id}/residual-scoring-history', 'residualScoringHistory');
+    app()->post('/risks/{id}/reopen', 'reopenForm');
+    app()->get('/risks/{id}/comments', 'getRiskComments');
+    app()->post('/risks/{id}/comments', 'saveCommentForm');
+    app()->post('/risks/{id}/accept-mitigation', 'acceptMitigationForm');
+    /************************* END RISKS CRUD API ****************************/
     app()->get('/admin', 'show_admin');
     app()->get('/admin/users/all', 'allusers');
     app()->get('/admin/users/enabled', 'enabledusers');
@@ -193,12 +248,13 @@ if (api_v2_is_authenticated())
     app()->get('/governance/document', 'getDocumentResponse');
     app()->get('/governance/selected_parent_documents_dropdown', 'getSelectedParentDocumentsDropdownResponse');
     app()->get('/governance/related_controls_by_framework_ids', 'getRelatedControlsByFrameworkIdsResponse');
-    app()->get('/governance/rebuild_control_filters', 'getControlFiltersByFrameworksResponse');
+    app()->post('/governance/rebuild_control_filters', 'getControlFiltersByFrameworksResponse');
 
     app()->post('/governance/add_control', 'addControlResponse');
     app()->post('/governance/update_control', 'updateControlResponse');
 
     app()->post('/compliance/define_tests', 'getDefineTestsResponse');
+    app()->post('/compliance/update_test', 'updateTestResponse');
     app()->get('/compliance/test', 'getTestResponse');
     app()->get('/compliance/initiate_audits', 'getInitiateTestAuditsResponse');
     app()->post('/compliance/active_audits', 'getActiveTestAuditsResponse');
@@ -298,8 +354,8 @@ if (api_v2_is_authenticated())
     // Get unfiltered table data
     app()->get('/admin/tables/fullData', 'getTableData');
 
-    // Get Mitigation Control Info
-    app()->get('/mitigation_controls/get_mitigation_control_info', 'get_mitigation_control_info');
+    // Get Mitigation Control Info (governance-gated via wrapper — see api_v2_get_mitigation_control_info())
+    app()->get('/mitigation_controls/get_mitigation_control_info', 'api_v2_get_mitigation_control_info');
 
     // Get Tooltip Info
     app()->post('/likelihood_impact_chart/tooltip', 'get_tooltip_api');
@@ -337,9 +393,6 @@ if (api_v2_is_authenticated())
     app()->get('/complianceforgescf/disable', 'api_complianceforgescf_disable');
     app()->get('/complianceforgescf/status', 'api_complianceforgescf_status');
 
-    // Datatable/report column selection settings API
-    app()->post('/admin/column_settings/save_column_settings', 'saveColumnSelectionSettingsAPI');
-
     // Enable / disable the Incident Management Extra
     app()->post('/admin/incidentmanagement', 'incidentManagementAPI');
 
@@ -347,12 +400,13 @@ if (api_v2_is_authenticated())
     app()->post('/get/datatable', 'getDatatableAPI');
     /*************************** DATATABLE API END ********************************/
 
-    /************************** UI LAYOUT API BEGIN *******************************/
+    /************************** UI API BEGIN *******************************/
     app()->post('/ui/layout', 'api_save_ui_layout');
     app()->get('/ui/layout', 'api_get_ui_layout');
     app()->get('/ui/widget', 'api_get_ui_widget');
     app()->post('/ui/default_layout', 'api_update_default_status');
-    /*************************** UI LAYOUT API END ********************************/
+    app()->post('/ui/column_settings', 'saveColumnSelectionSettingsAPI');
+    /*************************** UI API END ********************************/
 
     /************************** SIMPLERISK EXTRAS APIS ************************************/
 
@@ -628,6 +682,23 @@ if (api_v2_is_authenticated())
         }
     }
 
+    // If the Workflows Extra is enabled
+    if (workflows_extra())
+    {
+        // Required file
+        $required_file = realpath(__DIR__ . '/../../extras/workflows/includes/api.php');
+
+        // If the file exists
+        if (file_exists($required_file))
+        {
+            // Include the required file
+            require_once($required_file);
+
+            // Get the workflows routes
+            get_workflows_routes();
+        }
+    }
+
     // If the instance is registered
     if (get_setting('registration_registered') != 0)
     {
@@ -672,7 +743,7 @@ else if (check_questionnaire_get_token()) {
 // If we are unauthenticated
 else
 {
-    write_debug_log("[APIv2] Unable to authenticate.", "debug");
+    write_debug_log("[APIv2] Unable to authenticate.", "info");
 
     // Set the error message
     $status_code = "401";

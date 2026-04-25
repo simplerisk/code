@@ -227,7 +227,7 @@ function display_install_trailer()
     </div>
     <!-- End of content -->
     <footer class="footer text-center">
-        Copyright 2025 SimpleRisk, Inc. All rights reserved.
+        Copyright 2026 SimpleRisk, Inc. All rights reserved.
     </footer>
     </div>
     <!-- End of content-wrapper -->
@@ -627,8 +627,8 @@ function verify_step_4_simplerisk_info()
         // Remove any white space from the string
         $sr_host = str_replace(" ", "", $sr_host);
 
-        // If the resulting sr_host value is not a valid domain or IP
-        if (!(filter_var($sr_host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) || filter_var($sr_host, FILTER_VALIDATE_IP)))
+        // If the resulting sr_host value is not a valid domain, IP, wildcard, or netmask
+        if (!is_valid_sr_host($sr_host))
         {
             $error_message[] = "The SimpleRisk IP/Host \"" . $escaper->escapeHtml($sr_host) . "\" is not valid.";
             $error = true;
@@ -895,7 +895,7 @@ function step_6_simplerisk_installation()
     $sr_user_safe = str_replace("'", '', $sr_user);
 
     foreach ($sr_host_array as $host) {
-        if (filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) || filter_var($host, FILTER_VALIDATE_IP)) {
+        if (is_valid_sr_host($host)) {
             $sr_pass_quoted = $db->quote($sr_pass);
             $db->exec("CREATE USER '{$sr_user_safe}'@'{$host}' IDENTIFIED BY {$sr_pass_quoted}");
             $db->exec("GRANT SELECT,INSERT,UPDATE,ALTER,DELETE,CREATE,DROP,INDEX,REFERENCES ON {$sr_db_q}.* TO '{$sr_user_safe}'@'{$host}'");
@@ -913,6 +913,20 @@ function step_6_simplerisk_installation()
     $file_url = "https://raw.githubusercontent.com/simplerisk/database/{$branch}/{$file}";
 
     $web_file = @fopen($file_url, 'r');
+
+    // If the current version's SQL file isn't published yet (e.g. pre-release branch),
+    // fall back to the latest published release. The upgrade script will bring the DB
+    // up to the current version after installation.
+    if (!$web_file) {
+        $latest_version = installer_get_latest_version();
+        if ($latest_version && $latest_version !== $app_version) {
+            $fallback_map = ['en' => "simplerisk-en-$latest_version.sql", 'es' => "simplerisk-es-$latest_version.sql", 'bp' => "simplerisk-bp-$latest_version.sql"];
+            $fallback_file = $fallback_map[$default_language] ?? $fallback_map['en'];
+            $file_url = "https://raw.githubusercontent.com/simplerisk/database/{$branch}/{$fallback_file}";
+            $web_file = @fopen($file_url, 'r');
+        }
+    }
+
     if (!$web_file) { echo "ERROR: Unable to obtain file from {$file_url}"; exit;
     }
 
@@ -1833,6 +1847,64 @@ function installer_add_admin_user($user, $email, $name, $password)
  * Validate a MySQL identifier we control with a strict whitelist.
  * Allows letters, numbers, underscore and hyphen. Adjust as needed.
  */
+/**
+ * Returns true if $host is a valid value for a MySQL user host field.
+ *
+ * Accepts:
+ *   - Plain IPv4/IPv6 addresses and hostnames
+ *   - MySQL LIKE wildcards: '%' (any host), '%.domain' (subdomain wildcard),
+ *     or an IPv4 pattern where any octet is replaced by '%' or '_'
+ *     (e.g. 192.168.1.%, 192.168.%.%)
+ *   - IPv4 netmask notation with a full dotted-quad mask
+ *     (e.g. 192.168.1.0/255.255.255.0) — /24 shorthand is NOT accepted
+ */
+function is_valid_sr_host(string $host): bool {
+    // Plain IP address (IPv4 or IPv6)
+    if (filter_var($host, FILTER_VALIDATE_IP)) {
+        return true;
+    }
+
+    // Plain hostname or domain
+    if (filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
+        return true;
+    }
+
+    // Bare '%' — matches any host
+    if ($host === '%') {
+        return true;
+    }
+
+    // Wildcard subdomain: %.hostname (e.g. %.example.com)
+    if (str_starts_with($host, '%.')) {
+        $suffix = substr($host, 2);
+        if ($suffix !== '' && filter_var($suffix, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
+            return true;
+        }
+    }
+
+    // IPv4 wildcard: four dot-separated segments, each a valid octet (0–255),
+    // '%', or '_', with at least one wildcard present.
+    // e.g. 192.168.1.%, 192.168.%.%
+    $octet = '(?:25[0-5]|2[0-4]\d|[01]?\d\d?)';
+    $seg   = "(?:{$octet}|[%_])";
+    if ((str_contains($host, '%') || str_contains($host, '_')) &&
+        preg_match("/^{$seg}(?:\\.{$seg}){3}$/", $host)) {
+        return true;
+    }
+
+    // IPv4 netmask notation: base_ip/netmask_ip (full dotted-quad mask only)
+    // e.g. 192.168.1.0/255.255.255.0
+    if (str_contains($host, '/')) {
+        $parts = explode('/', $host, 2);
+        if (filter_var($parts[0], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) &&
+            filter_var($parts[1], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function validate_mysql_identifier(string $ident): bool {
     // Prevent empty, leading/trailing whitespace, or backticks
     if ($ident === '' || preg_match('/`/', $ident)) {

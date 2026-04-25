@@ -359,11 +359,11 @@ function display_graphical_risk_analysis_chart() {
 
     global $lang, $escaper;
 
-    // Get the values that were POSTed
+    // Get the values that were POSTed — escaping is handled by the chart functions via json_encode
     $type = isset($_POST['type']) ? $_POST['type'] : "area";
-    $title = isset($_POST['chart_title']) ? str_replace("'", "\'", $_POST['chart_title']) : "";
-    $x_axis_title = isset($_POST['x_axis_custom_label']) ? str_replace("'", "\'", $_POST['x_axis_custom_label']) : "";
-    $y_axis_title = isset($_POST['y_axis_custom_label']) ? str_replace("'", "\'", $_POST['y_axis_custom_label']) : "";
+    $title = isset($_POST['chart_title']) ? (string)$_POST['chart_title'] : "";
+    $x_axis_title = isset($_POST['x_axis_custom_label']) ? (string)$_POST['x_axis_custom_label'] : "";
+    $y_axis_title = isset($_POST['y_axis_custom_label']) ? (string)$_POST['y_axis_custom_label'] : "";
 
     // Get graphical risk analysis data
     $results = get_graphical_risk_analysis_data();
@@ -838,12 +838,12 @@ function get_risks_array_for_graphical($timeframe, $risk_status)
     switch ($risk_status)
     {
         case "open":
-            $dataset_label = str_replace("'", "\'", $lang['OpenRisks']);
+            $dataset_label = $lang['OpenRisks'];
             $datefield = "submission_date";
             $where_query = "WHERE a.status != 'Closed'";
             break;
         case "closed":
-            $dataset_label = str_replace("'", "\'", $lang['ClosedRisks']);
+            $dataset_label = $lang['ClosedRisks'];
             $datefield = "closure_date";
             $where_query = "WHERE a.status = 'Closed'";
             break;

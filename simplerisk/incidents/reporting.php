@@ -36,6 +36,11 @@
                 $breadcrumb_title_key = 'LessonsLearned';
                 $active_sidebar_thirdmenu ="IM_Reporting_LessonsLearned";
                 break;
+            // If the incident dashboard page was displayed
+            case "incident_dashboard":
+                $breadcrumb_title_key = 'IncidentDashboard';
+                $active_sidebar_thirdmenu = "IM_Reporting_IncidentDashboard";
+                break;
             // IF the overview page was displayed by default
             default:
                 $breadcrumb_title_key = 'Overview';
@@ -47,7 +52,7 @@
     } else {
         $breadcrumb_title_key = "Reporting";
     }
-    render_header_and_sidebar(['datatables', 'tabs:logic', 'multiselect', 'blockUI', 'datetimerangepicker', 'chart.js'], ['check_im_reporting' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu, $active_sidebar_thirdmenu, $active_sidebar_forthmenu);
+    render_header_and_sidebar(['datatables', 'tabs:logic', 'multiselect', 'blockUI', 'datetimerangepicker', 'chart.js', 'UILayoutWidget'], ['check_im_reporting' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu, $active_sidebar_thirdmenu, $active_sidebar_forthmenu);
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/permissions.php'));
@@ -114,6 +119,11 @@
                 // Display the lessons learned page
                 case "lessons_learned":
                     display_incident_management_reporting_lessons_learned();
+                    break;
+
+                // Display the incident dashboard page
+                case "incident_dashboard":
+                    (new \includes\Widgets\UILayout('incident_dashboard'))->render();
                     break;
 
                 // Display the overview page by default

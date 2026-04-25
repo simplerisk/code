@@ -28,7 +28,7 @@ try {
     // Do a full rebuild of the TF-IDF analysis as a routine cron job
     compute_document_control_scores();
 } catch (Exception $e) {
-    write_debug_log("Error in cron_tfidf_recalculation: " . $e->getMessage(), "warning");
+    write_debug_log("Error in cron_tfidf_recalculation: " . $e->getMessage(), "error");
 }
 
 write_debug_log("Successfully completed cron_tfidf_recalculation.", "info");

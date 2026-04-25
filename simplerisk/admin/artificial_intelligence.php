@@ -91,23 +91,7 @@ function display($display = "")
         <?php display(); ?>
 
         <div class='card-body my-2 border'>
-            <form name='anthropic_settings' method='post' action=''>
-                <div class='row'>
-                    <div class='form-group'>
-                        <label>Anthropic API Key:</label>
-                        <div>To begin using an Anthropic API key:</div>
-                        <div>
-                            <ol>
-                                <li>Create an account <a class="open-in-new-tab" href="https://console.anthropic.com/" target="_blank">here</a>.</li>
-                                <li>Add credits to your account <a class="open-in-new-tab" href="https://console.anthropic.com/settings/billing" target="_blank">here</a>.  We recommend at least $40 so that you can take advantage of the Tier 2 limits.</li>
-                                <li>Create an API key <a class="open-in-new-tab" href="https://console.anthropic.com/settings/keys" target="_blank">here.</a></li>
-                                <li>Enter your API key in the input box below.</li>
-                            </ol>
-                        </div>
-                        <?php display_anthropic_api_key_input() ?>
-                    </div>
-                </div>
-            </form>
+            <?php display_ai_provider_configuration() ?>
         </div>
 
 <?php
@@ -119,8 +103,8 @@ function display($display = "")
             display_artificial_intelligence_settings();
     }
 
-    // If we have an Anthropic API key
-    if (get_setting("anthropic_api_key") != false)
+    // If we have an AI API key configured
+    if (get_setting("ai_api_key") != false)
     {
         // Process the added/updated context
         $parameter_array = get_artificial_intelligence_context_parameter_array();
@@ -133,6 +117,20 @@ function display($display = "")
             // Update a setting for the last time this prefix was updated
             $setting_name = $settings_prefix . "last_saved";
             update_setting($setting_name, time());
+
+            // If the AI extra is enabled, re-queue analysis for all existing risks
+            // so their recommendations are regenerated against the updated context.
+            // queue_ai_risk_analysis() handles deduplication — skips risks already pending/in_progress.
+            if (artificial_intelligence_extra())
+            {
+                $db = db_open();
+                $stmt = $db->query("SELECT id + 1000 AS risk_id FROM `risks`");
+                $risk_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                foreach ($risk_ids as $risk_id) {
+                    queue_ai_risk_analysis((int)$risk_id, $db);
+                }
+                db_close($db);
+            }
         }
 
         // Provide the user with the ability to add context

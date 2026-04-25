@@ -43,7 +43,7 @@ $return_code = $response['return_code'];
 // If we were unable to connect to the URL
 if($return_code !== 200)
 {
-    write_debug_log("SimpleRisk was unable to connect to " . $url);
+    write_debug_log("SimpleRisk was unable to connect to " . $url, 'warning');
 
     // We were unable to connect so set the policies, guidelines and procedures to an empty array
     $policies = [];
@@ -53,7 +53,7 @@ if($return_code !== 200)
 // We were able to connect to the URL
 else
 {
-    write_debug_log("SimpleRisk successfully connected to " . $url);
+    write_debug_log("SimpleRisk successfully connected to " . $url, 'info');
 
     // Convert the json contents of the file to an array
     $templates = json_decode($response['response'], 1);

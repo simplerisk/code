@@ -65,6 +65,18 @@ function generateHash($salt, $password)
 }
 
 /***************************
+ * FUNCTION: HASH PASSWORD *
+ ***************************/
+function hash_password($password)
+{
+    // Use PHP's native password_hash() with bcrypt so that the salt is
+    // generated from a cryptographically secure random source rather than
+    // from a deterministic MD5 digest.  The output is a 60-character
+    // self-contained hash that embeds the algorithm, cost, salt, and digest.
+    return password_hash($password, PASSWORD_BCRYPT, ['cost' => 15]);
+}
+
+/***************************
  * FUNCTION: GET USER TYPE *
  ***************************/
 function get_user_type($user, $upgrade = false)
@@ -122,6 +134,11 @@ function get_user_type($user, $upgrade = false)
 
 /***************************
  * FUNCTION: IS VALID USER *
+ ***************************
+ * $upgrade = true is passed exclusively by admin/upgrade.php. When set, the lockout check is
+ * intentionally omitted so that the database upgrade page remains accessible even when a schema
+ * migration has left the user table in a state that breaks normal login. See the comment block
+ * in admin/upgrade.php for a full explanation of the tradeoffs accepted for that entrypoint.
  ***************************/
 function is_valid_user($user, $pass, $upgrade = false)
 {
@@ -137,7 +154,7 @@ function is_valid_user($user, $pass, $upgrade = false)
     if ($type == "DNE")
     {
         // Write the debug log
-        write_debug_log("Not a valid user in SimpleRisk.");
+        write_debug_log("Not a valid user in SimpleRisk.", 'warning');
 
         // If we should automatically add new users with a default role
         if (get_setting('AUTHENTICATION_ADD_NEW_USERS') == 1)
@@ -233,6 +250,11 @@ function is_valid_user($user, $pass, $upgrade = false)
 
 /**********************************
  * FUNCTION: SET USER PERMISSIONS *
+ **********************************
+ * $upgrade = true is passed exclusively by admin/upgrade.php. When set, only the minimal session
+ * values needed for the upgrade UI are populated (value, type, name, lang, admin) rather than the
+ * full permission set. This avoids querying permission tables that may be mid-migration. See the
+ * comment block in admin/upgrade.php for a full explanation of the upgrade entrypoint design.
  **********************************/
 function set_user_permissions($user, $upgrade = false)
 {
@@ -339,9 +361,6 @@ function set_user_permissions($user, $upgrade = false)
         }
     }
 
-    // Get the latest SimpleRisk version and add it to the session
-    $_SESSION['latest_version_app'] = latest_version('app');
-
     // If the users language is not null
     if (!is_null($array[0]['lang']))
     {
@@ -421,14 +440,6 @@ function fake_simplerisk_user_validity_check() {
  **************************************/
 function is_valid_simplerisk_user($user, $pass)
 {
-    // Old password hash format
-    $salt = oldGenerateSalt($user);
-    $oldProvidedPassword = generateHash($salt, $pass);
-
-    // New password hash format
-    $salt = generateSalt($user);
-    $providedPassword = generateHash($salt, $pass);
-
     // Open the database connection
     $db = db_open();
 
@@ -450,18 +461,46 @@ function is_valid_simplerisk_user($user, $pass)
     // Store the list in the array
     $array = $stmt->fetchAll();
 
-    // Get the stored password
-    $storedPassword = $array[0]['password'];
-
     // Close the database connection
     db_close($db);
 
-    // If the passwords are equal
-    if (hash_equals($storedPassword, $providedPassword) || hash_equals($storedPassword, $oldProvidedPassword))
+    // If no matching user was found, return false
+    if (empty($array)) {
+        return false;
+    }
+
+    $storedPassword = $array[0]['password'];
+    $userId = (int)$array[0]['value'];
+
+    // password_verify() handles all bcrypt variants ($2a$, $2x$, $2y$) so it
+    // correctly verifies both the old crypt()-based hashes (MD5-derived salts,
+    // whether username-based or per-user-salt) and any modern password_hash()
+    // hashes already in the database.
+    if (password_verify($pass, $storedPassword))
     {
+        // Rehash on login if the stored hash was produced with the old crypt()
+        // path (prefix $2a$, deterministic MD5-derived salt) or if the cost
+        // factor differs from what we now require.  password_hash() uses a
+        // cryptographically random salt and produces $2y$-prefixed hashes.
+        $needsRehash = !str_starts_with($storedPassword, '$2y$')
+                    || password_needs_rehash($storedPassword, PASSWORD_BCRYPT, ['cost' => 15]);
+
+        if ($needsRehash)
+        {
+            $newHash = hash_password($pass);
+            $db = db_open();
+            $update = $db->prepare("UPDATE user SET password = :password WHERE value = :value");
+            $update->bindParam(":password", $newHash, PDO::PARAM_STR, 60);
+            $update->bindParam(":value", $userId, PDO::PARAM_INT);
+            $update->execute();
+            db_close($db);
+            write_debug_log("Migrated password hash to password_hash() format for user value: {$userId}.", 'info');
+        }
+
         return true;
     }
-    else return false;
+
+    return false;
 }
 
 /********************************
@@ -522,20 +561,14 @@ function is_simplerisk_user($username) {
  * FUNCTION: GENERATE TOKEN *
  ****************************/
 function generate_token($size)
-{               
+{
     $token = "";
     $values = array_merge(range(0, 9), range('a', 'z'), range('A', 'Z'));
 	$values_count = count($values);
-        
+
     for ($i = 0; $i < $size; $i++)
     {
-        // If the random int function exists (PHP 7)
-        if (function_exists('random_int'))
-        {
-            // Generate the token using the random_int function
-            $token .= $values[random_int(0, $values_count-1)];
-        }
-        else $token .= $values[array_rand($values)];
+        $token .= $values[random_int(0, $values_count-1)];
     }
 
     return $token;
@@ -549,17 +582,14 @@ function password_reset_by_username($username) {
     $userid = is_simplerisk_user($username);
     
     // Check if the username exists
-    if ($userid != 0) {    
+    if ($userid != 0) {
         password_reset_by_userid($userid);
-
-        // Adding a random wait to increase noise in response time to make it harder for timing attacks on the password reset 
-        wait(rand(0, 2000));
-        return true;
-    } else {
-        // Adding a random wait to increase noise in response time to make it harder for timing attacks on the password reset
-        wait(rand(1000, 3000));
-        return false;
     }
+
+    // Always wait the same range regardless of whether the username exists,
+    // so response timing cannot be used to enumerate valid usernames.
+    wait(rand(1000, 3000));
+    return ($userid != 0);
 }
 
 /**************************************
@@ -567,8 +597,8 @@ function password_reset_by_username($username) {
  **************************************/
 function password_reset_by_userid($userid) {
         
-    // Generate a 20 character reset token
-    $token = generate_token(20);
+    // Generate a 32 character reset token (~190 bits of entropy)
+    $token = generate_token(32);
 
     // Open the database connection
     $db = db_open();
@@ -615,15 +645,20 @@ function password_reset_by_userid($userid) {
         )
     ");
 
+    // Hash the token before storing — the raw token is sent to the user via email;
+    // only the SHA-256 digest lives in the database so a DB compromise does not
+    // yield immediately usable tokens.
+    $token_hash = hash('sha256', $token);
+
     $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
-    $stmt->bindParam(":token", $token, PDO::PARAM_STR, 20);
+    $stmt->bindParam(":token", $token_hash, PDO::PARAM_STR, 64);
 
     $stmt->execute();
 
     // Close the database connection
     db_close($db);
 
-    // Send the reset e-mail
+    // Send the raw token to the user via email
     send_reset_email($username, $name, $email, $token);
 
     // If this was submitted by an unauthenticated user
@@ -706,6 +741,21 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
 {
     global $lang, $escaper;
     $userid = is_simplerisk_user($username);
+    $ip = $_SERVER['REMOTE_ADDR'];
+
+    // Check rate limit before attempting token validation
+    if (is_password_reset_rate_limited($username, $ip))
+    {
+        write_debug_log("Password reset rate limit reached for username \"" . $username . "\" from IP " . $ip . ".", "warning");
+
+        $lockout_time = (int)(get_setting("password_reset_attempt_lockout_time") ?: 5);
+
+        // Display an alert
+        set_alert(true, "bad", "Too many invalid reset attempts. Please wait " . $lockout_time . " minute(s) before trying again, or request a new password reset.");
+
+        // Return false
+        return false;
+    }
 
     // If the reset token is valid
     if (is_valid_reset_token($username, $token))
@@ -722,9 +772,8 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
                 // Open the database connection
                 $db = db_open();
 
-                // Create the new password hash
-                $salt = generateSalt($username);
-                $hash = generateHash($salt, $password);
+                // Create the new password hash using a cryptographically random salt
+                $hash = hash_password($password);
 
                 // Update the password
                 $stmt = $db->prepare("UPDATE user SET password=:hash, last_password_change_date=NOW() WHERE username=:username");
@@ -734,13 +783,18 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
 
                 // Delete tokens for this user
                 $stmt = $db->prepare("DELETE FROM password_reset WHERE username=:username AND token=:token");
+                $token_hash = hash('sha256', $token);
                 $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
-                $stmt->bindParam(":token", $token, PDO::PARAM_STR,20);
+                $stmt->bindParam(":token", $token_hash, PDO::PARAM_STR, 64);
                 $stmt->execute();
-
 
                 // Close the database connection
                 db_close($db);
+
+                // Clear rate limit attempts on successful reset
+                clear_password_reset_attempts($username);
+
+                write_debug_log("Password reset successful for username \"" . $username . "\" from IP " . $ip . ".", "info");
 
                 // Clean up other sessions of the user and roll the current session's id
                 kill_other_sessions_of_current_user($userid);
@@ -753,7 +807,7 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
             else
             {
                 // Display an alert
-                //set_alert(true, "bad", password_error_message($error_code));
+                set_alert(true, "bad", password_error_message($error_code));
 
                 // Return false
                 return false;
@@ -772,6 +826,11 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
     // Reset token was invalid
     else
     {
+        // Record the failed attempt against this username and IP
+        record_password_reset_attempt($username, $ip);
+
+        write_debug_log("Invalid password reset token submitted for username \"" . $username . "\" from IP " . $ip . ".", "warning");
+
         // Display an alert
         set_alert(true, "bad", "Invalid user reset token.");
 
@@ -799,32 +858,20 @@ function is_valid_reset_token($username, $token)
 	// If strict user validation is disabled
 	if (get_setting('strict_user_validation') == 0)
 	{
-		// Increment the attempts for the username
-		$stmt = $db->prepare("UPDATE password_reset SET attempts=attempts+1 WHERE LOWER(convert(`username` using utf8)) = LOWER(:username)");
-	}
-	else
-	{
-		// Increment the attempts for the username
-		$stmt = $db->prepare("UPDATE password_reset SET attempts=attempts+1 WHERE username=:username");
-	}
-
-    $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
-    $stmt->execute();
-
-	// If strict user validation is disabled
-	if (get_setting('strict_user_validation') == 0)
-	{
         // Search for a valid token
-        $stmt = $db->prepare("SELECT attempts FROM password_reset WHERE LOWER(convert(`username` using utf8)) = LOWER(:username) AND token=:token");
+        $stmt = $db->prepare("SELECT 1 FROM password_reset WHERE LOWER(convert(`username` using utf8)) = LOWER(:username) AND token=:token");
 	}
 	else
 	{
         // Search for a valid token
-        $stmt = $db->prepare("SELECT attempts FROM password_reset WHERE username=:username AND token=:token");
+        $stmt = $db->prepare("SELECT 1 FROM password_reset WHERE username=:username AND token=:token");
 	}
+
+	// Hash the submitted token so we compare digests, never plaintext
+    $token_hash = hash('sha256', $token);
 
 	$stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
-    $stmt->bindParam(":token", $token, PDO::PARAM_STR, 20);
+    $stmt->bindParam(":token", $token_hash, PDO::PARAM_STR, 64);
 	$stmt->execute();
 
 	// Store the list in the array
@@ -833,47 +880,7 @@ function is_valid_reset_token($username, $token)
 	// Close the database connection
 	db_close($db);
 
-    // If there is not a match for the username and token
-    if (empty($array))
-    {
-        return false;
-    }
-    else
-    {
-        // Get the number of attempts
-        $attempts = $array[0]['attempts'];
-
-        // Matching token has been attempted <= 5 times
-        if ($attempts < 5)
-        {
-            return true;
-        }
-        // Matching token has been attempted > 5 times
-        else
-        {
-            // Expire the reset token
-            expire_reset_token($token);
-
-            return false;
-        }
-    }
-}
-
-/********************************
- * FUNCTION: EXPIRE RESET TOKEN *
- ********************************/
-function expire_reset_token($token)
-{
-    // Open the database connection
-    $db = db_open();
-
-    // Remove the matching token
-    $stmt = $db->prepare("DELETE FROM password_reset WHERE token=:token");
-    $stmt->bindParam(":token", $token, PDO::PARAM_STR, 20);
-    $stmt->execute();
-
-    // Close the database connection
-    db_close($db);
+    return !empty($array);
 }
 
 /*********************************************
@@ -886,6 +893,72 @@ function expire_reset_token_for_username($username)
 
     // Remove the matching token
     $stmt = $db->prepare("DELETE FROM password_reset WHERE username=:username");
+    $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+}
+
+/***************************************************
+ * FUNCTION: IS PASSWORD RESET RATE LIMITED        *
+ ***************************************************/
+function is_password_reset_rate_limited($username, $ip)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Get the rate limit lockout window and max attempts (default: 5 min, 5 attempts)
+    $expiration = (int)(get_setting("password_reset_attempt_lockout_time") ?: 5);
+    $max_attempts = 5;
+
+    $stmt = $db->prepare("SELECT attempts FROM password_reset_attempts WHERE username=:username AND ip=:ip AND last_attempt >= DATE_SUB(NOW(), INTERVAL :expiration MINUTE)");
+    $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
+    $stmt->bindParam(":ip", $ip, PDO::PARAM_STR, 45);
+    $stmt->bindParam(":expiration", $expiration, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $row = $stmt->fetch();
+
+    // Close the database connection
+    db_close($db);
+
+    return $row && (int)$row['attempts'] >= $max_attempts;
+}
+
+/***************************************************
+ * FUNCTION: RECORD PASSWORD RESET ATTEMPT         *
+ ***************************************************/
+function record_password_reset_attempt($username, $ip)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Clean up attempts older than the lockout window
+    $expiration = (int)(get_setting("password_reset_attempt_lockout_time") ?: 5);
+    $stmt = $db->prepare("DELETE FROM password_reset_attempts WHERE last_attempt < DATE_SUB(NOW(), INTERVAL :expiration MINUTE)");
+    $stmt->bindParam(":expiration", $expiration, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Insert or increment the attempt counter for this username+IP pair
+    $stmt = $db->prepare("INSERT INTO password_reset_attempts (username, ip, attempts, last_attempt) VALUES (:username, :ip, 1, NOW()) ON DUPLICATE KEY UPDATE attempts=attempts+1, last_attempt=NOW()");
+    $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
+    $stmt->bindParam(":ip", $ip, PDO::PARAM_STR, 45);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+}
+
+/***************************************************
+ * FUNCTION: CLEAR PASSWORD RESET ATTEMPTS         *
+ ***************************************************/
+function clear_password_reset_attempts($username)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("DELETE FROM password_reset_attempts WHERE username=:username");
     $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
     $stmt->execute();
 
@@ -911,7 +984,7 @@ function add_session_check($permissions = [])
 			write_debug_log("We are using the database for sessions.", "debug");
 
 			// Set the custom session save handler
-			session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+			session_set_save_handler(new SimpleRiskSessionHandler());
 		}
 
 		// If we are running an old version of PHP
@@ -933,8 +1006,8 @@ function add_session_check($permissions = [])
 		}
 		else
 		{
-			write_debug_log("We are running a newer version of PHP >= 7.3 (" . PHP_VERSION_ID . ").");
-			write_debug_log("Setting the session cookie parameters.");
+			write_debug_log("We are running a newer version of PHP >= 7.3 (" . PHP_VERSION_ID . ").", 'debug');
+			write_debug_log("Setting the session cookie parameters.", 'debug');
 
 			// Set the session cookie parameters
             $parameters = [
@@ -1082,6 +1155,19 @@ function session_check()
 	return true;
 }
 
+/*************************************
+ * CLASS: SIMPLERISK SESSION HANDLER *
+ *************************************/
+class SimpleRiskSessionHandler implements SessionHandlerInterface
+{
+    public function open(string $path, string $name): bool { return sess_open($path, $name); }
+    public function close(): bool { return sess_close(); }
+    public function read(string $id): string|false { return sess_read($id); }
+    public function write(string $id, string $data): bool { return sess_write($id, $data); }
+    public function destroy(string $id): bool { return sess_destroy($id); }
+    public function gc(int $max_lifetime): int|false { sess_gc($max_lifetime); return 1; }
+}
+
 /**************************
  * FUNCTION: SESSION OPEN *
  **************************/
@@ -1226,12 +1312,16 @@ function sess_gc($sess_maxlifetime)
 function logout()
 {
     // Get the session username and uid
-    $username = $_SESSION['user'];
-    $uid = $_SESSION['uid'];
+    $username = $_SESSION['user'] ?? '';
+    $uid = $_SESSION['uid'] ?? 0;
 
     // Audit log
     $message = "Username \"" . $username . "\" logged out successfully.";
     write_log($uid + 1000, $uid, $message, "user");
+
+    // Invalidate all server-side sessions for this user (other browsers,
+    // devices, or stolen cookies) so that logout is a complete sign-out.
+    kill_sessions_of_user($uid);
 
     // Deny access
     $_SESSION["access"] = "denied";
@@ -1412,7 +1502,7 @@ function add_last_password_history($user_id, $old_salt, $old_password)
 /**********************************************
  * FUNCTION: CHECK ADD PASSWORD REUSE HISTORY *
  **********************************************/
-function check_add_password_reuse_history($user_id, $password)
+function check_add_password_reuse_history($user_id, $plaintext_password)
 {
 	$pass_policy_reuse_limit = get_setting('pass_policy_reuse_limit');
 
@@ -1422,46 +1512,62 @@ function check_add_password_reuse_history($user_id, $password)
 		// We don't need to check
 		return true;
 	}
-	else
+
+	// Open the database connection
+	$db = db_open();
+
+	// Fetch all stored password hashes for this user so we can verify each one
+	// with password_verify().  A direct SQL hash comparison is not possible here
+	// because password_hash() generates a unique random salt each time, so two
+	// hashes of the same password will never match as byte strings.
+	$stmt = $db->prepare("SELECT id, password, counts FROM user_pass_reuse_history WHERE user_id = :user_id");
+	$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+	$stmt->execute();
+	$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+	// Close the connection while we do the (potentially slow) bcrypt verifications
+	db_close($db);
+
+	$matchedRow = null;
+	foreach ($rows as $row)
 	{
-		// Open the database connection
-		$db = db_open();
-
-		// Check if row exists
-		$stmt = $db->prepare("SELECT * FROM user_pass_reuse_history WHERE user_id = :user_id AND password LIKE :password;");
-		$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
-		$stmt->bindParam(":password", $password, PDO::PARAM_STR, 60);
-		$stmt->execute();
-		$result = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-		if(!$result)
+		// password_verify() works for both $2y$ (password_hash) and $2a$ (old crypt) bcrypt hashes
+		if (password_verify($plaintext_password, $row['password']))
 		{
-			// Insert new record
-			$stmt = $db->prepare("INSERT INTO user_pass_reuse_history(`user_id`, password) VALUES(:user_id, :password);");
-			$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
-			$stmt->bindParam(":password", $password, PDO::PARAM_STR, 60);
-			$stmt->execute();
-		}
-		elseif($result['counts'] < $pass_policy_reuse_limit)
-		{
-			$stmt = $db->prepare("UPDATE user_pass_reuse_history SET `counts`=`counts`+1 WHERE `user_id`=:user_id AND password=:password ");
-			$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
-			$stmt->bindParam(":password", $password, PDO::PARAM_STR, 60);
-			$stmt->execute();
-		}
-		else
-		{
-			// Close the database connection
-			db_close($db);
-
-			return false;
+			$matchedRow = $row;
+			break;
 		}
 	}
 
-	// Close the database connection
-	db_close($db);
-    
-	return true;
+	// Re-open the database connection to write the result
+	$db = db_open();
+
+	if ($matchedRow === null)
+	{
+		// Password not seen before — store its hash in the reuse history
+		$newHash = hash_password($plaintext_password);
+		$stmt = $db->prepare("INSERT INTO user_pass_reuse_history(`user_id`, `password`) VALUES(:user_id, :password)");
+		$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+		$stmt->bindParam(":password", $newHash, PDO::PARAM_STR, 60);
+		$stmt->execute();
+		db_close($db);
+		return true;
+	}
+	elseif ($matchedRow['counts'] < $pass_policy_reuse_limit)
+	{
+		// Password was used before but is still within the allowed reuse count
+		$stmt = $db->prepare("UPDATE user_pass_reuse_history SET `counts` = `counts` + 1 WHERE `id` = :id");
+		$stmt->bindParam(":id", $matchedRow['id'], PDO::PARAM_INT);
+		$stmt->execute();
+		db_close($db);
+		return true;
+	}
+	else
+	{
+		// Password reuse limit reached — block this password
+		db_close($db);
+		return false;
+	}
 }
 
 /****************************
@@ -1484,15 +1590,12 @@ function reset_password($user_id, $current_password, $new_password, $confirm_pas
 		// If the new password is valid
 		if ($error_code == 1)
 		{
-			// Generate the salt
-			$salt = generateSalt($username);
-
-			// Generate the password hash
-			$hash = generateHash($salt, $new_password);
-
-			// If it is possible to reuse password
-			if(check_add_password_reuse_history($user_id, $hash))
+			// If it is possible to reuse password (pass plaintext so password_verify() can check history)
+			if(check_add_password_reuse_history($user_id, $new_password))
 			{
+				// Generate the password hash using a cryptographically random salt
+				$hash = hash_password($new_password);
+
 				// Get user old data
 				$old_data = get_salt_and_password_by_user_id($user_id);
 
@@ -1598,50 +1701,23 @@ function login($user, $pass)
  ****************************************************************************/
 function kill_sessions_of_user($user_id, $keep_current_session = false) {
 
-    $sid = session_id();
-
     $db = db_open();
 
+    // PHP session serialization stores uid as 'uid|i:N;' — match it at the
+    // start of the data string or after a semicolon to avoid false positives
+    $uid_pattern = '(^|;)uid\\|i:' . (int)$user_id . ';';
+
     if ($keep_current_session) {
-        // Get the session ids that are not THIS session
-        $stmt = $db->prepare("SELECT `id` FROM sessions where `id` <> :session_id and length(`data`) > 20;");
+        $sid = session_id();
+        $stmt = $db->prepare("DELETE FROM sessions WHERE `id` <> :session_id AND `data` REGEXP :uid_pattern");
         $stmt->bindParam(":session_id", $sid);
+        $stmt->bindParam(":uid_pattern", $uid_pattern);
     } else {
-        // Get the session ids including THIS session
-        $stmt = $db->prepare("SELECT `id` FROM sessions where length(`data`) > 20;");
+        $stmt = $db->prepare("DELETE FROM sessions WHERE `data` REGEXP :uid_pattern");
+        $stmt->bindParam(":uid_pattern", $uid_pattern);
     }
 
     $stmt->execute();
-    $session_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-    if (!empty($session_ids)) {
-        // Force-write current session changes
-        session_write_close();
-
-        // Iterate through the session ids
-        foreach($session_ids as $session_id) {
-
-            // Activate our target session
-            session_id($session_id);
-            session_start();
-
-            // Kill session if the user id matches the current user
-            if (isset($_SESSION['uid']) && $_SESSION['uid'] == $user_id) {
-                // unset $_SESSION variable for the run-time
-                session_unset();
-
-                // destroy session data in storage
-                session_destroy();
-
-            }
-            // Force-write current session changes
-            session_write_close();
-        }
-
-        // Start our old session again
-        session_id($sid);
-        session_start();
-    }
 
     db_close($db);
 }

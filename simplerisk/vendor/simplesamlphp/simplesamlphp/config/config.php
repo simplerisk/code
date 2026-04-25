@@ -135,19 +135,22 @@ $config = [
      * needed
      */
 
-    //'cert.pdo.table' => 'certificates',
-    //'cert.pdo.keytable' => 'private_keys',
-    //'cert.pdo.apply_prefix' => true,
-    //'cert.pdo.id_column' => 'id',
-    //'cert.pdo.data_column' => 'data',
+    // Point the cert loader at the SimpleRisk settings table.
+    // The cert and key PEM strings are stored there as SAML_SP_CERT / SAML_SP_KEY,
+    // referenced in authsources.php as pdo://SAML_SP_CERT and pdo://SAML_SP_KEY.
+    'cert.pdo.table'        => 'settings',
+    'cert.pdo.keytable'     => 'settings',
+    'cert.pdo.apply_prefix' => false,
+    'cert.pdo.id_column'    => 'name',
+    'cert.pdo.data_column'  => 'value',
 
     /*
      * Some information about the technical persons running this installation.
      * The email address will be used as the recipient address for error reports, and
      * also as the technical contact in generated metadata.
      */
-    'technicalcontact_name' => 'SimpleRisk Support',
-    'technicalcontact_email' => 'support@simplerisk.com',
+    'technicalcontact_name' => get_setting("phpmailer_from_name") ?: 'SimpleRisk Administrator',
+    'technicalcontact_email' => get_setting("phpmailer_from_email") ?: 'support@simplerisk.com',
 
     /*
      * (Optional) The method by which email is delivered.  Defaults to mail which utilizes the
@@ -325,7 +328,7 @@ $config = [
 
     'debug' => [
         'saml' => false,
-        'backtraces' => true,
+        'backtraces' => false,
         'validatexml' => false,
     ],
 
@@ -375,7 +378,7 @@ $config = [
      * are:
      *
      * - %date{<format>}: the date and time, with its format specified inside the brackets. See the PHP documentation
-     *   of the strftime() function for more information on the format. If the brackets are omitted, the standard
+     *   of the date() function for more information on the format. If the brackets are omitted, the standard
      *   format is applied. This can be useful if you just want to control the placement of the date, but don't care
      *   about the format.
      *
@@ -395,7 +398,7 @@ $config = [
      * - %msg: the message to be logged.
      *
      */
-    //'logging.format' => '%date{%b %d %H:%M:%S} %process %level %stat[%trackid] %msg',
+    //'logging.format' => '%date{M j H:i:s} %process %level %stat[%trackid] %msg',
 
     /*
      * Choose which facility should be used when logging with syslog.
@@ -479,13 +482,15 @@ $config = [
      * Ensure that you have the required PDO database driver installed
      * for your connection string.
      */
-    'database.dsn' => 'mysql:host=localhost;dbname=saml',
+    // Use the same SimpleRisk database as the session store so the cert loader
+    // can read the SAML_SP_CERT / SAML_SP_KEY rows from the settings table.
+    'database.dsn' => 'mysql:charset=UTF8;dbname='.DB_DATABASE.';host='.DB_HOSTNAME.';port='.DB_PORT,
 
     /*
      * SQL database credentials
      */
-    'database.username' => 'simplesamlphp',
-    'database.password' => 'secret',
+    'database.username' => DB_USERNAME,
+    'database.password' => DB_PASSWORD,
     'database.options' => [],
 
     /*
@@ -513,7 +518,7 @@ $config = [
      * options for the master (shown above) with the exception of the table
      * prefix and driver options.
      */
-    'database.slaves' => [
+    'database.secondaries' => [
         /*
         [
             'dsn' => 'mysql:host=myslave;dbname=saml',
@@ -851,7 +856,7 @@ $config = [
      */
     'language.available' => [
         'en', 'no', 'nn', 'se', 'da', 'de', 'sv', 'fi', 'es', 'ca', 'fr', 'it', 'nl', 'lb',
-        'cs', 'sl', 'lt', 'hr', 'hu', 'pl', 'pt', 'pt-br', 'tr', 'ja', 'zh', 'zh-tw', 'ru',
+        'cs', 'sl', 'lt', 'hr', 'hu', 'pl', 'pt', 'pt_BR', 'tr', 'ja', 'zh', 'zh_TW', 'ru',
         'et', 'he', 'id', 'sr', 'lv', 'ro', 'eu', 'el', 'af', 'zu', 'xh',
     ],
     'language.rtl' => ['ar', 'dv', 'fa', 'ur', 'he'],

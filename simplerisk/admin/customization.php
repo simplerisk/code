@@ -58,6 +58,8 @@
 
 				if (update_custom_field($id, $name, $required, $encryption, $alphabetical_order)) {
 
+					$_SESSION['custom_field_id'] = (int)$id;
+
 					set_alert(true, "good", $escaper->escapeHtml($lang['SuccessfullyUpdatedCustomField']));
 
 				}

@@ -43,13 +43,13 @@ return [
      * already exists, false if nothing to queue.
      ************************************************************/
     'task_check' => function(PDO $db) {
-        // If an Anthropic API key is not set
-        if (get_setting("anthropic_api_key", false, false, db: $db) === false) {
-            write_debug_log("Anthropic API Key not set.", "notice");
+        // If an AI API key is not set
+        if (get_setting("ai_api_key", false, false, db: $db) === false) {
+            write_debug_log("AI API Key not set.", "notice");
             return false;
         }
 
-        write_debug_log("AI Context Update: Checking for pending updates.", "info");
+        write_debug_log("AI Context Update: Checking for pending updates.", "debug");
 
         $last_saved = get_setting("ai_context_last_saved", false, false, db: $db);
         $last_updated = get_setting("ai_context_last_updated", false, false, db: $db);
@@ -78,19 +78,22 @@ return [
             }
 
             // If the task is not already running and we have settings we can process
-            if ($running_count === 0  && $settings_count > 0) {
+            if ($running_count === 0 && $settings_count > 0) {
                 $queue_task_payload = [
                     'triggered_at'      => time(),
                 ];
                 queue_task($db, 'core_ai_context_update', $queue_task_payload, 50, 5, 3600);
-                write_debug_log("AI Context Update: Queued new task.", "notice");
+                write_debug_log("AI Context Update: Queued new task.", "info");
                 return true;
+            } elseif ($running_count > 0) {
+                write_debug_log("AI Context Update: Task already running ({$running_count}). Skipping queueing.", "debug");
+                return false;
             } else {
-                write_debug_log("AI Context Update: Task already running ({$running_count}). Skipping queueing.", "info");
+                write_debug_log("AI Context Update: No AI context settings found (ai_context_* rows missing). Complete the AI context questionnaire to enable recommendations.", "notice");
                 return false;
             }
         } else {
-            write_debug_log("AI Context Update: No update required.", "info");
+            write_debug_log("AI Context Update: No update required.", "debug");
             return false;
         }
     },
@@ -169,7 +172,7 @@ return [
             $payload = json_decode($promise['payload'], true) ?? [];
 
             try {
-                $context_content = generate_anthropic_message_context();
+                $context_content = generate_ai_business_context();
 
                 if (!$context_content) {
                     throw new Exception("Context content empty");
@@ -198,7 +201,7 @@ return [
                     throw new Exception("No context content found for AI recommendations");
                 }
 
-                $advice = ask_anthropic_for_recommendations($context_content);
+                $advice = ai_get_recommendations($context_content);
 
                 if (!$advice) {
                     throw new Exception("AI returned empty recommendations");

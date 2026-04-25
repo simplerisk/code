@@ -59,7 +59,7 @@ class Sum
                 $returnValue += $arg;
             } elseif (is_bool($arg)) {
                 $returnValue += (int) $arg;
-            } elseif (ErrorValue::isError($arg)) {
+            } elseif (ErrorValue::isError($arg, true)) {
                 /** @var string $arg */
                 return $arg;
             } elseif ($arg !== null && !Functions::isCellValue($k)) {
@@ -110,6 +110,7 @@ class Sum
             }
         }
 
+        /** @var array<float|int> $wrkArray */
         return array_sum($wrkArray);
     }
 }

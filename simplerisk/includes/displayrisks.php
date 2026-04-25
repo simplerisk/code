@@ -596,7 +596,7 @@ function display_supporting_documentation_view($risk_id, $view_type, $panel_name
             <div class='{$span1} " . ($view_type == 1 ? "risk-details-view-title" : "mitigation-details-view-title") . " d-flex align-items-center justify-content-end'>
                 <label>" . $escaper->escapeHtml($lang['SupportingDocumentation']) . ": </label>
             </div>
-            <div class='{$span2} " . ($view_type == 1 ? "risk-details-view" : "mitigation-details-view") . "'>
+            <div class='{$span2} " . ($view_type == 1 ? "risk-details-view risk-details-supporting-documentation" : "mitigation-details-view mitigation-details-supporting-documentation") . "'>
     ";
                 supporting_documentation($risk_id, "view", $view_type);
     echo "  

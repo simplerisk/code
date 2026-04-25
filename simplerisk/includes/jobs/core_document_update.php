@@ -18,6 +18,20 @@ return [
         $stmt = $db->prepare("UPDATE compliance_files SET keyword_processing_error = 1 WHERE ref_id = :id");
         $stmt->execute([':id' => $document_id]);
 
+        // Clean up any tmp files that were written before the failure
+        $unique_name = $payload['unique_name'] ?? null;
+        $extracted_text_ref = $payload['extracted_text_ref'] ?? null;
+        if ($unique_name) {
+            try { delete_tmp_file($db, $unique_name); } catch (\Throwable $e) {
+                write_debug_log("Document Update: Failed to delete tmp file {$unique_name} during on_failure: " . $e->getMessage(), "warning");
+            }
+        }
+        if ($extracted_text_ref) {
+            try { delete_tmp_data($db, $extracted_text_ref); } catch (\Throwable $e) {
+                write_debug_log("Document Update: Failed to delete tmp data {$extracted_text_ref} during on_failure: " . $e->getMessage(), "warning");
+            }
+        }
+
         write_debug_log("Document Update: Marked document {$document_id} as failed after {$attempts} attempts: {$error_message}", "error");
     },
 
@@ -53,7 +67,7 @@ return [
             queue_task($db, 'core_document_update', $queue_task_payload, 100, 5, 3600);
         }
 
-        return true;
+        return !empty($document_ids);
     },
 
     'queue_check' => function(array $task, PDO $db) {
@@ -130,11 +144,12 @@ return [
 
             try {
                 $file = load_tmp_file($db, $unique_name);
+
+                if (!$file) throw new Exception("Temporary file not found: {$unique_name}");
+
                 $content = $file['content'];
                 $mimeType = $file['type'];
                 $fileName = $file['name'];
-
-                if (!$file) throw new Exception("Temporary file not found: {$unique_name}");
 
                 try {
                     $text = DocumentTextExtractor::extractText($content, $mimeType, $fileName);
@@ -142,14 +157,12 @@ return [
                     $payload['extracted_text_ref'] = save_tmp_data($db, "text_{$document_id}", $text);
                     write_debug_log("Document Update: Extracted text for {$unique_name}", "debug");
                 } catch (UnsupportedDocumentException $e) {
-                    // Mark this document as having a processing error and don't retry
                     write_debug_log("Document Update: Unsupported document type for document {$document_id}: " . $e->getMessage(), "warning");
 
                     $stmt = $db->prepare("UPDATE compliance_files SET keyword_processing_error = 1 WHERE ref_id = :id");
                     $stmt->execute([':id' => $document_id]);
 
-                    // Throw exception to stop processing this document
-                    throw new Exception("Unsupported document type - marked for skipping: " . $e->getMessage());
+                    throw new \NonRetryableException("Unsupported document type - marked for skipping: " . $e->getMessage());
                 }
             } catch (Exception $e) {
                 write_debug_log("Document Update: Failed to convert document to text for #{$promise['id']}: " . $e->getMessage(), "error");
@@ -181,7 +194,7 @@ return [
                     ':id' => $document_id
                 ]);
 
-                write_debug_log("Keywords with counts: " . var_dump($keywordsWithCounts), "debug");
+                write_debug_log("Keywords with counts: " . json_encode($keywordsWithCounts), "debug");
                 write_debug_log("Document Update: Calculated keywords for document {$document_id}", "debug");
             } catch (Exception $e) {
                 write_debug_log("Document Update: Failed to calculate keywords for #{$promise['id']}: " . $e->getMessage(), "error");

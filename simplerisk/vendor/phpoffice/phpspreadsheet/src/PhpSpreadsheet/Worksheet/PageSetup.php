@@ -431,10 +431,8 @@ class PageSetup
      */
     public function isColumnsToRepeatAtLeftSet(): bool
     {
-        if (!empty($this->columnsToRepeatAtLeft)) {
-            if ($this->columnsToRepeatAtLeft[0] != '' && $this->columnsToRepeatAtLeft[1] != '') {
-                return true;
-            }
+        if ($this->columnsToRepeatAtLeft[0] != '' && $this->columnsToRepeatAtLeft[1] != '') {
+            return true;
         }
 
         return false;
@@ -453,13 +451,13 @@ class PageSetup
     /**
      * Set Columns to repeat at left.
      *
-     * @param array{string, string} $columnsToRepeatAtLeft Containing start column and end column, empty array if option unset
+     * @param array{string, string}|array{} $columnsToRepeatAtLeft Containing start column and end column, empty array if option unset
      *
      * @return $this
      */
     public function setColumnsToRepeatAtLeft(array $columnsToRepeatAtLeft): static
     {
-        $this->columnsToRepeatAtLeft = $columnsToRepeatAtLeft;
+        $this->columnsToRepeatAtLeft = empty($columnsToRepeatAtLeft) ? ['', ''] : $columnsToRepeatAtLeft;
 
         return $this;
     }
@@ -576,7 +574,7 @@ class PageSetup
      * Get print area.
      *
      * @param int $index Identifier for a specific print area range if several ranges have been set
-     *                            Default behaviour, or a index value of 0, will return all ranges as a comma-separated string
+     *                            Default behaviour, or an index value of 0, will return all ranges as a comma-separated string
      *                            Otherwise, the specific range identified by the value of $index will be returned
      *                            Print areas are numbered from 1
      */
@@ -642,7 +640,7 @@ class PageSetup
      * @param int $index Identifier for a specific print area range allowing several ranges to be set
      *                            When the method is "O"verwrite, then a positive integer index will overwrite that indexed
      *                                entry in the print areas list; a negative index value will identify which entry to
-     *                                overwrite working bacward through the print area to the list, with the last entry as -1.
+     *                                overwrite working backward through the print area to the list, with the last entry as -1.
      *                                Specifying an index value of 0, will overwrite <b>all</b> existing print ranges.
      *                            When the method is "I"nsert, then a positive index will insert after that indexed entry in
      *                                the print areas list, while a negative index will insert before the indexed entry.

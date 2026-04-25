@@ -2,6 +2,7 @@
 
 namespace PhpOffice\PhpSpreadsheet\Collection;
 
+use PhpOffice\PhpSpreadsheet\Cell\AddressRange;
 use PhpOffice\PhpSpreadsheet\Cell\Cell;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Exception as PhpSpreadsheetException;
@@ -11,7 +12,8 @@ use Psr\SimpleCache\CacheInterface;
 
 class Cells
 {
-    protected const MAX_COLUMN_ID = 16384;
+    /** @deprecated 5.6.0 use AddressRange::MAX_COLUMN_INT */
+    protected const MAX_COLUMN_ID = AddressRange::MAX_COLUMN_INT;
 
     private CacheInterface $cache;
 
@@ -42,6 +44,25 @@ class Cells
      * @var int[]
      */
     private array $index = [];
+
+    /**
+     * Flag to avoid sorting the index every time.
+     */
+    private bool $indexSorted = false;
+
+    /**
+     * Index keys cache to avoid recalculating on large arrays.
+     *
+     * @var null|string[]
+     */
+    private ?array $indexKeysCache = null;
+
+    /**
+     * Index values cache to avoid recalculating on large arrays.
+     *
+     * @var null|int[]
+     */
+    private ?array $indexValuesCache = null;
 
     /**
      * Prefix used to uniquely identify cache data for this worksheet.
@@ -112,6 +133,10 @@ class Cells
 
         unset($this->index[$cellCoordinate]);
 
+        // Clear index caches
+        $this->indexKeysCache = null;
+        $this->indexValuesCache = null;
+
         // Delete the entry from cache
         $this->cache->delete($this->cachePrefix . $cellCoordinate);
     }
@@ -123,7 +148,12 @@ class Cells
      */
     public function getCoordinates(): array
     {
-        return array_keys($this->index);
+        // Build or rebuild index keys cache
+        if ($this->indexKeysCache === null) {
+            $this->indexKeysCache = array_keys($this->index);
+        }
+
+        return $this->indexKeysCache;
     }
 
     /**
@@ -133,9 +163,21 @@ class Cells
      */
     public function getSortedCoordinates(): array
     {
-        asort($this->index);
+        // Sort only when required
+        if (!$this->indexSorted) {
+            asort($this->index);
+            $this->indexSorted = true;
+            // Clear unsorted cache
+            $this->indexKeysCache = null;
+            $this->indexValuesCache = null;
+        }
 
-        return array_keys($this->index);
+        // Build or rebuild index keys cache
+        if ($this->indexKeysCache === null) {
+            $this->indexKeysCache = array_keys($this->index);
+        }
+
+        return $this->indexKeysCache;
     }
 
     /**
@@ -145,9 +187,19 @@ class Cells
      */
     public function getSortedCoordinatesInt(): array
     {
-        asort($this->index);
+        if (!$this->indexSorted) {
+            asort($this->index);
+            $this->indexSorted = true;
+            // Clear unsorted cache
+            $this->indexKeysCache = null;
+            $this->indexValuesCache = null;
+        }
 
-        return array_values($this->index);
+        if ($this->indexValuesCache === null) {
+            $this->indexValuesCache = array_values($this->index);
+        }
+
+        return $this->indexValuesCache;
     }
 
     /**
@@ -192,9 +244,9 @@ class Cells
         // Lookup highest column and highest row
         $maxRow = $maxColumn = 1;
         foreach ($this->index as $coordinate) {
-            $row = (int) floor(($coordinate - 1) / self::MAX_COLUMN_ID) + 1;
+            $row = (int) floor(($coordinate - 1) / AddressRange::MAX_COLUMN_INT) + 1;
             $maxRow = ($maxRow > $row) ? $maxRow : $row;
-            $column = ($coordinate % self::MAX_COLUMN_ID) ?: self::MAX_COLUMN_ID;
+            $column = ($coordinate % AddressRange::MAX_COLUMN_INT) ?: AddressRange::MAX_COLUMN_INT;
             $maxColumn = ($maxColumn > $column) ? $maxColumn : $column;
         }
 
@@ -224,14 +276,14 @@ class Cells
         }
 
         $maxColumn = 1;
-        $toRow = $row * self::MAX_COLUMN_ID;
-        $fromRow = --$row * self::MAX_COLUMN_ID;
+        $toRow = $row * AddressRange::MAX_COLUMN_INT;
+        $fromRow = --$row * AddressRange::MAX_COLUMN_INT;
         foreach ($this->index as $coordinate) {
             if ($coordinate < $fromRow || $coordinate >= $toRow) {
                 continue;
             }
-            $column = ($coordinate % self::MAX_COLUMN_ID) ?: self::MAX_COLUMN_ID;
-            $maxColumn = $maxColumn > $column ? $maxColumn : $column;
+            $column = ($coordinate % AddressRange::MAX_COLUMN_INT) ?: AddressRange::MAX_COLUMN_INT;
+            $maxColumn = max($column, $maxColumn);
         }
 
         return Coordinate::stringFromColumnIndex($maxColumn);
@@ -254,10 +306,10 @@ class Cells
         $maxRow = 1;
         $columnIndex = Coordinate::columnIndexFromString($column);
         foreach ($this->index as $coordinate) {
-            if ($coordinate % self::MAX_COLUMN_ID !== $columnIndex) {
+            if ($coordinate % AddressRange::MAX_COLUMN_INT !== $columnIndex) {
                 continue;
             }
-            $row = (int) floor($coordinate / self::MAX_COLUMN_ID) + 1;
+            $row = (int) floor($coordinate / AddressRange::MAX_COLUMN_INT) + 1;
             $maxRow = ($maxRow > $row) ? $maxRow : $row;
         }
 
@@ -300,6 +352,11 @@ class Cells
             }
         }
 
+        // Clear index sorted flag and index caches
+        $newCollection->indexSorted = false;
+        $newCollection->indexKeysCache = null;
+        $newCollection->indexValuesCache = null;
+
         return $newCollection;
     }
 
@@ -316,12 +373,12 @@ class Cells
             throw new PhpSpreadsheetException('Row number must be a positive integer');
         }
 
-        $toRow = $row * self::MAX_COLUMN_ID;
-        $fromRow = --$row * self::MAX_COLUMN_ID;
+        $toRow = $row * AddressRange::MAX_COLUMN_INT;
+        $fromRow = --$row * AddressRange::MAX_COLUMN_INT;
         foreach ($this->index as $coordinate) {
             if ($coordinate >= $fromRow && $coordinate < $toRow) {
-                $row = (int) floor($coordinate / self::MAX_COLUMN_ID) + 1;
-                $column = Coordinate::stringFromColumnIndex($coordinate % self::MAX_COLUMN_ID);
+                $row = (int) floor($coordinate / AddressRange::MAX_COLUMN_INT) + 1;
+                $column = Coordinate::stringFromColumnIndex($coordinate % AddressRange::MAX_COLUMN_INT);
                 $this->delete("{$column}{$row}");
             }
         }
@@ -338,9 +395,9 @@ class Cells
 
         $columnIndex = Coordinate::columnIndexFromString($column);
         foreach ($this->index as $coordinate) {
-            if ($coordinate % self::MAX_COLUMN_ID === $columnIndex) {
-                $row = (int) floor($coordinate / self::MAX_COLUMN_ID) + 1;
-                $column = Coordinate::stringFromColumnIndex($coordinate % self::MAX_COLUMN_ID);
+            if ($coordinate % AddressRange::MAX_COLUMN_INT === $columnIndex) {
+                $row = (int) floor($coordinate / AddressRange::MAX_COLUMN_INT) + 1;
+                $column = Coordinate::stringFromColumnIndex($coordinate % AddressRange::MAX_COLUMN_INT);
                 $this->delete("{$column}{$row}");
             }
         }
@@ -388,7 +445,12 @@ class Cells
         $row = '';
         sscanf($cellCoordinate, '%[A-Z]%d', $column, $row);
         /** @var int $row */
-        $this->index[$cellCoordinate] = (--$row * self::MAX_COLUMN_ID) + Coordinate::columnIndexFromString((string) $column);
+        $this->index[$cellCoordinate] = (--$row * AddressRange::MAX_COLUMN_INT) + Coordinate::columnIndexFromString((string) $column);
+
+        // Clear index sorted flag and index caches
+        $this->indexSorted = false;
+        $this->indexKeysCache = null;
+        $this->indexValuesCache = null;
 
         $this->currentCoordinate = $cellCoordinate;
         $this->currentCell = $cell;
@@ -443,6 +505,11 @@ class Cells
         $this->__destruct();
 
         $this->index = [];
+
+        // Clear index sorted flag and index caches
+        $this->indexSorted = false;
+        $this->indexKeysCache = null;
+        $this->indexValuesCache = null;
 
         // detach ourself from the worksheet, so that it can then delete this object successfully
         $this->parent = null;

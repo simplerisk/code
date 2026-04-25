@@ -106,14 +106,14 @@ class Indirect
      */
     private static function extractRequiredCells(?Worksheet $worksheet, string $cellAddress): array
     {
-        return Calculation::getInstance($worksheet !== null ? $worksheet->getParent() : null)
+        return Calculation::getInstance($worksheet?->getParent())
             ->extractCellRange($cellAddress, $worksheet, false, createCell: true);
     }
 
     private static function handleRowColumnRanges(?Worksheet $worksheet, string $start, string $end): string
     {
         // Being lazy, we're only checking a single row/column to get the max
-        if (ctype_digit($start) && $start <= 1048576) {
+        if (ctype_digit($start) && $start <= AddressRange::MAX_ROW) {
             // Max 16,384 columns for Excel2007
             $endColRef = ($worksheet !== null) ? $worksheet->getHighestDataColumn((int) $start) : AddressRange::MAX_COLUMN;
 

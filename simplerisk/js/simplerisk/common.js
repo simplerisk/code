@@ -336,15 +336,22 @@ function sanitizeHTML(str) {
     div.innerHTML = str;
 
     // Only allow specific HTML tags
-    const allowedTags = ['br', 'ul', 'li', 'p', 'strong', 'em'];
+    const allowedTags = ['br', 'ul', 'ol', 'li', 'p', 'strong', 'em', 'h4'];
 
-    // Remove any tags that aren't in our allowlist
+    // Remove any tags that aren't in our allowlist; strip all attributes from
+    // tags that are allowed (prevents onclick, onerror, style, and other
+    // attribute-based XSS vectors on otherwise-permitted elements).
     const allElements = div.getElementsByTagName('*');
     for (let i = allElements.length - 1; i >= 0; i--) {
         const element = allElements[i];
         if (!allowedTags.includes(element.tagName.toLowerCase())) {
             // Replace the element with its text content
             element.outerHTML = element.textContent;
+        } else {
+            // Strip every attribute from allowed elements
+            while (element.attributes.length > 0) {
+                element.removeAttribute(element.attributes[0].name);
+            }
         }
     }
 

@@ -1,5 +1,5 @@
 
-function init_default_editor(selector, resizeable=false) {
+function init_default_editor(selector, resizeable=false, height=600) {
 
 	hugerte.init({
 	    selector: selector,
@@ -18,7 +18,7 @@ function init_default_editor(selector, resizeable=false) {
         toolbar_mode: 'wrap',
         quickbars_insert_toolbar: false,
         contextmenu: 'link image table',
-        height: 600,
+        height: height,
 
   		color_default_background: '#FBEEB8', // Set the default background color to light yellow
   		color_default_foreground: '#E03E2D', // Set the default text color to red

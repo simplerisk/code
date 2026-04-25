@@ -31,13 +31,8 @@ function simplerisk_service_call($parameters)
         ],
     ];
 
-    // If SSL certificate checks are enabled for external requests
-    if (get_setting('ssl_certificate_check_external') == 1)
-    {
-        // Verify the SSL host and peer
-        $validate_ssl = true;
-    }
-    else $validate_ssl = false;
+    // SSL validation is on by default; only disabled when the setting is explicitly '0'
+    $validate_ssl = get_setting('ssl_certificate_check_external') !== '0';
 
     // Make the services call
     $response = fetch_url_content("stream", $http_options, $validate_ssl, $url, $parameters);
@@ -46,13 +41,13 @@ function simplerisk_service_call($parameters)
     // If we were unable to connect to the URL
     if($return_code !== 200)
     {
-        write_debug_log("SimpleRisk was unable to connect to " . $url);
+        write_debug_log("SimpleRisk was unable to connect to " . $url, 'warning');
         return false;
     }
     // We were able to connect to the URL
     else
     {
-        write_debug_log("SimpleRisk successfully connected to " . $url);
+        write_debug_log("SimpleRisk successfully connected to " . $url, 'info');
         return $response;
     }
 }
@@ -559,29 +554,24 @@ function check_system_token()
         $stmt = $db->prepare("DELETE FROM `system_tokens` WHERE timestamp < (NOW() - INTERVAL 1 MINUTE);");
         $stmt->execute();
 
-        // Check if the token matches one in our database
-        $stmt = $db->prepare("SELECT * FROM `system_tokens` WHERE token=:token;");
+        // Atomically consume the token by deleting it in a single operation.
+        // If the DELETE affects exactly one row, the token was valid; if zero rows
+        // are affected it was already used or never existed. This eliminates the
+        // SELECT/DELETE race that would otherwise allow two concurrent requests to
+        // both pass the SELECT before either DELETE executes.
+        $stmt = $db->prepare("DELETE FROM `system_tokens` WHERE token=:token;");
         $stmt->bindParam(":token", $headers['X-SYSTEM-TOKEN'], PDO::PARAM_STR);
         $stmt->execute();
-        $count = $stmt->rowCount();
-
-        // If we have a match
-        if ($count > 0)
-        {
-            // Delete the matching token
-            $stmt = $db->prepare("DELETE FROM `system_tokens` WHERE token=:token;");
-            $stmt->bindParam(":token", $headers['X-SYSTEM-TOKEN'], PDO::PARAM_STR);
-            $stmt->execute();
-
-            // Close the database connection
-            db_close($db);
-
-            // Return true
-            return true;
-        }
 
         // Close the database connection
         db_close($db);
+
+        // If we deleted a matching token
+        if ($stmt->rowCount() > 0)
+        {
+            // Return true
+            return true;
+        }
     }
 
     // If we get back to this point, return false

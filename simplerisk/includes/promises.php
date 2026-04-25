@@ -7,6 +7,13 @@
 require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/queues.php'));
 
+/**
+ * Throw this from a stage handler to signal that the failure is permanent
+ * and should not be retried. Unlike a regular exception, this bypasses the
+ * retry mechanism and results in immediate permanent failure of the promise.
+ */
+class NonRetryableException extends \RuntimeException {}
+
 /****************************
  * FUNCTION: CREATE PROMISE *
  ****************************/
@@ -204,36 +211,6 @@ function recursively_fulfill_parent(PDO $db, int $promise_id): void
 
         // Recursively check the parent's parent
         recursively_fulfill_parent($db, (int)$promise['depends_on']);
-    }
-}
-
-/**************************************************************************
- * FUNCTION: PROPAGATE PAYLOAD TO NEXT                                    *
- * Helper function to propagate payload data to the next promise in chain *
- **************************************************************************/
-function propagate_payload_to_next(PDO $db, int $completed_promise_id, array $payload): void {
-    // Find the next promise that depends on this one
-    $stmt = $db->prepare("
-        SELECT id FROM promises
-        WHERE depends_on = :pid
-          AND state = 'pending'
-        LIMIT 1
-    ");
-    $stmt->execute([':pid' => $completed_promise_id]);
-    $next_promise_id = $stmt->fetchColumn();
-
-    if ($next_promise_id) {
-        // Update the next promise's payload with the accumulated data
-        $stmt = $db->prepare("
-            UPDATE promises
-            SET payload = :payload, updated_at = NOW()
-            WHERE id = :id
-        ");
-        $stmt->execute([
-            ':payload' => json_encode($payload),
-            ':id' => $next_promise_id
-        ]);
-        write_debug_log("Propagated payload from promise #{$completed_promise_id} to #{$next_promise_id}", "debug");
     }
 }
 
@@ -455,6 +432,12 @@ function process_promise(array $promise, array $jobDef, PDO $db, int $maxRetryAt
     // Execute stage function safely
     try {
         $result = $stageFn($promise, $db);
+    } catch (NonRetryableException $e) {
+        // Permanent failure — do not retry regardless of maxRetryAttempts
+        $msg = "Stage '{$stageName}' non-retryable failure: {$e->getMessage()}";
+        write_debug_log($msg, "error");
+        handle_promise_failure($db, $promise, $msg, 1, 0, 0);
+        return 1;
     } catch (\Throwable $t) {
         $msg = "Stage '{$stageName}' threw error: {$t->getMessage()} in {$t->getFile()}:{$t->getLine()}";
         write_debug_log($msg, "error");
@@ -474,7 +457,6 @@ function process_promise(array $promise, array $jobDef, PDO $db, int $maxRetryAt
     // Success handling
     if (is_array($result)) {
         update_promise_stage($promiseId, null, 'completed', $result, $db);
-        propagate_payload_to_next($db, $promiseId, $result);
     } else {
         update_promise_stage($promiseId, null, 'completed', null, $db);
     }
@@ -493,7 +475,7 @@ function cancel_control_task(PDO $db, array $promise, string $reason): bool
     try
     {
         // Get the task_id
-        $task_id = (int)$promise['task_id'];
+        $task_id = (int)$promise['queue_task_id'];
 
         write_debug_log(
             "[cancel_control_task] Canceling task {$task_id} for deleted control: {$reason}",
@@ -546,7 +528,7 @@ function cancel_control_task(PDO $db, array $promise, string $reason): bool
     {
         write_debug_log(
             "[cancel_control_task] Error: " . $e->getMessage(),
-            "debug"
+            "error"
         );
         return false;
     }

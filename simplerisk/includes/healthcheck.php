@@ -520,19 +520,19 @@ function check_web_connectivity()
 	// Check the URLs
 	foreach ($urls as $url)
 	{
-		write_debug_log("Healthcheck for URL: " . $url);
+		write_debug_log("Healthcheck for URL: " . $url, 'info');
 
 		// Get the headers for the URL
 		$file_headers = @get_headers($url, 1);
 
 		if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found')
 		{
-			write_debug_log("SimpleRisk was unable to connect to " . $url);
+			write_debug_log("SimpleRisk was unable to connect to " . $url, 'warning');
 			$array[] = array("result" => 0, "text" => "SimpleRisk was unable to connect to " . $url . ".");
 		}
 		else
 		{
-			write_debug_log("SimpleRisk connected to " . $url);
+			write_debug_log("SimpleRisk connected to " . $url, 'info');
 			$array[] = array("result" => 1, "text" => "SimpleRisk connected to " . $url . ".");
 		}
 	}
@@ -937,8 +937,13 @@ function check_extra_versions($current_app_version)
 			// Check all purchases in one web service call
 			$purchases = core_check_all_purchases();
 
+			// If the service call failed, report it and skip the purchase checks
+			if ($purchases === false)
+			{
+				$array[] = array("result" => 0, "text" => "SimpleRisk was unable to connect to the services server to check Extra purchases.");
+			}
 			// For each available Extra
-			foreach ($extras as $extra)
+			else foreach ($extras as $extra)
 			{
 				// If this is the Upgrade or ComplianceForge SCF Extra
 				if ($extra['short_name'] == "upgrade" || $extra['short_name'] == "complianceforgescf")
@@ -951,6 +956,13 @@ function check_extra_versions($current_app_version)
 				{
 					$extras_xml = $purchases->{"extras"};
 					$extra_xml = $extras_xml->{$extra['short_name']};
+
+					// If this extra isn't in the service response, skip it
+					if ($extra_xml === null || !isset($extra_xml->{"purchased"}))
+					{
+						continue;
+					}
+
 					$purchased = (boolean)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
 					$disabled = (boolean)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
 					$deleted = (boolean)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
@@ -1300,7 +1312,7 @@ function unable_to_communicate_with_database() {
                         </div>
                         <!-- End of content -->
                         <footer class="footer text-center">
-                  			Copyright 2025 SimpleRisk, Inc. All rights reserved.
+                  			Copyright 2026 SimpleRisk, Inc. All rights reserved.
                 		</footer>
                 	</div>
                 	<!-- End of content-wrapper -->

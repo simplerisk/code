@@ -2,6 +2,7 @@
 
 namespace PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
+use Composer\Pcre\Preg;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx\Namespaces;
 use PhpOffice\PhpSpreadsheet\Shared\File;
 use PhpOffice\PhpSpreadsheet\Shared\XMLWriter;
@@ -156,11 +157,45 @@ class ContentTypes extends WriterPart
                 $this->writeDefaultContentType($objWriter, $extension, $mimeType);
             }
         }
+
+        if ($spreadsheet->hasInCellDrawings()) {
+            $this->writeOverrideContentType($objWriter, '/xl/richData/richValueRel.xml', 'application/vnd.ms-excel.richvaluerel+xml');
+            $this->writeOverrideContentType($objWriter, '/xl/richData/rdrichvalue.xml', 'application/vnd.ms-excel.rdrichvalue+xml');
+            $this->writeOverrideContentType($objWriter, '/xl/richData/rdrichvaluestructure.xml', 'application/vnd.ms-excel.rdrichvaluestructure+xml');
+            $this->writeOverrideContentType($objWriter, '/xl/richData/rdRichValueTypes.xml', 'application/vnd.ms-excel.rdrichvaluetypes+xml');
+        }
+
+        // Add pass-through media content types
+        /** @var array<string, array<string, mixed>> $sheets */
+        $sheets = $unparsedLoadedData['sheets'] ?? [];
+        foreach ($sheets as $sheetData) {
+            if (($sheetData['drawingPassThroughEnabled'] ?? false) !== true) {
+                continue;
+            }
+            /** @var string[] $mediaFiles */
+            $mediaFiles = $sheetData['drawingMediaFiles'] ?? [];
+            foreach ($mediaFiles as $mediaPath) {
+                $extension = strtolower(pathinfo($mediaPath, PATHINFO_EXTENSION));
+                if ($extension !== '' && !isset($aMediaContentTypes[$extension])) {
+                    $mimeType = match ($extension) { // @phpstan-ignore match.unhandled
+                        'png' => 'image/png',
+                        'jpg', 'jpeg' => 'image/jpeg',
+                        'gif' => 'image/gif',
+                        'bmp' => 'image/bmp',
+                        'tif', 'tiff' => 'image/tiff',
+                        'svg' => 'image/svg+xml',
+                    };
+                    $aMediaContentTypes[$extension] = $mimeType;
+                    $this->writeDefaultContentType($objWriter, $extension, $mimeType);
+                }
+            }
+        }
+
         if ($spreadsheet->hasRibbonBinObjects()) {
             // Some additional objects in the ribbon ?
             // we need to write "Extension" but not already write for media content
             /** @var string[] */
-            $tabRibbonTypes = array_diff($spreadsheet->getRibbonBinObjects('types') ?? [], array_keys($aMediaContentTypes));
+            $tabRibbonTypes = array_diff($spreadsheet->getRibbonBinObjects('types') ?? [], array_keys($aMediaContentTypes)); // @phpstan-ignore-line
             foreach ($tabRibbonTypes as $aRibbonType) {
                 $mimeType = 'image/.' . $aRibbonType; //we wrote $mimeType like customUI Editor
                 $this->writeDefaultContentType($objWriter, $aRibbonType, $mimeType);
@@ -222,8 +257,12 @@ class ContentTypes extends WriterPart
         }
 
         // Metadata needed for Dynamic Arrays
-        if ($this->getParentWriter()->useDynamicArrays()) {
+        if ($this->getParentWriter()->useDynamicArrays() || $spreadsheet->hasInCellDrawings()) {
             $this->writeOverrideContentType($objWriter, '/xl/metadata.xml', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheetMetadata+xml');
+        }
+
+        if ($spreadsheet->getUsesCheckboxStyle()) {
+            $this->writeOverrideContentType($objWriter, '/xl/featurePropertyBag/featurePropertyBag.xml', 'application/vnd.ms-excel.featurepropertybag+xml');
         }
 
         $objWriter->endElement();
@@ -243,6 +282,9 @@ class ContentTypes extends WriterPart
      */
     private function getImageMimeType(string $filename): string
     {
+        if (Preg::isMatch('~^data:(image/[^;]+);base64,~', $filename, $matches)) {
+            return $matches[1];
+        }
         if (File::fileExists($filename)) {
             $image = getimagesize($filename);
 

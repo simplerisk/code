@@ -70,7 +70,7 @@ function is_session_authenticated()
         // Session handler is database
         if (USE_DATABASE_FOR_SESSIONS == "true")
         {
-            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+            session_set_save_handler(new SimpleRiskSessionHandler());
         }
 
         // Start the session
@@ -94,8 +94,8 @@ function is_session_authenticated()
     // If the session is authenticated
     if (isset($_SESSION["access"]) && ($_SESSION["access"] == "1" || $_SESSION["access"] == "granted"))
     {
-	    // Load CSRF Magic
-	    csrf_init();
+	    // Load CSRF Magic — include_csrf_magic() to load the DB secret before validation
+	    include_csrf_magic();
 
 	    // Return true
 	    return true;
@@ -183,6 +183,8 @@ function unauthenticated_access()
  *********************************/
 function unauthorized_access() {
 
+    global $lang, $escaper;
+
     // Return a JSON response
     json_response(401, $escaper->escapeHtml($lang['UnauthorizedAccessInAPI']), NULL);
 
@@ -238,7 +240,14 @@ function show_management()
  ************************/
 function show_admin()
 {
-  echo '<ul>
+    // Check that this is an admin user
+    if (!is_admin())
+    {
+        json_response(403, $lang['AdminPermissionRequired'], NULL);
+        return;
+    }
+
+    echo '<ul>
           <li><a href="admin/users/all">/admin/users/all</a> -> (shows all users)</li>
           <li><a href="admin/users/enabled">/admin/users/enabled</a> -> (shows enabled users)</li>
           <li><a href="admin/users/disabled">/admin/users/disabled</a> -> (shows disabled users)</li>
@@ -542,7 +551,7 @@ function dynamicrisk()
 /************************************
  * FUNCTION: MANAGEMENT - VIEW RISK *
  ************************************/
-function viewrisk() {
+function viewrisk($id = null) {
     global $lang, $escaper;
 
     if (!check_permission("riskmanagement")) {
@@ -552,7 +561,7 @@ function viewrisk() {
     }
 
     // If the id is not sent
-    if (!isset($_GET['id']))
+    if ($id === null && !isset($_GET['id']))
     {
         set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
 
@@ -562,7 +571,7 @@ function viewrisk() {
     else
     {
         // Get the id
-        $id = (int)$_GET['id'];
+        $id = (int)($id ?? $_GET['id']);
 
         // Query the risk
         $risk = get_risk_by_id($id);
@@ -742,8 +751,8 @@ function viewrisk() {
 /******************************************
  * FUNCTION: MANAGEMENT - VIEW MITIGATION *
  ******************************************/
-function viewmitigation() {
-    
+function viewmitigation($id = null) {
+
     global $escaper, $lang;
 
     if (!check_permission("riskmanagement")) {
@@ -752,12 +761,12 @@ function viewmitigation() {
     }
 
     // If the id is not sent
-    if (!isset($_GET['id']))
+    if ($id === null && !isset($_GET['id']))
     {
         // Return a JSON response
         json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
     }
-    $risk_id = $_GET['id'];
+    $risk_id = $id ?? $_GET['id'];
     $mitigation = get_mitigation_by_id($risk_id);
 
     if(!isset($mitigation[0])){
@@ -810,7 +819,7 @@ function viewmitigation() {
 /**************************************
  * FUNCTION: MANAGEMENT - VIEW REVIEW *
  **************************************/
-function viewreview() {
+function viewreview($id = null) {
     global $escaper, $lang;
 
     if (!check_permission("riskmanagement")) {
@@ -819,13 +828,13 @@ function viewreview() {
     }
 
     // If the id is not sent
-    if (!isset($_GET['id']))
+    if ($id === null && !isset($_GET['id']))
     {
         // Return a JSON response
         json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
     }
 
-    $risk_id = $_GET['id'];
+    $risk_id = $id ?? $_GET['id'];
     $review = get_review_by_id($risk_id);
 
     if(!isset($review[0])){
@@ -1677,18 +1686,31 @@ function viewriskHtmlForm()
 /*************************************
  * FUNCTION: MANAGEMENT - REOPEN RISK *
  *************************************/
-function reopenForm()
+function reopenForm($id = null)
 {
     global $lang, $escaper;
+
+    if (!check_permission("riskmanagement"))
+    {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
+
+    if (!has_permission("modify_risks"))
+    {
+        json_response(403, $escaper->escapeHtml($lang['RiskUpdatePermissionMessage']), NULL);
+        return;
+    }
+
     // If the id is not sent
-    if (!isset($_GET['id']))
+    if ($id === null && !isset($_GET['id']))
     {
         set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
 
         // Return a JSON response
         json_response(400, get_alert(true), NULL);
     }
-    $id = $_GET['id'];
+    $id = $id ?? $_GET['id'];
 
     // If team separation is enabled
     if (team_separation_extra())
@@ -2531,19 +2553,19 @@ function scoreactionForm()
 /*****************************************
  * FUNCTION: MANAGEMENT - UPDATE SUBJECT*
  ****************************************/
-function saveSubjectForm()
+function saveSubjectForm($id = null)
 {
     global $lang, $escaper;
 
     // If the id is not sent
-    if (!isset($_GET['id']))
+    if ($id === null && !isset($_GET['id']))
     {
         set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
 
         // Return a JSON response
         json_response(400, get_alert(true), NULL);
     }
-    $id = $_GET['id'];
+    $id = $id ?? $_GET['id'];
 
     // If the user has permission to modify the risk and has access to the risk
     if(has_permission("modify_risks") && check_access_for_risk($id)){
@@ -2605,21 +2627,60 @@ function saveSubjectForm()
 }
 
 /*****************************************
- * FUNCTION: MANAGEMENT - UPDATE COMMENT*
+ * FUNCTION: MANAGEMENT - GET COMMENTS  *
  ****************************************/
-function saveCommentForm()
+function getRiskComments($id = null)
 {
     global $escaper, $lang;
-    
+
+    if (!check_permission("riskmanagement")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
+
+    $id = $id ?? $_GET['id'] ?? null;
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    if (!check_access_for_risk($id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
+
+    $raw = get_comments($id, false);
+    $comments = [];
+    foreach ($raw as $row) {
+        $text = try_decrypt($row['comment']);
+        if ($text !== null) {
+            $comments[] = [
+                'date' => $row['date'],
+                'user' => $row['name'],
+                'comment' => $text,
+            ];
+        }
+    }
+
+    json_response(200, 'Comments retrieved successfully.', $comments);
+}
+
+/*****************************************
+ * FUNCTION: MANAGEMENT - UPDATE COMMENT*
+ ****************************************/
+function saveCommentForm($id = null)
+{
+    global $escaper, $lang;
+
     // If the id is not sent
-    if (!isset($_GET['id']))
+    if ($id === null && !isset($_GET['id']))
     {
         set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
 
         // Return a JSON response
         json_response(400, get_alert(true), NULL);
     }
-    $id = $_GET['id'];
+    $id = $id ?? $_GET['id'];
 
     $access = check_access_for_risk($id);
 
@@ -2631,7 +2692,7 @@ function saveCommentForm()
         json_response(400, get_alert(true), NULL);
     }
     elseif($_SESSION["comment_risk_management"] == 1) {
-        $comment = $_POST['comment'];
+        $comment = $_POST['comment'] ?? null;
 
         if($comment == null){
             set_alert(true, "bad", $escaper->escapeHtml($lang['CommentRiskRequired']));
@@ -2647,8 +2708,17 @@ function saveCommentForm()
         }
     }
     else {
-        set_alert(true, "bad", $escaper->escapeHtml($lang['NoCommentRiskPermission']));
+        json_response(403, $escaper->escapeHtml($lang['NoCommentRiskPermission']), NULL);
     }
+
+    // getTabHtml includes a CSRF-checked template that requires HTTP_REFERER (set by
+    // browsers but not by API clients). Skip the HTML rendering for API calls so the
+    // csrf-magic library does not crash on the missing server variable.
+    if (!isset($_SERVER['HTTP_REFERER'])) {
+        json_response(200, get_alert(true), NULL);
+        return;
+    }
+
     $html = getTabHtml($id, 'comments-list');
 
     json_response(200, get_alert(true), $html);
@@ -2657,7 +2727,7 @@ function saveCommentForm()
 /********************************************
  * FUNCTION: MANAGEMENT - Accept Mitigation *
  ********************************************/
-function acceptMitigationForm()
+function acceptMitigationForm($id = null)
 {
     global $lang, $escaper;
 
@@ -2669,9 +2739,9 @@ function acceptMitigationForm()
         // Return a JSON response
         json_response(400, get_alert(true), NULL);
     }
-    
+
     // If the id is not sent
-    elseif (!isset($_GET['id']))
+    elseif ($id === null && !isset($_GET['id']))
     {
         set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
 
@@ -2680,7 +2750,15 @@ function acceptMitigationForm()
     }
     else
     {
-        $id = (int)$_GET['id'];
+        $id = (int)($id ?? $_GET['id']);
+
+        // Check team separation access
+        if (!check_access_for_risk($id))
+        {
+            set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForRiskManagement']));
+            json_response(403, get_alert(true), NULL);
+        }
+
         $accept = (int)$_POST['accept'];
 
         // Check if user has a permission for accept mitigation
@@ -2822,13 +2900,21 @@ function saveScoreForm()
 /**********************************************
  * FUNCTION: MANAGEMENT - Get Scoring History *
  **********************************************/
-function scoringHistory()
+function scoringHistory($id = null)
 {
+    global $escaper, $lang;
+
+    if (!check_permission("riskmanagement"))
+    {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
+
     // If the risk id is sent
-    if (isset($_GET['id']))
+    if ($id !== null || isset($_GET['id']))
     {
         //sleep(3);
-        $risk_id = $_GET['id'];
+        $risk_id = $id ?? $_GET['id'];
 
         // Check whether the user should be able to access this risk_id
         $access = check_access_for_risk($risk_id);
@@ -2860,13 +2946,21 @@ function scoringHistory()
 /*******************************************************
  * FUNCTION: MANAGEMENT - Get Residual Scoring History *
  *******************************************************/
-function residualScoringHistory()
+function residualScoringHistory($id = null)
 {
+    global $escaper, $lang;
+
+    if (!check_permission("riskmanagement"))
+    {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
+
     // If the risk id is sent
-    if (isset($_GET['id']))
+    if ($id !== null || isset($_GET['id']))
     {
         //sleep(3);
-        $risk_id= $_GET['id'];
+        $risk_id = $id ?? $_GET['id'];
 
         // Check whether the user should be able to access this risk_id
         $access = check_access_for_risk($risk_id);
@@ -2898,11 +2992,16 @@ function residualScoringHistory()
 /**********************************************************
  * FUNCTION: UPDATERISK - UPDATE A RISK FROM EXTERNAL APP *
  **********************************************************/
-function updateRisk(){
+function updateRisk($id = null){
     global $lang, $escaper;
 
+    // PHP only auto-populates $_POST for POST requests; parse the body for PATCH
+    if (empty($_POST)) {
+        parse_str(file_get_contents('php://input'), $_POST);
+    }
+
     // If the id is not sent
-    if (get_param("POST", 'id', false) === false)
+    if ($id === null && get_param("POST", 'id', false) === false)
     {
         $status = "400";
         $status_message = $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']);
@@ -2910,7 +3009,7 @@ function updateRisk(){
         json_response($status, $status_message, NULL);
     }
 
-    $id = get_param("POST", 'id');
+    $id = $id ?? get_param("POST", 'id');
 
     $risk = get_risk_by_id($id);
 
@@ -3222,11 +3321,16 @@ function addRisk(){
  * FUNCTION: SAVEMITIGATION - SAVE A MITIGATION FROM EXTERNAL APP*
  * PARAM: id: risk_id + 1000
  ****************************************************************/
-function saveMitigation(){
+function saveMitigation($id = null){
     global $lang, $escaper;
 
+    // PHP only auto-populates $_POST for POST requests; parse the body for PATCH
+    if (empty($_POST)) {
+        parse_str(file_get_contents('php://input'), $_POST);
+    }
+
     $data = array();
-    $id = get_param("POST", "id", false);
+    $id = $id ?? get_param("POST", "id", false);
 
     if (!$id)
     {
@@ -3255,8 +3359,8 @@ function saveMitigation(){
         $status = 400;
         $status_message = $escaper->escapeHtml($lang['MitigationPermissionMessage']);
     }
-    // If user has permission for modifing risks.
-    elseif(isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access){
+    // If the user has access to the risk
+    elseif($access){
         $mitigation_id = $risk[0]['mitigation_id'];
         // Submit mitigation and get the mitigation date back
         $post = array(
@@ -3301,10 +3405,10 @@ function saveMitigation(){
  * FUNCTION: SAVEREVIEW - SAVE A REVIEW FROM EXTERNAL APP*
  * PARAM: id: risk_id + 1000
  ****************************************************************/
-function saveReview(){
+function saveReview($id = null){
     global $lang, $escaper;
 
-    $id = get_param("POST", "id", false);
+    $id = $id ?? get_param("POST", "id", false);
     $data = array();
     if (!$id)
     {
@@ -3323,94 +3427,94 @@ function saveReview(){
     }
 
     $access = check_access_for_risk($id);
-    // If user has permission for modifing risks.
-    if(isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access){
+    if (!$access) {
+        $status = 400;
+        $status_message = $escaper->escapeHtml($lang['NoPermissionForRiskManagement']);
+        return json_response($status, $status_message, $data);
+    }
+
+    $risk_level = get_risk_level_name($risk[0]['calculated_risk']);
+
+    // Check that the user has permission to review this risk level
+    $approved = check_review_permission_by_risk_id($id);
+    if (!$approved){
+        $status = 400;
+        $params = array(
+            'risk_level' => $risk_level
+        );
+        $status_message = _lang('RiskReviewPermission', $params);
+        return json_response($status, $status_message);
+    }
+    $status = "Mgmt Reviewed";
+    $review = (int)get_param('POST', 'review');
+    $next_step = (int)get_param('POST', 'next_step');
+    $reviewer = $_SESSION['uid'];
+    $comments = get_param('POST', 'comments');
+    $custom_date = get_param('POST', 'custom_date');
+
+    if ($custom_date == "yes")
+    {
+        $custom_review = get_param('POST', 'next_review');
+
+        // Check the date format
+        if (!validate_date($custom_review, get_default_date_format()))
+        {
+            $custom_review = "0000-00-00";
+        }
+        // Otherwise, set the proper format for submitting to the database
+        else
+        {
+            $custom_review = get_standard_date_from_default_format($custom_review);
+        }
+    }
+    else {
+        $custom_review = "0000-00-00";
         $risk_level = get_risk_level_name($risk[0]['calculated_risk']);
+        $residual_risk_level = get_risk_level_name($risk[0]['residual_risk']);
+        $risk_id = (int)$risk[0]['id'];
 
-	// Check that the user has permission to review this risk level
-        $approved = check_review_permission_by_risk_id($id);
-        if (!$approved){
-            $status = 400;
-            $params = array(
-                'risk_level' => $risk_level
-            );
-            $status_message = _lang('RiskReviewPermission', $params);
-            return json_response($status, $status_message);
-        }else{
-            $status = "Mgmt Reviewed";
-            $review = (int)get_param('POST', 'review');
-            $next_step = (int)get_param('POST', 'next_step');
-            $reviewer = $_SESSION['uid'];
-            $comments = get_param('POST', 'comments');
-            $custom_date = get_param('POST', 'custom_date');
+        // If next_review_date_uses setting is Residual Risk.
+        if(get_setting('next_review_date_uses') == "ResidualRisk")
+        {
+            $custom_review = next_review($residual_risk_level, $risk_id, $custom_review, false, false, date("Y-m-d"));
+        }
+        // If next_review_date_uses setting is Inherent Risk.
+        else
+        {
+            $custom_review = next_review($risk_level, $risk_id, $custom_review, false, false, date("Y-m-d"));
+        }
+        $custom_review = get_standard_date_from_default_format($custom_review);
+    }
 
-            if ($custom_date == "yes")
-            {
-                $custom_review = get_param('POST', 'next_review');
+    $data = array(
+        'risk_id' => $id
+    );
 
-                // Check the date format
-                if (!validate_date($custom_review, get_default_date_format()))
-                {
-                    $custom_review = "0000-00-00";
-                }
-                // Otherwise, set the proper format for submitting to the database
-                else
-                {
-                    $custom_review = get_standard_date_from_default_format($custom_review);
-                }
-            }
-            else {
-                $custom_review = "0000-00-00";
-                $risk_level = get_risk_level_name($risk[0]['calculated_risk']);
-                $residual_risk_level = get_risk_level_name($risk[0]['residual_risk']);
-                $risk_id = (int)$risk[0]['id'];
+    submit_management_review($id, $status, $review, $next_step, $reviewer, $comments, $custom_review);
 
-                // If next_review_date_uses setting is Residual Risk.
-                if(get_setting('next_review_date_uses') == "ResidualRisk")
-                {
-                    $custom_review = next_review($residual_risk_level, $risk_id, $custom_review, false, false, date("Y-m-d"));
-                }
-                // If next_review_date_uses setting is Inherent Risk.
-                else
-                {
-                    $custom_review = next_review($risk_level, $risk_id, $custom_review, false, false, date("Y-m-d"));
-                }
-                $custom_review = get_standard_date_from_default_format($custom_review);
-            }
-
-            $data = array(
-                'risk_id' => $id
-            );
-
-            submit_management_review($id, $status, $review, $next_step, $reviewer, $comments, $custom_review);
-            
-            if ($next_step == 2) {
-                $project = get_param('POST', 'project', 0);
-                $prefix = 'new-projval-prfx-';
-                if (startsWith($project, $prefix)) {//It's a new project's name
-                    $name = substr($project, strlen($prefix));
-                    if(isset($_SESSION["add_projects"]) && $_SESSION["add_projects"] == 1) {
-                        $project = add_name("projects", try_encrypt($name));
-                        set_alert(true, "good", $lang['SuccessCreateProject']);
-                    } else {
-                        set_alert(true, "bad", $lang['NoAddProjectPermission']);
-                    }
-                }
-
-                if (ctype_digit((string)$project)) {
-                    update_risk_project((int)$project, $id - 1000);
-                    set_alert(true, "good", $lang['SuccessSetProject']);
-                } else {
-                    set_alert(true, "bad", $lang['ThereWasAProblemWithAddingTheProject']);
-                }
+    if ($next_step == 2) {
+        $project = get_param('POST', 'project', 0);
+        $prefix = 'new-projval-prfx-';
+        if (startsWith($project, $prefix)) {//It's a new project's name
+            $name = substr($project, strlen($prefix));
+            if(isset($_SESSION["add_projects"]) && $_SESSION["add_projects"] == 1) {
+                $project = add_name("projects", try_encrypt($name));
+                set_alert(true, "good", $lang['SuccessCreateProject']);
+            } else {
+                set_alert(true, "bad", $lang['NoAddProjectPermission']);
             }
         }
-        $status = 200;
-        $status_message = $lang['Success'];
-    }else{
-        $status = 400;
-        $status_message = $lang['RiskUpdatePermissionMessage'];
+
+        if (ctype_digit((string)$project)) {
+            update_risk_project((int)$project, $id - 1000);
+            set_alert(true, "good", $lang['SuccessSetProject']);
+        } else {
+            set_alert(true, "bad", $lang['ThereWasAProblemWithAddingTheProject']);
+        }
     }
+
+    $status = 200;
+    $status_message = $lang['Success'];
     return json_response($status, $status_message, $data);
 }
 
@@ -3727,6 +3831,7 @@ function getFrameworkControlsDatatable() {
                 $html .= "
                             <div class='row'>
                                 <div class='col-12 top-panel'>" . 
+                                    display_control_id_view($control['id'], 'top') .
                                     display_control_name_view($control['short_name'], 'top') . 
                                     display_control_longname_view($control['long_name'], 'top') . 
                                     display_control_number_view2($control['control_number'], 'top') . "
@@ -4512,7 +4617,7 @@ function getControlFiltersByFrameworksResponse()
     // If the user has governance permissions
     if (check_permission("governance"))
     {
-        $control_framework = isset($_GET['control_framework']) ? $_GET['control_framework'] : [];
+        $control_framework = isset($_POST['control_framework']) ? $_POST['control_framework'] : [];
 
         $classList  = getAvailableControlClassList($control_framework);
         $phaseList  = getAvailableControlPhaseList($control_framework);
@@ -4698,6 +4803,13 @@ function getControlResponse()
         if (!empty($control['custom_values'])) {
             foreach ($control['custom_values'] as &$custom_value) {
                 switch ($custom_value['field_type']) {
+                    case 'shorttext':
+                    case 'longtext':
+                        // If encryption for this field is enabled, decrypt value
+                        if ($custom_value['encryption']) {
+                            $custom_value['value'] = try_decrypt($custom_value['value']);
+                        }
+                        break;
                     case 'date':
                         $custom_value['value'] = $custom_value['value'] ? format_date($custom_value['value']) : '';
                         break;
@@ -4752,6 +4864,13 @@ function getFrameworkResponse()
         if (!empty($framework['custom_values'])) {
             foreach ($framework['custom_values'] as &$custom_value) {
                 switch ($custom_value['field_type']) {
+                    case 'shorttext':
+                    case 'longtext':
+                        // If encryption for this field is enabled, decrypt value
+                        if ($custom_value['encryption']) {
+                            $custom_value['value'] = try_decrypt($custom_value['value']);
+                        }
+                        break;
                     case 'date':
                         $custom_value['value'] = $custom_value['value'] ? format_date($custom_value['value']) : '';
                         break;
@@ -4824,60 +4943,64 @@ function getDefineTestsResponse()
             }
 
             $tests = get_framework_control_tests_by_control_id($control['id']);
-            $html = "<div class='card mb-4 border border-primary shadow-sm'>\n";
-            $html .= "  <div class='card-header d-flex justify-content-between align-items-center'>\n";
-            $html .= "    <div>\n";
-            $html .= "      <strong>" . $escaper->escapeHtml($control['control_number']) . "</strong>\n";
-            $html .= "      <div class='text-muted small'>" . $escaper->escapeHtml($control['short_name']) . "</div>\n";
-            $html .= "    </div>\n";
+
+            $html = "
+                <div class='card border border-primary mb-0'>
+                    <div class='card-header d-flex justify-content-between align-items-center'>
+                        <div>
+                            <strong>{$escaper->escapeHtml($control['control_number'])}</strong>
+                            <div class='text-muted small'>{$escaper->escapeHtml($control['short_name'])}</div>
+                        </div>
+            ";
 
             // Only display the "Add Test" button if the user has permissions to
             if(isset($_SESSION["define_tests"]) && $_SESSION["define_tests"] == 1)
             {
-                $html .= "    <button data-control-id='" . $control['id'] . "' class='btn btn-sm btn-dark add-test'>" . $escaper->escapeHtml($lang['AddTest']) . "</button>\n";
+                $html .= "
+                        <button data-control-id='{$control['id']}' class='btn btn-sm btn-dark add-test'>{$escaper->escapeHtml($lang['AddTest'])}</button>
+                ";
             }
-            $html .= "  </div>\n";
 
-            // BEGIN CARD  BODY
-            $html .= "  <div class='card-body'>\n";
-
-            // Description, mappings, etc goes here
-            $html .= "     <div class='row mb-2 top'>\n";
-            $html .= "        <div class='col-2 text-right'><label>" . $escaper->escapeHtml($lang['ControlLongName']) . ":</label></div>\n";
-            $html .= "        <div class='col-10'>" . $escaper->escapeHtml($control['long_name']) . "</div>\n";
-            $html .= "     </div>\n";
-            $html .= "     <div class='row mb-2 top'>\n";
-            $html .= "        <div class='col-2 text-right'><label>" . $escaper->escapeHtml($lang['ControlOwner']) . ":</label></div>\n";
-            $html .= "        <div class='col-10'>" . $escaper->escapeHtml($control['control_owner_name']) . "</div>\n";
-            $html .= "     </div>\n";
-            $html .= "     <div class='row mb-2 top'>\n";
-            $html .= "        <div class='col-2 text-right'><label>" . $escaper->escapeHtml($lang['Description']) . ":</label></div>\n";
-            $html .= "        <div class='col-10'>" . $escaper->escapeHtml($control['description']) . "</div>\n";
-            $html .= "     </div>\n";
-            $html .= "     <div class='row mb-2 top'>&nbsp;</div>\n";
-            $html .= display_mapping_framework_view($control['id']);
-            $html .= "     <div class='row mb-2 top'>&nbsp;</div>\n";
-
-            $html .= "<div class='framework-control-test-list'>\n";
-            $html .= "<table width='100%' class='table table-bordered table-striped table-condensed sortable'>\n";
             $html .= "
+                    </div>
+                    <div class='card-body'>
+                        <div class='row mb-2 top'>
+                            <div class='col-2 text-right'><label>{$escaper->escapeHtml($lang['ControlLongName'])} :</label></div>
+                            <div class='col-10'>{$escaper->escapeHtml($control['long_name'])}</div>
+                        </div>
+                        <div class='row mb-2 top'>
+                            <div class='col-2 text-right'><label>{$escaper->escapeHtml($lang['ControlOwner'])} :</label></div>
+                            <div class='col-10'>{$escaper->escapeHtml($control['control_owner_name'])}</div>
+                        </div>
+                        <div class='row mb-2 top'>
+                            <div class='col-2 text-right'><label>{$escaper->escapeHtml($lang['Description'])} :</label></div>
+                            <div class='col-10'>{$escaper->purifyHtml($control['description'])}</div>
+                        </div>" . 
+                        
+                        display_mapping_framework_view($control['id'], 'bottom') . "
+                        
+                        <div class='framework-control-test-list'>
+                            <table width='100%' class='table table-bordered table-striped table-condensed sortable mb-0'>
                                 <thead class='table-active'>
                                     <tr>
-                                        <th style='width: 100px; min-width: 100px'>".$escaper->escapeHtml($lang['ID'])."</th>
-                                        <th style='width: 150px; min-width: 150px'>".$escaper->escapeHtml($lang['TestName'])."</th>
-                                        <th style='width: 100px; min-width: 100px'>".$escaper->escapeHtml($lang['Tester'])."</th>
-                                        <th style='width: 100px; min-width: 100px'>".$escaper->escapeHtml($lang['AdditionalStakeholders'])."</th>
-                                        <th style='width: 150px; min-width: 150px'>".$escaper->escapeHtml($lang['Tags'])."</th>
-                                        <th style='width: 110px; min-width: 110px'>".$escaper->escapeHtml($lang['TestFrequency'])."</th>
-                                        <th style='width: 110px; min-width: 110px'>".$escaper->escapeHtml($lang['LastTestDate'])."</th>
-                                        <th style='width: 110px; min-width: 110px'>".$escaper->escapeHtml($lang['NextTestDate'])."</th>
-                                        <th style='width: 130px; min-width: 130px'>".$escaper->escapeHtml($lang['ApproximateTime'])."</th>
-                                        <th class='text-center' style='width: 50px; min-width: 50px'>".$escaper->escapeHtml($lang['Actions'])."</th>
+                                        <th style='width: 100px; min-width: 100px'>{$escaper->escapeHtml($lang['ID'])}</th>
+                                        <th style='width: 150px; min-width: 150px'>{$escaper->escapeHtml($lang['TestName'])}</th>
+                                        <th style='width: 100px; min-width: 100px'>{$escaper->escapeHtml($lang['Tester'])}</th>
+                                        <th style='width: 100px; min-width: 100px'>{$escaper->escapeHtml($lang['AdditionalStakeholders'])}</th>
+                                        <th style='width: 150px; min-width: 150px'>{$escaper->escapeHtml($lang['Tags'])}</th>
+                                        <th style='width: 110px; min-width: 110px'>{$escaper->escapeHtml($lang['TestFrequency'])}</th>
+                                        <th style='width: 110px; min-width: 110px'>{$escaper->escapeHtml($lang['LastTestDate'])}</th>
+                                        <th style='width: 110px; min-width: 110px'>{$escaper->escapeHtml($lang['NextTestDate'])}</th>
+                                        <th style='width: 110px; min-width: 110px'>{$escaper->escapeHtml($lang['AutoInitiateAudit'])}</th>
+                                        <th style='width: 110px; min-width: 110px'>{$escaper->escapeHtml($lang['AuditInitiationOffset'])}</th>
+                                        <th style='width: 130px; min-width: 130px'>{$escaper->escapeHtml($lang['ApproximateTime'])}</th>
+                                        <th class='text-center' style='width: 50px; min-width: 50px'>{$escaper->escapeHtml($lang['Actions'])}</th>
                                     </tr>
                                 </thead>
-                            ";
-            $html .= "<tbody>";
-            foreach($tests as $test){
+                                <tbody>
+            ";
+
+            foreach ($tests as $test) {
                 if ($separation_enabled) {
                     if (!is_user_allowed_to_access($_SESSION['uid'], $test['id'], 'test')) {
                         continue;
@@ -4886,7 +5009,9 @@ function getDefineTestsResponse()
                 $tags_view = "";
                 if ($test['tags']) {
                     foreach(str_getcsv($test['tags']) as $tag) {
-                        $tags_view .= "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin-right:2px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
+                        $tags_view .= "
+                            <button class='btn btn-secondary btn-sm' style='pointer-events: none;margin-right:2px;padding: 4px 12px;' role='button' aria-disabled='true'>{$escaper->escapeHtml($tag)}</button>
+                        ";
                     }
                 } else {
                     $tags_view .= "";
@@ -4894,43 +5019,60 @@ function getDefineTestsResponse()
 
                 $last_date = format_date($test['last_date']);
                 $next_date = format_date($test['next_date']);
-                if(isset($_SESSION["edit_tests"]) && $_SESSION["edit_tests"] == 1){
-                    $edit_row = "<a class='edit-test mx-1' data-id=\"{$escaper->escapeHtml($test['id'])}\" role='button'><i class=\"fa fa-edit\"></i></a>";
-                } else $edit_row = "";
-                if(isset($_SESSION["delete_tests"]) && $_SESSION["delete_tests"] == 1){
-                    $delete_row = "<a class='delete-row mx-1' data-toggle=\"modal\" data-id=\"{$escaper->escapeHtml($test['id'])}\" role='button'><i class=\"fa fa-trash\"></i></a>";
-                } else $delete_row = "";
+
+                // There's no separate fields for marking auto audit initiation enabled and another for the offset.
+                // Simply setting `audit_initiation_offset` to null means it's disabled
+                $auto_audit_initiation = isset($test['audit_initiation_offset']) ? $escaper->escapeHtml($lang['Yes']) : $escaper->escapeHtml($lang['No']);
+                $audit_initiation_offset = isset($test['audit_initiation_offset']) ? $escaper->escapeHtml($test['audit_initiation_offset']) . " " . ($test['audit_initiation_offset'] > 1 ? $escaper->escapeHtml($lang['days']) : $escaper->escapeHtml($lang['day'])) : "--";
+
+                if (isset($_SESSION["edit_tests"]) && $_SESSION["edit_tests"] == 1) {
+                    $edit_row = "
+                        <a class='edit-test mx-1' data-id='{$escaper->escapeHtml($test['id'])}' role='button'><i class='fa fa-edit'></i></a>
+                    ";
+                } else {
+                    $edit_row = "";
+                }
+
+                if (isset($_SESSION["delete_tests"]) && $_SESSION["delete_tests"] == 1) {
+                    $delete_row = "
+                        <a class='delete-row mx-1' data-toggle='modal' data-id='{$escaper->escapeHtml($test['id'])}' role='button'><i class='fa fa-trash'></i></a>
+                    ";
+                } else {
+                    $delete_row = "";
+                }
 
 
                 $html .= "
-                                        <tr>
-                                            <td>".$escaper->escapeHtml($test['id'])."</td>
-                                            <td>".$escaper->escapeHtml($test['name'])."</td>
-                                            <td>".$escaper->escapeHtml($test['tester_name'])."</td>
-                                            <td>".$escaper->escapeHtml(get_stakeholder_names($test['additional_stakeholders'], 3))."</td>
-                                            <td>".$tags_view."</td>
-                                            <td class='text-center'>".(int)$test['test_frequency']. " " .$escaper->escapeHtml($test['test_frequency'] > 1 ? $escaper->escapeHtml($lang['days']) : $escaper->escapeHtml($lang['Day']))."</td>
-                                            <td class='text-center'>".$escaper->escapeHtml($last_date)."</td>
-                                            <td class='text-center'>".$escaper->escapeHtml($next_date)."</td>
-                                            <td class='text-center'>".(int)$test['approximate_time']. " " .$escaper->escapeHtml($test['approximate_time'] > 1 ? $escaper->escapeHtml($lang['minutes']) : $escaper->escapeHtml($lang['minute']))."</td>
-                                            <td class='text-center'>{$edit_row}{$delete_row}
-                                            </td>
-                                        </tr>
-                                    ";
+                                    <tr>
+                                        <td>{$escaper->escapeHtml($test['id'])}</td>
+                                        <td>{$escaper->escapeHtml($test['name'])}</td>
+                                        <td>{$escaper->escapeHtml($test['tester_name'])}</td>
+                                        <td>{$escaper->escapeHtml(get_stakeholder_names($test['additional_stakeholders'], 3))}</td>
+                                        <td>{$tags_view}</td>
+                                        <td class='text-center'>" . (int)$test['test_frequency'] . " {$escaper->escapeHtml($test['test_frequency'] > 1 ? $escaper->escapeHtml($lang['days']) : $escaper->escapeHtml($lang['Day']))}</td>
+                                        <td class='text-center'>{$escaper->escapeHtml($last_date)}</td>
+                                        <td class='text-center'>{$escaper->escapeHtml($next_date)}</td>
+                                        <td class='text-center'>{$auto_audit_initiation}</td>
+                                        <td class='text-center'>{$audit_initiation_offset}</td>
+                                        <td class='text-center'>" . (int)$test['approximate_time'] . " {$escaper->escapeHtml($test['approximate_time'] > 1 ? $escaper->escapeHtml($lang['minutes']) : $escaper->escapeHtml($lang['minute']))}</td>
+                                        <td class='text-center'>{$edit_row}{$delete_row}</td>
+                                    </tr>
+                ";
+                
             }
-            $html .= "</tbody>";
-            $html .= "</table>\n";
-            $html .= "</div>\n";
-            $html .= "</div>\n";
-            $html .= "</div>\n";
 
-            // END CARD BODY
-            $html .= "  </div>\n";
-            $html .= "</div>\n";
-
+            $html .= "
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            ";
 
             $data[] = [$html];
+
         }
+
         $result = array(
             'draw' => $draw,
             'data' => $data,
@@ -4944,6 +5086,156 @@ function getDefineTestsResponse()
         json_response(400, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
     }
     exit;
+}
+
+/*************************
+ * FUNCTION: UPDATE TEST *
+ *************************/
+function updateTestResponse() {
+    global $lang, $escaper;
+
+    $error = false;
+    $error_msg = "";
+
+    // check permission
+    if (!check_permission("edit_tests")) {
+
+        // display an alert
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+        json_response(400, get_alert(true), null);
+
+    } else {
+    
+        $test_id = (int)$_POST['test_id'];
+
+        // If team separation is enabled
+        if (team_separation_extra()) {
+
+            //Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+            if (!is_user_allowed_to_access($_SESSION['uid'], $test_id, 'test')) {
+                $error = true;
+                $error_msg = $lang['NoPermissionForThisTest'];
+            }
+        }
+        
+        $today_dt = strtotime(date('Ymd'));
+        $tester = isset($_POST['tester']) ? (int)$_POST['tester'] : null;
+        $teams = isset($_POST['team']) ? array_filter($_POST['team'], 'ctype_digit') : [];
+        $additional_stakeholders = empty($_POST['additional_stakeholders']) ? "" : implode(",", $_POST['additional_stakeholders']);
+        $test_frequency = (int)$_POST['test_frequency'];
+        $last_date = get_standard_date_from_default_format($_POST['last_date']);
+        $next_date = get_standard_date_from_default_format($_POST['next_date']);
+        $name = !empty($_POST['name']) ? trim($_POST['name']) : "";
+        $objective = $_POST['objective'];
+        $test_steps = $_POST['test_steps'];
+        $approximate_time = !empty($_POST['approximate_time']) ? (int)$_POST['approximate_time'] : 0;
+        $expected_results = $_POST['expected_results'];
+        $tags = empty($_POST['tags']) ? [] : $_POST['tags'];
+
+        
+        // There's no separate fields for marking auto audit initiation enabled and another for the offset.
+        // Simply setting `audit_initiation_offset` to null means it's disabled
+        $auto_audit_initiation = (int)$_POST['auto_audit_initiation'];
+        $audit_initiation_offset = isset($_POST['audit_initiation_offset']) ? $_POST['audit_initiation_offset'] : null;
+
+        if (!$name) {
+
+            $error = true;
+            $error_msg = _lang('FieldRequired', array("field"=>$lang['TestName']));
+
+        }
+
+        if (!$tester) {
+
+            $error = true;
+            $error_msg = _lang('FieldRequired', array("field"=>$lang['Tester']));
+
+        }
+
+        if ($test_frequency < 0) {
+            $error = true;
+            $error_msg = $lang['InvalidTestFrequency'];
+        }
+
+        if ($auto_audit_initiation == 1) {
+            if ($audit_initiation_offset === "") {
+                $error = true;
+                $error_msg = _lang('FieldRequired', array("field"=>$lang['AuditInitiationOffset']));
+            } else if ((int)$audit_initiation_offset < 0) {
+                $error = true;
+                $error_msg = $lang['AuditInitiationOffsetMustBeANonNegativeValue'];
+            } else if ($test_frequency > 0 && (int)$audit_initiation_offset > $test_frequency) {
+                $error = true;
+                $error_msg = $lang['AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency'];
+            } else {
+                $audit_initiation_offset = (int)$audit_initiation_offset;
+            }
+        } else {
+            $audit_initiation_offset = null;
+        }
+
+        if ($approximate_time < 0) {
+            $error = true;
+            $error_msg = $lang['InvalidApproximateTime'];
+        }
+
+        if (!$last_date) {
+            $last_date = false;
+        } else {
+            if (strtotime($last_date) > $today_dt) {
+                $error = true;
+                $error_msg = $lang['InvalidLastTestDate'];
+            }
+        }
+
+        if (!$next_date) {
+            $next_date = false;
+        } else {
+//            if (strtotime($next_date) < $today_dt) {
+//                $error = true;
+//                $error_msg = $lang['InvalidNextTestDate'];
+//            }
+        }
+
+        if ($last_date && $next_date && strtotime($next_date) < strtotime($last_date)) {
+
+            $error = true;
+            $error_msg = $lang['InvalidNextTestDateLastTestDateOrder'];
+
+        }
+        
+        if (!$last_date || $last_date === "0000-00-00") {
+            if (!$next_date || $next_date === "0000-00-00" || strtotime($next_date) < $today_dt) {
+                $next_date = date("Y-m-d");
+            }
+        } else {
+            $calc_next_date = date("Y-m-d", strtotime($last_date) + $test_frequency*24*60*60);
+            if($calc_next_date < date("Y-m-d")){
+                $next_date = date("Y-m-d");
+            } else {
+                $next_date = $calc_next_date;
+            }
+        }
+
+        if ($error !== true) {
+
+            // Update a framework control test
+            update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date, false, $additional_stakeholders, $teams, $tags, $audit_initiation_offset);
+            
+            // display an alert
+            set_alert(true, "good", $lang['TestSuccessUpdated']);
+            json_response(200, get_alert(true), null);
+
+        } else {
+
+            // display an alert
+            set_alert(true, "bad", $error_msg);
+            json_response(400, get_alert(true), null);
+
+        }
+    }
 }
 
 /***********************
@@ -5530,6 +5822,15 @@ function reopenTestAuditResponse()
  ********************************************/
 function customization_addCustomField()
 {
+    global $lang;
+
+    // Check that this is an admin user
+    if (!is_admin())
+    {
+        json_response(403, $lang['AdminPermissionRequired'], NULL);
+        return;
+    }
+
     // Check customization extra is enabled
     if (customization_extra())
     {
@@ -5550,6 +5851,15 @@ function customization_addCustomField()
  ***********************************************/
 function customization_deleteCustomField()
 {
+    global $lang;
+
+    // Check that this is an admin user
+    if (!is_admin())
+    {
+        json_response(403, $lang['AdminPermissionRequired'], NULL);
+        return;
+    }
+
     // Check customization extra is enabled
     if (customization_extra())
     {
@@ -5570,6 +5880,15 @@ function customization_deleteCustomField()
  ********************************************/
 function customization_getCustomField()
 {
+    global $lang;
+
+    // Check that this is an admin user
+    if (!is_admin())
+    {
+        json_response(403, $lang['AdminPermissionRequired'], NULL);
+        return;
+    }
+
     // Check customization extra is enabled
     if (customization_extra())
     {
@@ -5882,7 +6201,9 @@ function getTabularDocumentsResponse() {
                 $document['id'] = $document['id'] . "_" . $document['file_version'];
                 $document['state'] = "open";
                 $document['document_type'] = $escaper->escapeHtml($document['document_type']);
-                $document['document_name'] = "<a class='text-info' href='" . build_url("governance/download.php?id={$document['unique_name']}") . "' >{$escaper->escapeHtml($document['document_name'])} ({$document['file_version']})</a>";
+                $document['document_name'] = "<a class='text-info' href='" . build_url("governance/download.php?id={$escaper->escapeHtml($document['unique_name'])}") . "' >{$escaper->escapeHtml($document['document_name'])} ({$document['file_version']})</a>";
+                $document['submitted_by'] = $escaper->escapeHtml(get_name_by_value('user', (int)$document['submitted_by']));
+                $document['updated_by'] = $escaper->escapeHtml(get_name_by_value('user', (int)$document['updated_by']));
                 $document['status'] = $escaper->escapeHtml(get_name_by_value('document_status', $document['status']));
                 
                 // if the version is the original version, the creation_date should be the date that the document is created.
@@ -5955,6 +6276,16 @@ function getTabularDocumentsResponse() {
                                     continue 3;
                                 }
                                 break;
+                            case "submitted_by":
+                                if (stripos(get_name_by_value('user', (int)$document['submitted_by']), $value) === false) {
+                                    continue 3;
+                                }
+                                break;
+                            case "updated_by":
+                                if (stripos(get_name_by_value('user', (int)$document['updated_by']), $value) === false) {
+                                    continue 3;
+                                }
+                                break;
                             case "creation_date":
                                 if(stripos(format_date($document['creation_date']), $value) === false) {
                                     continue 3;
@@ -5976,10 +6307,12 @@ function getTabularDocumentsResponse() {
 
                 $document['state'] = "closed";
                 $document['document_type'] = $escaper->escapeHtml($document['document_type']);
-                $document['document_name'] = "<a class='text-info' href='" . build_url("governance/download.php?id={$document['unique_name']}") . "' >{$escaper->escapeHtml($document['document_name'])}</a>";
+                $document['document_name'] = "<a class='text-info' href='" . build_url("governance/download.php?id={$escaper->escapeHtml($document['unique_name'])}") . "' >{$escaper->escapeHtml($document['document_name'])}</a>";
                 $document['status'] = $escaper->escapeHtml(get_name_by_value('document_status', $document['status']));
                 $document['framework_names'] = $escaper->escapeHtml($framework_names);
                 $document['control_names'] = $escaper->escapeHtml($control_names);
+                $document['submitted_by'] = $escaper->escapeHtml(get_name_by_value('user', (int)$document['submitted_by']));
+                $document['updated_by'] = $escaper->escapeHtml(get_name_by_value('user', (int)$document['updated_by']));
                 $document['creation_date'] = format_date($document['creation_date']);
                 $document['approval_date'] = format_date($document['approval_date']);
                 $document['actions'] = "
@@ -6019,9 +6352,9 @@ function getTabularDocumentsResponse() {
 function get_mitigation_control_info(){
     global $lang;
     global $escaper;
-    
-    $control_id = $_GET['control_id'];
-    $height     = $_GET['scroll_top'];
+
+    $control_id = (int)$_GET['control_id'];
+    $height     = (int)$_GET['scroll_top'];
     
     $some_control = get_framework_controls( $control_id );
     $mapped_frameworks = get_mapping_control_frameworks($control_id);
@@ -6334,8 +6667,8 @@ function getPlanMitigationsDatatableResponse()
                         }
                         break;
                     case "id":
-                        $id = convert_to_risk_id($risk['id']);
-                        $data_row[] = "<div data-id='{$id}' class='open-risk'><a class='open-in-new-tab' href='../management/view.php?id={$id}&active=PlanYourMitigations#mitigation'>{$id}</a></div>";
+                        $id = (int) convert_to_risk_id($risk['id']);
+                        $data_row[] = "<div data-id='{$id}' class='open-risk'><a class='open-in-new-tab' href='../management/view.php?id={$id}&active=PlanYourMitigations#mitigation' target='_blank'>{$id}</a></div>";
                         $filter_data[$column] = $id;
                         break;
                     case "risk_status":
@@ -7924,7 +8257,7 @@ function get_exception_for_display_api()
     }
 
     if($exception['unique_name'])
-        $exception['file_download'] = "<a class='text-info' href=\"".build_url("governance/download.php?id=".$exception['unique_name'])."\" >".$escaper->escapeHtml($exception['file_name']). " (".$exception['file_version'].")" ."</a>";
+        $exception['file_download'] = "<a class='text-info' href=\"".build_url("governance/download.php?id=".$escaper->escapeHtml($exception['unique_name']))."\" >".$escaper->escapeHtml($exception['file_name']). " (".$exception['file_version'].")" ."</a>";
     else $exception['file_download'] = "";
 
     foreach($exception as $key => $value) {
@@ -8665,6 +8998,12 @@ function cve_lookup_api() {
 
     global $escaper, $lang;
 
+    // Require a valid SimpleRisk session
+    if (!is_session_authenticated()) {
+        unauthenticated_access();
+        return;
+    }
+
     $cve_id = isset($_GET['cve_id']) ? trim($_GET['cve_id']) : '';
     $cve_pattern = '/^CVE-\d{4}-\d{4,7}$/i';
     if (!preg_match($cve_pattern, $cve_id)) {
@@ -8746,6 +9085,316 @@ function get_asset_options() {
         json_response(400, get_alert(true), NULL);
         return;
     }
+}
+
+/*******************************************
+ * FUNCTION: ASSET GROUP CRUD - LIST ALL   *
+ *******************************************/
+function listAssetGroups()
+{
+    global $escaper, $lang;
+
+    if (!check_permission("asset")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
+    $db = db_open();
+    $stmt = $db->prepare("SELECT id, name FROM `asset_groups` ORDER BY name");
+    $stmt->execute();
+    $groups = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    json_response(200, "SUCCESS", ['asset_groups' => $groups]);
+}
+
+/***********************************************
+ * FUNCTION: ASSET GROUP CRUD - CREATE         *
+ ***********************************************/
+function createAssetGroupCrud()
+{
+    global $escaper, $lang;
+
+    if (!check_permission("asset")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
+    $name = get_param("POST", "name", null);
+    if (!$name) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyANameParameter']), NULL);
+        return;
+    }
+
+    if (get_value_by_name('asset_groups', $name)) {
+        json_response(400, $escaper->escapeHtml($lang['AssetGroupNameAlreadyInUse']), NULL);
+        return;
+    }
+
+    $selected_assets = $_POST['selected_assets'] ?? [];
+
+    try {
+        $id = create_asset_group($name, $selected_assets);
+    } catch (Exception $e) {
+        error_log($e);
+        $id = false;
+    }
+
+    if ($id) {
+        json_response(200, $escaper->escapeHtml($lang['AssetGroupCreatedSuccessfully']), ['id' => $id]);
+    } else {
+        json_response(400, $escaper->escapeHtml($lang['ThereWasAProblemCreatingTheAssetGroup']), NULL);
+    }
+}
+
+/***********************************************
+ * FUNCTION: ASSET GROUP CRUD - GET BY ID      *
+ ***********************************************/
+function getAssetGroupById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("asset")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    try {
+        $group = get_asset_group($id);
+    } catch (Exception $e) {
+        error_log($e);
+        json_response(400, $escaper->escapeHtml($lang['ThereWasAProblemGettingTheAssetGroup']), NULL);
+        return;
+    }
+
+    if (empty($group)) {
+        json_response(404, "NOT FOUND: Unable to find an asset group with the specified id.", NULL);
+        return;
+    }
+
+    json_response(200, "SUCCESS", ['asset_group' => $group]);
+}
+
+/***********************************************
+ * FUNCTION: ASSET GROUP CRUD - UPDATE         *
+ ***********************************************/
+function updateAssetGroupById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("asset")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? get_param("POST", "id", 0));
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    // Load current group to use as defaults for omitted fields
+    try {
+        $current = get_asset_group($id);
+    } catch (Exception $e) {
+        error_log($e);
+        json_response(400, $escaper->escapeHtml($lang['ThereWasAProblemGettingTheAssetGroup']), NULL);
+        return;
+    }
+
+    if (empty($current)) {
+        json_response(404, "NOT FOUND: Unable to find an asset group with the specified id.", NULL);
+        return;
+    }
+
+    $name = get_param("POST", "name", null) ?: $current['name'];
+    $selected_assets = isset($_POST['selected_assets'])
+        ? $_POST['selected_assets']
+        : array_column($current['selected_assets'], 'id');
+
+    // Validate name uniqueness (allow same name if it's this group's own name)
+    $id_check = get_value_by_name('asset_groups', $name);
+    if ($id_check != $id && $id_check !== null) {
+        json_response(400, $escaper->escapeHtml($lang['AssetGroupNameAlreadyInUse']), NULL);
+        return;
+    }
+
+    try {
+        update_asset_group($id, $name, $selected_assets);
+    } catch (Exception $e) {
+        error_log($e);
+        json_response(400, $escaper->escapeHtml($lang['ThereWasAProblemUpdatingTheAssetGroup']), NULL);
+        return;
+    }
+
+    json_response(200, $escaper->escapeHtml($lang['AssetGroupUpdatedSuccessfully']), ['id' => $id]);
+}
+
+/***********************************************
+ * FUNCTION: ASSET GROUP CRUD - DELETE         *
+ ***********************************************/
+function deleteAssetGroupById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("asset")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    // Verify the group exists
+    $current = get_asset_group($id);
+    if (empty($current)) {
+        json_response(404, "NOT FOUND: Unable to find an asset group with the specified id.", NULL);
+        return;
+    }
+
+    try {
+        $deleted = delete_asset_group($id);
+    } catch (Exception $e) {
+        error_log($e);
+        $deleted = false;
+    }
+
+    if (!$deleted) {
+        json_response(400, $escaper->escapeHtml($lang['ThereWasAProblemDeletingTheAssetGroup']), NULL);
+        return;
+    }
+
+    json_response(200, $escaper->escapeHtml($lang['AssetGroupDeletedSuccessfully']), NULL);
+}
+
+/***********************************************
+ * FUNCTION: ASSET GROUP CRUD - GET ASSETS     *
+ ***********************************************/
+function getAssetGroupAssets($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("asset")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    $current = get_asset_group($id);
+    if (empty($current)) {
+        json_response(404, "NOT FOUND: Unable to find an asset group with the specified id.", NULL);
+        return;
+    }
+
+    $assets = get_assets_of_asset_group($id);
+    json_response(200, "SUCCESS", ['assets' => $assets]);
+}
+
+/***********************************************
+ * FUNCTION: ASSET GROUP CRUD - ADD ASSETS     *
+ ***********************************************/
+function addAssetsToAssetGroup($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("asset")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? get_param("POST", "id", 0));
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    $asset_ids = $_POST['asset_ids'] ?? [];
+    if (empty($asset_ids)) {
+        json_response(400, "BAD REQUEST: asset_ids[] is required.", NULL);
+        return;
+    }
+
+    // Load current group
+    try {
+        $current = get_asset_group($id);
+    } catch (Exception $e) {
+        error_log($e);
+        json_response(400, $escaper->escapeHtml($lang['ThereWasAProblemGettingTheAssetGroup']), NULL);
+        return;
+    }
+
+    if (empty($current)) {
+        json_response(404, "NOT FOUND: Unable to find an asset group with the specified id.", NULL);
+        return;
+    }
+
+    // Merge current asset IDs with new ones (deduplicated)
+    $current_ids = array_column($current['selected_assets'], 'id');
+    $merged_ids = array_values(array_unique(array_merge($current_ids, array_map('intval', $asset_ids))));
+
+    try {
+        update_asset_group($id, $current['name'], $merged_ids);
+    } catch (Exception $e) {
+        error_log($e);
+        json_response(400, $escaper->escapeHtml($lang['ThereWasAProblemUpdatingTheAssetGroup']), NULL);
+        return;
+    }
+
+    json_response(200, $escaper->escapeHtml($lang['AssetGroupUpdatedSuccessfully']), ['id' => $id]);
+}
+
+/***********************************************
+ * FUNCTION: ASSET GROUP CRUD - REMOVE ASSET   *
+ ***********************************************/
+function removeAssetFromAssetGroupById($id = null, $asset_id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("asset")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? 0);
+    $asset_id = (int)($asset_id ?? 0);
+    if (!$id || !$asset_id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    $current = get_asset_group($id);
+    if (empty($current)) {
+        json_response(404, "NOT FOUND: Unable to find an asset group with the specified id.", NULL);
+        return;
+    }
+
+    try {
+        $removed = remove_asset_from_asset_group($asset_id, $id);
+    } catch (Exception $e) {
+        error_log($e);
+        $removed = false;
+    }
+
+    if (!$removed) {
+        json_response(400, $escaper->escapeHtml($lang['ThereWasAProblemRemovingTheAssetFromAssetGroup']), NULL);
+        return;
+    }
+
+    json_response(200, $escaper->escapeHtml($lang['AssetRemovedFromAssetGroupSuccessfully']), NULL);
 }
 
 function asset_group_tree() {
@@ -9019,6 +9668,14 @@ function getManagerByUserAPI()
 function saveDynamicSelectionsForm()
 {
     global $lang, $escaper;
+
+    // Check if the user has permission to add saved risk reports
+    if (!check_permission("add_saved_risk_reports")) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionAddSavedRiskReports']));
+        
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+    }
     
     $type = get_param("post", "type");
     $name = get_param("post", "name");
@@ -9062,6 +9719,14 @@ function deleteDynamicSelectionForm()
 {
     global $lang, $escaper;
     
+    // Check if the user has permission to delete saved selections
+    if (!check_permission("delete_saved_risk_reports")) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionDeleteSavedRiskReports']));
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+    }
+
     $id = get_param("post", "id");
 
     // If the id is not sent
@@ -10149,6 +10814,13 @@ function detail_project_api(){
         if (!empty($result['custom_values'])) {
             foreach ($result['custom_values'] as &$custom_value) {
                 switch ($custom_value['field_type']) {
+                    case 'shorttext':
+                    case 'longtext':
+                        // If encryption for this field is enabled, decrypt value
+                        if ($custom_value['encryption']) {
+                            $custom_value['value'] = try_decrypt($custom_value['value']);
+                        }
+                        break;
                     case 'date':
                         $custom_value['value'] = $custom_value['value'] ? format_date($custom_value['value']) : '';
                         break;
@@ -12148,6 +12820,856 @@ function api_complianceforgescf_disable()
 /**********************************************
  * FUNCTION: CREATE A ASSET FROM EXTERNAL APP *
  **********************************************/
+/*************************************
+ * FUNCTION: ASSET CRUD - GET BY ID  *
+ *************************************/
+function getAssetById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("asset")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    $asset = get_asset_by_id($id);
+    if (empty($asset)) {
+        json_response(404, "NOT FOUND: Unable to find an asset with the specified id.", NULL);
+        return;
+    }
+
+    if (!check_access_for_asset($id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
+    if (encryption_extra()) {
+        $asset['ip']      = try_decrypt($asset['ip']);
+        $asset['name']    = try_decrypt($asset['name']);
+        $asset['details'] = try_decrypt($asset['details']);
+    }
+
+    json_response(200, "SUCCESS", ['asset' => $asset]);
+}
+
+/**************************************
+ * FUNCTION: ASSET CRUD - CREATE      *
+ **************************************/
+function createAsset()
+{
+    global $escaper, $lang;
+
+    if (!check_permission("asset")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
+    $name = get_param("POST", "name", null);
+    if (!$name) {
+        json_response(400, $escaper->escapeHtml($lang['AssetNameIsRequired']), NULL);
+        return;
+    }
+
+    $ip               = get_param("POST", "ip", "");
+    $value            = get_param("POST", "value", "");
+    $location         = $_POST['location'] ?? [];
+    $teams            = $_POST['team'] ?? [];
+    $details          = get_param("POST", "details", "");
+    $tags             = $_POST['tags'] ?? [];
+    $verified         = (bool)get_param("POST", "verified", 0);
+    $associated_risks = $_POST['associated_risks'] ?? [];
+
+    $control_maturity = $_POST['control_maturity'] ?? [];
+    $control_id       = $_POST['control_id'] ?? [];
+    $mapped_controls  = [];
+    foreach ($control_maturity as $index => $maturity) {
+        if (!empty($control_id[$index])) {
+            $mapped_controls[] = [$maturity, $control_id[$index]];
+        }
+    }
+
+    foreach ($tags as $tag) {
+        if (strlen($tag) > 255) {
+            json_response(400, $escaper->escapeHtml($lang['MaxTagLengthWarning']), NULL);
+            return;
+        }
+    }
+
+    $asset_id = add_asset($ip, $name, $value, $location, $teams, $details, $tags, $verified, $mapped_controls, $associated_risks);
+
+    if ($asset_id) {
+        json_response(200, $escaper->escapeHtml($lang['AssetWasAddedSuccessfully']), ['id' => $asset_id]);
+    } else {
+        json_response(400, $escaper->escapeHtml($lang['ThereWasAProblemAddingTheAsset']), NULL);
+    }
+}
+
+/**************************************
+ * FUNCTION: ASSET CRUD - UPDATE      *
+ **************************************/
+function updateAssetById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("asset")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
+    // PHP only auto-populates $_POST for POST requests; parse the body for PATCH
+    if (empty($_POST)) {
+        parse_str(file_get_contents('php://input'), $_POST);
+    }
+
+    $id = (int)($id ?? get_param("POST", "id", 0));
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    if (!asset_exists_by_id($id)) {
+        json_response(404, "NOT FOUND: Unable to find an asset with the specified id.", NULL);
+        return;
+    }
+
+    if (!check_access_for_asset($id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
+    $ip               = get_param("POST", "ip", null) ?: null;
+    $name             = get_param("POST", "name", null) ?: null;
+    $value            = get_param("POST", "value", null);
+    $location         = isset($_POST['location']) ? $_POST['location'] : null;
+    $teams            = isset($_POST['team']) ? $_POST['team'] : null;
+    $details          = get_param("POST", "details", null) ?: null;
+    $tags             = isset($_POST['tags']) ? $_POST['tags'] : null;
+    $verified         = isset($_POST['verified']) ? (bool)$_POST['verified'] : null;
+    $associated_risks = isset($_POST['associated_risks']) ? $_POST['associated_risks'] : [];
+
+    $control_maturity = $_POST['control_maturity'] ?? [];
+    $control_id       = $_POST['control_id'] ?? [];
+    $mapped_controls  = null;
+    if (!empty($control_maturity)) {
+        $mapped_controls = [];
+        foreach ($control_maturity as $index => $maturity) {
+            if (!empty($control_id[$index])) {
+                $mapped_controls[] = [$maturity, $control_id[$index]];
+            }
+        }
+    }
+
+    if ($tags !== null) {
+        foreach ($tags as $tag) {
+            if (strlen($tag) > 255) {
+                json_response(400, $escaper->escapeHtml($lang['MaxTagLengthWarning']), NULL);
+                return;
+            }
+        }
+    }
+
+    $success = update_asset($id, $ip, $name, $value, $location, $teams, $details, $tags, $verified, $mapped_controls, $associated_risks);
+
+    if ($success !== false) {
+        json_response(200, $escaper->escapeHtml($lang['AssetWasUpdatedSuccessfully']), ['id' => $id]);
+    } else {
+        json_response(400, $escaper->escapeHtml($lang['ThereWasAProblemUpdatingTheAsset']), NULL);
+    }
+}
+
+/**************************************
+ * FUNCTION: ASSET CRUD - DELETE      *
+ **************************************/
+function deleteAssetById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("asset")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    if (!asset_exists_by_id($id)) {
+        json_response(404, "NOT FOUND: Unable to find an asset with the specified id.", NULL);
+        return;
+    }
+
+    if (!check_access_for_asset($id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
+    delete_asset($id);
+    json_response(200, $escaper->escapeHtml($lang['AssetWasDeletedSuccessfully']), NULL);
+}
+
+/***********************************************
+ * FUNCTION: ASSET CRUD - GET ASSOCIATIONS     *
+ ***********************************************/
+function getAssetAssociations($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("asset")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    if (!asset_exists_by_id($id)) {
+        json_response(404, "NOT FOUND: Unable to find an asset with the specified id.", NULL);
+        return;
+    }
+
+    if (!check_access_for_asset($id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
+    $risk_associations = get_risk_connectivity_for_asset($id);
+    json_response(200, "SUCCESS", ['risks' => $risk_associations]);
+}
+
+/*********************************************
+ * FUNCTION: COMPLIANCE CRUD - GET TEST      *
+ *********************************************/
+function getTestById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("compliance")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    if (!check_access_for_test($id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisTest']), NULL);
+        return;
+    }
+
+    $test = get_framework_control_test_by_id($id);
+    if (empty($test['id'])) {
+        json_response(404, "NOT FOUND: Unable to find a test with the specified id.", NULL);
+        return;
+    }
+
+    json_response(200, "Test retrieved successfully.", ['test' => $test]);
+}
+
+/***********************************************
+ * FUNCTION: COMPLIANCE CRUD - CREATE TEST     *
+ ***********************************************/
+function createTest()
+{
+    global $escaper, $lang;
+
+    if (!check_permission("define_tests")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+        return;
+    }
+
+    $name                  = get_param("POST", "name", "");
+    $framework_control_id  = (int)get_param("POST", "framework_control_id", 0);
+    $tester                = (int)get_param("POST", "tester", 0);
+    $test_frequency        = (int)get_param("POST", "test_frequency", 0);
+
+    if (!$name) {
+        json_response(400, "The test name cannot be empty.", NULL);
+        return;
+    }
+
+    if (!$framework_control_id) {
+        json_response(400, "A framework_control_id is required.", NULL);
+        return;
+    }
+
+    $objective                = get_param("POST", "objective", "");
+    $test_steps               = get_param("POST", "test_steps", "");
+    $approximate_time         = (int)get_param("POST", "approximate_time", 0);
+    $expected_results         = get_param("POST", "expected_results", "");
+    $additional_stakeholders  = get_param("POST", "additional_stakeholders", "");
+    $last_date                = get_param("POST", "last_date", "0000-00-00");
+    $next_date                = get_param("POST", "next_date", false) ?: false;
+    $teams                    = isset($_POST['teams']) ? $_POST['teams'] : [];
+    $tags                     = isset($_POST['tags']) ? $_POST['tags'] : [];
+    $audit_initiation_offset  = isset($_POST['audit_initiation_offset']) ? (int)$_POST['audit_initiation_offset'] : null;
+
+    $test_id = add_framework_control_test(
+        $tester, $test_frequency, $name, $objective, $test_steps,
+        $approximate_time, $expected_results, $framework_control_id,
+        $additional_stakeholders, $last_date, $next_date, $teams, $tags,
+        $audit_initiation_offset
+    );
+
+    if ($test_id) {
+        json_response(201, "Test created successfully.", ['id' => (int)$test_id]);
+    } else {
+        json_response(500, "Failed to create the test.", NULL);
+    }
+}
+
+/***********************************************
+ * FUNCTION: COMPLIANCE CRUD - UPDATE TEST     *
+ ***********************************************/
+function updateTestById($id = null)
+{
+    global $escaper, $lang;
+
+    // PHP only auto-populates $_POST for POST requests; parse the body for PATCH
+    if (empty($_POST)) {
+        parse_str(file_get_contents('php://input'), $_POST);
+    }
+
+    if (!check_permission("edit_tests")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    if (!check_access_for_test($id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisTest']), NULL);
+        return;
+    }
+
+    $test = get_framework_control_test_by_id($id);
+    if (empty($test['id'])) {
+        json_response(404, "NOT FOUND: Unable to find a test with the specified id.", NULL);
+        return;
+    }
+
+    // Use false for omitted fields so update_framework_control_test preserves existing values
+    $tester                   = isset($_POST['tester'])                   ? (int)$_POST['tester']                  : false;
+    $test_frequency           = isset($_POST['test_frequency'])           ? (int)$_POST['test_frequency']          : false;
+    $name                     = isset($_POST['name'])                     ? $_POST['name']                         : false;
+    $objective                = isset($_POST['objective'])                ? $_POST['objective']                    : false;
+    $test_steps               = isset($_POST['test_steps'])               ? $_POST['test_steps']                   : false;
+    $approximate_time         = isset($_POST['approximate_time'])         ? (int)$_POST['approximate_time']        : false;
+    $expected_results         = isset($_POST['expected_results'])         ? $_POST['expected_results']             : false;
+    $last_date                = isset($_POST['last_date'])                ? $_POST['last_date']                    : false;
+    $next_date                = isset($_POST['next_date'])                ? $_POST['next_date']                    : false;
+    $framework_control_id     = isset($_POST['framework_control_id'])     ? (int)$_POST['framework_control_id']   : false;
+    $additional_stakeholders  = isset($_POST['additional_stakeholders'])  ? $_POST['additional_stakeholders']     : false;
+    $teams                    = isset($_POST['teams'])                    ? $_POST['teams']                        : false;
+    $tags                     = isset($_POST['tags'])                     ? $_POST['tags']                         : [];
+    $audit_initiation_offset  = isset($_POST['audit_initiation_offset'])  ? (int)$_POST['audit_initiation_offset'] : false;
+
+    update_framework_control_test(
+        $id, $tester, $test_frequency, $name, $objective, $test_steps,
+        $approximate_time, $expected_results, $last_date, $next_date,
+        $framework_control_id, $additional_stakeholders, $teams, $tags,
+        $audit_initiation_offset
+    );
+
+    json_response(200, "Test updated successfully.", NULL);
+}
+
+/***********************************************
+ * FUNCTION: COMPLIANCE CRUD - DELETE TEST     *
+ ***********************************************/
+function deleteTestById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("delete_tests")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    if (!check_access_for_test($id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisTest']), NULL);
+        return;
+    }
+
+    $test = get_framework_control_test_by_id($id);
+    if (empty($test['id'])) {
+        json_response(404, "NOT FOUND: Unable to find a test with the specified id.", NULL);
+        return;
+    }
+
+    delete_framework_control_test($id);
+    json_response(200, "Test deleted successfully.", NULL);
+}
+
+/***********************************************
+ * FUNCTION: COMPLIANCE CRUD - GET AUDIT      *
+ ***********************************************/
+function getAuditById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("compliance")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    if (!check_access_for_audit($id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisAudit']), NULL);
+        return;
+    }
+
+    $audit = get_framework_control_test_audit_by_id($id);
+    if (empty($audit['id'])) {
+        json_response(404, "NOT FOUND: Unable to find an audit with the specified id.", NULL);
+        return;
+    }
+
+    json_response(200, "Audit retrieved successfully.", ['audit' => $audit]);
+}
+
+/***********************************************
+ * FUNCTION: COMPLIANCE CRUD - CREATE AUDIT   *
+ ***********************************************/
+function createAudit()
+{
+    global $escaper, $lang;
+
+    if (!check_permission("initiate_audits")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+        return;
+    }
+
+    $test_id = (int)get_param("POST", "test_id", 0);
+    if (!$test_id) {
+        json_response(400, "A test_id is required.", NULL);
+        return;
+    }
+
+    if (!check_access_for_test($test_id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisTest']), NULL);
+        return;
+    }
+
+    $test = get_framework_control_test_by_id($test_id);
+    if (empty($test['id'])) {
+        json_response(404, "NOT FOUND: Unable to find a test with the specified id.", NULL);
+        return;
+    }
+
+    $tags = isset($_POST['tags']) ? $_POST['tags'] : [];
+
+    // Use the configured initiated_audit_status setting, cast to int to prevent injection
+    $initiated_audit_status = (int)(get_setting("initiated_audit_status") ?: 0);
+
+    $name = initiate_test_audit($test_id, $initiated_audit_status, $tags);
+
+    // Retrieve the ID of the newly created audit
+    $db = db_open();
+    $stmt = $db->prepare("SELECT id FROM `framework_control_test_audits` WHERE test_id = :test_id ORDER BY id DESC LIMIT 1");
+    $stmt->bindParam(":test_id", $test_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $audit_id = (int)$stmt->fetchColumn();
+    db_close($db);
+
+    json_response(201, "Audit initiated successfully.", ['id' => $audit_id, 'test_name' => $name]);
+}
+
+/***********************************************
+ * FUNCTION: COMPLIANCE CRUD - UPDATE AUDIT   *
+ ***********************************************/
+function updateAuditById($id = null)
+{
+    global $escaper, $lang;
+
+    // PHP only auto-populates $_POST for POST requests; parse the body for PATCH
+    if (empty($_POST)) {
+        parse_str(file_get_contents('php://input'), $_POST);
+    }
+
+    if (!check_permission("modify_audits")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    if (!check_access_for_audit($id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisAudit']), NULL);
+        return;
+    }
+
+    $audit = get_framework_control_test_audit_by_id($id);
+    if (empty($audit['id'])) {
+        json_response(404, "NOT FOUND: Unable to find an audit with the specified id.", NULL);
+        return;
+    }
+
+    $status      = isset($_POST['status'])      ? (int)$_POST['status']      : (int)$audit['status'];
+    $test_result = isset($_POST['test_result'])  ? $_POST['test_result']      : ($audit['test_result'] ?? '');
+    $tester      = isset($_POST['tester'])       ? (int)$_POST['tester']      : (int)$audit['tester'];
+    $test_date   = isset($_POST['test_date'])    ? $_POST['test_date']        : ($audit['test_date'] ?? date('Y-m-d'));
+    $summary     = isset($_POST['summary'])      ? $_POST['summary']          : ($audit['summary'] ?? '');
+    $teams       = isset($_POST['teams'])        ? $_POST['teams']            : ($audit['teams'] ?? []);
+    $tags        = isset($_POST['tags'])         ? $_POST['tags']             : [];
+
+    save_test_result($id, $status, $test_result, $tester, $test_date, $teams, $summary, $tags);
+    json_response(200, "Audit updated successfully.", NULL);
+}
+
+/***********************************************
+ * FUNCTION: COMPLIANCE CRUD - DELETE AUDIT   *
+ ***********************************************/
+function deleteAuditById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("delete_audits")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    if (!check_access_for_audit($id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisAudit']), NULL);
+        return;
+    }
+
+    $audit = get_framework_control_test_audit_by_id($id);
+    if (empty($audit['id'])) {
+        json_response(404, "NOT FOUND: Unable to find an audit with the specified id.", NULL);
+        return;
+    }
+
+    delete_test_audit($id);
+    json_response(200, "Audit deleted successfully.", NULL);
+}
+
+/*************************************************
+ * FUNCTION: GOVERNANCE CRUD - GET FRAMEWORK     *
+ *************************************************/
+function getFrameworkById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("governance")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    $framework = get_framework($id);
+    if (!$framework) {
+        json_response(404, "NOT FOUND: Unable to find a framework with the specified id.", NULL);
+        return;
+    }
+
+    json_response(200, "Framework retrieved successfully.", ['framework' => $framework]);
+}
+
+/***************************************************
+ * FUNCTION: GOVERNANCE CRUD - CREATE FRAMEWORK    *
+ ***************************************************/
+function createFrameworkCrud()
+{
+    global $escaper, $lang;
+
+    if (!check_permission("add_new_frameworks")) {
+        json_response(403, $escaper->escapeHtml($lang['NoAddFrameworkPermission']), NULL);
+        return;
+    }
+
+    $name        = get_param("POST", "name", "");
+    $description = get_param("POST", "description", "");
+    $parent      = (int)get_param("POST", "parent", 0);
+    $status      = (int)get_param("POST", "status", 1);
+
+    if (!$name) {
+        json_response(400, "The framework name cannot be empty.", NULL);
+        return;
+    }
+
+    $framework_id = add_framework($name, $description, $parent, $status);
+    if ($framework_id === false) {
+        json_response(409, "A framework with that name already exists.", NULL);
+        return;
+    }
+
+    json_response(201, "Framework created successfully.", ['id' => (int)$framework_id]);
+}
+
+/***************************************************
+ * FUNCTION: GOVERNANCE CRUD - UPDATE FRAMEWORK    *
+ ***************************************************/
+function updateFrameworkById($id = null)
+{
+    global $escaper, $lang;
+
+    // PHP only auto-populates $_POST for POST requests; parse the body for PATCH
+    if (empty($_POST)) {
+        parse_str(file_get_contents('php://input'), $_POST);
+    }
+
+    if (!check_permission("modify_frameworks")) {
+        json_response(403, $escaper->escapeHtml($lang['NoModifyFrameworkPermission']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    $framework = get_framework($id);
+    if (!$framework) {
+        json_response(404, "NOT FOUND: Unable to find a framework with the specified id.", NULL);
+        return;
+    }
+
+    $name        = isset($_POST['name'])        ? $_POST['name']               : false;
+    $description = isset($_POST['description']) ? $_POST['description']        : false;
+    $parent      = isset($_POST['parent'])      ? (int)$_POST['parent']        : false;
+
+    if ($name === false && $description === false && $parent === false) {
+        json_response(400, "No updatable fields were provided.", NULL);
+        return;
+    }
+
+    if (update_framework($id, $name !== false ? $name : $framework['name'], $description, $parent)) {
+        json_response(200, "Framework updated successfully.", NULL);
+    } else {
+        json_response(500, "Failed to update the framework.", NULL);
+    }
+}
+
+/***************************************************
+ * FUNCTION: GOVERNANCE CRUD - DELETE FRAMEWORK    *
+ ***************************************************/
+function deleteFrameworkById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("delete_frameworks")) {
+        json_response(403, $escaper->escapeHtml($lang['NoDeleteFrameworkPermission']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    $framework = get_framework($id);
+    if (!$framework) {
+        json_response(404, "NOT FOUND: Unable to find a framework with the specified id.", NULL);
+        return;
+    }
+
+    delete_frameworks($id);
+    json_response(200, "Framework deleted successfully.", NULL);
+}
+
+/***********************************************
+ * FUNCTION: GOVERNANCE CRUD - GET CONTROL     *
+ ***********************************************/
+function getControlById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("governance")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    $control = get_framework_control($id);
+    if (!$control) {
+        json_response(404, "NOT FOUND: Unable to find a control with the specified id.", NULL);
+        return;
+    }
+
+    json_response(200, "Control retrieved successfully.", ['control' => $control]);
+}
+
+/***********************************************
+ * FUNCTION: GOVERNANCE CRUD - CREATE CONTROL  *
+ ***********************************************/
+function createControlCrud()
+{
+    global $escaper, $lang;
+
+    if (!check_permission("add_new_controls")) {
+        json_response(403, $escaper->escapeHtml($lang['NoAddControlPermission']), NULL);
+        return;
+    }
+
+    $short_name = get_param("POST", "short_name", "");
+    if (!$short_name) {
+        json_response(400, $escaper->escapeHtml($lang['TheControlNameCannotBeEmpty']), NULL);
+        return;
+    }
+
+    $control = [
+        'short_name'               => trim($short_name),
+        'long_name'                => get_param("POST", "long_name", ""),
+        'description'              => get_param("POST", "description", ""),
+        'supplemental_guidance'    => get_param("POST", "supplemental_guidance", ""),
+        'control_owner'            => (int)get_param("POST", "control_owner", 0),
+        'control_class'            => (int)get_param("POST", "control_class", 0),
+        'control_phase'            => (int)get_param("POST", "control_phase", 0),
+        'control_number'           => get_param("POST", "control_number", ""),
+        'control_current_maturity' => (int)get_param("POST", "control_current_maturity", 0),
+        'control_desired_maturity' => (int)get_param("POST", "control_desired_maturity", 0),
+        'control_priority'         => (int)get_param("POST", "control_priority", 0),
+        'control_type'             => isset($_POST['control_type']) ? $_POST['control_type'] : [],
+        'control_status'           => (int)get_param("POST", "control_status", 1),
+        'family'                   => (int)get_param("POST", "family", 0),
+        'mitigation_percent'       => (int)get_param("POST", "mitigation_percent", 0),
+        'map_frameworks'           => [],
+        'mapped_assets'            => [],
+    ];
+
+    $control_id = add_framework_control($control);
+    if ($control_id) {
+        json_response(201, "Control created successfully.", ['id' => (int)$control_id]);
+    } else {
+        json_response(500, "Failed to create the control.", NULL);
+    }
+}
+
+/***********************************************
+ * FUNCTION: GOVERNANCE CRUD - UPDATE CONTROL  *
+ ***********************************************/
+function updateControlById($id = null)
+{
+    global $escaper, $lang;
+
+    // PHP only auto-populates $_POST for POST requests; parse the body for PATCH
+    if (empty($_POST)) {
+        parse_str(file_get_contents('php://input'), $_POST);
+    }
+
+    if (!check_permission("modify_controls")) {
+        json_response(403, $escaper->escapeHtml($lang['NoModifyControlPermission']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    $existing = get_framework_control($id);
+    if (!$existing) {
+        json_response(404, "NOT FOUND: Unable to find a control with the specified id.", NULL);
+        return;
+    }
+
+    $control = [
+        'short_name'               => isset($_POST['short_name'])               ? trim($_POST['short_name'])               : $existing['short_name'],
+        'long_name'                => isset($_POST['long_name'])                ? $_POST['long_name']                      : $existing['long_name'],
+        'description'              => isset($_POST['description'])              ? $_POST['description']                    : $existing['description'],
+        'supplemental_guidance'    => isset($_POST['supplemental_guidance'])    ? $_POST['supplemental_guidance']          : $existing['supplemental_guidance'],
+        'control_owner'            => isset($_POST['control_owner'])            ? (int)$_POST['control_owner']             : (int)$existing['control_owner'],
+        'control_class'            => isset($_POST['control_class'])            ? (int)$_POST['control_class']             : (int)$existing['control_class'],
+        'control_phase'            => isset($_POST['control_phase'])            ? (int)$_POST['control_phase']             : (int)$existing['control_phase'],
+        'control_number'           => isset($_POST['control_number'])           ? $_POST['control_number']                 : $existing['control_number'],
+        'control_current_maturity' => isset($_POST['control_current_maturity']) ? (int)$_POST['control_current_maturity'] : (int)($existing['control_current_maturity'] ?? 0),
+        'control_desired_maturity' => isset($_POST['control_desired_maturity']) ? (int)$_POST['control_desired_maturity'] : (int)($existing['control_desired_maturity'] ?? 0),
+        'control_priority'         => isset($_POST['control_priority'])         ? (int)$_POST['control_priority']          : (int)$existing['control_priority'],
+        'control_type'             => isset($_POST['control_type'])             ? $_POST['control_type']                   : [],
+        'control_status'           => isset($_POST['control_status'])           ? (int)$_POST['control_status']            : (int)$existing['control_status'],
+        'family'                   => isset($_POST['family'])                   ? (int)$_POST['family']                    : (int)$existing['family'],
+        'mitigation_percent'       => isset($_POST['mitigation_percent'])       ? (int)$_POST['mitigation_percent']        : (int)$existing['mitigation_percent'],
+        'map_frameworks'           => [],
+        'mapped_assets'            => [],
+    ];
+
+    if (update_framework_control($id, $control)) {
+        json_response(200, "Control updated successfully.", NULL);
+    } else {
+        json_response(500, "Failed to update the control.", NULL);
+    }
+}
+
+/***********************************************
+ * FUNCTION: GOVERNANCE CRUD - DELETE CONTROL  *
+ ***********************************************/
+function deleteControlById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("delete_controls")) {
+        json_response(403, $escaper->escapeHtml($lang['NoDeleteControlPermission']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    $existing = get_framework_control($id);
+    if (!$existing) {
+        json_response(404, "NOT FOUND: Unable to find a control with the specified id.", NULL);
+        return;
+    }
+
+    delete_framework_control($id);
+    json_response(200, "Control deleted successfully.", NULL);
+}
+
 function create_asset_api(){
     global $escaper, $lang;
     if (check_permission("asset")){
@@ -12232,9 +13754,16 @@ function delete_asset_api(){
 function incidentManagementAPI() {
     global $lang;
 
+    // Check that this is an admin user
+    if (!is_admin())
+    {
+        json_response(403, $lang['AdminPermissionRequired'], NULL);
+        return;
+    }
+
     $status = null;
     $status_message = null;
-    
+
     // If the extra directory exists
     if (is_dir(realpath(__DIR__ . '/../extras/incident_management'))) {
 

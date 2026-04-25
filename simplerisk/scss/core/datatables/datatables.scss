@@ -38,7 +38,9 @@
                 .risk-cell-holder {
                     display: flex;
                     align-items: center;
-                    float: right !important;
+                    justify-content: space-around;
+                    flex-direction: row-reverse;
+                    width: 100%;
             
                     .risk-color {
                         display: inline-block;
@@ -46,8 +48,6 @@
                         height: 20px;
                         border-radius: 2px;
                         border: 1px solid;
-                        margin-left: 10px;
-                        margin-right: auto;
                     }
                 }
             }

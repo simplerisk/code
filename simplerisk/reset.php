@@ -17,7 +17,7 @@
 
         // Session handler is database
         if (USE_DATABASE_FOR_SESSIONS == "true") {
-            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+            session_set_save_handler(new SimpleRiskSessionHandler());
         }
 
         // Start session
@@ -40,9 +40,11 @@
     require_once(language_file());
 
     // Check if this is a page from reset password email
+    $from_email_link = false;
     if (isset($_GET['token']) && $_GET['token'] && isset($_GET['username'])) {
         $token = $_GET['token'];
         $username = $_GET['username'];
+        $from_email_link = true;
     }
 
     // Check if a password reset email was requested
@@ -139,15 +141,6 @@
                 // Redirect back to the login page
                 $redirect_js = true;
 
-            } else {
-                
-                if (isset($_SESSION['alert']) && $_SESSION['alert'] == true) {
-                } else {
-
-                    // Display an alert
-                    set_alert(true, "bad", $lang['PassworResetRequestFailed']);
-
-                }
             }
         }
     }
@@ -263,11 +256,11 @@ if (!empty($redirect_js)) {
                                             		<form name="password_reset" method="post" action="" class="password_reset">
                                             			<div class="form-group">
                 			                                <label for="user"><?= $escaper->escapeHtml($lang['Username']) ?></label>
-                			                                <input class="form-control" autocomplete="username" name="user" value="<?= isset($username) ? $escaper->escapeHtml($username) : ''?>" id="user" type="text" required <?= isset($username) ? 'readonly tabindex=-1' : ''?>/>
+                			                                <input class="form-control" autocomplete="username" name="user" value="<?= isset($username) ? $escaper->escapeHtml($username) : ''?>" id="user" type="text" required <?= $from_email_link ? 'readonly tabindex=-1' : ''?>/>
                                                         </div>
                                                         <div class="form-group">
                                                     		<label for="token"><?= $escaper->escapeHtml($lang['ResetToken'])?></label>
-                			                                <input class="form-control" autocomplete="one-time-code" value="<?= isset($token) ? $escaper->escapeHtml($token) : '' ?>" name="token" id="token" type="text" maxlength="20" required <?= isset($token) ? 'readonly tabindex=-1' : ''?>/>
+                			                                <input class="form-control" autocomplete="one-time-code" value="<?= isset($token) ? $escaper->escapeHtml($token) : '' ?>" name="token" id="token" type="text" maxlength="32" required <?= $from_email_link ? 'readonly tabindex=-1' : ''?>/>
                                                         </div>
                                                         <div class="form-group">
                 											<label for="password"><?= $escaper->escapeHtml($lang['Password']) ?></label>

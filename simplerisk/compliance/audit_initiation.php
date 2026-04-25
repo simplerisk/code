@@ -5,66 +5,12 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'datepicker', 'easyui', 'datetimerangepicker', 'CUSTOM:pages/compliance.js', 'CUSTOM:pages/governance.js', 'CUSTOM:common.js'], ['check_compliance' => true]);
+    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'easyui', 'datetimerangepicker', 'CUSTOM:pages/compliance.js', 'CUSTOM:pages/governance.js', 'CUSTOM:common.js'], ['check_compliance' => true]);
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/governance.php'));
     require_once(realpath(__DIR__ . '/../includes/compliance.php'));
 
-    // Check if editing test
-    if (isset($_POST['update_test'])) {
-
-        $test_id = (int)$_POST['test_id'];
-        $tester = (int)$_POST['tester'];
-        $additional_stakeholders = empty($_POST['additional_stakeholders']) ? "" : implode(",", $_POST['additional_stakeholders']);
-        $teams = isset($_POST['team']) ? $_POST['team'] : [];
-        $test_frequency = (int)$_POST['test_frequency'];
-        $last_date = get_standard_date_from_default_format($_POST['last_date']);
-        $next_date = get_standard_date_from_default_format($_POST['next_date']);
-        $name = $_POST['name'];
-        $objective = $_POST['objective'];
-        $test_steps = $_POST['test_steps'];
-        $approximate_time = (int)($_POST['approximate_time']) ? $_POST['approximate_time'] : 0;
-        $expected_results = $_POST['expected_results'];
-        $tags = empty($_POST['tags']) ? [] : $_POST['tags'];
-        
-        // Update a framework control test
-        update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date, false, $additional_stakeholders, $teams, $tags);
-        
-        set_alert(true, "good", $escaper->escapeHtml($lang['TestSuccessUpdated']));
-        
-        // Refresh current page
-        refresh();
-
-    }
-
-    // Check if initiate framework or control or test
-    if (isset($_GET['initiate'])) {
-
-        $id = (int)$_GET['id'];
-        $type = $escaper->escapeHtml($_GET['type']);
-        
-        if ($name = initiate_framework_control_tests($type, $id)) {
-
-            if ($type == 'framework') {
-
-                set_alert(true, "good", $escaper->escapeHtml(_lang('InitiatedAllTestsUnderFramework', ['framework' => $name])));
-
-            } elseif ($type == 'control') {
-
-                set_alert(true, "good", $escaper->escapeHtml(_lang('InitiatedAllTestsUnderControl', ['control' => $name])));
-
-            } elseif ($type == 'test') {
-
-                set_alert(true, "good", $escaper->escapeHtml(_lang('InitiatedTest', ['test' => $name])));
-
-            }
-        }
-        
-        // Go back to old page
-        refresh(build_url("compliance/audit_initiation.php"));
-
-    }
 ?>
 <div class="row bg-white">
     <div class="col-12">
@@ -86,54 +32,6 @@
     <?php 
         }
     ?>
-        
-        $("body").on("click", ".test-name", function(e){
-            e.preventDefault();
-            
-            var test_id = $(this).data('id');
-            $.ajax({
-                type: "GET",
-                url: BASE_URL + "/api/compliance/test?id=" + test_id,
-                success: function(result){
-                    var data = result['data'];
-                    var modal = $('#test--edit');
-                    
-                    $('[name=test_id]', modal).val(data['id']);
-                    $('[name=tester]', modal).val(data['tester']);
-                    $('#additional_stakeholders', modal).multiselect('deselectAll', false);
-                    $('#additional_stakeholders', modal).multiselect('select', data['additional_stakeholders']);
-
-                    $("[name='team[]']", modal).multiselect('deselectAll', false);
-                    $("[name='team[]']", modal).multiselect('select', data['teams']);
-
-                    $('[name=test_frequency]', modal).val(data['test_frequency']);
-                    $('[name=last_date]', modal).val(data['last_date']);
-                    $('[name=next_date]', modal).val(data['next_date']);
-                    $('[name=name]', modal).val(data['name']);
-                    $('[name=objective]', modal).val(data['objective']);
-                    $('[name=test_steps]', modal).val(data['test_steps']);
-                    $('[name=approximate_time]', modal).val(data['approximate_time']);
-                    $('[name=expected_results]', modal).val(data['expected_results']);
-                    $(".datepicker" , modal).initAsDatePicker();
-                    $.each(data['tags'], function (i, item) {
-                        $('[name=\'tags[]\']', modal).append($('<option>', { 
-                            value: item,
-                            text : item,
-                            selected : true,
-                        }));
-                    });
-                    var select = $('[name=\'tags[]\']', modal).selectize();
-                    var selectize = select[0].selectize;
-                    selectize.setValue(data['tags']);
-
-					setEditorContent("objective", data['objective']);
-					setEditorContent("test_steps", data['test_steps']);
-					setEditorContent("expected_results", data['expected_results']);
-
-                    modal.modal("show");
-                }
-            })
-        })
         
         // Event when clicks Initiate Framework, Control, Test Audit button
         $('body').on("click", ".initiate-framework-audit-btn, .initiate-control-audit-btn, .initiate-test-btn", function() {
@@ -209,9 +107,12 @@
         init_minimun_editor('#update_supplemental_guidance');
 
         // Initialize the WYSIWYG editor for the update test modal
-        init_minimun_editor('#objective');
-        init_minimun_editor('#test_steps');
-        init_minimun_editor('#expected_results');
+        $("#test--update [name=objective]").attr("id", "update_objective");
+        init_minimun_editor('#update_objective');
+        $("#test--update [name=test_steps]").attr("id", "update_test_steps");
+        init_minimun_editor('#update_test_steps');
+        $("#test--update [name=expected_results]").attr("id", "update_expected_results");
+        init_minimun_editor('#update_expected_results');
 
         // Initialize the multiselect for the update control modal
         $("select[name='control_type[]'").multiselect({
@@ -234,108 +135,20 @@
     });
 </script>
 
-<!-- MODEL WINDOW FOR EDITING FRAMEWORK -->
+<!-- MODAL WINDOW FOR UPDATING FRAMEWORK -->
 <?php
     display_update_framework_modal('audit_initiation');
 ?>
 
-<!-- MODEL WINDOW FOR UPDATING CONTROL -->
+<!-- MODAL WINDOW FOR UPDATING CONTROL -->
 <?php
     display_update_control_modal('audit_initiation');
 ?>
 
-<!-- MODEL WINDOW FOR EDITING TEST -->
-<div id="test--edit" class="modal fade " tabindex="-1" aria-labelledby="risk-catalog--add" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
-        <div class="modal-content">
-            <form class="" id="update-test-form" method="post" autocomplete="off">
-                <input type="hidden" name="test_id" value="">
-                <input type="hidden" name="update_test" value="true">
-                <div class="modal-header">
-                    <h4 class="modal-title"><?= $escaper->escapeHtml($lang['TestEditHeader']); ?></h4>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row form-group">
-                        <div class="col-6">
-                            <label for=""><?= $escaper->escapeHtml($lang['TestName']); ?><span class="required">*</span> :</label>
-                            <input type="text" name="name" required value="" class="form-control" maxlength="1000" title="<?= $escaper->escapeHtml($lang['TestName']); ?>">
-                        </div>
-                        <div class="col-6">
-                            <label for=""><?= $escaper->escapeHtml($lang['Tester']); ?> :</label>
-    <?php 
-                            create_dropdown("enabled_users", NULL, "tester", false, false, false); 
-    ?>
-                        </div>
-                    </div>
-                    <div class="row form-group">
-                        <div class="col-6">
-                            <label for=""><?= $escaper->escapeHtml($lang['AdditionalStakeholders']); ?> :</label>
-    <?php 
-                            create_multiple_dropdown("enabled_users", NULL, "additional_stakeholders"); 
-    ?>
-                        </div>
-                        <div class="col-6">
-                            <label for=""><?= $escaper->escapeHtml($lang['Teams']); ?> :</label>
-    <?php 
-                            create_multiple_dropdown("team"); 
-    ?>
-                        </div>
-                    </div>
-                    <div class="row form-group">
-                        <div class="col-6">
-                            <label for=""><?= $escaper->escapeHtml($lang['TestFrequency']); ?><small class="white-labels ms-1">(<?= $escaper->escapeHtml($lang['days']); ?>)</small> :</label>
-                            <input type="number" min="0" max="2147483647" name="test_frequency" value="" class="form-control">
-                        </div>
-                        <div class="col-6">
-                            <label for=""><?= $escaper->escapeHtml($lang['LastTestDate']); ?> :</label>
-                            <input type="text" name="last_date" value="" class="form-control datepicker"> 
-                        </div>
-                    </div>
-                    <div class="row form-group">
-                        <div class="col-12">
-                            <label for=""><?= $escaper->escapeHtml($lang['NextTestDate']); ?> :</label>
-                            <input type="text" name="next_date" value="" class="form-control datepicker"> 
-                        </div>
-                    </div>
-                    <div class="row form-group">
-                        <div class="col-6">
-                            <label for=""><?= $escaper->escapeHtml($lang['Objective']); ?> :</label>
-                            <textarea name="objective" id="objective" class="form-control" rows="3" style="max-width:100%;height: auto;"></textarea>
-                        </div>
-                        <div class="col-6">
-                            <label for=""><?= $escaper->escapeHtml($lang['TestSteps']); ?> :</label>
-                            <textarea name="test_steps" id="test_steps" class="form-control" rows="3" style="max-width:100%;height:auto;"></textarea>
-                        </div>
-                    </div>
-                    <div class="row form-group">
-                        <div class="col-12">
-                            <label for=""><?= $escaper->escapeHtml($lang['ApproximateTime']); ?><small class="text-dark ms-1">(<?= $escaper->escapeHtml($lang['minutes']); ?>)</small> :</label>
-                            <input type="number" min="0" max="2147483647" name="approximate_time" value="" class="form-control">
-                        </div>
-                    </div>
-                    <div class="row form-group">
-                        <div class="col-12">
-                            <label for=""><?= $escaper->escapeHtml($lang['ExpectedResults']); ?> :</label>
-                            <textarea name="expected_results" id="expected_results" class="form-control" rows="3" style="max-width:100%;height: auto;"></textarea>
-                        </div>
-                    </div>
-                    <div class="row form-group mb-0">
-                        <div class="col-12">
-                            <label for=""><?= $escaper->escapeHtml($lang['Tags']); ?> :</label>
-                            <select class="test_tags" readonly name="tags[]" multiple placeholder="<?= $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);?>"></select>
-                            <div class="tag-max-length-warning"><?= $escaper->escapeHtml($lang['MaxTagLengthWarning']);?></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
-                    <button type="submit" id="update_test" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Update']); ?></button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<!-- MODAL WINDOW FOR UPDATING TEST -->
+<?php
+    display_update_test_modal('audit_initiation');
+?>
 
 <!-- MODEL WINDOW FOR ADD TAGS TO TEST -->
 <div id="tags--edit" class="modal fade " tabindex="-1" aria-labelledby="risk-catalog--add" aria-hidden="true">
@@ -382,7 +195,7 @@
         });
 
         //Have to remove the 'fade' class for the shown event to work for modals
-        $('#framework--update, #control--update, #test--edit').on('shown.bs.modal', function() {
+        $('#framework--update, #control--update, #test--update').on('shown.bs.modal', function() {
             $(this).find('.modal-body').scrollTop(0);
         });
     });

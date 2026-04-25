@@ -30,7 +30,7 @@ try {
     ");
     $stmt->execute();
 } catch (Exception $e) {
-    write_debug_log("Error in cron_temporary_cleanup: " . $e->getMessage(), "warning");
+    write_debug_log("Error in cron_temporary_cleanup: " . $e->getMessage(), "error");
 } finally {
     // Close the database connection
     db_close($db);

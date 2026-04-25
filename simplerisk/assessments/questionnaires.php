@@ -113,8 +113,6 @@
         </div>
     </div>
 </div>
-<input type="hidden" id="_lang_SimpleriskUsers" value="<?= $escaper->escapeHtml($lang['SimpleriskUsers']) ?>">
-<input type="hidden" id="_lang_AssessmentContacts" value="<?= $escaper->escapeHtml($lang['AssessmentContacts']) ?>">
 <script>
     $(function() {
         $('#setting_modal_btn').on('click', function(e) {

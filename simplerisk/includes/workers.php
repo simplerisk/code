@@ -36,7 +36,7 @@ function acquire_worker_lock(string $name, int $staleSeconds): bool
             if (($now - $lastHeartbeat) < $staleSeconds) {
                 write_debug_log(
                     "$name already running on host {$existingHost} (PID {$existingPid}), last heartbeat {$lastHeartbeat}",
-                    "info"
+                    "debug"
                 );
                 return false;
             }
@@ -44,7 +44,7 @@ function acquire_worker_lock(string $name, int $staleSeconds): bool
             // Stale process detected
             write_debug_log(
                 "$name stale lock detected (PID {$existingPid} on host {$existingHost}), attempting termination",
-                "warning"
+                "notice"
             );
 
             update_or_insert_setting("{$name}_last_restart_reason", "stale_heartbeat");
@@ -393,7 +393,7 @@ function reset_worker_metrics(string $workerName): void
 function register_worker_signal_handlers(string $workerName): void
 {
     if (!function_exists('pcntl_signal')) {
-        write_debug_log("[$workerName] pcntl_signal unavailable; signals will not be handled.", "warning");
+        write_debug_log("[$workerName] pcntl_signal unavailable; signals will not be handled.", "notice");
         return;
     }
 
@@ -526,7 +526,7 @@ function worker_get_job_definition(string $jobType, int $reloadAttempts = 1): ?a
 
     // Reload loop if missing
     for ($i = 0; $i < $reloadAttempts; $i++) {
-        write_debug_log("Job type '{$jobType}' missing, reloading job definitions (attempt " . ($i + 1) . ")...", "info");
+        write_debug_log("Job type '{$jobType}' missing, reloading job definitions (attempt " . ($i + 1) . ")...", "warning");
 
         $jobs = load_all_jobs();
         foreach ($jobs as $job) {

@@ -5,7 +5,7 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['tabs:logic', 'multiselect', 'datatables', 'CUSTOM:permissions-widget.js'], ['check_admin' => true]);
+    render_header_and_sidebar(['tabs:logic', 'multiselect', 'datatables', 'CUSTOM:permissions-widget.js', 'CUSTOM:common.js'], ['check_admin' => true]);
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/messages.php'));
@@ -90,14 +90,11 @@
                         // Verify that it is a valid username format
                         if (valid_username($user)) {
 
-                            // Create a unique salt for the user
+                            // Generate the password hash using a cryptographically random salt
+                            $hash = hash_password($pass);
+
+                            // Generate a random salt token for the user.salt column (no longer used for hashing)
                             $salt = generate_token(20);
-
-                            // Hash the salt
-                            $salt_hash = '$2a$15$' . md5($salt);
-
-                            // Generate the password hash
-                            $hash = generateHash($salt_hash, $pass);
 
                             // Insert a new user
                             $user_id = add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $admin, $multi_factor, $change_password, $manager, $permissions);
@@ -623,6 +620,7 @@
                 </div>
                 <div class="card-body my-2 border">
                     <form name="delete_user" method="post" action="">
+                        <input type="hidden" name="delete_user" value="true"/>
                         <h4><?= $escaper->escapeHtml($lang['DeleteAnExistingUser']); ?></h4>
                         <div class="row" style="align-items:flex-end">
                             <div class="col-md-4">
@@ -632,7 +630,7 @@
     ?>
                             </div>
                             <div class="col-md-2">
-                                <input type="submit" value="<?= $escaper->escapeHtml($lang['Delete']); ?>" name="delete_user" class="btn btn-submit"/>
+                                <input type="submit" value="<?= $escaper->escapeHtml($lang['Delete']); ?>" class="btn btn-submit"/>
                             </div>
                         </div>
                     </form>
@@ -837,6 +835,16 @@
     var reportDatatables = ["users_of_teams-table", "teams_of_users-table", "users_of_permissions-table", "permissions_of_users-table", "users_of_roles-table"];
 
     $(document).ready(function(){
+
+        $("form[name='delete_user']").submit(function() {
+            event.preventDefault();
+
+            // Display the confirmation dialog
+            confirm("<?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisUser']); ?>", () => {
+                // If confirmed, submit the form using native javascript
+                $(this)[0].submit();
+            });
+        });
 
         $("#team").multiselect({
             allSelectedText: "<?= $escaper->escapeHtml($lang['AllTeams']) ?>",

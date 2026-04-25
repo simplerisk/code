@@ -2,6 +2,8 @@
 
 namespace PhpOffice\PhpSpreadsheet\Reader;
 
+use Composer\Pcre\Preg;
+use PhpOffice\PhpSpreadsheet\Cell\AddressRange;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
@@ -140,7 +142,7 @@ class Xls extends XlsBase
     /**
      * REF structures. Only applies to BIFF8.
      *
-     * @var mixed[][]
+     * @var array<int, array{'externalBookIndex': int, 'firstSheetIndex': int, 'lastSheetIndex': int}>
      */
     protected array $ref;
 
@@ -292,6 +294,16 @@ class Xls extends XlsBase
     public function listWorksheetInfo(string $filename): array
     {
         return (new Xls\ListFunctions())->listWorksheetInfo2($filename, $this);
+    }
+
+    /**
+     * Return worksheet info (Name, Last Column Letter, Last Column Index, Total Rows, Total Columns).
+     *
+     * @return array<int, array{worksheetName: string, dimensionsMinR: int, dimensionsMinC: int, dimensionsMaxR: int, dimensionsMaxC: int, lastColumnLetter: string}>
+     */
+    public function listWorksheetDimensions(string $filename): array
+    {
+        return (new Xls\ListFunctions())->listWorksheetDimensions2($filename, $this);
     }
 
     /**
@@ -699,7 +711,7 @@ class Xls extends XlsBase
             ];
         } else {
             $extension = false;
-            if ($cellAddress == '$B$65536') {
+            if ($cellAddress === '$B$' . AddressRange::MAX_ROW_XLS) {
                 //    If the address row is -1 and the column is 0, (which translates as $B$65536) then this is a continuation
                 //        note from the previous cell annotation. We're not yet handling this, so annotations longer than the
                 //        max 2048 bytes will probably throw a wobbly.
@@ -1254,6 +1266,8 @@ class Xls extends XlsBase
 
                         break;
                 }
+                $readOrder = (0xC0 & ord($recordData[8])) >> 6;
+                $objStyle->getAlignment()->setReadOrder($readOrder);
 
                 // offset:  9; size: 1; Flags used for attribute groups
 
@@ -2022,8 +2036,8 @@ class Xls extends XlsBase
 
                     // repeated option flags
                     // OpenOffice.org documentation 5.21
-                    $option = ord($recordData[$pos]);
                     /** @var int $pos */
+                    $option = ord($recordData[$pos]);
                     ++$pos;
 
                     /** @var int $limitpos */
@@ -2596,7 +2610,7 @@ class Xls extends XlsBase
             // offset: 10; size: 2; not used
 
             for ($i = $firstColumnIndex + 1; $i <= $lastColumnIndex + 1; ++$i) {
-                if ($lastColumnIndex == 255 || $lastColumnIndex == 256) {
+                if ($lastColumnIndex == AddressRange::MAX_COLUMN_INT_XLS - 1 || $lastColumnIndex == AddressRange::MAX_COLUMN_INT) {
                     $this->phpSheet->getDefaultColumnDimension()->setWidth($width / 256);
 
                     break;
@@ -2647,7 +2661,14 @@ class Xls extends XlsBase
             $useDefaultHeight = (0x8000 & self::getUInt2d($recordData, 6)) >> 15;
 
             if (!$useDefaultHeight) {
-                $this->phpSheet->getRowDimension($r + 1)->setRowHeight($height / 20);
+                if (
+                    $this->phpSheet->getDefaultRowDimension()->getRowHeight() > 0
+                ) {
+                    $this->phpSheet->getRowDimension($r + 1)
+                        ->setCustomFormat(true, ($height === 255) ? -1 : ($height / 20));
+                } else {
+                    $this->phpSheet->getRowDimension($r + 1)->setRowHeight($height / 20);
+                }
             }
 
             // offset: 8; size: 2; not used
@@ -3518,6 +3539,17 @@ class Xls extends XlsBase
         }
     }
 
+    private const REGEX_WHOLE_COLUMN = '/^([A-Z]+1\:[A-Z]+)'
+        . '(' . AddressRange::MAX_ROW_XLS_OLD . '|' . AddressRange::MAX_ROW_XLS . ')'
+        . '$/';
+    private const REGEX_WHOLE_COLUMN_REPLACE = '${1}' . AddressRange::MAX_ROW;
+    private const REGEX_WHOLE_ROW = '/^(A\d+\:)'
+        . AddressRange::MAX_COLUMN_XLS
+        . '(\d+)$/';
+    private const REGEX_WHOLE_ROW_REPLACE = '${1}'
+        . AddressRange::MAX_COLUMN
+        . '${2}';
+
     /**
      * Read SELECTION record. There is one such record for each pane in the sheet.
      */
@@ -3550,19 +3582,14 @@ class Xls extends XlsBase
 
             $selectedCells = $cellRangeAddressList['cellRangeAddresses'][0];
 
-            // first row '1' + last row '16384' indicates that full column is selected (apparently also in BIFF8!)
-            if (preg_match('/^([A-Z]+1\:[A-Z]+)16384$/', $selectedCells)) {
-                $selectedCells = (string) preg_replace('/^([A-Z]+1\:[A-Z]+)16384$/', '${1}1048576', $selectedCells);
-            }
-
-            // first row '1' + last row '65536' indicates that full column is selected
-            if (preg_match('/^([A-Z]+1\:[A-Z]+)65536$/', $selectedCells)) {
-                $selectedCells = (string) preg_replace('/^([A-Z]+1\:[A-Z]+)65536$/', '${1}1048576', $selectedCells);
+            // first row '1' + last row '16384' or '65536' indicates that full column is selected (apparently also in BIFF8!)
+            if (Preg::isMatch(self::REGEX_WHOLE_COLUMN, $selectedCells)) {
+                $selectedCells = Preg::replace(self::REGEX_WHOLE_COLUMN, self::REGEX_WHOLE_COLUMN_REPLACE, $selectedCells);
             }
 
             // first column 'A' + last column 'IV' indicates that full row is selected
-            if (preg_match('/^(A\d+\:)IV(\d+)$/', $selectedCells)) {
-                $selectedCells = (string) preg_replace('/^(A\d+\:)IV(\d+)$/', '${1}XFD${2}', $selectedCells);
+            if (Preg::isMatch(self::REGEX_WHOLE_ROW, $selectedCells)) {
+                $selectedCells = Preg::replace(self::REGEX_WHOLE_ROW, self::REGEX_WHOLE_ROW_REPLACE, $selectedCells);
             }
 
             $this->phpSheet->setSelectedCells($selectedCells);
@@ -3575,10 +3602,9 @@ class Xls extends XlsBase
     {
         $includeCellRange = false;
         $rangeBoundaries = Coordinate::getRangeBoundaries($cellRangeAddress);
-        ++$rangeBoundaries[1][0];
+        StringHelper::stringIncrement($rangeBoundaries[1][0]);
         for ($row = $rangeBoundaries[0][1]; $row <= $rangeBoundaries[1][1]; ++$row) {
-            for ($column = $rangeBoundaries[0][0]; $column != $rangeBoundaries[1][0]; ++$column) {
-                /** @var string $column */
+            for ($column = $rangeBoundaries[0][0]; $column != $rangeBoundaries[1][0]; StringHelper::stringIncrement($column)) {
                 if ($this->getReadFilter()->readCell($column, $row, $this->phpSheet->getTitle())) {
                     $includeCellRange = true;
 
@@ -4782,6 +4808,7 @@ class Xls extends XlsBase
                     // todo: check if we have identified the whole set of special characters
                     // it seems that the following characters are not accepted for sheet names
                     // and we may assume that they are not present: []*/:\?
+                    // 'u' qualifier makes it risky to use Preg::isMatch here
                     if (preg_match("/[ !\"@#£$%&{()}<>=+'|^,;-]/u", $sheetRange)) {
                         $sheetRange = "'$sheetRange'";
                     }

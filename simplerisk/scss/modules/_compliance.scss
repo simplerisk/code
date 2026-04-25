@@ -21,6 +21,37 @@
         }
     }
 }
+
+#framework-controls_wrapper {
+    table#framework-controls {
+        display: block;
+
+        &>tbody {
+            display: block;
+
+            &>tr {
+                display: block;
+                border: none;
+
+                &>td.sorting_1 {
+                    display: block;
+
+                    //remove the black unnecessary border-bottom, border-left, border-right
+                    border: none;
+        
+                    //add border-top since it was none
+                    td {
+                        border-top: 1px solid var(--bs-table-border-color);
+                    }
+
+                    .framework-control-test-list {
+                        overflow: auto;
+                    }
+                }
+            }
+        }
+    }
+}
 //*********************************** COMPLIANCE > DEFINE TESTS END *******************************//
 
 //********************************* COMPLIANCE > INITIATE AUDITS BEGIN ****************************//

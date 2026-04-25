@@ -15,9 +15,9 @@
  */
 function fetch_url_content($connection = "curl", $http_options = [], $validate_ssl = true, $url = null, $parameters = [])
 {
-    write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: URL: {$url}", "info");
+    write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: URL: {$url}", "debug");
     write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: HTTP Options:", "debug");
-    write_debug_log($http_options);
+    write_debug_log($http_options, "debug");
 
     // If validate_ssl is true
     if ($validate_ssl)
@@ -73,6 +73,10 @@ function fetch_url_content_via_curl($http_options, $validate_ssl, $url, $paramet
         if ($validate_ssl) {
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            $ca_bundle = \Composer\CaBundle\CaBundle::getSystemCaRootBundlePath();
+            if ($ca_bundle) {
+                curl_setopt($ch, CURLOPT_CAINFO, $ca_bundle);
+            }
         } else {
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -158,6 +162,12 @@ function fetch_url_content_via_stream($http_options, $validate_ssl, $url, $param
         'verify_peer_name' => $validate_ssl,
         'allow_self_signed' => !$validate_ssl,
     ];
+    if ($validate_ssl) {
+        $ca_bundle = \Composer\CaBundle\CaBundle::getSystemCaRootBundlePath();
+        if ($ca_bundle) {
+            $opts['ssl']['cafile'] = $ca_bundle;
+        }
+    }
 
     // POST/PUT parameters
     if (!empty($parameters)) {

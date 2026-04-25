@@ -54,6 +54,11 @@
         $current_default_language = get_setting("default_language");
         if ($default_language != $current_default_language) {
             update_setting("default_language", $default_language);
+            
+            // refresh the page to update the language for the user interface       
+            header("Location: index.php");
+            exit();
+            
         }
 
         // Update the default timezone setting
@@ -379,17 +384,38 @@
 
         }
 
-        // Set limit the frequency of test mail to 5 minutes.
-        if((isset($_SESSION['test_mail_sent']) && $now - intval($_SESSION['test_mail_sent']) > 300) || !isset($_SESSION['test_mail_sent'])) {
+        // Limit test mail sending to 5 per hour.
+        $test_mail_rate_limit = 5;
+        $test_mail_period = 3600;
+
+        // Get the test mail sent times from the session, ensuring it's an array
+        if (isset($_SESSION['test_mail_sent_times'])) {
+            $test_mail_sent_times = is_array($_SESSION['test_mail_sent_times']) ? $_SESSION['test_mail_sent_times'] : [];
+        } else {
+            $test_mail_sent_times = [];
+        }
+
+        if (empty($test_mail_sent_times) && isset($_SESSION['test_mail_sent']) && is_numeric($_SESSION['test_mail_sent'])) {
+            $test_mail_sent_times[] = intval($_SESSION['test_mail_sent']);
+        }
+
+        // Drop entries older than the period.
+        $test_mail_sent_times = array_values(array_filter($test_mail_sent_times, function ($sent_time) use ($now, $test_mail_period) {
+            return is_numeric($sent_time) && ($now - intval($sent_time) <= $test_mail_period);
+        }));
+
+        if (count($test_mail_sent_times) < $test_mail_rate_limit) {
             // Send the e-mail
             send_email_immediate($name, $email, $subject, $full_message);
 
-            $_SESSION['test_mail_sent'] = time();
+            $test_mail_sent_times[] = $now;
+            $_SESSION['test_mail_sent_times'] = $test_mail_sent_times;
+            $_SESSION['test_mail_sent'] = $now;
 
             // Display an alert
-            set_alert(true, "good", "A test email has been sent using the current settings.");
+            set_alert(true, "good", $escaper->escapeHtml($lang['ATestEmailHasBeenSentUsingTheCurrentSettings']));
         } else {
-            set_alert(true, "bad", $escaper->escapeHtml($lang['LimitedTestmailMessage']));
+            set_alert(true, "bad", $escaper->escapeHtml($lang['LimitedPeriodTestmailMessage']));
         }
     }
 
@@ -498,7 +524,7 @@
             if (isset($_POST['submit_and_backup_now'])) {
 
                 $message = _lang('BackupInitiatedByUser', ['user_name' => $_SESSION['name']], false);
-                write_debug_log($message);
+                write_debug_log($message, 'notice');
                 write_log(0, $_SESSION['uid'], $message, 'backup');
 
                 // Increasing the time for timeout
@@ -576,6 +602,20 @@
         } else {
             $error = true;
             set_alert(true, "bad", $escaper->escapeHtml($lang['APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes']));
+        }
+
+        // Update the password reset attempt lockout time setting
+        $password_reset_attempt_lockout_time = (int)$_POST['password_reset_attempt_lockout_time'];
+
+        // If the password_reset_attempt_lockout_time value is at least 1 minute
+        if ($password_reset_attempt_lockout_time >= 1) {
+            $current_password_reset_attempt_lockout_time = get_setting("password_reset_attempt_lockout_time");
+            if ($password_reset_attempt_lockout_time != $current_password_reset_attempt_lockout_time) {
+                update_setting("password_reset_attempt_lockout_time", $password_reset_attempt_lockout_time);
+            }
+        } else {
+            $error = true;
+            set_alert(true, "bad", "The password reset attempt lockout time must be at least 1 minute.");
         }
         
         // Update the content security policy
@@ -1471,6 +1511,14 @@
                                         <div class="form-group">
                                             <label><?= $escaper->escapeHtml($lang['PasswordResetTokenExpirationPeriod']) . " (" . $escaper->escapeHtml($lang["minutes"]) . ")"; ?> :</label>
                                             <input name="password_reset_token_expiration" id="password_reset_token_expiration" type="number" min="5" size="20px" value="<?= $escaper->escapeHtml(get_setting("password_reset_token_expiration") ?: 15); ?>" class="form-control"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <label><?= $escaper->escapeHtml("Password Reset Attempt Lockout Time") . " (" . $escaper->escapeHtml($lang["minutes"]) . ")"; ?> :</label>
+                                            <input name="password_reset_attempt_lockout_time" id="password_reset_attempt_lockout_time" type="number" min="1" size="20px" value="<?= $escaper->escapeHtml(get_setting("password_reset_attempt_lockout_time") ?: 5); ?>" class="form-control"/>
                                         </div>
                                     </div>
                                 </div>

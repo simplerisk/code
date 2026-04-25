@@ -17,7 +17,7 @@
 
         // Session handler is database
         if (USE_DATABASE_FOR_SESSIONS == "true") {
-            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+            session_set_save_handler(new SimpleRiskSessionHandler());
         }
 
         // Start session
@@ -51,8 +51,26 @@
 
     }
 
+    // Generate a per-session CSRF nonce for this form if one does not already exist.
+    // This is an explicit, server-side defence independent of the csrf-magic library.
+    if (empty($_SESSION['reset_pwd_csrf_token'])) {
+        $_SESSION['reset_pwd_csrf_token'] = bin2hex(random_bytes(32));
+    }
+
     // Check if a password reset was requested
     if (isset($_POST['password_reset'])) {
+
+        // Validate the explicit CSRF nonce before any state change.
+        // hash_equals prevents timing-based side-channel attacks.
+        $submitted_token = $_POST['csrf_token'] ?? '';
+        if (!hash_equals($_SESSION['reset_pwd_csrf_token'], $submitted_token)) {
+            set_alert(true, "bad", $lang['AccessDenied']);
+            header('Location: reset_password.php');
+            exit;
+        }
+
+        // Rotate the nonce after a valid submission so it cannot be replayed.
+        $_SESSION['reset_pwd_csrf_token'] = bin2hex(random_bytes(32));
 
         $user_id            = $_SESSION['first_login_uid'];
         $current_password   = $_SESSION['first_login_pass'];
@@ -123,6 +141,7 @@
                                         <h3>Enterprise Risk Management Simplified...</h3>
                                         <div class="card">
                                             <form name="password_reset" method="post" autocomplete="off" action="" class="password_reset">
+                                                <input type="hidden" name="csrf_token" value="<?= $escaper->escapeHtmlAttr($_SESSION['reset_pwd_csrf_token']) ?>">
                                                 <div class="card-body">
                                                     <h4 class="card-title"><?= $escaper->escapeHtml($lang['PasswordChangeRequired']);?></h4>
     <?php

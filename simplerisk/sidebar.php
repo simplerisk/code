@@ -238,6 +238,11 @@ require_once(realpath(__DIR__ .'/header.php'));
                                 <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['Overview']);?></span>
                             </a>
                         </li>
+                        <li class="sidebar-item <?= ($active_sidebar_thirdmenu =='IM_Reporting_IncidentDashboard')?'active':''; ?>">
+                            <a href="../incidents/reporting.php?menu=incident_dashboard" class="sidebar-link">
+                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['IncidentDashboard']);?></span>
+                            </a>
+                        </li>
                         <li class="sidebar-item <?= ($active_sidebar_thirdmenu =='IncidentTrend')?'active':''; ?>">
                             <a href="../incidents/reporting.php?menu=incident_trend" class="sidebar-link">
                                 <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['IncidentTrend']);?></span>
@@ -429,6 +434,11 @@ require_once(realpath(__DIR__ .'/header.php'));
                             </a>
                         </li>
                         <li class="sidebar-item">
+                            <a href="../reports/mean_time_to_remediate.php" class="sidebar-link">
+                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['MeanTimeToRemediate']);?></span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
                             <a href="../reports/likelihood_impact.php" class="sidebar-link">
                                 <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['LikelihoodImpact']);?></span>
                             </a>
@@ -521,6 +531,11 @@ require_once(realpath(__DIR__ .'/header.php'));
                                 <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['AuditTimeline']);?></span>
                             </a>
                         </li>
+                        <li class="sidebar-item">
+                            <a href="../reports/audit_remediation_cycle_time.php" class="sidebar-link">
+                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['AuditRemediationCycleTime']);?></span>
+                            </a>
+                        </li>
     <?php
         }
         if(!empty($_SESSION['governance']))
@@ -529,6 +544,11 @@ require_once(realpath(__DIR__ .'/header.php'));
                         <li class="sidebar-item <?= ($active_sidebar_submenu =='Reporting_Governance')?'active':''; ?>">
                             <a href="javascript:void(0)" class="sidebar-link">
                                 <span class="hide-menu"><?= $escaper->escapeHtml($lang['Governance']);?></span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="../reports/governance_dashboard.php" class="sidebar-link">
+                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['GovernanceDashboard']);?></span>
                             </a>
                         </li>
                         <li class="sidebar-item">
@@ -544,6 +564,16 @@ require_once(realpath(__DIR__ .'/header.php'));
                         <li class="sidebar-item">
                             <a href="../reports/assets_and_controls.php" class="sidebar-link">
                                 <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['AssetsAndControls']);?></span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="../reports/document_program_report.php" class="sidebar-link">
+                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['DocumentProgramReport']);?></span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="../reports/exception_report.php" class="sidebar-link">
+                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['ExceptionReport']);?></span>
                             </a>
                         </li>
     <?php
@@ -632,6 +662,11 @@ require_once(realpath(__DIR__ .'/header.php'));
                         <li class="sidebar-item <?= ($active_sidebar_submenu == 'UserManagement')?'active':''; ?>">
                             <a href="../admin/user_management.php" class="sidebar-link">
                                 <span class="hide-menu"><?= $escaper->escapeHtml($lang['UserManagement']);?></span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="../admin/team_management.php" class="sidebar-link">
+                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['TeamManagement']);?></span>
                             </a>
                         </li>
                         <li class="sidebar-item">

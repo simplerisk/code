@@ -16,7 +16,7 @@ if (php_sapi_name() == "cli")
 	if (get_setting('backup_auto') == "true") {
 
 	    $message = "Automatic backup requested.";
-	    write_debug_log($message, "info");
+	    write_debug_log($message, "notice");
 	    write_log(0, 0, $message, 'backup');
 
 	    do_backup();
@@ -166,7 +166,7 @@ function do_backup($requested_from_ui=false) {
     if ($requested_from_ui) {
         set_alert(true, "good", $message);
     } else {
-        write_debug_log($message, "info");
+        write_debug_log($message, "notice");
     }
 }
 

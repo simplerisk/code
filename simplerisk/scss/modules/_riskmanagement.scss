@@ -1,5 +1,67 @@
+//********************** RISK MANAGEMENT > CUSTOM DISPLAY SETTING MODAL BEGIN ***********************//
+#column-selections-container {
+	#RiskColumns_container {
+		ul.sortable-risk {
+			li {
+				display: flex;
+				align-items: center;
+
+				input.form-check-input {
+					margin-top: 0;
+					margin-bottom: 0;
+				}
+
+				label {
+					margin-bottom: 0;
+				}
+			}
+		}
+	}
+	
+	#MitigationColumns_container {
+		ul.sortable-mitigation {
+			li {
+				display: flex;
+				align-items: center;
+
+				input.form-check-input {
+					margin-top: 0;
+					margin-bottom: 0;
+				}
+
+				label {
+					margin-bottom: 0;
+				}
+			}
+		}
+	}
+
+	#ReviewColumns_container {
+		ul.sortable-review {
+			li {
+				display: flex;
+				align-items: center;
+
+				input.form-check-input {
+					margin-top: 0;
+					margin-bottom: 0;
+				}
+
+				label {
+					margin-bottom: 0;
+				}
+			}
+		}
+	}
+}
+//*********************** RISK MANAGEMENT > CUSTOM DISPLAY SETTING MODAL END ************************//
+
 //****************************** RISK MANAGEMENT > RISK DETAILS BEGIN *******************************//
 .risk-session {
+	.risk-square {
+		border: var(--bs-border-width) var(--bs-border-style) rgba(var(--bs-dark-rgb), 0.25);
+	}
+
 	.risk-subject {
 		word-break: break-word;
 	}
@@ -17,6 +79,8 @@
 	.risk-details-assessment,
 	.risk-details-additional-notes {
 		word-break: break-word;
+		flex-direction: column;
+		align-items: flex-start!important;
 	}
 }
 
@@ -111,6 +175,10 @@
 	.risk-details-view {
 		display: block;
 		align-items: center;
+
+		&.risk-details-supporting-documentation {
+			flex-direction: column;
+		}
 	}
 }
 
@@ -125,6 +193,10 @@
 	.mitigation-details-view {
 		display: block;
 		align-items: center;
+
+		&.mitigation-details-supporting-documentation {
+			flex-direction: column;
+		}
 	}
 }
 

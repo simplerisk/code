@@ -42,7 +42,7 @@ else {
     if (!isset($_SESSION)) {
         // Session handler is database
         if (USE_DATABASE_FOR_SESSIONS == "true") {
-            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+            session_set_save_handler(new SimpleRiskSessionHandler());
         }
 
         // Start session
@@ -59,6 +59,11 @@ else {
         sess_gc(1440);
         session_name('SimpleRisk');
         session_start();
+    }
+
+    // Generate a CSRF token for the login form if not already set
+    if (!isset($_SESSION['login_csrf_token'])) {
+        $_SESSION['login_csrf_token'] = bin2hex(random_bytes(32));
     }
 
     // Include the language file
@@ -91,6 +96,15 @@ else {
         // If the login form was posted
         $user='';
         if (isset($_POST["submit"])) {
+            // Validate CSRF token
+            if (empty($_POST['csrf_token']) || !isset($_SESSION['login_csrf_token']) ||
+                !hash_equals($_SESSION['login_csrf_token'], $_POST['csrf_token'])) {
+                header("location: index.php");
+                exit();
+            }
+            // Regenerate token to prevent reuse
+            $_SESSION['login_csrf_token'] = bin2hex(random_bytes(32));
+
             $user = !empty($_POST["user"]) ? trim($_POST["user"]) : '';
             $pass = !empty($_POST["pass"]) ? $_POST["pass"] : '';
 
@@ -204,6 +218,15 @@ else {
             // If a response has been posted
             if (isset($_POST['authenticate']))
             {
+                // Validate CSRF token
+                if (empty($_POST['csrf_token']) || !isset($_SESSION['login_csrf_token']) ||
+                    !hash_equals($_SESSION['login_csrf_token'], $_POST['csrf_token'])) {
+                    header("location: index.php");
+                    exit();
+                }
+                // Regenerate token to prevent reuse
+                $_SESSION['login_csrf_token'] = bin2hex(random_bytes(32));
+
                 // If the mfa token matches
                 if (does_mfa_token_match()) {
 
@@ -248,6 +271,15 @@ else {
             // If a response has ben posted
             if (isset($_POST['verify']))
             {
+                // Validate CSRF token
+                if (empty($_POST['csrf_token']) || !isset($_SESSION['login_csrf_token']) ||
+                    !hash_equals($_SESSION['login_csrf_token'], $_POST['csrf_token'])) {
+                    header("location: index.php");
+                    exit();
+                }
+                // Regenerate token to prevent reuse
+                $_SESSION['login_csrf_token'] = bin2hex(random_bytes(32));
+
                 // If the MFA verification process worked
                 if (process_mfa_verify())
                 {
@@ -338,6 +370,7 @@ else {
                                     <div class="col-md-3"></div>
                                     <div class="col-md-6">
                                 	    <form name='mfa' method='post' action=''>
+                                	        <input type="hidden" name="csrf_token" value="<?= $escaper->escapeHtmlAttr($_SESSION['login_csrf_token']) ?>">
 <?php
                                             display_mfa_authentication_page();
 ?>
@@ -354,6 +387,7 @@ else {
                                 <div class="row">
                                     <div class="col-md-12">
                             		    <form name='mfa' method='post' action=''>
+                                            <input type="hidden" name="csrf_token" value="<?= $escaper->escapeHtmlAttr($_SESSION['login_csrf_token']) ?>">
                                             <div class='card' style='margin-top: 43.8px;'>
                                                 <div class='card-body'>
 <?php
@@ -377,16 +411,17 @@ else {
                                         <h3>Enterprise Risk Management Simplified...</h3>
                                         <div class="card">
                                             <form class="loginForm" action="" method="post" name="authenticate">
+                                                <input type="hidden" name="csrf_token" value="<?= $escaper->escapeHtmlAttr($_SESSION['login_csrf_token']) ?>">
                                                 <div class="card-body">
                                                     <h4 class="card-title"><?= $escaper->escapeHtml($lang['LogInHere']);?>:</h4>
                                                     <div class="form-group">
                                                         <label><?= $escaper->escapeHtml($lang['Username']);?></label>
-                                                        <input type="text" class="form-control user" id="user" name="user" required />
+                                                        <input type="text" class="form-control user" id="user" name="user" value="<?= isset($_GET['user']) ? $escaper->escapeHtmlAttr($_GET['user']) : '' ?>" required />
                                                     </div>
                                                     <div class="form-group">
                                                         <label><?= $escaper->escapeHtml($lang['Password']);?></label>
                                                         <div class="password-container">
-                                                            <input type="password" class="form-control pass" id="pass" name="pass" required />
+                                                            <input type="password" class="form-control pass" id="pass" name="pass" value="<?= isset($_GET['pass']) ? $escaper->escapeHtmlAttr($_GET['pass']) : '' ?>" required />
                                                             <span id="eye-icon"><i class="fa fa-eye"></i></span>
                                                         </div>
                                                     </div>
@@ -436,6 +471,11 @@ else {
 ?>
     	<script>
             $(function() {
+
+                // Auto-submit the login form when credentials are passed via GET parameters
+                <?php if (!empty($_GET['user']) && !empty($_GET['pass'])): ?>
+                document.querySelector('.loginForm').submit();
+                <?php endif; ?>
 
                 // Show the password when the eye icon is clicked
                 $("#eye-icon").on("mousedown", function() {

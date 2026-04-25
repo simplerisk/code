@@ -341,7 +341,7 @@
             'management_review',
         );
     }
-    
+
     foreach ($risk_fields as $column) {
         $risk_columns[$column] = in_array($column, $custom_display_settings) ? true : false;
     }
@@ -368,10 +368,38 @@
 
     $selected_columns = array_merge($risk_columns, $mitigation_columns, $review_columns, $scoring_columns, $unassigned_columns, $risk_mapping_columns);
 
+    // Reorder $selected_columns based on the user's custom order in $custom_display_settings
+    // Visible columns (in custom_display_settings) should appear first in the user's specified order,
+    // followed by hidden columns
+    if (is_array($custom_display_settings) && count($custom_display_settings) > 0) {
+        $ordered_columns = [];
+        // First, add all visible columns in the order specified by $custom_display_settings
+        foreach ($custom_display_settings as $column) {
+            if (isset($selected_columns[$column])) {
+                $ordered_columns[$column] = $selected_columns[$column];
+            }
+        }
+        // Then, add all remaining (hidden) columns
+        foreach ($selected_columns as $column => $visible) {
+            if (!isset($ordered_columns[$column])) {
+                $ordered_columns[$column] = $visible;
+            }
+        }
+        $selected_columns = $ordered_columns;
+    }
+
+    $saved_order_column = "";
+    $saved_order_dir = "";
     if (is_array($custom_selection_settings)) {
         foreach ($custom_selection_settings as $select=>$custom_selection_setting) {
             if (!isset($_POST[$select])) {
                 ${$select} = $custom_selection_setting;
+            }
+            if ($select === 'order_column') {
+                $saved_order_column = $custom_selection_setting;
+            }
+            if ($select === 'order_dir') {
+                $saved_order_dir = $custom_selection_setting;
             }
         }
     }
@@ -414,7 +442,7 @@
 	<div class="col-12" id="selections">
 		<div class="accordion">
     <?php 
-            view_get_risks_by_selections($status, $group, $sort, $risk_columns, $mitigation_columns, $review_columns, $scoring_columns, $unassigned_columns, $risk_mapping_columns); 
+            view_get_risks_by_selections($status, $group, $sort, $risk_columns, $mitigation_columns, $review_columns, $scoring_columns, $unassigned_columns, $risk_mapping_columns, $custom_display_settings); 
 
             display_save_dynamic_risk_selections();
     ?>
@@ -453,6 +481,8 @@
 	<input type="hidden" id="unassigned_option" value="<?= $escaper->escapeHtml($lang["Unassigned"]);?>">
 	<input type="hidden" id="date_format" value="<?= $escaper->escapeHtml(get_setting("default_date_format"));?>">
 	<input type="hidden" id="custom_column_filters" value="<?= $escaper->escapeHtml($custom_column_filters);?>">
+    <input type="hidden" id="saved_order_column" value="<?= $escaper->escapeHtml($saved_order_column); ?>">
+	<input type="hidden" id="saved_order_dir" value="<?= $escaper->escapeHtml($saved_order_dir); ?>">
 </div>
 <?php
 	// Render the footer of the page. Please don't put code after this part.

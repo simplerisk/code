@@ -5,7 +5,7 @@
 
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['datatables', 'tabs:logic', 'WYSIWYG:Notification'], ['check_admin' => true], 'Notification Extra', 'Configure', 'Extras');
+render_header_and_sidebar(['datatables', 'tabs:logic', 'multiselect', 'CUSTOM:common.js', 'WYSIWYG:Notification', 'blockUI'], ['check_admin' => true], 'Notification Extra', 'Configure', 'Extras');
 
 // If the extra directory exists
 if (is_dir(realpath(__DIR__ . '/../extras/notification')))

@@ -130,12 +130,13 @@
         app()->get('/governance/document', 'getDocumentResponse');
         app()->get('/governance/selected_parent_documents_dropdown', 'getSelectedParentDocumentsDropdownResponse');
         app()->get('/governance/related_controls_by_framework_ids', 'getRelatedControlsByFrameworkIdsResponse');
-        app()->get('/governance/rebuild_control_filters', 'getControlFiltersByFrameworksResponse');
+        app()->post('/governance/rebuild_control_filters', 'getControlFiltersByFrameworksResponse');
         
         app()->post('/governance/add_control', 'addControlResponse');
         app()->post('/governance/update_control', 'updateControlResponse');
 
         app()->post('/compliance/define_tests', 'getDefineTestsResponse');
+        app()->post('/compliance/update_test', 'updateTestResponse');
         app()->get('/compliance/test', 'getTestResponse');
         app()->get('/compliance/initiate_audits', 'getInitiateTestAuditsResponse');
         app()->post('/compliance/active_audits', 'getActiveTestAuditsResponse');
@@ -231,8 +232,6 @@
         // Get unfiltered table data
         app()->get('/admin/tables/fullData', 'getTableData');
         
-        // Get Mitigation Control Info
-        app()->get('/mitigation_controls/get_mitigation_control_info', 'get_mitigation_control_info');
 
         // Get Tooltip Info
         app()->post('/likelihood_impact_chart/tooltip', 'get_tooltip_api');

@@ -128,7 +128,7 @@ class Xls extends BaseWriter
             $this->writerWorksheets[$i] = new Worksheet($this->strTotal, $this->strUnique, $this->strTable, $this->colors, $this->parser, $this->preCalculateFormulas, $this->spreadsheet->getSheet($i), $this->writerWorkbook);
         }
 
-        // build Escher objects. Escher objects for workbooks needs to be build before Escher object for workbook.
+        // build Escher objects. Escher objects for worksheets need to be built before Escher object for workbook.
         $this->buildWorksheetEschers();
         $this->buildWorkbookEscher();
 
@@ -144,12 +144,15 @@ class Xls extends BaseWriter
             $this->writerWorkbook->addXfWriter($style, false);
         }
 
-        // add fonts from rich text eleemnts
+        // add fonts from rich text elements
         for ($i = 0; $i < $countSheets; ++$i) {
             foreach ($this->writerWorksheets[$i]->phpSheet->getCellCollection()->getCoordinates() as $coordinate) {
                 /** @var Cell $cell */
                 $cell = $this->writerWorksheets[$i]->phpSheet->getCellCollection()->get($coordinate);
                 $cVal = $cell->getValue();
+                if ($cVal instanceof RichText && (string) $cVal === '') {
+                    $cVal = '';
+                }
                 if ($cVal instanceof RichText) {
                     $active = $this->spreadsheet->getActiveSheetIndex();
                     $sheet = $cell->getWorksheet();
@@ -339,7 +342,7 @@ class Xls extends BaseWriter
                 while ($iInc <= $iNumColEnd) {
                     ++$countShapes[$sheetIndex];
 
-                    // create an Drawing Object for the dropdown
+                    // create a Drawing Object for the dropdown
                     $oDrawing = new BaseDrawing();
                     // get the coordinates of drawing
                     $cDrawing = Coordinate::stringFromColumnIndex($iInc) . $rangeBounds[0][1];
@@ -698,7 +701,7 @@ class Xls extends BaseWriter
         // value
         $dataProp .= 'Feuilles de calcul';
         // vtUnalignedString - headingParts
-        // wType : 0x0003 = 32 bit signed integer
+        // wType : 0x0003 = 32-bit signed integer
         $dataProp .= pack('v', 0x0300);
         // padding
         $dataProp .= pack('v', 0x0000);

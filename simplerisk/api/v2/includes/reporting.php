@@ -127,10 +127,14 @@ function api_v2_reports_risk_average()
     // If we did not find any data
     if (empty($array))
     {
-        // Set the status
-        $status_code = 204;
-        $status_message = "NO CONTENT: Unable to find the requested data.";
-        $data = null;
+        // Return an empty dataset rather than 204 so callers can always expect
+        // a consistent 200 response with the same data shape.
+        $status_code = 200;
+        $status_message = "SUCCESS";
+        $data = [
+            "dates"    => [],
+            "averages" => [],
+        ];
     }
     // Otherwise, prepare the results
     else
@@ -311,10 +315,14 @@ function api_v2_reports_risk_open_count()
     // If we did not find any data
     if (empty($array))
     {
-        // Set the status
-        $status_code = 204;
-        $status_message = "NO CONTENT: Unable to find the requested data.";
-        $data = null;
+        // Return an empty dataset rather than 204 so callers can always expect
+        // a consistent 200 response with the same data shape.
+        $status_code = 200;
+        $status_message = "SUCCESS";
+        $data = [
+            "dates"  => [],
+            "counts" => [],
+        ];
     }
     // Otherwise, prepare the results
     else

@@ -1,3 +1,72 @@
+//*********************** REPORTING > DYNAMIC RISK REPORT BEGIN ***********************//
+#column-order-content {
+    ul.sortable-columns {
+        list-style: none; 
+        margin: 0; 
+        padding: 0;
+
+        li {
+            display: flex; 
+            align-items: center; 
+            border: 1px solid var(--bs-border-color); 
+            margin: 4px 0px; 
+            padding: 5px 12px;
+            cursor: grab; 
+
+            &.ui-sortable-placeholder {
+                visibility: visible !important; 
+                background: #e3f2fd; 
+                border: 2px dashed #2196f3; 
+            }
+
+            &.no-columns-message {
+                justify-content: center;
+                color: #6c757d;
+                cursor: default; 
+            }
+
+            &:not(.no-columns-message):hover {
+                background: #f8f9fa; 
+                border-color: rgba(var(--bs-dark-rgb), 0.25);
+            }
+
+            &:last-of-type {
+                margin-bottom: 0;
+            }
+
+            .drag-handle {
+                margin-right: 10px; 
+                color: #6c757d; 
+            }
+
+            .column-name { 
+                flex-grow: 1; 
+            }
+
+            .column-category { 
+                font-size: 0.75rem; 
+                color: #6c757d; 
+                background: #e9ecef; 
+                padding: 2px 6px; 
+                margin-right: 10px; 
+            }
+
+            .remove-column { 
+                cursor: pointer; 
+                padding: 4px 8px; 
+                border-radius: 3px; 
+                font-size: 12px;
+                color: var(--bs-secondary-color);
+
+                &:hover {
+                    color: #000000;
+                }
+            }
+        }
+    }
+}
+//************************ REPORTING > DYNAMIC RISK REPORT END ************************//
+
 //*************************** REPORTING > RISK ADVICE BEGIN ***************************//
 .risk-advice-table-container {
     table {
@@ -64,3 +133,33 @@
     }
 }
 //*************************** REPORTING > AUDIT TIMELINE END **************************//
+
+//************************* REPORTING > DOCUMENT PROGRAM BEGIN ************************//
+#document_program_datatable_wrapper {
+    .multiselect-native-select {
+        .multiselect-container.dropdown-menu {
+            width: auto;
+        }
+    }
+
+    // When multiselect dropdown is moved to the outside of the datatable's header filter scrollable container so that it can't be cut off by the scrollable container
+    .multiselect-container.dropdown-menu {
+        width: auto;
+    }
+}
+//************************** REPORTING > DOCUMENT PROGRAM END *************************//
+
+//************************* REPORTING > EXCEPTION REPORT BEGIN ************************//
+#document_exception_datatable_wrapper {
+    .multiselect-native-select {
+        .multiselect-container.dropdown-menu {
+            width: auto;
+        }
+    }
+
+    // When multiselect dropdown is moved to the outside of the datatable's header filter scrollable container so that it can't be cut off by the scrollable container
+    .multiselect-container.dropdown-menu {
+        width: auto;
+    }
+}
+//************************** REPORTING > EXCEPTION REPORT END *************************//

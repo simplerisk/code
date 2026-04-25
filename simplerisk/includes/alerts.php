@@ -42,7 +42,7 @@ function set_alert($alert = false, $type = "good", $message = "") {
 
     }
 
-    write_debug_log("Core: [set_alert]: Alert with type '{$type}' and message '{$message}' was added.");
+    write_debug_log("Core: [set_alert]: Alert with type '{$type}' and message '{$message}' was added.", 'info');
 
 }
 

@@ -21,8 +21,11 @@ namespace PhpOffice\PhpSpreadsheet\Calculation;
  * whether in an action of contract, tort or otherwise, arising from, out of or in connection with the
  * software or the use or other dealings in the software.
  *
+ * The following links are no longer valid.
  * https://ewbi.blogs.com/develops/2007/03/excel_formula_p.html
  * https://ewbi.blogs.com/develops/2004/12/excel_formula_p.html
+ *
+ * @deprecated 5.5.0 No replacement.
  */
 class FormulaParser
 {
@@ -463,16 +466,8 @@ class FormulaParser
         $tokenCount = count($tokens1);
         for ($i = 0; $i < $tokenCount; ++$i) {
             $token = $tokens1[$i];
-            if (isset($tokens1[$i - 1])) {
-                $previousToken = $tokens1[$i - 1];
-            } else {
-                $previousToken = null;
-            }
-            if (isset($tokens1[$i + 1])) {
-                $nextToken = $tokens1[$i + 1];
-            } else {
-                $nextToken = null;
-            }
+            $previousToken = $tokens1[$i - 1] ?? null;
+            $nextToken = $tokens1[$i + 1] ?? null;
 
             if ($token->getTokenType() != FormulaToken::TOKEN_TYPE_WHITESPACE) {
                 $tokens2[] = $token;
@@ -518,11 +513,7 @@ class FormulaParser
         $tokenCount = count($tokens2);
         for ($i = 0; $i < $tokenCount; ++$i) {
             $token = $tokens2[$i];
-            if (isset($tokens2[$i - 1])) {
-                $previousToken = $tokens2[$i - 1];
-            } else {
-                $previousToken = null;
-            }
+            $previousToken = $tokens2[$i - 1] ?? null;
 
             if ($token->getTokenType() == FormulaToken::TOKEN_TYPE_OPERATORINFIX && $token->getValue() == '-') {
                 if ($i == 0) {

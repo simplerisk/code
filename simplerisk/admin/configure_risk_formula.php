@@ -7,6 +7,34 @@
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
     render_header_and_sidebar(['tabs:logic', 'editable'], ['check_admin' => true]);
 
+    // Check if the SLA thresholds were submitted
+    if (isset($_POST['update_sla_thresholds'])) {
+
+        $sla_error = false;
+        $risk_levels_for_sla = get_risk_levels();
+
+        foreach ($risk_levels_for_sla as $rl) {
+            $setting_name = 'sla_threshold_' . strtolower(str_replace(' ', '_', $rl['name']));
+            if (isset($_POST[$setting_name])) {
+                $sla_val = (int)$_POST[$setting_name];
+                if ($sla_val >= 1 && $sla_val <= 3650) {
+                    if ($sla_val != (int)get_setting($setting_name)) {
+                        update_setting($setting_name, $sla_val);
+                    }
+                } else {
+                    $sla_error = true;
+                    set_alert(true, "bad", $escaper->escapeHtml($lang['SLAThresholdMustBeBetween1And3650']));
+                }
+            }
+        }
+
+        if (!$sla_error) {
+            set_alert(true, "good", $escaper->escapeHtml($lang['SLAThresholdsUpdatedSuccessfully']));
+        }
+
+        refresh();
+    }
+
     // Check if the risk formula update was submitted
     if (isset($_POST['update_risk_formula'])) {
         
@@ -157,13 +185,46 @@
     <div class="tab-content cust-tab-content" id="myTabContent" >
         <div class="tab-pane active risk-levels-container" id="risk-levels" role="tabpanel" aria-labelledby="riskLevels-tab">
             <div class="card-body my-2 border">
-    <?php 
-        $risk_levels = get_risk_levels(); 
-                display_editable_line_for('RiskLevelTextTop', $risk_levels, 3); 
-                display_editable_line_for('RiskLevelTextRest', $risk_levels, 2); 
-                display_editable_line_for('RiskLevelTextRest', $risk_levels, 1); 
-                display_editable_line_for('RiskLevelTextRest', $risk_levels, 0); 
+    <?php
+        $risk_levels = get_risk_levels();
+                display_editable_line_for('RiskLevelTextTop', $risk_levels, 3);
+                display_editable_line_for('RiskLevelTextRest', $risk_levels, 2);
+                display_editable_line_for('RiskLevelTextRest', $risk_levels, 1);
+                display_editable_line_for('RiskLevelTextRest', $risk_levels, 0);
     ?>
+            </div>
+            <div class="card-body my-2 border">
+                <h4 class="page-title"><?= $escaper->escapeHtml($lang['SLAThresholds']); ?></h4>
+                <p class="text-muted"><?= $escaper->escapeHtml($lang['SLAThresholdsDescription']); ?></p>
+                <form method="post" action="">
+                    <div class="row">
+    <?php
+        // Display one input per risk level, highest first, using the level's own color and display name
+        foreach (array_reverse($risk_levels) as $rl) {
+            $setting_name = 'sla_threshold_' . strtolower(str_replace(' ', '_', $rl['name']));
+            $defaults = ['Very High' => 30, 'High' => 60, 'Medium' => 90, 'Low' => 180];
+            $current_val = (int)get_setting($setting_name, $defaults[$rl['name']] ?? 90);
+            $display_name = $rl['display_name'] !== '' ? $rl['display_name'] : $rl['name'];
+            echo "
+                        <div class='col-3'>
+                            <div class='form-group'>
+                                <label>" . $escaper->escapeHtml($display_name) . " (" . $escaper->escapeHtml($lang['days']) . ") :</label>
+                                <input type='number' name='{$setting_name}' id='{$setting_name}'
+                                       min='1' max='3650' step='1'
+                                       value='" . $escaper->escapeHtml($current_val) . "'
+                                       class='form-control'/>
+                            </div>
+                        </div>
+            ";
+        }
+    ?>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <button type="submit" name="update_sla_thresholds" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Update']); ?></button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
 

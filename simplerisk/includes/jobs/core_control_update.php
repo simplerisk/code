@@ -57,7 +57,7 @@ return [
             queue_task($db, 'core_control_update', $queue_task_payload, 25, 5, 3600);
         }
 
-        return true;
+        return !empty($control_ids);
     },
 
     'queue_check' => function(array $task, PDO $db) {
@@ -155,7 +155,7 @@ return [
                 // Load the saved control data
                 $control = load_tmp_data($db, $control_ref);
 
-                write_debug_log("Analyzing the contents of Control ID: " . $control_id);
+                write_debug_log("Analyzing the contents of Control ID: " . $control_id, "debug");
 
                 // Get the control text and calculate the control term frequency
                 $control_text = "{$control['short_name']}: {$control['description']}";

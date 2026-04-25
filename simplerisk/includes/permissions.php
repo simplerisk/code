@@ -62,7 +62,7 @@ function check_permission($permission) {
 	// Check if the permission is authorized
 	if (!isset($_SESSION[$permission]) || $_SESSION[$permission] != 1) {
 
-		write_debug_log("{$message} does not have the '{$permission}' permission.", "notice");
+		write_debug_log("{$message} does not have the '{$permission}' permission.", "info");
 		return false;
 
 	} else {
@@ -81,7 +81,7 @@ function enforce_permission($permission)
 	// If the permission is not authorized
 	if (!check_permission($permission)) {
 
-	    write_debug_log("Redirecting back to the login page. User doesn't have the '{$permission}' permission.");
+	    write_debug_log("Redirecting back to the login page. User doesn't have the '{$permission}' permission.", 'info');
 
 		// Different actions for different permissions
 		switch ($permission) {
@@ -155,7 +155,7 @@ function check_questionnaire_get_token() {
     if (assessments_extra()) {
         require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
 
-        $GLOBALS[$global_var_name] = is_valid_questionnaire_token($token);
+        $GLOBALS[$global_var_name] = is_valid_questionnaire_token($token, true);
         return $GLOBALS[$global_var_name];
     }
 
@@ -525,11 +525,11 @@ function add_new_permissions($permission_groups_and_permissions)
         $group_id = $group['id'];
 
 		// Write debug log
-		write_debug_log("Added new permission group with the following values:");
-		write_debug_log("GROUP ID: " . $group_id);
-		write_debug_log("NAME: " . $group_name);
-		write_debug_log("DESCRIPTION: " . $group_description);
-		write_debug_log("ORDER: " . $group_order);
+		write_debug_log("Added new permission group with the following values:", 'info');
+		write_debug_log("GROUP ID: " . $group_id, 'info');
+		write_debug_log("NAME: " . $group_name, 'info');
+		write_debug_log("DESCRIPTION: " . $group_description, 'info');
+		write_debug_log("ORDER: " . $group_order, 'info');
 
 		// Write audit log
 		$message = "A new permission group named \"" . $group_name . "\" was added to the system.";
@@ -566,12 +566,12 @@ function add_new_permissions($permission_groups_and_permissions)
 			$new_permissions[] = $permission_id;
 
 			// Write debug log
-			write_debug_log("Added new permission with the following values:");
-			write_debug_log("PERMISSION ID: " . $permission_id);
-			write_debug_log("KEY: " . $key);
-			write_debug_log("NAME: " . $permission_name);
-			write_debug_log("DESCRIPTION: " . $permission_description);
-			write_debug_log("ORDER: " . $permission_order);
+			write_debug_log("Added new permission with the following values:", 'info');
+			write_debug_log("PERMISSION ID: " . $permission_id, 'info');
+			write_debug_log("KEY: " . $key, 'info');
+			write_debug_log("NAME: " . $permission_name, 'info');
+			write_debug_log("DESCRIPTION: " . $permission_description, 'info');
+			write_debug_log("ORDER: " . $permission_order, 'info');
 
 			// Write audit log
 			$message = "A new permission named \"" . $permission_name . "\" was added to the system.";
@@ -584,7 +584,7 @@ function add_new_permissions($permission_groups_and_permissions)
 			$stmt->execute();
 
 			// Write debug log
-			write_debug_log("Added permission id \"" . $permission_id . "\" to group id \"" . $group_id . "\".");
+			write_debug_log("Added permission id \"" . $permission_id . "\" to group id \"" . $group_id . "\".", 'info');
 
 			// Write audit log
 			$message = "The \"" . $permission_name . "\" permission was added to the \"" . $group_name . "\" permission group.";
@@ -620,7 +620,7 @@ function add_new_permissions($permission_groups_and_permissions)
 		refresh_permissions_in_sessions_of_user($user_id);
 
 		// Write debug log
-		write_debug_log("The new permissions were added to the \"" . $username . "\" user.");
+		write_debug_log("The new permissions were added to the \"" . $username . "\" user.", 'info');
 	}
 
 	// Automatically grant all permissions to roles granted admin
@@ -670,7 +670,7 @@ function remove_permissions($permission_groups_and_permissions)
             $no_remove_permission = isset($permission['no_remove'])?$permission['no_remove']:0;
             if($no_remove_permission) continue;
 
-			write_debug_log("Deleting permission named \"" . $permission_name . "\".");
+			write_debug_log("Deleting permission named \"" . $permission_name . "\".", 'info');
 
             // Get the permission id
             $stmt = $db->prepare("SELECT `id` FROM `permissions` WHERE `name` = :name;");
@@ -704,7 +704,7 @@ function remove_permissions($permission_groups_and_permissions)
 		}
         if(!$no_remove_group) {
             // After all permissions have been deleted, delete the permission group
-            write_debug_log("Deleting permission group named \"" . $group_name . "\".");
+            write_debug_log("Deleting permission group named \"" . $group_name . "\".", 'info');
             $stmt = $db->prepare("
                 DELETE FROM `permission_groups`  WHERE `name` = :name;
             ");
@@ -750,7 +750,7 @@ function remove_permissions($permission_groups_and_permissions)
                 refresh_permissions_in_sessions_of_user($user_id);
 
                 // Write debug log
-                write_debug_log("The new permissions were added to the \"" . $username . "\" user.");
+                write_debug_log("The new permissions were added to the \"" . $username . "\" user.", 'info');
         }
 
 	// Close the database connection

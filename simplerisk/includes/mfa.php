@@ -511,21 +511,35 @@ function process_mfa_verify($uid = null)
         $uid = $_SESSION['uid'];
     }
 
+    // Check the MFA attempts for this uid
+    if (!check_mfa_attempts($uid))
+    {
+        // If we have too many MFA attempts return false
+        return false;
+    }
+
     // Get the POSTed secret
     $verify_secret = isset($_POST['mfa_secret']) ? $_POST['mfa_secret'] : null;
 
     // Get the secret for the currently logged in user
     $mfa = get_mfa_secret_for_uid($uid);
 
-    // Get the secret key
+    // Get the secret key, timestamp, and last token hash
     $secret = $mfa['secret'];
+    $user_timestamp = $mfa['timestamp'];
+    $user_mfa_token_hash = $mfa['last_mfa_token'];
 
     // Create a new Google2FA
     $google2fa = new \PragmaRX\Google2FA\Google2FA();
 
-    // If the secrets match
-    if ($google2fa->verifyKey($secret, $verify_secret))
+    $timestamp = $google2fa->verifyKeyNewer($secret, $verify_secret, $user_timestamp);
+
+    // If we have a valid MFA token and it is not the last one used
+    if ($timestamp !== false && !password_verify($verify_secret, $user_mfa_token_hash))
     {
+        // Update the MFA timestamp and token for this UID to prevent replay
+        update_mfa_for_uid($uid, $timestamp, $verify_secret);
+
         // Set the user to MFA enabled
         enable_mfa_for_uid($uid);
 
@@ -582,6 +596,9 @@ function process_mfa_disable($uid = null)
 
         // Disable MFA for the user
         disable_mfa_for_uid($uid);
+
+        // Kill any other sessions for this uid
+        kill_sessions_of_user($uid, true);
 
         // Display an alert
         set_alert(true, "good", $lang['MFADisabledSuccessfully']);

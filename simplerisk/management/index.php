@@ -5,7 +5,7 @@
 
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['blockUI', 'tabs:logic', 'selectize', 'datatables', 'chart.js', 'WYSIWYG', 'multiselect', 'CUSTOM:common.js', 'CUSTOM:pages/risk.js', 'CUSTOM:cve_lookup.js', 'datetimerangepicker', 'JSLocalization'], ['check_riskmanagement' => true], required_localization_keys: ['MitigationPlanned']);
+render_header_and_sidebar(['blockUI', 'tabs:logic', 'selectize', 'datatables', 'chart.js', 'WYSIWYG', 'multiselect', 'CUSTOM:common.js', 'CUSTOM:pages/risk.js', 'CUSTOM:cve_lookup.js', 'datetimerangepicker', 'JSLocalization', 'EXTRA:JS:artificial_intelligence:ai-chat.js'], ['check_riskmanagement' => true, 'show_ai_chat' => true], required_localization_keys: ['MitigationPlanned']);
 
 // Check if the user has access to submit risks
 if (!isset($_SESSION["submit_risks"]) || $_SESSION["submit_risks"] != 1) {

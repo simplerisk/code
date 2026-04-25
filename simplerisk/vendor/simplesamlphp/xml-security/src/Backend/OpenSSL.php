@@ -7,6 +7,7 @@ namespace SimpleSAML\XMLSecurity\Backend;
 use SimpleSAML\XMLSecurity\Constants as C;
 use SimpleSAML\XMLSecurity\Exception\InvalidArgumentException;
 use SimpleSAML\XMLSecurity\Exception\OpenSSLException;
+use SimpleSAML\XMLSecurity\Exception\RuntimeException;
 use SimpleSAML\XMLSecurity\Key\AsymmetricKey;
 use SimpleSAML\XMLSecurity\Key\KeyInterface;
 use SimpleSAML\XMLSecurity\Key\PrivateKey;
@@ -158,6 +159,9 @@ final class OpenSSL implements EncryptionBackend, SignatureBackend
         $options = OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING;
         if ($this->useAuthTag) { // configure GCM mode
             $authTag = substr($ciphertext, - self::AUTH_TAG_LEN);
+            if (strlen($authTag) !== self::AUTH_TAG_LEN) {
+                throw new RuntimeException('Authentication tag length is invalid');
+            }
             $ciphertext = substr($ciphertext, 0, - self::AUTH_TAG_LEN);
             $options = OPENSSL_RAW_DATA;
         }

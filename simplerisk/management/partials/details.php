@@ -8,15 +8,8 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "1") {
 // Enforce that the user has access to risk management
 enforce_permission("riskmanagement");
 
-// Include required functions file
-require_once(realpath(__DIR__ . '/../../includes/artificial_intelligence.php'));
-
 ?>
 <div class="risk-details mt-2">
-    <?php
-    // Display the AI Extra icon
-    display_artificial_intelligence_icon("risk_tabs", $id);
-    ?>
     <nav class="nav nav-tabs">
         <a id="tab_details" data-bs-target="#details" class="nav-link active" data-bs-toggle="tab"><?php echo $escaper->escapeHtml($lang['Details']); ?></a>
         <a id="tab_mitigation" data-bs-target="#mitigation" class="nav-link" data-bs-toggle="tab"><?php echo $escaper->escapeHtml($lang['Mitigation']); ?></a>

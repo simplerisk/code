@@ -19,7 +19,7 @@
         "ext-pcre": "*",
         "ext-spl": "*",
 
-        "guzzlehttp/psr7": "~2.7.1",
+        "guzzlehttp/psr7": "~2.7",
         "webmozart/assert": "~1.11.0"
     },
     "require-dev": {

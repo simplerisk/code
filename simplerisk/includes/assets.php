@@ -109,12 +109,12 @@ function asset_exists($name)
 {
     global $escaper;
 
-    write_debug_log("Checking if asset named \"" . $escaper->escapeHtml($name) . "\" exists");
+    write_debug_log("Checking if asset named \"" . $escaper->escapeHtml($name) . "\" exists", 'debug');
 
     // If the encryption extra is enabled
     if (encryption_extra())
     {
-        write_debug_log("Encryption extra is enabled");
+        write_debug_log("Encryption extra is enabled", 'debug');
 
         // Load the extra
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
@@ -124,7 +124,7 @@ function asset_exists($name)
     }
     else
     {
-        write_debug_log("Encryption extra is not enabled");
+        write_debug_log("Encryption extra is not enabled", 'debug');
         
         // Open the database connection
         $db = db_open();
@@ -142,20 +142,20 @@ function asset_exists($name)
             // Close the database connection
             db_close($db);
 
-            write_debug_log("Asset was found");
+            write_debug_log("Asset was found", 'debug');
             return $asset_id;
         }
 
         // Close the database connection
         db_close($db);
 
-        write_debug_log("Asset was not found");
+        write_debug_log("Asset was not found", 'debug');
         return false;
     }
 }
 
 /**
- * Checks if an asset exists with the provided id 
+ * Checks if an asset exists with the provided id
  * 
  * @param int $id ID we want to check for
  * @return boolean
@@ -185,12 +185,12 @@ function asset_exists_exact($ip, $name, $value, $location, $teams, $details, $ve
 {
     global $escaper;
 
-    write_debug_log("Checking if asset named \"" . $escaper->escapeHtml($name) . "\" exists");
+    write_debug_log("Checking if asset named \"" . $escaper->escapeHtml($name) . "\" exists", 'debug');
 
     // If the encryption extra is enabled
     if (encryption_extra())
     {
-        write_debug_log("Encryption extra is enabled");
+        write_debug_log("Encryption extra is enabled", 'debug');
 
         // Load the extra
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
@@ -203,7 +203,7 @@ function asset_exists_exact($ip, $name, $value, $location, $teams, $details, $ve
     }
     else
     {
-        write_debug_log("Encryption extra is not enabled");
+        write_debug_log("Encryption extra is not enabled", 'debug');
 
         // Open the database connection
         $db = db_open();
@@ -226,12 +226,12 @@ function asset_exists_exact($ip, $name, $value, $location, $teams, $details, $ve
         // If the assets array contains at least one value
         if (count($assets) > 0)
         {
-            write_debug_log("Asset was found");
+            write_debug_log("Asset was found", 'debug');
             return true;
         }
         else
         {
-            write_debug_log("Asset was not found");
+            write_debug_log("Asset was not found", 'debug');
             return false;
         }
     }
@@ -335,6 +335,11 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
 
         $message = "Asset '{$name}' was added by user '{$_SESSION['user']}'.";
         write_log($asset_id , $_SESSION['uid'], $message, "asset");
+
+        trigger_workflow_event('asset.created', [
+            'asset_id' => $asset_id,
+            'name'     => $name,
+        ]);
 
         // Return success or failure
         return $asset_id;
@@ -454,6 +459,11 @@ function update_asset($asset_id, $ip, $name, $value=null, $location=null, $teams
 
     $message = "Asset \"" . $name . "\" was modified by user \"" . $_SESSION['user'] . "\".";
     write_log($asset_id, $_SESSION['uid'], $message, "asset");
+
+    trigger_workflow_event('asset.updated', [
+        'asset_id' => $asset_id,
+        'name'     => $name,
+    ]);
 
     return true;
 }
@@ -883,6 +893,11 @@ function delete_asset($asset_id) {
 
     write_log($asset_id, $_SESSION['uid'], $message, "asset");
 
+    trigger_workflow_event('asset.deleted', [
+        'asset_id' => $asset_id,
+        'name'     => $name,
+    ]);
+
     // Return success or failure
     return $return;
 }
@@ -1311,7 +1326,7 @@ function import_asset($ip, $name, $value, $location, $teams, $details, $tags, $v
 
     if ($asset_id == false)
     {
-	    write_debug_log("An asset named \"{$name} was not found so adding a new asset.");
+	    write_debug_log("An asset named \"{$name} was not found so adding a new asset.", 'info');
 
 	    return add_asset($ip, $name, $value, $location, $teams, $details, $tags, $verified, [], [], true);
     }
@@ -1854,7 +1869,7 @@ function display_add_asset()
     // If the customization extra is enabled, shows fields by asset customization
     if (customization_extra())
     {
-        write_debug_log("Customization extra is enabled");
+        write_debug_log("Customization extra is enabled", 'debug');
 
         // Load the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
@@ -3784,8 +3799,13 @@ function update_asset_API_v2($view) {
 
     if (!empty($changes)) {
         write_log($id, $_SESSION['uid'], _lang('AssetAuditLogUpdate', array('asset_name' => $asset_name, 'user' => $_SESSION['user'], 'changes' => implode(', ', $changes)), false), 'asset');
+
+        trigger_workflow_event('asset.updated', [
+            'asset_id' => $id,
+            'name'     => $asset_name,
+        ]);
     }
-    
+
     set_alert(true, "good", $escaper->escapeHtml($lang['AssetWasUpdatedSuccessfully']));
     api_v2_json_result(200, get_alert(true), NULL);
 
@@ -3956,6 +3976,11 @@ function create_asset_API_v2($view) {
 
     $message = _lang("CreateSuccess_{$view_type}", ['name' => $asset_name, 'user' => $_SESSION['user']]);
     write_log($id, $_SESSION['uid'], $message, "asset");
+
+    trigger_workflow_event('asset.created', [
+        'asset_id' => $id,
+        'name'     => $asset_name,
+    ]);
 
     set_alert(true, "good", $escaper->escapeHtml($lang['SavedSuccess']));
     api_v2_json_result(200, get_alert(true), NULL);

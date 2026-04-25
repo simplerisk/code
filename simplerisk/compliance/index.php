@@ -110,150 +110,6 @@
         }
     }
 
-    // Check if editing test
-    if (isset($_POST['update_test'])) {
-
-        $error = false;
-        $error_msg = "";
-
-        // check permission
-        if (!isset($_SESSION["edit_tests"]) || $_SESSION["edit_tests"] != 1) {
-
-            // display an alert
-            set_alert(true, "bad", $lang['NoPermissionForThisAction']);
-
-        } else {
-        
-            $test_id = (int)$_POST['test_id'];
-
-            // If team separation is enabled
-            if (team_separation_extra()) {
-
-                //Include the team separation extra
-                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                if (!is_user_allowed_to_access($_SESSION['uid'], $test_id, 'test')) {
-                    $error = true;
-                    $error_msg = $lang['NoPermissionForThisTest'];
-                }
-            }
-            
-            $today_dt = strtotime(date('Ymd'));
-            $tester = isset($_POST['tester']) ? (int)$_POST['tester'] : null;
-            $teams = isset($_POST['team']) ? array_filter($_POST['team'], 'ctype_digit') : [];
-            $additional_stakeholders = empty($_POST['additional_stakeholders_edit']) ? "" : implode(",", $_POST['additional_stakeholders_edit']);
-            $test_frequency = (int)$_POST['test_frequency'];
-            $last_date = get_standard_date_from_default_format($_POST['last_date']);
-            $next_date = get_standard_date_from_default_format($_POST['next_date']);
-            $name = !empty($_POST['name']) ? trim($_POST['name']) : "";
-            $objective = $_POST['objective'];
-            $test_steps = $_POST['test_steps'];
-            $approximate_time = !empty($_POST['approximate_time']) ? (int)$_POST['approximate_time'] : 0;
-            $expected_results = $_POST['expected_results'];
-            $tags = empty($_POST['tags']) ? [] : $_POST['tags'];
-
-            
-            // There's no separate fields for marking auto audit initiation enabled and another for the offset.
-            // Simply setting `audit_initiation_offset` to null means it's disabled
-            $auto_audit_initiation = (int)$_POST['auto_audit_initiation'];
-            $audit_initiation_offset = isset($_POST['audit_initiation_offset']) ? $_POST['audit_initiation_offset'] : null;
-
-            if (!$name) {
-
-                $error = true;
-                $error_msg = _lang('FieldRequired', array("field"=>$lang['TestName']));
-
-            }
-
-            if (!$tester) {
-
-                $error = true;
-                $error_msg = _lang('FieldRequired', array("field"=>$lang['Tester']));
-
-            }
-
-            if ($test_frequency < 0) {
-                $error = true;
-                $error_msg = $lang['InvalidTestFrequency'];
-            }
-
-            if ($auto_audit_initiation == 1) {
-                if ($audit_initiation_offset === "") {
-                    $error = true;
-                    $error_msg = _lang('FieldRequired', array("field"=>$lang['AuditInitiationOffset']));
-                } else if ((int)$audit_initiation_offset < 0) {
-                    $error = true;
-                    $error_msg = $lang['AuditInitiationOffsetMustBeANonNegativeValue'];
-                } else if ($test_frequency > 0 && (int)$audit_initiation_offset > $test_frequency) {
-                    $error = true;
-                    $error_msg = $lang['AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency'];
-                } else {
-                    $audit_initiation_offset = (int)$audit_initiation_offset;
-                }
-            } else {
-                $audit_initiation_offset = null;
-            }
-
-            if ($approximate_time < 0) {
-                $error = true;
-                $error_msg = $lang['InvalidApproximateTime'];
-            }
-
-            if (!$last_date) {
-                $last_date = false;
-            } else {
-                if (strtotime($last_date) > $today_dt) {
-                    $error = true;
-                    $error_msg = $lang['InvalidLastTestDate'];
-                }
-            }
-
-            if (!$next_date) {
-                $next_date = false;
-            } else {
-    //            if (strtotime($next_date) < $today_dt) {
-    //                $error = true;
-    //                $error_msg = $lang['InvalidNextTestDate'];
-    //            }
-            }
-
-            if ($last_date && $next_date && strtotime($next_date) < strtotime($last_date)) {
-
-                $error = true;
-                $error_msg = $lang['InvalidNextTestDateLastTestDateOrder'];
-
-            }
-            
-            if (!$last_date || $last_date === "0000-00-00") {
-                if (!$next_date || $next_date === "0000-00-00" || strtotime($next_date) < $today_dt) {
-                    $next_date = date("Y-m-d");
-                }
-            } else {
-                $calc_next_date = date("Y-m-d", strtotime($last_date) + $test_frequency*24*60*60);
-                if($calc_next_date < date("Y-m-d")){
-                    $next_date = date("Y-m-d");
-                } else {
-                    $next_date = $calc_next_date;
-                }
-            }
-
-            if ($error !== true) {
-
-                // Update a framework control test
-                update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date, false, $additional_stakeholders, $teams, $tags, $audit_initiation_offset);
-                
-                // display an alert
-                set_alert(true, "good", $lang['TestSuccessUpdated']);
-
-            } else {
-
-                // display an alert
-                set_alert(true, "bad", $error_msg);
-
-            }
-        }
-    }
-
     // Check if deleting test
     if (isset($_POST['delete_test'])) {
 
@@ -503,118 +359,12 @@
         </div>
     </div>
 </div>
-    
-<!-- MODEL WINDOW FOR EDITING TEST -->
-<div id="test--edit" class="modal fade" tabindex="-1" aria-labelledby="risk-catalog--add" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
-        <div class="modal-content">
-            <form class="" id="test-edit-form" method="post" autocomplete="off">
-                <input type="hidden" name="test_id" value="">
-                <input type="hidden" name="filter_by_control" value="">
-                <input type="hidden" name="filter_by_control_family" value="">
-                <input type="hidden" name="filter_by_control_text" value="">
-                <input type="hidden" name="update_test" value="true">    
-                <div class="modal-header">
-                    <h5 class="modal-title"><?= $escaper->escapeHtml($lang['TestEditHeader']); ?></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row form-group">
-                        <div class="col-6">
-                            <label for=""><?= $escaper->escapeHtml($lang['TestName']); ?><span class="required">*</span> :</label>
-                            <input type="text" name="name" required value="" class="form-control" maxlength="1000" title="<?= $escaper->escapeHtml($lang['TestName']); ?>">
-                        </div>
-                        <div class="col-6">
-                            <label for=""><?= $escaper->escapeHtml($lang['Tester']); ?><span class="required">*</span> :</label>
-    <?php 
-                            create_dropdown("enabled_users", NULL, "tester", false, false, false, "required title='{$escaper->escapeHtml($lang['Tester'])}'"); 
-    ?>
-                        </div>
-                    </div>
-                    <div class="row form-group">
-                        <div class="col-6">
-                            <label for=""><?= $escaper->escapeHtml($lang['AdditionalStakeholders']); ?> :</label>
-    <?php 
-                            create_multiple_dropdown("enabled_users", NULL, "additional_stakeholders_edit"); 
-    ?>
-                        </div>
-                        <div class="col-6">
-                            <label for=""><?= $escaper->escapeHtml($lang['Teams']); ?> :</label>
-    <?php 
-                            create_multiple_dropdown("team"); 
-    ?>
-                        </div>
-                    </div>
-                    <div class="row form-group">
-                        <div class="col-6">
-                            <label for=""><?= $escaper->escapeHtml($lang['TestFrequency']); ?><small class="white-labels ms-1">(<?= $escaper->escapeHtml($lang['days']); ?>)</small> :</label>
-                            <input type="number" min="0" max="2147483647" name="test_frequency" value="" class="form-control"> 
-                        </div>
-                        <div class="col-6">
-                            <label for=""><?= $escaper->escapeHtml($lang['LastTestDate']); ?> :</label>
-                            <input type="text" name="last_date" value="" class="form-control datepicker"> 
-                        </div>
-                    </div>
-                    <div class="row form-group">
-                        <div class="col-12">
-                            <label for=""><?= $escaper->escapeHtml($lang['NextTestDate']); ?> :</label>
-                            <input type="text" name="next_date" value="" class="form-control datepicker"> 
-                        </div>
-                    </div>
-                    <div class="row form-group audit-initiation">
-                        <div class="col-6">
-                            <label><?= $escaper->escapeHtml($lang['AutoInitiateAudit']); ?> :</label>
-                            <div class="mt-1">
-                                <input type='radio' name='auto_audit_initiation' value='1' id='edit_audit_auto_init_yes' class='form-check-input cursor-pointer'/>
-                                <label for='edit_audit_auto_init_yes' class='cursor-pointer'><?= $escaper->escapeHtml($lang['Yes']) ?></label>
-                                <input type='radio' name='auto_audit_initiation' value='0' id='edit_audit_auto_init_no' class='form-check-input ms-3 cursor-pointer' checked/>
-                                <label for='edit_audit_auto_init_no' class='cursor-pointer'><?= $escaper->escapeHtml($lang['No']) ?></label>
-                            </div>
-                        </div>
-                        <div class="col-6 audit-initiation-offset-container">
-                            <label for="edit_audit_initiation_offset"><?= $escaper->escapeHtml($lang['AuditInitiationOffset']); ?><small class="text-dark ms-1">(<?= $escaper->escapeHtml($lang['AuditInitiationOffset_explanation']); ?>)</small><span class="required d-none">*</span> :</label>
-                            <input type="number" name="audit_initiation_offset" id="edit_audit_initiation_offset" class="form-control" disabled title="<?= $escaper->escapeHtml($lang['AuditInitiationOffset']); ?>" min="0">
-                        </div>
-                    </div>
-                    <div class="row form-group">
-                        <div class="col-6">
-                            <label for=""><?= $escaper->escapeHtml($lang['Objective']); ?> :</label>
-                            <textarea name="objective" id="edit_objective" class="form-control" rows="3" style="max-width:100%;height: auto;"></textarea>
-                        </div>
-                        <div class="col-6">
-                            <label for=""><?= $escaper->escapeHtml($lang['TestSteps']); ?> :</label>
-                            <textarea name="test_steps" id="edit_test_steps" class="form-control" rows="3" style="max-width:100%;height:auto;"></textarea>
-                        </div>
-                    </div>
-                    <div class="row form-group">
-                        <div class="col-12">
-                            <label for=""><?= $escaper->escapeHtml($lang['ApproximateTime']); ?><small class="text-dark ms-1">(<?= $escaper->escapeHtml($lang['minutes']); ?>)</small> :</label>
-                            <input type="number" min="0" max="2147483647" name="approximate_time" value="" class="form-control"> 
-                        </div>
-                    </div>
-                    <div class="row form-group">
-                        <div class="col-12">
-                            <label for=""><?= $escaper->escapeHtml($lang['ExpectedResults']); ?> :</label>
-                            <textarea name="expected_results" id="edit_expected_results" class="form-control" rows="3" style="max-width:100%;height: auto;"></textarea>
-                        </div>
-                    </div>
-                    <div class="row form-group mb-0">
-                        <div class="col-12">
-                            <label for=""><?= $escaper->escapeHtml($lang['Tags']); ?> :</label>
-                            <select class="test_tags" readonly name="tags[]" multiple placeholder="<?= $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);?>"></select>
-                            <div class="text-danger" ><?= $escaper->escapeHtml($lang['MaxTagLengthWarning']);?></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
-                    <button type="submit" id="update_test" class="btn btn-danger"><?= $escaper->escapeHtml($lang['Update']); ?></button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-    
+
+<!-- MODAL WINDOW FOR UPDATING TEST -->
+<?php
+    display_update_test_modal('define_tests');
+?>
+
 <!-- MODEL WINDOW FOR PROJECT DELETE CONFIRM -->
 <div id="test--delete" class="modal fade" tabindex="-1" aria-labelledby="test--delete" aria-hidden="true">
     <div class="modal-dialog modal-md modal-dialog-scrollable modal-dialog-centered">
@@ -645,7 +395,7 @@
             buttonWidth: '100%'
         });
 
-        $("#additional_stakeholders_edit").multiselect({
+        $("#additional_stakeholders").multiselect({
             buttonWidth: '100%'
         });
 
@@ -654,7 +404,7 @@
         });
 
         //Have to remove the 'fade' class for the shown event to work for modals
-        $('#test--add, #test--edit').on('shown.bs.modal', function() {
+        $('#test--add, #test--update').on('shown.bs.modal', function() {
             $(this).find('.modal-body').scrollTop(0);
         });
 
@@ -687,9 +437,14 @@
         init_minimun_editor('#add_objective');
         init_minimun_editor('#add_test_steps');
         init_minimun_editor('#add_expected_results');
-        init_minimun_editor('#edit_objective');
-        init_minimun_editor('#edit_test_steps');
-        init_minimun_editor('#edit_expected_results');
+
+        // Initialize the WYSIWYG editor for the update test modal
+        $("#test--update [name=objective]").attr("id", "update_objective");
+        init_minimun_editor('#update_objective');
+        $("#test--update [name=test_steps]").attr("id", "update_test_steps");
+        init_minimun_editor('#update_test_steps');
+        $("#test--update [name=expected_results]").attr("id", "update_expected_results");
+        init_minimun_editor('#update_expected_results');
 
     });
 
@@ -701,7 +456,7 @@
 
 </script>
 <script>
-    <?php prevent_form_double_submit_script(['test-new-form', 'test-edit-form']); ?>
+    <?php prevent_form_double_submit_script(['test-new-form', 'update-test-form']); ?>
 </script>
 <?php
     // Render the footer of the page. Please don't put code after this part.

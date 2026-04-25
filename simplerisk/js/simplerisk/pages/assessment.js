@@ -265,8 +265,8 @@ function setupQuestionnaireContactUserWidget(select_tag) {
         searchField: 'name',
         sortField: 'name',
         optgroups: [
-            { class: 'user', name: $("#_lang_SimpleriskUsers").length ? $("#_lang_SimpleriskUsers").val() : "Simplerisk Users" },
-            { class: 'assessment', name: $("#_lang_AssessmentContacts").length ? $("#_lang_AssessmentContacts").val() : "Assessment Contacts" },
+            { class: 'user', name: _lang['SimpleriskUsers'] },
+            { class: 'assessment', name: _lang['AssessmentContacts'] },
         ],
         optgroupField: 'class',
         optgroupLabelField: 'name',

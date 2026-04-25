@@ -199,6 +199,7 @@ function get_parent_frameworks($frameworks, $framework_id, &$news){
  *************************************/
 function update_framework_status($status, $framework_id)
 {
+    global $escaper;
     $frameworks = get_frameworks();
     
     // Open the database connection
@@ -278,12 +279,12 @@ function update_framework_status($status, $framework_id)
     db_close($db);
 
     if($status == 1){
-        $message = "A framework named \"{$framework['name']}\" was activated by the \"" . $_SESSION['user'] . "\" user.";
+        $message = "A framework named \"" . $escaper->escapeHtml($framework['name']) . "\" was activated by the \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\" user.";
     }
     elseif($status == 2){
-        $message = "A framework named \"{$framework['name']}\" was deactivated by the \"" . $_SESSION['user'] . "\" user.";
+        $message = "A framework named \"" . $escaper->escapeHtml($framework['name']) . "\" was deactivated by the \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\" user.";
     }
-    write_log($framework_id+1000, $_SESSION['uid'], $message, 'framework');
+    write_log($framework_id+1000, (int)($_SESSION['uid'] ?? 0), $message, 'framework');
 
     return $result_ids;
 }
@@ -482,7 +483,7 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
     // Open the database connection
     $db = db_open();
     $sql = "
-        SELECT t1.*, GROUP_CONCAT(DISTINCT f.value) framework_ids, GROUP_CONCAT(DISTINCT f.name) framework_names, t2.name control_class_name, t3.name control_phase_name, t4.name control_priority_name, t5.name family_short_name, t6.name control_owner_name, t7.name control_maturity_name, t8.name desired_maturity_name, group_concat(distinct ctype.value) control_type_ids, GROUP_CONCAT(DISTINCT m.reference_name) reference_name
+        SELECT t1.*, GROUP_CONCAT(DISTINCT f.value) framework_ids, GROUP_CONCAT(DISTINCT f.name) framework_names, t2.name control_class_name, t3.name control_phase_name, t4.name control_priority_name, t5.name family_short_name, t6.name control_owner_name, t7.name control_maturity_name, t8.name desired_maturity_name, group_concat(distinct ctype.value) control_type_ids, GROUP_CONCAT(distinct ctype.name) control_type_names, IF(t1.control_status = 1, 'Pass', 'Fail') control_status_name, GROUP_CONCAT(DISTINCT m.reference_name) reference_name, GROUP_CONCAT(DISTINCT m.reference_text) reference_text
         FROM `framework_controls` t1 
             LEFT JOIN `framework_control_mappings` m on t1.id=m.control_id
             LEFT JOIN `frameworks` f on m.framework=f.value AND f.status=1
@@ -802,9 +803,75 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
             || (stripos((string)$control['control_owner_name'], $control_text) !== false) 
             || (stripos((string)$control['framework_names'], $control_text) !== false)
             || (stripos((string)$control['reference_name'], $control_text) !== false)
+            || (stripos((string)$control['reference_text'], $control_text) !== false)
+            || (stripos((string)$control['control_maturity_name'], $control_text) !== false)
+            || (stripos((string)$control['desired_maturity_name'], $control_text) !== false)
+            || (stripos((string)$control['mitigation_percent'], $control_text) !== false)
+            || (stripos((string)$control['control_type_names'], $control_text) !== false)
+            || (stripos((string)$control['control_status_name'], $control_text) !== false)
         )
         {
             $filtered_controls[] = $control;
+            continue;
+        }
+
+        // Search for the Mapped Assets Content
+        $mapped_assets_match = false;
+        $mapped_assets = get_control_to_assets((int)$control['id']);
+        foreach ($mapped_assets as $mapped_asset) {
+            if (stripos((string)$mapped_asset['control_maturity_name'], $control_text) !== false) {
+                $mapped_assets_match = true;
+                break;
+            }
+
+            $asset_names_array = [];
+            if (!empty($mapped_asset['asset_name'])) {
+                $asset_names_array[] = $mapped_asset['asset_name'];
+            }
+            if (!empty($mapped_asset['asset_group_name'])) {
+                $asset_names_array[] = $mapped_asset['asset_group_name'];
+            }
+            $asset_names = implode(",", $asset_names_array );
+
+            if (stripos((string)$asset_names, $control_text) !== false) {
+                $mapped_assets_match = true;
+                break;
+            }
+        }
+
+        if ($mapped_assets_match) {
+            $filtered_controls[] = $control;
+            continue;
+        }
+
+        // Search for the Custom Fields Content if customization extra is enabled
+        if (customization_extra()) {
+            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+            $custom_search_fields = [];
+            $active_fields = get_active_fields("control", "", 2);
+            foreach ($active_fields as $field) {
+                if ((int)$field['is_basic'] === 0 && (int)$field['active'] === 1 && (int)$field['tab_index'] === 2) {
+                    $custom_search_fields[] = $field;
+                }
+            }
+
+            $custom_fields_match = false;
+            if (!empty($custom_search_fields)) {
+                foreach ($custom_search_fields as $field) {
+                    $custom_value = get_plan_custom_field_name_by_row_id($field, $control["id"], "control");
+                    $custom_value_text = trim(strip_tags((string)$custom_value));
+                    if ($custom_value_text !== "" && stripos($custom_value_text, $control_text) !== false) {
+                        $custom_fields_match = true;
+                        break;
+                    }
+                }
+            }
+
+            if ($custom_fields_match) {
+                $filtered_controls[] = $control;
+                continue;
+            }
         }
 
     }
@@ -819,6 +886,7 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
  * FUNCTION: ADD NEW FRAMEWORK      *
  ************************************/
 function add_framework($name, $description, $parent=0, $status=1){
+    global $escaper;
     // Open the database connection
     $db = db_open();
     
@@ -849,14 +917,10 @@ function add_framework($name, $description, $parent=0, $status=1){
     }
 
     // Create a framework
-    $stmt = $db->prepare("INSERT INTO `frameworks` (`name`, `description`, `parent`, `status`, `order`) VALUES (:name, :description, :parent, :status, :order)");
-    $stmt->bindParam(":name", $try_encrypt_name, PDO::PARAM_STR, 100);
-    $stmt->bindParam(":description", $try_encrypt_descryption, PDO::PARAM_STR, 1000);
-    $stmt->bindParam(":parent", $parent, PDO::PARAM_INT);
-    $stmt->bindParam(":status", $status, PDO::PARAM_INT);
-    $stmt->bindParam(":order", $order, PDO::PARAM_INT);
-    $stmt->execute();
-    
+    $stmt = $db->prepare("INSERT INTO `frameworks` (`name`, `description`, `parent`, `status`, `order`) VALUES (?, ?, ?, ?, ?)");
+    $insert_args = [$try_encrypt_name, $try_encrypt_descryption, (int)$parent, (int)$status, (int)$order];
+    $stmt->execute($insert_args);
+
     $framework_id = $db->lastInsertId();
 
     // If customization extra is enabled
@@ -873,11 +937,16 @@ function add_framework($name, $description, $parent=0, $status=1){
         }
     }
 
-    $message = "A new framework named \"{$name}\" was created by username \"" . $_SESSION['user'] . "\".";
-    write_log((int)$framework_id + 1000, $_SESSION['uid'], $message, "framework");
-    
+    $message = "A new framework named \"" . $escaper->escapeHtml($name) . "\" was created by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".";
+    write_log((int)$framework_id + 1000, (int)($_SESSION['uid'] ?? 0), $message, "framework");
+
     // Close the database connection
     db_close($db);
+
+    trigger_workflow_event('framework.created', [
+        'framework_id' => $framework_id,
+        'name'         => $name,
+    ]);
 
     return $framework_id;
 }
@@ -921,7 +990,7 @@ function detect_circular_parent_reference($framework_id, $parent) {
  ******************************/
 function update_framework($framework_id, $name, $description=false, $parent=false){
 
-    global $lang;
+    global $lang, $escaper;
 
     if (isset($name)) {
         $name = trim($name);
@@ -981,11 +1050,16 @@ function update_framework($framework_id, $name, $description=false, $parent=fals
     $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
     $stmt->execute();
 
-    $message = "A framework named \"{$name}\" was updated by username \"" . $_SESSION['user'] . "\".";
+    $message = "A framework named \"" . $escaper->escapeHtml($name) . "\" was updated by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
     write_log((int)$framework_id + 1000, $_SESSION['uid'], $message, "framework");
-    
+
     // Close the database connection
     db_close($db);
+
+    trigger_workflow_event('framework.updated', [
+        'framework_id' => $framework_id,
+        'name'         => $name,
+    ]);
 
     return true;
 }
@@ -1037,6 +1111,7 @@ function get_all_child_frameworks($parent_id, $status=false, $decrypt=true)
  * FUNCTION: DELETE FRAMEWORKS BY PARENT ID *
  ********************************************/
 function delete_frameworks($framework_id){
+    global $escaper;
     $framework = get_framework($framework_id);
     // Check framework ID is valid
     if($framework)
@@ -1073,11 +1148,16 @@ function delete_frameworks($framework_id){
             delete_custom_data_by_row_id($framework_id, "framework");
         }
 
-        $message = "A framework named \"{$name}\" was deleted by username \"" . $_SESSION['user'] . "\".";
-        write_log((int)$framework_id + 1000, $_SESSION['uid'], $message, "framework");
+        $message = "A framework named \"" . $escaper->escapeHtml($name) . "\" was deleted by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".";
+        write_log((int)$framework_id + 1000, (int)($_SESSION['uid'] ?? 0), $message, "framework");
 
         // Removing residual junction table entries
         cleanup_after_delete("frameworks");
+
+        trigger_workflow_event('framework.deleted', [
+            'framework_id' => $framework_id,
+            'name'         => $name,
+        ]);
 
         return true;
     }
@@ -1199,9 +1279,15 @@ function add_framework_control($control){
 
     $user = isset($_SESSION['user'])?$_SESSION['user']:"";
     $uid = isset($_SESSION['uid'])?$_SESSION['uid']:"";
-    $message = "A new control named \"{$short_name}\" was created by username \"" . $user . "\".";
+    $message = "A new control named \"" . $escaper->escapeHtml($short_name) . "\" was created by username \"" . $escaper->escapeHtml($user) . "\".";
     write_log((int)$control_id + 1000, $uid, $message, "control");
-    
+
+    trigger_workflow_event('control.created', [
+        'control_id'    => $control_id,
+        'short_name'    => $short_name,
+        'control_owner' => $control_owner,
+    ]);
+
     return $control_id;
 }
 
@@ -1209,6 +1295,7 @@ function add_framework_control($control){
  * FUNCTION: UPDATE FRAMEWORK CONTROL BY ID *
  ********************************************/
 function update_framework_control($control_id, $control){
+    global $escaper;
     $short_name = isset($control['short_name']) ? $control['short_name'] : "";
     $long_name = isset($control['long_name']) ? $control['long_name'] : "";
     $description = isset($control['description']) ? $control['description'] : "";
@@ -1287,9 +1374,15 @@ function update_framework_control($control_id, $control){
 
     $user = isset($_SESSION['user'])?$_SESSION['user']:"";
     $uid = isset($_SESSION['uid'])?$_SESSION['uid']:"";
-    $message = "A control named \"{$short_name}\" was updated by username \"" . $user . "\".";
+    $message = "A control named \"" . $escaper->escapeHtml($short_name) . "\" was updated by username \"" . $escaper->escapeHtml($user) . "\".";
     write_log((int)$control_id + 1000, $uid, $message, "control");
-    
+
+    trigger_workflow_event('control.updated', [
+        'control_id'    => $control_id,
+        'short_name'    => $short_name,
+        'control_owner' => $control_owner,
+    ]);
+
     // Add residual risk scoring history
     add_residual_risk_scoring_histories_for_control($control_id);
     
@@ -1352,6 +1445,7 @@ function delete_framework_control(int $control_id)
  *********************************************/
 function delete_framework_controls_batch(array $control_ids)
 {
+    global $escaper;
     if (empty($control_ids)) return;
 
     // Initialize controls lookup
@@ -1448,7 +1542,10 @@ function delete_framework_controls_batch(array $control_ids)
             }
         }
 
+        // If customization extra is enabled, delete custom_control_data related with control IDs
         if (customization_extra() && !empty($control_ids)) {
+            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
             delete_custom_data_by_row_ids($control_ids, "control");
         }
 
@@ -1477,10 +1574,15 @@ function delete_framework_controls_batch(array $control_ids)
         $user = $_SESSION['user'] ?? "";
         $uid = $_SESSION['uid'] ?? "";
         $message = empty($short_name)
-            ? "A missing control (ID:{$id}) was cleaned up by user '{$user}'."
-            : "A control named '{$short_name}' was deleted by user '{$user}'.";
+            ? "A missing control (ID:{$id}) was cleaned up by user '" . $escaper->escapeHtml($user) . "'."
+            : "A control named '" . $escaper->escapeHtml($short_name) . "' was deleted by user '" . $escaper->escapeHtml($user) . "'.";
         write_log((int)$id + 1000, $uid, $message, "control");
-        write_debug_log($message, "debug");
+        write_debug_log($message, "info");
+
+        trigger_workflow_event('control.deleted', [
+            'control_id' => $id,
+            'short_name' => $short_name ?? '',
+        ]);
     }
 }
 
@@ -1827,6 +1929,13 @@ function getHasBeenAuditFrameworkControlList($type = "test_audit") {
             LEFT JOIN `framework_control_tests` t2 ON t1.id=t2.framework_control_id
         ";
 
+    } else if ($type == "document") {
+
+        $sql .= "
+            LEFT JOIN `document_control_mappings` dcm ON t1.id=dcm.control_id AND dcm.selected=1
+            LEFT JOIN `documents` t2 ON dcm.document_id=t2.id
+        ";
+
     }
 
     $sql .= "  
@@ -1876,6 +1985,13 @@ function getHasBeenAuditFrameworkList($type = "test_audit") {
 
         $sql .= "
             LEFT JOIN `framework_control_tests` t3 ON t2.id=t3.framework_control_id
+        ";
+
+    } else if ($type == "document") {
+
+        $sql .= "
+            LEFT JOIN `document_framework_mappings` dfm ON t1.value=dfm.framework_id
+            LEFT JOIN `documents` t3 ON dfm.document_id=t3.id
         ";
 
     }
@@ -2264,6 +2380,15 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
     // Close the database connection
     db_close($db);
 
+    if ($return_value) {
+        trigger_workflow_event('document.created', [
+            'document_id'   => $return_value,
+            'document_name' => $document_name,
+            'document_type' => $document_type,
+            'submitted_by'  => $submitted_by,
+        ]);
+    }
+
     // Return the return value
     return $return_value;
 }
@@ -2444,7 +2569,7 @@ function update_document($document_id, $updated_by, $document_type, $document_na
         $stmt->execute();
     }
 
-    // Only notify of the changes if there's any 
+    // Only notify of the changes if there's any
     if ($changes) {
         $updated_by_name = get_user_name($updated_by);
         $message = _lang('AuditLog_DocumentUpdates', array('document_name' => $document_name, 'document_id' => $document_id, 'user_name' => $updated_by_name, 'changes' => $changes), false);
@@ -2459,6 +2584,13 @@ function update_document($document_id, $updated_by, $document_type, $document_na
             notify_document_update($document_id, ['changes' => $changes_arr]);
         }
     }
+
+    trigger_workflow_event('document.updated', [
+        'document_id'   => $document_id,
+        'document_name' => $document_name,
+        'document_type' => $document_type,
+        'updated_by'    => $updated_by,
+    ]);
 
     return $document_id;
 }
@@ -2522,12 +2654,20 @@ function delete_document($document_id, $version=null)
         cleanup_after_delete("documents");
     }
 
-    $message = "The existing document ID \"".$document_id."\" was deleted by the \"" . $_SESSION['user'] . "\" user.";
+    $message = "The existing document ID \"".$document_id."\" was deleted by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
     write_log(1000, $_SESSION['uid'], $message, "document");
-    
+
     // Close the database connection
     db_close($db);
-    
+
+    // Only fire for full document deletion, not version-only deletion
+    if (!$version) {
+        trigger_workflow_event('document.deleted', [
+            'document_id'   => $document_id,
+            'document_name' => $row['document_name'] ?? '',
+        ]);
+    }
+
     return true;
 }
 
@@ -2546,6 +2686,8 @@ function get_document_hierarchy_tabs($type="")
                 <th data-options=\"field:'document_type'\" width='10%'>{$escaper->escapeHtml($lang['DocumentType'])}</th>
                 <th data-options=\"field:'framework_names'\" width='20%'>{$escaper->escapeHtml($lang['ControlFrameworks'])}</th>
                 <th data-options=\"field:'control_names'\" width='20%'>{$escaper->escapeHtml($lang['Controls'])}</th>
+                <th data-options=\"field:'submitted_by'\" width='10%'>{$escaper->escapeHtml($lang['Submitter'])}</th>
+                <th data-options=\"field:'updated_by'\" width='10%'>{$escaper->escapeHtml($lang['UpdatedBy'])}</th>
                 <th data-options=\"field:'creation_date'\" width='9%'>{$escaper->escapeHtml($lang['CreationDate'])}</th>
                 <th data-options=\"field:'approval_date'\" width='9%'>{$escaper->escapeHtml($lang['ApprovalDate'])}</th>
                 <th data-options=\"field:'status'\" width='7%'>{$escaper->escapeHtml($lang['Status'])}</th>
@@ -2569,6 +2711,8 @@ function get_document_tabular_tabs($type, $document_id=0)
                 <th data-options=\"field:'document_type'\" width='10%'>{$escaper->escapeHtml($lang['DocumentType'])}</th>
                 <th data-options=\"field:'framework_names'\" width='18%'>{$escaper->escapeHtml($lang['ControlFrameworks'])}</th>
                 <th data-options=\"field:'control_names'\" width='18%'>{$escaper->escapeHtml($lang['Controls'])}</th>
+                <th data-options=\"field:'submitted_by'\" width='8%'>{$escaper->escapeHtml($lang['Submitter'])}</th>
+                <th data-options=\"field:'updated_by'\" width='8%'>{$escaper->escapeHtml($lang['UpdatedBy'])}</th>
                 <th data-options=\"field:'creation_date'\" width='9%'>{$escaper->escapeHtml($lang['CreationDate'])}</th>
                 <th data-options=\"field:'approval_date'\" width='9%'>{$escaper->escapeHtml($lang['ApprovalDate'])}</th>
                 <th data-options=\"field:'status'\" width='6%'>{$escaper->escapeHtml($lang['Status'])}</th>
@@ -2623,6 +2767,16 @@ function get_documents_as_treegrid($type){
                             continue 3;
                         }
                         break;
+                    case "submitted_by":
+                        if( stripos(get_name_by_value('user', (int)$document['submitted_by']), $value) === false ){
+                            continue 3;
+                        }
+                        break;
+                    case "updated_by":
+                        if( stripos(get_name_by_value('user', (int)$document['updated_by']), $value) === false ){
+                            continue 3;
+                        }
+                        break;
                     case "creation_date":
                         if( stripos(format_date($document['creation_date']), $value) === false ){
                             continue 3;
@@ -2649,6 +2803,8 @@ function get_documents_as_treegrid($type){
         $document['framework_names'] = $escaper->escapeHtml($framework_names);
         $document['control_ids'] = $escaper->escapeHtml($document['control_ids']);
         $document['control_names'] = $escaper->escapeHtml($control_names);
+        $document['submitted_by'] = $escaper->escapeHtml(get_name_by_value('user', (int)$document['submitted_by']));
+        $document['updated_by'] = $escaper->escapeHtml(get_name_by_value('user', (int)$document['updated_by']));
         $document['status'] = $escaper->escapeHtml(get_name_by_value('document_status', $document['status']));
         $document['creation_date'] = format_date($document['creation_date']);
         $document['approval_date'] = format_date($document['approval_date']);
@@ -3270,7 +3426,7 @@ function create_exception($name, $status, $policy, $framework, $control, $owner,
     // Close the database connection
     db_close($db);
 
-    write_log($id, $_SESSION['uid'], _lang('ExceptionAuditLogCreate', array('exception_name' => $name, 'user' => $_SESSION['user']), false), 'exception');
+    write_log($id, $_SESSION['uid'], _lang('ExceptionAuditLogCreate', array('exception_name' => $name, 'user' => $_SESSION['user'])), 'exception');
 
 
     // If submitted files are existing, save files
@@ -3298,12 +3454,18 @@ function create_exception($name, $status, $policy, $framework, $control, $owner,
         $stmt->execute();
     }
 
+    trigger_workflow_event('exception.created', [
+        'exception_id' => $id,
+        'name'         => $name,
+        'owner'        => $owner,
+    ]);
+
     return $id;
 }
 
 function update_exception($name, $status, $policy, $framework, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification, $associated_risks, $id) {
 
-
+    global $escaper;
     $original = getExceptionForChangeChecking($id);
 
     $db = db_open();
@@ -3358,8 +3520,14 @@ function update_exception($name, $status, $policy, $framework, $control, $owner,
     $changes = getChangesInException($original, $updated);
 
     if (!empty($changes)) {
-        write_log($id, $_SESSION['uid'], _lang('ExceptionAuditLogUpdate', array('exception_name' => $name, 'user' => $_SESSION['user'], 'changes' => implode(', ', $changes)), false), 'exception');
+        write_log($id, $_SESSION['uid'], _lang('ExceptionAuditLogUpdate', array('exception_name' => $escaper->escapeHtml($name), 'user' => $escaper->escapeHtml($_SESSION['user']), 'changes' => implode(', ', $changes)), false), 'exception');
     }
+
+    trigger_workflow_event('exception.updated', [
+        'exception_id' => $id,
+        'name'         => $name,
+        'owner'        => $owner,
+    ]);
 
     // If submitted files are existing, save files
     if(!empty($_FILES['file'])){
@@ -3449,7 +3617,7 @@ function getChangesInException($original, $updated) {
     $changes = [];
     foreach($original as $key => $value) {
         if ($value !== $updated[$key]) {
-            $changes[] = _lang('ExceptionAuditLogUpdateChange', array('key' => $key, 'value' => $value, 'new_value' => $updated[$key]), false);
+            $changes[] = _lang('ExceptionAuditLogUpdateChange', array('key' => $key, 'value' => $value, 'new_value' => $updated[$key]));
         }
     }
     return $changes;
@@ -3483,6 +3651,12 @@ function approve_exception($id) {
     db_close($db);
 
     write_log($approved_exception['value'], $_SESSION['uid'], _lang('ExceptionAuditLogApprove', array('exception_name' => $approved_exception['name'], 'user' => $_SESSION['user'])), 'exception');
+
+    trigger_workflow_event('exception.approved', [
+        'exception_id' => $id,
+        'name'         => $approved_exception['name'],
+        'approver'     => $approver,
+    ]);
 }
 
 function unapprove_exception($id) {
@@ -3504,6 +3678,11 @@ function unapprove_exception($id) {
     db_close($db);
 
     write_log($unapproved_exception['value'], $_SESSION['uid'], _lang('ExceptionAuditLogUnapprove', array('exception_name' => $unapproved_exception['name'], 'user' => $_SESSION['user'])), 'exception');
+
+    trigger_workflow_event('exception.unapproved', [
+        'exception_id' => $id,
+        'name'         => $unapproved_exception['name'],
+    ]);
 }
 
 function delete_exception($id) {
@@ -3529,6 +3708,11 @@ function delete_exception($id) {
     db_close($db);
 
     write_log($deleted_exception['value'], $_SESSION['uid'], _lang('ExceptionAuditLogDelete', array('exception_name' => $deleted_exception['name'], 'user' => $_SESSION['user'])), 'exception');
+
+    trigger_workflow_event('exception.deleted', [
+        'exception_id' => $id,
+        'name'         => $deleted_exception['name'],
+    ]);
 }
 
 function batch_delete_exception($id, $type, $approved) {
@@ -3681,7 +3865,8 @@ function save_control_to_framework_by_ids($control_id, $framework_ids, $referenc
         // A rowcount of 1=insert, 2=update
         if ($stmt->rowCount() > 0) {
             write_debug_log(
-                "Saved mapping: control {$control_id}, framework {$framework}, reference '{$reference_name}'"
+                "Saved mapping: control {$control_id}, framework {$framework_id}, reference '{$reference_name}'",
+                'info'
             );
         }
     }
@@ -3744,7 +3929,7 @@ function add_framework_control_to_framework($control_id, $framework_id, $referen
     // Open the database connection
     $db = db_open();
 
-    write_debug_log("Removing SimpleRisk framework id \"" . $framework_id . "\" from existing controls.");
+    write_debug_log("Removing SimpleRisk framework id \"" . $framework_id . "\" from existing controls.", 'info');
 
     // Remove the framework_id value from the control
     $stmt = $db->prepare("
@@ -3782,7 +3967,7 @@ function remove_framework_from_controls($framework_id)
     $stmt = $db->prepare("DELETE FROM `framework_control_mappings` WHERE framework=:framework_id;");
     $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
     $stmt->execute();
-    write_debug_log("Removing SimpleRisk framework id \"" . $framework_id . "\" from existing controls.");
+    write_debug_log("Removing SimpleRisk framework id \"" . $framework_id . "\" from existing controls.", 'info');
 
     // Close the database connection
     db_close($db);
@@ -4558,6 +4743,9 @@ function display_detail_control_fields_view($panel_name, $fields, $control) {
                 $field['name'] = str_replace("_view", "", $field['name'], $field['name']);
 
                 switch ($field['name']) {
+                    case 'ControlID':
+                        $html .= display_control_id_view($control['id'], $panel_name);
+                        break;
                     case 'ControlShortName':
                         $html .= display_control_name_view($control['short_name'], $panel_name);
                         break;
@@ -4643,6 +4831,34 @@ function display_detail_control_fields_view($panel_name, $fields, $control) {
             }
         }
     }
+
+    return $html;
+
+}
+
+
+/********************************
+* FUNCTION: DISPLAY CONTROL ID *
+*********************************/
+function display_control_id_view($control_id, $panel_name="") {
+
+    global $lang, $escaper;
+
+    if ($panel_name=="top" || $panel_name=="bottom") {
+        $span1 = "col-2";
+        $span2 = "col-10";
+    } else {
+        $span1 = "col-4";
+        $span2 = "col-8";
+    }
+
+    $display_control_id = (int)$control_id + 1000;
+    $html = "
+        <div class='row mb-2 {$panel_name}'>
+            <div class='{$span1} text-right'><label>{$escaper->escapeHtml($lang['ControlID'])} : </label></div>
+            <div class='{$span2}'>{$escaper->escapeHtml($display_control_id)}</div>
+        </div>
+    ";
 
     return $html;
 
@@ -4781,9 +4997,17 @@ function display_control_owner_view($control_owner_name, $panel_name="") {
 /**********************************************
 * FUNCTION: DISPLAY CONTROL MAPPING FRAMEWORK *
 ***********************************************/
-function display_mapping_framework_view($control_id) {
+function display_mapping_framework_view($control_id, $panel_name="") {
 
     global $lang, $escaper;
+
+    if ($panel_name=="top" || $panel_name=="bottom") {
+        $span1 = "col-2";
+        $span2 = "col-10";
+    } else {
+        $span1 = "col-4";
+        $span2 = "col-8";
+    }
 
     $collapse_id = "mapped-frameworks-collapse-" . (int)$control_id;
     $table_id    = "mapped-frameworks-table-" . (int)$control_id;
@@ -4793,26 +5017,19 @@ function display_mapping_framework_view($control_id) {
 
     return "
         <div class='mb-2'>
-            <div class='d-flex align-items-center gap-2'
-                 role='button'
-                 data-bs-toggle='collapse'
-                 data-bs-target='#{$collapse_id}'
-                 data-control-id='{$control_id}'
-                 style='cursor:pointer'>
-                <i class='fa fa-chevron-right collapse-caret'></i>
-                {$escaper->escapeHtml($lang['MappedControlFrameworks'])}
-                <span class='badge bg-secondary ms-2 mapped-count'>Frameworks: {$count['frameworks']} | Controls: {$count['controls']}</span>
+            <div class='row {$panel_name} cursor-pointer' role='button' data-bs-toggle='collapse' data-bs-target='#{$collapse_id}' data-control-id='{$control_id}'>
+                <div class='{$span1} text-right'><label class='cursor-pointer'>{$escaper->escapeHtml($lang['MappedControlFrameworks'])} : </label></div>
+                <div class='{$span2}'>
+                    <span class='badge bg-secondary me-3 mapped-count'>{$escaper->escapeHtml($lang['Frameworks'])}: {$count['frameworks']} | {$escaper->escapeHtml($lang['Controls'])}: {$count['controls']}</span>
+                    <i class='fa fa-chevron-right collapse-caret'></i>
+                </div>
             </div>
-
             <div id='{$collapse_id}' class='collapse mt-2'>
                 <div class='bg-light border p-3'>
                     <div class='text-muted loading-placeholder'>
                         Loading mapped frameworks…
                     </div>
-                    
-                    <table id='{$table_id}'
-                           class='table table-bordered table-striped table-sm d-none'
-                           width='100%'>
+                    <table id='{$table_id}' class='table table-bordered table-striped table-sm d-none mb-0' width='100%'>
                         <thead>
                             <tr>
                                 <th>{$escaper->escapeHtml($lang['Framework'])}</th>
@@ -5227,7 +5444,7 @@ function get_document_to_control_mappings($document_id, $refresh = false)
 {
     $document = get_document_by_id($document_id);
     if (empty($document)) {
-        write_debug_log("Document ID $document_id not found. Exiting.");
+        write_debug_log("Document ID $document_id not found. Exiting.", 'warning');
         return false;
     }
 
@@ -5241,17 +5458,17 @@ function get_document_to_control_mappings($document_id, $refresh = false)
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             if (!empty($results)) {
-                write_debug_log("Cached mappings found for Document ID $document_id. Returning cached results.");
+                write_debug_log("Cached mappings found for Document ID $document_id. Returning cached results.", 'debug');
                 return $results;
             }
         }
 
-        write_debug_log("Refreshing mappings for Document ID: {$document_id}");
+        write_debug_log("Refreshing mappings for Document ID: {$document_id}", 'info');
 
         // Fetch document keywords
         $docKeywordsData = get_keywords_for_document($document_id);
         if (empty($docKeywordsData) || empty($docKeywordsData['data']['keywords'])) {
-            write_debug_log("No keywords found for document ID: {$document_id}");
+            write_debug_log("No keywords found for document ID: {$document_id}", 'info');
             return false;
         }
         $docKeywords = $docKeywordsData['data']['keywords'];
@@ -5356,11 +5573,11 @@ function get_document_to_control_mappings($document_id, $refresh = false)
         $stmt->execute([':document_id' => $document_id]);
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        write_debug_log("Finished TF-IDF processing for document {$document_id}, " . count($results) . " mappings stored.");
+        write_debug_log("Finished TF-IDF processing for document {$document_id}, " . count($results) . " mappings stored.", 'info');
         return $results;
 
     } catch (Exception $e) {
-        write_debug_log("Error in get_document_to_control_mappings: " . $e->getMessage());
+        write_debug_log("Error in get_document_to_control_mappings: " . $e->getMessage(), 'error');
         return false;
     } finally {
         db_close($db);
@@ -5378,13 +5595,13 @@ function get_control_to_document_mappings($control_id, $refresh = false)
     // If the control doesn't exist, return false
     if (empty($control))
     {
-        write_debug_log("Control ID $control_id not found. Exiting.");
+        write_debug_log("Control ID $control_id not found. Exiting.", 'warning');
         return false;
     }
     // If the control exists
     else
     {
-        write_debug_log("Starting get_control_to_document_mappings for Control ID: " . $control_id);
+        write_debug_log("Starting get_control_to_document_mappings for Control ID: " . $control_id, 'info');
 
         try
         {
@@ -5436,7 +5653,7 @@ function get_control_to_document_mappings($control_id, $refresh = false)
 
                         if (empty($docKeywords))
                         {
-                            write_debug_log("Document ID $document_id has no keywords. Skipping.");
+                            write_debug_log("Document ID $document_id has no keywords. Skipping.", 'debug');
                             continue;
                         }
 
@@ -5511,7 +5728,7 @@ function get_control_to_document_mappings($control_id, $refresh = false)
                         $stmt->bindParam(":keyword_match", $keyword_match, PDO::PARAM_INT);
                         $stmt->execute();
 
-                        write_debug_log("Scoring Document ID $document_id: TF-IDF Similarity = $tfidf_similarity, Keyword Match = $keyword_match, Final Score = $final_score");
+                        write_debug_log("Scoring Document ID $document_id: TF-IDF Similarity = $tfidf_similarity, Keyword Match = $keyword_match, Final Score = $final_score", 'debug');
                     }
 
                     // Reload updated mappings
@@ -5521,14 +5738,14 @@ function get_control_to_document_mappings($control_id, $refresh = false)
                     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 }
             } else {
-                write_debug_log("Cached mappings found for Control ID $control_id. Returning cached results.");
+                write_debug_log("Cached mappings found for Control ID $control_id. Returning cached results.", 'debug');
             }
 
             db_close($db);
-            write_debug_log("Finished processing for Control ID $control_id. Returning " . count($results) . " mappings.");
+            write_debug_log("Finished processing for Control ID $control_id. Returning " . count($results) . " mappings.", 'info');
             return $results;
         } catch (Exception $e) {
-            write_debug_log("Error in get_document_to_control_mappings: " . $e->getMessage());
+            write_debug_log("Error in get_document_to_control_mappings: " . $e->getMessage(), 'error');
             return false;
         } finally {
             db_close($db);
@@ -5558,7 +5775,7 @@ function update_document_keywords($document_id, array $keywords) {
 
         return true;
     } catch (Exception $e) {
-        write_debug_log("Error in update_document_keywords: " . $e->getMessage());
+        write_debug_log("Error in update_document_keywords: " . $e->getMessage(), 'error');
         return false;
     } finally {
         db_close($db);
@@ -5648,7 +5865,7 @@ function get_keywords_for_document($document_id, $refresh = false)
         {
             try
             {
-                write_debug_log("Analyzing the contents of Document ID: " . $document_id);
+                write_debug_log("Analyzing the contents of Document ID: " . $document_id, 'debug');
 
                 // Get the file content
                 $content = $file['content'];
@@ -5659,18 +5876,18 @@ function get_keywords_for_document($document_id, $refresh = false)
                 $document_text = DocumentTextExtractor::extractText($content, $mimeType, $fileName);
 
                 // Get the significant terms for the document
-                write_debug_log("Calculating significant terms from the document.  This may take a while.");
+                write_debug_log("Calculating significant terms from the document.  This may take a while.", 'debug');
                 $keywords = extractSignificantTerms($document_text);
-                write_debug_log("Significant Terms: " . json_encode($keywords));
+                write_debug_log("Significant Terms: " . json_encode($keywords), 'debug');
 
                 // Get the keyword matches for the document
                 $keyword_occurrences = countKeywordOccurrencesPerKeyword($document_text, $keywords);
                 $keyword_occurrences_json = json_encode($keyword_occurrences);
-                write_debug_log("Keyword matches for Document ID {$document_id}: " . $keyword_occurrences_json);
+                write_debug_log("Keyword matches for Document ID {$document_id}: " . $keyword_occurrences_json, 'debug');
 
                 // Get the keyword count for the document
                 $keyword_count = array_sum($keyword_occurrences);
-                write_debug_log("Keyword count for Document ID {$document_id}: " . $keyword_count);
+                write_debug_log("Keyword count for Document ID {$document_id}: " . $keyword_count, 'debug');
 
                 // Update the file with the keywords and keyword count
                 $stmt = $db->prepare("UPDATE compliance_files SET keywords = :keywords, keyword_count = :keyword_count WHERE BINARY unique_name = :unique_name");
@@ -5702,7 +5919,7 @@ function get_keywords_for_document($document_id, $refresh = false)
                 ];
             } catch (Exception $e)
             {
-                write_debug_log("Error in get_keywords_for_document: " . $e->getMessage());
+                write_debug_log("Error in get_keywords_for_document: " . $e->getMessage(), 'error');
 
                 // Create a result
                 $result = [
@@ -5775,22 +5992,22 @@ function get_keywords_for_control($control_id, $refresh = false)
         {
             try
             {
-                write_debug_log("Analyzing the contents of Control ID: " . $control_id);
+                write_debug_log("Analyzing the contents of Control ID: " . $control_id, 'debug');
 
                 // Get the control text and calculate the control term frequency
                 $control_text = $control['short_name'] . ': ' . $control['description'];
-                write_debug_log("Calculating significant terms from the control.  This may take a while.");
+                write_debug_log("Calculating significant terms from the control.  This may take a while.", 'debug');
                 $keywords = extractSignificantTerms($control_text);
-                write_debug_log("Significant Terms: " . json_encode($keywords));
+                write_debug_log("Significant Terms: " . json_encode($keywords), 'debug');
 
                 // Get the keyword matches for the control
                 $keyword_occurrences = countKeywordOccurrencesPerKeyword($control_text, $keywords);
                 $keyword_occurrences_json = json_encode($keyword_occurrences);
-                write_debug_log("Keyword matches for Control ID {$control_id}: " . $keyword_occurrences_json);
+                write_debug_log("Keyword matches for Control ID {$control_id}: " . $keyword_occurrences_json, 'debug');
 
                 // Get the keyword count for the control
                 $keyword_count = array_sum($keyword_occurrences);
-                write_debug_log("Keyword count for Control ID {$control_id}: " . $keyword_count);
+                write_debug_log("Keyword count for Control ID {$control_id}: " . $keyword_count, 'debug');
 
                 // Update the control with the keywords and keyword count
                 $stmt = $db->prepare("UPDATE framework_controls SET keywords = :keywords, keyword_count = :keyword_count WHERE id = :control_id");
@@ -5810,7 +6027,7 @@ function get_keywords_for_control($control_id, $refresh = false)
                 ];
             } catch (Exception $e)
             {
-                write_debug_log("Error in get_keywords_for_control: " . $e->getMessage());
+                write_debug_log("Error in get_keywords_for_control: " . $e->getMessage(), 'error');
 
                 // Create a result
                 $result = [
@@ -5847,7 +6064,7 @@ function get_text_from_document_content($content)
         // If this is a text file
         if (strpos($mime_type, 'text') !== false)
         {
-            write_debug_log("Determined that the file is a text file.");
+            write_debug_log("Determined that the file is a text file.", 'debug');
 
             // Just use the text
             $document_text = file_get_contents($temp_file);
@@ -5858,7 +6075,7 @@ function get_text_from_document_content($content)
             // Try to process the file as a Word document
             try
             {
-                write_debug_log("Attempting to process as a Word document...");
+                write_debug_log("Attempting to process as a Word document...", 'debug');
 
                 // Read the Word document
                 $phpWord = PhpOffice\PhpWord\IOFactory::load($temp_file, 'Word2007');
@@ -5867,12 +6084,12 @@ function get_text_from_document_content($content)
                 $document_text = extract_text_content($phpWord);
             } catch (\Exception $e)
             {
-                write_debug_log("Error: " . $e->getMessage());
+                write_debug_log("Error: " . $e->getMessage(), 'error');
 
                 // If the file is not a Word document, try to process it as a PDF
                 try
                 {
-                    write_debug_log("Attempting to process as PDF...");
+                    write_debug_log("Attempting to process as PDF...", 'debug');
 
                     // Read the PDF document
                     $pdf = new \Smalot\PdfParser\Parser();
@@ -5884,8 +6101,8 @@ function get_text_from_document_content($content)
                 {
                     // If the file is not a PDF document, set the document text to null
                     $document_text = null;
-                    write_debug_log("Error: " . $e->getMessage());
-                    write_debug_log("Unable to process the file.  Leaving the text as null.");
+                    write_debug_log("Error: " . $e->getMessage(), 'error');
+                    write_debug_log("Unable to process the file.  Leaving the text as null.", 'warning');
                 }
             }
         }
@@ -5894,13 +6111,13 @@ function get_text_from_document_content($content)
         unlink($temp_file);
     } catch (Exception $e)
     {
-        write_debug_log("Error in get_text_from_document_content: " . $e->getMessage());
+        write_debug_log("Error in get_text_from_document_content: " . $e->getMessage(), 'error');
 
         // Set the document text to null
         $document_text = null;
     }
 
-    write_debug_log("Extracted Text: " . $document_text);
+    write_debug_log("Extracted text: " . strlen((string)$document_text) . " bytes.", 'debug');
 
     // Return the document text
     return $document_text;
@@ -6373,6 +6590,130 @@ function display_add_asset_row() {
         </div>
     ";
 
+}
+
+/*************************************************
+ * FUNCTION: GET CONTROL CURRENT MATURITY COUNTS *
+ *************************************************/
+function get_control_current_maturity_counts() {
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT
+            CASE
+                WHEN cm.name IS NULL OR cm.name = '' THEN 'Unassigned'
+                ELSE cm.name
+            END AS maturity_name,
+            COUNT(fc.id) AS control_count
+        FROM framework_controls fc
+        LEFT JOIN control_maturity cm ON fc.control_maturity = cm.value
+        WHERE fc.deleted = 0
+        GROUP BY 
+            CASE
+                WHEN cm.name IS NULL OR cm.name = '' THEN 'Unassigned'
+                ELSE cm.name
+            END
+        ORDER BY cm.value ASC
+    ");
+    $stmt->execute();
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    return $results;
+}
+
+/****************************************************************
+ * FUNCTION: GET FRAMEWORK CONTROLS MATURITY STACKED CHART DATA *
+ ****************************************************************/
+function get_framework_controls_maturity_stacked_chart_data() {
+
+    $db = db_open();
+
+    $stmt_maturities = $db->prepare("
+        SELECT
+            CASE
+                WHEN cm.name IS NULL OR cm.name = '' THEN 'Unassigned'
+                ELSE cm.name
+            END AS maturity_name,
+            MIN(IF(cm.value IS NULL, -1, cm.value)) AS sort_key
+        FROM framework_controls fc
+        LEFT JOIN control_maturity cm ON fc.control_maturity = cm.value
+        WHERE fc.deleted = 0
+        GROUP BY
+            CASE
+                WHEN cm.name IS NULL OR cm.name = '' THEN 'Unassigned'
+                ELSE cm.name
+            END
+        ORDER BY sort_key ASC
+    ");
+    $stmt_maturities->execute();
+    $maturity_order = array_column($stmt_maturities->fetchAll(PDO::FETCH_ASSOC), 'maturity_name');
+
+    $stmt = $db->prepare("
+        SELECT
+            f.value AS framework_id,
+            f.name AS framework_name,
+            CASE
+                WHEN cm.name IS NULL OR cm.name = '' THEN 'Unassigned'
+                ELSE cm.name
+            END AS maturity_name,
+            COUNT(DISTINCT fc.id) AS control_count
+        FROM frameworks f
+        INNER JOIN framework_control_mappings fcm ON f.value = fcm.framework
+        INNER JOIN framework_controls fc ON fcm.control_id = fc.id AND fc.deleted = 0
+        LEFT JOIN control_maturity cm ON fc.control_maturity = cm.value
+        WHERE f.status = 1
+        GROUP BY
+            f.value,
+            f.name,
+            CASE
+                WHEN cm.name IS NULL OR cm.name = '' THEN 'Unassigned'
+                ELSE cm.name
+            END
+        ORDER BY f.name ASC
+    ");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    db_close($db);
+
+    $framework_id_order = [];
+    $labels = [];
+    foreach ($rows as $row) {
+        $fid = (int)$row['framework_id'];
+        if (!in_array($fid, $framework_id_order, true)) {
+            $framework_id_order[] = $fid;
+            $labels[] = try_decrypt($row['framework_name']);
+        }
+    }
+
+    $matrix = [];
+    foreach ($framework_id_order as $fid) {
+        $matrix[$fid] = array_fill_keys($maturity_order, 0);
+    }
+    foreach ($rows as $row) {
+        $fid = (int)$row['framework_id'];
+        if (isset($matrix[$fid])) {
+            $matrix[$fid][$row['maturity_name']] = (int)$row['control_count'];
+        }
+    }
+
+    $counts_by_maturity = [];
+    foreach ($maturity_order as $m) {
+        $counts_by_maturity[$m] = [];
+        foreach ($framework_id_order as $fid) {
+            $counts_by_maturity[$m][] = $matrix[$fid][$m] ?? 0;
+        }
+    }
+
+    return [
+        'labels' => $labels,
+        'maturity_order' => $maturity_order,
+        'counts_by_maturity' => $counts_by_maturity,
+    ];
 }
 
 ?>

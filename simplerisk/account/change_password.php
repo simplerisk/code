@@ -35,16 +35,13 @@ if (isset($_POST['change_password']))
 
         // If the password is valid
         if ($error_code == 1)
-        {    
-            // Generate the salt
-            $salt = generateSalt($team);
-
-            // Generate the password hash
-            $hash = generateHash($salt, $new_pass);
-            
-            // If it is possible to reuse password
-            if(check_add_password_reuse_history($_SESSION["uid"], $hash))
+        {
+            // If it is possible to reuse password (pass plaintext so password_verify() can check history)
+            if(check_add_password_reuse_history($_SESSION["uid"], $new_pass))
             {
+                // Generate the password hash using a cryptographically random salt
+                $hash = hash_password($new_pass);
+
                 // Get user old data
                 $old_data = get_salt_and_password_by_user_id($_SESSION['uid']);
 

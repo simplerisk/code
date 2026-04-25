@@ -75,6 +75,26 @@ function autoloader(string $name)
     {
         require_once realpath(__DIR__ . '/reporting.php');
     }
+
+    if (file_exists(realpath(__DIR__ . '/riskformula.php')))
+    {
+        require_once realpath(__DIR__ . '/riskformula.php');
+    }
+
+    if (file_exists(realpath(__DIR__ . '/documents.php')))
+    {
+        require_once realpath(__DIR__ . '/documents.php');
+    }
+
+    if (file_exists(realpath(__DIR__ . '/exceptions.php')))
+    {
+        require_once realpath(__DIR__ . '/exceptions.php');
+    }
+
+    if (file_exists(realpath(__DIR__ . '/ui.php')))
+    {
+        require_once realpath(__DIR__ . '/ui.php');
+    }
 }
 
 // Include required functions file
@@ -90,6 +110,10 @@ $scan_directories = [
     realpath(__DIR__ . '/compliance.php'),
     realpath(__DIR__ . '/artificial_intelligence.php'),
     realpath(__DIR__ . '/reporting.php'),
+    realpath(__DIR__ . '/riskformula.php'),
+    realpath(__DIR__ . '/documents.php'),
+    realpath(__DIR__ . '/exceptions.php'),
+    realpath(__DIR__ . '/ui.php'),
 ];
 
 // If the Secure Controls Framework (SCF) Extra is installed
@@ -133,6 +157,17 @@ if (incident_management_extra())
         // Add the incident management extra API documentation
         require_once realpath(__DIR__ . '/../../../extras/incident_management/includes/api_documentation.php');
         $scan_directories[] = realpath(__DIR__ . '/../../../extras/incident_management/includes/api_documentation.php');
+    }
+}
+
+// If the workflows extra is enabled
+if (workflows_extra())
+{
+    if (file_exists(realpath(__DIR__ . '/../../../extras/workflows/includes/api_documentation.php')))
+    {
+        // Add the workflows extra API documentation
+        require_once realpath(__DIR__ . '/../../../extras/workflows/includes/api_documentation.php');
+        $scan_directories[] = realpath(__DIR__ . '/../../../extras/workflows/includes/api_documentation.php');
     }
 }
 

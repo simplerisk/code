@@ -15,6 +15,7 @@ use PhpOffice\PhpSpreadsheet\Style\ConditionalFormatting\CellStyleAssessor;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Style\Protection;
 use PhpOffice\PhpSpreadsheet\Style\Style;
+use PhpOffice\PhpSpreadsheet\Worksheet\BaseDrawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\Table;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Stringable;
@@ -233,6 +234,9 @@ class Cell implements Stringable
      */
     public function setValue(mixed $value, ?IValueBinder $binder = null): self
     {
+        if ($this->hadHyperlink) {
+            $this->clearHyperlink();
+        }
         // Cells?->Worksheet?->Spreadsheet
         $binder ??= $this->parent?->getParent()?->getParent()?->getValueBinder() ?? self::getValueBinder();
         if (!$binder->bindValue($this, $value)) {
@@ -242,11 +246,31 @@ class Cell implements Stringable
         return $this;
     }
 
+    private bool $hadHyperlink = false;
+
+    /** @internal */
+    public function setHadHyperlink(bool $hadHyperlink): void
+    {
+        $this->hadHyperlink = $hadHyperlink;
+    }
+
+    private function clearHyperlink(): void
+    {
+        $worksheet = $this->getWorksheetOrNull();
+        if ($worksheet !== null) {
+            $coordinate = $this->getCoordinate();
+            $worksheet->setHyperlink($coordinate, null);
+        }
+        $this->hadHyperlink = false;
+    }
+
     /**
      * Set the value for a cell, with the explicit data type passed to the method (bypassing any use of the value binder).
      *
      * @param mixed $value Value
      * @param string $dataType Explicit data type, see DataType::TYPE_*
+     *        This parameter is currently optional (default = string).
+     *        Omitting it is ***DEPRECATED***, and the default will be removed in a future release.
      *        Note that PhpSpreadsheet does not validate that the value and datatype are consistent, in using this
      *             method, then it is your responsibility as an end-user developer to validate that the value and
      *             the datatype match.
@@ -257,6 +281,9 @@ class Cell implements Stringable
      */
     public function setValueExplicit(mixed $value, string $dataType = DataType::TYPE_STRING): self
     {
+        if ($this->hadHyperlink) {
+            $this->clearHyperlink();
+        }
         $oldValue = $this->value;
         $quotePrefix = false;
 
@@ -306,6 +333,14 @@ class Cell implements Stringable
             case DataType::TYPE_ISO_DATE:
                 $this->value = SharedDate::convertIsoDate($value);
                 $dataType = DataType::TYPE_NUMERIC;
+
+                break;
+            case DataType::TYPE_DRAWING_IN_CELL:
+                if ($value instanceof BaseDrawing) {
+                    $this->value = $value;
+                } else {
+                    throw new SpreadsheetException('Item is not a drawing');
+                }
 
                 break;
             case DataType::TYPE_ERROR:
@@ -391,7 +426,7 @@ class Cell implements Stringable
             $value = array_shift($value);
         }
 
-        return StringHelper::convertToString($value, false);
+        return StringHelper::convertToString($value, false, convertBool: true);
     }
 
     /**
@@ -453,6 +488,7 @@ class Cell implements Stringable
                 }
                 $newColumn = $this->getColumn();
                 if (is_array($result)) {
+                    $result = self::convertSpecialArray($result);
                     $this->formulaAttributes['t'] = 'array';
                     $this->formulaAttributes['ref'] = $maxCoordinate = $coordinate;
                     $newRow = $row = $this->getRow();
@@ -472,7 +508,7 @@ class Cell implements Stringable
                                     }
                                 }
                                 /** @var string $newColumn */
-                                ++$newColumn;
+                                StringHelper::stringIncrement($newColumn);
                             }
                             ++$newRow;
                         } else {
@@ -484,7 +520,7 @@ class Cell implements Stringable
                                     }
                                 }
                             }
-                            ++$newColumn;
+                            StringHelper::stringIncrement($newColumn);
                         }
                         if ($spill) {
                             break;
@@ -502,14 +538,14 @@ class Cell implements Stringable
                             $coordinate = $this->getCoordinate();
                             $ref = $oldAttributesRef;
                             if (preg_match('/^([A-Z]{1,3})([0-9]{1,7})(:([A-Z]{1,3})([0-9]{1,7}))?$/', $ref, $matches) === 1) {
-                                if (isset($matches[3])) {
+                                if (isset($matches[5])) {
                                     $minCol = $matches[1];
                                     $minRow = (int) $matches[2];
                                     $maxCol = $matches[4];
-                                    ++$maxCol;
+                                    StringHelper::stringIncrement($maxCol);
                                     $maxRow = (int) $matches[5];
                                     for ($row = $minRow; $row <= $maxRow; ++$row) {
-                                        for ($col = $minCol; $col !== $maxCol; ++$col) {
+                                        for ($col = $minCol; $col !== $maxCol; StringHelper::stringIncrement($col)) {
                                             /** @var string $col */
                                             if ("$col$row" !== $coordinate) {
                                                 $thisworksheet->getCell("$col$row")->setValue(null);
@@ -537,15 +573,14 @@ class Cell implements Stringable
                                         ->getCell($newColumn . $newRow)
                                         ->setValue($resultValue);
                                 }
-                                /** @var string $newColumn */
-                                ++$newColumn;
+                                StringHelper::stringIncrement($newColumn);
                             }
                             ++$newRow;
                         } else {
                             if ($row !== $newRow || $column !== $newColumn) {
                                 $thisworksheet->getCell($newColumn . $newRow)->setValue($resultRow);
                             }
-                            ++$newColumn;
+                            StringHelper::stringIncrement($newColumn);
                         }
                     }
                     $thisworksheet->getCell($column . $row);
@@ -580,6 +615,36 @@ class Cell implements Stringable
         }
 
         return $this->convertDateTimeInt($this->value);
+    }
+
+    /**
+     * Convert array like the following (preserve values, lose indexes):
+     * [
+     *   rowNumber1 => [colLetter1 => value, colLetter2 => value ...],
+     *   rowNumber2 => [colLetter1 => value, colLetter2 => value ...],
+     *   ...
+     * ].
+     *
+     * @param mixed[] $array
+     *
+     * @return mixed[]
+     */
+    private static function convertSpecialArray(array $array): array
+    {
+        $newArray = [];
+        foreach ($array as $rowIndex => $row) {
+            if (!is_int($rowIndex) || $rowIndex <= 0 || !is_array($row)) {
+                return $array;
+            }
+            $keys = array_keys($row);
+            $key0 = $keys[0] ?? '';
+            if (!is_string($key0)) {
+                return $array;
+            }
+            $newArray[] = array_values($row);
+        }
+
+        return $newArray;
     }
 
     /**
@@ -716,7 +781,8 @@ class Cell implements Stringable
             throw new SpreadsheetException('Cannot get hyperlink for cell that is not bound to a worksheet');
         }
 
-        return $this->getWorksheet()->getHyperlink($this->getCoordinate());
+        return $this->getWorksheet()
+            ->getHyperlink($this->getCoordinate());
     }
 
     /**
@@ -730,7 +796,8 @@ class Cell implements Stringable
             throw new SpreadsheetException('Cannot set hyperlink for cell that is not bound to a worksheet');
         }
 
-        $this->getWorksheet()->setHyperlink($this->getCoordinate(), $hyperlink);
+        $this->getWorksheet()
+            ->setHyperlink($this->getCoordinate(), $hyperlink);
 
         return $this->updateInCollection();
     }

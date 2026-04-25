@@ -41,16 +41,28 @@ define('SIMPLERISK_API_URL', SIMPLERISK_BASE_URL.API_PATH);
 *     description="User Operations",
 *   ),
 *   @OA\Tag(
+*     name="asset_crud",
+*     description="Asset Management (CRUD)",
+*   ),
+*   @OA\Tag(
 *     name="asset",
-*     description="Asset Operations",
+*     description="Asset Management (Legacy)",
+*   ),
+*   @OA\Tag(
+*     name="risk_crud",
+*     description="Risk Management (CRUD)",
 *   ),
 *   @OA\Tag(
 *     name="risk",
-*     description="Risk Operations",
+*     description="Risk Management (Legacy)",
+*   ),
+*   @OA\Tag(
+*     name="governance_crud",
+*     description="Governance (CRUD)",
 *   ),
 *   @OA\Tag(
 *     name="governance",
-*     description="Governance Operations",
+*     description="Governance (Legacy)",
 *   ),
 *   @OA\Tag(
 *     name="Artificial Intelligence",
@@ -60,6 +72,26 @@ define('SIMPLERISK_API_URL', SIMPLERISK_BASE_URL.API_PATH);
 *      name="assessment",
 *      description="Risk Assessment Extra",
 *    ),
+*   @OA\Tag(
+*     name="compliance_crud",
+*     description="Compliance (CRUD)",
+*   ),
+*   @OA\Tag(
+*     name="compliance",
+*     description="Compliance (Legacy)",
+*   ),
+*   @OA\Tag(
+*     name="reports",
+*     description="Reporting Operations",
+*   ),
+*   @OA\Tag(
+*     name="risk_formula",
+*     description="Risk Formula Operations",
+*   ),
+*   @OA\Tag(
+*     name="ui",
+*     description="User Interface Operations",
+*   ),
 *   @OA\Tag(
 *     name="need_explode_for_arrays",
 *     description="Technical tag for marking a request for the Swagger schema generating logic to add encoding/explode definitions so array parameters in the requests are sent in a format the API expects them.",

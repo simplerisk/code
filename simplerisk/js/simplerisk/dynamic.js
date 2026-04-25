@@ -73,6 +73,10 @@ function makeFilterNonDropdownHTML(index, columnName, fieldType)
     return HTML;
 }
 
+// Define global variable to store datatable objects for each risk table on the page
+// it can be used to save order direction and order column when saving dynamic reports.
+var riskDataTables = [];
+
 $(document).ready(function(){
     if($(".risk-datatable").length){
         var sortColumns = [["calculated_risk", "desc"], ["id", "asc"], ["subject", "asc"], ["residual_risk", "desc"]];
@@ -81,6 +85,19 @@ $(document).ready(function(){
         if(defaultSortColumn == undefined){
             defaultSortColumn = sortColumns[defaultSortColumnIndex];
         }
+        
+        // Use saved selection sort if available
+        var savedOrderColumn = $("#saved_order_column").val();
+        var savedOrderDir = $("#saved_order_dir").val();
+        if (savedOrderColumn && savedOrderDir) {
+            $(".risk-datatable:first tr.main th").each(function(index){
+                if ($(this).data('name') === savedOrderColumn) {
+                    defaultSortColumnIndex = index;
+                    defaultSortColumn = [savedOrderColumn, savedOrderDir];
+                }
+            });
+        }
+        
         var risk_columns = $("#risk_columns").val();
         var mitigation_columns = $("#mitigation_columns").val();
         var review_columns = $("#review_columns").val();
@@ -156,7 +173,6 @@ $(document).ready(function(){
             var hidden_location_filters = false;
         }
         
-        var riskDataTables = [];
         var unique = [];
         var unassigned_option = $("#unassigned_option").val();
         if($("#custom_column_filters").val()){
@@ -416,6 +432,131 @@ $(document).ready(function(){
             var url = "print_by_group.php?group=" + group + "&status=" + status + "&sort=" + sort + "&group_value=" + group_value + "&order_column=" + orderColumnName + "&order_dir=" + orderDir + "&" + filter_uri;
             window.open(url,'_blank');
         });
+
+        // Helper function to get column info from select elements
+        function getColumnInfo() {
+            let columnInfo = {};
+
+            let categoryMap = {
+                'risk_columns': 'risk',
+                'mitigation_columns': 'mitigation',
+                'review_columns': 'review',
+                'scoring_columns': 'scoring',
+                'unassigned_columns': 'unassigned',
+                'risk_mapping_columns': 'risk_mapping'
+            };
+
+            let categoryLabels = {
+                'risk': _lang['Risk'],
+                'mitigation': _lang['Mitigation'],
+                'review': _lang['Review'],
+                'scoring': _lang['RiskScoring'],
+                'unassigned': _lang['Unassigned'],
+                'risk_mapping': _lang['RiskMapping']
+            };
+            
+            for (let selectId in categoryMap) {
+                let category = categoryMap[selectId];
+
+                $('#' + CSS.escape(selectId) + ' option').each(function() {
+                    columnInfo[$(this).val()] = { 
+                        name: $(this).text(), 
+                        category: category,
+                        categoryLabel: categoryLabels[category]
+                    };
+                });
+            }
+
+            return columnInfo;
+        }
+
+        // Build column info once for use in handlers
+        var columnInfoCache = null;
+        function getCachedColumnInfo() {
+            if (!columnInfoCache) {
+                columnInfoCache = getColumnInfo();
+            }
+            return columnInfoCache;
+        }
+
+        // Helper function to add item to sortable column order list
+        function addToColumnOrderList(columnKey, columnInfo) {
+            let $sortableList = $('#dynamic-report-column-order');
+            
+            // Remove "no columns" message if it exists
+            $sortableList.find('.no-columns-message').remove();
+            
+            // Check if item already exists
+            if ($sortableList.find('li[data-column="' + CSS.escape(columnKey) + '"]').length > 0) {
+                return;
+            }
+            
+            let info = columnInfo[columnKey];
+
+            if (!info) {
+                return;
+            }
+
+            // Create a new drag/drop item
+            let $newItem = $('<li>')
+            .attr('data-column', columnKey)
+            .attr('data-category', info.category);
+
+            // Add a drag handle to the item
+            $newItem.append(
+                $('<span>', { class: 'drag-handle' }).append(
+                    $('<i>', { class: 'fa fa-grip-vertical' })
+                )
+            );
+
+            // Add a span for the column name
+            $newItem.append(
+                $('<span>', {
+                    class: 'column-name',
+                    text: info.name
+                })
+            );
+            
+            // Add a span for the category label
+            $newItem.append(
+                $('<span>', {
+                    class: 'column-category',
+                    text: info.categoryLabel
+                })
+            );
+            
+            // Add a remove button to the item
+            $newItem.append(
+                $('<span>', {
+                    class: 'remove-column',
+                    title: _lang['Remove']
+                }).append(
+                    $('<i>', { class: 'fa fa-times' })
+                )
+            );
+
+            $sortableList.append($newItem);
+        }
+        
+        // Helper function to remove item from sortable column order list
+        function removeFromColumnOrderList(columnKey) {
+            let $sortableList = $('#dynamic-report-column-order');
+
+            $sortableList.find('li[data-column="' + CSS.escape(columnKey) + '"]').remove();
+            
+            // Show "no columns" message if list is empty
+            if ($sortableList.find('li[data-column]').length === 0) {
+                if ($sortableList.find('.no-columns-message').length === 0) {
+                    $sortableList.append(
+                        $('<li>', {
+                            class: 'no-columns-message',
+                            text: _lang['NoColumnsSelected']
+                        })
+                    );
+                }
+            }
+        }
+
         var selected_all = false;
         $('#column-selections-container .multiselect').multiselect({
             enableFiltering: true,
@@ -426,74 +567,171 @@ $(document).ready(function(){
             enableCaseInsensitiveFiltering: true,
             onSelectAll : function(){
                 selected_all = true;
+
+                // Add all options from this select to the order list
+                let self = this;
+                let columnInfo = getCachedColumnInfo();
+
+                $(self.$select).find('option').each(function() {
+                    addToColumnOrderList($(this).val(), columnInfo);
+                });
             },
             onDeselectAll : function(){
                 selected_all = true;
+
+                // Remove all options from this select from the order list
+                var self = this;
+                $(self.$select).find('option').each(function() {
+                    removeFromColumnOrderList($(this).val());
+                });
             },
             onChange: function(option, checked, select){
-                var option_value = $(option).val();
-                for(var key in riskDataTables){
-                    var column = riskDataTables[key].column("th[data-name='"+ option_value +"']");
-                    if(checked == true){
-                        column.visible(true);
-                        // The TH element to show filter html
-                        var targetTH = $("tr.filter th[data-name='"+ option_value +"']", riskDataTables[key].table().header());
-
-                        // If this element was hidden on loading, add filter content to the TH element and create multi dropdown
-                        if($(".hidden-container", column.header()).length > 0)
-                        {
-                            targetTH.html($(".hidden-container", column.header()).html());
-                            createMultiSelectColumnFilter(riskDataTables[key], targetTH);
-                            $(".hidden-container", column.header()).remove();
-                        }
-                    }else{
-                        column.visible(false);
-                    }
+                let option_value = $(option).val();
+                let columnInfo = getCachedColumnInfo();
+                
+                // Add or remove from the column order list
+                if (checked) {
+                    addToColumnOrderList(option_value, columnInfo);
+                } else {
+                    removeFromColumnOrderList(option_value);
                 }
+
                 return true;
             },
             onDropdownHide: function(){
+                // No longer auto-apply on dropdown hide - user must click Apply button
+                return true;
+            },
+       });
+
+       // Initialize sortable for column order tab
+       if ($('#dynamic-report-column-order').length) {
+           $('#dynamic-report-column-order').sortable({
+               placeholder: 'ui-sortable-placeholder',
+               cursor: 'grabbing',
+               items: 'li[data-column]', // Only sort items with data-column, not the "no columns" message
+               update: function(event, ui) {
+                   // Reorder is handled, but changes are only applied when clicking Apply button
+               }
+           });
+           
+           // Handle remove button click on column order items
+           $(document).on('click', '#dynamic-report-column-order .remove-column', function(e) {
+               e.stopPropagation();
+
+               let $item = $(this).closest('li');
+               let columnKey = $item.data('column');
+               let category = $item.data('category');
+               
+               // Remove from the sortable list
+               $item.remove();
+               
+               // Show "no columns" message if list is empty
+               let $sortableList = $('#dynamic-report-column-order');
+               if ($sortableList.find('li[data-column]').length === 0) {
+                   if ($sortableList.find('.no-columns-message').length === 0) {
+                        $sortableList.append(
+                            $('<li>', {
+                                class: 'no-columns-message',
+                                text: _lang['NoColumnsSelected']
+                            })
+                        );
+                   }
+               }
+               
+               // Map category to select element ID
+               let categorySelectMap = {
+                   'risk': 'risk_columns',
+                   'mitigation': 'mitigation_columns',
+                   'review': 'review_columns',
+                   'scoring': 'scoring_columns',
+                   'unassigned': 'unassigned_columns',
+                   'risk_mapping': 'risk_mapping_columns'
+               };
+               
+               let selectId = categorySelectMap[category];
+               if (selectId) {
+                   // Deselect from the corresponding multiselect
+                   let $select = $('#' + selectId);
+
+                   $select.find('option[value="' + columnKey + '"]').prop('selected', false);
+                   $select.multiselect('refresh');
+               }
+           });
+           
+           // Refresh sortable when switching to the Column Order tab
+           $('#column-order-tab').on('shown.bs.tab', function(e) {
+               var $sortableList = $('#dynamic-report-column-order');
+               
+               // Refresh sortable to ensure proper functionality
+               if ($sortableList.data('ui-sortable')) {
+                   $sortableList.sortable('refresh');
+               }
+           });
+
+            // Handle Apply button click
+            $('#apply-column-selections').on('click', function() {
                 $('#selections').block({
                     message: 'Processing',
-                    css: { border: '1px solid black', background: '#ffffff', zIndex:100001 }
+                    css: { border: '1px solid black', background: '#ffffff', zIndex: 100001 }
                 });
-                setTimeout(function(){
-                    var risk_columns = $("#risk_columns").val()?$("#risk_columns").val():[];
-                    var mitigation_columns = $("#mitigation_columns").val()?$("#mitigation_columns").val():[];
-                    var review_columns = $("#review_columns").val()?$("#review_columns").val():[];
-                    var scoring_columns = $("#scoring_columns").val()?$("#scoring_columns").val():[];
-                    var unassigned_columns = $("#unassigned_columns").val()?$("#unassigned_columns").val():[];
-                    var risk_mapping_columns = $("#risk_mapping_columns").val()?$("#risk_mapping_columns").val():[];
-                    var selected_columns = risk_columns.concat(mitigation_columns, review_columns, scoring_columns, unassigned_columns, risk_mapping_columns);
-                    if(selected_all == true) {
-                        visible_column("risk_columns", selected_columns);
-                        visible_column("mitigation_columns", selected_columns);
-                        visible_column("review_columns", selected_columns);
-                        visible_column("scoring_columns", selected_columns);
-                        visible_column("unassigned_columns", selected_columns);
-                        visible_column("risk_mapping_columns", risk_mapping_columns);
+
+                setTimeout(function() {
+                    // Get ordered columns from the sortable list
+                    let orderedColumns = [];
+                    $('#dynamic-report-column-order li[data-column]').each(function() {
+                        orderedColumns.push($(this).data('column'));
+                    });
+                    
+                    // Apply visibility changes to datatables
+                    for (let key in riskDataTables) {
+                        // First hide all columns
+                        riskDataTables[key].columns().every(function() {
+                            let colName = $(this.header()).data('name');
+                            if (colName) {
+                                this.visible(false);
+                            }
+                        });
+                        
+                        // Then show only the selected columns
+                        orderedColumns.forEach(function(colName) {
+                            let column = riskDataTables[key].column("th[data-name='" + colName + "']");
+                            column.visible(true);
+                            
+                            // The TH element to show filter html
+                            let targetTH = $("tr.filter th[data-name='" + colName + "']", riskDataTables[key].table().header());
+                            
+                            // If this element was hidden on loading, add filter content to the TH element and create multi dropdown
+                            if ($(".hidden-container", column.header()).length > 0) {
+                                targetTH.html($(".hidden-container", column.header()).html());
+                                createMultiSelectColumnFilter(riskDataTables[key], targetTH);
+                                $(".hidden-container", column.header()).remove();
+                            }
+                        });
                     }
+                    
+                    // Save the column order to session
                     $.ajax({
                         type: "POST",
                         url: BASE_URL + "/api/set_custom_display",
                         data: {
-                            columns: selected_columns,
+                            columns: orderedColumns,
                         },
-                        success: function(data){
+                        success: function(data) {
                             $("#selections").unblock();
+                            
+                            // Reload the page to reflect the new column order
+                            location.href = BASE_URL + '/reports/dynamic_risk_report.php';
                         },
-                        error: function(xhr,status,error){
-                            if(!retryCSRF(xhr, this))
-                            {
+                        error: function(xhr, status, error) {
+                            $("#selections").unblock();
+                            if (!retryCSRF(xhr, this)) {
                             }
                         }
                     });
-                    selected_all = false;
-                },200);
-
-                return true;
-            },
-       });
+                }, 200);
+            });
+       }
     }
     
     $("#export-dynamic-risk-report").click(function(e){

@@ -5,7 +5,7 @@
 
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'multiselect'], ['check_riskmanagement' => true]);
+render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'multiselect', 'EXTRA:JS:artificial_intelligence:ai-chat.js'], ['check_riskmanagement' => true, 'show_ai_chat' => true]);
 
 // If reviewed is passed via GET
 if (isset($_GET['reviewed']))

@@ -17,7 +17,7 @@ add_security_headers();
 if (!isset($_SESSION)) {
     // Session handler is database
     if (USE_DATABASE_FOR_SESSIONS == "true") {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+        session_set_save_handler(new SimpleRiskSessionHandler());
     }
 
     // Start the session

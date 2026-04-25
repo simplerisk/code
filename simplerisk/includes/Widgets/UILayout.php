@@ -394,14 +394,25 @@ class UILayout {
                     type: "GET",
                     url: BASE_URL + "/api/v2/ui/widget?widget_name=" + w.name + "&layout_name=" + layout_name
 					+ `
-	<?php 
+	<?php
 		// Need to pass the teams parameter if it's set, so we can load the correct data for the widget
 		// This is needed for the 'dashboard_open' and 'dashboard_close' widgets to load the correct data
-		if (isset($_GET['teams'])) { 
-			echo "&teams={$_GET['teams']}"; 
-		} else { 
-			echo ""; 
-		} 
+		if (isset($_GET['teams'])) {
+			// Only allow comma-separated integers to prevent XSS injection into the JS template literal
+			$teams_filtered = implode(',', array_filter(explode(',', $_GET['teams']), 'ctype_digit'));
+			echo "&teams={$teams_filtered}";
+		} else {
+			echo "";
+		}
+		// Need to pass the frameworks parameter if it's set, so we can load the correct data for the widget
+		// This is needed for the widgets on the 'compliance_dashboard' to load the correct data
+		if (isset($_GET['frameworks'])) {
+			// Only allow comma-separated integers to prevent XSS injection into the JS template literal
+			$frameworks_filtered = implode(',', array_filter(explode(',', $_GET['frameworks']), 'ctype_digit'));
+			echo "&frameworks={$frameworks_filtered}";
+		} else {
+			echo "";
+		}
 	?>
 	`
 	,

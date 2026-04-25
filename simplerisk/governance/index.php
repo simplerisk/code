@@ -158,6 +158,9 @@
     if (isset($_POST['delete_controls'])) {
         $control_ids = $_POST['control_ids'];
 
+        // Explode control ids into an array
+        $control_ids = explode(",", $control_ids);
+
         // If user has no permission for delete controls
         if (empty($_SESSION['delete_controls'])) {
 
@@ -288,9 +291,65 @@
     	document.controls_form.submit();
     });
 
-    $("body").on("click", "#active-controls .checkbox-in-div input[type=checkbox]", function(){
-    	// enable/disable the delete controls button based on whether there's any controls selected
-		$('#delete-controls-btn').attr('disabled', $('#active-controls .checkbox-in-div input[type=checkbox]:checked').length == 0);
+    $(document).on('change', '#select-all-controls', function() {
+        if ($(this).is(':checked')) {
+
+            // Check all controls checkboxes
+            $('#active-controls .checkbox-in-div input[type=checkbox]').prop('checked', true);
+
+            // Enable the delete selected controls button
+            $('#delete-controls-btn').prop('disabled', false);
+
+        } else {
+
+            // Uncheck all controls checkboxes
+            $('#active-controls .checkbox-in-div input[type=checkbox]').prop('checked', false);
+
+            // Disable the delete selected controls button
+            $('#delete-controls-btn').prop('disabled', true);
+
+        }
+    });
+
+    $(document).on('change', '#active-controls .checkbox-in-div input[type=checkbox]', function() {
+
+        // The length of selected controls
+        let selected_controls_length = $('#active-controls .checkbox-in-div input[type=checkbox]:checked').length;
+
+        // If all controls are selected, check the select all checkbox
+        if (selected_controls_length === $('#active-controls .checkbox-in-div input[type=checkbox]').length) {
+            
+            // Check the select all checkbox and set it to not indeterminate
+            $('#select-all-controls').prop('checked', true);
+            $('#select-all-controls').prop('indeterminate', false);
+
+            // Enable the delete selected controls button
+            $('#delete-controls-btn').prop('disabled', false);
+
+        // If not all controls are selected, 
+        } else {
+
+            // Uncheck the select all checkbox
+            $('#select-all-controls').prop('checked', false);
+            
+            if (selected_controls_length > 0) {
+                
+                // If there is at least one control selected, made the select all checkbox indeterminate
+                $('#select-all-controls').prop('indeterminate', true);
+
+                // Enable the delete selected controls button
+                $('#delete-controls-btn').prop('disabled', false);
+
+            } else {
+                
+                // If no controls are selected, set the select all checkbox to not indeterminate
+                $('#select-all-controls').prop('indeterminate', false);
+                
+                // If no controls are selected, disable the delete selected controls button
+                $('#delete-controls-btn').prop('disabled', true);
+
+            }
+        }
     });
 
 	// Not initializing the treegrid in a static call, but rather initializing it when its tab is activated
@@ -481,11 +540,14 @@
                 </div>
             </div>
             <div class="card-body border mt-2">
-                <!-- h4 class="mt-4 mb-4"><?= $escaper->escapeHtml($lang['Controls']); ?> <span id="controls_count"></span></h4-->
                 <form action="" name="controls_form" method="POST" id="controls-form" style="margin-top: -0.5rem">
                     <input type="hidden" name="delete_controls" value="1">
                     <div data-sr-role="dt-settings" data-sr-target="active-controls" class="text-end" >
-                        <button type="button" id="delete-controls-btn" class="btn btn-secondary" disabled data-bs-toggle="modal" data-bs-target="#controls--delete"><?= $escaper->escapeHtml($lang['DeleteSelectedControls']) ?></button>
+                        <div class="d-inline-block me-2">
+                            <input class="form-check-input cursor-pointer"  type="checkbox" id="select-all-controls" value="1">
+                            <label for="select-all-controls"><?= $escaper->escapeHtml($lang['SelectAll']); ?></label>
+                        </div>
+                        <button type="button" id="delete-controls-btn" class="btn btn-secondary" disabled><?= $escaper->escapeHtml($lang['DeleteSelectedControls']) ?></button>
                         <a href="#control--add" role="button" data-bs-toggle="modal" data-bs-target="#control--add" class="btn btn-primary control--add"><?= $escaper->escapeHtml($lang['CreateControl']) ?></i></a>
                     </div> <!-- status-tabs -->
                     <table id="active-controls" style="width:100%">
@@ -562,9 +624,9 @@
                     <div class="form-group text-center">
                         <label for=""><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisControl']); ?></label>
                     </div>
-                    <div class="form-group text-center control-delete-actions">
+                    <div class="form-group text-center">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
-                        <button type="submit" name="delete_control" form="control--delete-form" class="delete_control btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
+                        <button type="submit" name="delete_control" form="control--delete-form" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
                     </div>
                 </div>
             </form>
@@ -575,15 +637,18 @@
 <div class="modal fade" id="controls--delete" tabindex="-1" aria-labelledby="controls--delete" aria-hidden="true">
     <div class="modal-dialog modal-md modal-dialog-centered modal-dark">
         <div class="modal-content">
-            <div class="modal-body">
-                <div class="form-group text-center">
-                    <label for=""><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteTheSelectedControls']); ?></label>
+            <form id="controls--delete-form" action="" method="post">
+                <input type="hidden" class="delete-ids" name="control_ids" value=""/>
+                <div class="modal-body">
+                    <div class="form-group text-center">
+                        <label for=""><?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteTheSelectedControls']); ?></label>
+                    </div>
+                    <div class="form-group text-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+                        <button type="submit" name="delete_controls" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
+                    </div>
                 </div>
-                <div class="form-group text-center control-delete-actions">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
-                    <button type="button" id="confirm_delete_controls" class="delete_control btn btn-submit"><?= $escaper->escapeHtml($lang['Yes']); ?></button>
-                </div>
-            </div>
+            </form>
         </div>
     </div>
 </div>

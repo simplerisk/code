@@ -51,16 +51,41 @@
     if (isset($_POST['submit'])) {
         $user = $_POST['user'];
         $pass = $_POST['pass'];
+
+        // INTENTIONAL DESIGN: This page uses a simplified authentication path (upgrade mode) that
+        // differs from the standard login flow in the following ways:
+        //
+        // 1. LOCKOUT IS NOT ENFORCED: is_valid_user(..., true) and get_user_type(..., true) omit
+        //    the lockout = 0 predicate. This is deliberate. A schema migration may alter the user
+        //    table in a way that breaks normal login before the upgrade completes. If an admin's
+        //    account were locked at that moment, they would have no way to recover the instance.
+        //
+        // 2. MFA IS NOT ENFORCED: The upgrade entrypoint does not call the standard login()
+        //    pipeline and therefore does not trigger MFA verification. This is accepted for the
+        //    same reason — MFA infrastructure may be unavailable or broken mid-upgrade.
+        //
+        // 3. FORCED PASSWORD CHANGE IS NOT ENFORCED: Accounts flagged for change_password are not
+        //    redirected to reset_password.php. Completing a password change is not a meaningful
+        //    prerequisite for running a database upgrade.
+        //
+        // 4. FAILED ATTEMPTS ARE NOT RECORDED: add_login_attempt_and_block() is not called on
+        //    failure because the failed_login_attempts table and user table may be mid-migration
+        //    and in an inconsistent state.
+        //
+        // This page uses a separate session name (SimpleRiskDBUpgrade) and is not linked from
+        // anywhere in the normal application UI. It is only meaningful during a version upgrade.
+        // These limitations are accepted tradeoffs for an emergency-recovery entrypoint.
+
         // If the user is valid
         if (is_valid_user($user, $pass, true)) {
             // Set the user permissions
             set_user_permissions($user, true);
-            
+
             // Check if the user is an admin
             if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1") {
                 // Grant access
                 $_SESSION["access"] = "1";
-            
+
             // The user is not an admin
             } else {
                 // Display an alert

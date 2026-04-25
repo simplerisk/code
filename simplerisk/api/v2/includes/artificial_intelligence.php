@@ -18,14 +18,14 @@ function api_v2_ai_recommendations()
     // Check that this is an admin user
     api_v2_check_admin();
 
-    // If we have an Anthropic API key
-    if (get_setting("anthropic_api_key") != false)
+    // If we have an AI API key
+    if (get_setting("ai_api_key") != false)
     {
-        // Generate the anthropic message context
-        $context_content = generate_anthropic_message_context();
+        // Generate the AI message context
+        $context_content = generate_ai_business_context();
 
-        // Ask Anthropic for recommendations
-        $advice = ask_anthropic_for_recommendations($context_content);
+        // Ask AI for recommendations
+        $advice = ai_get_recommendations($context_content);
 
         // If we received advice
         if ($advice != false)
@@ -40,16 +40,16 @@ function api_v2_ai_recommendations()
         {
             // Set the status
             $status_code = 503;
-            $status_message = "There was an issue retrieving a result from Anthropic.  Check the debug logs for more information.";
+            $status_message = "There was an issue retrieving a result from the AI provider.  Check the debug logs for more information.";
             $data = null;
         }
     }
-    // If we do not have an Anthropic key
+    // If we do not have an AI API key
     else
     {
         // Set the status
         $status_code = 503;
-        $status_message = "An Anthropic API key needs to be set to use this functionality.";
+        $status_message = "An AI API key needs to be set to use this functionality.";
         $data = null;
     }
 

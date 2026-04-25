@@ -130,7 +130,7 @@ foreach ($jobs as $job) {
 
     if (isset($job['task_check']) && is_callable($job['task_check'])) {
         try {
-            write_debug_log("Running task_check for job type '{$jobType}'", "info");
+            write_debug_log("Running task_check for job type '{$jobType}'", "debug");
 
             // Check if task_check accepts $db
             $reflection = new ReflectionFunction($job['task_check']);
@@ -141,9 +141,9 @@ foreach ($jobs as $job) {
             if ($result === true) {
                 $queuedTasks++;
                 worker_metric_inc($workerName, 'last_queued_tasks', 1);
-                write_debug_log("task_check for '{$jobType}' queued tasks successfully.", "notice");
+                write_debug_log("task_check for '{$jobType}' queued tasks successfully.", "info");
             } elseif ($result === false) {
-                write_debug_log("task_check for '{$jobType}' found no tasks to queue.", "info");
+                write_debug_log("task_check for '{$jobType}' found no tasks to queue.", "debug");
             } else {
                 write_debug_log("task_check for '{$jobType}' returned unexpected value: " . var_export($result, true), "warning");
             }
@@ -153,7 +153,7 @@ foreach ($jobs as $job) {
             write_debug_log("Stack trace: " . $e->getTraceAsString(), "debug");
         }
     } else {
-        write_debug_log("Job type '{$jobType}' does not have an automated task_check; tasks must be queued manually.", "info");
+        write_debug_log("Job type '{$jobType}' does not have an automated task_check; tasks must be queued manually.", "debug");
     }
 
     // === WORKER TICK ===

@@ -146,6 +146,9 @@ function api_v2_admin_tag_delete_all()
  ******************************************/
 function api_v2_admin_write_debug_log()
 {
+    // Check that this is an admin user
+    api_v2_check_admin();
+
     // Open the database connection
     $db = db_open();
 
@@ -162,7 +165,7 @@ function api_v2_admin_write_debug_log()
         foreach ($results as $result)
         {
             // Write the message to the Apache debug log
-            write_debug_log($result['message']);
+            write_debug_log($result['message'], 'info');
 
             // Delete the message
             $stmt = $db->prepare("DELETE FROM `debug_log` WHERE id=:id");
@@ -179,7 +182,7 @@ function api_v2_admin_write_debug_log()
         if ($db->inTransaction()) {
             $db->rollBack();
         }
-        write_debug_log("Error in api_v2_admin_write_debug_log: " . $e->getMessage());
+        write_debug_log("Error in api_v2_admin_write_debug_log: " . $e->getMessage(), 'error');
     } finally {
         // Close the database connection
         db_close($db);
@@ -309,7 +312,7 @@ function api_v2_update_all_document_control_mappings()
         // Get the document id
         $document_id = $document['id'];
 
-        write_debug_log("Updating control mapping suggestions for document id: " . $document_id);
+        write_debug_log("Updating control mapping suggestions for document id: " . $document_id, 'debug');
 
         // Update the document to control mappings for the document
         $mappings = get_document_to_control_mappings($document_id, true);

@@ -1182,18 +1182,22 @@ $field_settings = [
         ],
         "teams" => [
             'customization_field_name' => 'Teams',
-            'localization_key' => '',
+            'localization_key' => 'Teams',
             'technical_field' => true,
             'encrypted' => false,
-            'searchable' => false,
-            'orderable' => false,
-            'order_column' => "teams",
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "teams_display",
             'editable' => false,
             'select_parts' => [
                 "GROUP_CONCAT(DISTINCT `i2t`.`team_id`) teams", 
+                "GROUP_CONCAT(DISTINCT `t`.`name` ORDER BY `t`.`name` ASC SEPARATOR ', ') AS teams_display",
+                "IFNULL(GROUP_CONCAT(DISTINCT `t`.`value` ORDER BY `t`.`name` ASC), '') AS teams_filter"
             ],
-            'has_display_field' => false,
-            'join_parts' => [],
+            'has_display_field' => true,
+            'join_parts' => [
+                "LEFT JOIN `team` t ON i2t.`team_id` = `t`.`value`",
+            ],
         ],
         "test_result" => [
             'customization_field_name' => 'TestResult',
@@ -1416,7 +1420,7 @@ $field_settings = [
             'localization_key' => 'ControlDescription',
             'technical_field' => true,
             'custom_column_style' => 'min-width:200px;',
-            'encrypted' => true,
+            'encrypted' => false,
             'searchable' => true,
             'orderable' => true,
             'order_column' => "control_description",
@@ -1598,6 +1602,292 @@ $field_settings = [
             'has_display_field' => false,
             'join_parts' => [],
         ], 
+    ],
+    //all the fields in the 'document_exception' need to be set as technical fields
+    //since they must be displayed regardless of whether customiztion extra is true or not.
+    //if it's possible to customize document_exception fields, we can unset some from being technical fields but for now it's best to keep them as technical fields.
+    "document_exception" => [
+        'id' => [
+            'customization_field_name' => 'ID',
+            'localization_key' => 'ID',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "id",
+            'editable' => false,
+            'select_parts' => ["
+                a.value as id
+            "],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        'exception_name' => [
+            'customization_field_name' => 'ExceptionName',
+            'localization_key' => 'ExceptionName',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "exception_name",
+            'editable' => false,
+            'select_parts' => [
+                "a.name as exception_name",
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ], 
+        'parent_name' => [
+            'customization_field_name' => 'ParentName',
+            'localization_key' => 'ParentName',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "parent_name",
+            'editable' => false,
+            'select_parts' => [
+                "IF(a.policy_document_id > 0, d.document_name, fc.short_name) AS parent_name",
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ], 
+        'exception_type' => [
+            'customization_field_name' => 'ExceptionType',
+            'localization_key' => 'ExceptionType',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "exception_type",
+            'editable' => false,
+            'select_parts' => [
+                "IF(a.policy_document_id > 0, 'policy', 'control') AS exception_type",
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ], 
+        'exception_status' => [
+            'customization_field_name' => 'Status',
+            'localization_key' => 'Status',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "exception_status_display",
+            'editable' => false,
+            'select_parts' => [
+                "a.status AS exception_status",
+                "des.name AS exception_status_display",
+            ],
+            'has_display_field' => true,
+            'join_parts' => [
+                "LEFT JOIN document_exceptions_status des ON a.status = des.value"
+            ],
+        ], 
+        "owner" => [
+            'customization_field_name' => 'ExceptionOwner',
+            'localization_key' => 'ExceptionOwner',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "owner_display",
+            'editable' => false,
+            'select_parts' => [
+                "a.owner",
+                "u.name owner_display"
+            ],
+            'has_display_field' => true,
+            'join_parts' => [
+                "LEFT JOIN `user` u ON a.owner = u.value"
+            ],
+        ],
+        "additional_stakeholders" => [
+            'customization_field_name' => 'AdditionalStakeholders',
+            'localization_key' => 'AdditionalStakeholders',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "additional_stakeholders_display",
+            'editable' => false,
+            'select_parts' => [
+                "a.additional_stakeholders", 
+                "GROUP_CONCAT(DISTINCT u_as.name ORDER BY u_as.name SEPARATOR ', ') additional_stakeholders_display"
+            ],
+            'has_display_field' => true,
+            'join_parts' => [
+                "LEFT JOIN `user` u_as ON FIND_IN_SET(u_as.value, a.additional_stakeholders)"
+            ],
+        ],
+        "associated_risks" => [
+            'customization_field_name' => 'AssociatedRisks',
+            'localization_key' => 'AssociatedRisks',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "associated_risks",
+            'editable' => false,
+            'select_parts' => [
+                "CONCAT(
+                    '[',
+                    IF(
+                        r.id IS NOT NULL,
+                        GROUP_CONCAT(DISTINCT
+                            JSON_OBJECT(
+                                'value', r.id,
+                                'name', CAST(r.subject AS CHAR)
+                            )
+                            SEPARATOR ','
+                        ),
+                        ''
+                    ),
+                    ']'
+                ) AS associated_risks",
+                "IFNULL(GROUP_CONCAT(DISTINCT r.id ORDER BY r.subject ASC), '') associated_risks_filter"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN `risks` r ON FIND_IN_SET(r.id, a.associated_risks)"
+            ],
+        ],
+        'description' => [
+            'customization_field_name' => 'Description',
+            'localization_key' => 'Description',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "description",
+            'editable' => false,
+            'select_parts' => [
+                "a.description",
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ], 
+        'justification' => [
+            'customization_field_name' => 'Justification',
+            'localization_key' => 'Justification',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "justification",
+            'editable' => false,
+            'select_parts' => [
+                "a.justification",
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ], 
+        "creation_date" => [
+            'customization_field_name' => 'CreationDate',
+            'localization_key' => 'CreationDate',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:150px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "creation_date",
+            'editable' => false,
+            'select_parts' => [
+                "a.creation_date", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "review_frequency" => [
+            'customization_field_name' => 'ReviewFrequency',
+            'localization_key' => 'ReviewFrequency',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "review_frequency",
+            'editable' => false,
+            'select_parts' => [
+                "a.review_frequency"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "next_review_date" => [
+            'customization_field_name' => 'NextReviewDate',
+            'localization_key' => 'NextReviewDate',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:150px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "next_review_date",
+            'editable' => false,
+            'select_parts' => [
+                "a.next_review_date", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "approval_date" => [
+            'customization_field_name' => 'ApprovalDate',
+            'localization_key' => 'ApprovalDate',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:150px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "approval_date",
+            'editable' => false,
+            'select_parts' => [
+                "a.approval_date", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "approver" => [
+            'customization_field_name' => 'Approver',
+            'localization_key' => 'Approver',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "approver_display",
+            'editable' => false,
+            'select_parts' => [
+                "a.approver",
+                "u_a.name approver_display"
+            ],
+            'has_display_field' => true,
+            'join_parts' => [
+                "LEFT JOIN `user` u_a ON a.approver = u_a.value"
+            ],
+        ],
+        'approval_status' => [
+            'customization_field_name' => 'ApprovalStatus',
+            'localization_key' => 'ApprovalStatus',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "approval_status_display",
+            'editable' => false,
+            'select_parts' => [
+                "a.approved AS approval_status",
+                "IF(a.approved = 1, 'Approved', 'Unapproved') AS approval_status_display",
+            ],
+            'has_display_field' => true,
+            'join_parts' => [],
+        ],
     ],
     //all the fields in 'incident' need to be set as technical fields
     //since they must be displayed regardless of whether customiztion extra is true or not.
@@ -2365,6 +2655,284 @@ $field_settings = [
             ],
         ]
     ],
+    //all the fields in the 'document' need to be set as technical fields
+    //since they must be displayed regardless of whether customiztion extra is true or not.
+    //if it's possible to customize document fields, we can unset some from being technical fields but for now it's best to keep them as technical fields.
+    "document" => [
+        'id' => [
+            'customization_field_name' => '',
+            'localization_key' => '',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "a.id",
+            'editable' => false,
+            'select_parts' => [
+                "a.id"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],     
+        'document_name' => [
+            'customization_field_name' => 'DocumentName',
+            'localization_key' => 'DocumentName',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "document_name",
+            'editable' => false,
+            'select_parts' => [
+                "a.document_name"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],      
+        'document_type' => [
+            'customization_field_name' => 'DocumentType',
+            'localization_key' => 'DocumentType',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "document_type",
+            'editable' => false,
+            'select_parts' => [
+                "a.document_type"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "framework_name" => [
+            'customization_field_name' => 'Frameworks',
+            'localization_key' => 'Frameworks',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => true,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "framework_name",
+            'editable' => false,
+            'select_parts' => [
+                "IFNULL(GROUP_CONCAT(DISTINCT f.name ORDER BY f.name ASC SEPARATOR ', '), '') framework_name",
+                "IFNULL(GROUP_CONCAT(DISTINCT f.value ORDER BY f.name ASC), '') framework_name_filter"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN `document_framework_mappings` dfm ON a.id=dfm.document_id", 
+                "LEFT JOIN `frameworks` f ON dfm.framework_id=f.value AND f.status=1"
+            ],
+        ],
+        "control_name" => [
+            'customization_field_name' => 'Controls',
+            'localization_key' => 'Controls',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false, 
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "control_name",
+            'editable' => false,
+            'select_parts' => [
+                "IFNULL(GROUP_CONCAT(DISTINCT fc.short_name ORDER BY fc.short_name ASC SEPARATOR ', '), '') control_name",
+                "IFNULL(GROUP_CONCAT(DISTINCT fc.id ORDER BY fc.short_name ASC), '') control_name_filter"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN `document_control_mappings` dcm ON a.id=dcm.document_id AND dcm.selected=1",
+                "LEFT JOIN `framework_controls` fc ON dcm.control_id=fc.id AND fc.deleted=0"
+            ],
+        ],
+        "creation_date" => [
+            'customization_field_name' => 'CreationDate',
+            'localization_key' => 'CreationDate',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:150px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "creation_date",
+            'editable' => false,
+            'select_parts' => [
+                "a.creation_date", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "approval_date" => [
+            'customization_field_name' => 'ApprovalDate',
+            'localization_key' => 'ApprovalDate',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:150px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "approval_date",
+            'editable' => false,
+            'select_parts' => [
+                "a.approval_date", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "document_status" => [
+            'customization_field_name' => 'Status',
+            'localization_key' => 'Status',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:150px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "document_status_display",
+            'editable' => false,
+            'select_parts' => [
+                "a.document_status",
+                "ds.name document_status_display",
+            ],
+            'has_display_field' => true,
+            'join_parts' => [
+                "LEFT JOIN `document_status` ds ON a.document_status=ds.value"
+            ],
+        ],
+        "document_owner" => [
+            'customization_field_name' => 'DocumentOwner',
+            'localization_key' => 'DocumentOwner',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "document_owner_display",
+            'editable' => false,
+            'select_parts' => [
+                "a.document_owner",
+                "u.name document_owner_display"
+            ],
+            'has_display_field' => true,
+            'join_parts' => [
+                "LEFT JOIN `user` u ON a.document_owner = u.value"
+            ],
+        ],
+        "additional_stakeholders" => [
+            'customization_field_name' => 'AdditionalStakeholders',
+            'localization_key' => 'AdditionalStakeholders',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "additional_stakeholders_display",
+            'editable' => false,
+            'select_parts' => [
+                "a.additional_stakeholders", 
+                "GROUP_CONCAT(DISTINCT uu.name ORDER BY uu.name ASC SEPARATOR ', ') additional_stakeholders_display"
+            ],
+            'has_display_field' => true,
+            'join_parts' => [
+                "LEFT JOIN `user` uu ON FIND_IN_SET(uu.value, a.additional_stakeholders)"
+            ],
+        ],
+        "teams" => [
+            'customization_field_name' => 'Teams',
+            'localization_key' => 'Teams',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "teams_display",
+            'editable' => false,
+            'select_parts' => [
+                "a.team_ids teams", 
+                "GROUP_CONCAT(DISTINCT t.name ORDER BY t.name ASC SEPARATOR ', ') AS teams_display"
+            ],
+            'has_display_field' => true,
+            'join_parts' => [],
+        ],
+        "review_frequency" => [
+            'customization_field_name' => 'ReviewFrequency',
+            'localization_key' => 'ReviewFrequency',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "review_frequency",
+            'editable' => false,
+            'select_parts' => [
+                "a.review_frequency"
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "last_review_date" => [
+            'customization_field_name' => 'LastReview',
+            'localization_key' => 'LastReview',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:150px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "last_review_date",
+            'editable' => false,
+            'select_parts' => [
+                "a.last_review_date", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "next_review_date" => [
+            'customization_field_name' => 'NextReviewDate',
+            'localization_key' => 'NextReviewDate',
+            'technical_field' => true,
+            'custom_column_style' => 'min-width:150px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "next_review_date",
+            'editable' => false,
+            'select_parts' => [
+                "a.next_review_date", 
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "approver" => [
+            'customization_field_name' => 'Approver',
+            'localization_key' => 'Approver',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "approver_display",
+            'editable' => false,
+            'select_parts' => [
+                "a.approver",
+                "u_approver.name approver_display"
+            ],
+            'has_display_field' => true,
+            'join_parts' => [
+                "LEFT JOIN `user` u_approver ON a.approver = u_approver.value"
+            ],
+        ],
+        "parent_document" => [
+            'customization_field_name' => 'ParentDocument',
+            'localization_key' => 'ParentDocument',
+            'technical_field' => true,
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "parent_document_display",
+            'editable' => false,
+            'select_parts' => [
+                "a.parent parent_document",
+                "d_parent.document_name parent_document_display"
+            ],
+            'has_display_field' => true,
+            'join_parts' => [
+                "LEFT JOIN `documents` d_parent ON a.parent = d_parent.id",
+            ],
+        ],
+    ],
 ];
 
 global $field_settings_display_groups;
@@ -2463,6 +3031,7 @@ $field_settings_display_groups = [
             "test_frequency",
             "tester",
             "additional_stakeholders",
+            "teams",
             "objective",
             "control_name",
             "framework_name",
@@ -2487,7 +3056,8 @@ $field_settings_display_groups = [
             "tags",
             "status",
             "test_result",
-            "test_result_background_class"
+            "test_result_background_class",
+            "teams",
         ],
     ],
     'dynamic_audit_report' => [
@@ -2533,6 +3103,27 @@ $field_settings_display_groups = [
             'last_date',
             'last_test_result',
             'next_date',
+        ],
+    ],
+    'document_program' => [
+        'header_key' => '',
+        'field_type' => 'document',
+        'fields' => [
+            'document_name',
+            'document_type',
+            'framework_name',
+            'control_name',
+            'parent_document',
+            'document_owner',
+            'additional_stakeholders',
+            'teams',
+            'creation_date',
+            'last_review_date',
+            'review_frequency',
+            'next_review_date',
+            'approval_date',
+            'approver',
+            'document_status',
         ],
     ],
     'incident_detection' => [
@@ -2641,6 +3232,28 @@ $field_settings_display_groups = [
             'functional_average',
             'information_average',
             'recovery_average'
+        ],
+    ],
+    'document_exception' => [
+        'header_key' => '',
+        'field_type' => 'document_exception',
+        'fields' => [
+            'id',
+            'exception_name',
+            'parent_name',
+            'exception_type',
+            'exception_status',
+            'owner',
+            'additional_stakeholders',
+            'description',
+            'justification',
+            'associated_risks',
+            'creation_date',
+            'review_frequency',
+            'next_review_date',
+            'approval_date',
+            'approver',
+            'approval_status',
         ],
     ],
 ];
@@ -2791,6 +3404,7 @@ $field_settings_views = [
             "test_frequency",
             "tester",
             "additional_stakeholders",
+            "teams",
             "objective",
             "control_name",
             "framework_name",
@@ -2831,6 +3445,7 @@ $field_settings_views = [
             "test_date",
             "control_name",
             "framework_name",
+            "teams",
             "tags",
             "status",
             "test_result"
@@ -2869,7 +3484,8 @@ $field_settings_views = [
             "framework_name",
             "tags",
             "status",
-            "test_result"
+            "test_result",
+            "teams"
         ]
     ],
     'audit_timeline' => [
@@ -3018,6 +3634,60 @@ $field_settings_views = [
             'selected',
             'matching',
             'recommendation'
+        ],
+    ],
+    'document_program' => [
+        'view_type' => 'document',
+        'join_parts' => [
+            "LEFT JOIN `team` t ON FIND_IN_SET(t.value, a.team_ids)",
+        ],
+        'id_field' => 'id',
+        'datatable_ajax_uri' => '/api/v2/get/datatable?view=document_program',
+        'datatable_data_type' => 'associative',
+        'datatable_filter_submit_delay' => 600,
+        'groups' => [
+            'document_program'
+        ],
+        'default_enabled_columns' => [
+            'document_name',
+            'document_type',
+            'framework_name',
+            'control_name',
+            'creation_date',
+            'approval_date',
+            'document_status',
+        ],
+    ],
+    'document_exception' => [
+        'view_type' => 'document_exception',
+        'join_parts' => [
+            "LEFT JOIN documents d ON a.policy_document_id > 0 AND a.policy_document_id = d.id AND d.document_type = 'policies'",
+            "LEFT JOIN framework_controls fc ON a.control_framework_id > 0 AND a.control_framework_id = fc.id",
+        ],
+        'groupby' => 'a.value',
+        'datatable_ajax_uri' => '/api/v2/get/datatable?view=document_exception',
+        'datatable_data_type' => 'associative',
+        'datatable_filter_submit_delay' => 600,
+        'groups' => [
+            'document_exception'
+        ],
+        'default_enabled_columns' => [
+            'id',
+            'exception_name',
+            'parent_name',
+            'exception_type',
+            'exception_status',
+            'owner',
+            'additional_stakeholders',
+            'description',
+            'justification',
+            'associated_risks',
+            'creation_date',
+            'review_frequency',
+            'next_review_date',
+            'approval_date',
+            'approver',
+            'approval_status',
         ],
     ],
 ];
@@ -3225,7 +3895,115 @@ $ui_layout_widget_config = [
             'minH' => 2,
         ],
         '' => '',
-    ]
+    ],
+    'open_team_exposure' => [
+        'localization_key' => 'ExposureByTeam',
+        'type' => 'chart',
+        'required_permission' => '',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'open_category_exposure' => [
+        'localization_key' => 'ExposureByCategory',
+        'type' => 'chart',
+        'required_permission' => '',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'open_location_exposure' => [
+        'localization_key' => 'ExposureByLocation',
+        'type' => 'chart',
+        'required_permission' => '',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'open_risk_sla_status' => [
+        'localization_key' => 'SLABreachStatus',
+        'type' => 'chart',
+        'required_permission' => '',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'compliance_controls_by_framework_bar_chart' => [
+        'localization_key' => 'ControlsByFramework',
+        'type' => 'chart',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 12,
+            'h' => 3,
+            'minW' => 8,
+            'minH' => 3,
+        ],
+        '' => '',
+    ],
+    'compliance_pass_fail_pie_chart' => [
+        'localization_key' => 'ControlPassFailStatus',
+        'type' => 'chart',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'compliance_pass_rate_trend_line_chart' => [
+        'localization_key' => 'ControlPassRateTrend',
+        'type' => 'chart',
+        'required_permission' =>'',
+        'defaults' => [
+            'w' => 12,
+            'h' => 3,
+            'minW' => 8,
+            'minH' => 3,
+        ],
+        '' => '',
+    ],
+    'governance_current_control_maturity_pie_chart' => [
+        'localization_key' => 'CurrentControlMaturity',
+        'type' => 'chart',
+        'required_permission' => '',
+        'defaults' => [
+            'w' => 4,
+            'h' => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ],
+    'governance_framework_maturity_stacked_bar_chart' => [
+        'localization_key' => 'GovernanceControlsByFrameworkMaturityStacked',
+        'type' => 'chart',
+        'required_permission' => '',
+        'defaults' => [
+            'w' => 12,
+            'h' => 3,
+            'minW' => 8,
+            'minH' => 3,
+        ],
+        '' => '',
+    ],
 ];
 
 /**
@@ -3307,7 +4085,11 @@ $ui_layout_config = [
             'open_technology',
             'open_owner',
             'open_owners_manager',
-            'open_risk_scoring_method'
+            'open_risk_scoring_method',
+            'open_team_exposure',
+            'open_category_exposure',
+            'open_location_exposure',
+            'open_risk_sla_status',
         ],
         'available_custom_widgets' => [
             'WYSIWYG'
@@ -3447,8 +4229,117 @@ $ui_layout_config = [
                 'layout' => 'dashboard_close'
             ]
         ],
-    ]
+    ],
+    'compliance_dashboard' => [
+        'API_endpoint' => '/api/v2/ui/layout',
+        'required_permission' => '',
+        'available_widgets' => [
+            'compliance_controls_by_framework_bar_chart',
+            'compliance_pass_rate_trend_line_chart',
+            'compliance_pass_fail_pie_chart',
+        ],
+        'available_custom_widgets' => [
+            'WYSIWYG',
+        ],
+        'default_layout' => [
+            [
+                'x' => 0,
+                'y' => 0,
+                'w' => 12,
+                'h' => 3,
+                'minW' => 8,
+                'minH' => 3,
+                'name' => 'compliance_controls_by_framework_bar_chart',
+                'type' => 'chart',
+                'layout' => 'compliance_dashboard',
+            ],
+            [
+                'x' => 0,
+                'y' => 3,
+                'w' => 12,
+                'h' => 3,
+                'minW' => 8,
+                'minH' => 3,
+                'name' => 'compliance_pass_rate_trend_line_chart',
+                'type' => 'chart',
+                'layout' => 'compliance_dashboard',
+            ],
+            [
+                'x' => 0,
+                'y' => 6,
+                'w' => 4,
+                'h' => 4,
+                'minW' => 2,
+                'minH' => 2,
+                'name' => 'compliance_pass_fail_pie_chart',
+                'type' => 'chart',
+                'layout' => 'compliance_dashboard',
+            ],
+        ],
+    ],
+    'governance_dashboard' => [
+        'API_endpoint' => '/api/v2/ui/layout',
+        'required_permission' => 'governance',
+        'available_widgets' => [
+            'governance_current_control_maturity_pie_chart',
+            'governance_framework_maturity_stacked_bar_chart',
+        ],
+        'available_custom_widgets' => [
+            'WYSIWYG',
+        ],
+        'default_layout' => [
+            [
+                'x' => 0,
+                'y' => 0,
+                'w' => 4,
+                'h' => 4,
+                'minW' => 4,
+                'minH' => 4,
+                'name' => 'governance_current_control_maturity_pie_chart',
+                'type' => 'chart',
+                'layout' => 'governance_dashboard',
+            ],
+            [
+                'x' => 0,
+                'y' => 4,
+                'w' => 12,
+                'h' => 3,
+                'minW' => 8,
+                'minH' => 3,
+                'name' => 'governance_framework_maturity_stacked_bar_chart',
+                'type' => 'chart',
+                'layout' => 'governance_dashboard',
+            ],
+        ],
+    ],
 ];
+
+// If the Organizational Hierarchy Extra is enabled, register its dashboard widgets.
+// The extra provides the rendering functions; this stub makes them available to
+// the core widget system without creating a hard dependency on the extra.
+if (organizational_hierarchy_extra()) {
+    $ui_layout_widget_config['open_business_unit_exposure'] = [
+        'localization_key'    => 'ExposureByBusinessUnit',
+        'type'                => 'chart',
+        'required_permission' => '',
+        'defaults'            => [
+            'w'    => 4,
+            'h'    => 4,
+            'minW' => 2,
+            'minH' => 2,
+        ],
+        '' => '',
+    ];
+    $ui_layout_config['dashboard_open']['available_widgets'][] = 'open_business_unit_exposure';
+}
+
+// Delegate Incident Dashboard widget registration to the IM Extra so that no
+// IM-specific metadata lives in core. The extra's functions.php is safe to
+// require_once here; if it was already loaded by index.php the call is a no-op.
+if (incident_management_extra()) {
+    require_once(realpath(__DIR__ . '/../extras/incident_management/includes/functions.php'));
+    im_register_ui_layout_widgets();
+}
 
 /******************************
  * FUNCTION: DATABASE CONNECT *
@@ -3824,7 +4715,7 @@ function save_dynamic_selections($type, $name, $custom_display_settings,$custom_
     // Close the database connection
     db_close($db);
 
-    $message = "The selections for Dynamic Risk Report named \"" . $escaper->escapeHtml($name) . "\" was created by the \"" . $_SESSION['user'] . "\" user.";
+    $message = "The selections for Dynamic Risk Report named \"" . $escaper->escapeHtml($name) . "\" was created by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
     write_log(1000, $_SESSION['uid'], $message);
 
     return $id;
@@ -3848,7 +4739,7 @@ function delete_dynamic_selection($id)
     // Close the database connection
     db_close($db);
 
-    $message = "The selections for Dynamic Risk Report (ID : {$id}) was deleted by the \"" . $_SESSION['user'] . "\" user.";
+    $message = "The selections for Dynamic Risk Report (ID : {$id}) was deleted by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
     write_log(1000, $_SESSION['uid'], $message);
 }
 
@@ -4782,6 +5673,7 @@ function hex2rgba($color, $opacity = false) {
  ************************************/
 function update_review_settings($veryhigh, $high, $medium, $low, $insignificant)
 {
+    global $escaper;
     // Open the database connection
     $db = db_open();
 
@@ -4812,7 +5704,7 @@ function update_review_settings($veryhigh, $high, $medium, $low, $insignificant)
 
     // Audit log
     $risk_id = 1000;
-    $message = "The review settings were modified by the \"" . $_SESSION['user'] . "\" user.";
+    $message = "The review settings were modified by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
     write_log($risk_id, $_SESSION['uid'], $message);
 
     // Close the database connection
@@ -5403,6 +6295,7 @@ function get_risk_level_name_from_levels($risk, $levels)
  *******************************/
 function update_risk_model($risk_model)
 {
+    global $escaper;
     // Open the database connection
     $db = db_open();
 
@@ -5463,7 +6356,7 @@ function update_risk_model($risk_model)
     // Audit log
     $risk_id = 1000;
     if ($current_risk_model[0]['value'] != $risk_model) {
-        $message = "The risk formula was modified from '" . $status[$current_risk_model[0]['value']] . "' to '" . $status[$risk_model] . "' by user \"" . $_SESSION['user'] . "\".";
+        $message = "The risk formula was modified from '" . $status[$current_risk_model[0]['value']] . "' to '" . $status[$risk_model] . "' by user \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
         write_log($risk_id, $_SESSION['uid'], $message);
     }
 
@@ -5478,6 +6371,7 @@ function update_risk_model($risk_model)
  ***********************************/
 function change_scoring_method($risk_id, $scoring_method)
 {
+    global $escaper;
     // Subtract 1000 from the risk_id
     $id = (int)$risk_id - 1000;
 
@@ -5499,8 +6393,8 @@ function change_scoring_method($risk_id, $scoring_method)
         $stmt->execute();
 
         // Audit log
-        $message = "Scoring method has been updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-        write_log($risk_id, $_SESSION['uid'], $message);
+        $message = "Scoring method has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".";
+        write_log($risk_id, (int)($_SESSION['uid'] ?? 0), $message);
     }
 
     // Close the database connection
@@ -5515,6 +6409,7 @@ function change_scoring_method($risk_id, $scoring_method)
  **************************/
 function update_table($table, $name, $value, $length=20)
 {
+    global $escaper;
     // Open the database connection
     $db = db_open();
 
@@ -5531,22 +6426,22 @@ function update_table($table, $name, $value, $length=20)
         {
             case "impact":
                 $risk_id = 1000;
-                $message = "The impact naming convention was modified by the \"" . $_SESSION['user'] . "\" user.";
+                $message = "The impact naming convention was modified by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
             case "likelihood":
                 $risk_id = 1000;
-                $message = "The likelihood naming convention was modified by the \"" . $_SESSION['user'] . "\" user.";
+                $message = "The likelihood naming convention was modified by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
             case "mitigation_effort":
                 $risk_id = 1000;
-                $message = "The mitigation effort naming convention was modified by the \"" . $_SESSION['user'] . "\" user.";
+                $message = "The mitigation effort naming convention was modified by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
             default:
                 $risk_id = 1000;
-                $message = "The \"".$table."\" naming convention was modified by the \"" . $_SESSION['user'] . "\" user.";
+                $message = "The \"".$table."\" naming convention was modified by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
         }
@@ -5562,6 +6457,7 @@ function update_table($table, $name, $value, $length=20)
  ********************************/
 function update_table_by_id($table, $name, $id, $length=50)
 {
+    global $escaper;
     // Open the database connection
     $db = db_open();
 
@@ -5575,7 +6471,7 @@ function update_table_by_id($table, $name, $id, $length=50)
     {
         // Audit log
         $risk_id = 1000;
-        $message = "The \"".$table."\" naming convention was modified by the \"" . $_SESSION['user'] . "\" user.";
+        $message = "The \"".$table."\" naming convention was modified by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
         write_log($risk_id, $_SESSION['uid'], $message);
     }
 
@@ -5680,6 +6576,7 @@ function update_or_insert_setting($name, $value, ?PDO $db = null): bool
  ****************************/
 function update_setting($name, $value, ?PDO $db = null): bool
 {
+    global $escaper;
     $close_db = false;
 
     if ($db === null) {
@@ -5715,9 +6612,9 @@ function update_setting($name, $value, ?PDO $db = null): bool
         // Audit log
         $risk_id = 1000;
         if ($name === "max_upload_size") {
-            $message = "The maximum upload file size was updated by \"" . $_SESSION['user'] . "\" user.";
+            $message = "The maximum upload file size was updated by \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
         } else {
-            $message = "A setting value named \"{$name}\" was updated by \"" . $_SESSION['user'] . "\" user.";
+            $message = "A setting value named \"{$name}\" was updated by \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
         }
         write_log($risk_id, $_SESSION['uid'], $message);
 
@@ -5764,7 +6661,7 @@ function delete_setting($name, ?PDO $db = null): void
     } catch (Exception $e) {
         write_debug_log(
                 "[delete_setting] DB error deleting setting '{$name}': " . $e->getMessage(),
-                "debug"
+                "error"
         );
     } finally {
         if ($close_db) {
@@ -5825,7 +6722,7 @@ function get_setting($setting, $default = false, $cached = true, ?PDO $db = null
     } catch (Exception $e) {
         write_debug_log(
                 "[get_setting] DB error retrieving setting '{$setting}': " . $e->getMessage(),
-                "debug"
+                "error"
         );
         return false;
     } finally {
@@ -5896,7 +6793,7 @@ function get_settings($settings, ?PDO $db = null)
     } catch (Exception $e) {
         write_debug_log(
                 "[get_settings] DB error retrieving settings: " . $e->getMessage(),
-                "debug"
+                "error"
         );
         return [];
     } finally {
@@ -5950,7 +6847,7 @@ function setting_exists(string $setting_name, ?PDO $db = null): bool
     } catch (Exception $e) {
         write_debug_log(
                 "[setting_exists] DB error checking setting '{$setting_name}': " . $e->getMessage(),
-                "debug"
+                "error"
         );
         return false;
     } finally {
@@ -5991,7 +6888,7 @@ function rename_setting($from_setting_name, $to_setting_name, $setting_value = f
     } catch (Exception $e) {
         write_debug_log(
                 "[rename_setting] There was an error renaming the setting '{$from_setting_name}' to '{$to_setting_name}': " . $e->getMessage(),
-                "debug"
+                "error"
         );
         return false;
     } finally {
@@ -6151,6 +7048,7 @@ function get_standard_date_from_date_string($date_string, $time=false)
  **********************/
 function add_name($table, $name, $size=20)
 {
+    global $escaper;
     if(!$name){
         return false;
     }
@@ -6185,62 +7083,62 @@ function add_name($table, $name, $size=20)
         {
             case "projects":
                 $risk_id = 1000;
-                $message = "A new project \"" . try_decrypt($name) . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                $message = "A new project \"" . try_decrypt($name) . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
             case "category":
                 $risk_id = 1000;
-                $message = "A new category \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                $message = "A new category \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
             case "team":
                 $risk_id = 1000;
-                $message = "A new team \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                $message = "A new team \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
             case "technology":
                 $risk_id = 1000;
-                $message = "A new technology \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                $message = "A new technology \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
             case "location":
                 $risk_id = 1000;
-                $message = "A new location \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                $message = "A new location \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
             case "source":
                 $risk_id = 1000;
-                $message = "A new source \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                $message = "A new source \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
             case "regulation":
                 $risk_id = 1000;
-                $message = "A new control regulation \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                $message = "A new control regulation \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
             case "planning_strategy":
                 $risk_id = 1000;
-                $message = "A new planning strategy \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                $message = "A new planning strategy \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
             case "close_reason":
                 $risk_id = 1000;
-                $message = "A new close reason \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                $message = "A new close reason \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
             case "file_types":
                 $risk_id = 1000;
-                $message = "A new upload file type \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                $message = "A new upload file type \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
             case "control_class":
                 $risk_id = 1000;
-                $message = "A new control_class \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                $message = "A new control_class \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
             default:
                 $risk_id = 1000;
-                $message = "A new " . $table . " \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+                $message = "A new " . $table . " \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
         }
@@ -6293,6 +7191,7 @@ function delete_value_by_id($table, $id)
  **************************/
 function delete_value($table, $value)
 {
+    global $escaper;
     // Open the database connection
     $db = db_open();
 
@@ -6309,66 +7208,66 @@ function delete_value($table, $value)
     {
         case "projects":
             $risk_id = 1000;
-            $message = "The existing project \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            $message = "The existing project \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
             write_log($risk_id, $_SESSION['uid'], $message);
             break;
         case "user":
-            $message = "The existing user \"" . $name . "\" was deleted by the \"" . $_SESSION['user'] . "\" user.";
+            $message = "The existing user \"" . $name . "\" was deleted by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
             write_log($value + 1000, $_SESSION['uid'], $message, "user");
             break;
         case "category":
             $risk_id = 1000;
-            $message = "The existing category \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            $message = "The existing category \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
             write_log($risk_id, $_SESSION['uid'], $message);
             break;
         case "team":
             $risk_id = 1000;
-            $message = "The existing team \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            $message = "The existing team \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
             write_log($risk_id, $_SESSION['uid'], $message);
             break;
         case "technology":
             $risk_id = 1000;
-            $message = "The existing technology \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            $message = "The existing technology \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
             write_log($risk_id, $_SESSION['uid'], $message);
             break;
         case "location":
             $risk_id = 1000;
-            $message = "The existing location \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            $message = "The existing location \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
             write_log($risk_id, $_SESSION['uid'], $message);
             break;
         case "source":
             $risk_id = 1000;
-            $message = "The existing source \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            $message = "The existing source \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
             write_log($risk_id, $_SESSION['uid'], $message);
             break;
         case "regulation":
             $risk_id = 1000;
-            $message = "The existing control regulation \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            $message = "The existing control regulation \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
             write_log($risk_id, $_SESSION['uid'], $message);
             break;
         case "planning_strategy":
             $risk_id = 1000;
-            $message = "The existing planning strategy \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            $message = "The existing planning strategy \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
             write_log($risk_id, $_SESSION['uid'], $message);
             break;
         case "close_reason":
             $risk_id = 1000;
-            $message = "The existing close reason \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            $message = "The existing close reason \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
             write_log($risk_id, $_SESSION['uid'], $message);
             break;
         case "file_types":
             $risk_id = 1000;
-            $message = "The existing upload file type \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            $message = "The existing upload file type \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
             write_log($risk_id, $_SESSION['uid'], $message);
             break;
         case "file_type_extensions":
             $risk_id = 1000;
-            $message = "The existing upload extension \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            $message = "The existing upload extension \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
             write_log($risk_id, $_SESSION['uid'], $message);
             break;
         case "frameworks":
             $risk_id = 1000;
-            $message = "The existing framework \"" . try_decrypt($name) . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            $message = "The existing framework \"" . try_decrypt($name) . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
             write_log($risk_id, $_SESSION['uid'], $message);
             break;
         case "test_status":
@@ -6382,13 +7281,13 @@ function delete_value($table, $value)
             $stmt->execute();
 
             $risk_id = 1000;
-            $message = "The existing test status \"" . try_decrypt($name) . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            $message = "The existing test status \"" . try_decrypt($name) . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
             write_log($risk_id, $_SESSION['uid'], $message);
 
             break;
         default:
             $risk_id = 1000;
-            $message = "The existing " . $table . " \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            $message = "The existing " . $table . " \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
             write_log($risk_id, $_SESSION['uid'], $message);
             break;
     }
@@ -6508,6 +7407,7 @@ function email_exist($email) {
  *************************/
 function enable_user($value)
 {
+    global $escaper;
     // Open the database connection
     $db = db_open();
 
@@ -6518,7 +7418,7 @@ function enable_user($value)
 
     // Audit log
     $username = get_name_by_value("user", $value);
-    $message = "The user \"" . $username . "\" was enabled by the \"" . $_SESSION['user'] . "\" user.";
+    $message = "The user \"" . $username . "\" was enabled by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
     write_log($value + 1000, $_SESSION['uid'], $message, "user");
 
     // Close the database connection
@@ -6532,6 +7432,7 @@ function enable_user($value)
  **************************/
 function disable_user($value)
 {
+    global $escaper;
     // Open the database connection
     $db = db_open();
 
@@ -6542,7 +7443,7 @@ function disable_user($value)
 
     // Audit log
     $username = get_name_by_value("user", $value);
-    $message = "The user \"" . $username . "\" was disabled by the \"" . $_SESSION['user'] . "\" user.";
+    $message = "The user \"" . $username . "\" was disabled by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
     write_log($value + 1000, $_SESSION['uid'], $message, "user");
 
     // Close the database connection
@@ -6794,6 +7695,7 @@ function check_valid_specials($password)
  ************************************/
 function update_password_policy($strict_user_validation, $mfa_required, $pass_policy_enabled, $min_characters, $alpha_required, $upper_required, $lower_required, $digits_required, $special_required, $pass_policy_attempt_lockout, $pass_policy_attempt_lockout_time, $pass_policy_min_age, $pass_policy_max_age, $pass_policy_reuse_limit)
 {
+    global $escaper;
     // Open the database connection
     $db = db_open();
 
@@ -6862,7 +7764,7 @@ function update_password_policy($strict_user_validation, $mfa_required, $pass_po
 
     // Audit log
     $risk_id = 1000;
-    $message = "The password policy was updated by user \"" . $_SESSION['user'] . "\".";
+    $message = "The password policy was updated by user \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
     write_log($risk_id, $_SESSION['uid'], $message);
 
     // Return true
@@ -6874,6 +7776,8 @@ function update_password_policy($strict_user_validation, $mfa_required, $pass_po
  **********************/
 function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $admin, $multi_factor, $change_password, $manager, $permissions)
 {
+    global $escaper;
+
     $custom_display_settings = json_encode(array(
         'id',
         'subject',
@@ -6989,12 +7893,12 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
     // Audit log
     if(!empty($_SESSION['uid']))
     {
-        $message = "The new user \"" . $user . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+        $message = "The new user \"" . $escaper->escapeHtml($user) . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
         write_log((int)$user_id + 1000, $_SESSION['uid'], $message, 'user');
     }
     else
     {
-        $message = "The new user \"" . $user . "\" was added.";
+        $message = "The new user \"" . $escaper->escapeHtml($user) . "\" was added.";
         write_log((int)$user_id + 1000, $user_id, $message, 'user');
     }
 
@@ -7097,12 +8001,12 @@ function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id,
     if(!empty($_SESSION['uid'])) {
         $message = _lang('UserUpdatedAuditLog', [
             'username' => "{$post_update_user['name']}({$post_update_user['username']})",
-            'updater' => "{$_SESSION['name']}({$_SESSION['user']})",
+            'updater' => ($_SESSION['name'] ?? '') . '(' . ($_SESSION['user'] ?? 'unknown') . ')',
             'changes' => $changes
-        ], false);
+        ]);
         write_log((int)$user_id + 1000, $_SESSION['uid'], $message, 'user');
     } else {
-        $message = _lang('UserUpdatedFromidPDataAuditLog', ['username' => "{$post_update_user['name']}({$post_update_user['username']})", 'changes' => $changes], false);
+        $message = _lang('UserUpdatedFromidPDataAuditLog', ['username' => "{$post_update_user['name']}({$post_update_user['username']})", 'changes' => $changes]);
         write_log((int)$user_id + 1000, $user_id, $message, 'user');
     }
 
@@ -7198,12 +8102,15 @@ function get_user_by_id($id, $include_permissions = false)
     $db = db_open();
 
     // Get the user information
+    $has_mfa_table = table_exists("user_mfa");
+    $mfa_join = $has_mfa_table ? "LEFT JOIN `user_mfa` um ON `um`.`uid` = `u`.`value`" : "";
+    $mfa_select = $has_mfa_table ? "um.verified as mfa_verified," : "NULL as mfa_verified,";
     $stmt = $db->prepare("
         SELECT
-            u.*, um.verified as mfa_verified, GROUP_CONCAT(DISTINCT `t`.`value`) as teams
+            u.*, {$mfa_select} GROUP_CONCAT(DISTINCT `t`.`value`) as teams
         FROM
             `user` u
-            LEFT JOIN `user_mfa` um ON `um`.`uid` = `u`.`value`
+            {$mfa_join}
             LEFT JOIN `user_to_team` u2t ON `u2t`.`user_id` = `u`.`value`
             LEFT JOIN `team` t ON `u2t`.`team_id` = `t`.`value` OR `u`.`admin` = 1
         WHERE
@@ -7347,6 +8254,7 @@ function update_password($user, $hash)
  *************************/
 function submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source,  $category, $team, $technology, $owner, $manager, $assessment, $notes, $project_id = 0, $submitted_by=0, $submission_date=false, $additional_stakeholders=[], $risk_catalog_mapping=[], $threat_catalog_mapping=[], $template_group_id="",$subject_order=true)
 {
+    global $escaper;
     // If customization extra is enabled
     if(customization_extra())
     {
@@ -7359,7 +8267,7 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
         }
     }
     // In the database `submitted_by` is defaulted to 1 as that's the id of the pre-created Admin user, so it's defaulted to 1 here as well
-    $submitted_by || ($submitted_by = $_SESSION['uid']) || ($submitted_by = 1);
+    $submitted_by || ($submitted_by = ($_SESSION['uid'] ?? null)) || ($submitted_by = 1);
 
     $owner || $owner = 0;
 
@@ -7478,7 +8386,7 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     );
     $insert_data = [];
     foreach ($insert_fields as $key => $value) {
-        $insert_data[] = "`".$key. "` => '".$value."'";
+        $insert_data[] = "`".$key. "` => '".$escaper->escapeHtml($value)."'";
     }
     $inserted_string = implode(", ", $insert_data);
 
@@ -7486,11 +8394,44 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     // If there's no session we get the name of the submitter from the database
     $username = (isset($_SESSION) && !empty($_SESSION['user']) ? $_SESSION['user'] : get_name_by_value("user", $submitted_by));
 
-    $message = "A new risk ID \"" . $risk_id . "\" was submitted by username \"" . $username . "\". \n".$inserted_string;
-    write_log($risk_id, $submitted_by, $message); 
+    $message = "A new risk ID \"" . $risk_id . "\" was submitted by username \"" . $escaper->escapeHtml($username) . "\". \n".$inserted_string;
+    write_log($risk_id, $submitted_by, $message);
+
+    // If the artificial intelligence extra is enabled, queue FAIR risk analysis
+    if (artificial_intelligence_extra())
+    {
+        require_once(realpath(__DIR__ . '/../extras/artificial_intelligence/index.php'));
+        queue_ai_risk_analysis($last_insert_id + 1000, $db);
+    }
 
     // Close the database connection
     db_close($db);
+
+    // Fire the risk.submitted workflow trigger
+    trigger_workflow_event('risk.submitted', [
+        'trigger_type'   => 'risk.submitted',
+        'risk_id'        => (int)$last_insert_id,
+        'display_risk_id'=> (int)$last_insert_id + 1000,
+        'subject'        => $subject,
+        'status'         => $status,
+        'owner'          => (int)$owner,
+        'manager'        => (int)$manager,
+        'category'       => (int)$category,
+        'source'         => (int)$source,
+        'submitted_by'   => (int)$submitted_by,
+        'project_id'     => (int)$project_id,
+        'submission_date'=> $submission_date,
+    ]);
+
+    // Additional trigger hooks (callsites to be added in future iterations):
+    // risk.scored            → add to update_risk_scoring() after score recalc
+    // mitigation.updated     → add to update_mitigation()
+    // control.test_submitted → add to save_audit_test_result()
+    // control.test_failed    → add to save_audit_test_result() when result = Fail
+    // vulnerability.imported → add to add_*_vulnerability() in each VM connector
+    // asset.created          → add to add_asset()
+    // user.created           → add to add_user()
+    // finding.created        → add to add_audit_finding()
 
     return $last_insert_id;
 }
@@ -7526,7 +8467,7 @@ function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_like
 {
 
 
-    error_log("Submitting risk scoring with parameters: last_insert_id=$last_insert_id, scoring_method=$scoring_method, CLASSIC_likelihood=$CLASSIC_likelihood, CLASSIC_impact=$CLASSIC_impact, AccessVector=$AccessVector, AccessComplexity=$AccessComplexity, Authentication=$Authentication, ConfImpact=$ConfImpact, IntegImpact=$IntegImpact, AvailImpact=$AvailImpact, Exploitability=$Exploitability, RemediationLevel=$RemediationLevel, ReportConfidence=$ReportConfidence, CollateralDamagePotential=$CollateralDamagePotential, TargetDistribution=$TargetDistribution, ConfidentialityRequirement=$ConfidentialityRequirement, IntegrityRequirement=$IntegrityRequirement, AvailabilityRequirement=$AvailabilityRequirement, DREADDamage=$DREADDamage, DREADReproducibility=$DREADReproducibility, DREADExploitability=$DREADExploitability, DREADAffectedUsers=$DREADAffectedUsers, DREADDiscoverability=$DREADDiscoverability, OWASPSkill=$OWASPSkill, OWASPMotive=$OWASPMotive, OWASPOpportunity=$OWASPOpportunity, OWASPSize=$OWASPSize, OWASPDiscovery=$OWASPDiscovery, OWASPExploit=$OWASPExploit, OWASPAwareness=$OWASPAwareness, OWASPIntrusionDetection=$OWASPIntrusionDetection, OWASPLossOfConfidentiality=$OWASPLossOfConfidentiality, OWASPLossOfIntegrity=$OWASPLossOfIntegrity, OWASPLossOfAvailability=$OWASPLossOfAvailability, OWASPLossOfAccountability=$OWASPLossOfAccountability, OWASPFinancialDamage=$OWASPFinancialDamage, OWASPReputationDamage=$OWASPReputationDamage, OWASPNonCompliance=$OWASPNonCompliance, OWASPPrivacyViolation=$OWASPPrivacyViolation, custom=$custom, ContributingLikelihood=$ContributingLikelihood, ContributingImpacts=" . json_encode($ContributingImpacts));
+    write_debug_log("Submitting risk scoring with parameters: last_insert_id=$last_insert_id, scoring_method=$scoring_method, CLASSIC_likelihood=$CLASSIC_likelihood, CLASSIC_impact=$CLASSIC_impact, AccessVector=$AccessVector, AccessComplexity=$AccessComplexity, Authentication=$Authentication, ConfImpact=$ConfImpact, IntegImpact=$IntegImpact, AvailImpact=$AvailImpact, Exploitability=$Exploitability, RemediationLevel=$RemediationLevel, ReportConfidence=$ReportConfidence, CollateralDamagePotential=$CollateralDamagePotential, TargetDistribution=$TargetDistribution, ConfidentialityRequirement=$ConfidentialityRequirement, IntegrityRequirement=$IntegrityRequirement, AvailabilityRequirement=$AvailabilityRequirement, DREADDamage=$DREADDamage, DREADReproducibility=$DREADReproducibility, DREADExploitability=$DREADExploitability, DREADAffectedUsers=$DREADAffectedUsers, DREADDiscoverability=$DREADDiscoverability, OWASPSkill=$OWASPSkill, OWASPMotive=$OWASPMotive, OWASPOpportunity=$OWASPOpportunity, OWASPSize=$OWASPSize, OWASPDiscovery=$OWASPDiscovery, OWASPExploit=$OWASPExploit, OWASPAwareness=$OWASPAwareness, OWASPIntrusionDetection=$OWASPIntrusionDetection, OWASPLossOfConfidentiality=$OWASPLossOfConfidentiality, OWASPLossOfIntegrity=$OWASPLossOfIntegrity, OWASPLossOfAvailability=$OWASPLossOfAvailability, OWASPLossOfAccountability=$OWASPLossOfAccountability, OWASPFinancialDamage=$OWASPFinancialDamage, OWASPReputationDamage=$OWASPReputationDamage, OWASPNonCompliance=$OWASPNonCompliance, OWASPPrivacyViolation=$OWASPPrivacyViolation, custom=$custom, ContributingLikelihood=$ContributingLikelihood, ContributingImpacts=" . json_encode($ContributingImpacts), "debug");
 
 
     // Open the database connection
@@ -7879,6 +8820,7 @@ function add_residual_risk_scoring_history($risk_id, $residual_risk)
  **********************************/
 function update_classic_score($risk_id, $CLASSIC_likelihood, $CLASSIC_impact)
 {
+    global $escaper;
     // Get old calculated risk
     $old_calculated_risk = get_calculated_risk_by_id($risk_id);
 
@@ -7918,7 +8860,7 @@ function update_classic_score($risk_id, $CLASSIC_likelihood, $CLASSIC_impact)
         add_residual_risk_scoring_history($id, $residual_risk);
 
         // Audit log
-        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
         write_log($risk_id, $_SESSION['uid'], $message);
     }
 
@@ -7930,6 +8872,7 @@ function update_classic_score($risk_id, $CLASSIC_likelihood, $CLASSIC_impact)
  *******************************/
 function update_cvss_score($risk_id, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement)
 {
+    global $escaper;
     // Get old calculated risk
     $old_calculated_risk = get_calculated_risk_by_id($risk_id);
 
@@ -7997,7 +8940,7 @@ function update_cvss_score($risk_id, $AccessVector, $AccessComplexity, $Authenti
         add_residual_risk_scoring_history($id, $residual_risk);
 
         // Audit log
-        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
         write_log($risk_id, $_SESSION['uid'], $message);
     }
 
@@ -8009,6 +8952,7 @@ function update_cvss_score($risk_id, $AccessVector, $AccessComplexity, $Authenti
  ********************************/
 function update_dread_score($risk_id, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability)
 {
+    global $escaper;
     // Get old calculated risk
     $old_calculated_risk = get_calculated_risk_by_id($risk_id);
 
@@ -8051,7 +8995,7 @@ function update_dread_score($risk_id, $DREADDamagePotential, $DREADReproducibili
         add_residual_risk_scoring_history($id, $residual_risk);
 
         // Audit log
-        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
         write_log($risk_id, $_SESSION['uid'], $message);
     }
 
@@ -8063,6 +9007,7 @@ function update_dread_score($risk_id, $DREADDamagePotential, $DREADReproducibili
  ********************************/
 function update_owasp_score($risk_id, $OWASPSkill, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPDiscovery, $OWASPExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation)
 {
+    global $escaper;
     // Get old calculated risk
     $old_calculated_risk = get_calculated_risk_by_id($risk_id);
 
@@ -8195,7 +9140,7 @@ function update_owasp_score($risk_id, $OWASPSkill, $OWASPMotive, $OWASPOpportuni
         add_residual_risk_scoring_history($id, $residual_risk);
 
         // Audit log
-        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
         write_log($risk_id, $_SESSION['uid'], $message);
     }
 
@@ -8207,6 +9152,7 @@ function update_owasp_score($risk_id, $OWASPSkill, $OWASPMotive, $OWASPOpportuni
  *********************************/
 function update_custom_score($risk_id, $custom)
 {
+    global $escaper;
     // Get old calculated risk
     $old_calculated_risk = get_calculated_risk_by_id($risk_id);
 
@@ -8252,7 +9198,7 @@ function update_custom_score($risk_id, $custom)
         add_residual_risk_scoring_history($id, $residual_risk);
 
         // Audit log
-        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
         write_log($risk_id, $_SESSION['uid'], $message);
     }
 
@@ -8264,6 +9210,7 @@ function update_custom_score($risk_id, $custom)
  ********************************************/
 function update_contributing_risk_score($risk_id, $ContributingLikelihood="", $ContributingImpacts=[])
 {
+    global $escaper;
     // Get old calculated risk
     $old_calculated_risk = get_calculated_risk_by_id($risk_id);
 
@@ -8330,7 +9277,7 @@ function update_contributing_risk_score($risk_id, $ContributingLikelihood="", $C
         add_residual_risk_scoring_history($id, $residual_risk);
 
         // Audit log
-        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
         write_log($risk_id, $_SESSION['uid'], $message);
     }
 
@@ -8360,6 +9307,7 @@ function get_calculated_risk_by_id($risk_id)
  *********************************/
 function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkill, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPDiscovery, $OWASPExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood="", $ContributingImpacts=[])
 {
+    global $escaper;
     // Subtract 1000 from the id
     $id = (int)$risk_id - 1000;
 
@@ -8597,8 +9545,8 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
     if($old_scoring_method != $scoring_method)
     {
         // Audit log
-        $message = "Scoring method has been updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-        write_log($risk_id, $_SESSION['uid'], $message);
+        $message = "Scoring method has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".";
+        write_log($risk_id, (int)($_SESSION['uid'] ?? 0), $message);
     }
 
     // If risk score was changed
@@ -8612,7 +9560,7 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
         add_residual_risk_scoring_history($id, $residual_risk);
 
         // Audit log
-        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
         write_log($risk_id, $_SESSION['uid'], $message);
     }
 
@@ -8688,8 +9636,9 @@ function save_mitigation_controls($mitigation_id, $control_ids, $post = array())
  *******************************/
 function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
 {
+    global $escaper;
     if($submitted_by_id === false){
-        $submitted_by_id = $_SESSION['uid'];
+        $submitted_by_id = (int)($_SESSION['uid'] ?? 0);
     }
     // Subtract 1000 from id
     $id = (int)$risk_id - 1000;
@@ -8786,9 +9735,9 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     $stmt->bindParam(":security_requirements", $security_requirements, PDO::PARAM_STR);
     $stmt->bindParam(":security_recommendations", $security_recommendations, PDO::PARAM_STR);
     $stmt->bindParam(":submitted_by", $submitted_by_id, PDO::PARAM_INT);
-    $stmt->bindParam(":planning_date", $planning_date, PDO::PARAM_STR, 10);
-    $stmt->bindParam(":submission_date", $mitigation_date, PDO::PARAM_STR, 10);
-    $stmt->bindParam(":mitigation_percent", $mitigation_percent, PDO::PARAM_INT);
+    $stmt->bindValue(":planning_date", $planning_date, PDO::PARAM_STR);
+    $stmt->bindValue(":submission_date", $mitigation_date, PDO::PARAM_STR);
+    $stmt->bindValue(":mitigation_percent", (int)$mitigation_percent, PDO::PARAM_INT);
     $stmt->execute();
 
     // Get the new mitigation id
@@ -8802,10 +9751,10 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
 
     // Update the risk status and last_update
     $stmt = $db->prepare("UPDATE risks SET status=:status, last_update=:last_update, mitigation_id=:mitigation_id WHERE id = :risk_id");
-    $stmt->bindParam(":status", $status, PDO::PARAM_STR, 20);
-    $stmt->bindParam(":last_update", $current_datetime, PDO::PARAM_STR, 20);
-    $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
-    $stmt->bindParam(":mitigation_id", $mitigation_id, PDO::PARAM_INT);
+    $stmt->bindValue(":status", $status, PDO::PARAM_STR);
+    $stmt->bindValue(":last_update", $current_datetime, PDO::PARAM_STR);
+    $stmt->bindValue(":risk_id", (int)$id, PDO::PARAM_INT);
+    $stmt->bindValue(":mitigation_id", (int)$mitigation_id, PDO::PARAM_INT);
 
     $stmt->execute();
 
@@ -8822,16 +9771,38 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     // Audit log
     $insert_data = [];
     foreach ($insert_fields as $key => $value) {
-        $insert_data[] = "`".$key. "` => '".$value."'";
+        $insert_data[] = "`".$key. "` => '".$escaper->escapeHtml($value)."'";
     }
     $inserted_string = implode(", ", $insert_data);
 
-    $message = "A mitigation was submitted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\". \n".$inserted_string;
-    write_log($risk_id, $_SESSION['uid'], $message);
+    $message = "A mitigation was submitted for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\". \n".$inserted_string;
+    write_log($risk_id, (int)($_SESSION['uid'] ?? 0), $message);
+
+    // Capture risk owner for workflow context before closing the connection
+    $stmt = $db->prepare("SELECT `owner` FROM `risks` WHERE `id` = :id LIMIT 1");
+    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $_wf_owner = (int)(($stmt->fetch(PDO::FETCH_ASSOC))['owner'] ?? 0);
+
+    // If the artificial intelligence extra is enabled, re-queue FAIR risk analysis
+    if (artificial_intelligence_extra())
+    {
+        require_once(realpath(__DIR__ . '/../extras/artificial_intelligence/index.php'));
+        queue_ai_risk_analysis($risk_id, $db);
+    }
 
     // Close the database connection
     db_close($db);
 
+    // Fire the mitigation.submitted workflow trigger
+    trigger_workflow_event('mitigation.submitted', [
+        'trigger_type'   => 'mitigation.submitted',
+        'risk_id'        => $id,
+        'display_risk_id'=> $id + 1000,
+        'owner'          => $_wf_owner,
+        'mitigation_id'  => (int)$mitigation_id,
+        'mitigation_owner' => (int)$mitigation_owner,
+    ]);
 
     /***** upload files ******/
     // If the delete value exists
@@ -8889,6 +9860,7 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
  *********************************/
 function submit_unmitigation($risk_id)
 {
+    global $escaper;
     // Subtract 1000 from id
     $id = (int)$risk_id - 1000;
 
@@ -8934,7 +9906,7 @@ function submit_unmitigation($risk_id)
     $stmt->execute();
 
     // Audit log
-    $message = "A mitigation was deleted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+    $message = "A mitigation was deleted for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
     write_log($risk_id, $_SESSION['uid'], $message);
 
     // Close the database connection
@@ -8948,6 +9920,7 @@ function submit_unmitigation($risk_id)
  **************************************/
 function submit_management_review($risk_id, $status, $review, $next_step, $reviewer, $comments, $next_review, $close=false, $submission_date = false)
 {
+    global $escaper;
 
     if(is_null($review)){
         $review = 0;
@@ -9036,14 +10009,40 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
         }
 
         // Audit log
-        $message = "A management review was submitted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-        write_log($risk_id, $_SESSION['uid'], $message);
+        $message = "A management review was submitted for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".";
+        write_log($risk_id, (int)($_SESSION['uid'] ?? 0), $message);
     }
 
     $review_id = $db->lastInsertId();
-    
+
+    // Capture risk owner for workflow context before closing the connection
+    $stmt = $db->prepare("SELECT `owner` FROM `risks` WHERE `id` = :id LIMIT 1");
+    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $_wf_owner = (int)(($stmt->fetch(PDO::FETCH_ASSOC))['owner'] ?? 0);
+
+    // If the artificial intelligence extra is enabled, re-queue FAIR risk analysis
+    if (artificial_intelligence_extra())
+    {
+        require_once(realpath(__DIR__ . '/../extras/artificial_intelligence/index.php'));
+        queue_ai_risk_analysis($risk_id, $db);
+    }
+
     // Close the database connection
     db_close($db);
+
+    // Fire the review.submitted workflow trigger (not for risk closures)
+    if (!$close) {
+        trigger_workflow_event('review.submitted', [
+            'trigger_type'   => 'review.submitted',
+            'risk_id'        => $id,
+            'display_risk_id'=> $id + 1000,
+            'owner'          => $_wf_owner,
+            'review_id'      => (int)$review_id,
+            'reviewer'       => (int)$reviewer,
+            'decision'       => (int)$review,
+        ]);
+    }
 
     return $review_id;
 }
@@ -9052,6 +10051,7 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
  ****************************************/
 function submit_management_unreview($risk_id)
 {
+    global $escaper;
     // Get current datetime for last_update
     $current_datetime = date('Y-m-d H:i:s');
 
@@ -9080,7 +10080,7 @@ function submit_management_unreview($risk_id)
     $stmt->execute();
    
     // Audit log
-    $message = "A management review was deleted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+    $message = "A management review was deleted for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
     write_log($risk_id, $_SESSION['uid'], $message);
     // Close the database connection
     db_close($db);
@@ -9302,14 +10302,21 @@ function update_risk($risk_id, $is_api = false)
         notify_risk_update($id);
     }
 
+    // If the artificial intelligence extra is enabled, re-queue FAIR risk analysis
+    if (artificial_intelligence_extra())
+    {
+        require_once(realpath(__DIR__ . '/../extras/artificial_intelligence/index.php'));
+        queue_ai_risk_analysis($risk_id, $db);
+    }
+
     // Audit log
     if(count($updated_fields)) {
         $detail_updated = [];
         foreach ($updated_fields as $key => $value) {
-            $detail_updated[] = "Field name : `".$key. "` (`".$value["original"]."`=>`".$value["updated"]."`)";
+            $detail_updated[] = "Field name : `".$key. "` (`".$escaper->escapeHtml($value["original"])."`=>`".$escaper->escapeHtml($value["updated"])."`)";
         }
         $updated_string = implode(", ", $detail_updated);
-        $message = "Risk details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".\n".$updated_string;
+        $message = "Risk details were updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".\n".$updated_string;
         write_log($risk_id, $_SESSION['uid'], $message);
     }
 
@@ -9369,6 +10376,15 @@ function update_risk($risk_id, $is_api = false)
 //        create_subject_order(isset($_SESSION['encrypted_pass']) && $_SESSION['encrypted_pass'] ? $_SESSION['encrypted_pass'] : fetch_key());
     }
 
+    // Fire the risk.updated workflow trigger
+    trigger_workflow_event('risk.updated', [
+        'trigger_type'    => 'risk.updated',
+        'risk_id'         => $id,
+        'display_risk_id' => $id + 1000,
+        'owner'           => $owner !== false ? (int)$owner : 0,
+        'changed_fields'  => implode(', ', array_keys($updated_fields)),
+    ]);
+
     return $success;
 }
 
@@ -9420,6 +10436,7 @@ function get_residual_risk($risk_id) {
  *********************************/
 function update_risk_subject($risk_id, $subject)
 {
+    global $escaper;
     // Subtract 1000 from risk_id
     $id = (int)$risk_id - 1000;
 
@@ -9437,7 +10454,7 @@ function update_risk_subject($risk_id, $subject)
     $stmt->execute();
 
     // Audit log
-    $message = "Risk subject was updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+    $message = "Risk subject was updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
     write_log($risk_id, $_SESSION['uid'], $message);
 
     // Close the database connection
@@ -9469,7 +10486,19 @@ function update_risk_subject($risk_id, $subject)
 function convert_to_risk_id($id) {
 
     // Add 1000 to any id to make it at least 4 digits
-    $id = (int)$id + 1000;
+    $risk_id = (int)$id + 1000;
+
+    return $risk_id;
+
+}
+
+/***********************************
+ * FUNCTION: CONVERT RISK ID TO ID *
+ ***********************************/
+function convert_risk_id_to_id($risk_id) {
+
+    // Subtract 1000 from any risk id to get the original id
+    $id = (int)$risk_id - 1000;
 
     return $id;
 
@@ -14087,6 +15116,7 @@ function next_review_by_score($calculated_risk)
  ************************/
 function close_risk($risk_id, $user_id, $status, $close_reason, $note, $closure_date = false)
 {
+    global $escaper;
     // Subtract 1000 from risk_id
     $id = (int)$risk_id - 1000;
 
@@ -14135,11 +15165,26 @@ function close_risk($risk_id, $user_id, $status, $close_reason, $note, $closure_
     }
 
     // Audit log
-    $message = "Risk ID \"" . $risk_id . "\" was marked as closed by username \"" . $_SESSION['user'] . "\".";
-    write_log($risk_id, $_SESSION['uid'], $message);
+    $message = "Risk ID \"" . $risk_id . "\" was marked as closed by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".";
+    write_log($risk_id, (int)($_SESSION['uid'] ?? 0), $message);
+
+    // Capture risk owner for workflow context before closing the connection
+    $stmt = $db->prepare("SELECT `owner` FROM `risks` WHERE `id` = :id LIMIT 1");
+    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $_wf_owner = (int)(($stmt->fetch(PDO::FETCH_ASSOC))['owner'] ?? 0);
 
         // Close the database connection
         db_close($db);
+
+    // Fire the risk.closed workflow trigger
+    trigger_workflow_event('risk.closed', [
+        'trigger_type'   => 'risk.closed',
+        'risk_id'        => $id,
+        'display_risk_id'=> $id + 1000,
+        'owner'          => $_wf_owner,
+        'closure_reason' => (int)$close_reason,
+    ]);
 
         return true;
 }
@@ -14172,6 +15217,7 @@ function get_close_id($risk_id)
  *************************/
 function reopen_risk($risk_id)
 {
+    global $escaper;
     // Subtract 1000 from id
     $id = (int)$risk_id - 1000;
 
@@ -14193,11 +15239,25 @@ function reopen_risk($risk_id)
     $stmt->execute();
 
     // Audit log
-    $message = "Risk ID \"" . $risk_id . "\" was reopened by username \"" . $_SESSION['user'] . "\".";
-    write_log($risk_id, $_SESSION['uid'], $message);
+    $message = "Risk ID \"" . $risk_id . "\" was reopened by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".";
+    write_log($risk_id, (int)($_SESSION['uid'] ?? 0), $message);
+
+    // Capture risk owner for workflow context before closing the connection
+    $stmt = $db->prepare("SELECT `owner` FROM `risks` WHERE `id` = :id LIMIT 1");
+    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $_wf_owner = (int)(($stmt->fetch(PDO::FETCH_ASSOC))['owner'] ?? 0);
 
     // Close the database connection
     db_close($db);
+
+    // Fire the risk.reopened workflow trigger
+    trigger_workflow_event('risk.reopened', [
+        'trigger_type'    => 'risk.reopened',
+        'risk_id'         => $id,
+        'display_risk_id' => $id + 1000,
+        'owner'           => $_wf_owner,
+    ]);
 
     return true;
 }
@@ -14207,6 +15267,7 @@ function reopen_risk($risk_id)
  *************************/
 function add_comment($risk_id, $user_id, $comment)
 {
+    global $escaper;
     // Subtract 1000 from id
     $id = (int)$risk_id - 1000;
 
@@ -14246,8 +15307,8 @@ function add_comment($risk_id, $user_id, $comment)
     }
 
     // Audit log
-    $message = "A comment was added to risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-    write_log($risk_id, $_SESSION['uid'], $message);
+    $message = "A comment was added to risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".";
+    write_log($risk_id, (int)($_SESSION['uid'] ?? 0), $message);
 
         // Close the database connection
         db_close($db);
@@ -14408,6 +15469,7 @@ function get_audit_trail($id = NULL, $days = 7, $log_type=NULL)
  *******************************/
 function update_mitigation($risk_id, $post)
 {
+    global $escaper;
     // Subtract 1000 from risk_id
     $id = (int)$risk_id - 1000;
 
@@ -14560,8 +15622,8 @@ function update_mitigation($risk_id, $post)
     $stmt->bindParam(":current_solution", $current_solution, PDO::PARAM_STR);
     $stmt->bindParam(":security_requirements", $security_requirements, PDO::PARAM_STR);
     $stmt->bindParam(":security_recommendations", $security_recommendations, PDO::PARAM_STR);
-    $stmt->bindParam(":planning_date", $planning_date, PDO::PARAM_STR, 10);
-    $stmt->bindParam(":mitigation_percent", $mitigation_percent, PDO::PARAM_INT);
+    $stmt->bindValue(":planning_date", $planning_date, PDO::PARAM_STR);
+    $stmt->bindValue(":mitigation_percent", (int)$mitigation_percent, PDO::PARAM_INT);
 //    $stmt->bindParam(":mitigation_controls", $mitigation_controls, PDO::PARAM_STR, 500);
     $stmt->execute();
     
@@ -14587,11 +15649,11 @@ function update_mitigation($risk_id, $post)
     if(count($updated_fields)) {
         $detail_updated = [];
         foreach ($updated_fields as $key => $value) {
-            $detail_updated[] = "Field name : `".$key. "` (`".$value["original"]."`=>`".$value["updated"]."`)";
+            $detail_updated[] = "Field name : `".$key. "` (`".$escaper->escapeHtml($value["original"])."`=>`".$escaper->escapeHtml($value["updated"])."`)";
         }
         $updated_string = implode(", ", $detail_updated);
-        $message = "Risk mitigation details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".\n".$updated_string;
-        write_log($risk_id, $_SESSION['uid'], $message);
+        $message = "Risk mitigation details were updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".\n".$updated_string;
+        write_log($risk_id, (int)($_SESSION['uid'] ?? 0), $message);
     }
 
     // Close the database connection
@@ -14767,9 +15829,9 @@ function get_reviews($risk_id, $template_group_id="")
 /****************************
  * FUNCTION: LATEST VERSION *
  ****************************/
-function latest_version($param) {
-    $latest_versions = latest_versions();
-    
+function latest_version($param, $force_refresh = true) {
+    $latest_versions = latest_versions($force_refresh);
+
     if (isset($latest_versions[$param]))
         return $latest_versions[$param];
     else
@@ -14781,10 +15843,25 @@ function latest_version($param) {
  * Gets the list of the latest versions and caches it, so if it's needed    *
  * multiple times in the same request it will still only be loaded once     * 
  ****************************************************************************/
-function latest_versions() {
+function latest_versions($force_refresh = true) {
 
-    if(isset($GLOBALS['latest_versions_cached'])){
+    if(!$force_refresh && isset($GLOBALS['latest_versions_cached'])){
         return $GLOBALS['latest_versions_cached'];
+    }
+
+    // Check if the version check job has stored fresh data in the database
+    if (!$force_refresh)
+    {
+        $cached_data = get_setting('latest_version_data', false, false);
+        if ($cached_data)
+        {
+            $latest_versions = json_decode($cached_data, true);
+            if (!empty($latest_versions))
+            {
+                $GLOBALS['latest_versions_cached'] = $latest_versions;
+                return $GLOBALS['latest_versions_cached'];
+            }
+        }
     }
 
     // Url for SimpleRisk current versions
@@ -14793,7 +15870,7 @@ function latest_versions() {
         $url = UPDATES_URL . '/releases.xml';
     }
     else $url = 'https://raw.githubusercontent.com/simplerisk/updates.simplerisk.com/updates.simplerisk.com/releases.xml';
-    write_debug_log("Checking latest versions at " . $url);
+    write_debug_log("Checking latest versions at " . $url, 'info');
 
     // Set the HTTP options
     $http_options = [
@@ -14819,7 +15896,7 @@ function latest_versions() {
     // If we were unable to connect to the URL
     if($return_code !== 200)
     {           
-        write_debug_log("SimpleRisk was unable to connect to " . $url);
+        write_debug_log("SimpleRisk was unable to connect to " . $url, 'warning');
 
         // Return 0 for the latest versions
         $GLOBALS['latest_versions_cached'] = 0;
@@ -14828,7 +15905,7 @@ function latest_versions() {
     // We were able to connect to the URL
     else
     {
-        write_debug_log("SimpleRisk connected to " . $url);
+        write_debug_log("SimpleRisk connected to " . $url, 'info');
         $version_page = $response['response'];
 
         // Convert it to be an array
@@ -14861,7 +15938,14 @@ function latest_versions() {
             $short_name = $extra['short_name'];
 
             // Get the latest version of the extra
-            $extra_versions = $latest_release[0]['extras'][$short_name];
+            $extra_versions = $latest_release[0]['extras'][$short_name] ?? null;
+
+            // Skip extras not yet listed in the remote releases feed
+            if (empty($extra_versions))
+            {
+                $latest_versions[$short_name] = null;
+                continue;
+            }
 
             // If theres multiple versions of the extra for this release
             if (count($extra_versions) > 1)
@@ -15043,7 +16127,7 @@ function get_announcements()
 function language_file($force_default=false)
 {
     // Define allowed languages (WHITELIST)
-    $allowed_languages = ['af', 'ar', 'bg', 'bp', 'ca', 'cs', 'cu', 'da', 'de', 'el', 'en', 'es', 'fi', 'fr', 'he', 'hi', 'hu', 'it', 'ja', 'ko', 'mn', 'nl', 'no', 'pl', 'pt', 'ro', 'ru', 'si', 'sk', 'sr', 'sv', 'tr', 'uk', 'vi', 'zh-CN', 'zh-TW'];
+    $allowed_languages = ['af', 'ar', 'bg', 'bp', 'ca', 'cs', 'cu', 'da', 'de', 'el', 'en', 'es', 'fi', 'fr', 'he', 'hi', 'hu', 'it', 'ja', 'ko', 'mn', 'nl', 'no', 'pl', 'pt', 'ro', 'ru', 'si', 'sk', 'sr', 'sv', 'tr', 'th', 'uk', 'vi', 'zh-CN', 'zh-TW'];
 
     // If the session hasn't been defined yet
     if (!isset($_SESSION) && PHP_SAPI !== 'cli' && !$force_default)
@@ -15595,6 +16679,55 @@ function vulnmgmt_extra() {
     return $GLOBALS['extra_vulnmgmt'];
 }
 
+/*****************************
+ * FUNCTION: WORKFLOWS EXTRA *
+ *****************************/
+function workflows_extra() {
+    if (isset($GLOBALS['extra_workflows'])) {
+        return $GLOBALS['extra_workflows'];
+    }
+
+    $setting = get_setting('extra_workflows');
+
+    if (!empty($setting))
+    {
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
+        {
+            $GLOBALS['extra_workflows'] = true;
+        }
+        else $GLOBALS['extra_workflows'] = false;
+    }
+    else $GLOBALS['extra_workflows'] = false;
+
+    return $GLOBALS['extra_workflows'];
+}
+
+/***********************************
+ * FUNCTION: TRIGGER WORKFLOW EVENT *
+ * Fires a named workflow trigger   *
+ * event with context data.         *
+ * No-op if tables don't exist yet. *
+ ***********************************/
+function trigger_workflow_event(string $event_type, array $context): void
+{
+    // Skip during unit tests — user-configured workflows can silently modify
+    // test data (e.g. auto-assigning framework parents) and cause false failures.
+    if (!empty($GLOBALS['__unit_test_mode'])) {
+        return;
+    }
+
+    // Skip if the workflow tables haven't been created yet (pre-upgrade)
+    if (!table_exists('workflow_definitions')) {
+        return;
+    }
+
+    // Load the workflow engine on demand
+    require_once(realpath(__DIR__ . '/workflows.php'));
+
+    // Dispatch the event to any matching workflow definitions
+    dispatch_workflow_event($event_type, $context);
+}
+
 /*********************************************************
  * FUNCTION: NORMALIZE BOOL                              *
  * Avoids repeating brittle checks like "true", "1", etc *
@@ -15707,7 +16840,7 @@ function upload_file($risk_id, $file, $view_type = 1) {
                     db_close($db);
 
                     // Audit log entry for uploading a file
-                    $message = "File \"" . $file['name'] . "\" was uploaded by username \"" . $_SESSION['user'] . "\".";
+                    $message = "File \"" . $file['name'] . "\" was uploaded by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
                     write_log($risk_id + 1000, $_SESSION['uid'], $message, 'risk');
 
                     // Return a success
@@ -15762,6 +16895,7 @@ function upload_file($risk_id, $file, $view_type = 1) {
  *************************/
 function delete_db_file($unique_name)
 {
+    global $escaper;
     // Open the database connection
     $db = db_open();
 
@@ -15780,7 +16914,7 @@ function delete_db_file($unique_name)
     else
     {
         // Audit log entry for deleting a file
-        $message = "File \"" . $file['name'] . "\" was deleted by username \"" . $_SESSION['user'] . "\".";
+        $message = "File \"" . $file['name'] . "\" was deleted by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
         write_log($file['risk_id'] + 1000, $_SESSION['uid'], $message, 'risk');
     }
 
@@ -15800,6 +16934,7 @@ function delete_db_file($unique_name)
  *************************/
 function refresh_files_for_risk($unique_names, $risk_id, $view_type = 1)
 {
+    global $escaper;
     if(!$unique_names){
         $unique_names = array();
     }
@@ -15822,7 +16957,7 @@ function refresh_files_for_risk($unique_names, $risk_id, $view_type = 1)
     foreach($deleteIds as $key => $deleteId){
 
         // Audit log entry for deleting a file
-        $message = "File \"" . $delete_files[$key]['name'] . "\" was deleted by username \"" . $_SESSION['user'] . "\".";
+        $message = "File \"" . $delete_files[$key]['name'] . "\" was deleted by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
         write_log($delete_files[$key]['risk_id'] + 1000, $_SESSION['uid'], $message, 'risk');
 
         // Delete the file from the database
@@ -16071,6 +17206,7 @@ function delete_risks($risks)
  *************************/
 function delete_risk($risk_id)
 {
+    global $escaper;
     // Open the database connection
     $db = db_open();
 
@@ -16134,8 +17270,8 @@ function delete_risk($risk_id)
 
     // Audit log
     $risk_id = (int)$risk_id + 1000;
-    $message = "Risk ID \"" . $risk_id . "\" was DELETED by username \"" . $_SESSION['user'] . "\".";
-    write_log($risk_id, $_SESSION['uid'], $message);
+    $message = "Risk ID \"" . $risk_id . "\" was DELETED by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".";
+    write_log($risk_id, (int)($_SESSION['uid'] ?? 0), $message);
 
     // Return success or failure
     return $return;
@@ -16333,7 +17469,7 @@ function add_registration($name="", $company="", $title="", $phone="", $email=""
     // If there was an error communicating with the SimpleRisk services API
     if ($return_code !== 200)
     {
-        write_debug_log("Unable to communicate with the SimpleRisk services API");
+        write_debug_log("Unable to communicate with the SimpleRisk services API", 'warning');
 
         set_alert(true, "bad", $lang['FailedToRegisterInstance']);
 
@@ -16342,7 +17478,7 @@ function add_registration($name="", $company="", $title="", $phone="", $email=""
     }
     else
     {
-        write_debug_log("Successfully made the SimpleRisk service call");
+        write_debug_log("Successfully made the SimpleRisk service call", 'info');
         set_alert(true, "good", "Successfully made the SimpleRisk service call");
 
         $results = $response['response'];
@@ -16351,7 +17487,7 @@ function add_registration($name="", $company="", $title="", $phone="", $email=""
         // For each line in the results returned from the SimpleRisk service call
         foreach ($results as $line) {
             if (preg_match("/<api_key>(.*)<\/api_key>/", $line, $matches)) {
-                write_debug_log("An API key was returned from the SimpleRisk services tier");
+                write_debug_log("An API key was returned from the SimpleRisk services tier", 'info');
                 set_alert(true, "good", "An API key was returned from the SimpleRisk services tier");
 
                 $services_api_key = $matches[1];
@@ -16575,6 +17711,7 @@ function update_registration($name="", $company="", $title="", $phone="", $email
  ********************************/
 function update_risk_status($risk_id, $status)
 {
+    global $escaper;
     // Adjust the risk id
     $id = (int)$risk_id - 1000;
 
@@ -16699,7 +17836,7 @@ function update_risk_status($risk_id, $status)
     // Check if the risk exists
     if(!empty($risk[0])){
         $subject = try_decrypt($risk[0]["subject"]);
-        $message = "A risk status for subject \"{$subject}\" was changed by the \"" . $_SESSION['user'] . "\" user.";
+        $message = "A risk status for subject \"{$subject}\" was changed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
         write_log($risk_id, $_SESSION['uid'], $message);
     }
 
@@ -18391,7 +19528,7 @@ function add_family($short_name){
     $insertedId = $db->lastInsertId();
 
     $risk_id = 1000;
-    $message = "A new family \"" . $short_name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+    $message = "A new family \"" . $short_name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
     write_log($risk_id, $_SESSION['uid'], $message);
 
     // Close the database connection
@@ -18418,7 +19555,7 @@ function update_family($value, $short_name){
     $stmt->execute();
 
     $risk_id = 1000;
-    $message = "A new family \"" . $short_name . "\" was updated by the \"" . $_SESSION['user'] . "\" user.";
+    $message = "A new family \"" . $short_name . "\" was updated by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
     write_log($risk_id, $_SESSION['uid'], $message);
 
     // Close the database connection
@@ -18432,6 +19569,7 @@ function update_family($value, $short_name){
  ***************************/
 function delete_family($value)
 {
+    global $escaper;
     // Open the database connection
     $db = db_open();
 
@@ -18796,8 +19934,17 @@ function add_role($role_name) {
         return;
     }
 
-    // Add the role
-    add_name("role", $role_name);
+    // Add the role; INSERT IGNORE combined with the UNIQUE constraint on role.name ensures
+    // that concurrent requests cannot create duplicate role names (race condition prevention).
+    // add_name() returns 0 when INSERT IGNORE is suppressed by the UNIQUE constraint.
+    $inserted_id = add_name("role", $role_name);
+
+    // If the id is 0 the INSERT IGNORE was suppressed by the UNIQUE constraint,
+    // meaning a concurrent request already created a role with this name.
+    if (!$inserted_id) {
+        set_alert(true, "bad", $lang['TheRoleNameAlreadyExists']);
+        return;
+    }
 
     // Set the alert
     set_alert(true, "good", $escaper->escapeHtml($lang['AddedSuccess']));
@@ -18808,6 +19955,8 @@ function add_role($role_name) {
  * FUNCTION: DELETE A ROLE *
  ***************************/
 function delete_role($role_id) {
+
+    global $escaper;
 
     $deleted_role_responsibilities = get_responsibilites_by_role_id($role_id);
 
@@ -18847,6 +19996,14 @@ function delete_role($role_id) {
         // Update the user's permissions
         update_permissions($user_id, $new_responsibilities);
 
+        // If the update affects the current logged in user
+        if (isset($_SESSION['uid']) && $_SESSION['uid'] == $user_id && isset($_SESSION['user'])) {
+            set_user_permissions($_SESSION['user']);
+        }
+
+        // Refresh the permissions in the active sessions of the user
+        refresh_permissions_in_sessions_of_user($user_id);
+
         // Update users to use their new role(default)
         $stmt = $db->prepare("UPDATE `user` SET `role_id` = :role_id WHERE value=:user_id;");
         $stmt->bindParam(":role_id", $default_role_id, PDO::PARAM_INT);
@@ -18865,7 +20022,7 @@ function delete_role($role_id) {
     cleanup_after_delete('role');
 
     $risk_id = 1000;
-    $message = "The existing role \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+    $message = "The existing role \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
     write_log($risk_id, $_SESSION['uid'], $message);
 
     // Close the database connection
@@ -19009,6 +20166,7 @@ function get_role($role_id) {
  ********************************************/
 function get_responsibilites_by_role_id($role_id)
 {
+    global $escaper;
     // Open the database connection
     $db = db_open();
 
@@ -19030,6 +20188,7 @@ function get_responsibilites_by_role_id($role_id)
  *****************************************/
 function accept_mitigation_by_risk_id($risk_id, $accept)
 {
+    global $escaper;
     $risk_id = (int)$risk_id - 1000;
     $user_id = $_SESSION['uid'];
     // Open the database connection
@@ -19045,7 +20204,7 @@ function accept_mitigation_by_risk_id($risk_id, $accept)
         $stmt->bindParam(":created_at", $today, PDO::PARAM_STR);
         $stmt->execute();
 
-        $message = "Mitigation for risk ID ". convert_to_risk_id($risk_id) ." accepted by \"" . $_SESSION['user'] . "\" user.";
+        $message = "Mitigation for risk ID ". convert_to_risk_id($risk_id) ." accepted by \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
         write_log(convert_to_risk_id($risk_id), $_SESSION['uid'], $message);
     }
     // If decline mitigation, delete a record
@@ -19056,7 +20215,7 @@ function accept_mitigation_by_risk_id($risk_id, $accept)
         $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
         $stmt->execute();
 
-        $message = "Mitigation for risk ID ". convert_to_risk_id($risk_id) ." rejected by \"" . $_SESSION['user'] . "\" user.";
+        $message = "Mitigation for risk ID ". convert_to_risk_id($risk_id) ." rejected by \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
         write_log(convert_to_risk_id($risk_id), $_SESSION['uid'], $message);
     }
     // Close the database connection
@@ -19622,7 +20781,7 @@ function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1, 
                         }
 
                         // Audit log entry for uploading a file
-                        $message = "File \"" . $file['name'] . "\" was uploaded by username \"" . $_SESSION['user'] . "\".";
+                        $message = "File \"" . $file['name'] . "\" was uploaded by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
                         write_log($test_audit_id + 1000, $_SESSION['uid'], $message, $log_type);
 
                     }
@@ -20074,11 +21233,11 @@ function generate_teams_query($teams, $field_name, $check_unassign = true) {
             $teams_query = " 0 ";
         } else {
             if (is_array($teams)) {
-                $teams_list = implode(',', $teams);
-                $teams_array = $teams;
+                $teams_array = array_map('intval', $teams);
+                $teams_list = implode(',', $teams_array);
             } else {
-                $teams_list = $teams;
-                $teams_array = explode(',', $teams);
+                $teams_array = array_map('intval', explode(',', $teams));
+                $teams_list = implode(',', $teams_array);
             }
 
             $teams_query = " FIND_IN_SET({$field_name}, '{$teams_list}') ";
@@ -20446,7 +21605,7 @@ function add_file_type($name, $extension) {
 
     // Write an audit log entry
     $risk_id = 1000;
-    $message = "A new upload file type of \"" . $name . "\" for extension \"" . $extension . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+    $message = "A new upload file type of \"" . $name . "\" for extension \"" . $extension . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
     write_log($risk_id, $_SESSION['uid'], $message);
     
     // Close the database connection
@@ -21516,16 +22675,51 @@ function update_risk_level($field, $value, $name) {
 }
 
 /*********************************
+ * FUNCTION: CSRF STARTUP         *
+ * Hook called by csrf_init()    *
+ * before the token check runs.  *
+ *********************************/
+function csrf_startup() {
+    // HTTP header names are case-insensitive (RFC 7230) but PHP-FPM/nginx reconstructs
+    // them from HTTP_* server vars with title-case, so 'CSRF-TOKEN' becomes 'Csrf-Token'.
+    // Normalise to uppercase before csrf_check() does its exact-case lookup.
+    $headers = array_change_key_case(apache_request_headers(), CASE_UPPER);
+    $name = $GLOBALS['csrf']['input-name'];
+    if (!empty($headers['CSRF-TOKEN']) && !isset($_POST[$name])) {
+        $_POST[$name] = $headers['CSRF-TOKEN'];
+    }
+}
+
+/**********************************
  * FUNCTION: INCLUDE CSRF MAGIC  *
  * Make sure to call this after  *
  * the session is properly setup *
  *********************************/
 function include_csrf_magic() {
 
-    //function csrf_startup() {
-        global $escaper;
-        csrf_conf('rewrite-js', $escaper->escapeHtml(build_url('/vendor/simplerisk/csrf-magic/csrf-magic.js')));
-    //}
+    global $escaper;
+
+    // Resolve the CSRF secret, preferring the database for HA compatibility.
+    $secret = get_setting('csrf_secret');
+
+    if ($secret === false || $secret === '') {
+        // Migrate from the legacy on-disk file if it exists.
+        $legacy_file = realpath(__DIR__ . '/../vendor/simplerisk/csrf-magic/csrf-secret.php');
+        if ($legacy_file !== false && file_exists($legacy_file)) {
+            $secret = '';
+            include $legacy_file;
+        }
+
+        // Generate a cryptographically secure secret if we still don't have one.
+        if ($secret === '') {
+            $secret = bin2hex(random_bytes(32));
+        }
+
+        add_setting('csrf_secret', $secret);
+    }
+
+    csrf_conf('secret', $secret);
+    csrf_conf('rewrite-js', $escaper->escapeHtml(build_url('/vendor/simplerisk/csrf-magic/csrf-magic.js')));
     csrf_init();
 }
 
@@ -22269,7 +23463,7 @@ function set_proxy_stream_context($method=null, $header=null, $content=null, $ss
     // If proxy web requests is set
     if ($proxy_web_requests)
     {
-	    write_debug_log("Proxy web requests is enabled");
+	    write_debug_log("Proxy web requests is enabled", 'debug');
 
         // Get the proxy configuration
         $proxy_verify_ssl_certificate = get_setting("proxy_verify_ssl_certificate");
@@ -22286,21 +23480,21 @@ function set_proxy_stream_context($method=null, $header=null, $content=null, $ss
             'request_fulluri' => true,
         );
 
-	write_debug_log("HTTP Context - Proxy: " . $http_context['proxy']);
-	write_debug_log("HTTP Context - Ignore Errors: " . $http_context['ignore_errors']);
-	write_debug_log("HTTP Context - Request Full URI: " . $http_context['request_fulluri']);
+	write_debug_log("HTTP Context - Proxy: " . $http_context['proxy'], 'debug');
+	write_debug_log("HTTP Context - Ignore Errors: " . $http_context['ignore_errors'], 'debug');
+	write_debug_log("HTTP Context - Request Full URI: " . $http_context['request_fulluri'], 'debug');
 
     // Create the ssl context array
     $ssl_context = array(
         'SNI_enabled' => true
     );
 
-	write_debug_log("SSL Context - SNI Enabled: " . $ssl_context['SNI_enabled']);
+	write_debug_log("SSL Context - SNI Enabled: " . $ssl_context['SNI_enabled'], 'debug');
 
         // If this is an authenticated proxy
         if ($proxy_authenticated)
         {
-	    write_debug_log("We are using an authenticated proxy");
+	    write_debug_log("We are using an authenticated proxy", 'debug');
 
             // Create the BASE64 encoded credentials
             $auth = base64_encode("$proxy_user:$proxy_pass");
@@ -22308,38 +23502,38 @@ function set_proxy_stream_context($method=null, $header=null, $content=null, $ss
             // Add the authenticated header to the http_context
             $http_context['header'] = "Proxy-Authorization: Basic $auth";
 
-	    write_debug_log("HTTP Context - Header: " . $http_context['header']);
+	    write_debug_log("HTTP Context - Header: " . $http_context['header'], 'debug');
         }
 
         // If we want to turn off ssl verification
         if (!$proxy_verify_ssl_certificate || $ssl_verify_off == true)
         {
-	    write_debug_log("SSL verification is disabled");
+	    write_debug_log("SSL verification is disabled", 'debug');
 
             $ssl_context['verify_peer'] = false;
             $ssl_context['verify_peer_name'] = false;
             $ssl_context['allow_self_signed'] = true;
 
-	    write_debug_log("SSL Context - Verify Peer: " . $ssl_context['verify_peer']);
-	    write_debug_log("SSL Context - Verify Peer Name: " . $ssl_context['verify_peer_name']);
-	    write_debug_log("SSL Context - Allow Self Signed: " . $ssl_context['allow_self_signed']);
+	    write_debug_log("SSL Context - Verify Peer: " . $ssl_context['verify_peer'], 'debug');
+	    write_debug_log("SSL Context - Verify Peer Name: " . $ssl_context['verify_peer_name'], 'debug');
+	    write_debug_log("SSL Context - Allow Self Signed: " . $ssl_context['allow_self_signed'], 'debug');
         }
 
         // If the function was provided a method
         if ($method)
         {
-	    write_debug_log("A method was provided");
+	    write_debug_log("A method was provided", 'debug');
 
             // Set the provided method
             $http_context['method'] = $method;
 
-	    write_debug_log("HTTP Context - Method: " . $http_context['method']);
+	    write_debug_log("HTTP Context - Method: " . $http_context['method'], 'debug');
         }
 
         // If the function was provided a header
         if ($header)
         {
-	    write_debug_log("A header was provider");
+	    write_debug_log("A header was provider", 'debug');
 
             // If a http header is already set
             if (isset($http_context['header']))
@@ -22354,29 +23548,29 @@ function set_proxy_stream_context($method=null, $header=null, $content=null, $ss
                 $http_context['header'] = $header;
             }
 
-	    write_debug_log("HTTP Context - Header: " . $http_context['header']);
+	    write_debug_log("HTTP Context - Header: " . $http_context['header'], 'debug');
         }
 
         // If the function was provided content
         if ($content)
         {
-	    write_debug_log("Content was provided");
+	    write_debug_log("Content was provided", 'debug');
 
             // Set the provided content
             $http_context['content'] = $content;
 
-	    write_debug_log("HTTP Context - Content: " . $http_context['content']);
+	    write_debug_log("HTTP Context - Content: " . $http_context['content'], 'debug');
         }
 
 	// If a timeout was provided
 	if ($timeout)
 	{
-            write_debug_log("Timeout was provided");
+            write_debug_log("Timeout was provided", 'debug');
 
 	    // Set the provided timeout
 	    $http_context['timeout'] = $timeout;
 
-	    write_debug_log("HTTP Context - Timeout: " . $http_context['timeout']);
+	    write_debug_log("HTTP Context - Timeout: " . $http_context['timeout'], 'debug');
 	}
 
         // Set the stream context
@@ -22397,18 +23591,18 @@ function set_proxy_stream_context($method=null, $header=null, $content=null, $ss
         // If the function was provided a method
         if ($method)
         {
-            write_debug_log("A method was provided");
+            write_debug_log("A method was provided", 'debug');
 
             // Set the provided method
             $http_context['method'] = $method;
 
-            write_debug_log("HTTP Context - Method: " . $http_context['method']);
+            write_debug_log("HTTP Context - Method: " . $http_context['method'], 'debug');
         }
 
         // If the function was provided a header
         if ($header)
         {
-            write_debug_log("A header was provider");
+            write_debug_log("A header was provider", 'debug');
 
             // If a http header is already set
             if (isset($http_context['header']))
@@ -22423,49 +23617,49 @@ function set_proxy_stream_context($method=null, $header=null, $content=null, $ss
                 $http_context['header'] = $header;
             }
 
-            write_debug_log("HTTP Context - Header: " . $http_context['header']);
-        }        
+            write_debug_log("HTTP Context - Header: " . $http_context['header'], 'debug');
+        }
 
         // If the function was provided content
         if ($content)
         {
-            write_debug_log("Content was provided");
+            write_debug_log("Content was provided", 'debug');
 
             // Set the provided content
             $http_context['content'] = $content;
 
-            write_debug_log("HTTP Context - Content: " . $http_context['content']);
+            write_debug_log("HTTP Context - Content: " . $http_context['content'], 'debug');
         }
 
         // If a timeout was provided
         if ($timeout)
         {
-            write_debug_log("Timeout was provided");
+            write_debug_log("Timeout was provided", 'debug');
 
             // Set the provided timeout
             $http_context['timeout'] = $timeout;
 
-            write_debug_log("HTTP Context - Timeout: " . $http_context['timeout']);
+            write_debug_log("HTTP Context - Timeout: " . $http_context['timeout'], 'debug');
         }
 
         // Create the ssl context array
         $ssl_context = array(
             'SNI_enabled' => true
         );
-        write_debug_log("SSL Context - SNI Enabled: " . $ssl_context['SNI_enabled']);
+        write_debug_log("SSL Context - SNI Enabled: " . $ssl_context['SNI_enabled'], 'debug');
 
         // If we want to turn off ssl verification
         if (get_setting("ssl_certificate_check") != 1)
         {
-            write_debug_log("SSL verification is disabled");
+            write_debug_log("SSL verification is disabled", 'debug');
 
             $ssl_context['verify_peer'] = false;
             $ssl_context['verify_peer_name'] = false;
             $ssl_context['allow_self_signed'] = true;
 
-            write_debug_log("SSL Context - Verify Peer: " . $ssl_context['verify_peer']);
-            write_debug_log("SSL Context - Verify Peer Name: " . $ssl_context['verify_peer_name']);
-            write_debug_log("SSL Context - Allow Self Signed: " . $ssl_context['allow_self_signed']);
+            write_debug_log("SSL Context - Verify Peer: " . $ssl_context['verify_peer'], 'debug');
+            write_debug_log("SSL Context - Verify Peer Name: " . $ssl_context['verify_peer_name'], 'debug');
+            write_debug_log("SSL Context - Allow Self Signed: " . $ssl_context['allow_self_signed'], 'debug');
         }
 
         // Set the stream context
@@ -22786,7 +23980,8 @@ function get_operator_from_value($value)
  ****************************************************************/
 function get_latest_app_version() {
     if (!isset($_SESSION['latest_version_app']) || !$_SESSION['latest_version_app']) {
-        $_SESSION['latest_version_app'] = latest_version('app');
+        // Use the DB-cached value from the version check job to avoid a blocking network call
+        $_SESSION['latest_version_app'] = latest_version('app', false);
     }
 
     return $_SESSION['latest_version_app'];
@@ -23152,7 +24347,7 @@ function file_upload_error_message($error)
 	}
 
 	// Write a message to the debug log
-	write_debug_log($message);
+	write_debug_log($message, 'warning');
 
 	// Display an alert
     set_alert(true, "bad", $message);
@@ -25210,6 +26405,8 @@ function cvss3_temporal_vector_split($cvss_temporal_vector)
  *****************************/
 function add_project($project){
 
+    global $escaper;
+
     $name = isset($project['name']) ? try_encrypt($project['name']) : "";
     $due_date = isset($project['due_date']) ? $project['due_date'] : "";
     $consultant = isset($project['consultant']) ? $project['consultant'] : 0;
@@ -25230,7 +26427,7 @@ function add_project($project){
     
     $project_id = $db->lastInsertId();
 
-    $message = "A new prject named \"{$name}\" was created by username \"" . $_SESSION['user'] . "\".";
+    $message = "A new prject named \"{$name}\" was created by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
     write_log(1000, $_SESSION['uid'], $message, "project");
     
     // Close the database connection
@@ -25242,6 +26439,8 @@ function add_project($project){
  * FUNCTION: UPDATE PROJECT  *
  *****************************/
 function update_project($proejct_id, $project){
+
+    global $escaper;
 
     $name = isset($project['name']) ? try_encrypt($project['name']) : "";
     $due_date = isset($project['due_date']) ? $project['due_date'] : "";
@@ -25262,7 +26461,7 @@ function update_project($proejct_id, $project){
     $stmt->bindParam(":data_classification", $data_classification, PDO::PARAM_INT);
     $stmt->execute();
 
-    $message = "A prject named \"{$name}\" was updated by username \"" . $_SESSION['user'] . "\".";
+    $message = "A prject named \"{$name}\" was updated by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
     //write_log(1000, $_SESSION['uid'], $message, "project");
     
     // Close the database connection
@@ -25303,6 +26502,7 @@ function get_project($id){
  **********************************/
 function name_exists_in_table($name, $table, $where="")
 {
+    global $escaper;
     // Open the database connection
     $db = db_open();
 
@@ -25625,7 +26825,7 @@ function save_graphical_selections($type, $name, $graphic_form_data=[])
     // Close the database connection
     db_close($db);
 
-    $message = "The selections for Graphical Risk Analysis named \"" . $escaper->escapeHtml($name) . "\" was created by the \"" . $_SESSION['user'] . "\" user.";
+    $message = "The selections for Graphical Risk Analysis named \"" . $escaper->escapeHtml($name) . "\" was created by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
     write_log(1000, $_SESSION['uid'], $message);
 
     return $id;
@@ -25649,7 +26849,7 @@ function delete_graphical_selection($id)
     // Close the database connection
     db_close($db);
 
-    $message = "The selections for Graphical Risk Analysis (ID : {$id}) was deleted by the \"" . $_SESSION['user'] . "\" user.";
+    $message = "The selections for Graphical Risk Analysis (ID : {$id}) was deleted by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
     write_log(1000, $_SESSION['uid'], $message);
 }
 
@@ -25944,7 +27144,7 @@ function create_default_admin_account()
                         </div>
                         <!-- End of content -->
                         <footer class="footer text-center">
-                  			Copyright 2025 SimpleRisk, Inc. All rights reserved.
+                  			Copyright 2026 SimpleRisk, Inc. All rights reserved.
                 		</footer>
                 	</div>
                 	<!-- End of content-wrapper -->
@@ -26285,11 +27485,9 @@ function utf8ize( $mixed ) {
         foreach ($mixed as $key => $value) {
             $mixed[$key] = utf8ize($value);
         }
-    } elseif (is_string($mixed)) {
-        //return utf8_encode($mixed);
-        if(mb_detect_encoding($mixed) !="UTF-8")
-            return iconv("CP1251", "UTF-8", $mixed);
-        else $mixed;
+    } elseif (is_string($mixed) && !mb_check_encoding($mixed, 'UTF-8')) {
+        $detected = mb_detect_encoding($mixed, null, true);
+        return mb_convert_encoding($mixed, 'UTF-8', $detected ?: 'ISO-8859-1');
     }
     return $mixed;
 }
@@ -26850,11 +28048,15 @@ function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 1
             $where .= get_user_teams_query_for_tests_and_audits("a", false, true);
         } else if ($view == 'audit_timeline') {
             $where .= get_user_teams_query_for_tests("a", false, true);
+        } else if ($view == 'document_program') {
+            $where .= get_user_teams_query_for_documents("a", false, true);
+        } else if ($view == 'document_exception') {
+            $where .= " AND (d.document_type = 'policies' " . get_user_teams_query_for_documents("d", false, true) . " OR fc.id IS NOT NULL)";
         }
     }
     
     // At this point it's safe to add the column directly into the sql as it was validated
-    $order_by = $sql_orderable ?  "ORDER BY {$sql_order_column} {$orderDir}, `a`.`id` ASC" : "";
+    $order_by = $sql_orderable ?  "ORDER BY {$sql_order_column} {$orderDir}, {$groupby} ASC" : "";
     
     // We can do the paging through sql if there's no filtering and we can do the ordering through sql as well
     $sql_paging = empty($column_filters) && $sql_orderable;
@@ -26945,11 +28147,11 @@ function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 1
             $value = '';
             $display = false;
 
-            if (!empty($item[$selected_field_name])) {
+            if (isset($item[$selected_field_name])) {
                 // if it's not defined in the settings it's probably a custom field
                 if ($customization && empty($field_settings[$view_type][$selected_field_name]) && str_starts_with($selected_field_name, 'custom_field_')) {
                     // as of now with how the custom field's actual values' getting goes they're already encrypted and escaped at this point
-                    $value = !empty($item[$selected_field_name]) ? $item[$selected_field_name] : '';
+                    $value = isset($item[$selected_field_name]) ? $item[$selected_field_name] : '';
                     $display = isset($item["{$selected_field_name}_display"]) ? $item["{$selected_field_name}_display"] : false;
                 } else {
                     $value = $item[$selected_field_name];
@@ -26972,7 +28174,7 @@ function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 1
 
             $row[$selected_field_name] = $value;
             if ($display !== false) {
-                $row["{$selected_field_name}_display"] = $display;
+                $row["{$selected_field_name}_display"] = $escaper->escapeHtml($display);
             }
 
             // Do the filtering.
@@ -27066,10 +28268,14 @@ function get_wheres_for_view($view) {
         
     } else if ($view == "audit_timeline") {
         
-        $where = "where f.status = 1";
+        $where = "where f.status = 1 ";
+
+    } else if ($view == "document_exception") {
+        
+        $where = "where (d.id IS NOT NULL OR fc.id IS NOT NULL) ";
 
     } else {
-        $where = "where 1";
+        $where = "where 1 ";
     }
 
     return $where;
@@ -27089,6 +28295,10 @@ function get_custom_formatting_data_for_view($view, $selected_field_name, $value
         $result = get_custom_formatting_data_for_dynamic_audit_report($selected_field_name, $value, $display, $item);
     } else if ($view == 'audit_timeline') {
         $result = get_custom_formatting_data_for_audit_timeline($selected_field_name, $value, $display, $item);
+    } else if ($view == 'document_program') {
+        $result = get_custom_formatting_data_for_document_program($selected_field_name, $value, $display, $item);
+    } else if ($view == 'document_exception') {
+        $result = get_custom_formatting_data_for_document_exception($selected_field_name, $value, $display, $item);
     } else {
         $result = [$value, $display];
     }
@@ -27263,6 +28473,78 @@ function get_custom_formatting_data_for_audit_timeline($selected_field_name, $va
 
 }
 
+/*************************************************************
+ * FUNCTION: GET CUSTOM FORMATTING DATA FOR DOCUMENT PROGRAM *
+ *************************************************************/
+function get_custom_formatting_data_for_document_program($selected_field_name, $value, $display, $item) {
+
+    global $lang, $escaper;
+
+    // For fields that need custom formatting
+    switch($selected_field_name) {
+        case 'review_frequency':
+            $value = (int)$value . " " .$escaper->escapeHtml($value > 1 ? $lang['days'] : $lang['Day']);
+            break;
+        case 'creation_date':
+        case 'approval_date':
+        case 'last_review_date':
+        case 'next_review_date':
+            $value = $escaper->escapeHtml(format_date($value));
+            break;
+        default:
+            // Only have to escape non-custom fields as those are already escaped
+            $value = $escaper->escapeHtml($value);
+    }
+
+    return [$value, $display];
+
+}
+
+/***************************************************************
+ * FUNCTION: GET CUSTOM FORMATTING DATA FOR DOCUMENT EXCEPTION *
+ ***************************************************************/
+function get_custom_formatting_data_for_document_exception($selected_field_name, $value, $display, $item) {
+
+    global $lang, $escaper;
+
+    // For fields that need custom formatting
+    switch($selected_field_name) {
+        case 'id': 
+            $value = $value + 1000;
+            break;
+        case 'review_frequency':
+            $value = (int)$value . " " .$escaper->escapeHtml($value > 1 ? $lang['days'] : $lang['Day']);
+            break;
+        case 'description': 
+        case 'justification':
+            $value = $escaper->purifyHtml($value);
+            break;
+        case 'creation_date':
+        case 'next_review_date':
+        case 'approval_date':
+            $value = $escaper->escapeHtml(format_date($value));
+            break;
+        case 'associated_risks':
+            if (!empty($value) && $value !== '[]') {
+                $associated_risks = [];
+                foreach (json_decode($value, true) as $associated_risk) {
+                    $associated_risk_id = convert_to_risk_id($associated_risk['value']);
+                    $associated_risks []= $escaper->escapeHtml("[{$associated_risk_id}]" . try_decrypt($associated_risk['name']));
+                }
+                $value = implode(', ', $associated_risks);
+            } else {
+                $value = '';
+            }
+            break;
+        default:
+            // Only have to escape non-custom fields as those are already escaped
+            $value = $escaper->escapeHtml($value);
+    }
+
+    return [$value, $display];
+
+}
+
 /*****************************************************
  * FUNCTION: PROCESS SELECTED FIELD FILTER FOR VIEWS *
  *****************************************************/
@@ -27275,6 +28557,10 @@ function process_selected_field_filter_for_views($view, $selected_field_name, $f
         $filter_result = process_selected_field_filter_for_dynamic_audit_report($selected_field_name, $filter_value, $column_filters, $item);
     } else if ($view == 'audit_timeline') {
         $filter_result = process_selected_field_filter_for_audit_timeline($selected_field_name, $filter_value, $column_filters, $item);
+    } else if ($view == 'document_program') {
+        $filter_result = process_selected_field_filter_for_document_program($selected_field_name, $filter_value, $column_filters, $item);
+    } else if ($view == 'document_exception') {
+        $filter_result = process_selected_field_filter_for_document_exception($selected_field_name, $filter_value, $column_filters, $item);
     } else {
         if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
             $filter_result = true;
@@ -27423,6 +28709,48 @@ function process_selected_field_filter_for_active_audits($selected_field_name, $
             }
         } else {
             // unselect all
+            $filter_result = true;
+        }
+    } else if (in_array($selected_field_name, ['teams'])) {
+        $item_filter_value = $item['teams_filter'];
+        $item_filter_value_array = explode(",", $item_filter_value);
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (array_intersect($item_filter_value_array, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(0, $search_value)) {
+                    if (!$item_filter_value) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if (in_array($selected_field_name, ['additional_stakeholders'])) {
+        $item_filter_value = $item['additional_stakeholders'];
+        $item_filter_value_array = explode(",", $item_filter_value);
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (array_intersect($item_filter_value_array, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(0, $search_value)) {
+                    if (!$item_filter_value) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
             $filter_result = true;
         }
     } else {
@@ -27592,6 +28920,27 @@ function process_selected_field_filter_for_past_audits($selected_field_name, $fi
             }
         } else {
             $filter_result = false;
+        }
+    } else if (in_array($selected_field_name, ['teams'])) {
+        $item_filter_value = $item['teams_filter'];
+        $item_filter_value_array = explode(",", $item_filter_value);
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (array_intersect($item_filter_value_array, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(0, $search_value)) {
+                    if (!$item_filter_value) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            $filter_result = true;
         }
     } else {
         if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
@@ -27837,6 +29186,215 @@ function process_selected_field_filter_for_audit_timeline($selected_field_name, 
 
 }
 
+/****************************************************************
+ * FUNCTION: PROCESS SELECTED FIELD FILTER FOR DOCUMENT PROGRAM *
+ ****************************************************************/
+function process_selected_field_filter_for_document_program($selected_field_name, $filter_value, $column_filters, $item) {
+    if (in_array($selected_field_name, ['document_owner', 'approver'])) {
+        $item_filter_value = $item[$selected_field_name];
+
+        if ($item_filter_value) {
+            $item_filter_value_array = explode(",", $item_filter_value);
+        } else {
+            $item_filter_value_array = [];
+        }
+        
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(-1, $search_value)) {
+                    if (empty($item_filter_value_array)) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'additional_stakeholders') {
+        $item_filter_value = $item['additional_stakeholders'];
+
+        if ($item_filter_value) {
+            $item_filter_value_array = explode(",", $item_filter_value);
+        } else {
+            $item_filter_value_array = [];
+        }
+
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (array_intersect($item_filter_value_array, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(-1, $search_value)) {
+                    if (empty($item_filter_value_array)) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'framework_name') {
+        $item_filter_value = $item['framework_name_filter'];
+
+        if ($item_filter_value) {
+            $item_filter_value_array = explode(",", $item_filter_value);
+        } else {
+            $item_filter_value_array = [];
+        }
+
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (array_intersect($item_filter_value_array, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(-1, $search_value)) {
+                    if (empty($item_filter_value_array)) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'control_name') {
+        $item_filter_value = $item['control_name_filter'];
+
+        if ($item_filter_value) {
+            $item_filter_value_array = explode(",", $item_filter_value);
+        } else {
+            $item_filter_value_array = [];
+        }
+
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (array_intersect($item_filter_value_array, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(-1, $search_value)) {
+                    if (empty($item_filter_value_array)) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'document_status') {
+        $item_filter_value = $item['document_status'];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(0, $search_value)) {
+                    if (!$item_filter_value) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else {
+        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
+            $filter_result = true;
+        } else {
+            $filter_result = false;
+        }
+    }
+
+    return $filter_result;
+
+}
+
+/******************************************************************
+ * FUNCTION: PROCESS SELECTED FIELD FILTER FOR DOCUMENT EXCEPTION *
+ ******************************************************************/
+function process_selected_field_filter_for_document_exception($selected_field_name, $filter_value, $column_filters, $item) {
+    if (in_array($selected_field_name, ['owner'])) {
+        $item_filter_value = $item[$selected_field_name];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                $filter_result = true;
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if (in_array($selected_field_name, ['additional_stakeholders', 'approver'])) {
+        $item_filter_value = $item[$selected_field_name];
+        if (!empty($item_filter_value)) {
+            $item_filter_value_array = explode(",", $item_filter_value);
+        } else {
+            $item_filter_value_array = [];
+        }
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if (array_intersect($item_filter_value_array, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(-1, $search_value)) {
+                    if (!$item_filter_value) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'exception_status') {
+        $item_filter_value = $item[$selected_field_name];
+        $search_value = $column_filters[$selected_field_name];
+        if (!empty($search_value)) {
+            if ($item_filter_value == $search_value) {
+                $filter_result = false;
+            } else {
+                $filter_result = true;
+            }
+        } else {
+            $filter_result = false;
+        }
+    } else {
+        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
+            $filter_result = true;
+        } else {
+            $filter_result = false;
+        }
+    }
+
+    return $filter_result;
+
+}
+
 /*************************************
  * FUNCTION: GET CUSTOM ITEM ACTIONS *
  *************************************/
@@ -27939,6 +29497,9 @@ function get_custom_item_actions_for_audit_timeline($view, $actions_tooltips, $i
  * FUNCTION: GET FILTER FIELD FOR VIEWS *
  ****************************************/
 function get_filter_field_for_views($view, $field_name, $localizations) {
+
+    global $escaper;
+
     if ($view == 'active_audits') {
         $filter_field = get_filter_field_for_active_audits($field_name, $localizations);
     } else if ($view == 'past_audits') {
@@ -27947,9 +29508,13 @@ function get_filter_field_for_views($view, $field_name, $localizations) {
         $filter_field = get_filter_field_for_dynamic_audit_report($field_name, $localizations);
     } else if ($view == 'audit_timeline') {
         $filter_field = get_filter_field_for_audit_timeline($field_name, $localizations);
+    } else if ($view == 'document_program') {
+        $filter_field = get_filter_field_for_document_program($field_name, $localizations);
+    } else if ($view == 'document_exception') {
+        $filter_field = get_filter_field_for_document_exception($field_name, $localizations);
     } else {
         $filter_field = "
-            <input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control' style='max-width: unset;'>
+            <input type='text' name='{$escaper->escapeHtmlAttr($field_name)}' placeholder='{$escaper->escapeHtmlAttr($localizations[$field_name])}' autocomplete='off' class='form-control' style='max-width: unset;'>
         ";
     }
 
@@ -28011,6 +29576,14 @@ function get_filter_field_for_active_audits($field_name, $localizations) {
         
         $filter_field = create_multiple_dropdown("test_results_filter", "all", "test_result", null, true, $escaper->escapeHtml($lang['Unassigned']), "0", true, "", 0, true, "");
         
+    } else if ($field_name == 'additional_stakeholders') {
+
+        $filter_field = create_multiple_dropdown("enabled_users", "all", "additional_stakeholders", null, true, $escaper->escapeHtml($lang['Unassigned']), "0", returnHtml: true);
+
+    } else if ($field_name == 'teams') {
+
+        $filter_field = create_multiple_dropdown("team", "all", "teams", null, true, $escaper->escapeHtml($lang['Unassigned']), "0", returnHtml: true);
+
     } else {
         $filter_field = "
             <input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control' style='max-width: unset;'>
@@ -28078,6 +29651,10 @@ function get_filter_field_for_past_audits($field_name, $localizations) {
         $filter_field = "
             <input type='text' name='test_date' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control datepicker' style='max-width: unset;'>
         ";
+
+    } else if ($field_name == 'teams') {
+
+        $filter_field = create_multiple_dropdown("team", "all", "teams", null, true, $escaper->escapeHtml($lang['Unassigned']), "0", returnHtml: true);
 
     } else {
         $filter_field = "
@@ -28207,6 +29784,120 @@ function get_filter_field_for_audit_timeline($field_name, $localizations) {
         
         $filter_field = "
             <input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control' style='max-width: unset;'>
+        ";
+
+    }
+
+    return $filter_field;
+
+}
+
+/***************************************************
+ * FUNCTION: GET FILTER FIELD FOR DOCUMENT PROGRAM *
+ ***************************************************/
+function get_filter_field_for_document_program($field_name, $localizations) {
+
+    global $lang, $escaper;
+
+    if ($field_name == 'document_type') {
+
+        $filter_field = "
+            <select name='document_type' id='document_type' class='form-select'>
+                <option value=''>--</option>
+                <option value='policies'>{$escaper->escapeHtml($lang['Policies'])}</option>
+                <option value='guidelines'>{$escaper->escapeHtml($lang['Guidelines'])}</option>
+                <option value='standards'>{$escaper->escapeHtml($lang['Standards'])}</option>
+                <option value='procedures'>{$escaper->escapeHtml($lang['Procedures'])}</option>
+            </select>
+        ";
+
+    } else if (in_array($field_name, ['document_owner', 'approver', 'additional_stakeholders'])) {
+
+        $filter_field = create_multiple_dropdown("enabled_users", "all", $field_name, null, true, $escaper->escapeHtml($lang['Unassigned']), -1, true, "", 0, true, "");
+
+    } else if ($field_name == 'framework_name') {
+        
+        $options = getHasBeenAuditFrameworkList("document"); 
+
+        $filter_field = create_multiple_dropdown("frameworks", "all", "framework_name", $options, true, $escaper->escapeHtml($lang['Unassigned']), -1, returnHtml: true);
+
+    } else if ($field_name == 'control_name') {
+
+        $options = getHasBeenAuditFrameworkControlList("document");
+
+        $filter_field = create_multiple_dropdown("framework_controls", "all", "control_name", $options, true, $escaper->escapeHtml($lang['Unassigned']), -1, returnHtml: true); 
+
+    } else if (in_array($field_name, ['creation_date', 'approval_date', 'last_review_date', 'next_review_date'])) {
+
+        $filter_field = "
+            <input type='text' name='{$field_name}' placeholder='{$localizations[$field_name]}' autocomplete='off' class='form-control datepicker' style='max-width: unset;'>
+        ";
+
+    } else if ($field_name == 'document_status') {
+
+        $filter_field = create_multiple_dropdown("document_status", "all", returnHtml: true);
+        
+    } else {
+        
+        $filter_field = "
+            <input type='text' name='{$escaper->escapeHtmlAttr($field_name)}' placeholder='{$escaper->escapeHtmlAttr($localizations[$field_name])}' autocomplete='off' class='form-control' style='max-width: unset;'>
+        ";
+
+    }
+
+    return $filter_field;
+
+}
+
+/*****************************************************
+ * FUNCTION: GET FILTER FIELD FOR DOCUMENT EXCEPTION *
+ *****************************************************/
+function get_filter_field_for_document_exception($field_name, $localizations) {
+
+    global $lang, $escaper;
+
+    if ($field_name == 'owner') {
+
+        $filter_field = create_multiple_dropdown("enabled_users", "all", $field_name, null, false, returnHtml: true);
+
+    } else if ($field_name == 'approver' || $field_name == 'additional_stakeholders') {
+        
+        $filter_field = create_multiple_dropdown("enabled_users", "all", $field_name, null, true, $lang['Unassigned'], "-1", returnHtml: true);
+
+    } else if (in_array($field_name, ['creation_date', 'next_review_date', 'approval_date'])) {
+
+        $filter_field = "
+            <input type='text' name='{$escaper->escapeHtmlAttr($field_name)}' placeholder='{$escaper->escapeHtmlAttr($localizations[$field_name])}' autocomplete='off' class='form-control datepicker' style='max-width: unset;'>
+        ";
+
+    } else if ($field_name == 'exception_status') {
+
+        $filter_field = create_dropdown("document_exceptions_status", NULL, "exception_status", true, false, true); ;
+        
+    } else if ($field_name == 'exception_type') {
+
+        $filter_field = "
+            <select class='exception_type form-select' name='exception_type'>
+                <option value=''>--</option>
+                <option value='policy'>{$escaper->escapeHtml($lang['Policy'])}</option>
+                <option value='control'>{$escaper->escapeHtml($lang['Control'])}</option>
+            </select>
+        ";
+        
+    } else if ($field_name == 'approval_status') {
+
+        $filter_field = "
+            <select class='approval_status form-select' name='approval_status'>
+                <option value=''>--</option>
+                <option value='Approved'>{$escaper->escapeHtml($lang['Approved'])}</option>
+                <option value='Unapproved'>{$escaper->escapeHtml($lang['Unapproved'])}</option>
+            </select>
+        ";
+        
+    } else {
+        
+        $filter_field = "
+            <input type='text' name='{$escaper->escapeHtmlAttr($field_name)}' placeholder='{$escaper->escapeHtmlAttr($localizations[$field_name])}' autocomplete='off' class='form-control' style='max-width: unset;'>
         ";
 
     }
@@ -29414,6 +31105,288 @@ function remove_files(array $files): int
 function safe_round($value, $precision = 2)
 {
     return is_numeric($value) ? round((float)$value, $precision) : null;
+}
+
+// *****************************************************************************************
+// FUNCTION: GET DYNAMIC RISKS DATA FOR OUTPUT                                             *
+// This function retrieves dynamic risks data for output, either for display or download.  *
+// It returns [xlsHeader, xlsRows] arrays containing the risk data formatted for output.   *
+// Returned results are the same for the download and html options                         *
+// *****************************************************************************************
+function get_dynamic_risks_data_for_output($filter_status, $group, $sort, $download_group_value="", $selected_columns=[], $column_filters=[], $order_column=null, $order_dir="asc", $option="download", $force_user_id=null) {
+    
+    global $escaper, $lang;
+
+    // Allow this to run as long as necessary
+    ini_set('max_execution_time', 0);
+
+    // For downloading table, disregard column_filters
+    if($option == "download" || $option == "html") {
+        $risks = get_risks_only_dynamic($need_total_count=false, $filter_status, $sort, 0, $column_filters, $rowCount, 0, -1, "", "", [], force_user_id: $force_user_id);
+    } else {
+        $risks = get_risks_only_dynamic($need_total_count=false, $filter_status, $sort, $group, $column_filters, $rowCount, 0, -1, $download_group_value, "", [], $order_column, $order_dir, force_user_id: $force_user_id);
+    }
+
+    // Get group name from $group
+    list($group_name, $order_query) = get_group_name_for_dynamic_risk($group, "");
+
+    // Save it in a boolean so don't have to check a string
+    $grouped = $group_name !== "none";
+
+    $xlsHeader = array();
+    $xlsRows = array();
+
+    $xlsRow = array();
+    $str = "";
+    foreach($selected_columns as $column=>$status){
+        if(stripos($column, "custom_field_") === false){
+            $name = get_label_by_risk_field_name($column);
+        } else {
+            // If customization extra is enabled, includes customization fields 
+            if(customization_extra()){
+                $custom_cols = "";
+                
+                // Include the extra
+                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+                
+                $field_id = str_replace("custom_field_", "", $column);
+                $custom_field = get_field_by_id($field_id);
+                $name = $escaper->escapeHtml($custom_field['name']);
+            }
+        }
+        if($status == true) array_push($xlsRow, $name);
+    }
+
+    $xlsHeader = $xlsRow;
+
+    $risk_levels = get_risk_levels();
+    $review_levels = get_review_levels();
+
+    // If the group name is none
+    if (!$grouped) {
+
+        $xlsRows[] = $xlsHeader;
+
+        // For each risk in the risks array
+        foreach ($risks as $risk) {
+            $xlsRows[] = get_risk_columns_for_download($risk, $risk_levels, $review_levels, $selected_columns);
+        }
+    }
+    else
+    {
+        $displayed_group_names = [];
+        // For each risk in the risks array
+        foreach ($risks as $risk)
+        {
+            // We only need these for grouping, it's a waste of time to calculate the rest.
+            // In case you add a new grouping add to this list
+            // so the $group_value = ${$group_name}; expression can get its value
+            $status = $risk['status'];
+            $scoring_method = get_scoring_method_name($risk['scoring_method']);
+            $risk_level = get_risk_level_name((float)$risk['calculated_risk']);
+            $location = $risk['location'];
+            $source = $risk['source'];
+            $category = $risk['category'];
+            $team = $risk['team'];
+            $technology = $risk['technology'];
+            $owner = $risk['owner'];
+            $manager = $risk['manager'];
+            $regulation = try_decrypt($risk['regulation']);
+            $project = try_decrypt($risk['project']);
+            $next_step = $risk['next_step'];
+            if (!$risk['submission_date'] || stripos($risk['submission_date'], "0000-00-00") !== false)
+            {
+                // Set the review date to empty
+                $month_submitted = "";
+            }
+            else
+            {
+                $month_submitted = date('Y F', strtotime($risk['submission_date']));
+            }
+
+            if($group_name == "month_submitted"){
+                if (!$download_group_value || stripos($download_group_value, "0000-00-00") !== false)
+                {
+                    // Set the review date to empty
+                    $download_group_value = "";
+                }
+                else
+                {
+                    $download_group_value = date('Y F', strtotime($download_group_value)); 
+                }
+            }else{
+                switch($group_name){
+                    case "risk_level":
+                        $download_group_value = get_risk_level_name($download_group_value);
+                    break;
+                }
+            }
+            if($option == "download" || $option == "html"){
+                $initial_group_value = trim(${$group_name} ?? '');
+                
+                // Check comma splitted group
+                if($group_name == "team" || $group_name == "technology")
+                {
+                    if($initial_group_value)
+                    {
+                        $group_values_including_empty = array_map("trim", explode(",", $initial_group_value));
+                        $group_values = [];
+                        foreach($group_values_including_empty as $val){
+                            // Remove empty values from group_values
+                            if($val) $group_values[] = $val;
+                        }
+                    }
+                    else
+                    {
+                        $group_values = [""];
+                    }
+                }
+                else
+                {
+                    $group_values = [$initial_group_value];
+                }
+            } else {
+                $group_values = [$download_group_value];
+            }
+
+            foreach($group_values as $group_value)
+            {
+                // If the selected group value is empty
+                if ($group_value == "")
+                {
+                    // Current group is Unassigned
+                    $group_value = $lang['Unassigned'];
+                }
+
+                if (!in_array($group_value, $displayed_group_names))
+                {
+                    $displayed_group_names[] = $group_value;
+                    if($option == "download" || $option == "html"){
+                        switch($group_name){
+                            case "risk_level":
+                                $group_value_from_db = $risk['calculated_risk'];
+                            break;
+                            case "month_submitted":
+                                $group_value_from_db = $risk['submission_date'];
+                            break;
+                            // Comma splitted group
+                            case "team";
+                            case "technology";
+                                $group_value_from_db = get_value_by_name($group_name, $group_value);
+                            break;
+                            default:
+                                $group_value_from_db = $risk[$group_name];
+                            break;
+                        }
+                        if(!$group_value_from_db) $group_value_from_db = "";
+                        $display_group_name = $group_value;
+                    } else {
+                        $group_value_from_db = $download_group_value;
+                        $display_group_name = get_group_name_from_value($group, $group_value);
+                    }
+                    $xlsRows[] = $display_group_name;
+                    $xlsRows[] = $xlsHeader;
+                    $risks_by_group = get_risks_only_dynamic($need_total_count=false, $filter_status, $sort, $group, $column_filters, $rowCount, 0, -1, $group_value_from_db, "", [], $order_column, $order_dir, force_user_id: $force_user_id);
+                    // For each risk in the risks array
+                    foreach ($risks_by_group as $risk) {
+                        $xlsRows[] = get_risk_columns_for_download($risk, $risk_levels, $review_levels, $selected_columns);
+                    }
+                }
+            }
+        }
+    }
+
+    return [$xlsHeader, $xlsRows, $grouped];
+
+}
+
+/*****************************************************
+ * FUNCTION: GET NON-ADMIN USERS FOR TEAM MANAGEMENT *
+ *****************************************************/
+function get_non_admin_users_for_team_management($team_id = 0) {
+    $team_id = (int)$team_id;
+
+    if (organizational_hierarchy_extra()) {
+        if (!$team_id) {
+            return [];
+        }
+
+        $db = db_open();
+
+        $stmt = $db->prepare("
+            SELECT
+                u.`value`,
+                u.`username`
+            FROM
+                `user` u
+            WHERE
+                u.`admin` = 0
+                AND u.`selected_business_unit` IN (
+                    SELECT
+                        `business_unit_id`
+                    FROM
+                        `business_unit_to_team`
+                    WHERE
+                        `team_id` = :team_id
+                )
+            ORDER BY
+                u.`username` ASC
+        ");
+        $stmt->bindParam(':team_id', $team_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        db_close($db);
+
+        return $users;
+    }
+
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT
+            `value`,
+            `username`
+        FROM
+            `user`
+        WHERE
+            `admin` = 0
+        ORDER BY
+            `username` ASC;
+    ");
+    $stmt->execute();
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    db_close($db);
+
+    return $users;
+}
+
+/**********************************************
+ * FUNCTION: UPDATE TEAM MEMBERSHIP FOR USERS *
+ **********************************************/
+function update_team_membership_for_users($team_id, $selected_user_ids, $all_user_ids) {
+    foreach ($all_user_ids as $user_id) {
+        $current_teams = get_user_teams($user_id);
+        if (!$current_teams) {
+            $current_teams = [];
+        }
+
+        $is_team_member = in_array($team_id, $current_teams);
+        $should_be_member = in_array($user_id, $selected_user_ids);
+
+        if ($is_team_member === $should_be_member) {
+            continue;
+        }
+
+        if ($should_be_member) {
+            $updated_teams = array_unique(array_merge($current_teams, [$team_id]));
+        } else {
+            $updated_teams = array_values(array_diff($current_teams, [$team_id]));
+        }
+
+        set_teams_of_user($user_id, $updated_teams);
+    }
 }
 
 ?>

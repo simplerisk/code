@@ -5,48 +5,7 @@
 
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(permissions: ['check_admin' => true]);
-
-$customAddFunction_team = function($name) {
-    // Insert a new team
-    $teamId = add_name("team", $name);
-
-    // Set all teams to admistrator users
-    set_all_teams_to_administrators();
-
-    // If the Organizational Hierarchy extra is turned on
-    // the new teams should be assigned to the default business unit
-    if (organizational_hierarchy_extra()) {
-        // Include the Organizational Hierarchy Extra
-        require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
-
-        assign_teams_to_default_business_unit();
-    }
-    
-    return $teamId;
-};
-
-$customDeleteFunction_team = function($value) {
-    // If team separation is enabled
-    if (team_separation_extra()) {
-        // Check if a risk is assigned to the team
-        $delete = empty(get_risks_by_team($value));
-    } else {
-        $delete = true;
-    }
-
-    // If it is ok to delete the team
-    if ($delete) {
-        $delete_result = delete_value("team", $value);
-        cleanup_after_delete("team");
-        return $delete_result;
-    } else {
-        global $lang;
-        // Display an alert
-        set_alert(true, "bad", $lang['CantDeleteTeamItsInUseByARisk']);
-        return false;
-    }
-};
+render_header_and_sidebar(['CUSTOM:common.js'], permissions: ['check_admin' => true]);
 
 $customDeleteFunction_technology = function($value) {
     $delete_result = delete_value("technology", $value);
@@ -164,12 +123,6 @@ $tableConfig = array(
     'category' => array(
         'headerKey' => 'Category',
         'lengthLimit' => 50,
-    ),
-    'team' => array(
-        'headerKey' => 'Team',
-        'lengthLimit' => 50,
-        'customAddFunction' => $customAddFunction_team,
-        'customDeleteFunction' => $customDeleteFunction_team,
     ),
     'technology' => array(
         'headerKey' => 'Technology',
@@ -421,7 +374,7 @@ if (isset($_POST['add_remove_values_input']) && ($_POST['add_remove_values_input
             echo '
                                     </div>
                                     <div class="col-md-1">
-                                        <input type="submit" value="' . $text_delete . '" data-action="delete" class="btn btn-submit form-control"/>
+                                        <input type="submit" value="' . $text_delete . '" data-action="delete" class="btn btn-primary form-control"/>
                                     </div>
                                 </div>
                             </div>
@@ -472,7 +425,16 @@ if (isset($_POST['add_remove_values_input']) && ($_POST['add_remove_values_input
                     break;
             }
             if (tableName && action) {
-                $('[name="add_remove_values"]').submit();
+                // When deleting, show a confirmation dialog before submitting the form
+                if (action == "delete") {
+                    // Display a confirmation dialog
+                    confirm("<?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteSelction']); ?>", () => {
+                        $('[name="add_remove_values"]').submit();
+                    });
+                // For add and update actions, submit the form directly without confirmation
+                } else {
+                    $('[name="add_remove_values"]').submit();
+                }
             }
         }
     }

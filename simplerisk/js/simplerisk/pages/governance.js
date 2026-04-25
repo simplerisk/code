@@ -155,6 +155,8 @@ $.fn.extend({
                 filterRow.find('input[name="document_type"]').attr('placeholder', _lang['DocumentType']);
                 filterRow.find('input[name="framework_names"]').attr('placeholder', _lang['ControlFrameworks']);
                 filterRow.find('input[name="control_names"]').attr('placeholder', _lang['Controls']);
+                filterRow.find('input[name="submitted_by"]').attr('placeholder', _lang['Submitter']);
+                filterRow.find('input[name="updated_by"]').attr('placeholder', _lang['UpdatedBy']);
                 filterRow.find('input[name="creation_date"]').attr('placeholder', _lang['CreationDate']);
                 filterRow.find('input[name="approval_date"]').attr('placeholder', _lang['ApprovalDate']);
                 filterRow.find('input[name="status"]').attr('placeholder', _lang['Status']);
@@ -379,6 +381,22 @@ jQuery(document).ready(function($){
             $('.delete-id', modal).val(control_id);
             $(modal).modal('show');
           });
+
+        $(document).on('click', '#delete-controls-btn', function(event) {
+            event.preventDefault();
+            let control_ids = [];
+
+            // Get the selected control ids from the datatable checkboxes
+            $('#active-controls .checkbox-in-div input[type=checkbox]:checked').each(function() {
+                control_ids.push($(this).val());
+            });
+
+            var modal = $('#controls--delete');
+            // Set the control ids to a hidden input in the modal so that it can be used when confirming the deletion
+            $('.delete-ids', modal).val(control_ids.join(','));
+
+            $(modal).modal('show');
+        });
 
           // Event handler when clicking
           // the edit control button on Governance > Define Framework Controls page and 
@@ -673,6 +691,11 @@ jQuery(document).ready(function($){
         });
 
         controlDatatable.on('draw', function (e, settings) {
+            // Uncheck the select all checkbox and set it to not indeterminate
+            $('#select-all-controls').prop('checked', false);
+            $('#select-all-controls').prop('indeterminate', false);
+            
+            // Disable the delete selected controls button
             $('#delete-controls-btn').attr('disabled', true);
         });
     }
@@ -781,8 +804,11 @@ jQuery(document).ready(function($){
 function rebuild_filters()
 {
     $.ajax({
-        type: "GET",
-        url: BASE_URL + "/api/governance/rebuild_control_filters?control_framework=" + $("#filter_by_control_framework").val(),
+        type: "POST",
+        url: BASE_URL + "/api/governance/rebuild_control_filters",
+        data: {
+            control_framework: $("#filter_by_control_framework").val()
+        },
         success: function(result){
             var data = result.data;
             rebuild_filter($("#filter_by_control_class"),data.classList);
@@ -1228,7 +1254,7 @@ function setupAssetsAssetGroupsWidget(select_tag, control_id, control_maturity) 
                     // Framework header row
                     const $headerRow = $(`
                         <tr class="fw-bold table-primary framework-header">
-                            <td colspan="3">${frameworkName}</td>
+                            <td colspan="3">${escapeHtml(frameworkName)}</td>
                         </tr>
                     `);
                     $tbody.append($headerRow);
@@ -1236,9 +1262,9 @@ function setupAssetsAssetGroupsWidget(select_tag, control_id, control_maturity) 
                     rows.forEach(row => {
                         const $dataRow = $(`
                             <tr class="framework-row">
-                                <td>${row.framework_name || ''}</td>
-                                <td>${row.reference_name || ''}</td>
-                                <td>${row.reference_text || ''}</td>
+                                <td>${escapeHtml(row.framework_name || '')}</td>
+                                <td>${escapeHtml(row.reference_name || '')}</td>
+                                <td>${escapeHtml(row.reference_text || '')}</td>
                             </tr>
                         `);
                         $tbody.append($dataRow);

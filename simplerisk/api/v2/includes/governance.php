@@ -93,6 +93,34 @@ function api_v2_governance_frameworks_treegrid()
     }
 }
 
+/*********************************************************
+ * FUNCTION: API V2 GET MITIGATION CONTROL INFO          *
+ * Permission-gated wrapper around the shared            *
+ * get_mitigation_control_info() helper. The permission  *
+ * check lives here at the v2 route level because the    *
+ * shared function is also invoked from the v1 API.      *
+ *                                                       *
+ * Access requires governance OR riskmanagement:         *
+ * - riskmanagement users need control details to make   *
+ *   informed selections on the mitigation planning tab  *
+ * - governance users need them for the Risks & Controls *
+ *   report                                              *
+ * - users with neither have no legitimate need for this *
+ *   data                                                *
+ *********************************************************/
+function api_v2_get_mitigation_control_info()
+{
+    // Allow access if the user has governance or riskmanagement permission
+    if (!check_permission("governance") && !check_permission("riskmanagement"))
+    {
+        api_v2_json_result(403, "FORBIDDEN: The user does not have the required permission to perform this action.", null);
+        exit;
+    }
+
+    // Delegate to the shared implementation
+    get_mitigation_control_info();
+}
+
 /****************************************
  * FUNCTION: API V2 GOVERNANCE CONTROLS *
  ****************************************/
@@ -426,7 +454,7 @@ function api_v2_governance_documents_associations()
  ************************************************/
 function api_v2_governance_documents_significant_terms()
 {
-    write_debug_log("FUNCTION: API V2 GOVERNANCE DOCUMENTS SIGNIFICANT TERMS");
+    write_debug_log("FUNCTION: API V2 GOVERNANCE DOCUMENTS SIGNIFICANT TERMS", "debug");
 
     // Check that this user has the ability to view risks
     api_v2_check_permission("governance");
@@ -495,11 +523,11 @@ function api_v2_governance_documents_significant_terms()
 
                         // Extract the text from the Word document
                         $document_text = extract_text_content($phpWord);
-                        write_debug_log("Extracted Text: " . $document_text);
+                        write_debug_log("Extracted text: " . strlen((string)$document_text) . " bytes.", "debug");
 
                         // Get the significant terms for the document
                         $significant_terms = extractSignificantTerms($document_text);
-                        write_debug_log("Significant Terms: " . json_encode($significant_terms));
+                        write_debug_log("Significant Terms: " . json_encode($significant_terms), "debug");
 
                         // Set the status
                         $status_code = 200;
@@ -513,7 +541,7 @@ function api_v2_governance_documents_significant_terms()
 
                 }
             } catch (\Exception $e) {
-                write_debug_log("Error processing document: " . $e->getMessage());
+                write_debug_log("Error processing document: " . $e->getMessage(), "error");
                 // Return a 500 response
                 $status_code = 500;
                 $status_message = "Error processing document.";
@@ -550,7 +578,7 @@ function api_v2_governance_documents_significant_terms()
  ****************************************/
 function api_v2_governance_keywords()
 {
-    write_debug_log("FUNCTION: API V2 GOVERNANCE KEYWORDS");
+    write_debug_log("FUNCTION: API V2 GOVERNANCE KEYWORDS", "debug");
 
     // Check that this user has the ability to view risks
     api_v2_check_permission("governance");
@@ -598,7 +626,7 @@ function api_v2_governance_keywords()
  *****************************************************/
 function api_v2_governance_documents_to_controls()
 {
-    write_debug_log("FUNCTION: API V2 GOVERNANCE DOCUMENTS TO CONTROLS");
+    write_debug_log("FUNCTION: API V2 GOVERNANCE DOCUMENTS TO CONTROLS", "debug");
 
     // Check that this user has the ability to view risks
     api_v2_check_permission("governance");

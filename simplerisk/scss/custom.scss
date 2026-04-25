@@ -241,6 +241,14 @@ input[type=number]::-webkit-outer-spin-button {
 }
 //**************** MAKE THE LONG TEXT WITHOUT SPACES WRAPPED IN THE TABLE *************//
 
+//**************** ADJUST THE BUTTONS SO THEY ARE PROPERLY ALIGNED  *******************//
+//****************** AND VISUALLY CONSISTENT WITH THE UI BEGIN ************************//
+.btn-container {
+	white-space: nowrap;
+}
+//**************** ADJUST THE BUTTONS SO THEY ARE PROPERLY ALIGNED  *******************//
+//****************** AND VISUALLY CONSISTENT WITH THE UI END **************************//
+
 // FOR MAKING MODALS WITH THE DIRECT CHILD 'form' OF '.modal-content' SCROLLABLE AND CENTERED
 .modal-content>form {
 	position: relative;
@@ -631,27 +639,48 @@ input#dollarsign {
 
 .select-list-wrapper {
 	display: flex;
-	justify-content: space-between;
 
 	.select-list-available,
 	.select-list-selected {
-		width: 40%;
 		display: flex;
 		flex-direction: column;
 
 		select[multiple=multiple] {
 			flex-grow: 1;
+			padding: 0;
+
+            option {
+                padding: 4px 10px 4px 10px;
+            }
+
+            option:hover {
+                background: #EEEEEE;
+            }
 		}
 	}
 
 	.select-list-arrows {
-		width: 10%;
 		margin-top: 20px;
 
 		input {
 			padding: 3px;
 			width: 30px;
 			margin: 2px;
+		}
+	}
+}
+
+.modal-content {
+	.select-list-wrapper {
+		justify-content: space-between;
+
+		.select-list-available,
+		.select-list-selected {
+			width: 40%;
+		}
+
+		.select-list-arrows {
+			width: 10%;
 		}
 	}
 }
@@ -1099,19 +1128,6 @@ a.open-in-new-tab {
 .tox {
 	.tox-edit-area::before {
 		border-radius: 0!important;
-	}
-}
-
-// COMPLIANCE / PAST AUDITS PAGE
-#framework-controls {
-	td.sorting_1 {
-		//remove the black unnecessary border-bottom, border-left, border-right
-		border: none;
-
-		//add border-top since it was none
-		td {
-			border-top: 1px solid var(--bs-table-border-color);
-		}
 	}
 }
 

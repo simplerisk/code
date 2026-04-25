@@ -35,7 +35,11 @@ abstract class Coordinate
     public static function coordinateFromString(string $cellAddress): array
     {
         if (preg_match(self::A1_COORDINATE_REGEX, $cellAddress, $matches)) {
-            return [$matches['col'], $matches['row']];
+            $row = (int) ltrim($matches['row'], '$');
+            // reluctantly allow row 0 due to regression problems
+            if (/*$row > 0 &&*/ $row <= AddressRange::MAX_ROW) {
+                return [$matches['col'], $matches['row']];
+            }
         } elseif (self::coordinateIsRange($cellAddress)) {
             throw new Exception('Cell coordinate string can not be a range of cells');
         } elseif ($cellAddress == '') {
@@ -136,7 +140,8 @@ abstract class Coordinate
     }
 
     /**
-     * Split range into coordinate strings.
+     * Split range into coordinate strings, using comma for union
+     * and ignoring intersection (space).
      *
      * @param string $range e.g. 'B4:D9' or 'B4:D9,H2:O11' or 'B4'
      *
@@ -161,9 +166,31 @@ abstract class Coordinate
     }
 
     /**
+     * Split range into coordinate strings, resolving unions and intersections.
+     *
+     * @param string $range e.g. 'B4:D9' or 'B4:D9,H2:O11' or 'B4'
+     * @param bool $unionIsComma true=comma is union, space is intersection
+     *                           false=space is union, comma is intersection
+     *
+     * @return array<array<string>> Array containing one or more arrays containing one or two coordinate strings
+     *                                e.g. ['B4','D9'] or [['B4','D9'], ['H2','O11']]
+     *                                        or ['B4']
+     */
+    public static function allRanges(string $range, bool $unionIsComma = true): array
+    {
+        if (!$unionIsComma) {
+            $range = str_replace([',', ' ', "\0"], ["\0", ',', ' '], $range);
+        }
+
+        return self::splitRange(
+            self::resolveUnionAndIntersection($range)
+        );
+    }
+
+    /**
      * Build range from coordinate strings.
      *
-     * @param mixed[] $range Array containing one or more arrays containing one or two coordinate strings
+     * @param array<array<string>> $range Array containing one or more arrays containing one or two coordinate strings
      *
      * @return string String representation of $pRange
      */
@@ -183,6 +210,7 @@ abstract class Coordinate
             $range[$i] = implode(':', $range[$i]);
         }
 
+        /** @var array<string> $range */
         return implode(',', $range);
     }
 
@@ -293,7 +321,7 @@ abstract class Coordinate
 
         $worksheet = $matches['worksheet'];
         if ($worksheet !== '') {
-            if (substr($worksheet, 0, 1) === "'" && substr($worksheet, -1, 1) === "'") {
+            if (str_starts_with($worksheet, "'") && str_ends_with($worksheet, "'")) {
                 $worksheet = substr($worksheet, 1, -1);
             }
             $data['worksheet'] = strtolower($worksheet);
@@ -378,7 +406,7 @@ abstract class Coordinate
             return $indexCache[$columnAddress];
         }
         //    It's surprising how costly the strtoupper() and ord() calls actually are, so we use a lookup array
-        //        rather than use ord() and make it case insensitive to get rid of the strtoupper() as well.
+        //        rather than use ord() and make it case-insensitive to get rid of the strtoupper() as well.
         //        Because it's a static, there's no significant memory overhead either.
         /** @var array<string, int> */
         static $columnLookup = [
@@ -397,22 +425,28 @@ abstract class Coordinate
                 $indexCache[$columnAddress] = $columnLookup[$columnAddress];
 
                 return $indexCache[$columnAddress];
-            } elseif (!isset($columnAddress[2])) {
+            }
+            if (!isset($columnAddress[2])) {
                 $indexCache[$columnAddress] = $columnLookup[$columnAddress[0]] * 26
                     + $columnLookup[$columnAddress[1]];
 
                 return $indexCache[$columnAddress];
-            } elseif (!isset($columnAddress[3])) {
-                $indexCache[$columnAddress] = $columnLookup[$columnAddress[0]] * 676
+            }
+            if (!isset($columnAddress[3])) {
+                $temp = $columnLookup[$columnAddress[0]] * 676
                     + $columnLookup[$columnAddress[1]] * 26
                     + $columnLookup[$columnAddress[2]];
 
-                return $indexCache[$columnAddress];
+                if ($temp <= AddressRange::MAX_COLUMN_INT) {
+                    $indexCache[$columnAddress] = $temp;
+
+                    return $temp;
+                }
             }
         }
 
         throw new Exception(
-            'Column string index can not be ' . ((isset($columnAddress[0])) ? 'longer than 3 characters' : 'empty')
+            'Column string index can not be ' . ((isset($columnAddress[0])) ? ('beyond ' . AddressRange::MAX_COLUMN) : 'empty')
         );
     }
 
@@ -423,11 +457,19 @@ abstract class Coordinate
      *
      * @param int|numeric-string $columnIndex Column index (A = 1)
      */
-    public static function stringFromColumnIndex(int|string $columnIndex): string
+    public static function stringFromColumnIndex(int|string $columnIndex, bool $tolerateZero = false): string
     {
         /** @var string[] */
         static $indexCache = [];
+        $columnIndex2 = (int) $columnIndex;
+        if ($columnIndex2 === 0 && $tolerateZero) {
+            return '';
+        }
+        if ($columnIndex2 < 1 || $columnIndex2 > AddressRange::MAX_COLUMN_INT) {
+            throw new Exception("Invalid column index $columnIndex");
+        }
 
+        $columnIndex = $columnIndex2;
         if (!isset($indexCache[$columnIndex])) {
             $indexValue = $columnIndex;
             $base26 = '';
@@ -493,7 +535,7 @@ abstract class Coordinate
 
     /**
      * @param mixed[] $operators
-     * @param mixed[][] $cells
+     * @param string[][] $cells
      *
      * @return mixed[]
      */
@@ -531,7 +573,7 @@ abstract class Coordinate
             $row = 0;
             sscanf($coordinate, '%[A-Z]%d', $column, $row);
             /** @var int $row */
-            $key = (--$row * 16384) + self::columnIndexFromString((string) $column);
+            $key = (--$row * AddressRange::MAX_COLUMN_INT) + self::columnIndexFromString((string) $column);
             $sortKeys[$key] = $coordinate;
         }
         ksort($sortKeys);
@@ -648,7 +690,7 @@ abstract class Coordinate
      *
      * @param array<string, mixed> $coordinateCollection associative array mapping coordinates to values
      *
-     * @return array<string, mixed> associative array mapping coordinate ranges to valuea
+     * @return array<string, mixed> associative array mapping coordinate ranges to values
      */
     public static function mergeRangesInCollection(array $coordinateCollection): array
     {

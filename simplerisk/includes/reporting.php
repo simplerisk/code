@@ -49,35 +49,32 @@ function suggested_colors_array() {
  ********************************************************************************/
 function create_chartjs_pie_code($title = "", $element_id = "", $array = [], $width = null, $height = null) {
 
-    // Escape the title for javascript display
-    $title = str_replace("'", "\'", $title);
+    // Encode for safe embedding — json_encode handles all special characters
+    $title_json = json_encode((string)$title);
+    $title_html = htmlspecialchars((string)$title, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
     // If the array is empty
     if (empty($array)) {
 
-        $labels = [];
-        $data = [];
+        $labels_raw = [];
+        $data_raw   = [];
 
     // Otherwise
     } else {
 
-        // Create the individual arrays
+        // Collect raw values — json_encode handles all escaping
         foreach ($array as $row) {
-
-            // Replace any single quote characters in the label
-            $label = str_replace("'", "\'", $row['label']);
-            $labels[] = $label;
-            $data[] = js_string_escape($row['data']);
-
+            $labels_raw[] = $row['label'];
+            $data_raw[]   = $row['data'];
         }
     }
 
     // If the labels and data are not empty
-    if (!empty($labels) && !empty($data)) {
+    if (!empty($labels_raw) && !empty($data_raw)) {
 
-        // Convert the values to CSV strings
-        $labels = "'" . implode("','", $labels) . "'";
-        $data = "'" . implode("','", $data) . "'";
+        // Encode as JSON arrays for safe JS embedding
+        $labels_json = json_encode(array_values($labels_raw));
+        $data_json   = json_encode(array_values($data_raw));
 
         // Get the background color value
         $backgroundColor = get_background_colors($array);
@@ -107,9 +104,9 @@ function create_chartjs_pie_code($title = "", $element_id = "", $array = [], $wi
             <script>
                 $(function() {
                     data = {
-                        labels: [{$labels}],
+                        labels: {$labels_json},
                         datasets: [{
-                            data: [{$data}],
+                            data: {$data_json},
                             {$backgroundColor}
                         }],
                     };
@@ -120,7 +117,7 @@ function create_chartjs_pie_code($title = "", $element_id = "", $array = [], $wi
                             plugins: {
                                 title: {
                                     display: true,
-                                    text: '{$title}',
+                                    text: {$title_json},
                                 },
                             },
                         },
@@ -129,7 +126,17 @@ function create_chartjs_pie_code($title = "", $element_id = "", $array = [], $wi
                     ctx = document.getElementById('{$element_id}').getContext('2d');
     
                     {$element_id}_chart = new Chart(ctx, config);
-                    
+
+                    const unassigned_index = data.labels.indexOf('Unassigned');
+
+                    if (unassigned_index > -1) {
+
+                        // Set 'Unassigned' slice color to gray
+                        {$element_id}_chart.data.datasets[0].backgroundColor[unassigned_index] = '#9E9E9E';
+                        {$element_id}_chart.update();
+
+                    }
+
                     // Enable download of chart as an image
                     document.getElementById('{$element_id}_save').addEventListener('click',function(){
                         var {$element_id}_link = document.createElement('a');
@@ -154,7 +161,7 @@ function create_chartjs_pie_code($title = "", $element_id = "", $array = [], $wi
     } else {
         echo "
             <div class='d-flex flex-column text-center'>
-                <strong class='mb-3'>{$title}</strong>
+                <strong class='mb-3'>{$title_html}</strong>
                 <strong>No Data Available</strong>
             </div>
         ";
@@ -175,8 +182,9 @@ function create_chartjs_pie_code($title = "", $element_id = "", $array = [], $wi
  ********************************************************************************/
 function create_chartjs_multi_series_pie_code($title = "", $element_id = "", $dataset_labels = [], $array = [], $width = null, $height = null)
 {
-    // Escape the title for javascript display
-    $title = js_string_escape($title);
+    // Encode for safe JS/HTML embedding
+    $title_json = json_encode((string)$title);
+    $title_html = htmlspecialchars((string)$title, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
     // Set the width
     if (is_null($width))
@@ -221,23 +229,23 @@ function create_chartjs_multi_series_pie_code($title = "", $element_id = "", $da
                 // Create the individual arrays for the dataset
                 foreach ($dataset as $row)
                 {
-                    $slice_labels[] = js_string_escape($row['label']);
-                    $data[] = js_string_escape($row['data']);
+                    $slice_labels[] = $row['label'];
+                    $data[] = $row['data'];
                     $colors[] = $row['color'];
                 }
 
                 // If the data is not empty
                 if (!empty($data))
                 {
-                    // Convert the values to CSV strings
-                    $slice_labels = "'" . implode("','", $slice_labels) . "'";
-                    $data = "'" . implode("','", $data) . "'";
-                    $color = "'" . implode("','", $colors) . "'";
+                    // Encode as JSON arrays for safe JS embedding
+                    $slice_labels_json = json_encode(array_values($slice_labels));
+                    $data_json         = json_encode(array_values($data));
+                    $color_json        = json_encode(array_values($colors));
 
                     // Add the data and colors
                     $dataset_json = "{\n";
-                    $dataset_json .= "data: [{$data}],\n";
-                    $dataset_json .= "backgroundColor: [{$color}],\n";
+                    $dataset_json .= "data: {$data_json},\n";
+                    $dataset_json .= "backgroundColor: {$color_json},\n";
                     $dataset_json .= "}\n";
                 }
 
@@ -248,14 +256,14 @@ function create_chartjs_multi_series_pie_code($title = "", $element_id = "", $da
                 if ($index === "inside")
                 {
                     echo "
-                    var insidePieLabels = [{$slice_labels}];
+                    var insidePieLabels = {$slice_labels_json};
                     ";
                 }
                 // If this is the outside pie
                 else if ($index === "outside")
                 {
                     echo "
-                    var outsidePieLabels = [{$slice_labels}];
+                    var outsidePieLabels = {$slice_labels_json};
                     ";
                 }
             }
@@ -280,7 +288,7 @@ function create_chartjs_multi_series_pie_code($title = "", $element_id = "", $da
                             plugins: {
                                 title: {
                                     display: true,
-                                    text: '{$title}',
+                                    text: {$title_json},
                                 },
                                 tooltip: {
                                     callbacks: {
@@ -322,7 +330,7 @@ function create_chartjs_multi_series_pie_code($title = "", $element_id = "", $da
     {
         echo "
             <div class='d-flex flex-column text-center'>
-                <strong class='mb-3'>{$title}</strong>
+                <strong class='mb-3'>{$title_html}</strong>
                 <strong>No Data Available</strong>
             </div>
         ";
@@ -343,8 +351,10 @@ function create_chartjs_multi_series_pie_code($title = "", $element_id = "", $da
  ********************************************************************************/
 function create_chartjs_line_code($title = "", $element_id = "", $labels = [], $datasets = [], $tooltip = "", $x_axis_title = null, $y_axis_title = null, $y_axis_max = null, $width = null, $height = null) {
 
-    // Escape the title for javascript display
-    $title = str_replace("'", "\'", $title);
+    // Encode for safe JS/HTML embedding
+    $title_json       = json_encode((string)$title);
+    $title_html       = htmlspecialchars((string)$title, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $x_axis_title_json = json_encode((string)$x_axis_title);
 
     // If the labels and datasets are not empty
     if (!empty($labels) && !empty($datasets)) {
@@ -374,13 +384,13 @@ function create_chartjs_line_code($title = "", $element_id = "", $labels = [], $
                 $(function() {
         ";
 
-        // Convert the labels to a CSV string
-        $labels = "'" . implode("','", $labels) . "'";
+        // Encode labels as a JSON array for safe JS embedding
+        $labels_json = json_encode(array_values($labels));
 
         // Begin the data
         echo "
                     data = {
-                        labels: [{$labels}],
+                        labels: {$labels_json},
                         datasets: [
         ";
 
@@ -388,7 +398,7 @@ function create_chartjs_line_code($title = "", $element_id = "", $labels = [], $
         foreach ($datasets as $dataset) {
 
             // Get the values for the dataset
-            $label = (isset($dataset['label']) ? "label: '{$dataset['label']}'," : "");
+            $label = (isset($dataset['label']) ? "label: " . json_encode((string)$dataset['label']) . "," : "");
             $data = implode(",", $dataset['data']);
             $display = (isset($dataset['display']) ? "display: {$dataset['display']}," : "");
             $fill = (isset($dataset['fill']) ? "fill: {$dataset['fill']}," : "");
@@ -432,7 +442,7 @@ function create_chartjs_line_code($title = "", $element_id = "", $labels = [], $
                             plugins: {
                                 title: {
                                     display: true,
-                                    text: '{$title}',
+                                    text: {$title_json},
                                 },
                                 {$tooltip}
                             },
@@ -445,7 +455,7 @@ function create_chartjs_line_code($title = "", $element_id = "", $labels = [], $
                                     display: true,
                                     title: {
                                         display: true,
-                                        text: '{$x_axis_title}'
+                                        text: {$x_axis_title_json}
                                     }
                                 },
                                 {$y_axis}
@@ -474,7 +484,7 @@ function create_chartjs_line_code($title = "", $element_id = "", $labels = [], $
     } else {
         echo "
             <div class='d-flex flex-column text-center'>
-                <strong class='mb-3'>{$title}</strong>
+                <strong class='mb-3'>{$title_html}</strong>
                 <strong>No Data Available</strong>
             </div>
         ";
@@ -493,13 +503,19 @@ function create_chartjs_line_code($title = "", $element_id = "", $labels = [], $
  * $width - The width of the created canvas                                     *
  * $height - The height of the created canvas                                   *
  ********************************************************************************/
-function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $datasets = [], $x_axis_title = null, $y_axis_title = null, $width = null, $height = null)
+function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $datasets = [], $x_axis_title = null, $y_axis_title = null, $width = null, $height = null, $stacked = false)
 {
 
     global $lang, $escaper;
 
-    // Escape the title for javascript display
-    $title = str_replace("'", "\'", $title);
+    // Encode for safe JS/HTML embedding
+    $title_json       = json_encode((string)$title);
+    $title_html       = htmlspecialchars((string)$title, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $x_axis_title_json = json_encode((string)$x_axis_title);
+    $y_axis_title_json = json_encode((string)$y_axis_title);
+
+    $x_stacked = $stacked ? "\n stacked: true," : "";
+    $y_stacked = $stacked ? "\n stacked: true," : "";
 
     // If the labels and datasets are not empty
     if (!empty($labels) && !empty($datasets))
@@ -519,23 +535,21 @@ function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $d
         else $height = "height: {$height};";
 
         echo "
-            <div style='{$width}{$height}'>
-                <canvas id='{$element_id}'></canvas>
-                <div class='d-flex justify-content-end align-items-center'>
-                    <i class='far fa-save' id='{$element_id}_save'></i>
-                </div>
+            <canvas id='{$element_id}'></canvas>
+            <div class='save_as_image'>
+                <i class='far fa-save' id='{$element_id}_save'></i>
             </div>
             <script>
                 $(function() {
         ";
 
-        // Convert the labels to a CSV string
-        $labels = "'" . implode("','", $labels) . "'";
+        // Encode labels as a JSON array for safe JS embedding
+        $labels_json = json_encode(array_values($labels));
 
         // Begin the data
         echo "
                     data = {
-                        labels: [{$labels}],
+                        labels: {$labels_json},
                         datasets: [
         ";
 
@@ -543,20 +557,24 @@ function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $d
         foreach ($datasets as $dataset)
         {
             // Get the values for the dataset
-            $label = $dataset['label'];
-            $data = implode(",", $dataset['data']);
+            $label_json = json_encode((string)$dataset['label']);
+            $data_json = json_encode(array_values($dataset['data']));
             $backgroundColor = isset($dataset['backgroundColor']) ? $dataset['backgroundColor'] : null;
-
-            echo "
-                            {
-                                label: '{$escaper->escapeJS($label)}',
-                                data: [{$escaper->escapeJS($data)}],
+            $bar_thickness_line = $stacked ? "" : "
                                 barThickness: 5,
             ";
 
+            echo "
+                            {
+                                label: {$label_json},
+                                data: {$data_json},
+                                {$bar_thickness_line}
+            ";
+
             if ($backgroundColor) {
+                $bg_json = json_encode((string)$backgroundColor);
                 echo "
-                                backgroundColor: '{$escaper->escapeJS($backgroundColor)}',
+                                backgroundColor: {$bg_json},
                 ";
             }
             
@@ -580,7 +598,7 @@ function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $d
                             plugins: {
                                 title: {
                                     display: true,
-                                    text: '{$title}',
+                                    text: {$title_json},
                                 },
                             },
                             interaction: {
@@ -589,17 +607,17 @@ function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $d
                             },
                             scales: {
                                 x: {
-                                    display: true,
+                                    display: true,{$x_stacked}
                                     title: {
                                         display: true,
-                                        text: '{$x_axis_title}'
+                                        text: {$x_axis_title_json}
                                     }
                                 },
                                 y: {
-                                    display: true,
+                                    display: true,{$y_stacked}
                                     title: {
                                         display: true,
-                                        text: '{$y_axis_title}'
+                                        text: {$y_axis_title_json}
                                     },
                                     beginAtZero: true
                                 }
@@ -625,7 +643,7 @@ function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $d
     {
         echo "
             <div class='d-flex flex-column text-center'>
-                <strong class='mb-3'>{$title}</strong>
+                <strong class='mb-3'>{$title_html}</strong>
                 <strong>{$escaper->escapeHtml($lang['NoDataAvailable'])}</strong>
             </div>
         ";
@@ -646,8 +664,9 @@ function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $d
  ********************************************************************************/
 function create_chartjs_radar_code($title = "", $element_id = "", $labels = [], $datasets = [], $width = null, $height = null) {
 
-    // Escape the title for javascript display
-    $title = str_replace("'", "\'", $title);
+    // Encode for safe JS/HTML embedding
+    $title_json = json_encode((string)$title);
+    $title_html = htmlspecialchars((string)$title, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
     // If the labels and datasets are not empty
     if (!empty($labels) && !empty($datasets)) {
@@ -683,33 +702,35 @@ function create_chartjs_radar_code($title = "", $element_id = "", $labels = [], 
                     var maturity_levels = {
         ";
         foreach($control_maturity_levels as $maturity_level) {
+            $ml_value_json = json_encode((int)$maturity_level['value']);
+            $ml_name_json  = json_encode((string)$maturity_level['name']);
             echo "
-                        {$maturity_level['value']}: '{$maturity_level['name']}', 
+                        {$ml_value_json}: {$ml_name_json},
             ";
         }
         echo "
                     }
         ";
 
-        // Convert the labels to a CSV string
-        $labels = "'" . implode("','", $labels) . "'";
+        // Encode labels as a JSON array for safe JS embedding
+        $labels_json = json_encode(array_values($labels));
 
         // Begin the data
         echo "
                     data = {
-                        labels: [{$labels}],
+                        labels: {$labels_json},
                         datasets: [
         ";
 
         // For each of the datasets provided
         foreach ($datasets as $dataset) {
             // Get the values for the dataset
-            $label = $dataset['label'];
+            $label_json = json_encode((string)$dataset['label']);
             $data = implode(",", $dataset['data']);
 
             echo "
                             {
-                                label: '{$label}',
+                                label: {$label_json},
                                 data: [{$data}],
                                 fill: true
                             },
@@ -745,7 +766,7 @@ function create_chartjs_radar_code($title = "", $element_id = "", $labels = [], 
                             plugins: {
                                 title: {
                                     display: true,
-                                    text: '{$title}',
+                                    text: {$title_json},
                                 },
                                 tooltip: {
                                     mode: 'index'
@@ -777,7 +798,7 @@ function create_chartjs_radar_code($title = "", $element_id = "", $labels = [], 
 
         echo "
             <div class='d-flex flex-column text-center'>
-                <strong class='mb-3'>{$title}</strong>
+                <strong class='mb-3'>{$title_html}</strong>
                 <strong>No Data Available</strong>
             </div>
         ";
@@ -799,8 +820,11 @@ function create_chartjs_radar_code($title = "", $element_id = "", $labels = [], 
  ********************************************************************************/
 function create_chartjs_bubble_code($title = "", $element_id = "", $datasets = [], $tooltip = [], $x_axis_title = null, $y_axis_title = null, $width = null, $height = null) {
 
-    // Escape the title for javascript display
-    $title = str_replace("'", "\'", $title);
+    // Encode for safe JS/HTML embedding
+    $title_json        = json_encode((string)$title);
+    $title_html        = htmlspecialchars((string)$title, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $x_axis_title_json = json_encode((string)$x_axis_title);
+    $y_axis_title_json = json_encode((string)$y_axis_title);
 
     // If the datasets are not empty
     if (!empty($datasets)) {
@@ -855,8 +879,8 @@ function create_chartjs_bubble_code($title = "", $element_id = "", $datasets = [
             // Add the ids to the ids array as a string
             $ids[] = "[" . implode(",", $dataset['ids']) . "]";
 
-            // Add the subjects to the subjects array as a string
-            $subjects[] = "['" . implode("','", $dataset['subjects']) . "']";
+            // Encode subjects as a JSON array
+            $subjects[] = json_encode(array_values($dataset['subjects']));
 
             echo "
                             {
@@ -875,33 +899,30 @@ function create_chartjs_bubble_code($title = "", $element_id = "", $datasets = [
                     };
         ";
 
-        // Create javascript variables for the extra data
+        // Create javascript variables for the extra data using json_encode for safe embedding
+        $scores_json   = json_encode(array_values($scores));
+        $colors_json   = json_encode(array_values($colors));
+        $counts_json   = json_encode(array_values($counts));
         echo "
-                    var scores = ['" . implode("','", $scores) . "'];
-                    var colors = ['" . implode("','", $colors) . "'];
-                    var counts = [" . implode(",", $counts) . "];
+                    var scores = {$scores_json};
+                    var colors = {$colors_json};
+                    var counts = {$counts_json};
                     var ids = [" . implode(",", $ids) . "];
                     var subjects = [" . implode(",", $subjects) . "];
         ";
 
         // Get the likelihood options
-        $likelihoods = get_options_from_table("likelihood");
-        foreach ($likelihoods as $key=>$likelihood) {
-            // Escape single quotes
-            $likelihoods[$key] = str_replace("'", "\'", $likelihood['name']);
-        }
+        $likelihood_names = array_column(get_options_from_table("likelihood"), 'name');
+        $likelihoods_json = json_encode(array_values($likelihood_names));
         echo "
-                    var likelihoods = ['" . implode("','", $likelihoods) . "'];
+                    var likelihoods = {$likelihoods_json};
         ";
 
         // Get the impact options
-        $impacts = get_options_from_table("impact");
-        foreach ($impacts as $key=>$impact) {
-            // Escape single quotes
-            $impacts[$key] = str_replace("'", "\'", $impact['name']);
-        }
+        $impact_names  = array_column(get_options_from_table("impact"), 'name');
+        $impacts_json  = json_encode(array_values($impact_names));
         echo "
-                    var impacts = ['" . implode("','", $impacts) . "'];
+                    var impacts = {$impacts_json};
 
                     config = {
                         type: 'bubble',
@@ -911,7 +932,7 @@ function create_chartjs_bubble_code($title = "", $element_id = "", $datasets = [
                             plugins: {
                                 title: {
                                     display: true,
-                                    text: '{$title}',
+                                    text: {$title_json},
                                 },
                                 legend: false,
                                 {$tooltip}
@@ -921,7 +942,7 @@ function create_chartjs_bubble_code($title = "", $element_id = "", $datasets = [
                                     display: true,
                                     title: {
                                         display: true,
-                                        text: '{$x_axis_title}'
+                                        text: {$x_axis_title_json}
                                     },
                                     ticks: {
                                         beginAtZero: true,
@@ -935,7 +956,7 @@ function create_chartjs_bubble_code($title = "", $element_id = "", $datasets = [
                                     display: true,
                                     title: {
                                         display: true,
-                                        text: '{$y_axis_title}'
+                                        text: {$y_axis_title_json}
                                     },
                                     ticks: {
                                         beginAtZero: true,
@@ -986,7 +1007,7 @@ function create_chartjs_bubble_code($title = "", $element_id = "", $datasets = [
     } else {
         echo "
             <div class='d-flex flex-column text-center'>
-                <strong class='mb-3'>{$title}</strong>
+                <strong class='mb-3'>{$title_html}</strong>
                 <strong>No Data Available</strong>
             </div>
         ";
@@ -1117,12 +1138,12 @@ function get_url_switch_code($array) {
         foreach ($array as $row) {
             // If we have a label and url
             if (isset($row['label']) && isset($row['url'])) {
-                // Get the label and url
-                $label = str_replace("'", "\'", $row['label']);
+                // Encode label so the case value matches the JSON-decoded label from the chart
+                $label_json = json_encode((string)$row['label']);
                 $url = $row['url'];
 
                 // Create the case statement
-                $url_switch_code .= "  case '{$label}':\n";
+                $url_switch_code .= "  case {$label_json}:\n";
 
                 // Create the window open statement
                 $url_switch_code .= "    window.open('{$url}', '_self');\n";
@@ -1512,8 +1533,8 @@ function get_risk_trend($title = null, $labels = [], $datasets = []) {
 
     // Create the Chart.js line chart
     $element_id = "risk_trend_chart";
-    $x_axis_title = $escaper->escapeHtml($lang['Date']);
-    $y_axis_title = $escaper->escapeHtml($lang['Count']);
+    $x_axis_title = $lang['Date'];
+    $y_axis_title = $lang['Count'];
     create_chartjs_line_code($title, $element_id, $labels, $datasets, "", $x_axis_title, $y_axis_title);
 
 }
@@ -5005,7 +5026,7 @@ function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName
  *      1: dynamic risk
  *      3: unique column
  **************************************/
-function make_full_risks_sql($query_type, $status, $sort, $group, $column_filters=[], &$group_value_from_db="", &$custom_query="", &$bind_params=[], $having_query="", $orderColumnName="", $orderDir="asc", $risks_by_team=0, $teams=[], $owners=[], $ownersmanagers=[])
+function make_full_risks_sql($query_type, $status, $sort, $group, $column_filters=[], &$group_value_from_db="", &$custom_query="", &$bind_params=[], $having_query="", $orderColumnName="", $orderDir="asc", $risks_by_team=0, $teams=[], $owners=[], $ownersmanagers=[], $force_user_id=null)
 {
     $delimiter = "---";
 
@@ -5187,7 +5208,7 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
         require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
         // Get the separation query string
-        $separation_query = get_user_teams_query("a", false, true);
+        $separation_query = get_user_teams_query("a", false, true, force_user_id: $force_user_id);
 
         $filter_query .= $separation_query;
     }
@@ -5416,7 +5437,7 @@ function get_query_type($need_total_count)
 /******************************************
  * FUNCTION: GET DATA FOR ONLY DYNAMIC RISK
  ******************************************/
-function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $column_filters, &$rowCount, $start=0, $length=10, $group_value_from_db="", $custom_query="", $bind_params=[], $orderColumnName=null, $orderDir="asc", $risks_by_team=0, $teams=[], $owners=[], $ownersmanagers=[])
+function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $column_filters, &$rowCount, $start=0, $length=10, $group_value_from_db="", $custom_query="", $bind_params=[], $orderColumnName=null, $orderDir="asc", $risks_by_team=0, $teams=[], $owners=[], $ownersmanagers=[], $force_user_id=null)
 {
     global $lang;
 
@@ -5620,9 +5641,16 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                     case "category":
                     case "owner":
                     case "manager":
-                    case "submitted_by":
                         $wheres[] = " FIND_IN_SET(a.{$name}, :{$bind_param_name}) ";
                         if($empty_filter) $column_filter .= ",0";
+                        $bind_params[$bind_param_name] = $column_filter;
+                    case "submitted_by":
+                        // We should also display risks whose submitter is deleted when selecting Unassigned
+                        if ($empty_filter) {
+                            $wheres[] = " (FIND_IN_SET(a.{$name}, :{$bind_param_name}) OR i.value IS NULL) ";
+                        } else {
+                            $wheres[] = " FIND_IN_SET(a.{$name}, :{$bind_param_name}) ";
+                        }
                         $bind_params[$bind_param_name] = $column_filter;
                     break;
                     case "reviewer":
@@ -5919,7 +5947,7 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
     }
     $query_type = get_query_type($need_total_count);
     
-    list($query, $group_name, $create_temporary_tables, $drop_temporary_tables) = make_full_risks_sql($query_type, $status, $sort, $group, $column_filters, $group_value_from_db, $custom_query, $bind_params, $having_query, $orderColumnName, $orderDir, $risks_by_team, $teams, $owners, $ownersmanagers);
+    list($query, $group_name, $create_temporary_tables, $drop_temporary_tables) = make_full_risks_sql($query_type, $status, $sort, $group, $column_filters, $group_value_from_db, $custom_query, $bind_params, $having_query, $orderColumnName, $orderDir, $risks_by_team, $teams, $owners, $ownersmanagers, force_user_id: $force_user_id);
 
     $start = (int)$start;
     $length = (int)$length;
@@ -7096,7 +7124,7 @@ function risks_and_control_table($report, $sort_by, $projects, $status) {
                 var height = $(window).scrollTop();
                 
                 $.ajax({
-                    url: BASE_URL + "/api/mitigation_controls/get_mitigation_control_info",
+                    url: BASE_URL + "/api/v2/mitigation_controls/get_mitigation_control_info",
                     data: { "control_id": control_id, "scroll_top": height },
                     success: function(response){
                         $("#control-content-"+risk_id + "-" +control_id).html(response.data["control_info"]);
@@ -7131,6 +7159,7 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $fil
     // Open the database
     $db = db_open();
     $order = "c.calculated_risk DESC";
+    $params = [];
 
     switch($status) {
         case 0: // Open
@@ -7146,8 +7175,8 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $fil
     }
 
     if($projects && is_array($projects)){
-        $where = [0];
-        $where_ids = [];
+        $ids = [];
+        $clauses = [];
         foreach($projects as $val){
             $val = (int)$val;
             if($val)
@@ -7155,24 +7184,31 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $fil
                 // If unassigned option.
                 if($val == -1)
                 {
-                    $where[] = "(b.project_id is NULL OR b.project_id='')";
+                    $clauses[] = "(b.project_id IS NULL OR b.project_id='')";
                 }
                 else
                 {
-                    $where_ids[] = $val;
+                    $ids[] = $val;
                 }
             }
         }
-        $where[] = "FIND_IN_SET(b.project_id, '".implode(",", $where_ids)."')";
-        $where_sql .= " AND (". implode(" OR ", $where) . ")";
+        if ($ids) {
+            $in = build_in_clause($ids, "project", $params);
+            $clauses[] = "b.project_id IN ($in)";
+        }
+        if ($clauses) {
+            $where_sql .= " AND (" . implode(" OR ", $clauses) . ")";
+        } else {
+            $where_sql .= " AND 0 ";
+        }
     }
-    
+
     // Risks by Controls
     if($report == 0)
     {
         $select = "SELECT fc.id gr_id, b.*, c.calculated_risk, fc.short_name control_short_name, fc.long_name control_long_name, fc.id control_id
                 , fc.control_number, fc.mitigation_percent, fc.description control_description, fc.supplemental_guidance, GROUP_CONCAT(DISTINCT f.name) framework_names, cc.name control_class_name
-                , cph.name control_phase_name, cpr.name control_priority_name, cf.name control_family_name, cu.name control_owner_name 
+                , cph.name control_phase_name, cpr.name control_priority_name, cf.name control_family_name, cu.name control_owner_name
                 , GROUP_CONCAT(DISTINCT l.name) location
                 , GROUP_CONCAT(DISTINCT t.name) team
                 , DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open
@@ -7182,8 +7218,8 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $fil
 
         // If control class ID is requested.
         if($control_class && is_array($control_class)){
-            $where = [0];
-            $where_ids = [];
+            $ids = [];
+            $clauses = [];
             foreach($control_class as $val){
                 $val = (int)$val;
                 if($val)
@@ -7191,17 +7227,23 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $fil
                     // If unassigned option.
                     if($val == -1)
                     {
-                        $where[] = "(cc.value is NULL OR cc.value='')";
+                        $clauses[] = "(cc.value IS NULL OR cc.value='')";
                     }
                     else
                     {
-                        $where_ids[] = $val;
+                        $ids[] = $val;
                     }
                 }
             }
-            $where[] = "FIND_IN_SET(cc.value, '".implode(",", $where_ids)."')";
-            
-            $where_sql .= " AND (". implode(" OR ", $where) . ")";
+            if ($ids) {
+                $in = build_in_clause($ids, "control_class", $params);
+                $clauses[] = "cc.value IN ($in)";
+            }
+            if ($clauses) {
+                $where_sql .= " AND (" . implode(" OR ", $clauses) . ")";
+            } else {
+                $where_sql .= " AND 0 ";
+            }
         }
         elseif($control_class == "all"){
             $where_sql .= " AND 1 ";
@@ -7212,8 +7254,8 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $fil
 
         // If control phase ID is requested.
         if($control_phase && is_array($control_phase)){
-            $where = [0];
-            $where_ids = [];
+            $ids = [];
+            $clauses = [];
             foreach($control_phase as $val){
                 $val = (int)$val;
                 if($val)
@@ -7221,18 +7263,25 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $fil
                     // If unassigned option.
                     if($val == -1)
                     {
-                        $where[] = "(cph.value is NULL OR cph.value='')";
+                        $clauses[] = "(cph.value IS NULL OR cph.value='')";
                     }
                     else
                     {
-                        $where_ids[] = $val;
+                        $ids[] = $val;
                     }
                 }
             }
-            $where[] = "FIND_IN_SET(cph.value, '".implode(",", $where_ids)."')";
-            $where_sql .= " AND (". implode(" OR ", $where) . ")";
+            if ($ids) {
+                $in = build_in_clause($ids, "control_phase", $params);
+                $clauses[] = "cph.value IN ($in)";
+            }
+            if ($clauses) {
+                $where_sql .= " AND (" . implode(" OR ", $clauses) . ")";
+            } else {
+                $where_sql .= " AND 0 ";
+            }
         }
-        elseif($control_class == "all"){
+        elseif($control_phase == "all"){
             $where_sql .= " AND 1 ";
         }
         else{
@@ -7241,8 +7290,8 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $fil
 
         // If control priority ID is requested.
         if($control_priority && is_array($control_priority)){
-            $where = [0];
-            $where_ids = [];
+            $ids = [];
+            $clauses = [];
             foreach($control_priority as $val){
                 $val = (int)$val;
                 if($val)
@@ -7250,16 +7299,23 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $fil
                     // If unassigned option.
                     if($val == -1)
                     {
-                        $where[] = "(cpr.value is NULL OR cpr.value='')";
+                        $clauses[] = "(cpr.value IS NULL OR cpr.value='')";
                     }
                     else
                     {
-                        $where_ids[] = $val;
+                        $ids[] = $val;
                     }
                 }
             }
-            $where[] = "FIND_IN_SET(cpr.value, '".implode(",", $where_ids)."')";
-            $where_sql .= " AND (". implode(" OR ", $where) . ")";
+            if ($ids) {
+                $in = build_in_clause($ids, "control_priority", $params);
+                $clauses[] = "cpr.value IN ($in)";
+            }
+            if ($clauses) {
+                $where_sql .= " AND (" . implode(" OR ", $clauses) . ")";
+            } else {
+                $where_sql .= " AND 0 ";
+            }
         }
         elseif($control_priority == "all"){
             $where_sql .= " AND 1 ";
@@ -7267,11 +7323,11 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $fil
         else{
             $where_sql .= " AND 0 ";
         }
-        
+
         // If control family ID is requested.
         if($control_family && is_array($control_family)){
-            $where = [0];
-            $where_ids = [];
+            $ids = [];
+            $clauses = [];
             foreach($control_family as $val){
                 $val = (int)$val;
                 if($val)
@@ -7279,16 +7335,23 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $fil
                     // If unassigned option.
                     if($val == -1)
                     {
-                        $where[] = "(cf.value is NULL OR cf.value='')";
+                        $clauses[] = "(cf.value IS NULL OR cf.value='')";
                     }
                     else
                     {
-                        $where_ids[] = $val;
+                        $ids[] = $val;
                     }
                 }
             }
-            $where[] = "FIND_IN_SET(cf.value, '".implode(",", $where_ids)."')";
-            $where_sql .= " AND (". implode(" OR ", $where) . ")";
+            if ($ids) {
+                $in = build_in_clause($ids, "control_family", $params);
+                $clauses[] = "cf.value IN ($in)";
+            }
+            if ($clauses) {
+                $where_sql .= " AND (" . implode(" OR ", $clauses) . ")";
+            } else {
+                $where_sql .= " AND 0 ";
+            }
         }
         elseif($control_family == "all"){
             $where_sql .= " AND 1 ";
@@ -7296,11 +7359,11 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $fil
         else{
             $where_sql .= " AND 0 ";
         }
-        
+
         // If control owner ID is requested.
         if($control_owner && is_array($control_owner)){
-            $where = [0];
-            $where_or_ids = [];
+            $ids = [];
+            $clauses = [];
             foreach($control_owner as $val){
                 $val = (int)$val;
                 if($val)
@@ -7308,17 +7371,23 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $fil
                     // If unassigned option.
                     if($val == -1)
                     {
-                        $where[] = "(cu.value is NULL OR cu.value='')";
+                        $clauses[] = "(cu.value IS NULL OR cu.value='')";
                     }
                     else
                     {
-                        $where_or_ids[] = $val;
+                        $ids[] = $val;
                     }
                 }
             }
-            $where[] = "FIND_IN_SET(cu.value, '".implode(",", $where_or_ids)."')";
-            
-            $where_sql .= " AND (". implode(" OR ", $where) . ")";
+            if ($ids) {
+                $in = build_in_clause($ids, "control_owner", $params);
+                $clauses[] = "cu.value IN ($in)";
+            }
+            if ($clauses) {
+                $where_sql .= " AND (" . implode(" OR ", $clauses) . ")";
+            } else {
+                $where_sql .= " AND 0 ";
+            }
         }
         elseif($control_owner == "all"){
             $where_sql .= " AND 1 ";
@@ -7326,11 +7395,11 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $fil
         else{
             $where_sql .= " AND 0 ";
         }
-        
+
         // If control framework ID is requested.
         if($control_framework && is_array($control_framework)){
-            $where = [0];
-            $where_or_ids = [];
+            $ids = [];
+            $clauses = [];
             foreach($control_framework as $val){
                 $val = (int)$val;
                 if($val)
@@ -7338,16 +7407,23 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $fil
                     // If unassigned option.
                     if($val == -1)
                     {
-                        $where[] = "m.control_id is NULL";
+                        $clauses[] = "m.control_id IS NULL";
                     }
                     else
                     {
-                        $where_or_ids[] = $val;
+                        $ids[] = $val;
                     }
                 }
             }
-            $where[] = "FIND_IN_SET(m_1.framework, '".implode(",", $where_or_ids)."')";
-            $where_sql .= " AND (". implode(" OR ", $where) . ")";
+            if ($ids) {
+                $in = build_in_clause($ids, "control_framework", $params);
+                $clauses[] = "m_1.framework IN ($in)";
+            }
+            if ($clauses) {
+                $where_sql .= " AND (" . implode(" OR ", $clauses) . ")";
+            } else {
+                $where_sql .= " AND 0 ";
+            }
         }
         elseif($control_framework == "all"){
             $where_sql .= " AND 1 ";
@@ -7396,6 +7472,9 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $fil
     ";
 
     $stmt = $db->prepare($query);
+    foreach ($params as $key => $val) {
+        $stmt->bindValue($key, $val, PDO::PARAM_INT);
+    }
     $stmt->execute();
     // Store the results in the rows array
     $rows = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
@@ -8154,7 +8233,7 @@ function get_connectivity_visualizer() {
                 foreach ($risks as $risk) {
 
                     // Get the risk id and calculated risk score
-                    $risk_id = $risk['id']+1000;
+                    $risk_id = $risk['id'];
                     $calculated_risk = $risk['calculated_risk'];
                     $color = get_risk_color($calculated_risk);
                     echo "
@@ -8162,7 +8241,7 @@ function get_connectivity_visualizer() {
                     ";
                     $array[] = [
                         "id" => $escaper->escapeHtml($risk_id),
-                        "node_id" => "risk_id_" . $escaper->escapeHtml($risk['id']),
+                        "node_id" => "risk_id_" . $escaper->escapeHtml(convert_risk_id_to_id($risk['id'])),
                         "node_name" => "[" . $escaper->escapeHtml($risk_id) . "] " . $escaper->escapeHtml($risk['subject']),
                         "color" => $color,
                     ];
@@ -8505,37 +8584,24 @@ function connectivity_visualizer_associations_risk($id)
     // If a value has been selected
     if (!is_null($id))
     {
-        // Get the associations for the risk
-        $endpoint = "/api/v2/risks/associations?id={$id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        $asset_associations = $associations['assets'];
-        $control_associations = $associations['controls'];
+        $asset_associations = get_asset_connectivity_for_risk($id);
+        $control_associations = get_control_connectivity_for_risk($id);
     }
 
     // For each control association
     foreach ($control_associations as $value)
     {
-        // Get the control id
         $control_id = $value['control_id'];
-
-        // Get the associations for the control
-        $endpoint = "/api/v2/governance/controls/associations?id={$control_id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        $framework_associations = array_merge((array)$framework_associations, (array)$associations['frameworks']);
-        $test_associations = array_merge((array)$test_associations, (array)$associations['tests']);
-        $document_associations = array_merge((array)$document_associations, (array)$associations['documents']);
+        $framework_associations = array_merge($framework_associations, get_framework_connectivity_for_control($control_id));
+        $test_associations = array_merge($test_associations, get_test_connectivity_for_control($control_id));
+        $document_associations = array_merge($document_associations, get_document_connectivity_for_control($control_id));
     }
 
     // For each test association
     foreach ($test_associations as $value)
     {
-        // Get the test id
         $test_id = $value['test_id'];
-
-        // Get the associations for the test result
-        $endpoint = "/api/v2/compliance/tests/associations?id={$test_id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        $test_result_associations = array_merge((array)$test_result_associations, (array)$associations['test_results']);
+        $test_result_associations = array_merge($test_result_associations, get_results_connectivity_for_test($test_id));
     }
 
     // Merge the association arrays
@@ -8568,60 +8634,30 @@ function connectivity_visualizer_associations_asset($id)
     // If a value has been selected
     if (!is_null($id))
     {
-        // Get the associations for the risk
-        $endpoint = "/api/v2/assets/associations?id={$id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        if (!empty($associations['risks'])) {
-            $risk_associations = $associations['risks'];
-        }
+        $risk_associations = get_risk_connectivity_for_asset($id);
     }
 
     // For each risk association
     foreach ($risk_associations as $value)
     {
-        // Get the risk id
         $risk_id = $value['risk_id'];
-
-        // Get the associations for the control
-        $endpoint = "/api/v2/risks/associations?id={$risk_id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        if (!empty($associations['controls'])) {
-            $control_associations = array_merge((array)$control_associations, (array)$associations['controls']);
-        }
+        $control_associations = array_merge($control_associations, get_control_connectivity_for_risk($risk_id));
     }
 
     // For each control association
     foreach ($control_associations as $value)
     {
-        // Get the control id
         $control_id = $value['control_id'];
-
-        // Get the associations for the control
-        $endpoint = "/api/v2/governance/controls/associations?id={$control_id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        if (!empty($associations['frameworks'])) {
-            $framework_associations = array_merge((array)$framework_associations, (array)$associations['frameworks']);
-        }
-        if (!empty($associations['tests'])) {
-            $test_associations = array_merge((array)$test_associations, (array)$associations['tests']);
-        }
-        if (!empty($associations['documents'])) {
-            $document_associations = array_merge((array)$document_associations, (array)$associations['documents']);
-        }
+        $framework_associations = array_merge($framework_associations, get_framework_connectivity_for_control($control_id));
+        $test_associations = array_merge($test_associations, get_test_connectivity_for_control($control_id));
+        $document_associations = array_merge($document_associations, get_document_connectivity_for_control($control_id));
     }
 
     // For each test association
     foreach ($test_associations as $value)
     {
-        // Get the test id
         $test_id = $value['test_id'];
-
-        // Get the associations for the test result
-        $endpoint = "/api/v2/compliance/tests/associations?id={$test_id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        if (!empty($associations['test_results'])) {
-            $test_result_associations = array_merge((array)$test_result_associations, (array)$associations['test_results']);
-        }
+        $test_result_associations = array_merge($test_result_associations, get_results_connectivity_for_test($test_id));
     }
 
     // Merge the association arrays
@@ -8654,54 +8690,30 @@ function connectivity_visualizer_associations_framework($id)
     // If a value has been selected
     if (!is_null($id))
     {
-        // Get the associations for the framework
-        $endpoint = "/api/v2/governance/frameworks/associations?id={$id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        $control_associations = $associations['controls'];
+        $control_associations = get_control_connectivity_for_framework($id);
     }
 
     // For each control association
     foreach ($control_associations as $value)
     {
-        // Get the control id
         $control_id = $value['control_id'];
-
-        // Get the associations for the control
-        $endpoint = "/api/v2/governance/controls/associations?id={$control_id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        if (!empty($associations['tests'])) {
-            $test_associations = array_merge((array)$test_associations, (array)$associations['tests']);
-        }
-        if (!empty($associations['documents'])) {
-            $document_associations = array_merge((array)$document_associations, (array)$associations['documents']);
-        }
-        if (!empty($associations['risks'])) {
-            $risk_associations = array_merge((array)$risk_associations, (array)$associations['risks']);
-        }
+        $test_associations = array_merge($test_associations, get_test_connectivity_for_control($control_id));
+        $document_associations = array_merge($document_associations, get_document_connectivity_for_control($control_id));
+        $risk_associations = array_merge($risk_associations, get_risk_connectivity_for_control($control_id));
     }
 
     // For each test association
     foreach ($test_associations as $value)
     {
-        // Get the test id
         $test_id = $value['test_id'];
-
-        // Get the associations for the test result
-        $endpoint = "/api/v2/compliance/tests/associations?id={$test_id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        $test_result_associations = array_merge((array)$test_result_associations, (array)$associations['test_results']);
+        $test_result_associations = array_merge($test_result_associations, get_results_connectivity_for_test($test_id));
     }
 
     // For each risk association
     foreach ($risk_associations as $value)
     {
-        // Get the risk id
         $risk_id = $value['risk_id'];
-
-        // Get the associations for the risk
-        $endpoint = "/api/v2/risks/associations?id={$risk_id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        $asset_associations = array_merge((array)$asset_associations, (array)$associations['assets']);
+        $asset_associations = array_merge($asset_associations, get_asset_connectivity_for_risk($risk_id));
     }
 
     // Merge the association arrays
@@ -8734,49 +8746,24 @@ function connectivity_visualizer_associations_control($id)
     // If a value has been selected
     if (!is_null($id))
     {
-        // Get the associations for the control
-        $endpoint = "/api/v2/governance/controls/associations?id={$id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        if (!empty($associations['frameworks'])) {
-            $framework_associations = $associations['frameworks'];
-        }
-        if (!empty($associations['tests'])) {
-            $test_associations = $associations['tests'];
-        }
-        if (!empty($associations['documents'])) {
-            $document_associations = $associations['documents'];
-        }
-        if (!empty($associations['risks'])) {
-            $risk_associations = $associations['risks'];
-        }
+        $framework_associations = get_framework_connectivity_for_control($id);
+        $test_associations = get_test_connectivity_for_control($id);
+        $document_associations = get_document_connectivity_for_control($id);
+        $risk_associations = get_risk_connectivity_for_control($id);
     }
 
     // For each test association
     foreach ($test_associations as $value)
     {
-        // Get the test id
         $test_id = $value['test_id'];
-
-        // Get the associations for the test result
-        $endpoint = "/api/v2/compliance/tests/associations?id={$test_id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        if (!empty($associations['test_results'])) {
-            $test_result_associations = array_merge((array)$test_result_associations, (array)$associations['test_results']);
-        }
+        $test_result_associations = array_merge($test_result_associations, get_results_connectivity_for_test($test_id));
     }
 
     // For each risk association
     foreach ($risk_associations as $value)
     {
-        // Get the risk id
         $risk_id = $value['risk_id'];
-
-        // Get the associations for the risk
-        $endpoint = "/api/v2/risks/associations?id={$risk_id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        if (!empty($associations['assets'])) {
-            $asset_associations = array_merge((array)$asset_associations, (array)$associations['assets']);
-        }
+        $asset_associations = array_merge($asset_associations, get_asset_connectivity_for_risk($risk_id));
     }
 
     // Merge the association arrays
@@ -8809,49 +8796,24 @@ function connectivity_visualizer_associations_test($id)
     // If a value has been selected
     if (!is_null($id))
     {
-        // Get the associations for the test
-        $endpoint = "/api/v2/compliance/tests/associations?id={$id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        if (!empty($associations['test_results'])) {
-            $test_result_associations = $associations['test_results'];
-        }
-        if (!empty($associations['controls'])) {
-            $control_associations = $associations['controls'];
-        }
+        $test_result_associations = get_results_connectivity_for_test($id);
+        $control_associations = get_control_connectivity_for_test($id);
     }
 
     // For each control association
     foreach ($control_associations as $value)
     {
-        // Get the control id
         $control_id = $value['control_id'];
-
-        // Get the associations for the control
-        $endpoint = "/api/v2/governance/controls/associations?id={$control_id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        if (!empty($associations['frameworks'])) {
-            $framework_associations = array_merge((array)$framework_associations, (array)$associations['frameworks']);
-        }
-        if (!empty($associations['documents'])) {
-            $document_associations = array_merge((array)$document_associations, (array)$associations['documents']);
-        }
-        if (!empty($associations['risks'])) {
-            $risk_associations = array_merge((array)$risk_associations, (array)$associations['risks']);
-        }
+        $framework_associations = array_merge($framework_associations, get_framework_connectivity_for_control($control_id));
+        $document_associations = array_merge($document_associations, get_document_connectivity_for_control($control_id));
+        $risk_associations = array_merge($risk_associations, get_risk_connectivity_for_control($control_id));
     }
 
     // For each risk association
     foreach ($risk_associations as $value)
     {
-        // Get the risk id
         $risk_id = $value['risk_id'];
-
-        // Get the associations for the risk
-        $endpoint = "/api/v2/risks/associations?id={$risk_id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        if (!empty($associations['assets'])) {
-            $asset_associations = array_merge((array)$asset_associations, (array)$associations['assets']);
-        }
+        $asset_associations = array_merge($asset_associations, get_asset_connectivity_for_risk($risk_id));
     }
 
     // Merge the association arrays
@@ -8884,60 +8846,30 @@ function connectivity_visualizer_associations_document($id)
     // If a value has been selected
     if (!is_null($id))
     {
-        // Get the associations for the document
-        $endpoint = "/api/v2/governance/documents/associations?id={$id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        if (!empty($associations['controls'])) {
-            $control_associations = $associations['controls'];
-        }
+        $control_associations = get_control_connectivity_for_document($id);
     }
 
     // For each control association
     foreach ($control_associations as $value)
     {
-        // Get the control id
         $control_id = $value['control_id'];
-
-        // Get the associations for the control
-        $endpoint = "/api/v2/governance/controls/associations?id={$control_id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        if (!empty($associations['frameworks'])) {
-            $framework_associations = array_merge((array)$framework_associations, (array)$associations['frameworks']);
-        }
-        if (!empty($associations['tests'])) {
-            $test_associations = array_merge((array)$test_associations, (array)$associations['tests']);
-        }
-        if (!empty($associations['risks'])) {
-            $risk_associations = array_merge((array)$risk_associations, (array)$associations['risks']);
-        }
+        $framework_associations = array_merge($framework_associations, get_framework_connectivity_for_control($control_id));
+        $test_associations = array_merge($test_associations, get_test_connectivity_for_control($control_id));
+        $risk_associations = array_merge($risk_associations, get_risk_connectivity_for_control($control_id));
     }
 
     // For each risk association
     foreach ($risk_associations as $value)
     {
-        // Get the risk id
         $risk_id = $value['risk_id'];
-
-        // Get the associations for the risk
-        $endpoint = "/api/v2/risks/associations?id={$risk_id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        if (!empty($associations['assets'])) {
-            $asset_associations = array_merge((array)$asset_associations, (array)$associations['assets']);
-        }
+        $asset_associations = array_merge($asset_associations, get_asset_connectivity_for_risk($risk_id));
     }
 
     // For each test association
     foreach ($test_associations as $value)
     {
-        // Get the test id
         $test_id = $value['test_id'];
-
-        // Get the associations for the test result
-        $endpoint = "/api/v2/compliance/tests/associations?id={$test_id}";
-        $associations = call_simplerisk_api_endpoint($endpoint);
-        if (!empty($associations['test_results'])) {
-            $test_result_associations = array_merge((array)$test_result_associations, (array)$associations['test_results']);
-        }
+        $test_result_associations = array_merge($test_result_associations, get_results_connectivity_for_test($test_id));
     }
 
     // Merge the association arrays
@@ -9407,41 +9339,31 @@ function get_control_connectivity_for_document($document_id)
     // Open the database connection
     $db = db_open();
 
-    // Get the list of control ids for the document
-    $stmt = $db->prepare("SELECT DISTINCT control_ids FROM documents WHERE id = :document_id;");
+    // Get the controls for this document via the junction table
+    $stmt = $db->prepare("SELECT DISTINCT fc.id, fc.short_name FROM framework_controls fc JOIN document_control_mappings dcm ON fc.id = dcm.control_id WHERE dcm.document_id = :document_id AND dcm.selected = 1;");
     $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
     $stmt->execute();
-    $control_ids_array = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $control_ids = $control_ids_array[0]['control_ids'];
 
-    // If the control_ids is not null
-    if ($control_ids != null)
+    // Store the list in the array
+    $controls = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // For each control
+    foreach ($controls as $value)
     {
-        // Get the controls for this document
-        $stmt = $db->prepare("SELECT DISTINCT fc.id, fc.short_name FROM framework_controls fc WHERE FIND_IN_SET(fc.id, '" . $control_ids . "');");
-        $stmt->execute();
+        // Get the control name and id
+        $control_id = $value['id'];
+        $control_name = $value['short_name'];
 
-        // Store the list in the array
-        $controls = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // For each control
-        foreach ($controls as $value)
-        {
-            // Get the control name and id
-            $control_id = $value['id'];
-            $control_name = $value['short_name'];
-
-            // Display the connectivity to documents
-            $associations[] = [
-                "document_id" => $document_id,
-                "control_id" => $control_id,
-                "control_name" => $control_name,
-                "node_id" => "control_id_{$control_id}",
-                "node_name" => $control_name,
-                "connected_node_id" => "document_id_{$document_id}",
-                "color" => "#154360",
-            ];
-        }
+        // Display the connectivity to documents
+        $associations[] = [
+            "document_id" => $document_id,
+            "control_id" => $control_id,
+            "control_name" => $control_name,
+            "node_id" => "control_id_{$control_id}",
+            "node_name" => $control_name,
+            "connected_node_id" => "document_id_{$document_id}",
+            "color" => "#154360",
+        ];
     }
 
     // Close the database connection
@@ -9461,8 +9383,8 @@ function get_document_connectivity_for_control($control_id)
     // Open the database connection
     $db = db_open();
 
-    // Get the list of documents with this control id
-    $stmt = $db->prepare("SELECT DISTINCT d.id, d.document_name FROM documents d WHERE FIND_IN_SET(:control_id, d.control_ids);");
+    // Get the list of documents with this control id via the junction table
+    $stmt = $db->prepare("SELECT DISTINCT d.id, d.document_name FROM documents d JOIN document_control_mappings dcm ON d.id = dcm.document_id WHERE dcm.control_id = :control_id AND dcm.selected = 1;");
     $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -9582,9 +9504,8 @@ function display_control_maturity_spider_chart($framework_id) {
 	// Get the list of control gaps
 	foreach ($control_gaps as $value) {
 
-	    // Escaping it here as it's used later both as key and value and wanted to make sure that they match
-        // Also, passing null to the third parameter of str_replace is deprecated, so using an empty string instead
-	    $value['family_short_name'] = str_replace("'", "\'", $value['family_short_name'] ?? '');
+	    // Normalise to empty string if null so comparisons and array keys work consistently
+	    $value['family_short_name'] = $value['family_short_name'] ?? '';
 
 		// If this is not the current category
 		if ($value['family_short_name'] != $current_category) {
@@ -9636,16 +9557,14 @@ function display_control_maturity_spider_chart($framework_id) {
 	}
 
 	// Create the Current Maturity dataset
-    $current_maturity_label = str_replace("'", "\'", $lang['CurrentControlMaturity']);
     $current_maturity_dataset = [
-        "label" => $current_maturity_label,
+        "label" => $lang['CurrentControlMaturity'],
         "data" => empty($categories_current_maturity_average) ? [] : $categories_current_maturity_average,
     ];
 
 	// Create the Desired Maturity dataset
-    $desired_maturity_label = str_replace("'", "\'", $lang['DesiredControlMaturity']);
     $desired_maturity_dataset = [
-        "label" => $desired_maturity_label,
+        "label" => $lang['DesiredControlMaturity'],
         "data" => empty($categories_desired_maturity_average) ? [] : $categories_desired_maturity_average,
     ];
 
@@ -9655,7 +9574,7 @@ function display_control_maturity_spider_chart($framework_id) {
         $desired_maturity_dataset
     ];
 
-    $title = $escaper->escapeHtml($lang['CurrentVsDesiredMaturity']);
+    $title = $lang['CurrentVsDesiredMaturity'];
     $element_id = "control_maturity_spider_chart";
     create_chartjs_radar_code($title, $element_id, $categories, $datasets);
 
@@ -9950,9 +9869,12 @@ function assets_and_controls_table($report, $sort_by) {
                 var height = $(window).scrollTop();
                 
                 $.ajax({
-                    url: BASE_URL + "/api/mitigation_controls/get_mitigation_control_info",
+                    url: BASE_URL + "/api/v2/mitigation_controls/get_mitigation_control_info",
                     data: { "control_id": control_id, "scroll_top": height },
                     success: function(response){
+                        // control_info is a server-rendered HTML table. All user-supplied fields are
+                        // escaped server-side via escapeHtml() or purifyHtml() (HTMLPurifier) before
+                        // being included in the response. Using .html() here is intentional and safe.
                         $("#control-content-asset-"+asset_id + "-" +control_id).html(response.data["control_info"]);
                     }
                 });
@@ -10335,6 +10257,857 @@ function get_assets_and_controls_rows($report, $sort_by, $filters) {
     db_close($db);
 
     return $rows;
+}
+
+/*******************************************************************************************************
+ * FUNCTION: GET DYNAMIC RISKS TABLE STRING
+ * this function is to get DRR tables string 
+ * and it comes from the download_risks_by_table() of the export functionality on the DRR page
+ * $option = 'html' corresponses to the former's $option = 'download' 
+ * Not sure $option and $download_group_value are necessary yet but it's better that we leave them now 
+ *******************************************************************************************************/
+function get_dynamic_risks_table_string($filter_status, $group, $sort, $download_group_value="", $selected_columns=[], $column_filters=[], $force_user_id = null) {
+
+    global $lang;
+    global $escaper;
+    
+    // We should assign all the inputted parameters to this function 
+    // because they are all used in the get_dynamic_risks_data_for_output function
+    list($xlsHeader, $xlsRows, $grouped) = get_dynamic_risks_data_for_output($filter_status, $group, $sort, $download_group_value="", $selected_columns, $column_filters, $order_column=null, $order_dir="asc", $option="html", force_user_id: $force_user_id);
+
+    /***********Generate Table String**************/
+    $table_string = "
+        <table class='table table-striped table-bordered table-hover' id='dynamic_risks_table'>
+    ";
+    // Store the number of empty rows we added so we can account for them when calculating the position of the cells we want to merge 
+    $empty_rows = 0;
+
+    // Save column count so it only has to be calculated once
+    $columnCount = count($xlsHeader);
+
+    foreach ($xlsRows as $position => $xlsRow) {
+
+        // If grouped and it's a non-array row then it's a group header
+        if ($grouped && !is_array($xlsRow)) {
+
+            // Add an empty row before the group header if it's not the FIRST group
+            if ($position > 0) {
+                $table_string .= "
+            <tr><td colspan = '{$columnCount}'></td></tr>
+                ";
+                $empty_rows += 1;
+            }
+
+            // create the group header with the centered style
+            $table_string .= "
+            <tr><td align='center' colspan = '{$columnCount}'>{$xlsRow}</td></tr>
+            ";
+                
+        } else {
+
+            $table_string .= "
+            <tr>
+            ";
+
+            // If the row is an array, it means it's a risk row
+            foreach ($xlsRow as $cell) {
+
+                // If the cell is empty
+                if ($cell == null || $cell == "") {
+                    $cell = "&nbsp;"; // Replace it with a non-breaking space
+                }
+
+                // Escape the cell value
+                $cell = $escaper->escapeHtml($cell);
+
+                // Add the cell to the row string
+                $table_string .= "
+                <td>{$cell}</td>
+                ";
+
+            }
+
+            // Close the row
+            $table_string .= "
+            </tr>
+            ";
+
+        }
+    }
+
+    // Close the table
+    $table_string .= "
+        </table>
+    ";
+
+    return $table_string;
+
+}
+
+/**********************************************************************
+ * FUNCTION: GET DYNAMIC RISKS TABLE STRING FROM SAVED SELECTIONS
+ * This function is to get DRR tables string from saved selections
+ * It is not implemented yet, but it is a placeholder for future use
+ **********************************************************************/
+function get_dynamic_risks_table_string_from_saved_selections($selection_id, $force_user_id = null) {
+
+    global $lang;
+    global $escaper;
+
+    // Allow this to run as long as necessary
+    ini_set('max_execution_time', 0);
+
+    // Open the database connection
+    $db = db_open();
+
+    // Get the saved selection
+    $stmt = $db->prepare("SELECT * FROM dynamic_saved_selections WHERE value = :selection_id;");
+    $stmt->bindParam(":selection_id", $selection_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $selection = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // If the selection is not found
+    if (!$selection) {
+        return "<p class='text-danger'>{$lang['SelectionNotFound']}</p>";
+    }
+
+    // Get the filter status, group, sort, and download group value from the selection
+    $custom_selection_settings = json_decode($selection['custom_selection_settings'], true);
+    if ($custom_selection_settings) {
+        $filter_status = $custom_selection_settings['status'] ?? 0;
+        $group = $custom_selection_settings['group'] ?? 0;
+        $sort = $custom_selection_settings['sort'] ?? 0;
+    } else {
+        // Default values if custom settings are not set
+        $filter_status = 0;
+        $group = 0;
+        $sort = 0;
+    }
+
+    // Get the selected columns and column filters from the selection
+    $selected_columns_original = json_decode($selection['custom_display_settings'], true);
+    $column_filters_original = json_decode($selection['custom_column_filters'], true);
+
+    $selected_columns = [];
+    foreach ($selected_columns_original as $selected_column) {
+        $selected_columns[$selected_column] = true;
+    }
+
+    $column_filters = [];
+    foreach ($column_filters_original as $column_filter) {
+        if (isset($column_filter[0]) && isset($column_filter[1])) {
+            $key = $column_filter[0];
+            $value = $column_filter[1];
+    
+            $column_filters[$key] = $value;
+        }
+    }
+
+    // Call the function to get the dynamic risks table string
+    return get_dynamic_risks_table_string($filter_status, $group, $sort, "", $selected_columns, $column_filters, force_user_id: $force_user_id);
+}
+
+/************************************
+ * FUNCTION: GET MTTR BY TEAM       *
+ * Returns avg days-to-close for    *
+ * closed risks, grouped by team.   *
+ ************************************/
+function get_mttr_by_team($teams = false) {
+    $teams_query = generate_teams_query($teams, "rtt.team_id");
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT
+            IFNULL(t.name, 'Unassigned') AS label,
+            ROUND(AVG(DATEDIFF(o.closure_date, a.submission_date)), 1) AS avg_days
+        FROM risks a
+        LEFT JOIN closures o ON a.close_id = o.id
+        LEFT JOIN risk_to_team rtt ON a.id = rtt.risk_id
+        LEFT JOIN team t ON rtt.team_id = t.value
+        WHERE a.status = 'Closed' AND o.id IS NOT NULL AND {$teams_query}
+        GROUP BY t.value, t.name
+        HAVING avg_days IS NOT NULL
+        ORDER BY avg_days DESC
+    ");
+    $stmt->execute();
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+    return $results;
+}
+
+/****************************************
+ * FUNCTION: GET MTTR BY CATEGORY       *
+ * Returns avg days-to-close for        *
+ * closed risks, grouped by category.   *
+ ****************************************/
+function get_mttr_by_category($teams = false) {
+    $teams_query = generate_teams_query($teams, "rtt.team_id");
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT
+            IFNULL(c.name, 'Unassigned') AS label,
+            ROUND(AVG(DATEDIFF(o.closure_date, a.submission_date)), 1) AS avg_days
+        FROM risks a
+        LEFT JOIN closures o ON a.close_id = o.id
+        LEFT JOIN risk_to_team rtt ON a.id = rtt.risk_id
+        LEFT JOIN category c ON a.category = c.value
+        WHERE a.status = 'Closed' AND o.id IS NOT NULL AND {$teams_query}
+        GROUP BY a.category, c.name
+        HAVING avg_days IS NOT NULL
+        ORDER BY avg_days DESC
+    ");
+    $stmt->execute();
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+    return $results;
+}
+
+/******************************************
+ * FUNCTION: GET MTTR BY RISK LEVEL       *
+ * Returns avg days-to-close for          *
+ * closed risks, grouped by risk level.   *
+ ******************************************/
+function get_mttr_by_risk_level($teams = false) {
+    $teams_query = generate_teams_query($teams, "rtt.team_id");
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT
+            IFNULL(
+                (SELECT IF(display_name='', name, display_name) FROM risk_levels
+                 WHERE value - rs.calculated_risk <= 0.00001 ORDER BY value DESC LIMIT 1),
+                'Insignificant'
+            ) AS label,
+            ROUND(AVG(DATEDIFF(o.closure_date, a.submission_date)), 1) AS avg_days
+        FROM risks a
+        LEFT JOIN closures o ON a.close_id = o.id
+        LEFT JOIN risk_scoring rs ON a.id = rs.id
+        LEFT JOIN risk_to_team rtt ON a.id = rtt.risk_id
+        WHERE a.status = 'Closed' AND o.id IS NOT NULL AND {$teams_query}
+        GROUP BY label
+        HAVING avg_days IS NOT NULL
+        ORDER BY avg_days DESC
+    ");
+    $stmt->execute();
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+    return $results;
+}
+
+/*****************************************************
+ * FUNCTION: GET RISK EXPOSURE BY DIMENSION          *
+ * Returns SUM(calculated_risk) for open risks       *
+ * grouped by 'team', 'category', or 'location'.    *
+ *****************************************************/
+function get_risk_exposure_by_dimension($dimension, $teams = false) {
+    $teams_query = generate_teams_query($teams, "rtt.team_id");
+    $db = db_open();
+
+    switch ($dimension) {
+        case 'team':
+            $stmt = $db->prepare("
+                SELECT IFNULL(t.name, 'Unassigned') AS label,
+                       ROUND(SUM(rs.calculated_risk), 2) AS total_exposure
+                FROM risks a
+                LEFT JOIN risk_to_team rtt ON a.id = rtt.risk_id
+                LEFT JOIN team t ON rtt.team_id = t.value
+                LEFT JOIN risk_scoring rs ON a.id = rs.id
+                WHERE a.status != 'Closed' AND {$teams_query}
+                GROUP BY t.value, t.name
+                ORDER BY total_exposure DESC
+            ");
+            break;
+        case 'category':
+            $stmt = $db->prepare("
+                SELECT IFNULL(c.name, 'Unassigned') AS label,
+                       ROUND(SUM(rs.calculated_risk), 2) AS total_exposure
+                FROM risks a
+                LEFT JOIN risk_to_team rtt ON a.id = rtt.risk_id
+                LEFT JOIN category c ON a.category = c.value
+                LEFT JOIN risk_scoring rs ON a.id = rs.id
+                WHERE a.status != 'Closed' AND {$teams_query}
+                GROUP BY a.category, c.name
+                ORDER BY total_exposure DESC
+            ");
+            break;
+        case 'location':
+            $stmt = $db->prepare("
+                SELECT IFNULL(l.name, 'Unassigned') AS label,
+                       ROUND(SUM(rs.calculated_risk), 2) AS total_exposure
+                FROM risks a
+                LEFT JOIN risk_to_team rtt ON a.id = rtt.risk_id
+                LEFT JOIN risk_to_location rtl ON a.id = rtl.risk_id
+                LEFT JOIN location l ON rtl.location_id = l.value
+                LEFT JOIN risk_scoring rs ON a.id = rs.id
+                WHERE a.status != 'Closed' AND {$teams_query}
+                GROUP BY l.value, l.name
+                ORDER BY total_exposure DESC
+            ");
+            break;
+        default:
+            db_close($db);
+            return [];
+    }
+
+    $stmt->execute();
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+    return $results;
+}
+
+/***********************************************
+ * FUNCTION: OPEN RISK TEAM EXPOSURE PIE       *
+ * Score-weighted (SUM of calculated_risk)     *
+ * pie chart instead of count-based.           *
+ ***********************************************/
+function open_risk_team_exposure_pie($teams = false, $title = null) {
+    global $escaper;
+    $rows = get_risk_exposure_by_dimension('team', $teams);
+    $data = [];
+    foreach ($rows as $row) {
+        $data[] = [
+            'label' => $escaper->escapeHtml($row['label']),
+            'data'  => (float)$row['total_exposure'],
+            'url'   => 'dynamic_risk_report.php?status=0&group=6&sort=0',
+        ];
+    }
+    create_chartjs_pie_code($title, 'open_risk_team_exposure_pie', $data);
+}
+
+/***************************************************
+ * FUNCTION: OPEN RISK CATEGORY EXPOSURE PIE       *
+ ***************************************************/
+function open_risk_category_exposure_pie($teams = false, $title = null) {
+    global $escaper;
+    $rows = get_risk_exposure_by_dimension('category', $teams);
+    $data = [];
+    foreach ($rows as $row) {
+        $data[] = [
+            'label' => $escaper->escapeHtml($row['label']),
+            'data'  => (float)$row['total_exposure'],
+            'url'   => 'dynamic_risk_report.php?status=0&group=5&sort=0',
+        ];
+    }
+    create_chartjs_pie_code($title, 'open_risk_category_exposure_pie', $data);
+}
+
+/***************************************************
+ * FUNCTION: OPEN RISK LOCATION EXPOSURE PIE       *
+ ***************************************************/
+function open_risk_location_exposure_pie($teams = false, $title = null) {
+    global $escaper;
+    $rows = get_risk_exposure_by_dimension('location', $teams);
+    $data = [];
+    foreach ($rows as $row) {
+        $data[] = [
+            'label' => $escaper->escapeHtml($row['label']),
+            'data'  => (float)$row['total_exposure'],
+            'url'   => 'dynamic_risk_report.php?status=0&sort=0',
+        ];
+    }
+    create_chartjs_pie_code($title, 'open_risk_location_exposure_pie', $data);
+}
+
+/*****************************************************
+ * FUNCTION: GET SLA BREACH DATA                     *
+ * Counts open risks within / past SLA per level.    *
+ * Default thresholds (days): VH=30, H=60, M=90,    *
+ * Low=180, Insignificant=365.                       *
+ *****************************************************/
+function get_sla_breach_data($teams = false) {
+    $teams_query = generate_teams_query($teams, "rtt.team_id");
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT
+            IFNULL(
+                (SELECT IF(rl.display_name='', rl.name, rl.display_name) FROM risk_levels rl
+                 WHERE rl.value - rs.calculated_risk <= 0.00001 ORDER BY rl.value DESC LIMIT 1),
+                'Insignificant'
+            ) AS risk_level_display,
+            IFNULL(
+                (SELECT rl2.name FROM risk_levels rl2
+                 WHERE rl2.value - rs.calculated_risk <= 0.00001 ORDER BY rl2.value DESC LIMIT 1),
+                'Insignificant'
+            ) AS risk_level_key,
+            DATEDIFF(NOW(), a.submission_date) AS days_open
+        FROM risks a
+        LEFT JOIN risk_scoring rs ON a.id = rs.id
+        LEFT JOIN risk_to_team rtt ON a.id = rtt.risk_id
+        WHERE a.status != 'Closed' AND {$teams_query}
+        GROUP BY a.id
+    ");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    // Build thresholds dynamically from the configured risk levels so that
+    // custom level names and settings are respected.
+    $defaults_by_name = ['Very High' => 30, 'High' => 60, 'Medium' => 90, 'Low' => 180];
+    $all_risk_levels  = get_risk_levels();
+    $thresholds = ['Insignificant' => 365];
+    foreach ($all_risk_levels as $rl) {
+        $key = 'sla_threshold_' . strtolower(str_replace(' ', '_', $rl['name']));
+        $thresholds[$rl['name']] = (int)get_setting($key, $defaults_by_name[$rl['name']] ?? 90);
+    }
+
+    $within = [];
+    $breached = [];
+
+    foreach ($rows as $row) {
+        $display = $row['risk_level_display'];
+        $key     = $row['risk_level_key'];
+        $limit   = $thresholds[$key] ?? 365;
+
+        if ((int)$row['days_open'] > $limit) {
+            $breached[$display] = ($breached[$display] ?? 0) + 1;
+        } else {
+            $within[$display] = ($within[$display] ?? 0) + 1;
+        }
+    }
+
+    return ['within' => $within, 'breached' => $breached];
+}
+
+/*************************************************************
+ * FUNCTION: OPEN RISK SLA STATUS                           *
+ * Stacked bar chart: within SLA (green) + breached (red)  *
+ * per risk level, ordered highest to lowest.              *
+ *************************************************************/
+function open_risk_sla_status($teams = false, $title = null) {
+    global $escaper, $lang;
+
+    $sla_data    = get_sla_breach_data($teams);
+    $risk_levels = array_reverse(get_risk_levels()); // highest first
+
+    // Build ordered label list and per-dataset value arrays
+    $labels        = [];
+    $within_values = [];
+    $breach_values = [];
+
+    foreach ($risk_levels as $rl) {
+        $display         = $rl['display_name'] !== '' ? $rl['display_name'] : $rl['name'];
+        $labels[]        = $display;
+        $within_values[] = $sla_data['within'][$display] ?? ($sla_data['within'][$rl['name']] ?? 0);
+        $breach_values[] = $sla_data['breached'][$display] ?? ($sla_data['breached'][$rl['name']] ?? 0);
+    }
+
+    // Only render if there is any data
+    $has_data = array_sum($within_values) + array_sum($breach_values) > 0;
+
+    $element_id     = 'open_risk_sla_status';
+    $title_html     = $escaper->escapeHtml((string)$title);
+    $title_json     = json_encode((string)$title);
+    $labels_json    = json_encode(array_values($labels));
+    $within_json    = json_encode(array_values($within_values));
+    $breach_json    = json_encode(array_values($breach_values));
+    $within_label   = $escaper->escapeJS($lang['WithinSLA']);
+    $breach_label   = $escaper->escapeJS($lang['SLABreached']);
+    $x_title        = $escaper->escapeJS($lang['RiskLevel']);
+    $y_title        = $escaper->escapeJS($lang['NumberOfRisks']);
+
+    if ($has_data) {
+        echo "
+            <div>
+                <canvas id='{$element_id}'></canvas>
+                <div class='d-flex justify-content-end align-items-center'>
+                    <i class='far fa-save' id='{$element_id}_save'></i>
+                </div>
+            </div>
+            <script>
+                $(function() {
+                    var data = {
+                        labels: {$labels_json},
+                        datasets: [
+                            {
+                                label: '{$within_label}',
+                                data: {$within_json},
+                                backgroundColor: '#66CC00',
+                                stack: 'sla',
+                            },
+                            {
+                                label: '{$breach_label}',
+                                data: {$breach_json},
+                                backgroundColor: '#FF0000',
+                                stack: 'sla',
+                            }
+                        ]
+                    };
+                    var config = {
+                        type: 'bar',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                title: { display: true, text: {$title_json} },
+                                legend: { display: true }
+                            },
+                            interaction: { mode: 'index', intersect: false },
+                            scales: {
+                                x: {
+                                    stacked: true,
+                                    title: { display: true, text: '{$x_title}' }
+                                },
+                                y: {
+                                    stacked: true,
+                                    beginAtZero: true,
+                                    title: { display: true, text: '{$y_title}' }
+                                }
+                            }
+                        }
+                    };
+                    var ctx = document.getElementById('{$element_id}').getContext('2d');
+                    var {$element_id}_chart = new Chart(ctx, config);
+                    document.getElementById('{$element_id}_save').addEventListener('click', function() {
+                        var link = document.createElement('a');
+                        link.href = {$element_id}_chart.toBase64Image();
+                        link.download = '{$element_id}.png';
+                        link.click();
+                    });
+                });
+            </script>
+        ";
+    } else {
+        echo "
+            <div class='d-flex flex-column text-center'>
+                <strong class='mb-3'>{$title_html}</strong>
+                <strong>" . $escaper->escapeHtml($lang['NoDataAvailable']) . "</strong>
+            </div>
+        ";
+    }
+}
+
+/********************************************************
+ * FUNCTION: COMPLIANCE CONTROLS BY FRAMEWORK BAR CHART *
+ ********************************************************/
+function compliance_controls_by_framework_bar_chart() {
+    global $escaper, $lang;
+
+    // Get all active frameworks for the filter dropdown
+    $all_frameworks = array_values(get_frameworks(1));
+
+    // Resolve selected framework IDs from GET param.
+    // - No 'frameworks' key in URL (first load): default to all (null = no filter)
+    // - Key present with IDs: filter to those IDs
+    // - Key present but empty (user deselected all): return empty results
+    if (!isset($_GET['frameworks'])) {
+        // First load — select all in the multiselect, pass null to data functions
+        $selected_fw_ids = array_column($all_frameworks, 'value');
+        $filter_ids      = null;
+    } else {
+        $selected_fw_ids = array_values(array_filter(explode(',', $_GET['frameworks']), 'ctype_digit'));
+        $selected_fw_ids = array_map('intval', $selected_fw_ids);
+        $filter_ids      = $selected_fw_ids; // may be [] if user deselected all
+    }
+    
+    // --- Snapshot bar chart data ---
+    $framework_data = get_framework_controls_test_status_counts($filter_ids);
+
+    $snap_labels  = [];
+    $passing_data = [];
+    $failing_data = [];
+    foreach ($framework_data as $framework) {
+        $snap_labels[]  = $escaper->escapeHtml(try_decrypt($framework['framework_name']));
+        $passing_data[] = (int)$framework['passing_controls'];
+        $failing_data[] = (int)$framework['failing_controls'];
+    }
+    $snap_datasets = [
+        [
+            'label'           => $escaper->escapeHtml($lang['PassingControls']),
+            'data'            => $passing_data,
+            'backgroundColor' => '#66CC00',
+        ],
+        [
+            'label'           => $escaper->escapeHtml($lang['FailingControls']),
+            'data'            => $failing_data,
+            'backgroundColor' => '#FF0000',
+        ],
+    ];
+    create_chartjs_bar_code(
+        $lang['ControlsByFramework'],
+        'compliance_controls_by_framework_bar_chart',
+        $snap_labels,
+        $snap_datasets,
+        $lang['Framework'],
+        $lang['NumberOfControls']
+    );
+}
+
+function compliance_pass_rate_trend_line_chart() {
+    global $escaper, $lang;
+
+    // Get all active frameworks for the filter dropdown
+    $all_frameworks = array_values(get_frameworks(1));
+
+    // Resolve selected framework IDs from GET param.
+    // - No 'frameworks' key in URL (first load): default to all (null = no filter)
+    // - Key present with IDs: filter to those IDs
+    // - Key present but empty (user deselected all): return empty results
+    if (!isset($_GET['frameworks'])) {
+        // First load — select all in the multiselect, pass null to data functions
+        $selected_fw_ids = array_column($all_frameworks, 'value');
+        $filter_ids      = null;
+    } else {
+        $selected_fw_ids = array_values(array_filter(explode(',', $_GET['frameworks']), 'ctype_digit'));
+        $selected_fw_ids = array_map('intval', $selected_fw_ids);
+        $filter_ids      = $selected_fw_ids; // may be [] if user deselected all
+    }
+
+    // --- Monthly pass rate trend chart data ---
+    $trend_by_framework = get_framework_controls_pass_rate_by_month(12, $filter_ids);
+
+    $all_months = [];
+    foreach ($trend_by_framework as $fw_months) {
+        $all_months = array_merge($all_months, array_keys($fw_months));
+    }
+    $all_months = array_unique($all_months);
+    sort($all_months);
+
+    $trend_labels = array_map(fn($m) => date('M Y', strtotime($m . '-01')), $all_months);
+
+    $palette = ['#4472C4', '#ED7D31', '#A9D18E', '#FFC000', '#5B9BD5', '#70AD47', '#FF0000', '#7030A0'];
+    $trend_datasets = [];
+    $ci = 0;
+    foreach ($trend_by_framework as $fw_name => $fw_months) {
+        $color = $palette[$ci % count($palette)];
+        $ci++;
+        $trend_datasets[] = [
+            'label'           => $escaper->escapeHtml($fw_name),
+            'data'            => array_map(fn($m) => $fw_months[$m] ?? 'null', $all_months),
+            'borderColor'     => $color,
+            'backgroundColor' => $color,
+            'fill'            => 'false',
+            'tension'         => '0.3',
+        ];
+    }
+
+    create_chartjs_line_code(
+        $escaper->escapeHtml($lang['ControlPassRateTrend']),
+        'compliance_pass_rate_trend_chart',
+        $trend_labels,
+        $trend_datasets,
+        '',
+        $escaper->escapeHtml($lang['Month'] ?? 'Month'),
+        $escaper->escapeHtml($lang['PassRatePercent']),
+        100
+    );
+}
+
+/********************************************
+ * FUNCTION: COMPLIANCE PASS/FAIL PIE CHART *
+ ********************************************/
+function compliance_pass_fail_pie_chart() {
+    global $escaper, $lang;
+
+    // Get all active frameworks for the filter dropdown
+    $all_frameworks = array_values(get_frameworks(1));
+
+    // Resolve selected framework IDs from GET param.
+    // - No 'frameworks' key in URL (first load): default to all (null = no filter)
+    // - Key present with IDs: filter to those IDs
+    // - Key present but empty (user deselected all): return empty results
+    if (!isset($_GET['frameworks'])) {
+        // First load — select all in the multiselect, pass null to data functions
+        $selected_fw_ids = array_column($all_frameworks, 'value');
+        $filter_ids      = null;
+    } else {
+        $selected_fw_ids = array_values(array_filter(explode(',', $_GET['frameworks']), 'ctype_digit'));
+        $selected_fw_ids = array_map('intval', $selected_fw_ids);
+        $filter_ids      = $selected_fw_ids; // may be [] if user deselected all
+    }
+
+    // --- Snapshot bar chart data ---
+    $framework_data = get_framework_controls_test_status_counts($filter_ids);
+
+    $passing_data = [];
+    $failing_data = [];
+    foreach ($framework_data as $framework) {
+        $passing_data[] = (int)$framework['passing_controls'];
+        $failing_data[] = (int)$framework['failing_controls'];
+    }
+
+    $total_passing = array_sum($passing_data);
+    $total_failing = array_sum($failing_data);
+    $overall_pass_fail_data = [
+        [
+            'label' => $escaper->escapeHtml($lang['PassingControls']),
+            'data' => $total_passing,
+            'color' => '#66CC00',
+        ],
+        [
+            'label' => $escaper->escapeHtml($lang['FailingControls']),
+            'data' => $total_failing,
+            'color' => '#FF0000',
+        ],
+    ];
+
+    create_chartjs_pie_code(
+        $escaper->escapeHtml($lang['ControlPassFailStatus']),
+        'compliance_pass_fail_pie_chart',
+        $overall_pass_fail_data
+    );
+}
+
+/***********************************************************
+ * FUNCTION: GOVERNANCE CURRENT CONTROL MATURITY PIE CHART *
+ ***********************************************************/
+function governance_current_control_maturity_pie_chart() {
+    global $escaper, $lang;
+
+    $control_maturity_data = get_control_current_maturity_counts();
+    $suggested_colors = suggested_colors_array();
+    $current_maturity_pie_data = [];
+
+    foreach ($control_maturity_data as $index => $maturity) {
+        $maturity_name = $escaper->escapeHtml($maturity['maturity_name']);
+        $color = ($maturity['maturity_name'] === 'Unassigned' || $maturity['maturity_name'] === 'Not Performed') ? '#808080' : $suggested_colors[$index % count($suggested_colors)];
+
+        $current_maturity_pie_data[] = [
+            'label' => $maturity_name,
+            'data' => (int)$maturity['control_count'],
+            'color' => $color,
+        ];
+    }
+
+    create_chartjs_pie_code(
+        $escaper->escapeHtml($lang['CurrentControlMaturity']),
+        'governance_current_control_maturity_pie_chart',
+        $current_maturity_pie_data
+    );
+}
+
+/***********************************************************
+ * FUNCTION: GOVERNANCE DESIRED CONTROL MATURITY PIE CHART *
+ ***********************************************************/
+function governance_framework_maturity_stacked_bar_chart() {
+    global $escaper, $lang;
+
+    $stacked_chart_data = get_framework_controls_maturity_stacked_chart_data();
+    $suggested_colors = suggested_colors_array();
+    $framework_maturity_bar_labels = array_map(static function ($label) use ($escaper) {
+        return $escaper->escapeHtml($label);
+    }, $stacked_chart_data['labels']);
+    $framework_maturity_bar_datasets = [];
+    foreach ($stacked_chart_data['maturity_order'] as $mIndex => $maturity_name) {
+        $color = ($maturity_name === 'Not Set') ? '#808080' : $suggested_colors[$mIndex % count($suggested_colors)];
+        $framework_maturity_bar_datasets[] = [
+            'label' => $escaper->escapeHtml($maturity_name),
+            'data' => $stacked_chart_data['counts_by_maturity'][$maturity_name],
+            'backgroundColor' => $color,
+        ];
+    }
+
+    create_chartjs_bar_code(
+        $escaper->escapeHtml($lang['GovernanceControlsByFrameworkMaturityStacked']),
+        'governance_framework_maturity_stacked_bar_chart',
+        $framework_maturity_bar_labels,
+        $framework_maturity_bar_datasets,
+        $escaper->escapeHtml($lang['Framework']),
+        $escaper->escapeHtml($lang['NumberOfControls']),
+        null,
+        null,
+        true
+    );
+}
+
+/*******************************************
+* FUNCTION: DISPLAY EXCEPTION REPORT TABLE *
+********************************************/
+function display_exception_report() {
+
+    global $lang, $escaper;
+    
+    // If User has permission for governance menu and view exception, shows EXCEPTION REPORT report
+    if(check_permission("governance") && check_permission_exception('view')) {
+
+        echo "
+            <div class='card-body border my-2'>
+                <div class='row'>
+                    <div class='col-10'></div>
+                    <div class='col-2'>
+                        <div style='float: right;'>
+        ";
+                            render_column_selection_widget('document_exception');
+        echo "
+                        </div>
+                    </div>
+                </div>
+                <div class='row'>
+                    <div class='col-12'>
+        ";
+                        render_view_table('document_exception');
+        echo "
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+                $(function () {
+
+                    initializeMultiselect('.header_filter .multiselect', {
+                        allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
+                        includeSelectAllOption: true,
+                        buttonWidth: '100%',
+                        maxHeight: 400,
+                        enableCaseInsensitiveFiltering: true,
+                    });
+
+                    $('.header_filter [name=creation_date].datepicker').initAsDatePicker();
+                    $('.header_filter [name=next_review_date].datepicker').initAsDatePicker();
+                    $('.header_filter [name=approval_date].datepicker').initAsDatePicker();
+
+                });    
+            </script>
+        ";
+    }
+}
+
+/*********************************************
+ * FUNCTION: DISPLAY DOCUMENT PROGRAM REPORT *
+ *********************************************/
+function display_document_program_report() {
+    global $lang, $escaper;
+    
+    // If User has permission for governance menu, shows Document Program report
+    if (has_permission('governance')) {
+        echo "
+            <div class='card-body border my-2'>
+                <div class='row'>
+                    <div class='col-10'></div>
+                    <div class='col-2'>
+                        <div style='float: right;'>
+        ";
+                            render_column_selection_widget('document_program');
+        echo "
+                        </div>
+                    </div>
+                </div>
+                <div class='row'>
+                    <div class='col-12'>
+        ";
+                        render_view_table('document_program');
+        echo "
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+                $(function () {
+
+                    initializeMultiselect('.header_filter .multiselect', {
+                        allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
+                        includeSelectAllOption: true,
+                        buttonWidth: '100%',
+                        maxHeight: 400,
+                        enableCaseInsensitiveFiltering: true,
+                    });
+
+                    $('.header_filter [name=creation_date].datepicker').initAsDatePicker();
+                    $('.header_filter [name=approval_date].datepicker').initAsDatePicker();
+                    $('.header_filter [name=last_review_date].datepicker').initAsDatePicker();
+                    $('.header_filter [name=next_review_date].datepicker').initAsDatePicker();
+
+                });    
+            </script>
+        ";
+    }
 }
 
 ?>

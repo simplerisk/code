@@ -25,7 +25,7 @@ function view_score_html($risk_id, $calculated_risk, $mitigation_percent)
 
     // Inherent Risk
     echo "
-                <div class='p-10 text-center' style='background-color: " . $escaper->escapeHtml(get_risk_color($calculated_risk)) . "'>
+                <div class='risk-square p-10 text-center' style='background-color: " . $escaper->escapeHtml(get_risk_color($calculated_risk)) . "'>
                     <h5 class=''>" .$escaper->escapeHtml($lang['InherentRisk']) . "</h5>
                     <h1 class='my-0'>" .$escaper->escapeHtml($calculated_risk) . "</h5>
                     <h5 class=''>" . $escaper->escapeHtml(get_risk_level_name($calculated_risk)) . "</h5>
@@ -36,7 +36,7 @@ function view_score_html($risk_id, $calculated_risk, $mitigation_percent)
     // Residual Risk
     if(!$calculated_risk || $calculated_risk == "0.0")
     {
-        $residual_risk = "0.0";
+        $residual_risk = "0";
     }
     else
     {
@@ -45,7 +45,7 @@ function view_score_html($risk_id, $calculated_risk, $mitigation_percent)
 
     echo "
             <div class='col-6'>
-                <div class='p-10 text-center' style='background-color: " . $escaper->escapeHtml(get_risk_color($residual_risk)) . "'>
+                <div class='risk-square p-10 text-center' style='background-color: " . $escaper->escapeHtml(get_risk_color($residual_risk)) . "'>
                     <h5 class=''>" . $escaper->escapeHtml($lang['ResidualRisk']) . "</h5>
                     <h1 class='my-0'>" . $escaper->escapeHtml($residual_risk) . "</h5>
                     <h5 class=''>" . $escaper->escapeHtml(get_risk_level_name($residual_risk)) . "</h5>
@@ -5388,11 +5388,11 @@ function view_risks_and_issues_selections($risk_tags, $start_date="", $end_date=
                                 </div>
                                 <div class='col-4'>
                                     <label>{$escaper->escapeHtml($lang['StartDate'])} :</label>
-                                    <input type='text' name='start_date' value='{$start_date}' class='form-control datepicker'>
+                                    <input type='text' name='start_date' value='{$escaper->escapeHtml($start_date)}' class='form-control datepicker'>
                                 </div>
                                 <div class='col-4'>
                                     <label>{$escaper->escapeHtml($lang['EndDate'])} :</label>
-                                    <input type='text' name='end_date' value='{$end_date}' class='form-control datepicker'>
+                                    <input type='text' name='end_date' value='{$escaper->escapeHtml($end_date)}' class='form-control datepicker'>
                                 </div>
                             </div>
                         </div>
@@ -5425,7 +5425,7 @@ function view_risks_and_issues_selections($risk_tags, $start_date="", $end_date=
 /******************************************
 * FUNCTION: VIEW GET RISKS BY SELECTIONS *
 ******************************************/
-function view_get_risks_by_selections($status=0, $group=0, $sort=0, $risk_columns=[], $mitigation_columns=[], $review_columns=[], $scoring_columns=[], $unassigned_columns=[], $risk_mapping_columns=[]) {
+function view_get_risks_by_selections($status=0, $group=0, $sort=0, $risk_columns=[], $mitigation_columns=[], $review_columns=[], $scoring_columns=[], $unassigned_columns=[], $risk_mapping_columns=[], $custom_display_settings=[]) {
 
     global $lang, $escaper;
     
@@ -5487,7 +5487,7 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $risk_column
     ";
 
     // Risk columns
-        display_risk_columns($risk_columns, $mitigation_columns, $review_columns, $scoring_columns, $unassigned_columns, $risk_mapping_columns);
+        display_risk_columns($risk_columns, $mitigation_columns, $review_columns, $scoring_columns, $unassigned_columns, $risk_mapping_columns, $custom_display_settings);
 }
 
 /*************************************************
@@ -5564,16 +5564,28 @@ function display_save_dynamic_risk_selections() {
                                                 },
                                                 option: function (data) {
                                                     if (data.value) {
-                                                        return $('<div>', {class: 'option d-flex'}).html(data.name + '<i class=\'fa fa-trash font-10 rounded-5 p-1 delete-option-btn\'></i>');
+    ";
+
+    if (check_permission("delete_saved_risk_reports")) {
+        echo "
+                                                        return $('<div>', {class: 'option d-flex'}).text(data.name).append($('<i>', {class: 'fa fa-trash font-10 rounded-5 p-1 delete-option-btn'}));
+        ";
+    } else {
+        echo "
+                                                        return $('<div>', {class: 'option'}).text(data.name);
+        ";
+    }
+
+    echo "
                                                     } else {
-                                                        return $('<div>', {class: 'option'}).html(data.name);
+                                                        return $('<div>', {class: 'option'}).text(data.name);
                                                     }
                                                 },
                                                 item: function (data) {
                                                     if (data.value) {
-                                                        return $('<div>', {class: 'item'}).html('[' + (data.class == 'private' ? '$private' : '$public') + '] ' + data.name); 
+                                                        return $('<div>', {class: 'item'}).text('[' + (data.class == 'private' ? '$private' : '$public') + '] ' + data.name); 
                                                     } else {
-                                                        return $('<div>', {class: 'item'}).html('');
+                                                        return $('<div>', {class: 'item'}).text('');
                                                     }
                                                 }
                                             }
@@ -5616,6 +5628,10 @@ function display_save_dynamic_risk_selections() {
                             </div>
                         </div>
                     </form>
+    ";
+
+    if (check_permission("add_saved_risk_reports")) {
+        echo "
                     <form method='post' id='save-selections-form'>
                         <div class='row align-items-end'>
                             <div class='col-4'>
@@ -5635,25 +5651,41 @@ function display_save_dynamic_risk_selections() {
                             </div>
                         </div>
                     </form>
+        ";
+    }
+
+    echo "
                 </div>
             </div>
         </div>
             
         <script>
             $(document).ready(function(){
-                
+    ";
+
+    if (check_permission("add_saved_risk_reports")) {
+        echo "
                 $('#save-selections-form').submit(function(){
                     var self = $(this);
                     var type = $('#saved-selection-type', self).val();
                     var name = $('input[name=name]', self).val();
+
+                    // Get ordered columns from the sortable order list
+                    let selected_columns = [];
+                    $('#dynamic-report-column-order li[data-column]').each(function() {
+                        selected_columns.push($(this).data('column'));
+                    });
                     
-                    var viewColumns = [];
-                    var risk_columns = $('#risk_columns').val();
-                    var mitigation_columns = $('#mitigation_columns').val();
-                    var review_columns = $('#review_columns').val();
-                    var scoring_columns = $('#scoring_columns').val();
-                    var risk_mapping_columns = $('#risk_mapping_columns').val();
-                    var selected_columns = risk_columns.concat(mitigation_columns, review_columns, scoring_columns, risk_mapping_columns);
+                    // Fallback to multiselect values if order list is empty
+                    if (selected_columns.length === 0) {
+                        let risk_columns = $('#risk_columns').val() || [];
+                        let mitigation_columns = $('#mitigation_columns').val() || [];
+                        let review_columns = $('#review_columns').val() || [];
+                        let scoring_columns = $('#scoring_columns').val() || [];
+                        let risk_mapping_columns = $('#risk_mapping_columns').val() || [];
+                        selected_columns = risk_columns.concat(mitigation_columns, review_columns, scoring_columns, risk_mapping_columns);
+                    }
+
                     var columnFilters = [];
                     $('.risk-datatable:first .dynamic-column-filter').each(function(i){
                         if($(this).val().length > 0){
@@ -5665,6 +5697,21 @@ function display_save_dynamic_risk_selections() {
                     selectFilters.status = $('#status').val();
                     selectFilters.group = $('#group').val();
                     selectFilters.sort = $('#sort').val();
+                    
+                    // Include current table sort (column and direction) in saved selection
+                    if (riskDataTables && riskDataTables.length > 0) {
+                        var dt = riskDataTables[0];
+                        var order = dt.order();
+                        if (order && order.length && order[0].length >= 2) {
+                            var colIndex = order[0][0];
+                            var orderDir = order[0][1];
+                            var th = $('.risk-datatable:first tr.main th').eq(colIndex);
+                            if (th.length && th.data('name')) {
+                                selectFilters.order_column = th.data('name');
+                                selectFilters.order_dir = orderDir;
+                            }
+                        }
+                    }
 
                     var test = $.ajax({
                         type: 'POST',
@@ -5703,8 +5750,10 @@ function display_save_dynamic_risk_selections() {
                     });
                     
                     return false;
-                })
-                
+                });
+        ";  
+    }
+    echo "
                 $('#saved_selections').change(function(){
                     var selection = $(this).val();
                     if(selection){
@@ -5722,7 +5771,7 @@ function display_save_dynamic_risk_selections() {
 /*********************************
 * FUNCTION: DISPLAY RISK COLUMNS *
 **********************************/
-function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_columns=[], $scoring_columns=[], $unassigned_columns=[], $risk_mapping_columns=[]) {
+function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_columns=[], $scoring_columns=[], $unassigned_columns=[], $risk_mapping_columns=[], $custom_display_settings=[]) {
 
     global $escaper, $lang;
 
@@ -5863,6 +5912,63 @@ function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_
         }
     }
 
+    // Get all selected columns in their current order 
+    $all_selected_columns = array_merge(
+        $risk_columns_selected,
+        $mitigation_columns_selected,
+        $review_columns_selected,
+        $scoring_columns_selected,
+        $unassigned_columns_selected,
+        $risk_mapping_columns_selected
+    );
+
+    // Reorder $all_selected_columns based on the current view's column order
+    // Uses $custom_display_settings which contains either saved selection's order or user's order
+    if (is_array($custom_display_settings) && count($custom_display_settings) > 0) {
+        $custom_order = $custom_display_settings;
+        $ordered_selected_columns = [];
+        // First, add columns in the order specified by custom_display_settings
+        foreach ($custom_order as $column) {
+            if (in_array($column, $all_selected_columns)) {
+                $ordered_selected_columns[] = $column;
+            }
+        }
+        // Then, add any remaining columns that might not be in custom_display_settings
+        foreach ($all_selected_columns as $column) {
+            if (!in_array($column, $ordered_selected_columns)) {
+                $ordered_selected_columns[] = $column;
+            }
+        }
+        $all_selected_columns = $ordered_selected_columns;
+    }
+
+    // Build a lookup for all columns with their labels
+    $all_columns_lookup = [];
+
+    foreach ($risk_columns_option as $col) {
+        $all_columns_lookup[$col['value']] = ['name' => $col['name'], 'category' => 'risk'];
+    }
+
+    foreach ($mitigation_columns_option as $col) {
+        $all_columns_lookup[$col['value']] = ['name' => $col['name'], 'category' => 'mitigation'];
+    }
+
+    foreach ($review_columns_option as $col) {
+        $all_columns_lookup[$col['value']] = ['name' => $col['name'], 'category' => 'review'];
+    }
+
+    foreach ($scoring_columns_option as $col) {
+        $all_columns_lookup[$col['value']] = ['name' => $col['name'], 'category' => 'scoring'];
+    }
+
+    foreach ($unassigned_columns_option as $col) {
+        $all_columns_lookup[$col['value']] = ['name' => $col['name'], 'category' => 'unassigned'];
+    }
+
+    foreach ($risk_mapping_columns_option as $col) {
+        $all_columns_lookup[$col['value']] = ['name' => $col['name'], 'category' => 'risk_mapping'];
+    }
+
     echo "
         <div class='accordion-item' id='column-selections-container'>
             <h2 class='accordion-header'>
@@ -5870,52 +5976,111 @@ function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_
             </h2>
             <div id='column-selection-accordion-body' class='accordion-collapse collapse'>
                 <div class='accordion-body card-body'>
-                    <div class='row'>
-                        <div class='col-4 form-group'>
-                            <label>{$escaper->escapeHtml($lang['RiskColumns'])} :</label>
-    ";
-                            create_multiple_dropdown("", $risk_columns_selected, "risk_columns", $risk_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
-    echo "
-                        </div>
-                        <div class='col-4 form-group'>
-                            <label>{$escaper->escapeHtml($lang['MitigationColumns'])} :</label>
-    ";
-                            create_multiple_dropdown("", $mitigation_columns_selected, "mitigation_columns", $mitigation_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
-    echo "
-                        </div>
-                        <div class='col-4 form-group'>
-                            <label>{$escaper->escapeHtml($lang['ReviewColumns'])} :</label>
-    ";
-                            create_multiple_dropdown("", $review_columns_selected, "review_columns", $review_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
-    echo "
-                        </div>
+                    <div>
+                        <nav class='nav nav-tabs' id='column-selection-tabs'>
+                            <a class='nav-link active' id='select-columns-tab' data-bs-target='#select-columns-content' data-bs-toggle='tab'>{$escaper->escapeHtml($lang['SelectColumns'])}</a>
+                            <a class='nav-link' id='column-order-tab' data-bs-target='#column-order-content' data-bs-toggle='tab'>{$escaper->escapeHtml($lang['ColumnOrder'])}</a>
+                        </nav>
                     </div>
-                    <div class='row'>
-                        <div class='col-4'>
-                            <label>{$escaper->escapeHtml($lang['RiskScoringColumns'])} :</label>
+                    <div class='tab-content card-body my-2 border' id='column-selection-tabs-content'>
+
+                        <!-- Tab 1: Select Columns (multiselects) -->
+
+                        <div class='tab-pane active' id='select-columns-content'>
+                            <div class='row'>
+                                <div class='col-4 form-group'>
+                                    <label>{$escaper->escapeHtml($lang['RiskColumns'])} :</label>
     ";
-                            create_multiple_dropdown("", $scoring_columns_selected, "scoring_columns", $scoring_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
+                                    create_multiple_dropdown("", $risk_columns_selected, "risk_columns", $risk_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
     echo "
-                        </div>
+                                </div>
+                                <div class='col-4 form-group'>
+                                    <label>{$escaper->escapeHtml($lang['MitigationColumns'])} :</label>
+    ";
+                                    create_multiple_dropdown("", $mitigation_columns_selected, "mitigation_columns", $mitigation_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
+    echo "
+                                </div>
+                                <div class='col-4 form-group'>
+                                    <label>{$escaper->escapeHtml($lang['ReviewColumns'])} :</label>
+    ";
+                                    create_multiple_dropdown("", $review_columns_selected, "review_columns", $review_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
+    echo "
+                                </div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-4'>
+                                    <label>{$escaper->escapeHtml($lang['RiskScoringColumns'])} :</label>
+    ";
+                                    create_multiple_dropdown("", $scoring_columns_selected, "scoring_columns", $scoring_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
+    echo "
+                                </div>
     ";
 
     if (count($unassigned_columns_option)) {
         echo "
-                        <div class='col-4'>
-                            <label>{$escaper->escapeHtml($lang['UnassignedColumns'])} :</label>
+                                <div class='col-4'>
+                                    <label>{$escaper->escapeHtml($lang['UnassignedColumns'])} :</label>
         ";
-                            create_multiple_dropdown("", $unassigned_columns_selected, "unassigned_columns", $unassigned_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
+                                    create_multiple_dropdown("", $unassigned_columns_selected, "unassigned_columns", $unassigned_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
         echo "
-                        </div>
+                                </div>
         "; 
     }
 
     echo "
-                        <div class='col-4'>
-                            <label>{$escaper->escapeHtml($lang['RiskMappingColumns'])} :</label>
+                                <div class='col-4'>
+                                    <label>{$escaper->escapeHtml($lang['RiskMappingColumns'])} :</label>
     ";
-                            create_multiple_dropdown("", $risk_mapping_columns_selected, "risk_mapping_columns", $risk_mapping_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
+                                    create_multiple_dropdown("", $risk_mapping_columns_selected, "risk_mapping_columns", $risk_mapping_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
     echo "
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 2: Column Order (drag and drop) -->
+
+                        <div class='tab-pane' id='column-order-content'>
+                            <strong class='d-inline-block mb-1'><i class='fa fa-info-circle'></i> {$escaper->escapeHtml($lang['DragAndDropToReorder'])}</strong>
+                            <ul class='sortable-columns' id='dynamic-report-column-order'>
+    ";
+    
+    // Display selected columns in their current order
+    if (count($all_selected_columns) > 0) {
+        foreach ($all_selected_columns as $column_key) {
+            if (isset($all_columns_lookup[$column_key])) {
+                $col_info = $all_columns_lookup[$column_key];
+                $category_label = '';
+                switch ($col_info['category']) {
+                    case 'risk': $category_label = $escaper->escapeHtml($lang['Risk']); break;
+                    case 'mitigation': $category_label = $escaper->escapeHtml($lang['Mitigation']); break;
+                    case 'review': $category_label = $escaper->escapeHtml($lang['Review']); break;
+                    case 'scoring': $category_label = $escaper->escapeHtml($lang['RiskScoring']); break;
+                    case 'unassigned': $category_label = $escaper->escapeHtml($lang['Unassigned']); break;
+                    case 'risk_mapping': $category_label = $escaper->escapeHtml($lang['RiskMapping']); break;
+                }
+                echo "
+                                <li data-column='{$escaper->escapeHtml($column_key)}' data-category='{$escaper->escapeHtml($col_info['category'])}'>
+                                    <span class='drag-handle'><i class='fa fa-grip-vertical'></i></span>
+                                    <span class='column-name'>{$escaper->escapeHtml($col_info['name'])}</span>
+                                    <span class='column-category'>{$category_label}</span>
+                                    <span class='remove-column' title='{$escaper->escapeHtml($lang['Remove'])}'><i class='fa fa-times'></i></span>
+                                </li>
+                ";
+            }
+        }
+    } else {
+        echo "
+                                <li class='no-columns-message'>{$escaper->escapeHtml($lang['NoColumnsSelected'])}</li>
+        ";
+    }
+    
+    echo "
+                            </ul>
+                        </div>
+                    </div>
+                    <div class='row mt-2'>
+                        <div class='col-12 text-end'>
+                            <button type='button' class='btn btn-submit' id='apply-column-selections'>{$escaper->escapeHtml($lang['Apply'])}</button>
                         </div>
                     </div>
                 </div>
@@ -6949,10 +7114,10 @@ function risk_average_baseline_metric($time = "day", $title = "") {
     $risksOpened = implode(',', $counts);
 
     // Create the Chart.js line chart
-    $title = $escaper->escapeHtml($lang['RiskAverageOverTime']);
+    $title = $lang['RiskAverageOverTime'];
     $element_id = "risk_score_average";
-    $x_axis_title = $escaper->escapeHtml($lang['Date']);
-    $y_axis_title = $escaper->escapeHtml($lang['RiskScore']);
+    $x_axis_title = $lang['Date'];
+    $y_axis_title = $lang['RiskScore'];
     $tooltip = "
         tooltip: {
             callbacks: {
@@ -7047,10 +7212,10 @@ function score_over_time($time = "day")
     $datasets = array_merge($datasets, $background_dataset);
 
     // Create the Chart.js line chart
-    $title = $escaper->escapeHtml($lang['RiskScoringHistory']);
+    $title = $lang['RiskScoringHistory'];
     $element_id = "risk_score_average";
-    $x_axis_title = $escaper->escapeHtml($lang['Date']);
-    $y_axis_title = $escaper->escapeHtml($lang['RiskScore']);
+    $x_axis_title = $lang['Date'];
+    $y_axis_title = $lang['RiskScore'];
     $tooltip = "
         tooltip: {
             callbacks: {
@@ -7133,8 +7298,8 @@ function report_likelihood_impact() {
                     // Get the color of the calculated risk
                     $color = get_risk_color($inherent_risk);
 
-                    // Get the risk subject to be displayed
-                    $subject = str_replace("'", "\'", $risk['subject']);
+                    // Get the risk subject to be displayed (json_encode in bubble chart handles escaping)
+                    $subject = $risk['subject'];
                     $residual_risk = "{$escaper->escapeHtml($lang['ResidualRisk'])}: {$residual_risk}";
                     $residual_risk = str_pad($residual_risk, 20);
                     $risk_subjects[] = truncate_to("{$residual_risk}[{$risk_id}] {$subject}", 50);
@@ -7192,8 +7357,8 @@ function report_likelihood_impact() {
     ";
 
     $element_id = "likelihood_impact_chart";
-    $x_axis_title = $escaper->escapeHtml($lang['Likelihood']);
-    $y_axis_title = $escaper->escapeHtml($lang['Impact']);
+    $x_axis_title = $lang['Likelihood'];
+    $y_axis_title = $lang['Impact'];
     create_chartjs_bubble_code("", $element_id, $datasets, $tooltip, $x_axis_title, $y_axis_title);
 }
 
@@ -9654,7 +9819,7 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
             $str .= "
                                         <li>
                                             <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
-                                            <label for='{$elem_id}'>{$risk_columns[$field]}</label>
+                                            <label class='ms-2' for='{$elem_id}'>{$escaper->escapeHtml($risk_columns[$field])}</label>
                                         </li>
             ";
         }
@@ -9732,7 +9897,7 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
             $str .= "
                                         <li>
                                             <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
-                                            <label for='{$elem_id}'>{$mitigation_columns[$field]}</label>
+                                            <label class='ms-2' for='{$elem_id}'>{$escaper->escapeHtml($mitigation_columns[$field])}</label>
                                         </li>
             ";
         }
@@ -9809,7 +9974,7 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
             $str .= "
                                         <li>
                                             <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
-                                            <label for='{$elem_id}'>{$review_columns[$field]}</label>
+                                            <label class='ms-2' for='{$elem_id}'>{$review_columns[$field]}</label>
                                         </li>
             ";
         }
@@ -10009,7 +10174,7 @@ function display_control_gap_analysis() {
         }
 
                     // Create the dropdown
-                    create_dropdown("frameworks", $framework, "framework");
+                    create_dropdown("frameworks", $framework, "framework", blankText: $lang['NoneSelected'], customHtml: "onchange='this.form.submit();'");
 
         echo "
                 </form>
@@ -10017,10 +10182,10 @@ function display_control_gap_analysis() {
 
             <script>
                 $(function () {
-                    var frameworks = document.getElementById('framework');
-                    frameworks.addEventListener('change', function() {
-                        document.getElementById('framework_form').submit();
-                    });
+                    
+                    // Make the Control Framework dropdown to be searchable
+                    $('#framework').select2();
+                    
                 });
             </script>
         ";
@@ -10563,7 +10728,7 @@ function render_column_selection_widget($view) {
                     $.blockUI({message:\"<i class=\'fa fa-spinner fa-spin\' style=\'font-size:24px\'></i>\"});
                     $.ajax({
                         type: 'POST',
-                        url: BASE_URL + '/api/v2/admin/column_settings/save_column_settings',
+                        url: BASE_URL + '/api/v2/ui/column_settings',
                         data: form,
                         async: true,
                         cache: false,
@@ -11044,13 +11209,14 @@ function render_create_modal($view) {
     echo "
         <script>
             $(function() {
+                const view = '{$escaper->escapeHtml($view)}';
     ";
 
     if ($has_header) {
 
         echo "
                 // .off() is there to make sure there's no multiple click handlers on it in case multiple of this widget is rendered on the same page
-                $('body').off('click', '#create_popup_modal-{$view} .collapsible--toggle span.collapse-title').on('click', '#create_popup_modal-{$view} .collapsible--toggle span.collapse-title', function(event) {
+                $('body').off('click', '#create_popup_modal-' + CSS.escape(view) + ' .collapsible--toggle span.collapse-title').on('click', '#create_popup_modal-' + CSS.escape(view) + ' .collapsible--toggle span.collapse-title', function(event) {
                     event.preventDefault();
                     $(this).closest('.collapsible--toggle').next('.collapsible').slideToggle('400');
                     $(this).find('i').toggleClass('fa-caret-right fa-caret-down');
@@ -11060,7 +11226,23 @@ function render_create_modal($view) {
     }
     
     echo "
-                $('form#create_popup-{$view}').submit(function() {
+                // Reset form fields when the modal is opened
+                $('#create_popup_modal-' + CSS.escape(view)).on('show.bs.modal', function() {
+                    // Reset the form to clear any previous data
+                    resetForm($('form#create_popup-' + CSS.escape(view)), true, true);
+                    
+                    // Clear any WYSIWYG editor content
+                    if (typeof setEditorContent === 'function') {
+                        $('form#create_popup-' + CSS.escape(view) + ' textarea.create_input').each(function() {
+                            setEditorContent($(this).attr('id'), '');
+                        });
+                    }
+                    
+                    // Remove dynamically added control mapping rows
+                    $('form#create_popup-' + CSS.escape(view) + ' table.mapping_control_table tbody').html('');
+                });
+
+                $('form#create_popup-' + CSS.escape(view)).submit(function() {
                     event.preventDefault();
 
                     // Create a JSON object based on the control mapping row

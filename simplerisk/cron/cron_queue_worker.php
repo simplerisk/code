@@ -31,6 +31,7 @@ $memoryLimitBytes = 400 * 1024 * 1024;
 $stuckThresholdMinutes = 30;
 
 $startTime = time();
+$lastWorkTime = time();
 
 // === SYSTEM SETTINGS ===
 ini_set('max_execution_time', 0);
@@ -106,7 +107,7 @@ while (true) {
         break;
     }
 
-    if (($now - $startTime) > ($maxIdleMinutes * 60)) {
+    if (($now - $lastWorkTime) > ($maxIdleMinutes * 60)) {
         record_worker_restart($workerName, 'max_idle_exceeded');
         break;
     }
@@ -198,7 +199,7 @@ while (true) {
         if (!is_callable($handler)) throw new \RuntimeException("No valid handler for task #{$task['id']}");
 
         $result = $handler($task, $db);
-        write_debug_log("Task #{$task['id']} handler returned: " . var_export($result, true), "info");
+        write_debug_log("Task #{$task['id']} handler returned: " . var_export($result, true), "debug");
 
         if ($result === false) {
             handle_queue_task_failure($db, $task, "Handler returned false");
@@ -213,6 +214,8 @@ while (true) {
         write_debug_log("Unexpected error processing task #{$task['id']}: " . $t->getMessage(), "error");
         handle_queue_task_failure($db, $task, $t->getMessage(), 5, 5, 3600);
     }
+
+    $lastWorkTime = time();
 
     // === WORKER TICK ===
     worker_tick($workerName, $db);

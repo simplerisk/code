@@ -196,7 +196,7 @@ function countKeywordOccurrencesPerKeyword($text, $keywords) {
 function countKeywordMatches($docKeywords, $controlKeywords) {
     // Input validation
     if (!is_array($docKeywords) || !is_array($controlKeywords)) {
-        write_debug_log("Error: countKeywordMatches received non-array input");
+        write_debug_log("Error: countKeywordMatches received non-array input", 'warning');
         return 0;
     }
 
@@ -210,9 +210,9 @@ function countKeywordMatches($docKeywords, $controlKeywords) {
 
     // Optional: Log some details about the matches for debugging
     if ($matchCount > 0) {
-        write_debug_log("Matching terms: " . implode(", ", array_keys($matchingTerms)));
+        write_debug_log("Matching terms: " . implode(", ", array_keys($matchingTerms)), 'debug');
     } else {
-        write_debug_log("No matching terms found between document and control");
+        write_debug_log("No matching terms found between document and control", 'debug');
     }
 
     // Optional: Consider term frequencies for weighted matching
@@ -223,7 +223,7 @@ function countKeywordMatches($docKeywords, $controlKeywords) {
         $weightedMatchScore += min($docFreq, $controlFreq);
     }
 
-    write_debug_log("Match count: $matchCount, Weighted match score: $weightedMatchScore");
+    write_debug_log("Match count: $matchCount, Weighted match score: $weightedMatchScore", 'debug');
 
     // You can return either the simple count or the weighted score
     // depending on your preference

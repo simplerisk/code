@@ -38,6 +38,7 @@ function available_extras()
         array("short_name" => "ucf", "long_name" => "Unified Compliance Framework (UCF) Extra"),
         array("short_name" => "upgrade", "long_name" => "Upgrade Extra"),
 	    array("short_name" => "vulnmgmt", "long_name" => "Vulnerability Management Extra"),
+        array("short_name" => "workflows", "long_name" => "Workflows Extra"),
     );
 
     // Return the array of available Extras
@@ -122,6 +123,8 @@ function core_extra_current_version($extra)
                     return UPGRADE_EXTRA_VERSION;
                 case "vulnmgmt":
                     return VULNMGMT_EXTRA_VERSION;
+                case "workflows":
+                    return WORKFLOWS_EXTRA_VERSION;
                 default:
                     return "N/A";
 			}
@@ -172,6 +175,8 @@ function core_extra_activated($extra)
                 return true;
             case "vulnmgmt":
                 return vulnmgmt_extra();
+            case "workflows":
+                return workflows_extra();
             default:
                 return false;
         }
@@ -222,6 +227,8 @@ function core_extra_activated_link($extra)
                 return "";
 		case "vulnmgmt":
 		    return "<a class='text-info m-l-10' href='vulnmgmt.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
+        case "workflows":
+            return "<a class='text-info m-l-10' href='workflows.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
         default:
             return "";
     }
@@ -278,29 +285,41 @@ function core_display_upgrade_extras()
 			{
 				$extras_xml = $purchases->{"extras"};
 				$extra_xml = $extras_xml->{$extra['short_name']};
-				$purchased = (boolean)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
-				$disabled = (boolean)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
-				$deleted = (boolean)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
 
-				// If the extra was purchased
-				if ($purchased)
+				// If the extra is not yet known to the SimpleRisk licensing server
+				if (empty($extra_xml) || !isset($extra_xml->{"purchased"}))
 				{
-					// Get the expiration date
-					$expires = $extra_xml->{"expires"}->__toString();
-
-					// If the exipration date is not set
-					if ($expires == "0000-00-00 00:00:00")
-					{
-						$expires = $escaper->escapeHtml("N/A");
-					}
-					// If the expiration date has passed
-					else if ($expires < date('Y-m-d h:i:s'))
-					{
-						$expires = "<font color='red'><b>Expired</b></font>";
-					}
-					else $expires = "<font color='green'><b>" . $escaper->escapeHtml(substr($expires, 0, 10)) . "</b></font>";
+					$purchased = false;
+					$disabled = false;
+					$deleted = false;
+					$expires = "N/A";
 				}
-				else $expires = "N/A";
+				else
+				{
+					$purchased = (boolean)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
+					$disabled = (boolean)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
+					$deleted = (boolean)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
+
+					// If the extra was purchased
+					if ($purchased)
+					{
+						// Get the expiration date
+						$expires = $extra_xml->{"expires"}->__toString();
+
+						// If the exipration date is not set
+						if ($expires == "0000-00-00 00:00:00")
+						{
+							$expires = $escaper->escapeHtml("N/A");
+						}
+						// If the expiration date has passed
+						else if ($expires < date('Y-m-d h:i:s'))
+						{
+							$expires = "<font color='red'><b>Expired</b></font>";
+						}
+						else $expires = "<font color='green'><b>" . $escaper->escapeHtml(substr($expires, 0, 10)) . "</b></font>";
+					}
+					else $expires = "N/A";
+				}
 			}
 
 			// Check if the extra is installed
@@ -391,7 +410,7 @@ function core_is_purchased($extra)
         'extra_name' => $extra,
     );
 
-    write_debug_log("Checking for purchase of " . $extra . " for instance ID " . $instance_id);
+    write_debug_log("Checking for purchase of " . $extra . " for instance ID " . $instance_id, 'info');
 
     // Ask the service if the extra is purchased
     $response = simplerisk_service_call($parameters);
@@ -400,7 +419,7 @@ function core_is_purchased($extra)
     // If the SimpleRisk service call returned false
     if ($return_code !== 200)
     {
-        write_debug_log("Unable to communicate with the SimpleRisk services API");
+        write_debug_log("Unable to communicate with the SimpleRisk services API", 'warning');
 
         // Return false
         return false;
@@ -444,7 +463,7 @@ function core_check_all_purchases()
         'api_key' => $services_api_key,
     );
 
-    write_debug_log("Checking for all purchases for instance ID " . $instance_id);
+    write_debug_log("Checking for all purchases for instance ID " . $instance_id, 'info');
 
     // Configuration for the SimpleRisk service call
     if (defined('SERVICES_URL'))
@@ -477,7 +496,7 @@ function core_check_all_purchases()
     // If we were unable to connect to the URL
     if($return_code !== 200)
     {
-        write_debug_log("SimpleRisk was unable to connect to " . $url);
+        write_debug_log("SimpleRisk was unable to connect to " . $url, 'warning');
 
 	    // Return false
 	    return false;
@@ -485,7 +504,7 @@ function core_check_all_purchases()
     // We were able to connect to the URL
     else
     {
-        write_debug_log("SimpleRisk successfully connected to " . $url);
+        write_debug_log("SimpleRisk successfully connected to " . $url, 'info');
 
 	    // Return the XML results
 	    $xml = simplexml_load_string($result);
@@ -578,6 +597,10 @@ function core_get_action_button($extra_name, $purchased, $installed, $activated,
 	    case "vulnmgmt":
 	        $button_name = "get_vulnmgmt_extra";
 	        $action_link = "vulnmgmt.php";
+            break;
+        case "workflows":
+            $button_name = "get_workflows_extra";
+            $action_link = "workflows.php";
             break;
         case "artificial_intelligence":
             $button_name = "get_artificial_intelligence_extra";
@@ -677,7 +700,7 @@ function core_upgrade_extras($extras_to_upgrade = false) {
  *********************************************************/
 function extra_simplerisk_version_compatible($extra)
 {
-	write_debug_log("Checking version comptability for the \"" . $extra . "\" extra.");
+	write_debug_log("Checking version comptability for the \"" . $extra . "\" extra.", 'info');
 
 	// Get the list of available extra names
 	$available_extras = available_extra_short_names();
@@ -700,11 +723,11 @@ function extra_simplerisk_version_compatible($extra)
 
 		// Get the current version of SimpleRisk
 		$simplerisk_version = current_version("app");
-		write_debug_log("The current version of SimpleRisk is " . $simplerisk_version);
+		write_debug_log("The current version of SimpleRisk is " . $simplerisk_version, 'info');
 
 		// Get the current version of the extra
 		$extra_version = core_extra_current_version($extra);
-		write_debug_log("Current version of this extra is " . $extra_version);
+		write_debug_log("Current version of this extra is " . $extra_version, 'info');
 
         // Set the HTTP options
         $http_options = [
@@ -722,7 +745,7 @@ function extra_simplerisk_version_compatible($extra)
         }
         else $validate_ssl = false;
 
-		write_debug_log("Fetching content from the extra compatibility page.");
+		write_debug_log("Fetching content from the extra compatibility page.", 'info');
 
 		// Set the default socket timeout to 5 seconds
 		ini_set('default_socket_timeout', 5);
@@ -734,7 +757,7 @@ function extra_simplerisk_version_compatible($extra)
 		// If we were unable to connect to the URL
         if ($return_code !== 200)
 		{
-			write_debug_log("Unable to connect to " . $url);
+			write_debug_log("Unable to connect to " . $url, 'warning');
 			return false;
 		}
 		// We were able to connect to the URL
@@ -761,13 +784,13 @@ function extra_simplerisk_version_compatible($extra)
 				// If we have a match
 				if ($simplerisk_version == $array_simplerisk_version && $extra_version == $array_extra_version)
 				{
-					write_debug_log("The current version of SimpleRisk is compatible with this Extra.");
+					write_debug_log("The current version of SimpleRisk is compatible with this Extra.", 'info');
 					return true;
 				}
 			}
 
 			// If we never found our match
-			write_debug_log("The current version of SimpleRisk is not compatible with this Extra.");
+			write_debug_log("The current version of SimpleRisk is not compatible with this Extra.", 'warning');
 			return false;
 		}
 	}
@@ -778,7 +801,7 @@ function extra_simplerisk_version_compatible($extra)
  **************************************/
 function simplerisk_license_check()
 {
-	write_debug_log("Running license check.");
+	write_debug_log("Running license check.", 'info');
 
 	// Get if the instance is registered
 	$registration_registered = get_setting('registration_registered');
@@ -786,7 +809,7 @@ function simplerisk_license_check()
 	// If the registration is registered
 	if ($registration_registered == 1)
 	{
-		write_debug_log("The instance is registered.");
+		write_debug_log("The instance is registered.", 'info');
 
         	// Get the hosting tier setting
         	$hosting_tier = get_setting('hosting_tier');
@@ -794,7 +817,7 @@ function simplerisk_license_check()
         	// If the hosting tier is not set then this is an on-premise instance
         	if (!$hosting_tier)
         	{
-			write_debug_log("The instance is on-premise.");
+			write_debug_log("The instance is on-premise.", 'info');
 
 			// Check the license against what is installed
 			simplerisk_license_check_purchases();
@@ -845,6 +868,13 @@ function simplerisk_license_check_purchases()
 				// Get the license information
 				$extras_xml = $purchases->{"extras"};
 				$extra_xml = $extras_xml->{$extra['short_name']};
+
+				// Skip extras not yet known to the SimpleRisk licensing server
+				if (empty($extra_xml) || !isset($extra_xml->{"purchased"}))
+				{
+					continue;
+				}
+
 				$purchased = (boolean)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
 				$expires = $extra_xml->{"expires"}->__toString();
 				$disabled = (boolean)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
@@ -859,7 +889,7 @@ function simplerisk_license_check_purchases()
 				// If the Extra is activated and should be disabled
 				if ($activated && $disabled)
 				{
-					write_debug_log("SimpleRisk says this Extra should be disabled: " . $extra['short_name']);
+					write_debug_log("SimpleRisk says this Extra should be disabled: " . $extra['short_name'], 'warning');
 
 					// Deactivate the Extra
 					core_deactivate_extra($extra['short_name']);
@@ -868,7 +898,7 @@ function simplerisk_license_check_purchases()
 				// If the Extra is installed and should be deleted
 				if ($installed && $deleted)
 				{
-					write_debug_log("SimpleRisk says this Extra should be deleted: " . $extra['short_name']);
+					write_debug_log("SimpleRisk says this Extra should be deleted: " . $extra['short_name'], 'warning');
 
 					// Delete the Extra
 					core_delete_extra($extra['short_name']);
@@ -899,7 +929,7 @@ function simplerisk_license_check_purchases()
 					// If the Extra is not purchased or has expired
 					if (!$purchased || $expired)
 					{
-						write_debug_log("Extra not purchased or expired: " . $extra['short_name']);
+						write_debug_log("Extra not purchased or expired: " . $extra['short_name'], 'warning');
 
 						// Set the session value for the license check to failed
 						$_SESSION['license_check'] = "fail";
@@ -923,7 +953,7 @@ function simplerisk_license_check_purchases()
         	                			// If it has been 30 or more days since the license check failure
         	                			if ($days >= 30)
 							{
-								write_debug_log("Deactivating and deleting Extra: " . $extra['short_name']);
+								write_debug_log("Deactivating and deleting Extra: " . $extra['short_name'], 'warning');
 
 								// Deactivate the Extra
 								core_deactivate_extra($extra['short_name']);
@@ -936,7 +966,7 @@ function simplerisk_license_check_purchases()
 					// If the Extra is purchased and has not expired
 					else if ($purchased && !$expired)
 					{
-						write_debug_log("Removing license check failure for Extra: " . $extra['short_name']);
+						write_debug_log("Removing license check failure for Extra: " . $extra['short_name'], 'info');
 
 						// Delete the setting for a failed license date
 						delete_setting($license_check_fail_date_name);
@@ -1024,6 +1054,9 @@ function core_deactivate_extra($extra)
 					return false;
 				case "vulnmgmt":
 					disable_vulnmgmt_extra();
+					return true;
+				case "workflows":
+					disable_workflows_extra();
 					return true;
 				default:
 					return false;

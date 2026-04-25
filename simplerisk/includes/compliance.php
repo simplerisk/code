@@ -41,6 +41,8 @@ function display_framework_controls_in_compliance()
                     bSort: true,
                     orderCellsTop: true,
                     scrollX: true,
+                    stateSave: true,
+                    stateDuration: 60 * 30,
                     ajax: {
                         type: 'post',
                         url: BASE_URL + '/api/compliance/define_tests',
@@ -76,110 +78,125 @@ function display_framework_controls_in_compliance()
                     $('#test--delete [name=test_id]').val(testId);
                     $('#test--delete').modal('show');
                 })
-                
-                $('body').on('click', '.edit-test', function(){
-                    var testId = $(this).data('id');
-                    $.ajax({
-                        type: 'GET',
-                        url:  BASE_URL + '/api/compliance/test?id=' + testId,
-                        success: function(result){
-                            var data = result['data'];
-                            var form = $('#test-edit-form');
-                            $('[name=test_id]', form).val(data['id']);
-                            $('[name=tester]', form).val(data['tester']);
-
-                            $('#additional_stakeholders_edit', form).multiselect('deselectAll', false);
-                            $('#additional_stakeholders_edit', form).multiselect('select', data['additional_stakeholders']);
-
-                            $('[name=\'team[]\']', form).multiselect('deselectAll', false);
-                            $('[name=\'team[]\']', form).multiselect('select', data['teams']);
-
-                            $('[name=test_frequency]', form).val(data['test_frequency']);
-
-                            // If the audit_initiation_offset is not null, auto_audit_initiation is true
-                            if (data['audit_initiation_offset'] != null) {
-
-                                // Check the auto_audit_initiation true radio button
-                                $('[name=auto_audit_initiation][value=\"1\"]', form).prop('checked', true);
-
-                                // Enable and require the audit_initiation_offset input
-                                $('[name=audit_initiation_offset]', form).prop('disabled', false);
-                                $('[name=audit_initiation_offset]', form).prop('required', true);
-
-                                // Show the required mark
-                                $('.audit-initiation .audit-initiation-offset-container span.required', form).removeClass('d-none');
-
-                                // Set the audit_initiation_offset value
-                                $('[name=audit_initiation_offset]', form).val(data['audit_initiation_offset']);
-
-                            // If the audit_initiation_offset is null, auto_audit_initiation is false
-                            } else {
-
-                                // Check the auto_audit_initiation false radio button
-                                $('[name=auto_audit_initiation][value=\"0\"]', form).prop('checked', true);
-
-                                // Disable and not require the audit_initiation_offset input
-                                $('[name=audit_initiation_offset]', form).prop('disabled', true);
-                                $('[name=audit_initiation_offset]', form).prop('required', false);
-
-                                // Hide the required mark
-                                $('.audit-initiation .audit-initiation-offset-container span.required', form).addClass('d-none');
-
-                                // Clear the audit_initiation_offset value
-                                $('[name=audit_initiation_offset]', form).val('');
-                            }
-                            $('[name=last_date]', form).val(data['last_date']);
-                            if (!data['last_date']) {
-                                if (!data['next_date'] || data['next_date'] <= '" . date("Y-m-d") . "') {
-                                    $('[name=next_date]', form).val('" . date("Y-m-d") . "');
-                                } else {
-                                    $('[name=next_date]', form).val(data['next_date']);
-                                }
-                            } else {
-                                let date_obj = new Date(data['last_date']);
-                                date_obj.setDate(date_obj.getDate() + data['test_frequency']);
-                                let calc_next_date = date_obj.toISOString().split('T')[0];
-                                if (calc_next_date < '" . date("Y-m-d") . "') {
-                                    $('[name=next_date]', form).val('" . date("Y-m-d") . "');
-                                } else {
-                                    $('[name=next_date]', form).val(calc_next_date);
-                                }
-                            }
-                            $('[name=name]', form).val(data['name']);
-                            $('[name=objective]', form).val(data['objective']);
-                            $('[name=test_steps]', form).val(data['test_steps']);
-                            $('[name=approximate_time]', form).val(data['approximate_time']);
-                            $('[name=expected_results]', form).val(data['expected_results']);
-                            $('[name=last_date]', form).initAsDatePicker({maxDate: new Date});
-                            if(data['last_date'] != '') {
-                                min_next_date = new Date(data['last_date']);
-                            } else min_next_date = null;
-                            $('[name=next_date]', form).initAsDatePicker({minDate: min_next_date});
-                            $.each(data['tags'], function (i, item) {
-                                $('[name=\'tags[]\']', form).append($('<option>', { 
-                                    value: item,
-                                    text : item,
-                                    selected : true,
-                                }));
-                            });
-                            var select = $('[name=\'tags[]\']', form).selectize();
-                            var selectize = select[0].selectize;
-                            selectize.setValue(data['tags']);
-                            $('#test--edit').modal('show');
-
-                            setEditorContent('edit_objective', data['objective']);
-                            setEditorContent('edit_test_steps', data['test_steps']);
-                            setEditorContent('edit_expected_results', data['expected_results']);
-                        },
-                        error: function(xhr,status,error){
-                            if(xhr.responseJSON && xhr.responseJSON.status_message){
-                                showAlertsFromArray(xhr.responseJSON.status_message);
-                            }
-                        }
-                    })
-                });
             });
         </script>
+    ";
+}
+
+/***************************************
+ * FUNCTION: DISPLAY UPDATE TEST MODAL *
+ ***************************************/
+function display_update_test_modal($where = "define_tests") {
+    global $lang, $escaper;
+
+    echo "
+        <div id='test--update' class='modal fade' tabindex='-1' aria-hidden='true'>
+            <div class='modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered'>
+                <div class='modal-content'>
+                    <form class='' id='update-test-form' method='post' autocomplete='off'>
+                        <input type='hidden' name='test_id' value=''>
+                        <input type='hidden' name='update_test' value='true'>
+                        <input type='hidden' name='where' value='{$escaper->escapeHtml($where)}'>
+                        <div class='modal-header'>
+                            <h4 class='modal-title'>{$escaper->escapeHtml($lang['TestEditHeader'])}</h4>
+                            <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                        </div>
+                        <div class='modal-body'>
+                            <div class='row form-group'>
+                                <div class='col-6'>
+                                    <label for=''>{$escaper->escapeHtml($lang['TestName'])}<span class='required'>*</span> :</label>
+                                    <input type='text' name='name' required value='' class='form-control' maxlength='1000' title='{$escaper->escapeHtml($lang['TestName'])}'>
+                                </div> 
+                                <div class='col-6'>
+                                    <label for=''>{$escaper->escapeHtml($lang['Tester'])}<span class='required'>*</span> :</label>
+    ";
+                                    create_dropdown("enabled_users", NULL, "tester", false, false, false, "required title='{$escaper->escapeHtml($lang['Tester'])}'"); 
+    echo "
+                                </div>
+                            </div>
+                            <div class='row form-group'>
+                                <div class='col-6'>
+                                    <label for=''>{$escaper->escapeHtml($lang['AdditionalStakeholders'])} :</label>
+    ";
+                                    create_multiple_dropdown("enabled_users", NULL, "additional_stakeholders"); 
+    echo "
+                                </div>
+                                <div class='col-6'>
+                                    <label for=''>{$escaper->escapeHtml($lang['Teams'])} :</label>
+    ";
+                                    create_multiple_dropdown("team"); 
+    echo "
+                                </div>
+                            </div>
+                            <div class='row form-group'>
+                                <div class='col-6'>
+                                    <label for=''>{$escaper->escapeHtml($lang['TestFrequency'])}<small class='white-labels ms-1'>({$escaper->escapeHtml($lang['days'])})</small> :</label>
+                                    <input type='number' min='0' max='2147483647' name='test_frequency' value='' class='form-control'>
+                                </div>
+                                <div class='col-6'>
+                                    <label for=''>{$escaper->escapeHtml($lang['LastTestDate'])} :</label>
+                                    <input type='text' name='last_date' value='' class='form-control datepicker'> 
+                                </div>
+                            </div>
+                            <div class='row form-group'>
+                                <div class='col-12'>
+                                    <label for=''>{$escaper->escapeHtml($lang['NextTestDate'])} :</label>
+                                    <input type='text' name='next_date' value='' class='form-control datepicker'> 
+                                </div>
+                            </div>
+                            <div class='row form-group audit-initiation'>
+                                <div class='col-6'>
+                                    <label>{$escaper->escapeHtml($lang['AutoInitiateAudit'])} :</label>
+                                    <div class='mt-1'>
+                                        <input type='radio' name='auto_audit_initiation' value='1' id='edit_audit_auto_init_yes' class='form-check-input cursor-pointer'/>
+                                        <label for='edit_audit_auto_init_yes' class='cursor-pointer'>{$escaper->escapeHtml($lang['Yes'])}</label>
+                                        <input type='radio' name='auto_audit_initiation' value='0' id='edit_audit_auto_init_no' class='form-check-input ms-3 cursor-pointer' checked/>
+                                        <label for='edit_audit_auto_init_no' class='cursor-pointer'>{$escaper->escapeHtml($lang['No'])}</label>
+                                    </div>
+                                </div>
+                                <div class='col-6 audit-initiation-offset-container'>
+                                    <label for='edit_audit_initiation_offset'>{$escaper->escapeHtml($lang['AuditInitiationOffset'])}<small class='text-dark ms-1'>({$escaper->escapeHtml($lang['AuditInitiationOffset_explanation'])})</small><span class='required d-none'>*</span> :</label>
+                                    <input type='number' name='audit_initiation_offset' id='edit_audit_initiation_offset' class='form-control' disabled title='{$escaper->escapeHtml($lang['AuditInitiationOffset'])}' min='0'>
+                                </div>
+                            </div>
+                            <div class='row form-group'>
+                                <div class='col-6'>
+                                    <label for=''>{$escaper->escapeHtml($lang['Objective'])} :</label>
+                                    <textarea name='objective' id='objective' class='form-control' rows='3' style='max-width:100%;height: auto;'></textarea>
+                                </div>
+                                <div class='col-6'>
+                                    <label for=''>{$escaper->escapeHtml($lang['TestSteps'])} :</label>
+                                    <textarea name='test_steps' id='test_steps' class='form-control' rows='3' style='max-width:100%;height:auto;'></textarea>
+                                </div>
+                            </div>
+                            <div class='row form-group'>
+                                <div class='col-12'>
+                                    <label for=''>{$escaper->escapeHtml($lang['ApproximateTime'])}<small class='text-dark ms-1'>({$escaper->escapeHtml($lang['minutes'])})</small> :</label>
+                                    <input type='number' min='0' max='2147483647' name='approximate_time' value='' class='form-control'>
+                                </div>
+                            </div>
+                            <div class='row form-group'>
+                                <div class='col-12'>
+                                    <label for=''>{$escaper->escapeHtml($lang['ExpectedResults'])} :</label>
+                                    <textarea name='expected_results' id='expected_results' class='form-control' rows='3' style='max-width:100%;height: auto;'></textarea>
+                                </div>
+                            </div>
+                            <div class='row form-group mb-0'>
+                                <div class='col-12'>
+                                    <label for=''>{$escaper->escapeHtml($lang['Tags'])} :</label>
+                                    <select class='test_tags' readonly name='tags[]' multiple placeholder='{$escaper->escapeHtml($lang['TagsWidgetPlaceholder'])}'></select>
+                                    <div class='tag-max-length-warning'>{$escaper->escapeHtml($lang['MaxTagLengthWarning'])}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class='modal-footer'>
+                            <button type='button' class='btn btn-secondary' data-bs-dismiss='modal' aria-label='Close'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+                            <button type='submit' id='update_test' class='btn btn-submit'>{$escaper->escapeHtml($lang['Update'])}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     ";
 }
 
@@ -236,6 +253,12 @@ function add_framework_control_test($tester, $test_frequency, $name, $objective,
 
     // Close the database connection
     db_close($db);
+
+    trigger_workflow_event('test.created', [
+        'test_id'    => $test_id,
+        'control_id' => $framework_control_id,
+        'tester'     => $tester,
+    ]);
 
     return $test_id;
 }
@@ -296,6 +319,11 @@ function update_framework_control_test($test_id, $tester=false, $test_frequency=
     $message = _lang('AuditLog_TestUpdated', array('test_name' => $name, 'test_id' => $test_id, 'user_name' => $_SESSION['user'], 'changes' => $changes), false);
     write_log((int)$test_id + 1000, $_SESSION['uid'], $message, "test");
 
+    trigger_workflow_event('test.updated', [
+        'test_id'    => $test_id,
+        'control_id' => $framework_control_id,
+        'tester'     => $tester,
+    ]);
 
     return $test_id;
 }
@@ -939,7 +967,13 @@ function initiate_test_audit($test_id, $initiated_audit_status, $tags=[], $reque
         write_log((int)$test_id + 1000, 0, $message, "test");
 
     }
-    
+
+    trigger_workflow_event('audit.initiated', [
+        'audit_id'   => $audit_id,
+        'test_id'    => $test_id,
+        'control_id' => $test['framework_control_id'],
+    ]);
+
     return $name;
 }
 
@@ -1958,6 +1992,12 @@ function save_test_result($test_audit_id, $status, $test_result, $tester, $test_
         $message = _lang('AuditLog_TestAuditUpdated', ['test_audit_name' => $test_audit["name"], 'test_audit_id' => $test_audit_id, 'user_name' => $_SESSION['user'], 'changes' => $changes], false);
         write_log((int)$test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
     }
+
+    trigger_workflow_event('audit.updated', [
+        'audit_id' => $test_audit_id,
+        'test_id'  => $test_audit['test_id'],
+        'tester'   => $tester,
+    ]);
 
     return true;
 }
@@ -3260,14 +3300,28 @@ function run_auto_initiate_test_cron() {
  * passing and failing controls based on their most recent    *
  * test result                                                 *
  **************************************************************/
-function get_framework_controls_test_status_counts() {
+function get_framework_controls_test_status_counts($framework_ids = null) {
+    // null  = no filter (all active frameworks)
+    // []    = explicit empty selection (return nothing)
+    // [ids] = filter to those framework IDs
+    if ($framework_ids !== null && empty($framework_ids)) {
+        return [];
+    }
+
     // Open the database connection
     $db = db_open();
-    
+
+    // Build optional IN clause for framework filtering
+    $fw_clause = '';
+    if (!empty($framework_ids)) {
+        $placeholders = implode(',', array_fill(0, count($framework_ids), '?'));
+        $fw_clause = "AND f.value IN ({$placeholders})";
+    }
+
     // Query to get controls by framework with passing/failing test counts
     // Uses the most recent test result for each control
     $stmt = $db->prepare("
-        SELECT 
+        SELECT
             f.value as framework_id,
             f.name as framework_name,
             COUNT(DISTINCT fc.id) as total_controls,
@@ -3277,7 +3331,7 @@ function get_framework_controls_test_status_counts() {
         INNER JOIN framework_control_mappings fcm ON f.value = fcm.framework
         INNER JOIN framework_controls fc ON fcm.control_id = fc.id AND fc.deleted = 0
         LEFT JOIN (
-            SELECT 
+            SELECT
                 ta1.framework_control_id,
                 tr1.test_result
             FROM framework_control_test_audits ta1
@@ -3291,18 +3345,150 @@ function get_framework_controls_test_status_counts() {
                 AND tr2.test_result IN ('Pass', 'Fail')
             )
         ) latest_test ON fc.id = latest_test.framework_control_id
-        WHERE f.status = 1
+        WHERE f.status = 1 {$fw_clause}
         GROUP BY f.value, f.name
         ORDER BY f.name ASC
     ");
-    
-    $stmt->execute();
+
+    if (!empty($framework_ids)) {
+        $stmt->execute(array_values($framework_ids));
+    } else {
+        $stmt->execute();
+    }
+
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
     // Close the database connection
     db_close($db);
-    
+
     return $results;
+}
+
+/************************************************************
+ * FUNCTION: GET FRAMEWORK CONTROLS PASS RATE BY MONTH     *
+ * Returns monthly pass rate (%) per framework over the    *
+ * last $months months.                                    *
+ * Result shape:                                           *
+ *   [framework_name => [month => pass_rate_pct], ...]     *
+ * month format: 'YYYY-MM'                                 *
+ ************************************************************/
+function get_framework_controls_pass_rate_by_month($months = 12, $framework_ids = null) {
+    // null  = no filter (all active frameworks)
+    // []    = explicit empty selection (return nothing)
+    // [ids] = filter to those framework IDs
+    if ($framework_ids !== null && empty($framework_ids)) {
+        return [];
+    }
+
+    $db = db_open();
+
+    // Build optional IN clause for framework filtering
+    $fw_clause = '';
+    if (!empty($framework_ids)) {
+        $placeholders = implode(',', array_fill(0, count($framework_ids), '?'));
+        $fw_clause = "AND f.value IN ({$placeholders})";
+    }
+
+    $stmt = $db->prepare("
+        SELECT
+            f.name AS framework_name,
+            DATE_FORMAT(tr.submission_date, '%Y-%m') AS month,
+            COUNT(DISTINCT CASE WHEN tr.test_result = 'Pass' THEN fc.id END) AS passing_controls,
+            COUNT(DISTINCT fc.id) AS tested_controls
+        FROM frameworks f
+        INNER JOIN framework_control_mappings fcm ON f.value = fcm.framework
+        INNER JOIN framework_controls fc ON fcm.control_id = fc.id AND fc.deleted = 0
+        INNER JOIN framework_control_test_audits ta ON fc.id = ta.framework_control_id
+        INNER JOIN framework_control_test_results tr ON ta.id = tr.test_audit_id
+            AND tr.test_result IN ('Pass', 'Fail')
+        WHERE f.status = 1
+            AND tr.submission_date >= DATE_SUB(NOW(), INTERVAL ? MONTH)
+            {$fw_clause}
+        GROUP BY f.value, f.name, month
+        ORDER BY f.name ASC, month ASC
+    ");
+
+    $params = array_merge([$months], !empty($framework_ids) ? array_values($framework_ids) : []);
+    $stmt->execute($params);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    db_close($db);
+
+    // Restructure into [framework => [month => pass_rate%]]
+    $result = [];
+    foreach ($rows as $row) {
+        $fw      = $row['framework_name'];
+        $mo      = $row['month'];
+        $tested  = (int)$row['tested_controls'];
+        $passing = (int)$row['passing_controls'];
+        if (!isset($result[$fw])) {
+            $result[$fw] = [];
+        }
+        $result[$fw][$mo] = $tested > 0 ? round(100 * $passing / $tested, 1) : 0.0;
+    }
+
+    return $result;
+}
+
+/*************************************************************
+ * FUNCTION: GET AUDIT REMEDIATION CYCLE TIME BY FRAMEWORK *
+ *                                                          *
+ * Returns the average number of days from audit initiation *
+ * (created_at) to result submission (submission_date) for  *
+ * all closed audits, grouped by framework.                 *
+ *                                                          *
+ * Audits without a recorded test result are excluded.      *
+ *                                                          *
+ * $framework_ids:                                          *
+ *   null  = no filter (all active frameworks)              *
+ *   []    = explicit empty selection (return [])           *
+ *   [ids] = filter to those framework IDs                  *
+ *                                                          *
+ * Returns array of:                                        *
+ *   ['framework_name' => string, 'avg_days' => float,      *
+ *    'audit_count'    => int]                              *
+ *************************************************************/
+function get_audit_remediation_cycle_time_by_framework($framework_ids = null) {
+    if ($framework_ids !== null && empty($framework_ids)) {
+        return [];
+    }
+
+    $closed_status = (int)get_setting('closed_audit_status');
+
+    $db = db_open();
+
+    // Build optional IN clause for framework filtering
+    $fw_clause = '';
+    if (!empty($framework_ids)) {
+        $placeholders = implode(',', array_fill(0, count($framework_ids), '?'));
+        $fw_clause = "AND f.value IN ({$placeholders})";
+    }
+
+    $stmt = $db->prepare("
+        SELECT
+            f.name AS framework_name,
+            ROUND(AVG(DATEDIFF(fctr.submission_date, fcta.created_at)), 1) AS avg_days,
+            COUNT(DISTINCT fcta.id) AS audit_count
+        FROM framework_control_test_audits fcta
+        INNER JOIN framework_control_test_results fctr ON fctr.test_audit_id = fcta.id
+            AND fctr.submission_date IS NOT NULL
+        INNER JOIN framework_controls fc ON fc.id = fcta.framework_control_id AND fc.deleted = 0
+        INNER JOIN framework_control_mappings fcm ON fcm.control_id = fc.id
+        INNER JOIN frameworks f ON f.value = fcm.framework AND f.status = 1
+        WHERE fcta.status = ?
+            AND fcta.created_at IS NOT NULL
+            {$fw_clause}
+        GROUP BY f.value, f.name
+        ORDER BY avg_days DESC
+    ");
+
+    $params = array_merge([$closed_status], !empty($framework_ids) ? array_values($framework_ids) : []);
+    $stmt->execute($params);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    db_close($db);
+
+    return $rows;
 }
 
 ?>
