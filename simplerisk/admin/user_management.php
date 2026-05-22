@@ -10,6 +10,7 @@
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/messages.php'));
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));
+    require_once(realpath(__DIR__ . '/../includes/extras.php'));
 
     $default_role_id = get_default_role_id();
 
@@ -114,14 +115,13 @@
                                 }
                             }
 
-                            // If ths customization extra is enabled, add new user to custom field as user multi dropdown
-                            if(customization_extra()) {
-
-                                // Include the extra
-                                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-                                add_user_to_custom_fields($user_id);
-
-                            }
+                            // Add new user to custom field as user multi dropdown (no-op if customization extra is disabled)
+                            call_extra_function(
+                                'customization_extra',
+                                __DIR__ . '/../extras/customization/index.php',
+                                'add_user_to_custom_fields',
+                                [$user_id]
+                            );
 
                             // Clear values
                             $name = "";
@@ -950,7 +950,7 @@
     function get_responsibilities(role_id) {
         $.ajax({
             type: "GET",
-            url: BASE_URL + "/api/role_responsibilities/get_responsibilities",
+            url: BASE_URL + "/api/v2/role_responsibilities/get_responsibilities",
             data: {
                 role_id: role_id
             },
@@ -1003,7 +1003,7 @@
                 "orderable": false
             }],
             ajax: {
-                url: BASE_URL + "/api/reports/user_management_reports",
+                url: BASE_URL + "/api/v2/reports/user_management_reports",
                 type: "POST",
                 data: function(d) {
                     d.type = type;
@@ -1023,7 +1023,7 @@
                     
                 $.ajax({
                     type: "GET",
-                    url: BASE_URL + "/api/reports/user_management_reports_unique_column_data?type=" + type,
+                    url: BASE_URL + "/api/v2/reports/user_management_reports_unique_column_data?type=" + type,
                     dataType: "json",
                     success: function(data){
                         var header = self.api().table().header();

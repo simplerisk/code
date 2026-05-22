@@ -33,7 +33,7 @@ function get_nvd_cve_info(cve, parent) {
 
     // 5. Use same-origin API (avoids CORS); 
     // fetches from https://cve.circl.lu/api/cve/ directly cause CORS issues
-    const url = BASE_URL + '/api/cve/lookup?cve_id=' + encodeURIComponent(sanitizedCVE);
+    const url = BASE_URL + '/api/v2/cve/lookup?cve_id=' + encodeURIComponent(sanitizedCVE);
 
     // 6. Make the request with additional security options
     $.ajax({

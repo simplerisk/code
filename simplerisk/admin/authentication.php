@@ -12,7 +12,32 @@ if (is_dir(realpath(__DIR__ . '/../extras/authentication')))
 {
     // Include the Authentication Extra
     require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
-    
+
+    // If the user is clearing the SAML metadata cache
+    if (isset($_POST['clear_saml_metadata_cache']))
+    {
+        clear_saml_metadata_cache();
+
+        set_alert(true, "good", "SAML metadata cache cleared. The next SAML login will re-fetch metadata from the URL.");
+
+        refresh();
+    }
+
+    // If the user is regenerating the SAML SP certificate
+    if (isset($_POST['regenerate_saml_sp_cert']))
+    {
+        if (generate_saml_sp_certificate() !== false)
+        {
+            set_alert(true, "good", "SAML SP certificate regenerated. Re-upload the SP metadata to your IdP before the next SAML login.");
+        }
+        else
+        {
+            set_alert(true, "bad", "Failed to regenerate the SAML SP certificate. Check the debug log for details.");
+        }
+
+        refresh();
+    }
+
     // If the user updated the configuration
     if (isset($_POST['update_settings']) || isset($_POST['update_ldap']) || isset($_POST['update_saml']))
     {
@@ -44,6 +69,7 @@ if (is_dir(realpath(__DIR__ . '/../extras/authentication')))
 /*********************
  * FUNCTION: DISPLAY *
  *********************/
+// @phan-suppress-next-line PhanRedefineFunction -- each admin page defines its own display() entry point
 function display($display = "")
 {
     global $lang;

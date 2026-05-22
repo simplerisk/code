@@ -50,7 +50,7 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['multiselect','CUSTOM:dynamic.js'], ['check_governance' => true], active_sidebar_submenu: 'Reporting_Governance', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'AssetsAndControls');
+    render_header_and_sidebar(['multiselect','CUSTOM:dynamic.js'], ['check_governance' => true, 'check_assets' => true], active_sidebar_submenu: 'Reporting_Reports', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'AssetsAndControls');
 
     // If User has no access permission for governance menu, enforce to main page.
     if(empty($_SESSION['governance'])) {

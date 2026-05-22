@@ -40,6 +40,7 @@ if (is_dir(realpath(__DIR__ . '/../extras/complianceforge'))) {
 /*********************
  * FUNCTION: DISPLAY *
  *********************/
+// @phan-suppress-next-line PhanRedefineFunction -- each admin page defines its own display() entry point
 function display() {
 
     global $lang;

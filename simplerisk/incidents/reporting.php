@@ -6,9 +6,12 @@
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 
-    $breadcrumb_title_key="";
-    $active_sidebar_menu ="IncidentManagement";
-    $active_sidebar_submenu ="Reporting";
+    $breadcrumb_title_key = "";
+    $active_sidebar_menu = "Reporting";
+    $active_sidebar_submenu = (isset($_GET['menu']) && $_GET['menu'] === 'incident_dashboard')
+        ? 'Reporting_Dashboards'
+        : 'Reporting_Reports';
+    $active_sidebar_thirdmenu = '';
     $active_sidebar_forthmenu = '';
 
     // If a menu was provided
@@ -19,32 +22,26 @@
             // If the overview page was displayed
             case "overview":
                 $breadcrumb_title_key = 'Overview';
-                $active_sidebar_thirdmenu ="Overview";
                 break;
             // If the incident trend page was displayed
             case "incident_trend":
                 $breadcrumb_title_key = 'IncidentTrend';
-                $active_sidebar_thirdmenu ="IncidentTrend";
                 break;
             // If the dynamic incident report page was displayed
             case "dynamic_incident_report":
                 $breadcrumb_title_key = 'DynamicIncidentReport';
-                $active_sidebar_thirdmenu ="DynamicIncidentReport";
                 break;
             // If the lessons learned page was displayed
             case "lessons_learned":
                 $breadcrumb_title_key = 'LessonsLearned';
-                $active_sidebar_thirdmenu ="IM_Reporting_LessonsLearned";
                 break;
             // If the incident dashboard page was displayed
             case "incident_dashboard":
                 $breadcrumb_title_key = 'IncidentDashboard';
-                $active_sidebar_thirdmenu = "IM_Reporting_IncidentDashboard";
                 break;
             // IF the overview page was displayed by default
             default:
                 $breadcrumb_title_key = 'Overview';
-                $active_sidebar_thirdmenu ="Overview";
                 break;
         }
         

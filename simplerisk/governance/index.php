@@ -10,6 +10,7 @@
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/permissions.php'));
     require_once(realpath(__DIR__ . '/../includes/governance.php'));
+    require_once(realpath(__DIR__ . '/../includes/extras.php'));
 
     // Check if a new framework was submitted
     if (isset($_POST['add_framework'])) {
@@ -92,16 +93,13 @@
                 }
             } else {
 
-                // If the ucf extra is enabled
-                if (ucf_extra()) {
-
-                    // Include the ucf extra
-                    require_once(realpath(__DIR__ . '/../extras/ucf/index.php'));
-
-                    // Disable the UCF framework
-                    disable_ucf_framework($value);
-
-                }
+                // Disable the UCF framework if the UCF Extra is enabled
+                call_extra_function(
+                    'ucf_extra',
+                    __DIR__ . '/../extras/ucf/index.php',
+                    'disable_ucf_framework',
+                    [$value]
+                );
 
                 // Delete the framework
                 delete_frameworks($value);
@@ -277,7 +275,7 @@
 
 	$(document).on('show.bs.modal', '#framework--add', function(e) {
 		$.ajax({
-            url: BASE_URL + '/api/governance/parent_frameworks_dropdown?status=1',
+            url: BASE_URL + '/api/v2/governance/parent_frameworks_dropdown?status=1',
             type: 'GET',
             async: false,
             success : function (res){
@@ -445,7 +443,7 @@
                 <ol>
                     <li>Click the plus (+) icon above to manually create a new framework.</li>
                     <li><a href="../admin/register.php">Register</a> your SimpleRisk instance to download the free Secure Controls Framework (SCF) Extra and <a href="../admin/securecontrolsframework.php">select from over 200 different frameworks</a> that have been expertly mapped against over 1000 security and privacy controls.</li>
-                    <li>Use the licensed <a href="../admin/content.php">Import-Export Extra</a> to instantly install any of the following frameworks or import your own:
+                    <li>Use the licensed <a href="../admin/importexport.php">Import-Export Extra</a> to instantly install any of the following frameworks or import your own:
                         <ol style="list-style-type: disc;">
     <?php
             // For each framework returned from GitHub

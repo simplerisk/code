@@ -400,6 +400,7 @@ class UILayout {
 		if (isset($_GET['teams'])) {
 			// Only allow comma-separated integers to prevent XSS injection into the JS template literal
 			$teams_filtered = implode(',', array_filter(explode(',', $_GET['teams']), 'ctype_digit'));
+			// @phan-suppress-next-line SecurityCheck-XSS -- values sanitized via ctype_digit()+array_filter() to digits-only before output
 			echo "&teams={$teams_filtered}";
 		} else {
 			echo "";
@@ -409,6 +410,7 @@ class UILayout {
 		if (isset($_GET['frameworks'])) {
 			// Only allow comma-separated integers to prevent XSS injection into the JS template literal
 			$frameworks_filtered = implode(',', array_filter(explode(',', $_GET['frameworks']), 'ctype_digit'));
+			// @phan-suppress-next-line SecurityCheck-XSS -- values sanitized via ctype_digit()+array_filter() to digits-only before output
 			echo "&frameworks={$frameworks_filtered}";
 		} else {
 			echo "";

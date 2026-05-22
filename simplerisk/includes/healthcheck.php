@@ -7,7 +7,7 @@
 // Include required configuration files
 require_once(language_file());
 require_once(realpath(__DIR__ . '/functions.php'));
-require_once(realpath(__DIR__ . '/config.php'));
+require_once(realpath(__DIR__ . '/bootstrap.php'));
 require_once(realpath(__DIR__ . '/extras.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
@@ -723,7 +723,7 @@ function check_api_connectivity()
 	else
 	{
 		// Create the whoami URL
-		$url = build_url("/api/whoami");
+		$url = build_url("/api/v2/whoami");
 
 		// Set the HTTP options
 		$http_options = [
@@ -743,8 +743,26 @@ function check_api_connectivity()
 		}
 		else $validate_ssl = false;
 
+		// Release the session lock before curling back into Apache. The
+		// outer request that invoked this health check holds an exclusive
+		// lock on the session storage (file-based PHP sessions take an
+		// flock, and SimpleRiskSessionHandler acquires a row lock under
+		// the DB-backed path). When this curl call loops back into a
+		// second PHP-FPM worker for /api/v2/whoami, that worker's
+		// session_start() blocks waiting on the lock — which the outer
+		// request will not release until curl returns — and the curl
+		// times out at 5s. Closing here releases the lock so the inner
+		// request can complete; the surrounding healthcheck render does
+		// not need to write to $_SESSION afterward, so a session_start()
+		// restart is not required.
+		session_write_close();
+
 		// Make a curl request to the whoami API endpoint
 		$response = fetch_url_content("curl", $http_options, $validate_ssl, $url);
+		if (!is_array($response))
+		{
+			return array("result" => 0, "text" => "Unable to communicate with the SimpleRisk API.");
+		}
 		$return_code = $response['return_code'];
 
 		// If the request was successful
@@ -963,9 +981,10 @@ function check_extra_versions($current_app_version)
 						continue;
 					}
 
-					$purchased = (boolean)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
-					$disabled = (boolean)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
-					$deleted = (boolean)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
+					$purchased = (bool)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
+					$disabled = (bool)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
+					$deleted = (bool)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
+					$expired = false;
 
 					// If the extra was purchased
 					if ($purchased)
@@ -1051,21 +1070,19 @@ function check_extra_versions($current_app_version)
  ********************************************/
 function check_use_database_for_session()
 {
-	// If USE_DATABASE_FOR_SESSIONS is defined
-	if (defined('USE_DATABASE_FOR_SESSIONS'))
+	// Delegate the true/false decision to the central normalizer so this
+	// page reports the same outcome consumers actually observe. The prior
+	// implementation only returned an array on the exact 'true' / 'false'
+	// strings and an unguarded else branch — defined-but-unexpected values
+	// (notably the un-substituted '__USE_DATABASE_FOR_SESSIONS__'
+	// placeholder left by the release Docker image's entrypoint.sh)
+	// fell through and returned null, which display_health_check_results()
+	// then rendered as a bare X icon with empty text on the SimpleRisk tab.
+	if (use_database_for_sessions())
 	{
-		// If USE_DATABASE_FOR_SESSIONS is set to false
-		if (USE_DATABASE_FOR_SESSIONS == "false")
-		{
-			return array("result" => 0, "text" => "The USE_DATABASE_FOR_SESSIONS value is set to false in the config.php file.  SimpleRisk will function normally, however, this creates an issue with the one-click upgrade process.  We recommend setting the USE_DATABASE_FOR_SESSIONS to true.");
-		}
-		// If USE_DATABASE_FOR_SESSIONS is set to true
-		else if (USE_DATABASE_FOR_SESSIONS == "true")
-		{
-			return array("result" => 1, "text" => "Using the database to store PHP session information.");
-		}
+		return array("result" => 1, "text" => "Using the database to store PHP session information.");
 	}
-	else return array("result" => 0, "text" => "Unable to determine a value for USE_DATABASE_FOR_SESSIONS in the config.php file.");
+	return array("result" => 0, "text" => "The USE_DATABASE_FOR_SESSIONS value is set to false in the config.php file.  SimpleRisk will function normally, however, this creates an issue with the one-click upgrade process.  We recommend setting the USE_DATABASE_FOR_SESSIONS to true.");
 }
 
 /***********************************
@@ -1117,6 +1134,8 @@ function check_php_memory_limit()
 	// Otherwise
 	else
 	{
+		$memory_limit_bytes = 0;
+
 		// If the memory limit is a number followed by characters
 		if (preg_match('/^(\d+)(.)$/', $memory_limit, $matches))
 		{
@@ -1231,16 +1250,6 @@ function check_simplerisk_base_url_dns()
         // This is not a domain or IP and should be rejected
         return array("result" => 0, "text" => "The detected server name is not a valid domain or IP address.");
     }
-
-    // If the base URL stored in settings and the one we are using are the same
-    if ($simplerisk_base_url == $base_url)
-    {
-        return array("result" => 1, "text" => "Your SimpleRisk Base URL matches the URL you are using to connect to SimpleRisk.");
-    }
-    else
-    {
-        return array("result" => 0, "text" => "Your SimpleRisk Base URL does not match the URL you are using to connect to SimpleRisk.");
-    }
 }
 
 /*************************************************
@@ -1332,5 +1341,11 @@ function unable_to_communicate_with_database() {
     </body>
 </html>
 <?php
+    // Terminate the request after rendering the friendly page. Without this,
+    // execution returns to db_open(), which then returns null, and the next
+    // caller (e.g. table_exists() in permissions.php) fatals with a "Call to
+    // a member function prepare() on null" before the user ever sees the
+    // page we just emitted.
+    exit;
 }
 ?>

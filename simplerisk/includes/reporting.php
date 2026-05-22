@@ -53,14 +53,11 @@ function create_chartjs_pie_code($title = "", $element_id = "", $array = [], $wi
     $title_json = json_encode((string)$title);
     $title_html = htmlspecialchars((string)$title, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
-    // If the array is empty
-    if (empty($array)) {
+    $labels_raw = [];
+    $data_raw   = [];
 
-        $labels_raw = [];
-        $data_raw   = [];
-
-    // Otherwise
-    } else {
+    // If the array is not empty
+    if (!empty($array)) {
 
         // Collect raw values — json_encode handles all escaping
         foreach ($array as $row) {
@@ -73,8 +70,8 @@ function create_chartjs_pie_code($title = "", $element_id = "", $array = [], $wi
     if (!empty($labels_raw) && !empty($data_raw)) {
 
         // Encode as JSON arrays for safe JS embedding
-        $labels_json = json_encode(array_values($labels_raw));
-        $data_json   = json_encode(array_values($data_raw));
+        $labels_json = json_encode($labels_raw);
+        $data_json   = json_encode($data_raw);
 
         // Get the background color value
         $backgroundColor = get_background_colors($array);
@@ -215,6 +212,8 @@ function create_chartjs_multi_series_pie_code($title = "", $element_id = "", $da
                 $(function () {
         ";
 
+        $datasets_json_array = [];
+
         // For each dataset in the array
         foreach($array as $index=>$dataset)
         {
@@ -233,6 +232,9 @@ function create_chartjs_multi_series_pie_code($title = "", $element_id = "", $da
                     $data[] = $row['data'];
                     $colors[] = $row['color'];
                 }
+
+                $slice_labels_json = '[]';
+                $dataset_json = '{}';
 
                 // If the data is not empty
                 if (!empty($data))
@@ -865,6 +867,12 @@ function create_chartjs_bubble_code($title = "", $element_id = "", $datasets = [
                         datasets: [
         ";
 
+        $scores = [];
+        $counts = [];
+        $colors = [];
+        $ids = [];
+        $subjects = [];
+
         // For each of the datasets provided
         foreach ($datasets as $dataset) {
 
@@ -1033,6 +1041,7 @@ function create_background_dataset($count)
 
     // Set the current risk level to 10
     $current_risk_level = 10;
+    $data = [];
 
     // Create a dataset for each risk level
     foreach($risk_levels as $risk_level)
@@ -1170,6 +1179,8 @@ function get_background_colors($array) {
 
     // If the array contains colors
     if (isset($array[0]['color'])) {
+
+        $colors = [];
 
         // For each item in the array
         foreach ($array as $row) {
@@ -1427,6 +1438,9 @@ function get_risk_trend($title = null, $labels = [], $datasets = []) {
 
         $opened_sum = 0;
         $closed_sum = 0;
+        $opened_risk_data = [];
+        $closed_risk_data = [];
+        $trend_data = [];
 
         // if the original start date of the report would be before 2000-01-01 then ignore those and search for the first valid date
         // but keep track of the opened/closed risks before so the numbers are properly accounted for
@@ -2547,7 +2561,7 @@ function get_my_open_table() {
                     bSort: true,
                     orderCellsTop: true,
                     ajax: {
-                        url: BASE_URL + '/api/reports/my_open_risk',
+                        url: BASE_URL + '/api/v2/reports/my_open_risk',
                         type: 'POST',
                         error: function(xhr,status,error){
                             retryCSRF(xhr, this);
@@ -2755,7 +2769,7 @@ function get_high_risk_report_table()
                     },
                     order: [[3, 'DESC']],
                     ajax: {
-                        url: BASE_URL + '/api/reports/high_risk?score_used={$score_used}',
+                        url: BASE_URL + '/api/v2/reports/high_risk?score_used={$score_used}',
                         type: 'POST',
                         error: function(xhr,status,error){
                             retryCSRF(xhr, this);
@@ -2823,7 +2837,7 @@ function get_recent_commented_table() {
                     bSort: true,
                     orderCellsTop: true,
                     ajax: {
-                        url: BASE_URL + '/api/reports/recent_commented_risk',
+                        url: BASE_URL + '/api/v2/reports/recent_commented_risk',
                         type: 'POST',
                         error: function(xhr,status,error){
                             retryCSRF(xhr, this);
@@ -3499,10 +3513,11 @@ function risks_and_issues_table($risk_tags, $start_date, $end_date) {
         }
 
         $comments = get_comments($risk_id, false);
+        // @phan-suppress-next-line PhanTypeMismatchArgumentInternal -- get_comments($_, false) returns array; Phan's union return type includes 'true' from the html branch
         if (count($comments) > 0) {
             foreach ($comments as $comment) {
                 $details .= "
-                            <li>" . format_date($comment['date']) . " [ {$comment['name']} ] : " . $escaper->purifyHtml(try_decrypt($comment['comment'])) . "</li>
+                            <li>" . format_date($comment['date']) . " [ {$escaper->escapeHtml($comment['name'])} ] : " . $escaper->purifyHtml(try_decrypt($comment['comment'])) . "</li>
                 ";
             }
         }
@@ -3517,6 +3532,7 @@ function risks_and_issues_table($risk_tags, $start_date, $end_date) {
                     <td rowspan='" . count($categories[$risk['category']]) . "'>{$escaper->escapeHtml($risk['category_name'])}</td>
             ";
         } 
+        // @phan-suppress-next-line SecurityCheck-XSS -- $trend is hardcoded HTML entities; $color is escaped; $details values are escaped/purified
         echo "
                     <td style='background-color:{$escaper->escapeHtml($color)}'></td>
                     <td style='text-align:center; font-weight:bold; font-size: 30px;'>{$trend}</td>
@@ -3918,8 +3934,8 @@ function get_risks_by_table($status, $sort=0, $group=0, $table_columns=[]) {
                             $group_value_from_db = $risk['submission_date'];
                             break;
                         // Comma splitted group
-                        case "team";
-                        case "technology";
+                        case "team":
+                        case "technology":
                             $group_value_from_db = get_value_by_name($group_name, $group_value);
                             break;
                         default:
@@ -3949,9 +3965,15 @@ function get_risks_by_table($status, $sort=0, $group=0, $table_columns=[]) {
 
                         $length = count($table_columns);
                         
-                        // Display the table header
+                        // Display the table header.
+                        // Hoisted so the suppression below sits directly above
+                        // the flagged escape — `@phan-suppress-next-line` only
+                        // covers the immediately following line and can't
+                        // reach into a multi-line echo string.
+                        // @phan-suppress-next-line SecurityCheck-DoubleEscaped -- $group_value_from_db is raw DB data assigned in the switch above (from $risk[$group_name] / $risk['calculated_risk'] / $risk['submission_date'] / get_value_by_name); Phan's array-taint plugin flags it because other fields in the same $risk array are pre-escaped (encryption_order via next_review in get_risks_only_dynamic).
+                        $escaped_group_value_from_db = $escaper->escapeHtml($group_value_from_db);
                         echo "
-        <table data-group='{$escaper->escapeHtml($group_value_from_db)}' class='table risk-datatable table-bordered table-striped table-condensed  table-margin-top' style='width: 100%'>
+        <table data-group='{$escaped_group_value_from_db}' class='table risk-datatable table-bordered table-striped table-condensed  table-margin-top' style='width: 100%'>
             <thead data-group-header-title='{$escaper->escapeHtml($group_value)}' data-group-header-colspan='{$length}'>
                 <tr class='main'>
                         ";
@@ -4044,6 +4066,7 @@ function get_risks_by_group($status, $group, $sort, $group_value, $display_colum
         $tags = "";
         if ($row['risk_tags']) {
             foreach(str_getcsv($row['risk_tags']) as $tag) {
+                // @phan-suppress-next-line SecurityCheck-DoubleEscaped -- $tag is raw text from str_getcsv on $row['risk_tags']; flagged only because other keys in $row (e.g. encryption_order from get_risks_only_dynamic) are pre-escaped, contaminating Phan's array-taint analysis.
                 $tags .= "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin: 1px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
             }
         }
@@ -4055,15 +4078,18 @@ function get_risks_by_group($status, $group, $sort, $group_value, $display_colum
                 switch ($column) {
                     default:
                         if(array_key_exists($column, $row)) {
+                            // @phan-suppress-next-line SecurityCheck-DoubleEscaped -- default-case columns ($row[$column]) are raw DB data; flagged due to Phan's array-taint plugin merging taint across keys.
                             $data_row[] = $escaper->escapeHtml($row[$column]);
                         } else {
                             $data_row[] = "";
                         }
                         break;
                     case 'id':
+                        // @phan-suppress-next-line SecurityCheck-DoubleEscaped -- $row['id'] is integer (int-cast and offset earlier in this loop); flagged due to Phan's array-taint plugin merging taint across keys.
                         $data_row[] = "<a class='text-info' href=\"../management/view.php?id=" . $escaper->escapeHtml($row['id']) . "\" target=\"_blank\">".$escaper->escapeHtml($row['id'])."</a>";
                         break;
                     case 'risk_status':
+                        // @phan-suppress-next-line SecurityCheck-DoubleEscaped -- $row['status'] is raw DB data; flagged due to Phan's array-taint plugin merging taint across keys.
                         $data_row[] = $escaper->escapeHtml($row['status']);
                         break;
                     case 'closure_date':
@@ -4101,8 +4127,9 @@ function get_risks_by_group($status, $group, $sort, $group_value, $display_colum
                     case "residual_risk_60":
                     case "residual_risk_90":
                         $color = get_risk_color_from_levels($row[$column], $risk_levels);
+                        // @phan-suppress-next-line SecurityCheck-DoubleEscaped -- $row[$column] is a raw numeric risk score from the DB; flagged due to Phan's array-taint plugin merging taint across keys.
                         $data_row[] = "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($row[$column]) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div>";
-                        break;                
+                        break;
                 }
             } else if(customization_extra()) {
                 // Include the extra
@@ -4154,6 +4181,7 @@ function get_risks_by_group($status, $group, $sort, $group_value, $display_colum
     $str .= "</tbody>\n";
     $str .= "</table>\n";
     $str .= "<br />\n";
+    // @phan-suppress-next-line SecurityCheck-XSS -- all values in $str are escaped via escapeHtml()/purifyHtml() throughout the building loop
 	echo $str;
 }
 
@@ -4282,6 +4310,11 @@ function risks_by_month_table() {
     $close_date = $closed_risks[0];
     $close_count = $closed_risks[1];
 
+    $open = [];
+    $close = [];
+    $total = [];
+    $total_open_risks = [];
+
     echo "
         <table class='table table-hover border-bottom border-top mb-0'>
             <thead>
@@ -4380,6 +4413,7 @@ function risks_by_month_table() {
     for ($i = 12; $i >= 0; $i--) {
 
         // Subtract the open number from the closed number
+        // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset -- $open/$close populated by prior loops over the same $i range
         $total[$i] = $open[$i] - $close[$i];
 
         // If the total is positive
@@ -4455,6 +4489,8 @@ function risks_by_month_table() {
 function risks_query_select($column_filters=[])
 {
     global $lang;
+
+    $currency = get_currency_symbol(true);
 
     $query = "
         a.id, 
@@ -4658,9 +4694,9 @@ function risks_query_select($column_filters=[])
         s.max_value AS mitigation_max_cost, 
         s.valuation_level_name, 
         t.name AS mitigation_owner,
-        IF(s.valuation_level_name IS NULL OR s.valuation_level_name='', 
-            CONCAT('\$', s.min_value, ' to \$', s.max_value),
-            CONCAT('\$', s.min_value, ' to \$', s.max_value, '(', s.valuation_level_name, ')')
+        IF(s.valuation_level_name IS NULL OR s.valuation_level_name='',
+            CONCAT('{$currency}', s.min_value, ' to {$currency}', s.max_value),
+            CONCAT('{$currency}', s.min_value, ' to {$currency}', s.max_value, '(', s.valuation_level_name, ')')
           ) mitigation_cost,
         (
             SELECT
@@ -4741,8 +4777,9 @@ function risks_query_select($column_filters=[])
 function risks_unique_column_query_select()
 {
     global $lang;
-    
+
     $delimiter = "---";
+    $currency = get_currency_symbol(true);
 
     return "
         /*Risk columns*/
@@ -4819,9 +4856,9 @@ function risks_unique_column_query_select()
 
         /*Mitigation columns*/
         CONCAT(r.name, '{$delimiter}', r.value) AS mitigation_effort_for_dropdown, 
-        IF(s.valuation_level_name IS NULL OR s.valuation_level_name='', 
-            CONCAT('\$', s.min_value, ' to \$', s.max_value, '{$delimiter}', s.min_value, '-', s.max_value),
-            CONCAT('\$', s.min_value, ' to \$', s.max_value, '(', s.valuation_level_name, ')', '{$delimiter}', s.min_value, '-', s.max_value)
+        IF(s.valuation_level_name IS NULL OR s.valuation_level_name='',
+            CONCAT('{$currency}', s.min_value, ' to {$currency}', s.max_value, '{$delimiter}', s.min_value, '-', s.max_value),
+            CONCAT('{$currency}', s.min_value, ' to {$currency}', s.max_value, '(', s.valuation_level_name, ')', '{$delimiter}', s.min_value, '-', s.max_value)
           ) mitigation_cost,
         CONCAT(t.name, '{$delimiter}', t.value) AS mitigation_owner_for_dropdown,
         CONCAT(q.name, '{$delimiter}', q.value) AS planning_strategy_for_dropdown,        
@@ -5462,6 +5499,10 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
         foreach($column_filters as $name => $column_filter)
         {
             if(!$column_filter) continue;
+            // Reject any filter key that is not a plain SQL identifier. The loop body
+            // interpolates $name (and substrings of $name) into SQL identifier
+            // positions in several branches, where bind parameters cannot help.
+            if (!is_string($name) || !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $name)) continue;
             $empty_filter = false;
             // If encryption extra is enabled and Column is a encrypted field
             if((encryption_extra() && in_array($name, $encrypt_column_names)) || $name == "next_review_date" || $name == "management_review" || $name == "id" || $name == "project_status" || in_array($name, $date_fields))
@@ -6256,7 +6297,9 @@ function risks_query($status, $sort, $group, $column_filters, &$rowCount, $start
                     $row['planning_date']  =  format_date($risk['planning_date']);
                     break;
                 case 'mitigation_accepted':
-                    $row['mitigation_accepted'] = $risk['mitigation_accepted'] ? $escaper->escapeHtml($lang['Yes']) : $escaper->escapeHtml($lang['No']);
+                    // Store the raw localized label; consumers (api.php, get_risks_by_group)
+                    // are responsible for HTML-escaping at output time.
+                    $row['mitigation_accepted'] = $risk['mitigation_accepted'] ? $lang['Yes'] : $lang['No'];
                     break;
                 case 'mitigation_date':
                     $row['mitigation_date'] = format_date($risk['mitigation_date']);
@@ -6549,6 +6592,8 @@ function count_array_values($array, $sort)
     // Initialize the value and count
     $value = "";
     $value_count = 1;
+    $value_array = [];
+    $data = [];
 
     // Count the number of risks for each value
     foreach ($array as $risk)
@@ -6634,9 +6679,12 @@ function get_opened_risks_array($timeframe) {
     $current_date = "";
     $open_date = array();
     $open_count = array();
+    $open_total = array();
 
     // For each row
     foreach ($array as $key=>$row) {
+
+        $date = '';
 
         // If the timeframe is by day
         if ($timeframe === "day") {
@@ -6682,17 +6730,20 @@ function get_opened_risks_array($timeframe) {
             // Otherwise, add the value of this row to the previous value
             } else {
 
+                // @phan-suppress-next-line PhanTypeInvalidDimOffset -- $counter > 0 guarantees $open_total[$counter-1] was set in a prior iteration
                 $open_total[$counter] = $open_total[$counter-1] + 1;
 
             }
-        
+
         // Otherwise, if the date is the same
         } else {
 
             // Increment the open count
+            // @phan-suppress-next-line PhanTypeInvalidDimOffset -- the $current_date != $date branch above set this index in a prior iteration
             $open_count[$counter] = $open_count[$counter] + 1;
 
             // Update the open total
+            // @phan-suppress-next-line PhanTypeInvalidDimOffset -- prior iteration set this index
             $open_total[$counter] = $open_total[$counter] + 1;
 
         }
@@ -6754,9 +6805,12 @@ function get_closed_risks_array($timeframe) {
     $current_date = "";
     $close_date = array();
     $close_count = array();
-    
+    $close_total = array();
+
     // For each row
     foreach ($array as $key=>$row) {
+
+        $date = '';
 
         // If the timeframe is by day
         if ($timeframe === "day") {
@@ -6802,17 +6856,20 @@ function get_closed_risks_array($timeframe) {
             // Otherwise, add the value of this row to the previous value
             } else {
 
+                // @phan-suppress-next-line PhanTypeInvalidDimOffset -- $counter > 0 guarantees $close_total[$counter-1] was set in a prior iteration
                 $close_total[$counter] = $close_total[$counter-1] + 1;
 
             }
-        
+
         // Otherwise, if the date is the same
         } else {
 
             // Increment the closed count
+            // @phan-suppress-next-line PhanTypeInvalidDimOffset -- prior iteration set this index
             $close_count[$counter] = $close_count[$counter] + 1;
 
             // Update the close total
+            // @phan-suppress-next-line PhanTypeInvalidDimOffset -- prior iteration set this index
             $close_total[$counter] = $close_total[$counter] + 1;
 
         }
@@ -6836,7 +6893,7 @@ function encode_data_before_display($array)
     // For each element in the array
     foreach ($array as $element)
     {
-        $name = js_string_escape($element[0]);
+        $name = $element[0];
         $count = $element[1];
         $data[] = array($name, $count);
     }
@@ -7042,8 +7099,8 @@ function risks_and_control_table($report, $sort_by, $projects, $status) {
                             </th>
                         </tr>
                         <tr role='row' style='height: 0px;'>
-                            <th class='sorting_asc' aria-controls='mitigation-controls-table140955b56e1c6c5879' rowspan='1' colspan='1' style='width: 0px; padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px;' aria-sort='ascending' aria-label='&amp;nbsp;: activate to sort column descending'>
-                                <div class='dataTables_sizing' style='height:0;overflow:hidden;'>&nbsp;
+                            <th class='dt-ordering-asc' aria-controls='mitigation-controls-table140955b56e1c6c5879' rowspan='1' colspan='1' style='width: 0px; padding-top: 0px; padding-bottom: 0px; border-top-width: 0px; border-bottom-width: 0px; height: 0px;' aria-sort='ascending' aria-label='&amp;nbsp;: activate to sort column descending'>
+                                <div class='dt-sizing' style='height:0;overflow:hidden;'>&nbsp;
                                 </div>
                             </th>
                         </tr>
@@ -7160,6 +7217,8 @@ function get_risks_and_controls_rows($report, $sort_by, $projects, $status, $fil
     $db = db_open();
     $order = "c.calculated_risk DESC";
     $params = [];
+
+    $select = '';
 
     switch($status) {
         case 0: // Open
@@ -7738,7 +7797,7 @@ function display_appetite_datatable_script() {
                     bSort: true,
                     orderCellsTop: true,
                     ajax: {
-                        url: BASE_URL + '/api/reports/appetite?type=' + appetite_type,
+                        url: BASE_URL + '/api/v2/reports/appetite?type=' + appetite_type,
                         type: 'get'
                     },
                     order: [[2, 'desc']],
@@ -7858,6 +7917,8 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
         'users_of_roles' => [2]
     );
     $orderColumn = $orderColumns[$type][$orderColumn];
+
+    $query = '';
 
     if ($type === "permissions_of_users") {
 
@@ -8153,6 +8214,10 @@ function get_connectivity_visualizer() {
 
     global $lang, $escaper;
 
+    $array = [];
+    $type = '';
+    $selected = 0;
+
     echo "
         <div class='card-body my-2 border'>
     ";
@@ -8182,18 +8247,53 @@ function get_connectivity_visualizer() {
         $selected = (int)$_POST['selected'];
     }
 
-    // Create the dropdown
+    // Build the dropdown with options scoped to the user's permissions:
+    //   Risk     -> riskmanagement
+    //   Asset    -> asset
+    //   Test     -> compliance
+    //   Framework, Control, Document -> governance
+    // If the user lacks the permission for an entity type, that option is
+    // not emitted, so they cannot start a graph from a domain they cannot see.
+    $can_risk       = check_permission('riskmanagement');
+    $can_asset      = check_permission('asset');
+    $can_governance = check_permission('governance');
+    $can_compliance = check_permission('compliance');
+
     echo "
                 <select name='filter' onchange='javascript: submit()' class='form-select'>
                     <option value='0'" . ($filter == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['NoneSelected']) . "</option>
-                    <option value='1'" . ($filter == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Risk']) . "</option>
-                    <option value='2'" . ($filter == 2 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Asset']) . "</option>
-                    <option value='3'" . ($filter == 3 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Framework']) . "</option>
-                    <option value='4'" . ($filter == 4 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Control']) . "</option>
-                    <option value='5'" . ($filter == 5 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Test']) . "</option>
-                    <option value='6'" . ($filter == 6 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Document']) . "</option>
-                </select>
     ";
+    if ($can_risk) {
+        echo "      <option value='1'" . ($filter == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Risk']) . "</option>";
+    }
+    if ($can_asset) {
+        echo "      <option value='2'" . ($filter == 2 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Asset']) . "</option>";
+    }
+    if ($can_governance) {
+        echo "      <option value='3'" . ($filter == 3 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Framework']) . "</option>";
+        echo "      <option value='4'" . ($filter == 4 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Control']) . "</option>";
+    }
+    if ($can_compliance) {
+        echo "      <option value='5'" . ($filter == 5 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Test']) . "</option>";
+    }
+    if ($can_governance) {
+        echo "      <option value='6'" . ($filter == 6 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Document']) . "</option>";
+    }
+    echo "      </select>
+    ";
+
+    // Defense in depth: if the user posted a filter value they lack permission
+    // for (e.g. by hand-editing the form), drop it back to the unselected state
+    // so the case branches below don't query an entity type they shouldn't see.
+    $allowed_filters = [0 => true];
+    if ($can_risk)       $allowed_filters[1] = true;
+    if ($can_asset)      $allowed_filters[2] = true;
+    if ($can_governance) { $allowed_filters[3] = true; $allowed_filters[4] = true; $allowed_filters[6] = true; }
+    if ($can_compliance) $allowed_filters[5] = true;
+    if (!isset($allowed_filters[$filter])) {
+        $filter = 0;
+        $selected = 0;
+    }
 
     // If the filter is not zero
     if ($filter != 0) {
@@ -8242,7 +8342,7 @@ function get_connectivity_visualizer() {
                     $array[] = [
                         "id" => $escaper->escapeHtml($risk_id),
                         "node_id" => "risk_id_" . $escaper->escapeHtml(convert_risk_id_to_id($risk['id'])),
-                        "node_name" => "[" . $escaper->escapeHtml($risk_id) . "] " . $escaper->escapeHtml($risk['subject']),
+                        "node_name" => "[" . $risk_id . "] " . $risk['subject'],
                         "color" => $color,
                     ];
                 }
@@ -8262,7 +8362,7 @@ function get_connectivity_visualizer() {
                     $array[] = [
                         "id" => $escaper->escapeHtml($asset['id']),
                         "node_id" => "asset_id_" . $escaper->escapeHtml($asset['id']),
-                        "node_name" => $escaper->escapeHtml($asset['name']),
+                        "node_name" => $asset['name'],
                         "color" => "#f7dc6f",
                     ];
                 }
@@ -8282,7 +8382,7 @@ function get_connectivity_visualizer() {
                     $array[] = [
                         "id" => $escaper->escapeHtml($framework['value']),
                         "node_id" => "framework_id_" . $escaper->escapeHtml($framework['value']),
-                        "node_name" => $escaper->escapeHtml($framework['name']),
+                        "node_name" => $framework['name'],
                         "color" => "#4a235a",
                     ];
                 }
@@ -8302,7 +8402,7 @@ function get_connectivity_visualizer() {
                     $array[] = [
                         "id" => $escaper->escapeHtml($control['id']),
                         "node_id" => "control_id_" . $escaper->escapeHtml($control['id']),
-                        "node_name" => $escaper->escapeHtml($control['long_name']),
+                        "node_name" => $control['long_name'],
                         "color" => "#154360",
                     ];
                 }
@@ -8322,7 +8422,7 @@ function get_connectivity_visualizer() {
                     $array[] = [
                         "id" => $escaper->escapeHtml($test['id']),
                         "node_id" => "test_id_" . $escaper->escapeHtml($test['id']),
-                        "node_name" => $escaper->escapeHtml($test['name']),
+                        "node_name" => $test['name'],
                         "color" => "#2e86c1",
                     ];
                 }
@@ -8342,7 +8442,7 @@ function get_connectivity_visualizer() {
                     $array[] = [
                         "id" => $escaper->escapeHtml($document['id']),
                         "node_id" => "document_id_" . $escaper->escapeHtml($document['id']),
-                        "node_name" => $escaper->escapeHtml($document['document_name']),
+                        "node_name" => $document['document_name'],
                         "color" => "#a2d9ce",
                     ];
                 }
@@ -8406,6 +8506,34 @@ function connectivity_visualizer($type, $id, $array) {
                 break;
         }
 
+        // Drop association buckets the calling user lacks permission for, so
+        // the graph never renders nodes/edges into a domain they cannot see.
+        // Mapping mirrors the dropdown above:
+        //   risks                   -> riskmanagement
+        //   assets                  -> asset
+        //   frameworks/controls/documents -> governance
+        //   tests/test_results      -> compliance
+        $bucket_to_perm = [
+            'risks'        => 'riskmanagement',
+            'assets'       => 'asset',
+            'frameworks'   => 'governance',
+            'controls'     => 'governance',
+            'documents'    => 'governance',
+            'tests'        => 'compliance',
+            'test_results' => 'compliance',
+        ];
+        foreach ($bucket_to_perm as $bucket => $required_perm) {
+            if (isset($associations[$bucket]) && !check_permission($required_perm)) {
+                unset($associations[$bucket]);
+            }
+        }
+        // Recompute $found over the filtered set so the "no connections" message
+        // fires when filtering leaves nothing visible.
+        $found = false;
+        foreach ($associations as $bucket) {
+            if (!empty($bucket)) { $found = true; break; }
+        }
+
         // If we found associations
         if ($found) {
             // Get the array values that goes with the id
@@ -8442,10 +8570,14 @@ function connectivity_visualizer_display($type, $id, $selected_array, $associati
     $node_name = $selected_array['node_name'];
     $color = $selected_array['color'];
 
-    // If the name is longer than 50 characters
-    if (strlen($node_name) > 50) {
-        // Truncate the name to 50 characters
-        $node_name = substr($node_name, 0, 50) . "...";
+    // If the name is longer than 50 characters, truncate to 50. Use the
+    // multibyte-aware functions so the cut is by character rather than by
+    // byte -- node_name now carries raw UTF-8 (the source-level escape was
+    // moved to the sinks), and a byte-based substr could split a multi-byte
+    // character in half and emit malformed UTF-8 that json_encode at the JS
+    // sink rejects.
+    if (mb_strlen($node_name) > 50) {
+        $node_name = mb_substr($node_name, 0, 50) . "...";
     }
 
     $added_nodes[] = [
@@ -8493,12 +8625,23 @@ function connectivity_visualizer_display($type, $id, $selected_array, $associati
                     "color" => $color,
                 ];
 
-                // Add the node to the table
+                // Add the node to the table. node_name carries raw user-
+                // supplied text from connectivity helpers (asset / risk
+                // subject / control name / etc.) — escape at the HTML
+                // sink. $key is the associations array key (always a
+                // hardcoded literal like 'frameworks' / 'controls' / etc.
+                // from connectivity_visualizer_associations_*) but the
+                // SAST taint tracker can't know that, so escape it too.
+                // $node_id / $connected_node_id are prefixed string ids
+                // produced by the helpers (e.g. "asset_id_5",
+                // "risk_id_3") so the graphology graph can distinguish
+                // nodes of different types — they are not numeric and
+                // must not be int-cast. Escape at the HTML sink.
                 echo "
                         <div class='row'>
-                            <div class='col-4'>{$key}</div>
-                            <div class='col-4'>{$node_name}</div>
-                            <div class='col-4'>{$node_id} => {$connected_node_id}</div>
+                            <div class='col-4'>" . $escaper->escapeHtml($key) . "</div>
+                            <div class='col-4'>" . $escaper->escapeHtml($node_name) . "</div>
+                            <div class='col-4'>" . $escaper->escapeHtml($node_id) . " => " . $escaper->escapeHtml($connected_node_id) . "</div>
                         </div>
                 ";
             }
@@ -8536,23 +8679,43 @@ function connectivity_visualizer_display($type, $id, $selected_array, $associati
 
     // For each of the added nodes
     foreach ($added_nodes as $node) {
-        // Display the node
-        $node_id = $node['node_id'];
+        // Display the node. JS-context sanitization at every sink:
+        //   - $node_id is a prefixed string id ("asset_id_5", "risk_id_3",
+        //     etc.) — the prefix is what lets graphology distinguish nodes
+        //     of different types, so it must NOT be int-cast. json_encode
+        //     it so the resulting JS string literal is safe against
+        //     backslashes, embedded quotes, and `</script>`.
+        //   - $node_name is raw user-supplied text. Use json_encode so the
+        //     resulting JS string literal is safe against backslashes,
+        //     embedded quotes, line separators (U+2028/U+2029 are escaped
+        //     to \uXXXX by default), and `</script>` (the default escaping
+        //     of `/` to `\/` keeps the byte sequence from appearing inside
+        //     the <script> block and prematurely closing it). Sigma renders
+        //     the label via canvas fillText, so the resulting JS string
+        //     content is drawn as text glyphs, never reinterpreted as HTML.
+        //   - $size is a hardcoded literal (10 or 20) set above; cast to
+        //     int for defense in depth.
+        //   - $color flows from the connectivity helpers as a string;
+        //     json_encode it so a non-color-name value can't break out of
+        //     the JS string literal.
+        $node_id   = $node['node_id'];
         $node_name = $node['node_name'];
-        $size = $node['size'];
-        $color = $node['color'];
+        $size      = (int)$node['size'];
+        $color     = $node['color'];
         echo "
-                graph.addNode(\"{$node_id}\", { label: \"{$node_name}\", x: Math.random(), y: Math.random(), size: {$size}, color: \"{$color}\" });
+                graph.addNode(" . json_encode((string)$node_id) . ", { label: " . json_encode((string)$node_name) . ", x: Math.random(), y: Math.random(), size: {$size}, color: " . json_encode((string)$color) . " });
         ";
     }
 
-    // For each of the added edges
+    // For each of the added edges. Both ids are prefixed string ids
+    // (e.g. "asset_id_5", "risk_id_3"); json_encode them so the JS
+    // string literals are well-formed against backslashes, embedded
+    // quotes, and `</script>`.
     foreach ($added_edges as $edge) {
-        // Display the edge
-        $node_id = $edge['node_id'];
+        $node_id           = $edge['node_id'];
         $connected_node_id = $edge['connected_node_id'];
         echo "
-                graph.addEdge(\"{$node_id}\", \"{$connected_node_id}\", { size: 1, color: \"black\" });
+                graph.addEdge(" . json_encode((string)$node_id) . ", " . json_encode((string)$connected_node_id) . ", { size: 1, color: \"black\" });
         ";
     }
 
@@ -8899,7 +9062,8 @@ function get_asset_connectivity_for_risk($risk_id)
     // Open the database connection
     $db = db_open();
 
-    // Create an empty array to track assets we have already added
+    // Create empty arrays
+    $associations = [];
     $assets_added = [];
 
     // Get the assets
@@ -8990,6 +9154,8 @@ function get_control_connectivity_for_risk($risk_id)
     // Open the database connection
     $db = db_open();
 
+    $associations = [];
+
     // Query the database
     $stmt = $db->prepare("SELECT DISTINCT fc.id, fc.short_name FROM mitigations m LEFT JOIN mitigation_to_controls mtc ON m.id = mtc.mitigation_id LEFT JOIN framework_controls fc ON mtc.control_id = fc.id WHERE m.risk_id = :risk_id;");
     $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
@@ -9036,6 +9202,8 @@ function get_risk_connectivity_for_asset($asset_id)
 
     // Open the database connection
     $db = db_open();
+
+    $associations = [];
 
     // Get the assets
     $stmt = $db->prepare("SELECT DISTINCT r.id, r.subject, rs.calculated_risk FROM risks r LEFT JOIN risk_scoring rs ON r.id = rs.id LEFT JOIN risks_to_assets rta ON r.id = rta.risk_id WHERE rta.asset_id = :asset_id;");
@@ -9100,6 +9268,8 @@ function get_framework_connectivity_for_control($control_id)
     // Open the database connection
     $db = db_open();
 
+    $associations = [];
+
     // Get the frameworks for this control
     $stmt = $db->prepare("SELECT DISTINCT f.value, f.name FROM framework_control_mappings fcm LEFT JOIN frameworks f ON f.value = fcm.framework WHERE fcm.control_id = :control_id;");
     $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
@@ -9143,6 +9313,8 @@ function get_risk_connectivity_for_control($control_id)
 
     // Open the database connection
     $db = db_open();
+
+    $associations = [];
 
     // Get the risks for this control
     $stmt = $db->prepare("SELECT DISTINCT r.id, r.subject, rs.calculated_risk FROM risks r LEFT JOIN risk_scoring rs ON r.id = rs.id LEFT JOIN mitigations m ON r.id = m.risk_id LEFT JOIN mitigation_to_controls mtc ON m.id = mtc.mitigation_id WHERE mtc.control_id = :control_id;");
@@ -9207,6 +9379,8 @@ function get_test_connectivity_for_control($control_id)
     // Open the database connection
     $db = db_open();
 
+    $associations = [];
+
     // Get the tests for this control
     $stmt = $db->prepare("SELECT DISTINCT fct.id, fct.name FROM framework_control_tests fct WHERE fct.framework_control_id = :control_id;");
     $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
@@ -9250,6 +9424,8 @@ function get_control_connectivity_for_framework($framework_id)
 
     // Open the database connection
     $db = db_open();
+
+    $associations = [];
 
     // Get the controls for this framework
     $stmt = $db->prepare("SELECT DISTINCT fc.id, fc.short_name FROM framework_controls fc LEFT JOIN framework_control_mappings fcm ON fc.id = fcm.control_id WHERE fcm.framework = :framework_id;");
@@ -9295,6 +9471,8 @@ function get_control_connectivity_for_test($test_id)
     // Open the database connection
     $db = db_open();
 
+    $associations = [];
+
     // Get the controls for this framework
     $stmt = $db->prepare("SELECT DISTINCT fc.id, fc.short_name FROM framework_controls fc LEFT JOIN framework_control_tests fct ON fc.id = fct.framework_control_id WHERE fct.id = :test_id;");
     $stmt->bindParam(":test_id", $test_id, PDO::PARAM_INT);
@@ -9338,6 +9516,8 @@ function get_control_connectivity_for_document($document_id)
 
     // Open the database connection
     $db = db_open();
+
+    $associations = [];
 
     // Get the controls for this document via the junction table
     $stmt = $db->prepare("SELECT DISTINCT fc.id, fc.short_name FROM framework_controls fc JOIN document_control_mappings dcm ON fc.id = dcm.control_id WHERE dcm.document_id = :document_id AND dcm.selected = 1;");
@@ -9383,6 +9563,8 @@ function get_document_connectivity_for_control($control_id)
     // Open the database connection
     $db = db_open();
 
+    $associations = [];
+
     // Get the list of documents with this control id via the junction table
     $stmt = $db->prepare("SELECT DISTINCT d.id, d.document_name FROM documents d JOIN document_control_mappings dcm ON d.id = dcm.document_id WHERE dcm.control_id = :control_id AND dcm.selected = 1;");
     $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
@@ -9426,6 +9608,8 @@ function get_results_connectivity_for_test($test_id)
 
     // Open the database connection
     $db = db_open();
+
+    $associations = [];
 
     // Get the controls for this framework
     $stmt = $db->prepare("SELECT DISTINCT fctr.id, fctr.test_result, fctr.test_date FROM framework_control_test_results fctr LEFT JOIN framework_control_test_audits fcta ON fctr.test_audit_id = fcta.id LEFT JOIN framework_control_tests fct ON fct.id = fcta.test_id WHERE fct.id = :test_id;");
@@ -9514,12 +9698,15 @@ function display_control_maturity_spider_chart($framework_id) {
 			$categories[] = $value['family_short_name'];
 
 			// Set the count for this family to one
+			// @phan-suppress-next-line PhanTypeInvalidDimOffset -- arrays are populated keyed by family_short_name
 			$categories_count[$value['family_short_name']] = 1;
 
 			// Put the first value in the categories current maturity sum array
+			// @phan-suppress-next-line PhanTypeInvalidDimOffset
 			$categories_current_maturity_sum[$value['family_short_name']] = $value['control_maturity'];
 
 			// Put the first value in the categories desired maturity sum array
+			// @phan-suppress-next-line PhanTypeInvalidDimOffset
 			$categories_desired_maturity_sum[$value['family_short_name']] = $value['desired_maturity'];
 
 			// Set the new current category
@@ -9529,12 +9716,15 @@ function display_control_maturity_spider_chart($framework_id) {
 		} else {
 
 			// Increment the count
+			// @phan-suppress-next-line PhanTypeInvalidDimOffset,PhanTypePossiblyInvalidDimOffset -- prior iteration in the if-branch set this key
 			$categories_count[$value['family_short_name']] = $categories_count[$value['family_short_name']] + 1;
 
 			// Increment the current maturity sum
+			// @phan-suppress-next-line PhanTypeInvalidDimOffset,PhanTypePossiblyInvalidDimOffset
 			$categories_current_maturity_sum[$value['family_short_name']] = $categories_current_maturity_sum[$value['family_short_name']] + $value['control_maturity'];
 
 			// Increment the desired maturity sum
+			// @phan-suppress-next-line PhanTypeInvalidDimOffset,PhanTypePossiblyInvalidDimOffset
 			$categories_desired_maturity_sum[$value['family_short_name']] = $categories_desired_maturity_sum[$value['family_short_name']] + $value['desired_maturity'];
 
 		}
@@ -9549,7 +9739,9 @@ function display_control_maturity_spider_chart($framework_id) {
 	foreach ($categories as $key => $value) {
 
 		// Average = sum / value
+		// @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset -- $categories built in lockstep with the sum/count arrays above
 		$current_maturity_average = $categories_current_maturity_sum[$value] / $categories_count[$value];
+		// @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
 		$desired_maturity_average = $categories_desired_maturity_sum[$value] / $categories_count[$value];
 		$categories_current_maturity_average[] = round($current_maturity_average, 1);
 		$categories_desired_maturity_average[] = round($desired_maturity_average, 1);
@@ -10869,7 +11061,7 @@ function compliance_pass_rate_trend_line_chart() {
         $color = $palette[$ci % count($palette)];
         $ci++;
         $trend_datasets[] = [
-            'label'           => $escaper->escapeHtml($fw_name),
+            'label'           => $fw_name,
             'data'            => array_map(fn($m) => $fw_months[$m] ?? 'null', $all_months),
             'borderColor'     => $color,
             'backgroundColor' => $color,
@@ -10879,13 +11071,13 @@ function compliance_pass_rate_trend_line_chart() {
     }
 
     create_chartjs_line_code(
-        $escaper->escapeHtml($lang['ControlPassRateTrend']),
+        $lang['ControlPassRateTrend'],
         'compliance_pass_rate_trend_chart',
         $trend_labels,
         $trend_datasets,
         '',
-        $escaper->escapeHtml($lang['Month'] ?? 'Month'),
-        $escaper->escapeHtml($lang['PassRatePercent']),
+        $lang['Month'] ?? 'Month',
+        $lang['PassRatePercent'],
         100
     );
 }
@@ -10927,19 +11119,19 @@ function compliance_pass_fail_pie_chart() {
     $total_failing = array_sum($failing_data);
     $overall_pass_fail_data = [
         [
-            'label' => $escaper->escapeHtml($lang['PassingControls']),
+            'label' => $lang['PassingControls'],
             'data' => $total_passing,
             'color' => '#66CC00',
         ],
         [
-            'label' => $escaper->escapeHtml($lang['FailingControls']),
+            'label' => $lang['FailingControls'],
             'data' => $total_failing,
             'color' => '#FF0000',
         ],
     ];
 
     create_chartjs_pie_code(
-        $escaper->escapeHtml($lang['ControlPassFailStatus']),
+        $lang['ControlPassFailStatus'],
         'compliance_pass_fail_pie_chart',
         $overall_pass_fail_data
     );
@@ -10956,7 +11148,7 @@ function governance_current_control_maturity_pie_chart() {
     $current_maturity_pie_data = [];
 
     foreach ($control_maturity_data as $index => $maturity) {
-        $maturity_name = $escaper->escapeHtml($maturity['maturity_name']);
+        $maturity_name = $maturity['maturity_name'];
         $color = ($maturity['maturity_name'] === 'Unassigned' || $maturity['maturity_name'] === 'Not Performed') ? '#808080' : $suggested_colors[$index % count($suggested_colors)];
 
         $current_maturity_pie_data[] = [
@@ -10967,7 +11159,7 @@ function governance_current_control_maturity_pie_chart() {
     }
 
     create_chartjs_pie_code(
-        $escaper->escapeHtml($lang['CurrentControlMaturity']),
+        $lang['CurrentControlMaturity'],
         'governance_current_control_maturity_pie_chart',
         $current_maturity_pie_data
     );
@@ -10981,26 +11173,24 @@ function governance_framework_maturity_stacked_bar_chart() {
 
     $stacked_chart_data = get_framework_controls_maturity_stacked_chart_data();
     $suggested_colors = suggested_colors_array();
-    $framework_maturity_bar_labels = array_map(static function ($label) use ($escaper) {
-        return $escaper->escapeHtml($label);
-    }, $stacked_chart_data['labels']);
+    $framework_maturity_bar_labels = $stacked_chart_data['labels'];
     $framework_maturity_bar_datasets = [];
     foreach ($stacked_chart_data['maturity_order'] as $mIndex => $maturity_name) {
         $color = ($maturity_name === 'Not Set') ? '#808080' : $suggested_colors[$mIndex % count($suggested_colors)];
         $framework_maturity_bar_datasets[] = [
-            'label' => $escaper->escapeHtml($maturity_name),
+            'label' => $maturity_name,
             'data' => $stacked_chart_data['counts_by_maturity'][$maturity_name],
             'backgroundColor' => $color,
         ];
     }
 
     create_chartjs_bar_code(
-        $escaper->escapeHtml($lang['GovernanceControlsByFrameworkMaturityStacked']),
+        $lang['GovernanceControlsByFrameworkMaturityStacked'],
         'governance_framework_maturity_stacked_bar_chart',
         $framework_maturity_bar_labels,
         $framework_maturity_bar_datasets,
-        $escaper->escapeHtml($lang['Framework']),
-        $escaper->escapeHtml($lang['NumberOfControls']),
+        $lang['Framework'],
+        $lang['NumberOfControls'],
         null,
         null,
         true

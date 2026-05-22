@@ -4,11 +4,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// @phan-suppress-next-line PhanUnreferencedUseNormal -- OA alias used in PHPDoc @OA annotations
 use OpenApi\Annotations as OA;
 
-define('SIMPLERISK_BASE_URL', rtrim(get_setting("simplerisk_base_url"), '/'));
-define('API_PATH', "/api/v2");
-define('SIMPLERISK_API_URL', SIMPLERISK_BASE_URL.API_PATH);
+// Annotations below describe the API contract statically — they must parse without
+// a live SimpleRisk runtime so offline tooling (the GitHub Actions Postman
+// collection generator, third-party OpenAPI consumers running swagger-php from
+// the command line, etc.) can produce a spec without bootstrapping the database
+// layer. The placeholder URL on @OA\Server is overwritten with the customer's
+// live SIMPLERISK_BASE_URL at runtime by simplerisk/api/v2/documentation/index.php
+// so the in-product Swagger UI continues to show the live URL pre-filled.
 
 /**
 * @OA\OpenApi(
@@ -25,7 +30,7 @@ define('SIMPLERISK_API_URL', SIMPLERISK_BASE_URL.API_PATH);
 *     ),
 *   ),
 *   @OA\Server(
-*     url=SIMPLERISK_API_URL,
+*     url="https://your-simplerisk-instance.example.com/api/v2",
 *     description="SimpleRisk",
 *   ),
 *   @OA\ExternalDocumentation(

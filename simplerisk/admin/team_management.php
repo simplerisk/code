@@ -5,6 +5,7 @@
 
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+require_once(realpath(__DIR__ . '/../includes/extras.php'));
 render_header_and_sidebar(['CUSTOM:selectlist.js', 'CUSTOM:common.js'], ['check_admin' => true]);
 
 $team_length_limit = 50;
@@ -16,11 +17,12 @@ function add_team_for_management($name) {
     // Any new team should be assigned to all admin users.
     set_all_teams_to_administrators();
 
-    // If the Organizational Hierarchy extra is enabled, assign to the default business unit.
-    if (organizational_hierarchy_extra()) {
-        require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
-        assign_teams_to_default_business_unit();
-    }
+    // Assign to the default business unit (no-op if Organizational Hierarchy extra is disabled)
+    call_extra_function(
+        'organizational_hierarchy_extra',
+        __DIR__ . '/../extras/organizational_hierarchy/index.php',
+        'assign_teams_to_default_business_unit'
+    );
 
     return $team_id;
 }

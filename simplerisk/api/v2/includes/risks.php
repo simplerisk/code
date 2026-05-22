@@ -6,6 +6,7 @@
 // Include required functions file
 require_once(realpath(__DIR__ . '/api.php'));
 require_once(realpath(__DIR__ . '/../../../includes/functions.php'));
+require_once(realpath(__DIR__ . '/../../../includes/extras.php'));
 
 require_once(language_file());
 
@@ -616,10 +617,12 @@ function api_v2_risk_submit()
     }
 
     // Notify after successful creation
-    if (notification_extra()) {
-        require_once(realpath(__DIR__ . '/../../../extras/notification/index.php'));
-        notify_new_risk($last_insert_id);
-    }
+    call_extra_function(
+        'notification_extra',
+        __DIR__ . '/../../../extras/notification/index.php',
+        'notify_new_risk',
+        [$last_insert_id]
+    );
 
     $risk_id = (int)$last_insert_id + 1000;
 

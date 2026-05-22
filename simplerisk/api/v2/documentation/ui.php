@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// @phan-suppress-next-line PhanUnreferencedUseNormal -- OA alias used in PHPDoc @OA annotations
 use OpenApi\Annotations as OA;
 
 /**
@@ -178,5 +179,180 @@ class OpenApiUpdateUiDefaultLayout {}
  * )
  */
 class OpenApiSaveUiColumnSettings {}
+
+/**
+ * @OA\Get(
+ *     path="/reports/catalog",
+ *     summary="Return the Reports Hub catalog filtered to the current user's permissions",
+ *     operationId="reportsCatalog",
+ *     tags={"ui"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Catalog entries visible to the authenticated user, each annotated with a favorited flag.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="reports",
+ *                     type="array",
+ *                     description="Catalog entries the user can access, in catalog order.",
+ *                     @OA\Items(
+ *                         type="object",
+ *                         @OA\Property(property="key",         type="string",  description="Unique catalog key (e.g. 'dynamic_risk_report')."),
+ *                         @OA\Property(property="label",       type="string",  description="Translated display label for the report."),
+ *                         @OA\Property(property="description", type="string",  description="Translated description sentence for the report."),
+ *                         @OA\Property(property="path",        type="string",  description="URL path relative to the simplerisk root (e.g. 'reports/dynamic_risk_report.php')."),
+ *                         @OA\Property(property="kind",        type="string",  enum={"report", "dashboard"}, description="Whether this entry is a report or a dashboard."),
+ *                         @OA\Property(property="tags",        type="array",   @OA\Items(type="string"), description="Domain tags such as 'riskmanagement', 'compliance', 'governance', 'asset'."),
+ *                         @OA\Property(property="favorited",   type="boolean", description="True when the authenticated user has starred this report.")
+ *                     )
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=401,
+ *         description="UNAUTHORIZED: request is not authenticated or session has no user.",
+ *     ),
+ * )
+ */
+class OpenApiReportsCatalog {}
+
+/**
+ * @OA\Get(
+ *     path="/reports/favorites",
+ *     summary="Return the authenticated user's favorited report keys",
+ *     operationId="reportsFavoritesList",
+ *     tags={"ui"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Alphabetically sorted list of report_keys the user has favorited.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="favorites",
+ *                     type="array",
+ *                     @OA\Items(type="string"),
+ *                     description="Alphabetically sorted list of report_keys the user has favorited (may be empty)."
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=401,
+ *         description="UNAUTHORIZED: request is not authenticated or session has no user.",
+ *     ),
+ * )
+ */
+class OpenApiReportsFavoritesList {}
+
+/**
+ * @OA\Post(
+ *     path="/reports/favorites",
+ *     summary="Add a report to the current user's favorites",
+ *     operationId="reportsFavoritesAdd",
+ *     tags={"ui"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/json",
+ *             @OA\Schema(
+ *                 required={"report_key"},
+ *                 @OA\Property(
+ *                     property="report_key",
+ *                     type="string",
+ *                     maxLength=64,
+ *                     description="The catalog key of the report to favorite (e.g. 'dynamic_risk_report'). Must match a key in the reports catalog."
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Favorite recorded (or already existed). Returns the updated favorites list.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="favorites",
+ *                     type="array",
+ *                     @OA\Items(type="string"),
+ *                     description="Alphabetically sorted list of report_keys the user has favorited."
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="BAD REQUEST: report_key is missing, exceeds 64 chars, or is not a known catalog key.",
+ *     ),
+ *     @OA\Response(
+ *         response=401,
+ *         description="UNAUTHORIZED: request is not authenticated or session has no user.",
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="User does not have access to this report",
+ *     ),
+ * )
+ */
+class OpenApiReportsFavoritesAdd {}
+
+/**
+ * @OA\Delete(
+ *     path="/reports/favorites/{report_key}",
+ *     summary="Remove a report from the current user's favorites",
+ *     operationId="reportsFavoritesDelete",
+ *     tags={"ui"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="report_key",
+ *         in="path",
+ *         required=true,
+ *         description="The catalog key of the report to un-favorite. Must be a known catalog key the user currently has access to. Idempotent — deleting a key that was never favorited is a safe no-op.",
+ *         @OA\Schema(type="string", maxLength=64)
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Favorite removed (or was not present). Returns the updated favorites list.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="favorites",
+ *                     type="array",
+ *                     @OA\Items(type="string"),
+ *                     description="Alphabetically sorted list of report_keys the user has favorited."
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="BAD REQUEST: report_key path parameter is empty, exceeds 64 chars, or is not a known catalog key.",
+ *     ),
+ *     @OA\Response(
+ *         response=401,
+ *         description="UNAUTHORIZED: request is not authenticated or session has no user.",
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="User does not have access to this report",
+ *     ),
+ * )
+ */
+class OpenApiReportsFavoritesDelete {}
 
 ?>

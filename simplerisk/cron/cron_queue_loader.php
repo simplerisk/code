@@ -133,7 +133,7 @@ foreach ($jobs as $job) {
             write_debug_log("Running task_check for job type '{$jobType}'", "debug");
 
             // Check if task_check accepts $db
-            $reflection = new ReflectionFunction($job['task_check']);
+            $reflection = new ReflectionFunction(Closure::fromCallable($job['task_check']));
             $params = $reflection->getParameters();
 
             $result = count($params) > 0 ? $job['task_check']($db) : $job['task_check']();

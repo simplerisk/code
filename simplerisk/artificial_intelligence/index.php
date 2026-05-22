@@ -22,6 +22,7 @@ render_header_and_sidebar(permissions:['check_ai' => true]);
             if ($recommendations != false)
             {
                 // Display the recommendations (purified to prevent XSS from AI-generated HTML)
+                // @phan-suppress-next-line SecurityCheck-XSS -- purify_html() (HTMLPurifier) applied before output
                 echo purify_html($recommendations);
             }
             // If content was not returned

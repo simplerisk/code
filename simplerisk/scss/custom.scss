@@ -607,7 +607,15 @@ input#dollarsign {
 
 }
 
-#actions {
+// The Notification Extra's Actions tab (#actions) and the IM admin page's
+// Notifications tab (.notification-actions-accordion) both render accordion
+// items whose header carries a leading enable/disable checkbox. Overlay the
+// checkbox onto the header button so the title reads inline with it. Also
+// hide the details_template textarea — render_template_editor_html() emits
+// it as a sibling of the editable template so the JS init can read its
+// contents, but it should never be visible to the user.
+#actions,
+.notification-actions-accordion {
 	.accordion-header {
 		position: relative;
 
@@ -623,6 +631,10 @@ input#dollarsign {
 		.accordion-button {
 			padding-left: 35px;
 		}
+	}
+
+	.details_template {
+		display: none;
 	}
 }
 
@@ -1210,6 +1222,7 @@ a.open-in-new-tab {
 @import "modules/assessment";
 @import "modules/questionnaire";
 @import "modules/reporting";
+@import "modules/hub";
 @import "modules/configure";
 //@import "modules/_tabs";
 

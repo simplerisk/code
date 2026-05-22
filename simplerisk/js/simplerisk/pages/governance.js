@@ -58,7 +58,7 @@ $.fn.extend({
 
                     var framework_id = row.value;
                     $.ajax({
-                        url: BASE_URL + '/api/governance/update_framework_status',
+                        url: BASE_URL + '/api/v2/governance/update_framework_status',
                         type: 'POST',
                         data: {framework_id : framework_id, status:data_status},
                         success : function (data){
@@ -82,7 +82,7 @@ $.fn.extend({
                 var parent = targetRow ? targetRow.value : 0;
                 var framework_id = sourceRow.value;
                   $.ajax({
-                    url: BASE_URL + '/api/governance/update_framework_parent',
+                    url: BASE_URL + '/api/v2/governance/update_framework_parent',
                     type: 'POST',
                     data: {parent : parent, framework_id:framework_id},
                     success: function(data){
@@ -131,7 +131,7 @@ $.fn.extend({
             animate: true,
             collapsible: false,
             fitColumns: true,
-            url: BASE_URL + (type === 'document-hierarchy' ? '/api/governance/documents?type=' : `/api/governance/tabular_documents?type=${type}`),
+            url: BASE_URL + (type === 'document-hierarchy' ? '/api/v2/governance/documents/treegrid?type=' : `/api/v2/governance/tabular_documents?type=${type}`),
             method: 'get',
             idField: 'id',
             treeField: 'document_name',
@@ -200,7 +200,7 @@ $.fn.extend({
             animate: false,
             fitColumns: true,
             nowrap: true,
-            url: BASE_URL + `/api/exceptions/tree?type=${type}`,
+            url: BASE_URL + `/api/v2/exceptions/tree?type=${type}`,
             method: 'get',
             idField: 'value',
             treeField: 'name',
@@ -329,12 +329,12 @@ jQuery(document).ready(function($){
                 var framework_id = $(this).data("id");
 
                 $.ajax({
-                    url: BASE_URL + '/api/governance/framework?framework_id=' + framework_id,
+                    url: BASE_URL + '/api/v2/governance/framework?framework_id=' + framework_id,
                     type: 'GET',
                     success : function (res){
                         var data = res.data;
                         $.ajax({
-                            url: BASE_URL + '/api/governance/selected_parent_frameworks_dropdown?child_id=' + framework_id,
+                            url: BASE_URL + '/api/v2/governance/selected_parent_frameworks_dropdown?child_id=' + framework_id,
                             type: 'GET',
                             success : function (res){
                                 $("#framework--update .parent_frameworks_container").html(res.data.html)
@@ -407,7 +407,7 @@ jQuery(document).ready(function($){
             resetForm('#control--update form');
             var control_id  = $(this).attr('data-id');
             $.ajax({
-                url: BASE_URL + '/api/governance/control?control_id=' + control_id,
+                url: BASE_URL + '/api/v2/governance/control?control_id=' + control_id,
                 type: 'GET',
                 dataType: 'json',
                 success : function (res){
@@ -490,7 +490,7 @@ jQuery(document).ready(function($){
 			resetForm('#control--add form');
             var control_id  = $(this).attr('data-id');
             $.ajax({
-                url: BASE_URL + '/api/governance/control?control_id=' + control_id,
+                url: BASE_URL + '/api/v2/governance/control?control_id=' + control_id,
                 type: 'GET',
                 dataType: 'json',
                 success : function (res){
@@ -661,7 +661,7 @@ jQuery(document).ready(function($){
             scrollX: true,
             bSort: true,
             ajax: {
-                url: BASE_URL + '/api/datatable/framework_controls',
+                url: BASE_URL + '/api/v2/datatable/framework_controls',
                 type: "POST",
                 data: function (d) {
                     d.control_class = $("#filter_by_control_class").val();
@@ -805,7 +805,7 @@ function rebuild_filters()
 {
     $.ajax({
         type: "POST",
-        url: BASE_URL + "/api/governance/rebuild_control_filters",
+        url: BASE_URL + "/api/v2/governance/rebuild_control_filters",
         data: {
             control_framework: $("#filter_by_control_framework").val()
         },
@@ -891,7 +891,7 @@ $(function(){
 
         $.ajax({
             type: "POST",
-            url: BASE_URL + "/api/governance/add_control",
+            url: BASE_URL + "/api/v2/governance/add_control",
             data: form,
             async: true,
             cache: false,
@@ -968,7 +968,7 @@ $(function(){
 
         $.ajax({
             type: "POST",
-            url: BASE_URL + "/api/governance/update_control",
+            url: BASE_URL + "/api/v2/governance/update_control",
             data: form,
             async: true,
             cache: false,
@@ -1064,7 +1064,7 @@ $(function(){
 
         $.ajax({
             type: "POST",
-            url: BASE_URL + "/api/governance/update_framework",
+            url: BASE_URL + "/api/v2/governance/update_framework",
             data: form,
             async: true,
             cache: false,
@@ -1161,7 +1161,7 @@ function setupAssetsAssetGroupsWidget(select_tag, control_id, control_maturity) 
         load: function(query, callback) {
             if (query.length) return callback();
             $.ajax({
-                url: BASE_URL + '/api/asset-group/options_by_control' ,
+                url: BASE_URL + '/api/v2/asset-group/options_by_control' ,
                 data: { 
                         "control_id": control_id, 
                         "control_maturity": control_maturity, 

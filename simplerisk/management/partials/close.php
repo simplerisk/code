@@ -17,7 +17,7 @@
     if (!isset($_SESSION))
     {
         // Session handler is database
-        if (USE_DATABASE_FOR_SESSIONS == "true")
+        if (use_database_for_sessions())
         {
             session_set_save_handler(new SimpleRiskSessionHandler());
         }
@@ -89,9 +89,7 @@
             // If the user should not have access to the risk
             if (!extra_grant_access($_SESSION['uid'], $id))
             {
-                // Redirect back to the page the workflow started on
-                header("Location: " . $_SESSION["workflow_start"]);
-                exit(0);
+                redirect_permission_denied('NoPermissionForThisAction', "close risk id={$id}");
             }
         }
 

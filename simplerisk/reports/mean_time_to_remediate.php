@@ -1,6 +1,6 @@
 <?php
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['chart.js'], active_sidebar_submenu: 'Reporting_RiskManagement', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'MeanTimeToRemediate');
+    render_header_and_sidebar(['chart.js'], ['check_riskmanagement' => true], active_sidebar_submenu: 'Reporting_Reports', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'MeanTimeToRemediate');
 
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));
 
@@ -9,28 +9,28 @@
     $by_level    = get_mttr_by_risk_level();
 
     // --- By Team ---
-    $team_labels   = array_map(fn($r) => $escaper->escapeHtml($r['label']), $by_team);
+    $team_labels   = array_map(fn($r) => $r['label'], $by_team);
     $team_data     = array_map(fn($r) => (float)$r['avg_days'], $by_team);
     $team_datasets = [[
-        'label'           => $escaper->escapeHtml($lang['AverageDaysToClose']),
+        'label'           => $lang['AverageDaysToClose'],
         'data'            => $team_data,
         'backgroundColor' => '#4472C4',
     ]];
 
     // --- By Category ---
-    $cat_labels   = array_map(fn($r) => $escaper->escapeHtml($r['label']), $by_category);
+    $cat_labels   = array_map(fn($r) => $r['label'], $by_category);
     $cat_data     = array_map(fn($r) => (float)$r['avg_days'], $by_category);
     $cat_datasets = [[
-        'label'           => $escaper->escapeHtml($lang['AverageDaysToClose']),
+        'label'           => $lang['AverageDaysToClose'],
         'data'            => $cat_data,
         'backgroundColor' => '#ED7D31',
     ]];
 
     // --- By Risk Level ---
-    $level_labels   = array_map(fn($r) => $escaper->escapeHtml($r['label']), $by_level);
+    $level_labels   = array_map(fn($r) => $r['label'], $by_level);
     $level_data     = array_map(fn($r) => (float)$r['avg_days'], $by_level);
     $level_datasets = [[
-        'label'           => $escaper->escapeHtml($lang['AverageDaysToClose']),
+        'label'           => $lang['AverageDaysToClose'],
         'data'            => $level_data,
         'backgroundColor' => '#A9D18E',
     ]];
@@ -48,12 +48,12 @@
             <div class="mt-4">
                 <?php
                     create_chartjs_bar_code(
-                        $escaper->escapeHtml($lang['ByTeam'] ?? 'By Team'),
+                        $lang['ByTeam'] ?? 'By Team',
                         'mttr_team_chart',
                         $team_labels,
                         $team_datasets,
-                        $escaper->escapeHtml($lang['Team']),
-                        $escaper->escapeHtml($lang['AverageDaysToClose'])
+                        $lang['Team'],
+                        $lang['AverageDaysToClose']
                     );
                 ?>
             </div>
@@ -63,12 +63,12 @@
             <div class="mt-4">
                 <?php
                     create_chartjs_bar_code(
-                        $escaper->escapeHtml($lang['ByCategory'] ?? 'By Category'),
+                        $lang['ByCategory'] ?? 'By Category',
                         'mttr_category_chart',
                         $cat_labels,
                         $cat_datasets,
-                        $escaper->escapeHtml($lang['Category']),
-                        $escaper->escapeHtml($lang['AverageDaysToClose'])
+                        $lang['Category'],
+                        $lang['AverageDaysToClose']
                     );
                 ?>
             </div>
@@ -78,12 +78,12 @@
             <div class="mt-4">
                 <?php
                     create_chartjs_bar_code(
-                        $escaper->escapeHtml($lang['ByRiskLevel'] ?? 'By Risk Level'),
+                        $lang['ByRiskLevel'] ?? 'By Risk Level',
                         'mttr_level_chart',
                         $level_labels,
                         $level_datasets,
-                        $escaper->escapeHtml($lang['RiskLevel']),
-                        $escaper->escapeHtml($lang['AverageDaysToClose'])
+                        $lang['RiskLevel'],
+                        $lang['AverageDaysToClose']
                     );
                 ?>
             </div>

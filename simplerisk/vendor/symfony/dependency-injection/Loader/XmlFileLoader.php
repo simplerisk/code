@@ -739,38 +739,39 @@ class XmlFileLoader extends FileLoader
         $tmpfiles = [];
         $imports = '';
         foreach ($schemaLocations as $namespace => $location) {
-            $parts = explode('/', $location);
-            $locationstart = 'file:///';
             if (0 === stripos($location, 'phar://')) {
-                $tmpfile = tempnam(sys_get_temp_dir(), 'symfony');
-                if ($tmpfile) {
+                if ($tmpfile = tempnam(sys_get_temp_dir(), 'symfony')) {
                     copy($location, $tmpfile);
                     $tmpfiles[] = $tmpfile;
-                    $parts = explode('/', str_replace('\\', '/', $tmpfile));
+                    $location = self::getFileUrl($tmpfile);
                 } else {
+                    $parts = explode('/', '\\' === \DIRECTORY_SEPARATOR ? str_replace('\\', '/', $location) : $location);
                     array_shift($parts);
-                    $locationstart = 'phar:///';
+                    $drive = '\\' === \DIRECTORY_SEPARATOR ? array_shift($parts).'/' : '';
+                    $location = 'phar:///'.$drive.implode('/', array_map('rawurlencode', $parts));
                 }
             } elseif ('\\' === \DIRECTORY_SEPARATOR && str_starts_with($location, '\\\\')) {
-                $locationstart = '';
+                $parts = explode('/', $location);
+                $drive = array_shift($parts).'/';
+                $location = $drive.implode('/', array_map('rawurlencode', $parts));
+            } else {
+                $location = self::getFileUrl($location);
             }
-            $drive = '\\' === \DIRECTORY_SEPARATOR ? array_shift($parts).'/' : '';
-            $location = $locationstart.$drive.implode('/', array_map('rawurlencode', $parts));
 
             $imports .= \sprintf('  <xsd:import namespace="%s" schemaLocation="%s" />'."\n", $namespace, $location);
         }
 
         $source = <<<EOF
-<?xml version="1.0" encoding="utf-8" ?>
-<xsd:schema xmlns="http://symfony.com/schema"
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    targetNamespace="http://symfony.com/schema"
-    elementFormDefault="qualified">
+            <?xml version="1.0" encoding="utf-8" ?>
+            <xsd:schema xmlns="http://symfony.com/schema"
+                xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                targetNamespace="http://symfony.com/schema"
+                elementFormDefault="qualified">
 
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
-$imports
-</xsd:schema>
-EOF
+                <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+            $imports
+            </xsd:schema>
+            EOF
         ;
 
         if ($this->shouldEnableEntityLoader()) {
@@ -800,7 +801,7 @@ EOF
             });
             $schema = '<?xml version="1.0" encoding="utf-8"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <xsd:include schemaLocation="file:///'.rawurlencode(str_replace('\\', '/', $tmpfile)).'" />
+  <xsd:include schemaLocation="'.self::getFileUrl($tmpfile).'" />
 </xsd:schema>';
             file_put_contents($tmpfile, '<?xml version="1.0" encoding="utf-8"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -810,6 +811,19 @@ EOF
         }
 
         return !@$dom->schemaValidateSource($schema);
+    }
+
+    private static function getFileUrl(string $path): string
+    {
+        if ('\\' === \DIRECTORY_SEPARATOR) {
+            $parts = explode('/', str_replace('\\', '/', $path));
+            $drive = array_shift($parts).'/';
+        } else {
+            $parts = explode('/', $path);
+            $drive = '';
+        }
+
+        return 'file:///'.$drive.implode('/', array_map('rawurlencode', $parts));
     }
 
     private function validateAlias(\DOMElement $alias, string $file): void
@@ -844,7 +858,7 @@ EOF
 
             // can it be handled by an extension?
             if (!$this->container->hasExtension($node->namespaceURI)) {
-                $extensionNamespaces = array_filter(array_map(fn (ExtensionInterface $ext) => $ext->getNamespace(), $this->container->getExtensions()));
+                $extensionNamespaces = array_filter(array_map(static fn (ExtensionInterface $ext) => $ext->getNamespace(), $this->container->getExtensions()));
                 throw new InvalidArgumentException(\sprintf('There is no extension able to load the configuration for "%s" (in "%s"). Looked for namespace "%s", found "%s".', $node->tagName, $file, $node->namespaceURI, $extensionNamespaces ? implode('", "', $extensionNamespaces) : 'none'));
             }
         }

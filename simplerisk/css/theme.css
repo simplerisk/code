@@ -9025,13 +9025,13 @@ input.error, select.error, textarea.error, button.multiselect.error {
 /**
 * jquery datatable
 */
-.dataTables_wrapper .dataTables_length {
+.dt-container .dt-length {
   float: right;
 }
-.dataTables_wrapper .dataTables_processing {
+.dt-container .dt-processing {
   z-index: 99;
 }
-.dataTables_wrapper .dataTables_paginate .paginate_button {
+.dt-container .dt-paging .dt-paging-button {
   background-color: #c1b4b4;
   color: #fff !important;
   margin: 0 2px;
@@ -9041,27 +9041,27 @@ input.error, select.error, textarea.error, button.multiselect.error {
   font-weight: bold;
   padding: 4px 12px;
 }
-.dataTables_wrapper .dataTables_paginate .paginate_button:hover, .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+.dt-container .dt-paging .dt-paging-button:hover, .dt-container .dt-paging .dt-paging-button.current {
   background: #3a3a3a;
   color: #fff !important;
   border: 0px;
 }
-.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+.dt-container .dt-paging .dt-paging-button.current:hover {
   border: 0px;
   background: #3a3a3a;
   color: #fff !important;
 }
-.dataTables_wrapper .dataTables_paginate .paginate_button.first, .dataTables_wrapper .dataTables_paginate .paginate_button.next, .dataTables_wrapper .dataTables_paginate .paginate_button.previous, .dataTables_wrapper .dataTables_paginate .paginate_button.last {
+.dt-container .dt-paging .dt-paging-button.first, .dt-container .dt-paging .dt-paging-button.next, .dt-container .dt-paging .dt-paging-button.previous, .dt-container .dt-paging .dt-paging-button.last {
   background: transparent;
   color: #c1b4b4 !important;
 }
-.dataTables_wrapper .dataTables_paginate .paginate_button.first:hover, .dataTables_wrapper .dataTables_paginate .paginate_button.next:hover, .dataTables_wrapper .dataTables_paginate .paginate_button.previous:hover, .dataTables_wrapper .dataTables_paginate .paginate_button.last:hover {
+.dt-container .dt-paging .dt-paging-button.first:hover, .dt-container .dt-paging .dt-paging-button.next:hover, .dt-container .dt-paging .dt-paging-button.previous:hover, .dt-container .dt-paging .dt-paging-button.last:hover {
   color: #3a3a3a !important;
 }
-.dataTables_wrapper .dataTables_paginate .paginate_button.first.disabled, .dataTables_wrapper .dataTables_paginate .paginate_button.next.disabled, .dataTables_wrapper .dataTables_paginate .paginate_button.previous.disabled, .dataTables_wrapper .dataTables_paginate .paginate_button.last.disabled {
+.dt-container .dt-paging .dt-paging-button.first.disabled, .dt-container .dt-paging .dt-paging-button.next.disabled, .dt-container .dt-paging .dt-paging-button.previous.disabled, .dt-container .dt-paging .dt-paging-button.last.disabled {
   color: #c1b4b4 !important;
 }
-.dataTables_wrapper .view-all {
+.dt-container .view-all {
   float: right;
   margin-left: 15px;
   cursor: pointer;
@@ -9074,28 +9074,28 @@ input.error, select.error, textarea.error, button.multiselect.error {
   margin-top: 5px;
   border-radius: 2px;
 }
-.dataTables_wrapper .view-all.current {
+.dt-container .view-all.current {
   background: #3a3a3a;
   color: #fff !important;
   border: 0px;
 }
 
-th.sorting_asc > .fa {
+th.dt-ordering-asc > .fa {
   display: inline-block;
   position: relative;
   left: 10px;
   top: 3px;
 }
-th.sorting_asc > .fa:before {
+th.dt-ordering-asc > .fa:before {
   content: "\f0de";
 }
-th.sorting_desc > .fa {
+th.dt-ordering-desc > .fa {
   display: inline-block;
   position: relative;
   left: 10px;
   top: -3px;
 }
-th.sorting_desc > .fa:before {
+th.dt-ordering-desc > .fa:before {
   content: "\f0dd";
 }
 
@@ -9119,7 +9119,7 @@ th.sorting_desc > .fa:before {
   background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
 }
 
-.dataTables_filter input {
+.dt-search input {
   width: 206px;
 }
 
@@ -11535,7 +11535,7 @@ div.doc-link.edit-mode {
 #risk-table-container, #risks-open-by-team-container {
   padding-bottom: 50px;
 }
-#risk-table-container .dataTables_wrapper.no-footer .dataTables_scrollBody, #risks-open-by-team-container .dataTables_wrapper.no-footer .dataTables_scrollBody {
+#risk-table-container .dt-container.no-footer .dt-scroll-body, #risks-open-by-team-container .dt-container.no-footer .dt-scroll-body {
   border-bottom: 0px;
 }
 #export-dynamic-risk-report {

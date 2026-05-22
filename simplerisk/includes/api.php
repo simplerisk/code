@@ -68,7 +68,7 @@ function is_session_authenticated()
     if (!isset($_SESSION))
     {
         // Session handler is database
-        if (USE_DATABASE_FOR_SESSIONS == "true")
+        if (use_database_for_sessions())
         {
             session_set_save_handler(new SimpleRiskSessionHandler());
         }
@@ -240,6 +240,8 @@ function show_management()
  ************************/
 function show_admin()
 {
+    global $lang;
+
     // Check that this is an admin user
     if (!is_admin())
     {
@@ -278,6 +280,7 @@ function show_audit_log()
 /*************************
  * FUNCTION: API VERSION *
  *************************/
+// @phan-suppress-next-line PhanRedefineFunction -- core definition; extras/api/index.php overrides this
 function api_version()
 {
   return '1.1';
@@ -465,7 +468,13 @@ function disabledusers()
  *******************************************/
 function dynamicrisk()
 {
-    global $escaper;
+    global $escaper, $lang;
+
+    if (!check_permission("riskmanagement")) {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
+
     // If the status, sort, and group are not sent
     if (!isset($_GET['status']) || !isset($_GET['sort']) || !isset($_GET['group']))
     {
@@ -735,7 +744,7 @@ function viewrisk($id = null) {
                 $risk["custom_values"] = getCustomFieldValuesByRiskId($id, 1);
             }
 
-            $data[] = $risk;
+            $data = [$risk];
 
             // Return a JSON response
             json_response(200, "viewrisk", $data);
@@ -886,8 +895,13 @@ function viewreview($id = null) {
  ************************************/
 function dynamicriskForm()
 {
-    global $escaper;
-    
+    global $escaper, $lang;
+
+    if (!check_permission("riskmanagement")) {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
+
     // If the status, sort, and group are not sent
     if ((!isset($_REQUEST['status']) || !isset($_REQUEST['sort']) || !isset($_REQUEST['group'])) && !isset($_REQUEST['risks_by_team']))
     {
@@ -907,11 +921,14 @@ function dynamicriskForm()
         $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
         $length = $_POST['length'] ? (int)$_POST['length'] : 10;
         $group_value_from_db = $_POST['group_value'] ? $_POST['group_value'] : "";
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderColumnIndex = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
 
         // Sanitizing input
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderColumnName = !empty($_POST['columns'][$orderColumnIndex]['name']) && preg_match('/^[a-zA-Z0-9_]+$/', $_POST['columns'][$orderColumnIndex]['name']) ? $_POST['columns'][$orderColumnIndex]['name'] : null;
         // Sanitizing input
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderDir = !empty($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
 
         // Params in risks_by_teams page
@@ -1034,6 +1051,7 @@ function dynamicriskForm()
         );
 
         // Return a JSON response
+        // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output for DataTables; values are pre-escaped via escapeHtml()/purifyHtml()
         echo json_encode($results);
     }
 }
@@ -1068,7 +1086,8 @@ function dynamicriskUniqueColumnDataAPI()
         $risks = get_dynamicrisk_unique_column_data($status, $group, $group_value_from_db);
 
         $datas = array();
-        
+        $active_fields = [];
+
         // If Customization Extra is true, include custom extra
         if(customization_extra())
         {
@@ -1423,6 +1442,7 @@ function getTabHtml($id, $template){
         $next_review = "";
         $color = "";
         $risk_level = "";
+        $residual_risk_level = null;
 
         $scoring_method = "";
         $CLASSIC_likelihood = "";
@@ -1472,77 +1492,87 @@ function getTabHtml($id, $template){
         $display_risk = false;
     }
 
-    // If the current scoring method was changed to Classic
-    if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 1 && $access)
+    // Scoring-method changes triggered via GET on a getTabHtml caller (e.g.
+    // /api/management/risk/viewhtml, /api/management/risk/scoreaction) write
+    // through change_scoring_method() and update_*_score() to risk_scoring.
+    // Gate the entire block on modify_risks so a riskmanagement-only user
+    // cannot mutate stored scoring state by appending scoring_method to a view
+    // URL. The original code only checked $access (team-separation visibility)
+    // and let any reader trigger the writes. (HackerOne report.)
+    if (isset($_GET['scoring_method']) && $access && check_permission("modify_risks"))
     {
-        // Set the new scoring method
-        $scoring_method = change_scoring_method($id, "1");
+        // If the current scoring method was changed to Classic
+        if ($_GET['scoring_method'] == 1)
+        {
+            // Set the new scoring method
+            $scoring_method = change_scoring_method($id, "1");
 
-        // Update the classic score
-        $calculated_risk = update_classic_score($id, $CLASSIC_likelihood, $CLASSIC_impact);
+            // Update the classic score
+            $calculated_risk = update_classic_score($id, $CLASSIC_likelihood, $CLASSIC_impact);
 
-        // Display an alert
-        set_alert(true, "good", "The scoring method has been successfully changed to Classic.");
-    }
-    // If the current scoring method was changed to CVSS
-    else if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 2 && $access)
-    {
-        // Set the new scoring method
-        $scoring_method = change_scoring_method($id, "2");
+            // Display an alert
+            set_alert(true, "good", "The scoring method has been successfully changed to Classic.");
+        }
+        // If the current scoring method was changed to CVSS
+        else if ($_GET['scoring_method'] == 2)
+        {
+            // Set the new scoring method
+            $scoring_method = change_scoring_method($id, "2");
 
-        // Update the cvss score
-        $calculated_risk = update_cvss_score($id, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement);
+            // Update the cvss score
+            $calculated_risk = update_cvss_score($id, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement);
 
-        // Display an alert
-        set_alert(true, "good", "The scoring method has been successfully changed to CVSS.");
-    }
-    // If the current scoring method was changed to DREAD
-    else if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 3 && $access)
-    {
-        // Set the new scoring method
-        $scoring_method = change_scoring_method($id, "3");
+            // Display an alert
+            set_alert(true, "good", "The scoring method has been successfully changed to CVSS.");
+        }
+        // If the current scoring method was changed to DREAD
+        else if ($_GET['scoring_method'] == 3)
+        {
+            // Set the new scoring method
+            $scoring_method = change_scoring_method($id, "3");
 
-        // Update the dread score
-        $calculated_risk = update_dread_score($id, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability);
+            // Update the dread score
+            $calculated_risk = update_dread_score($id, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability);
 
-        // Display an alert
-        set_alert(true, "good", "The scoring method has been successfully changed to DREAD.");
-    }
-    // If the current scoring method was changed to OWASP
-    else if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 4 && $access)
-    {
-        // Set the new scoring method
-        $scoring_method = change_scoring_method($id, "4");
+            // Display an alert
+            set_alert(true, "good", "The scoring method has been successfully changed to DREAD.");
+        }
+        // If the current scoring method was changed to OWASP
+        else if ($_GET['scoring_method'] == 4)
+        {
+            // Set the new scoring method
+            $scoring_method = change_scoring_method($id, "4");
 
-        // Update the owasp score
-        $calculated_risk = update_owasp_score($id, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation);
+            // Update the owasp score
+            $calculated_risk = update_owasp_score($id, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation);
 
-        // Display an alert
-        set_alert(true, "good", "The scoring method has been successfully changed to OWASP.");
-    }
-    // If the current scoring method was changed to Custom
-    else if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 5 && $access)
-    {
-        // Set the new scoring method
-        $scoring_method = change_scoring_method($id, "5");
+            // Display an alert
+            set_alert(true, "good", "The scoring method has been successfully changed to OWASP.");
+        }
+        // If the current scoring method was changed to Custom
+        else if ($_GET['scoring_method'] == 5)
+        {
+            // Set the new scoring method
+            $scoring_method = change_scoring_method($id, "5");
 
-        // Update the custom score
-        $calculated_risk = update_custom_score($id, $custom);
+            // Update the custom score
+            $calculated_risk = update_custom_score($id, $custom);
 
-        // Display an alert
-        set_alert(true, "good", "The scoring method has been successfully changed to Custom.");
-    }
-    // If the current scoring method was changed to Contributing Risk
-    else if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 6 && $access)
-    {
-        // Set the new scoring method
-        $scoring_method = change_scoring_method($id, "6");
+            // Display an alert
+            set_alert(true, "good", "The scoring method has been successfully changed to Custom.");
+        }
+        // If the current scoring method was changed to Contributing Risk
+        else if ($_GET['scoring_method'] == 6)
+        {
+            // Set the new scoring method
+            $scoring_method = change_scoring_method($id, "6");
 
-        // Update the custom score
-        $calculated_risk = update_contributing_risk_score($id, $ContributingLikelihood, $ContributingImpacts);
+            // Update the custom score
+            $calculated_risk = update_contributing_risk_score($id, $ContributingLikelihood, $ContributingImpacts);
 
-        // Display an alert
-        set_alert(true, "good", "The scoring method has been successfully changed to Contributing Risk.");
+            // Display an alert
+            set_alert(true, "good", "The scoring method has been successfully changed to Contributing Risk.");
+        }
     }
 
     if ($submission_date == "")
@@ -1558,15 +1588,25 @@ function getTabHtml($id, $template){
     if ($mitigation == true && $access)
     {
         // Set the mitigation values
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $mitigation_date    = format_date($mitigation[0]['submission_date']);
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $planning_strategy  = $mitigation[0]['planning_strategy'];
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $mitigation_effort  = $mitigation[0]['mitigation_effort'];
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $mitigation_cost    = $mitigation[0]['mitigation_cost'];
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $mitigation_owner   = $mitigation[0]['mitigation_owner'];
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $mitigation_team    = $mitigation[0]['mitigation_team'];
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $current_solution   = $mitigation[0]['current_solution'];
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $security_requirements      = $mitigation[0]['security_requirements'];
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $security_recommendations   = $mitigation[0]['security_recommendations'];
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $planning_date      = format_date($mitigation[0]['planning_date']);
         $mitigation_percent = (isset($mitigation[0]['mitigation_percent']) && $mitigation[0]['mitigation_percent'] >= 0 && $mitigation[0]['mitigation_percent'] <= 100) ? $mitigation[0]['mitigation_percent'] : 0;
         $mitigation_controls = isset($mitigation[0]['mitigation_controls']) ? $mitigation[0]['mitigation_controls'] : "";
@@ -1728,12 +1768,15 @@ function reopenForm($id = null)
         }
     }
 
+    $risk_id = null;
+    $synchronized_risk_field_values = null;
+
     if (jira_extra()) {
         require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
 
         $risk_id = $id - 1000;
         $metadata = get_risk_issue_association_metadata($risk_id);
-        
+
         if ($metadata && isset($metadata['issue_key'])) {
             $issue_key = $metadata['issue_key'];
             $synchronized_risk_field_values = get_synchronized_risk_field_values($risk_id);
@@ -1824,17 +1867,20 @@ function closeriskForm()
 
     $access = check_access_for_risk($id);
 
-    if(check_permission("modify_risks") && $access){
+    if(check_permission("close_risks") && $access){
         $status = "Closed";
         $close_reason = $_POST['close_reason'];
         $note = $_POST['note'];
+
+        $risk_id = null;
+        $synchronized_risk_field_values = null;
 
         if (jira_extra()) {
             require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
 
             $risk_id = $id - 1000;
             $metadata = get_risk_issue_association_metadata($risk_id);
-            
+
             if ($metadata && isset($metadata['issue_key'])) {
                 $issue_key = $metadata['issue_key'];
                 $synchronized_risk_field_values = get_synchronized_risk_field_values($risk_id);
@@ -1865,7 +1911,7 @@ function closeriskForm()
         json_response(200, get_alert(true), $viewhtml);
 
     }else{
-        set_alert(true, "bad", "You do not have permission to modify risks.  Any risks that you attempt to modify will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.");
+        set_alert(true, "bad", "You do not have permission to close risks.  Any attempts to close risks will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.");
 
         // Return a JSON response
         json_response(400, get_alert(true), NULL);
@@ -1942,6 +1988,9 @@ function saveDetailsForm()
 
     $access = check_access_for_risk($id);
     if(isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access){
+
+        $issue_key = null;
+        $synchronized_risk_field_values = null;
 
         if (jira_extra()) {
             require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
@@ -2314,6 +2363,9 @@ function updateStatusForm()
 
         // Check that the id is a numeric value
         if (is_numeric($id)) {
+            $risk_id = null;
+            $synchronized_risk_field_values = null;
+
             if (jira_extra()) {
                 require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
 
@@ -2550,6 +2602,140 @@ function scoreactionForm()
     json_response(200, get_alert(true), $html);
 }
 
+/****************************************************
+ * FUNCTION: MANAGEMENT - UPDATE SCORING METHOD     *
+ ****************************************************
+ * Dedicated POST endpoint that performs the scoring-method change as a real
+ * mutation: csrf-magic protects POSTs automatically, the handler enforces
+ * modify_risks + check_access_for_risk(), and getTabHtml() (which is reached
+ * from this handler with $_GET['scoring_method'] absent) is then reduced to
+ * pure rendering.
+ *
+ * The previous flow piggy-backed the mutation on GET /scoreaction (and other
+ * getTabHtml-backed view URLs) by passing scoring_method on the query string,
+ * which let any team-visible reader silently rewrite stored scoring state.
+ * That GET path now also enforces modify_risks (defence in depth) but the
+ * canonical mutation surface is this POST handler. Reported via HackerOne.
+ ****************************************************/
+function updateScoringMethodForm()
+{
+    global $lang, $escaper;
+
+    // Required: id of the risk to rescore
+    if (!isset($_POST['id']))
+    {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    // Required: scoring_method to switch to
+    if (!isset($_POST['scoring_method']))
+    {
+        set_alert(true, "bad", "You need to specify a scoring_method parameter.");
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $id     = (is_numeric($_POST['id']) ? (int)$_POST['id'] : 0);
+    $method = (is_numeric($_POST['scoring_method']) ? (int)$_POST['scoring_method'] : 0);
+
+    // Reject any scoring_method outside the supported set so we don't write
+    // arbitrary integers into risks.scoring_method.
+    if (!in_array($method, [1, 2, 3, 4, 5, 6], true))
+    {
+        set_alert(true, "bad", "Invalid scoring_method value.");
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    // Permission gates: must hold modify_risks AND have team-separation
+    // visibility into this specific risk.
+    if (!check_permission("modify_risks") || !check_access_for_risk($id))
+    {
+        set_alert(true, "bad", "You do not have permission to modify risks.  Any risks that you attempt to modify will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.");
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    // Pull the risk's existing per-method fields so update_*_score() can
+    // recompute against the values the user already entered. Mirrors what the
+    // legacy inline block in getTabHtml does, just at a real mutation entry
+    // point.
+    $risk = get_risk_by_id($id);
+    if (count($risk) == 0)
+    {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['RiskIdDoesNotExist']));
+        json_response(404, get_alert(true), NULL);
+        return;
+    }
+    $r = $risk[0];
+
+    change_scoring_method($id, (string)$method);
+
+    switch ($method)
+    {
+        case 1:
+            update_classic_score($id, $r['CLASSIC_likelihood'], $r['CLASSIC_impact']);
+            set_alert(true, "good", "The scoring method has been successfully changed to Classic.");
+            break;
+        case 2:
+            update_cvss_score(
+                $id,
+                $r['CVSS_AccessVector'], $r['CVSS_AccessComplexity'], $r['CVSS_Authentication'],
+                $r['CVSS_ConfImpact'], $r['CVSS_IntegImpact'], $r['CVSS_AvailImpact'],
+                $r['CVSS_Exploitability'], $r['CVSS_RemediationLevel'], $r['CVSS_ReportConfidence'],
+                $r['CVSS_CollateralDamagePotential'], $r['CVSS_TargetDistribution'],
+                $r['CVSS_ConfidentialityRequirement'], $r['CVSS_IntegrityRequirement'], $r['CVSS_AvailabilityRequirement']
+            );
+            set_alert(true, "good", "The scoring method has been successfully changed to CVSS.");
+            break;
+        case 3:
+            update_dread_score(
+                $id,
+                $r['DREAD_DamagePotential'], $r['DREAD_Reproducibility'], $r['DREAD_Exploitability'],
+                $r['DREAD_AffectedUsers'], $r['DREAD_Discoverability']
+            );
+            set_alert(true, "good", "The scoring method has been successfully changed to DREAD.");
+            break;
+        case 4:
+            update_owasp_score(
+                $id,
+                $r['OWASP_SkillLevel'], $r['OWASP_Motive'], $r['OWASP_Opportunity'], $r['OWASP_Size'],
+                $r['OWASP_EaseOfDiscovery'], $r['OWASP_EaseOfExploit'], $r['OWASP_Awareness'], $r['OWASP_IntrusionDetection'],
+                $r['OWASP_LossOfConfidentiality'], $r['OWASP_LossOfIntegrity'], $r['OWASP_LossOfAvailability'],
+                $r['OWASP_LossOfAccountability'], $r['OWASP_FinancialDamage'], $r['OWASP_ReputationDamage'],
+                $r['OWASP_NonCompliance'], $r['OWASP_PrivacyViolation']
+            );
+            set_alert(true, "good", "The scoring method has been successfully changed to OWASP.");
+            break;
+        case 5:
+            update_custom_score($id, $r['Custom']);
+            set_alert(true, "good", "The scoring method has been successfully changed to Custom.");
+            break;
+        case 6:
+            $contributing_risks_impacts = $r['Contributing_Risks_Impacts'];
+            $contributing_impacts = $contributing_risks_impacts
+                ? get_contributing_impacts_by_subjectimpact_values($contributing_risks_impacts)
+                : [];
+            update_contributing_risk_score($id, $r['Contributing_Likelihood'], $contributing_impacts);
+            set_alert(true, "good", "The scoring method has been successfully changed to Contributing Risk.");
+            break;
+    }
+
+    // Render and return the updated score-overview tab. The legacy inline
+    // scoring_method handler in getTabHtml fires on isset($_GET['scoring_method'])
+    // (api.php:1502 area). On a normal POST that branch is dormant because
+    // $_GET is empty, but a caller that includes scoring_method in the query
+    // string as well as the POST body would re-trigger the same mutation a
+    // second time. The mutation is idempotent so it's not a correctness bug,
+    // but it's a wasted DB round-trip. Drop the GET key explicitly so the
+    // inline block can never re-fire from this entry point.
+    unset($_GET['scoring_method']);
+    $html = getTabHtml($id, 'score-overview');
+    json_response(200, get_alert(true), $html);
+}
+
 /*****************************************
  * FUNCTION: MANAGEMENT - UPDATE SUBJECT*
  ****************************************/
@@ -2573,12 +2759,15 @@ function saveSubjectForm($id = null)
         $new_subject = $_POST['subject'];
         if (trim($new_subject) != '')
         {
+            $risk_id = null;
+            $synchronized_risk_field_values = null;
+
             if (jira_extra()) {
                 require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
 
                 $risk_id = $id - 1000;
                 $metadata = get_risk_issue_association_metadata($risk_id);
-                
+
                 if ($metadata && isset($metadata['issue_key'])) {
                     $issue_key = $metadata['issue_key'];
                     $synchronized_risk_field_values = get_synchronized_risk_field_values($risk_id);
@@ -2624,6 +2813,43 @@ function saveSubjectForm($id = null)
     }
 
 
+}
+
+/*****************************************************
+ * FUNCTION: MANAGEMENT - SET PROJECT TO A RISK      *
+ * POST /management/risk/setProjectToRisk?id={id}    *
+ * Body: project_id={project_id}                     *
+ *****************************************************/
+function setProjectToRiskForm($id = null)
+{
+    global $lang, $escaper;
+
+    if ($id === null && !isset($_GET['id']))
+    {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    $id = $id ?? $_GET['id'];
+
+    if (!has_permission("modify_risks") || !check_access_for_risk($id)) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForRiskManagement']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $project_id = isset($_POST['project_id']) ? $_POST['project_id'] : null;
+    if (!ctype_digit((string)$project_id)) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['ThereWasAProblemWithAddingTheProject']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $risk_id = (int)$id - 1000;
+    update_risk_project((int)$project_id, $risk_id);
+
+    set_alert(true, "good", $escaper->escapeHtml($lang['SuccessSetProject']));
+    json_response(200, get_alert(true), NULL);
 }
 
 /*****************************************
@@ -2770,15 +2996,13 @@ function acceptMitigationForm($id = null)
     
         accept_mitigation_by_risk_id($id, $accept);
 
-        // If notification is enabled
-        if (notification_extra())
-        {
-            // Include the notification extra
-            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-            // Send the notification
-            notify_mitigation_update($id - 1000);
-        }
+        // Send the notification (no-op if notification extra is disabled)
+        call_extra_function(
+            'notification_extra',
+            __DIR__ . '/../extras/notification/index.php',
+            'notify_mitigation_update',
+            [$id - 1000]
+        );
 
         $message = view_accepted_mitigations($id);
 
@@ -3145,6 +3369,8 @@ function addRisk(){
         }
     }
     
+    $issue_key = null;
+
     if (jira_extra()) {
         require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
         $issue_key = strtoupper(trim(get_param("POST", 'jira_issue_key')));
@@ -3293,15 +3519,13 @@ function addRisk(){
             }
         }
 
-        // If the notification extra is enabled
-        if (notification_extra())
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-            // Send the notification
-            notify_new_risk($last_insert_id);
-        }
+        // Send the notification (no-op if notification extra is disabled)
+        call_extra_function(
+            'notification_extra',
+            __DIR__ . '/../extras/notification/index.php',
+            'notify_new_risk',
+            [$last_insert_id]
+        );
 
         // There is an alert message
         $risk_id = (int)$last_insert_id + 1000;
@@ -3563,6 +3787,9 @@ function setCustomAuditsColumn(){
 function deleteMapping(){
     global $lang;
 
+    $status = null;
+    $status_message = null;
+
     // If the extra directory exists
     if (is_dir(realpath(__DIR__ . '/../extras/import-export')))
     {
@@ -3746,13 +3973,16 @@ function getFrameworkControlsDatatable() {
     global $lang;
     global $escaper;
 
-    // If the customization extra is enabled, shows fields by asset customization
-    if (customization_extra()) {
-        // Load the extra
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+    $active_fields = [];
 
-        $active_fields = get_active_fields("control", "", 2);
-    }
+    // Get the active control fields (returns [] if customization extra is disabled)
+    $active_fields = call_extra_function(
+        'customization_extra',
+        __DIR__ . '/../extras/customization/index.php',
+        'get_active_fields',
+        ["control", "", 2],
+        []
+    );
 
     // If the user has governance permissions
     if (check_permission("governance")) {
@@ -4730,8 +4960,11 @@ function auditTimelineResponse()
     {
         $draw = $escaper->escapeHtml($_GET['draw']);
 
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderColumn = isset($_GET['order'][0]['column']) ? $_GET['order'][0]['column'] : "";
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderColumnName = isset($_GET['columns'][$orderColumn]['name']) ? $_GET['columns'][$orderColumn]['name'] : null;
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderDir = !empty($_GET['order'][0]['dir']) && strtolower($_GET['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
 
         // Get risks requiring mitigations
@@ -4781,9 +5014,10 @@ function auditTimelineResponse()
         'recordsTotal' => $recordsTotal,
         'recordsFiltered' => $recordsTotal,
     );
+    // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output; build_url() called with hardcoded paths and DB integer IDs
     echo json_encode($result);
     exit;
-    
+
 }
 
 /*******************************
@@ -5449,6 +5683,7 @@ function getInitiateTestAuditsResponse() {
             }
         }
 
+        // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output; all fields individually escaped
         echo json_encode($results);
 
     } else {
@@ -5495,13 +5730,17 @@ function getPastTestAuditsResponse()
             "status",
             "test_result",
         );
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderColumn = isset($_POST['order'][0]['column']) ? (int)$_POST['order'][0]['column'] : -1;
         $columnName = isset($columnNames[$orderColumn]) ? $columnNames[$orderColumn] : false;
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderDir = isset($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) == "asc" ? "asc" : "desc";
 
         $column_filters = [];
         for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             if ( isset($_POST['columns'][$i]) && $_POST['columns'][$i]['searchable'] == "true" && $_POST['columns'][$i]['search']['value'] != '' ) {
+                // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
                 $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
             }
         }
@@ -5558,6 +5797,7 @@ function getPastTestAuditsResponse()
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsTotal,
         );
+        // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output; build_url() called with hardcoded path
         echo json_encode($result);
         exit;
     }
@@ -5583,7 +5823,9 @@ function getActiveTestAuditsResponse() {
         // should check if sorting is enabled
         if (isset($_POST['order'])) {
 
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             $orderColumn = (int)$_POST['order'][0]['column'];
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             $orderDir = strtolower($_POST['order'][0]['dir']) == "asc" ? "asc" : "desc";
 
         // if not, we should set the default value
@@ -5691,6 +5933,7 @@ function getActiveTestAuditsResponse() {
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsTotal,
         );
+        // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output; build_url() called with hardcoded path
         echo json_encode($result);
         exit;
     }
@@ -6335,7 +6578,8 @@ function getTabularDocumentsResponse() {
             }
             $documents = $filtered_documents;
         }
-        
+
+        // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output; build_url() called with hardcoded path and pre-escaped unique_name
         echo json_encode($documents);
         exit;
     } else {
@@ -6426,9 +6670,10 @@ function get_mitigation_control_info(){
         </tbody>
     </table>';
 
+    $data = [];
     $data['control_info'] = $control_info;
     $data['scroll_top']   = $height;
-    
+
     json_response(200, "Success", $data);
     exit;
 }
@@ -6502,13 +6747,18 @@ function getPlanMitigationsDatatableResponse()
 
         $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
         $length = $_POST['length'] ? (int)$_POST['length'] : 10;
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderColumn = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderColumnName = isset($_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;;
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderDir = !empty($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
 
         $column_filters = [];
         for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             if ( isset($_POST['columns'][$i]) && $_POST['columns'][$i]['searchable'] == "true" && $_POST['columns'][$i]['search']['value'] != '' ) {
+                // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
                 $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
             }
         }
@@ -6762,7 +7012,8 @@ function getPlanMitigationsDatatableResponse()
                         }
                         else 
                         {
-                            $mitigation_cost = "$" . $mitigation_min_cost . " to $" . $mitigation_max_cost;
+                            $currency = get_currency_symbol();
+                            $mitigation_cost = $currency . $mitigation_min_cost . " to " . $currency . $mitigation_max_cost;
                             if (!empty($risk['valuation_level_name']))
                                 $mitigation_cost .= " ({$risk['valuation_level_name']})";
                         }
@@ -6856,10 +7107,12 @@ function getPlanMitigationsDatatableResponse()
                         }
                         break;
                     case "risk_tags":
+                        // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
                         if ($filter_data['risk_tags']) {
                             $tag_match = false;
+                            // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
                             foreach ($filter_data['risk_tags'] as $tag) {
-                                $tag_match |= stripos($tag, $val) !== false;
+                                $tag_match = $tag_match || stripos($tag, $val) !== false;
                                 if ($tag_match) {
                                     break;
                                 }
@@ -6894,6 +7147,7 @@ function getPlanMitigationsDatatableResponse()
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsTotal,
         );
+        // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output for DataTables; all columns escaped via escapeHtml()/purifyHtml() in switch block
         echo json_encode($result);
         exit;
     }
@@ -6942,8 +7196,11 @@ function getManagementReviewsDatatableResponse()
         // In case there's no column selected that is orderable the order won't be sent from the client
         if (!empty($_POST['order'])) {
 
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             $orderColumn = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             $orderColumnName = isset($_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             $orderDir = !empty($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
 
         } else {
@@ -6956,7 +7213,9 @@ function getManagementReviewsDatatableResponse()
 
         $column_filters = [];
         for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             if ( isset($_POST['columns'][$i]) && $_POST['columns'][$i]['searchable'] == "true" && $_POST['columns'][$i]['search']['value'] != '' ) {
+                // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
                 $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
             }
         }
@@ -7211,7 +7470,8 @@ function getManagementReviewsDatatableResponse()
                         }
                         else
                         {
-                            $mitigation_cost = "$" . $mitigation_min_cost . " to $" . $mitigation_max_cost;
+                            $currency = get_currency_symbol();
+                            $mitigation_cost = $currency . $mitigation_min_cost . " to " . $currency . $mitigation_max_cost;
                             if (!empty($risk['valuation_level_name']))
                                 $mitigation_cost .= " ({$risk['valuation_level_name']})";
                         }
@@ -7304,10 +7564,12 @@ function getManagementReviewsDatatableResponse()
                         }
                         break;
                     case "risk_tags":
+                        // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
                         if ($filter_data['risk_tags']) {
                             $tag_match = false;
+                            // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
                             foreach ($filter_data['risk_tags'] as $tag) {
-                                $tag_match |= stripos($tag, $val) !== false;
+                                $tag_match = $tag_match || stripos($tag, $val) !== false;
                                 if ($tag_match) {
                                     break;
                                 }
@@ -7324,7 +7586,7 @@ function getManagementReviewsDatatableResponse()
             if($success == true) $data[] = $risk["data_row"];
         }
         $risks_by_page = [];
-        
+
         if($length == -1)
         {
             $risks_by_page = $data;
@@ -7342,6 +7604,7 @@ function getManagementReviewsDatatableResponse()
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsTotal,
         );
+        // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output for DataTables; all columns escaped via escapeHtml()/purifyHtml() in switch block
         echo json_encode($result);
         exit;
     }
@@ -7382,13 +7645,18 @@ function getReviewRisksDatatableResponse()
 
         $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
         $length = $_POST['length'] ? (int)$_POST['length'] : 10;
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderColumn = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderColumnName = isset($_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderDir = !empty($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
 
         $column_filters = [];
         for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             if ( isset($_POST['columns'][$i]) && $_POST['columns'][$i]['searchable'] == "true" && $_POST['columns'][$i]['search']['value'] != '' ) {
+                // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
                 $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
             }
         }
@@ -7464,6 +7732,15 @@ function getReviewRisksDatatableResponse()
                 }
             });
         }
+
+        $risk_id = [];
+        $subject = [];
+        $status = [];
+        $calculated_risk = [];
+        $color = [];
+        $dayssince = [];
+        $next_review = [];
+        $next_review_html = [];
 
         // Parse through each row in the array
         foreach ($risks as $key => $row)
@@ -7678,7 +7955,8 @@ function getReviewRisksDatatableResponse()
                         }
                         else 
                         {
-                            $mitigation_cost = "$" . $mitigation_min_cost . " to $" . $mitigation_max_cost;
+                            $currency = get_currency_symbol();
+                            $mitigation_cost = $currency . $mitigation_min_cost . " to " . $currency . $mitigation_max_cost;
                             if (!empty($risk['valuation_level_name']))
                                 $mitigation_cost .= " ({$risk['valuation_level_name']})";
                         }
@@ -7773,10 +8051,12 @@ function getReviewRisksDatatableResponse()
                         }
                         break;
                     case "risk_tags":
+                        // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
                         if ($risk['risk_tags']) {
                             $tag_match = false;
+                            // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
                             foreach ($risk['risk_tags'] as $tag) {
-                                $tag_match |= stripos($tag, $val) !== false;
+                                $tag_match = $tag_match || stripos($tag, $val) !== false;
                                 if ($tag_match) {
                                     break;
                                 }
@@ -7812,6 +8092,7 @@ function getReviewRisksDatatableResponse()
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsTotal,
         );
+        // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output for DataTables; all columns escaped via escapeHtml()/purifyHtml() in switch block
         echo json_encode($result);
         exit;
     }
@@ -7834,7 +8115,9 @@ function getReviewsWithDateIssuesDatatableResponse()
     {
         $draw = (int)$escaper->escapeHtml($_GET['draw']);
 
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $order_column = isset($_GET['order'][0]['column']) ? (int)$_GET['order'][0]['column'] : 0;
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $order_dir = $escaper->escapeHtml($_GET['order'][0]['dir']) == "asc" ? "asc" : "desc";
         $offset = (int)$_GET['start'];
         $page_size = (int)$_GET['length'];
@@ -8923,7 +9206,7 @@ function get_exceptions_audit_log_api()
     json_response(200, null, array_map(function($log) use ($escaper) {
             return array(
                 'timestamp' => date(get_default_datetime_format("g:i A T"), strtotime($log['timestamp'])),
-                'message' => $escaper->purifyHtml(try_decrypt($log['message']))
+                'message' => $escaper->escapeHtml(try_decrypt($log['message']))
             );
         }, get_exceptions_audit_log($days))
     );
@@ -8971,11 +9254,15 @@ function get_audit_logs_api()
             $log_type = NULL;
         }
 
-        json_response(200, null, array_map(function($log) {
+        // Audit messages are now stored as plain text (the prior write-time
+        // escapeHtml was reverted in favor of escape-at-render). Mirror the
+        // sink-side encoding that get_exceptions_audit_log_api applies so
+        // consumers receive HTML-safe text on the wire.
+        json_response(200, null, array_map(function($log) use ($escaper) {
                 return array(
                     'timestamp' => date(get_default_datetime_format("g:i A T"), strtotime($log['timestamp'])),
                     'username' => $log['user_fullname'],
-                    'message' => $log['message']
+                    'message' => $escaper->escapeHtml($log['message'])
                 );
             }, get_audit_trail(NULL, $days, $log_type))
         );
@@ -9779,7 +10066,9 @@ function appetite_report_api()
             // In case there's no column selected that is orderable the order won't be sent from the client
             if (!empty($_GET['order'])) {
 
+                // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
                 $orderColumn = (int)$_GET['order'][0]['column'];
+                // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
                 $orderDir = strtolower($_GET['order'][0]['dir']) == "asc" ? "asc" : "desc";
 
             } else {
@@ -9842,8 +10131,10 @@ function user_management_reports_api() {
             $length = (isset($_POST['length']) && $_POST['length']) ? (int)$_POST['length'] : 10;
             
             $draw = $escaper->escapeHtml($_POST['draw']);
-            
+
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             $orderColumn = (int)$_POST['order'][0]['column'];
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             $orderDir = strtolower($_POST['order'][0]['dir']) == "asc" ? "asc" : "desc";
 
             // Sanitizing filter input data
@@ -9977,7 +10268,8 @@ function user_management_reports_unique_column_data_api() {
             }
             
             $unique_data = [];
-            
+            $unique_keys = [];
+
             if ($type === 'users_of_teams') {
                 $unique_keys['teams'] = [];
                 $unique_keys['users'] = [];
@@ -10221,6 +10513,28 @@ function one_click_upgrade() {
             return;
         }
 
+        // Two-phase upgrade: the JavaScript calls this endpoint once with
+        // step=update_extra to download the latest upgrade extra (so the next
+        // request loads new code from disk), then makes a direct POST to
+        // /extras/upgrade/ for the backup and upgrade steps — eliminating the
+        // dependency on this old core's call_extra_api_functionality for
+        // long-running operations that can trigger nginx proxy timeouts.
+        if (isset($_POST['step']) && $_POST['step'] === 'update_extra') {
+            if ($is_upgrade_mode_extra && $need_update_extras && in_array("upgrade", $extra_upgrades)) {
+                stream_write(_lang('UpdateExtrasExtraUpdateStarted', array('extra' => 'upgrade')));
+                list($status, $result) = call_extra_api_functionality('upgrade', 'upgrade', 'app');
+                if ($status !== 200) {
+                    if (is_array($result) && !empty($result['status_message'])) { stream_write_error($result['status_message']); }
+                    stream_write_error($lang['BackupFailed'] ?? 'Upgrade Extra update failed.');
+                } elseif (is_array($result) && !empty($result['status_message'])) {
+                    stream_write($result['status_message']);
+                }
+            }
+            // Phase 1 done — return so the JavaScript can call /extras/upgrade/
+            // directly for backup and upgrade (phase 2).
+            return;
+        }
+
         stream_write($lang['BackupStart']);
 
         if ($is_upgrade_mode_extra) {
@@ -10228,25 +10542,29 @@ function one_click_upgrade() {
             // Do the app backup
             stream_write($lang['BackupStartApplication']);
             list($status, $result) = call_extra_api_functionality('upgrade', 'backup', 'app');
-            
+
             // Check the results
             if ($status !== 200) {
                 // Print the error message if the call failed for some reason and stop the upgrade
-                stream_write_error($result['status_message']);
+                if (is_array($result) && !empty($result['status_message'])) { stream_write_error($result['status_message']); }
                 stream_write_error($lang['BackupFailed']);
                 return;
             }
             // Print the success message
             stream_write($result['status_message']);
-            
+
             // Do the database backup
             stream_write($lang['BackupStartDatabase']);
-            list($status, $result) = call_extra_api_functionality('upgrade', 'backup', 'db');
-            
+            list($http_status, $result) = call_extra_api_functionality('upgrade', 'backup', 'db');
+            // The DB backup endpoint flushes whitespace keep-alives to prevent proxy
+            // timeouts, which commits HTTP 200 headers early. Read status from the
+            // JSON body field instead of the HTTP status code.
+            $status = (is_array($result) && isset($result['status'])) ? (int)$result['status'] : $http_status;
+
             // Check the results
             if ($status !== 200) {
                 // Print the error message if the call failed for some reason and stop the upgrade
-                stream_write_error($result['status_message']);
+                if (is_array($result) && !empty($result['status_message'])) { stream_write_error($result['status_message']); }
                 stream_write_error($lang['BackupFailed']);
                 return;
             }
@@ -10270,7 +10588,7 @@ function one_click_upgrade() {
             // Check the results
             if ($status !== 200) {
                 // Print the error message if the call failed for some reason and stop the upgrade
-                stream_write_error($result['status_message']);
+                if (is_array($result) && !empty($result['status_message'])) { stream_write_error($result['status_message']); }
                 return;
             }
             // Print the success message
@@ -10280,11 +10598,11 @@ function one_click_upgrade() {
         if ($need_update_app) {
             if ($is_upgrade_mode_extra) {
                 list($status, $result) = call_extra_api_functionality('upgrade', 'upgrade', 'core_app');
-                
+
                 // Check the results
                 if ($status !== 200) {
                     // Print the error message if the call failed for some reason and stop the upgrade
-                    stream_write_error($result['status_message']);
+                    if (is_array($result) && !empty($result['status_message'])) { stream_write_error($result['status_message']); }
                     return;
                 }
                 // Print the success message
@@ -10353,7 +10671,7 @@ function one_click_upgrade() {
                     // Check the results
                     if ($status !== 200) {
                         // Print the error message if the call failed for some reason and stop the upgrade
-                        stream_write_error($result['status_message']);
+                        if (is_array($result) && !empty($result['status_message'])) { stream_write_error($result['status_message']); }
                         stream_write_error(_lang('UpdateExtrasUpdateExtraFailed', array('extra' => $extra)));
                         return;
                     }
@@ -10382,12 +10700,17 @@ function high_risk_report_datatable() {
 
     $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
     $length = $_POST['length'] ? (int)$_POST['length'] : 10;
+    // @phan-suppress-next-line PhanTypeMismatchDimFetch
     $orderColumnIndex = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
+    // @phan-suppress-next-line PhanTypeMismatchDimFetch
     $orderColumnName = isset($_POST['columns'][$orderColumnIndex]['name']) ? $_POST['columns'][$orderColumnIndex]['name'] : null;
+    // @phan-suppress-next-line PhanTypeMismatchDimFetch
     $orderDir = isset($_POST['order'][0]['dir']) && strtoupper($_POST['order'][0]['dir']) === 'ASC'? "ASC" : 'DESC';
     $column_filters = [];
     for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         if ( isset($_POST['columns'][$i]) && $_POST['columns'][$i]['searchable'] == "true" && $_POST['columns'][$i]['search']['value'] != '' ) {
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
         }
     }
@@ -10611,6 +10934,7 @@ function high_risk_report_datatable() {
             "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['score']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div>",
             $escaper->escapeHtml($submission_date),
             $mitigation_planned, // mitigation plan
+            // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
             $risk['management_review'] // management review
         );
         $success = true;
@@ -10636,6 +10960,7 @@ function high_risk_report_datatable() {
                     break;
                 }
             } else if($column_name == "management_review") {
+                // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
                 if( stripos(strip_tags($risk['management_review']), $val) === false ){
                     $success = false;
                     break;
@@ -10745,8 +11070,13 @@ function add_project_api(){
 function edit_project_api(){
     global $lang, $escaper;
     $value = (int)$_POST['project_id'];
-    // check permission for project add 
-    if(isset($_SESSION["add_projects"]) && $_SESSION["add_projects"] == 1){
+    // Editing an existing project is a manage-projects action, not an
+    // add-projects one. add_projects gates only the creation of new
+    // projects (see add_project_api above); modifying an existing record
+    // belongs to the manage_projects authority used by update / status /
+    // order below. Flagged via HackerOne; the previous gate let an
+    // add-only user mutate any existing project by id.
+    if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
         $name = isset($_POST['name']) ? trim($_POST['name']) : "";
         $exist = get_value_by_name("projects", $name);
         // Check if the project name is null
@@ -10783,14 +11113,13 @@ function edit_project_api(){
                 'data_classification' => isset($_POST['data_classification']) ? (int)$_POST['data_classification'] : 0,
             );
             update_project($value, $project);
-            // If customization extra is enabled
-            if(customization_extra())
-            {
-                // Include the extra
-                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-                save_custom_field_values($value, "project");
-            }
+            // Save custom field values (no-op if customization extra is disabled)
+            call_extra_function(
+                'customization_extra',
+                __DIR__ . '/../extras/customization/index.php',
+                'save_custom_field_values',
+                [$value, "project"]
+            );
 
             set_alert(true, "good", $escaper->escapeHtml($lang['UpdatedSuccess']));
             json_response(200, get_alert(true), NULL);
@@ -10805,8 +11134,13 @@ function edit_project_api(){
 function detail_project_api(){
     global $lang, $escaper;
     $value = (int)$_GET['project_id'];
-    // check permission for project add 
-    if(isset($_SESSION["add_projects"]) && $_SESSION["add_projects"] == 1){
+    // Reading an existing project's full record is a manage-projects
+    // action, not an add-projects one. add_projects gates only the
+    // creation of new projects; viewing any existing project by id
+    // belongs to the manage_projects authority. Flagged via HackerOne;
+    // the previous gate let an add-only user enumerate and read any
+    // project record by id.
+    if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
         $result = get_project($value);
         $result['name'] = try_decrypt($result['name']);
         $result['due_date'] = format_date($result['due_date']);
@@ -10872,14 +11206,13 @@ function delete_project_api(){
                 // Delete the project
                 delete_value("projects", $value);
 
-                // If customization extra is enabled
-                if(customization_extra())
-                {
-                    // Include the extra
-                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-                    // delete custom project data
-                    delete_custom_data_by_row_id($value, "project");
-                }
+                // Delete custom project data (no-op if customization extra is disabled)
+                call_extra_function(
+                    'customization_extra',
+                    __DIR__ . '/../extras/customization/index.php',
+                    'delete_custom_data_by_row_id',
+                    [$value, "project"]
+                );
 
                 // Display an alert
                 set_alert(true, "good", "An existing project was deleted successfully.");
@@ -11567,11 +11900,13 @@ function getFilesWithEncodingIssuesDatatableResponse() {
         
         $draw = (int)$_GET['draw'];
         
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $order_column = isset($_GET['order'][0]['column']) ? (int)$_GET['order'][0]['column'] : 0;
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $order_dir = $escaper->escapeHtml($_GET['order'][0]['dir']) == "asc" ? "asc" : "desc";
         $offset = (int)$_GET['start'];
         $page_size = (int)$_GET['length'];
-        
+
         $type = isset($_GET['type']) && in_array($_GET['type'], ['risk', 'compliance', 'questionnaire']) ? $_GET['type'] : 'risk';
 
         list($recordsTotal, $fileList) = get_files_with_encoding_issues($type, $order_column, $order_dir, $offset, $page_size);
@@ -11675,6 +12010,8 @@ function uploadFileToFixFileEncodingIssue() {
             set_alert(true, "bad", $lang['InvalidUniqueName']);
             json_response(400, get_alert(true), NULL);
         }
+
+        $log_type = null;
 
         switch($type) {
             case 'risk':
@@ -11805,12 +12142,17 @@ function my_open_risk_datatable() {
 
     $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
     $length = $_POST['length'] ? (int)$_POST['length'] : 10;
+    // @phan-suppress-next-line PhanTypeMismatchDimFetch
     $orderColumnIndex = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
+    // @phan-suppress-next-line PhanTypeMismatchDimFetch
     $orderColumnName = isset($_POST['columns'][$orderColumnIndex]['name']) ? $_POST['columns'][$orderColumnIndex]['name'] : null;
+    // @phan-suppress-next-line PhanTypeMismatchDimFetch
     $orderDir = isset($_POST['order'][0]['dir']) && strtoupper($_POST['order'][0]['dir']) === 'ASC'? "ASC" : 'DESC';
     $column_filters = [];
     for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         if ( isset($_POST['columns'][$i]) && $_POST['columns'][$i]['searchable'] == "true" && $_POST['columns'][$i]['search']['value'] != '' ) {
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
         }
     }
@@ -12081,12 +12423,17 @@ function recent_commented_risk_datatable() {
 
     $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
     $length = $_POST['length'] ? (int)$_POST['length'] : 10;
+    // @phan-suppress-next-line PhanTypeMismatchDimFetch
     $orderColumnIndex = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
+    // @phan-suppress-next-line PhanTypeMismatchDimFetch
     $orderColumnName = isset($_POST['columns'][$orderColumnIndex]['name']) ? $_POST['columns'][$orderColumnIndex]['name'] : null;
+    // @phan-suppress-next-line PhanTypeMismatchDimFetch
     $orderDir = isset($_POST['order'][0]['dir']) && strtoupper($_POST['order'][0]['dir']) === 'ASC'? "ASC" : 'DESC';
     $column_filters = [];
     for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         if ( isset($_POST['columns'][$i]) && $_POST['columns'][$i]['searchable'] == "true" && $_POST['columns'][$i]['search']['value'] != '' ) {
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
         }
     }
@@ -12278,6 +12625,7 @@ function recent_commented_risk_datatable() {
             "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div>",
             "<div class='".$escaper->escapeHtml($residual_color)."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['residual_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($residual_color) . "\"></span></div></div>",
             $escaper->escapeHtml($comment_date),
+            // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
             $escaper->escapeHtml($risk['comment']),
         );
         $success = true;
@@ -12347,8 +12695,11 @@ function controlGapAnalysisResponse()
     	$maturity = $escaper->escapeHtml($_GET['maturity']);
         $draw = $escaper->escapeHtml($_GET['draw']);
 
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderColumn = isset($_GET['order'][0]['column']) ? $_GET['order'][0]['column'] : "";
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderColumnName = isset($_GET['columns'][$orderColumn]['name']) ? $_GET['columns'][$orderColumn]['name'] : null;
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderDir = !empty($_GET['order'][0]['dir']) && strtolower($_GET['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
 
     	// Get controls with gaps
@@ -12601,9 +12952,9 @@ function delete_contributing_risks_impact_api(){
 function contributing_risks_table_list_api(){
     $table = get_param("POST", "table", "likelihood");
     if($table == "likelihood")
-        $table_list = display_contributing_risks_likelihood_table_list($table);
-    else 
-        $table_list = display_contributing_risks_impact_table_list($table);
+        $table_list = display_contributing_risks_likelihood_table_list();
+    else
+        $table_list = display_contributing_risks_impact_table_list();
     echo $table_list;exit;
 }
 
@@ -12711,6 +13062,7 @@ function api_complianceforgescf_status()
     // If the user calling this is an admin
     if (is_admin())
     {
+        $data = [];
         // If the SCF is loading
         if (get_setting("scf_status") == "loading")
         {
@@ -13338,12 +13690,17 @@ function updateAuditById($id = null)
     }
 
     $status      = isset($_POST['status'])      ? (int)$_POST['status']      : (int)$audit['status'];
-    $test_result = isset($_POST['test_result'])  ? $_POST['test_result']      : ($audit['test_result'] ?? '');
+    $test_result = isset($_POST['test_result'])  ? (string)$_POST['test_result'] : ($audit['test_result'] ?? '');
     $tester      = isset($_POST['tester'])       ? (int)$_POST['tester']      : (int)$audit['tester'];
     $test_date   = isset($_POST['test_date'])    ? $_POST['test_date']        : ($audit['test_date'] ?? date('Y-m-d'));
     $summary     = isset($_POST['summary'])      ? $_POST['summary']          : ($audit['summary'] ?? '');
     $teams       = isset($_POST['teams'])        ? $_POST['teams']            : ($audit['teams'] ?? []);
     $tags        = isset($_POST['tags'])         ? $_POST['tags']             : [];
+
+    if (!is_valid_test_result_name($test_result)) {
+        json_response(400, "Invalid test_result. Allowed values: Pass, Inconclusive, Fail.", NULL);
+        return;
+    }
 
     save_test_result($id, $status, $test_result, $tester, $test_date, $teams, $summary, $tags);
     json_response(200, "Audit updated successfully.", NULL);
@@ -13731,6 +14088,7 @@ function create_asset_api(){
  **********************************************/
 function delete_asset_api(){
     global $escaper, $lang;
+    $message = null;
     if (check_permission("asset")){
         $id = isset($_POST['id']) ? (int)$_POST['id'] : NULL;
         if(!is_null($id) && $id != "") {
@@ -13746,54 +14104,6 @@ function delete_asset_api(){
         $message = $escaper->escapeHtml($lang['NoPermissionForAsset']);
         return json_response(400, $message, NULL);
     }
-}
-
-/*************************************************************
- * FUNCTION: ENABLE OR DISABLE INCIDENT MANAGEMENT EXTRA APP *
- *************************************************************/
-function incidentManagementAPI() {
-    global $lang;
-
-    // Check that this is an admin user
-    if (!is_admin())
-    {
-        json_response(403, $lang['AdminPermissionRequired'], NULL);
-        return;
-    }
-
-    $status = null;
-    $status_message = null;
-
-    // If the extra directory exists
-    if (is_dir(realpath(__DIR__ . '/../extras/incident_management'))) {
-
-        // Include the Incident Management Extra
-        require_once(realpath(__DIR__ . '/../extras/incident_management/index.php'));
-
-        // If the user wants to activate the extra
-        if (isset($_POST['activate'])) {
-
-            // Enable the Incident Management Extra
-            enable_incident_management_extra();
-            
-            $status = 200;
-            $status_message = 'Activated The Incident Management Extra';
-            set_alert(true, "good", $status_message);
-        }
-
-        // If the user wants to deactivate the extra
-        if (isset($_POST['deactivate'])) {
-            
-            // Disable the Incident Management Extra
-            disable_incident_management_extra();
-
-            $status = 200;
-            $status_message = 'Deactivated The Incident Management Extra';
-            set_alert(true, "bad", $status_message);
-        }
-    }
-
-    return json_response($status, $status_message);
 }
 
 /*******************************
@@ -13812,6 +14122,7 @@ function getDatatableAPI() {
     //check if the necessary permissions have already been set.
     // check_incident_management_permission_for_view($view);
 
+    // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
     $type = $field_settings_views[$view]['view_type'];
 
     //don't need customization now, but keep it yet.
@@ -13825,18 +14136,25 @@ function getDatatableAPI() {
     
     // In case there's no column selected that is orderable the order won't be sent from the client
     if (!empty($_POST['order'])) {
-        
+
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderDir = strtoupper($_POST['order'][0]['dir']) == "ASC" ? "ASC" : "DESC";
-        
+
         // Get and validate the order column
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderColumnIndex = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : 0;
         $orderColumnName =
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         !empty($_POST['columns'][$orderColumnIndex]['name'])
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
         && in_array($_POST['columns'][$orderColumnIndex]['name'], $selected_fields)
         && (
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             (!empty($field_settings[$type][$_POST['columns'][$orderColumnIndex]['name']]) && $field_settings[$type][$_POST['columns'][$orderColumnIndex]['name']]['orderable'])
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             || str_starts_with($_POST['columns'][$orderColumnIndex]['name'], 'custom_field_')
             )
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             ? $_POST['columns'][$orderColumnIndex]['name']
             : 'id';
     } else {
@@ -13848,24 +14166,33 @@ function getDatatableAPI() {
     }
     
     $column_filters = [];
+    // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
     for ($i = 0; $i < count($_POST['columns']); $i++) {
-        
+
         // Gathering filter data for only the fields that are either set as searchable in the field settings
         // or a custom field which is searchable by default
         // when unselect all in the multi select of the table header, $_POST['columns'][$i]['search']['value'] is not set but it is also one of the custom cases that we input filter value. So we should consider that case as column_filters too.
         if (
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             !empty($_POST['columns'][$i]['name']) &&
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             (!empty($_POST['columns'][$i]['search']['value']) || !isset($_POST['columns'][$i]['search']['value'])) &&
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             in_array($_POST['columns'][$i]['name'], $selected_fields) &&
             (
+                // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
                 (!empty($field_settings[$type][$_POST['columns'][$i]['name']]['searchable']) && $field_settings[$type][$_POST['columns'][$i]['name']]['searchable'])
                 ||
+                // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
                 ($customization && str_starts_with($_POST['columns'][$i]['name'], 'custom_field_'))
             )
         ) {
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
             if (isset($_POST['columns'][$i]['search']['value'])) {
+                // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
                 $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
             } else {
+                // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
                 $column_filters[$_POST['columns'][$i]['name']] = null;
             }
         }
@@ -13881,9 +14208,126 @@ function getDatatableAPI() {
         'recordsFiltered' => $data['recordsFiltered'],
     );
     
+    // @phan-suppress-next-line SecurityCheck-XSS -- JSON response for DataTables; data comes from get_data_for_datatable() with proper server-side processing
     echo json_encode($result);
     exit;
 
+}
+
+/**********************************************
+ * FUNCTION: ACTIVATE OR DEACTIVATE EXTRA API *
+ **********************************************/
+function activateDeactivateExtraApi() {
+    global $escaper, $lang;
+
+    // Check that this is an admin user
+    if (!is_admin())
+    {
+        json_response(403, $lang['AdminPermissionRequired'], NULL);
+        return;
+    }
+
+    $extra_type = isset($_POST['extra_type']) ? preg_replace('/[^a-zA-Z0-9_\-]/', '', $_POST['extra_type']) : "";
+
+    // Validate the slug against the Settings Hub catalog (the source of truth
+    // for what extra_name slugs the Hub knows about). Build a slug→entry map
+    // up front so we can also look up the display name and locate the on-disk
+    // directory + enable/disable handler names in one pass.
+    require_once(realpath(__DIR__ . '/settings_catalog.php'));
+    require_once(realpath(__DIR__ . '/extras.php'));
+    $catalog_by_slug = [];
+    foreach (settings_catalog() as $entry) {
+        if (!empty($entry['extra_name'])) {
+            $catalog_by_slug[$entry['extra_name']] = $entry;
+        }
+    }
+    if (!isset($catalog_by_slug[$extra_type])) {
+        return json_response(400, "Invalid extra type specified.", NULL);
+    }
+
+    // The catalog's extra_name is now the on-disk directory name. The
+    // enable/disable handler function infix comes from extra_handler_slug
+    // (which matches the dir name for most Extras, with a few overrides
+    // documented in extras.php). The state-check function name comes from
+    // extra_state_check_function for the same reason.
+    $dir          = $extra_type;
+    $handler_slug = extra_handler_slug($dir);
+
+    // Resolve on-disk directory.
+    $path = realpath(__DIR__ . '/../extras/' . $dir . '/index.php');
+    if (!$path) {
+        return json_response(404, "The specified extra does not exist on the server.", NULL);
+    }
+
+    // Include the Extra so its enable_/disable_/state functions are defined.
+    // $extra_type is regex-stripped to [a-zA-Z0-9_\-]+ at line 14230, then
+    // validated via isset($catalog_by_slug[$extra_type]) against the
+    // hard-coded Settings Hub catalog at line 14244, then realpath()'d on
+    // line 14257 — only on-disk paths under simplerisk/extras/<known>/index.php
+    // can reach this require_once. Phan can't trace that allow-list through
+    // the array-key lookup, so the suppression carries the reasoning.
+    // @phan-suppress-next-line SecurityCheck-PathTraversal -- $extra_type validated against hard-coded catalog allowlist via isset() before realpath() construction; only known Extra names can reach here
+    require_once($path);
+
+    // Display name from the catalog entry's label_key.
+    $entry = $catalog_by_slug[$extra_type];
+    $display_name = $lang[$entry['label_key']] ?? $entry['label_key'];
+
+    // State check uses the canonical state-check function name (matches
+    // functions.php). For 4 historical Extras (separation, authentication,
+    // import-export, complianceforgescf) this is NOT just "<dir>_extra".
+    $state_fn = extra_state_check_function($dir);
+
+    // If the user wants to activate the extra
+    if (isset($_POST['activate'])) {
+        $handler = "enable_{$handler_slug}_extra";
+
+        if (!function_exists($handler)) {
+            return json_response(500, "Activation handler does not exist");
+        }
+
+        $status_message = _lang('ActivatedExtra', array("extra_type" => $display_name));
+
+        // Idempotent: if already enabled, return success without re-running the handler.
+        // The handler calls prevent_extra_double_submit() which invokes refresh() (redirect
+        // + exit) when the extra is already in the target state — that breaks API callers.
+        if (function_exists($state_fn) && $state_fn()) {
+            return json_response(200, $status_message);
+        }
+
+        //Enable the Extra
+        $handler();
+
+        // Consume any queued toast so it doesn't leak to the next navigation;
+        // the API response itself carries the success message for the JS modal.
+        get_alert(true, true);
+        return json_response(200, $status_message);
+    }
+
+    // If the user wants to deactivate the extra
+    if (isset($_POST['deactivate'])) {
+        $handler = "disable_{$handler_slug}_extra";
+
+        if (!function_exists($handler)) {
+            return json_response(500, "Deactivation handler does not exist");
+        }
+
+        $status_message = _lang('DeactivatedExtra', array("extra_type" => $display_name));
+
+        // Idempotent: if already disabled, return success without re-running the handler.
+        if (function_exists($state_fn) && !$state_fn()) {
+            return json_response(200, $status_message);
+        }
+
+        //Disable the Extra
+        $handler();
+
+        // Consume any queued toast (see comment above).
+        get_alert(true, true);
+        return json_response(200, $status_message);
+    }
+
+    return json_response(400, "No action specified.", NULL);
 }
 
 ?>

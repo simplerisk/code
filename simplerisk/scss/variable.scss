@@ -29,6 +29,14 @@ $sr-dark: #252525;
 $sr-body: #ffffff;
 $excel-green: #10793F;
 
+// Semantic state colors for the Configure Hub badges and similar status
+// affordances. Aliases of existing palette entries so future theme work
+// can swap them without hunting through partials. Promote new variables
+// here (e.g. $state-warning) when those states appear.
+$state-success: $excel-green;
+$state-danger:  $sr-important;
+$state-info:    #0d6efd;
+
 $sr-theme-colors: (
   "primary": $sr-primary,
   "secondary": $sr-secondary,

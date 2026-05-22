@@ -214,7 +214,7 @@ $(document).ready(function(){
                 orderCellsTop: true,
                 deferRender: false,
                 ajax: {
-                    url:  BASE_URL + '/api/reports/dynamic',
+                    url:  BASE_URL + '/api/v2/reports/dynamic',
                     type: "post",
                     data: function(d) {
                         d.status        = $("#status").val();
@@ -283,7 +283,7 @@ $(document).ready(function(){
                         
                     $.ajax({
                         type: "POST",
-                        url: BASE_URL + "/api/reports/dynamic_unique_column_data",
+                        url: BASE_URL + "/api/v2/reports/dynamic_unique_column_data",
                         data: params,
                         dataType: 'json',
                         success: function(data){
@@ -713,7 +713,7 @@ $(document).ready(function(){
                     // Save the column order to session
                     $.ajax({
                         type: "POST",
-                        url: BASE_URL + "/api/set_custom_display",
+                        url: BASE_URL + "/api/v2/set_custom_display",
                         data: {
                             columns: orderedColumns,
                         },

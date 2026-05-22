@@ -7,6 +7,7 @@
 require_once(realpath(__DIR__ . '/api.php'));
 require_once(realpath( __DIR__ . '/../../../includes/assets.php'));
 require_once(realpath(__DIR__ . '/../../../includes/functions.php'));
+require_once(realpath(__DIR__ . '/../../../includes/extras.php'));
 
 require_once(language_file());
 
@@ -126,19 +127,30 @@ function assets_for_view_API() {
         
         // In case there's no column selected that is orderable the order won't be sent from the client
         if (!empty($_POST['order'])) {
-            
-            $orderDir = strtoupper($_POST['order'][0]['dir']) == "ASC" ? "ASC" : "DESC";
-            
+            /** @var array[] $post_order */
+            $post_order = $_POST['order'];
+            /** @var array[] $post_columns */
+            $post_columns = $_POST['columns'];
+
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch
+            $orderDir = strtoupper($post_order[0]['dir']) == "ASC" ? "ASC" : "DESC";
+
             // Get and validate the order column
-            $orderColumnIndex = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : 0;
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch
+            $orderColumnIndex = isset($post_order[0]['column']) ? $post_order[0]['column'] : 0;
             $orderColumnName =
-            !empty($_POST['columns'][$orderColumnIndex]['name'])
-            && in_array($_POST['columns'][$orderColumnIndex]['name'], $selected_fields)
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch -- DataTables sends $post_columns as nested array
+            !empty($post_columns[$orderColumnIndex]['name'])
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch
+            && in_array($post_columns[$orderColumnIndex]['name'], $selected_fields)
             && (
-                (!empty($field_settings[$type][$_POST['columns'][$orderColumnIndex]['name']]) && $field_settings[$type][$_POST['columns'][$orderColumnIndex]['name']]['orderable'])
-                || str_starts_with($_POST['columns'][$orderColumnIndex]['name'], 'custom_field_')
+                // @phan-suppress-next-line PhanTypeMismatchDimFetch
+                (!empty($field_settings[$type][$post_columns[$orderColumnIndex]['name']]) && $field_settings[$type][$post_columns[$orderColumnIndex]['name']]['orderable'])
+                // @phan-suppress-next-line PhanTypeMismatchDimFetch
+                || str_starts_with($post_columns[$orderColumnIndex]['name'], 'custom_field_')
                 )
-                ? $_POST['columns'][$orderColumnIndex]['name']
+                // @phan-suppress-next-line PhanTypeMismatchDimFetch
+                ? $post_columns[$orderColumnIndex]['name']
                 : 'id';
         } else {
             // so we're defaulting to ordering by the asset's id
@@ -175,9 +187,10 @@ function assets_for_view_API() {
             'recordsFiltered' => $data['recordsFiltered'],
         );
         
+        // @phan-suppress-next-line SecurityCheck-XSS -- JSON response consumed by JavaScript/DataTables, not rendered as HTML; values are pre-escaped
         echo json_encode($result);
         exit;
-    }    
+    }
 }
 
 function assets_view_action_API() {
@@ -250,10 +263,13 @@ function assets_view_action_API() {
                     $where = "
                         WHERE `a`.`id` = :id";
                     
-                    if(team_separation_extra()){
-                        require_once(realpath(__DIR__ . '/../../../extras/separation/index.php'));
-                        $where .= get_user_teams_query_for_assets("a", false, true);
-                    }
+                    $where .= call_extra_function(
+                        'team_separation_extra',
+                        __DIR__ . '/../../../extras/separation/index.php',
+                        'get_user_teams_query_for_assets',
+                        ['a', false, true],
+                        ''
+                    );
                     $encryption = encryption_extra();
                     $customization = customization_extra();
                     

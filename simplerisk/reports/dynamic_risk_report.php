@@ -5,7 +5,7 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['multiselect', 'selectize', 'datatables', 'blockUI', 'CUSTOM:dynamic.js', 'CUSTOM:common.js'], active_sidebar_submenu: 'Reporting_RiskManagement', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'DynamicRiskReport');
+    render_header_and_sidebar(['multiselect', 'selectize', 'datatables', 'blockUI', 'CUSTOM:dynamic.js', 'CUSTOM:common.js'], ['check_riskmanagement' => true], active_sidebar_submenu: 'Reporting_Reports', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'DynamicRiskReport');
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));
@@ -471,12 +471,15 @@
 <div class="row bg-white my-2">
 	<div class="col-12">
 		<div id="risk-table-container" class="card-body border">
-    <?php 
-            get_risks_by_table($status, $sort, $group, $selected_columns); 
+    <?php
+            // @phan-suppress-next-line SecurityCheck-XSS -- $status, $sort, $group are all cast to (int) before use
+            get_risks_by_table($status, $sort, $group, $selected_columns);
     ?>
 		</div>
 	</div>
+	<?php // @phan-suppress-next-line SecurityCheck-XSS -- $location_ids is array_map("base64_encode", ...), base64 output contains no HTML-special chars ?>
 	<input type="hidden" id="hidden_location_filters" value="<?= implode(",", $location_ids); ?>">
+	<?php // @phan-suppress-next-line SecurityCheck-XSS -- $tag_ids is array_map("base64_encode", ...), base64 output contains no HTML-special chars ?>
 	<input type="hidden" id="hidden_tag_filters" value="<?= implode(",", $tag_ids); ?>">
 	<input type="hidden" id="unassigned_option" value="<?= $escaper->escapeHtml($lang["Unassigned"]);?>">
 	<input type="hidden" id="date_format" value="<?= $escaper->escapeHtml(get_setting("default_date_format"));?>">

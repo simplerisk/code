@@ -382,7 +382,7 @@
         }
 
         $.ajax({
-            url: BASE_URL + '/api/governance/related_controls_by_framework_ids?fids=' + fids.join(","),
+            url: BASE_URL + '/api/v2/governance/related_controls_by_framework_ids?fids=' + fids.join(","),
             type: 'GET',
             success : function (res) {
                 var options = "";
@@ -454,7 +454,7 @@
         $("#document-program--add .document_type").change(function() {
             $parent = $(this).parents(".modal");
             $.ajax({
-                url: BASE_URL + '/api/governance/parent_documents_dropdown?type=' + encodeURI($(this).val()),
+                url: BASE_URL + '/api/v2/governance/parent_documents_dropdown?type=' + encodeURI($(this).val()),
                 type: 'GET',
                 success : function (res) {
                     $(".parent_documents_container", $parent).html(res.data.html)
@@ -466,7 +466,7 @@
             $parent = $(this).parents(".modal");
             var document_id = $("[name=document_id]", $parent).val();
             $.ajax({
-                url: BASE_URL + '/api/governance/selected_parent_documents_dropdown?type=' + encodeURI($(this).val()) + "&child_id=" + document_id,
+                url: BASE_URL + '/api/v2/governance/selected_parent_documents_dropdown?type=' + encodeURI($(this).val()) + "&child_id=" + document_id,
                 type: 'GET',
                 success : function (res) {
                     $(".parent_documents_container", $parent).html(res.data.html)
@@ -485,12 +485,12 @@
             $('#document-update-modal #file-size').html('');
 
             $.ajax({
-                url: BASE_URL + '/api/governance/document?id=' + document_id,
+                url: BASE_URL + '/api/v2/governance/document?id=' + document_id,
                 type: 'GET',
                 success : function (res) {
                     var data = res.data;
                     $.ajax({
-                        url: BASE_URL + '/api/governance/selected_parent_documents_dropdown?type=' + encodeURI(data.document_type) + '&child_id=' + document_id,
+                        url: BASE_URL + '/api/v2/governance/selected_parent_documents_dropdown?type=' + encodeURI(data.document_type) + '&child_id=' + document_id,
                         type: 'GET',
                         success : function (res){
                             $("#document-update-modal .parent_documents_container").html(res.data.html)
@@ -576,7 +576,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: BASE_URL + "/api/documents/create",
+                    url: BASE_URL + "/api/v2/documents/create",
                     data: new FormData($('#add-document-form')[0]),
                     async: true,
                     cache: false,
@@ -642,7 +642,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: BASE_URL + "/api/documents/update",
+                    url: BASE_URL + "/api/v2/documents/update",
                     data: new FormData($('#update-document-form')[0]),
                     async: true,
                     cache: false,
@@ -706,7 +706,7 @@
                 loading = true;
                 $.ajax({
                     type: "POST",
-                    url: BASE_URL + "/api/documents/delete",
+                    url: BASE_URL + "/api/v2/documents/delete",
                     data: new FormData($('#delete-document-form')[0]),
                     async: true,
                     cache: false,
@@ -760,7 +760,7 @@
             if(last_review_date != "" && review_frequency != ""){
                 var next_review_date = new Date(last_review_date);
                 next_review_date.setDate(next_review_date.getDate() + parseInt(review_frequency));
-                var next_review_date_str = $.datepicker.formatDate('<?= get_default_date_format_for_datepicker() ?>', next_review_date);
+                var next_review_date_str = $.datepicker.formatDate('<?= /* @phan-suppress-current-line SecurityCheck-XSS -- get_default_date_format_for_datepicker() returns admin-configured date format string with no user input */ get_default_date_format_for_datepicker() ?>', next_review_date);
                 $(form).find("input[name=next_review_date]").val(next_review_date_str);
             }
             return true;

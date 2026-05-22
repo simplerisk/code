@@ -72,7 +72,8 @@ if (isset($_POST['uninstall_frameworks']))
 /*********************
  * FUNCTION: DISPLAY *
  *********************/
-function display()                                    
+// @phan-suppress-next-line PhanRedefineFunction -- each admin page defines its own display() entry point
+function display()
 {
     global $lang;
     global $escaper;

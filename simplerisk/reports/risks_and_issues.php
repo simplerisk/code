@@ -5,13 +5,14 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['multiselect', 'datetimerangepicker'], active_sidebar_submenu: 'Reporting_RiskManagement', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'RisksAndIssues');
+    render_header_and_sidebar(['multiselect', 'datetimerangepicker'], ['check_riskmanagement' => true], active_sidebar_submenu: 'Reporting_Reports', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'RisksAndIssues');
 
     // Include required functions file
     // require_once(realpath(__DIR__ . '/../includes/reporting.php'));
 
     $user_info = get_user_by_id($_SESSION['uid']);
-    $tag_ids = explode(',', (string)$user_info['custom_risks_and_issues_settings']);
+    // @phan-suppress-next-line PhanTypeInvalidDimOffset -- get_user_by_id() returns the user row including 'custom_risks_and_issues_settings' when valid
+    $tag_ids = explode(',', (string)($user_info['custom_risks_and_issues_settings'] ?? ''));
 
     $risk_tags = isset($_REQUEST['risk_tags']) ? $_REQUEST['risk_tags'] : $tag_ids;
     $start_date = isset($_REQUEST['start_date']) ? $_REQUEST['start_date'] : format_date(date('Y-m-d', strtotime('-30 days')));

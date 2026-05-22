@@ -382,9 +382,9 @@ div.doc-link {
         border-bottom: 1px solid #dddddd;
     }
     &.table.dataTable thead{
-        .sorting_asc, .sorting_desc{
+        .dt-ordering-asc, .dt-ordering-desc{
         }
-    } 
+    }
     thead{
         tr.filter{
             display: none;

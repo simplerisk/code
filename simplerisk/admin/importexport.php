@@ -134,6 +134,7 @@
 	/*********************
 	 * FUNCTION: DISPLAY *
 	 *********************/
+	// @phan-suppress-next-line PhanRedefineFunction -- each admin page defines its own display() entry point
 	function display($display = "") {
 
 		global $lang;
@@ -241,7 +242,7 @@
 			}
 			$.ajax({
 				method: "POST",
-				url: BASE_URL + "/api/management/impportexport/deleteMapping",
+				url: BASE_URL + "/api/v2/management/impportexport/deleteMapping",
 				data: {id: mapping_id},
 				success: function(data){
 					document.location.reload();

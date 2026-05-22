@@ -276,7 +276,7 @@ return [
         'clean_tmp_files' => function(array $promise, PDO $db) {
             $payload = json_decode($promise['payload'], true) ?? [];
             $control_ref = $payload['control_ref'] ?? null;
-            $matches_ref = $payload['matches_ref'] ?? [];
+            $matches_ref = array_filter((array)($payload['matches_ref'] ?? []));
 
             try
             {

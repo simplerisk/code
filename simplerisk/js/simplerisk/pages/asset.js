@@ -19,7 +19,7 @@ function updateAsset(e, self) {
 
             $.ajax({
                 type: "POST",
-                url: BASE_URL + "/api/assets/update_asset",
+                url: BASE_URL + "/api/v2/assets/update_asset",
                 data : {
                     id: id,
                     fieldName: fieldName,
@@ -64,7 +64,7 @@ function initSelectizeOptions() {
     if (initialLoadStatus === 'None') {
         initialLoadStatus = 'Started';
         $.ajax({
-            url: BASE_URL + '/api/management/tag_options_of_type?type=asset',
+            url: BASE_URL + '/api/v2/management/tag_options_of_type?type=asset',
             type: 'GET',
             dataType: 'json',
             error: function() {

@@ -54,7 +54,7 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['multiselect','CUSTOM:dynamic.js'], active_sidebar_submenu: 'Reporting_RiskManagement', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'RisksAndControls');
+    render_header_and_sidebar(['multiselect','CUSTOM:dynamic.js'], ['check_riskmanagement' => true, 'check_governance' => true], active_sidebar_submenu: 'Reporting_Reports', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'RisksAndControls');
 
 ?>
 <div class="row bg-white">

@@ -7,6 +7,7 @@
 
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+require_once(realpath(__DIR__ . '/../includes/extras.php'));
 render_header_and_sidebar(['datatables', 'multiselect', 'datetimerangepicker', 'CUSTOM:common.js'], ['check_admin' => true], 'Workflows Extra', 'Configure', 'Extras');
 
 // If the extra directory exists
@@ -27,17 +28,18 @@ if (is_dir(realpath(__DIR__ . '/../extras/workflows')))
         disable_workflows_extra();
     }
 
-    // If the Workflows Extra is enabled, process any incoming requests
-    if (workflows_extra())
-    {
-        require_once(realpath(__DIR__ . '/../extras/workflows/includes/display.php'));
-        process_workflows_extra_request();
-    }
+    // Process any incoming Workflows Extra requests (no-op if Workflows Extra is disabled)
+    call_extra_function(
+        'workflows_extra',
+        __DIR__ . '/../extras/workflows/includes/display.php',
+        'process_workflows_extra_request'
+    );
 }
 
 /*********************
  * FUNCTION: DISPLAY *
  *********************/
+// @phan-suppress-next-line PhanRedefineFunction -- each admin page defines its own display() entry point
 function display()
 {
     global $lang;

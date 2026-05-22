@@ -5,7 +5,7 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['datatables', 'multiselect', 'blockUI', 'datetimerangepicker'], ['check_governance' => true], active_sidebar_submenu: 'Reporting_Governance', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'DocumentProgramReport');
+    render_header_and_sidebar(['datatables', 'multiselect', 'blockUI', 'datetimerangepicker'], ['check_governance' => true], active_sidebar_submenu: 'Reporting_Reports', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'DocumentProgramReport');
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));

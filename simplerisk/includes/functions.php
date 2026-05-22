@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required configuration files
-require_once(realpath(__DIR__ . '/config.php'));
+require_once(realpath(__DIR__ . '/bootstrap.php'));
 require_once(realpath(__DIR__ . '/cvss.php'));
 require_once(realpath(__DIR__ . '/services.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
@@ -23,6 +23,7 @@ require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 // Add Monolog logger
 use Monolog\Logger;
+use Monolog\Level;
 use Monolog\Handler\StreamHandler;
 use Monolog\Formatter\LineFormatter;
 
@@ -48,15 +49,15 @@ $tables_where_name_is_encrypted = array('frameworks', 'projects', 'assets');
 global $variable_regex_pattern;
 $variable_regex_pattern = '/<span class="variable" data-id="([^"]+)">.+?<\/span>/';
 
-/* The list of available extras. */
+/* The list of available extras.  Keep in sync with available_extras() in includes/extras.php. */
 global $available_extras;
 $available_extras = array(
     'advanced_search',
     'api',
     'artificial_intelligence',
     'assessments',
-    'complianceforgescf',
     'authentication',
+    'complianceforgescf',
     'customization',
     'encryption',
     'import-export',
@@ -68,6 +69,7 @@ $available_extras = array(
     'ucf',
     'upgrade',
     'vulnmgmt',
+    'workflows',
 );
 
 
@@ -117,7 +119,7 @@ $junction_config = array(
         'junctions' => array(
             'user_to_team' => 'user_id',
             'risk_to_additional_stakeholder' => 'user_id',
-            'permission_to_user' => 'user_id' // There's no permission counterpart to this, as permissions can't be deleted 
+            'permission_to_user' => 'user_id',
         )
     ),
     'risks' => array(
@@ -288,7 +290,9 @@ $junction_config = array(
         'id_field' => 'id',
         'junctions' => array(
             'document_framework_mappings' => 'document_id',
-            'document_control_mappings' => 'document_id'
+            'document_control_mappings' => 'document_id',
+            'document_additional_stakeholder_mappings' => 'document_id',
+            'document_team_mappings' => 'document_id',
         )
     ],
     'file_types' => [
@@ -2825,12 +2829,13 @@ $field_settings = [
             'order_column' => "additional_stakeholders_display",
             'editable' => false,
             'select_parts' => [
-                "a.additional_stakeholders", 
+                "GROUP_CONCAT(DISTINCT dasm.user_id) additional_stakeholders",
                 "GROUP_CONCAT(DISTINCT uu.name ORDER BY uu.name ASC SEPARATOR ', ') additional_stakeholders_display"
             ],
             'has_display_field' => true,
             'join_parts' => [
-                "LEFT JOIN `user` uu ON FIND_IN_SET(uu.value, a.additional_stakeholders)"
+                "LEFT JOIN `document_additional_stakeholder_mappings` dasm ON a.id = dasm.document_id",
+                "LEFT JOIN `user` uu ON dasm.user_id = uu.value"
             ],
         ],
         "teams" => [
@@ -2843,11 +2848,14 @@ $field_settings = [
             'order_column' => "teams_display",
             'editable' => false,
             'select_parts' => [
-                "a.team_ids teams", 
+                "GROUP_CONCAT(DISTINCT dtm.team_id) teams",
                 "GROUP_CONCAT(DISTINCT t.name ORDER BY t.name ASC SEPARATOR ', ') AS teams_display"
             ],
             'has_display_field' => true,
-            'join_parts' => [],
+            'join_parts' => [
+                "LEFT JOIN `document_team_mappings` dtm ON a.id = dtm.document_id",
+                "LEFT JOIN `team` t ON dtm.team_id = t.value"
+            ],
         ],
         "review_frequency" => [
             'customization_field_name' => 'ReviewFrequency',
@@ -3328,7 +3336,7 @@ $field_settings_views = [
     
     'perform_reviews' => [
         'view_type' => 'risk',
-        'datatable_ajax_uri' => '/api/risk_management/managment_review',
+        'datatable_ajax_uri' => '/api/v2/risk_management/managment_review',
         'datatable_data_type' => 'list',
         'groups' => [
             'risk_details',
@@ -3347,7 +3355,7 @@ $field_settings_views = [
     ],
     'plan_mitigation' => [
         'view_type' => 'risk',
-        'datatable_ajax_uri' => '/api/risk_management/plan_mitigation',
+        'datatable_ajax_uri' => '/api/v2/risk_management/plan_mitigation',
         'datatable_data_type' => 'list',
         'groups' => [
             'risk_details',
@@ -3366,7 +3374,7 @@ $field_settings_views = [
     ],
     'review_regularly' => [
         'view_type' => 'risk',
-        'datatable_ajax_uri' => '/api/risk_management/review_risks',
+        'datatable_ajax_uri' => '/api/v2/risk_management/review_risks',
         'datatable_data_type' => 'list',
         'groups' => [
             'risk_details',
@@ -3638,9 +3646,7 @@ $field_settings_views = [
     ],
     'document_program' => [
         'view_type' => 'document',
-        'join_parts' => [
-            "LEFT JOIN `team` t ON FIND_IN_SET(t.value, a.team_ids)",
-        ],
+        'join_parts' => [],
         'id_field' => 'id',
         'datatable_ajax_uri' => '/api/v2/get/datatable?view=document_program',
         'datatable_data_type' => 'associative',
@@ -4334,12 +4340,12 @@ if (organizational_hierarchy_extra()) {
 }
 
 // Delegate Incident Dashboard widget registration to the IM Extra so that no
-// IM-specific metadata lives in core. The extra's functions.php is safe to
-// require_once here; if it was already loaded by index.php the call is a no-op.
-if (incident_management_extra()) {
-    require_once(realpath(__DIR__ . '/../extras/incident_management/includes/functions.php'));
-    im_register_ui_layout_widgets();
-}
+// IM-specific metadata lives in core.
+call_extra_function(
+    'incident_management_extra',
+    __DIR__ . '/../extras/incident_management/includes/functions.php',
+    'im_register_ui_layout_widgets'
+);
 
 /******************************
  * FUNCTION: DATABASE CONNECT *
@@ -4356,16 +4362,39 @@ function db_open() {
         // Set the simplerisk timezone for any datetime functions
         $offset = currentTimezoneOffset();
 
+        // PHP 8.5 moved PDO MySQL constants to the Pdo\Mysql namespace and
+        // deprecated the PDO::MYSQL_ATTR_* aliases. Prefer the new constants
+        // when available so 8.5+ stops emitting deprecation notices; fall
+        // back to the old constants on 8.1-8.4 where the new ones don't
+        // exist. The new constants are looked up via constant() (a string
+        // lookup) rather than a direct \Pdo\Mysql::* reference so static
+        // analyzers running against the PHP 8.1 floor don't flag the class
+        // as undeclared.
+        $pdo_mysql_init_command = defined('Pdo\Mysql::ATTR_INIT_COMMAND') ? constant('Pdo\Mysql::ATTR_INIT_COMMAND') : PDO::MYSQL_ATTR_INIT_COMMAND;
+        $pdo_mysql_ssl_ca       = defined('Pdo\Mysql::ATTR_SSL_CA')       ? constant('Pdo\Mysql::ATTR_SSL_CA')       : PDO::MYSQL_ATTR_SSL_CA;
+
         // Set the default options array
         $options = array(
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4, @@group_concat_max_len = 4294967295, time_zone='{$offset}'"
+            $pdo_mysql_init_command => "SET NAMES utf8mb4, @@group_concat_max_len = 4294967295, time_zone='{$offset}'"
         );
 
         // If a database SSL certificate path has been defined
         if (defined("DB_SSL_CERTIFICATE_PATH") && DB_SSL_CERTIFICATE_PATH != '') {
+            // If the path is set but the file is missing or unreadable,
+            // surface a precise diagnostic before PDO bubbles a generic
+            // "Cannot connect to MySQL using SSL" error. We deliberately
+            // do NOT silently fall back to a non-SSL connection — the
+            // operator declared SSL was required, and downgrading would
+            // mask a misconfigured mount or permission and let traffic
+            // flow unencrypted without warning.
+            if (!file_exists(DB_SSL_CERTIFICATE_PATH)) {
+                error_log("[SimpleRisk] DB_SSL_CERTIFICATE_PATH is set to '" . DB_SSL_CERTIFICATE_PATH . "' but that file does not exist. PDO will fail to connect with a generic SSL error.");
+            } elseif (!is_readable(DB_SSL_CERTIFICATE_PATH)) {
+                error_log("[SimpleRisk] DB_SSL_CERTIFICATE_PATH is set to '" . DB_SSL_CERTIFICATE_PATH . "' but the file is not readable by the PHP process. PDO will fail to connect with a generic SSL error.");
+            }
             // Add the SSL certificate to the options array
-            $options[PDO::MYSQL_ATTR_SSL_CA] = DB_SSL_CERTIFICATE_PATH;
+            $options[$pdo_mysql_ssl_ca] = DB_SSL_CERTIFICATE_PATH;
         }
 
         // Create the PDO object
@@ -4437,7 +4466,13 @@ function db_open() {
 
     } catch (PDOException $e) {
 
-        //die("Database Connection Failed: " . $e->getMessage());
+        // Log the connection failure so operators have a diagnostic that
+        // matches the friendly "Unable to Communicate with the Database"
+        // page's instruction to check the web server's error log. Direct
+        // error_log() is used (not write_debug_log) because write_debug_log
+        // calls get_setting() to read the log-level configuration, which
+        // requires the database connection we just failed to open.
+        error_log("[SimpleRisk] Database connection failed: " . $e->getMessage());
 
         // We were unable to connect to the SimpleRisk database
         require_once(realpath(__DIR__ . '/healthcheck.php'));
@@ -4890,6 +4925,8 @@ function get_custom_table($type) {
     // to notify that the result is supposed to be fetched as grouped
     $grouped = false;
     $encryption = encryption_extra();
+    $stmt = null;
+    $array = [];
 
     // Array of CVSS values
     $allowed_cvss_values = array('AccessComplexity', 'AccessVector', 'Authentication', 'AvailabilityRequirement', 'AvailImpact', 'CollateralDamagePotential', 'ConfidentialityRequirement', 'ConfImpact', 'Exploitability', 'IntegImpact', 'IntegrityRequirement', 'RemediationLevel', 'ReportConfidence', 'TargetDistribution');
@@ -5277,10 +5314,12 @@ function get_custom_table($type) {
     }
 
     // Execute the database query
-    $stmt->execute();
+    if ($stmt) {
+        $stmt->execute();
 
-    // Store the list in the array
-    $array = $stmt->fetchAll($grouped ? PDO::FETCH_GROUP|PDO::FETCH_ASSOC : PDO::FETCH_ASSOC);
+        // Store the list in the array
+        $array = $stmt->fetchAll($grouped ? PDO::FETCH_GROUP|PDO::FETCH_ASSOC : PDO::FETCH_ASSOC);
+    }
 
     // Close the database connection
     db_close($db);
@@ -6038,6 +6077,8 @@ function get_risk_level_display_name($name)
  ****************************/
 function calculate_risk($impact, $likelihood) {
 
+    $risk = 0;
+
     if (empty($GLOBALS['count_of_impacts'])) {
         $GLOBALS['count_of_impacts'] = count(get_table("impact"));
         $GLOBALS['count_of_likelihoods'] = count(get_table("likelihood"));
@@ -6188,6 +6229,7 @@ function get_risk_color_from_levels($risk, $levels)
 
     // Find the color
     if ($result['name']){
+        // @phan-suppress-next-line PhanTypeInvalidDimOffset -- when $result was reassigned from $level inside the loop, it includes the 'color' key
         $color = $result['color'];
     }
     else{
@@ -6676,6 +6718,7 @@ function delete_setting($name, ?PDO $db = null): void
 function get_setting($setting, $default = false, $cached = true, ?PDO $db = null)
 {
     $close_db = false;
+    $key = 'setting_' . $setting;
 
     if ($db === null) {
         $db = db_open();
@@ -6687,7 +6730,6 @@ function get_setting($setting, $default = false, $cached = true, ?PDO $db = null
         // If we want to cache the setting
         if ($cached)
         {
-            $key = 'setting_' . $setting;
             if (isset($GLOBALS[$key]))
             {
                 return $GLOBALS[$key];
@@ -6730,6 +6772,23 @@ function get_setting($setting, $default = false, $cached = true, ?PDO $db = null
             db_close($db);
         }
     }
+}
+
+/************************************************************
+ * FUNCTION: GET CURRENCY SYMBOL                            *
+ * Returns the configured currency symbol from the settings *
+ * with a "$" fallback. Pass $sql_safe = true when the      *
+ * value will be embedded in an SQL CONCAT literal so any   *
+ * single quotes are stripped (defense-in-depth — prefer a  *
+ * parameterized query when possible).                      *
+ ************************************************************/
+function get_currency_symbol($sql_safe = false)
+{
+    $currency = get_setting('currency') ?: '$';
+    if ($sql_safe) {
+        $currency = str_replace("'", '', $currency);
+    }
+    return $currency;
 }
 
 /************************************************************
@@ -7776,8 +7835,6 @@ function update_password_policy($strict_user_validation, $mfa_required, $pass_po
  **********************/
 function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $admin, $multi_factor, $change_password, $manager, $permissions)
 {
-    global $escaper;
-
     $custom_display_settings = json_encode(array(
         'id',
         'subject',
@@ -7870,8 +7927,20 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
     }
 
     $stmt->execute();
-    
+
     $user_id = $db->lastInsertId();
+
+    // Seed the default favorite reports so a brand-new user has a useful
+    // starting set in the Reports Hub. Idempotent; reuses the open $db.
+    require_once(realpath(__DIR__ . '/reports_catalog.php'));
+    seed_default_favorite_reports((int)$user_id, $db);
+
+    // Same for the Settings Hub favorites — Preferences, Health Check, and
+    // Register & Upgrade are the high-traffic admin destinations and also
+    // the JS fallback set on API failure, so seeding them as defaults
+    // aligns the steady-state and recovery-state experiences.
+    require_once(realpath(__DIR__ . '/settings_catalog.php'));
+    seed_default_favorite_settings((int)$user_id, $db);
 
     // If it's an admin then make sure that all teams are assigned
     if ($admin) {
@@ -7893,12 +7962,12 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
     // Audit log
     if(!empty($_SESSION['uid']))
     {
-        $message = "The new user \"" . $escaper->escapeHtml($user) . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
+        $message = "The new user \"" . $user . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
         write_log((int)$user_id + 1000, $_SESSION['uid'], $message, 'user');
     }
     else
     {
-        $message = "The new user \"" . $escaper->escapeHtml($user) . "\" was added.";
+        $message = "The new user \"" . $user . "\" was added.";
         write_log((int)$user_id + 1000, $user_id, $message, 'user');
     }
 
@@ -7972,7 +8041,7 @@ function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id,
     set_teams_of_user($user_id, $teams);
 
     update_permissions($user_id, $permissions);
-    
+
     // Close the database connection
     db_close($db);
 
@@ -8003,10 +8072,10 @@ function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id,
             'username' => "{$post_update_user['name']}({$post_update_user['username']})",
             'updater' => ($_SESSION['name'] ?? '') . '(' . ($_SESSION['user'] ?? 'unknown') . ')',
             'changes' => $changes
-        ]);
+        ], false);
         write_log((int)$user_id + 1000, $_SESSION['uid'], $message, 'user');
     } else {
-        $message = _lang('UserUpdatedFromidPDataAuditLog', ['username' => "{$post_update_user['name']}({$post_update_user['username']})", 'changes' => $changes]);
+        $message = _lang('UserUpdatedFromidPDataAuditLog', ['username' => "{$post_update_user['name']}({$post_update_user['username']})", 'changes' => $changes], false);
         write_log((int)$user_id + 1000, $user_id, $message, 'user');
     }
 
@@ -8052,9 +8121,14 @@ function refresh_permissions_in_sessions_of_user($uid) {
 
     $db = db_open();
 
-    // Get the session ids that are not THIS session
-    $stmt = $db->prepare("SELECT `id` FROM sessions where `id` <> :session_id and length(`data`) > 20;");
+    // PHP session serialization stores uid as 'uid|i:N;' — match it at the
+    // start of the data string or after a semicolon to avoid false positives.
+    // Without this filter the function iterates every active session in the
+    // DB, which becomes a request-killer on installs with many users.
+    $uid_pattern = '(^|;)uid\\|i:' . (int)$uid . ';';
+    $stmt = $db->prepare("SELECT `id` FROM sessions WHERE `id` <> :session_id AND `data` REGEXP :uid_pattern");
     $stmt->bindParam(":session_id", $sid);
+    $stmt->bindParam(":uid_pattern", $uid_pattern);
     $stmt->execute();
     $session_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
@@ -8346,12 +8420,13 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
         }
     }
 
-    if(jira_extra()) {
-        // Include the extra
-        require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
-
-        CreateIssueForRisk($last_insert_id);
-    }
+    // Create a Jira issue for the risk (no-op if jira extra is disabled)
+    call_extra_function(
+        'jira_extra',
+        __DIR__ . '/../extras/jira/index.php',
+        'CreateIssueForRisk',
+        [$last_insert_id]
+    );
 
     // If the encryption extra is enabled, updates order_by_subject
     if (encryption_extra() && $subject_order == true)
@@ -8397,12 +8472,13 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     $message = "A new risk ID \"" . $risk_id . "\" was submitted by username \"" . $escaper->escapeHtml($username) . "\". \n".$inserted_string;
     write_log($risk_id, $submitted_by, $message);
 
-    // If the artificial intelligence extra is enabled, queue FAIR risk analysis
-    if (artificial_intelligence_extra())
-    {
-        require_once(realpath(__DIR__ . '/../extras/artificial_intelligence/index.php'));
-        queue_ai_risk_analysis($last_insert_id + 1000, $db);
-    }
+    // Queue FAIR risk analysis (no-op if artificial intelligence extra is disabled)
+    call_extra_function(
+        'artificial_intelligence_extra',
+        __DIR__ . '/../extras/artificial_intelligence/index.php',
+        'queue_ai_risk_analysis',
+        [$last_insert_id + 1000, $db]
+    );
 
     // Close the database connection
     db_close($db);
@@ -8472,6 +8548,8 @@ function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_like
 
     // Open the database connection
     $db = db_open();
+
+    $calculated_risk = 0;
 
     // If the scoring method is Classic (1)
     if ($scoring_method == 1)
@@ -8572,6 +8650,9 @@ function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_like
     else if ($scoring_method == 4){
         $threat_agent_factors = ($OWASPSkill + $OWASPMotive + $OWASPOpportunity + $OWASPSize)/4;
         $vulnerability_factors = ($OWASPDiscovery + $OWASPExploit + $OWASPAwareness + $OWASPIntrusionDetection)/4;
+
+        $OWASP_likelihood_name = "LOW";
+        $OWASP_impact_name = "LOW";
 
         // Average the threat agent and vulnerability factors to get the likelihood
         $OWASP_likelihood = ($threat_agent_factors + $vulnerability_factors)/2;
@@ -9017,6 +9098,10 @@ function update_owasp_score($risk_id, $OWASPSkill, $OWASPMotive, $OWASPOpportuni
     // Open the database connection
     $db = db_open();
 
+    $OWASP_likelihood_name = "LOW";
+    $OWASP_impact_name = "LOW";
+    $calculated_risk = 0;
+
     $threat_agent_factors = ($OWASPSkill + $OWASPMotive + $OWASPOpportunity + $OWASPSize)/4;
     $vulnerability_factors = ($OWASPDiscovery + $OWASPExploit + $OWASPAwareness + $OWASPIntrusionDetection)/4;
 
@@ -9316,6 +9401,10 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
 
     // Open the database connection
     $db = db_open();
+
+    $OWASP_likelihood_name = "LOW";
+    $OWASP_impact_name = "LOW";
+    $calculated_risk = 0;
 
     // Get scoring method from db
     $stmt = $db->prepare("SELECT scoring_method FROM `risk_scoring` WHERE id = :id");
@@ -9643,15 +9732,13 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     // Subtract 1000 from id
     $id = (int)$risk_id - 1000;
 
-    // If customization extra is enabled
-    if(customization_extra())
-    {
-        // Include the extra
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-        // Save custom fields
-        save_risk_custom_field_values($risk_id);
-    }
+    // Save custom fields (no-op if customization extra is disabled)
+    call_extra_function(
+        'customization_extra',
+        __DIR__ . '/../extras/customization/index.php',
+        'save_risk_custom_field_values',
+        [$risk_id]
+    );
 
     $planning_strategy          = isset($post['planning_strategy']) ? (int)$post['planning_strategy'] : 0;
     $mitigation_effort          = isset($post['mitigation_effort']) ? (int)$post['mitigation_effort'] : 0;
@@ -9758,15 +9845,13 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
 
     $stmt->execute();
 
-    // If notification is enabled
-    if (notification_extra())
-    {
-        // Include the notification extra
-        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-        // Send the notification
-        notify_new_mitigation($id);
-    }
+    // Send the notification (no-op if notification extra is disabled)
+    call_extra_function(
+        'notification_extra',
+        __DIR__ . '/../extras/notification/index.php',
+        'notify_new_mitigation',
+        [$id]
+    );
 
     // Audit log
     $insert_data = [];
@@ -9784,12 +9869,13 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     $stmt->execute();
     $_wf_owner = (int)(($stmt->fetch(PDO::FETCH_ASSOC))['owner'] ?? 0);
 
-    // If the artificial intelligence extra is enabled, re-queue FAIR risk analysis
-    if (artificial_intelligence_extra())
-    {
-        require_once(realpath(__DIR__ . '/../extras/artificial_intelligence/index.php'));
-        queue_ai_risk_analysis($risk_id, $db);
-    }
+    // Re-queue FAIR risk analysis (no-op if artificial intelligence extra is disabled)
+    call_extra_function(
+        'artificial_intelligence_extra',
+        __DIR__ . '/../extras/artificial_intelligence/index.php',
+        'queue_ai_risk_analysis',
+        [$risk_id, $db]
+    );
 
     // Close the database connection
     db_close($db);
@@ -9973,15 +10059,13 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
     // Get the new mitigation id
     $review_id = get_review_id($id);
 
-    // If customization extra is enabled
-    if(customization_extra())
-    {
-        // Include the extra
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-        // Save custom fields
-        save_risk_custom_field_values($risk_id, $review_id);
-    }
+    // Save custom fields (no-op if customization extra is disabled)
+    call_extra_function(
+        'customization_extra',
+        __DIR__ . '/../extras/customization/index.php',
+        'save_risk_custom_field_values',
+        [$risk_id, $review_id]
+    );
 
     if(!is_null($status)){
         // Update the risk status and last_update
@@ -9998,15 +10082,13 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
     // If this is not a risk closure
     if (!$close)
     {
-        // If notification is enabled
-        if (notification_extra())
-        {
-            // Include the notification extra
-            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-            // Send the notification
-            notify_new_review($id);
-        }
+        // Send the notification (no-op if notification extra is disabled)
+        call_extra_function(
+            'notification_extra',
+            __DIR__ . '/../extras/notification/index.php',
+            'notify_new_review',
+            [$id]
+        );
 
         // Audit log
         $message = "A management review was submitted for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".";
@@ -10021,12 +10103,13 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
     $stmt->execute();
     $_wf_owner = (int)(($stmt->fetch(PDO::FETCH_ASSOC))['owner'] ?? 0);
 
-    // If the artificial intelligence extra is enabled, re-queue FAIR risk analysis
-    if (artificial_intelligence_extra())
-    {
-        require_once(realpath(__DIR__ . '/../extras/artificial_intelligence/index.php'));
-        queue_ai_risk_analysis($risk_id, $db);
-    }
+    // Re-queue FAIR risk analysis (no-op if artificial intelligence extra is disabled)
+    call_extra_function(
+        'artificial_intelligence_extra',
+        __DIR__ . '/../extras/artificial_intelligence/index.php',
+        'queue_ai_risk_analysis',
+        [$risk_id, $db]
+    );
 
     // Close the database connection
     db_close($db);
@@ -10243,7 +10326,9 @@ function update_risk($risk_id, $is_api = false)
                 case "manager":
                     $user_original = get_user_by_id($risk[0][$key]);
                     $user_updated = get_user_by_id($value);
+                    // @phan-suppress-next-line PhanTypeInvalidDimOffset -- get_user_by_id() returns the row including 'name' when truthy
                     $original_value = $user_original ? $user_original["name"] : '';
+                    // @phan-suppress-next-line PhanTypeInvalidDimOffset
                     $updated_value = $user_updated ? $user_updated["name"] : '';
                 break;
             }
@@ -10292,22 +10377,21 @@ function update_risk($risk_id, $is_api = false)
             import_assets_asset_groups_for_type($id, $affected_assets, 'risk');
     }
 
-    // If notification is enabled
-    if (notification_extra())
-    {
-        // Include the notification extra
-        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+    // Send the notification (no-op if notification extra is disabled)
+    call_extra_function(
+        'notification_extra',
+        __DIR__ . '/../extras/notification/index.php',
+        'notify_risk_update',
+        [$id]
+    );
 
-        // Send the notification
-        notify_risk_update($id);
-    }
-
-    // If the artificial intelligence extra is enabled, re-queue FAIR risk analysis
-    if (artificial_intelligence_extra())
-    {
-        require_once(realpath(__DIR__ . '/../extras/artificial_intelligence/index.php'));
-        queue_ai_risk_analysis($risk_id, $db);
-    }
+    // Re-queue FAIR risk analysis (no-op if artificial intelligence extra is disabled)
+    call_extra_function(
+        'artificial_intelligence_extra',
+        __DIR__ . '/../extras/artificial_intelligence/index.php',
+        'queue_ai_risk_analysis',
+        [$risk_id, $db]
+    );
 
     // Audit log
     if(count($updated_fields)) {
@@ -10469,15 +10553,13 @@ function update_risk_subject($risk_id, $subject)
         create_subject_order(isset($_SESSION['encrypted_pass']) && $_SESSION['encrypted_pass'] ? base64_decode($_SESSION['encrypted_pass']) : fetch_key());
     }
 
-    // If notification is enabled
-    if (notification_extra())
-    {
-        // Include the notification extra
-        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-        // Send the notification
-        notify_risk_update($id);
-    }
+    // Send the notification (no-op if notification extra is disabled)
+    call_extra_function(
+        'notification_extra',
+        __DIR__ . '/../extras/notification/index.php',
+        'notify_risk_update',
+        [$id]
+    );
 }
 
 /************************
@@ -10570,15 +10652,14 @@ function get_risk_by_id($id)
     // Subtract 1000 from the id
     $id = (int)$id - 1000;
 
-    // If the team separation extra is enabled
-    if (team_separation_extra()) {
-        // Include the team separation extra
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-        // Get the separation query string
-        $separation_query = get_user_teams_query("b", false, true);
-    } else
-        $separation_query = "";
+    // Get the separation query string (returns "" if team separation extra is disabled)
+    $separation_query = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query',
+        ['b', false, true],
+        ''
+    );
     
     // Query the database
     $stmt = $db->prepare("
@@ -10729,15 +10810,14 @@ function get_mitigation_by_id($risk_id)
 
     // Close the database connection
     db_close($db);
-    // If team separation is enabled
-    if (team_separation_extra())
-    {
-        //Include the team separation extra
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-        // Strip out risks the user should not have access to
-        $array = strip_no_access_risks($array);
-    }
+    // Strip out risks the user should not have access to (no-op if team separation extra is disabled)
+    $array = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'strip_no_access_risks',
+        [$array],
+        $array
+    );
 
     // If the array is empty
     if (empty($array))
@@ -10795,15 +10875,14 @@ function get_review_by_id($risk_id)
     // Close the database connection
     db_close($db);
 
-    // If team separation is enabled
-    if (team_separation_extra())
-    {
-        //Include the team separation extra
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-        // Strip out risks the user should not have access to
-        $array = strip_no_access_risks($array, null, "risk_id");
-    }
+    // Strip out risks the user should not have access to (no-op if team separation extra is disabled)
+    $array = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'strip_no_access_risks',
+        [$array, null, "risk_id"],
+        $array
+    );
 
     // If the array is empty
     if (empty($array))
@@ -10882,15 +10961,14 @@ function get_risks_unassigned_project()
 
     db_close($db);
 
-    // If team separation is enabled
-    if (team_separation_extra())
-    {
-        // Include the team separation extra
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-        // Strip out risks the user should not have access to
-        $array = strip_no_access_risks($array);
-    }
+    // Strip out risks the user should not have access to (no-op if team separation extra is disabled)
+    $array = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'strip_no_access_risks',
+        [$array],
+        $array
+    );
 
     return $array;
 }
@@ -10963,15 +11041,14 @@ function get_risks_by_project_id($project_id)
 
     db_close($db);
 
-    // If team separation is enabled
-    if (team_separation_extra())
-    {
-        // Include the team separation extra
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-        // Strip out risks the user should not have access to
-        $array = strip_no_access_risks($array);
-    }
+    // Strip out risks the user should not have access to (no-op if team separation extra is disabled)
+    $array = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'strip_no_access_risks',
+        [$array],
+        $array
+    );
 
     return $array;
 }
@@ -10981,9 +11058,11 @@ function get_risks_by_project_id($project_id)
  ***********************/
 function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 {
-    
+
     // Open the database connection
     $db = db_open();
+
+    $array = [];
     
     // If sort_field is defined, set sort query
     if($order_field)
@@ -11821,15 +11900,14 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             $sort_query = " ORDER BY b.review_date ASC ";
         }
 
-        if (team_separation_extra()) {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-    
-            // Get the separation query string
-            $separation_query = get_user_teams_query("b", false, true);
-        } else {
-            $separation_query = '';
-        }
+        // Get the separation query string (returns '' if team separation extra is disabled)
+        $separation_query = call_extra_function(
+            'team_separation_extra',
+            __DIR__ . '/../extras/separation/index.php',
+            'get_user_teams_query',
+            ['b', false, true],
+            ''
+        );
 
         // Query the database
         $stmt = $db->prepare("
@@ -13077,11 +13155,11 @@ function get_risk_table($sort_order=0, $activecol="")
         // if not on page 1, don't show back links
         if ($currentpage > 1) {
            // show << link to go back to page 1
-           echo "<li><a href='{$_SERVER['SCRIPT_NAME']}?currentpage=1' class=\"no-bg\"><i class=\"fa fa-chevron-left\"></i><i class=\"fa fa-chevron-left\"></i></a></li>";
+           echo "<li><a href='" . $escaper->escapeHtmlAttr($_SERVER['SCRIPT_NAME']) . "?currentpage=1' class=\"no-bg\"><i class=\"fa fa-chevron-left\"></i><i class=\"fa fa-chevron-left\"></i></a></li>";
            // get previous page num
            $prevpage = $currentpage - 1;
            // show < link to go back to 1 page
-           echo " <li><a href='{$_SERVER['SCRIPT_NAME']}?currentpage={$prevpage}' class=\"no-bg\"><i class=\"fa fa-chevron-left\"></i></a></li> ";
+           echo " <li><a href='" . $escaper->escapeHtmlAttr($_SERVER['SCRIPT_NAME']) . "?currentpage={$prevpage}' class=\"no-bg\"><i class=\"fa fa-chevron-left\"></i></a></li> ";
         } else {// end if
            echo " <li><a href='javascript:void();' class=\"no-bg\"><i class=\"fa fa-chevron-left\"></i></a></li> ";
         }
@@ -13097,7 +13175,7 @@ function get_risk_table($sort_order=0, $activecol="")
               // if not current page...
               } else {
                  // make it a link
-                 echo " <li><a href='{$_SERVER['SCRIPT_NAME']}?currentpage={$x}'>{$x}</a></li> ";
+                 echo " <li><a href='" . $escaper->escapeHtmlAttr($_SERVER['SCRIPT_NAME']) . "?currentpage={$x}'>{$x}</a></li> ";
               } // end else
            } // end if
         } // end for
@@ -13107,16 +13185,16 @@ function get_risk_table($sort_order=0, $activecol="")
            // get next page
            $nextpage = $currentpage + 1;
             // echo forward link for next page
-           echo " <li><a href='{$_SERVER['SCRIPT_NAME']}?currentpage={$nextpage}' class=\"no-bg\"><i class=\"fa fa-chevron-right\"></i></a></li> ";
+           echo " <li><a href='" . $escaper->escapeHtmlAttr($_SERVER['SCRIPT_NAME']) . "?currentpage={$nextpage}' class=\"no-bg\"><i class=\"fa fa-chevron-right\"></i></a></li> ";
            // echo forward link for lastpage
-          echo "<li><a href='{$_SERVER['SCRIPT_NAME']}?currentpage={$totalpages}' class=\"no-bg\"><i class=\"fa fa-chevron-right\"></i><i class=\"fa fa-chevron-right\"></i></a></li>";
+          echo "<li><a href='" . $escaper->escapeHtmlAttr($_SERVER['SCRIPT_NAME']) . "?currentpage={$totalpages}' class=\"no-bg\"><i class=\"fa fa-chevron-right\"></i><i class=\"fa fa-chevron-right\"></i></a></li>";
         } else { // end if
            echo " <li><a href='javascript:void(0);' class=\"no-bg\"><i class=\"fa fa-chevron-right\"></i></a></li> ";
         }
         /****** end build pagination links ******/
     }
 
-    echo " <li {$all_style}><a href='{$_SERVER['SCRIPT_NAME']}?currentpage=all'>All</a></li> ";
+    echo " <li {$all_style}><a href='" . $escaper->escapeHtmlAttr($_SERVER['SCRIPT_NAME']) . "?currentpage=all'>All</a></li> ";
 
     echo "</ul></div>";
 
@@ -13506,7 +13584,7 @@ function get_risk_teams_table()
                 echo "<table class=\"table table-bordered table-condensed sortable\">\n";
                 echo "<thead>\n";
                 echo "<tr>\n";
-                echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"\">". $escaper->escapeHtml($current_team) ."</font></center></th>\n";
+                echo "<th colspan=\"4\" class=\"table-active text-center fw-bold\">". $escaper->escapeHtml($current_team) ."</th>\n";
                 echo "</tr>\n";
                 echo "<tr>\n";
                 echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
@@ -13522,7 +13600,7 @@ function get_risk_teams_table()
                 echo "<tr>\n";
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-                echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+                echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></td>\n";
                 echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
     }
@@ -13581,7 +13659,7 @@ function get_risk_technologies_table($sort_order=19)
             echo "<table class=\"table table-bordered table-condensed sortable\">\n";
             echo "<thead>\n";
             echo "<tr>\n";
-            echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"\">". $escaper->escapeHtml($current_technology) ."</font></center></th>\n";
+            echo "<th colspan=\"4\" class=\"table-active text-center fw-bold\">". $escaper->escapeHtml($current_technology) ."</th>\n";
             echo "</tr>\n";
             echo "<tr>\n";
             echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
@@ -13597,7 +13675,7 @@ function get_risk_technologies_table($sort_order=19)
         echo "<tr>\n";
         echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
         echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-        echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+        echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></td>\n";
         echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
         echo "</tr>\n";
     }
@@ -13614,7 +13692,7 @@ function get_risk_scoring_table()
     echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
-        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $escaper->escapeHtml($lang['ClassicRiskScoring']) ."</font></center></th>\n";
+        echo "<th colspan=\"4\" class=\"table-active text-center fw-bold\">". $escaper->escapeHtml($lang['ClassicRiskScoring']) ."</th>\n";
         echo "</tr>\n";
         echo "<tr>\n";
         echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
@@ -13639,7 +13717,7 @@ function get_risk_scoring_table()
                 echo "<tr>\n";
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-                echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+                echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></td>\n";
                 echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
         }
@@ -13651,7 +13729,7 @@ function get_risk_scoring_table()
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
-        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $escaper->escapeHtml($lang['CVSSRiskScoring']) ."</font></center></th>\n";
+        echo "<th colspan=\"4\" class=\"table-active text-center fw-bold\">". $escaper->escapeHtml($lang['CVSSRiskScoring']) ."</th>\n";
         echo "</tr>\n";
         echo "<tr>\n";
         echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
@@ -13676,7 +13754,7 @@ function get_risk_scoring_table()
                 echo "<tr>\n";
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-                echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+                echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></td>\n";
         echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
         }
@@ -13688,7 +13766,7 @@ function get_risk_scoring_table()
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
-        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $escaper->escapeHtml($lang['DREADRiskScoring']) ."</font></center></th>\n";
+        echo "<th colspan=\"4\" class=\"table-active text-center fw-bold\">". $escaper->escapeHtml($lang['DREADRiskScoring']) ."</th>\n";
         echo "</tr>\n";
         echo "<tr>\n";
         echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
@@ -13713,7 +13791,7 @@ function get_risk_scoring_table()
                 echo "<tr>\n";
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-                echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+                echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></td>\n";
         echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
         }
@@ -13725,7 +13803,7 @@ function get_risk_scoring_table()
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
-        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $escaper->escapeHtml($lang['OWASPRiskScoring']) ."</font></center></th>\n";
+        echo "<th colspan=\"4\" class=\"table-active text-center fw-bold\">". $escaper->escapeHtml($lang['OWASPRiskScoring']) ."</th>\n";
         echo "</tr>\n";
         echo "<tr>\n";
         echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
@@ -13750,7 +13828,7 @@ function get_risk_scoring_table()
                 echo "<tr>\n";
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-                echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+                echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></td>\n";
         echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
         }
@@ -13762,7 +13840,7 @@ function get_risk_scoring_table()
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
-        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $escaper->escapeHtml($lang['CustomRiskScoring']) ."</font></center></th>\n";
+        echo "<th colspan=\"4\" class=\"table-active text-center fw-bold\">". $escaper->escapeHtml($lang['CustomRiskScoring']) ."</th>\n";
         echo "</tr>\n";
         echo "<tr>\n";
         echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
@@ -13787,7 +13865,7 @@ function get_risk_scoring_table()
                 echo "<tr>\n";
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-                echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+                echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></td>\n";
         echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
         }
@@ -13821,7 +13899,7 @@ function get_projects_and_risks_table()
             echo "<table class=\"table table-bordered table-condensed sortable\">\n";
             echo "<thead>\n";
             echo "<tr>\n";
-            echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">" . $escaper->escapeHtml($name) . "</font></center></th>\n";
+            echo "<th colspan=\"4\" class=\"table-active text-center fw-bold\">" . $escaper->escapeHtml($name) . "</th>\n";
             echo "</tr>\n";
             echo "<tr>\n";
             echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
@@ -13849,7 +13927,7 @@ function get_projects_and_risks_table()
                     echo "<tr>\n";
                     echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                     echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-                    echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+                    echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></td>\n";
                     echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                     echo "</tr>\n";
                 }
@@ -14172,6 +14250,7 @@ function get_project_tabs($status, $template_group_id="") {
     $str = "";
     $row_width = "1301";
     $custom_field_count = 0;
+    $active_fields = [];
 
     // If customization extra is enabled
     if (customization_extra()) {
@@ -14232,10 +14311,10 @@ function get_project_tabs($status, $template_group_id="") {
 
                 $no_sort = '';
                 $name = $escaper->escapeHtml($name);
-                $due_date = format_date($project['due_date']);
+                $due_date = $escaper->escapeHtml(format_date($project['due_date']));
                 $consultant = $escaper->escapeHtml(get_user_name($project['consultant']));
                 $business_owner = $escaper->escapeHtml(get_user_name($project['business_owner']));
-                $data_classification = get_table_value_by_id("data_classification", $project['data_classification']);
+                $data_classification = $escaper->escapeHtml(get_table_value_by_id("data_classification", $project['data_classification']));
 
                 // Get risks for this project
                 $risks = get_risks_by_project_id($id);
@@ -14286,7 +14365,7 @@ function get_project_tabs($status, $template_group_id="") {
                         }
                     } else {
                         $custom_field_count++;
-                        $text = get_plan_custom_field_name_by_row_id($field, $id, "project");
+                        $text = $escaper->escapeHtml(get_plan_custom_field_name_by_row_id($field, $id, "project"));
                         $str .= "
                         <div class='col p-2 border'>{$text}</div>
                         ";
@@ -14915,13 +14994,15 @@ function get_last_review($risk_id)
 }
 
 /**
-* Get next review date by risk scoring
+* Get next review date by risk scoring.
 *
 * @param mixed $risk_id
+* @return string Raw date string (e.g. "2026-05-09" or "0000-00-00"); the caller is
+*                responsible for HTML-escaping at output. The only consumer chain
+*                (details.php -> edit_review_submission -> display_set_next_review_date_edit)
+*                escapes via $escaper->escapeHtml() before rendering.
 */
 function get_next_review_default($risk_id){
-    global $escaper;
-
     $id = intval($risk_id) + 1000;
     $risk = get_risk_by_id($id);
     if($risk)
@@ -14942,7 +15023,7 @@ function get_next_review_default($risk_id){
         $next_review = "0000-00-00";
     }
 
-    return $escaper->escapeHtml($next_review);
+    return $next_review;
 }
 
 /**********************************
@@ -15154,15 +15235,13 @@ function close_risk($risk_id, $user_id, $status, $close_reason, $note, $closure_
     $stmt->bindParam(":date", $closure_date, PDO::PARAM_STR);
     $stmt->execute();
 
-    // If notification is enabled
-    if (notification_extra())
-    {
-        // Include the team separation extra
-        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-        // Send the notification
-        notify_risk_close($id);
-    }
+    // Send the notification (no-op if notification extra is disabled)
+    call_extra_function(
+        'notification_extra',
+        __DIR__ . '/../extras/notification/index.php',
+        'notify_risk_close',
+        [$id]
+    );
 
     // Audit log
     $message = "Risk ID \"" . $risk_id . "\" was marked as closed by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".";
@@ -15296,15 +15375,13 @@ function add_comment($risk_id, $user_id, $comment)
     $stmt->bindParam(":date", $current_datetime, PDO::PARAM_STR);
     $stmt->execute();
 
-    // If notification is enabled
-    if (notification_extra())
-    {
-        // Include the notification extra
-        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-        // Send the notification
-        notify_risk_comment($id, $comment);
-    }
+    // Send the notification (no-op if notification extra is disabled)
+    call_extra_function(
+        'notification_extra',
+        __DIR__ . '/../extras/notification/index.php',
+        'notify_risk_comment',
+        [$id, $comment]
+    );
 
     // Audit log
     $message = "A comment was added to risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".";
@@ -15367,13 +15444,17 @@ function get_comments($id, $html = true) {
  *****************************/
 function get_audit_trail($id = NULL, $days = 7, $log_type=NULL)
 {
+    $logs = [];
+
     // If the ID is greater than 1000 or NULL
     if ($id > 1000 || $id === NULL)
     {
         // Open the database connection
         $db = db_open();
-        
-        $query = " 
+
+        $stmt = null;
+
+        $query = "
             SELECT t1.timestamp, t1.message, t1.log_type, t1.user_id, t2.name user_fullname 
             FROM audit_log t1
                 LEFT JOIN user t2 ON t1.user_id=t2.value
@@ -15473,15 +15554,13 @@ function update_mitigation($risk_id, $post)
     // Subtract 1000 from risk_id
     $id = (int)$risk_id - 1000;
 
-    // If customization extra is enabled
-    if(customization_extra())
-    {
-        // Include the extra
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-        // Save custom fields
-        save_risk_custom_field_values($risk_id);
-    }
+    // Save custom fields (no-op if customization extra is disabled)
+    call_extra_function(
+        'customization_extra',
+        __DIR__ . '/../extras/customization/index.php',
+        'save_risk_custom_field_values',
+        [$risk_id]
+    );
 
     $planning_strategy  = isset($post['planning_strategy']) ? (int)$post['planning_strategy'] : 0;
     $mitigation_effort  = isset($post['mitigation_effort']) ? (int)$post['mitigation_effort'] : 0;
@@ -15563,7 +15642,9 @@ function update_mitigation($risk_id, $post)
                 case "mitigation_owner":
                     $owner_original = get_user_by_id($mitigation[0][$key]);
                     $owner_updated = get_user_by_id($value);
+                    // @phan-suppress-next-line PhanTypeInvalidDimOffset -- get_user_by_id() returns the row including 'name' when truthy
                     $original_value = $owner_original ? $owner_original["name"] : '';
+                    // @phan-suppress-next-line PhanTypeInvalidDimOffset
                     $updated_value = $owner_updated ? $owner_updated["name"] : '';
                 break;
             }
@@ -15635,15 +15716,13 @@ function update_mitigation($risk_id, $post)
     save_junction_values("mitigation_to_team", "mitigation_id", $mitigation_id, "team_id", $mitigation_team);
 
         
-    // If notification is enabled
-    if (notification_extra())
-    {
-        // Include the notification extra
-        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-        // Send the notification
-        notify_mitigation_update($id);
-    }
+    // Send the notification (no-op if notification extra is disabled)
+    call_extra_function(
+        'notification_extra',
+        __DIR__ . '/../extras/notification/index.php',
+        'notify_mitigation_update',
+        [$id]
+    );
 
     // Audit log
     if(count($updated_fields)) {
@@ -15741,6 +15820,8 @@ function get_reviews($risk_id, $template_group_id="")
 
     // Close the database connection
     db_close($db);
+
+    $active_fields = [];
 
     // If customization extra is enabled
     if(customization_extra()) {
@@ -15891,11 +15972,17 @@ function latest_versions($force_refresh = true) {
 
     // Get the response
     $response = fetch_url_content("curl", $http_options, $validate_ssl, $url);
+    if (!is_array($response))
+    {
+        write_debug_log("SimpleRisk was unable to connect to " . $url, 'warning');
+        $GLOBALS['latest_versions_cached'] = 0;
+        return $GLOBALS['latest_versions_cached'];
+    }
     $return_code = $response['return_code'];
 
     // If we were unable to connect to the URL
     if($return_code !== 200)
-    {           
+    {
         write_debug_log("SimpleRisk was unable to connect to " . $url, 'warning');
 
         // Return 0 for the latest versions
@@ -16982,6 +17069,8 @@ function download_file($unique_name, $file_type = "file")
     // Open the database connection
     $db = db_open();
 
+    $stmt = null;
+
     // Get the file from the database
     if($file_type == "file") {
         $stmt = $db->prepare("SELECT * FROM files WHERE BINARY unique_name=:unique_name");
@@ -16991,9 +17080,29 @@ function download_file($unique_name, $file_type = "file")
         $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_INT);
     }
 
+    if (!$stmt) {
+        write_debug_log("download_file: invalid file_type '{$file_type}' — expected 'file' or 'validation_file'", "warning");
+        db_close($db);
+        exit;
+    }
+
     $stmt->execute();
     // Store the results in an array
     $array = $stmt->fetch();
+
+    // For validation_files we need the parent risk to authorize against.
+    // validation_files links to a risk indirectly:
+    //   validation_files.mitigation_id → mitigations.id → mitigations.risk_id
+    // Resolve here while the connection is open so the team-separation
+    // branch below can call extra_grant_access() against the right risk.
+    $validation_file_risk_id = null;
+    if ($file_type === "validation_file" && !empty($array['mitigation_id'])) {
+        $mstmt = $db->prepare("SELECT risk_id FROM mitigations WHERE id = :mitigation_id");
+        $mstmt->bindParam(":mitigation_id", $array['mitigation_id'], PDO::PARAM_INT);
+        $mstmt->execute();
+        $mrow = $mstmt->fetch();
+        $validation_file_risk_id = $mrow ? (int)$mrow['risk_id'] : null;
+    }
 
     // Close the database connection
     db_close($db);
@@ -17012,26 +17121,31 @@ function download_file($unique_name, $file_type = "file")
             //Include the team separation extra
             require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-            // If the user has access to view the risk
-            if (($file_type == "file" && extra_grant_access($_SESSION['uid'], (int)$array['risk_id'] + 1000)) || ($file_type == "validation_file"))
-            {
-                // Display the file
-                header("Content-length: " . $array['size']);
-                header("Content-type: " . $array['type']);
-                header("Content-Disposition: attachment; filename=" . $escaper->escapeUrl($array['name']));
-                echo $array['content'];
-                exit;
+            // Authorize against the parent risk. The previous expression
+            // (file && check) || (validation_file) was an operator-precedence
+            // trap — the right side short-circuited the OR to true for every
+            // validation_file request, bypassing the team check entirely.
+            // Validation files now resolve their risk via the mitigation
+            // lookup above and run the same extra_grant_access() the regular
+            // file branch does.
+            $has_access = false;
+            if ($file_type === "file") {
+                $has_access = extra_grant_access($_SESSION['uid'], (int)$array['risk_id'] + 1000);
+            } elseif ($file_type === "validation_file" && $validation_file_risk_id !== null) {
+                $has_access = extra_grant_access($_SESSION['uid'], $validation_file_risk_id + 1000);
+            }
+
+            if (!$has_access) {
+                redirect_permission_denied('NoPermissionForThisAction', "download_file id={$unique_name} type={$file_type}");
             }
         }
-        // Otherwise display the file
-        else
-        {
-            header("Content-length: " . $array['size']);
-            header("Content-type: " . $array['type']);
-            header("Content-Disposition: attachment; filename=" . $escaper->escapeUrl($array['name']));
-            echo $array['content'];
-            exit;
-        }
+
+        // Display the file (no team separation, or team separation passed)
+        header("Content-length: " . $array['size']);
+        header("Content-type: " . $array['type']);
+        header("Content-Disposition: attachment; filename=" . $escaper->escapeUrl($array['name']));
+        echo $array['content'];
+        exit;
     }
 }
 
@@ -17258,12 +17372,13 @@ function delete_risk($risk_id)
     cleanup_after_delete("risks");
     cleanup_after_delete("mitigations");
 
-    // If customization extra is enabled, delete custom_risk_data related with risk ID
-    if(customization_extra())
-    {
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        delete_custom_data_by_row_id($risk_id, "risk");
-    }
+    // Delete custom_risk_data related with risk ID (no-op if customization extra is disabled)
+    call_extra_function(
+        'customization_extra',
+        __DIR__ . '/../extras/customization/index.php',
+        'delete_custom_data_by_row_id',
+        [$risk_id, "risk"]
+    );
 
     // Close the database connection
     db_close($db);
@@ -17401,7 +17516,7 @@ function write_debug_log($value, $level = 'info') {
             }
 
             // StreamHandler with append mode and file lock
-            $handler = new StreamHandler($logFile, Logger::DEBUG, true, null, true);
+            $handler = new StreamHandler($logFile, Level::Debug, true, null, true);
 
             // Custom format: includes SAPI for Apache vs CLI
             $formatter = new LineFormatter(
@@ -17745,15 +17860,13 @@ function update_risk_status($risk_id, $status)
             // Get the new mitigation id
             $review_id = get_review_id($id);
 
-            // If customization extra is enabled
-            if(customization_extra())
-            {
-                // Include the extra
-                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-                // Save custom fields
-                save_risk_custom_field_values($risk_id, $review_id);
-            }
+            // Save custom fields (no-op if customization extra is disabled)
+            call_extra_function(
+                'customization_extra',
+                __DIR__ . '/../extras/customization/index.php',
+                'save_risk_custom_field_values',
+                [$risk_id, $review_id]
+            );
 
             // Update the risk status and last_update
             $stmt = $db->prepare("UPDATE risks SET status=:status, last_update=:last_update, review_date=:review_date, mgmt_review=:mgmt_review WHERE id = :risk_id");
@@ -17924,7 +18037,7 @@ function try_encrypt($value) {
             if (!isset($GLOBALS['decoded_encrypted_pass'])) {
                 $GLOBALS['decoded_encrypted_pass'] = base64_decode($_SESSION['encrypted_pass']);
             }
-            
+
             // Encrypt the value
             $encrypted_value = encrypt($GLOBALS['decoded_encrypted_pass'], $value);
         }
@@ -18056,6 +18169,29 @@ function password_max_age_redirect()
     header("Location: account/change_password.php");
 }
 
+/***************************************
+ * FUNCTION: GET DEFAULT LANDING PAGE  *
+ ***************************************/
+/**
+ * Choose a sensible post-login landing page based on the calling user's
+ * permissions. Prefer the area the user actually works in so users without
+ * the riskmanagement permission do not redirect-loop on reports/index.php
+ * after that page started enforcing check_riskmanagement.
+ *
+ * Returns a path relative to the application root (e.g. "reports/index.php").
+ */
+function get_default_landing_page()
+{
+    if (!empty($_SESSION['riskmanagement'])) return "reports/index.php";
+    if (!empty($_SESSION['compliance']))     return "compliance/index.php";
+    if (!empty($_SESSION['governance']))     return "governance/index.php";
+    if (incident_management_extra() && !empty($_SESSION['im_incidents']))    return "incidents/index.php";
+    if (vulnmgmt_extra()            && !empty($_SESSION['vm_vulnerabilities'])) return "vulnerabilities/index.php";
+    if (!empty($_SESSION['asset']))       return "assets/index.php";
+    if (!empty($_SESSION['assessments'])) return "assessments/index.php";
+    return "account/profile.php";
+}
+
 /***********************************
  * FUNCTION: REGISTRATION REDIRECT *
  ***********************************/
@@ -18095,8 +18231,8 @@ function registration_redirect()
                 // Otherwise
                 else
                 {
-                    // Redirect to the reports index
-                    header("Location: reports/index.php");
+                    // Redirect to the user's default landing page
+                    header("Location: " . get_default_landing_page());
                 }
             }
         }
@@ -18119,8 +18255,8 @@ function registration_redirect()
             // Otherwise
             else
             {
-                // Redirect to the reports index
-                header("Location: reports/index.php");
+                // Redirect to the user's default landing page
+                header("Location: " . get_default_landing_page());
             }
         }
     }
@@ -18143,8 +18279,8 @@ function registration_redirect()
         // Otherwise
         else
         {
-            // Redirect to the reports index
-            header("Location: reports/index.php");
+            // Redirect to the user's default landing page
+            header("Location: " . get_default_landing_page());
         }
     }
 }
@@ -18795,6 +18931,8 @@ function get_file_types()
 
     // Close the database connection
     db_close($db);
+
+    $allowed_types = [];
 
     // Create an array of allowed types
     foreach ($result as $key => $row)
@@ -19514,6 +19652,7 @@ function refresh($url = false){
  * FUNCTION: ADD FAMILY *
  ************************/
 function add_family($short_name){
+    global $escaper;
     if(!$short_name){
         return false;
     }
@@ -19541,6 +19680,7 @@ function add_family($short_name){
  * FUNCTION: UPDATE FAMILY *
  ***************************/
 function update_family($value, $short_name){
+    global $escaper;
     if(!$short_name){
         return false;
     }
@@ -19750,7 +19890,7 @@ function set_session_last_activity_timeout()
         if (!$session_activity_timeout)
         {
                 // Set the session activity timeout to the value in the config file
-                $session_activity_timeout = LAST_ACTIVITY_TIMEOUT;
+                $session_activity_timeout = defined('LAST_ACTIVITY_TIMEOUT') ? LAST_ACTIVITY_TIMEOUT : null;
 
                 // If the session activity timeout isn't null
                 if ($session_activity_timeout != null)
@@ -19797,7 +19937,7 @@ function set_content_security_policy()
         if (!$content_security_policy)
         {
                 // Set the content security policy to the value in the config file
-                $content_security_policy = CSP_ENABLED;
+                $content_security_policy = defined('CSP_ENABLED') ? CSP_ENABLED : null;
 
                 // If the content security policy isn't null
                 if ($content_security_policy != null)
@@ -19829,7 +19969,7 @@ function set_debug_logging()
         if (!$debug_logging)
         {
                 // Set the debug logging to the value in the config file
-                $debug_logging = DEBUG;
+                $debug_logging = defined('DEBUG') ? DEBUG : null;
 
                 // If the debug logging isn't null
                 if ($debug_logging != null)
@@ -19861,7 +20001,7 @@ function set_default_language()
         if (!$default_language)
         {
                 // Set the default language to the value in the config file
-                $default_language = LANG_DEFAULT;
+                $default_language = defined('LANG_DEFAULT') ? LANG_DEFAULT : null;
 
                 // If the default language isn't null
                 if ($default_language != null)
@@ -21922,6 +22062,7 @@ function localized_yes_no($val)
  * FUNCTION: TABLE EXISTS *
  **************************/
 if (!function_exists('table_exists')) {
+    // @phan-suppress-next-line PhanRedefineFunction -- guarded by function_exists() check above; alternate definition in includes/permissions.php
     function table_exists($table) {
 
         // Open the database connection
@@ -21948,6 +22089,7 @@ if (!function_exists('table_exists')) {
  * FUNCTION: FIELD EXISTS IN TABLE *
  ***********************************/
 if (!function_exists('field_exists_in_table')) {
+    // @phan-suppress-next-line PhanRedefineFunction -- guarded by function_exists() check above; alternate definition in includes/upgrade.php
     function field_exists_in_table($field, $table) {
 
         // Open the database connection
@@ -21985,6 +22127,7 @@ if (!function_exists('field_exists_in_table')) {
  ***********************************/
 if (!function_exists('index_exists_on_table')) {
 
+    // @phan-suppress-next-line PhanRedefineFunction -- guarded by function_exists() check above; alternate definition in includes/upgrade.php
     function index_exists_on_table($index_name, $table) {
 
         // Open the database connection
@@ -22082,6 +22225,7 @@ if (!function_exists('hash_equals')) {
      * @param string $known_string The string of known length to compare against
      * @param string $user_string The user-supplied string
      * @return boolean Returns TRUE when the two strings are equal, FALSE otherwise.
+     * @phan-suppress PhanRedefineFunctionInternal -- polyfill guarded by function_exists() for PHP < 5.6
      */
     function hash_equals($known_string, $user_string)
     {
@@ -22679,6 +22823,7 @@ function update_risk_level($field, $value, $name) {
  * Hook called by csrf_init()    *
  * before the token check runs.  *
  *********************************/
+// @phan-suppress-next-line PhanRedefineFunction -- alternate definition in vendor csrf-magic js-test fixture is not loaded in production
 function csrf_startup() {
     // HTTP header names are case-insensitive (RFC 7230) but PHP-FPM/nginx reconstructs
     // them from HTTP_* server vars with title-case, so 'CSRF-TOKEN' becomes 'Csrf-Token'.
@@ -22838,6 +22983,10 @@ function getItemsOfTeam($team_id, $type, $full=false) {
 
     $db = db_open();
 
+    $item_table_name = '';
+    $item_id_field_name = '';
+    $teams_query = '';
+
     switch($type) {
         case 'audit':
             $item_table_name = 'framework_control_test_audits';
@@ -22854,7 +23003,7 @@ function getItemsOfTeam($team_id, $type, $full=false) {
     // Assemble the query
     $sql = "
         SELECT
-            `item`." . 
+            `item`." .
             ($full ?  "*, ({$teams_query}) as teams" : "`{$item_id_field_name}`") . "
         FROM
             `{$item_table_name}` item
@@ -23149,6 +23298,10 @@ function updateItemsOfTeam($team_id, $type, $items) {
 
         //$db = db_open();
 
+        $audit_type = '';
+        $item_table_name = '';
+        $use_id = true;
+
         switch($type) {
             case 'audit':
                 $audit_type = 'test_audit';
@@ -23178,7 +23331,8 @@ function updateItemsOfTeam($team_id, $type, $items) {
             ), false
         );
 
-        write_log((int)$item_id + 1000, $_SESSION['uid'], $message, $audit_type);
+        // updateItemsOfTeam operates on a list of items, so we log against the team-level event with a 0 ref ID
+        write_log(1000, $_SESSION['uid'], $message, $audit_type);
     }
 
     return true;
@@ -23406,9 +23560,9 @@ function check_closed_risk_by_id($id)
 */
 function is_extra_installed($extra) {
     global $available_extras;
-    
+
     if (!in_array($extra, $available_extras))
-        false;
+        return false;
 
     return file_exists(realpath(__DIR__ . "/../extras/$extra/index.php"));
 }
@@ -23473,11 +23627,26 @@ function set_proxy_stream_context($method=null, $header=null, $content=null, $ss
         $proxy_user = get_setting("proxy_user");
         $proxy_pass = get_setting("proxy_pass");
 
-        // Create the http context array
+        // Create the http context array. protocol_version and user_agent
+        // are set here so every caller picks them up: PHP's HTTP stream
+        // wrapper defaults to HTTP/1.0 and an empty User-Agent, which
+        // Cloudflare-fronted services (services.nvd.nist.gov, github.com,
+        // etc.) silently reject as bot traffic — get_headers() and
+        // file_get_contents() then return false with a generic
+        // "HTTP request failed!" message that looks identical to a real
+        // network outage. HTTP/1.1 + any non-empty User-Agent gets past
+        // that filter. The User-Agent stays generic ('SimpleRisk') so
+        // server-side filtering on specific versions is one less moving
+        // part. Callers that need a different UA can append a
+        // "User-Agent: ..." line via the $header parameter — header-line
+        // values override the user_agent context option in PHP's HTTP
+        // stream wrapper.
         $http_context = array(
             'proxy' => "tcp://$proxy_host:$proxy_port",
             'ignore_errors' => true,
             'request_fulluri' => true,
+            'protocol_version' => 1.1,
+            'user_agent' => 'SimpleRisk',
         );
 
 	write_debug_log("HTTP Context - Proxy: " . $http_context['proxy'], 'debug');
@@ -23585,8 +23754,16 @@ function set_proxy_stream_context($method=null, $header=null, $content=null, $ss
     // Otherwise, if the proxy is not enabled
     else
     {
-        // Create array for the http context
-        $http_context = array();
+        // Create array for the http context. protocol_version and
+        // user_agent are set so every caller picks them up — see the
+        // matching block in the proxy-enabled branch above for the full
+        // rationale (Cloudflare-fronted services reject HTTP/1.0 + empty
+        // User-Agent silently, breaking get_headers() / file_get_contents()
+        // with what looks like a network outage).
+        $http_context = array(
+            'protocol_version' => 1.1,
+            'user_agent' => 'SimpleRisk',
+        );
 
         // If the function was provided a method
         if ($method)
@@ -23826,7 +24003,8 @@ function cleanup_after_delete($deleted_item_table) {
     }
 
     if ($has_tags) {
-        
+
+        // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset -- $has_tags above guarantees tag_type is set
         $tag_type = $config['tag_type'];
         // Clean up every tag junction entries that aren't tied to a value in the configued table
         // but make sure we're not deleting other types' junction entries
@@ -24506,6 +24684,8 @@ function refresh_file_encoding_issue_counts($type = 'all') {
 
     foreach ($types as $type) {
         $setting_name = "file_encoding_issues_count_{$type}";
+        $log_type = $type;
+        $sql = '';
         switch($type) {
             case 'compliance':
                 $log_type = 'test_audit';
@@ -24520,6 +24700,7 @@ function refresh_file_encoding_issue_counts($type = 'all') {
                 $sql = "SELECT count(1) AS cnt FROM `questionnaire_files` WHERE `size` <> LENGTH(`content`);";
                 break;
         }
+        if (!$sql) continue;
 
         $stmt = $db->prepare($sql);
         $stmt->execute();
@@ -24549,6 +24730,7 @@ function get_files_with_encoding_issues($type = 'risk', $order_column = 0, $orde
 
     $db = db_open();
     $log_type = '';
+    $sql = '';
     switch($type) {
         case 'compliance':
             $log_type = 'test_audit';
@@ -24695,6 +24877,7 @@ function display_file_encoding_issues($type) {
         <table id='{$tableID}' width='100%' class='risk-datatable table table-bordered table-striped table-condensed'>
             <thead>
                 <tr>";
+    $data_list = [];
     switch($type) {
         case 'risk':
             echo "
@@ -24739,7 +24922,7 @@ function display_file_encoding_issues($type) {
                     },
                     order: [[0, 'asc']],
                     ajax: {
-                        url: BASE_URL + '/api/upload_encoding_issue_fix/datatable?type=$type',
+                        url: BASE_URL + '/api/v2/upload_encoding_issue_fix/datatable?type=$type',
                         data: function(d){ },
                         complete: function(response){ }
                     },
@@ -24809,7 +24992,7 @@ function display_file_encoding_issues($type) {
 
                         $.ajax({
                             type: 'POST',
-                            url: BASE_URL + '/api/upload_encoding_issue_fix/file_upload',
+                            url: BASE_URL + '/api/v2/upload_encoding_issue_fix/file_upload',
                             cache: false,
                             contentType: false,
                             processData: false,
@@ -25831,7 +26014,7 @@ function renderCRUDUI($tableConfig) {
                     if (tableName && action) {
                         $.ajax({
                             type: 'POST',
-                            url: BASE_URL + '/api/authentication/remote_items',
+                            url: BASE_URL + '/api/v2/authentication/remote_items',
                             data: (function() {
                                 var d = new Object();
                                 d.table_name = tableName;
@@ -26607,6 +26790,13 @@ function create_selectize_dropdown($type, $selected_values, $additional_info = f
 
     global $escaper, $lang;
 
+    $name = '';
+    $required = false;
+    $option_type = '';
+    $multiple = false;
+    $grouped = false;
+    $placeholder = '';
+
     switch($type) {
         case 'risk_catalog' :
             $name = 'risk_catalog_mapping';
@@ -27173,6 +27363,8 @@ function create_default_admin_account()
 function verify_create_default_admin_account()
 {
     $error = false;
+    $error_message = [];
+    $result = [];
 
     // If the Username is empty
     if ($_POST['username'] == "")
@@ -27597,8 +27789,8 @@ function object2array($object)
 
 /**
  * Get the default list of displayed columns for a field group
- * 
- * @param string $group - field group(asset, risk, ..., etc)
+ *
+ * @param string $view - field group(asset, risk, ..., etc)
  * @return string[] the list of enabled field names. Example: ['id', 'name', 'value', ..., etc]
  */
 function field_settings_get_display_defaults($view) {
@@ -27611,11 +27803,12 @@ function field_settings_get_display_defaults($view) {
 
 /**
  * Get localized display strings for the field group
- * 
- * @param string $group - field group(asset, risk, ..., etc)
+ *
+ * @param string $view - field group(asset, risk, ..., etc)
+ * @param boolean $grouped - whether to group results by display group
  * @param boolean $escaped - localization need to be escaped or not
- * @param boolean $escape_html - HTML escaping or JS  
- * @return string[] ['field_name1' => 'localized string1', 'field_name2' => 'localized string2', ...] 
+ * @param boolean $escape_html - HTML escaping or JS
+ * @return string[] ['field_name1' => 'localized string1', 'field_name2' => 'localized string2', ...]
  */
 function field_settings_get_localization($view, $grouped = true, $escaped = true, $escape_html = true) {
 
@@ -27668,6 +27861,7 @@ function field_settings_get_localization($view, $grouped = true, $escaped = true
         if ($customization) {
 
             // Get the active fields for only the required tab(if there's any set up)
+            // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset -- customization_tab_index is optional; !empty() guards the access
             $active_fields = get_active_fields($type, null, !empty($field_settings_display_groups[$group]['customization_tab_index']) ? $field_settings_display_groups[$group]['customization_tab_index'] : null);
 
             // The weights for ordering the fields
@@ -27741,10 +27935,13 @@ function field_settings_get_localization($view, $grouped = true, $escaped = true
  * @param string $view the view
  * @param array $selected_fields a list of fields you need the select/join parts for. If not specified then tries to load the saved selected fields for the view.
  * @param boolean $technical_fields whether to return the technical fields as well
- * @return [string[],string[]] returns two string arrays. One for the select parts the other for the joins
+ * @return array{0:string[],1:string[]} returns two string arrays. One for the select parts the other for the joins
+ */
+/**
+ * @phan-suppress PhanTypePossiblyInvalidDimOffset
  */
 function field_settings_get_join_parts($view, $selected_fields = [], $technical_fields = true) {
-    
+
     global $field_settings, $field_settings_views;
     $type = $field_settings_views[$view]['view_type'];
     $customization = customization_extra();
@@ -27851,6 +28048,7 @@ function display_settings_get_valid_field_keys($view) {
 
         if ($customization) {
             // Getting only the customization tab for the group if it's set up
+            // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset -- customization_tab_index is optional; !empty() guards the access
             $active_fields = get_active_fields($type, null, !empty($field_settings_display_groups[$group]['customization_tab_index']) ? $field_settings_display_groups[$group]['customization_tab_index'] : null);
 
             foreach ($active_fields as $active_field) {
@@ -27977,8 +28175,11 @@ function display_settings_get_display_settings_for_view($view) {
     return $settings;
 }
 
+/**
+ * @phan-suppress PhanTypePossiblyInvalidDimOffset
+ */
 function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 10, $orderColumn = 'id', $orderDir = 'ASC', $column_filters = []) {
-    
+
     global $field_settings_views, $field_settings, $escaper, $lang;
 
     $view_type = $field_settings_views[$view]['view_type'];
@@ -28010,6 +28211,8 @@ function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 1
         ];
     }
     
+    $sql_order_column = '';
+
     if (str_starts_with($orderColumn, 'custom_field_')) {
         $sql_orderable = false;
     } else {
@@ -28200,11 +28403,14 @@ function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 1
             if ($actions_column_info) {
 
                 // Only show the edit button if the view's edit type is popup, no need for the button for inline editing
+                // @phan-suppress-next-line PhanPossiblyUndeclaredVariable -- $actions_tooltips populated upstream when $actions_column_info is set
                 $item_actions = $view_edit_type_popup ? ["<button type='button' class='btn btn-secondary btn-sm asset-row-action' style='margin:1px; padding: 4px 12px;' role='button' data-action='edit' title='{$actions_tooltips['edit']}'><i class='fa fa-edit'></i></button>"] : [];
 
                 // Merge custom item actions
+                // @phan-suppress-next-line PhanPossiblyUndeclaredVariable -- $actions_tooltips populated upstream when $actions_column_info is set
                 $item_actions = array_merge($item_actions, get_custom_item_actions($view, $actions_tooltips, $item));
 
+                // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset -- $actions_column_info populated upstream when truthy includes 'field_name'
                 $row[$actions_column_info['field_name']] = "<span data-id='{$item['id']}'>" . implode('', $item_actions) . "</span>";
 
             }
@@ -29500,6 +29706,8 @@ function get_filter_field_for_views($view, $field_name, $localizations) {
 
     global $escaper;
 
+    $filter_field = "";
+    
     if ($view == 'active_audits') {
         $filter_field = get_filter_field_for_active_audits($field_name, $localizations);
     } else if ($view == 'past_audits') {
@@ -29512,6 +29720,11 @@ function get_filter_field_for_views($view, $field_name, $localizations) {
         $filter_field = get_filter_field_for_document_program($field_name, $localizations);
     } else if ($view == 'document_exception') {
         $filter_field = get_filter_field_for_document_exception($field_name, $localizations);
+    } else if (in_array($view, ['incident_management_response', 'incident_management_lessons_learned', 'incident_management_closed', 'dynamic_incident_report'])) {
+        if (incident_management_extra()) {
+            require_once(realpath(__DIR__ . '/../extras/incident_management/includes/functions.php'));
+            $filter_field = get_filter_field_for_incident_management_view($field_name, $localizations);
+        }
     } else {
         $filter_field = "
             <input type='text' name='{$escaper->escapeHtmlAttr($field_name)}' placeholder='{$escaper->escapeHtmlAttr($localizations[$field_name])}' autocomplete='off' class='form-control' style='max-width: unset;'>
@@ -30205,11 +30418,12 @@ function delete_all_tags($type)
  * @return array the header
  */
 function getSpreadsheetHeader($filePath) {
+    $header = [];
     // Create the reader based on the extension of the file
     $reader = OpenSpout\Reader\Common\Creator\ReaderFactory::createFromFile($filePath);
     // Open the reader
     $reader->open($filePath);
-    
+
     // Iterate through the sheets
     foreach ($reader->getSheetIterator() as $sheet) {
         foreach ($sheet->getRowIterator() as $row) {
@@ -30266,6 +30480,7 @@ function fetchCountries(): array
     $cache_valid = $cache && isset($cache['fetched_at'], $cache['countries']);
 
     if ($cache_valid) {
+        // @phan-suppress-next-line PhanTypeArraySuspiciousNullable -- $cache_valid guarantees $cache is array with these keys set
         $age = time() - $cache['fetched_at'];
         if ($age >= 24 * 60 * 60) { // cache older than 1 day
             // Only queue if no pending or in-progress task exists
@@ -30283,6 +30498,7 @@ function fetchCountries(): array
         }
 
         // Return cached countries immediately
+        // @phan-suppress-next-line PhanTypeArraySuspiciousNullable -- $cache_valid guarantees $cache is array with 'countries' key set
         return $cache['countries'];
     }
 
@@ -30315,7 +30531,7 @@ function fetchCountriesFromAPI(): array
     $url = 'https://restcountries.com/v3.1/all?fields=name,region';
 
     $response = fetch_url_content("stream", $http_options, $validate_ssl, $url);
-    if ($response['return_code'] !== 200) {
+    if (!is_array($response) || $response['return_code'] !== 200) {
         write_debug_log("SimpleRisk was unable to connect to " . $url, "error");
         return [];
     }
@@ -30508,7 +30724,7 @@ function save_layout_for_user($user_id, $layout_name, $layout, $default = false)
     $stmt->execute();
 
     if ($default) {
-        set_layout_default_status($user_id, $layout_name);
+        set_layout_default_status($user_id, $layout_name, true);
     }
 
     // Close the database connection
@@ -30552,7 +30768,7 @@ function get_default_layout($layout_name) {
  * @param string $layout_name
  * @param int $user_id
  * 
- * @return [string $layout, boolean $is_custom, boolean $default_set_by_user]
+ * @return array{0:string,1:bool,2:bool} [$layout, $is_custom, $default_set_by_user]
  */
 function get_layout_for_user($layout_name, $user_id = null) {
     // Open the database connection
@@ -30621,7 +30837,7 @@ function delete_layout_for_user($layout_name, $user_id = null) {
  * Get the configurations for the widgets allowed for a layout type
  * 
  * @param string $layout_name
- * @return ['<widget name>' => [widget configuration], '<widget name 2>' => [widget configuration 2], ...]
+ * @return array<string,array> map of widget name => widget configuration
  */
 function get_widget_configuration_for_layout_name($layout_name, $is_custom = false) {
     global $lang, $escaper, $ui_layout_config, $ui_layout_widget_config;
@@ -31139,16 +31355,17 @@ function get_dynamic_risks_data_for_output($filter_status, $group, $sort, $downl
     $xlsRow = array();
     $str = "";
     foreach($selected_columns as $column=>$status){
+        $name = '';
         if(stripos($column, "custom_field_") === false){
             $name = get_label_by_risk_field_name($column);
         } else {
-            // If customization extra is enabled, includes customization fields 
+            // If customization extra is enabled, includes customization fields
             if(customization_extra()){
                 $custom_cols = "";
-                
+
                 // Include the extra
                 require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-                
+
                 $field_id = str_replace("custom_field_", "", $column);
                 $custom_field = get_field_by_id($field_id);
                 $name = $escaper->escapeHtml($custom_field['name']);
@@ -31270,8 +31487,8 @@ function get_dynamic_risks_data_for_output($filter_status, $group, $sort, $downl
                                 $group_value_from_db = $risk['submission_date'];
                             break;
                             // Comma splitted group
-                            case "team";
-                            case "technology";
+                            case "team":
+                            case "technology":
                                 $group_value_from_db = get_value_by_name($group_name, $group_value);
                             break;
                             default:

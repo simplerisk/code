@@ -11,10 +11,12 @@
 // Add various security headers
 add_security_headers();
 
-// Add the session
+// Add the session — flagged is_action because this is a file
+// download, not a viewable page that should anchor navigation.
 $permissions = array(
         "check_access" => true,
         "check_riskmanagement" => true,
+        "is_action" => true,
 );
 add_session_check($permissions);
 

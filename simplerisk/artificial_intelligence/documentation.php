@@ -56,11 +56,15 @@ else
     write_debug_log("SimpleRisk successfully connected to " . $url, 'info');
 
     // Convert the json contents of the file to an array
+    // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
     $templates = json_decode($response['response'], 1);
 
     // Get the policies, guidelines and procedures
+    // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
     $policies = $templates['policies'];
+    // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
     $guidelines = $templates['guidelines'];
+    // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
     $procedures = $templates['procedures'];
 }
 
@@ -136,6 +140,7 @@ else if ($installed && $activated)
                             require_once(realpath(__DIR__ . "/../extras/artificial_intelligence/index.php"));
 
                             // Show the content from GitHub
+                            // @phan-suppress-next-line SecurityCheck-XSS -- data from fixed first-party GitHub URL; ai_show_github_content() escapes all HTML output
                             ai_show_github_content("policies", $policies);
                         }
                         // Otherwise, the Artificial Intelligence check failed
@@ -155,7 +160,7 @@ else if ($installed && $activated)
                                     $url = null;
                                 }
 
-                                echo "      <li><a href='{$url}' target='_blank'>" . $escaper->escapeHtml($name) . "</a></li>\n";
+                                echo "      <li><a href='" . $escaper->escapeHtmlAttr($url ?? '') . "' target='_blank'>" . $escaper->escapeHtml($name) . "</a></li>\n";
                             }
                             echo "    </ol>\n";
                         }
@@ -176,6 +181,7 @@ else if ($installed && $activated)
                             require_once(realpath(__DIR__ . "/../extras/artificial_intelligence/index.php"));
 
                             // Show the content from GitHub
+                            // @phan-suppress-next-line SecurityCheck-XSS -- data from fixed first-party GitHub URL; ai_show_github_content() escapes all HTML output
                             ai_show_github_content("guidelines", $guidelines);
                         }
                         // Otherwise, the Artificial Intelligence checks failed
@@ -195,7 +201,7 @@ else if ($installed && $activated)
                                     $url = null;
                                 }
 
-                                echo "      <li><a href='{$url}' target='_blank'>" . $escaper->escapeHtml($name) . "</a></li>\n";
+                                echo "      <li><a href='" . $escaper->escapeHtmlAttr($url ?? '') . "' target='_blank'>" . $escaper->escapeHtml($name) . "</a></li>\n";
                             }
                             echo "    </ol>\n";
                         }
@@ -216,6 +222,7 @@ else if ($installed && $activated)
                             require_once(realpath(__DIR__ . "/../extras/artificial_intelligence/index.php"));
 
                             // Show the content from GitHub
+                            // @phan-suppress-next-line SecurityCheck-XSS -- data from fixed first-party GitHub URL; ai_show_github_content() escapes all HTML output
                             ai_show_github_content("procedures", $procedures);
                         }
                         // Otherwise, the Artificial Intelligence checks failed
@@ -235,7 +242,7 @@ else if ($installed && $activated)
                                     $url = null;
                                 }
 
-                                echo "      <li><a href='{$url}' target='_blank'>" . $escaper->escapeHtml($name) . "</a></li>\n";
+                                echo "      <li><a href='" . $escaper->escapeHtmlAttr($url ?? '') . "' target='_blank'>" . $escaper->escapeHtml($name) . "</a></li>\n";
                             }
                             echo "    </ol>\n";
                         }

@@ -253,7 +253,7 @@ class AssetAssetGroupDropdown {
                                 return callback();
                             }
                             $.ajax({
-                                url: BASE_URL + '/api/asset-group/options',
+                                url: BASE_URL + '/api/v2/asset-group/options',
                                 type: 'GET',
                                 dataType: 'json',
                                 " . ($this->itemId && $this->itemType ? "data: {id: '{$this->itemId}', type: '{$this->itemType}'},": '') . "

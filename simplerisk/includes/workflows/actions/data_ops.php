@@ -53,6 +53,9 @@ function workflow_action_http_request(array $inputs, array $context): array
     $http_options = ['method' => $method, 'header' => $parsed_headers, 'timeout' => $timeout];
     $validate_ssl = (get_setting('ssl_certificate_check_external') == 1);
     $response     = fetch_url_content("curl", $http_options, $validate_ssl, $url, $body ?: '');
+    if (!is_array($response)) {
+        $response = [];
+    }
     $return_code   = $response['return_code'] ?? 0;
     $response_body = is_string($response['response'] ?? '') ? ($response['response'] ?? '') : '';
 

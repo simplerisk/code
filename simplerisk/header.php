@@ -99,22 +99,30 @@ if (!empty($required_scripts_or_css)) {
             $required_localization_keys = array_merge_unique($required_localization_keys, $localization_required_by_scripts[$script_with_localization_needs]);
         }
 
-        // Render the script tag with the localized strings
+        // Render the script tag with the localized strings.
+        // Use json_encode() with the safe-for-HTML flags so the object is
+        // a valid JS literal AND safe to embed inside a <script> tag — the
+        // flags hex-encode <, >, &, ', " so a stray closing-tag/quote in
+        // a translated value can't break out of the <script> or the JS
+        // string. The previous implementation used $escaper->escapeHtml()
+        // for the values, which is the wrong escaper for a JS-string
+        // context — it HTML-entity-encoded ampersands and quotes,
+        // producing literal "Users &amp; Access" in textContent renders
+        // downstream.
 ?>
 		<script type="text/javascript">
 <?php
             if (!empty($required_localization_keys)) {
-?>
-    		var _lang = {
-<?php
+                $lang_subset = [];
                 foreach ($required_localization_keys as $localization_key) {
-                    // Escaped as html so it won't cause issues when inserted in the html using JS
-?>
-        		'<?= $localization_key ?>': '<?= $escaper->escapeHtml($lang[$localization_key]) ?>',
-<?php
+                    $lang_subset[$localization_key] = $lang[$localization_key] ?? $localization_key;
                 }
+                $lang_json = json_encode(
+                    $lang_subset,
+                    JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+                );
 ?>
-			};
+    		var _lang = <?= $lang_json ?>;
 <?php
             }
 ?>
@@ -905,19 +913,29 @@ if (!advanced_search_extra()) { ?>
               <?php require_once(realpath(__DIR__ . '/extras/artificial_intelligence/includes/chat.php')); ai_render_chat_icon(); ?>
 <?php endif; ?>
 			  <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle waves-effect waves-dark" href="#" id="2" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <a class="nav-link dropdown-toggle waves-effect waves-dark"
+                   href="#"
+                   id="2"
+                   role="button"
+                   data-bs-toggle="dropdown"
+                   aria-expanded="false"
+                   title="<?= $escaper->escapeHtmlAttr($lang['Help']) ?>"
+                   aria-label="<?= $escaper->escapeHtmlAttr($lang['Help']) ?>">
                   <i class="font-24 far fa-question-circle align-middle"></i>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end animated" aria-labelledby="2">
                   
-                  <!-- About This Page -->
-                  <li><a class="dropdown-item" href="https://help.simplerisk.com/index.php?page=<?=get_request_uri();?>" target="_blank"><i class="fas fa-info-circle me-1 ms-1"></i><?= $escaper->escapeHtml($lang['AboutThisPage']);?></a></li>
+                  <!-- User Guide -->
+                  <li><a class="dropdown-item" href="https://support.simplerisk.com/kb/user-guide" target="_blank"><i class="fas fa-book-reader me-1 ms-1"></i><?= $escaper->escapeHtml($lang['UserGuide']);?></a></li>
+
+                  <!-- Administrator Guide -->
+                  <li><a class="dropdown-item" href="https://support.simplerisk.com/kb/administrator-guide" target="_blank"><i class="fas fa-user-shield me-1 ms-1"></i><?= $escaper->escapeHtml($lang['AdministratorGuide']);?></a></li>
 
                   <!-- API Documentation -->
-                  <li><a class="dropdown-item" href="<?php echo build_url("api/v2/documentation.php");?>" target="_blank"><i class="fas fa-info-circle me-1 ms-1"></i><?= $escaper->escapeHtml($lang['APIDocumentation']);?></a></li>
+                  <li><a class="dropdown-item" href="<?php echo /* @phan-suppress-current-line SecurityCheck-XSS -- build_url() called with hardcoded path; base URL is admin-configured */ build_url("api/v2/documentation.php");?>" target="_blank"><i class="fas fa-info-circle me-1 ms-1"></i><?= $escaper->escapeHtml($lang['APIDocumentation']);?></a></li>
                   
                   <!-- How-To Videos -->
-                  <li><a class="dropdown-item" href="https://support.simplerisk.com/kb/simplerisk-user-guides" target="_blank"><i class="fas fa-video me-1 ms-1"></i><?= $escaper->escapeHtml($lang['HowToVideos']);?></a></li>
+                  <li><a class="dropdown-item" href="https://www.youtube.com/playlist?list=PLD9huGT2L0QFhvMoj7d8c4oDS5sFkWkUX" target="_blank"><i class="fas fa-video me-1 ms-1"></i><?= $escaper->escapeHtml($lang['HowToVideos']);?></a></li>
                   
                   <!-- FAQs -->
                   <li><a class="dropdown-item" href="https://support.simplerisk.com/kb/faqs" target="_blank"><i class="fas fa-question-circle me-1 ms-1"></i><?= $escaper->escapeHtml($lang['FAQs']);?></a></li>
@@ -938,10 +956,32 @@ if (!advanced_search_extra()) { ?>
                   <li><a class="dropdown-item" href="mailto: support@simplerisk.com" target="_blank"><i class="fas fa-envelope me-1 ms-1"></i><?= $escaper->escapeHtml($lang['EmailSupport']);?></a></li>
                 </ul>
               </li>
+              <!-- End of Help dropdown -->
+
+              <!-- Settings Hub cog (admin OR vm_configure OR im_configure) -->
+<?php
+    require_once(realpath(__DIR__ . '/includes/settings_catalog.php'));
+    if (user_can_access_settings_hub()):
+?>
+              <li class="nav-item">
+                <a class="nav-link waves-effect waves-dark"
+                   href="../admin/index.php"
+                   title="<?= $escaper->escapeHtmlAttr($lang['Settings']) ?>"
+                   aria-label="<?= $escaper->escapeHtmlAttr($lang['Settings']) ?>">
+                  <i class="font-24 fas fa-cog align-middle"></i>
+                </a>
+              </li>
+<?php endif; ?>
 
               <!-- Profile dropdown menu -->
               <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle waves-effect waves-dark" role="button" data-bs-toggle="dropdown"><i class="display-7 mdi mdi-account align-middle"></i></a>
+                <a class="nav-link dropdown-toggle waves-effect waves-dark"
+                   role="button"
+                   data-bs-toggle="dropdown"
+                   title="<?= $escaper->escapeHtmlAttr($lang['Profile']) ?>"
+                   aria-label="<?= $escaper->escapeHtmlAttr($lang['Profile']) ?>">
+                  <i class="display-7 mdi mdi-account align-middle"></i>
+                </a>
 		        <ul class="dropdown-menu dropdown-menu-end animated">
 			      <li><a class="dropdown-item" href="../account/profile.php"><i class="fa fa-user me-1 ms-1"></i> <?= $escaper->escapeHtml($lang['MyProfile']);?></a></li>
 <?php

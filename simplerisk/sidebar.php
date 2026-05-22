@@ -164,15 +164,6 @@ require_once(realpath(__DIR__ .'/header.php'));
                         </li>
     <?php
             }
-            if (check_permission("vm_configure")) {
-    ?>
-                        <li class="sidebar-item <?= ($active_sidebar_submenu =='Configure')?'active':''; ?>">
-                            <a href="../vulnerabilities/configure.php" class="sidebar-link ">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Configure']);?></span>
-                            </a>
-                        </li>
-    <?php
-            }
     ?>
                     </ul>
                 </li>
@@ -193,103 +184,37 @@ require_once(realpath(__DIR__ .'/header.php'));
             // If the user has asset management permissions
             if (check_permission("im_incidents")) {
     ?>
-                        <li class="sidebar-item <?= ($active_sidebar_submenu =='Incidents')?'active':''; ?>">
-                            <a href="javascript:void(0)" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Incidents']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item <?= ($active_sidebar_thirdmenu =='Preparation')?'active':''; ?>">
+                        <li class="sidebar-item <?= ($active_sidebar_submenu =='Preparation')?'active':''; ?>">
                             <a href="../incidents/index.php?menu=preparation" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['Preparation']);?></span>
+                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Preparation']);?></span>
                             </a>
                         </li>
-                        <li class="sidebar-item <?= ($active_sidebar_thirdmenu =='Identification')?'active':''; ?>">
+                        <li class="sidebar-item <?= ($active_sidebar_submenu =='Identification')?'active':''; ?>">
                             <a href="../incidents/index.php?menu=identification" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['Identification']);?></span>
+                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Identification']);?></span>
                             </a>
                         </li>
-                        <li class="sidebar-item <?= ($active_sidebar_thirdmenu =='Response')?'active':''; ?>">
+                        <li class="sidebar-item <?= ($active_sidebar_submenu =='Response')?'active':''; ?>">
                             <a href="../incidents/index.php?menu=response" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['Response']);?></span>
+                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Response']);?></span>
                             </a>
                         </li>
-                        <li class="sidebar-item <?= ($active_sidebar_thirdmenu =='LessonsLearned')?'active':''; ?>">
+                        <li class="sidebar-item <?= ($active_sidebar_submenu =='LessonsLearned')?'active':''; ?>">
                             <a href="../incidents/index.php?menu=lessonslearned" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['LessonsLearned']);?></span>
+                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['LessonsLearned']);?></span>
                             </a>
                         </li>
-                        <li class="sidebar-item <?= ($active_sidebar_thirdmenu =='Closed')?'active':''; ?>">
+                        <li class="sidebar-item <?= ($active_sidebar_submenu =='Closed')?'active':''; ?>">
                             <a href="../incidents/index.php?menu=closed" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['Closed']);?></span>
+                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Closed']);?></span>
                             </a>
                         </li>
     <?php
             }
-            // If the user has asset management permissions
-            if (check_permission("im_reporting")) {
-    ?>
-                        <li class="sidebar-item <?= ($active_sidebar_submenu =='Reporting')?'active':''; ?>">
-                            <a href="javascript:void(0)" class="sidebar-link ">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Reporting']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item <?= ($active_sidebar_thirdmenu =='Overview')?'active':''; ?>">
-                            <a href="../incidents/reporting.php?menu=overview" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['Overview']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item <?= ($active_sidebar_thirdmenu =='IM_Reporting_IncidentDashboard')?'active':''; ?>">
-                            <a href="../incidents/reporting.php?menu=incident_dashboard" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['IncidentDashboard']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item <?= ($active_sidebar_thirdmenu =='IncidentTrend')?'active':''; ?>">
-                            <a href="../incidents/reporting.php?menu=incident_trend" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['IncidentTrend']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item <?= ($active_sidebar_thirdmenu =='DynamicIncidentReport')?'active':''; ?>">
-                            <a href="../incidents/reporting.php?menu=dynamic_incident_report" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['DynamicIncidentReport']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item <?= ($active_sidebar_thirdmenu =='IM_Reporting_LessonsLearned')?'active':''; ?>">
-                            <a href="../incidents/reporting.php?menu=lessons_learned" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['LessonsLearned']);?></span>
-                            </a>
-                        </li>
-    <?php
-            }
-            // If the user has asset management permissions
-            if (check_permission("im_configure")) { 
-    ?>
-                        <li class="sidebar-item <?= ($active_sidebar_submenu =='IM_Configure')?'active':''; ?>">
-                            <a href="javascript:void(0)" class="sidebar-link ">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Configure']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item <?= ($active_sidebar_thirdmenu =='Settings')?'active':''; ?>">
-                            <a href="../incidents/configure.php?menu=settings" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['Settings']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item <?= ($active_sidebar_thirdmenu =='AddAndRemoveValues')?'active':''; ?>">
-                            <a href="../incidents/configure.php?menu=add_remove_values" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['AddAndRemoveValues']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item <?= ($active_sidebar_thirdmenu =='Playbooks')?'active':''; ?>">
-                            <a href="../incidents/configure.php?menu=playbooks" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['Playbooks']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item <?= ($active_sidebar_thirdmenu =='Notifications')?'active':''; ?>">
-                            <a data-bs-target="#" onclick="location.href='../admin/notification.php'" class="sidebar-link cursor-pointer">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['Notifications']);?></span>
-                            </a>
-                        </li>
-    <?php
-            }
+            // IM Configure has moved into the Settings Hub at /admin/index.php;
+            // the tile links to admin/incidentmanagement.php, which renders
+            // the Settings / Add and Remove Values / Playbooks / Notifications
+            // tabs inline.
     ?>
                     </ul>
                 </li>
@@ -383,369 +308,35 @@ require_once(realpath(__DIR__ .'/header.php'));
     ?>
                     </ul>
                 </li>
-                <li class="sidebar-item">
-                    <a class="sidebar-link has-arrow  waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
+<?php
+    // Reporting top-level menu — shown to users with any of the four
+    // module permissions. The two leaf links go to the Reports and
+    // Dashboards hubs which fetch the per-user-filtered catalog via
+    // GET /api/v2/reports/catalog and render tiles client-side.
+    if (!empty($_SESSION['riskmanagement']) || !empty($_SESSION['compliance']) ||
+        !empty($_SESSION['governance']) || !empty($_SESSION['asset']) ||
+        (incident_management_extra() && !empty($_SESSION['im_reporting']))) {
+?>
+                <li class="sidebar-item <?= ($active_sidebar_menu == 'Reporting') ? 'selected' : ''; ?>">
+                    <a class="sidebar-link has-arrow waves-effect waves-dark <?= ($active_sidebar_menu == 'Reporting') ? 'active' : ''; ?>" href="javascript:void(0)" aria-expanded="false">
                         <span class="hide-menu"><?= $escaper->escapeHtml($lang['Reporting']);?></span>
                     </a>
-                    <ul aria-expanded="false" class="collapse first-level">
-                        <li class="sidebar-item <?= ($active_sidebar_submenu =='Reporting_RiskManagement')?'active':''; ?>">
-                            <a href="javascript:void(0)" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['RiskManagement']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
+                    <ul aria-expanded="false" class="collapse first-level <?= ($active_sidebar_menu == 'Reporting') ? 'in' : ''; ?>">
+                        <li class="sidebar-item <?= ($active_sidebar_submenu == 'Reporting_Reports') ? 'active' : ''; ?>">
                             <a href="../reports/index.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['Overview']);?></span>
+                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Reports']);?></span>
                             </a>
                         </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/dashboard.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['RiskDashboard']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/risk_appetite.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['RiskAppetiteReport']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/trend.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['RiskTrend']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/dynamic_risk_report.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['DynamicRiskReport']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/graphical_risk_analysis.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['GraphicalRiskAnalysis']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/connectivity_visualizer.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['ConnectivityVisualizer']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/risk_average_baseline_metric.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['RiskAverageOverTime']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/mean_time_to_remediate.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['MeanTimeToRemediate']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/likelihood_impact.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['LikelihoodImpact']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/riskadvice.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['RiskAdvice']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/risks_and_assets.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['RisksAndAssets']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/risks_and_controls.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['RisksAndControls']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/risks_and_issues.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['RisksAndIssues']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/my_open.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['AllOpenRisksAssignedToMeByRiskLevel']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/review_needed.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['AllOpenRisksNeedingReview']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/risks_open_by_team.php?id=true&risk_status=true&subject=true&calculated_risk=true&submission_date=true&team=true&mitigation_planned=true&management_review=true&owner=true&manager=true" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['AllOpenRisksByTeamByLevel']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/high.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['HighRiskReport']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/submitted_by_date.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['SubmittedRisksByDate']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/mitigations_by_date.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['MitigationsByDate']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/mgmt_reviews_by_date.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['ManagementReviewsByDate']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/closed_by_date.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['ClosedRisksByDate']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/recent_commented.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['CurrentRiskComments']);?></span>
-                            </a>
-                        </li>
-    <?php
-        if(!empty($_SESSION['compliance'])) { 
-    ?>
-                        <li class="sidebar-item <?= ($active_sidebar_submenu =='Reporting_Compliance')?'active':''; ?>">
-                            <a href="javascript:void(0)" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Compliance']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/compliance_dashboard.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['ComplianceDashboard']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/dynamic_audit_report.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['DynamicAuditReport']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/audit_timeline.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['AuditTimeline']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/audit_remediation_cycle_time.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['AuditRemediationCycleTime']);?></span>
-                            </a>
-                        </li>
-    <?php
-        }
-        if(!empty($_SESSION['governance']))
-        { 
-    ?>
-                        <li class="sidebar-item <?= ($active_sidebar_submenu =='Reporting_Governance')?'active':''; ?>">
-                            <a href="javascript:void(0)" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Governance']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/governance_dashboard.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['GovernanceDashboard']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/control_gap_analysis.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['ControlGapAnalysis']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/documents_to_controls.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['DocumentControlMapping']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/assets_and_controls.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['AssetsAndControls']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/document_program_report.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['DocumentProgramReport']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../reports/exception_report.php" class="sidebar-link">
-                                <span class="hide-menu ps-4"><?= $escaper->escapeHtml($lang['ExceptionReport']);?></span>
-                            </a>
-                        </li>
-    <?php
-        }
-    ?>
-                    </ul>
-                </li>
-                <li class="sidebar-item <?= ($active_sidebar_menu =="Configure")?'selected':''; ?>">
-    <?php
-        // If the user is logged in as an administrator
-        if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1") { 
-    ?>
-                    <a class="sidebar-link has-arrow waves-effect waves-dark <?= ($active_sidebar_menu =="Configure")?'active':''; ?>" href="javascript:void(0)" aria-expanded="false">
-                        <span class="hide-menu">Configure</span>
-                    </a>
-    <?php 
-        }
-    ?>
-                    <ul aria-expanded="false" class="collapse first-level <?= ($active_sidebar_menu =='Configure')?'in':''; ?>">
-    <?php
-        if (getTypeOfColumn('mgmt_reviews', 'next_review') == 'varchar') { 
-    ?>
-                        <li class="sidebar-item">
-                            <a href="../admin/fix_review_dates.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['FixReviewDates']);?></span>
-                            </a>
-                        </li>
-    <?php
-        }
-        if (has_files_with_encoding_issues()) { 
-    ?>
-                        <li class="sidebar-item">
-                            <a href="../admin/fix_upload_encoding_issues.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['FixFileEncodingIssues']);?></span>
-                            </a>
-                        </li>
-    <?php
-        }
-    ?>
-                        <li class="sidebar-item">
-                            <a href="../admin/index.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Settings']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../admin/content.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Content']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../admin/risk_catalog.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['RiskAndThreatCatalog']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../admin/configure_risk_formula.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['ConfigureRiskFormula']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../admin/review_settings.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['ConfigureReviewSettings']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../admin/add_remove_values.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['AddAndRemoveValues']);?></span>
-                            </a>
-                        </li>
-    <?php
-        if (organizational_hierarchy_extra()) { 
-    ?>
-                        <li class="sidebar-item">
-                            <a href="../admin/organizational_hierarchy.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['OrganizationManagement']);?></span>
-                            </a>
-                        </li>
-    <?php
-        }
-    ?>
-                        <li class="sidebar-item">
-                            <a href="../admin/role_management.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['RoleManagement']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item <?= ($active_sidebar_submenu == 'UserManagement')?'active':''; ?>">
-                            <a href="../admin/user_management.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['UserManagement']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../admin/team_management.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['TeamManagement']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../admin/custom_names.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['RedefineNamingConventions']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../admin/assetvaluation.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['AssetValuation']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../admin/delete_risks.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['DeleteRisks']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item <?= ($active_sidebar_submenu =='AuditTrail')?'active':''; ?>">
-                            <a href="../admin/audit_trail.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['AuditTrail']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item <?= ($active_sidebar_submenu =='QueueMonitor')?'active':''; ?>">
-                            <a href="../admin/queue_monitor.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['QueueMonitor']);?></span>
-                            </a>
-                        </li>
-    <?php
-        if (import_export_extra()) { 
-    ?>
-                        <li class="sidebar-item">
-                            <a href="../admin/importexport.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['ImportExport']);?></span>
-                            </a>
-                        </li>
-    <?php
-        }
-        if (assessments_extra()) { 
-    ?>
-                        <li class="sidebar-item">
-                            <a href="../admin/active_assessments.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['ActiveAssessments']);?></span>
-                            </a>
-                        </li>
-    <?php
-        }
-    ?>
-                        <li class="sidebar-item  <?= ($active_sidebar_submenu == 'ArtificialIntelligence')?'active':''; ?>">
-                            <a href="../admin/artificial_intelligence.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['ArtificialIntelligence']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item  <?= ($active_sidebar_submenu == 'Extras')?'active':''; ?>">
-                            <a href="../admin/extras.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Extras']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../admin/announcements.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Announcements']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../admin/register.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['RegisterAndUpgrade']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../admin/health_check.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['HealthCheck']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../admin/about.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['About']);?></span>
+                        <li class="sidebar-item <?= ($active_sidebar_submenu == 'Reporting_Dashboards') ? 'active' : ''; ?>">
+                            <a href="../reports/dashboards.php" class="sidebar-link">
+                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Dashboards']);?></span>
                             </a>
                         </li>
                     </ul>
                 </li>
+<?php
+    }
+?>
             </ul>
         </nav>
         <!-- End Sidebar navigation -->
@@ -754,6 +345,26 @@ require_once(realpath(__DIR__ .'/header.php'));
 </aside>
 <!-- End Left Sidebar - style you can find in sidebar.scss  -->
 
+<?php
+    // Detect whether the current page is a Settings Hub destination so the
+    // breadcrumb can show "Settings > <tile>" (and link back to the Hub).
+    // The helper is decoupled from rendering: it returns label keys; this
+    // file resolves them through $lang before emitting them.
+    require_once(realpath(__DIR__ . '/includes/settings_catalog.php'));
+    $hub_current_script = $_SERVER['SCRIPT_NAME'] ?? '';
+    $hub_current_menu   = isset($_GET['menu']) ? (string)$_GET['menu'] : null;
+    $hub_breadcrumb     = find_settings_hub_breadcrumb($hub_current_script, $hub_current_menu);
+
+    // Settings Hub destinations get the page title + breadcrumb populated
+    // automatically from the catalog: if the destination admin page didn't
+    // pass a $breadcrumb_title_key (many older admin pages don't), use the
+    // matched catalog tile's leaf label as the H4 page title. The
+    // right-aligned "Settings > Tile Name" breadcrumb is then triggered
+    // by the existing !empty($breadcrumb_title_key) gate below.
+    if ($hub_breadcrumb !== null && empty($breadcrumb_title_key)) {
+        $breadcrumb_title_key = $hub_breadcrumb['leaf_label'];
+    }
+?>
 <!-- ============================================================== -->
 <!-- Page wrapper  -->
 <div class="page-wrapper">
@@ -784,7 +395,33 @@ require_once(realpath(__DIR__ .'/header.php'));
                         </h4>
     <?php
         if (!empty($breadcrumb_title_key)) {
-            if (!empty($active_sidebar_menu) && !empty($active_sidebar_submenu)) {
+            if ($hub_breadcrumb !== null) {
+                // Configure Hub destination — render "Settings > [Sub-hub heading >] Tile Name".
+                // The first segment always links to /admin/index.php; for IM sub-hub
+                // destinations, the middle segment links to the bookmarkable
+                // ?section=incident_management URL.
+    ?>
+                        <div class="ms-auto text-end">
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item">
+                                        <a href="../admin/index.php"><?= $escaper->escapeHtml($lang['Settings']) ?></a>
+                                    </li>
+    <?php           if (isset($hub_breadcrumb['sub_hub'])): ?>
+                                    <li class="breadcrumb-item">
+                                        <a href="<?= $escaper->escapeHtmlAttr('../admin/index.php?section=' . $hub_breadcrumb['sub_hub']['section_key']) ?>">
+                                            <?= $escaper->escapeHtml($lang[$hub_breadcrumb['sub_hub']['heading_lang_key']] ?? $hub_breadcrumb['sub_hub']['heading_lang_key']) ?>
+                                        </a>
+                                    </li>
+    <?php           endif; ?>
+                                    <li class="breadcrumb-item active" aria-current="page">
+                                        <?= $escaper->escapeHtml($lang[$hub_breadcrumb['leaf_label']] ?? $hub_breadcrumb['leaf_label']) ?>
+                                    </li>
+                                </ol>
+                            </nav>
+                        </div>
+    <?php
+            } elseif (!empty($active_sidebar_menu) && !empty($active_sidebar_submenu)) {
     ?>
                         <div class="ms-auto text-end">
                             <nav aria-label="breadcrumb">

@@ -327,6 +327,8 @@ class AIClient {
             // 429 Rate Limited / 529 Overloaded — retry with Retry-After or exponential backoff
             if ($http_status === 429 || $http_status === 529) {
                 $retry_after = isset($response_headers['retry-after']) ? (int)$response_headers['retry-after'] : null;
+                // Exponential backoff: 2**0=1, 2**1=2, 2**2=4, ... — first retry uses $baseDelay unchanged
+                // @phan-suppress-next-line PhanPowerOfZero
                 $delay       = $retry_after ?? ($baseDelay * (2 ** $retries));
                 write_debug_log("Anthropic API {$http_status}: waiting {$delay}s before retry " . ($retries + 1) . "/{$maxRetries}.", 'warning');
                 sleep($delay);
@@ -655,6 +657,8 @@ class AIClient {
             // 429 Rate Limited / 503 Overloaded — retry with Retry-After or exponential backoff
             if ($http_status === 429 || $http_status === 503) {
                 $retry_after = isset($response_headers['retry-after']) ? (int)$response_headers['retry-after'] : null;
+                // Exponential backoff: 2**0=1, 2**1=2, 2**2=4, ... — first retry uses $baseDelay unchanged
+                // @phan-suppress-next-line PhanPowerOfZero
                 $delay       = $retry_after ?? ($baseDelay * (2 ** $retries));
                 write_debug_log("OpenAI-compatible API {$http_status}: waiting {$delay}s before retry " . ($retries + 1) . "/{$maxRetries}.", 'warning');
                 sleep($delay);
@@ -793,6 +797,8 @@ function display_ai_provider_configuration()
     }
 
     // ── Read current settings (skipped above if test connection was run) ───
+    $key_from_post    = false;
+    $current_api_key  = '';
     if (!isset($current_provider))
     {
         $current_provider = get_setting('ai_provider', false, false) ?: 'anthropic';
@@ -1004,6 +1010,102 @@ function display_ai_provider_configuration()
         });
     })();
     </script>";
+}
+
+/******************************************************
+ * FUNCTION: PROCESS AND DISPLAY AI CONTEXT QUESTIONS *
+ ******************************************************/
+/**
+ * Render the AI Context Questions form. Handles the POST processing
+ * (save_ai_context) including the ai_context_last_saved timestamp and
+ * the queue_ai_risk_analysis re-queue when the AI Extra is active.
+ *
+ * Calling context: admin/ai_provider.php (Core tile) and
+ * admin/artificial_intelligence.php (AI Extra tile). Both pages
+ * delegate the entire Context Questions tab content to this helper.
+ *
+ * No longer gated on get_setting('ai_api_key') being set — admins can
+ * answer the context questions before configuring a provider.
+ */
+/******************************************************
+ * FUNCTION: AI PROVIDER IS CONFIGURED                *
+ ******************************************************/
+/**
+ * Returns true when an AI provider is configured well enough to make
+ * live calls — currently, that the ai_api_key setting is non-empty.
+ * Used by the Context Questions and AI Extra Settings tabs to decide
+ * whether to surface a "not configured" warning.
+ */
+function ai_provider_is_configured(): bool
+{
+    return (bool) get_setting('ai_api_key');
+}
+
+/******************************************************
+ * FUNCTION: DISPLAY AI PROVIDER NOT CONFIGURED WARNING *
+ ******************************************************/
+/**
+ * Render a non-blocking warning that the AI provider isn't configured.
+ * Both pages (admin/artificial_intelligence_core.php and the AI Extra's
+ * admin/artificial_intelligence.php) call this from the Context
+ * Questions and Settings tabs.
+ */
+function display_ai_provider_not_configured_warning(): void
+{
+    global $escaper, $lang;
+    echo "
+        <div class='alert alert-warning my-2' role='alert'>
+            " . $escaper->escapeHtml($lang['AIProviderNotConfiguredWarning']) . "
+        </div>";
+}
+
+function process_and_display_ai_context_questions(): void
+{
+    // Surface a warning when the provider isn't configured. Questions
+    // are still answerable — the warning just communicates that the
+    // answers won't ground any live AI calls until a provider + key
+    // are set up on the Provider Configuration tab.
+    if (!ai_provider_is_configured()) {
+        display_ai_provider_not_configured_warning();
+    }
+
+    // Process the added/updated context
+    $parameter_array = get_artificial_intelligence_context_parameter_array();
+    $settings_prefix = "ai_context_";
+    $parameter_array = update_posted_settings_values($parameter_array, $settings_prefix);
+
+    // If this was a POST to update the AI context
+    if (isset($_POST['save_ai_context']))
+    {
+        // Update a setting for the last time this prefix was updated
+        $setting_name = $settings_prefix . "last_saved";
+        update_setting($setting_name, time());
+
+        // If the AI extra is enabled, re-queue analysis for all existing risks
+        // so their recommendations are regenerated against the updated context.
+        // queue_ai_risk_analysis() handles deduplication — skips risks already pending/in_progress.
+        if (function_exists('artificial_intelligence_extra') && artificial_intelligence_extra())
+        {
+            // Ensure queue_ai_risk_analysis() (defined in the AI Extra's
+            // index.php) is loaded. The admin/artificial_intelligence.php
+            // caller already requires it; admin/ai_provider.php (Core) does
+            // not, so include it here when the directory exists.
+            $ai_extra_index = realpath(__DIR__ . '/../extras/artificial_intelligence/index.php');
+            if ($ai_extra_index !== false) {
+                require_once($ai_extra_index);
+            }
+            $db = db_open();
+            $stmt = $db->query("SELECT id + 1000 AS risk_id FROM `risks`");
+            $risk_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            foreach ($risk_ids as $risk_id) {
+                queue_ai_risk_analysis((int)$risk_id, $db);
+            }
+            db_close($db);
+        }
+    }
+
+    // Render the form
+    display_artificial_intelligence_add_context($parameter_array);
 }
 
 /*********************************************************
@@ -2105,6 +2207,8 @@ function generate_ai_business_context()
  ***********************************************/
 function ai_get_recommendations($context_content)
 {
+    $messages = [];
+
     // Create the content asking for advice
     $content = "The organization you have been hired to assist has been asked a series of questions to determine which frameworks are relevant for their GRC program.  What follows is a list of questions they were asked and the answers that they provided.\n";
 
@@ -2307,29 +2411,36 @@ function process_artificial_intelligence_document_to_control_matching_task($db, 
     }
 
     $document_id = $payload['document_id'];
+    // @phan-suppress-next-line PhanParamTooFew,PhanTypeMismatchArgument -- create_promise() WIP: $stages param and $db param to be wired up
     $promise_id = create_promise('ai_document_enhance', $document_id, $payload);
+    // @phan-suppress-next-line PhanUndeclaredFunction -- update_promise_status() not yet implemented in promises.php
     update_promise_status($promise_id, 'running');
 
     try {
         $result = ai_document_enhance($document_id, false);
 
         if ($result['status_code'] == 200) {
+            // @phan-suppress-next-line PhanUndeclaredFunction -- update_promise_status() not yet implemented
             update_promise_status($promise_id, 'completed', $result);
             $db->prepare("UPDATE queue_tasks SET status='completed', updated_at=NOW() WHERE id=?")
                 ->execute([$task['id']]);
             write_debug_log("Document ID {$document_id} enhanced successfully.", "info");
         } else {
+            // @phan-suppress-next-line PhanUndeclaredFunction -- increment_promise_attempts() not yet implemented
             increment_promise_attempts($promise_id);
+            // @phan-suppress-next-line PhanUndeclaredFunction -- update_promise_status() not yet implemented
             update_promise_status($promise_id, 'failed', $result);
             $db->prepare("
-                UPDATE queue_tasks 
-                SET status='failed', attempts=attempts+1, updated_at=NOW() 
+                UPDATE queue_tasks
+                SET status='failed', attempts=attempts+1, updated_at=NOW()
                 WHERE id=?
             ")->execute([$task['id']]);
             write_debug_log("Error processing document ID {$document_id}: {$result['status_message']}", "warning");
         }
     } catch (Exception $e) {
+        // @phan-suppress-next-line PhanUndeclaredFunction -- increment_promise_attempts() not yet implemented
         increment_promise_attempts($promise_id);
+        // @phan-suppress-next-line PhanUndeclaredFunction -- update_promise_status() not yet implemented
         update_promise_status($promise_id, 'failed', ['error' => $e->getMessage()]);
         $db->prepare("
             UPDATE queue_tasks 

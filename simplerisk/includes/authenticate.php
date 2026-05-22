@@ -5,11 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required configuration files
-require_once(realpath(__DIR__ . '/config.php'));
+require_once(realpath(__DIR__ . '/bootstrap.php'));
 require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/messages.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
 require_once(realpath(__DIR__ . '/permissions.php'));
+require_once(realpath(__DIR__ . '/extras.php'));
 
 /*******************************
  * FUNCTION: OLD GENERATE SALT *
@@ -132,6 +133,55 @@ function get_user_type($user, $upgrade = false)
     return $type;
 }
 
+/****************************************
+ * FUNCTION: LOG USER DNE REASON         *
+ ****************************************
+ * get_user_type() collapses four distinct conditions to "DNE" — no matching row, enabled=0,
+ * lockout=1, or an unrecognized type — which left administrators reading the logs unable to
+ * tell a typo apart from a locked-out account. This helper re-queries the user row without
+ * those filters so a specific log line can be emitted for each cause. Called only from
+ * is_valid_user when the get_user_type() result is DNE.
+ ****************************************/
+function log_user_dne_reason($user)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // If strict user validation is disabled
+    if (get_setting('strict_user_validation') == 0)
+    {
+        $stmt = $db->prepare("SELECT enabled, lockout, type FROM user WHERE LOWER(convert(`username` using utf8)) = LOWER(:user)");
+    }
+    else
+    {
+        $stmt = $db->prepare("SELECT enabled, lockout, type FROM user WHERE username = :user");
+    }
+
+    $stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    if (!$row)
+    {
+        write_debug_log("Login failed: no user record matched username \"" . $user . "\".", 'info');
+    }
+    elseif ((int)$row['enabled'] !== 1)
+    {
+        write_debug_log("Login failed: user \"" . $user . "\" is disabled.", 'info');
+    }
+    elseif ((int)$row['lockout'] === 1)
+    {
+        write_debug_log("Login failed: user \"" . $user . "\" is locked out.", 'info');
+    }
+    elseif (!in_array($row['type'], array('simplerisk', 'ldap', 'saml'), true))
+    {
+        write_debug_log("Login failed: user \"" . $user . "\" has an unrecognized type \"" . $row['type'] . "\".", 'error');
+    }
+}
+
 /***************************
  * FUNCTION: IS VALID USER *
  ***************************
@@ -153,8 +203,7 @@ function is_valid_user($user, $pass, $upgrade = false)
     // If the user does not exist
     if ($type == "DNE")
     {
-        // Write the debug log
-        write_debug_log("Not a valid user in SimpleRisk.", 'warning');
+        log_user_dne_reason($user);
 
         // If we should automatically add new users with a default role
         if (get_setting('AUTHENTICATION_ADD_NEW_USERS') == 1)
@@ -230,15 +279,14 @@ function is_valid_user($user, $pass, $upgrade = false)
     // If the type is saml
     else if ($type == "saml")
     {
-        // If custom authentication is enabled
-        if (custom_authentication_extra())
-        {
-            // Include the custom authentication extra
-            require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
-
-            // Check for a valid SAML user
-            $valid_saml = is_valid_saml_user($user);
-        }
+        // Check for a valid SAML user (returns false if custom authentication extra is disabled)
+        $valid_saml = call_extra_function(
+            'custom_authentication_extra',
+            __DIR__ . '/../extras/authentication/index.php',
+            'is_valid_saml_user',
+            [$user],
+            false
+        );
     }
 
     // If either the SAML, AD, or SimpleRisk user are valid
@@ -272,10 +320,11 @@ function set_user_permissions($user, $upgrade = false)
         $user = $stmt->fetchColumn();
     }
 
+    $organizational_hierarchy_extra = false;
+
     // If we are not doing an upgrade
     if (!$upgrade)
     {
-        
         $organizational_hierarchy_extra = organizational_hierarchy_extra();
         
         $user_query_sql = "
@@ -327,7 +376,9 @@ function set_user_permissions($user, $upgrade = false)
     set_simplerisk_timezone();
 
     // Set the minimal session values
-    $_SESSION['uid'] = $array[0]['value'];
+    // Cast to int: PDO returns MySQL ints as strings, and kill_sessions_of_user()
+    // depends on the uid|i:N; PHP serialization format to locate sessions by REGEXP.
+    $_SESSION['uid'] = (int)$array[0]['value'];
     $_SESSION['user'] = $user;
     $_SESSION['name'] = $array[0]['name'];
     $_SESSION['admin'] = $array[0]['admin'];
@@ -979,7 +1030,7 @@ function add_session_check($permissions = [])
 		write_debug_log("A session is not currently started and active.", "debug");
 
 		// If we are using the database for sessions
-		if (USE_DATABASE_FOR_SESSIONS == "true")
+		if (use_database_for_sessions())
 		{
 			write_debug_log("We are using the database for sessions.", "debug");
 
@@ -1070,6 +1121,25 @@ function add_session_check($permissions = [])
 					write_debug_log("Risk management permission is required.", "debug");
 					enforce_permission("riskmanagement");
                     break;
+                case "check_any_of":
+					// OR semantics: pass an array of permission tokens.
+					// Authorization succeeds if the caller holds any one of them.
+					$authorized = false;
+					if (is_array($value)) {
+						foreach ($value as $any_perm) {
+							if (check_permission($any_perm)) {
+								$authorized = true;
+								break;
+							}
+						}
+					}
+					if (!$authorized) {
+						$any_list = is_array($value) ? implode(', ', $value) : '(invalid value)';
+						write_debug_log("User does not have any of the required permissions: {$any_list}. Redirecting to login.", "info");
+						header("Location: ../index.php");
+						exit(0);
+					}
+                    break;
 				case "check_im":
 					write_debug_log("Incident Management Incidents permission is required.", "debug");
 					enforce_permission("im_incidents");
@@ -1096,6 +1166,28 @@ function add_session_check($permissions = [])
                     break;
 			}
 		}
+	}
+
+	// Capture the current page URL as the user's most recent legitimate
+	// landing point. redirect_permission_denied() reads this back when a
+	// later permission check fails, so the user is bounced to where they
+	// came from with a toast rather than to a generic dashboard.
+	//
+	// Skip:
+	//   - non-GET requests (POST handlers shouldn't anchor navigation)
+	//   - pages that opted out via 'is_action' => true (file downloads,
+	//     POST/AJAX action handlers, and pages with a secondary check
+	//     that may itself redirect — those would loop back to themselves)
+	//
+	// Source the URL from SCRIPT_FILENAME + http_build_query($_GET) via
+	// get_encoded_request_uri() so the stored value is server-derived
+	// rather than reflected from request input.
+	if (
+		isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'GET'
+		&& empty($permissions['is_action'])
+	) {
+		$base_url = !empty($_SESSION['base_url']) ? $_SESSION['base_url'] : get_base_url();
+		$_SESSION['workflow_start'] = rtrim($base_url, '/') . get_encoded_request_uri();
 	}
 }
 
@@ -1660,15 +1752,13 @@ function login($user, $pass)
     // If no multi factor authentication is enabled for the user
     if ($multi_factor == 0)
     {
-        // If the encryption extra is enabled
-        if (encryption_extra())
-        {
-            // Load the extra
-            require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-
-            // Check user enc
-            check_user_enc($user, $pass);
-        }
+        // Check user enc (no-op if encryption extra is disabled)
+        call_extra_function(
+            'encryption_extra',
+            __DIR__ . '/../extras/encryption/index.php',
+            'check_user_enc',
+            [$user, $pass]
+        );
 
         // Grant the user access
         grant_access();

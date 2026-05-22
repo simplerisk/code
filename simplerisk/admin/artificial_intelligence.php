@@ -7,7 +7,11 @@
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/artificial_intelligence.php'));
-render_header_and_sidebar(['multiselect'], ['check_admin' => true]);
+render_header_and_sidebar(
+    ['multiselect', 'tabs:logic'],
+    ['check_admin' => true],
+    'ArtificialIntelligenceExtra', 'Configure', 'Extras'
+);
 
 // Include the language file
 require_once(language_file());
@@ -36,107 +40,82 @@ if (is_dir(realpath(__DIR__ . '/../extras/artificial_intelligence')))
     if (isset($_POST['update_artificial_intelligence_settings']))
     {
         // Update the artificial intelligence settings
-        update_artificial_intelligence_settings();
+        artificial_intelligence_process_settings();
     }
 }
 
 /*********************
  * FUNCTION: DISPLAY *
  *********************/
+// @phan-suppress-next-line PhanRedefineFunction -- each admin page defines its own display() entry point
 function display($display = "")
 {
     global $lang;
     global $escaper;
 
-    // If the extra directory exists
-    if (is_dir(realpath(__DIR__ . '/../extras/artificial_intelligence')))
-    {
-        // But the extra is not activated
-        if (!artificial_intelligence_extra())
-        {
-            echo "<div class='card-body my-2 border'>";
-            // If the extra is not restricted based on the install type
-            if (!restricted_extra("artificial_intelligence"))
-            {
-                echo "
-                    <form id='activate_extra' name='activate' method='post' action=''>
-                        <input type='submit' value='" . $escaper->escapeHtml($lang['Activate']) . "' name='activate' class='btn btn-submit'/>
-                    </form>";
-            }
-            // The extra is restricted
-            else echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
-            echo "</div>";
-        }
-        // Once it has been activated
-        else
-        {
-            // Include the Notification Extra
-            require_once(realpath(__DIR__ . '/../extras/artificial_intelligence/index.php'));
-
-            display_artificial_intelligence();
-        }
-    }
-    // Otherwise, the Extra does not exist
-    else
+    // If the extra directory does not exist, point to the purchase page.
+    if (!is_dir(realpath(__DIR__ . '/../extras/artificial_intelligence')))
     {
         echo "
             <div class='card-body my-2 border'>
-                <a href='https://www.simplerisk.com/extras' target='_blank' class='text-info'>Purchase the Extra</a>
+                <a href='https://www.simplerisk.com/extras' target='_blank' class='text-info'>" . $escaper->escapeHtml($lang['PurchaseTheExtra']) . "</a>
             </div>";
+        return;
     }
+
+    // Inactive — render activation form (or restricted-extra message).
+    // The Configure Hub's activation-modal flow is the primary path; this
+    // form remains as the fallback for direct-URL visitors.
+    if (!artificial_intelligence_extra())
+    {
+        echo "<div class='card-body my-2 border'>";
+        if (!restricted_extra("artificial_intelligence"))
+        {
+            echo "
+                <form id='activate_extra' name='activate' method='post' action=''>
+                    <input type='submit' value='" . $escaper->escapeHtml($lang['Activate']) . "' name='activate' class='btn btn-submit'/>
+                </form>";
+        }
+        else echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
+        echo "</div>";
+        return;
+    }
+
+    // Active — render the activated-status header (with deactivate button)
+    // above the three tabs: Provider Configuration, Context Questions, Settings.
+    require_once(realpath(__DIR__ . '/../extras/artificial_intelligence/index.php'));
+    display_artificial_intelligence();
+?>
+    <div class="card-body my-2 border">
+        <nav class="nav nav-tabs">
+            <a data-bs-target="#provider-tab-pane" data-bs-toggle="tab" class="nav-link active"><?= $escaper->escapeHtml($lang['ProviderConfiguration']) ?></a>
+            <a data-bs-target="#context-tab-pane" data-bs-toggle="tab" class="nav-link"><?= $escaper->escapeHtml($lang['ContextQuestions']) ?></a>
+            <a data-bs-target="#settings-tab-pane" data-bs-toggle="tab" class="nav-link"><?= $escaper->escapeHtml($lang['Settings']) ?></a>
+        </nav>
+        <div class="tab-content my-2">
+            <div id="provider-tab-pane" class="tab-pane active" role="tabpanel">
+                <?php display_ai_provider_configuration(); ?>
+            </div>
+            <div id="context-tab-pane" class="tab-pane" role="tabpanel">
+                <?php process_and_display_ai_context_questions(); ?>
+            </div>
+            <div id="settings-tab-pane" class="tab-pane" role="tabpanel">
+                <?php
+                    // Surface the same provider-not-configured warning the Context tab uses.
+                    if (!ai_provider_is_configured()) {
+                        display_ai_provider_not_configured_warning();
+                    }
+                    display_artificial_intelligence_settings();
+                ?>
+            </div>
+        </div>
+    </div>
+<?php
 }
 ?>
-<div class="row bg-white"> 
+<div class="row bg-white">
     <div class="col-12">
         <?php display(); ?>
-
-        <div class='card-body my-2 border'>
-            <?php display_ai_provider_configuration() ?>
-        </div>
-
-<?php
-
-    // And the AI extra is  activated
-    if (artificial_intelligence_extra())
-    {
-            // Display the artificial intelligence settings
-            display_artificial_intelligence_settings();
-    }
-
-    // If we have an AI API key configured
-    if (get_setting("ai_api_key") != false)
-    {
-        // Process the added/updated context
-        $parameter_array = get_artificial_intelligence_context_parameter_array();
-        $settings_prefix = "ai_context_";
-        $parameter_array = update_posted_settings_values($parameter_array, $settings_prefix);
-
-        // If this was a POST to update the AI context
-        if (isset($_POST['save_ai_context']))
-        {
-            // Update a setting for the last time this prefix was updated
-            $setting_name = $settings_prefix . "last_saved";
-            update_setting($setting_name, time());
-
-            // If the AI extra is enabled, re-queue analysis for all existing risks
-            // so their recommendations are regenerated against the updated context.
-            // queue_ai_risk_analysis() handles deduplication — skips risks already pending/in_progress.
-            if (artificial_intelligence_extra())
-            {
-                $db = db_open();
-                $stmt = $db->query("SELECT id + 1000 AS risk_id FROM `risks`");
-                $risk_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
-                foreach ($risk_ids as $risk_id) {
-                    queue_ai_risk_analysis((int)$risk_id, $db);
-                }
-                db_close($db);
-            }
-        }
-
-        // Provide the user with the ability to add context
-        display_artificial_intelligence_add_context($parameter_array);
-    }
-?>
     </div>
     <script>
         <?php prevent_form_double_submit_script(['activate_extra', 'deactivate_extra']); ?>

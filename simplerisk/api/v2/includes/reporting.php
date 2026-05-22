@@ -7,6 +7,7 @@
 require_once(realpath(__DIR__ . '/api.php'));
 require_once(realpath( __DIR__ . '/../../../includes/reporting.php'));
 require_once(realpath(__DIR__ . '/../../../includes/functions.php'));
+require_once(realpath(__DIR__ . '/../../../includes/extras.php'));
 
 require_once(language_file());
 
@@ -78,15 +79,14 @@ function api_v2_reports_risk_average()
         $stmt->execute();
         $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // If team separation is enabled
-        if (team_separation_extra())
-        {
-            //Include the team separation extra
-            require_once(realpath(__DIR__ . '/../../../extras/separation/index.php'));
-
-            // Strip out risks the user should not have access to
-            $array = strip_no_access_risks($array);
-        }
+        // Strip out risks the user should not have access to (no-op when team separation extra is disabled)
+        $array = call_extra_function(
+            'team_separation_extra',
+            __DIR__ . '/../../../extras/separation/index.php',
+            'strip_no_access_risks',
+            [$array],
+            $array
+        );
     }
     // If we did not receive a risk id
     else
@@ -110,15 +110,14 @@ function api_v2_reports_risk_average()
         $stmt->execute();
         $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // If team separation is enabled
-        if (team_separation_extra())
-        {
-            //Include the team separation extra
-            require_once(realpath(__DIR__ . '/../../../extras/separation/index.php'));
-
-            // Strip out risks the user should not have access to
-            $array = strip_no_access_risks($array);
-        }
+        // Strip out risks the user should not have access to (no-op when team separation extra is disabled)
+        $array = call_extra_function(
+            'team_separation_extra',
+            __DIR__ . '/../../../extras/separation/index.php',
+            'strip_no_access_risks',
+            [$array],
+            $array
+        );
     }
 
     // Close the database connection
@@ -144,6 +143,7 @@ function api_v2_reports_risk_average()
         $risk_ids = [];
         $risk_scores = [];
         $dates = [];
+        $averages = [];
         $total = 0;
         $selected_last_update = null;
         $array_index = -1;
@@ -168,6 +168,7 @@ function api_v2_reports_risk_average()
             if ($found !== false)
             {
                 // Get the current calculated risk value at the index
+                // @phan-suppress-next-line PhanTypeInvalidDimOffset
                 $current_calculated_risk = $risk_scores[$found];
 
                 // Subtract it from the total
@@ -299,15 +300,14 @@ function api_v2_reports_risk_open_count()
     $stmt->execute();
     $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // If team separation is enabled
-    if (team_separation_extra())
-    {
-        //Include the team separation extra
-        require_once(realpath(__DIR__ . '/../../../extras/separation/index.php'));
-
-        // Strip out risks the user should not have access to
-        $array = strip_no_access_risks($array);
-    }
+    // Strip out risks the user should not have access to (no-op when team separation extra is disabled)
+    $array = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../../../extras/separation/index.php',
+        'strip_no_access_risks',
+        [$array],
+        $array
+    );
 
     // Close the database connection
     db_close($db);
@@ -338,6 +338,8 @@ function api_v2_reports_risk_open_count()
         $array_index = -1;
         $dates = [];
         $counts = [];
+        $labels = [];
+        $data = [];
 
         // For each audit log entry
         foreach ($array as $log)

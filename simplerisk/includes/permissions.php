@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required configuration files
-require_once(realpath(__DIR__ . '/config.php'));
+require_once(realpath(__DIR__ . '/bootstrap.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
 
 // Include the language file
@@ -13,6 +13,7 @@ require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 if (!function_exists('table_exists')) {
+    // @phan-suppress-next-line PhanRedefineFunction -- guarded by function_exists() check above; alternate definition in includes/functions.php
     function table_exists($table) {
         
         // Open the database connection
@@ -533,7 +534,7 @@ function add_new_permissions($permission_groups_and_permissions)
 
 		// Write audit log
 		$message = "A new permission group named \"" . $group_name . "\" was added to the system.";
-		write_log(1000, $_SESSION['uid'], $message, "user");
+		write_log(1000, $_SESSION['uid'] ?? 0, $message, "user");
 
 		// For each of the permissions in this permission group
 		foreach ($permissions as $key => $permission)
@@ -575,7 +576,7 @@ function add_new_permissions($permission_groups_and_permissions)
 
 			// Write audit log
 			$message = "A new permission named \"" . $permission_name . "\" was added to the system.";
-			write_log(1000, $_SESSION['uid'], $message, "user");
+			write_log(1000, $_SESSION['uid'] ?? 0, $message, "user");
 
 			// Add the permission to the permission group
 			$stmt = $db->prepare("INSERT IGNORE INTO `permission_to_permission_group` (`permission_id`, `permission_group_id`) VALUES (:permission_id, :permission_group_id);");
@@ -588,7 +589,7 @@ function add_new_permissions($permission_groups_and_permissions)
 
 			// Write audit log
 			$message = "The \"" . $permission_name . "\" permission was added to the \"" . $group_name . "\" permission group.";
-			write_log(1000, $_SESSION['uid'], $message, "user");
+			write_log(1000, $_SESSION['uid'] ?? 0, $message, "user");
 		}
 	}
 
@@ -600,17 +601,47 @@ function add_new_permissions($permission_groups_and_permissions)
 		$user_id = (int)$user['value'];
 		$username = $user['username'];
 
-		// Get the current permissions of this user
-		$current_permissions = get_permission_ids_of_user($user_id);
+		// Additively grant each new permission ID to this admin user.
+		// The previous flow used update_permissions(), which destructively
+		// rewrote permission_to_user (DELETE all rows for the user, then
+		// INSERT the merged set). For an admin whose direct permissions
+		// were empty at this moment — for example, a role-based admin
+		// whose access lives in role_responsibilities and not in
+		// permission_to_user — that flow read get_permission_ids_of_user()
+		// as [], merged it with the new Extra's perms, then wiped every
+		// other direct row in the rewrite. The admin's session, rebuilt
+		// from permission_to_user via set_user_permissions() below, lost
+		// every sidebar gate and the user appeared to "lose access" the
+		// moment they activated the Extra. INSERT IGNORE preserves the
+		// user's existing direct permission rows and only adds the new
+		// ones idempotently. Issued as a single multi-VALUES statement
+		// so the cost stays O(admins), not O(admins × perms).
+		if (!empty($new_permissions)) {
+			$placeholders = [];
+			$params = [':user_id' => $user_id];
+			foreach ($new_permissions as $i => $new_perm_id) {
+				$placeholders[] = "(:user_id, :pid_{$i})";
+				$params[":pid_{$i}"] = (int)$new_perm_id;
+			}
+			$stmt = $db->prepare(
+				"INSERT IGNORE INTO `permission_to_user` (`user_id`, `permission_id`) VALUES "
+				. implode(',', $placeholders) . ";"
+			);
+			$stmt->execute($params);
 
-		// Add the new permission to the current permissions
-		$updated_permissions = array_merge($current_permissions, $new_permissions);
-
-		// Add the updated permissions to the admin user
-		update_permissions($user_id, $updated_permissions);
+			// Audit log: record which permissions were granted to this
+			// admin user as part of the add_new_permissions() call. The
+			// pre-fix path emitted an audit entry via save_junction_values()
+			// for every user the destructive rewrite touched; the additive
+			// INSERT IGNORE path does not, so emit one explicitly here.
+			$perm_names = get_names_by_multi_values('permissions', $new_permissions, false, ', ', true);
+			$target_name = get_name_by_value('user', $user_id);
+			$message = "Permissions \"" . $perm_names . "\" granted to user \"" . $target_name . "\" as part of permission group addition.";
+			write_log((int)$user_id + 1000, $_SESSION['uid'] ?? 0, $message, 'user');
+		}
 
 		// If the update affects the current logged in user
-		if ($_SESSION['uid'] == $user_id)
+		if (($_SESSION['uid'] ?? 0) == $user_id)
 		{
 			// Update the current user's permissions
 			set_user_permissions($username);
@@ -699,7 +730,7 @@ function remove_permissions($permission_groups_and_permissions)
 
                 // Write audit log
                 $message = "The \"" . $permission_name . "\" permission was removed from the system.";
-                write_log(1000, $_SESSION['uid'], $message, "user");
+                write_log(1000, $_SESSION['uid'] ?? 0, $message, "user");
             }
 		}
         if(!$no_remove_group) {
@@ -713,7 +744,7 @@ function remove_permissions($permission_groups_and_permissions)
 
             // Write audit log
             $message = "The \"" . $group_name . "\" permission group was removed from the system.";
-            write_log(1000, $_SESSION['uid'], $message, "user");
+            write_log(1000, $_SESSION['uid'] ?? 0, $message, "user");
         }
 
 	}
@@ -740,7 +771,7 @@ function remove_permissions($permission_groups_and_permissions)
                 //update_permissions($user_id, $updated_permissions);
 
                 // If the update affects the current logged in user
-                if ($_SESSION['uid'] == $user_id)
+                if (($_SESSION['uid'] ?? 0) == $user_id)
                 {
                         // Update the current user's permissions
                         set_user_permissions($username);
@@ -808,6 +839,62 @@ function check_review_permission_by_risk_id($risk_id)
 
 	// Return the approved status
 	return $approved;
+}
+
+/**********************************************************************
+ * FUNCTION: COMPUTE WORKFLOW REDIRECT TARGET                          *
+ *                                                                     *
+ * Pure decision logic for redirect_permission_denied(): pick the URL  *
+ * the user should be sent to after a permission denial. Pulled out of *
+ * the helper itself so it can be unit-tested without exercising       *
+ * header()/exit() side effects.                                       *
+ *                                                                     *
+ * Returns $workflow_start when it is non-empty AND different from the *
+ * current request URL. Otherwise returns $fallback. The same-URL      *
+ * check is defense-in-depth: an action page that forgot to declare    *
+ * 'is_action' => true would have anchored workflow_start at its own   *
+ * URL, and bouncing to itself produces a redirect loop.               *
+ **********************************************************************/
+function compute_workflow_redirect_target($workflow_start, $current_url, $fallback) {
+	if (empty($workflow_start) || $workflow_start === $current_url) {
+		return $fallback;
+	}
+	return $workflow_start;
+}
+
+/**********************************************************************
+ * FUNCTION: REDIRECT PERMISSION DENIED                                *
+ *                                                                     *
+ * Called when a permission/access check inside a page denies. Logs a  *
+ * warning, queues a toast for the next page render, and redirects     *
+ * the user back to the most recent legitimate page they visited       *
+ * (recorded by add_session_check() into $_SESSION['workflow_start']). *
+ *                                                                     *
+ * The captured URL is server-derived (SCRIPT_FILENAME-based) and only *
+ * written for GET requests on non-action pages, so it is safe to      *
+ * reflect into a Location: header.                                    *
+ *                                                                     *
+ * $message_lang_key — language key for the toast message              *
+ * $log_context      — extra context for the debug log                 *
+ **********************************************************************/
+function redirect_permission_denied($message_lang_key = 'NoPermissionForThisAction', $log_context = '') {
+	global $lang;
+
+	$user = isset($_SESSION['user']) ? $_SESSION['user'] : '(unauthenticated)';
+	$detail = $log_context !== '' ? " ({$log_context})" : '';
+	write_debug_log("Permission denied for user '{$user}' on " . $_SERVER['SCRIPT_NAME'] . $detail, 'warning');
+
+	$message = isset($lang[$message_lang_key]) ? $lang[$message_lang_key] : 'You do not have permission to perform that action.';
+	set_alert(true, "bad", $message);
+
+	$base_url       = !empty($_SESSION['base_url']) ? $_SESSION['base_url'] : get_base_url();
+	$current_url    = rtrim($base_url, '/') . get_encoded_request_uri();
+	$workflow_start = !empty($_SESSION['workflow_start']) ? $_SESSION['workflow_start'] : '';
+
+	$target = compute_workflow_redirect_target($workflow_start, $current_url, build_url(''));
+
+	header("Location: " . $target);
+	exit();
 }
 
 ?>

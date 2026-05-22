@@ -66,6 +66,11 @@ return [
         try {
             // Ping the server
             $results = ping_server();
+            if (!is_array($results)) {
+                queue_update_status($task['id'], 'failed', $db);
+                write_debug_log("Ping Server: ping_server returned non-array result.", "warning");
+                return false;
+            }
             $return_code = $results['return_code'];
             $response = $results['response'];
 

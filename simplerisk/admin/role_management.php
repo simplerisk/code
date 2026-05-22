@@ -281,7 +281,7 @@
     function get_responsibilities(role_id) {
         $.ajax({
             type: "GET",
-            url: BASE_URL + "/api/role_responsibilities/get_responsibilities",
+            url: BASE_URL + "/api/v2/role_responsibilities/get_responsibilities",
             data: {
                 role_id: role_id
             },

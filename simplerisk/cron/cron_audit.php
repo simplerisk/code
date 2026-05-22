@@ -9,7 +9,7 @@ if (php_sapi_name() == "cli")
 {
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/functions.php'));
-	require_once(realpath(__DIR__ . '/../includes/config.php'));
+	require_once(realpath(__DIR__ . '/../includes/bootstrap.php'));
     require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
     require_once(realpath(__DIR__ . '/../includes/compliance.php'));
 

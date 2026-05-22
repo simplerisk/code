@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required configuration files
-require_once(realpath(__DIR__ . '/config.php'));
+require_once(realpath(__DIR__ . '/bootstrap.php'));
 require_once(realpath(__DIR__ . '/functions.php'));
 
 /*****************************
@@ -125,14 +125,20 @@ function process_and_save_tmp_spreadsheet(string $file_name, string $file_tmp_na
     
     // Initialize the sheet index to 0
     $sheet_index = 0;
-    
+
+    // Create an array for the column header
+    $column_header = [];
+
+    // Create an array of data
+    $data_array = [];
+
     // For each spreadsheet
     foreach ($reader->getSheetIterator() as $sheet)
     {
-        // Create an array for the column header
+        // Reset the column header for this sheet
         $column_header = [];
-        
-        // Create an array of data
+
+        // Reset the data array for this sheet
         $data_array = [];
         
         // Initialize the row index to 0
@@ -410,7 +416,7 @@ function upload_tmp_import_file($file, $unique_name = null) {
  * @param string|null $header_json
  * @param string|null $content_json
  * @return string
- * @throws \Random\RandomException
+ * @throws \Exception random_bytes() can throw \Random\RandomException on PHP 8.2+; using \Exception parent for compatibility with Phan
  */
 function save_tmp_file(
     PDO $db,

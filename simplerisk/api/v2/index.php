@@ -49,6 +49,12 @@ if (api_v2_is_authenticated())
     app()->get('/assets', 'api_v2_assets');
     app()->get('/assets/associations', 'api_v2_assets_associations');
     app()->get('/assets/tags', 'api_v2_assets_tags_get');
+    // Literal /assets/<word> GETs must be registered before the /assets/{id}
+    // CRUD wildcard below — Leaf matches in registration order, so a wildcard
+    // registered first will swallow GET /assets/options as id="options" and
+    // 400 from getAssetById's non-integer-id check. Same constraint applies
+    // to any future literal GET /assets/<word> route.
+    app()->get('/assets/options', 'get_asset_options');
 
     /************************** ASSETS CRUD API *******************************/
     app()->get('/assets/{id}', 'getAssetById');
@@ -75,6 +81,11 @@ if (api_v2_is_authenticated())
     app()->get('/governance/controls/mapped-frameworks', 'api_v2_get_control_mapped_frameworks');
     app()->get('/governance/controls/mapped-frameworks/count', 'api_v2_get_control_mapped_frameworks_count');
     app()->get('/governance/controls/associations', 'api_v2_governance_controls_associations');
+    // /governance/documents is the v2-native flat-list endpoint. The legacy
+    // treegrid view (used by the Document Hierarchy tab) lives at
+    // /governance/documents/treegrid further down in this file — the two
+    // are separate routes by design so the same path doesn't try to serve
+    // two different response shapes.
     app()->get('/governance/documents', 'api_v2_governance_documents');
     app()->delete('/governance/documents', 'api_v2_governance_documents_delete');
     app()->get('/governance/documents/controls', 'api_v2_governance_documents_to_controls');
@@ -124,6 +135,18 @@ if (api_v2_is_authenticated())
     // SimpleRisk Reports Routes
     app()->get('/reports/risk/average', 'api_v2_reports_risk_average');
     app()->get('/reports/risk/opencount', 'api_v2_reports_risk_open_count');
+
+    // Reports Hub + Settings Hub — catalog endpoints, per-user favorites,
+    // and Settings Hub license enrichment for uninstalled Extras tiles
+    app()->get('/reports/catalog', 'api_v2_reports_catalog');
+    app()->get('/admin/settings/catalog', 'api_v2_admin_settings_catalog');
+    app()->get('/admin/settings/extras/licenses', 'api_v2_admin_settings_extras_licenses');
+    app()->post('/admin/extras/install',           'api_v2_admin_extras_install');
+    app()->post('/admin/settings/favorites',          'api_v2_admin_settings_favorite_add');
+    app()->delete('/admin/settings/favorites/{key}',  'api_v2_admin_settings_favorite_remove');
+    app()->get('/reports/favorites', 'api_v2_reports_favorites_list');
+    app()->post('/reports/favorites', 'api_v2_reports_favorites_add');
+    app()->delete('/reports/favorites/{report_key}', 'api_v2_reports_favorites_delete');
 
     // RISK API from external app
     // Define the normal routes
@@ -205,6 +228,7 @@ if (api_v2_is_authenticated())
     app()->post('/management/risk/saveMarkUnreview', 'saveMarkUnreviewForm');
 
     app()->get('/management/risk/scoreaction', 'scoreactionForm');
+    app()->post('/management/risk/scoring-method', 'updateScoringMethodForm');
     app()->post('/management/risk/saveScore', 'saveScoreForm');
 
     app()->post('/management/risk/saveSubject', 'saveSubjectForm');
@@ -212,6 +236,7 @@ if (api_v2_is_authenticated())
     app()->post('/management/risk/saveComment', 'saveCommentForm');
     app()->post('/management/risk/accept_mitigation', 'acceptMitigationForm');
     app()->post('/management/risk/fix_review_date_format', 'fixReviewDateFormat');
+    app()->post('/management/risk/setProjectToRisk', 'setProjectToRiskForm');
 
     app()->post('/management/impportexport/deleteMapping', 'deleteMapping');
 
@@ -244,7 +269,11 @@ if (api_v2_is_authenticated())
     app()->get('/governance/framework', 'getFrameworkResponse');
     app()->post('/governance/update_framework', 'updateFrameworkResponse');
     app()->get('/governance/parent_documents_dropdown', 'getParentDocumentsDropdownResponse');
-    app()->get('/governance/documents', 'getDocumentsResponse');
+    // Treegrid view of documents grouped by type. Used by governance.js:134's
+    // documentation-tab loader. Distinct from /governance/documents above
+    // (the v2-native flat list); they were previously colliding on the same
+    // path.
+    app()->get('/governance/documents/treegrid', 'getDocumentsResponse');
     app()->get('/governance/document', 'getDocumentResponse');
     app()->get('/governance/selected_parent_documents_dropdown', 'getSelectedParentDocumentsDropdownResponse');
     app()->get('/governance/related_controls_by_framework_ids', 'getRelatedControlsByFrameworkIdsResponse');
@@ -275,7 +304,6 @@ if (api_v2_is_authenticated())
     app()->post('/assets/create_asset', 'assets_create_asset_API');
     app()->post('/assets/view/asset_data', 'assets_for_view_API');
     app()->post('/assets/view/action', 'assets_view_action_API');
-    app()->get('/assets/options', 'get_asset_options');
     app()->post('/asset-group/create', 'asset_group_create');
     app()->post('/asset-group/update', 'asset_group_update');
     app()->post('/asset-group/delete', 'asset_group_delete');
@@ -283,6 +311,7 @@ if (api_v2_is_authenticated())
     app()->get('/asset-group/tree', 'asset_group_tree');
     app()->get('/asset-group/info', 'asset_group_info');
     app()->get('/asset-group/options', 'get_asset_group_options');
+    app()->get('/asset-group/options_by_control', 'get_asset_group_options_by_control');
     app()->post('/assets/create', 'create_asset_api');
     app()->post('/assets/delete', 'delete_asset_api');
     /********************************************************************************/
@@ -393,8 +422,9 @@ if (api_v2_is_authenticated())
     app()->get('/complianceforgescf/disable', 'api_complianceforgescf_disable');
     app()->get('/complianceforgescf/status', 'api_complianceforgescf_status');
 
-    // Enable / disable the Incident Management Extra
-    app()->post('/admin/incidentmanagement', 'incidentManagementAPI');
+    //**************************** ACTIVATE/DEACTIVATE EXTRA BEGIN****************************//
+    app()->post('/admin/activate_deactivate_extra', 'activateDeactivateExtraApi');
+    //***************************** ACTIVATE/DEACTIVATE EXTRA END*****************************//
 
     /************************** DATATABLE API BEGIN *******************************/
     app()->post('/get/datatable', 'getDatatableAPI');
@@ -757,6 +787,7 @@ else
 // Set the error handling if the page is not found
 app()->set404(function ()
 {
+    $response = [];
     $response['status'] = 404;
     $response['status_message'] = "The Requested API Endpoint Was Not Found";
     $response['data'] = null;

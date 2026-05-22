@@ -6,6 +6,7 @@
 
 // Include required configuration files
 require_once(realpath(__DIR__ . '/functions.php'));
+require_once(realpath(__DIR__ . '/extras.php'));
 require_once(language_file());
 require_once(realpath(__DIR__ . '/displayassets.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
@@ -327,11 +328,13 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
             }
         }
 
-        // If the encryption extra is enabled, updates order_by_name
-        if (encryption_extra()) {
-            require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-            update_name_order_for_asset($asset_id, $name);
-        }
+        // Updates order_by_name (no-op if encryption extra is disabled)
+        call_extra_function(
+            'encryption_extra',
+            __DIR__ . '/../extras/encryption/index.php',
+            'update_name_order_for_asset',
+            [$asset_id, $name]
+        );
 
         $message = "Asset '{$name}' was added by user '{$_SESSION['user']}'.";
         write_log($asset_id , $_SESSION['uid'], $message, "asset");
@@ -877,11 +880,13 @@ function delete_asset($asset_id) {
     // Close the database connection
     db_close($db);
 
-    // If customization extra is enabled, delete custom_asset_data related with asset ID
-    if(customization_extra()) {
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        delete_custom_data_by_row_id($asset_id, "asset");
-    }
+    // Delete custom_asset_data related with asset ID (no-op if customization extra is disabled)
+    call_extra_function(
+        'customization_extra',
+        __DIR__ . '/../extras/customization/index.php',
+        'delete_custom_data_by_row_id',
+        [$asset_id, "asset"]
+    );
 
     // Clean up after the delete
     cleanup_after_delete('assets');
@@ -985,10 +990,13 @@ function get_entered_assets($verified=null)
         $params['verified'] = $verified;
     } else $where = " WHERE 1";
 
-    if(team_separation_extra()){
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        $where .= get_user_teams_query_for_assets("a", false, true);
-    }
+    $where .= call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_assets',
+        ['a', false, true],
+        ''
+    );
 
     if (encryption_extra()) {
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
@@ -1175,6 +1183,7 @@ function display_edit_asset_table()
     // If the customization extra is enabled, shows fields by asset customization
     if ($customization)
     {
+        // @phan-suppress-next-line PhanPossiblyUndeclaredVariable
         display_main_detail_asset_fields_th($active_fields);
     }
     // If the customization extra is disabled, Show default main fields
@@ -1492,12 +1501,103 @@ function update_asset_values($min_value, $max_value)
     return true;
 }
 
+/*********************************************
+ * FUNCTION: UPDATE ASSET VALUES EXPONENTIAL *
+ *********************************************/
+/**
+ * Distribute the 10 asset-valuation buckets geometrically (exponential
+ * progression) between $min_value and $max_value. Each bucket's upper
+ * boundary is computed as $min_value * r^i where
+ * r = ($max_value / $min_value)^(1/10) and i runs 1..10. Mirrors the
+ * per-row idiom of update_asset_values() (level 1's lower bound is
+ * $min_value; each subsequent level's lower bound is the previous
+ * level's upper bound + 1; level 10's upper bound is forced to
+ * $max_value to absorb any rounding drift).
+ *
+ * Requires $min_value > 0 (geometric progression cannot start at zero).
+ * Callers are expected to validate before calling; safety net here
+ * returns false when min <= 0 or max <= min so no rows are updated.
+ */
+function update_asset_values_exponential($min_value, $max_value)
+{
+    $min_value = (float)$min_value;
+    $max_value = (float)$max_value;
+
+    // Range must actually be a range, and max must be positive (so the
+    // geometric progression has somewhere to terminate). min can be
+    // zero — that's the natural starting point for an exponential range
+    // (e.g. 0-10, 11-100, 101-1000, ...).
+    if ($min_value < 0 || $max_value <= $min_value || $max_value <= 0) {
+        return false;
+    }
+
+    // Compute the geometric step r and level 1's upper bound. min=0 needs
+    // a special anchor (geometric needs a non-zero start), so we anchor on
+    // max^(1/10) — i.e. the 10th root of max — which produces the natural
+    // "0-10, 11-100, 101-1000, ..." sequence when max is a power of 10.
+    // min>0 uses the standard (max/min)^(1/10) ratio with level 1's upper
+    // bound = min*r.
+    if ($min_value == 0.0) {
+        $r = pow($max_value, 1.0 / 10.0);
+        $level_1_lower = 0;
+        $level_1_upper = (int)round($r);
+    } else {
+        $r = pow($max_value / $min_value, 1.0 / 10.0);
+        $level_1_lower = (int)round($min_value);
+        $level_1_upper = (int)round($min_value * $r);
+    }
+
+    // Open the database connection
+    $db = db_open();
+
+    // Set the value for level 1
+    update_asset_value(1, $level_1_lower, $level_1_upper);
+    $value = $level_1_upper;
+
+    // For each level from 2 to 10
+    for ($i = 2; $i <= 10; $i++)
+    {
+        // The minimum value is the previous level's upper bound + 1
+        $level_min = $value + 1;
+
+        // If this is not level 10, compute the upper bound
+        if ($i != 10)
+        {
+            // anchor is max^(1/10) when min=0, else min
+            $value = ($min_value == 0.0)
+                ? (int)round(pow($r, $i))
+                : (int)round($min_value * pow($r, $i));
+        }
+        else
+        {
+            // Force the last bucket to land exactly on $max_value so any
+            // rounding drift across the previous buckets doesn't leave a
+            // gap at the top of the range.
+            $value = (int)round($max_value);
+        }
+
+        // Set the value for the other levels
+        update_asset_value($i, $level_min, $value);
+    }
+
+    // Close the database connection
+    db_close($db);
+
+    // Return success
+    return true;
+}
+
 /*******************************************
  * FUNCTION: DISPLAY ASSET VALUATION TABLE *
  *******************************************/
-function display_asset_valuation_table() {
+function display_asset_valuation_table($form_id = '') {
 
     global $lang, $escaper;
+
+    // When the table is rendered inside a tab/page that wraps a different
+    // outer form, callers can pass a form ID so each input is associated
+    // with the manual asset valuation form via the HTML5 form attribute.
+    $form_attr = $form_id !== '' ? " form='" . $escaper->escapeHtmlAttr($form_id) . "'" : '';
 
     // Open the database connection
     $db = db_open();
@@ -1534,13 +1634,13 @@ function display_asset_valuation_table() {
                 <tr>
                     <td class='text-center'>{$escaper->escapeHtml($value['id'])}</td>
                     <td class='text-center'>
-                        <input id='dollarsign' type='number' min='{$escaper->escapeHtml($minimum)}' name='min_value_{$escaper->escapeHtml($value['id'])}' value='{$escaper->escapeHtml($value['min_value'])}' onFocus='this.oldvalue = this.value;' onChange='javascript:updateMinValue('{$escaper->escapeHtml($value['id'])}');this.oldvalue = this.value;' class='form-control'/>
+                        <input id='dollarsign' type='number' min='{$escaper->escapeHtml($minimum)}' name='min_value_{$escaper->escapeHtml($value['id'])}' value='{$escaper->escapeHtml($value['min_value'])}' onFocus='this.oldvalue = this.value;' onChange='javascript:updateMinValue('{$escaper->escapeHtml($value['id'])}');this.oldvalue = this.value;' class='form-control'{$form_attr}/>
                     </td>
                     <td class='text-center'>
-                        <input id='dollarsign' type='number' min='{$escaper->escapeHtml($minimum)}' name='max_value_{$escaper->escapeHtml($value['id'])}' value='{$escaper->escapeHtml($value['max_value'])}' onFocus='this.oldvalue = this.value;' onChange='javascript:updateMaxValue('{$escaper->escapeHtml($value['id'])}');this.oldvalue = this.value;'  class='form-control'/>
+                        <input id='dollarsign' type='number' min='{$escaper->escapeHtml($minimum)}' name='max_value_{$escaper->escapeHtml($value['id'])}' value='{$escaper->escapeHtml($value['max_value'])}' onFocus='this.oldvalue = this.value;' onChange='javascript:updateMaxValue('{$escaper->escapeHtml($value['id'])}');this.oldvalue = this.value;'  class='form-control'{$form_attr}/>
                     </td>
                     <td class='text-center'>
-                        <input type='text' name='valuation_level_name_{$escaper->escapeHtml($value['id'])}' value='{$escaper->escapeHtml($value['valuation_level_name'])}'  class='form-control' placeholder='{$escaper->escapeHtml($lang['EnterAValuationLevelName'])}'/>
+                        <input type='text' name='valuation_level_name_{$escaper->escapeHtml($value['id'])}' value='{$escaper->escapeHtml($value['valuation_level_name'])}'  class='form-control' placeholder='{$escaper->escapeHtml($lang['EnterAValuationLevelName'])}'{$form_attr}/>
                     </td>
                 </tr>
         ";
@@ -1656,7 +1756,8 @@ function get_default_asset_valuation()
  * FUNCTION: GET ASSET ID BY VALUE *
  ***********************************/
 function get_asset_id_by_value($value){
-    $value = strtolower(str_replace(array('$', ','), '', $value));
+    $currency = get_currency_symbol();
+    $value = strtolower(str_replace(array($currency, ','), '', $value));
     
     $min_max = explode("to", $value);
     $min = intval($min_max[0]);
@@ -2171,6 +2272,10 @@ function update_assets_of_asset_group($assets, $asset_group_id, $asset_group_nam
 
     $db = db_open();
 
+    $assets_to_remove = [];
+    $assets_current = [];
+    $assets_to_add = [];
+
     if (!$create) {
         //Get the current assets
         $assets_current = array_column(get_assets_of_asset_group($asset_group_id), 'id');
@@ -2380,7 +2485,7 @@ function process_selected_assets_asset_groups_of_type($item_id, $assets_and_grou
     $separation = team_separation_extra();
     
     // Using the team separation saving logic only makes sense if the team separation extra is activated and the user isn't an admin
-    $team_separation_asset_saving_logic &= $separation && !is_admin();
+    $team_separation_asset_saving_logic = $team_separation_asset_saving_logic && $separation && !is_admin();
 
 
     $stmt = $db->prepare("DELETE FROM `{$asset_groups_junction_name}` WHERE {$asset_group_junction_item_id_name} = :item_id");
@@ -2553,7 +2658,7 @@ function import_assets_asset_groups_for_type($type_id, $asset_and_group_names, $
             $forced_asset_verification_state = null;
         break;
         case 'questionnaire_answer':
-            if(!assessments_extra() || !assessments_extra("questionnaire_answers_to_assets") || !assessments_extra("questionnaire_answers_to_asset_groups"))
+            if(!assessments_extra() || !table_exists("questionnaire_answers_to_assets") || !table_exists("questionnaire_answers_to_asset_groups"))
             {
                 return;
             }
@@ -2622,6 +2727,7 @@ function get_asset_groups_table() {
 
     global $escaper;
 
+    // @phan-suppress-next-line SecurityCheck-XSS -- build_url() called with hardcoded path literal; base URL is admin-configured
     echo "<table id='asset-groups-table' class='easyui-treegrid asset-groups-table'
             data-options=\"
                 iconCls: 'icon-ok',
@@ -2631,7 +2737,7 @@ function get_asset_groups_table() {
                 pagination: true,
                 pageSize: 10,
                 pageList: [5,10,20,100],
-                url: '" . build_url("api/asset-group/tree") . "',
+                url: '" . build_url("api/v2/asset-group/tree") . "',
                 method: 'GET',
                 idField: 'id',
                 treeField: 'name',
@@ -2756,6 +2862,7 @@ function get_assets_of_asset_group_for_treegrid($id){
     $remove_tooltip = $escaper->escapeHtml($lang['RemoveAssetTooltip']);
 
     // If the customization extra, set custom values
+    $active_fields = [];
     $customization_enabled = customization_extra();
     if ($customization_enabled)
     {
@@ -2830,8 +2937,8 @@ function get_assets_of_asset_group_for_treegrid($id){
  * Getting the list of verified assets and asset groups. If the id and type are provided then it sets the selected field to true for assets/asset groups that are selected.
  * You either specify NONE of the id or type to simply get the available assets and asset groups or specify BOTH to get the selected field populated.
  * 
- * @param string $type the type of the id
  * @param int $id the id of the item the function should return the selected state of the assets for
+ * @param string $type the type of the id
  * @param bool $selected_only whether we want the function to return only the selected assets(not verified assets will be returned too if they're selected)
  * @return array The list of all verified assets and asset groups. If the id and type are provided then sets the selected state for those that are selected for that item
  */
@@ -2839,19 +2946,25 @@ function get_assets_and_asset_groups_of_type($id = null, $type = null, $selected
 
     // Having this variable here so the code is easier to read later
     $has_id = $id !== null;
-    
+
     // If the function got an id as a parameter then the type is required too
     if ($has_id && $type === null) {
         return [];
     }
 
+    $junction_config_type = null;
+    $assets_junction_name = null;
+    $asset_groups_junction_name = null;
+    $asset_junction_id_name = null;
+    $asset_group_junction_id_name = null;
+
     // If no type and id provided then we don't need this setup step
     if ($type !== null) {
-        
+
         if (!in_array($type, ['risk', 'assessment_answer', 'questionnaire_answer', 'questionnaire_risk', 'incident'])) {
             return [];
         }
-        
+
         global $junction_config;
         // set the names of the junction fields and fields required for the query for the type provided
         switch($type) {
@@ -3210,6 +3323,7 @@ function get_assets_data_for_view_v2($view, $selected_fields, $verified = null, 
     
     // If there's an edit section setup in the view settings then the view is editable
     $view_editable = !empty($field_settings_views[$view]['edit']);
+    // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
     $view_edit_type_popup = $view_editable && $field_settings_views[$view]['edit']['type'] === 'popup';
     
     // Open the database connection
@@ -3218,6 +3332,7 @@ function get_assets_data_for_view_v2($view, $selected_fields, $verified = null, 
     $params = [];
     $encryption = encryption_extra();
     
+    $actions_tooltips = [];
     $actions_column_info = !empty($field_settings_views[$view]['actions_column']) ? $field_settings_views[$view]['actions_column'] : false;
     if ($actions_column_info) {
         // Create an array of escaped localized strings so it doesn't have to be done for every assets
@@ -3228,24 +3343,33 @@ function get_assets_data_for_view_v2($view, $selected_fields, $verified = null, 
             'delete' => $escaper->escapeHtml($lang['Delete']),
         ];
     }
-    
+
+    $sql_order_column = null;
     if (str_starts_with($orderColumn, 'custom_field_')) {
         $sql_orderable = false;
     } else {
         // Can only order fields in the sql if they're not a custom field and encryption isn't enabled or they're not encrypted or if it's specifically stated that it's sql orderable
+        // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
         $sql_orderable =
+        // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
         (!$encryption || !$field_settings['asset'][$orderColumn]['encrypted']) &&
+        // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
         (!array_key_exists('force_php_ordering', $field_settings['asset'][$orderColumn]) || !$field_settings['asset'][$orderColumn]['force_php_ordering']);
 
         if ($sql_orderable) {
+            // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
             $sql_order_column = $field_settings['asset'][$orderColumn]['order_column'];
         } else {
             // If encryption is turned on and there's an encrypted order column specified then use that column for ordering and mark it as sql orderable
+            // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
             if ($encryption && $field_settings['asset'][$orderColumn]['encrypted'] && !empty($field_settings['asset'][$orderColumn]['encrypted_order_column'])) {
+                // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
                 $sql_order_column = $field_settings['asset'][$orderColumn]['encrypted_order_column'];
                 $sql_orderable = true;
+            // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
             } elseif(array_key_exists('force_php_ordering', $field_settings['asset'][$orderColumn]) && $field_settings['asset'][$orderColumn]['force_php_ordering']) {
                 // technically it would be possible to order in sql, but the result would be wrong, have to order in PHP by the display string
+                // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
                 $orderColumn = $field_settings['asset'][$orderColumn]['order_column'];
             }
         }
@@ -3257,11 +3381,14 @@ function get_assets_data_for_view_v2($view, $selected_fields, $verified = null, 
     } else {
         $where = "WHERE 1";
     }
-    
-    if(team_separation_extra()){
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        $where .= get_user_teams_query_for_assets("a", false, true);
-    }
+
+    $where .= call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_assets',
+        ['a', false, true],
+        ''
+    );
     
     // At this point it's safe to add the column directly into the sql as it was validated
     $order_by = $sql_orderable ?  "ORDER BY {$sql_order_column} {$orderDir}, `a`.`id` ASC" : "";
@@ -3315,6 +3442,7 @@ function get_assets_data_for_view_v2($view, $selected_fields, $verified = null, 
 
     // Get and store the currency here and not every time in the loop
     // also, only do it if the value column is selected
+    $currency_sign = null;
     if (in_array('value', $selected_fields)) {
         $currency_sign = get_setting("currency");
     }
@@ -3455,23 +3583,30 @@ function get_assets_data_for_view_v2($view, $selected_fields, $verified = null, 
             if ($actions_column_info) {
 
                 // Only show the edit button if the view's edit type is popup, no need for the button for inline editing
+                // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset -- $actions_tooltips populated upstream when $actions_column_info is set
                 $asset_actions = $view_edit_type_popup ? ["<button type='button' class='btn btn-secondary btn-sm asset-row-action' style='margin:1px; padding: 4px 12px;' role='button' data-action='edit' title='{$actions_tooltips['edit']}'><i class='fa fa-edit'></i></button>"] : [];
 
                 // Different actions are available based on whether we want the verified/unverified/all assets
                 if ($verified === 1) {
                     // When we display the verified assets the delete button is available
+                    // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset -- $actions_tooltips populated upstream when $actions_column_info is set
                     $asset_actions []= "<button class='btn btn-secondary btn-sm asset-row-action' style='margin:1px; padding: 4px 12px;' role='button' data-action='delete' title='{$actions_tooltips['delete']}'><i class='fa fa-trash'></i></button>";
                 } elseif ($verified === 0) {
                     // When we display the not verified assets both the verify and discard buttons are available
+                    // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset -- $actions_tooltips populated upstream when $actions_column_info is set
                     $asset_actions []= "<button class='btn btn-secondary btn-sm asset-row-action' style='margin:1px; padding: 4px 12px;' role='button' data-action='discard' title='{$actions_tooltips['discard']}'><i class='fa fa-trash'></i></button>";
+                    // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset -- $actions_tooltips populated upstream when $actions_column_info is set
                     $asset_actions []= "<button class='btn btn-secondary btn-sm asset-row-action' style='margin:1px; padding: 4px 12px;' role='button' data-action='verify' title='{$actions_tooltips['verify']}'><i class='fa fa-check'></i></button>";
                 } else {
-                    
+
                     // in case of displaying all assets the presence of the verify button is decided on a per row basis
                     if (!$asset['verified']) {
+                        // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset -- $actions_tooltips populated upstream when $actions_column_info is set
                         $asset_actions []= "<button class='btn btn-secondary btn-sm asset-row-action' style='margin:1px; padding: 4px 12px;' role='button' data-action='discard' title='{$actions_tooltips['discard']}'><i class='fa fa-trash'></i></button>";
+                        // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset -- $actions_tooltips populated upstream when $actions_column_info is set
                         $asset_actions []= "<button class='btn btn-secondary btn-sm asset-row-action' style='margin:1px; padding: 4px 12px;' role='button' data-action='verify' title='{$actions_tooltips['verify']}'><i class='fa fa-check'></i></button>";
                     } else {
+                        // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset -- $actions_tooltips populated upstream when $actions_column_info is set
                         $asset_actions []= "<button class='btn btn-secondary btn-sm asset-row-action' style='margin:1px; padding: 4px 12px;' role='button' data-action='delete' title='{$actions_tooltips['delete']}'><i class='fa fa-trash'></i></button>";
                     }
                 }
@@ -3530,10 +3665,10 @@ function update_asset_field_API_v2($view, $fieldName) {
         set_alert(true, "bad", $lang['EditFailed_NotSelected']);
         api_v2_json_result(400, get_alert(true), NULL);
     }
-    
+
+    // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
     $view_type = $field_settings_views[$view]['view_type'];
-    
-    
+
     // TODO: add check to see if field is editable
     // TODO: Unique fields
     // Check if the field is required and if it is, then whether it has a proper value set
@@ -3623,10 +3758,12 @@ function update_asset_field_API_v2($view, $fieldName) {
 
 // Used to update the asset through the API call
 function update_asset_API_v2($view) {
-    
+
     global $field_settings_views, $field_settings, $lang, $escaper;
 
+    // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
     $view_type = $field_settings_views[$view]['view_type'];
+    // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
     $id_field = $field_settings_views[$view]['id_field'];
     $id = (int)$_POST[$id_field];
 
@@ -3637,13 +3774,15 @@ function update_asset_API_v2($view) {
         api_v2_json_result(400, get_alert(true), NULL);
     }
     
+    $mapped_custom_field_settings = [];
+    $custom_field_data = [];
+    $asset_name = null;
+
     // If customization is enabled then gather information about the custom fields
     if ($customization = customization_extra()) {
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        
+
         $active_fields = get_active_fields($view_type);
-        $mapped_custom_field_settings = [];
-        $custom_field_data = [];
         foreach ($active_fields as $active_field) {
             // Skip this step for basic fields
             if ($active_field['is_basic']) {
@@ -3706,6 +3845,7 @@ function update_asset_API_v2($view) {
         // Storing values after validation to update the asset
         if ($customization && str_starts_with($field_name, 'custom_field_')) {
             // Storing the field's value so we can save that after the asset is updated
+            // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
             $custom_field_data[$mapped_custom_field_settings[$field_name]['field_id']] = $field_value;
         } else {
             // These fields are still comma selected ids, need to remove this part once they're properly converted to use junction tables
@@ -3749,6 +3889,7 @@ function update_asset_API_v2($view) {
                     }
 
                     // Encrypt the field if needed
+                    // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
                     if ($encryption && $field_settings[$view_type][$field_name]['encrypted']) {
                         $field_value = try_encrypt($field_value);
                     }
@@ -3813,9 +3954,10 @@ function update_asset_API_v2($view) {
 
 
 function create_asset_API_v2($view) {
-    
+
     global $field_settings_views, $field_settings, $lang, $escaper;
-    
+
+    // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
     $view_type = $field_settings_views[$view]['view_type'];
     
     // If the asset name is alread taken, but not on this asset
@@ -3824,19 +3966,21 @@ function create_asset_API_v2($view) {
         api_v2_json_result(400, get_alert(true), NULL);
     }
     
+    $mapped_custom_field_settings = [];
+    $custom_field_data = [];
+    $asset_name = null;
+
     // If customization is enabled then gather information about the custom fields
     if ($customization = customization_extra()) {
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        
+
         $active_fields = get_active_fields($view_type);
-        $mapped_custom_field_settings = [];
-        $custom_field_data = [];
         foreach ($active_fields as $active_field) {
             // Skip this step for basic fields
             if ($active_field['is_basic']) {
                 continue;
             }
-            
+
             $mapped_custom_field_settings["custom_field_{$active_field['id']}"] = [
                 'field_id' => $active_field['id'],
                 'required' => $active_field['required'],
@@ -3844,15 +3988,15 @@ function create_asset_API_v2($view) {
             ];
         }
     }
-    
+
     if ($encryption = encryption_extra()) {
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
     }
-    
+
     if ($notification = notification_extra()) {
         require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
     }
-    
+
     $tags = [];
     $mapped_controls = [];
     $associated_risks = [];
@@ -3878,6 +4022,7 @@ function create_asset_API_v2($view) {
         // Storing values after validation to update the asset
         if ($customization && str_starts_with($field_name, 'custom_field_')) {
             // Storing the field's value so we can save that after the asset is updated
+            // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
             $custom_field_data[$mapped_custom_field_settings[$field_name]['field_id']] = $field_value;
         } else {
             // These fields are still comma selected ids, need to remove this part once they're properly converted to use junction tables
@@ -3885,7 +4030,7 @@ function create_asset_API_v2($view) {
             if (($field_name === "location" || $field_name === "teams") && is_array($field_value)) {
                 $field_value = implode(",", $field_value);
             }
-            
+
             switch ($field_name) {
                 case 'tags':
                     // If it's empty, we need an empty array, rather than null that's the default behavior for missing data
@@ -3928,10 +4073,11 @@ function create_asset_API_v2($view) {
                     }
                     
                     // Encrypt the field if needed
+                    // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
                     if ($encryption && $field_settings[$view_type][$field_name]['encrypted']) {
                         $field_value = try_encrypt($field_value);
                     }
-                    
+
                     // build the parts that'll be used to construct the insert
                     $insert_parts [] = "`{$field_name}` = :{$field_name}";
                     $params[":{$field_name}"] = $field_value;
@@ -4004,7 +4150,9 @@ function process_asset_control_mapping($raw_mapped_controls) {
     // merging individual rows, grouped by maturity
     $mapped_controls = [];
     foreach ($temp_mapping as $mapped_control) {
+        // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
         $maturity_id = (int)$mapped_control['control_maturity'];
+        // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
         $control_ids = array_map(fn($control_id) => (int)$control_id, $mapped_control['control_id']);
         if (isset($mapped_controls[$maturity_id])) {
             $mapped_controls[$maturity_id] = array_values(array_unique([...$mapped_controls[$maturity_id], ...$control_ids]));
@@ -4049,10 +4197,13 @@ function get_asset_for_change_checking($id) {
     $where = "
     WHERE `a`.`id` = :id";
 
-    if (team_separation_extra()) {
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        $where .= get_user_teams_query_for_assets("a", false, true);
-    }
+    $where .= call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_assets',
+        ['a', false, true],
+        ''
+    );
 
     $encryption = encryption_extra();
     $customization = customization_extra();
@@ -4083,6 +4234,7 @@ function get_asset_for_change_checking($id) {
     db_close($db);
 
     global $field_settings, $field_settings_views, $escaper;
+    // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
     $id_field = $field_settings_views[$view]['id_field'];
 
     $data = [];

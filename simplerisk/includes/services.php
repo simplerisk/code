@@ -36,6 +36,11 @@ function simplerisk_service_call($parameters)
 
     // Make the services call
     $response = fetch_url_content("stream", $http_options, $validate_ssl, $url, $parameters);
+    if (!is_array($response))
+    {
+        write_debug_log("SimpleRisk was unable to connect to " . $url, 'warning');
+        return false;
+    }
     $return_code = $response['return_code'];
 
     // If we were unable to connect to the URL
@@ -141,6 +146,14 @@ function download_extra($name, $streamed_response = false) {
 
     // Make the SimpleRisk service call
 	$response = simplerisk_service_call($parameters);
+    if (!is_array($response)) {
+        if ($streamed_response) {
+            stream_write_error($lang['FailedToDownloadExtra']);
+        } else {
+            set_alert(true, "bad", $lang['FailedToDownloadExtra']);
+        }
+        return 0;
+    }
     $return_code = $response['return_code'];
     $results = $response['response'];
 
@@ -451,6 +464,9 @@ function call_extra_api_functionality($extra, $functionality, $target) {
     //error_log("header: " . json_encode($http_response_header));
     //error_log("result: " . json_encode($result));
 
+    if (!is_array($result)) {
+        return [0, null];
+    }
     return [$result['return_code'], json_decode($result['response'], true)];
 }
 
@@ -503,10 +519,15 @@ function call_simplerisk_api_endpoint($endpoint, $method = "GET", $system_token 
     //error_log("header: " . json_encode($http_response_header));
     //error_log("result: " . json_encode($result));
 
+    if (!is_array($result)) {
+        return null;
+    }
+
     // If we got a successful result
     if ($result['return_code'] == 200)
     {
         // Return the data array
+        // @phan-suppress-next-line PhanTypeArraySuspiciousNullable -- json_decode of valid 200 response should be array; null gracefully degrades
         return json_decode($result['response'], true)['data'];
     }
     // Otherwise return an empty array

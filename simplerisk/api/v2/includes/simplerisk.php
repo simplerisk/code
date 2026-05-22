@@ -350,8 +350,10 @@ function api_v2_admin_queue()
     // DataTables server-side parameters
     $start = isset($_GET['start']) ? (int)$_GET['start'] : 0;
     $length = isset($_GET['length']) ? (int)$_GET['length'] : 10;
-    $order_column_index = isset($_GET['order'][0]['column']) ? (int)$_GET['order'][0]['column'] : 3; // Default to created_at
-    $order_dir = isset($_GET['order'][0]['dir']) && in_array(strtolower($_GET['order'][0]['dir']), ['asc','desc']) ? $_GET['order'][0]['dir'] : 'desc';
+    /** @var array[] $get_order */
+    $get_order = $_GET['order'] ?? [];
+    $order_column_index = isset($get_order[0]['column']) ? (int)$get_order[0]['column'] : 3; // Default to created_at
+    $order_dir = isset($get_order[0]['dir']) && in_array(strtolower($get_order[0]['dir']), ['asc','desc']) ? $get_order[0]['dir'] : 'desc';
 
     // Columns mapping
     $columns = ["id", "task_type", "status", "created_at", "updated_at", "attempts", "priority", "payload"];

@@ -83,7 +83,7 @@
 
         } elseif(isset($_GET['action']) && $_GET['action']=="edit") {
 
-        display_questionnaire_edit($_GET['id']);
+        display_questionnaire_edit();
 
         }
     ?>

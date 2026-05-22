@@ -38,6 +38,7 @@ if(isset($_POST['download_audit_log']))
 /*********************
  * FUNCTION: DISPLAY *
  *********************/
+// @phan-suppress-next-line PhanRedefineFunction -- each page defines its own display() entry point
 function display($display = "")
 {
     global $lang;
@@ -171,7 +172,7 @@ function display($display = "")
             $("#exception-update-form #file-size").text("");
             
             $.ajax({
-                url: BASE_URL + '/api/exceptions/exception?id=' + exception_id,
+                url: BASE_URL + '/api/v2/exceptions/exception?id=' + exception_id,
                 type: 'GET',
                 success : function (res){
                     var data = res.data;
@@ -224,7 +225,7 @@ function display($display = "")
             var approval = $(this).hasClass("exception--approve");
             
             $.ajax({
-                url: BASE_URL + '/api/exceptions/info',
+                url: BASE_URL + '/api/v2/exceptions/info',
                 data: {
                     id: exception_id,
                     type: type,
@@ -309,7 +310,7 @@ function display($display = "")
     function refreshAuditLogs() {
         $.ajax({
             type: "GET",
-            url: BASE_URL + "/api/exceptions/audit_log",
+            url: BASE_URL + "/api/v2/exceptions/audit_log",
             data: {
                 days: $('.audit-trail select.audit-select-days').val()
             },
@@ -391,7 +392,7 @@ function display($display = "")
         var framework_id = $frameworks.val();
         if(framework_id == null) return;
         $.ajax({
-            url: BASE_URL + '/api/governance/related_controls_by_framework_ids?fids=' + framework_id,
+            url: BASE_URL + '/api/v2/governance/related_controls_by_framework_ids?fids=' + framework_id,
             type: 'GET',
             success : function (res){
                 var options = "<option value='0' selected=''>--</option>";
@@ -419,7 +420,7 @@ function display($display = "")
             }
             $.ajax({
                 type: "POST",
-                url: BASE_URL + "/api/exceptions/create",
+                url: BASE_URL + "/api/v2/exceptions/create",
                 data: new FormData($('#exception-new-form')[0]),
                 async: true,
                 cache: false,
@@ -471,7 +472,7 @@ function display($display = "")
 
             $.ajax({
                 type: "POST",
-                url: BASE_URL + "/api/exceptions/update",
+                url: BASE_URL + "/api/v2/exceptions/update",
                 data: new FormData($('#exception-update-form')[0]),
                 async: true,
                 cache: false,
@@ -541,7 +542,7 @@ function display($display = "")
 
             $.ajax({
                 type: "POST",
-                url: BASE_URL + "/api/exceptions/unapprove",
+                url: BASE_URL + "/api/v2/exceptions/unapprove",
                 data: new FormData($('#exception-update-form')[0]),
                 async: true,
                 cache: false,
@@ -585,7 +586,7 @@ function display($display = "")
 
             $.ajax({
                 type: "POST",
-                url: BASE_URL + "/api/exceptions/approve",
+                url: BASE_URL + "/api/v2/exceptions/approve",
                 data: new FormData($('#exception-approve-form')[0]),
                 async: true,
                 cache: false,
@@ -625,7 +626,7 @@ function display($display = "")
 
             $.ajax({
                 type: "POST",
-                url: BASE_URL + "/api/exceptions/delete",
+                url: BASE_URL + "/api/v2/exceptions/delete",
                 data: new FormData($('#exception-delete-form')[0]),
                 async: true,
                 cache: false,
@@ -667,7 +668,7 @@ function display($display = "")
                                
             $.ajax({
                 type: "POST",
-                url: BASE_URL + "/api/exceptions/batch-delete",
+                url: BASE_URL + "/api/v2/exceptions/batch-delete",
                 data: new FormData($('#exception-batch-delete-form')[0]),
                 async: true,
                 cache: false,

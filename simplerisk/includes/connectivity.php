@@ -209,8 +209,21 @@ function fetch_url_content_via_stream($http_options, $validate_ssl, $url, $param
         }
     }
 
-    // Determine HTTP response code if available
-    if (!empty($http_response_header) && preg_match('{HTTP\/\S*\s(\d{3})}', $http_response_header[0], $match)) {
+    // Determine HTTP response code if available. PHP 8.5 deprecated the
+    // predefined $http_response_header magic variable in favor of
+    // http_get_last_response_headers() (added in PHP 8.4). Prefer the new
+    // function when available; fall back to the magic variable on PHP < 8.4.
+    // Phan runs against the PHP 8.1 floor and does not know about the new
+    // function, so the function_exists() and call_user_func() lines are
+    // suppressed individually.
+    // @phan-suppress-next-line PhanUndeclaredFunctionInCallable
+    if (function_exists('http_get_last_response_headers')) {
+        // @phan-suppress-next-line PhanUndeclaredFunctionInCallable
+        $response_headers = call_user_func('http_get_last_response_headers');
+    } else {
+        $response_headers = $http_response_header ?? null;
+    }
+    if (!empty($response_headers) && preg_match('{HTTP\/\S*\s(\d{3})}', $response_headers[0], $match)) {
         $return_code = (int)$match[1];
     }
 

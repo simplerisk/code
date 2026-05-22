@@ -28,7 +28,7 @@
             $(`form#custom_display_settings-active_audits [type='checkbox']`).prop('checked', false);
 
             // Set true to checkboxes that are in the custom_display_settings array
-            custom_display_settings.map((e) => {
+            custom_display_settings_active_audits.map((e) => {
                 return $(`form#custom_display_settings-active_audits [name='${e}']`).prop('checked', true);
             });
             

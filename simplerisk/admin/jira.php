@@ -5,7 +5,7 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['multiselect'], ['check_admin' => true], 'JiraExtra', 'Configure', 'Extras');
+    render_header_and_sidebar(['multiselect'], ['check_admin' => true], 'JiraIntegrationExtra', 'Configure', 'Extras');
 
     // If the extra directory exists
     if (is_dir(realpath(__DIR__ . '/../extras/jira'))) {
@@ -40,6 +40,7 @@
     /*********************
      * FUNCTION: DISPLAY *
      *********************/
+    // @phan-suppress-next-line PhanRedefineFunction -- each admin page defines its own display() entry point
     function display() {
         global $lang;
         global $escaper;

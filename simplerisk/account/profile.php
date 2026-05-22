@@ -11,6 +11,7 @@ render_header_and_sidebar(['CUSTOM:permissions-widget.js'], breadcrumb_title_key
 
 // Include required functions file
 require_once(realpath(__DIR__ . '/../includes/messages.php'));
+require_once(realpath(__DIR__ . '/../includes/extras.php'));
 
 // If the language was changed
 if (isset($_POST['change_language'])) {
@@ -261,14 +262,12 @@ if(isset($_POST['reset_custom_display_settings'])) {
                 </div>
             </form>
     <?php
-        // If the API Extra is enabled
-        if (api_extra()) {
-            // Require the API Extra
-            require_once(realpath(__DIR__ . '/../extras/api/index.php'));
-
-            // Display the API Profile
-            display_api_profile();
-        }
+        // Display the API Profile (provided by the API Extra)
+        call_extra_function(
+            'api_extra',
+            __DIR__ . '/../extras/api/index.php',
+            'display_api_profile'
+        );
     ?>
         </div>
     <?php

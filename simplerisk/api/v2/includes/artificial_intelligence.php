@@ -33,7 +33,7 @@ function api_v2_ai_recommendations()
             // Set the status
             $status_code = 200;
             $status_message = "SUCCESS";
-            $data[] = $advice;
+            $data = [$advice];
         }
         // If we did not receive advice
         else

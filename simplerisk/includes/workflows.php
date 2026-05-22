@@ -1130,8 +1130,7 @@ function enrich_workflow_context(string $event_type, array $context, PDO $db): a
         $stmt = $db->prepare("
             SELECT d.`document_name`, d.`document_type`, d.`document_owner`, d.`document_status`,
                    d.`creation_date`, d.`last_review_date`, d.`review_frequency`,
-                   d.`next_review_date`, d.`approval_date`, d.`approver`,
-                   d.`additional_stakeholders`, d.`team_ids`, d.`parent`,
+                   d.`next_review_date`, d.`approval_date`, d.`approver`, d.`parent`,
                    ds.`name` AS document_status_name,
                    u1.`name` AS document_owner_name,
                    u2.`name` AS approver_name,
@@ -1159,26 +1158,38 @@ function enrich_workflow_context(string $event_type, array $context, PDO $db): a
             $s->execute();
             $ctrl_row = $s->fetch(PDO::FETCH_ASSOC);
 
+            // Fetch additional stakeholder user IDs (comma-separated)
+            $s = $db->prepare("SELECT GROUP_CONCAT(`user_id`) AS ids FROM `document_additional_stakeholder_mappings` WHERE `document_id` = :id");
+            $s->bindParam(':id', $document_id, PDO::PARAM_INT);
+            $s->execute();
+            $stakeholder_row = $s->fetch(PDO::FETCH_ASSOC);
+
+            // Fetch team IDs (comma-separated)
+            $s = $db->prepare("SELECT GROUP_CONCAT(`team_id`) AS ids FROM `document_team_mappings` WHERE `document_id` = :id");
+            $s->bindParam(':id', $document_id, PDO::PARAM_INT);
+            $s->execute();
+            $team_row = $s->fetch(PDO::FETCH_ASSOC);
+
             $fill = [
-                'document_name'           => $row['document_name']           ?? '',
-                'document_type'           => $row['document_type']           ?? '',
+                'document_name'           => $row['document_name']        ?? '',
+                'document_type'           => $row['document_type']        ?? '',
                 'document_owner'          => (int)$row['document_owner'],
-                'document_owner_name'     => $row['document_owner_name']     ?? '',
+                'document_owner_name'     => $row['document_owner_name']  ?? '',
                 'document_status'         => (int)$row['document_status'],
-                'document_status_name'    => $row['document_status_name']    ?? '',
-                'creation_date'           => $row['creation_date']           ?? '',
-                'last_review_date'        => $row['last_review_date']        ?? '',
-                'review_frequency'        => $row['review_frequency']        ?? '',
-                'next_review_date'        => $row['next_review_date']        ?? '',
-                'approval_date'           => $row['approval_date']           ?? '',
+                'document_status_name'    => $row['document_status_name'] ?? '',
+                'creation_date'           => $row['creation_date']        ?? '',
+                'last_review_date'        => $row['last_review_date']     ?? '',
+                'review_frequency'        => $row['review_frequency']     ?? '',
+                'next_review_date'        => $row['next_review_date']     ?? '',
+                'approval_date'           => $row['approval_date']        ?? '',
                 'approver'                => (int)$row['approver'],
-                'approver_name'           => $row['approver_name']           ?? '',
-                'additional_stakeholders' => $row['additional_stakeholders'] ?? '',
-                'team_ids'                => $row['team_ids']                ?? '',
+                'approver_name'           => $row['approver_name']        ?? '',
+                'additional_stakeholders' => $stakeholder_row['ids']      ?? '',
+                'team_ids'                => $team_row['ids']             ?? '',
                 'parent_document_id'      => (int)$row['parent'],
-                'parent_document_name'    => $row['parent_document_name']    ?? '',
-                'document_frameworks'     => $fw_row['ids']                  ?? '',
-                'document_controls'       => $ctrl_row['ids']                ?? '',
+                'parent_document_name'    => $row['parent_document_name'] ?? '',
+                'document_frameworks'     => $fw_row['ids']               ?? '',
+                'document_controls'       => $ctrl_row['ids']             ?? '',
             ];
             foreach ($fill as $k => $v) {
                 if (!array_key_exists($k, $context)) $context[$k] = $v;

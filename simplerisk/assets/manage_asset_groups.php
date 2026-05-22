@@ -226,7 +226,7 @@
             $('#asset-group-new-form .select-list-available select option').remove();
 
             $.ajax({
-                url: BASE_URL + '/api/assets/options',
+                url: BASE_URL + '/api/v2/assets/options',
                 type: 'GET',
                 success : function (response){
                     addOptions($('#asset-group-new-form .select-list-available select'), response.data);
@@ -246,7 +246,7 @@
 
             $.ajax({
                 type: "POST",
-                url: BASE_URL + "/api/asset-group/create",
+                url: BASE_URL + "/api/v2/asset-group/create",
                 data: data,
                 async: true,
                 cache: false,
@@ -287,7 +287,7 @@
 
             $.ajax({
                 type: "POST",
-                url: BASE_URL + "/api/asset-group/update",
+                url: BASE_URL + "/api/v2/asset-group/update",
                 data: data,
                 async: true,
                 cache: false,
@@ -333,7 +333,7 @@
 
             $.ajax({
                 type: "POST",
-                url: BASE_URL + "/api/asset-group/delete",
+                url: BASE_URL + "/api/v2/asset-group/delete",
                 data: data,
                 async: true,
                 cache: false,
@@ -389,7 +389,7 @@
 
             $.ajax({
                 type: "POST",
-                url: BASE_URL + "/api/asset-group/remove_asset",
+                url: BASE_URL + "/api/v2/asset-group/remove_asset",
                 data: data,
                 async: true,
                 cache: false,
@@ -433,7 +433,7 @@
             $('#asset-group-update-form .select-list-available select option').remove();
 
             $.ajax({
-                url: BASE_URL + '/api/asset-group/info?id=' + asset_group_id,
+                url: BASE_URL + '/api/v2/asset-group/info?id=' + asset_group_id,
                 type: 'GET',
                 success : function (response) {
                     var data = response.data;

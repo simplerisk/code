@@ -14,7 +14,10 @@ require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 add_security_headers();
 
 // Add the session
-add_session_check();
+add_session_check(['check_riskmanagement' => true]);
+
+// Require the riskmanagement permission to view this report
+enforce_permission("riskmanagement");
 
 // Include the CSRF Magic library
 include_csrf_magic();

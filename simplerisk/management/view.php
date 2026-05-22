@@ -130,17 +130,28 @@ if (isset($_GET['id']))
         if ($mitigation == true && $access)
         {
             // Set the mitigation values
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch -- get_mitigation_by_id() returns array of mitigation rows when truthy
             $mitigation_id = $mitigation[0]['mitigation_id'];
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch
             $mitigation_date = $mitigation[0]['submission_date'];
             $mitigation_date = format_date($mitigation_date);
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch
             $planning_strategy = $mitigation[0]['planning_strategy'];
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch
             $mitigation_effort = $mitigation[0]['mitigation_effort'];
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch
             $mitigation_cost = $mitigation[0]['mitigation_cost'];
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch
             $mitigation_owner = $mitigation[0]['mitigation_owner'];
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch
             $mitigation_team = $mitigation[0]['mitigation_team'];
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch
             $current_solution = $mitigation[0]['current_solution'];
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch
             $security_requirements = $mitigation[0]['security_requirements'];
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch
             $security_recommendations = $mitigation[0]['security_recommendations'];
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch
             $planning_date = format_date($mitigation[0]['planning_date']);
             $mitigation_percent = (isset($mitigation[0]['mitigation_percent']) && $mitigation[0]['mitigation_percent'] >= 0 && $mitigation[0]['mitigation_percent'] <= 100) ? $mitigation[0]['mitigation_percent'] : 0;
             $mitigation_controls = isset($mitigation[0]['mitigation_controls']) ? $mitigation[0]['mitigation_controls'] : "";

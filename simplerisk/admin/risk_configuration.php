@@ -7,6 +7,50 @@
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
     render_header_and_sidebar(['tabs:logic', 'editable'], ['check_admin' => true]);
 
+    // Check if the review settings update was submitted
+    //
+    // Relocated from admin/review_settings.php during the Settings Hub
+    // consolidation — review cadence is a risk-lifecycle concern that
+    // lives on the Risk Configuration page (Review Settings tab) rather
+    // than a standalone Hub tile.
+    if (isset($_POST['update_review_settings_input']) && $_POST['update_review_settings_input'] == 'review_settings')
+    {
+        $veryhigh = (int)$_POST['veryhigh'];
+        $high = (int)$_POST['high'];
+        $medium = (int)$_POST['medium'];
+        $low = (int)$_POST['low'];
+        $insignificant = (int)$_POST['insignificant'];
+
+        // Check if all values are integers
+        if (is_int($veryhigh) && is_int($high) && is_int($medium) && is_int($low) && is_int($insignificant)){
+            // Update the review settings
+            update_review_settings($veryhigh, $high, $medium, $low, $insignificant);
+
+            // Display an alert
+            set_alert(true, "good", "The review settings have been updated successfully!");
+        }
+            // NOTE: This will never trigger as we bind $high, $medium, and $low to integer values
+        else{
+            // Display an alert
+            set_alert(true, "bad", "One of your review settings is not an integer value.  Please try again.");
+        }
+    }
+
+    // Check if the Risk Appetite was submitted
+    //
+    // Relocated from admin/settings.php's Default Values tab during the
+    // Settings Hub split — the slider lives in the Risk Levels tab here
+    // because it identifies an organizational risk tolerance against the
+    // risk-level gradient defined on the same page, not a "form default".
+    if (isset($_POST['update_risk_appetite'])) {
+        $risk_appetite_post = (float)$_POST['risk_appetite'];
+        if ($risk_appetite_post != get_setting("risk_appetite") && $_POST['risk_appetite'] !== "") {
+            update_setting("risk_appetite", $risk_appetite_post);
+            set_alert(true, "good", "The settings were updated successfully.");
+        }
+        refresh();
+    }
+
     // Check if the SLA thresholds were submitted
     if (isset($_POST['update_sla_thresholds'])) {
 
@@ -171,8 +215,8 @@
 <div class="row">
     <div class="mt-2">
         <nav class="nav nav-tabs">
-            <a class="nav-link active" id="riskLevels-tab" data-bs-toggle="tab" data-bs-target="#risk-levels" type="button" role="tab" aria-controls="riskLevels" aria-selected="true">
-                <?= $escaper->escapeHtml($lang['RiskLevels']); ?> 
+            <a class="nav-link active" id="scoring-tab" data-bs-toggle="tab" data-bs-target="#scoring" type="button" role="tab" aria-controls="scoring" aria-selected="true">
+                <?= $escaper->escapeHtml($lang['Scoring']); ?>
             </a>
             <a class="nav-link" id="classicriskformula-tab" data-bs-toggle="tab" data-bs-target="#classic-risk-formula" type="button" role="tab" aria-controls="classic-risk-formula" aria-selected="false">
                 <?= $escaper->escapeHtml($lang['ClassicRiskFormula']); ?>
@@ -180,11 +224,15 @@
             <a class="nav-link" id="contributingriskformula-tab" data-bs-toggle="tab" data-bs-target="#contributing-risk-formula" type="button" role="tab" aria-controls="contributing-risk-formula" aria-selected="false">
                 <?= $escaper->escapeHtml($lang['ContributingRiskFormula']); ?>
             </a>
+            <a class="nav-link" id="reviewsettings-tab" data-bs-toggle="tab" data-bs-target="#review-settings" type="button" role="tab" aria-controls="review-settings" aria-selected="false">
+                <?= $escaper->escapeHtml($lang['ReviewSettings']); ?>
+            </a>
         </nav>
     </div>
     <div class="tab-content cust-tab-content" id="myTabContent" >
-        <div class="tab-pane active risk-levels-container" id="risk-levels" role="tabpanel" aria-labelledby="riskLevels-tab">
+        <div class="tab-pane active risk-levels-container" id="scoring" role="tabpanel" aria-labelledby="scoring-tab">
             <div class="card-body my-2 border">
+                <h4 class="page-title"><?= $escaper->escapeHtml($lang['RiskLevels']); ?></h4>
     <?php
         $risk_levels = get_risk_levels();
                 display_editable_line_for('RiskLevelTextTop', $risk_levels, 3);
@@ -192,6 +240,75 @@
                 display_editable_line_for('RiskLevelTextRest', $risk_levels, 1);
                 display_editable_line_for('RiskLevelTextRest', $risk_levels, 0);
     ?>
+            </div>
+            <div class="card-body my-2 border">
+                <h4 class="page-title"><?= $escaper->escapeHtml($lang['RiskAppetite']); ?></h4>
+                <form name="risk_appetite_settings" method="post" action="">
+    <?php
+        $risk_appetite = (float)get_setting("risk_appetite", 0);
+
+        // Build a separate ranges array for the slider gradient — we extend
+        // the persisted risk_levels with a synthetic "Insignificant" bucket at
+        // the bottom so the slider can render a 0-value position. This does
+        // not modify the configured risk_levels (the editable-line table above
+        // still reflects the persisted values).
+        $appetite_levels = $risk_levels;
+        if ((int)$appetite_levels[0]['value'] > 0) {
+            array_unshift($appetite_levels, ['value' => 0.0, 'name' => 'Insignificant', 'color' => 'white', 'display_name' => $lang['Insignificant']]);
+        }
+
+        $ranges = [];
+        $number_of_levels = count($appetite_levels);
+        foreach ($appetite_levels as $key => $level) {
+            $next_key = ($key + 1 < $number_of_levels) ? $key + 1 : null;
+            $ranges[] = [
+                'display_name' => $level['display_name'],
+                'color'        => $level['color'],
+                'range'        => [(int)$level['value'], $next_key ? $appetite_levels[$next_key]['value'] - 0.1 : 9999],
+            ];
+        }
+
+        $need_risk_score_normalization = get_setting("need_risk_score_normalization", "true");
+
+        // Calculate the maximum risk score based on the current risk model
+        $max_risk = calculate_maximum_risk_score();
+
+        if ($need_risk_score_normalization == "true") {
+            $multiple_index = 10;
+        } else {
+            $multiple_index = round((100 / $max_risk), 2);
+        }
+
+        $slider_bg_grad = '';
+        foreach ($ranges as $key => $range) {
+            if ($key == 0) {
+                $slider_bg_grad = "{$range['color']} " . ($range['range'][1] * $multiple_index) . "%";
+            } elseif ($key == count($ranges) - 1) {
+                $slider_bg_grad .= ", {$range['color']} " . ($ranges[$key - 1]['range'][1] * $multiple_index) . "%, {$range['color']} 100%";
+            } else {
+                $slider_bg_grad .= ", {$range['color']} " . ($ranges[$key - 1]['range'][1] * $multiple_index) . "%, {$range['color']} " . ($range['range'][1] * $multiple_index) . "%";
+            }
+        }
+    ?>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <div class="slider-progress-values">
+                                    <label><?= $escaper->escapeHtml($lang['RiskAppetite']); ?> :</label>
+                                    <span id="risk_appetite_display" style="border:0; font-weight:bold;"><?= $escaper->escapeHtml($risk_appetite); ?></span>
+                                    <span id="risk_appetite_color" class="risk-color" style="background-color:#ff0000"></span>
+                                </div>
+                                <input type="hidden" id="risk_appetite" name="risk_appetite" value="<?= $escaper->escapeHtml($risk_appetite); ?>">
+                                <div id="slider" style="margin-top: 10px; background-image: linear-gradient(90deg, <?= $slider_bg_grad; ?>); background-size: 100% 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <button type="submit" name="update_risk_appetite" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Update']); ?></button>
+                        </div>
+                    </div>
+                </form>
             </div>
             <div class="card-body my-2 border">
                 <h4 class="page-title"><?= $escaper->escapeHtml($lang['SLAThresholds']); ?></h4>
@@ -238,11 +355,69 @@
         <div class="tab-pane" id="contributing-risk-formula" role="tabpanel" aria-labelledby="contributing-risk-formula-tab">
             <div class="row">
                 <div class="col-12">
-    <?php 
-                    display_contributing_risk_formula(); 
+    <?php
+                    display_contributing_risk_formula();
     ?>
-                </div> 
+                </div>
             </div>
+        </div>
+        <div class="tab-pane" id="review-settings" role="tabpanel" aria-labelledby="reviewsettings-tab">
+            <form name="review_settings" method="post" action="">
+                <?php $review_levels = get_review_levels(); ?>
+                <div class="card-body my-2 border">
+                    <div class="row align-items-end" >
+                        <div class="col-md-6 form-group">
+                            <span>
+                                <?= $escaper->escapeHtml($lang['IWantToReviewVeryHighRiskEvery']); ?>
+                                <span class="editable"><?= $escaper->escapeHtml($review_levels[0]['value']); ?></span>
+                                <input type="text" name="veryhigh" size="2" value="<?= $escaper->escapeHtml($review_levels[0]['value']); ?>" class="editable" style='display: none;'>
+                                <?= $escaper->escapeHtml($lang['days']); ?>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row align-items-end">
+                        <div class="col-md-6 form-group">
+                            <span>
+                                <?= $escaper->escapeHtml($lang['IWantToReviewHighRiskEvery']); ?>
+                                <span class="editable"><?= $escaper->escapeHtml($review_levels[1]['value']); ?></span>
+                                <input type="text" name="high" size="2" value="<?= $escaper->escapeHtml($review_levels[1]['value']); ?>" class="editable" style='display: none;'>
+                                <?= $escaper->escapeHtml($lang['days']); ?>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row align-items-end">
+                        <div class="col-md-6 form-group">
+                            <span>
+                                <?= $escaper->escapeHtml($lang['IWantToReviewMediumRiskEvery']); ?>
+                                <span class="editable"><?= $escaper->escapeHtml($review_levels[2]['value']); ?></span>
+                                <input type="text" name="medium" size="2" value="<?= $escaper->escapeHtml($review_levels[2]['value']); ?>" class="editable" style='display: none;'>
+                                <?= $escaper->escapeHtml($lang['days']); ?>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row align-items-end">
+                        <div class="col-md-6 form-group">
+                            <span>
+                                <?= $escaper->escapeHtml($lang['IWantToReviewLowRiskEvery']); ?>
+                                <span class="editable"><?= $escaper->escapeHtml($review_levels[3]['value']); ?></span>
+                                <input type="text" name="low" size="2" value="<?= $escaper->escapeHtml($review_levels[3]['value']); ?>" class="editable" style='display: none;'>
+                                <?= $escaper->escapeHtml($lang['days']); ?>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row align-items-end">
+                        <div class="col-md-6">
+                            <span>
+                                <?= $escaper->escapeHtml($lang['IWantToReviewInsignificantRiskEvery']); ?>
+                                <span class="editable"><?= $escaper->escapeHtml($review_levels[4]['value']); ?></span>
+                                <input type="text" name="insignificant" size="2" value="<?= $escaper->escapeHtml($review_levels[4]['value']); ?>" class="editable" style='display: none;'>
+                                <?= $escaper->escapeHtml($lang['days']); ?>
+                            </span>
+                        </div>
+                    </div>
+                    <input type="hidden" value="review_settings" name="update_review_settings_input"/>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -286,9 +461,49 @@
     }
 
 
+    // Risk Appetite slider — relocated from admin/settings.php. The ranges
+    // array, slider min/max, and initial value come from the PHP-rendered
+    // risk level configuration above.
+    <?= "var ranges = " . json_encode($ranges) . ";"; ?>
+    function handleValueInRange(value) {
+        var index, len;
+        for (index = 0, len = ranges.length; index < len; ++index) {
+            if (ranges[index]['range'][0] <= value && ranges[index]['range'][1] >= value) {
+                $("#risk_appetite_display").text(ranges[index]['display_name'] + " (" + value + ")");
+                $("#risk_appetite").val(value);
+                $("#risk_appetite_color").css('background-color', ranges[index]['color']);
+
+                return;
+            }
+        }
+    }
+
     $(document).ready(function() {
 
-        $("#risk-levels input.editable").change(function() {
+        $("#slider").slider({
+            value: <?= $risk_appetite * 10; ?>,
+            min: 0,
+    <?php
+        if ($need_risk_score_normalization == "true") {
+            echo "
+            max: 100,
+            ";
+        } else {
+            echo "
+            max: " . $max_risk * 10 . ",
+            ";
+        }
+    ?>
+            step: 1,
+            create: function() {
+                handleValueInRange($("#slider").slider("value") / 10);
+            },
+            slide: function(event, ui) {
+                handleValueInRange(ui.value / 10);
+            }
+        });
+
+        $("#scoring input.editable").change(function() {
 
             //saving it so it can be referenced from the AJAX callbacks
             var _this = $(this);
@@ -351,7 +566,42 @@
 
             //Update color values
             inp.trigger("change");
-            
+
+        });
+
+        // Review Settings tab — editable-cell behaviour for the per-risk-level
+        // review-cadence inputs. Relocated from admin/review_settings.php
+        // and scoped to #review-settings so it does not collide with the
+        // Scoring tab's #scoring-scoped editable handler above.
+        function reviewSettingsResizable(el, factor) {
+            var int = Number(factor) || 7.6;
+            function resize() { el.width((el.val().length + 1) * int); }
+            var e = ["keyup", "keypress", "focus", "blur", "change"];
+            for (var i in e)
+                el.on(e[i], resize);
+            resize();
+        }
+
+        $("#review-settings input.editable").each(function() {
+            reviewSettingsResizable($(this));
+        });
+
+        $("#review-settings").on("click", "span.editable", function() {
+            $(this).hide();
+            $(this).parent().find("input").show().select();
+        });
+
+        $("#review-settings").on("blur", "input.editable", function() {
+            if (!$(this).val()) return false;
+            var label = $(this).parent().find("span.editable");
+            $(this).hide();
+            label.text($(this).val());
+            label.show();
+            $("[name='review_settings']").submit();
+        });
+
+        $("#review-settings input.editable").change(function() {
+            $("[name='review_settings']").submit();
         });
     });
 </script>

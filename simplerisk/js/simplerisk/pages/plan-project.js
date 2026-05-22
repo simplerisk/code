@@ -41,7 +41,7 @@ var planProject = {
             var project_id = $this.closest('div.project-block--header').attr('data-project');
 
             $.ajax({
-                url: BASE_URL + '/api/management/project/delete',
+                url: BASE_URL + '/api/v2/management/project/delete',
                 type: 'POST',
                 data: {delete_project: true, project_id : project_id},
                 success : function (data){
@@ -103,7 +103,7 @@ var planProject = {
                 });
 
                 $.ajax({
-                    url: BASE_URL + '/api/management/project/update_order',
+                    url: BASE_URL + '/api/v2/management/project/update_order',
                     type: 'POST',
                     data: {update_order: true, project_ids : order},
                     success : function (data){
@@ -147,7 +147,7 @@ var planProject = {
                 var target_project_id = $('.project-block--header', this).attr('data-project');
 
                 $.ajax({
-                    url: BASE_URL + '/api/management/project/update',
+                    url: BASE_URL + '/api/v2/management/project/update',
                     type: 'POST',
                     data: {update_projects: true, risk_id : risk_id, project_id : target_project_id},
                     success : function (data){
@@ -198,7 +198,7 @@ var planProject = {
                 var status = $(this).attr('data-status');
 
                 $.ajax({
-                    url: BASE_URL + '/api/management/project/update_status',
+                    url: BASE_URL + '/api/v2/management/project/update_status',
                     type: 'POST',
                     data: {update_project_status: true, project_id : project_id, status:status},
                     success : function (data){
@@ -252,7 +252,7 @@ $(function() {
 
         var form = new FormData($(this)[0]);
         $.ajax({
-            url: BASE_URL + '/api/management/project/add',
+            url: BASE_URL + '/api/v2/management/project/add',
             type: "POST",
             data: form,
             async: true,
@@ -306,7 +306,7 @@ $(function() {
 
         var form = new FormData($(this)[0]);
         $.ajax({
-            url: BASE_URL + '/api/management/project/edit',
+            url: BASE_URL + '/api/v2/management/project/edit',
             type: "POST",
             data: form,
             async: true,
@@ -346,7 +346,7 @@ $(function() {
 
         var project_id = $(this).attr('data-id');
         $.ajax({
-            url: BASE_URL + '/api/management/project/detail?project_id=' + project_id,
+            url: BASE_URL + '/api/v2/management/project/detail?project_id=' + project_id,
             type: 'GET',
             success : function (res){
                 var project = res.data;
@@ -389,7 +389,7 @@ $(function() {
  */
 function init_projects_datatable(table_el) {   
     $(table_el).DataTable({
-        ajax: BASE_URL + '/api/admin/risk_catalog/datatable',
+        ajax: BASE_URL + '/api/v2/admin/risk_catalog/datatable',
         bSort: true,
         paging: false,
         ordering: false,

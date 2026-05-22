@@ -117,6 +117,33 @@
 </div>
 <script>
     $(function() {
+
+        // display custom display settings when clicking the setting cog button
+        $("[data-bs-target='#setting_modal-asset_verified']").on('click', function() {
+
+            // Set false to all checkboxes
+            $(`form#custom_display_settings-asset_verified [type='checkbox']`).prop('checked', false);
+
+            // Set true to checkboxes that are in the custom_display_settings array
+            custom_display_settings_asset_verified.map((e) => {
+                return $(`form#custom_display_settings-asset_verified [name='${e}']`).prop('checked', true);
+            });
+            
+        });
+
+        // display custom display settings when clicking the setting cog button
+        $("[data-bs-target='#setting_modal-asset_unverified']").on('click', function() {
+
+            // Set false to all checkboxes
+            $(`form#custom_display_settings-asset_unverified [type='checkbox']`).prop('checked', false);
+
+            // Set true to checkboxes that are in the custom_display_settings array
+            custom_display_settings_asset_unverified.map((e) => {
+                return $(`form#custom_display_settings-asset_unverified [name='${e}']`).prop('checked', true);
+            });
+            
+        });
+
         $('.datepicker').initAsDatePicker();
 
         // Event handler for the row level actions

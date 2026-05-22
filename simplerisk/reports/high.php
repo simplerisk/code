@@ -5,7 +5,7 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['datatables', 'chart.js'], active_sidebar_submenu: 'Reporting_RiskManagement', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'HighRiskReport');
+    render_header_and_sidebar(['datatables', 'chart.js'], ['check_riskmanagement' => true], active_sidebar_submenu: 'Reporting_Reports', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'HighRiskReport');
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));
@@ -75,7 +75,7 @@
             <div class="col-6">
                 <div class="card-body border">
     <?php 
-                    open_risk_level_pie($escaper->escapeHtml($lang['RiskLevel']), "open_risk_level_pie", false, $score_used); 
+                    open_risk_level_pie($lang['RiskLevel'], "open_risk_level_pie", false, $score_used);
     ?>
                 </div>
             </div>

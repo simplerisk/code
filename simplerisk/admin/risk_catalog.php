@@ -275,7 +275,7 @@
 
     function swap_groups_async(type, group1_id, group2_id) {
         $.ajax({
-            url: BASE_URL + '/api/admin/risk_catalog/swap_groups',
+            url: BASE_URL + '/api/v2/admin/risk_catalog/swap_groups',
             type: 'POST',
             data: {
                 type: type,
@@ -306,7 +306,7 @@
 
         // GET THE RISK DATATABLE
         risk_table = $('#risk_catalog').DataTable({
-            ajax: BASE_URL + '/api/admin/risk_catalog/datatable',
+            ajax: BASE_URL + '/api/v2/admin/risk_catalog/datatable',
             bSort: true,
             paging: false,
             ordering: false,
@@ -384,7 +384,7 @@
                 orders.push([id,newPosition]);
             }
             $.ajax({
-                url: BASE_URL + '/api/admin/risk_catalog/update_order',
+                url: BASE_URL + '/api/v2/admin/risk_catalog/update_order',
                 type: 'POST',
                 data: {orders: orders},
                 success : function (result){
@@ -430,7 +430,7 @@
         /******THREAT CATALOG DATATABLE CONFIGURATION******/
         
         threat_table = $('#threat_catalog').DataTable({
-            ajax: BASE_URL + '/api/admin/threat_catalog/datatable',
+            ajax: BASE_URL + '/api/v2/admin/threat_catalog/datatable',
             bSort: true,
             paging: false,
             ordering: false,
@@ -505,7 +505,7 @@
                 orders.push([id,newPosition]);
             }
             $.ajax({
-                url: BASE_URL + '/api/admin/threat_catalog/update_order',
+                url: BASE_URL + '/api/v2/admin/threat_catalog/update_order',
                 type: 'POST',
                 data: {orders: orders},
                 success : function (result){
@@ -554,7 +554,7 @@
             var modal = $('#risk-catalog--edit');
             var risk_id  = $(this).attr('data-id');
             $.ajax({
-                url: BASE_URL + '/api/admin/risk_catalog/detail?risk_id=' + risk_id,
+                url: BASE_URL + '/api/v2/admin/risk_catalog/detail?risk_id=' + risk_id,
                 type: 'GET',
                 dataType: 'json',
                 success : function (res){
@@ -578,7 +578,7 @@
             var modal = $('#threat-catalog--edit');
             var threat_id  = $(this).attr('data-id');
             $.ajax({
-                url: BASE_URL + '/api/admin/threat_catalog/detail?threat_id=' + threat_id,
+                url: BASE_URL + '/api/v2/admin/threat_catalog/detail?threat_id=' + threat_id,
                 type: 'GET',
                 dataType: 'json',
                 success : function (res){
@@ -651,7 +651,7 @@
 
             $.ajax({
                 type: "POST",
-                url: BASE_URL + "/api/admin/risk_catalog/add_risk_catalog",
+                url: BASE_URL + "/api/v2/admin/risk_catalog/add_risk_catalog",
                 data: form_data,
                 async: true,
                 cache: false,
@@ -723,7 +723,7 @@
 
             $.ajax({
                 type: "POST",
-                url: BASE_URL + "/api/admin/threat_catalog/add_threat_catalog",
+                url: BASE_URL + "/api/v2/admin/threat_catalog/add_threat_catalog",
                 data: form_data,
                 async: true,
                 cache: false,
@@ -773,7 +773,7 @@
             var form_data = new FormData(form[0]);
             $.ajax({
                 type: "POST",
-                url: BASE_URL + "/api/admin/risk_catalog/update_risk_catalog",
+                url: BASE_URL + "/api/v2/admin/risk_catalog/update_risk_catalog",
                 data: form_data,
                 async: true,
                 cache: false,
@@ -814,7 +814,7 @@
             var form_data = new FormData(form[0]);
             $.ajax({
                 type: "POST",
-                url: BASE_URL + "/api/admin/threat_catalog/update_threat_catalog",
+                url: BASE_URL + "/api/v2/admin/threat_catalog/update_threat_catalog",
                 data: form_data,
                 async: true,
                 cache: false,
@@ -847,7 +847,7 @@
             var form_data = new FormData(form[0]);
             $.ajax({
                 type: "POST",
-                url: BASE_URL + "/api/admin/risk_catalog/delete_risk_catalog",
+                url: BASE_URL + "/api/v2/admin/risk_catalog/delete_risk_catalog",
                 data: form_data,
                 async: true,
                 cache: false,
@@ -880,7 +880,7 @@
             var form_data = new FormData(form[0]);
             $.ajax({
                 type: "POST",
-                url: BASE_URL + "/api/admin/threat_catalog/delete_threat_catalog",
+                url: BASE_URL + "/api/v2/admin/threat_catalog/delete_threat_catalog",
                 data: form_data,
                 async: true,
                 cache: false,

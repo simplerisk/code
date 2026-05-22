@@ -5,7 +5,7 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'multiselect'], ['check_governance' => true], active_sidebar_submenu: 'Reporting_Governance', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'DocumentControlMapping');
+    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'multiselect'], ['check_governance' => true], active_sidebar_submenu: 'Reporting_Reports', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'DocumentControlMapping');
 
 ?>
 <div class="row bg-white">

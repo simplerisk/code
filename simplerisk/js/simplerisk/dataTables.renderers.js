@@ -27,7 +27,7 @@ DataTable.render.tags = function (tag_type) {
                         onChange: function() {$('#tags-${id}').data('changed', true);},
                     });
                     $.ajax({
-                        url: BASE_URL + '/api/management/tag_options_of_type?type=${tag_type}',
+                        url: BASE_URL + '/api/v2/management/tag_options_of_type?type=${tag_type}',
                         type: 'GET',
                         dataType: 'json',
                         error: function() {

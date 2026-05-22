@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required configuration files
-require_once(realpath(__DIR__ . '/config.php'));
+require_once(realpath(__DIR__ . '/bootstrap.php'));
 require_once(realpath(__DIR__ . '/functions.php'));
 //require_once(realpath(__DIR__ . '/assessments.php'));
 require_once(realpath(__DIR__ . '/reporting.php'));
@@ -20,6 +20,7 @@ require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 // These are here to make sure they're available when upgrading
 if (!function_exists('index_exists_on_table')) {
+    // @phan-suppress-next-line PhanRedefineFunction -- guarded by function_exists() check above; alternate definition in includes/functions.php
     function index_exists_on_table($index_name, $table) {
 
         // Open the database connection
@@ -39,6 +40,7 @@ if (!function_exists('index_exists_on_table')) {
 }
 
 if (!function_exists('field_exists_in_table')) {
+    // @phan-suppress-next-line PhanRedefineFunction -- guarded by function_exists() check above; alternate definition in includes/functions.php
     function field_exists_in_table($field, $table) {
 
         // Open the database connection
@@ -72,6 +74,7 @@ if (!function_exists('field_exists_in_table')) {
 }
 
 if (!function_exists('table_exists')) {
+    // @phan-suppress-next-line PhanRedefineFunction -- guarded by function_exists() check above; alternate definition in includes/functions.php
     function table_exists($table) {
 
         // Open the database connection
@@ -192,6 +195,7 @@ $releases = [
     "20260302-001",
     "20260421-001",
     "20260422-001",
+    "20260519-001",
 ];
 
 /*************************
@@ -9168,7 +9172,7 @@ function upgrade_from_20260302001($db) {
     // Database version upgrading to
     $version_upgrading_to = '20260421-001';
 
-    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+    echo "BeginBeginningning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
     // Migrate AI settings: rename old Anthropic-only key to provider-agnostic name
     if (setting_exists('anthropic_api_key')) {
@@ -9963,6 +9967,335 @@ function upgrade_from_20260421001($db) {
     $version_upgrading_to = '20260422-001';
 
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20260422-001 *
+ ***************************************/
+function upgrade_from_20260422001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20260422-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20260519-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Creating junction table for document <-> additional_stakeholders associations and doing the migration
+    if (field_exists_in_table('additional_stakeholders', 'documents')) {
+        if (!table_exists('document_additional_stakeholder_mappings')) {
+            echo "Creating `document_additional_stakeholder_mappings` table.<br />\n";
+            $stmt = $db->prepare("
+                CREATE TABLE IF NOT EXISTS `document_additional_stakeholder_mappings` (
+                    `document_id` INT NOT NULL,
+                    `user_id` INT NOT NULL,
+                    PRIMARY KEY(`document_id`, `user_id`),
+                    INDEX(`user_id`, `document_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            ");
+            $stmt->execute();
+        }
+
+        echo "Migrating additional_stakeholders field in documents table to new table.<br />\n";
+        $stmt = $db->prepare("
+            SELECT DISTINCT t1.id document_id, t2.value user_id FROM `documents` t1, `user` t2 WHERE FIND_IN_SET(t2.value, t1.additional_stakeholders);
+        ");
+        $stmt->execute();
+        $array = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+
+        $stmt = $db->prepare("INSERT IGNORE INTO `document_additional_stakeholder_mappings`(document_id, user_id) VALUES (:document_id, :user_id)");
+        foreach($array as $document_id => $additional_stakeholders) {
+            foreach($additional_stakeholders as $additional_stakeholder) {
+                $stmt->bindParam(':document_id', $document_id, PDO::PARAM_INT);
+                $stmt->bindParam(':user_id', $additional_stakeholder['user_id'], PDO::PARAM_INT);
+                $stmt->execute();
+            }
+        }
+
+        echo "Deleting `additional_stakeholders` field from the `documents` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` DROP `additional_stakeholders`; ");
+        $stmt->execute();
+    }
+
+    // Creating junction table for document <-> team associations and doing the migration
+    if (field_exists_in_table('team_ids', 'documents')) {
+        if (!table_exists('document_team_mappings')) {
+            echo "Creating `document_team_mappings` table.<br />\n";
+            $stmt = $db->prepare("
+                CREATE TABLE IF NOT EXISTS `document_team_mappings` (
+                    `document_id` INT NOT NULL,
+                    `team_id` INT NOT NULL,
+                    PRIMARY KEY(`document_id`, `team_id`),
+                    INDEX(`team_id`, `document_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            ");
+            $stmt->execute();
+        }
+
+        echo "Migrating team_ids field in documents table to new table.<br />\n";
+        $stmt = $db->prepare("
+            SELECT DISTINCT t1.id document_id, t2.value team_id FROM `documents` t1, `team` t2 WHERE FIND_IN_SET(t2.value, t1.team_ids);
+        ");
+        $stmt->execute();
+        $array = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+
+        $stmt = $db->prepare("INSERT IGNORE INTO `document_team_mappings`(document_id, team_id) VALUES (:document_id, :team_id)");
+        foreach($array as $document_id => $teams) {
+            foreach($teams as $team) {
+                $stmt->bindParam(':document_id', $document_id, PDO::PARAM_INT);
+                $stmt->bindParam(':team_id', $team['team_id'], PDO::PARAM_INT);
+                $stmt->execute();
+            }
+        }
+
+        echo "Deleting `team_ids` field from the `documents` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` DROP `team_ids`; ");
+        $stmt->execute();
+    }
+
+
+    // Create the user_favorite_reports table for per-user starred reports.
+    // Composite primary key prevents duplicate favorites; FK with ON DELETE
+    // CASCADE removes a user's favorites when their account is deleted.
+    if (!table_exists('user_favorite_reports')) {
+        echo "Creating the `user_favorite_reports` table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `user_favorite_reports` (
+                `user_id` INT NOT NULL,
+                `report_key` VARCHAR(64) NOT NULL,
+                `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (`user_id`, `report_key`),
+                CONSTRAINT `fk_ufr_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`value`) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        ");
+        $stmt->execute();
+    }
+
+    // Remove the legacy config.php.sample shipped before the rename to
+    // config.sample.php. Bundle extraction does not delete files that no
+    // longer exist in the new release, so we explicitly remove the old
+    // name here to keep upgraded installs clean.
+    //
+    // Operate on the literal path rather than its realpath so that a
+    // symlink at this location is left alone — we don't want to follow
+    // an unexpected symlink and delete its target.
+    $legacy_sample = __DIR__ . '/config.php.sample';
+    if (is_link($legacy_sample))
+    {
+        echo "<font color=\"red\"><b>The legacy config.php.sample at " . $legacy_sample . " is a symlink. Skipping automatic deletion — please review and remove it manually if appropriate.</b></font><br />\n";
+    }
+    else if (file_exists($legacy_sample))
+    {
+        echo "Deleting the legacy config.php.sample file.<br />\n";
+        if (!delete_file($legacy_sample))
+        {
+            echo "<font color=\"red\"><b>Could not delete the legacy config.php.sample file.  You can manually delete it here: " . $legacy_sample . "</b></font><br />\n";
+        }
+    }
+
+    // Settings Hub: per-user favorites for admin Settings tiles.
+    // Mirrors user_favorite_reports — admin-only, but the FK is on user.value
+    // so DELETE CASCADEs when a user is removed. settings_key matches the
+    // catalog entry key (e.g., 'user_management', 'audit_trail').
+    //
+    // The table + column were originally named user_favorite_configure /
+    // configure_key on this branch; they were renamed before release to align
+    // with the user-facing "Settings" Hub label. Instances that pulled the
+    // branch mid-development may have the old names — rename in place so
+    // existing data + foreign keys are preserved on those installs.
+    if (table_exists('user_favorite_configure') && !table_exists('user_favorite_settings')) {
+        echo "Renaming `user_favorite_configure` table to `user_favorite_settings`.<br />\n";
+        $db->prepare("RENAME TABLE `user_favorite_configure` TO `user_favorite_settings`")->execute();
+    }
+    if (table_exists('user_favorite_settings')) {
+        // If the table was just renamed (or was created on an even-older
+        // branch revision), the column may still be `configure_key`. Rename
+        // it to `settings_key` to match the new identifiers in
+        // settings_catalog.php. getTypeOfColumn returns "" when the column
+        // doesn't exist, so a non-empty result signals "rename needed."
+        $col_type = getTypeOfColumn('user_favorite_settings', 'configure_key');
+        if (!empty($col_type)) {
+            echo "Renaming column `configure_key` to `settings_key` on `user_favorite_settings`.<br />\n";
+            $db->prepare("ALTER TABLE `user_favorite_settings` CHANGE `configure_key` `settings_key` VARCHAR(64) NOT NULL")->execute();
+        }
+    }
+    if (!table_exists('user_favorite_settings')) {
+        echo "Creating the `user_favorite_settings` table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `user_favorite_settings` (
+                `user_id`       INT          NOT NULL,
+                `settings_key`  VARCHAR(64)  NOT NULL,
+                PRIMARY KEY (`user_id`, `settings_key`),
+                CONSTRAINT `fk_uf_settings_user`
+                    FOREIGN KEY (`user_id`) REFERENCES `user`(`value`) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        ");
+        $stmt->execute();
+    }
+
+    // Seed default favorite reports for every existing user so the Reports
+    // Hub has a useful starting set after the upgrade lands. New users
+    // created from here on get the same defaults via add_user(). The list
+    // (connectivity_visualizer, dynamic_risk_report, dynamic_audit_report)
+    // lives in default_favorite_report_keys() in reports_catalog.php — edit
+    // it there to change the set. Idempotent: INSERT IGNORE preserves any
+    // pre-existing favorites and a user who later unfavorites one of these
+    // is unaffected on re-run.
+    //
+    // Must run AFTER the CREATE TABLE above in the same upgrade function —
+    // otherwise the table_exists() guard skips silently on first install.
+    if (table_exists('user_favorite_reports')) {
+        echo "Seeding default favorite reports for all existing users.<br />\n";
+        require_once(realpath(__DIR__ . '/reports_catalog.php'));
+        $stmt = $db->prepare("
+            INSERT IGNORE INTO `user_favorite_reports` (`user_id`, `report_key`)
+            SELECT u.`value`, :report_key FROM `user` u
+        ");
+        foreach (default_favorite_report_keys() as $report_key) {
+            $stmt->bindValue(':report_key', $report_key, PDO::PARAM_STR);
+            $stmt->execute();
+        }
+    }
+
+    // Seed default favorite settings tiles for every existing user so
+    // the Settings Hub has a useful starting set after the upgrade
+    // lands. New users from here on get the same defaults via add_user().
+    // The list (settings_preferences, health_check, register) lives in
+    // default_favorite_settings_keys() in settings_catalog.php — edit
+    // it there to change the set. Idempotent: INSERT IGNORE preserves
+    // any pre-existing favorites and a user who later unfavorites one
+    // is unaffected on re-run.
+    //
+    // Must run AFTER the CREATE TABLE for user_favorite_settings above
+    // in the same upgrade function — otherwise the table_exists() guard
+    // skips silently on first install.
+    if (table_exists('user_favorite_settings')) {
+        echo "Seeding default favorite settings tiles for all existing users.<br />\n";
+        require_once(realpath(__DIR__ . '/settings_catalog.php'));
+        $stmt = $db->prepare("
+            INSERT IGNORE INTO `user_favorite_settings` (`user_id`, `settings_key`)
+            SELECT u.`value`, :settings_key FROM `user` u
+        ");
+        foreach (default_favorite_settings_keys() as $settings_key) {
+            $stmt->bindValue(':settings_key', $settings_key, PDO::PARAM_STR);
+            $stmt->execute();
+        }
+    }
+
+    // Seed the asset_valuation_mode setting that drives the Asset Management
+    // tab's mode selector (Linear / Exponential / Manual) on
+    // admin/settings_preferences.php. Default to 'manual' so existing
+    // instances preserve any hand-edited bucket boundaries on upgrade — an
+    // admin who wants a generated range can switch to Linear or Exponential
+    // explicitly. Idempotent: only seeded when absent.
+    if (!setting_exists('asset_valuation_mode')) {
+        echo "Seeding asset_valuation_mode setting with default value 'manual'.<br />\n";
+        add_setting('asset_valuation_mode', 'manual');
+    }
+
+    // Seed the enable_api_v1 setting for the API v1 deprecation gate.
+    // Default behavior:
+    //   - On instances with the API Extra installed and active, default to '1'
+    //     to preserve backward compatibility for any external customer
+    //     integration that relies on the v1 endpoints.
+    //   - Everywhere else, default to '0' (v1 disabled). The unversioned
+    //     /api/<path> dispatcher transparently falls through to v2 in that
+    //     mode; explicit /api/v1/<path> requests return HTTP 410.
+    // Skip if the setting already exists (idempotent across re-runs).
+    if (get_setting('enable_api_v1') === false) {
+        $enable_api_v1 = api_extra() ? '1' : '0';
+        echo "Seeding enable_api_v1 setting to '" . $enable_api_v1 . "' (api_extra=" . ($enable_api_v1 === '1' ? 'true' : 'false') . ").<br />\n";
+        write_debug_log("Seeded enable_api_v1 setting to '" . $enable_api_v1 . "' during upgrade to " . $version_upgrading_to . ".", 'notice');
+        update_or_insert_setting('enable_api_v1', $enable_api_v1);
+    }
+
+    // Remove stale files that were deleted in this release. The Configure
+    // Hub work:
+    //   - merged the legacy admin/extras.php content into per-Extra tiles
+    //     in the Hub (file deleted).
+    //   - inlined the VM Configure UI into admin/vulnmgmt.php via a helper
+    //     in the VM Extra's tree (vulnerabilities/configure.php deleted —
+    //     the new home is admin/vulnmgmt.php).
+    //   - consolidated Active Assessments into admin/assessments.php as a
+    //     tab via display_assessments_active() in the Assessments Extra's
+    //     tree (admin/active_assessments.php deleted — the new home is
+    //     admin/assessments.php#active-tab-pane).
+    //   - split the legacy 6-tab admin/settings.php into dedicated
+    //     single-purpose Hub tiles for file upload, mail, backups,
+    //     security, and logging. The Risk Appetite slider moved to
+    //     admin/risk_configuration.php in the Scoring tab. The Base URL
+    //     setting moved to the Security page. admin/settings.php is
+    //     deleted.
+    //   - merged admin/settings_default_values.php and
+    //     admin/settings_user_interface.php into a single Preferences
+    //     page at admin/settings_preferences.php (tagged Customization).
+    //     Both legacy paths are deleted; customers upgrading need them
+    //     unlinked so the Hub renders only the new tile.
+    //   - renamed admin/configure_risk_formula.php to
+    //     admin/risk_configuration.php to reflect the broader scope of
+    //     the page (Risk Levels, Risk Appetite, SLA Thresholds, and the
+    //     classic + contributing risk formulas).
+    //   - merged admin/review_settings.php into admin/risk_configuration.php
+    //     as a fourth "Review Settings" tab so review cadence sits
+    //     alongside the other risk-lifecycle controls; the standalone
+    //     Hub tile and page are deleted.
+    //   - tabified admin/settings_preferences.php into five Bootstrap tabs
+    //     (System, Risk Management, Governance, Compliance, Asset
+    //     Management) and absorbed admin/assetvaluation.php (Automatic
+    //     and Manual Asset Valuation forms) into the Asset Management
+    //     tab; the standalone Hub tile and page are deleted.
+    //   - collapsed the Incident Management sub-hub (four tiles linking
+    //     to incidents/configure.php?menu=… and admin/notification.php)
+    //     into a single tabbed admin page at admin/incidentmanagement.php
+    //     with Settings / Add and Remove Values / Playbooks / Notifications
+    //     tabs. incidents/configure.php is deleted; the new home is
+    //     admin/incidentmanagement.php.
+    //   - removed the Content tile (admin/content.php). The page was a
+    //     promotional gate for the Import-Export Extra; admins who want
+    //     to install frameworks should reach for the Import-Export Extra
+    //     tile directly. admin/content.php is deleted.
+    // Also retires management/comment.php: the legacy forms that posted to
+    // it (viewhtml.php, assessments/index.php) had their action attribute
+    // removed, and comment submission now goes through the v2 API endpoints
+    // (/api/v2/management/risk/saveComment and
+    // /api/v2/assessments/questionnaire/save_result_comment).
+    // Customers upgrading from an older release will still have these
+    // stale files on disk; unlink them so they don't linger.
+    $stale_files = [
+        __DIR__ . '/../admin/extras.php',
+        __DIR__ . '/../admin/active_assessments.php',
+        __DIR__ . '/../vulnerabilities/configure.php',
+        __DIR__ . '/../admin/settings.php',
+        __DIR__ . '/../admin/configure_risk_formula.php',
+        __DIR__ . '/../admin/review_settings.php',
+        __DIR__ . '/../admin/settings_default_values.php',
+        __DIR__ . '/../admin/settings_user_interface.php',
+        __DIR__ . '/../admin/assetvaluation.php',
+        __DIR__ . '/../management/comment.php',
+        __DIR__ . '/../incidents/configure.php',
+        __DIR__ . '/../admin/content.php',
+    ];
+    foreach ($stale_files as $stale_file) {
+        $resolved = realpath($stale_file);
+        if ($resolved !== false && is_file($resolved)) {
+            if (@unlink($resolved)) {
+                echo "Removed stale file: " . htmlspecialchars($stale_file) . ".<br />\n";
+                write_debug_log("Upgrade removed stale file: " . $stale_file, 'notice');
+            } else {
+                echo "Could not remove stale file (check permissions): " . htmlspecialchars($stale_file) . ".<br />\n";
+                write_debug_log("Upgrade could not remove stale file: " . $stale_file, 'warning');
+            }
+        }
+    }
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
 
     // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);

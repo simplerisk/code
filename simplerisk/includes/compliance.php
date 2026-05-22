@@ -5,10 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required configuration files
-require_once(realpath(__DIR__ . '/config.php'));
+require_once(realpath(__DIR__ . '/bootstrap.php'));
 require_once(realpath(__DIR__ . '/cvss.php'));
 require_once(realpath(__DIR__ . '/services.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
+require_once(realpath(__DIR__ . '/extras.php'));
 
 // Include the language file
 require_once(language_file());
@@ -45,7 +46,7 @@ function display_framework_controls_in_compliance()
                     stateDuration: 60 * 30,
                     ajax: {
                         type: 'post',
-                        url: BASE_URL + '/api/compliance/define_tests',
+                        url: BASE_URL + '/api/v2/compliance/define_tests',
                         data: function(d){
                             d.control_framework = $('#filter_by_control_framework').val();
                             d.control_family = $('#filter_by_control_family').val();
@@ -758,7 +759,7 @@ function display_active_audits() {
     
                         $.ajax({
                             type: 'POST',
-                            url: BASE_URL + '/api/compliance/delete_audit',
+                            url: BASE_URL + '/api/v2/compliance/delete_audit',
                             data : {
                                 id: id
                             },
@@ -811,6 +812,7 @@ function initiate_framework_control_tests($type, $id, $tags=[]){
     // Open the database connection
     $db = db_open();
 
+    $name = null;
     switch($type){
         case "framework":
             if ($separation_enabled && !in_array($id, $compliance_separation_access_info['frameworks']))
@@ -840,6 +842,7 @@ function initiate_framework_control_tests($type, $id, $tags=[]){
             $test_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
             
             foreach($test_ids as $test_id){
+                // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
                 if ($separation_enabled && !in_array($test_id, $compliance_separation_access_info['framework_control_tests']))
                     continue;
 
@@ -866,9 +869,10 @@ function initiate_framework_control_tests($type, $id, $tags=[]){
 
             $test_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
             foreach($test_ids as $test_id){
+                // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
                 if ($separation_enabled && !in_array($test_id, $compliance_separation_access_info['framework_control_tests']))
                     continue;
-                
+
                 initiate_test_audit($test_id, $initiated_audit_status, $tags);
             }
         break;
@@ -943,15 +947,13 @@ function initiate_test_audit($test_id, $initiated_audit_status, $tags=[], $reque
     // Close the database connection
     db_close($db);
 
-    // If notification is enabled
-    if (notification_extra())
-    {
-        // Include the notification extra
-        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-        // Send the notification
-        notify_audit_initiate($audit_id, $requested_from_ui);
-    }  
+    // Send the notification (no-op if notification extra is disabled)
+    call_extra_function(
+        'notification_extra',
+        __DIR__ . '/../extras/notification/index.php',
+        'notify_audit_initiate',
+        [$audit_id, $requested_from_ui]
+    );
 
     // If the initiate test audit was requested from the UI
     if ($requested_from_ui) {
@@ -1367,15 +1369,13 @@ function save_test_comment($test_audit_id, $comment){
         // Close the database connection
         db_close($db);
         
-        // If notification is enabled
-        if (notification_extra())
-        {
-            // Include the notification extra
-            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-            // Send the notification
-            notify_audit_comment($test_audit_id, $comment);
-        }        
+        // Send the notification (no-op if notification extra is disabled)
+        call_extra_function(
+            'notification_extra',
+            __DIR__ . '/../extras/notification/index.php',
+            'notify_audit_comment',
+            [$test_audit_id, $comment]
+        );
 
         set_alert(true, "good",  "Your comment has been successfully added to the audit.");
     }
@@ -1449,13 +1449,14 @@ function display_testing() {
         $tags_view .= "--";
     }
   
+    // @phan-suppress-next-line SecurityCheck-XSS -- $close_risks is from $_SESSION (server-side, not user-controlled); all other values in this echo are escaped
     echo "
         <div class='card-body border my-2'>
             <form id='edit-test' class='' method='POST' enctype='multipart/form-data'>
-                <input type='hidden' name='origin_test_results' id='origin_test_results' value='{$test_audit['test_result']}' data-permission='{$close_risks}'>
+                <input type='hidden' name='origin_test_results' id='origin_test_results' value='{$escaper->escapeHtml($test_audit['test_result'])}' data-permission='{$close_risks}'>
                 <input type='hidden' name='remove_associated_risk' id='remove_associated_risk' value='0'>
                 <input type='hidden' name='associate_new_risk_id' id='associate_new_risk_id' value=''>
-                <input type='hidden' name='associate_exist_risk_ids' id='associate_exist_risk_ids' value='" . implode(",", $risk_ids) . "'>
+                <input type='hidden' name='associate_exist_risk_ids' id='associate_exist_risk_ids' value='" . implode(",", array_map('intval', $risk_ids)) . "'>
                 <h4>{$escaper->escapeHtml($test_audit['name'])}</h4>
                 <div class='row'>
                     <div class='col-6'>
@@ -1479,7 +1480,7 @@ function display_testing() {
                         </div>
                         <div class='form-group'>
                             <label>{$escaper->escapeHtml($lang['TestDate'])} :</label>
-                            <input name='test_date' value='{$test_audit['test_date']}' required class='datepicker form-control' type='text'>
+                            <input name='test_date' value='{$escaper->escapeHtml($test_audit['test_date'])}' required class='datepicker form-control' type='text'>
                         </div>
                         <div class='form-group'>
                             <label>{$escaper->escapeHtml($lang['Teams'])} :</label>
@@ -1597,8 +1598,9 @@ function display_compliance_files($ref_id, $ref_type){
         ";
     }
     
+    // @phan-suppress-next-line SecurityCheck-XSS -- build_url() called with hardcoded path; unique_name is pre-escaped
     echo $html;
-    
+
     return count($files);
 }
 
@@ -1846,7 +1848,7 @@ function display_test_audit_comment($test_audit_id) {
 
                 $.ajax({
                     type: 'POST',
-                    url: BASE_URL + '/api/compliance/save_audit_comment',
+                    url: BASE_URL + '/api/v2/compliance/save_audit_comment',
                     data: form,
                     contentType: false,
                     processData: false,
@@ -1923,6 +1925,21 @@ function get_testing_comment_list($test_audit_id) {
 
     return $returnHTML;
     
+}
+
+/********************************************************************
+ * FUNCTION: IS VALID TEST RESULT NAME                                *
+ *                                                                    *
+ * Validates that $name is either the empty string ("not yet set"     *
+ * sentinel) or a row in the `test_results` lookup table. The table   *
+ * is seeded once at install with Pass/Inconclusive/Fail and has no   *
+ * admin UI to extend it, but driving validation off the live table   *
+ * keeps this in lock-step with whatever rows actually exist.         *
+ ********************************************************************/
+function is_valid_test_result_name($name) {
+    $name = (string)$name;
+    if ($name === '') return true;
+    return (bool)get_value_by_name('test_results', $name);
 }
 
 /********************************
@@ -2089,6 +2106,7 @@ function delete_compliance_file($file_id){
         // Audit log entry for deleting a file
         $message = "File \"" . $file['name'] . "\" was deleted by username \"" . $_SESSION['user'] . "\".";
         $log_type = $file['ref_type'];
+        $ref_type = null;
         if ($ref_type == 'documents') {
             $log_type = 'document';
         } else if ($ref_type == 'exceptions') {
@@ -2115,14 +2133,23 @@ function submit_test_result()
 
     $test_audit_id  = (int)$_GET['id'];
     $test_audit_status  = (int)$_POST['status'];
-    $test_result    = $_POST['test_result'];
+    $test_result    = isset($_POST['test_result']) ? (string)$_POST['test_result'] : '';
     $tester         = (int)$_POST['tester'];
     $test_date      = $_POST['test_date'];
     $teams          = isset($_POST['team']) ? $_POST['team'] : [];
     $summary        = $_POST['summary'];
     $tags           = isset($_POST['tags']) ? $_POST['tags'] : [];
-    
+
     if(!$test_audit_id || !$tester || !$test_date)
+    {
+        set_alert(true, "bad", $lang['InvalidParams']);
+        return false;
+    }
+
+    // Reject test_result values that aren't in the test_results lookup
+    // table — guards against arbitrary strings (e.g. HTML/JS payloads)
+    // being persisted and rendered back into compliance views.
+    if (!is_valid_test_result_name($test_result))
     {
         set_alert(true, "bad", $lang['InvalidParams']);
         return false;
@@ -2308,7 +2335,7 @@ function display_past_audits() {
                     var id = $(this).data('id');
                     $.ajax({
                         type: 'POST',
-                        url: BASE_URL + '/api/compliance/reopen_audit',
+                        url: BASE_URL + '/api/v2/compliance/reopen_audit',
                         data:{
                             id: id
                         },
@@ -2454,8 +2481,9 @@ function display_detail_test() {
                 continue; // skip invalid entries
             }
 
+            // @phan-suppress-next-line SecurityCheck-XSS -- build_url() called with hardcoded path; unique_name is regex-validated and pre-escaped
             echo  "
-                        <p>            
+                        <p>
                             <a href='" . build_url("compliance/download.php?id={$escaper->escapeHtml($file['unique_name'])}") . "' >{$escaper->escapeHtml($file['name'])}</a>
                         </p>
             ";
@@ -3001,23 +3029,23 @@ function get_audit_tests($order_field=false, $order_dir=false)
     
     switch($order_field)
     {
-        case "test_name";
+        case "test_name":
             $sql .= " ORDER BY t1.name {$order_dir} ";
         break;
-        case "associated_frameworks";
+        case "associated_frameworks":
             // If encryption extra is disabled, sort by query
             if(!encryption_extra())
             {
                 $sql .= " ORDER BY framework_names {$order_dir} ";
             }
         break;
-        case "last_test_date";
+        case "last_test_date":
             $sql .= " ORDER BY t1.last_date {$order_dir} ";
         break;
-        case "next_test_date";
+        case "next_test_date":
             $sql .= " ORDER BY t1.next_date {$order_dir} ";
         break;
-        case "last_test_result";
+        case "last_test_result":
             $sql .= " ORDER BY last_test_result {$order_dir} ";
         break;
     }

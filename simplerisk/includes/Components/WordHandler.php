@@ -13,6 +13,7 @@ require_once (realpath(__DIR__ . '/../../vendor/autoload.php'));
 require_once(realpath(__DIR__ . '/../functions.php'));
 
 use DOMDocument;
+use DOMElement;
 use DOMNode;
 use PDO;
 use ZipArchive;
@@ -50,11 +51,14 @@ class WordHandler
     public function convertTmpDocxToMarkdown(string $unique_name): string
     {
         $file = load_tmp_file($this->db, $unique_name);
+        // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
         $content = $file['content'];
+        // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
         $mimeType = $file['type'];
+        // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
         $fileName = $file['name'];
         if (!$file) {
-            throw new Exception("Temporary file not found: $unique_name");
+            throw new \Exception("Temporary file not found: $unique_name");
         }
         return self::convertDocxToMarkdown($content);
     }
@@ -69,7 +73,7 @@ class WordHandler
 
         if ($zip->open($meta['uri']) !== true) {
             fclose($tmp);
-            throw new Exception("Failed to open DOCX as ZIP archive");
+            throw new \Exception("Failed to open DOCX as ZIP archive");
         }
 
         $md = '';
@@ -202,6 +206,7 @@ class WordHandler
     {
         // Normal paragraph style
         $phpWord->addParagraphStyle('Normal', [
+            // @phan-suppress-next-line PhanDeprecatedClassConstant -- Jc::START not available in this PhpWord version
             'alignment' => Jc::LEFT,
             'spaceAfter' => 120,
             'spacing' => 120,
@@ -435,6 +440,7 @@ class WordHandler
                 case 'p':
                     $text = trim($child->textContent);
                     if ($text !== '') {
+                        // @phan-suppress-next-line PhanDeprecatedClassConstant -- Jc::START not available in this PhpWord version
                         $section->addText($text, null, ['alignment' => Jc::LEFT]);
                     }
                     break;
@@ -479,7 +485,7 @@ class WordHandler
     /**
      * Table processing for DOCX
      */
-    private function processTableManually($section, DOMNode $tableNode): void
+    private function processTableManually($section, DOMElement $tableNode): void
     {
         $table = $section->addTable();
 
@@ -487,6 +493,7 @@ class WordHandler
             $table->addRow();
             foreach ($tr->getElementsByTagName('td') as $td) {
                 $text = trim($td->textContent);
+                // @phan-suppress-next-line PhanDeprecatedClassConstant -- Jc::START not available in this PhpWord version
                 $table->addCell(1750)->addText($text, null, ['alignment' => Jc::LEFT]);
             }
             // Optionally handle <th>

@@ -6,7 +6,7 @@ $.fn.extend({
             fitColumns: true,
             nowrap: true,
             collapsible: false,
-            url: BASE_URL + '/api/compliance/initiate_audits',
+            url: BASE_URL + '/api/v2/compliance/initiate_audits',
             method: 'get',
             idField: 'id',
             treeField: 'name',
@@ -40,7 +40,7 @@ function createTagsInstance(tag, tag_type, options) {
             if (query.length) return callback();
             
             $.ajax({
-                url: BASE_URL + '/api/management/tag_options_of_types?type=' + tag_type,
+                url: BASE_URL + '/api/v2/management/tag_options_of_types?type=' + tag_type,
                 type: 'GET',
                 dataType: 'json',
                 error: function() {
@@ -199,7 +199,7 @@ $(function(){
 
         $.ajax({
             type: "GET",
-            url: BASE_URL + "/api/compliance/test?id=" + test_id,
+            url: BASE_URL + "/api/v2/compliance/test?id=" + test_id,
             success: function(result) {
                 let data = result['data'];
                 let modal = $('#test--update');

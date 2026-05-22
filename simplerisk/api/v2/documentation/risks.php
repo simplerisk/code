@@ -1250,6 +1250,41 @@ class OpenApiResidualScoringHistory {}
 
 /**
  * @OA\Post(
+ *     path="/management/risk/scoring-method",
+ *     summary="Change a risk's scoring method and recompute its score",
+ *     description="Changes the scoring method (Classic / CVSS / DREAD / OWASP / Custom / Contributing Risk) for an existing risk and recomputes the calculated risk against the values already stored for that method on the risk record. Requires the modify_risks permission and team-separation visibility into the risk.",
+ *     operationId="updateRiskScoringMethod",
+ *     tags={"risk"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 required={"id", "scoring_method"},
+ *                 @OA\Property(property="id", type="integer", format="int32", description="External risk ID (internal ID + 1000)."),
+ *                 @OA\Property(property="scoring_method", type="integer", description="Numeric scoring method: 1=Classic, 2=CVSS, 3=DREAD, 4=OWASP, 5=Custom, 6=Contributing Risk.", enum={1, 2, 3, 4, 5, 6})
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *       response=200,
+ *       description="Scoring method changed successfully. Returns the rendered score-overview tab HTML.",
+ *     ),
+ *     @OA\Response(
+ *       response=400,
+ *       description="Missing or invalid id / scoring_method, or caller lacks the modify_risks permission or team-separation visibility into the risk.",
+ *     ),
+ *     @OA\Response(
+ *       response=404,
+ *       description="No risk exists with the supplied id.",
+ *     ),
+ * )
+ */
+class OpenApiUpdateRiskScoringMethod {}
+
+/**
+ * @OA\Post(
  *     path="/management/risk/reopen",
  *     summary="Reopen a closed risk",
  *     operationId="reopenRisk",
@@ -1302,6 +1337,43 @@ class OpenApiReopenRisk {}
  * )
  */
 class OpenApiSaveRiskSubject {}
+
+/**
+ * @OA\Post(
+ *     path="/management/risk/setProjectToRisk",
+ *     summary="Associate a risk with a project",
+ *     description="Sets the project association on the given risk. Used by the Risk Management workflow when a management review concludes that a risk should be tracked under a specific project. Requires the modify_risks permission and access to the risk.",
+ *     operationId="setProjectToRisk",
+ *     tags={"risk"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         in="query",
+ *         name="id",
+ *         required=true,
+ *         description="The risk ID (1000-padded display id).",
+ *         @OA\Schema(type="integer"),
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 required={"project_id"},
+ *                 @OA\Property(property="project_id", type="integer", format="int32", description="The project ID to associate with this risk.")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Project association set successfully.",
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="BAD REQUEST: Missing id, missing/invalid project_id, or user lacks modify_risks permission/access to the risk.",
+ *     ),
+ * )
+ */
+class OpenApiSetProjectToRisk {}
 
 /**
  * @OA\Post(

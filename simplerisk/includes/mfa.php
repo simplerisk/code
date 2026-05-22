@@ -472,7 +472,8 @@ function get_mfa_qr_code_image($uid)
 {
     // Get the username for this uid
     $user = get_user_by_id($uid);
-    $username = $user['username'];
+    // @phan-suppress-next-line PhanTypeInvalidDimOffset -- get_user_by_id() returns the user row including 'username' when valid
+    $username = $user ? ($user['username'] ?? '') : '';
 
     // Get the MFA secret for the authenticated user
     $mfa = get_mfa_secret_for_uid($uid);

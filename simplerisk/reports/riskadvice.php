@@ -6,7 +6,7 @@
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 
-    render_header_and_sidebar(['chart.js'], active_sidebar_submenu: 'Reporting_RiskManagement', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'RiskAdvice');
+    render_header_and_sidebar(['chart.js'], ['check_riskmanagement' => true], active_sidebar_submenu: 'Reporting_Reports', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'RiskAdvice');
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));
@@ -22,14 +22,14 @@
             <div class="col-md-6">
                 <div class="card-body border">
     <?php 
-                    open_risk_level_pie($escaper->escapeHtml($lang['InherentRisk']), "open_inherent_risk_level_pie", false, "inherent"); 
+                    open_risk_level_pie($lang['InherentRisk'], "open_inherent_risk_level_pie", false, "inherent");
     ?>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="card-body border">
     <?php 
-                    open_risk_level_pie($escaper->escapeHtml($lang['ResidualRisk']), "open_residual_risk_level_pie", false, "residual"); 
+                    open_risk_level_pie($lang['ResidualRisk'], "open_residual_risk_level_pie", false, "residual");
     ?>
                 </div>
             </div>

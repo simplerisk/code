@@ -16,7 +16,7 @@
     if (!isset($_SESSION))
     {
         // Session handler is database
-        if (USE_DATABASE_FOR_SESSIONS == "true")
+        if (use_database_for_sessions())
         {
             session_set_save_handler(new SimpleRiskSessionHandler());
         }
@@ -79,9 +79,7 @@ require_once(language_file());
                 // If the user should not have access to the risk
                 if (!extra_grant_access($_SESSION['uid'], $id))
                 {
-                        // Redirect back to the page the workflow started on
-                        header("Location: " . $_SESSION["workflow_start"]);
-                        exit(0);
+                        redirect_permission_denied('NoPermissionForThisAction', "change status of risk id={$id}");
                 }
         }
 
@@ -160,8 +158,14 @@ require_once(language_file());
         {
             if (!(isset($_SESSION["close_risks"]) && $_SESSION["close_risks"] == 1) && $option['name'] === "Closed") continue;
 
+            // Hoisted so the suppression below sits directly above the
+            // flagged escape — `@phan-suppress-next-line` only covers the
+            // immediately following line and can't reach into a multi-line
+            // echo string.
+            // @phan-suppress-next-line SecurityCheck-DoubleEscaped -- $option['name'] is raw DB data from get_options_from_table('status'); flagged because get_options_from_table has a separate asset_valuation branch (in get_custom_table) that pre-escapes its name field, which Phan's multi-path return analysis can't distinguish from the status branch taken here.
+            $escaped_option_name = $escaper->escapeHtml($option['name']);
             echo "
-                            <option value='" . $escaper->escapeHtml($option['value']) . "'>" . $escaper->escapeHtml($option['name']) . "</option>
+                            <option value='" . $escaper->escapeHtml($option['value']) . "'>" . $escaped_option_name . "</option>
             ";
         }
 

@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required configuration files
-require_once(realpath(__DIR__ . '/config.php'));
+require_once(realpath(__DIR__ . '/bootstrap.php'));
 require_once(realpath(__DIR__ . '/queues.php'));
 
 // Require the composer autoload file
@@ -32,6 +32,8 @@ function get_mail_settings()
 
         // Close the database connection
         db_close($db);
+
+        $mail = [];
 
         // For each entry in the array
         foreach ($array as $value)
@@ -313,7 +315,7 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
  * FUNCTION: SEND EMAIL          *
  * Will queue emails for sending *
  *********************************/
-function send_email(PDO $db, $name, $email, $subject, $body)
+function send_email(PDO $db, $name, $email, $subject, $body): bool
 {
     $queue_task_payload = [
         'triggered_at'    => time(),
@@ -323,9 +325,13 @@ function send_email(PDO $db, $name, $email, $subject, $body)
         'body'            => $body
     ];
 
-    if (!queue_task($db, 'core_email_send', $queue_task_payload, 100, 5, 3600)) {
+    $queued = queue_task($db, 'core_email_send', $queue_task_payload, 100, 5, 3600);
+
+    if (!$queued) {
         write_debug_log("Failed to queue email to {$email}", 'error');
     }
+
+    return $queued;
 }
 
 /**********************************

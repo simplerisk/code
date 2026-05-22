@@ -53,9 +53,10 @@
                 </div>
     <?php
         if(count($searchresult)) {
+            // @phan-suppress-next-line SecurityCheck-XSS -- $searchresult contains only regex-validated IPv4 addresses (digits and dots only)
             echo "
                 <div class='mt-3'>
-                    <label class='m-r-10'>" . $escaper->escapeHtml($lang['SearchResults']) . " :</label>" . 
+                    <label class='m-r-10'>" . $escaper->escapeHtml($lang['SearchResults']) . " :</label>" .
                     implode(", ", $searchresult) . "
                 </div>
             ";

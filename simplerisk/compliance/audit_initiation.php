@@ -73,7 +73,7 @@
             selectize.clear();
         
             $.ajax({
-                url: BASE_URL + '/api/compliance/audit_initiation/initiate',
+                url: BASE_URL + '/api/v2/compliance/audit_initiation/initiate',
                 type: 'POST',
                 data: {
                     type: type, // control, test

@@ -231,15 +231,21 @@ function risk_distribution_analysis() {
                 $a['subject'] = $escaper->escapeHtml(try_decrypt($a['subject']));
                 return $a;
             }, $array);
-            
+
+            $efforts = [];
+            $residual_risks = [];
+            $subjects = [];
+
             foreach ($array as $key => $risk) {
                 $efforts[$key] = $risk['mitigation_effort'];
                 $residual_risks[$key] = $risk['residual_risk'];
                 $subjects[$key] = $risk['subject'];
             }
-            
+
             array_multisort($efforts, SORT_ASC, SORT_NUMERIC, $residual_risks, SORT_DESC, SORT_NUMERIC, $subjects, SORT_ASC, SORT_STRING, $array);
         }
+
+        $old_residual_risk = null;
 
         // For each result
         foreach ($array as $risk) {

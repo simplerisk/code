@@ -5,7 +5,7 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['chart.js'], active_sidebar_submenu: 'Reporting_RiskManagement', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'RiskTrend');
+    render_header_and_sidebar(['chart.js'], ['check_riskmanagement' => true], active_sidebar_submenu: 'Reporting_Reports', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'RiskTrend');
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));
@@ -15,7 +15,7 @@
     <div class="col-12">
         <div class="card-body border my-2">
     <?php 
-            get_risk_trend(js_string_escape($lang['RisksOpenedAndClosedOverTime'])); 
+            get_risk_trend($lang['RisksOpenedAndClosedOverTime']);
     ?>
         </div>
     </div>

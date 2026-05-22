@@ -289,7 +289,7 @@ function addRisk($this){
             load: function(query, callback) {
                 if (query.length) return callback();
                 $.ajax({
-                    url: BASE_URL + '/api/asset-group/options',
+                    url: BASE_URL + '/api/v2/asset-group/options',
                     type: 'GET',
                     dataType: 'json',
                     data: {id: risk_id, type: 'risk'},
@@ -415,7 +415,7 @@ $(document).ready(function(){
         });
         $.ajax({
             type: "POST",
-            url: BASE_URL + "/api/management/risk/saveSubject?id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/saveSubject?id=" + risk_id,
             data: form,
             async: true,
             cache: false,
@@ -510,7 +510,7 @@ $(document).ready(function(){
     function editDetailsRequest(risk_id, tabContainer){
         $.ajax({
             type: "GET",
-            url: BASE_URL + "/api/management/risk/editdetails?action=editdetail&id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/editdetails?action=editdetail&id=" + risk_id,
             success: function(data){
                 $('.content-container', tabContainer).html(data.data);
                 callbackAfterRefreshTab(tabContainer, 0);
@@ -537,7 +537,7 @@ $(document).ready(function(){
     function cancelEditDetailsRequest(risk_id, tabContainer){
         $.ajax({
             type: "GET",
-            url: BASE_URL + "/api/management/risk/editdetails?id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/editdetails?id=" + risk_id,
             success: function(data){
                 $('.content-container', tabContainer).html(data.data);
                 callbackAfterRefreshTab(tabContainer, 0);
@@ -587,7 +587,7 @@ $(document).ready(function(){
 
         $.ajax({
             type: "POST",
-            url: BASE_URL + "/api/management/risk/saveDetails?id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/saveDetails?id=" + risk_id,
             data: form,
             async: true,
             cache: false,
@@ -632,7 +632,7 @@ $(document).ready(function(){
         
         $.ajax({
             type: "GET",
-            url: BASE_URL + "/api/management/risk/editdetails?action=editmitigation&id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/editdetails?action=editmitigation&id=" + risk_id,
             success: function(data){
                 $('.content-container', tabContainer).html(data.data);
                 callbackAfterRefreshTab(tabContainer, 1);
@@ -654,7 +654,7 @@ $(document).ready(function(){
         
         $.ajax({
             type: "GET",
-            url: BASE_URL + "/api/management/risk/editdetails?id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/editdetails?id=" + risk_id,
             success: function(data){
                 $('.content-container', tabContainer).html(data.data);
                 callbackAfterRefreshTab(tabContainer, 1);
@@ -702,7 +702,7 @@ $(document).ready(function(){
 
         $.ajax({
             type: "POST",
-            url: BASE_URL + "/api/management/risk/saveMitigation?id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/saveMitigation?id=" + risk_id,
             data: form,
             async: true,
             cache: false,
@@ -748,7 +748,7 @@ $(document).ready(function(){
         
         $.ajax({
             type: "GET",
-            url: BASE_URL + "/api/management/risk/editdetails?action=editreview&id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/editdetails?action=editreview&id=" + risk_id,
             success: function(data){
                 $('.content-container', tabContainer).html(data.data);
                 callbackAfterRefreshTab(tabContainer, 2);
@@ -763,14 +763,14 @@ $(document).ready(function(){
         })
     })
     
-    $('body').on('click', '.cancel-edit-review ', function(e){
+    $('body').on('click', '.cancel-edit-review', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
         var risk_id = $('.risk-id', tabContainer).html();
         
         $.ajax({
             type: "GET",
-            url: BASE_URL + "/api/management/risk/editdetails?id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/editdetails?id=" + risk_id,
             success: function(data){
                 $('.content-container', tabContainer).html(data.data);
                 callbackAfterRefreshTab(tabContainer, 2);
@@ -812,7 +812,7 @@ $(document).ready(function(){
 
         $.ajax({
             type: "POST",
-            url: BASE_URL + "/api/management/risk/saveReview?id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/saveReview?id=" + risk_id,
             data: form,
             async: true,
             cache: false,
@@ -865,7 +865,7 @@ $(document).ready(function(){
         
         $.ajax({
             type: "GET",
-            url: BASE_URL + "/api/management/risk/view_all_reviews?id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/view_all_reviews?id=" + risk_id,
             success: function(data){
                 $('.content-container', tabContainer).html(data.data);
             },
@@ -894,7 +894,7 @@ $(document).ready(function(){
         var form = new FormData($(getForm)[0]);
         $.ajax({
             type: "POST",
-            url: BASE_URL + "/api/management/risk/closerisk?id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/closerisk?id=" + risk_id,
             data: form,
             async: true,
             cache: false,
@@ -930,7 +930,7 @@ $(document).ready(function(){
         var risk_id = $('.risk-id', tabContainer).html();
         $.ajax({
             type: "GET",
-            url: BASE_URL + "/api/management/risk/closerisk?id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/closerisk?id=" + risk_id,
             success: function(data){
                 $('.content-container', tabContainer).html(data.data);
             },
@@ -950,7 +950,7 @@ $(document).ready(function(){
         var risk_id = $('.risk-id', tabContainer).html();
         $.ajax({
             type: "POST",
-            url: BASE_URL + "/api/management/risk/reopen?id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/reopen?id=" + risk_id,
             success: function(data){
                 if($('.show-score').is(":visible")){
                     $('.overview-container', tabContainer).html(data.data);
@@ -986,7 +986,7 @@ $(document).ready(function(){
         var risk_id = $('.risk-id', tabContainer).html();
         $.ajax({
             type: "GET",
-            url: BASE_URL + "/api/management/risk/changestatus?id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/changestatus?id=" + risk_id,
             success: function(data){
                 $('.content-container', tabContainer).html(data.data);
             },
@@ -1007,7 +1007,7 @@ $(document).ready(function(){
 
         $.ajax({
             type: "POST",
-            url: BASE_URL + "/api/management/risk/updateStatus?id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/updateStatus?id=" + risk_id,
             data: form,
             async: true,
             cache: false,
@@ -1043,9 +1043,15 @@ $(document).ready(function(){
     function getScoreByAction(tabContainer, scoring_method){
         var risk_id = $('.risk-id', tabContainer).html();
         var visibleScoredetails = $('.hide-score', tabContainer).is(':visible');
+        // Switching scoring method is a state-changing operation. Use the
+        // dedicated POST endpoint so csrf-magic protects the request and the
+        // server-side handler enforces modify_risks. The legacy GET-on-view
+        // path remains gated for defence in depth but is no longer the
+        // canonical entry point.
         $.ajax({
-            type: "GET",
-            url: BASE_URL + "/api/management/risk/scoreaction?id=" + risk_id + "&scoring_method=" + scoring_method,
+            type: "POST",
+            url: BASE_URL + "/api/v2/management/risk/scoring-method",
+            data: { id: risk_id, scoring_method: scoring_method },
             success: function(data){
                 $('.score-overview-container', tabContainer).html(data.data);
                 if(visibleScoredetails){
@@ -1105,7 +1111,7 @@ $(document).ready(function(){
 
         $.ajax({
             type: "POST",
-            url: BASE_URL + "/api/management/risk/saveScore?id=" + risk_id + "&action=" + action,
+            url: BASE_URL + "/api/v2/management/risk/saveScore?id=" + risk_id + "&action=" + action,
             data: form,
             async: true,
             cache: false,
@@ -1207,7 +1213,7 @@ $(document).ready(function(){
 
         $.ajax({
             type: "POST",
-            url: BASE_URL + "/api/management/risk/saveComment?id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/saveComment?id=" + risk_id,
             data: form,
             async: true,
             cache: false,
@@ -1335,40 +1341,6 @@ $(document).ready(function(){
         }
     })
     
-    /**
-    * Event when click plus button on review formn
-    */
-    $('body').on('click', '.project-holder .set-project', function(e){
-        e.preventDefault();
-        var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.risk-id', tabContainer).html();
-        var project_id = $("#project_name", tabContainer).val();
-        if(project_id !== ""){
-            $.ajax({
-                type: "POST",
-                url: BASE_URL + "/api/management/risk/setProjectToRisk?id=" + risk_id,
-                data: {
-                    project_id: project_id
-                },
-                success: function(data){
-                    
-                    if(data.status_message){                    
-                        showAlertsFromArray(data.status_message);
-                    }
-                },
-                error: function(xhr,status,error){
-                    if(!retryCSRF(xhr, this))
-                    {
-                        if(xhr.responseJSON && xhr.responseJSON.status_message){
-                            showAlertsFromArray(xhr.responseJSON.status_message);
-                        }
-                    }
-                }
-            })
-        }
-        
-    })
-    
     $('body').on('change', '[name=owner]', function(e){
 
         // Get the form of this tab to make sure this logic won't change values on the other tabs
@@ -1386,7 +1358,7 @@ $(document).ready(function(){
             // reach out to the server and get the id of the owner's manager
             $.ajax({
                 type: 'GET',
-                url: BASE_URL + '/api/user/manager',
+                url: BASE_URL + '/api/v2/user/manager',
                 data: {
                     id: ownerId
                 },
@@ -1414,7 +1386,7 @@ $(document).ready(function(){
         var risk_id = $('.risk-id', tabContainer).html();
         $.ajax({
             type: "GET",
-            url: BASE_URL + "/api/management/risk/mark-unmitigation?id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/mark-unmitigation?id=" + risk_id,
             success: function(data){
                 $('.content-container', tabContainer).html(data.data);
             },
@@ -1436,7 +1408,7 @@ $(document).ready(function(){
 
         $.ajax({
             type: "POST",
-            url: BASE_URL + "/api/management/risk/saveMarkUnmitigation?id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/saveMarkUnmitigation?id=" + risk_id,
             data: form,
             async: true,
             cache: false,
@@ -1468,7 +1440,7 @@ $(document).ready(function(){
         var risk_id = $('.risk-id', tabContainer).html();
         $.ajax({
             type: "GET",
-            url: BASE_URL + "/api/management/risk/mark-unreview?id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/mark-unreview?id=" + risk_id,
             success: function(data){
                 $('.content-container', tabContainer).html(data.data);
             },
@@ -1490,7 +1462,7 @@ $(document).ready(function(){
 
         $.ajax({
             type: "POST",
-            url: BASE_URL + "/api/management/risk/saveMarkUnreview?id=" + risk_id,
+            url: BASE_URL + "/api/v2/management/risk/saveMarkUnreview?id=" + risk_id,
             data: form,
             async: true,
             cache: false,

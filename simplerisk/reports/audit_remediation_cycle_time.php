@@ -5,7 +5,7 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['multiselect', 'chart.js'], active_sidebar_submenu: 'Reporting_Compliance', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'AuditRemediationCycleTime');
+    render_header_and_sidebar(['multiselect', 'chart.js'], ['check_compliance' => true], active_sidebar_submenu: 'Reporting_Reports', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'AuditRemediationCycleTime');
 
     // Include required functions files
     require_once(realpath(__DIR__ . '/../includes/compliance.php'));
@@ -39,12 +39,12 @@
     $chart_labels   = [];
     $chart_data     = [];
     foreach ($cycle_time_data as $row) {
-        $chart_labels[] = $escaper->escapeHtml($row['framework_name']);
+        $chart_labels[] = $row['framework_name'];
         $chart_data[]   = (float)$row['avg_days'];
     }
 
     $chart_datasets = [[
-        'label'           => $escaper->escapeHtml($lang['AverageDaysToRemediate']),
+        'label'           => $lang['AverageDaysToRemediate'],
         'data'            => $chart_data,
         'backgroundColor' => '#4472C4',
     ]];
@@ -75,12 +75,12 @@
             <div class="mt-4">
                 <?php
                     create_chartjs_bar_code(
-                        $escaper->escapeHtml($lang['AuditRemediationCycleTime']),
+                        $lang['AuditRemediationCycleTime'],
                         'audit_remediation_chart',
                         $chart_labels,
                         $chart_datasets,
-                        $escaper->escapeHtml($lang['Framework']),
-                        $escaper->escapeHtml($lang['AverageDaysToRemediate'])
+                        $lang['Framework'],
+                        $lang['AverageDaysToRemediate']
                     );
                 ?>
             </div>

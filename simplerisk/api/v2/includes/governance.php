@@ -522,6 +522,7 @@ function api_v2_governance_documents_significant_terms()
                         unlink($temp_file);
 
                         // Extract the text from the Word document
+                        // @phan-suppress-next-line PhanUndeclaredFunction -- extract_text_content() is a runtime-loaded helper for PHPWord text extraction
                         $document_text = extract_text_content($phpWord);
                         write_debug_log("Extracted text: " . strlen((string)$document_text) . " bytes.", "debug");
 
@@ -716,14 +717,23 @@ function getDocumentsToControlsDatatableResponse()
 
         $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
         $length = $_POST['length'] ? (int)$_POST['length'] : 10;
-        $orderColumn = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
-        $orderColumnName = isset($_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;;
-        $orderDir = !empty($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
+        /** @var array[] $post_order */
+        $post_order = $_POST['order'];
+        /** @var array[] $post_columns */
+        $post_columns = $_POST['columns'];
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
+        $orderColumn = isset($post_order[0]['column']) ? $post_order[0]['column'] : "";
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
+        $orderColumnName = isset($post_columns[$orderColumn]['name']) ? $post_columns[$orderColumn]['name'] : null;;
+        // @phan-suppress-next-line PhanTypeMismatchDimFetch
+        $orderDir = !empty($post_order[0]['dir']) && strtolower($post_order[0]['dir']) === 'asc'? 'asc' : 'desc';
 
         $column_filters = [];
-        for ($i=0; $i<count($_POST['columns']); $i++) {
-            if (isset($_POST['columns'][$i]) && $_POST['columns'][$i]['searchable'] == "true" && $_POST['columns'][$i]['search']['value'] != '') {
-                $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
+        for ($i=0; $i<count($post_columns); $i++) {
+            // @phan-suppress-next-line PhanTypeMismatchDimFetch
+            if (isset($post_columns[$i]) && $post_columns[$i]['searchable'] == "true" && $post_columns[$i]['search']['value'] != '') {
+                // @phan-suppress-next-line PhanTypeMismatchDimFetch
+                $column_filters[$post_columns[$i]['name']] = $post_columns[$i]['search']['value'];
             }
         }
 
@@ -791,6 +801,7 @@ function getDocumentsToControlsDatatableResponse()
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
         ];
+        // @phan-suppress-next-line SecurityCheck-XSS -- JSON response consumed by JavaScript/DataTables, not rendered as HTML; values are pre-escaped
         echo json_encode($result);
         exit;
     }

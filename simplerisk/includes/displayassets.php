@@ -6,6 +6,7 @@
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 require_once(realpath(__DIR__ . '/functions.php'));
+require_once(realpath(__DIR__ . '/extras.php'));
 
 /********************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN DETAILS ADD *
@@ -63,13 +64,13 @@ function display_main_detail_asset_fields_add($fields)
                 continue;
             }
             
-            // If customization extra is enabled
-            if(customization_extra())
-            {
-                // Include the extra
-                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-                display_custom_field_edit($field, [], "div_2:10");
-            }
+            // Display the custom field edit (no-op if customization extra is disabled)
+            call_extra_function(
+                'customization_extra',
+                __DIR__ . '/../extras/customization/index.php',
+                'display_custom_field_edit',
+                [$field, [], "div_2:10"]
+            );
         }
     }
 }

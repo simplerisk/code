@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// @phan-suppress-next-line PhanUnreferencedUseNormal -- OA alias used in PHPDoc @OA annotations
 use OpenApi\Annotations as OA;
 
 // =====================================================================
@@ -1016,5 +1017,43 @@ class OpenApiAssetGroupInfo {}
  * )
  */
 class OpenApiGetAssetGroupOptions {}
+
+/**
+ * @OA\Get(
+ *     path="/asset-group/options_by_control",
+ *     summary="Get asset and asset-group options associated with a control, formatted for a dropdown/select.",
+ *     description="Returns the combined list of assets and asset groups associated with the given control id. Used by the governance UI to populate asset-group selectors that filter by a specific control. Requires either the asset or governance permission.",
+ *     operationId="getAssetGroupOptionsByControl",
+ *     tags={"asset"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         in="query",
+ *         name="control_id",
+ *         description="The control id to filter associated assets and asset groups by.",
+ *         required=true,
+ *         @OA\Schema(type="integer"),
+ *     ),
+ *     @OA\Parameter(
+ *         in="query",
+ *         name="control_maturity",
+ *         description="Optional control maturity level filter.",
+ *         required=false,
+ *         @OA\Schema(type="integer"),
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Array of combined asset and asset-group option objects.",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(type="object"),
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="BAD REQUEST: User lacks the asset or governance permission required to read this list.",
+ *     ),
+ * )
+ */
+class OpenApiGetAssetGroupOptionsByControl {}
 
 ?>

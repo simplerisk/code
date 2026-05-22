@@ -258,7 +258,7 @@ function display_save_graphic_selection() {
                 var id = $('#saved_selections').val();
                 $.ajax({
                     type: 'POST',
-                    url: BASE_URL + '/api/reports/delete-graphical-selection',
+                    url: BASE_URL + '/api/v2/reports/delete-graphical-selection',
                     data:{
                         id: id,
                     },
@@ -289,7 +289,7 @@ function display_save_graphic_selection() {
                     var graphic_form_data = $('#graphical_risk_analysis').serialize();
                     $.ajax({
                         type: 'POST',
-                        url: BASE_URL + '/api/reports/save-graphical-selections',
+                        url: BASE_URL + '/api/v2/reports/save-graphical-selections',
                         data: graphic_form_data,
                         success: function(res){
                             $('#saved_selections').append(new Option(res.data.name, res.data.value));
@@ -343,7 +343,7 @@ function display_graphical_risk_analysis() {
         // If we have valid values
         if (valid_graphical_risk_analysis($type, $x_axis, $y_axis)) {
             // Display the chart
-            display_graphical_risk_analysis_chart($type, $x_axis, $y_axis);
+            display_graphical_risk_analysis_chart();
         } else {
             echo "
                 <strong>invalid</strong>
@@ -378,6 +378,7 @@ function display_graphical_risk_analysis_chart() {
     {
         case "area":
         case "line":
+            // @phan-suppress-next-line SecurityCheck-XSS -- $datasets labels are encoded for JS via json_encode() inside create_chartjs_line_code()
             create_chartjs_line_code($title, $element_id, $labels, $datasets, "", $x_axis_title, $y_axis_title);
             break;
         case "column":
@@ -428,6 +429,9 @@ function get_graphical_risk_analysis_data() {
     } else {
         $fill = "false";
     }
+
+    $dates = [];
+    $opened_dates = [];
 
     // Switch on the y-axis values
     switch ($risk_status) {
@@ -580,6 +584,8 @@ function display_graphical_risk_analysis_area_chart($chart, $type, $x_axis, $y_a
         "month" => "%b %Y",
     );
 
+    $date_arr = [];
+
     // Switch on the y-axis values
     switch ($risk_status)
     {
@@ -604,6 +610,10 @@ function display_graphical_risk_analysis_area_chart($chart, $type, $x_axis, $y_a
         default:
             break;
     }
+
+    $opened_risk_data = [];
+    $closed_risk_data = [];
+    $trend_data = [];
 
     // If the opened risks array is empty
     if (!count($date_arr))
@@ -857,6 +867,8 @@ function get_risks_array_for_graphical($timeframe, $risk_status)
     $order_query = "ORDER BY {$datefield}";
     $group_query = "GROUP BY a.id";
 
+    $date_format = get_default_date_format();
+
     // Set the date format based on the selected timeframe
     switch ($timeframe)
     {
@@ -933,6 +945,7 @@ function get_risks_array_for_graphical($timeframe, $risk_status)
         $data = [];
 
         // Get the appropriate start date based on the selected timeframe
+        $date = strtotime($array[0][$datefield]);
         switch ($timeframe)
         {
             case "day":
@@ -1039,8 +1052,11 @@ function get_risks_array_for_graphical($timeframe, $risk_status)
 
                     // Add the calculated/residual risk to the values at the index
                     $sum[$index] += $array[$key][$scoring_field];
+                    // @phan-suppress-next-line PhanTypeInvalidDimOffset -- the if-branch above set $min[$index] in a prior iteration when this date was first seen
                     $min[$index] = ($min[$index] < $array[$key][$scoring_field]) ? $min[$index] : $array[$key][$scoring_field];
+                    // @phan-suppress-next-line PhanTypeInvalidDimOffset -- prior iteration set $max[$index]
                     $max[$index] = ($max[$index] > $array[$key][$scoring_field]) ? $max[$index] : $array[$key][$scoring_field];
+                    // @phan-suppress-next-line PhanTypeInvalidDimOffset -- prior iteration set $sum[$index] and $count[$index]
                     $average[$index] = $sum[$index] / $count[$index];
                 }
             }

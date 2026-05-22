@@ -519,7 +519,7 @@ $_ai_badge_label = $_ai_badge_map[$_ai_status][1] ?? ucfirst($_ai_status ?? '');
                 var approval = $(this).hasClass("exception--approve");
                 
                 $.ajax({
-                    url: BASE_URL + '/api/exceptions/info',
+                    url: BASE_URL + '/api/v2/exceptions/info',
                     data: {
                         id: exception_id,
                         type: type,
@@ -676,7 +676,7 @@ $_ai_badge_label = $_ai_badge_map[$_ai_status][1] ?? ucfirst($_ai_status ?? '');
                 <div class="row mt-2">
                     <div class="col-12">
                         <div class="comment-wrapper">
-                            <form id="comment" class="comment-form" name="add_comment" method="post" action="/management/comment.php?id=<?php echo $id; ?>">
+                            <form id="comment" class="comment-form" name="add_comment" method="post">
                                 <textarea style="width: 100%; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;" name="comment" cols="50" rows="3" id="comment-text" class="comment-text form-control"></textarea>
                                 <div class="form-actions text-end mt-2" id="comment-div">
                                     <input class="btn btn-dark" id="rest-btn" value="<?php echo $escaper->escapeHtml($lang['Reset']); ?>" type="reset" />

@@ -85,7 +85,7 @@ $(document).ready(function () {
 
         $.ajax({
             type: "POST",
-            url: BASE_URL + "/api/assessment/update?assessment_id=" + assessment_id,
+            url: BASE_URL + "/api/v2/assessment/update?assessment_id=" + assessment_id,
             data: {
                 assessments: JSON.stringify(assessments)
             },
@@ -362,7 +362,7 @@ function setupQuestionnaireAssetsAssetGroupsWidget(select_tag) {
         load: function (query, callback) {
             if (query.length) return callback();
             $.ajax({
-                url: BASE_URL + '/api/asset-group/options',
+                url: BASE_URL + '/api/v2/asset-group/options',
                 type: 'GET',
                 dataType: 'json',
                 error: function () {
@@ -458,7 +458,7 @@ function createTagsInstance(tag, options) {
             if (query.length) return callback();
 
             $.ajax({
-                url: BASE_URL + '/api/management/tag_options_of_types?type=risk,questionnaire_answer',
+                url: BASE_URL + '/api/v2/management/tag_options_of_types?type=risk,questionnaire_answer',
                 type: 'GET',
                 dataType: 'json',
                 error: function () {

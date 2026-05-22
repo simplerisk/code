@@ -198,6 +198,7 @@
 	/*********************
 	 * FUNCTION: DISPLAY *
 	 *********************/
+	// @phan-suppress-next-line PhanRedefineFunction -- each admin page defines its own display() entry point
 	function display($display = "") {
 
 		global $lang;

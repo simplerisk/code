@@ -177,8 +177,23 @@ $openapi = (new Generator())->setVersion(OpenApi::VERSION_3_1_0)->generate($scan
 // Add the Asset base schema that is generated including changes made by the customization extra if it's activated
 create_asset_base_schema($openapi, 'asset_verified');
 
-
-
+// Overwrite the static placeholder server URL (kept in general.php so offline
+// tooling can parse the spec without bootstrapping SimpleRisk) with the
+// customer's live SIMPLERISK_BASE_URL. This preserves the in-product Swagger
+// UI's pre-filled URL behavior — customers see their own instance URL, not
+// the placeholder.
+$live_base_url = rtrim(get_setting('simplerisk_base_url'), '/');
+if ($live_base_url !== '' && !empty($openapi->servers) && is_array($openapi->servers))
+{
+    foreach ($openapi->servers as $server)
+    {
+        if ($server instanceof \OpenApi\Annotations\Server)
+        {
+            $server->url = $live_base_url . '/api/v2';
+            break;
+        }
+    }
+}
 
 // Can validate now because the required schemas are added
 $openapi->validate();
@@ -193,20 +208,20 @@ function create_asset_base_schema(&$openapi, $view) {
 
     $view_type = $field_settings_views[$view]['view_type'];
 
+    $mapped_custom_field_settings = [];
     if (customization_extra()) {
         require_once(realpath(__DIR__ . '/../../../extras/customization/index.php'));
-        
+
         $active_fields = get_active_fields($view_type);
-        $mapped_custom_field_settings = [];
         foreach ($active_fields as $active_field) {
-            
+
             // Skip this step for basic fields
             if ($active_field['is_basic']) {
                 continue;
             }
-            
+
             $field_name = "custom_field_{$active_field['id']}";
-            
+            $type = null;
             switch($active_field['type']) {
                 case "shorttext":
                 case "hyperlink":

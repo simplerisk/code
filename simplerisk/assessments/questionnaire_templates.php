@@ -79,7 +79,7 @@
     ?>
         <div class="hero-unit card-body my-2 border">
     <?php 
-            display_questionnaire_template_edit($_GET['id']); 
+            display_questionnaire_template_edit();
     ?>
         </div>
     <?php

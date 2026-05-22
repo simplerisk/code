@@ -6,7 +6,7 @@
     require_once(realpath(__DIR__ . '/../includes/functions.php'));
     require_once(realpath(__DIR__ . '/../includes/display.php'));
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-    require_once(realpath(__DIR__ . '/../includes/config.php'));
+    require_once(realpath(__DIR__ . '/../includes/bootstrap.php'));
     require_once(realpath(__DIR__ . '/../includes/upgrade.php'));
     require_once(realpath(__DIR__ . '/../includes/alerts.php'));
     require_once(realpath(__DIR__ . '/../vendor/autoload.php'));

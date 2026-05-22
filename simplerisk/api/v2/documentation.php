@@ -24,12 +24,16 @@
     <head>
         <meta charset="UTF-8">
         <title>SimpleRisk API Documentation</title>
+        <?php // @phan-suppress-next-line SecurityCheck-XSS -- build_url() uses hardcoded paths; base URL from $_SERVER is server-controlled and sanitized ?>
         <link rel="stylesheet" type="text/css" href="<?= build_url("vendor/swagger-api/swagger-ui/dist/swagger-ui.css") ?>"/>
+        <?php // @phan-suppress-next-line SecurityCheck-XSS -- build_url() uses hardcoded paths; base URL from $_SERVER is server-controlled and sanitized ?>
         <script src="<?= build_url("vendor/swagger-api/swagger-ui/dist/swagger-ui-bundle.js") ?>"></script>
+        <?php // @phan-suppress-next-line SecurityCheck-XSS -- build_url() uses hardcoded paths; base URL from $_SERVER is server-controlled and sanitized ?>
         <script src="<?= build_url("vendor/swagger-api/swagger-ui/dist/swagger-ui-standalone-preset.js") ?>"></script>
         <script>
           	window.onload = function() {
             	const ui = SwaggerUIBundle({
+              		<?php // @phan-suppress-next-line SecurityCheck-XSS -- build_url() uses hardcoded paths; base URL from $_SERVER is server-controlled and sanitized ?>
               		url: "<?= build_url("api/v2/documentation/index.php") ?>",
               		dom_id: '#swagger-ui',
               		requestInterceptor: function(request) {

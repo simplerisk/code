@@ -8,59 +8,60 @@
 
     $breadcrumb_title_key="";
     $active_sidebar_menu ="IncidentManagement";
-    $active_sidebar_submenu ="Incidents";
+    $active_sidebar_submenu ="";
+    $active_sidebar_thirdmenu = '';
     $active_sidebar_forthmenu = '';
 
     // If incident detail page was displayed
     if (isset($_GET['incident_id'])) {
         $breadcrumb_title_key = "IncidentDetails";
-        $active_sidebar_thirdmenu ="Response";
+        $active_sidebar_submenu ="Response";
         $active_sidebar_forthmenu = "IncidentDetails";
     } else {
 
         // If a menu was provided
         if (isset($_GET['menu'])) {
-            
+
             // If the page for the menu was displayed
             switch ($_GET['menu']) {
 
                 // If the preparation page was displayed
                 case "preparation":
                     $breadcrumb_title_key = 'Preparation';
-                    $active_sidebar_thirdmenu ="Preparation";
+                    $active_sidebar_submenu ="Preparation";
                     break;
 
                 // If the identification page was displayed
                 case "identification":
                     $breadcrumb_title_key = 'Identification';
-                    $active_sidebar_thirdmenu ="Identification";
+                    $active_sidebar_submenu ="Identification";
                     break;
 
                 // If the response page was displayed
                 case "response":
                     $breadcrumb_title_key = 'Response';
-                    $active_sidebar_thirdmenu ="Response";
+                    $active_sidebar_submenu ="Response";
                     break;
 
                 // If the lessons learned page was displayed
                 case "lessonslearned":
                     $breadcrumb_title_key = 'LessonsLearned';
-                    $active_sidebar_thirdmenu ="LessonsLearned";
+                    $active_sidebar_submenu ="LessonsLearned";
                     break;
 
                 // If the closed page was displayed
                 case "closed":
                     $breadcrumb_title_key = 'Closed';
-                    $active_sidebar_thirdmenu ="Closed";
+                    $active_sidebar_submenu ="Closed";
                     break;
 
                 // IF the preparation page was displayed by default
                 default:
                     $breadcrumb_title_key = 'Preparation';
-                    $active_sidebar_thirdmenu ="Preparation";
+                    $active_sidebar_submenu ="Preparation";
                     break;
             }
-            
+
         // If no menu was provided
         } else {
             $breadcrumb_title_key = "Incidents";

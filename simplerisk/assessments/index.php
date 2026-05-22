@@ -9,6 +9,7 @@
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/assessments.php'));
+    require_once(realpath(__DIR__ . '/../includes/extras.php'));
 
     // Check if we should add a pending risk
     if (isset($_POST['add'])) {
@@ -43,16 +44,12 @@
     // If an assessment was sent
     if (isset($_POST['send_assessment'])) {
 
-        // If the assessments extra is enabled
-        if (assessments_extra()) {
-
-            // Include the assessments extra
-            require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
-
-            // Process the sent assessment
-            process_sent_assessment();
-
-        }
+        // Process the sent assessment (no-op if assessments extra is disabled)
+        call_extra_function(
+            'assessments_extra',
+            __DIR__ . '/../extras/assessments/index.php',
+            'process_sent_assessment'
+        );
     }
 
     // If an action was sent
@@ -99,16 +96,12 @@
         // If the action was create
         if ((isset($_GET['action']) && $_GET['action'] == "create") || (isset($_POST['action']) && $_POST['action'] == "create")) {
 
-            // If the assessments extra is enabled
-            if (assessments_extra()) {
-
-                // Include the assessments extra
-                require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
-
-                // Display the create assessments
-        display_create_assessments();
-
-            }
+            // Display the create assessments (no-op if assessments extra is disabled)
+            call_extra_function(
+                'assessments_extra',
+                __DIR__ . '/../extras/assessments/index.php',
+                'display_create_assessments'
+            );
             
         // If the action was edit
         } else if ((isset($_GET['action']) && $_GET['action'] == "edit") || (isset($_POST['action']) && $_POST['action'] == "edit")) {
@@ -138,16 +131,12 @@
         // If the action was send
         } else if ((isset($_GET['action']) && $_GET['action'] == "send") || (isset($_POST['action']) && $_POST['action'] == "send")) {
 
-            // If the assessments extra is enabled
-            if (assessments_extra()) {
-
-                // Include the assessments extra
-                require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
-
-                // Display the send assessment options
-        display_send_assessment_options();
-
-            }
+            // Display the send assessment options (no-op if assessments extra is disabled)
+            call_extra_function(
+                'assessments_extra',
+                __DIR__ . '/../extras/assessments/index.php',
+                'display_send_assessment_options'
+            );
 
         } else {
                 // Display the available assessments

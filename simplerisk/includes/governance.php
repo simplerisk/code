@@ -5,13 +5,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required configuration files
-require_once(realpath(__DIR__ . '/config.php'));
+require_once(realpath(__DIR__ . '/bootstrap.php'));
 require_once(realpath(__DIR__ . '/cvss.php'));
 require_once(realpath(__DIR__ . '/services.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
 require_once(realpath(__DIR__ . '/tf_idf_enrichment.php'));
 require_once(realpath(__DIR__ . '/Components/DocumentTextHandler.php'));
 require_once(realpath(__DIR__ . '/queues.php'));
+require_once(realpath(__DIR__ . '/extras.php'));
 
 // Include the language file
 require_once(language_file());
@@ -278,10 +279,13 @@ function update_framework_status($status, $framework_id)
     // Close the database connection
     db_close($db);
 
+    $message = '';
     if($status == 1){
+        // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset -- $framework rows include 'name' from the upstream query
         $message = "A framework named \"" . $escaper->escapeHtml($framework['name']) . "\" was activated by the \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\" user.";
     }
     elseif($status == 2){
+        // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
         $message = "A framework named \"" . $escaper->escapeHtml($framework['name']) . "\" was deactivated by the \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\" user.";
     }
     write_log($framework_id+1000, (int)($_SESSION['uid'] ?? 0), $message, 'framework');
@@ -1039,6 +1043,7 @@ function update_framework($framework_id, $name, $description=false, $parent=fals
 
     $framework['name'] = $encrypted_name;
     // Sanitizing input that comes from the WYSIWYG editor or outside sources
+    // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset -- $framework rows include 'description' from the upstream query
     $framework['description'] = $description === false ? try_encrypt($framework['description']) : try_encrypt(purify_html($description));
     $framework['parent'] = $parent === false ? $framework['parent'] : $parent;
 
@@ -1116,7 +1121,9 @@ function delete_frameworks($framework_id){
     // Check framework ID is valid
     if($framework)
     {
+        // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset -- $framework rows include 'parent' and 'name' from the upstream query
         $parent = $framework['parent'];
+        // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
         $name = $framework['name'];
         // Open the database connection
         $db = db_open();
@@ -1141,12 +1148,13 @@ function delete_frameworks($framework_id){
         // Close the database connection
         db_close($db);
 
-        // If customization extra is enabled, delete custom_framework_data related with framework ID
-        if(customization_extra())
-        {
-            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-            delete_custom_data_by_row_id($framework_id, "framework");
-        }
+        // Delete custom_framework_data related with framework ID (no-op if customization extra is disabled)
+        call_extra_function(
+            'customization_extra',
+            __DIR__ . '/../extras/customization/index.php',
+            'delete_custom_data_by_row_id',
+            [$framework_id, "framework"]
+        );
 
         $message = "A framework named \"" . $escaper->escapeHtml($name) . "\" was deleted by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".";
         write_log((int)$framework_id + 1000, (int)($_SESSION['uid'] ?? 0), $message, "framework");
@@ -1363,14 +1371,13 @@ function update_framework_control($control_id, $control){
     // Update affected assets and asset groups
     if(isset($control['mapped_assets'])) save_control_to_assets($control_id, $control['mapped_assets']);
     
-    // If customization extra is enabled
-    if(customization_extra())
-    {
-        // Include the extra
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-        save_custom_field_values($control_id, "control");
-    }
+    // Save custom field values for control (no-op if customization extra is disabled)
+    call_extra_function(
+        'customization_extra',
+        __DIR__ . '/../extras/customization/index.php',
+        'save_custom_field_values',
+        [$control_id, "control"]
+    );
 
     $user = isset($_SESSION['user'])?$_SESSION['user']:"";
     $uid = isset($_SESSION['uid'])?$_SESSION['uid']:"";
@@ -2106,16 +2113,13 @@ function get_document_versions_by_id($id) {
 
     // Open the database connection
     $db = db_open();
-    if (team_separation_extra()) {
-
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        $where = get_user_teams_query_for_documents("t1" , false);
-
-    } else {
-        
-        $where = " 1";
-
-    }
+    $where = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_documents',
+        ['t1', false],
+        ' 1'
+    );
 
     $sql = "
         SELECT
@@ -2148,22 +2152,29 @@ function get_document_by_id($id)
 {
     // Open the database connection
     $db = db_open();
-    if(team_separation_extra()){
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        $where = get_user_teams_query_for_documents("t1" , false);
-    } else $where = " 1";
+    $where = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_documents',
+        ['t1', false],
+        ' 1'
+    );
 
     $sql = "
         SELECT t1.*, t2.version file_version, t2.unique_name, t2.name file_name, t2.size file_size, t3.value as status,
-            GROUP_CONCAT(DISTINCT f.value) framework_ids, 
-            GROUP_CONCAT(DISTINCT fc.id) control_ids
-        FROM `documents` t1 
+            GROUP_CONCAT(DISTINCT f.value) framework_ids,
+            GROUP_CONCAT(DISTINCT fc.id) control_ids,
+            GROUP_CONCAT(DISTINCT dasm.user_id) additional_stakeholders,
+            GROUP_CONCAT(DISTINCT dtm.team_id) team_ids
+        FROM `documents` t1
             LEFT JOIN `compliance_files` t2 ON t1.file_id=t2.id
             LEFT JOIN `document_status` t3 ON t1.document_status=t3.value
             LEFT JOIN `document_framework_mappings` dfm ON t1.id=dfm.document_id
             LEFT JOIN `frameworks` f ON dfm.framework_id=f.value
             LEFT JOIN `document_control_mappings` dcm ON t1.id=dcm.document_id AND dcm.selected=1
             LEFT JOIN `framework_controls` fc ON dcm.control_id=fc.id
+            LEFT JOIN `document_additional_stakeholder_mappings` dasm ON t1.id=dasm.document_id
+            LEFT JOIN `document_team_mappings` dtm ON t1.id=dtm.document_id
         WHERE t1.id=:id AND {$where}
         GROUP BY t1.id
         ;
@@ -2189,20 +2200,27 @@ function get_documents($type="")
 
     $sql = "
         SELECT t1.*, t2.version file_version, t2.unique_name, t3.value as status,
-            GROUP_CONCAT(DISTINCT f.value) framework_ids, 
-            GROUP_CONCAT(DISTINCT fc.id) control_ids
-        FROM `documents` t1 
-	        LEFT JOIN `compliance_files` t2 ON t1.file_id=t2.id
+            GROUP_CONCAT(DISTINCT f.value) framework_ids,
+            GROUP_CONCAT(DISTINCT fc.id) control_ids,
+            GROUP_CONCAT(DISTINCT dasm.user_id) additional_stakeholders,
+            GROUP_CONCAT(DISTINCT dtm.team_id) team_ids
+        FROM `documents` t1
+            LEFT JOIN `compliance_files` t2 ON t1.file_id=t2.id
             LEFT JOIN `document_status` t3 ON t1.document_status=t3.value
             LEFT JOIN `document_framework_mappings` dfm ON t1.id=dfm.document_id
             LEFT JOIN `frameworks` f ON dfm.framework_id=f.value
-            LEFT JOIN `document_control_mappings` dcm ON t1.id=dcm.document_id AnD dcm.selected=1
+            LEFT JOIN `document_control_mappings` dcm ON t1.id=dcm.document_id AND dcm.selected=1
             LEFT JOIN `framework_controls` fc ON dcm.control_id=fc.id
+            LEFT JOIN `document_additional_stakeholder_mappings` dasm ON t1.id=dasm.document_id
+            LEFT JOIN `document_team_mappings` dtm ON t1.id=dtm.document_id
     ";
-    if(team_separation_extra()){
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        $where = get_user_teams_query_for_documents("t1");
-    } else $where = " WHERE 1";
+    $where = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_documents',
+        ['t1'],
+        ' WHERE 1'
+    );
     if($type) {
         $sql .= $where . " AND t1.document_type=:type";
     } else {
@@ -2265,7 +2283,7 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
         return false;
     }
     // Create a document
-    $stmt = $db->prepare("INSERT INTO `documents` (`submitted_by`, `document_type`, `document_name`, `parent`, `document_status`, `file_id`, `creation_date`, `last_review_date`, `review_frequency`, `next_review_date`, `approval_date`, `document_owner`, `additional_stakeholders`, `approver`, `team_ids`) VALUES (:submitted_by, :document_type, :document_name, :parent, :status, :file_id, :creation_date, :last_review_date, :review_frequency, :next_review_date, :approval_date, :document_owner, :additional_stakeholders, :approver, :team_ids)");
+    $stmt = $db->prepare("INSERT INTO `documents` (`submitted_by`, `document_type`, `document_name`, `parent`, `document_status`, `file_id`, `creation_date`, `last_review_date`, `review_frequency`, `next_review_date`, `approval_date`, `document_owner`, `approver`) VALUES (:submitted_by, :document_type, :document_name, :parent, :status, :file_id, :creation_date, :last_review_date, :review_frequency, :next_review_date, :approval_date, :document_owner, :approver)");
     $stmt->bindParam(":submitted_by", $submitted_by, PDO::PARAM_INT);
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
@@ -2279,9 +2297,7 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
     $stmt->bindParam(":next_review_date", $next_review_date, PDO::PARAM_STR);
     $stmt->bindParam(":approval_date", $approval_date, PDO::PARAM_STR);
     $stmt->bindParam(":document_owner", $document_owner, PDO::PARAM_INT);
-    $stmt->bindParam(":additional_stakeholders", $additional_stakeholders, PDO::PARAM_STR);
     $stmt->bindParam(":approver", $approver, PDO::PARAM_INT);
-    $stmt->bindParam(":team_ids", $team_ids, PDO::PARAM_STR);
 
     $stmt->execute();
 
@@ -2320,9 +2336,11 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
     // Save document frameworks
     save_junction_values("document_framework_mappings", "document_id", $document_id, "framework_id", $framework_ids);
 
-    // Save document framework controls
-    // We don't need to do this because we already saved the mappings above when inserting the document_control_mappings records
-    // save_junction_values("document_control_mappings", "document_id", $document_id, "control_id", $control_ids);
+    // Save additional stakeholders
+    save_junction_values("document_additional_stakeholder_mappings", "document_id", $document_id, "user_id", $additional_stakeholders);
+
+    // Save teams
+    save_junction_values("document_team_mappings", "document_id", $document_id, "team_id", $team_ids);
 
     // If submitted files are existing, save files
     if(!empty($_FILES['file'])){
@@ -2365,14 +2383,13 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
         ];
         queue_task($db, 'core_document_update', $queue_task_payload, 100, 5, 3600);
 
-        // If notification is enabled
-        if (notification_extra()) {
-            // Include the notification extra
-            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-            // Send the notification
-            notify_new_document($document_id);
-        }
+        // Send the notification (no-op if notification extra is disabled)
+        call_extra_function(
+            'notification_extra',
+            __DIR__ . '/../extras/notification/index.php',
+            'notify_new_document',
+            [$document_id]
+        );
 
         $return_value = $document_id;
     }
@@ -2401,10 +2418,13 @@ function update_document($document_id, $updated_by, $document_type, $document_na
     
     // Open the database connection
     $db = db_open();
-    if(team_separation_extra()){
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        $where = get_user_teams_query_for_documents(false , false);
-    } else $where = " 1";
+    $where = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_documents',
+        [false, false],
+        ' 1'
+    );
     $sql = "SELECT * FROM `documents` where document_name=:document_name AND document_type=:document_type AND id<>:id AND {$where}; ";
 
     // Check if the document exists
@@ -2478,6 +2498,7 @@ function update_document($document_id, $updated_by, $document_type, $document_na
     ];
 
     // If the notification extra is enabled then get the changes in a format the extra can use too
+    $changes_arr = [];
     if (notification_extra()) {
         [$changes, $changes_arr] = get_changes('document', $before, $after, 3);
     } else {
@@ -2485,7 +2506,7 @@ function update_document($document_id, $updated_by, $document_type, $document_na
     }
 
     // Update a document
-    $stmt = $db->prepare("UPDATE `documents` SET `updated_by` = :updated_by, `document_type`=:document_type, `document_name`=:document_name, `parent`=:parent, `document_status`=:document_status, `creation_date`=:creation_date, `last_review_date`=:last_review_date, `review_frequency`=:review_frequency, `next_review_date`=:next_review_date, `approval_date`=:approval_date, `document_owner`=:document_owner, `additional_stakeholders`=:additional_stakeholders , `approver`=:approver, `team_ids`=:team_ids WHERE id=:document_id; ");
+    $stmt = $db->prepare("UPDATE `documents` SET `updated_by` = :updated_by, `document_type`=:document_type, `document_name`=:document_name, `parent`=:parent, `document_status`=:document_status, `creation_date`=:creation_date, `last_review_date`=:last_review_date, `review_frequency`=:review_frequency, `next_review_date`=:next_review_date, `approval_date`=:approval_date, `document_owner`=:document_owner, `approver`=:approver WHERE id=:document_id; ");
     $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
     $stmt->bindParam(":updated_by", $updated_by, PDO::PARAM_INT);
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
@@ -2498,9 +2519,7 @@ function update_document($document_id, $updated_by, $document_type, $document_na
     $stmt->bindParam(":next_review_date", $next_review_date, PDO::PARAM_STR);
     $stmt->bindParam(":approval_date", $approval_date, PDO::PARAM_STR);
     $stmt->bindParam(":document_owner", $document_owner, PDO::PARAM_STR);
-    $stmt->bindParam(":additional_stakeholders", $additional_stakeholders, PDO::PARAM_STR);
     $stmt->bindParam(":approver", $approver, PDO::PARAM_INT);
-    $stmt->bindParam(":team_ids", $team_ids, PDO::PARAM_STR);
     $stmt->execute();
 
     // Deselect existing mappings for this document
@@ -2541,9 +2560,11 @@ function update_document($document_id, $updated_by, $document_type, $document_na
     // Save document frameworks
     save_junction_values("document_framework_mappings", "document_id", $document_id, "framework_id", $framework_ids);
 
-    // Save document framework controls
-    // We don't need to do this as we are just updating the existing mappings above
-    // save_junction_values("document_control_mappings", "document_id", $document_id, "control_id", $control_ids);
+    // Save additional stakeholders
+    save_junction_values("document_additional_stakeholder_mappings", "document_id", $document_id, "user_id", $additional_stakeholders);
+
+    // Save teams
+    save_junction_values("document_team_mappings", "document_id", $document_id, "team_id", $team_ids);
 
     // If submitted files are existing, save files
     if(!empty($_FILES['file'])){
@@ -2575,14 +2596,13 @@ function update_document($document_id, $updated_by, $document_type, $document_na
         $message = _lang('AuditLog_DocumentUpdates', array('document_name' => $document_name, 'document_id' => $document_id, 'user_name' => $updated_by_name, 'changes' => $changes), false);
         write_log(1000, $updated_by, $message, "document");
 
-        // If notification is enabled
-        if (notification_extra()) {
-            // Include the notification extra
-            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-            // Send the notification
-            notify_document_update($document_id, ['changes' => $changes_arr]);
-        }
+        // Send the notification (no-op if notification extra is disabled)
+        call_extra_function(
+            'notification_extra',
+            __DIR__ . '/../extras/notification/index.php',
+            'notify_document_update',
+            [$document_id, ['changes' => $changes_arr]]
+        );
     }
 
     trigger_workflow_event('document.updated', [
@@ -2605,10 +2625,13 @@ function delete_document($document_id, $version=null)
     // Open the database connection
     $db = db_open();
 
-    if(team_separation_extra()){
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        $where = get_user_teams_query_for_documents(false , false);
-    } else $where = " 1";
+    $where = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_documents',
+        [false, false],
+        ' 1'
+    );
 
     // Check permission for delete this document with team separation
     $sql = "SELECT * FROM `documents` where id = :id AND {$where}; ";
@@ -2838,6 +2861,7 @@ function get_documents_as_treegrid($type){
  ************************************/
 function get_framework_controls_long_name($control_ids=false)
 {
+    $long_name = null;
     // Open the database connection
     $db = db_open();
     $sql = "
@@ -3078,10 +3102,13 @@ function get_exceptions_as_treegrid($type){
         where
             c.id is not null";
 
-    if(team_separation_extra()){
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        $where = get_user_teams_query_for_documents("p", false);
-    } else $where = " 1";
+    $where = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_documents',
+        ['p', false],
+        ' 1'
+    );
 
     $policy_sql_base .= " AND ".$where;
 
@@ -3186,7 +3213,7 @@ function get_exceptions_as_treegrid($type){
             if (!$branch_type)
                 $branch_type = $row['type'];
 
-            $all_approved &= $row['approved'];
+            $all_approved = $all_approved && $row['approved'];
 
             $branch[] = $row;
         }
@@ -3242,10 +3269,13 @@ function get_associated_exceptions_as_treegrid($risk_id, $type) {
         and 
             FIND_IN_SET({$risk_id}, de.associated_risks) > 0";
 
-    if(team_separation_extra()){
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        $where = get_user_teams_query_for_documents("p", false);
-    } else $where = " 1";
+    $where = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_documents',
+        ['p', false],
+        ' 1'
+    );
 
     $policy_sql_base .= " AND ".$where;
 
@@ -3278,6 +3308,7 @@ function get_associated_exceptions_as_treegrid($risk_id, $type) {
 
         $all_approved = true;
         $branch_type = false;
+        $parent_name = "";
         foreach($group as $row){
             $parent_name = $row['parent_name'];
             $row['children'] = [];
@@ -3294,7 +3325,7 @@ function get_associated_exceptions_as_treegrid($risk_id, $type) {
             else $updateAction = "";
 
             if ($delete)
-                $deleteAction = "<a class='exception--delete' data-id='".((int)$row['value'])."' data-type='{$row['type']}' data-approved='" . ($row['approved'] ? 'true' : 'false') . "'><i class='fa fa-trash'></i></a>"; 
+                $deleteAction = "<a class='exception--delete' data-id='".((int)$row['value'])."' data-type='{$row['type']}' data-approved='" . ($row['approved'] ? 'true' : 'false') . "'><i class='fa fa-trash'></i></a>";
             else $deleteAction = "";
 
             $row['actions'] = "<div class='text-center'>{$approve_action}{$updateAction}{$deleteAction}</div>";
@@ -3302,7 +3333,7 @@ function get_associated_exceptions_as_treegrid($risk_id, $type) {
             if (!$branch_type)
                 $branch_type = $row['type'];
 
-            $all_approved &= $row['approved'];
+            $all_approved = $all_approved && $row['approved'];
             $branch[] = $row;
         }
         if ($delete)
@@ -4099,26 +4130,26 @@ function get_control_gaps($framework_id = null, $maturity = "all_maturity", $ord
 
     switch($order_field)
     {
-        case "control_number";
+        case "control_number":
             $sql .= " ORDER BY control_number {$order_dir} ";
         break;
-        case "associated_frameworks";
+        case "associated_frameworks":
             // If encryption extra is disabled, sort by query
             if(!encryption_extra())
             {
                 $sql .= " ORDER BY framework_names {$order_dir} ";
             }
         break;
-        case "control_family";
+        case "control_family":
             $sql .= " ORDER BY t5.name {$order_dir} ";
         break;
-        case "control_phase";
+        case "control_phase":
             $sql .= " ORDER BY t3.name {$order_dir} ";
         break;
-        case "control_current_maturity";
+        case "control_current_maturity":
             $sql .= " ORDER BY t7.name {$order_dir} ";
         break;
-        case "control_desired_maturity";
+        case "control_desired_maturity":
             $sql .= " ORDER BY t8.name {$order_dir} ";
         break;
     }
@@ -4201,15 +4232,14 @@ function display_detail_framework_fields_add($fields) {
             if($field['active'] == 0) {
                 continue;
             }
-            
-            // If customization extra is enabled
-            if(customization_extra()) {
 
-                // Include the extra
-                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-                display_custom_field_edit($field, [], "label");
-                
-            }
+            // Display the custom field edit (no-op if customization extra is disabled)
+            call_extra_function(
+                'customization_extra',
+                __DIR__ . '/../extras/customization/index.php',
+                'display_custom_field_edit',
+                [$field, [], "label"]
+            );
         }
     }
 }
@@ -4276,7 +4306,7 @@ function display_add_control() {
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
         $active_fields = get_active_fields("control", "", 1);
-        $inactive_fields = get_inactive_fields("control", "", 1);
+        $inactive_fields = get_inactive_fields("control", "");
 
         display_detail_control_fields_add($active_fields);
         display_detail_control_fields_add($inactive_fields);
@@ -4395,15 +4425,14 @@ function display_detail_control_fields_add($fields) {
             if ($field['active'] == 0) {
                 continue;
             }
-            
-            // If customization extra is enabled
-            if(customization_extra()) {
 
-                // Include the extra
-                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-                display_custom_field_edit($field, [], "label");
-
-            }
+            // Display the custom field edit (no-op if customization extra is disabled)
+            call_extra_function(
+                'customization_extra',
+                __DIR__ . '/../extras/customization/index.php',
+                'display_custom_field_edit',
+                [$field, [], "label"]
+            );
         }
     }
 }
@@ -6081,6 +6110,7 @@ function get_text_from_document_content($content)
                 $phpWord = PhpOffice\PhpWord\IOFactory::load($temp_file, 'Word2007');
 
                 // Extract the text from the Word document
+                // @phan-suppress-next-line PhanUndeclaredFunction -- extract_text_content() is a runtime-loaded helper for PHPWord text extraction
                 $document_text = extract_text_content($phpWord);
             } catch (\Exception $e)
             {
@@ -6130,10 +6160,13 @@ function get_document_content_by_document_id($document_id)
 {
     // Open the database connection
     $db = db_open();
-    if(team_separation_extra()){
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        $where = get_user_teams_query_for_documents("t1" , false);
-    } else $where = " 1";
+    $where = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_documents',
+        ['t1', false],
+        ' 1'
+    );
 
     $sql = "
         SELECT t2.content AS content, t2.type, t2.name
@@ -6268,27 +6301,27 @@ function get_documents_to_controls($sort_order = 0, $order_field = false, $order
                     $filter_params[$param_name] = "%{$val}%";
                     break;
                 case "matching":
-                    if (stripos("DefiniteMatch", $val) !== false)
+                    if (stripos($val, "DefiniteMatch") !== false)
                     {
                         $where_query .= " AND ((dtc.ai_run = 1 AND dtc.ai_match = 1) OR (dtc.ai_run = 0 AND dtc.score >= 0.9))";
                     }
-                    else if (stripos("LikelyMatch", $val) !== false)
+                    else if (stripos($val, "LikelyMatch") !== false)
                     {
                         $where_query .= " AND (dtc.ai_run = 0 AND dtc.score >= 0.7 AND dtc.score < 0.9)";
                     }
-                    else if (stripos("PossibleMatch", $val) !== false)
+                    else if (stripos($val, "PossibleMatch") !== false)
                     {
                         $where_query .= " AND (dtc.ai_run = 0 AND dtc.score >= 0.4 AND dtc.score < 0.7)";
                     }
-                    else if (stripos("UnlikelyMatch", $val) !== false)
+                    else if (stripos($val, "UnlikelyMatch") !== false)
                     {
                         $where_query .= " AND (dtc.ai_run = 0 AND dtc.score >= 0.3 AND dtc.score < 0.4)";
                     }
-                    else if (stripos("NotAMatch", $val) !== false)
+                    else if (stripos($val, "NotAMatch") !== false)
                     {
                         $where_query .= " AND ((dtc.ai_run = 1 AND dtc.ai_match = 0) OR (dtc.ai_run = 0 AND dtc.score < 0.3))";
                     }
-                    else if (stripos("ReviewManually", $val) !== false)
+                    else if (stripos($val, "ReviewManually") !== false)
                     {
                         $where_query .= " AND NOT (
                             (dtc.ai_run = 1 AND dtc.ai_match = 1) OR
@@ -6302,21 +6335,21 @@ function get_documents_to_controls($sort_order = 0, $order_field = false, $order
                     }
                     break;
                 case "recommendation":
-                    if (stripos("AddControlToPolicy", $val) !== false)
+                    if (stripos($val, "AddControlToPolicy") !== false)
                     {
-                        $where_query .= " AND ((dtc.ai_run = 1 AND dtc.selected = 0 AND dtc.ai_match = 1) 
+                        $where_query .= " AND ((dtc.ai_run = 1 AND dtc.selected = 0 AND dtc.ai_match = 1)
                            OR (dtc.ai_run = 0 AND dtc.selected = 0 AND dtc.score >= 0.9))";
                     }
-                    else if (stripos("ConsiderAddingControl", $val) !== false)
+                    else if (stripos($val, "ConsiderAddingControl") !== false)
                     {
                         $where_query .= " AND (dtc.ai_run = 0 AND dtc.selected = 0 AND dtc.score >= 0.3 AND dtc.score < 0.9)";
                     }
-                    else if (stripos("RemoveControlFromPolicy", $val) !== false)
+                    else if (stripos($val, "RemoveControlFromPolicy") !== false)
                     {
-                        $where_query .= " AND ((dtc.ai_run = 1 AND dtc.selected = 1 AND dtc.ai_match = 0) 
+                        $where_query .= " AND ((dtc.ai_run = 1 AND dtc.selected = 1 AND dtc.ai_match = 0)
                            OR (dtc.ai_run = 0 AND dtc.selected = 1 AND dtc.score < 0.3))";
                     }
-                    else if (stripos("NoActionRequired", $val) !== false)
+                    else if (stripos($val, "NoActionRequired") !== false)
                     {
                         $where_query .= " AND NOT (
                             (dtc.ai_run = 1 AND dtc.selected = 0 AND dtc.ai_match = 1) OR

@@ -10,6 +10,26 @@ require_once(realpath(__DIR__ . '/escaper.php'));
 // Include Escaper for HTML Output Encoding
 $escaper = new simpleriskEscaper();
 
+/*****************************
+ * FUNCTION: INSTALLER LOG   *
+ *****************************/
+// Logging helper for the install path. Prefers SimpleRisk's write_debug_log
+// so installer events land in the same log stream as the rest of the app.
+// Falls back to error_log only when functions.php has not been loaded —
+// which is the case during the pre-install bootstrap, because functions.php
+// require_once's config.php at its top and config.php may not exist yet.
+//
+// $level is required (no default) — same rule as write_debug_log itself, so
+// the wrapper doesn't quietly accept calls that omit a level.
+function installer_log($message, $level)
+{
+    if (function_exists('write_debug_log')) {
+        write_debug_log("Installer: {$message}", $level);
+    } else {
+        error_log("SimpleRisk installer [{$level}]: {$message}");
+    }
+}
+
 /*************************************
  * FUNCTION: SIMPLERISK INSTALLATION *
  *************************************/
@@ -387,6 +407,9 @@ function verify_step_3_database_credentials()
     $db_user = addslashes($_POST['db_user']);
     $db_pass = addslashes($_POST['db_pass']);
 
+    $error_message = [];
+    $result = [];
+
     // Connect to the database
     try
     {
@@ -606,8 +629,6 @@ function step_4_simplerisk_info($error_message = null)
  *******************************************/
 function verify_step_4_simplerisk_info()
 {
-    global $escaper;
-
     // Database Connection Information
     $db_host = addslashes($_POST['db_host']);
     $db_port = addslashes($_POST['db_port']);
@@ -619,6 +640,8 @@ function verify_step_4_simplerisk_info()
     $db_ssl_cert_path = $_POST['db_ssl_cert_path'];
 
     $error = false;
+    $error_message = [];
+    $result = [];
 
     // Check if the sr_host is a valid value
     $sr_host_array = explode(",", $sr_host);
@@ -630,7 +653,8 @@ function verify_step_4_simplerisk_info()
         // If the resulting sr_host value is not a valid domain, IP, wildcard, or netmask
         if (!is_valid_sr_host($sr_host))
         {
-            $error_message[] = "The SimpleRisk IP/Host \"" . $escaper->escapeHtml($sr_host) . "\" is not valid.";
+            // Plain text — installer_health_check_bad() escapes once at the rendering sink.
+            $error_message[] = "The SimpleRisk IP/Host \"" . $sr_host . "\" is not valid.";
             $error = true;
         }
     }
@@ -653,7 +677,7 @@ function verify_step_4_simplerisk_info()
     // If the database exists
     if (!empty($array))
     {
-        $error_message[] = "A database with the name \"" . $escaper->escapeHtml($sr_db) . "\" already exists.";
+        $error_message[] = "A database with the name \"" . $sr_db . "\" already exists.";
         $error = true;
     }
 
@@ -666,7 +690,7 @@ function verify_step_4_simplerisk_info()
     // If the username exists
     if (!empty($array))
     {
-        $error_message[] = "An entry in the mysql user table with the name \"" . $escaper->escapeHtml($sr_user) . "\" already exists.";
+        $error_message[] = "An entry in the mysql user table with the name \"" . $sr_user . "\" already exists.";
         $error = true;
     }
 
@@ -679,7 +703,7 @@ function verify_step_4_simplerisk_info()
     // If the array is not empty
     if (!empty($array))
     {
-        $error_message[] = "An entry in the mysql db table with the name \"" . $escaper->escapeHtml($sr_user) . "\" already exists.";
+        $error_message[] = "An entry in the mysql db table with the name \"" . $sr_user . "\" already exists.";
         $error = true;
     }
 
@@ -789,6 +813,8 @@ function step_5_default_admin_account($error_message = null)
 function verify_step_5_default_admin_account()
 {
     $error = false;
+    $error_message = [];
+    $result = [];
 
     // If the Username is empty
     if ($_POST['username'] == "")
@@ -980,16 +1006,10 @@ function step_6_simplerisk_installation()
 
     installer_instance_registration($instance_id, $full_name, $email, $mailing_list);
 
-    $file = realpath(__DIR__ . '/config.php');
-    $config_file = create_config_file($db_host, $db_port, $sr_user, $sr_pass, $sr_db, $db_sessions, $db_ssl_cert_path);
-
-    if ($file && file_exists($file) && is_writable($file)) {
-        file_put_contents($file, $config_file);
-        echo "Configuration file has been updated successfully.<br><br>";
+    if (create_config_file($db_host, $db_port, $sr_user, $sr_pass, $sr_db, $db_sessions, $db_ssl_cert_path)) {
+        echo "Configuration file has been created successfully.<br><br>";
         echo "SimpleRisk should now be communicating with the database.<br><br>";
         echo "<input type=\"button\" value=\"GO TO SIMPLERISK\" onclick=\"window.location.reload(true)\" />";
-    } else {
-        echo nl2br(htmlentities($config_file, ENT_QUOTES, 'UTF-8'));
     }
 }
 
@@ -1023,6 +1043,8 @@ function installer_display_health_check_array_results($health_check_array)
 /*****************************************
  * FUNCTION: INSTALLER HEALTH CHECK GOOD *
  *****************************************/
+// $text is plain text — this function is the HTML sink and escapes once.
+// Callers must not pre-escape; doing so would render literal entities.
 function installer_health_check_good($text)
 {
     global $escaper;
@@ -1033,6 +1055,8 @@ function installer_health_check_good($text)
 /****************************************
  * FUNCTION: INSTALLER HEALTH CHECK BAD *
  ****************************************/
+// $text is plain text — this function is the HTML sink and escapes once.
+// Callers must not pre-escape; doing so would render literal entities.
 function installer_health_check_bad($text)
 {
     global $escaper;
@@ -1175,9 +1199,15 @@ function installer_db_open($db_host, $db_port, $db_user, $db_pass, $db_name)
     try
     {
         $db = new PDO("mysql:charset=UTF8;dbname=".$db_name.";host=".$db_host.";port=".$db_port,$db_user,$db_pass, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
-        $db->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET NAMES utf8");
-        $db->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET CHARACTER SET utf8");
-        $db->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO'");
+
+        // PHP 8.5 moved PDO MySQL constants to the Pdo\Mysql namespace and
+        // deprecated the PDO::MYSQL_ATTR_* aliases. See db_open() in
+        // functions.php for the same shim.
+        $pdo_mysql_init_command = defined('Pdo\Mysql::ATTR_INIT_COMMAND') ? constant('Pdo\Mysql::ATTR_INIT_COMMAND') : PDO::MYSQL_ATTR_INIT_COMMAND;
+
+        $db->setAttribute($pdo_mysql_init_command, "SET NAMES utf8");
+        $db->setAttribute($pdo_mysql_init_command, "SET CHARACTER SET utf8");
+        $db->setAttribute($pdo_mysql_init_command, "SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO'");
 
         return $db;
     }
@@ -1229,56 +1259,180 @@ function get_simplerisk_base_url()
  ********************************/
 function create_config_file($dbhost, $dbport, $sr_user, $sr_pass, $sr_db, $db_sessions, $db_ssl_cert_path)
 {
-    $content = "<?php\n";
-    $content .= " /* This Source Code Form is subject to the terms of the Mozilla Public\n";
-    $content .= " * License, v. 2.0. If a copy of the MPL was not distributed with this\n";
-    $content .= " * file, You can obtain one at http://mozilla.org/MPL/2.0/. */\n";
-    $content .= "\n";
-    $content .= "// MySQL Database Host Name\n";
-    $content .= "define('DB_HOSTNAME', '" . $dbhost . "');\n";
-    $content .= "\n";
-    $content .= "// MySQL Database Port Number\n";
-    $content .= "define('DB_PORT', '" . $dbport . "');\n";
-    $content .= "\n";
-    $content .= "// MySQL Database User Name\n";
-    $content .= "define('DB_USERNAME', '" . $sr_user . "');\n";
-    $content .= "\n";
-    $content .= "// MySQL Database Password\n";
-    $content .= "define('DB_PASSWORD', '" . $sr_pass . "');\n";
-    $content .= "\n";
-    $content .= "// MySQL Database Name\n";
-    $content .= "define('DB_DATABASE', '" . $sr_db . "');\n";
-    $content .= "\n";
-    $content .= "// Use database for sessions\n";
-    $content .= "define('USE_DATABASE_FOR_SESSIONS', '" . $db_sessions . "');\n";
-    $content .= "\n";
+    $sample_file = __DIR__ . '/config.sample.php';
+    $target_file = __DIR__ . '/config.php';
+    $target_dir  = __DIR__;
 
-    // If the db_ssl_cert_path is not empty
-    if ($db_ssl_cert_path != "")
-    {
-        // If the db_ssl_cert_path is to a valid file
-        if (file_exists($db_ssl_cert_path))
-        {
-            // Add the value to the config.php file
-            $content .= "// Path to the certificate to be used for SSL connections to the database\n";
-            $content .= "define('DB_SSL_CERTIFICATE_PATH', '" . $db_ssl_cert_path . "');\n";
-            $content .= "\n";
-        }
-        else
-        {
-            // Put an empty value in the config.php file
-            $content .= "// Path to the certificate to be used for SSL connections to the database\n";
-            $content .= "define('DB_SSL_CERTIFICATE_PATH', '');\n";
-            $content .= "\n";
-        }
+    // Identify the OS user PHP is running as so permission errors point the
+    // operator at the right account to fix in chown/chmod.
+    if (function_exists('posix_geteuid') && function_exists('posix_getpwuid')) {
+        $pwuid = posix_getpwuid(posix_geteuid());
+        $runtime_user = is_array($pwuid) && isset($pwuid['name']) ? $pwuid['name'] : 'unknown';
+    } else {
+        $runtime_user = function_exists('get_current_user') ? (get_current_user() ?: 'unknown') : 'unknown';
     }
 
-    $content .= "// Disable SimpleRisk installer script\n";
-    $content .= "define('SIMPLERISK_INSTALLED', 'true');\n";
-    $content .= "\n";
-    $content .= "?>";
+    if (!file_exists($sample_file)) {
+        installer_report_config_error("Installer cannot create config.php: missing template at {$sample_file}.");
+        return false;
+    }
 
-    return $content;
+    $template = file_get_contents($sample_file);
+    if ($template === false) {
+        installer_report_config_error("Installer could not read the config template at {$sample_file}.");
+        return false;
+    }
+
+    // Resolve the SSL certificate path: blank if not supplied, blank if the
+    // supplied path does not exist on disk.
+    $resolved_ssl_path = ($db_ssl_cert_path !== '' && file_exists($db_ssl_cert_path)) ? $db_ssl_cert_path : '';
+
+    // Render up front so any permission-failure branch below can fall back
+    // to showing the operator the exact contents to drop into config.php
+    // by hand. This is the "manual recovery" path: on restrictive hosts
+    // where the web user cannot write to includes/, the installer would
+    // otherwise leave the operator stuck — they would not know what
+    // create_config_file() was going to produce, and could not finish the
+    // install without reading source. Showing the rendered template
+    // restores the recovery story.
+    $rendered = render_config_template($template, [
+        '__DB_HOSTNAME__'               => $dbhost,
+        '__DB_PORT__'                   => $dbport,
+        '__DB_USERNAME__'               => $sr_user,
+        '__DB_PASSWORD__'               => $sr_pass,
+        '__DB_DATABASE__'               => $sr_db,
+        '__USE_DATABASE_FOR_SESSIONS__' => $db_sessions,
+    ]);
+
+    // SSL cert path: the sample config ships with the DB_SSL_CERTIFICATE_PATH
+    // define commented out as an opt-in marker. When the operator supplied
+    // a real path at install time, replace that commented line with an
+    // active define. When no path was supplied, leave the line commented
+    // so SimpleRisk does not attempt SSL at all (preferable to silently
+    // running with a stale or stub path).
+    if ($resolved_ssl_path !== '') {
+        $rendered = preg_replace(
+            "~^[ \t]*//[ \t]*define\(\s*'DB_SSL_CERTIFICATE_PATH'.*$~m",
+            "define('DB_SSL_CERTIFICATE_PATH', '" . addcslashes($resolved_ssl_path, "'\\") . "');",
+            $rendered,
+            1
+        );
+    }
+
+    if (!is_writable($target_dir)) {
+        installer_report_config_error("Installer cannot write config.php to {$target_dir}. The PHP process is running as '{$runtime_user}'. Make this directory writable by that user and reload the installer.");
+        installer_show_manual_config_recovery($target_file, $rendered);
+        return false;
+    }
+
+    // Atomic write: stage to a sibling .tmp file then rename into place.
+    // file_put_contents alone is not atomic — a parallel request landing
+    // mid-write could otherwise require_once a half-written file and hit
+    // a parse error. rename() is atomic on POSIX when source and
+    // destination share a filesystem (they do here, both in $target_dir).
+    $tmp_target_file = $target_file . '.tmp';
+    if (file_put_contents($tmp_target_file, $rendered) === false) {
+        installer_report_config_error("Installer failed to write the staging config file at {$tmp_target_file}. Process is running as '{$runtime_user}'. Check filesystem permissions on {$target_dir}.");
+        installer_show_manual_config_recovery($target_file, $rendered);
+        return false;
+    }
+
+    // Tighten permissions before publishing the file: config.php holds the
+    // database password, so default-umask 0644 (world-readable) is too loose
+    // on shared hosts. 0640 keeps it readable by the webserver group and
+    // hidden from other local accounts. Silenced because chmod can fail on
+    // filesystems without POSIX permissions (e.g. some Windows/NFS mounts);
+    // the file is already written, so we proceed and let the rename land.
+    @chmod($tmp_target_file, 0640);
+
+    if (!rename($tmp_target_file, $target_file)) {
+        @unlink($tmp_target_file);
+        installer_report_config_error("Installer wrote {$tmp_target_file} but could not rename it to {$target_file}. Process is running as '{$runtime_user}'. Check filesystem permissions on {$target_dir}.");
+        installer_show_manual_config_recovery($target_file, $rendered);
+        return false;
+    }
+
+    installer_log("Wrote config.php to {$target_file}.", 'notice');
+    return true;
+}
+
+/**********************************************
+ * FUNCTION: INSTALLER SHOW MANUAL CONFIG     *
+ *           RECOVERY                         *
+ **********************************************/
+/**
+ * Surface the rendered config.php contents to the operator after a
+ * permission-failure branch so they can create the file by hand and
+ * resume installation. Restores the manual-recovery story the old
+ * pre-template installer offered via nl2br(htmlentities(...)).
+ *
+ * Note: the rendered template contains the operator-supplied DB
+ * password. That value never leaves the operator's own browser
+ * session — this is the same surface the installer form they just
+ * submitted lives in. We are not weakening the security boundary,
+ * only making the recovery actionable.
+ */
+function installer_show_manual_config_recovery(string $target_file, string $rendered_config): void
+{
+    global $escaper;
+
+    echo "<div class=\"alert alert-info\">\n";
+    echo "<p><b>Manual recovery:</b> if the permission issue above cannot be resolved, you can finish installation by creating <code>" . $escaper->escapeHtml($target_file) . "</code> yourself. Copy the contents below into that file with your preferred editor, save it, and reload this page — SimpleRisk will detect the configuration and continue.</p>\n";
+    echo "<pre style=\"max-height: 400px; overflow: auto; white-space: pre-wrap;\">" . $escaper->escapeHtml($rendered_config) . "</pre>\n";
+    echo "</div>\n";
+}
+
+/******************************************
+ * FUNCTION: RENDER CONFIG TEMPLATE       *
+ ******************************************/
+/**
+ * Substitute __PLACEHOLDER__ tokens in $template with values from
+ * $values, escaping each value so it is safe to land inside a
+ * single-quoted PHP string literal.
+ *
+ * Pure: takes a template string and a placeholder=>value map, returns
+ * the rendered string. No file I/O, no escaper state, no globals.
+ *
+ * Each value is run through addcslashes($value, "'\\") before
+ * substitution — this neutralises the only two characters that can
+ * break out of a single-quoted PHP literal (`'` and `\`). All other
+ * characters (including PHP open tags `<?` / `<?php`, newlines, null
+ * bytes, unicode) pass through unchanged because they are inert
+ * inside a single-quoted literal. strtr() then does the substitution
+ * in a single non-overlapping pass, so a raw value that happens to
+ * contain another placeholder substring is not re-substituted.
+ *
+ * The escape step is the security-critical contract: a password
+ * containing `'` rendered without escaping becomes
+ * `define('DB_PASSWORD', 'pa'ss')` — a PHP parse error that bricks
+ * every subsequent request. The accompanying unit tests pin this
+ * behaviour across single quotes, backslashes, both combined, PHP
+ * open tags, empty strings, and unicode.
+ *
+ * @param string                $template  Raw template (typically
+ *                                         file_get_contents on
+ *                                         config.sample.php).
+ * @param array<string, string> $values    Map of placeholder => raw
+ *                                         (un-escaped) value.
+ */
+function render_config_template(string $template, array $values): string
+{
+    $escaped = [];
+    foreach ($values as $placeholder => $value) {
+        $escaped[$placeholder] = addcslashes($value, "'\\");
+    }
+    return strtr($template, $escaped);
+}
+
+/**********************************************
+ * FUNCTION: INSTALLER REPORT CONFIG ERROR    *
+ **********************************************/
+function installer_report_config_error($message)
+{
+    global $escaper;
+
+    installer_log($message, 'error');
+    echo "<div class=\"alert alert-danger\"><b>" . $escaper->escapeHtml($message) . "</b></div>\n";
 }
 
 /***********************
@@ -1395,7 +1549,7 @@ function installer_get_latest_version()
     // If we were unable to connect to the URL
     if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found')
     {
-        error_log("SimpleRisk was unable to connect to {$url}");
+        installer_log("Unable to connect to {$url}", 'warning');
     }
     // We were able to connect to the URL
     else
@@ -1410,6 +1564,7 @@ function installer_get_latest_version()
         // Convert it to be an array
         $releases_array = json_decode(json_encode(new SimpleXMLElement($version_page)), true);
         $latest_release = reset($releases_array);
+        $latest_versions = [];
         $latest_versions['appversion'] = $latest_release[0]['@attributes']['version'];
 
         // Adding aliases, as the values not always requested with the same name the XML serves it
@@ -1455,7 +1610,7 @@ function installer_check_web_connectivity()
 
         if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found')
         {
-            error_log("SimpleRisk was unable to connect to {$url}");
+            installer_log("Unable to connect to {$url}", 'warning');
             $array[] = array("result" => 0, "text" => "SimpleRisk was unable to connect to " . $url . ".");
         }
         else
@@ -1517,6 +1672,8 @@ function installer_check_php_memory_limit()
     // Otherwise
     else
     {
+        $memory_limit_bytes = 0;
+
         // If the memory limit is a number followed by characters
         if (preg_match('/^(\d+)(.)$/', $memory_limit, $matches))
         {

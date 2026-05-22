@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required configuration files
-require_once(realpath(__DIR__ . '/config.php'));
+require_once(realpath(__DIR__ . '/bootstrap.php'));
 require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/services.php'));
 
@@ -13,10 +13,51 @@ require_once(realpath(__DIR__ . '/services.php'));
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
+/*********************************
+ * FUNCTION: CALL EXTRA FUNCTION *
+ *********************************/
+/**
+ * Safely invoke a function defined in a SimpleRisk Extra.
+ *
+ * Guards against the three failure modes the bare pattern misses:
+ *  - extra is enabled in the DB but the extras directory is missing on disk
+ *  - extras directory exists but the file holds a version older than core (function not yet defined)
+ *  - file loads but the function still isn't defined for any other reason
+ *
+ * Pass $extra_file = null when the file is loaded elsewhere (e.g. by the extra's index.php).
+ * Returns $default (null by default) if any guard fails.
+ *
+ * Note: $args is evaluated at the call site before $extra_file is required, so
+ * do not pass calls to extras-defined functions as args. Use plain variables,
+ * scalars, arithmetic, or core-defined function calls only.
+ */
+function call_extra_function($extra_check_function, $extra_file, $function_name, array $args = [], $default = null) {
+    if (!call_user_func($extra_check_function)) {
+        return $default;
+    }
+
+    if ($extra_file !== null) {
+        $resolved = realpath($extra_file);
+        if ($resolved === false) {
+            write_debug_log("Extra '{$extra_check_function}' is enabled but file is missing on disk: {$extra_file} (cannot call {$function_name}())", 'error');
+            return $default;
+        }
+        require_once($resolved);
+    }
+
+    if (!function_exists($function_name)) {
+        write_debug_log("Extra '{$extra_check_function}' is enabled but {$function_name}() is not defined — extras directory is likely older than core", 'warning');
+        return $default;
+    }
+
+    return call_user_func_array($function_name, $args);
+}
+
 /***************************************************
  * FUNCTION: AVAILABLE EXTRAS                      *
  * Returns an array of available SimpleRisk Extras *
  ***************************************************/
+// @phan-suppress-next-line PhanRedefineFunction -- alternate definition in extras/upgrade/backwards_compatibility.php is guarded by function_exists()
 function available_extras()
 {
     // The available SimpleRisk Extras
@@ -49,6 +90,7 @@ function available_extras()
  * FUNCTION: AVAILABLE EXTRA SHORT NAMES                  *
  * Returns the short names of available SimpleRisk Extras *
  **********************************************************/
+// @phan-suppress-next-line PhanRedefineFunction -- alternate definition in extras/upgrade/backwards_compatibility.php is guarded by function_exists()
 function available_extra_short_names()
 {
     // Get the list of available extras
@@ -296,9 +338,9 @@ function core_display_upgrade_extras()
 				}
 				else
 				{
-					$purchased = (boolean)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
-					$disabled = (boolean)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
-					$deleted = (boolean)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
+					$purchased = (bool)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
+					$disabled = (bool)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
+					$deleted = (bool)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
 
 					// If the extra was purchased
 					if ($purchased)
@@ -376,6 +418,58 @@ function core_display_upgrade_extras()
 function core_is_installed($extra_name) {
     global $available_extras;
     return in_array($extra_name, $available_extras) && file_exists(realpath(__DIR__ . "/../extras/{$extra_name}/index.php"));
+}
+
+/******************************************************
+ * FUNCTION: EXTRA STATE CHECK FUNCTION                *
+ ******************************************************/
+/**
+ * Returns the canonical state-check function name (e.g. "jira_extra")
+ * for a given Extra directory name. For 4 historical Extras the
+ * state-check function uses a different slug than the directory:
+ *
+ *   directory             state-check function
+ *   --------------------  ---------------------------
+ *   separation            team_separation_extra
+ *   authentication        custom_authentication_extra
+ *   import-export         import_export_extra
+ *   complianceforgescf    complianceforge_scf_extra
+ *
+ * Every other Extra: function name is "<dir>_extra".
+ */
+function extra_state_check_function(string $dir_name): string
+{
+    static $overrides = [
+        'separation'         => 'team_separation_extra',
+        'authentication'     => 'custom_authentication_extra',
+        'import-export'      => 'import_export_extra',
+        'complianceforgescf' => 'complianceforge_scf_extra',
+    ];
+    return $overrides[$dir_name] ?? ($dir_name . '_extra');
+}
+
+/******************************************************
+ * FUNCTION: EXTRA HANDLER SLUG                       *
+ ******************************************************/
+/**
+ * Returns the slug used in enable_/disable_ handler function names for
+ * a given Extra directory name. For most Extras this matches the state-
+ * check slug (separation/import-export/complianceforgescf each use the
+ * state-check slug for their enable/disable handlers too). The one
+ * exception is the Custom Authentication Extra, whose state-check is
+ * custom_authentication_extra() but whose enable/disable handlers are
+ * enable_authentication_extra() / disable_authentication_extra() (the
+ * directory name, not the state-check slug).
+ */
+function extra_handler_slug(string $dir_name): string
+{
+    static $overrides = [
+        'separation'         => 'team_separation',
+        'import-export'      => 'import_export',
+        'complianceforgescf' => 'complianceforge_scf',
+        // authentication: handler slug equals dir name — no override.
+    ];
+    return $overrides[$dir_name] ?? $dir_name;
 }
 
 /***************************************************************
@@ -490,6 +584,11 @@ function core_check_all_purchases()
 
     // Make the services call
     $response = fetch_url_content("stream", $http_options, $validate_ssl, $url, $parameters);
+    if (!is_array($response))
+    {
+        write_debug_log("SimpleRisk was unable to connect to " . $url, 'warning');
+        return false;
+    }
     $return_code = $response['return_code'];
     $result = $response['response'];
 
@@ -523,6 +622,8 @@ function core_get_action_button($extra_name, $purchased, $installed, $activated,
 
     // Default button is N/A
     $action_button = "N/A";
+    $button_name = "";
+    $action_link = "";
 
     // Check the Extra Name
     switch ($extra_name)
@@ -752,6 +853,11 @@ function extra_simplerisk_version_compatible($extra)
 
         // Make the services call
         $response = fetch_url_content("stream", $http_options, $validate_ssl, $url);
+        if (!is_array($response))
+        {
+            write_debug_log("Unable to connect to " . $url, 'warning');
+            return false;
+        }
         $return_code = $response['return_code'];
 
 		// If we were unable to connect to the URL
@@ -776,6 +882,7 @@ function extra_simplerisk_version_compatible($extra)
 			$array = json_decode($json, true);
 
 			// For each extra entry in the array
+			// @phan-suppress-next-line PhanTypeArraySuspiciousNullable -- json_decode result from valid XML→JSON; xml validity confirmed by simplexml_load_string success
 			foreach($array[$extra]['extra'] as $key => $value)
 			{
 				$array_extra_version = $value['@attributes']['version'];
@@ -846,7 +953,7 @@ function simplerisk_license_check_purchases()
 	{
 		// Get the support information
 		$support_xml = $purchases->{"support"};
-		$support_purchased = (boolean)json_decode(strtolower($support_xml->{"purchased"}->__toString()));
+		$support_purchased = (bool)json_decode(strtolower($support_xml->{"purchased"}->__toString()));
 
 		// If support is purchased
 		if ($support_purchased == "true")
@@ -875,10 +982,10 @@ function simplerisk_license_check_purchases()
 					continue;
 				}
 
-				$purchased = (boolean)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
+				$purchased = (bool)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
 				$expires = $extra_xml->{"expires"}->__toString();
-				$disabled = (boolean)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
-				$deleted = (boolean)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
+				$disabled = (bool)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
+				$deleted = (bool)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
 
 				// Check if the extra is installed
 				$installed = core_is_installed($extra['short_name']);

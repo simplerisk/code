@@ -17,7 +17,7 @@ class NonRetryableException extends \RuntimeException {}
 /****************************
  * FUNCTION: CREATE PROMISE *
  ****************************/
-function create_promise(string $promise_type, array $stages, array $payload = [], PDO $db): int
+function create_promise(string $promise_type, array $stages, array $payload, PDO $db): int
 {
     $stmt = $db->prepare("
         INSERT INTO promises (promise_type, current_stage, status, state, stages, payload, created_at, updated_at)
@@ -39,10 +39,10 @@ function create_promise(string $promise_type, array $stages, array $payload = []
 function create_stage_promise(
     string $promise_type,
     string $stage_name,
-    array $payload = [],
-    ?int $depends_on = null,
-    ?int $reference_id = null,
-    ?int $queue_task_id = null,
+    array $payload,
+    ?int $depends_on,
+    ?int $reference_id,
+    ?int $queue_task_id,
     PDO $db
 ): int {
     try {
@@ -95,7 +95,7 @@ function create_stage_promise(
  * FUNCTION: UPDATE PROMISE STAGE                      *
  * Updates promise state and triggers completion logic *
  *******************************************************/
-function update_promise_stage(int $promise_id, ?string $current_stage = null, ?string $status = null, ?array $payload = null, PDO $db): bool
+function update_promise_stage(int $promise_id, ?string $current_stage, ?string $status, ?array $payload, PDO $db): bool
 {
     $parts = [];
     $params = [':pid' => $promise_id];
@@ -449,6 +449,7 @@ function process_promise(array $promise, array $jobDef, PDO $db, int $maxRetryAt
     write_debug_log("Stage '{$stageName}' returned: {$resultStr}", "debug");
 
     // Failure detection
+    // @phan-suppress-next-line PhanTypeComparisonFromArray -- $stageFn is a dynamic callable that may return false/null/array/scalar
     if ($result === false || $result === null) {
         handle_promise_failure($db, $promise, "Stage returned " . var_export($result, true), $maxRetryAttempts, $baseRetryDelay, $maxRetryDelay);
         return 1;

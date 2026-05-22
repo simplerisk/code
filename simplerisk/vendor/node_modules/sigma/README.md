@@ -6,6 +6,9 @@
 
 **[Website](https://www.sigmajs.org/)** | **[Documentation](https://www.sigmajs.org/docs)** | **[Storybook](https://www.sigmajs.org/storybook)** | <strong><a rel="me" href="https://vis.social/@sigmajs">Mastodon</a></strong>
 
+> [!NOTE]
+> Sigma v4 is now available as an alpha release. See [v4.sigmajs.org](https://v4.sigmajs.org/) for the website, or the [`v4` branch](https://github.com/jacomyal/sigma.js/tree/v4) for the source code.
+
 ---
 
 [Sigma.js](https://www.sigmajs.org) is an open-source JavaScript library aimed at visualizing graphs of thousands of nodes and edges using WebGL, mainly developed by [@jacomyal](https://github.com/jacomyal) and [@Yomguithereal](https://github.com/Yomguithereal), and built on top of [graphology](https://graphology.github.io/).

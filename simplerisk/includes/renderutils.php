@@ -21,11 +21,11 @@
  * 
  * The $required_localization_keys is a list of localization keys which will be used to generate a Javascript array called '_lang' that contains the translations(for the current language) for the listed keys
  * 
+ * @param array $required_scripts_or_css (optional)
+ * @param array $permissions (optional)
  * @param string $breadcrumb_title_key (optional)
  * @param string $active_sidebar_menu (optional)
  * @param string $active_sidebar_submenu (optional)
- * @param array $permissions (optional)
- * @param array $required_scripts_or_css (optional)
  * @param array $additional_render_info (optional)
  * @param array $required_localization_keys (optional)
  */
@@ -34,7 +34,7 @@ function render_header_and_sidebar($required_scripts_or_css = [], $permissions =
     
     require_once(realpath(__DIR__ . '/../sidebar.php'));
     // These variables doesn't need to be declared global
-    $local_variables = ['local_variables', 'required_scripts_or_css', 'permissions', 'breadcrumb_title_key', 'active_sidebar_menu', 'active_sidebar_submenu', 'active_sidebar_thirdmenu', 'active_sidebar_forthmenu', 'additional_render_info', 'required_script', 'matches', 'required_script_or_css', 'localization_key', 'required_localization_keys', 'localization_required_by_scripts', 'scripts_with_localization_needs', 'script_with_localization_needs', 'script_dependency'];
+    $local_variables = ['local_variables', 'required_scripts_or_css', 'permissions', 'breadcrumb_title_key', 'active_sidebar_menu', 'active_sidebar_submenu', 'active_sidebar_thirdmenu', 'active_sidebar_forthmenu', 'additional_render_info', 'required_script', 'matches', 'required_script_or_css', 'localization_key', 'required_localization_keys', 'localization_required_by_scripts', 'scripts_with_localization_needs', 'script_with_localization_needs', 'script_dependency', 'hub_current_script', 'hub_current_menu', 'hub_breadcrumb', 'lang_subset', 'lang_json'];
     // but we're printing a warning about every other variables as they might not be accessible in other parts of the application if they're not declared as global variables
     foreach (array_keys(get_defined_vars()) as $key) {
         if (!in_array($key, $local_variables) && !isset($GLOBALS[$key])) {

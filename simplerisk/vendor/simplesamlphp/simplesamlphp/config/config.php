@@ -22,6 +22,25 @@ $baseurlpath = $simplerisk_base_url . 'vendor/simplesamlphp/simplesamlphp/www/';
 // Get the system temp directory
 $temp_dir = sys_get_temp_dir();
 
+// Resolve a per-install SimpleSAMLphp secretsalt. Lazily generated and persisted on first
+// load so each install has an independent value — no hardcoded fallback that an attacker
+// could rely on to forge HMAC'd state in SimpleSAMLphp_kvstore.
+$saml_secretsalt = get_setting('SAML_SECRETSALT');
+if (!$saml_secretsalt) {
+    $saml_secretsalt = bin2hex(random_bytes(16));
+    update_or_insert_setting('SAML_SECRETSALT', $saml_secretsalt);
+    write_debug_log("Lazily generated SAML_SECRETSALT in SimpleSAMLphp config.", 'notice');
+
+    // Clear any kvstore rows HMAC'd with the previous (legacy or absent) salt so SimpleSAMLphp
+    // does not encounter unreadable garbage. Mirrors upgrade_authentication_extra_20260429001.
+    if (table_exists('SimpleSAMLphp_kvstore')) {
+        $db = db_open();
+        $db->exec("DELETE FROM `SimpleSAMLphp_kvstore`");
+        db_close($db);
+        write_debug_log("Cleared SimpleSAMLphp_kvstore after lazy SAML_SECRETSALT rotation.", 'notice');
+    }
+}
+
 /**
  * The configuration of SimpleSAMLphp
  */
@@ -207,7 +226,7 @@ $config = [
      * A possible way to generate a random salt is by running the following command from a unix shell:
      * LC_CTYPE=C tr -c -d '0123456789abcdefghijklmnopqrstuvwxyz' </dev/urandom | dd bs=32 count=1 2>/dev/null;echo
      */
-    'secretsalt' => 'j4b4c9lc7td882b905uneuhkl7q1nhe0',
+    'secretsalt' => $saml_secretsalt,
 
     /*
      * This password must be kept secret, and modified from the default value 123.

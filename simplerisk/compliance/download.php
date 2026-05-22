@@ -15,10 +15,12 @@
 // Add various security headers
 add_security_headers();
 
-// Add the session
+// Add the session — flagged is_action so this download handler does
+// not anchor itself as the user's most recent legitimate landing.
 $permissions = array(
         "check_access" => true,
         "check_compliance" => true,
+        "is_action" => true,
 );
 add_session_check($permissions);
 
@@ -50,12 +52,7 @@ global $escaper, $lang;
     
             if (!should_skip_test_and_audit_permission_check()) {
                 if (!check_permission_for_compliance_file($id)) {
-
-                    set_alert(true, "bad",  $escaper->escapeHtml($lang['DownloadFilePermissionMessage']));
-
-                    header("Location: ".$_SERVER['HTTP_REFERER']);
-                    exit();
-
+                    redirect_permission_denied('DownloadFilePermissionMessage', "compliance file id={$id}");
                 }
             }
         }

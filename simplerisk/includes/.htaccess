@@ -1,0 +1,14 @@
+# simplerisk/includes/ is a library directory — every file here is
+# require_once'd from an entry point elsewhere in the application
+# (simplerisk/index.php, simplerisk/admin/*, simplerisk/management/*,
+# simplerisk/cron/*, etc.). Nothing under this directory is intended
+# to be accessed directly via a URL: no <a href>, form action, AJAX
+# call, header(Location: ...), iframe src, or .htaccess rewrite
+# anywhere in the repo targets includes/. Direct GET requests would
+# at best execute a library file out of context (no useful output) and
+# at worst could partially execute and leak diagnostic information.
+#
+# Defence-in-depth: send any direct request to /404 the same way
+# simplerisk/api/v2/includes/.htaccess does.
+RewriteEngine On
+RewriteRule ^.*$ /404 [L]

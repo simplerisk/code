@@ -10,6 +10,7 @@ require_once(realpath(__DIR__ . '/assessments.php'));
 require_once(realpath(__DIR__ . '/permissions.php'));
 require_once(realpath(__DIR__ . '/governance.php'));
 require_once(realpath(__DIR__ . '/reporting.php'));
+require_once(realpath(__DIR__ . '/extras.php'));
 
 /****************************
 * FUNCTION: VIEW SCORE HTML *
@@ -1997,7 +1998,7 @@ function print_mitigation_controls_table($control_ids, $mitigation_id, $flag="vi
                     serverSide: true,
                     bSort: true,
                     ajax: {
-                        url: BASE_URL + '/api/datatable/mitigation_controls',
+                        url: BASE_URL + '/api/v2/datatable/mitigation_controls',
                         type: 'POST',
                         data: function(d){
                             var form = $('#{$tableID}').parents('form');
@@ -3642,8 +3643,8 @@ function contributing_risk_scoring_table($id, $calculated_risk, $Contributing_Li
                 <th width='50%' class='text-center'>" . $escaper->escapeHtml($lang['MaximumValue']) . "</th>
             </tr>
             <tr>
-                <td align='center'>[ " . $Contributing_Likelihood . " ] ". $Contributing_Likelihood_name . "</td>
-                <td align='center'>[ " . $max_likelihood . " ] " . $max_likelihood_name . "</td>
+                <td align='center'>[ " . (int)$Contributing_Likelihood . " ] ". $escaper->escapeHtml($Contributing_Likelihood_name) . "</td>
+                <td align='center'>[ " . (int)$max_likelihood . " ] " . $escaper->escapeHtml($max_likelihood_name) . "</td>
             </tr>
         </table>
         <br>
@@ -4533,739 +4534,6 @@ function view_dread_help()
     ";
 }
 
-/***************************
-* FUNCTION: VIEW TOP MENU *
-***************************/
-function view_top_menu($active)
-{
-    global $lang, $escaper;
-
-    echo "<script>\n";
-    echo "var BASE_URL = '". (isset($_SESSION['base_url']) ? $escaper->escapeHtml($_SESSION['base_url']) : "") ."'; \n";
-    echo "</script>\n";
-
-    echo "<div id=\"load\" style=\"display:none;\">".$escaper->escapeHtml($lang['SendingRequestPleaseWait'])."</div>";
-
-    // If the page is in the root directory
-    if ($active == "Home")
-    {
-        echo "<header class=\"l-header\">\n";
-        echo "<div class=\"navbar\">\n";
-        echo "<div class=\"navbar-inner\">\n";
-        echo "<div class=\"container-fluid\">\n";
-            echo "<a class=\"brand\" href=\"https://www.simplerisk.com/\"><img src='images/logo@2x.png' alt='SimpleRisk Logo' /></a>\n";
-        echo "<div class=\"navbar-content\">\n";
-        echo "<ul class=\"nav\">\n";
-        // If the user has asset management permissions
-        if (isset($_SESSION["asset"]) && $_SESSION["asset"] == "1")
-        {
-            //echo ($active == "AssetManagement" ? "<li class=\"active\">\n" : "<li>\n");
-            //echo "<a href=\"assets/index.php\">" . $escaper->escapeHtml($lang['AssetManagement']) . "</a>\n";
-            //echo "</li>\n";
-        }
-
-        // If the user has assessments permissions
-        if (isset($_SESSION["assessments"]) && $_SESSION["assessments"] == "1")
-        {
-            //echo ($active == "Assessments" ? "<li class=\"active\">\n" : "<li>\n");
-            //echo "<a href=\"assessments/index.php\">" . $escaper->escapeHtml($lang['Assessments']) . "</a>\n";
-            //echo "</li>\n";
-        }
-
-        // echo "<li>\n";
-        // echo "<a href=\"reports/index.php\">" . $escaper->escapeHtml($lang['Reporting']) . "</a>\n";
-        // echo "</li>\n";
-
-        // If the user is logged in as an administrator
-        if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
-        {
-            //echo ($active == "Configure" ? "<li class=\"active\">\n" : "<li>\n");
-            //echo "<a href=\"admin/index.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>\n";
-            //echo "</li>\n";
-        }
-
-        echo "</ul>\n";
-        echo "</div>\n";
-
-        // If the user is logged in
-        if (isset($_SESSION["access"]) && $_SESSION["access"] == "1")
-        {
-            // Show the user profile menu
-            echo "<div class=\"btn-group pull-right\">\n";
-            echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
-            echo "<ul class=\"dropdown-menu\">\n";
-            echo "<li>\n";
-            echo "<a href=\"account/profile.php\"><i class=\"fa fa-user\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['MyProfile']) ."</a>\n";
-            echo "</li>\n";
-            echo "<li>\n";
-            echo "<a href=\"logout.php\"><i class=\"fa fa-sign-out-alt\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
-            echo "</li>\n";
-            echo "</ul>\n";
-            echo "</div>\n";
-
-        }
-    }
-    // If the page is in another sub-directory
-    else
-    {
-        echo "<header class=\"l-header\">\n";
-        echo "<div class=\"navbar\">\n";
-        echo "<div class=\"navbar-inner\">\n";
-        echo "<div class=\"container-fluid\">\n";
-        echo "<a class=\"brand\" href=\"https://www.simplerisk.com/\"><img src='../images/logo@2x.png' alt='SimpleRisk Logo' /></a>\n";
-        echo "<div class=\"navbar-content\">\n";
-        echo "<ul class=\"nav\">\n";
-// echo ($active == "Home" ? "<li class=\"active\">\n" : "<li>\n");
-// echo "<a href=\"../index.php\">" . $escaper->escapeHtml($lang['Home']) . "</a>\n";
-// echo "</li>\n";
-
-        // If the user has governance permissions
-        if (check_permission("governance"))
-        {
-            echo ($active == "Governance" ? "<li class=\"active\">\n" : "<li>\n");
-            echo "<a href=\"../governance/index.php\">" . $escaper->escapeHtml($lang['Governance']) . "</a>\n";
-            echo "</li>\n";
-        }
-
-        // If the user has risk management permissions
-        if (check_permission("riskmanagement"))
-        {
-            echo ($active == "RiskManagement" ? "<li class=\"active\">\n" : "<li>\n");
-            echo "<a href=\"../management/index.php\">" . $escaper->escapeHtml($lang['RiskManagement']) . "</a>\n";
-            echo "</li>\n";
-        }
-
-        // If the user has compliance permissions
-        if (check_permission("compliance"))
-        {
-            echo ($active == "Compliance" ? "<li class=\"active\">\n" : "<li>\n");
-            echo "<a href=\"../compliance/index.php\">" . $escaper->escapeHtml($lang['Compliance']) . "</a>\n";
-            echo "</li>\n";
-        }
-
-        // If the user has asset management permissions
-        if (isset($_SESSION["asset"]) && $_SESSION["asset"] == "1")
-        {
-            echo ($active == "AssetManagement" ? "<li class=\"active\">\n" : "<li>\n");
-            echo "<a href=\"../assets/index.php\">" . $escaper->escapeHtml($lang['AssetManagement']) . "</a>\n";
-            echo "</li>\n";
-        }
-
-        // If the user has assessments permissions
-        if (isset($_SESSION["assessments"]) && $_SESSION["assessments"] == "1")
-        {
-            echo ($active == "Assessments" ? "<li class=\"active\">\n" : "<li>\n");
-            echo "<a href=\"../assessments/index.php\">" . $escaper->escapeHtml($lang['Assessments']) . "</a>\n";
-            echo "</li>\n";
-        }
-
-        echo ($active == "Reporting" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"../reports/index.php\">" . $escaper->escapeHtml($lang['Reporting']) . "</a>\n";
-        echo "</li>\n";
-
-        // If the user is logged in as an administrator
-        if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
-        {
-            echo ($active == "Configure" ? "<li class=\"active\">\n" : "<li>\n");
-            echo "<a href=\"../admin/index.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>\n";
-            echo "</li>\n";
-        }
-
-        echo "</ul>\n";
-        echo "</div>\n";
-
-
-        // If the user is logged in
-        if (isset($_SESSION["access"]) && $_SESSION["access"] == "1")
-        {
-            // Show the user profile menu
-            echo "<div class=\"pull-right user--info\">\n";
-            echo "<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
-            echo "<ul class=\"dropdown-menu\">\n";
-            echo "<li>\n";
-            echo "<a href=\"../account/profile.php\"><i class=\"fa fa-user\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['MyProfile']) ."</a>\n";
-            echo "</li>\n";
-
-            if (organizational_hierarchy_extra()) {
-
-                require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
-
-                echo '
-                    <script>
-                        $(document).ready(function() {
-                      		$(document).on("click", "li.dropdown-submenu.business-units a", function() {
-			                	var $this = $(this);
-			                	if (!$this.hasClass("selected")) {
-
-			                		var business_unit_id = $this.data("id");
-			                		$.ajax({
-    			                        url: BASE_URL + "/api/organizational_hierarchy/business_unit/select?id=" + business_unit_id,
-    			                        type: "GET",
-    			                        success : function (response) {
-    			                        	window.location.href = window.location.pathname + window.location.search;
-    			                        	return false;
-    			                        },
-    			                		error: function(xhr,status,error) {
-			                                if(xhr.responseJSON && xhr.responseJSON.status_message) {
-			                                    showAlertsFromArray(xhr.responseJSON.status_message);
-			                                }
-    			                        }
-    			                    });
-			                	}
-			                    return false;
-		                	});
-                        });
-                    </script>
-                ';
-
-                echo "
-                    <li class='dropdown-submenu pull-left business-units'>
-                        <a href='#'><i class=\"fa fa-briefcase\"></i>&nbsp&nbsp;" . $escaper->escapeHtml($lang['BusinessUnits']) . "</a>
-                        <ul class='dropdown-menu'>
-                            " . get_available_business_unit_menu_items() . "
-                        </ul>
-                    </li>
-                ";
-            }
-            echo "<li>\n";
-            echo "<a href=\"../logout.php\"><i class=\"fa fa-sign-out-alt\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
-            echo "</li>\n";
-            echo "</ul>\n";
-            echo "</div>\n";
-        }
-        
-        if ($active != "Home"){
-            echo "<div class=\"pull-right help\">\n";
-            echo "<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\"><img src=\"../images/helpicon-top.png\"><span class=\"caret\"></span></a>\n";
-            echo "<ul class=\"dropdown-menu\">\n";
-            echo "<li>\n";
-            echo "<a href=\"https://help.simplerisk.com/index.php?page=" . get_request_uri() . "\" target=\"_blank\"><i class=\"fa fa-info-circle\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['AboutThisPage']) ."</a>\n";
-            echo "</li>\n";
-            echo "<li>\n";
-            echo "<a href=\"".$_SESSION['base_url']."/api/v2/documentation.php\" target=\"_blank\"><i class=\"fa fa-book\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['APIDocumentation']) ."</a>\n";
-            echo "</li>\n";
-            echo "<li>\n";
-            echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/folders/6000228831\" target=\"_blank\"><i class=\"fa fa-video\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['HowToVideos']) ."</a>\n";
-            echo "</li>\n";
-            echo "<li>\n";
-            echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/folders/6000168810\" target=\"_blank\"><i class=\"fa fa-question-circle\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['FAQs']) ."</a>\n";
-            echo "</li>\n";
-            echo "<li>\n";
-            echo "<a href=\"https://github.com/simplerisk/documentation/raw/master/SimpleRisk%20Release%20Notes%20" . $escaper->escapeHtml(get_latest_app_version()) . ".pdf\" target=\"_blank\"><i class=\"fa fa-newspaper\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['WhatsNew']) ."</a>\n";
-            echo "</li>\n";
-            echo "<li>\n";
-            echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/articles/6000190811\" target=\"_blank\"><i class=\"fa fa-map\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['Roadmap']) ."</a>\n";
-            echo "</li>\n";
-            echo "<li>\n";
-            echo "<a href=\"https://simplerisk.freshdesk.com/support/solutions\" target=\"_blank\"><i class=\"fa fa-cloud\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['SupportPortal']) ."</a>\n";
-            echo "</li>\n";
-            echo "<li>\n";
-            echo "<a href=\"https://simplerisk.freshdesk.com/support/tickets/new\" target=\"_blank\"><i class=\"fa fa-ticket-alt\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['WebSupport']) ."</a>\n";
-            echo "</li>\n";
-            echo "<li>\n";
-            echo "<a href=\"mailto: support@simplerisk.com\"><i class=\"fa fa-envelope\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['EmailSupport']) ."</a>\n";
-            echo "</li>\n";
-
-            // If the user has support enabled
-            if (isset($_SESSION['support']) && $_SESSION['support'] == "true")
-            {
-                echo "<li>\n";
-                echo "<a href=\"https://www.simplerisk.com/schedule/support\" target=\"_blank\"><i class=\"fa fa-phone\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['PhoneSupport']) ."</a>\n";
-                echo "</li>\n";
-            }
-
-            echo "</ul>\n";
-            echo "</div>\n";
-
-            if (!advanced_search_extra()) {
-                echo "
-                    <div class='pull-right search-risks'>
-                        <a id='show-search-pop'><i class='fa fa-search'></i></a>
-                        <div class='search-popup'>
-                            <form name='search' action='../management/view.php' method='get'>
-                                <span class='search--wrapper'>
-                                    <input type='text' size='6' name='id' placeholder='ID#' onClick='this.setSelectionRange(0, this.value.length)' />
-                                    <a href='javascript:document.search.submit()'><i class='fa fa-search'></i></a>
-                                </span>
-                            </form>
-                        </div>
-                    </div>
-
-                    <script type='text/javascript'>
-                        $(document).click(function() {
-                            $('.search-popup').hide();
-                        });
-
-                        $('#show-search-pop, .search-popup').click(function(event) {
-                            event.stopPropagation();
-                            event.preventDefault();
-                            $('.search-popup').show();
-                            $('.search-popup .search--wrapper input[type=text]').focus();
-                        });
-                    </script>\n";
-            } else {
-                
-                require_once(realpath(__DIR__ . '/../extras/advanced_search/index.php'));
-                
-                echo "
-                    <div class='pull-right search-risks'>
-                        <a id='show-search-pop'><i class='fa fa-search'></i></a>
-                        <div class='search-popup'>
-                            <form id='header-search-form' action='' method='GET' autocomplete='off'>
-                                <span class='search--wrapper'>
-                                    <input type='text' size='6' name='q' placeholder='" . $escaper->escapeHtml($lang['RiskSearch']) . "' onClick='this.setSelectionRange(0, this.value.length)' autocomplete='off'/>
-                                    <a href='#'><i class='fa fa-search'></i></a>
-                                </span>
-                            </form>
-                            <div id='result-template' style='display: none;'>
-                                <div class='control-block item-block clearfix'>
-                                    <div class='control-block--header clearfix'>
-                                        <div class='control-block--row'>
-                                            <table width='100%'>
-                                                <tbody>
-                                                    <tr>
-                                                        <td colspan='2'><a class='result-url' href='!id!'>(!id!) !subject!</a></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td width='13%'><strong class='category_field_name'>!category_field_name!</strong>:</td>
-                                                        <td class='field_value'>!field_value!</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id='advanced-search-results-table-wrapper' style='display: none;'>
-                                <table id='advanced-search-results-table' width='100%'>
-                                    <tbody>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div id='advanced-search-no-results-message' style='display: none;'>" . $escaper->escapeHtml($lang['NoSearchResults']) . "</div>
-                        </div>
-                    </div>
-
-                    <script type='text/javascript'>
-
-                        $(document).click(function() {
-                            $('.search-popup').hide();
-                        });
-
-                        $(document).on('click', '#show-search-pop, .search-popup, .result-url', function(event) {
-                            if ($(this).hasClass('result-url')) {
-                                event.stopPropagation();
-                            }
-                            else {
-                                event.stopPropagation();
-                                event.preventDefault();
-                                $('.search-popup').show();
-                                $('.search-popup .search--wrapper input[type=text]').focus();
-                            }
-                        });
-
-                        $('.search--wrapper a').click(function(event) {
-                            event.stopPropagation();
-                            event.preventDefault();
-                            $('#header-search-form').submit();
-                        });
-
-                        $('#header-search-form').submit(function(event) {
-                            event.preventDefault();
-                            
-                            var q = $(this).find('input[name=\'q\']').val();
-
-                            if (q.length >= 1) {
-
-                                $.ajax({
-                                    type: 'GET',
-                                    url: BASE_URL + '/api/advanced_search?q=' + q,
-                                    async: true,
-                                    cache: false,
-                                    contentType: false,
-                                    processData: false,
-                                    success: function(response){
-                                        if(response.status_message) {
-                                            showAlertsFromArray(response.status_message);
-                                        }
-
-                                        var data = response.data;
-
-                                        if (data && data instanceof Array && data.length) {
-
-                                            if (data[0]['category_field_name'] == 'id') {
-                                                window.location.href = BASE_URL + '/management/view.php?id=' + data[0]['id'];
-                                            } else {
-                                                $('#advanced-search-no-results-message').hide();
-                                                $('#advanced-search-results-table-wrapper').show();
-                                                var results_table = $('#advanced-search-results-table tbody');
-                                                results_table.html('');
-                                                var length = data.length;
-                                                for (var i = 0; i < length; i++) {
-                                                    var item = data[i];
-
-                                                    var template = $('#result-template').children().clone();
-
-                                                    result_url = template.find('.result-url');
-                                                    result_url.attr('href', BASE_URL + '/management/view.php?id=' + item['id']);
-                                                    result_url.html('(' + item['id'] + ') ' + item['subject']);
-
-                                                    category_field_name = template.find('.category_field_name');
-                                                    category_field_name.html(item['category_field_name']);
-
-                                                    field_value = template.find('.field_value');
-                                                    field_value.html(item['field_value']);
-
-                                                    template = $('<tr></tr>').append($('<td></td>').append(template));
-                                                    results_table.append(template);
-                                                }
-                                            }
-                                        } else {
-                                            $('#advanced-search-results-table-wrapper').hide();
-                                            $('#advanced-search-no-results-message').show();
-                                        }
-                                    },
-
-                                    error: function(xhr,status,error) {
-                                        if(!retryCSRF(xhr, this)) {
-                                            if(xhr.responseJSON && xhr.responseJSON.status_message) {
-                                                showAlertsFromArray(xhr.responseJSON.status_message);
-                                            }
-                                        }
-                                    }
-                                });
-                            }
-
-                            return false;
-                        });
-                    </script>";
-            }
-        }
-    }
-
-    echo "</div>\n";
-    echo "</div>\n";
-    echo "</div>\n";
-    echo "</header>\n";
-}
-
-/*********************************
-* FUNCTION: VIEW GOVERNANCE MENU *
-**********************************/
-function view_governance_menu($active)
-{
-    global $lang;
-    global $escaper;
-
-    echo "<ul class=\"nav nav-pills nav-stacked aside--nav \">\n";
-    echo ($active == "DefineControlFrameworks" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"index.php\"> <span>1</span> " . $escaper->escapeHtml($lang['DefineControlFrameworks']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "DocumentProgram" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"documentation.php\"> <span>2</span> " . $escaper->escapeHtml($lang['DocumentProgram']) . "</a>\n";
-    echo "</li>\n";
-    if (check_permission_exception('view')) {
-        echo ($active == "DocumentExceptions" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"document_exceptions.php\"> <span>3</span> " . $escaper->escapeHtml($lang['DocumentExceptions']) . "</a>\n";
-        echo "</li>\n";
-    }
-    echo "</ul>\n";
-}
-
-/***************************************
-* FUNCTION: VIEW RISK MANAGEMENT MENU *
-***************************************/
-function view_risk_management_menu($active)
-{
-    global $lang;
-    global $escaper;
-
-    echo "<ul class=\"nav nav-pills nav-stacked aside--nav \">\n";
-    echo ($active == "SubmitYourRisks" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"index.php\"> <span>1</span> " . $escaper->escapeHtml($lang['SubmitYourRisks']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "PlanYourMitigations" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"plan_mitigations.php\"> <span>2</span> " . $escaper->escapeHtml($lang['PlanYourMitigations']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "PerformManagementReviews" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"management_review.php\"> <span>3</span> " . $escaper->escapeHtml($lang['PerformManagementReviews']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "PrioritizeForProjectPlanning" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"prioritize_planning.php\"> <span>4</span> " . $escaper->escapeHtml($lang['PrioritizeForProjectPlanning']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "ReviewRisksRegularly" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"review_risks.php\"> <span>5</span> " . $escaper->escapeHtml($lang['ReviewRisksRegularly']) . "</a>\n";
-    echo "</li>\n";
-    echo "</ul>\n";
-}
-
-/*********************************
-* FUNCTION: VIEW COMPLIANCE MENU *
-**********************************/
-function view_compliance_menu($active)
-{
-    global $lang;
-    global $escaper;
-
-    echo "<ul class=\"nav nav-pills nav-stacked aside--nav \">\n";
-        echo ($active == "DefineTests" ? "<li class=\"active\">\n" : "<li>\n");
-            echo "<a href=\"index.php\"> <span>1</span> " . $escaper->escapeHtml($lang['DefineTests']) . "</a>\n";
-        echo "</li>\n";
-        echo ($active == "InitialAudits" ? "<li class=\"active\">\n" : "<li>\n");
-            echo "<a href=\"audit_initiation.php\"> <span>2</span> " . $escaper->escapeHtml($lang['InitiateAudits']) . "</a>\n";
-        echo "</li>\n";
-        echo ($active == "ActiveAudits" ? "<li class=\"active\">\n" : "<li>\n");
-            echo "<a href=\"active_audits.php\"> <span>3</span> " . $escaper->escapeHtml($lang['ActiveAudits']) . "</a>\n";
-        echo "</li>\n";
-        echo ($active == "PastAudits" ? "<li class=\"active\">\n" : "<li>\n");
-            echo "<a href=\"past_audits.php\"> <span>4</span> " . $escaper->escapeHtml($lang['PastAudits']) . "</a>\n";
-        echo "</li>\n";
-    echo "</ul>\n";
-}
-
-/***************************************
-* FUNCTION: VIEW ASSET MANAGEMENT MENU *
-****************************************/
-function view_asset_management_menu($active)
-{
-    global $lang;
-    global $escaper;
-
-    echo "<ul class=\"nav nav-pills nav-stacked aside--nav \">\n";
-    echo ($active == "AutomatedDiscovery" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"index.php\"> <span>1</span>" . $escaper->escapeHtml($lang['AutomatedDiscovery']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "AddDeleteAssets" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"manage_assets.php\"> <span>2</span>" . $escaper->escapeHtml($lang['ManageAssets']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "ManageAssetGroups" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"manage_asset_groups.php\"> <span>3</span>" . $escaper->escapeHtml($lang['ManageAssetGroups']) . "</a>\n";
-    echo "</li>\n";    
-    echo "</ul>\n";
-}
-
-/***********************************
-* FUNCTION: VIEW ASSESSMENTS MENU *
-***********************************/
-function view_assessments_menu($active)
-{
-    global $lang;
-    global $escaper;
-
-    echo "<ul class=\"nav nav-pills nav-stacked aside--nav \">\n";
-    echo ($active == "SelfAssessments" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"index.php\"> " . $escaper->escapeHtml($lang['SelfAssessments']) . "</a>\n";
-    echo "</li>\n";
-
-    // If the assessments extra is installed
-    if (assessments_extra())
-    {
-        // Include the assessments extra
-        require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
-
-        // Display the assessments extra menu
-        view_assessments_extra_menu($active);
-    }
-
-    echo "</ul>\n";
-}
-
-/*********************************
-* FUNCTION: VIEW REPORTING MENU *
-*********************************/
-function view_reporting_menu($active)
-{
-    global $lang;
-    global $escaper;
-
-    echo "<ul class=\"nav nav-pills nav-stacked aside--nav \">\n";
-    echo ($active == "Overview" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"index.php\">" . $escaper->escapeHtml($lang['Overview']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "RiskDashboard" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"dashboard.php\">" . $escaper->escapeHtml($lang['RiskDashboard']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "RisksAndIssues" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"risks_and_issues.php\">" . $escaper->escapeHtml($lang['RisksAndIssues']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "RiskAppetiteReport" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"risk_appetite.php\">" . $escaper->escapeHtml($lang['RiskAppetiteReport']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "RiskTrend" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"trend.php\">" . $escaper->escapeHtml($lang['RiskTrend']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "DynamicRiskReport" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"dynamic_risk_report.php\">" . $escaper->escapeHtml($lang['DynamicRiskReport']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "GraphicalRiskAnalysis" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"graphical_risk_analysis.php\">" . $escaper->escapeHtml($lang['GraphicalRiskAnalysis']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "ConnectivityVisualizer" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"connectivity_visualizer.php\">" . $escaper->escapeHtml($lang['ConnectivityVisualizer']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "RiskAverageOverTime" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"risk_average_baseline_metric.php\">" . $escaper->escapeHtml($lang['RiskAverageOverTime']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "LikelihoodImpact" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"likelihood_impact.php\">" . $escaper->escapeHtml($lang['LikelihoodImpact']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "RiskAdvice" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"riskadvice.php\">" . $escaper->escapeHtml($lang['RiskAdvice']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "RisksAndAssets" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"risks_and_assets.php\">" . $escaper->escapeHtml($lang['RisksAndAssets']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "RisksAndControls" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"risks_and_controls.php\">" . $escaper->escapeHtml($lang['RisksAndControls']) . "</a>\n";
-    echo "</li>\n";    
-    echo ($active == "AllOpenRisksAssignedToMeByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"my_open.php\">" . $escaper->escapeHtml($lang['AllOpenRisksAssignedToMeByRiskLevel']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "AllOpenRisksNeedingReview" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"review_needed.php\">" . $escaper->escapeHtml($lang['AllOpenRisksNeedingReview']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "AllOpenRisksByTeam" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"risks_open_by_team.php?id=true&risk_status=true&subject=true&calculated_risk=true&submission_date=true&team=true&mitigation_planned=true&management_review=true&owner=true&manager=true\">" . $escaper->escapeHtml($lang['AllOpenRisksByTeamByLevel']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "HighRiskReport" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"high.php\">" . $escaper->escapeHtml($lang['HighRiskReport']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "SubmittedRisksByDate" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"submitted_by_date.php\">" . $escaper->escapeHtml($lang['SubmittedRisksByDate']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "MitigationsByDate" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"mitigations_by_date.php\">" . $escaper->escapeHtml($lang['MitigationsByDate']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "ManagementReviewsByDate" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"mgmt_reviews_by_date.php\">" . $escaper->escapeHtml($lang['ManagementReviewsByDate']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "ClosedRisksByDate" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"closed_by_date.php\">" . $escaper->escapeHtml($lang['ClosedRisksByDate']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "CurrentRiskComments" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"recent_commented.php\">" . $escaper->escapeHtml($lang['CurrentRiskComments']) . "</a>\n";
-    echo "</li>\n";
-
-    // If User has permission for compliance menu, shows Audit Timeline report
-    if(!empty($_SESSION['compliance']))
-    {
-        echo ($active == "AuditTimeline" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"audit_timeline.php\">" . $escaper->escapeHtml($lang['AuditTimeline']) . "</a>\n";
-        echo "</li>\n";
-    } 
-
-    // If User has permission for governance menu, show Governance reports
-    if(!empty($_SESSION['governance']))
-    {
-        echo ($active == "ControlGapAnalysis" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"control_gap_analysis.php\">" . $escaper->escapeHtml($lang['ControlGapAnalysis']) . "</a>\n";
-        echo "</li>\n";
-        echo ($active == "DocumentControlMapping" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"documents_to_controls.php\">" . $escaper->escapeHtml($lang['DocumentControlMapping']) . "</a>\n";
-        echo "</li>\n";
-    }
-
-    echo "</ul>\n";
-}
-
-/*********************************
-* FUNCTION: VIEW CONFIGURE MENU *
-*********************************/
-function view_configure_menu($active)
-{
-    global $lang;
-    global $escaper;
-
-    echo "<ul class=\"nav nav-pills nav-stacked aside--nav \">\n";
-    if (getTypeOfColumn('mgmt_reviews', 'next_review') == 'varchar') {
-        echo ($active == "FixReviewDates" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"fix_review_dates.php\"><i class=\"fa fa-exclamation-circle\" aria-hidden=\"true\" style=\"color: " . ($active == "FixReviewDates" ? "white": "#bd081c") . "; padding-right: 5px;\"></i>" . $escaper->escapeHtml($lang['FixReviewDates']) . "</a>\n";
-        echo "</li>\n";
-    }
-    if (has_files_with_encoding_issues()) {
-        echo ($active == "FixFileEncodingIssues" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"fix_upload_encoding_issues.php\"><i class=\"fa fa-exclamation-circle\" aria-hidden=\"true\" style=\"color: " . ($active == "FixFileEncodingIssues" ? "white": "#bd081c") . "; padding-right: 5px;\"></i>" . $escaper->escapeHtml($lang['FixFileEncodingIssues']) . "</a>\n";
-        echo "</li>\n";
-    }
-    echo ($active == "Settings" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"index.php\">" . $escaper->escapeHtml($lang['Settings']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "Content" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"content.php\">" . $escaper->escapeHtml($lang['Content']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "RiskAndThreatCatalog" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"risk_catalog.php\">" . $escaper->escapeHtml($lang['RiskAndThreatCatalog']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "ConfigureRiskFormula" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"configure_risk_formula.php\">" . $escaper->escapeHtml($lang['ConfigureRiskFormula']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "ConfigureReviewSettings" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"review_settings.php\">" . $escaper->escapeHtml($lang['ConfigureReviewSettings']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "AddAndRemoveValues" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"add_remove_values.php\">" . $escaper->escapeHtml($lang['AddAndRemoveValues']) . "</a>\n";
-    echo "</li>\n";
-    if (organizational_hierarchy_extra()) {
-        echo ($active == "OrganizationalHierarchy" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"organizational_hierarchy.php\">" . $escaper->escapeHtml($lang['OrganizationManagement']) . "</a>\n";
-        echo "</li>\n";
-    }
-    echo ($active == "RoleManagement" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"role_management.php\">" . $escaper->escapeHtml($lang['RoleManagement']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "UserManagement" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"user_management.php\">" . $escaper->escapeHtml($lang['UserManagement']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "RedefineNamingConventions" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"custom_names.php\">" . $escaper->escapeHtml($lang['RedefineNamingConventions']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "AssetValuation" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"assetvaluation.php\">" . $escaper->escapeHtml($lang['AssetValuation']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "DeleteRisks" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"delete_risks.php\">" . $escaper->escapeHtml($lang['DeleteRisks']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "AuditTrail" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"audit_trail.php\">" . $escaper->escapeHtml($lang['AuditTrail']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "QueueMonitor" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"queue_monitor.php\">" . $escaper->escapeHtml($lang['QueueMonitor']) . "</a>\n";
-    echo "</li>\n";
-
-    // If the Import/Export Extra is enabled
-    if (import_export_extra())
-    {
-        echo ($active == "ImportExport" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"importexport.php\">" . $escaper->escapeHtml($lang['ImportExport']) . "</a>\n";
-        echo "</li>\n";
-    }
-
-    // If the Assessments Extra is enabled
-    if (assessments_extra())
-    {
-        echo ($active == "ActiveAssessments" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"active_assessments.php\">" . $escaper->escapeHtml($lang['ActiveAssessments']) . "</a>\n";
-        echo "</li>\n";
-    }
-
-    echo ($active == "Extras" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"extras.php\">" . $escaper->escapeHtml($lang['Extras']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "Announcements" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"announcements.php\">" . $escaper->escapeHtml($lang['Announcements']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "Register" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"register.php\">" . $escaper->escapeHtml($lang['RegisterAndUpgrade']) . "</a>\n";
-    echo "</li>\n";
-    echo ($active == "Health Check" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"health_check.php\">" . $escaper->escapeHtml($lang['HealthCheck']) ."</a>\n";
-    echo "</li>\n";
-    echo ($active == "About" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"about.php\">" . $escaper->escapeHtml($lang['About']) . "</a>\n";
-    echo "</li>\n";
-    echo "</ul>\n";
-}
-
 /**********************************************
 * FUNCTION: VIEW RISKS AND ASSETS SELECTIONS *
 **********************************************/
@@ -5430,7 +4698,8 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $risk_column
     global $lang, $escaper;
     
     $encoded_request_uri = get_encoded_request_uri();
-    
+
+    // @phan-suppress-next-line SecurityCheck-XSS -- build_url() sanitizes the path; GET params are URL-encoded by http_build_query() in get_encoded_request_uri()
     echo   "
         <div class='accordion-item' id='group-selections-container'>
             <h2 class='accordion-header'>
@@ -5606,7 +4875,7 @@ function display_save_dynamic_risk_selections() {
                                     {
                                         $.ajax({
                                             type: 'POST',
-                                            url: BASE_URL + '/api/reports/delete-dynamic-selection',
+                                            url: BASE_URL + '/api/v2/reports/delete-dynamic-selection',
                                             data:{
                                                 id: id,
                                             },
@@ -5715,7 +4984,7 @@ function display_save_dynamic_risk_selections() {
 
                     var test = $.ajax({
                         type: 'POST',
-                        url: BASE_URL + '/api/reports/save-dynamic-selections',
+                        url: BASE_URL + '/api/v2/reports/save-dynamic-selections',
                         data:{
                             type: type,
                             name: name,
@@ -6058,10 +5327,16 @@ function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_
                     case 'unassigned': $category_label = $escaper->escapeHtml($lang['Unassigned']); break;
                     case 'risk_mapping': $category_label = $escaper->escapeHtml($lang['RiskMapping']); break;
                 }
+                // Hoisted so the suppression below sits directly above the
+                // flagged escape — `@phan-suppress-next-line` only covers the
+                // immediately following line and can't reach into a multi-line
+                // echo string.
+                // @phan-suppress-next-line SecurityCheck-DoubleEscaped -- $col_info['name'] is mixed-source: $custom_field['name'] (raw, needs escape) or get_label_by_risk_field_name() (which pre-escapes via js_string_escape). Defensive escape here is safe for the raw branch; cosmetic over-escape on the legacy js_string_escape branch.
+                $escaped_col_name = $escaper->escapeHtml($col_info['name']);
                 echo "
                                 <li data-column='{$escaper->escapeHtml($column_key)}' data-category='{$escaper->escapeHtml($col_info['category'])}'>
                                     <span class='drag-handle'><i class='fa fa-grip-vertical'></i></span>
-                                    <span class='column-name'>{$escaper->escapeHtml($col_info['name'])}</span>
+                                    <span class='column-name'>{$escaped_col_name}</span>
                                     <span class='column-category'>{$category_label}</span>
                                     <span class='remove-column' title='{$escaper->escapeHtml($lang['Remove'])}'><i class='fa fa-times'></i></span>
                                 </li>
@@ -6794,7 +6069,7 @@ function display_view_assessment_questions($assessment_id = NULL) {
 
         echo "
                                 $.ajax({
-                                    url: BASE_URL + '/api/asset-group/options',
+                                    url: BASE_URL + '/api/v2/asset-group/options',
                                     type: 'GET',
                                     dataType: 'json',
                                     success: function(res) {
@@ -7006,7 +6281,7 @@ function display_pending_risks($assessment_id = null) {
                 var assets_and_asset_groups = [];
                 $(document).ready(function() {
                     $.ajax({
-                        url: BASE_URL + '/api/asset-group/options',
+                        url: BASE_URL + '/api/v2/asset-group/options',
                         type: 'GET',
                         dataType: 'json',
                         success: function(res) {
@@ -7078,7 +6353,7 @@ function risk_average_baseline_metric($time = "day", $title = "") {
     $counts = $count_result['counts'] ?? [];
 
     // Create the inherent average dataset
-    $label = $escaper->escapeHtml($lang['InherentRisk']);
+    $label = $lang['InherentRisk'];
     $inherent_average_dataset = [
         "label" => "{$label}",
         "data" => $inherent_averages,
@@ -7089,7 +6364,7 @@ function risk_average_baseline_metric($time = "day", $title = "") {
     ];
 
     // Create the residual average dataset
-    $label = $escaper->escapeHtml($lang['ResidualRisk']);
+    $label = $lang['ResidualRisk'];
     $residual_average_dataset = [
         "label" => "{$label}",
         "data" => $residual_averages,
@@ -7110,7 +6385,7 @@ function risk_average_baseline_metric($time = "day", $title = "") {
     $datasets = array_merge($datasets, $background_dataset);
 
     // Create a javascript array of open risks
-    $risksOpened_label = $escaper->escapeHtml($lang['OpenRisks']);
+    $risksOpened_label = $lang['OpenRisks'];
     $risksOpened = implode(',', $counts);
 
     // Create the Chart.js line chart
@@ -7153,6 +6428,7 @@ function risk_average_baseline_metric($time = "day", $title = "") {
             }
         }
     ";
+    // @phan-suppress-next-line SecurityCheck-XSS -- chart data from internal API encoded via json_encode() inside function; $tooltip uses numeric values and escaped lang strings
     create_chartjs_line_code($title, $element_id, $labels, $datasets, $tooltip, $x_axis_title, $y_axis_title, 10);
 }
 
@@ -7180,7 +6456,7 @@ function score_over_time($time = "day")
     $residual_averages = $residual_averages_result['averages'] ?? [];
 
     // Create the inherent average dataset
-    $label = $escaper->escapeHtml($lang['InherentRisk']);
+    $label = $lang['InherentRisk'];
     $inherent_average_dataset = [
         "label" => "{$label}",
         "data" => $inherent_averages,
@@ -7191,7 +6467,7 @@ function score_over_time($time = "day")
     ];
 
     // Create the residual average dataset
-    $label = $escaper->escapeHtml($lang['ResidualRisk']);
+    $label = $lang['ResidualRisk'];
     $residual_average_dataset = [
         "label" => "{$label}",
         "data" => $residual_averages,
@@ -7248,6 +6524,7 @@ function score_over_time($time = "day")
             }
         }
     ";
+    // @phan-suppress-next-line SecurityCheck-XSS -- chart data from internal API encoded via json_encode() inside function
     create_chartjs_line_code($title, $element_id, $labels, $datasets, $tooltip, $x_axis_title, $y_axis_title, 10);
 }
 
@@ -7279,6 +6556,8 @@ function report_likelihood_impact() {
             $risk_ids = [];
             $risk_subjects = [];
             $count = 0;
+            $inherent_risk = 0;
+            $color = '';
 
             // Search the $risks array for the likelihood and impact values
             foreach ($risks as $risk) {
@@ -7930,7 +7209,7 @@ function create_risk_formula_table() {
                     switch(type) {
                         case 'impact':
                         case 'likelihood':
-                            url = BASE_URL + '/api/riskformula/update_impact_or_likelihood_name';
+                            url = BASE_URL + '/api/v2/riskformula/update_impact_or_likelihood_name';
                             var value = $(this).data('id');
                             var name = $(this).val();
                             var data = {
@@ -7940,7 +7219,7 @@ function create_risk_formula_table() {
                             };
                         break;
                         case 'score':
-                            var url = BASE_URL + '/api/riskformula/update_custom_score';
+                            var url = BASE_URL + '/api/v2/riskformula/update_custom_score';
                             var impact = $(this).data('impact');
                             var likelihood = $(this).data('likelihood');
                             var score = $(this).val();
@@ -7978,7 +7257,7 @@ function create_risk_formula_table() {
                     e.preventDefault();
                     $.ajax({
                         type: 'POST',
-                        url: BASE_URL + '/api/riskformula/add_impact',
+                        url: BASE_URL + '/api/v2/riskformula/add_impact',
                         success: function(data){
                             document.location.reload();
                         },
@@ -7995,7 +7274,7 @@ function create_risk_formula_table() {
                     e.preventDefault();
                     $.ajax({
                         type: 'POST',
-                        url: BASE_URL + '/api/riskformula/delete_impact',
+                        url: BASE_URL + '/api/v2/riskformula/delete_impact',
                         success: function(data){
                             document.location.reload();
                         },
@@ -8013,7 +7292,7 @@ function create_risk_formula_table() {
                     e.preventDefault();
                     $.ajax({
                         type: 'POST',
-                        url: BASE_URL + '/api/riskformula/add_likelihood',
+                        url: BASE_URL + '/api/v2/riskformula/add_likelihood',
                         success: function(data){
                             document.location.reload();
                         },
@@ -8031,7 +7310,7 @@ function create_risk_formula_table() {
                     e.preventDefault();
                     $.ajax({
                         type: 'POST',
-                        url: BASE_URL + '/api/riskformula/delete_likelihood',
+                        url: BASE_URL + '/api/v2/riskformula/delete_likelihood',
                         success: function(data){
                             document.location.reload();
                         },
@@ -8477,7 +7756,7 @@ function display_contributing_risk_formula() {
                 }
                 $.ajax({
                     type: 'POST',
-                    url: BASE_URL + '/api/contributing_risks/add',
+                    url: BASE_URL + '/api/v2/contributing_risks/add',
                     data: data,
                     success: function(data){
                         if(data.status_message){
@@ -8519,7 +7798,7 @@ function display_contributing_risk_formula() {
 
                 $.ajax({
                     type: 'POST',
-                    url: BASE_URL + '/api/contributing_risks/update/' + table,
+                    url: BASE_URL + '/api/v2/contributing_risks/update/' + table,
                     data: {
                         id: id,
                         value: value,
@@ -8561,7 +7840,7 @@ function display_contributing_risk_formula() {
                 }
                 $.ajax({
                     type: 'POST',
-                    url: BASE_URL + '/api/contributing_risks/delete/' + table,
+                    url: BASE_URL + '/api/v2/contributing_risks/delete/' + table,
                     data: data,
                     dataType : 'json',
                     success: function(data){
@@ -8587,7 +7866,7 @@ function display_contributing_risk_formula() {
                     data: {
                         table: table,
                     },
-                    url: BASE_URL + '/api/contributing_risks/table_list',
+                    url: BASE_URL + '/api/v2/contributing_risks/table_list',
                     success: function(data){
                         $('#'+table_body+' tbody').html(data);
                         $('input.editable').each(function(){
@@ -8770,7 +8049,7 @@ function display_plan_mitigations()
                     },
                     order: [[{$order_index}, '{$order_dir}']],
                     ajax: {
-                        url: BASE_URL + '/api/risk_management/plan_mitigation',
+                        url: BASE_URL + '/api/v2/risk_management/plan_mitigation',
                         type: 'post',
                         data: function(d){
                         },
@@ -8810,7 +8089,7 @@ function display_plan_mitigations()
                         });
                         $.ajax({
                             type: 'POST',
-                            url: BASE_URL + '/api/risk_management/save_custom_plan_mitigation_display_settings',
+                            url: BASE_URL + '/api/v2/risk_management/save_custom_plan_mitigation_display_settings',
                             data:{
                                 risk_columns: riskColumns,
                                 mitigation_columns: mitigationColumns,
@@ -8947,7 +8226,7 @@ function display_management_review()
                     },
                     order: [[{$order_index}, '{$order_dir}']],
                     ajax: {
-                        url: BASE_URL + '/api/risk_management/managment_review',
+                        url: BASE_URL + '/api/v2/risk_management/managment_review',
                         type: 'post',
                         data: function(d){
                         },
@@ -8988,7 +8267,7 @@ function display_management_review()
                         });
                         $.ajax({
                             type: 'POST',
-                            url: BASE_URL + '/api/risk_management/save_custom_perform_reviews_display_settings',
+                            url: BASE_URL + '/api/v2/risk_management/save_custom_perform_reviews_display_settings',
                             data:{
                                 risk_columns: riskColumns,
                                 mitigation_columns: mitigationColumns,
@@ -9128,7 +8407,7 @@ function display_review_risks()
                     },
                     order: [[{$order_index}, '{$order_dir}']],
                     ajax: {
-                        url: BASE_URL + '/api/risk_management/review_risks',
+                        url: BASE_URL + '/api/v2/risk_management/review_risks',
                         type: 'post',
                         data: function(d){
                         },
@@ -9168,7 +8447,7 @@ function display_review_risks()
                         });
                         $.ajax({
                             type: 'POST',
-                            url: BASE_URL + '/api/risk_management/save_custom_reviewregularly_display_settings',
+                            url: BASE_URL + '/api/v2/risk_management/save_custom_reviewregularly_display_settings',
                             data:{
                                 risk_columns: riskColumns,
                                 mitigation_columns: mitigationColumns,
@@ -9287,7 +8566,7 @@ function display_audit_timeline() {
                     // Initiate Audit Button Click Event
                     $('body').on('click', '.btn-initiate-audit', function() {
                         $.ajax({
-                            url: BASE_URL + '/api/compliance/audit_initiation/initiate',
+                            url: BASE_URL + '/api/v2/compliance/audit_initiation/initiate',
                             type: 'POST',
                             data: {
                                 type: 'test',
@@ -9349,7 +8628,7 @@ function display_review_date_issues()
                     },
                     order: [[0, 'asc']],
                     ajax: {
-                        url: BASE_URL + '/api/risk_management/review_date_issues',
+                        url: BASE_URL + '/api/v2/risk_management/review_date_issues',
                         data: function(d){ },
                         complete: function(response){ }
                     },
@@ -9406,7 +8685,7 @@ function display_review_date_issues()
                         } else {
                             $.ajax({
                                 type: 'POST',
-                                url: BASE_URL + '/api/management/risk/fix_review_date_format',
+                                url: BASE_URL + '/api/v2/management/risk/fix_review_date_format',
                                 data : {
                                     review_id: data[4],
                                     format: format
@@ -9451,7 +8730,7 @@ function get_audit_trail_html($id = NULL, $days = 7, $log_type=NULL) {
             $date = date(get_default_datetime_format("g:i A T"), strtotime($log['timestamp']));
 
             echo "
-                <p>{$escaper->escapeHtml($date)} > {$escaper->purifyHtml($log['message'])}</p>
+                <p>{$escaper->escapeHtml($date)} > {$escaper->escapeHtml($log['message'])}</p>
             ";
         }
 
@@ -9803,7 +9082,7 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
                                     <ul class='sortable sortable-risk mb-0 ps-0'>
     ";
 
-    for ($i ; $i < count($risk_columns_keys) ; $i++) {
+    for (; $i < count($risk_columns_keys) ; $i++) {
 
         $field = $risk_columns_keys[$i];
         $elem_id = "checkbox_" . $field;
@@ -9819,7 +9098,7 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
             $str .= "
                                         <li>
                                             <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
-                                            <label class='ms-2' for='{$elem_id}'>{$escaper->escapeHtml($risk_columns[$field])}</label>
+                                            <label class='ms-2' for='{$elem_id}'>{$risk_columns[$field]}</label>
                                         </li>
             ";
         }
@@ -9881,7 +9160,7 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
                                     <ul class='sortable sortable-mitigation mb-0 ps-0'>
     ";
 
-    for ($i ; $i < count($mitigation_columns_keys) ; $i++) {
+    for (; $i < count($mitigation_columns_keys) ; $i++) {
 
         $field = $mitigation_columns_keys[$i];
         $elem_id = "checkbox_" . $field;
@@ -9897,7 +9176,7 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
             $str .= "
                                         <li>
                                             <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
-                                            <label class='ms-2' for='{$elem_id}'>{$escaper->escapeHtml($mitigation_columns[$field])}</label>
+                                            <label class='ms-2' for='{$elem_id}'>{$mitigation_columns[$field]}</label>
                                         </li>
             ";
         }
@@ -9958,7 +9237,7 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
                                     <ul class='sortable sortable-review mb-0 ps-0'>
     ";
 
-    for ($i ; $i < count($review_columns_keys) ; $i++) {
+    for (; $i < count($review_columns_keys) ; $i++) {
 
         $field = $review_columns_keys[$i];
         $elem_id = "checkbox_" . $field;
@@ -10296,7 +9575,7 @@ function display_gap_analysis_table($framework, $maturity) {
                     },
                     order: [[1, 'asc']],
                     ajax: {
-                        url: BASE_URL + '/api/reports/governance/control_gap_analysis?framework_id={$escaper->escapeHtml($framework)}&maturity={$escaper->escapeHtml($maturity)}',
+                        url: BASE_URL + '/api/v2/reports/governance/control_gap_analysis?framework_id={$escaper->escapeHtml($framework)}&maturity={$escaper->escapeHtml($maturity)}',
                         data: function(d){
                         },
                         complete: function(response){
@@ -10376,11 +9655,14 @@ function display_contributing_risks_impact_table_list(){
 function display_datetimepicker_javascript($initialize = false) {
 
     $app_version = current_version("app");
+    // @phan-suppress-next-line SecurityCheck-XSS -- build_url() called with hardcoded asset path; base URL is admin-configured
     echo "<script src='" . build_url("js/jquery.datetimepicker.full.min.js?{$app_version}") . "'></script>\n";
+    // @phan-suppress-next-line SecurityCheck-XSS -- build_url() called with hardcoded asset path; base URL is admin-configured
     echo "<link rel='stylesheet' href='" . build_url("css/jquery.datetimepicker.min.css?{$app_version}") . "'/>\n";
 
     if ($initialize) {
         // Initialize if needed
+        // @phan-suppress-next-line SecurityCheck-XSS -- get_default_datetime_format() returns admin-configured date format string with no user input
         echo "
             <script>
                 $(document).ready(function(){
@@ -10683,7 +9965,15 @@ function display_project_table_header($template_group_id = "") {
 
 /**
  * Renders the column selection widget, including the modal window, the button that opens the modal on click
- * and the javascripts required for saving the selections
+ * and the javascripts required for saving the selections.
+ *
+ * The emitted JS variable is namespaced per-view (`custom_display_settings_{$view}`) so that a single page
+ * can render this widget for multiple views without one view's selection clobbering another's. The two
+ * sibling renderers `display_custom_risk_columns()` and `display_custom_document_control_columns()` still
+ * emit un-namespaced variables — that's intentional, because their callers (review_risks.php,
+ * plan_mitigations.php, management_review.php, etc.) only ever render one of those widgets per page so
+ * there is no name conflict to resolve. If you ever add a second widget call to the same page, namespace
+ * those too.
  */
 function render_column_selection_widget($view) {
 
@@ -10719,7 +10009,7 @@ function render_column_selection_widget($view) {
         <script>
 
             // This is the list of selected columns for the view
-            var custom_display_settings = JSON.parse('" . json_encode($settings) . "');
+            var custom_display_settings_{$view} = JSON.parse('" . json_encode($settings) . "');
 
             $(function() {
                 $('form#custom_display_settings-{$view}').submit(function() {
@@ -10794,9 +10084,11 @@ function render_column_selection_widget($view) {
 
         // Within a section the options are split into two columns.
         $counter = 1;
+        // @phan-suppress-next-line PhanTypeMismatchArgumentInternal
         $halfpoint = count($group['fields']) / 2;
 
-        foreach ($group['fields'] as $field_name => $text) { 
+        // @phan-suppress-next-line PhanTypeMismatchForeach
+        foreach ($group['fields'] as $field_name => $text) {
 
             echo "
                                             <div class='mb-1'>
@@ -10861,10 +10153,16 @@ function render_column_selection_widget($view) {
 
 
 
+/**
+ * @phan-suppress PhanTypeArraySuspiciousNullable
+ * @phan-suppress PhanTypeMismatchForeach
+ */
 function render_field_edit_popup_modal($view) {
     global $field_settings_views, $field_settings_display_groups, $field_settings, $escaper, $lang;
 
+    // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
     $view_type = $field_settings_views[$view]['view_type'];
+    // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
     $view_edit_ajax_uri = $field_settings_views[$view]['edit']['edit_ajax_uri'];
     //$id_field_settings = !empty($field_settings_views[$view]['id_field']) ?  $field_settings[$view_type][$field_settings_views[$view]['id_field']] : false;
     $groups = [];
@@ -10875,7 +10173,7 @@ function render_field_edit_popup_modal($view) {
             'fields' =>  $group
         ];
         
-        $has_header |= !empty($groups[$group_name]['header']);
+        $has_header = $has_header || !empty($groups[$group_name]['header']);
     }
     
     echo "
@@ -10987,6 +10285,7 @@ function render_field_edit_popup_modal($view) {
 
             $field_name = "custom_field_{$active_field['id']}";
 
+            $type = null;
             switch($active_field['type']) {
                 case "shorttext":
                 case "hyperlink":
@@ -11105,7 +10404,7 @@ function render_field_edit_popup_modal($view) {
                                                         onChange: function() { $('#{$tag_input_id}').data('changed', true);},
                                                     });
                                                     $.ajax({
-                                                        url: BASE_URL + '/api/management/tag_options_of_type?type={$view_type}',
+                                                        url: BASE_URL + '/api/v2/management/tag_options_of_type?type={$view_type}',
                                                         type: 'GET',
                                                         dataType: 'json',
                                                         error: function(xhr,status,error){
@@ -11187,6 +10486,10 @@ function render_field_edit_popup_modal($view) {
 }
 
 
+/**
+ * @phan-suppress PhanTypeArraySuspiciousNullable
+ * @phan-suppress PhanTypeMismatchForeach
+ */
 function render_create_modal($view) {
 
     global $field_settings_views, $field_settings_display_groups, $field_settings, $escaper, $lang;
@@ -11203,7 +10506,7 @@ function render_create_modal($view) {
             'fields' =>  $group
         ];
         
-        $has_header |= !empty($groups[$group_name]['header']);
+        $has_header = $has_header || !empty($groups[$group_name]['header']);
     }
     
     echo "
@@ -11341,7 +10644,8 @@ function render_create_modal($view) {
             }
             
             $field_name = "custom_field_{$active_field['id']}";
-            
+
+            $type = null;
             switch($active_field['type']) {
                 case "shorttext":
                 case "hyperlink":
@@ -11363,7 +10667,7 @@ function render_create_modal($view) {
                     $type = "multiselect[user]";
                     break;
             }
-            
+
             $mapped_custom_field_settings[$field_name] = [
                 'type' => $type,
                 'required' => $active_field['required'],
@@ -11460,7 +10764,7 @@ function render_create_modal($view) {
                                                         onChange: function() { $('#{$tag_input_id}').data('changed', true);},
                                                     });
                                                     $.ajax({
-                                                        url: BASE_URL + '/api/management/tag_options_of_type?type={$view_type}',
+                                                        url: BASE_URL + '/api/v2/management/tag_options_of_type?type={$view_type}',
                                                         type: 'GET',
                                                         dataType: 'json',
                                                         error: function(xhr,status,error){
@@ -11554,8 +10858,10 @@ function render_create_modal($view) {
  * -Wires in the API endpoint setup in the settings as the datasource
  * -Adds the filter bar and logic for the filtering
  * -Adds editing functionality(inline or popup)
- * 
+ *
  * @param string $view
+ *
+ * @phan-suppress PhanTypeArraySuspiciousNullable
  */
 function render_view_table($view) {
     global $lang, $escaper, $field_settings, $field_settings_views;
@@ -11663,8 +10969,6 @@ function render_view_table($view) {
             $(function() {
                 // Save the datatable instance into the dictionary
                 datatableInstances['{$view}'] = $('#{$datatable_id}').DataTable({
-                    bSort: true,
-                    orderCellsTop: true,
                     scrollX: true,
     " .
     ($order_index !== false ? "
@@ -11723,13 +11027,17 @@ function render_view_table($view) {
             $class_name = false;
         }
         
-        // If the data coming from the server side as an associative array we need to add the configuration a bit differently
+        // If the data coming from the server side as an associative array we need to add the configuration a bit differently.
+        // The 'name' attribute lets future code reference a column by name via DataTables' "<name>:name" selector
+        // (e.g. table.column('subject:name').search(...)) without having to know its index. No current consumer relies on it;
+        // it is emitted unconditionally so callers added later don't need to revisit render_view_table.
         if ($datatable_data_type_associative) {
             echo "
                         {
-                            'data': '{$field_name}{$display_post_fix}', 
-                            'searchable': {$searchable}, 
-                            'orderable': {$orderable}" . 
+                            'name': '{$field_name}',
+                            'data': '{$field_name}{$display_post_fix}',
+                            'searchable': {$searchable},
+                            'orderable': {$orderable}" .
                             ($class_name ? ", 
                             'className': '{$class_name}'" : "") . 
                             ($renderer ? ", 
@@ -11740,9 +11048,10 @@ function render_view_table($view) {
         } else {
             echo "
                         {
-                            'target': '{$field_idx}', 
-                            'searchable': {$searchable}, 
-                            'orderable': {$orderable}" . 
+                            'name': '{$field_name}',
+                            'target': '{$field_idx}',
+                            'searchable': {$searchable},
+                            'orderable': {$orderable}" .
                             ($class_name ? ", 
                             'className': '{$class_name}'" : "") . 
                             ($renderer ? ", 
@@ -12375,7 +11684,7 @@ function display_custom_document_control_columns($custom_setting_field = "custom
                                     <ul class='sortable sortable-document mb-0 ps-0'>
     ";
 
-    for ($i ; $i < count($document_columns_keys) ; $i++) {
+    for (; $i < count($document_columns_keys) ; $i++) {
 
         $field = $document_columns_keys[$i];
         $elem_id = "checkbox_" . $field;
@@ -12453,7 +11762,7 @@ function display_custom_document_control_columns($custom_setting_field = "custom
                                     <ul class='sortable sortable-control mb-0 ps-0'>
     ";
 
-    for ($i ; $i < count($control_columns_keys) ; $i++) {
+    for (; $i < count($control_columns_keys) ; $i++) {
 
         $field = $control_columns_keys[$i];
         $elem_id = "checkbox_" . $field;
@@ -12530,7 +11839,7 @@ function display_custom_document_control_columns($custom_setting_field = "custom
                                     <ul class='sortable sortable-matching mb-0 ps-0'>
     ";
 
-    for ($i ; $i < count($matching_columns_keys) ; $i++) {
+    for (; $i < count($matching_columns_keys) ; $i++) {
 
         $field = $matching_columns_keys[$i];
         $elem_id = "checkbox_" . $field;

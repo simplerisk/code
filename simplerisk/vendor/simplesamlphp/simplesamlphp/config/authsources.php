@@ -1,10 +1,10 @@
 <?php
 
-// Include the Custom Authentication index.php file
-require_once(realpath(__DIR__ . '/../../../../extras/authentication/index.php'));
-
 // Include the SimpleRisk functions.php file
 require_once(realpath(__DIR__ . '/../../../../includes/functions.php'));
+
+// Include the SimpleRisk extras.php file (provides call_extra_function)
+require_once(realpath(__DIR__ . '/../../../../includes/extras.php'));
 
 // Include the SimpleSamlPHP functions
 require_once(realpath(__DIR__ . '/../../../../vendor/autoload.php'));
@@ -19,67 +19,18 @@ if (!endsWith($simplerisk_base_url, '/')) {
 $saml_sp_name = get_setting("SAML_SP_NAME") ?: 'default-sp';
 
 // -----------------------------------------------------------------
-// SAML IdP metadata — fetched from URL with TTL-based DB caching,
-// falling back to manually supplied XML when no URL is configured.
+// SAML IdP metadata — fetched via the Custom Authentication Extra's
+// shared helper (URL with TTL-based DB caching, or stored XML when
+// no URL is configured). Returns false when the extra is disabled or
+// missing, which is handled gracefully downstream.
 // -----------------------------------------------------------------
-$metadata_url = get_setting("SAML_METADATA_URL");
-write_debug_log("SAML Metadata URL: " . $metadata_url, 'debug');
-
-$metadata_ttl    = (int)(get_setting("SAML_METADATA_CACHE_TTL") ?: 3600);
-$cached_xml      = get_setting("SAML_METADATA_CACHE") ?: '';
-$cache_expiry    = (int)(get_setting("SAML_METADATA_CACHE_EXPIRY") ?: 0);
-
-if ($metadata_url !== false && filter_var($metadata_url, FILTER_VALIDATE_URL))
-{
-    if (!empty($cached_xml) && time() < $cache_expiry)
-    {
-        // Cache is still valid — use it without a network call
-        write_debug_log("Using cached SAML metadata (expires " . date('Y-m-d H:i:s', $cache_expiry) . ").", 'debug');
-        $metadata_xml = $cached_xml;
-    }
-    else
-    {
-        // Cache is absent or stale — fetch from URL
-        $http_options = [
-            'method' => "GET",
-            'header' => ["content-type: application/json"],
-        ];
-        $validate_ssl = get_setting('ssl_certificate_check_external') == 1;
-
-        $response    = fetch_url_content("stream", $http_options, $validate_ssl, $metadata_url);
-        $return_code = $response['return_code'];
-
-        if ($return_code !== 200)
-        {
-            if (!empty($cached_xml))
-            {
-                write_debug_log("Failed to refresh SAML metadata from URL (HTTP {$return_code}); using stale cache.", 'warning');
-                $metadata_xml = $cached_xml;
-            }
-            else
-            {
-                write_debug_log("Failed to fetch SAML metadata from URL (HTTP {$return_code}) and no cache is available.", 'error');
-                $metadata_xml = false;
-            }
-        }
-        else
-        {
-            write_debug_log("Successfully fetched SAML metadata from URL.", 'info');
-            $metadata_xml = $response['response'];
-
-            // Persist to cache
-            update_or_insert_setting("SAML_METADATA_CACHE", $metadata_xml);
-            update_or_insert_setting("SAML_METADATA_CACHE_EXPIRY", (string)(time() + $metadata_ttl));
-        }
-    }
-}
-else
-{
-    // No URL configured — use manually supplied XML
-    $metadata_xml = get_setting("SAML_METADATA_XML");
-    write_debug_log("No valid metadata URL configured; using stored SAML metadata XML.", 'info');
-}
-
+$metadata_xml = call_extra_function(
+    'custom_authentication_extra',
+    realpath(__DIR__ . '/../../../../extras/authentication/index.php'),
+    'get_saml_idp_metadata_xml',
+    [],
+    false
+);
 write_debug_log("SAML Metadata XML:", 'debug');
 write_debug_log($metadata_xml, 'debug');
 

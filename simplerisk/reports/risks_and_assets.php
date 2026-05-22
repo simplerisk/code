@@ -31,7 +31,7 @@
 
         // Render the header and sidebar
         require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-        render_header_and_sidebar(['multiselect','CUSTOM:dynamic.js'], required_localization_keys: ['All'], active_sidebar_submenu: 'Reporting_RiskManagement', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'RisksAndAssets');
+        render_header_and_sidebar(['multiselect','CUSTOM:dynamic.js'], ['check_riskmanagement' => true, 'check_assets' => true], required_localization_keys: ['All'], active_sidebar_submenu: 'Reporting_Reports', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'RisksAndAssets');
 
     } else {
 

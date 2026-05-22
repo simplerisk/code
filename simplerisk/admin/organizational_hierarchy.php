@@ -28,6 +28,7 @@
 	/*********************
 	 * FUNCTION: DISPLAY *
 	 *********************/
+	// @phan-suppress-next-line PhanRedefineFunction -- each admin page defines its own display() entry point
 	function display() {
 
 		global $lang;
@@ -264,7 +265,7 @@
 <script>
 	function refresh_business_unit_menu_items() {
 		$.ajax({
-			url: BASE_URL + '/api/organizational_hierarchy/business_unit/available_business_unit_menu_items',
+			url: BASE_URL + '/api/v2/organizational_hierarchy/business_unit/available_business_unit_menu_items',
 			type: 'GET',
 			success : function (response) {
 				$('li.dropdown-submenu.business-units ul.dropdown-menu').html(response);
@@ -296,7 +297,7 @@
 			animate: false,
 			collapsible: true,
 			fitColumns: true,
-			url: BASE_URL + '/api/organizational_hierarchy/business_unit/tree',
+			url: BASE_URL + '/api/v2/organizational_hierarchy/business_unit/tree',
 			method: 'get',
 			idField: 'value',
 			treeField: 'name',
@@ -361,7 +362,7 @@
 
 			$.ajax({
 				type: 'POST',
-				url: BASE_URL + '/api/organizational_hierarchy/business_unit/create',
+				url: BASE_URL + '/api/v2/organizational_hierarchy/business_unit/create',
 				data: data,
 				async: true,
 				cache: false,
@@ -404,7 +405,7 @@
 			$('#business-unit-update-form .select-list-available select option').remove();
 
 			$.ajax({
-				url: BASE_URL + '/api/organizational_hierarchy/business_unit?id=' + business_unit_id,
+				url: BASE_URL + '/api/v2/organizational_hierarchy/business_unit?id=' + business_unit_id,
 				type: 'GET',
 				success : function (response) {
 					var data = response.data;
@@ -456,7 +457,7 @@
 
 			$.ajax({
 				type: 'POST',
-				url: BASE_URL + '/api/organizational_hierarchy/business_unit/update',
+				url: BASE_URL + '/api/v2/organizational_hierarchy/business_unit/update',
 				data: data,
 				async: true,
 				cache: false,
@@ -526,7 +527,7 @@
 
 			$.ajax({
 				type: 'POST',
-				url: BASE_URL + '/api/organizational_hierarchy/business_unit/delete',
+				url: BASE_URL + '/api/v2/organizational_hierarchy/business_unit/delete',
 				data: data,
 				async: true,
 				cache: false,
@@ -595,7 +596,7 @@
 
 			$.ajax({
 				type: 'POST',
-				url: BASE_URL + '/api/organizational_hierarchy/business_unit/remove-team',
+				url: BASE_URL + '/api/v2/organizational_hierarchy/business_unit/remove-team',
 				data: data,
 				async: true,
 				cache: false,

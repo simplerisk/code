@@ -13,10 +13,13 @@
 	// Add various security headers
 	add_security_headers();
 
-	// Add the session
+	// Add the session — flagged is_action because this view runs a
+	// secondary team-separation check that may itself redirect; without
+	// the flag a denial would bounce the user back to this same URL.
 	$permissions = array(
 			"check_access" => true,
 			"check_riskmanagement" => true,
+			"is_action" => true,
 	);
 	add_session_check($permissions);
 
@@ -43,10 +46,7 @@
 
             // If the user should not have access to the risk
             if (!extra_grant_access($_SESSION['uid'], $id)) {
-
-                // Redirect back to the page the workflow started on
-                header("Location: " . $_SESSION["workflow_start"]);
-                exit(0);
+                redirect_permission_denied('NoPermissionForThisAction', "print view of risk id={$id}");
             }
         }
 
@@ -355,7 +355,7 @@
 								<div class='col-12'>
 									<div class='card-body border my-2'>
 	<?php 
-										view_print_top_table($id, $calculated_risk, $subject, $status, true); 
+										view_print_top_table($id, $calculated_risk, $subject, $status);
 	?>
 									</div>
 									<div class='card-body border my-2'>
@@ -374,8 +374,9 @@
 	?>
 									</div>
 									<div class='card-body border my-2'>
-	<?php 
-										view_print_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comments, $template_group_id); 
+	<?php
+										// @phan-suppress-next-line SecurityCheck-DoubleEscaped -- $next_review here is either pre-escaped (returned by next_review(..., false) when management reviews exist) or DB-constrained to a DATE value (mgmt_reviews.next_review column); view_print_review_details defensively re-escapes either way, which Phan flags. The function keeps the defensive escape so future callers and any schema drift remain safe.
+										view_print_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comments, $template_group_id);
 	?>
 									</div>
 									<div class='comments-container card-body border my-2'>

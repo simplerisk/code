@@ -4,6 +4,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// Include required configuration files
+require_once(realpath(__DIR__ . '/extras.php'));
+
 /**********************************
  * FUNCTION: GET ASSESSMENT NAMES *
  **********************************/
@@ -353,15 +356,13 @@ function push_pending_risk() {
         CreateIssueForRisk($last_insert_id);
     }
 
-    // If the notification extra is enabled
-    if (notification_extra())
-    {
-        // Include the team separation extra
-        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-        // Send the notification
-        notify_new_risk($last_insert_id);
-    }
+    // Send the notification (no-op if notification extra is disabled)
+    call_extra_function(
+        'notification_extra',
+        __DIR__ . '/../extras/notification/index.php',
+        'notify_new_risk',
+        [$last_insert_id]
+    );
 
     // There is an alert message
     $risk_id = (int)$last_insert_id + 1000;

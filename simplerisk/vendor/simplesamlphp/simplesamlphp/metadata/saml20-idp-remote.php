@@ -3,75 +3,34 @@
 // Include the SimpleRisk functions.php file
 require_once(realpath(__DIR__ . '/../../../../includes/functions.php'));
 
+// Include the SimpleRisk extras.php file (provides call_extra_function)
+require_once(realpath(__DIR__ . '/../../../../includes/extras.php'));
+
 // Include the SimpleSamlPHP functions
 require_once(realpath(__DIR__ . '/../../../../vendor/autoload.php'));
 
-// Get the SAML metadata URL
-$metadata_url = get_setting("SAML_METADATA_URL");
-write_debug_log("SAML Metadata URL:");
-write_debug_log($metadata_url);
-
-// If a SAML Metadata URL exists and it is a valid URL
-if ($metadata_url !== false && filter_var($metadata_url, FILTER_VALIDATE_URL))
-{
-    // URL for the metadata
-    $url = $metadata_url;
-
-    // Set the HTTP options
-    $http_options = [
-        'method' => "GET",
-        'header' => [
-            "content-type: application/json",
-        ],
-    ];
-
-    // If SSL certificate checks are enabled
-    if (get_setting('ssl_certificate_check_external') == 1)
-    {
-        $validate_ssl = true;
-    }
-    else $validate_ssl = false;
-
-    // Fetch the SAML metadata from the URL
-    // NOTE: SAML metadata changes very rarely.  On a production system
-    // this data should be cached as appropriate.
-    $response = fetch_url_content("stream", $http_options, $validate_ssl, $url);
-    $return_code = $response['return_code'];
-
-    // If we were unable to connect to the URL
-    if ($return_code !== 200)
-    {
-        write_debug_log("SimpleRisk was unable to connect to " . $url);
-
-        // Set the metadata XML to false
-        $metadata_xml = false;
-    }
-    // We were able to connect to the URL
-    else
-    {
-        write_debug_log("SimpleRisk successfully connected to " . $url);
-
-        // Overwrite the metadata_xml with the xml content from the URL
-        $metadata_xml = $response['response'];
-    }
-}
-// If the metadata URL is invalid
-else
-{
-    // Get the SAML metadata XML configuration
-    $metadata_xml = get_setting("SAML_METADATA_XML");
-}
-
-write_debug_log("SAML Metadata:");
-write_debug_log($metadata_xml);
+// Fetch IdP metadata via the Custom Authentication Extra's shared helper
+// (URL with TTL-based DB caching, or stored XML when no URL is configured).
+// Returns false when the extra is disabled or missing.
+$metadata_xml = call_extra_function(
+    'custom_authentication_extra',
+    realpath(__DIR__ . '/../../../../extras/authentication/index.php'),
+    'get_saml_idp_metadata_xml',
+    [],
+    false
+);
 
 // Create a new SimpleSAML XML object
 $xml = new \SimpleSAML\Utils\XML();
 
+// Default outputs in case parsing fails
+$output   = [];
+$entityid = '';
+
 // If we have metadata and the XML is valid
 if ($metadata_xml !== false && $xml->isValid($metadata_xml, 'saml-schema-metadata-2.0.xsd'))
 {
-    write_debug_log("SAML metadata XML is valid. Parsing metadata.");
+    write_debug_log("SAML metadata XML is valid. Parsing metadata.", 'debug');
 
     try
     {
@@ -105,14 +64,9 @@ if ($metadata_xml !== false && $xml->isValid($metadata_xml, 'saml-schema-metadat
         write_debug_log($e, 'error');
     }
 }
-// Otherwise, if the metadata XML is not valid
 else
 {
-    write_debug_log("The SAML Metadata was either not configured, not received or was invalid.");
-
-    $xmldata = '';
-    $output = [];
-    $entityid = '';
+    write_debug_log("The SAML Metadata was either not configured, not received or was invalid.", 'warning');
 }
 
 /**

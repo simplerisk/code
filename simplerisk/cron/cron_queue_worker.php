@@ -33,6 +33,12 @@ $stuckThresholdMinutes = 30;
 $startTime = time();
 $lastWorkTime = time();
 
+// === SESSION IDENTITY FOR AUDIT LOGS ===
+// Functions that write audit log entries read $_SESSION['user'] and $_SESSION['uid'].
+// There is no HTTP session in CLI context, so seed these with a system identity.
+$_SESSION['user'] = 'System User';
+$_SESSION['uid']  = -1;
+
 // === SYSTEM SETTINGS ===
 ini_set('max_execution_time', 0);
 set_time_limit(0);

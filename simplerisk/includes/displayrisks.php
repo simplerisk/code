@@ -6,6 +6,7 @@
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 require_once(realpath(__DIR__ . '/functions.php'));
+require_once(realpath(__DIR__ . '/extras.php'));
 
 /*****************************************
 * FUNCTION: DISPLAY SUBMISSION_DATE VIEW *
@@ -540,10 +541,11 @@ function display_jira_issue_key_view($jira_issue_key, $panel_name="")
 
     global $lang, $escaper;
 
+    $project_key = '';
     if ($jira_issue_key) {
         //At this point we don't even have to validate
         preg_match('/^([A-Z][A-Z_0-9]+)-[0-9][0-9]*$/', $jira_issue_key, $matches);
-        $project_key = $matches[1];
+        $project_key = $matches[1] ?? '';
     }
 
     if($panel_name=="top" || $panel_name=="bottom") {
@@ -1785,7 +1787,7 @@ function display_accept_mitigation_view($risk_id, $panel_name = "")
                         data: {
                             accept: 1
                         },
-                        url: BASE_URL + '/api/management/risk/accept_mitigation?id=' + risk_id,
+                        url: BASE_URL + '/api/v2/management/risk/accept_mitigation?id=' + risk_id,
                         success: function(data){
                             $('.accept-mitigation-container', tabContainer).hide();
                             $('.reject-mitigation-container', tabContainer).show();
@@ -1827,7 +1829,7 @@ function display_accept_mitigation_view($risk_id, $panel_name = "")
                         data: {
                             accept: 0
                         },
-                        url: BASE_URL + '/api/management/risk/accept_mitigation?id=' + risk_id,
+                        url: BASE_URL + '/api/v2/management/risk/accept_mitigation?id=' + risk_id,
                         success: function(data){
                             $('.accept-mitigation-container', tabContainer).show();
                             $('.reject-mitigation-container', tabContainer).hide();
@@ -2056,6 +2058,7 @@ function display_custom_field_print($field, $custom_values, $review_id=0) {
         }
     }
     
+    // @phan-suppress-next-line SecurityCheck-XSS -- get_custom_field_name_by_value() applies escapeHtml()/purifyHtml() on all branches before returning
     echo "
         <div class='d-flex align-items-center mb-2'>
             <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($field['name']) . ":</label>
@@ -2785,6 +2788,7 @@ function display_review_date_edit($panel_name = "")
             </div>
             <div class='{$span2} review-details-edit'>
     ";
+    // @phan-suppress-next-line SecurityCheck-XSS -- date(get_default_date_format()) outputs formatted current system time; no user input involved
     echo        date(get_default_date_format());
     echo "
             </div>
@@ -3178,7 +3182,7 @@ function display_risk_tags_edit($tags = "", $panel_name = "bottom")
                             load: function(query, callback) {
                                 if (query.length) return callback();
                                 $.ajax({
-                                    url: BASE_URL + '/api/management/tag_options_of_type?type=risk',
+                                    url: BASE_URL + '/api/v2/management/tag_options_of_type?type=risk',
                                     type: 'GET',
                                     dataType: 'json',
                                     error: function() {
@@ -3362,14 +3366,13 @@ function display_main_detail_fields_by_panel_add($panel_name, $fields, $template
             }
             else
             {
-                // If customization extra is enabled
-                if(customization_extra())
-                {
-                    // Include the extra
-                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-                    display_custom_field_edit($field, [], "div", false, $panel_name);
-                }
+                // Display the custom field edit (no-op if customization extra is disabled)
+                call_extra_function(
+                    'customization_extra',
+                    __DIR__ . '/../extras/customization/index.php',
+                    'display_custom_field_edit',
+                    [$field, [], "div", false, $panel_name]
+                );
             }
         }
     }

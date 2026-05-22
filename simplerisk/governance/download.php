@@ -15,10 +15,12 @@
 // Add various security headers
 add_security_headers();
 
-// Add the session
+// Add the session — flagged is_action because this is a file
+// download, not a viewable page that should anchor navigation.
 $permissions = array(
         "check_access" => true,
         "check_governance" => true,
+        "is_action" => true,
 );
 add_session_check($permissions);
 
@@ -40,6 +42,21 @@ require_once(language_file());
         {
             // Set the id to the post parameter
             $id = $_POST['id'];
+        }
+
+        // Same team-separation gate compliance/download.php applies. Without
+        // this guard, governance/download.php served any compliance_file by
+        // id even with the team separation extra enabled, since
+        // download_compliance_file() itself has no authorization logic.
+        if (team_separation_extra()) {
+
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+            if (!should_skip_test_and_audit_permission_check()) {
+                if (!check_permission_for_compliance_file($id)) {
+                    redirect_permission_denied('DownloadFilePermissionMessage', "governance file id={$id}");
+                }
+            }
         }
 
         // Get the file for the submitted file id

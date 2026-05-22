@@ -11,6 +11,7 @@ require_once (realpath(__DIR__ . '/../../vendor/autoload.php'));
 require_once(realpath(__DIR__ . '/../functions.php'));
 
 use Smalot\PdfParser\Parser;
+// @phan-suppress-next-line PhanUnreferencedUseNormal -- kept for potential future use
 use Smalot\PdfParser\Exception as PdfException;
 use RuntimeException;
 
@@ -92,14 +93,14 @@ class PdfHandler
                 foreach ($pdf->getPages() as $page) {
                     $pageText = trim($page->getText());
                     // Sanitize each page individually
-                    $text[] = self::sanitizeUtf8($pageText);
+                    $text[] = \sanitizeUtf8($pageText);
                 }
                 $output = implode("\n\n---- PAGE BREAK ----\n\n", $text);
             } else {
                 // Default extraction
                 $output = trim($pdf->getText());
                 // Sanitize the entire extracted text
-                $output = self::sanitizeUtf8($output);
+                $output = \sanitizeUtf8($output);
             }
 
             return $output;

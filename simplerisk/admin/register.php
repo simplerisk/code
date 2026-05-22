@@ -340,66 +340,82 @@ else
 	</div>
 </div>
 <script type='text/javascript'>
-	var last_response_len = false;
 	var progress_window = $('.progress-window');
-	
+
+	// Returns an onprogress handler with its own position counter so that
+	// two sequential streaming AJAX calls can both append to progress_window
+	// without interfering with each other's byte offsets.
+	function makeProgressHandler() {
+		var responseLen = false;
+		return function(e) {
+			var this_response, response = e.currentTarget.response;
+			if (response.indexOf('__csrf_magic') > -1) { return; }
+			if (responseLen === false) {
+				this_response = response;
+				responseLen = response.length;
+			} else {
+				this_response = response.substring(responseLen);
+				responseLen = response.length;
+			}
+			progress_window.append('<div>' + this_response + '</div>');
+			progress_window.animate({ scrollTop: 9999 });
+		};
+	}
+
 	$(document).ready(function(){
 		$('#app_upgrade').click(function() {
 			progress_window.html('');
 			$('.progress-wrapper').show();
 			$('#upgrade-panel .hero-unit').height($('#register-panel .hero-unit').height());
-			
-			$.ajax(BASE_URL + '/api/one_click_upgrade', {
+
+			// Phase 1: ask the core API to update the upgrade extra only.
+			// After this the new extra code is on disk; the next HTTP request
+			// will load it — eliminating any dependency on this core version's
+			// call_extra_api_functionality for the long-running backup/upgrade steps.
+			$.ajax(BASE_URL + '/api/v2/one_click_upgrade', {
 				method: 'POST',
-				data: {data: 1},
-				xhrFields: {
-					onprogress: function(e)
-					{
-						var this_response, response = e.currentTarget.response;
-						if(response.indexOf('__csrf_magic') > -1){
-							return;
-						}
-						
-						if(last_response_len === false)
-						{
-							this_response = response;
-							last_response_len = response.length;
-						}
-						
-						else
-						{
-							this_response = response.substring(last_response_len);
-							last_response_len = response.length;
-						}
-						progress_window.append('<div style=\"\">' + this_response + '</div>');
-						progress_window.animate({ scrollTop: 9999 });
-					}
-				},
-				error: function(xhr,status,error){
-					if(!retryCSRF(xhr, this))
-					{
-						if(xhr.responseJSON && xhr.responseJSON.status_message){
+				data: {data: 1, step: 'update_extra'},
+				xhrFields: { onprogress: makeProgressHandler() },
+				error: function(xhr, status, error) {
+					if (!retryCSRF(xhr, this)) {
+						if (xhr.responseJSON && xhr.responseJSON.status_message) {
 							showAlertsFromArray(xhr.responseJSON.status_message);
 						}
 					}
-					
 				}
 			})
-			.done(function(data)
-			{
-				/*progress_window.append('<div style=\"color: limegreen\"><?= $lang['UpdateSuccessful'] ?></div>');
-				progress_window.animate({ scrollTop: 9999 });*/
+			.done(function() {
+				// Phase 2: run backup and upgrade directly inside the upgrade extra.
+				// This POST goes to extras/upgrade/index.php which loads the freshly
+				// downloaded extra code and runs everything in-process — no inner
+				// HTTP sub-requests, no nginx proxy timeouts for connection 1.
+				var nonce = $('input[name="upgrade_nonce"]').val();
+				$.ajax(BASE_URL + '/extras/upgrade/', {
+					method: 'POST',
+					data: {full_upgrade: 1, upgrade_nonce: nonce},
+					xhrFields: { onprogress: makeProgressHandler() },
+					error: function(xhr, status, error) {
+						if (!retryCSRF(xhr, this)) {
+							if (xhr.responseJSON && xhr.responseJSON.status_message) {
+								showAlertsFromArray(xhr.responseJSON.status_message);
+							}
+						}
+					}
+				})
+				.fail(function(xhr, status, errorMessage) {
+					progress_window.append('<div style="color: orangered"><?= $lang['UpdateFailed'] ?></div>');
+					progress_window.append('<div style="color: orangered">' + status + ' (' + errorMessage + ')</div>');
+					progress_window.animate({ scrollTop: 9999 });
+				});
 			})
-			.fail(function(xhr, status, errorMessage)
-			{
-				if(retryCSRFCount > 5){
-					progress_window.append('<div style=\"color: orangered\"><?= $lang['UpdateFailed'] ?></div>');
-					progress_window.append('<div style=\"color: orangered\">' + status +  '(' + errorMessage + ')</div>');
+			.fail(function(xhr, status, errorMessage) {
+				if (retryCSRFCount > 5) {
+					progress_window.append('<div style="color: orangered"><?= $lang['UpdateFailed'] ?></div>');
+					progress_window.append('<div style="color: orangered">' + status + ' (' + errorMessage + ')</div>');
 					progress_window.animate({ scrollTop: 9999 });
 				}
-				
 			});
-	
+
 		});
 	});
 </script>

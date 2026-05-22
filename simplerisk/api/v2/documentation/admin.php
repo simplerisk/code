@@ -4,8 +4,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// @phan-suppress-next-line PhanUnreferencedUseNormal -- OA alias used in PHPDoc @OA annotations
 use OpenApi\Annotations as OA;
-require_once(realpath(__DIR__ . '/../../../includes/upgrade.php'));
+
+// Annotations describe the API contract statically — see comment in general.php.
+// The "version" example below is a static placeholder; bump it at release time
+// so the in-product Swagger UI and the published Postman collection both show
+// a sensible default. The endpoint itself always uses the most recent release
+// when called without a version argument, regardless of this example value.
 
 /**
 * @OA\Get(
@@ -67,10 +73,14 @@ class OpenApiAdminVersionApp {}
 
 class OpenApiAdminVersionDB {}
 
-// Get the latest release version
-global $releases;
-$version = end($releases);
-define('CURRENT_DB_VERSION', $version);
+// The "example" value below is a static placeholder so this annotation parses
+// without a live SimpleRisk runtime (the prior implementation read the latest
+// release from the global $releases set up by simplerisk/includes/upgrade.php).
+// It is overwritten with the actual current release string at runtime by
+// simplerisk/api/v2/documentation/index.php so the in-product Swagger UI keeps
+// showing the live version. Update this placeholder at release time as a
+// belt-and-suspenders fallback for offline tooling that doesn't run the
+// runtime patch — i.e. the GitHub Actions Postman collection generator.
 /**
  * @OA\Post(
  *      path="/admin/upgrade/db",
@@ -90,7 +100,7 @@ define('CURRENT_DB_VERSION', $version);
  *                      property="version",
  *                      type="string",
  *                      description="Optional target database version for the upgrade (format: YYYYMMDD-XXX). If omitted, the most recent release is used.",
- *                      example=CURRENT_DB_VERSION,
+ *                      example="20260519-001",
  *                      pattern="^\\d{8}-\\d{3}$"
  *                  )
  *              )
@@ -1152,5 +1162,220 @@ class OpenApiOneClickUpgrade {}
  */
 
 class OpenApiRoleResponsibilitiesGet {}
+
+/**
+ * @OA\Get(
+ *     path="/admin/settings/catalog",
+ *     summary="List the Settings Hub catalog",
+ *     description="Returns every Settings Hub tile visible to the current admin.",
+ *     operationId="adminSettingsCatalog",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Catalog payload",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="integer", example=200),
+ *             @OA\Property(property="status_message", type="string", example="OK"),
+ *             @OA\Property(property="data", type="object",
+ *                 @OA\Property(property="tiles", type="array",
+ *                     @OA\Items(
+ *                         @OA\Property(property="key", type="string", example="user_management"),
+ *                         @OA\Property(property="label", type="string", example="User Management"),
+ *                         @OA\Property(property="description", type="string"),
+ *                         @OA\Property(property="path", type="string", example="admin/user_management.php"),
+ *                         @OA\Property(property="tags", type="array", @OA\Items(type="string")),
+ *                         @OA\Property(property="favorited", type="boolean"),
+ *                         @OA\Property(
+ *                             property="state",
+ *                             type="string",
+ *                             enum={"activated","deactivated","uninstalled","ready_to_download","purchase"},
+ *                             description="Activation state for Extras tiles. Non-Extras tiles always report 'activated'. Tiles in 'uninstalled' state are upgraded to 'ready_to_download' or 'purchase' by a deferred GET /admin/settings/extras/licenses call."
+ *                         ),
+ *                         @OA\Property(
+ *                             property="extra_name",
+ *                             type="string",
+ *                             nullable=true,
+ *                             description="Canonical Extra slug (e.g. 'jira', 'vulnmgmt'). Non-null on every Extras-tag tile; null on non-Extras tiles.",
+ *                             example="jira"
+ *                         ),
+ *                         @OA\Property(
+ *                             property="sub_hub",
+ *                             type="object",
+ *                             nullable=true,
+ *                             description="If present, clicking this tile in 'activated' state enters a sub-hub view in the Settings Hub instead of navigating. Currently used only by incident_management_activation.",
+ *                             @OA\Property(property="section_key", type="string", example="incident_management"),
+ *                             @OA\Property(property="heading", type="string", description="Localized heading for the sub-hub view", example="Incident Management"),
+ *                             @OA\Property(
+ *                                 property="tiles",
+ *                                 type="array",
+ *                                 @OA\Items(
+ *                                     type="object",
+ *                                     @OA\Property(property="key", type="string", example="example_sub_tile"),
+ *                                     @OA\Property(property="label", type="string", description="Localized sub-tile label", example="Settings"),
+ *                                     @OA\Property(property="path", type="string", description="Path relative to simplerisk/, may include query string", example="admin/example.php?tab=settings")
+ *                                 )
+ *                             )
+ *                         )
+ *                     )
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *       response=401,
+ *       description="Not authenticated",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The user does not have admin privileges.",
+ *     ),
+ * )
+ */
+
+class OpenApiAdminSettingsCatalog {}
+
+/**
+ * @OA\Get(
+ *     path="/admin/settings/extras/licenses",
+ *     summary="List Extras the customer is licensed for",
+ *     description="Returns the Extra slugs the current customer has purchased. Used by the Settings Hub to upgrade uninstalled tiles from 'Checking…' to 'Ready to Download' or 'Purchase'.",
+ *     operationId="adminSettingsExtrasLicenses",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="License list",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="integer", example=200),
+ *             @OA\Property(property="status_message", type="string", example="OK"),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="licensed",
+ *                     type="array",
+ *                     @OA\Items(type="string"),
+ *                     example={"jira","incident_management"}
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *       response=401,
+ *       description="Not authenticated",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The user does not have admin privileges.",
+ *     ),
+ *     @OA\Response(
+ *       response=503,
+ *       description="Services API unreachable; license check could not complete.",
+ *     ),
+ * )
+ */
+
+class OpenApiAdminSettingsExtrasLicenses {}
+
+/**
+ * @OA\Post(
+ *     path="/admin/settings/favorites",
+ *     summary="Add a Settings Hub tile to the caller's favorites",
+ *     operationId="adminSettingsFavoriteAdd",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             required={"key"},
+ *             @OA\Property(property="key", type="string", description="Catalog entry key", example="user_management")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *       response=200,
+ *       description="Favorite added (idempotent).",
+ *     ),
+ *     @OA\Response(
+ *       response=400,
+ *       description="Missing or unknown key.",
+ *     ),
+ *     @OA\Response(
+ *       response=401,
+ *       description="UNAUTHORIZED: No session user.",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The user does not have admin privileges.",
+ *     ),
+ * )
+ */
+
+class OpenApiAdminSettingsFavoriteAdd {}
+
+/**
+ * @OA\Delete(
+ *     path="/admin/settings/favorites/{key}",
+ *     summary="Remove a Settings Hub tile from the caller's favorites",
+ *     operationId="adminSettingsFavoriteRemove",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="key",
+ *         in="path",
+ *         required=true,
+ *         description="Catalog entry key",
+ *         @OA\Schema(type="string", example="user_management")
+ *     ),
+ *     @OA\Response(
+ *       response=200,
+ *       description="Favorite removed (idempotent).",
+ *     ),
+ *     @OA\Response(
+ *       response=401,
+ *       description="UNAUTHORIZED: No session user.",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The user does not have admin privileges.",
+ *     ),
+ * )
+ */
+
+class OpenApiAdminSettingsFavoriteRemove {}
+
+/**
+ * @OA\Post(
+ *     path="/admin/extras/install",
+ *     summary="Install a SimpleRisk Extra",
+ *     description="Downloads and unpacks the named Extra into simplerisk/extras/<name>/. Activation is a separate step (POST /admin/activate_deactivate_extra). Requires admin.",
+ *     operationId="adminExtrasInstall",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             required={"name"},
+ *             @OA\Property(property="name", type="string", description="Canonical Extra slug, e.g. 'jira', 'vulnmgmt'", example="jira")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Install succeeded",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="integer", example=200),
+ *             @OA\Property(property="data", type="object",
+ *                 @OA\Property(property="installed", type="boolean", example=true)
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(response=400, description="Missing or unknown name"),
+ *     @OA\Response(response=401, description="Not authenticated"),
+ *     @OA\Response(response=403, description="Authenticated but not admin"),
+ *     @OA\Response(response=500, description="Download or unpack failed")
+ * )
+ */
+
+class OpenApiAdminExtrasInstall {}
 
 ?>
