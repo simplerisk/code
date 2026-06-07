@@ -8,11 +8,11 @@ name: Propagate release bundle
 #      (the repo is 3.4 GB; even a depth-1 clone fetches every tarball)
 #   2. s3://<DOWNLOADS_BUCKET>/public/bundles/ - unconditional overwrite;
 #      a re-release means the old object is stale by definition
-#   3. releases.xml (branch updates.simplerisk.com of the
-#      updates.simplerisk.com repo) - bundle_md5 + bundle_sha256 for the
-#      version's entry, so the www download page's displayed checksums
-#      always match the file its link serves
-# All three converge on re-runs; heal anything by re-dispatching.
+# Both converge on re-runs; heal anything by re-dispatching. The prod
+# releases.xml bundle_md5/sha256 are NOT written here - sync_code_repo.yml
+# (which builds the asset) writes the complete prod feed entry with the
+# real hashes; the S3 object above derives from the same asset, so they
+# agree by construction.
 #
 # Explicit dispatch (not on: release: published) is deliberate: it fires
 # only after the asset exists, and it covers re-releases - a
@@ -176,62 +176,6 @@ jobs:
           aws s3 cp "simplerisk-$VERSION.tgz" \
             "s3://${{ vars.DOWNLOADS_BUCKET }}/public/bundles/simplerisk-$VERSION.tgz"
 
-      - name: Mint updates-repo token
-        id: updates-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        with:
-          app-id: ${{ secrets.CORE_SYNC_APP_ID }}
-          private-key: ${{ secrets.CORE_SYNC_APP_PRIVATE_KEY }}
-          owner: simplerisk
-          repositories: updates.simplerisk.com
-
-      - name: Update releases.xml checksums (prod branch)
-        id: xml
-        env:
-          GH_TOKEN: ${{ steps.updates-token.outputs.token }}
-          VERSION: ${{ steps.ver.outputs.version }}
-          MD5: ${{ steps.asset.outputs.md5 }}
-          SHA256: ${{ steps.asset.outputs.sha256 }}
-          UPDATES_BRANCH: updates.simplerisk.com
-        run: |
-          set -euo pipefail
-          # releases.xml is small (<1 MB), so the contents API works for
-          # both fetch and put.
-          META=$(gh api "repos/simplerisk/updates.simplerisk.com/contents/releases.xml?ref=$UPDATES_BRANCH")
-          FILE_SHA=$(printf '%s' "$META" | jq -r .sha)
-          printf '%s' "$META" | jq -r .content | base64 -d > releases.xml
-
-          if ! grep -q "<release version=\"$VERSION\">" releases.xml; then
-            # Entry creation belongs to the release process; warn, don't
-            # fail - a re-dispatch heals the checksums once it exists.
-            echo "::warning::releases.xml ($UPDATES_BRANCH) has no entry for $VERSION - checksums not written"
-            echo "action=entry-missing" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # Range-scoped sed keeps every other byte of the file untouched.
-          # Drop any prior bundle_sha256 in this entry (idempotent re-runs),
-          # then rewrite bundle_md5 and insert bundle_sha256 after it.
-          sed -i "/<release version=\"$VERSION\">/,/<\/release>/{ /<bundle_sha256>/d }" releases.xml
-          sed -i "/<release version=\"$VERSION\">/,/<\/release>/ s|<bundle_md5>[^<]*</bundle_md5>|<bundle_md5>$MD5</bundle_md5>\n        <bundle_sha256>$SHA256</bundle_sha256>|" releases.xml
-          # The substitution is a silent no-op if the entry has no
-          # <bundle_md5> (schema drift); fail loudly instead of committing
-          # an unchanged file and reporting success.
-          if ! grep -q "<bundle_sha256>$SHA256</bundle_sha256>" releases.xml; then
-            echo "::error::sed did not insert bundle_sha256 — releases.xml schema may have changed"; exit 1
-          fi
-
-          base64 -w0 releases.xml > /tmp/releases.b64
-          jq -n --rawfile content /tmp/releases.b64 \
-            --arg message "Update bundle checksums for SimpleRisk $VERSION" \
-            --arg sha "$FILE_SHA" --arg branch "$UPDATES_BRANCH" \
-            '{message: $message, content: $content, sha: $sha, branch: $branch,
-              committer: {name: "SimpleRisk Updater", email: "support@simplerisk.com"}}' \
-            > /tmp/releases-put.json
-          gh api -X PUT repos/simplerisk/updates.simplerisk.com/contents/releases.xml \
-            --input /tmp/releases-put.json >/dev/null
-          echo "action=updated" >> "$GITHUB_OUTPUT"
-
       - name: Step summary
         env:
           VERSION: ${{ steps.ver.outputs.version }}
@@ -245,5 +189,4 @@ jobs:
             echo "- SHA256: \`${{ steps.asset.outputs.sha256 }}\`"
             echo "- bundles repo: ${{ steps.bundles.outputs.action }}"
             echo "- S3 public/bundles: uploaded (overwrite)"
-            echo "- releases.xml (prod): ${{ steps.xml.outputs.action }}"
           } >> "$GITHUB_STEP_SUMMARY"
