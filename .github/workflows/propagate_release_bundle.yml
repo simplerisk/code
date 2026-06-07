@@ -8,11 +8,11 @@ name: Propagate release bundle
 #      (the repo is 3.4 GB; even a depth-1 clone fetches every tarball)
 #   2. s3://<DOWNLOADS_BUCKET>/public/bundles/ - unconditional overwrite;
 #      a re-release means the old object is stale by definition
-#   3. releases.xml (branch updates.simplerisk.com of the
-#      updates.simplerisk.com repo) - bundle_md5 + bundle_sha256 for the
-#      version's entry, so the www download page's displayed checksums
-#      always match the file its link serves
-# All three converge on re-runs; heal anything by re-dispatching.
+# Both converge on re-runs; heal anything by re-dispatching. The prod
+# releases.xml bundle_md5/sha256 are NOT written here - sync_code_repo.yml
+# (which builds the asset) writes the complete prod feed entry with the
+# real hashes; the S3 object above derives from the same asset, so they
+# agree by construction.
 #
 # Explicit dispatch (not on: release: published) is deliberate: it fires
 # only after the asset exists, and it covers re-releases - a
