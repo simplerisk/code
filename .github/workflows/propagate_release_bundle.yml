@@ -1,0 +1,238 @@
+name: Propagate release bundle
+
+# On repository_dispatch (event type publish-bundle, sent by
+# sync_code_repo.yml in code-development right after it publishes a release
+# here), download the release asset simplerisk-<version>.tgz and propagate
+# those exact bytes to the legacy distribution channels:
+#   1. simplerisk/bundles (master) - via the Git Data API, never a clone
+#      (the repo is 3.4 GB; even a depth-1 clone fetches every tarball)
+#   2. s3://<DOWNLOADS_BUCKET>/public/bundles/ - unconditional overwrite;
+#      a re-release means the old object is stale by definition
+#   3. releases.xml (branch updates.simplerisk.com of the
+#      updates.simplerisk.com repo) - bundle_md5 + bundle_sha256 for the
+#      version's entry, so the www download page's displayed checksums
+#      always match the file its link serves
+# All three converge on re-runs; heal anything by re-dispatching.
+#
+# Explicit dispatch (not on: release: published) is deliberate: it fires
+# only after the asset exists, and it covers re-releases - a
+# `gh release upload --clobber` fires no release event, which is exactly
+# the case where stale channel artifacts must be replaced.
+#
+# Requires (one-time setup):
+#   - Secrets CORE_SYNC_APP_ID / CORE_SYNC_APP_PRIVATE_KEY (the
+#     SimpleRisk Core Sync App, installed on code, bundles, and
+#     updates.simplerisk.com)
+#   - Variables AWS_REGION, DOWNLOADS_BUCKET, DOWNLOADS_PUBLISHER_ROLE_ARN
+#     (OIDC role trusting this repo's master, PutObject on
+#     public/bundles/*)
+#
+# Design: docs/superpowers/specs/2026-06-06-release-bundle-propagation-design.md
+# in the code-development repo.
+
+on:
+  repository_dispatch:
+    types: [publish-bundle]
+  # Manual heals and ad-hoc propagation of backfilled releases.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (YYYYMMDD-NNN)'
+        required: true
+
+permissions:
+  contents: read
+  id-token: write   # OIDC role assumption for the S3 upload
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+# Re-dispatches for the same or different versions queue rather than race.
+concurrency:
+  group: propagate-release-bundle
+  cancel-in-progress: false
+
+jobs:
+  propagate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve and validate version
+        id: ver
+        env:
+          DISPATCH_VERSION: ${{ github.event.client_payload.version }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          VERSION="${DISPATCH_VERSION:-$INPUT_VERSION}"
+          if ! printf '%s' "$VERSION" | grep -qE '^[0-9]{8}-[0-9]{3}$'; then
+            echo "::error::invalid or missing version: '$VERSION'"; exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Download release asset and compute checksums
+        id: asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          set -euo pipefail
+          gh release download "$VERSION" -R simplerisk/code \
+            --pattern "simplerisk-$VERSION.tgz" --output "simplerisk-$VERSION.tgz"
+          SIZE=$(wc -c < "simplerisk-$VERSION.tgz" | tr -d ' ')
+          # The Git Data blob API and git itself both cap files at 100 MB;
+          # refuse early with a clear error when we get close (95 MB).
+          if [ "$SIZE" -ge 99614720 ]; then
+            echo "::error::bundle is $SIZE bytes (>= 95 MiB) - too close to the 100 MB API/git limit"; exit 1
+          fi
+          MD5=$(md5sum "simplerisk-$VERSION.tgz" | cut -d' ' -f1)
+          SHA256=$(sha256sum "simplerisk-$VERSION.tgz" | cut -d' ' -f1)
+          {
+            echo "md5=$MD5"
+            echo "sha256=$SHA256"
+            echo "size=$SIZE"
+          } >> "$GITHUB_OUTPUT"
+
+      # SHA-pinned (same pin as sync_code_repo.yml in code-development) so a
+      # supply-chain compromise of the action repo can't run new code in a
+      # token-minting job.
+      - name: Mint bundles-repo token
+        id: bundles-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.CORE_SYNC_APP_ID }}
+          private-key: ${{ secrets.CORE_SYNC_APP_PRIVATE_KEY }}
+          owner: simplerisk
+          repositories: bundles
+
+      - name: Push bundle to the bundles repo
+        id: bundles
+        env:
+          GH_TOKEN: ${{ steps.bundles-token.outputs.token }}
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          set -euo pipefail
+          FILE="simplerisk-$VERSION.tgz"
+
+          # Idempotency: compare git blob shas via the trees API (the
+          # contents API errors on >1 MB files; tree listings are cheap).
+          NEW_SHA=$(git hash-object "$FILE")
+          EXISTING_SHA=$(gh api "repos/simplerisk/bundles/git/trees/master" \
+            --jq ".tree[] | select(.path==\"$FILE\") | .sha" || true)
+          if [ "$NEW_SHA" = "$EXISTING_SHA" ]; then
+            echo "action=identical-skip" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Git Data API write path: blob -> tree -> commit -> ref. The blob
+          # endpoint is the documented route for files up to 100 MB; the
+          # base64 payload (~1.33x file size) goes via --input, never argv.
+          python3 -c '
+          import base64, json, sys
+          with open(sys.argv[1], "rb") as f:
+              content = base64.b64encode(f.read()).decode()
+          json.dump({"content": content, "encoding": "base64"}, open("/tmp/blob.json", "w"))
+          ' "$FILE"
+          BLOB_SHA=$(gh api -X POST repos/simplerisk/bundles/git/blobs \
+            --input /tmp/blob.json --jq .sha)
+          rm -f /tmp/blob.json
+
+          HEAD_SHA=$(gh api repos/simplerisk/bundles/git/ref/heads/master --jq .object.sha)
+          BASE_TREE=$(gh api "repos/simplerisk/bundles/commits/$HEAD_SHA" --jq .commit.tree.sha)
+          # jq-built payloads: gh api's repeated-key array syntax has
+          # unreliable object grouping for arrays of objects.
+          jq -n --arg base "$BASE_TREE" --arg path "$FILE" --arg sha "$BLOB_SHA" \
+            '{base_tree: $base, tree: [{path: $path, mode: "100644", type: "blob", sha: $sha}]}' \
+            > /tmp/tree.json
+          TREE_SHA=$(gh api -X POST repos/simplerisk/bundles/git/trees --input /tmp/tree.json --jq .sha)
+          jq -n --arg msg "SimpleRisk $VERSION Release" --arg tree "$TREE_SHA" --arg parent "$HEAD_SHA" \
+            '{message: $msg, tree: $tree, parents: [$parent],
+              author: {name: "SimpleRisk Updater", email: "support@simplerisk.com"}}' \
+            > /tmp/commit.json
+          COMMIT_SHA=$(gh api -X POST repos/simplerisk/bundles/git/commits --input /tmp/commit.json --jq .sha)
+          gh api -X PATCH repos/simplerisk/bundles/git/refs/heads/master \
+            -f sha="$COMMIT_SHA" >/dev/null
+
+          if [ -n "$EXISTING_SHA" ]; then
+            echo "action=replaced" >> "$GITHUB_OUTPUT"
+          else
+            echo "action=committed" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.DOWNLOADS_PUBLISHER_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Upload to S3 (unconditional overwrite)
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          set -euo pipefail
+          aws s3 cp "simplerisk-$VERSION.tgz" \
+            "s3://${{ vars.DOWNLOADS_BUCKET }}/public/bundles/simplerisk-$VERSION.tgz"
+
+      - name: Mint updates-repo token
+        id: updates-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.CORE_SYNC_APP_ID }}
+          private-key: ${{ secrets.CORE_SYNC_APP_PRIVATE_KEY }}
+          owner: simplerisk
+          repositories: updates.simplerisk.com
+
+      - name: Update releases.xml checksums (prod branch)
+        id: xml
+        env:
+          GH_TOKEN: ${{ steps.updates-token.outputs.token }}
+          VERSION: ${{ steps.ver.outputs.version }}
+          MD5: ${{ steps.asset.outputs.md5 }}
+          SHA256: ${{ steps.asset.outputs.sha256 }}
+          UPDATES_BRANCH: updates.simplerisk.com
+        run: |
+          set -euo pipefail
+          # releases.xml is small (<1 MB), so the contents API works for
+          # both fetch and put.
+          META=$(gh api "repos/simplerisk/updates.simplerisk.com/contents/releases.xml?ref=$UPDATES_BRANCH")
+          FILE_SHA=$(printf '%s' "$META" | jq -r .sha)
+          printf '%s' "$META" | jq -r .content | base64 -d > releases.xml
+
+          if ! grep -q "<release version=\"$VERSION\">" releases.xml; then
+            # Entry creation belongs to the release process; warn, don't
+            # fail - a re-dispatch heals the checksums once it exists.
+            echo "::warning::releases.xml ($UPDATES_BRANCH) has no entry for $VERSION - checksums not written"
+            echo "action=entry-missing" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Range-scoped sed keeps every other byte of the file untouched.
+          # Drop any prior bundle_sha256 in this entry (idempotent re-runs),
+          # then rewrite bundle_md5 and insert bundle_sha256 after it.
+          sed -i "/<release version=\"$VERSION\">/,/<\/release>/{ /<bundle_sha256>/d }" releases.xml
+          sed -i "/<release version=\"$VERSION\">/,/<\/release>/ s|<bundle_md5>[^<]*</bundle_md5>|<bundle_md5>$MD5</bundle_md5>\n        <bundle_sha256>$SHA256</bundle_sha256>|" releases.xml
+
+          base64 -w0 releases.xml > /tmp/releases.b64
+          jq -n --rawfile content /tmp/releases.b64 \
+            --arg message "Update bundle checksums for SimpleRisk $VERSION" \
+            --arg sha "$FILE_SHA" --arg branch "$UPDATES_BRANCH" \
+            '{message: $message, content: $content, sha: $sha, branch: $branch,
+              committer: {name: "SimpleRisk Updater", email: "support@simplerisk.com"}}' \
+            > /tmp/releases-put.json
+          gh api -X PUT repos/simplerisk/updates.simplerisk.com/contents/releases.xml \
+            --input /tmp/releases-put.json >/dev/null
+          echo "action=updated" >> "$GITHUB_OUTPUT"
+
+      - name: Step summary
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          {
+            echo "## Propagated release bundle"
+            echo
+            echo "- Version: \`$VERSION\` (${{ steps.asset.outputs.size }} bytes)"
+            echo "- MD5: \`${{ steps.asset.outputs.md5 }}\`"
+            echo "- SHA256: \`${{ steps.asset.outputs.sha256 }}\`"
+            echo "- bundles repo: ${{ steps.bundles.outputs.action }}"
+            echo "- S3 public/bundles: uploaded (overwrite)"
+            echo "- releases.xml (prod): ${{ steps.xml.outputs.action }}"
+          } >> "$GITHUB_STEP_SUMMARY"
