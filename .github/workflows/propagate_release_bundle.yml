@@ -116,8 +116,12 @@ jobs:
           # Idempotency: compare git blob shas via the trees API (the
           # contents API errors on >1 MB files; tree listings are cheap).
           NEW_SHA=$(git hash-object "$FILE")
+          # An absent file yields empty jq output with exit 0; a non-zero
+          # exit is a REAL API failure (auth, rate limit, network) and must
+          # fail here, not several Git Data calls later with a cryptic error.
           EXISTING_SHA=$(gh api "repos/simplerisk/bundles/git/trees/master" \
-            --jq ".tree[] | select(.path==\"$FILE\") | .sha" || true)
+            --jq ".tree[] | select(.path==\"$FILE\") | .sha") \
+            || { echo "::error::failed to fetch bundles tree — cannot check idempotency"; exit 1; }
           if [ "$NEW_SHA" = "$EXISTING_SHA" ]; then
             echo "action=identical-skip" >> "$GITHUB_OUTPUT"
             exit 0
@@ -210,6 +214,12 @@ jobs:
           # then rewrite bundle_md5 and insert bundle_sha256 after it.
           sed -i "/<release version=\"$VERSION\">/,/<\/release>/{ /<bundle_sha256>/d }" releases.xml
           sed -i "/<release version=\"$VERSION\">/,/<\/release>/ s|<bundle_md5>[^<]*</bundle_md5>|<bundle_md5>$MD5</bundle_md5>\n        <bundle_sha256>$SHA256</bundle_sha256>|" releases.xml
+          # The substitution is a silent no-op if the entry has no
+          # <bundle_md5> (schema drift); fail loudly instead of committing
+          # an unchanged file and reporting success.
+          if ! grep -q "<bundle_sha256>$SHA256</bundle_sha256>" releases.xml; then
+            echo "::error::sed did not insert bundle_sha256 — releases.xml schema may have changed"; exit 1
+          fi
 
           base64 -w0 releases.xml > /tmp/releases.b64
           jq -n --rawfile content /tmp/releases.b64 \
@@ -226,6 +236,7 @@ jobs:
         env:
           VERSION: ${{ steps.ver.outputs.version }}
         run: |
+          set -euo pipefail
           {
             echo "## Propagated release bundle"
             echo
