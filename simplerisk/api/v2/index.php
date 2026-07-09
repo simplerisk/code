@@ -39,11 +39,27 @@ if (api_v2_is_authenticated())
     app()->get('/admin/version/db', 'api_v2_admin_version_db');
     app()->post('/admin/upgrade/db', 'api_v2_admin_upgrade_db');
     app()->post('/admin/write_debug_log', 'api_v2_admin_write_debug_log');
+    app()->post('/admin/reset_registration', 'api_v2_admin_reset_registration');
     app()->delete('/admin/tag', 'api_v2_admin_tag_delete');
     app()->delete('/admin/tag/all', 'api_v2_admin_tag_delete_all');
     app()->post('/admin/governance/documents/maptocontrols', 'api_v2_update_all_document_control_mappings');
     app()->get('/admin/queue', 'api_v2_admin_queue');
     app()->get('/admin/queue/promises', 'api_v2_admin_queue_promises');
+
+    // Encryption Extra HTTP handlers. Registered in Core because the four
+    // endpoints (status, restore, algorithm-check/trigger, backup/delete) must be
+    // reachable even when encryption_extra() is false — failed or partial
+    // activation states need the failure-recovery routes. The handlers
+    // themselves live with the Extra; the require_once below is gated on
+    // the Extra directory existing.
+    if (is_dir(realpath(__DIR__ . '/../../extras/encryption'))) {
+        require_once realpath(__DIR__ . '/../../extras/encryption/includes/api.php');
+        app()->get('/encryption/activation/status', 'api_v2_encryption_activation_status');
+        app()->post('/encryption/restore', 'api_v2_encryption_restore');
+        app()->post('/encryption/algorithm-check/trigger', 'api_v2_encryption_algorithm_check_trigger');
+        app()->delete('/encryption/backup', 'api_v2_encryption_backup_delete');
+        app()->get('/encryption/backup/download', 'api_v2_encryption_backup_download');
+    }
 
     // SimpleRisk Assets Routes
     app()->get('/assets', 'api_v2_assets');
@@ -141,12 +157,22 @@ if (api_v2_is_authenticated())
     app()->get('/reports/catalog', 'api_v2_reports_catalog');
     app()->get('/admin/settings/catalog', 'api_v2_admin_settings_catalog');
     app()->get('/admin/settings/extras/licenses', 'api_v2_admin_settings_extras_licenses');
+    app()->post('/admin/license/refresh',          'api_v2_admin_license_refresh');
+    app()->get('/admin/licenses',                  'api_v2_admin_licenses');
     app()->post('/admin/extras/install',           'api_v2_admin_extras_install');
     app()->post('/admin/settings/favorites',          'api_v2_admin_settings_favorite_add');
     app()->delete('/admin/settings/favorites/{key}',  'api_v2_admin_settings_favorite_remove');
     app()->get('/reports/favorites', 'api_v2_reports_favorites_list');
     app()->post('/reports/favorites', 'api_v2_reports_favorites_add');
     app()->delete('/reports/favorites/{report_key}', 'api_v2_reports_favorites_delete');
+
+    // Notifications
+    require_once(realpath(__DIR__ . '/../../includes/notifications.php'));
+    app()->get('/notifications/counts', 'api_v2_notifications_counts');
+    app()->get('/notifications',        'api_v2_notifications_list');
+    app()->post('/notifications/mark-read', 'api_v2_notifications_mark_read');
+    app()->post('/notifications/trash',    'api_v2_notifications_trash');
+    app()->post('/notifications/restore',  'api_v2_notifications_restore');
 
     // RISK API from external app
     // Define the normal routes
@@ -427,7 +453,16 @@ if (api_v2_is_authenticated())
     //***************************** ACTIVATE/DEACTIVATE EXTRA END*****************************//
 
     /************************** DATATABLE API BEGIN *******************************/
-    app()->post('/get/datatable', 'getDatatableAPI');
+    // SR-1721: resource-scoped, permission-gated DataTables feeds. The old generic
+    // POST /get/datatable (getDatatableAPI) was removed — it enforced only session
+    // auth, letting any logged-in user pull any module's datatable data. Each route
+    // gates on its module permission first, then serves a fixed view.
+    app()->post('/compliance/audits/active/datatable', 'api_v2_compliance_active_audits_datatable');
+    app()->post('/compliance/audits/past/datatable', 'api_v2_compliance_past_audits_datatable');
+    app()->post('/compliance/audits/report/datatable', 'api_v2_compliance_dynamic_audit_report_datatable');
+    app()->post('/compliance/audits/timeline/datatable', 'api_v2_compliance_audit_timeline_datatable');
+    app()->post('/governance/documents/datatable', 'api_v2_governance_documents_datatable');
+    app()->post('/exceptions/datatable', 'api_v2_exceptions_datatable');
     /*************************** DATATABLE API END ********************************/
 
     /************************** UI API BEGIN *******************************/
@@ -766,7 +801,10 @@ else if (check_questionnaire_get_token()) {
             // Load the required file
             require_once(realpath(__DIR__ . '/../../extras/assessments/includes/api.php'));
 
-            // Endpoint for draft saves with race condition protection
+            // This registration serves the token-only (check_questionnaire_get_token()) code path,
+            // which does not call get_assessments_routes(). It is NOT redundant with the registration
+            // in get_assessments_routes() — removing it would silently break draft saves for external
+            // (unauthenticated) contacts who authenticate via questionnaire token only.
             app()->post('/assessments/questionnaire/draft/save', 'api_v2_assessment_questionnaire_draft_save');
         }
     }
@@ -791,7 +829,7 @@ app()->set404(function ()
     $response['status'] = 404;
     $response['status_message'] = "The Requested API Endpoint Was Not Found";
     $response['data'] = null;
-    response()->json($response);
+    response()->json($response, 404);
 });
 
 // Configure leaf logging to the error log

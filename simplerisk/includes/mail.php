@@ -68,7 +68,7 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
             // Add an audit log entry for the change
             $risk_id = 1000;
             $message = "A setting value named \"phpmailer_transport\" was updated by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
         }
     }
@@ -89,7 +89,7 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
             // Add an audit log entry for the change
             $risk_id = 1000;
             $message = "A setting value named \"phpmailer_from_email\" was updated by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
         }
 	}
@@ -107,7 +107,7 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
         // Add an audit log entry for the change
         $risk_id = 1000;
         $message = "A setting value named \"phpmailer_from_name\" was updated by the \"" . $_SESSION['user'] . "\" user.";
-        write_log($risk_id, $_SESSION['uid'], $message);
+        write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
     }
 
@@ -127,7 +127,7 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
             // Add an audit log entry for the change
             $risk_id = 1000;
             $message = "A setting value named \"phpmailer_replyto_email\" was updated by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
         }
 	}
@@ -145,7 +145,7 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
         // Add an audit log entry for the change
         $risk_id = 1000;
         $message = "A setting value named \"phpmailer_replyto_name\" was updated by the \"" . $_SESSION['user'] . "\" user.";
-        write_log($risk_id, $_SESSION['uid'], $message);
+        write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
     }
 
@@ -162,7 +162,7 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
         // Add an audit log entry for the change
         $risk_id = 1000;
         $message = "A setting value named \"phpmailer_host\" was updated by the \"" . $_SESSION['user'] . "\" user.";
-        write_log($risk_id, $_SESSION['uid'], $message);
+        write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
     }
 
@@ -183,7 +183,7 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
             // Add an audit log entry for the change
             $risk_id = 1000;
             $message = "A setting value named \"phpmailer_smtpautotls\" was updated by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
         }
 	}
@@ -204,7 +204,7 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
             // Add an audit log entry for the change
             $risk_id = 1000;
             $message = "A setting value named \"phpmailer_smtpauth\" was updated by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
         }
 	}
@@ -222,7 +222,7 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
         // Add an audit log entry for the change
         $risk_id = 1000;
         $message = "A setting value named \"phpmailer_username\" was updated by the \"" . $_SESSION['user'] . "\" user.";
-        write_log($risk_id, $_SESSION['uid'], $message);
+        write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
     }
 
@@ -242,7 +242,7 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
             // Add an audit log entry for the change
             $risk_id = 1000;
             $message = "A setting value named \"phpmailer_password\" was updated by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
         }
     }
@@ -263,7 +263,7 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
             // Add an audit log entry for the change
             $risk_id = 1000;
             $message = "A setting value named \"phpmailer_smtpsecure\" was updated by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
         }
     }
@@ -284,7 +284,7 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
             // Add an audit log entry for the change
             $risk_id = 1000;
             $message = "A setting value named \"phpmailer_port\" was updated by the \"" . $_SESSION['user'] . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
         }
     }
@@ -302,7 +302,7 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
         // Add an audit log entry for the change
         $risk_id = 1000;
         $message = "A setting value named \"phpmailer_prepend\" was updated by the \"" . $_SESSION['user'] . "\" user.";
-        write_log($risk_id, $_SESSION['uid'], $message);
+        write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
     }
 

@@ -25,11 +25,21 @@ function api_v2_assets()
     // If we received an id
     if (!empty($id))
     {
+        // SR-1760: enforce team-based separation on the single-asset lookup.
+        // get_asset_by_id() runs an unscoped query, so without this check any
+        // asset-permitted user could read any asset cross-team (IDOR). Deny as
+        // 204 (identical to not-found) rather than 403 so the endpoint is not an
+        // existence/enumeration oracle for cross-team asset ids.
+        // check_access_for_asset() is fail-open when the Team Separation Extra is
+        // off (returns true), so behavior is unchanged on the base product.
+        if (!check_access_for_asset($id))
+        {
+            $status_code = 204;
+            $status_message = "NO CONTENT: Unable to find an asset with the specified id.";
+            $data = null;
+        }
         // Get just the asset with that id
-        $asset = get_asset_by_id($id);
-
-        // If the asset value returned is empty then we are unable to find an asset with that id
-        if (empty($asset))
+        elseif (empty($asset = get_asset_by_id($id)))
         {
             // Set the status
             $status_code = 204;
@@ -204,6 +214,16 @@ function assets_view_action_API() {
         $action = $_POST['action'];
         
         if (isset($_POST['all']) && $_POST['all']) {
+
+            // verify_all_assets()/delete_all_assets() act on every asset with no team
+            // filter. Under Team Separation a team-scoped user must not run them, or they
+            // could verify/delete other teams' assets wholesale. Admins bypass separation.
+            if (team_separation_extra() && !is_admin()) {
+                set_alert(true, "bad", $lang['NoPermissionForAsset']);
+                api_v2_json_result(403, get_alert(true), null);
+                return;
+            }
+
             switch ($action) {
                 case 'verify':
                     if (verify_all_assets()) {
@@ -227,7 +247,18 @@ function assets_view_action_API() {
             }
         } elseif (isset($_POST['id'])) {
             $id = (int)$_POST['id'];
-            
+
+            // Object-level authorization: when Team Separation is installed, confirm
+            // the caller may act on this specific asset before verify/discard/delete/edit.
+            // Mirrors updateAssetById()/deleteAssetById(); without it the verify/delete
+            // branches act on any asset id (cross-team). check_access_for_asset() returns
+            // true when Team Separation is not installed, so base installs are unaffected.
+            if (!check_access_for_asset($id)) {
+                set_alert(true, "bad", $lang['NoPermissionForAsset']);
+                api_v2_json_result(403, get_alert(true), null);
+                return;
+            }
+
             switch ($action) {
                 case 'verify':
                     if (verify_asset($id)) {

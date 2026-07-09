@@ -107,6 +107,15 @@ function workflow_action_update_framework_field(array $inputs, array $context): 
         return ['status' => 'success', 'output' => ['dry_run' => true, 'framework_id' => $framework_id, 'field' => $field, 'value' => $value], 'error' => null];
     }
 
+    // Sanitize the rich-text description before storing. The framework description
+    // is rendered as raw HTML in the governance treegrid, so the stored value must
+    // always be purified — mirror add_framework()/update_framework(), which route
+    // the description through purify_html() on write. (purify_html() is defined in
+    // includes/functions.php, already in scope here via try_encrypt()/db_open().)
+    if ($column === 'description') {
+        $value = purify_html($value);
+    }
+
     // Encrypt name and description before storing
     if ($column === 'name' || $column === 'description') {
         $value = try_encrypt($value);
@@ -196,6 +205,11 @@ function workflow_action_update_asset_field(array $inputs, array $context): arra
     {
         $column    = $encrypted_fields[$field];
         if (!_wf_safe_column($column)) { db_close($db); return ['status' => 'failed', 'output' => [], 'error' => 'update_asset_field: Internal error — invalid column identifier.']; }
+        // Purify the rich-text details field before encrypting/storing (SR-1897) —
+        // asset details is HTML content (rendered via purifyHtml at its sink).
+        if ($column === 'details') {
+            $value = purify_html($value);
+        }
         $encrypted = try_encrypt($value);
         $stmt = $db->prepare("UPDATE `assets` SET `{$column}` = :value WHERE `id` = :id");
         $stmt->bindValue(':value', $encrypted);
@@ -266,6 +280,13 @@ function workflow_action_update_control_field(array $inputs, array $context): ar
 
     if (!$is_junction && !isset($field_map[$field])) {
         return ['status' => 'failed', 'output' => [], 'error' => "update_control_field: Field '{$field}' is not an updatable field."];
+    }
+
+    // Purify the rich-text fields before storage (SR-1897) — control description
+    // and supplemental guidance are WYSIWYG fields rendered as raw HTML at their
+    // display/edit sinks, so a value written via a workflow must be purified too.
+    if (in_array($field, ['control__description', 'control__supplemental_guidance'], true)) {
+        $value = purify_html($value);
     }
 
     // Validate and clamp mitigation_percent to 0–100
@@ -406,6 +427,12 @@ function workflow_action_update_test_field(array $inputs, array $context): array
 
     if (!_wf_safe_column($column)) {
         return ['status' => 'failed', 'output' => [], 'error' => 'update_test_field: Internal error — invalid column identifier.'];
+    }
+
+    // Purify the rich-text fields before storage (SR-1897) — objective, test steps
+    // and expected results are WYSIWYG fields rendered as raw HTML at their edit sinks.
+    if (in_array($column, ['objective', 'test_steps', 'expected_results'], true)) {
+        $value = purify_html($value);
     }
 
     // Date conversion
@@ -718,6 +745,12 @@ function workflow_action_update_exception_field(array $inputs, array $context): 
     $column = $field_map[$field];
 
     if (!_wf_safe_column($column)) { db_close($db); return ['status' => 'failed', 'output' => [], 'error' => 'update_exception_field: Internal error — invalid column identifier.']; }
+
+    // Purify the rich-text fields before storage (SR-1897) — exception description
+    // and justification are WYSIWYG fields rendered as raw HTML at their edit sinks.
+    if (in_array($column, ['description', 'justification'], true)) {
+        $value = purify_html($value);
+    }
 
     $stmt = $db->prepare("UPDATE `document_exceptions` SET `{$column}` = :value WHERE `value` = :id");
     $stmt->bindValue(':value', $value);

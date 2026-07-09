@@ -68,6 +68,15 @@
         // Include the SimpleRisk language file
         require_once(language_file());
 
+        if (!has_permission("assessment_view_results")) {
+            set_alert(true, "bad", $lang['NoPermissionForAssessments']);
+            // Redirect to the base page (not the current URL) to avoid an infinite
+            // redirect loop — refresh() with no arg goes back to the same
+            // ?action=download&token=... URL and would re-trigger this check.
+            refresh('questionnaire_results.php');
+            exit;
+        }
+
         download_questionnaire_result($_GET['token']);
         exit;
     }
@@ -95,8 +104,10 @@
     <div class="col-12">
         <div class="questionnaire-results card-body my-2 border">
     <?php
-        if(isset($_GET['action']) && $_GET['action']=="full_view") {
-            display_questionnaire_fullview(); 
+        if (!has_permission("assessment_view_results")) {
+            echo "<div class='alert alert-danger'>" . $escaper->escapeHtml($lang['NoPermissionForAssessments']) . "</div>";
+        } elseif(isset($_GET['action']) && $_GET['action']=="full_view") {
+            display_questionnaire_fullview();
         } else {
             echo "
             <p><strong>{$escaper->escapeHtml($lang['QuestionnaireResultsHelp'])}.</strong></p>

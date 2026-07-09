@@ -26,7 +26,7 @@ function view_score_html($risk_id, $calculated_risk, $mitigation_percent)
 
     // Inherent Risk
     echo "
-                <div class='risk-square p-10 text-center' style='background-color: " . $escaper->escapeHtml(get_risk_color($calculated_risk)) . "'>
+                <div class='risk-square p-10 text-center' style='background-color: " . $escaper->escapeCssColor(get_risk_color($calculated_risk)) . "'>
                     <h5 class=''>" .$escaper->escapeHtml($lang['InherentRisk']) . "</h5>
                     <h1 class='my-0'>" .$escaper->escapeHtml($calculated_risk) . "</h5>
                     <h5 class=''>" . $escaper->escapeHtml(get_risk_level_name($calculated_risk)) . "</h5>
@@ -46,7 +46,7 @@ function view_score_html($risk_id, $calculated_risk, $mitigation_percent)
 
     echo "
             <div class='col-6'>
-                <div class='risk-square p-10 text-center' style='background-color: " . $escaper->escapeHtml(get_risk_color($residual_risk)) . "'>
+                <div class='risk-square p-10 text-center' style='background-color: " . $escaper->escapeCssColor(get_risk_color($residual_risk)) . "'>
                     <h5 class=''>" . $escaper->escapeHtml($lang['ResidualRisk']) . "</h5>
                     <h1 class='my-0'>" . $escaper->escapeHtml($residual_risk) . "</h5>
                     <h5 class=''>" . $escaper->escapeHtml(get_risk_level_name($residual_risk)) . "</h5>
@@ -97,7 +97,7 @@ function view_top_table($risk_id, $calculated_risk, $subject, $status, $show_det
         // If the risk is closed, offer to reopen
         if ($status == "Closed") { 
             echo "
-                                    <li><a class='reopen-risk dropdown-item' href='reopen.php?id=" . $escaper->escapeHtml($risk_id) . "'>" . $escaper->escapeHtml($lang['ReopenRisk']) . "</a></li>
+                                    <li><a class='reopen-risk dropdown-item' href='#'>" . $escaper->escapeHtml($lang['ReopenRisk']) . "</a></li>
             "; 
         }
 
@@ -227,7 +227,7 @@ function view_print_top_table($id, $calculated_risk, $subject, $status) {
 
     echo "
         <div class='d-flex align-items-center'>
-            <div class='flex-shrink-0 d-flex flex-column align-items-center justify-content-center py-2 border' style='height: 120px; width: 120px; background-color: " . $escaper->escapeHtml(get_risk_color($calculated_risk)) . "'>
+            <div class='flex-shrink-0 d-flex flex-column align-items-center justify-content-center py-2 border' style='height: 120px; width: 120px; background-color: " . $escaper->escapeCssColor(get_risk_color($calculated_risk)) . "'>
                 <span>" . $escaper->escapeHtml($lang['InherentRisk']) . "</span>
                 <span style='font-size: 30px;'>" . $escaper->escapeHtml($calculated_risk) . "</span>
                 <span>(". $escaper->escapeHtml(get_risk_level_name($calculated_risk)) . ")</span>
@@ -237,7 +237,7 @@ function view_print_top_table($id, $calculated_risk, $subject, $status) {
     $residual_risk = get_residual_risk($id);
 
     echo "
-            <div class='flex-shrink-0 d-flex flex-column align-items-center justify-content-center py-2 ms-3 border' style='height: 120px; width: 120px; background-color: " . $escaper->escapeHtml(get_risk_color($residual_risk)) . "'>
+            <div class='flex-shrink-0 d-flex flex-column align-items-center justify-content-center py-2 ms-3 border' style='height: 120px; width: 120px; background-color: " . $escaper->escapeCssColor(get_risk_color($residual_risk)) . "'>
                 <span>" . $escaper->escapeHtml($lang['ResidualRisk']) . "</span>
                 <span style='font-size: 30px;'>" . $escaper->escapeHtml($residual_risk) . "</span>
                 <span>(". $escaper->escapeHtml(get_risk_level_name($residual_risk)) . ")</span>
@@ -4699,7 +4699,6 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $risk_column
     
     $encoded_request_uri = get_encoded_request_uri();
 
-    // @phan-suppress-next-line SecurityCheck-XSS -- build_url() sanitizes the path; GET params are URL-encoded by http_build_query() in get_encoded_request_uri()
     echo   "
         <div class='accordion-item' id='group-selections-container'>
             <h2 class='accordion-header'>
@@ -4707,7 +4706,7 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $risk_column
             </h2>
             <div id='group-selections-accordion-body' class='accordion-collapse collapse show'>
                 <div class='accordion-body card-body'>
-                    <form id='get_risks_by' name='get_risks_by' method='post' action='" . build_url($encoded_request_uri) . "'>
+                    <form id='get_risks_by' name='get_risks_by' method='post' action='" . $escaper->escapeHtmlAttr(build_url($encoded_request_uri)) . "'>
                         <div class='row'>
                             <!-- Risk Status Selection -->
                             <div class='col-4'>
@@ -4867,7 +4866,7 @@ function display_save_dynamic_risk_selections() {
                                             e.stopPropagation();
 
                                             let id = $(e.target).parents('.option').first().data('value');
-                                            confirm('{$escaper->escapeHtml($lang["AreYouSureYouWantToDeleteSelction"])}', () => delete_saved_selection(id));
+                                            confirm('{$escaper->escapeJs($lang["AreYouSureYouWantToDeleteSelction"])}', () => delete_saved_selection(id));
                                         });            
                                     });
             
@@ -7030,16 +7029,16 @@ function create_risk_formula_table() {
     echo "
         <table class='risk-level-table'>
             <tr height='20px'>
-                <td><div class='risk-table-veryhigh' style='background-color: {$risk_levels_by_color['Very High']['color']}' /></td>
+                <td><div class='risk-table-veryhigh' style='background-color: {$escaper->escapeCssColor($risk_levels_by_color['Very High']['color'])}' /></td>
                 <td>{$escaper->escapeHtml($risk_levels_by_color['Very High']['display_name'] . " " . $lang['Risk'])}</td>
                 <td>&nbsp;</td>
-                <td><div class='risk-table-high' style='background-color: {$risk_levels_by_color['High']['color']}' /></td>
+                <td><div class='risk-table-high' style='background-color: {$escaper->escapeCssColor($risk_levels_by_color['High']['color'])}' /></td>
                 <td>{$escaper->escapeHtml($risk_levels_by_color['High']['display_name'] . " " . $lang['Risk'])}</td>
                 <td>&nbsp;</td>
-                <td><div class='risk-table-medium' style='background-color: {$risk_levels_by_color['Medium']['color']}' /></td>
+                <td><div class='risk-table-medium' style='background-color: {$escaper->escapeCssColor($risk_levels_by_color['Medium']['color'])}' /></td>
                 <td>{$escaper->escapeHtml($risk_levels_by_color['Medium']['display_name'] . " " . $lang['Risk'])}</td>
                 <td>&nbsp;</td>
-                <td><div class='risk-table-low' style='background-color: {$risk_levels_by_color['Low']['color']}' /></td>
+                <td><div class='risk-table-low' style='background-color: {$escaper->escapeCssColor($risk_levels_by_color['Low']['color'])}' /></td>
                 <td>{$escaper->escapeHtml($risk_levels_by_color['Low']['display_name'] . " " . $lang['Risk'])}</td>
                 <td>&nbsp;</td>
                 <td><div class='risk-table-insignificant' style='background-color: white' /></td>
@@ -7996,12 +7995,12 @@ function display_plan_mitigations()
                 $field_id = str_replace("custom_field_", "", $column);
                 $custom_field = get_field_by_id($field_id);
                 $label = $escaper->escapeHtml($custom_field['name']);
-                $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
+                $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
                 $index++;
             }
         } else {
             $label = get_label_by_risk_field_name($column);
-            $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
+            $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
             $index++;
         }
     }
@@ -8174,12 +8173,12 @@ function display_management_review()
                 $field_id = str_replace("custom_field_", "", $column);
                 $custom_field = get_field_by_id($field_id);
                 $label = $escaper->escapeHtml($custom_field['name']);
-                $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
+                $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
                 $index++;
             }
         } else {
             $label = get_label_by_risk_field_name($column);
-            $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
+            $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
             $index++;
         }
     }
@@ -8354,12 +8353,12 @@ function display_review_risks()
                 }
 
                 $label = $escaper->escapeHtml($custom_field['name']);
-                $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
+                $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
                 $index++;
             }
         } else {
             $label = get_label_by_risk_field_name($column);
-            $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
+            $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
             $index++;
         }
     }
@@ -9275,7 +9274,7 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
         <script>
 
             // variable to store the custom display settings
-            var custom_display_settings = JSON.parse('" . json_encode($custom_display_settings) . "');
+            var custom_display_settings = " . json_encode($custom_display_settings, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ";
 
         </script>
     ";
@@ -9408,15 +9407,33 @@ function display_license_check()
 	global $lang;
 	global $escaper;
 
-	// If the license check failed
-	if (isset($_SESSION['license_check']) && $_SESSION['license_check'] == "fail")
-	{
-		echo "
-            <div class='license_check alert alert-danger mt-2 mb-0'>" . 
-                $escaper->escapeHtml($lang['LicenseCheckFailed']) . "
-            </div>
-        ";
+	if (!isset($_SESSION['license_check'])) {
+		return;
 	}
+
+	$state = $_SESSION['license_check'];
+
+	// 'pass' and unset/empty mean everything is fine — no banner needed.
+	if ($state === 'pass' || $state === '') {
+		return;
+	}
+
+	// Map each non-passing state to a distinct lang key and alert style.
+	// 'fail' (remove_extras) uses alert-danger; all others use alert-warning
+	// because they are informational rather than active-deactivation states.
+	$message_key = match ($state) {
+		'lock'      => 'LicenseStateLockMessage',
+		'fail'      => 'LicenseStateFailMessage',
+		'anonymous' => 'LicenseStateAnonymousMessage',
+		default     => 'LicenseStateUnknownMessage',
+	};
+	$alert_class = ($state === 'fail') ? 'alert-danger' : 'alert-warning';
+
+	echo "
+        <div class='license_check alert {$alert_class} mt-2 mb-0'>" .
+            $escaper->escapeHtml($lang[$message_key]) . "
+        </div>
+    ";
 }
 
 /******************************************
@@ -10009,7 +10026,7 @@ function render_column_selection_widget($view) {
         <script>
 
             // This is the list of selected columns for the view
-            var custom_display_settings_{$view} = JSON.parse('" . json_encode($settings) . "');
+            var custom_display_settings_{$view} = " . json_encode($settings, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ";
 
             $(function() {
                 $('form#custom_display_settings-{$view}').submit(function() {
@@ -11417,12 +11434,12 @@ function display_document_to_controls()
                 $field_id = str_replace("custom_field_", "", $column);
                 $custom_field = get_field_by_id($field_id);
                 $label = $escaper->escapeHtml($custom_field['name']);
-                $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
+                $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
                 $index++;
             }
         } else {
             $label = get_label_by_document_field_name($column);
-            $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
+            $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
             $index++;
         }
     }
@@ -11877,7 +11894,7 @@ function display_custom_document_control_columns($custom_setting_field = "custom
         <script>
 
             // variable to store the custom display settings
-            var custom_display_settings = JSON.parse('" . json_encode($custom_display_settings) . "');
+            var custom_display_settings = " . json_encode($custom_display_settings, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ";
 
         </script>
     ";

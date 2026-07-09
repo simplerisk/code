@@ -11,285 +11,160 @@ require_once(realpath(__DIR__ . '/extras.php'));
 require_once(realpath(__DIR__ . '/connectivity.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-/*************************************
- * FUNCTION: SIMPLERISK SERVICE CALL *
- *************************************/
-function simplerisk_service_call($parameters)
-{
-    // Configuration for the SimpleRisk service call
-    if (defined('SERVICES_URL'))
-    {
-        $url = SERVICES_URL . "/index.php";
-    }
-    else $url = "https://services.simplerisk.com/index.php";
-
-    // Set the HTTP options
-    $http_options = [
-        'method' => 'POST',
-        'header' => [
-            "Content-Type: application/x-www-form-urlencoded",
-        ],
-    ];
-
-    // SSL validation is on by default; only disabled when the setting is explicitly '0'
-    $validate_ssl = get_setting('ssl_certificate_check_external') !== '0';
-
-    // Make the services call
-    $response = fetch_url_content("stream", $http_options, $validate_ssl, $url, $parameters);
-    if (!is_array($response))
-    {
-        write_debug_log("SimpleRisk was unable to connect to " . $url, 'warning');
-        return false;
-    }
-    $return_code = $response['return_code'];
-
-    // If we were unable to connect to the URL
-    if($return_code !== 200)
-    {
-        write_debug_log("SimpleRisk was unable to connect to " . $url, 'warning');
-        return false;
-    }
-    // We were able to connect to the URL
-    else
-    {
-        write_debug_log("SimpleRisk successfully connected to " . $url, 'info');
-        return $response;
-    }
-}
-
 /****************************
  * FUNCTION: DOWNLOAD EXTRA *
  ****************************/
+/**
+ * Download a SimpleRisk Extra package from the licensing service.
+ *
+ * @param string $name            Short Extra name (must be in available_extra_short_names()).
+ * @param bool   $streamed_response  When true, fetches via stream transport (used by the
+ *                                   one-click upgrade path that writes output to the browser
+ *                                   in real time); false uses curl (default).
+ *
+ * @return string|array Raw tgz bytes (string) on HTTP 200. On any error, an
+ *                      associative array {error, extra_name, reason,
+ *                      retry_after_seconds, http_status}. Callers MUST check
+ *                      is_string($result) to distinguish success from failure.
+ *                      A boolean truthy check is broken since the error array
+ *                      is non-empty and therefore truthy.
+ */
 function download_extra($name, $streamed_response = false) {
+    require_once(realpath(__DIR__ . '/licensing.php'));
 
-    global $available_extras, $escaper, $lang;
-    
-    // If the upgrade extra exists
-    if (file_exists(realpath(__DIR__ . '/../extras/upgrade/index.php')))
-    {
-        // Require the upgrade extra file
-        require_once(realpath(__DIR__ . '/../extras/upgrade/index.php'));
+    $instance_id      = get_setting('instance_id');
+    $services_api_key = get_setting('services_api_key');
 
-	// If the application is not at the latest version and this is not the Upgrade Extra
-        if(function_exists('check_app_latest_version') && !check_app_latest_version() && $name != "upgrade")
-        {
-            set_alert(true, "bad", $escaper->escapeHtml($lang['ApplicationNeedsToBeUpgradeToLatestVersionToUpgradeExtras']));
-            return;
-        }
-    }
-    
-    if (!in_array($name, $available_extras)) {
-
-        $message = _lang('UpdateExtraInvalidName', array('name' => $name));
-        if ($streamed_response) {
-            stream_write_error($message);
-        } else {
-            set_alert(true, "bad", $message);
-        }
-        // Return a failure
-        return 0;
+    // Defense-in-depth: refuse to ship a name Core doesn't recognize.
+    if (!in_array($name, available_extra_short_names(), true)) {
+        write_debug_log("download_extra: unknown Extra '{$name}'", 'warning');
+        return ['error' => 'invalid_extra_name', 'extra_name' => $name, 'reason' => null, 'retry_after_seconds' => null, 'http_status' => 0];
     }
 
+    $parameters = [
+        'instance_id'      => $instance_id,
+        'services_api_key' => $services_api_key,
+        'extra_name'       => $name,
+    ];
 
-	// SimpleRisk directory
-	$simplerisk_dir = realpath(__DIR__ . '/../');
+    $http_options = [
+        'method' => 'POST',
+        'header' => ['Content-Type: application/x-www-form-urlencoded'],
+    ];
 
-	// Extras directory
-	$extras_dir = $simplerisk_dir . '/extras';
+    // SSL validation is on by default; only disabled when the setting is explicitly '0'.
+    $validate_ssl = ssl_external_verify_enabled();
 
-	// Set success to true
-	$success = true;
-
-	// If the extras directory does not exist
-	if (!is_dir($extras_dir))
-	{
-		// If the simplerisk directory is not writeable
-		if (!is_writeable($simplerisk_dir)) {
-
-            $message = _lang('UpdateExtraNoPermissionForSimpleriskDirectory', array('simplerisk_dir' => $simplerisk_dir));
-			if ($streamed_response) {
-                stream_write_error($message);
-            } else {
-                set_alert(true, "bad", $message);
-            }
-			// Return a failure
-			return 0;
-		}
-
-		// If the extras directory can not be created
-		if (!mkdir($extras_dir)) {
-            
-            $message = _lang('UpdateExtraNoPermissionForExtrasDirectory', array('extras_dir' => $extras_dir));
-			if ($streamed_response) {
-                stream_write_error($message);
-            } else {
-                set_alert(true, "bad", $message);
-            }
-			// Return a failure
-			return 0;
-		}
-	}
-	
-	// Get the instance id
-	$instance_id = get_setting("instance_id");
-
-	// Get the services API key
-	$services_api_key = get_setting("services_api_key");
-
-    // Create the data to send
-    $parameters = array(
-        'action' => 'download_extra',
-        'extra_name' => $name,
-        'instance_id' => $instance_id,
-        'api_key' => $services_api_key,
+    $response = fetch_url_content(
+        $streamed_response ? 'stream' : 'curl',
+        $http_options, $validate_ssl,
+        licensing_url('/download-extra'), $parameters
     );
 
-    // Make the SimpleRisk service call
-	$response = simplerisk_service_call($parameters);
     if (!is_array($response)) {
-        if ($streamed_response) {
-            stream_write_error($lang['FailedToDownloadExtra']);
-        } else {
-            set_alert(true, "bad", $lang['FailedToDownloadExtra']);
-        }
-        return 0;
+        write_debug_log("download_extra: unable to reach licensing service", 'warning');
+        return ['error' => 'transport', 'extra_name' => $name, 'reason' => null, 'retry_after_seconds' => null, 'http_status' => 0];
     }
-    $return_code = $response['return_code'];
-    $results = $response['response'];
 
-    if ($return_code !== 200) {
-        
-        if ($streamed_response) {
-            stream_write_error($lang['FailedToDownloadExtra']);
-        } else {
-            set_alert(true, "bad", $lang['FailedToDownloadExtra']);
+    $code = (int)($response['return_code'] ?? 0);
+    $body = (string)($response['response'] ?? '');
+
+    if ($code === 200) {
+        // Integrity check before install: verify the downloaded bytes hash to
+        // the SHA-256 the licensing service advertised for this Extra (cached
+        // from /license/check). A tampered or truncated package must never reach
+        // a caller that would extract/install it. When no expected hash is known
+        // (forward-compat / older server), skip rather than block.
+        $expected_sha256 = get_download_sha256_for_extra($name);
+        if (!extra_download_is_intact($expected_sha256, $body)) {
+            write_debug_log("download_extra: SHA-256 mismatch for '{$name}' — refusing to install", 'error');
+            return ['error' => 'integrity', 'extra_name' => $name, 'reason' => _lang('ExtraIntegrityCheckFailed', array(), false), 'retry_after_seconds' => null, 'http_status' => $code];
         }
 
-        // Return a failure
-        return 0;
-    }
-    else
-    {
-        if (preg_match("/<result>(.*)<\/result>/", $results, $matches)) {
-            switch ($matches[1]) {
-                case "Not Purchased":
-                    if ($streamed_response) {
-                        stream_write_error($lang['RequestedExtraIsNotPurchased']);
-                    } else {
-                        set_alert(true, "bad", $lang['RequestedExtraIsNotPurchased']);
-                    }
-
-                    // Return a failure
-                    return 0;
-
-                case "Invalid Extra Name":
-                    if ($streamed_response) {
-                        stream_write_error($lang['RequestedExtraDoesNotExist']);
-                    } else {
-                        set_alert(true, "bad", $lang['RequestedExtraDoesNotExist']);
-                    }
-
-                    // Return a failure
-                    return 0;
-
-                case "Unmatched IP Address":
-                    if ($streamed_response) {
-                        stream_write_error($lang['InstanceWasRegisteredWithDifferentIp']);
-                    } else {
-                        set_alert(true, "bad", $lang['InstanceWasRegisteredWithDifferentIp']);
-                    }
-
-                    // Return a failure
-                    return 0;
-
-                case "Instance Disabled":
-                    if ($streamed_response) {
-                        stream_write_error($lang['InstanceIsDisabled']);
-                    } else {
-                        set_alert(true, "bad", $lang['InstanceIsDisabled']);
-                    }
-
-                    // Return a failure
-                    return 0;
-
-                case "Invalid Instance or Key":
-                    if ($streamed_response) {
-                        stream_write_error($lang['InvalidInstanceIdOrKey']);
-                    } else {
-                        set_alert(true, "bad", $lang['InvalidInstanceIdOrKey']);
-                    }
-
-                    // Return a failure
-                    return 0;
-
-                default:
-                    if ($streamed_response) {
-                        stream_write_error($lang['FailedToDownloadExtra']);
-                    } else {
-                        set_alert(true, "bad", $lang['FailedToDownloadExtra']);
-                    }
-
-                    // Return a failure
-                    return 0;
+        // Install the verified package to simplerisk/extras/<name>/. download_extra()'s
+        // contract is "string return == installed" — every caller (the Configure Hub
+        // Install endpoint, core_upgrade_extras, the post-registration upgrade) treats a
+        // string as success, so the bytes must be extracted onto disk here, not returned raw.
+        $extras_dir = realpath(__DIR__ . '/../extras');
+        if ($extras_dir === false) {
+            $simplerisk_dir = realpath(__DIR__ . '/../');
+            if ($simplerisk_dir !== false && is_writeable($simplerisk_dir) && mkdir($simplerisk_dir . '/extras')) {
+                $extras_dir = $simplerisk_dir . '/extras';
             }
-        } else {
-            // Write the extra to a file in the temporary directory
-            $extra_file = sys_get_temp_dir() . '/' . $name . '.tar.gz';
+        }
+        if ($extras_dir === false || !is_writeable($extras_dir)) {
+            write_debug_log("download_extra: extras directory not writeable; cannot install '{$name}'", 'error');
+            return ['error' => 'install_failed', 'extra_name' => $name, 'reason' => _lang('ExtraInstallWriteFailed', array(), false), 'retry_after_seconds' => null, 'http_status' => $code];
+        }
 
-            // Try to remove the file to make sure we can create the new one
-            delete_file($extra_file);
-
-            //Check if we succeeded
-            if (file_exists($extra_file)) {
-                if ($streamed_response) {
-                    stream_write_error($lang['FailedToCleanupExtraFiles']);
-                } else {
-                    set_alert(true, "bad", $lang['FailedToCleanupExtraFiles']);
+        // Use a private, unpredictable per-invocation working directory (0700) instead of
+        // fixed paths in the shared temp dir — avoids symlink/TOCTOU attacks on a multi-tenant
+        // host and collisions between concurrent installs of the same Extra.
+        $work   = sys_get_temp_dir() . '/sr_extra_' . bin2hex(random_bytes(8));
+        $tgz    = $work . '/' . $name . '.tar.gz';
+        $tar    = $work . '/' . $name . '.tar';
+        $source = $work . '/' . $name;
+        $dest   = $extras_dir . '/' . $name;
+        $copied = false;
+        try {
+            if (!mkdir($work, 0700, true)) {
+                throw new \RuntimeException('could not create work dir');
+            }
+            // Write the verified tgz, gunzip it to a .tar, extract, then copy the tree in.
+            if (file_put_contents($tgz, $body) === false) {
+                throw new \RuntimeException('write tgz failed');
+            }
+            $in = gzopen($tgz, 'rb');
+            if ($in === false) {
+                throw new \RuntimeException('gzopen failed');
+            }
+            $out = fopen($tar, 'wb');
+            if ($out === false) {
+                gzclose($in);
+                throw new \RuntimeException('fopen tar failed');
+            }
+            while (!gzeof($in)) {
+                $chunk = gzread($in, 4096);
+                if ($chunk === false || fwrite($out, $chunk) === false) {
+                    fclose($out);
+                    gzclose($in);
+                    throw new \RuntimeException('decompress/write failed');
                 }
-
-                // Return a failure
-                return 0;
             }
+            fclose($out);
+            gzclose($in);
 
-            $result = file_put_contents($extra_file, $results);
-
-            // Decompress the extra file
-            $buffer_size = 4096;
-            $out_file_name = str_replace('.gz', '', $extra_file);
-            $file = gzopen($extra_file, 'rb');
-            $out_file = fopen($out_file_name, 'wb');
-            while (!gzeof($file)) {
-                fwrite($out_file, gzread($file, $buffer_size));
+            $phar = new PharData($tar);
+            $phar->extractTo($work, null, true);
+            if (!recurse_copy($source, $dest)) {
+                throw new \RuntimeException('copy into extras directory failed');
             }
-            fclose($out_file);
-            gzclose($file);
-
-            // Extract the tar to the tmp directory
-            $phar = new PharData(sys_get_temp_dir() . '/' . $name . ".tar");
-            $phar->extractTo(sys_get_temp_dir(), null, true);
-
-            // Copy to the extras directory
-            $source = sys_get_temp_dir() . '/' . $name;
-            $destination = $extras_dir . '/' . $name;
-            recurse_copy($source, $destination);
-
-            // Clean up files
-            $file = sys_get_temp_dir() . '/' . $name . '.tar.gz';
-            delete_file($file);
-            $file = sys_get_temp_dir() . '/' . $name . '.tar';
-            delete_file($file);
-            delete_dir($source);
-
-            if ($streamed_response) {
-                stream_write($lang['ExtraInstalledSuccessfully']);
-            } else {
-                set_alert(true, "good", $lang['ExtraInstalledSuccessfully']);
+            $copied = true;
+        } catch (\Throwable $e) {
+            write_debug_log("download_extra: install of '{$name}' failed: " . normalize_log_value($e->getMessage()), 'error');
+            delete_dir($work);
+            // Remove a half-written Extra so a partial copy isn't later mistaken for installed.
+            if (!$copied) {
+                delete_dir($dest);
             }
-
-            // Return a success
-            return 1;
+            return ['error' => 'install_failed', 'extra_name' => $name, 'reason' => _lang('ExtraInstallExtractFailed', array(), false), 'retry_after_seconds' => null, 'http_status' => $code];
         }
+
+        // Clean up the temp artifacts; the Extra is now on disk.
+        delete_dir($work);
+
+        if (!is_dir($extras_dir . '/' . $name)) {
+            write_debug_log("download_extra: '{$name}' did not land on disk after extract", 'error');
+            return ['error' => 'install_failed', 'extra_name' => $name, 'reason' => _lang('ExtraInstallExtractFailed', array(), false), 'retry_after_seconds' => null, 'http_status' => $code];
+        }
+
+        // Success: return the bytes per the existing "string == installed" contract.
+        return $body;
     }
+
+    $err = parse_download_extra_error($code, $body);
+    write_debug_log("download_extra failed: {$err['error']} for '{$name}' (HTTP {$code})", 'warning');
+    return $err;
 }
 
 /**************************
@@ -434,17 +309,6 @@ function call_extra_api_functionality($extra, $functionality, $target) {
     }
 
     $url = build_url("api", $extra, $uri);
-    //error_log("URL: " . json_encode($url));
-    $http_options = [
-        'method' => 'GET',
-        'header' => [
-            "Cookie: " . session_name() . "=" . session_id(),
-            "Content-Type: application/json",
-            "Accept: application/json",
-        ],
-        'ignore_errors' => true,
-        'timeout' => 600,
-    ];
 
     // If SSL certificate checks are enabled
     if (get_setting('ssl_certificate_check_simplerisk') == 1)
@@ -458,11 +322,55 @@ function call_extra_api_functionality($extra, $functionality, $target) {
         $validate_ssl = false;
     }
 
-    //error_log("url: " . json_encode($url));
-    //error_log("context: " . json_encode($context));
-    $result = fetch_url_content("stream", $http_options, $validate_ssl, $url);
-    //error_log("header: " . json_encode($http_response_header));
-    //error_log("result: " . json_encode($result));
+    // Auth for the loopback call is the forwarded session cookie. This function is
+    // reached only from one_click_upgrade(), which the "Upgrade SimpleRisk" button
+    // drives with a session cookie — so csrf-magic is always loaded here (via
+    // is_session_authenticated()) and csrf_get_tokens() is available. The
+    // function_exists() guard below is defensive for a hypothetical non-session
+    // caller; there is none today (no API-key or step-less caller invokes
+    // one_click_upgrade()), and if one appeared the empty token would fail closed
+    // (403) rather than downgrade to GET.
+    $base_header = [
+        "Cookie: " . session_name() . "=" . session_id(),
+        "Content-Type: application/json",
+        "Accept: application/json",
+    ];
+
+    // Single place that issues the loopback request, so method/timeout stay in sync.
+    $do_call = function (string $method, array $extra_headers = []) use ($base_header, $validate_ssl, $url) {
+        return fetch_url_content("stream", [
+            'method'        => $method,
+            'header'        => array_merge($base_header, $extra_headers),
+            'ignore_errors' => true,
+            'timeout'       => 600,
+        ], $validate_ssl, $url);
+    };
+
+    // Read-only version lookups stay GET (no state change, no CSRF token needed).
+    if ($functionality === 'version') {
+        $result = $do_call('GET');
+        return is_array($result) ? [$result['return_code'], json_decode($result['response'], true)] : [0, null];
+    }
+
+    // SR-1912: the state-changing backup/upgrade endpoints are POST now, so
+    // csrf-magic validates a token. Send a session-derived CSRF token and POST.
+    // csrf_get_tokens() is stateless (derived from session_id()) so it is safe to
+    // call after session_write_close().
+    $csrf_token = function_exists('csrf_get_tokens') ? csrf_get_tokens() : '';
+    $result = $do_call('POST', ["CSRF-TOKEN: " . $csrf_token]);
+
+    // The GET fallback covers exactly ONE skew direction: this (post-fix) Core
+    // caller reaching an Extra whose routes are still GET-only — a POST to a
+    // GET-only Leaf route returns 404 (Leaf has no 405 handler; 405 is
+    // future-proofing). The REVERSE skew — the Extra self-upgrading to POST-only
+    // routes mid-script while this in-memory caller is still the old GET-only code
+    // — cannot be self-healed here (PHP can't hot-swap the loaded caller). That
+    // reverse case only arises for a step-less caller of one_click_upgrade(); the
+    // "Upgrade SimpleRisk" button's two-phase split (download the Extra in phase 1,
+    // then reload before backup/upgrade) avoids it, and no other caller exists.
+    if (is_array($result) && in_array((int)$result['return_code'], [404, 405], true)) {
+        $result = $do_call('GET');
+    }
 
     if (!is_array($result)) {
         return [0, null];

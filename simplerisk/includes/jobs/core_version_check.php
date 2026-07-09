@@ -4,6 +4,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// run_timestamped_queue_check() — no-op when loaded via the worker, which
+// requires queues.php before loading job definitions.
+require_once(realpath(__DIR__ . '/../queues.php'));
+
 return [
     'type' => 'core_version_check',
 
@@ -57,34 +61,26 @@ return [
     /************************************************************
      * FUNCTION: queue_check
      * Fetches the latest version data and caches it in the DB.
+     * Failure handling (gate stamping, retries, 'failed' status)
+     * is owned by run_timestamped_queue_check() and the worker.
      ************************************************************/
     'queue_check' => function(array $task, PDO $db) {
-        write_debug_log("Version Check: Fetching latest version data...", "info");
+        return run_timestamped_queue_check($task, $db, 'queue_timestamp_last_version_check', 'Version Check', function() use ($db) {
+            write_debug_log("Version Check: Fetching latest version data...", "info");
 
-        try {
             // Force a fresh network fetch by bypassing all caches
             $latest_versions = latest_versions(true);
 
             if ($latest_versions !== 0 && !empty($latest_versions))
             {
                 update_or_insert_setting('latest_version_data', json_encode($latest_versions), db: $db);
-                update_or_insert_setting('queue_timestamp_last_version_check', time(), db: $db);
-
-                queue_update_status($task['id'], 'completed', $db);
                 write_debug_log("Version Check: Successfully updated latest version data.", "info");
                 return true;
             }
-            else
-            {
-                queue_update_status($task['id'], 'failed', $db);
-                write_debug_log("Version Check: Failed to fetch latest version data from remote.", "error");
-                return false;
-            }
-        } catch (Exception $e) {
-            queue_update_status($task['id'], 'failed', $db);
-            write_debug_log("Version Check: Exception during version check — " . $e->getMessage(), "error");
+
+            write_debug_log("Version Check: Failed to fetch latest version data from remote.", "error");
             return false;
-        }
+        });
     }
 ];
 

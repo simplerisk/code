@@ -25,6 +25,18 @@ add_session_check($permissions ?? []);
 // Include the CSRF Magic library
 include_csrf_magic();
 
+// Release the session lock now that the request is authenticated and CSRF is
+// initialized. The DB session handler holds a row-level FOR UPDATE lock from
+// read() until the session is written/closed; holding it for the whole page
+// render serializes a page's parallel same-session AJAX (and concurrent tabs)
+// on the one session row, which under load piled up to 50-110s waits and 500s
+// (SR-1691). $_SESSION stays readable for the rest of the render; the few
+// paths that still write it (set_alert/clear_alert) re-acquire the lock
+// briefly via with_alert_session().
+if (session_status() === PHP_SESSION_ACTIVE) {
+    session_write_close();
+}
+
 // Include the SimpleRisk language file
 require_once(language_file());
 

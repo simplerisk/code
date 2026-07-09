@@ -567,7 +567,7 @@ function display_jira_issue_key_view($jira_issue_key, $panel_name="")
 
     if ($jira_issue_key) {
         echo "
-                <a href='" . get_setting('JiraInstanceURL') . "projects/{$project_key}/issues/{$jira_issue_key}' target='_blank' class='btn btn-default btn-sm' style='margin-left: 10px;'>" . $escaper->escapeHtml($lang['Open']) . "</a>
+                <a href='" . $escaper->escapeHtmlAttr(get_setting('JiraInstanceURL')) . "projects/{$project_key}/issues/{$jira_issue_key}' target='_blank' class='btn btn-default btn-sm' style='margin-left: 10px;'>" . $escaper->escapeHtml($lang['Open']) . "</a>
         ";
     }
 

@@ -1025,38 +1025,39 @@ html:has(.score-method-page) {
 	display: none;
 }
 
+.file-uploader {
+    min-width: 0;
+}
+
 .file-uploader .file-count {
     margin-left: 10px;
-    font-size: 13px; 
+    font-size: 13px;
 }
 
 .file-uploader .file-list, .file-uploader .exist-files {
     margin-top: 10px;
     list-style: none;
     margin-left: 0px;
-    color: #187bd0;
+    color: $file-uploader-link-color;
     font-size: 14px;
 }
 
 .file-uploader .file-list > li, .file-uploader .exist-files > li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
     margin-bottom: 10px;
 }
-    
+
 .file-uploader .file-list > li .file-name, .file-uploader .exist-files > li .file-name {
-    float: left;
-    width: calc(100% - 30px);
-    word-wrap: break-word;
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: break-word;
 }
-      
+
 .file-uploader .file-list > li .remove-file, .file-uploader .exist-files > li .remove-file {
-    float: right;
+    flex-shrink: 0;
     font-size: 20px;
-}
-      
-.file-uploader .file-list > li:after, .file-uploader .exist-files > li:after {
-    content: "";
-    clear: both;
-    display: table; 
 }
 
 .differency {

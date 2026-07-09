@@ -31,6 +31,7 @@ function init_default_editor(selector, resizeable=false, height=600) {
         relative_urls : false,
         remove_script_host : false,
         convert_urls : true,
+        newline_behavior: 'invert',
 
 		// Turn off the option to allow selection of the target of the link, in the code it'll be set to _blank anyway.
 		link_target_list: false,
@@ -66,6 +67,7 @@ function init_minimun_editor(selector) {
         relative_urls : false,
         remove_script_host : false,
         convert_urls : true,
+        newline_behavior: 'invert',
 
 		// Turn off the option to allow selection of the target of the link, in the code it'll be set to _blank anyway.
 		link_target_list: false,

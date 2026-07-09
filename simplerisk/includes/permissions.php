@@ -141,9 +141,9 @@ function check_questionnaire_get_token() {
         $token = $_GET['token'];
     }
     // If the token is provided via POST
-    else if (isset($_POST['token']))
+    else if (isset($_POST['questionnaire_token']))
     {
-        $token = $_POST['token'];
+        $token = $_POST['questionnaire_token'];
     }
     // No token was provided so fail the token check
     else return false;
@@ -522,8 +522,13 @@ function add_new_permissions($permission_groups_and_permissions)
         $stmt = $db->prepare("SELECT `id` FROM `permission_groups` WHERE `name` = :name;");
         $stmt->bindParam(":name", $group_name, PDO::PARAM_STR);
         $stmt->execute();
-        $group = $stmt->fetch(PDO::FETCH_ASSOC);
-        $group_id = $group['id'];
+        $group_row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $group_id = $group_row !== false ? $group_row['id'] : null;
+
+        if ($group_id === null) {
+            write_debug_log("[add_new_permissions] Could not resolve group id for name '{$group_name}'", 'error');
+            continue;
+        }
 
 		// Write debug log
 		write_debug_log("Added new permission group with the following values:", 'info');
@@ -556,12 +561,19 @@ function add_new_permissions($permission_groups_and_permissions)
 			$stmt->bindParam(":order", $permission_order, PDO::PARAM_INT);
 			$stmt->execute();
 
-			// Get the permission id
-			$stmt = $db->prepare("SELECT `id` FROM `permissions` WHERE `name` = :name;");
-			$stmt->bindParam(":name", $permission_name, PDO::PARAM_STR);
+			// Get the permission id by key (the unique field used in INSERT IGNORE),
+			// not name — so we always resolve the row even when the key already
+			// existed under a different name and INSERT IGNORE was a no-op.
+			$stmt = $db->prepare("SELECT `id` FROM `permissions` WHERE `key` = :key;");
+			$stmt->bindParam(":key", $key, PDO::PARAM_STR);
 			$stmt->execute();
-			$permission_id = $stmt->fetch(PDO::FETCH_ASSOC);
-			$permission_id = $permission_id['id'];
+			$permission_row = $stmt->fetch(PDO::FETCH_ASSOC);
+			$permission_id = $permission_row !== false ? $permission_row['id'] : null;
+
+			if ($permission_id === null) {
+				write_debug_log("[add_new_permissions] Could not resolve permission id for key '{$key}'", 'error');
+				continue;
+			}
 
 			// Add the new permission to the new permissions array
 			$new_permissions[] = $permission_id;

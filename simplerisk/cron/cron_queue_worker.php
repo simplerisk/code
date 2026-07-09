@@ -97,10 +97,21 @@ while (true) {
         break;
     }
 
+    // SIGHUP means "recycle with fresh code". An in-process reload is
+    // impossible (require_once is a no-op once a file is loaded), so exit
+    // gracefully and let cron respawn the worker with the new code.
     if (worker_should_reload()) {
-        write_debug_log("Reload requested, resetting worker metrics...", "info");
-        reset_worker_metrics($workerName);
-        worker_clear_reload_flag();
+        record_worker_restart($workerName, 'reload_signal');
+        break;
+    }
+
+    // A deploy/upgrade requested a restart after this worker started, so
+    // the code on disk is newer than the code in memory. Exit gracefully —
+    // the current task already finished — and let cron respawn with fresh
+    // code. Workers started after the request keep running.
+    if (worker_restart_requested_since($startTime, worker_restart_flag_timestamp())) {
+        record_worker_restart($workerName, 'restart_requested');
+        break;
     }
 
     // === METRICS: memory usage ===
@@ -137,15 +148,18 @@ while (true) {
     }
 
     // === RECOVER STUCK TASKS ===
+    // Only tasks with NO live promise chain are recovered — a task whose chain
+    // is still being resolved is legitimately 'in_progress' and re-running its
+    // queue_check would re-create the whole chain (the re-chaining runaway).
+    // See recover_stuck_queue_tasks() in queues.php for the full rationale and
+    // the liveness predicate (kept in sync with promise_chain_exists()).
     try {
-        $stmt = $db->prepare("
-            UPDATE queue_tasks
-            SET status='pending', updated_at=NOW()
-            WHERE status='in_progress' AND updated_at < NOW() - INTERVAL :mins MINUTE
-        ");
-        $stmt->execute([':mins' => $stuckThresholdMinutes]);
-        if ($stmt->rowCount() > 0) {
-            write_debug_log("Recovered {$stmt->rowCount()} stuck tasks.", "warning");
+        $recovered = recover_stuck_queue_tasks($db, $stuckThresholdMinutes);
+        if ($recovered > 0) {
+            // 'notice': reclaiming a stale/abandoned task (in_progress past the
+            // threshold with no live chain) is an infrequent, operator-relevant
+            // event — the "stale lock killed" analog — not a routine info event.
+            write_debug_log("Recovered {$recovered} stuck tasks (no live promise chain).", "notice");
         }
     } catch (\Throwable $t) {
         write_debug_log("Error recovering stuck tasks: " . $t->getMessage(), "error");

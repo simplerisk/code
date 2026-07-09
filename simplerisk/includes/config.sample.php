@@ -35,3 +35,27 @@ define('DB_DATABASE', '__DB_DATABASE__');
 // --- Sessions ---
 // Accepts the strings 'true' or 'false' (not booleans).
 define('USE_DATABASE_FOR_SESSIONS', '__USE_DATABASE_FOR_SESSIONS__');
+
+// --- Outbound request allow-lists (SSRF) ---
+// SimpleRisk makes server-side HTTP requests from two admin-configurable surfaces:
+// the AI provider "Test Connection" / background calls, and the Workflows "HTTP
+// Request" action. Both are fail-closed against Server-Side Request Forgery — by
+// default they cannot reach internal/reserved addresses (loopback, RFC1918,
+// 169.254.169.254 cloud metadata, link-local, ...). To reach a specific internal
+// or custom destination, a *system* administrator must name it in one of the lists
+// below — an explicit, auditable authorization on top of the in-app admin's
+// configuration (two different people, in two different places). Each list accepts
+// hostnames, bare IPs, and/or CIDR blocks; leave a list absent or empty to keep the
+// fail-closed default.
+//
+// AI provider: hosts permitted IN ADDITION to the built-in providers
+// (api.anthropic.com, api.openai.com, ...) and a loopback self-host
+// (127.0.0.1 / ::1 / localhost, e.g. Ollama or LM Studio). Name a custom cloud
+// endpoint or a LAN-hosted model here:
+// $ai_allowed_provider_hosts = ['llm.corp.example.com', '192.168.50.10'];
+//
+// Workflows HTTP Request action: public URLs are always allowed; name any INTERNAL
+// target the action is permitted to reach (e.g. an on-prem webhook / ticketing
+// system). Cloud metadata (169.254.169.254) is reachable only if you list it
+// explicitly — which you should not:
+// $workflow_http_allowed_internal_targets = ['jira.corp.example.com', '10.0.0.0/8'];

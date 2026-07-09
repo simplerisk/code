@@ -54,6 +54,23 @@
         errorEl.style.display = 'none';
         modal.appendChild(errorEl);
 
+        // Optional code-block companion for setError(). Used to surface
+        // server-supplied actionable text (e.g. the required GRANT
+        // statement returned with a 412 from the Encryption Extra
+        // activation gate) below the error message in a copy-pasteable
+        // <pre>. Hidden by default; setError(msg, {label, code}) reveals
+        // it.
+        var grantWrap = document.createElement('div');
+        grantWrap.className = 'hub__modal-grant';
+        grantWrap.style.display = 'none';
+        var grantLabel = document.createElement('div');
+        grantLabel.className = 'hub__modal-grant-label';
+        var grantPre = document.createElement('pre');
+        grantPre.className = 'simplerisk-privilege-grant-statement hub__modal-grant-code';
+        grantWrap.appendChild(grantLabel);
+        grantWrap.appendChild(grantPre);
+        modal.appendChild(grantWrap);
+
         var bodyEl;
         if (typeof opts.body === 'string') {
             bodyEl = document.createElement('p');
@@ -91,13 +108,30 @@
                 previouslyFocused.focus();
             }
         }
-        function setError(msg) {
+        // setError(msg)                     — show msg in the error banner
+        // setError(msg, { label, code })    — also reveal a <pre> code block
+        //                                     below the banner (used to
+        //                                     surface a copy-pasteable GRANT
+        //                                     statement returned in
+        //                                     data.required_grant from the
+        //                                     412 activation response).
+        // setError('') / setError(null)     — hide both
+        function setError(msg, detail) {
             if (msg) {
                 errorEl.textContent = msg;
                 errorEl.style.display = '';
             } else {
                 errorEl.textContent = '';
                 errorEl.style.display = 'none';
+            }
+            if (detail && typeof detail.code === 'string' && detail.code.length > 0) {
+                grantLabel.textContent = detail.label || '';
+                grantPre.textContent   = detail.code;
+                grantWrap.style.display = '';
+            } else {
+                grantLabel.textContent = '';
+                grantPre.textContent   = '';
+                grantWrap.style.display = 'none';
             }
         }
         function setBusy(busy) {
@@ -193,6 +227,16 @@
     // ---------------------------------------------------------------------------
     var root = document.querySelector('.hub');
     if (!root) { return; }
+
+    // Wire the SimpleRiskEncryption module to this page (blockUI target = .hub root).
+    if (window.SimpleRiskEncryption) {
+        window.SimpleRiskEncryption.init({
+            rootSelector: '.hub',
+            lang:         window._lang,
+            baseUrl:      (typeof BASE_URL !== 'undefined') ? BASE_URL : '',
+            csrfToken:    (typeof csrfMagicToken !== 'undefined') ? csrfMagicToken : '',
+        });
+    }
 
     var hubKind = root.dataset.hubKind || 'settings';
     var grid    = root.querySelector('.hub__main') || root;
@@ -292,6 +336,36 @@
     }
 
     // -----------------------------------------------------------------------
+    // Encryption in-flight helpers.
+    // -----------------------------------------------------------------------
+
+    // Returns a Promise resolving to true if an encryption pipeline is
+    // currently in flight. Used to gate the activate-modal entry so the user
+    // doesn't fill out a form whose POST will get a 409.
+    function isEncryptionPipelineInFlight() {
+        return fetch(BASE_URL + '/api/v2/encryption/activation/status', {
+            credentials: 'same-origin',
+        }).then(function (resp) {
+            if (!resp.ok) { return false; } // fail-open — server will 409 if needed
+            return resp.json();
+        }).then(function (json) {
+            if (!json || !json.data) { return false; }
+            return json.data.state === 'in_progress';
+        }).catch(function () {
+            return false; // fail-open
+        });
+    }
+
+    function openEncryptionInFlightModal() {
+        openModal({
+            title:        L('EncryptionInFlightTitle'),
+            body:         L('EncryptionInFlightBody'),
+            primaryLabel: L('OK'),
+            onPrimary:    function (m) { m.close(); },
+        });
+    }
+
+    // -----------------------------------------------------------------------
     // Click router for Extras tiles. Branches on tile state.
     // (ready_to_download and purchase land here too; the install and
     // purchase modal handlers are added in Phases 5 and 6 respectively.)
@@ -307,10 +381,27 @@
                 window.location.href = tileNode.dataset.tilePath;
                 return;
             case 'deactivated':
+                if (entry.extra_name === 'encryption') {
+                    isEncryptionPipelineInFlight().then(function (inFlight) {
+                        if (inFlight) {
+                            openEncryptionInFlightModal();
+                        } else {
+                            openActivateModal(entry);
+                        }
+                    });
+                    return;
+                }
                 openActivateModal(entry);
                 return;
             case 'ready_to_download':
-                openInstallModal(entry);
+                // Enforcement gate: paid Extras can only be installed when
+                // enforcement_level is 'normal'. Free Extras (upgrade,
+                // complianceforgescf) bypass this gate.
+                if (enforcementLevel !== 'normal' && FREE_EXTRAS.indexOf(entry.extra_name) === -1) {
+                    openEnforcementBlockedModal(entry);
+                } else {
+                    openInstallModal(entry);
+                }
                 return;
             case 'registration_required':
                 // SCF Extra is included automatically once the instance is
@@ -370,6 +461,15 @@
                             var serverMsg = (json && json.status_message) ? json.status_message : null;
                             var err = new Error(serverMsg || ('HTTP ' + resp.status));
                             err.serverMessage = serverMsg;
+                            // Surface any actionable detail the server returned in
+                            // `data` so the catch block can render it in the modal.
+                            // Today this carries `required_grant` from the 412 the
+                            // Encryption Extra activation gate emits when LOCK TABLES
+                            // is missing; the operator copy-pastes that statement to
+                            // unblock activation.
+                            if (json && json.data && typeof json.data.required_grant === 'string') {
+                                err.requiredGrant = json.data.required_grant;
+                            }
                             throw err;
                         }
                         return json;
@@ -377,11 +477,29 @@
                 }).then(function (json) {
                     if (!json) { return; }
                     m.close();
-                    loadCatalog();
+                    // Encryption activation is asynchronous: the POST only
+                    // enqueues the queue task. Surface a long-running
+                    // "Encrypting your SimpleRisk database" overlay and
+                    // poll /encryption/activation/status until the pipeline
+                    // reports complete (reload) or failed (failure modal).
+                    // Other Extras finish synchronously inside the POST and
+                    // can reload the catalog immediately.
+                    if (extraName === 'encryption') {
+                        window.SimpleRiskEncryption.watchActivation();
+                    } else {
+                        loadCatalog();
+                    }
                 }).catch(function (err) {
                     console.error('hub: activation failed for', extraName, err);
                     m.setBusy(false);
-                    m.setError(err.serverMessage || L('ActivateExtraError'));
+                    var detail = null;
+                    if (err && typeof err.requiredGrant === 'string' && err.requiredGrant.length > 0) {
+                        detail = {
+                            label: L('EncryptionRequiredGrantLabel'),
+                            code:  err.requiredGrant,
+                        };
+                    }
+                    m.setError(err.serverMessage || L('ActivateExtraError'), detail);
                 });
             },
         });
@@ -434,6 +552,15 @@
                     m.setError(err.serverMessage || L('InstallExtraError'));
                 });
             },
+        });
+    }
+
+    function openEnforcementBlockedModal(entry) {
+        openModal({
+            title:        entry.label,
+            body:         L('ExtraInstallDisabledByEnforcement'),
+            primaryLabel: L('Cancel'),
+            onPrimary:    function (m) { m.close(); },
         });
     }
 
@@ -782,12 +909,18 @@
     // ---------------------------------------------------------------------------
     // State shared across filter/search interactions
     // ---------------------------------------------------------------------------
-    var allEntries    = [];     // full catalog list
-    var activeSearch  = '';
-    var activeChip    = 'all';  // single selected chip: 'all', 'favorites', or a domain key
-    var activeFavOnly = false;
-    var activeView    = 'cards'; // 'cards' (default tile grid) or 'list' (compact table)
-    var activeSubHub  = null;    // null in main mode; otherwise the resolved sub_hub object from the catalog response
+    var allEntries        = [];     // full catalog list
+    var activeSearch      = '';
+    var activeChip        = 'all';  // single selected chip: 'all', 'favorites', or a domain key
+    var activeFavOnly     = false;
+    var activeView        = 'cards'; // 'cards' (default tile grid) or 'list' (compact table)
+    var activeSubHub      = null;    // null in main mode; otherwise the resolved sub_hub object from the catalog response
+    // Enforcement level from the catalog response. 'normal' allows paid Extra
+    // install; any other value (lock_extras, remove_extras, anonymous, unknown)
+    // disables paid-Extra Install/Upgrade actions in the UI.
+    // Free Extras (upgrade, complianceforgescf) are always available.
+    var enforcementLevel  = 'unknown';
+    var FREE_EXTRAS       = ['upgrade', 'complianceforgescf'];
 
     // ---------------------------------------------------------------------------
     // View-aware dispatchers. The render-catalog body uses buildEntryNode()
@@ -1206,14 +1339,27 @@
     // ---------------------------------------------------------------------------
     // Fallback tile set rendered when the catalog API fails.
     //
-    // These three tiles — Preferences, Health Check, and About — give the
-    // admin a clickable recovery path: Preferences is where default values
-    // and behavioral toggles live (the most-likely first stop), Health
-    // Check is where the admin can diagnose what's wrong, and About
-    // identifies the SimpleRisk version. They render through the same
-    // buildTile() pipeline as catalog tiles so they look identical.
+    // These four tiles give the admin a clickable recovery path:
+    //   - Security identifies where the Base URL lives — a misconfigured
+    //     Base URL is itself a common cause of the catalog API failing, so
+    //     this tile must be reachable here or the admin has no way back to
+    //     the field they need to fix.
+    //   - Preferences is where default values and behavioral toggles live
+    //     (the most-likely first stop).
+    //   - Health Check is where the admin can diagnose what's wrong.
+    //   - Register & Upgrade identifies the SimpleRisk version / license.
+    // They render through the same buildTile() pipeline as catalog tiles so
+    // they look identical.
     // ---------------------------------------------------------------------------
     var FALLBACK_TILES = [
+        {
+            key:         'settings_security',
+            label:       'Security',
+            description: '',
+            path:        'admin/settings_security.php',
+            tags:        ['system'],
+            favorited:   false,
+        },
         {
             key:         'settings_preferences',
             label:       'Preferences',
@@ -1241,9 +1387,11 @@
     ];
 
     // Localize the hardcoded English label using the existing $lang lookup.
-    // The lang keys here ('Preferences', 'HealthCheck', 'RegisterAndUpgrade')
-    // are guaranteed loaded by the page's required_localization_keys list.
+    // The lang keys here ('Security', 'Preferences', 'HealthCheck',
+    // 'RegisterAndUpgrade') are guaranteed loaded by the page's
+    // required_localization_keys list.
     var FALLBACK_LANG_KEY = {
+        settings_security:    'Security',
         settings_preferences: 'Preferences',
         health_check:         'HealthCheck',
         register:             'RegisterAndUpgrade',
@@ -1268,8 +1416,9 @@
 
         // Render the fallback tiles using the same pipeline as the success
         // path. renderCatalog() clears .hub__main, then groups by tag — the
-        // two fallback tiles both carry the 'system' tag and will land in
-        // the System section. Force the chip to 'all' so the tiles are
+        // Security, Health Check, and Register tiles carry the 'system' tag
+        // and land in the System section; Preferences carries 'customization'
+        // and lands in its own section. Force the chip to 'all' so the tiles are
         // visible regardless of what the URL state had selected (e.g. if
         // the user landed on the page with ?fav=1, neither fallback tile
         // is favorited and the favorites filter would hide them).
@@ -1438,6 +1587,13 @@
         }).then(function (json) {
             if (!json) { return; } // guard for 401 reload path (returns undefined)
             var tiles = (json && json.data && json.data.tiles) ? json.data.tiles : [];
+
+            // Capture the enforcement_level from the catalog response so the
+            // click router can gate paid-Extra Install actions client-side.
+            // The API still enforces server-side; this is a UI convenience.
+            if (json && json.data && json.data.enforcement_level) {
+                enforcementLevel = json.data.enforcement_level;
+            }
 
             // Every Configure Hub tile renders identically (no kind split).
             allEntries = tiles;

@@ -173,7 +173,6 @@ function deleteRow(tableID) {
 function selectize_assessment_answer_affected_assets_widget(select_tag, options) {
     return select_tag.selectize({
         options: options,
-        sortField: 'text',
         plugins: ['optgroup_columns', 'remove_button', 'restore_on_backspace'],
         delimiter: ',',
         create: function (input) {
@@ -203,7 +202,6 @@ function selectize_assessment_answer_affected_assets_widget(select_tag, options)
 function selectize_pending_risk_affected_assets_widget(select_tag, options) {
     var select = select_tag.selectize({
         options: options,
-        sortField: 'text',
         plugins: ['optgroup_columns', 'remove_button', 'restore_on_backspace'],
         delimiter: ',',
         create: function (input) {
@@ -255,7 +253,7 @@ function setupQuestionnaireContactUserWidget(select_tag) {
         return;
 
     var select = select_tag.selectize({
-        sortField: 'text',
+        dropdownParent: 'body',
         plugins: ['optgroup_columns', 'remove_button', 'restore_on_backspace'],
         delimiter: ',',
         create: false,
@@ -332,7 +330,7 @@ function setupQuestionnaireAssetsAssetGroupsWidget(select_tag) {
         return;
 
     var select = select_tag.selectize({
-        sortField: 'text',
+        dropdownParent: 'body',
         plugins: ['optgroup_columns', 'remove_button', 'restore_on_backspace'],
         delimiter: ',',
         create: function (input) {

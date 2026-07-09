@@ -293,15 +293,17 @@ function resetForm(formEL, multiselect = true, selectize = false) {
 */
 function confirm(message, callback) {
 
-	// Create the modal window
-	let myModal = new bootstrap.Modal(
-		$(`
+	// Build the modal window. The message is inserted via .text() (NOT
+	// interpolated into the template HTML), so a caller passing untrusted or
+	// unescaped text cannot inject markup — confirm() is safe-by-default for
+	// every call site. Callers therefore pass the raw message; do not pre-escape.
+	let $modal = $(`
 			<div class="modal fade" tabindex="-1" role="dialog">
 		        <div class="modal-dialog modal-md modal-dialog-centered modal-dark">
 		            <div class="modal-content">
 		                <div class="modal-body">
 		                    <div class="form-group text-center message-container">
-		                        <label class="message">${message}</label>
+		                        <label class="message"></label>
 		                    </div>
 		                    <div class="form-group text-center">
 		                        <button class="btn btn-secondary" data-bs-dismiss="modal">${_lang['Cancel']}</button>
@@ -310,8 +312,10 @@ function confirm(message, callback) {
 		                </div>
 		            </div>
 		        </div>
-		    </div>`
-		),
+		    </div>`);
+	$modal.find('.message').text(message);
+	let myModal = new bootstrap.Modal(
+		$modal,
 		{/* Could add configuration here to change how the modal popup behaves. For more information check https://getbootstrap.com/docs/5.3/components/modal/ */}
 	);
 

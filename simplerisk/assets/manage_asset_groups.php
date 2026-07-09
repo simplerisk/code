@@ -254,7 +254,7 @@
                 processData: false,
                 success: function(data){
                     if(data.status_message){
-                        showAlertsFromArray(data.status_message);
+                        showAlertsFromArray(data.status_message, true);
                     }
 
                     $('#asset-group--create').modal('hide');
@@ -295,7 +295,7 @@
                 processData: false,
                 success: function(data){
                     if(data.status_message){
-                        showAlertsFromArray(data.status_message);
+                        showAlertsFromArray(data.status_message, true);
                     }
 
                     $('#asset-group--update').modal('hide');
@@ -341,7 +341,7 @@
                 processData: false,
                 success: function(data){
                     if(data.status_message){
-                        showAlertsFromArray(data.status_message);
+                        showAlertsFromArray(data.status_message, true);
                     }
 
                     $('#asset-group--delete').modal('hide');
@@ -397,7 +397,7 @@
                 processData: false,
                 success: function(data){
                     if(data.status_message){
-                        showAlertsFromArray(data.status_message);
+                        showAlertsFromArray(data.status_message, true);
                     }
 
                     $('#asset--remove').modal('hide');

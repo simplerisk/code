@@ -200,7 +200,7 @@ function list_zombie_workers(string $name, int $staleSeconds): array
 /**************************************
  * FUNCTION: IS PROCESS RUNNING *
  **************************************/
-function isProcessRunning(int $pid, string $host = null): bool
+function isProcessRunning(int $pid, ?string $host = null): bool
 {
     // Check if PID exists on local host
     if ($pid <= 0) return false;
@@ -356,37 +356,6 @@ function worker_tick(string $workerName, PDO $db, array $metrics = []): void
     }
 }
 
-function reset_worker_metrics(string $workerName): void
-{
-    $now = time();
-
-    // Reset persistent DB metrics
-    update_or_insert_setting("{$workerName}_metrics", json_encode([
-        'gauges' => [],
-        'counters' => [],
-        'loop' => [],
-        'updated_at' => $now
-    ]));
-
-    // Runtime info
-    $runtime = json_decode(get_setting("{$workerName}_runtime") ?? '{}', true);
-    $runtime['started_at'] = $now;
-    $runtime['last_tick']  = $now;
-
-    update_or_insert_setting("{$workerName}_runtime", json_encode($runtime));
-
-    // Reset in-memory state
-    $GLOBALS['_worker_state'][$workerName] = [
-        'started_at'     => $now,
-        'last_tick'      => $now,
-        'last_flush'     => 0,
-        'last_heartbeat' => 0,
-        'gauges'         => [],
-        'counters'       => [],
-        'loop'           => [],
-    ];
-}
-
 /********************************************
  * FUNCTION: REGISTER WORKER SIGNAL HANDLERS
  ********************************************/
@@ -429,9 +398,66 @@ function worker_should_reload(): bool
     return !empty($GLOBALS['_worker_flags']['reload']);
 }
 
-function worker_clear_reload_flag(): void
+/***********************************************
+ * FUNCTION: WORKER RESTART REQUESTED SINCE
+ * Pure decision helper: should a worker that
+ * started at $workerStartTime exit because a
+ * restart was requested at $flagTimestamp?
+ * Strictly-greater comparison so a worker
+ * started at or after the request (already on
+ * new code) keeps running. Settings values
+ * arrive as strings; an absent setting arrives
+ * as false; anything non-numeric fails safe.
+ ***********************************************/
+function worker_restart_requested_since(int $workerStartTime, $flagTimestamp): bool
 {
-    $GLOBALS['_worker_flags']['reload'] = false;
+    if (!is_numeric($flagTimestamp)) {
+        return false;
+    }
+
+    return ((int)$flagTimestamp) > $workerStartTime;
+}
+
+/***********************************************
+ * FUNCTION: REQUEST WORKER RESTART
+ * Writes the current Unix timestamp to the
+ * worker_restart_requested_at setting. Every
+ * running worker compares that flag against its
+ * own start time each loop iteration and exits
+ * gracefully when the flag is newer, so cron
+ * respawns it with fresh code (the Laravel
+ * queue:restart pattern). Idempotent — repeated
+ * calls move the timestamp forward, which is
+ * correct: any worker older than the latest
+ * request must recycle. Host-agnostic: works
+ * across multi-container/multi-host deployments
+ * because the DB is the shared channel.
+ ***********************************************/
+function request_worker_restart(string $reason = 'deploy'): void
+{
+    $now = time();
+
+    update_or_insert_setting('worker_restart_requested_at', (string)$now);
+
+    write_debug_log(
+        "Worker restart requested ({$reason}); running workers will exit gracefully on their next loop iteration and cron will respawn them with fresh code.",
+        "notice"
+    );
+}
+
+/***********************************************
+ * FUNCTION: WORKER RESTART FLAG TIMESTAMP
+ * Uncached read of worker_restart_requested_at.
+ * The third get_setting() argument disables the
+ * $GLOBALS request cache — essential in a
+ * long-lived worker process, which would
+ * otherwise pin the first value it read forever
+ * and never see a new restart request. Returns
+ * false when no request has ever been made.
+ ***********************************************/
+function worker_restart_flag_timestamp(): string|false
+{
+    return get_setting('worker_restart_requested_at', false, false);
 }
 
 /**************************************

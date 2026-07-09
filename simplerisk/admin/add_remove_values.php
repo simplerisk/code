@@ -428,7 +428,7 @@ if (isset($_POST['add_remove_values_input']) && ($_POST['add_remove_values_input
                 // When deleting, show a confirmation dialog before submitting the form
                 if (action == "delete") {
                     // Display a confirmation dialog
-                    confirm("<?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteSelction']); ?>", () => {
+                    confirm("<?= $escaper->escapeJs($lang['AreYouSureYouWantToDeleteSelction']); ?>", () => {
                         $('[name="add_remove_values"]').submit();
                     });
                 // For add and update actions, submit the form directly without confirmation

@@ -3401,7 +3401,7 @@ $field_settings_views = [
             "LEFT JOIN `items_to_teams` i2t ON i2t.`item_id` = `a`.`id` and i2t.`type` = 'audit'"
         ],
         'id_field' => 'id',
-        'datatable_ajax_uri' => '/api/v2/get/datatable?view=active_audits',
+        'datatable_ajax_uri' => '/api/v2/compliance/audits/active/datatable',
         'datatable_data_type' => 'associative',
         'datatable_filter_submit_delay' => 600,
         'groups' => [
@@ -3428,6 +3428,7 @@ $field_settings_views = [
             'position' => 'last'
         ],
         'datatable_options' => '
+            orderCellsTop: true,
             createdRow: function(row, data, index){
                 var background = $(\'.background-class\', $(row)).data(\'background\');
                 $(row).find(\'td\').addClass(background)
@@ -3442,7 +3443,7 @@ $field_settings_views = [
             "LEFT JOIN `items_to_teams` i2t ON i2t.`item_id` = `a`.`id` and i2t.`type` = 'audit'"
         ],
         'id_field' => 'id',
-        'datatable_ajax_uri' => '/api/v2/get/datatable?view=past_audits',
+        'datatable_ajax_uri' => '/api/v2/compliance/audits/past/datatable',
         'datatable_data_type' => 'associative',
         'datatable_filter_submit_delay' => 600,
         'groups' => [
@@ -3463,6 +3464,7 @@ $field_settings_views = [
             'position' => 'last'
         ],
         'datatable_options' => '
+            orderCellsTop: true,
             createdRow: function(row, data, index){
                 var background = $(\'.background-class\', $(row)).data(\'background\');
                 $(row).find(\'td\').addClass(background)
@@ -3477,7 +3479,7 @@ $field_settings_views = [
             "LEFT JOIN `items_to_teams` i2t ON i2t.`item_id` = `a`.`id` and i2t.`type` = 'audit'"
         ],
         'id_field' => 'id',
-        'datatable_ajax_uri' => '/api/v2/get/datatable?view=dynamic_audit_report',
+        'datatable_ajax_uri' => '/api/v2/compliance/audits/report/datatable',
         'datatable_data_type' => 'associative',
         'datatable_filter_submit_delay' => 600,
         'groups' => [
@@ -3505,7 +3507,7 @@ $field_settings_views = [
             "LEFT JOIN `items_to_teams` i2t ON i2t.`item_id` = `a`.`id` and i2t.`type` = 'test'",
         ],
         'id_field' => 'id',
-        'datatable_ajax_uri' => '/api/v2/get/datatable?view=audit_timeline',
+        'datatable_ajax_uri' => '/api/v2/compliance/audits/timeline/datatable',
         'datatable_data_type' => 'associative',
         'datatable_filter_submit_delay' => 600,
         'groups' => [
@@ -3648,7 +3650,7 @@ $field_settings_views = [
         'view_type' => 'document',
         'join_parts' => [],
         'id_field' => 'id',
-        'datatable_ajax_uri' => '/api/v2/get/datatable?view=document_program',
+        'datatable_ajax_uri' => '/api/v2/governance/documents/datatable',
         'datatable_data_type' => 'associative',
         'datatable_filter_submit_delay' => 600,
         'groups' => [
@@ -3671,7 +3673,7 @@ $field_settings_views = [
             "LEFT JOIN framework_controls fc ON a.control_framework_id > 0 AND a.control_framework_id = fc.id",
         ],
         'groupby' => 'a.value',
-        'datatable_ajax_uri' => '/api/v2/get/datatable?view=document_exception',
+        'datatable_ajax_uri' => '/api/v2/exceptions/datatable',
         'datatable_data_type' => 'associative',
         'datatable_filter_submit_delay' => 600,
         'groups' => [
@@ -4751,7 +4753,7 @@ function save_dynamic_selections($type, $name, $custom_display_settings,$custom_
     db_close($db);
 
     $message = "The selections for Dynamic Risk Report named \"" . $escaper->escapeHtml($name) . "\" was created by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-    write_log(1000, $_SESSION['uid'], $message);
+    write_log(1000, $_SESSION['uid'] ?? 0, $message);
 
     return $id;
 }
@@ -4775,7 +4777,7 @@ function delete_dynamic_selection($id)
     db_close($db);
 
     $message = "The selections for Dynamic Risk Report (ID : {$id}) was deleted by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-    write_log(1000, $_SESSION['uid'], $message);
+    write_log(1000, $_SESSION['uid'] ?? 0, $message);
 }
 
 /***************************************************
@@ -5744,7 +5746,7 @@ function update_review_settings($veryhigh, $high, $medium, $low, $insignificant)
     // Audit log
     $risk_id = 1000;
     $message = "The review settings were modified by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-    write_log($risk_id, $_SESSION['uid'], $message);
+    write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
     // Close the database connection
     db_close($db);
@@ -6399,7 +6401,7 @@ function update_risk_model($risk_model)
     $risk_id = 1000;
     if ($current_risk_model[0]['value'] != $risk_model) {
         $message = "The risk formula was modified from '" . $status[$current_risk_model[0]['value']] . "' to '" . $status[$risk_model] . "' by user \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-        write_log($risk_id, $_SESSION['uid'], $message);
+        write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
     // Close the database connection
@@ -6469,22 +6471,22 @@ function update_table($table, $name, $value, $length=20)
             case "impact":
                 $risk_id = 1000;
                 $message = "The impact naming convention was modified by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
+                write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
                 break;
             case "likelihood":
                 $risk_id = 1000;
                 $message = "The likelihood naming convention was modified by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
+                write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
                 break;
             case "mitigation_effort":
                 $risk_id = 1000;
                 $message = "The mitigation effort naming convention was modified by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
+                write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
                 break;
             default:
                 $risk_id = 1000;
                 $message = "The \"".$table."\" naming convention was modified by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
+                write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
                 break;
         }
     }
@@ -6514,7 +6516,7 @@ function update_table_by_id($table, $name, $id, $length=50)
         // Audit log
         $risk_id = 1000;
         $message = "The \"".$table."\" naming convention was modified by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-        write_log($risk_id, $_SESSION['uid'], $message);
+        write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
     // Close the database connection
@@ -6613,6 +6615,43 @@ function update_or_insert_setting($name, $value, ?PDO $db = null): bool
     }
 }
 
+/*******************************************************************************
+ * FUNCTION: HASH MANAGEMENT API KEY                                            *
+ * SR-1651: derive the stored form of the management API key (settings.api_key) *
+ * from its plaintext. It's a high-entropy generate_token() value, so a fast    *
+ * SHA-256 is the right primitive (bcrypt's slowness buys nothing for a random  *
+ * token and this is verified per management-API request). The 'sha256:' prefix *
+ * is an explicit marker so verify_management_api_key() can distinguish a hashed *
+ * value from a legacy plaintext one without guessing by length/charset.        *
+ *******************************************************************************/
+function hash_management_api_key($plaintext) {
+    return 'sha256:' . hash('sha256', (string)$plaintext);
+}
+
+/*******************************************************************************
+ * FUNCTION: VERIFY MANAGEMENT API KEY                                          *
+ * SR-1651: constant-time check of a presented management API key against the   *
+ * stored settings.api_key. Transition-tolerant: a value tagged 'sha256:' is     *
+ * verified against the hash; a legacy (un-tagged) plaintext value is compared   *
+ * directly, so a key saved before the hashing migration still authenticates —   *
+ * critical because the migration that hashes the value runs inside the upgrade  *
+ * reached via this very key. $stored is injectable for testing; it defaults to  *
+ * settings.api_key.                                                            *
+ *******************************************************************************/
+function verify_management_api_key($presented, $stored = null) {
+    if ($stored === null) {
+        $stored = get_setting('api_key');
+    }
+    if (!is_string($stored) || $stored === '' || !is_string($presented) || $presented === '') {
+        return false;
+    }
+    if (strncmp($stored, 'sha256:', 7) === 0) {
+        return hash_equals($stored, hash_management_api_key($presented));
+    }
+    // Legacy plaintext (not yet migrated) — constant-time compare.
+    return hash_equals($stored, $presented);
+}
+
 /****************************
  * FUNCTION: UPDATE SETTING *
  ****************************/
@@ -6658,7 +6697,7 @@ function update_setting($name, $value, ?PDO $db = null): bool
         } else {
             $message = "A setting value named \"{$name}\" was updated by \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
         }
-        write_log($risk_id, $_SESSION['uid'], $message);
+        write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
         return true;
 
@@ -6710,6 +6749,24 @@ function delete_setting($name, ?PDO $db = null): void
             db_close($db);
         }
     }
+}
+
+/**********************************************
+ * FUNCTION: SSL EXTERNAL VERIFY ENABLED       *
+ * Whether outbound calls to external services *
+ * should verify the TLS certificate.          *
+ **********************************************/
+/**
+ * Secure by default: verifies the certificate unless an admin has explicitly
+ * disabled it (the 'ssl_certificate_check_external' setting is the string '0').
+ * An unset setting — e.g. on a fresh install before it is seeded — still
+ * verifies. The setting is only ever written as the integer 1 or 0
+ * (admin/settings_security.php and includes/upgrade.php), so the strict `!== '0'`
+ * comparison is exact: never the strings "true"/"false".
+ */
+function ssl_external_verify_enabled(?PDO $db = null): bool
+{
+    return get_setting('ssl_certificate_check_external', false, true, $db) !== '0';
 }
 
 /*************************
@@ -7143,62 +7200,62 @@ function add_name($table, $name, $size=20)
             case "projects":
                 $risk_id = 1000;
                 $message = "A new project \"" . try_decrypt($name) . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
+                write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
                 break;
             case "category":
                 $risk_id = 1000;
                 $message = "A new category \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
+                write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
                 break;
             case "team":
                 $risk_id = 1000;
                 $message = "A new team \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
+                write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
                 break;
             case "technology":
                 $risk_id = 1000;
                 $message = "A new technology \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
+                write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
                 break;
             case "location":
                 $risk_id = 1000;
                 $message = "A new location \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
+                write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
                 break;
             case "source":
                 $risk_id = 1000;
                 $message = "A new source \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
+                write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
                 break;
             case "regulation":
                 $risk_id = 1000;
                 $message = "A new control regulation \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
+                write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
                 break;
             case "planning_strategy":
                 $risk_id = 1000;
                 $message = "A new planning strategy \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
+                write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
                 break;
             case "close_reason":
                 $risk_id = 1000;
                 $message = "A new close reason \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
+                write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
                 break;
             case "file_types":
                 $risk_id = 1000;
                 $message = "A new upload file type \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
+                write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
                 break;
             case "control_class":
                 $risk_id = 1000;
                 $message = "A new control_class \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
+                write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
                 break;
             default:
                 $risk_id = 1000;
                 $message = "A new " . $table . " \"" . $name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
+                write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
                 break;
         }
 
@@ -7268,66 +7325,66 @@ function delete_value($table, $value)
         case "projects":
             $risk_id = 1000;
             $message = "The existing project \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
             break;
         case "user":
             $message = "The existing user \"" . $name . "\" was deleted by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-            write_log($value + 1000, $_SESSION['uid'], $message, "user");
+            write_log($value + 1000, $_SESSION['uid'] ?? 0, $message, "user");
             break;
         case "category":
             $risk_id = 1000;
             $message = "The existing category \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
             break;
         case "team":
             $risk_id = 1000;
             $message = "The existing team \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
             break;
         case "technology":
             $risk_id = 1000;
             $message = "The existing technology \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
             break;
         case "location":
             $risk_id = 1000;
             $message = "The existing location \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
             break;
         case "source":
             $risk_id = 1000;
             $message = "The existing source \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
             break;
         case "regulation":
             $risk_id = 1000;
             $message = "The existing control regulation \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
             break;
         case "planning_strategy":
             $risk_id = 1000;
             $message = "The existing planning strategy \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
             break;
         case "close_reason":
             $risk_id = 1000;
             $message = "The existing close reason \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
             break;
         case "file_types":
             $risk_id = 1000;
             $message = "The existing upload file type \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
             break;
         case "file_type_extensions":
             $risk_id = 1000;
             $message = "The existing upload extension \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
             break;
         case "frameworks":
             $risk_id = 1000;
             $message = "The existing framework \"" . try_decrypt($name) . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
             break;
         case "test_status":
             $test_status_ids = get_test_status_ids();
@@ -7341,13 +7398,13 @@ function delete_value($table, $value)
 
             $risk_id = 1000;
             $message = "The existing test status \"" . try_decrypt($name) . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
             break;
         default:
             $risk_id = 1000;
             $message = "The existing " . $table . " \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-            write_log($risk_id, $_SESSION['uid'], $message);
+            write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
             break;
     }
 
@@ -7478,7 +7535,7 @@ function enable_user($value)
     // Audit log
     $username = get_name_by_value("user", $value);
     $message = "The user \"" . $username . "\" was enabled by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-    write_log($value + 1000, $_SESSION['uid'], $message, "user");
+    write_log($value + 1000, $_SESSION['uid'] ?? 0, $message, "user");
 
     // Close the database connection
     db_close($db);
@@ -7503,7 +7560,7 @@ function disable_user($value)
     // Audit log
     $username = get_name_by_value("user", $value);
     $message = "The user \"" . $username . "\" was disabled by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-    write_log($value + 1000, $_SESSION['uid'], $message, "user");
+    write_log($value + 1000, $_SESSION['uid'] ?? 0, $message, "user");
 
     // Close the database connection
     db_close($db);
@@ -7824,7 +7881,7 @@ function update_password_policy($strict_user_validation, $mfa_required, $pass_po
     // Audit log
     $risk_id = 1000;
     $message = "The password policy was updated by user \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-    write_log($risk_id, $_SESSION['uid'], $message);
+    write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
     // Return true
     return true;
@@ -7963,7 +8020,7 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
     if(!empty($_SESSION['uid']))
     {
         $message = "The new user \"" . $user . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
-        write_log((int)$user_id + 1000, $_SESSION['uid'], $message, 'user');
+        write_log((int)$user_id + 1000, $_SESSION['uid'] ?? 0, $message, 'user');
     }
     else
     {
@@ -8073,7 +8130,7 @@ function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id,
             'updater' => ($_SESSION['name'] ?? '') . '(' . ($_SESSION['user'] ?? 'unknown') . ')',
             'changes' => $changes
         ], false);
-        write_log((int)$user_id + 1000, $_SESSION['uid'], $message, 'user');
+        write_log((int)$user_id + 1000, $_SESSION['uid'] ?? 0, $message, 'user');
     } else {
         $message = _lang('UserUpdatedFromidPDataAuditLog', ['username' => "{$post_update_user['name']}({$post_update_user['username']})", 'changes' => $changes], false);
         write_log((int)$user_id + 1000, $user_id, $message, 'user');
@@ -8125,9 +8182,15 @@ function refresh_permissions_in_sessions_of_user($uid) {
     // start of the data string or after a semicolon to avoid false positives.
     // Without this filter the function iterates every active session in the
     // DB, which becomes a request-killer on installs with many users.
+    // The current session is included intentionally: head.php calls
+    // session_write_close() before permission-grant code runs, so an
+    // in-memory $_SESSION update (e.g. from set_user_permissions() inside
+    // add_new_permissions()) is never flushed to storage.  By processing the
+    // current session in the same loop, we re-open it, re-read permissions
+    // from permission_to_user, write back, and close — so the next request
+    // picks up the newly granted permissions without requiring a relog.
     $uid_pattern = '(^|;)uid\\|i:' . (int)$uid . ';';
-    $stmt = $db->prepare("SELECT `id` FROM sessions WHERE `id` <> :session_id AND `data` REGEXP :uid_pattern");
-    $stmt->bindParam(":session_id", $sid);
+    $stmt = $db->prepare("SELECT `id` FROM sessions WHERE `data` REGEXP :uid_pattern");
     $stmt->bindParam(":uid_pattern", $uid_pattern);
     $stmt->execute();
     $session_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
@@ -8361,6 +8424,10 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     // Add the risk
     $sql = "INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `source`, `category`, `owner`, `manager`, `assessment`, `notes`, `project_id`, `submitted_by`, `submission_date`, `last_update`, `template_group_id`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :source, :category, :owner, :manager, :assessment, :notes, :project_id, :submitted_by, :submission_date, :last_update, :template_group_id)";
     
+    // Sanitizing input that comes from the WYSIWYG editor or outside sources
+    $assessment = purify_html($assessment);
+    $notes = purify_html($notes);
+
     $try_encrypt_assessment = try_encrypt($assessment);
     $try_encrypt_notes = try_encrypt($notes);
     if($submission_date == false) $submission_date = date("Y-m-d H:i:s");
@@ -8461,7 +8528,12 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     );
     $insert_data = [];
     foreach ($insert_fields as $key => $value) {
-        $insert_data[] = "`".$key. "` => '".$escaper->escapeHtml($value)."'";
+        // Rich-text (WYSIWYG) fields go in as plain text; escapeHtml would leave
+        // a literal "&lt;p&gt;" (the message is HTML-escaped again on display).
+        $rendered = in_array($key, ['assessment', 'notes'], true)
+            ? html_to_plain_text($value)
+            : $escaper->escapeHtml($value);
+        $insert_data[] = "`".$key. "` => '".$rendered."'";
     }
     $inserted_string = implode(", ", $insert_data);
 
@@ -8942,7 +9014,7 @@ function update_classic_score($risk_id, $CLASSIC_likelihood, $CLASSIC_impact)
 
         // Audit log
         $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-        write_log($risk_id, $_SESSION['uid'], $message);
+        write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
     return $calculated_risk;
@@ -9022,7 +9094,7 @@ function update_cvss_score($risk_id, $AccessVector, $AccessComplexity, $Authenti
 
         // Audit log
         $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-        write_log($risk_id, $_SESSION['uid'], $message);
+        write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
     return $calculated_risk;
@@ -9077,7 +9149,7 @@ function update_dread_score($risk_id, $DREADDamagePotential, $DREADReproducibili
 
         // Audit log
         $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-        write_log($risk_id, $_SESSION['uid'], $message);
+        write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
     return $calculated_risk;
@@ -9226,7 +9298,7 @@ function update_owasp_score($risk_id, $OWASPSkill, $OWASPMotive, $OWASPOpportuni
 
         // Audit log
         $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-        write_log($risk_id, $_SESSION['uid'], $message);
+        write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
     return $calculated_risk;
@@ -9284,7 +9356,7 @@ function update_custom_score($risk_id, $custom)
 
         // Audit log
         $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-        write_log($risk_id, $_SESSION['uid'], $message);
+        write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
     return $calculated_risk;
@@ -9363,7 +9435,7 @@ function update_contributing_risk_score($risk_id, $ContributingLikelihood="", $C
 
         // Audit log
         $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-        write_log($risk_id, $_SESSION['uid'], $message);
+        write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
     return $calculated_risk;
@@ -9650,7 +9722,7 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
 
         // Audit log
         $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-        write_log($risk_id, $_SESSION['uid'], $message);
+        write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
     return $calculated_risk;
@@ -9758,6 +9830,11 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
 
     $security_recommendations   = isset($post['security_recommendations']) ? $post['security_recommendations'] : "";
 
+    // Sanitizing input that comes from the WYSIWYG editor or outside sources
+    $current_solution = purify_html($current_solution);
+    $security_requirements = purify_html($security_requirements);
+    $security_recommendations = purify_html($security_recommendations);
+
     $planning_date              = isset($post['planning_date']) ? $post['planning_date'] : "";
     $mitigation_date            = isset($post['mitigation_date']) ? $post['mitigation_date'] : date(get_default_datetime_format());
 
@@ -9856,7 +9933,12 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     // Audit log
     $insert_data = [];
     foreach ($insert_fields as $key => $value) {
-        $insert_data[] = "`".$key. "` => '".$escaper->escapeHtml($value)."'";
+        // Rich-text (WYSIWYG) fields go in as plain text; escapeHtml would leave
+        // a literal "&lt;p&gt;" (the message is HTML-escaped again on display).
+        $rendered = in_array($key, ['current_solution', 'security_requirements', 'security_recommendations'], true)
+            ? html_to_plain_text($value)
+            : $escaper->escapeHtml($value);
+        $insert_data[] = "`".$key. "` => '".$rendered."'";
     }
     $inserted_string = implode(", ", $insert_data);
 
@@ -9993,7 +10075,7 @@ function submit_unmitigation($risk_id)
 
     // Audit log
     $message = "A mitigation was deleted for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-    write_log($risk_id, $_SESSION['uid'], $message);
+    write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
     // Close the database connection
     db_close($db);
@@ -10043,8 +10125,9 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
 
     // Add the review
     $stmt = $db->prepare("INSERT INTO mgmt_reviews (`risk_id`, `review`, `reviewer`, `next_step`, `comments`, `next_review`, `submission_date`) VALUES (:risk_id, :review, :reviewer, :next_step, :comments, :next_review, :submission_date)");
-    
-    $try_encrypt_comments = try_encrypt($comments);
+
+    // Sanitizing input that comes from the WYSIWYG editor or outside sources
+    $try_encrypt_comments = try_encrypt(purify_html($comments));
 
     $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
     $stmt->bindParam(":review", $review, PDO::PARAM_INT);
@@ -10164,7 +10247,7 @@ function submit_management_unreview($risk_id)
    
     // Audit log
     $message = "A management review was deleted for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-    write_log($risk_id, $_SESSION['uid'], $message);
+    write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     // Close the database connection
     db_close($db);
 
@@ -10247,11 +10330,13 @@ function update_risk($risk_id, $is_api = false)
     }
     $assessment             = get_param("post", "assessment", false);
     if($assessment !== false){
-        $assessment = try_encrypt($assessment);
+        // Sanitizing input that comes from the WYSIWYG editor or outside sources
+        $assessment = try_encrypt(purify_html($assessment));
     }
     $notes                  = get_param("post", "notes", false);
     if($notes !== false){
-        $notes = try_encrypt($notes);
+        // Sanitizing input that comes from the WYSIWYG editor or outside sources
+        $notes = try_encrypt(purify_html($notes));
     }
     // Get current datetime for last_update
     $current_datetime = date('Y-m-d H:i:s');
@@ -10397,11 +10482,21 @@ function update_risk($risk_id, $is_api = false)
     if(count($updated_fields)) {
         $detail_updated = [];
         foreach ($updated_fields as $key => $value) {
-            $detail_updated[] = "Field name : `".$key. "` (`".$escaper->escapeHtml($value["original"])."`=>`".$escaper->escapeHtml($value["updated"])."`)";
+            // Rich-text (WYSIWYG) fields emit as plain text; escapeHtml would
+            // leave a literal "&lt;p&gt;" (the message is HTML-escaped again on
+            // display).
+            if (in_array($key, ['assessment', 'notes'], true)) {
+                $original = html_to_plain_text($value["original"]);
+                $updated = html_to_plain_text($value["updated"]);
+            } else {
+                $original = $escaper->escapeHtml($value["original"]);
+                $updated = $escaper->escapeHtml($value["updated"]);
+            }
+            $detail_updated[] = "Field name : `".$key. "` (`".$original."`=>`".$updated."`)";
         }
         $updated_string = implode(", ", $detail_updated);
         $message = "Risk details were updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".\n".$updated_string;
-        write_log($risk_id, $_SESSION['uid'], $message);
+        write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
     // Close the database connection
@@ -10539,7 +10634,7 @@ function update_risk_subject($risk_id, $subject)
 
     // Audit log
     $message = "Risk subject was updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-    write_log($risk_id, $_SESSION['uid'], $message);
+    write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
     // Close the database connection
     db_close($db);
@@ -13097,7 +13192,7 @@ function get_risk_table($sort_order=0, $activecol="")
         if($sort_order == 22){
             echo "<td align=\"center\" >". $escaper->escapeHtml($risk['team_name']) ."</td>\n";
         }
-        echo "<td align=\"center\" class=\"" . $escaper->escapeHtml($color) . " risk-cell \"><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></td>\n";
+        echo "<td align=\"center\" class=\"" . $escaper->escapeHtml($color) . " risk-cell \"><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeCssColor($color) . "\"></span></div></td>\n";
         echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("g:i A T"), strtotime($risk['submission_date']))) . "</td>\n";
 
         // If the active column is management
@@ -13243,7 +13338,7 @@ function get_submitted_risks_table() {
                     <td align='center' width='150px' sorttable_customkey='{$escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date'])))}'>{$escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date'])))}</td>
                     <td class='risk-cell' align='center' bgcolor='{$escaper->escapeHtml($color)}' width='150px'>
                         <div class='risk-cell-holder'>
-                            {$escaper->escapeHtml($risk['calculated_risk'])} <span class='risk-color' style='background-color:{$escaper->escapeHtml($color)} '></span>
+                            {$escaper->escapeHtml($risk['calculated_risk'])} <span class='risk-color' style='background-color:{$escaper->escapeCssColor($color)} '></span>
                         </div>
                     </td>
                     <td align='center' width='150px'>{$escaper->escapeHtml($risk['status'])}</td>
@@ -13484,7 +13579,7 @@ function get_closed_risks_table($sort_order=17) {
                     <td align='left' width='300px'>{$escaper->escapeHtml($risk['subject'])}</td>
                     <td class='risk-cell' align='center' bgcolor='{$escaper->escapeHtml($color)}' width='150px'>
                         <div class='risk-cell-holder'>
-                            {$escaper->escapeHtml($risk['calculated_risk'])} <span class='risk-color' style='background-color:{$escaper->escapeHtml($color)} '></span>
+                            {$escaper->escapeHtml($risk['calculated_risk'])} <span class='risk-color' style='background-color:{$escaper->escapeCssColor($color)} '></span>
                         </div>
                     </td>
                     <td align='center' width='150px'>{$escaper->escapeHtml($risk['team'])}</td>
@@ -13600,7 +13695,7 @@ function get_risk_teams_table()
                 echo "<tr>\n";
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-                echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></td>\n";
+                echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeCssColor($color) . "\"></span></div></td>\n";
                 echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
     }
@@ -13675,7 +13770,7 @@ function get_risk_technologies_table($sort_order=19)
         echo "<tr>\n";
         echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
         echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-        echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></td>\n";
+        echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeCssColor($color) . "\"></span></div></td>\n";
         echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
         echo "</tr>\n";
     }
@@ -13717,7 +13812,7 @@ function get_risk_scoring_table()
                 echo "<tr>\n";
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-                echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></td>\n";
+                echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeCssColor($color) . "\"></span></div></td>\n";
                 echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
         }
@@ -13754,7 +13849,7 @@ function get_risk_scoring_table()
                 echo "<tr>\n";
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-                echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></td>\n";
+                echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeCssColor($color) . "\"></span></div></td>\n";
         echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
         }
@@ -13791,7 +13886,7 @@ function get_risk_scoring_table()
                 echo "<tr>\n";
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-                echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></td>\n";
+                echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeCssColor($color) . "\"></span></div></td>\n";
         echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
         }
@@ -13828,7 +13923,7 @@ function get_risk_scoring_table()
                 echo "<tr>\n";
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-                echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></td>\n";
+                echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeCssColor($color) . "\"></span></div></td>\n";
         echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
         }
@@ -13865,7 +13960,7 @@ function get_risk_scoring_table()
                 echo "<tr>\n";
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-                echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></td>\n";
+                echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeCssColor($color) . "\"></span></div></td>\n";
         echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
         }
@@ -13927,7 +14022,7 @@ function get_projects_and_risks_table()
                     echo "<tr>\n";
                     echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a></td>\n";
                     echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-                    echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></td>\n";
+                    echo "<td align=\"center\" class=\"risk-cell\"><div class=\"risk-cell-holder\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeCssColor($color) . "\"></span></div></td>\n";
                     echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                     echo "</tr>\n";
                 }
@@ -14181,7 +14276,7 @@ function update_risk_project($project_id, $risk_id)
     db_close($db);
 
     // Audit log
-    write_log($risk_id + 1000, $_SESSION['uid'],
+    write_log($risk_id + 1000, $_SESSION['uid'] ?? 0,
         _lang('RiskProjectAssociationAuditLog',
             array(
                 'risk_id' => $risk_id + 1000,
@@ -14412,7 +14507,7 @@ function get_project_tabs($status, $template_group_id="") {
                                 </div>
                                 <div class='risk--score ms-2'>
                                     {$escaper->escapeHtml($lang['InherentRisk'])} : 
-                                    <span class='label label-danger' style='background-color: {$escaper->escapeHtml($color)}; color: #000000;'>{$risk['calculated_risk']}</span> 
+                                    <span class='label label-danger' style='background-color: {$escaper->escapeCssColor($color)}; color: #000000;'>{$risk['calculated_risk']}</span> 
                                 </div>
                             </div>
                         </div>
@@ -15568,14 +15663,15 @@ function update_mitigation($risk_id, $post)
     $mitigation_owner   = isset($post['mitigation_owner']) ? (int)$post['mitigation_owner'] : 0;
     $mitigation_team   = isset($post['mitigation_team']) ? $post['mitigation_team'] : [];
 
+    // Sanitizing input that comes from the WYSIWYG editor or outside sources
     $current_solution           = isset($post['current_solution']) ? $post['current_solution'] : "";
-    $current_solution  = try_encrypt($current_solution);
+    $current_solution  = try_encrypt(purify_html($current_solution));
 
     $security_requirements      = isset($post['security_requirements']) ? $post['security_requirements'] : "";
-    $security_requirements  = try_encrypt($security_requirements);
+    $security_requirements  = try_encrypt(purify_html($security_requirements));
 
     $security_recommendations   = isset($post['security_recommendations']) ? $post['security_recommendations'] : "";
-    $security_recommendations   = try_encrypt($security_recommendations);
+    $security_recommendations   = try_encrypt(purify_html($security_recommendations));
 
     $planning_date      = isset($post['planning_date']) ? $post['planning_date'] : "";
     $mitigation_percent = (isset($post['mitigation_percent']) && $post['mitigation_percent'] >= 0 && $post['mitigation_percent'] <= 100) ? $post['mitigation_percent'] : 0;
@@ -15728,7 +15824,17 @@ function update_mitigation($risk_id, $post)
     if(count($updated_fields)) {
         $detail_updated = [];
         foreach ($updated_fields as $key => $value) {
-            $detail_updated[] = "Field name : `".$key. "` (`".$escaper->escapeHtml($value["original"])."`=>`".$escaper->escapeHtml($value["updated"])."`)";
+            // Rich-text (WYSIWYG) fields emit as plain text; escapeHtml would
+            // leave a literal "&lt;p&gt;" (the message is HTML-escaped again on
+            // display).
+            if (in_array($key, ['current_solution', 'security_requirements', 'security_recommendations'], true)) {
+                $original = html_to_plain_text($value["original"]);
+                $updated = html_to_plain_text($value["updated"]);
+            } else {
+                $original = $escaper->escapeHtml($value["original"]);
+                $updated = $escaper->escapeHtml($value["updated"]);
+            }
+            $detail_updated[] = "Field name : `".$key. "` (`".$original."`=>`".$updated."`)";
         }
         $updated_string = implode(", ", $detail_updated);
         $message = "Risk mitigation details were updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".\n".$updated_string;
@@ -15907,6 +16013,34 @@ function get_reviews($risk_id, $template_group_id="")
     return true;
 }
 
+/****************************************************************************
+ * FUNCTION: PARSE RELEASES FEED                                            *
+ * Parse the releases XML body returned by the version-check endpoint into  *
+ * the decoded releases array, or null when the body is unusable. Pure      *
+ * helper so the degrade-vs-parse decision is unit-testable.                *
+ *                                                                          *
+ * Guards three failure modes that must NOT fatal the caller:               *
+ *  - non-string / empty body. A mid-transfer timeout yields return_code    *
+ *    200 with an empty-array body (connectivity.php resets a failed        *
+ *    curl_exec to []), so a 200 is not a guarantee of a string body.       *
+ *  - body that fails to parse as XML (partial / garbled response).         *
+ *  - parsed structure that isn't a non-empty array.                        *
+ ****************************************************************************/
+function parse_releases_feed($version_page): ?array {
+    if (!is_string($version_page) || $version_page === '') {
+        return null;
+    }
+    $releases = @simplexml_load_string($version_page);
+    if ($releases === false) {
+        return null;
+    }
+    $releases_array = json_decode(json_encode($releases), true);
+    if (!is_array($releases_array) || empty($releases_array)) {
+        return null;
+    }
+    return $releases_array;
+}
+
 /****************************
  * FUNCTION: LATEST VERSION *
  ****************************/
@@ -15963,7 +16097,7 @@ function latest_versions($force_refresh = true) {
     ];
 
     // If SSL certificate checks are enabled for external requests
-    if (get_setting('ssl_certificate_check_external') == 1)
+    if (ssl_external_verify_enabled())
     {
         // Verify the SSL host and peer
         $validate_ssl = true;
@@ -15993,13 +16127,17 @@ function latest_versions($force_refresh = true) {
     else
     {
         write_debug_log("SimpleRisk connected to " . $url, 'info');
-        $version_page = $response['response'];
 
-        // Convert it to be an array
-        //$latest_versions = json_decode(json_encode(new SimpleXMLElement($version_page)), true);
-        //$latest_versions = new SimpleXMLElement($version_page);
-        $releases = simplexml_load_string($version_page);
-        $releases_array = json_decode(json_encode($releases), true);
+        // Parse the body defensively. A 200 status does NOT guarantee a usable
+        // string body — a mid-transfer timeout can leave return_code 200 with an
+        // empty-array body — so degrade gracefully (matching the non-200 path)
+        // instead of fataling in simplexml_load_string() / reset().
+        $releases_array = parse_releases_feed($response['response']);
+        if ($releases_array === null) {
+            write_debug_log("SimpleRisk received an empty or unparseable version response from " . $url, 'warning');
+            $GLOBALS['latest_versions_cached'] = 0;
+            return $GLOBALS['latest_versions_cached'];
+        }
         $latest_release = reset($releases_array);
         $latest_versions['version'] = $latest_release[0]['@attributes']['version'];
         $latest_versions['appversion'] = $latest_release[0]['@attributes']['version'];
@@ -16092,6 +16230,25 @@ function current_version($param)
         // Return the current version
         return $array[0]['value'];
     }
+}
+
+/****************************************
+ * FUNCTION: VERSION UPDATE STATUS      *
+ ****************************************/
+/**
+ * Display decision for a version row: compare an installed version to the
+ * latest-known version. Pure — no DB, no network.
+ *
+ * @return string 'unknown' when $latest is '' (e.g. the latest-version cache
+ *                has not been populated yet), 'up_to_date' when the two match,
+ *                otherwise 'update_available'.
+ */
+function version_update_status(string $current, string $latest): string
+{
+    if ($latest === '') {
+        return 'unknown';
+    }
+    return ($current === $latest) ? 'up_to_date' : 'update_available';
 }
 
 /***********************
@@ -16544,33 +16701,6 @@ function assessments_extra()
     return $GLOBALS['assessments_extra'];
 }
 
-/***********************************
- * FUNCTION: COMPLIANCEFORGE EXTRA *
- ***********************************/
-function complianceforge_extra()
-{
-    if(isset($GLOBALS['complianceforge_extra'])){
-        return $GLOBALS['complianceforge_extra'];
-    }
-
-    $setting = get_setting('complianceforge');
-
-    // If the setting is not empty
-    if (!empty($setting))
-    {
-        // If the setting is true or "true" or 1
-        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
-        {
-            // The extra is enabled
-            $GLOBALS['complianceforge_extra'] = true;
-        }
-        else $GLOBALS['complianceforge_extra'] = false;
-    }
-    else $GLOBALS['complianceforge_extra'] = false;
-
-    return $GLOBALS['complianceforge_extra'];
-}
-
 /***************************************
  * FUNCTION: COMPLIANCEFORGE SCF EXTRA *
  ***************************************/
@@ -16601,34 +16731,6 @@ function complianceforge_scf_extra() : bool
 
     return $is_enabled;
 }
-
-/******************************
- * FUNCTION: GOVERNANCE EXTRA *
- ******************************/
-function governance_extra()
-{
-    if(isset($GLOBALS['governance_extra'])){
-        return $GLOBALS['governance_extra'];
-    }   
-    
-    $setting = get_setting('governance');
-
-    // If the setting is not empty
-    if (!empty($setting))
-    {
-        // If the setting is true or "true" or 1
-        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
-        {
-            // The extra is enabled
-            $GLOBALS['governance_extra'] = true;
-        }
-        else $GLOBALS['governance_extra'] = false;
-    }
-    else $GLOBALS['governance_extra'] = false;
-
-    return $GLOBALS['governance_extra'];
-}
-
 
 /***********************************
  * FUNCTION: ADVANCED SEARCH EXTRA *
@@ -16928,7 +17030,7 @@ function upload_file($risk_id, $file, $view_type = 1) {
 
                     // Audit log entry for uploading a file
                     $message = "File \"" . $file['name'] . "\" was uploaded by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-                    write_log($risk_id + 1000, $_SESSION['uid'], $message, 'risk');
+                    write_log($risk_id + 1000, $_SESSION['uid'] ?? 0, $message, 'risk');
 
                     // Return a success
                     return 1;
@@ -17002,7 +17104,7 @@ function delete_db_file($unique_name)
     {
         // Audit log entry for deleting a file
         $message = "File \"" . $file['name'] . "\" was deleted by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-        write_log($file['risk_id'] + 1000, $_SESSION['uid'], $message, 'risk');
+        write_log($file['risk_id'] + 1000, $_SESSION['uid'] ?? 0, $message, 'risk');
     }
 
     // Delete the file from the database
@@ -17045,7 +17147,7 @@ function refresh_files_for_risk($unique_names, $risk_id, $view_type = 1)
 
         // Audit log entry for deleting a file
         $message = "File \"" . $delete_files[$key]['name'] . "\" was deleted by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-        write_log($delete_files[$key]['risk_id'] + 1000, $_SESSION['uid'], $message, 'risk');
+        write_log($delete_files[$key]['risk_id'] + 1000, $_SESSION['uid'] ?? 0, $message, 'risk');
 
         // Delete the file from the database
         $stmt = $db->prepare("DELETE FROM files WHERE id=:id");
@@ -17452,6 +17554,15 @@ function completed_project($project_id)
  ********************************/
 function incomplete_project($project_id)
 {
+    // Reopening a project's risks is a risk modification. Mirror the
+    // close_risks gate that completed_project() applies, so that callers such
+    // as update_project_status_api() (gated only on manage_projects) can't
+    // bypass the modify_risks check that reopenForm() enforces directly.
+    if (!isset($_SESSION["modify_risks"]) || $_SESSION["modify_risks"] != 1)
+    {
+        return 0;
+    }
+
     // Get the risks for the project
     $risks = get_project_risks($project_id);
 
@@ -17467,6 +17578,32 @@ function incomplete_project($project_id)
             reopen_risk($id);
         }
     }
+
+    return 1;
+}
+
+/*****************************************************************************
+ * FUNCTION: NORMALIZE LOG VALUE                                             *
+ * Coerce any value into a string Monolog will accept (its level methods    *
+ * require Stringable|string). null, bools, ints, floats, arrays, and       *
+ * objects must all be normalized — passing a raw null or bool to a Monolog  *
+ * level method throws a TypeError. Extracted as a pure helper so the        *
+ * coercion logic is unit-testable with no DB and no writable log file.      *
+ *****************************************************************************/
+function normalize_log_value($value): string {
+    if (is_string($value)) {
+        return $value;
+    }
+    if (is_array($value) || is_object($value)) {
+        return print_r($value, true);
+    }
+    if (is_bool($value)) {
+        return $value ? 'true' : 'false';
+    }
+    if ($value === null) {
+        return 'null';
+    }
+    return (string)$value;
 }
 
 /*****************************************************************************
@@ -17535,12 +17672,14 @@ function write_debug_log($value, $level = 'info') {
         }
     }
 
-    // Convert arrays/objects to readable strings
-    if (is_array($value) || is_object($value)) {
-        $value = print_r($value, true);
-    }
+    // Coerce the value to a string Monolog will accept (see normalize_log_value).
+    // write_debug_log is a logging failsafe and must never throw back into its
+    // caller; a null message reached here via the licensing path's
+    // fetch_url_content($parameters = null) call and 500'd the app.
+    $value = normalize_log_value($value);
 
-    // Write the log safely
+    // Write the log safely. Catch \Throwable, not just Exception, so a
+    // TypeError from the logging backend can never escalate to a fatal.
     try {
         if ($log && method_exists($log, $level)) {
             $log->$level($value);
@@ -17549,7 +17688,7 @@ function write_debug_log($value, $level = 'info') {
         } else {
             error_log("[SimpleRisk:LOGGING FAILSAFE] " . $value);
         }
-    } catch (Exception $e) {
+    } catch (\Throwable $e) {
         error_log("[SimpleRisk:LOGGING FAILSAFE] Log write failed: " . $e->getMessage() . " | Original: " . $value);
     }
 }
@@ -17560,265 +17699,121 @@ function write_debug_log($value, $level = 'info') {
 function add_registration($name="", $company="", $title="", $phone="", $email="", $fname="", $lname="", $download_upgrade_extra = true)
 {
     global $lang;
+    require_once(realpath(__DIR__ . '/licensing.php'));
 
-    // Create the SimpleRisk instance ID if it doesn't already exist
-    $instance_id = create_simplerisk_instance_id();
-
-    // Create the data to send
-    $parameters = array(
-        'action' => 'register_instance',
-        'instance_id' => $instance_id,
-        'name' => $name,
-        'company' => $company,
-        'title' => $title,
-        'phone' => $phone,
-        'email' => $email,
-        'fname' => $fname,
-        'lname' => $lname,
-    );
-
-    // Register instance with the web service
-    $response = simplerisk_service_call($parameters);
-    $return_code = $response['return_code'];
-
-    // If there was an error communicating with the SimpleRisk services API
-    if ($return_code !== 200)
-    {
-        write_debug_log("Unable to communicate with the SimpleRisk services API", 'warning');
-
-        set_alert(true, "bad", $lang['FailedToRegisterInstance']);
-
-        // Return a failure
-        return 0;
-    }
-    else
-    {
-        write_debug_log("Successfully made the SimpleRisk service call", 'info');
-        set_alert(true, "good", "Successfully made the SimpleRisk service call");
-
-        $results = $response['response'];
-        $results = array($results);
-
-        // For each line in the results returned from the SimpleRisk service call
-        foreach ($results as $line) {
-            if (preg_match("/<api_key>(.*)<\/api_key>/", $line, $matches)) {
-                write_debug_log("An API key was returned from the SimpleRisk services tier", 'info');
-                set_alert(true, "good", "An API key was returned from the SimpleRisk services tier");
-
-                $services_api_key = $matches[1];
-
-                // Open the database connection
-                $db = db_open();
-
-                // Add the registration
-                add_setting("registration_name", $name);
-                add_setting("registration_company", $company);
-                add_setting("registration_title", $title);
-                add_setting("registration_phone", $phone);
-                add_setting("registration_email", $email);
-                add_setting("registration_fname", $fname);
-                add_setting("registration_lname", $lname);
-                add_setting("services_api_key", $services_api_key);
-                update_or_insert_setting("registration_registered", 1);
-
-                // If we should download the upgrade extra
-                if ($download_upgrade_extra)
-                {
-                    // Download the upgrade extra
-                    $result = download_extra("upgrade");
-                }
-                else $result = true;
-
-                // Close the database connection
-                db_close($db);
-
-                // Return the result
-                return $result;
-            } elseif (preg_match("/<result>(.*)<\/result>/", $line, $matches)) {
-                switch ($matches[1]) {
-                    case "Not Purchased":
-                        // Display an alert
-                        set_alert(true, "bad", $lang['RequestedExtraIsNotPurchased']);
-
-                        // Return a failure
-                        return 0;
-
-                    case "Invalid Extra Name":
-                        // Display an alert
-                        set_alert(true, "bad", $lang['RequestedExtraDoesNotExist']);
-
-                        // Return a failure
-                        return 0;
-
-                    case "Unmatched IP Address":
-                        // Display an alert
-                        set_alert(true, "bad", $lang['InstanceWasRegisteredWithDifferentIp']);
-
-                        // Return a failure
-                        return 0;
-
-                    case "Instance Disabled":
-                        // Display an alert
-                        set_alert(true, "bad", $lang['InstanceIsDisabled']);
-
-                        // Return a failure
-                        return 0;
-
-                    case "Invalid Instance or Key":
-                    case "failure":
-                        // Display an alert
-                        set_alert(true, "bad", $lang['InvalidInstanceIdOrKey']);
-
-                        // Return a failure
-                        return 0;
-
-                    default:
-                        set_alert(true, "bad", $lang['FailedToRegisterInstance']);
-
-                        // Return a failure
-                        return 0;
-                }
-            }
+    // Backward-compat: legacy callers passed a single $name string.
+    // If $fname/$lname weren't provided, split $name conservatively.
+    if ($fname === '' && $lname === '' && $name !== '') {
+        $trimmed_name = trim($name);
+        $parts = preg_split('/\s+/', $trimmed_name, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $fname = $parts ? implode(' ', array_slice($parts, 0, -1)) : '';
+        $lname = $parts ? (string)end($parts) : '';
+        if (!$fname && $lname) {
+            $fname = $lname;
+            $lname = '';
         }
+    }
 
-        // Return a failure
+    $result = licensing_register_with_retry([
+        'fname'        => $fname,
+        'lname'        => $lname,
+        'company'      => $company,
+        'title'        => $title,
+        'phone'        => $phone,
+        'email'        => $email,
+        'mailing_list' => false,
+    ]);
+
+    if (!$result['ok']) {
+        write_debug_log("add_registration: licensing service registration failed: {$result['error']}", 'warning');
+        set_alert(true, "bad", $lang['FailedToRegisterInstance']);
         return 0;
     }
+
+    // Persist the new identity and credentials
+    update_or_insert_setting('instance_id',      $result['instance_id']);
+    update_or_insert_setting('services_api_key', $result['services_api_key']);
+    update_or_insert_setting('registration_name',    $name);
+    update_or_insert_setting('registration_company', $company);
+    update_or_insert_setting('registration_title',   $title);
+    update_or_insert_setting('registration_phone',   $phone);
+    update_or_insert_setting('registration_email',   $email);
+    update_or_insert_setting('registration_fname',   $fname);
+    update_or_insert_setting('registration_lname',   $lname);
+    update_or_insert_setting('registration_registered', 1);
+
+    write_debug_log("add_registration: instance_id={$result['instance_id']} registered via Management Extra path", 'notice');
+
+    // Optionally download the Upgrade Extra so the caller can proceed to upgrade
+    if ($download_upgrade_extra) {
+        $dl = download_extra("upgrade");
+        if (!is_string($dl)) {
+            $err_message = $dl['reason'] ?? $dl['error'] ?? 'unknown error';
+            write_debug_log("add_registration: download_extra failed for 'upgrade': {$err_message}", 'warning');
+            return 0;
+        }
+        return $dl;
+    }
+
+    return true;
 }
 
 /*********************************
  * FUNCTION: UPDATE REGISTRATION *
  *********************************/
 function update_registration($name="", $company="", $title="", $phone="", $email="", $fname="", $lname="")
-{ 
+{
     global $lang;
+    require_once(realpath(__DIR__ . '/licensing.php'));
 
-    // Get the instance id
-    $instance_id = get_setting("instance_id");
-
-    // Get the services API key
-    $services_api_key = get_setting("services_api_key");
-
-    // Create the data to send
-    $parameters = array(
-        'action' => 'update_instance',
-        'instance_id' => $instance_id,
-        'api_key' => $services_api_key,
-        'name' => $name,
-        'company' => $company,
-        'title' => $title,
-        'phone' => $phone,
-        'email' => $email,
-        'fname' => $fname,
-        'lname' => $lname,
-    );
-
-    // Register instance with the web service
-    $response = simplerisk_service_call($parameters);
-    $return_code = $response['return_code'];
-
-    // If the SimpleRisk service call failed
-    if ($return_code !== 200) {
-        set_alert(true, "bad", $lang['FailedToUpdateInstance']);
-
-        // Return a failure
-        return 0;
-    }
-    else
-    {
-        // Get the result from the response
-        $results = $response['response'];
-        $results = array($results);
-        preg_match("/<result>(.*)<\/result>/", $results[0], $matches);
-
-        switch ($matches[1]) {
-            case "Not Purchased":
-                // Display an alert
-                set_alert(true, "bad", $lang['RequestedExtraIsNotPurchased']);
-
-                // Return a failure
-                return 0;
-
-            case "Invalid Extra Name":
-                // Display an alert
-                set_alert(true, "bad", $lang['RequestedExtraDoesNotExist']);
-
-                // Return a failure
-                return 0;
-
-            case "Unmatched IP Address":
-                // Display an alert
-                set_alert(true, "bad", $lang['InstanceWasRegisteredWithDifferentIp']);
-
-                // Return a failure
-                return 0;
-
-            case "Instance Disabled":
-                // Display an alert
-                set_alert(true, "bad", $lang['InstanceIsDisabled']);
-
-                // Return a failure
-                return 0;
-
-            case "Invalid Instance or Key":
-            case "failure":
-                // Display an alert
-                set_alert(true, "bad", $lang['InvalidInstanceIdOrKey']);
-
-                // Return a failure
-                return 0;
-
-            case "success":
-                // Open the database connection
-                $db = db_open();
-
-                // Update the registration
-                $stmt = $db->prepare("UPDATE `settings` SET value=:name WHERE name='registration_name'");
-                $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
-                $stmt->execute();
-
-                $stmt = $db->prepare("UPDATE `settings` SET value=:company WHERE name='registration_company'");
-                $stmt->bindParam(":company", $company, PDO::PARAM_STR, 200);
-                $stmt->execute();
-
-                $stmt = $db->prepare("UPDATE `settings` SET value=:title WHERE name='registration_title'");
-                $stmt->bindParam(":title", $title, PDO::PARAM_STR, 200);
-                $stmt->execute();
-
-                $stmt = $db->prepare("UPDATE `settings` SET value=:phone WHERE name='registration_phone'");
-                $stmt->bindParam(":phone", $phone, PDO::PARAM_STR, 200);
-                $stmt->execute();
-
-                $stmt = $db->prepare("UPDATE `settings` SET value=:email WHERE name='registration_email'");
-                $stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
-                $stmt->execute();
-
-                $stmt = $db->prepare("UPDATE `settings` SET value=:fname WHERE name='registration_fname'");
-                $stmt->bindParam(":fname", $fname, PDO::PARAM_STR, 200);
-                $stmt->execute();
-
-                $stmt = $db->prepare("UPDATE `settings` SET value=:lname WHERE name='registration_lname'");
-                $stmt->bindParam(":lname", $lname, PDO::PARAM_STR, 200);
-                $stmt->execute();
-
-                // Download the update extra
-                $result = download_extra("upgrade");
-
-                // Close the database connection
-                db_close($db);
-
-                // Return the result
-                return $result;
-            default:
-                set_alert(true, "bad", $lang['FailedToUpdateInstance']);
-
-                // Return a failure
-                return 0;
+    // Backward-compat: legacy callers passed a single $name string.
+    // If $fname/$lname weren't provided, split $name conservatively.
+    if ($fname === '' && $lname === '' && $name !== '') {
+        $trimmed_name = trim($name);
+        $parts = preg_split('/\s+/', $trimmed_name, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $fname = $parts ? implode(' ', array_slice($parts, 0, -1)) : '';
+        $lname = $parts ? (string)end($parts) : '';
+        if (!$fname && $lname) {
+            $fname = $lname;
+            $lname = '';
         }
+    }
 
-        // Return a failure
+    $instance_id      = get_setting('instance_id');
+    $services_api_key = get_setting('services_api_key');
+
+    if (!$instance_id || !$services_api_key) {
+        write_debug_log("update_registration: instance not registered; nothing to update", 'notice');
         return 0;
     }
+
+    $result = licensing_instance_update([
+        'instance_id'      => $instance_id,
+        'services_api_key' => $services_api_key,
+        'fname'            => $fname,
+        'lname'            => $lname,
+        'company'          => $company,
+        'title'            => $title,
+        'phone'            => $phone,
+        'email'            => $email,
+    ]);
+
+    if (!$result['ok']) {
+        write_debug_log("update_registration: licensing service update failed: {$result['error']}", 'warning');
+        set_alert(true, "bad", $lang['FailedToUpdateInstance']);
+        return 0;
+    }
+
+    // Persist the updated contact details locally
+    update_or_insert_setting('registration_name',    $name);
+    update_or_insert_setting('registration_company', $company);
+    update_or_insert_setting('registration_title',   $title);
+    update_or_insert_setting('registration_phone',   $phone);
+    update_or_insert_setting('registration_email',   $email);
+    update_or_insert_setting('registration_fname',   $fname);
+    update_or_insert_setting('registration_lname',   $lname);
+
+    return true;
 }
 
 /********************************
@@ -17950,7 +17945,7 @@ function update_risk_status($risk_id, $status)
     if(!empty($risk[0])){
         $subject = try_decrypt($risk[0]["subject"]);
         $message = "A risk status for subject \"{$subject}\" was changed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-        write_log($risk_id, $_SESSION['uid'], $message);
+        write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
     return true;
@@ -17961,13 +17956,64 @@ function update_risk_status($risk_id, $status)
  *************************/
 function try_decrypt($value) {
 
+    $decrypted_value = try_decrypt_or_null($value);
+
+    // decrypt_with_openssl returns null on HMAC failure or openssl_decrypt
+    // failure. Convert to "" so the 540+ callers (most of which feed the
+    // result into escapeHtml / purifyHtml / array assignments / string ops)
+    // see a predictable empty string instead of null — null would trigger
+    // PHP 8.1+ deprecation warnings in stripos/strcmp/trim sites and could
+    // surface as Leaf ErrorExceptions.
+    //
+    // Also fire a user-facing toast once per request so operators see the
+    // failure without having to grep logs. Guard with a $GLOBALS flag so a
+    // page with 50 broken rows produces 1 toast, not 50.
+    if ($decrypted_value === null) {
+        // try_decrypt_or_null() returns null in two distinct situations:
+        //   1. a genuine decryption failure — decrypt was attempted on a
+        //      non-empty value and openssl/HMAC failed; or
+        //   2. a null input — there was nothing to decrypt (a NULL DB column),
+        //      which try_decrypt_or_null() passes straight through unchanged.
+        // Only (1) is an error worth alerting on. A NULL column is ordinary
+        // data (e.g. a risk with no regulation/project/comments), so firing
+        // the "could not decrypt" toast for it is a false alarm. Gate the
+        // alert on whether there was actually something to decrypt.
+        if (!empty($value) && empty($GLOBALS['encryption_extra_decrypt_alert_fired'])) {
+            $GLOBALS['encryption_extra_decrypt_alert_fired'] = true;
+            global $lang;
+            $message = $lang['DecryptionFailureToast']
+                ?? 'One or more encrypted fields could not be decrypted. They are shown as empty. Check the system logs for details.';
+            set_alert(true, "bad", $message);
+        }
+        return "";
+    }
+
+    return $decrypted_value;
+}
+
+/******************************
+ * FUNCTION: TRY DECRYPT OR NULL *
+ ******************************/
+/**
+ * Same lookup chain as try_decrypt() but returns null on decryption failure
+ * (HMAC mismatch, openssl_decrypt failure, or missing key) without firing
+ * the user-facing toast. Use this from code paths that explicitly want to
+ * detect failure — e.g. upgrade scripts that need to skip rows they can't
+ * decrypt. The toast suppression matters because those callers handle the
+ * failure themselves and a UI toast would be noise.
+ */
+function try_decrypt_or_null($value) {
+
     // If the value is empty string
     if (!$value) {
 
         return $value;
 
-    // If the encryption extra is enabled
-    } else if (encryption_extra()) {
+    // If the encryption extra is enabled OR a per-request password override
+    // is set (used by the activation promise during the per-table encrypt
+    // stages, which run before the encryption=true flag flips at the
+    // keystone stage).
+    } else if (encryption_extra() || ($GLOBALS['encryption_pwd_override'] ?? null) !== null) {
 
         // Only load it once as the realpath function call takes too much time if called a lot in a request
         // and it's totally unnecessary as the extra will only be loaded once anyway
@@ -17979,7 +18025,16 @@ function try_decrypt($value) {
 
         }
 
-        if (!isset($_SESSION['encrypted_pass']) || !$_SESSION['encrypted_pass']) {
+        $override = $GLOBALS['encryption_pwd_override'] ?? null;
+
+        // Pick the password — override wins if set, otherwise the existing
+        // session-or-fetch_key chain.
+        if ($override !== null) {
+
+            // Use the per-request override (set by activation stage handlers
+            // before the encryption flag flip).
+            $decrypted_value = decrypt($override, $value);
+        } else if (!isset($_SESSION['encrypted_pass']) || !$_SESSION['encrypted_pass']) {
 
             // If there's no session, try to get the password from the init.php
             $password = fetch_key();
@@ -18003,7 +18058,9 @@ function try_decrypt($value) {
     // Otherwise return the value
     else $decrypted_value=$value;
 
-    // Return the decrypted value
+    // Return the decrypted value (may be null if decrypt_with_openssl
+    // failed — try_decrypt_or_null() is the helper that exposes that
+    // signal to its callers).
     return $decrypted_value;
 }
 
@@ -18011,8 +18068,12 @@ function try_decrypt($value) {
  * FUNCTION: TRY ENCRYPT *
  *************************/
 function try_encrypt($value) {
-    // If the encryption extra is enabled
-    if (encryption_extra()) {
+    // If the encryption extra is enabled OR a per-request password override
+    // is set (used by the activation promise during the per-table encrypt
+    // stages, which run before the encryption=true flag flips at the
+    // keystone stage).
+    $override = $GLOBALS['encryption_pwd_override'] ?? null;
+    if (encryption_extra() || $override !== null) {
 
         // Only load it once as the realpath function call takes too much time if called a lot in a request
         // and it's totally unnecessary as the extra will only be loaded once anyway
@@ -18022,7 +18083,14 @@ function try_encrypt($value) {
             $GLOBALS['encryption_extra_loaded'] = true;
         }
 
-        if(!isset($_SESSION['encrypted_pass']) || !$_SESSION['encrypted_pass']){
+        // Pick the password — override wins if set, otherwise the existing
+        // session-or-fetch_key chain.
+        if ($override !== null) {
+
+            // Use the per-request override (set by activation stage handlers
+            // before the encryption flag flip).
+            $encrypted_value = encrypt($override, $value);
+        } else if (!isset($_SESSION['encrypted_pass']) || !$_SESSION['encrypted_pass']) {
             // If there's no session, try to get the password from the init.php
             $password = fetch_key();
 
@@ -18040,6 +18108,22 @@ function try_encrypt($value) {
 
             // Encrypt the value
             $encrypted_value = encrypt($GLOBALS['decoded_encrypted_pass'], $value);
+        }
+
+        // encrypt_with_openssl returns false when the underlying openssl_encrypt
+        // call fails (bad cipher / key length / algorithm). PDO binds false as
+        // "" on a string column, so the caller stores an empty value rather
+        // than a broken blob. Fire a user-facing toast once per request so
+        // operators see the failure — the next batch of fields that hit the
+        // same failure in the same request reuse the flag and suppress.
+        if ($encrypted_value === false) {
+            if (empty($GLOBALS['encryption_extra_encrypt_alert_fired'])) {
+                $GLOBALS['encryption_extra_encrypt_alert_fired'] = true;
+                global $lang;
+                $message = $lang['EncryptionFailureToast']
+                    ?? 'A field could not be encrypted and was not stored. Check the system logs for details.';
+                set_alert(true, "bad", $message);
+            }
         }
 
         return $encrypted_value;
@@ -19262,56 +19346,50 @@ function get_names_by_values($table, $values, $limit=4, $escape=true, $force_id=
     return implode(", ", $names) . ($limit && count($results) > $limit ? ", ...": "");
 }
 
-/*************************
- * FUNCTION: PING SERVER *
- *************************/
-function ping_server()
+/**********************************
+ * FUNCTION: LICENSE CHECK DAILY *
+ **********************************/
+function license_check_daily()
 {
-    global $escaper;
+    require_once(realpath(__DIR__ . '/licensing.php'));
 
-    // Set the default path
-    $path = "?";
+    // Most Extras' enabled-check function name follows <dir>_extra() with
+    // hyphens replaced by underscores. The three exceptions below diverge
+    // for historical reasons.
+    static $enabled_fn_exceptions = [
+        'authentication'     => 'custom_authentication_extra',
+        'complianceforgescf' => 'complianceforge_scf_extra',
+        'separation'         => 'team_separation_extra',
+    ];
 
-    // Create the SimpleRisk instance ID if it doesn't already exist
-    $instance_id = create_simplerisk_instance_id();
+    $instance_id      = create_simplerisk_instance_id();
+    $services_api_key = get_setting('services_api_key');
+    if ($services_api_key === false || $services_api_key === '') {
+        $services_api_key = null;
+    }
 
-    // Get the services API key
-    $services_api_key = get_setting("services_api_key");
-
-    // Get the timezone
-    $timezone = date_default_timezone_get();
-
-    // Open the database connection
     $db = db_open();
 
-    // Get the total number of risks
+    // Total risks
     $stmt = $db->prepare("SELECT COUNT(id) FROM risks");
     $stmt->execute();
-    $array = $stmt->fetchAll();
-    $risks = $array[0][0];
+    $risks = (int)$stmt->fetchColumn();
 
-    // Get the total number of users
+    // Total users
     $stmt = $db->prepare("SELECT COUNT(value) FROM user");
     $stmt->execute();
-    $array = $stmt->fetchAll();
-    $users = $array[0][0];
+    $users = (int)$stmt->fetchColumn();
 
-    // Get the last login date
-    $stmt = $db->prepare("SELECT last_login FROM user ORDER BY last_login desc");
+    // Last login across all users
+    $stmt = $db->prepare("SELECT last_login FROM user ORDER BY last_login DESC");
     $stmt->execute();
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    $last_login = $row['last_login'];
+    $last_login = $row['last_login'] ?? null;
 
-    // Get the application version
-    $app_version = $escaper->escapeHtml(current_version("app"));
-
-    // Get the database version
-    $db_version = $escaper->escapeHtml(current_version("app"));
-
-    // Get the 90-day and 12-month metrics for user login activity
+    // 90-day and 12-month login activity metrics (CTE on user_login_history).
     $stmt = $db->prepare("
         WITH last_90 AS (
-            SELECT 
+            SELECT
                 COUNT(*) AS total_logins,
                 COUNT(DISTINCT DATE(timestamp)) AS unique_login_days,
                 COUNT(DISTINCT user_id) AS unique_users_logged_in,
@@ -19320,17 +19398,17 @@ function ping_server()
             WHERE timestamp >= NOW() - INTERVAL 90 DAY
         ),
         prev_90 AS (
-            SELECT 
+            SELECT
                 COUNT(*) AS total_logins,
                 COUNT(DISTINCT DATE(timestamp)) AS unique_login_days,
                 COUNT(DISTINCT user_id) AS unique_users_logged_in,
                 AVG(users) AS avg_users
             FROM user_login_history
-            WHERE timestamp >= NOW() - INTERVAL 180 DAY 
+            WHERE timestamp >= NOW() - INTERVAL 180 DAY
             AND timestamp < NOW() - INTERVAL 90 DAY
         ),
         last_12_months AS (
-            SELECT 
+            SELECT
                 COUNT(*) AS total_logins,
                 COUNT(DISTINCT DATE(timestamp)) AS unique_login_days,
                 COUNT(DISTINCT user_id) AS unique_users_logged_in,
@@ -19339,17 +19417,16 @@ function ping_server()
             WHERE timestamp >= NOW() - INTERVAL 12 MONTH
         ),
         prev_12_months AS (
-            SELECT 
+            SELECT
                 COUNT(*) AS total_logins,
                 COUNT(DISTINCT DATE(timestamp)) AS unique_login_days,
                 COUNT(DISTINCT user_id) AS unique_users_logged_in,
                 AVG(users) AS avg_users
             FROM user_login_history
-            WHERE timestamp >= NOW() - INTERVAL 24 MONTH 
+            WHERE timestamp >= NOW() - INTERVAL 24 MONTH
             AND timestamp < NOW() - INTERVAL 12 MONTH
         )
-        SELECT 
-            -- Last 90 Days
+        SELECT
             l90.total_logins AS total_logins_last_90,
             l90.unique_login_days AS unique_days_last_90,
             l90.unique_users_logged_in AS unique_users_last_90,
@@ -19357,8 +19434,6 @@ function ping_server()
             (l90.total_logins / NULLIF(l90.avg_users, 0)) AS active_logins_rate_last_90,
             (l90.unique_login_days / NULLIF(l90.avg_users, 0)) AS active_days_rate_last_90,
             (l90.unique_users_logged_in / NULLIF(l90.avg_users, 0)) * 100 AS login_participation_last_90,
-
-            -- Previous 90 Days
             p90.total_logins AS total_logins_prev_90,
             p90.unique_login_days AS unique_days_prev_90,
             p90.unique_users_logged_in AS unique_users_prev_90,
@@ -19366,8 +19441,6 @@ function ping_server()
             (p90.total_logins / NULLIF(p90.avg_users, 0)) AS active_logins_rate_prev_90,
             (p90.unique_login_days / NULLIF(p90.avg_users, 0)) AS active_days_rate_prev_90,
             (p90.unique_users_logged_in / NULLIF(p90.avg_users, 0)) * 100 AS login_participation_prev_90,
-
-            -- Last 12 Months
             l12.total_logins AS total_logins_last_12m,
             l12.unique_login_days AS unique_days_last_12m,
             l12.unique_users_logged_in AS unique_users_last_12m,
@@ -19375,8 +19448,6 @@ function ping_server()
             (l12.total_logins / NULLIF(l12.avg_users, 0)) AS active_logins_rate_last_12m,
             (l12.unique_login_days / NULLIF(l12.avg_users, 0)) AS active_days_rate_last_12m,
             (l12.unique_users_logged_in / NULLIF(l12.avg_users, 0)) * 100 AS login_participation_last_12m,
-
-            -- Previous 12 Months
             p12.total_logins AS total_logins_prev_12m,
             p12.unique_login_days AS unique_days_prev_12m,
             p12.unique_users_logged_in AS unique_users_prev_12m,
@@ -19384,163 +19455,92 @@ function ping_server()
             (p12.total_logins / NULLIF(p12.avg_users, 0)) AS active_logins_rate_prev_12m,
             (p12.unique_login_days / NULLIF(p12.avg_users, 0)) AS active_days_rate_prev_12m,
             (p12.unique_users_logged_in / NULLIF(p12.avg_users, 0)) * 100 AS login_participation_prev_12m
-
         FROM last_90 l90, prev_90 p90, last_12_months l12, prev_12_months p12;
     ");
     $stmt->execute();
-
-    // Fetch the results
-    $result = $stmt->fetch();
-
-    // Create the parameters
-    $parameters = [
-        'instance_id' => $instance_id,
-        'api_key' => $services_api_key,
-        'timezone' => $timezone,
-        'risks' => $risks,
-        'users' => $users,
-        'app_version' => $app_version,
-        'db_version' => $db_version,
-        'last_login' => $last_login,
-        'total_logins_last_90' => $result['total_logins_last_90'],
-        'unique_days_last_90' => $result['unique_days_last_90'],
-        'unique_users_last_90' => $result['unique_users_last_90'],
-        'avg_users_last_90' => $result['avg_users_last_90'],
-        'active_logins_rate_last_90' => round($result['active_logins_rate_last_90'], 2),
-        'active_days_rate_last_90' => round($result['active_days_rate_last_90'], 2),
-        'login_participation_last_90' => round($result['login_participation_last_90'], 2),
-        'total_logins_prev_90' => $result['total_logins_prev_90'],
-        'unique_days_prev_90' => $result['unique_days_prev_90'],
-        'unique_users_prev_90' => $result['unique_users_prev_90'],
-        'avg_users_prev_90' => $result['avg_users_prev_90'],
-        'active_logins_rate_prev_90' => round($result['active_logins_rate_prev_90'], 2),
-        'active_days_rate_prev_90' => round($result['active_days_rate_prev_90'], 2),
-        'login_participation_prev_90' => round($result['login_participation_prev_90'], 2),
-        'total_logins_last_12m' => $result['total_logins_last_12m'],
-        'unique_days_last_12m' => $result['unique_days_last_12m'],
-        'unique_users_last_12m' => $result['unique_users_last_12m'],
-        'avg_users_last_12m' => $result['avg_users_last_12m'],
-        'active_logins_rate_last_12m' => round($result['active_logins_rate_last_12m'], 2),
-        'active_days_rate_last_12m' => round($result['active_days_rate_last_12m'], 2),
-        'login_participation_last_12m' => round($result['login_participation_last_12m'], 2),
-        'total_logins_prev_12m' => $result['total_logins_prev_12m'],
-        'unique_days_prev_12m' => $result['unique_days_prev_12m'],
-        'unique_users_prev_12m' => $result['unique_users_prev_12m'],
-        'avg_users_previous_12m' => $result['avg_users_prev_12m'],
-        'active_logins_rate_prev_12m' => round($result['active_logins_rate_prev_12m'], 2),
-        'active_days_rate_prev_12m' => round($result['active_days_rate_prev_12m'], 2),
-        'login_participation_prev_12m' => round($result['login_participation_prev_12m'], 2),
-    ];
-
-    // If the instance is registered
-    if (get_setting('registration_registered') != 0)
-    {
-        // Add the extra parameters
-        $extra_parameters = [
-            'advanced_search_installed' => core_is_installed("advanced_search"),
-            'advanced_search_enabled' => advanced_search_extra(),
-            'advanced_search_version' => core_extra_current_version("advanced_search"),
-            'api_installed' => core_is_installed("api"),
-            'api_enabled' => api_extra(),
-            'api_version' => core_extra_current_version("api"),
-            'artificial_intelligence_installed' => core_is_installed("artificial_intelligence"),
-            'artificial_intelligence_enabled' => artificial_intelligence_extra(),
-            'artificial_intelligence_version' => core_extra_current_version("artificial_intelligence"),
-            'risk_assessment_installed' => core_is_installed("assessments"),
-            'risk_assessment_enabled' => assessments_extra(),
-            'risk_assessment_version' => core_extra_current_version("assessments"),
-            'custom_authentication_installed' => core_is_installed("authentication"),
-            'custom_authentication_enabled' => custom_authentication_extra(),
-            'custom_authentication_version' => core_extra_current_version("authentication"),
-            'complianceforgescf_installed' => core_is_installed("complianceforgescf"),
-            'complianceforgescf_enabled' => complianceforge_scf_extra(),
-            'complianceforgescf_version' => core_extra_current_version("complianceforgescf"),
-            'customization_installed' => core_is_installed("customization"),
-            'customization_enabled' => customization_extra(),
-            'customization_version' => core_extra_current_version("customization"),
-            'encryption_installed' => core_is_installed("encryption"),
-            'encryption_enabled' => encryption_extra(),
-            'encryption_version' => core_extra_current_version("encryption"),
-            'import_export_installed' => core_is_installed("import-export"),
-            'import_export_enabled' => import_export_extra(),
-            'import_export_version' => core_extra_current_version("import-export"),
-            'incident_management_installed' => core_is_installed("incident_management"),
-            'incident_management_enabled' => incident_management_extra(),
-            'incident_management_version' => core_extra_current_version("incident_management"),
-            'jira_installed' => core_is_installed("jira"),
-            'jira_enabled' => jira_extra(),
-            'jira_version' => core_extra_current_version("jira"),
-            'email_notification_installed' => core_is_installed("notification"),
-            'email_notification_enabled' => notification_extra(),
-            'email_notification_version' => core_extra_current_version("notification"),
-            'organizational_hierarchy_installed' => core_is_installed("organizational_hierarchy"),
-            'organizational_hierarchy_enabled' => organizational_hierarchy_extra(),
-            'organizational_hierarchy_version' => core_extra_current_version("organizational_hierarchy"),
-            'team_separation_installed' => core_is_installed("separation"),
-            'team_separation_enabled' => team_separation_extra(),
-            'team_separation_version' => core_extra_current_version("separation"),
-            'ucf_installed' => core_is_installed("ucf"),
-            'ucf_enabled' => ucf_extra(),
-            'ucf_version' => core_extra_current_version("ucf"),
-            'vulnmgmt_installed' => core_is_installed("vulnmgmt"),
-            'vulnmgmt_enabled' => vulnmgmt_extra(),
-            'vulnmgmt_version' => core_extra_current_version("vulnmgmt"),
-        ];
-
-        // Merge the parameters together
-        $parameters = array_merge($parameters, $extra_parameters);
-
-        // If the organizational hierarchy extra is enabled
-        if (organizational_hierarchy_extra())
-        {
-            // Get the count of business units
-            $stmt = $db->prepare("SELECT COUNT(id) FROM business_unit;");
-            $stmt->execute();
-            $array = $stmt->fetchAll();
-            $organizational_hierarchy_count = (int)$array[0][0];
-
-            // Add the count of business units to the parameters
-
-            $oh_parameters = [
-                'organizational_hierarchy_count' => $organizational_hierarchy_count,
-            ];
-
-            $parameters = array_merge($parameters, $oh_parameters);
-        }
+    $m = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!is_array($m)) {
+        $m = [];
     }
 
-    // Close the database connection
+    $metrics = [
+        'total_logins_last_90'        => (int)($m['total_logins_last_90'] ?? 0),
+        'unique_days_last_90'         => (int)($m['unique_days_last_90'] ?? 0),
+        'unique_users_last_90'        => (int)($m['unique_users_last_90'] ?? 0),
+        'avg_users_last_90'           => (float)($m['avg_users_last_90'] ?? 0),
+        'active_logins_rate_last_90'  => round((float)($m['active_logins_rate_last_90'] ?? 0), 2),
+        'active_days_rate_last_90'    => round((float)($m['active_days_rate_last_90'] ?? 0), 2),
+        'login_participation_last_90' => round((float)($m['login_participation_last_90'] ?? 0), 2),
+        'total_logins_prev_90'        => (int)($m['total_logins_prev_90'] ?? 0),
+        'unique_days_prev_90'         => (int)($m['unique_days_prev_90'] ?? 0),
+        'unique_users_prev_90'        => (int)($m['unique_users_prev_90'] ?? 0),
+        'avg_users_prev_90'           => (float)($m['avg_users_prev_90'] ?? 0),
+        'active_logins_rate_prev_90'  => round((float)($m['active_logins_rate_prev_90'] ?? 0), 2),
+        'active_days_rate_prev_90'    => round((float)($m['active_days_rate_prev_90'] ?? 0), 2),
+        'login_participation_prev_90' => round((float)($m['login_participation_prev_90'] ?? 0), 2),
+        'total_logins_last_12m'       => (int)($m['total_logins_last_12m'] ?? 0),
+        'unique_days_last_12m'        => (int)($m['unique_days_last_12m'] ?? 0),
+        'unique_users_last_12m'       => (int)($m['unique_users_last_12m'] ?? 0),
+        'avg_users_last_12m'          => (float)($m['avg_users_last_12m'] ?? 0),
+        'active_logins_rate_last_12m' => round((float)($m['active_logins_rate_last_12m'] ?? 0), 2),
+        'active_days_rate_last_12m'   => round((float)($m['active_days_rate_last_12m'] ?? 0), 2),
+        'login_participation_last_12m'=> round((float)($m['login_participation_last_12m'] ?? 0), 2),
+        'total_logins_prev_12m'       => (int)($m['total_logins_prev_12m'] ?? 0),
+        'unique_days_prev_12m'        => (int)($m['unique_days_prev_12m'] ?? 0),
+        'unique_users_prev_12m'       => (int)($m['unique_users_prev_12m'] ?? 0),
+        'avg_users_prev_12m'          => (float)($m['avg_users_prev_12m'] ?? 0),
+        'active_logins_rate_prev_12m' => round((float)($m['active_logins_rate_prev_12m'] ?? 0), 2),
+        'active_days_rate_prev_12m'   => round((float)($m['active_days_rate_prev_12m'] ?? 0), 2),
+        'login_participation_prev_12m'=> round((float)($m['login_participation_prev_12m'] ?? 0), 2),
+    ];
+
+    $metadata = [
+        'app_version' => current_version('app'),
+        'db_version'  => current_version('db'),
+        'timezone'    => date_default_timezone_get(),
+        'risks'       => $risks,
+        'users'       => $users,
+        'last_login'  => $last_login,
+        'metrics'     => $metrics,
+    ];
+
+    // Organizational hierarchy business-unit count: only relevant when that
+    // Extra is enabled. Preserve from legacy.
+    if (function_exists('organizational_hierarchy_extra') && organizational_hierarchy_extra()) {
+        $stmt = $db->prepare("SELECT COUNT(id) FROM business_unit;");
+        $stmt->execute();
+        $metadata['organizational_hierarchy_count'] = (int)$stmt->fetchColumn();
+    }
+
+    // Build the per-Extra subobject keyed by filesystem-dir name.
+    $extras = [];
+    foreach (available_extra_short_names() as $name) {
+        $enabled_fn = $enabled_fn_exceptions[$name]
+            ?? (str_replace('-', '_', $name) . '_extra');
+        $enabled    = function_exists($enabled_fn) ? (bool)call_user_func($enabled_fn) : false;
+        $installed  = core_is_installed($name);
+        $extras[$name] = [
+            'installed' => (bool)$installed,
+            'enabled'   => $enabled,
+            'version'   => $installed ? core_extra_current_version($name) : null,
+        ];
+    }
+
     db_close($db);
 
-    // Set the HTTP options
-    $http_options = [
-        'method' => 'POST',
-        'header' => [
-            "Content-Type: application/x-www-form-urlencoded",
-        ],
-        'timeout' => 5,
-    ];
+    return license_check($instance_id, $services_api_key, $metadata, $extras);
+}
 
-    // If SSL certificate checks are enabled for external requests
-    if (get_setting('ssl_certificate_check_external') == 1)
-    {
-        // Verify the SSL host and peer
-        $validate_ssl = true;
-    }
-    else $validate_ssl = false;
-
-    // Url for SimpleRisk ping
-    if (defined('PING_URL'))
-    {
-        $url = PING_URL;
-    }
-    else $url = 'https://ping.simplerisk.com';
-
-    // Make the https request
-    $results = fetch_url_content("curl", $http_options, $validate_ssl, $url, $parameters);
-
-    // Return the results
-    return $results;
+/**
+ * @deprecated Use license_check_daily(). The "ping" name dates back to
+ * when this call was a flat metadata POST to ping.simplerisk.com; the
+ * licensing refactor consolidated that endpoint into /license/check,
+ * which uploads metadata AND retrieves entitlements in one call. Kept
+ * here so external code (especially the upgrade Extra) doesn't break.
+ */
+function ping_server()
+{
+    return license_check_daily();
 }
 
 /*******************************************
@@ -19668,7 +19668,7 @@ function add_family($short_name){
 
     $risk_id = 1000;
     $message = "A new family \"" . $short_name . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-    write_log($risk_id, $_SESSION['uid'], $message);
+    write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
     // Close the database connection
     db_close($db);
@@ -19695,8 +19695,8 @@ function update_family($value, $short_name){
     $stmt->execute();
 
     $risk_id = 1000;
-    $message = "A new family \"" . $short_name . "\" was updated by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-    write_log($risk_id, $_SESSION['uid'], $message);
+    $message = "A new family \"" . $escaper->escapeHtml($short_name) . "\" was updated by the \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\" user.";
+    write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
     // Close the database connection
     db_close($db);
@@ -20163,7 +20163,7 @@ function delete_role($role_id) {
 
     $risk_id = 1000;
     $message = "The existing role \"" . $name . "\" was removed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-    write_log($risk_id, $_SESSION['uid'], $message);
+    write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
     // Close the database connection
     db_close($db);
@@ -20345,7 +20345,7 @@ function accept_mitigation_by_risk_id($risk_id, $accept)
         $stmt->execute();
 
         $message = "Mitigation for risk ID ". convert_to_risk_id($risk_id) ." accepted by \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-        write_log(convert_to_risk_id($risk_id), $_SESSION['uid'], $message);
+        write_log(convert_to_risk_id($risk_id), $_SESSION['uid'] ?? 0, $message);
     }
     // If decline mitigation, delete a record
     else
@@ -20356,7 +20356,7 @@ function accept_mitigation_by_risk_id($risk_id, $accept)
         $stmt->execute();
 
         $message = "Mitigation for risk ID ". convert_to_risk_id($risk_id) ." rejected by \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-        write_log(convert_to_risk_id($risk_id), $_SESSION['uid'], $message);
+        write_log(convert_to_risk_id($risk_id), $_SESSION['uid'] ?? 0, $message);
     }
     // Close the database connection
     db_close($db);
@@ -20666,7 +20666,7 @@ function add_impact()
     // Close the database connection
     db_close($db);
 
-    write_log(1000, $_SESSION['uid'], "A new impact named \"".$escaper->escapeHtml($name)."\" was created by the \"" . $_SESSION['user'] . "\" user.");
+    write_log(1000, $_SESSION['uid'] ?? 0, "A new impact named \"".$escaper->escapeHtml($name)."\" was created by the \"" . $_SESSION['user'] . "\" user.");
 
     $new_likelihood_value = get_likelihoods_count();
     $new_impact_value = get_impacts_count();
@@ -20702,7 +20702,7 @@ function delete_impact()
             $stmt = $db->prepare("DELETE FROM `impact` WHERE value=:value;");
             $stmt->bindParam(":value", $array['value'], PDO::PARAM_INT);
             $stmt->execute();
-            write_log(1000, $_SESSION['uid'], "An impact named \"".$escaper->escapeHtml($array['name'])."\" was deleted by the \"" . $_SESSION['user'] . "\" user.");
+            write_log(1000, $_SESSION['uid'] ?? 0, "An impact named \"".$escaper->escapeHtml($array['name'])."\" was deleted by the \"" . $_SESSION['user'] . "\" user.");
             
             $new_likelihood_value = get_likelihoods_count();
             $new_impact_value = get_impacts_count();
@@ -20746,7 +20746,7 @@ function add_likelihood()
     // Close the database connection
     db_close($db);
 
-    write_log(1000, $_SESSION['uid'], "A new likelihood named \"".$escaper->escapeHtml($name)."\" was created by the \"" . $_SESSION['user'] . "\" user.");
+    write_log(1000, $_SESSION['uid'] ?? 0, "A new likelihood named \"".$escaper->escapeHtml($name)."\" was created by the \"" . $_SESSION['user'] . "\" user.");
 
     $new_likelihood_value = get_likelihoods_count();
     $new_impact_value = get_impacts_count();
@@ -20782,7 +20782,7 @@ function delete_likelihood()
             $stmt = $db->prepare("DELETE FROM `likelihood` WHERE value=:value;");
             $stmt->bindParam(":value", $array['value'], PDO::PARAM_INT);
             $stmt->execute();
-            write_log(1000, $_SESSION['uid'], "An likelihood named \"".$escaper->escapeHtml($array['name'])."\" was deleted by the \"" .$_SESSION['user'] . "\" user.");
+            write_log(1000, $_SESSION['uid'] ?? 0, "An likelihood named \"".$escaper->escapeHtml($array['name'])."\" was deleted by the \"" .$_SESSION['user'] . "\" user.");
             
             $new_likelihood_value = get_likelihoods_count();
             $new_impact_value = get_impacts_count();
@@ -20922,7 +20922,7 @@ function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1, 
 
                         // Audit log entry for uploading a file
                         $message = "File \"" . $file['name'] . "\" was uploaded by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-                        write_log($test_audit_id + 1000, $_SESSION['uid'], $message, $log_type);
+                        write_log($test_audit_id + 1000, $_SESSION['uid'] ?? 0, $message, $log_type);
 
                     }
                     // Otherwise
@@ -21746,7 +21746,7 @@ function add_file_type($name, $extension) {
     // Write an audit log entry
     $risk_id = 1000;
     $message = "A new upload file type of \"" . $name . "\" for extension \"" . $extension . "\" was added by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-    write_log($risk_id, $_SESSION['uid'], $message);
+    write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     
     // Close the database connection
     db_close($db);
@@ -22637,10 +22637,108 @@ function updateTagsOfType($taggee_id, $type, $tags) {
             ), false
         );
 
-        write_log($taggee_id + 1000, $_SESSION['uid'], $message, $type);
+        write_log($taggee_id + 1000, $_SESSION['uid'] ?? 0, $message, $type);
     }
 
     return true;
+}
+
+/*******************************************************************************
+ * FUNCTION: TAG TYPE PERMISSION REQUIREMENT                                    *
+ * Fail-closed authorization map for tag types (SR-1794 / SR-751). Returns the  *
+ * permission requirement for reading tags of $type, or null when the type is   *
+ * not recognized — in which case the caller MUST deny. No tag type may be      *
+ * served without an explicit entry here. Pure (no session/DB access) so the    *
+ * map is unit-testable, and any type added to $tag_types without a matching    *
+ * case here fails closed by default.                                           *
+ *                                                                              *
+ * Returns ['permissions' => string[], 'extra' => ?string, 'deny_lang' => str]: *
+ *   permissions — the session must hold AT LEAST ONE of these.                  *
+ *   extra       — required Extra name (e.g. 'assessments'); null if none.       *
+ *   deny_lang   — lang key for the denial message.                             *
+ *******************************************************************************/
+function tag_type_permission_requirement($type) {
+    switch ($type) {
+        case 'risk':
+            return ['permissions' => ['riskmanagement'], 'extra' => null, 'deny_lang' => 'NoPermissionForRiskManagement'];
+        case 'asset':
+            return ['permissions' => ['asset'], 'extra' => null, 'deny_lang' => 'NoPermissionForAsset'];
+        case 'test':
+        case 'test_audit':
+            return ['permissions' => ['compliance'], 'extra' => null, 'deny_lang' => 'NoPermissionForCompliance'];
+        case 'questionnaire_risk':
+        case 'questionnaire_answer':
+        case 'questionnaire_pending_risk':
+            return ['permissions' => ['assessments'], 'extra' => 'assessments', 'deny_lang' => 'NoPermissionForAssessments'];
+        case 'incident_management_source':
+        case 'incident_management_destination':
+            return ['permissions' => ['im_submit_incidents', 'im_edit_incidents'], 'extra' => 'incident_management', 'deny_lang' => 'NoPermissionForIncidentManagement'];
+        default:
+            return null; // fail-closed: an unmapped tag type is never served
+    }
+}
+
+/*******************************************************************************
+ * FUNCTION: CHECK TAG TYPE PERMISSION                                          *
+ * Session-aware check: may the current user read tags of $type? Fail-closed    *
+ * (unknown type → false). Grants access iff the session holds at least one of  *
+ * the mapped permissions AND the mapped Extra (if any) is active.              *
+ *******************************************************************************/
+function check_tag_type_permission($type) {
+    $requirement = tag_type_permission_requirement($type);
+    if ($requirement === null) {
+        return false;
+    }
+    if ($requirement['extra'] !== null) {
+        $extra_function = $requirement['extra'] . '_extra';
+        if (!function_exists($extra_function) || !$extra_function()) {
+            return false;
+        }
+    }
+    foreach ($requirement['permissions'] as $permission) {
+        if (check_permission($permission)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/*******************************************************************************
+ * FUNCTION: COMPLIANCE FILE REQUIRED EXCEPTION PERMISSION                      *
+ * SR-1694: the granular exception-permission that a compliance_files download  *
+ * must enforce for a given ref_type at the sink (download_compliance_file()),  *
+ * or null when coarse governance/compliance menu access is the intended        *
+ * authorization model. Exception attachments (ref_type 'exceptions') require   *
+ * view_exception — mirroring the exception display API, which already gates on  *
+ * check_permission_exception('view'). `documents` and `test_audit` have no      *
+ * granular view permission, so they return null (coarse access, plus the       *
+ * entry-point team-separation check for test_audit, is their model). Pure — no  *
+ * session/DB access — so the mapping is unit-testable and the coarse-by-design  *
+ * intent is locked against accidental regression.                              *
+ *******************************************************************************/
+function compliance_file_required_exception_permission($ref_type) {
+    return $ref_type === 'exceptions' ? 'view' : null;
+}
+
+/*******************************************************************************
+ * FUNCTION: COMPLIANCE FILE DOWNLOAD DENIED                                    *
+ * SR-1694: the deny decision enforced at download_compliance_file(). Returns   *
+ * true when a compliance_files row of the given ref_type must NOT be streamed  *
+ * to the current caller — i.e. the ref_type requires a granular exception      *
+ * permission (per compliance_file_required_exception_permission()) that the    *
+ * caller does not hold. ref_types with no granular requirement (documents,     *
+ * test_audit, and any unmapped value) are never denied here (coarse menu       *
+ * access plus the entry-point team-separation check is their model).           *
+ *                                                                              *
+ * The permission check is injected as a callable so the whole deny decision —  *
+ * the ref_type mapping AND that the correct permission is the one checked — is  *
+ * unit-testable without a session; download_compliance_file() passes the real  *
+ * check_permission_exception. Keeps the header()/exit() sink a thin wrapper    *
+ * over verifiable logic.                                                        *
+ *******************************************************************************/
+function compliance_file_download_denied($ref_type, callable $exception_permission_checker) {
+    $required_permission = compliance_file_required_exception_permission($ref_type);
+    return $required_permission !== null && !$exception_permission_checker($required_permission);
 }
 
 /*******************************************
@@ -22835,6 +22933,98 @@ function csrf_startup() {
     }
 }
 
+/**
+ * Determine whether a request targets the API, based on the URL path.
+ *
+ * Matches on the path component only — the full REQUEST_URI includes the query
+ * string, and matching that would misclassify a normal HTML page reached with
+ * "/api/" somewhere in its query parameters. Used by include_csrf_magic() to
+ * decide whether to disable csrf-magic's output rewriting (which corrupts JSON
+ * API responses that contain stored HTML).
+ *
+ * Pure: depends only on its argument — no DB, I/O, or session access.
+ *
+ * @param string|null $request_uri Typically $_SERVER['REQUEST_URI'].
+ * @return bool True if the request path contains the "/api/" segment.
+ */
+function request_path_is_api($request_uri) {
+    if (!is_string($request_uri) || $request_uri === '') {
+        return false;
+    }
+
+    $path = parse_url($request_uri, PHP_URL_PATH);
+
+    return is_string($path) && strpos($path, '/api/') !== false;
+}
+
+/****************************************
+ * FUNCTION: CSRF RESOLVE AND PERSIST   *
+ *           SECRET                     *
+ ****************************************/
+/**
+ * Resolve a stable CSRF secret, persisting one in the database.
+ *
+ * Precedence: (1) a non-empty `csrf_secret` setting in the DB (the HA-friendly
+ * source of truth); (2) the legacy on-disk csrf-magic secret file, migrated in;
+ * (3) a freshly generated secret. Whenever the value did not already come from
+ * a non-empty DB row, it is persisted with a raw REPLACE (an UPSERT).
+ *
+ * The UPSERT is the fix for a self-perpetuating CSRF outage: add_setting() is
+ * INSERT IGNORE, so if a `csrf_secret` row already existed but was EMPTY (and
+ * the legacy file was gone — e.g. an upgrade wiped the vendor directory), every
+ * request generated a fresh random secret that never persisted, and every token
+ * minted on one request failed validation on the next. The REPLACE overwrites
+ * the empty/stale row, so the instance converges on one stable secret after the
+ * first request.
+ *
+ * The persist is a raw REPLACE rather than update_or_insert_setting() on purpose:
+ * that helper writes the value into the debug log, and the CSRF secret must never
+ * reach the logs.
+ *
+ * Side effects are limited to the single settings REPLACE, so the
+ * resolution/persistence behaviour is testable without driving csrf-magic's
+ * global init (see CsrfSecretPersistenceTest).
+ *
+ * @return string A non-empty CSRF secret.
+ */
+function csrf_resolve_and_persist_secret(): string {
+
+    // A non-empty DB value is authoritative — use it as-is, nothing to persist.
+    $secret = get_setting('csrf_secret');
+    if ($secret !== false && $secret !== '') {
+        return $secret;
+    }
+
+    // Migrate from the legacy on-disk file if it exists.
+    $legacy_file = realpath(__DIR__ . '/../vendor/simplerisk/csrf-magic/csrf-secret.php');
+    if ($legacy_file !== false && file_exists($legacy_file)) {
+        $secret = '';
+        include $legacy_file;
+    }
+
+    // Generate a cryptographically secure secret if we still don't have one.
+    if (!is_string($secret) || $secret === '') {
+        $secret = bin2hex(random_bytes(32));
+    }
+
+    // Persist with a raw REPLACE (an UPSERT) rather than add_setting()'s INSERT
+    // IGNORE — that could not overwrite an existing empty/stale row, so the
+    // secret never persisted and every request minted a fresh random one. A raw
+    // REPLACE is also deliberately used instead of update_or_insert_setting()
+    // because that helper writes the value into the debug log, and the CSRF
+    // secret must never reach the logs.
+    $db = db_open();
+    $stmt = $db->prepare("REPLACE INTO settings (`name`, `value`) VALUES ('csrf_secret', :value)");
+    $stmt->bindParam(":value", $secret, PDO::PARAM_STR);
+    $stmt->execute();
+    db_close($db);
+
+    // Keep get_setting()'s in-memory cache coherent for the rest of the request.
+    $GLOBALS['setting_csrf_secret'] = $secret;
+
+    return $secret;
+}
+
 /**********************************
  * FUNCTION: INCLUDE CSRF MAGIC  *
  * Make sure to call this after  *
@@ -22844,27 +23034,26 @@ function include_csrf_magic() {
 
     global $escaper;
 
-    // Resolve the CSRF secret, preferring the database for HA compatibility.
-    $secret = get_setting('csrf_secret');
-
-    if ($secret === false || $secret === '') {
-        // Migrate from the legacy on-disk file if it exists.
-        $legacy_file = realpath(__DIR__ . '/../vendor/simplerisk/csrf-magic/csrf-secret.php');
-        if ($legacy_file !== false && file_exists($legacy_file)) {
-            $secret = '';
-            include $legacy_file;
-        }
-
-        // Generate a cryptographically secure secret if we still don't have one.
-        if ($secret === '') {
-            $secret = bin2hex(random_bytes(32));
-        }
-
-        add_setting('csrf_secret', $secret);
-    }
+    // Resolve a stable CSRF secret (DB-preferred, with legacy-file migration and
+    // a persisted fallback) before validation. See csrf_resolve_and_persist_secret().
+    $secret = csrf_resolve_and_persist_secret();
 
     csrf_conf('secret', $secret);
     csrf_conf('rewrite-js', $escaper->escapeHtml(build_url('/vendor/simplerisk/csrf-magic/csrf-magic.js')));
+
+    // csrf_ob_handler() in vendor/simplerisk/csrf-magic decides whether to
+    // rewrite the response by scanning the raw buffer for "<html". JSON API
+    // responses that include stored HTML (e.g. queue items containing email
+    // bodies) trip that check and the handler appends a closing <script> tag,
+    // producing invalid JSON that breaks DataTables and any other JSON client.
+    // API callers don't need server-side <form> rewriting — disable it here.
+    // request_path_is_api() matches on the request path only (not the query
+    // string), so an HTML page reached with "/api/" in its query parameters
+    // keeps its rewriting.
+    if (request_path_is_api($_SERVER['REQUEST_URI'] ?? null)) {
+        csrf_conf('rewrite', false);
+    }
+
     csrf_init();
 }
 
@@ -23203,7 +23392,7 @@ function updateTeamsOfItem($item_id, $type, $teams, $audit_log=true) {
                 break;
         }
 
-        write_log((int)$item_id + 1000, $_SESSION['uid'], $message, $audit_type);
+        write_log((int)$item_id + 1000, $_SESSION['uid'] ?? 0, $message, $audit_type);
     }
 
     return true;
@@ -23332,7 +23521,7 @@ function updateItemsOfTeam($team_id, $type, $items) {
         );
 
         // updateItemsOfTeam operates on a list of items, so we log against the team-level event with a 0 ref ID
-        write_log(1000, $_SESSION['uid'], $message, $audit_type);
+        write_log(1000, $_SESSION['uid'] ?? 0, $message, $audit_type);
     }
 
     return true;
@@ -24050,6 +24239,167 @@ function recursive_urldecode($str) {
     return $str;
 }
 
+/*******************************************************************************
+ * FUNCTION: IP IS LOOPBACK                                                     *
+ * Pure (no DNS): is $ip an IPv4 loopback (127.0.0.0/8) or the IPv6 loopback    *
+ * (::1)? Used by the outbound-URL SSRF guards to permit self-hosted services.  *
+ *******************************************************************************/
+function ip_is_loopback($ip) {
+    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+        return strpos($ip, '127.') === 0;
+    }
+    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+        $packed = @inet_pton($ip);
+        return $packed !== false && $packed === inet_pton('::1');
+    }
+    return false;
+}
+
+/*******************************************************************************
+ * FUNCTION: IP IS PRIVATE OR RESERVED                                          *
+ * Pure (no DNS): true when $ip is NOT a public, globally-routable address —    *
+ * i.e. private (RFC1918 / fc00::/7), loopback (127/8, ::1), link-local         *
+ * (169.254/16 incl. cloud metadata 169.254.169.254, fe80::/10), or otherwise   *
+ * reserved. Anything that is not a valid public IP is treated as unsafe. This  *
+ * is the SSRF core the outbound-URL guards build on.                           *
+ *******************************************************************************/
+function ip_is_private_or_reserved($ip) {
+    if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
+        return true; // not a valid IP → unsafe
+    }
+    // filter_var's NO_RES_RANGE misses a few non-routable / internal ranges that
+    // are still SSRF-reachable: 100.64.0.0/10 (RFC 6598 CGNAT — e.g. Tailscale mesh
+    // and some cloud NAT fabrics), 192.0.0.0/24 (RFC 6890 IETF protocol assignments),
+    // and 198.18.0.0/15 (RFC 2544 benchmarking). Flag them explicitly.
+    foreach (['100.64.0.0/10', '192.0.0.0/24', '198.18.0.0/15'] as $cidr) {
+        if (ip_in_cidr($ip, $cidr)) return true;
+    }
+    // filter_var returns the address only when it is public and non-reserved.
+    return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false;
+}
+
+/*******************************************************************************
+ * FUNCTION: RESOLVE HOST IPS                                                   *
+ * Resolve a hostname to its IPv4 + IPv6 addresses. A bare IP literal (optionally *
+ * bracketed for IPv6) returns itself. Returns [] on resolution failure —       *
+ * callers treat an empty result as unsafe (fail-closed).                       *
+ *******************************************************************************/
+function resolve_host_ips($host) {
+    $host = trim((string)$host);
+    if ($host === '') return [];
+    $bare = trim($host, '[]');
+    if (filter_var($bare, FILTER_VALIDATE_IP)) return [$bare];
+    $ips = [];
+    $a = @gethostbynamel($host);
+    if (is_array($a)) $ips = array_merge($ips, $a);
+    $aaaa = @dns_get_record($host, DNS_AAAA);
+    if (is_array($aaaa)) {
+        foreach ($aaaa as $rec) {
+            if (!empty($rec['ipv6'])) $ips[] = $rec['ipv6'];
+        }
+    }
+    return array_values(array_unique($ips));
+}
+
+/*******************************************************************************
+ * FUNCTION: IP IN CIDR                                                          *
+ * Pure (no DNS): does $ip fall inside $entry, where $entry is a bare IP literal *
+ * (exact match) or a CIDR block (e.g. 10.0.0.0/8, fc00::/7)? IPv4 and IPv6.     *
+ * A non-IP/non-CIDR $entry (e.g. a hostname) returns false. Used by the         *
+ * outbound-target allow-list matcher.                                          *
+ *******************************************************************************/
+function ip_in_cidr($ip, $entry) {
+    $ip_bin = @inet_pton((string)$ip);
+    if ($ip_bin === false) return false;
+    $entry = trim((string)$entry);
+    if (strpos($entry, '/') === false) {
+        $entry_bin = @inet_pton($entry);
+        return $entry_bin !== false && $entry_bin === $ip_bin;
+    }
+    [$subnet, $bits] = explode('/', $entry, 2);
+    $subnet_bin = @inet_pton($subnet);
+    if ($subnet_bin === false) return false;
+    if (strlen($subnet_bin) !== strlen($ip_bin)) return false; // v4 vs v6 mismatch
+    $bits = (int)$bits;
+    if ($bits < 0 || $bits > strlen($ip_bin) * 8) return false;
+    $whole = intdiv($bits, 8);
+    $rem   = $bits % 8;
+    if ($whole > 0 && substr($ip_bin, 0, $whole) !== substr($subnet_bin, 0, $whole)) return false;
+    if ($rem > 0) {
+        $mask = chr((0xff << (8 - $rem)) & 0xff);
+        if ((ord($ip_bin[$whole]) & ord($mask)) !== (ord($subnet_bin[$whole]) & ord($mask))) return false;
+    }
+    return true;
+}
+
+/*******************************************************************************
+ * FUNCTION: OUTBOUND TARGET ALLOWLISTED                                         *
+ * Is a single (host, ip) destination explicitly permitted by $allowed — an     *
+ * admin-maintained list of hostnames, bare IPs, and/or CIDR blocks in           *
+ * config.php? A hostname entry matches the URL host (case-insensitive); an      *
+ * IP / CIDR entry matches the resolved IP. This is the config.php half of the   *
+ * two-actor control: a destination the in-app admin configured is only reached  *
+ * if a system admin also named it here.                                        *
+ *******************************************************************************/
+function outbound_target_allowlisted($host, $ip, array $allowed) {
+    $host = strtolower(trim((string)$host));
+    foreach ($allowed as $entry) {
+        $entry = trim((string)$entry);
+        if ($entry === '') continue;
+        if ($host !== '' && strtolower($entry) === $host) return true; // hostname entry
+        if (ip_in_cidr($ip, $entry)) return true;                      // IP / CIDR entry
+    }
+    return false;
+}
+
+/*******************************************************************************
+ * FUNCTION: SAFE OUTBOUND REQUEST TARGET                                        *
+ * SSRF guard for a server-initiated HTTP request to a user/admin-supplied URL.  *
+ * Resolves the host ONCE and returns a pin descriptor                          *
+ * ['host','port','ip','resolve'] when the URL is safe to fetch, or null.        *
+ * Public, routable destinations are always allowed. An internal destination     *
+ * (loopback / private / link-local incl. 169.254.169.254 cloud metadata /       *
+ * reserved) is allowed ONLY when explicitly named in $allowed (host / IP / CIDR *
+ * from config.php) — otherwise denied, along with non-http(s) schemes and       *
+ * unresolvable hosts. The returned 'resolve' string ("host:port:ip") is meant   *
+ * for CURLOPT_RESOLVE so the request connects to the VALIDATED ip (closing the  *
+ * DNS-rebinding TOCTOU); the caller should also disable redirect-following.     *
+ *******************************************************************************/
+function safe_outbound_request_target($url, array $allowed = []) {
+    $scheme = strtolower((string)parse_url((string)$url, PHP_URL_SCHEME));
+    if (!in_array($scheme, ['http', 'https'], true)) return null;
+    $host = parse_url((string)$url, PHP_URL_HOST);
+    if ($host === null || $host === '') return null;
+    $port = (int)(parse_url((string)$url, PHP_URL_PORT) ?: ($scheme === 'https' ? 443 : 80));
+    $ips = resolve_host_ips($host);
+    if (empty($ips)) return null;
+    foreach ($ips as $ip) {
+        if (ip_is_private_or_reserved($ip) && !outbound_target_allowlisted($host, $ip, $allowed)) {
+            return null; // internal / reserved and not explicitly allow-listed
+        }
+    }
+    // All resolved IPs are public or explicitly allow-listed. Pin the first via a
+    // CURLOPT_RESOLVE token ONLY when the host is a hostname — a literal IP has no
+    // DNS to rebind, and a bracketed IPv6 literal isn't a valid resolve host token.
+    $is_literal = filter_var(trim($host, '[]'), FILTER_VALIDATE_IP) !== false;
+    return [
+        'host'    => $host,
+        'port'    => $port,
+        'ip'      => $ips[0],
+        'resolve' => $is_literal ? null : "{$host}:{$port}:{$ips[0]}",
+    ];
+}
+
+/*******************************************************************************
+ * FUNCTION: IS SAFE OUTBOUND URL                                               *
+ * Boolean convenience wrapper over safe_outbound_request_target(): true when    *
+ * the URL is http(s) and every resolved IP is public or explicitly named in     *
+ * the config.php $allowed list. Default $allowed = [] → deny ALL internal.      *
+ *******************************************************************************/
+function is_safe_outbound_url($url, array $allowed = []) {
+    return safe_outbound_request_target($url, $allowed) !== null;
+}
+
 /*******************************************************
  * FUNCTION: BUILD SIMPLERISK BASED URL FROM ARGUMENTS *
  * Takes any number of arguments and                   *
@@ -24534,6 +24884,34 @@ function file_upload_error_message($error)
 	return $message;
 }
 
+/*******************************************************************************
+ * FUNCTION: CUSTOM DISPLAY COLUMNS ARE VALID                                   *
+ * SR-1870: validate user-submitted custom display-settings column names before *
+ * they are stored + later echoed into `data-name` attributes / a JS literal.   *
+ * Every legitimate column name (id, risk_status, mitigation_planned, …, and the *
+ * custom_field_<id> pattern) is [A-Za-z0-9_]+, so a strict character-class check *
+ * accepts every real column yet fail-closes on any name containing the          *
+ * HTML/JS-breaking characters ('<>"&) that make an injected name dangerous —     *
+ * without needing an exhaustive per-view value list (which would risk rejecting  *
+ * a legitimate column). $column_sets is a list of the submitted column arrays,   *
+ * each an array of [name, visibility] pairs.                                    *
+ *******************************************************************************/
+function custom_display_columns_are_valid($column_sets)
+{
+    foreach ($column_sets as $set) {
+        if (!is_array($set)) {
+            return false;
+        }
+        foreach ($set as $pair) {
+            $name = is_array($pair) ? ($pair[0] ?? null) : $pair;
+            if (!is_string($name) || !preg_match('/^[A-Za-z0-9_]+$/', $name)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 /***********************************************
  * FUNCTION: SAVE CUSTOM RISK DISPLAY SETTINGS *
  **********************************************/
@@ -24712,12 +25090,12 @@ function refresh_file_encoding_issue_counts($type = 'all') {
             $old_count = (int)get_setting($setting_name);
             if ($old_count !== $count) {
                 update_or_insert_setting($setting_name, $count);
-                write_log(0, $_SESSION['uid'], _lang('EncodingIssueCountUpdated', ['type' => $type, 'old_count' => $old_count, 'count' => $count]), $log_type);
+                write_log(0, $_SESSION['uid'] ?? 0, _lang('EncodingIssueCountUpdated', ['type' => $type, 'old_count' => $old_count, 'count' => $count]), $log_type);
             }
         } else { 
             // Or delete the setting if the issues were cleaned up
             delete_setting($setting_name);
-            write_log(0, $_SESSION['uid'], _lang('EncodingIssueCleanedUp', ['type' => $type]), $log_type);
+            write_log(0, $_SESSION['uid'] ?? 0, _lang('EncodingIssueCleanedUp', ['type' => $type]), $log_type);
         }
     }
 
@@ -25127,7 +25505,7 @@ function add_contributing_risks($table, $name, $contributing_risks_id="")
     // Close the database connection
     db_close($db);
 
-    write_log(1000, $_SESSION['uid'], "A new {$table} named \"".$escaper->escapeHtml($name)."\" was created by the \"" . $_SESSION['user'] . "\" user.");
+    write_log(1000, $_SESSION['uid'] ?? 0, "A new {$table} named \"".$escaper->escapeHtml($name)."\" was created by the \"" . $_SESSION['user'] . "\" user.");
 
     return $stmt->rowCount();
 }
@@ -25349,6 +25727,18 @@ function get_changes($type, $before, $after, $return_type = 1) {
 
     $diff_arr = [];
     $diff_str = [];
+
+    // Field keys whose stored value is WYSIWYG/HTML (rich-text). Their audit-log
+    // representation must be plain text — the message is HTML-escaped on display
+    // (get_audit_trail_html()), so an embedded "<p>"/"&nbsp;" would otherwise
+    // render as a literal. Only the test/audit objective/test_steps/
+    // expected_results fields (bound to init_minimun_editor) qualify. Do NOT add
+    // plain-<textarea>/<input> fields here (e.g. audit `summary`, incident
+    // `details`/`summary`): they never carry markup, and strip_tags() would
+    // corrupt a legitimate value like "response time <5s" ("<5s" reads as a
+    // tag). Asset `details` (a real CKEditor field) is handled separately in
+    // get_changes_in_asset().
+    $richtext_fields = ['objective', 'test_steps', 'expected_results'];
 
     foreach ($change_audit_log_localization_config[$type] as $field => $key) {
         if ($before[$field] !== $after[$field]) {
@@ -25781,6 +26171,15 @@ function get_changes($type, $before, $after, $return_type = 1) {
                 }
             }
 
+            // Rich-text fields hold HTML — emit them as plain text so the audit
+            // message doesn't carry literal "<p>"/"&nbsp;". Only the emitted
+            // value is converted; the change comparison above ran on the raw
+            // values, so a formatting-only edit is still detected and logged.
+            if (in_array($field, $richtext_fields, true)) {
+                $before[$field] = html_to_plain_text($before[$field]);
+                $after[$field] = html_to_plain_text($after[$field]);
+            }
+
             // return_type is 'array' or 'both'
             if ($return_type >= 2) {
                 $diff_arr[$lang[$key]] = [
@@ -26199,7 +26598,6 @@ function check_if_url_responds($url)
 		curl_setopt($ch, CURLOPT_FAILONERROR, 1);
 		curl_exec($ch);
 		$return_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-		curl_close($ch);
 
 		// If the URL call was successful
 		if ($return_code == 200 || $return_code == 302 || $return_code == 304)
@@ -26611,7 +27009,7 @@ function add_project($project){
     $project_id = $db->lastInsertId();
 
     $message = "A new prject named \"{$name}\" was created by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-    write_log(1000, $_SESSION['uid'], $message, "project");
+    write_log(1000, $_SESSION['uid'] ?? 0, $message, "project");
     
     // Close the database connection
     db_close($db);
@@ -26645,7 +27043,7 @@ function update_project($proejct_id, $project){
     $stmt->execute();
 
     $message = "A prject named \"{$name}\" was updated by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-    //write_log(1000, $_SESSION['uid'], $message, "project");
+    // write_log call intentionally disabled here; restore if project-update audit logging is reinstated.
     
     // Close the database connection
     db_close($db);
@@ -26734,6 +27132,29 @@ function purify_html($html) {
     return $purified;
 }
 
+/**
+ * Sanitize a stored rich-text (WYSIWYG) value for safe raw-HTML rendering.
+ *
+ * Rich-text fields — framework/control descriptions, exception justifications,
+ * and similar WYSIWYG content — are rendered as raw HTML at their display sinks.
+ * On-write purification (via purify_html() in the add/update writers) is the
+ * primary control; call this at OUTPUT/RENDER boundaries as defense-in-depth so a
+ * value that bypassed on-write purification (legacy rows, a direct DB write, or a
+ * non-standard write path) still cannot deliver stored XSS. It is idempotent on
+ * already-purified values, so legitimate rich text renders unchanged.
+ *
+ * Placement rule: call this where the value is about to become HTML output — NOT
+ * inside a shared row getter that a writer later reuses (purifying in a getter
+ * makes a write path silently re-persist the normalized value on an unrelated
+ * field update).
+ *
+ * @param string|null $value Stored (already-decrypted) rich-text value.
+ * @return string Purified HTML, safe to render raw.
+ */
+function purify_rich_text_output($value): string {
+    return purify_html((string)($value ?? ''));
+}
+
 // To purify html with template variables
 // Please note that it's removing unnecessary spaces and replaces certain entities with their UTF-8 counterparts
 function purify_html_template($html) {
@@ -26781,6 +27202,81 @@ function populate_core_template_variable($template, $variable, $value, $escape =
 // Strips tags and removes extra whitespaces
 function strip_tags_and_extra_whitespace($html) {
     return trim(preg_replace("/[\r\n|\n|\s]{2,}/", "\n", strip_tags($html)));
+}
+
+/**
+ * Convert a stored WYSIWYG/HTML field value into plain text suitable for a
+ * CSV/XLSX export cell. strip_tags() removes the markup but leaves HTML
+ * entities (e.g. the "&nbsp;" a WYSIWYG editor stores for runs of spaces)
+ * intact, so they must be decoded afterwards — otherwise the export shows
+ * literal "&nbsp;"/"&amp;" instead of the characters the user typed.
+ *
+ * Callers must decrypt the value first (this helper is encryption-agnostic
+ * and pure) so that strip_tags()/html_entity_decode() operate on the
+ * decrypted HTML, not on ciphertext.
+ */
+function html_to_export_text($html) {
+    return html_to_plain_text($html);
+}
+
+/**
+ * Convert a stored WYSIWYG/HTML value into plain text: strip the markup and
+ * decode HTML entities (a single decode pass, matching the one level a browser
+ * does). Use this anywhere a rich-text field value is spliced into a non-HTML
+ * sink — an XLSX/CSV export cell, or an audit-log message that is later
+ * escaped for display (get_audit_trail_html() escapes the whole message, so an
+ * embedded "&nbsp;"/"<p>" would otherwise render as a literal). strip_tags()
+ * alone leaves entities intact, so both steps are required.
+ *
+ * Pure (no DB / no encryption); callers that hold ciphertext must decrypt
+ * first so the strip/decode operate on the plaintext HTML.
+ */
+function html_to_plain_text($html) {
+    return html_entity_decode(strip_tags($html ?? ""), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+}
+
+/**
+ * Normalize a single raw audit_log value into the plain text written into an
+ * audit-trail XLSX export cell (see download_audit_logs() in the Import-Export
+ * Extra).
+ *
+ * Audit messages embed raw WYSIWYG HTML — e.g. a questionnaire question's text
+ * is spliced straight into the message ("A questionnaire question, \"{$q}\"
+ * was updated ...") — so a message can carry "&nbsp;", "<p>", "&amp;", etc.
+ * Writing it verbatim leaves those literal in the spreadsheet (the reported
+ * questionnaire audit-trail defect, same class as the DRR XLS export fixed in
+ * PR #1905). This helper:
+ *   1. normalizes NULL-ish values to "",
+ *   2. preserves the legacy section-separator packing (multiple values joined
+ *      by "&sect;" are split and re-quoted as a comma list) — done on the raw
+ *      string so the literal "&sect;" marker is matched before entity decoding
+ *      would turn it into "§", then
+ *   3. strips markup and decodes entities via html_to_export_text().
+ *
+ * Pure (no DB / no encryption); callers that store ciphertext must decrypt
+ * first. The caller still passes the result through
+ * getOpenSpoutCellDataWithFormulasSuppressed() so the decoded text is what
+ * gets formula-neutralized.
+ */
+function audit_export_cell_text($cellData, $separator = "&sect;") {
+
+    // Normalize NULL-ish values to an empty string
+    if (is_null($cellData) || strtoupper(strval($cellData)) === "NULL") {
+        return "";
+    }
+
+    $cellData = (string)$cellData;
+
+    // Legacy: a single cell can pack multiple values joined by the section
+    // separator; split and re-quote them as a comma list. Matched on the raw
+    // string so the literal "&sect;" marker is consumed before entity decode.
+    if (strpos($cellData, $separator) !== false) {
+        $cellData = implode(",", array_map('add_quotes', explode($separator, $cellData)));
+    }
+
+    // Strip WYSIWYG markup and decode HTML entities so the export shows the
+    // characters the user typed, not literal "&nbsp;"/"<p>".
+    return html_to_export_text($cellData);
 }
 
 // To create a selectize dropdown. Add your own configuration and change the javascript configuration of the selectize widget accordingly
@@ -26990,6 +27486,18 @@ function reassign_groupless_threat_catalogs($default_group_id = false) {
     }
 }
 
+/*******************************************************************
+ * FUNCTION: IS VALID GRAPHICAL SELECTION TYPE                      *
+ * A saved graphical/dynamic selection may only be 'private' (owned *
+ * by the creating user) or 'public' (shared with all users). This  *
+ * predicate is extracted so the enum gate can be unit-tested        *
+ * without the request/permission context of the calling endpoint.  *
+ *******************************************************************/
+function is_valid_graphical_selection_type($type): bool
+{
+    return in_array($type, ['private', 'public'], true);
+}
+
 /***************************************
  * FUNCTION: SAVE GRAPHICAL SELECTIONS *
  ***************************************/
@@ -27016,7 +27524,7 @@ function save_graphical_selections($type, $name, $graphic_form_data=[])
     db_close($db);
 
     $message = "The selections for Graphical Risk Analysis named \"" . $escaper->escapeHtml($name) . "\" was created by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-    write_log(1000, $_SESSION['uid'], $message);
+    write_log(1000, $_SESSION['uid'] ?? 0, $message);
 
     return $id;
 }
@@ -27040,7 +27548,7 @@ function delete_graphical_selection($id)
     db_close($db);
 
     $message = "The selections for Graphical Risk Analysis (ID : {$id}) was deleted by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-    write_log(1000, $_SESSION['uid'], $message);
+    write_log(1000, $_SESSION['uid'] ?? 0, $message);
 }
 
 /***************************************************
@@ -27192,15 +27700,12 @@ function create_default_admin_account()
             // Create the SimpleRisk instance ID if it doesn't already exist
             $instance_id = create_simplerisk_instance_id();
 
-            // Register the instance
-            $parameters = array(
-                'action' => 'installer_registration',
-                'instance_id' => $instance_id,
-                'name' => $full_name,
-                'email' => $email,
-                'mailing_list' => $mailing_list,
-            );
-            $response = simplerisk_service_call($parameters);
+            // Register the instance with the licensing service.
+            // installer_instance_registration() is defined in install.php,
+            // which index.php always loads before calling this function.
+            $db = db_open();
+            installer_instance_registration($db, $instance_id, $full_name, $email, $mailing_list);
+            db_close($db);
 
             // Reload the login page
             header("Location: index.php");
@@ -27539,9 +28044,6 @@ function get_public_ip()
     // Get the return code
     $return_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-    // Close the curl session
-    curl_close($ch);
-
     // If the URL call was successful
     if ($return_code == 200)
     {
@@ -27552,123 +28054,6 @@ function get_public_ip()
     else return false;
 }
 
-/***********************************
- * FUNCTION: GET MYSQLDUMP COMMAND *
- ***********************************/
-function get_mysqldump_command()
-{
-    // Open the database connection
-    $db = db_open();
-
-    // Get the database version information
-    $stmt = $db->prepare("SELECT VERSION() as version;");
-    $stmt->execute();
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    $version = $row['version'];
-
-    // MariaDB version looks like "10.5.12-MariaDB-log"
-    // MySQL version looks like "8.0.23"
-
-    // Turn all mysqldump options off by default
-    $column_statistics = false;
-    $set_gtid_purged = false;
-    $lock_tables = false;
-    $skip_add_locks = false;
-    $no_tablespaces = false;
-
-    // If the database is MariaDB
-    if (preg_match('/MariaDB/', $version))
-    {
-        // MariaDB uses the lock-tables option
-        $lock_tables = true;
-
-        // MariaDB uses the skip-add-locks option
-        $skip_add_locks = true;
-
-        // MariaDB uses the no-tablespaces option
-        $no_tablespaces = true;
-    }
-    // Otherwise this is MySQL
-    else
-    {
-        // MySQL uses the set-gtid-purged option
-        $set_gtid_purged = true;
-
-        // MySQL uses the lock-tables option
-        $lock_tables = true;
-
-        // MySQL uses the skip-add-locks option
-        $skip_add_locks = true;
-
-        // MySQL uses the no-tablespaces option
-        $no_tablespaces = true;
-
-        // Split the version by the decimals
-        $version = explode('.', $version);
-        $major_version = $version[0];
-        $minor_version = $version[1].".".$version[2];
-
-        // If the version is MySQL 8 or higher
-        if ($major_version >= 8)
-        {
-            // MySQL >= 8 uses the column-statistics option
-            $column_statistics = true;
-        }
-    }
-
-    // If mysqldump does not exist
-    if(!is_process('mysqldump'))
-    {
-        // Get the path from the SimpleRisk configuration
-        $mysqldump_path = get_setting('mysqldump_path');
-    }
-    // Otherwise use the defined path to mysqldump
-    else $mysqldump_path = "mysqldump";
-
-    // Start the mysqldump command
-    $mysqldump_command = escapeshellcmd($mysqldump_path) . " --opt";
-
-    // If column_statistics is enabled
-    if ($column_statistics)
-    {
-        // Append the column statistics option
-        $mysqldump_command .= " --column-statistics=0";
-    }
-
-    // If lock_tables is enabled
-    if ($lock_tables)
-    {
-        // Append the lock tables option
-        $mysqldump_command .= " --lock-tables=false";
-    }
-
-    // If skip_add_locks is enabled
-    if ($skip_add_locks)
-    {
-        // Append the skip add locks option
-        $mysqldump_command .= " --skip-add-locks";
-    }
-
-    // If no_tablespaces is enabled
-    if ($no_tablespaces)
-    {
-        // Append the no tablespaces option
-        $mysqldump_command .= " --no-tablespaces";
-    }
-
-    // If set_gtid_purged is enabled
-    if ($set_gtid_purged)
-    {
-        // Append the set gtid purged option
-        $mysqldump_command .= " --set-gtid-purged=OFF";
-    }
-
-    // Append the database connection information
-    $mysqldump_command .= "  -h " . escapeshellarg(DB_HOSTNAME) . " -u " . escapeshellarg(DB_USERNAME) . " -p" . escapeshellarg(DB_PASSWORD) . " " . escapeshellarg(DB_DATABASE);
-
-    // Return the mysqldump command
-    return $mysqldump_command;
-}
 /**********************************
  * FUNCTION: CONVERT DATA TO UTF8 *
  **********************************/
@@ -28815,7 +29200,12 @@ function process_selected_field_filter_for_active_audits($selected_field_name, $
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
             } else {
-                $filter_result = true;
+                // '0' is the sentinel for frameworkless (no framework_control_mappings row)
+                if (in_array('0', $search_value) && $item_filter_value === '') {
+                    $filter_result = false;
+                } else {
+                    $filter_result = true;
+                }
             }
         } else {
             $filter_result = true;
@@ -29045,7 +29435,12 @@ function process_selected_field_filter_for_past_audits($selected_field_name, $fi
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
             } else {
-                $filter_result = true;
+                // '0' is the sentinel for frameworkless (no framework_control_mappings row)
+                if (in_array('0', $search_value) && $item_filter_value === '') {
+                    $filter_result = false;
+                } else {
+                    $filter_result = true;
+                }
             }
         } else {
             $filter_result = true;
@@ -29753,6 +30148,7 @@ function get_filter_field_for_active_audits($field_name, $localizations) {
     } else if ($field_name == 'framework_name') {
         $filter_field = "
             <select name='framework_name[]' id='framework_name' class='multiselect' multiple=''>
+                <option selected value='0'>{$escaper->escapeHtml($lang['Unassigned'])}</option>
         ";
 
         $options = getHasBeenAuditFrameworkList();
@@ -29768,17 +30164,17 @@ function get_filter_field_for_active_audits($field_name, $localizations) {
         ";
 
     } else if ($field_name == 'tags') {
-        
+
         $tags = [];
         foreach (getTagsOfType("test_audit") as $tag) {
             $tags[] = array('name' => $escaper->escapeHtml($tag['tag']), 'value' => (int)$tag['id']);
         }
         $filter_field = create_multiple_dropdown("tags", "all", "tags", $tags, true, $escaper->escapeHtml($lang['Unassigned']), "-1", true, "", 0, true, "");
-        
+
     } else if ($field_name == 'status') {
 
         $filter_field = create_multiple_dropdown("test_status", "all", "status", null, true, $escaper->escapeHtml($lang['Unassigned']), "0", true, "", 0, true, "");
-        
+
     } else if ($field_name == 'test_date') {
 
         $filter_field = "
@@ -29827,6 +30223,7 @@ function get_filter_field_for_past_audits($field_name, $localizations) {
     } else if ($field_name == 'framework_name') {
         $filter_field = "
             <select name='framework_name[]' id='framework_name' class='multiselect' multiple=''>
+                <option selected value='0'>{$escaper->escapeHtml($lang['Unassigned'])}</option>
         ";
 
         $options = getHasBeenAuditFrameworkList();
@@ -30526,7 +30923,7 @@ function fetchCountriesFromAPI(): array
         'timeout' => 5,
     ];
 
-    $validate_ssl = get_setting('ssl_certificate_check_external') == 1;
+    $validate_ssl = ssl_external_verify_enabled();
 
     $url = 'https://restcountries.com/v3.1/all?fields=name,region';
 
@@ -31029,7 +31426,7 @@ function audit_log_extra_toggle(string $extra, bool $on = true) {
     $on_off = $on ? 'On' : 'Off';
 
     if (!empty($_SESSION['uid']) && !empty($_SESSION['user'])) {
-        write_log(1000, $_SESSION['uid'], _lang("ExtraToggled{$on_off}", ['extra_name' => $lang[$extra], 'user' => $_SESSION['user']]), 'extra');
+        write_log(1000, $_SESSION['uid'] ?? 0, _lang("ExtraToggled{$on_off}", ['extra_name' => $lang[$extra], 'user' => $_SESSION['user']]), 'extra');
     } else {
         write_log(1000, 0, _lang("ExtraTechnicalToggled{$on_off}", ['extra_name' => $lang[$extra]]), 'extra');
     }
@@ -31604,6 +32001,44 @@ function update_team_membership_for_users($team_id, $selected_user_ids, $all_use
 
         set_teams_of_user($user_id, $updated_teams);
     }
+}
+
+/****************************************
+ * FUNCTION: DB SESSION HANDLER MODE    *
+ ****************************************/
+/**
+ * Decide which session-save-handler registration strategy applies for the
+ * given handler class, tolerant of Extra/Core version skew (a newer Extra
+ * running against an older Core). Side-effect-free for an already-loaded class
+ * (the production case — callers require_once authenticate.php first), so it is
+ * unit testable without bootstrapping a real session. class_exists() is called
+ * with autoload disabled; method_exists() can still autoload an unknown class,
+ * so do not call this on arbitrary untrusted class names.
+ *
+ * Returns one of:
+ *   'register' — the class exposes the static register() method (current Core);
+ *                callers invoke SimpleRiskSessionHandler::register().
+ *   'object'   — the class exists but predates register() (older Core); callers
+ *                register it as an object implementing SessionHandlerInterface
+ *                (never the individual-callback form, which PHP 8 deprecates).
+ *   'legacy'   — the class is absent entirely (Core predating it); callers use
+ *                the individual sess_* callbacks as a last resort.
+ *
+ * Test for the METHOD, not just the class: the legacy SimpleRiskSessionHandler
+ * predates register(), so class_exists() alone would select a method the class
+ * lacks (the original /metrics fatal this guards against).
+ */
+function db_session_handler_mode(string $handler_class): string
+{
+    if (method_exists($handler_class, 'register')) {
+        return 'register';
+    }
+
+    if (class_exists($handler_class, false)) {
+        return 'object';
+    }
+
+    return 'legacy';
 }
 
 ?>

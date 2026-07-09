@@ -7,6 +7,9 @@
 // Include required configuration files
 require_once(realpath(__DIR__ . '/bootstrap.php'));
 require_once(realpath(__DIR__ . '/functions.php'));
+// workers.php defines request_worker_restart(), fired after a successful
+// migration so long-running queue/promise workers recycle onto the new code.
+require_once(realpath(__DIR__ . '/workers.php'));
 //require_once(realpath(__DIR__ . '/assessments.php'));
 require_once(realpath(__DIR__ . '/reporting.php'));
 require_once(realpath(__DIR__ . '/assets.php'));
@@ -196,6 +199,7 @@ $releases = [
     "20260421-001",
     "20260422-001",
     "20260519-001",
+    "20260709-001",
 ];
 
 /*************************
@@ -229,14 +233,11 @@ function get_api_key()
  * FUNCTION: CHECK VALID KEY *
  *****************************/
 function check_valid_key($key) {
-    
-    $db_api_key = get_api_key();
-    //If the key is set and correct
-    if ($db_api_key && $key == $db_api_key) {
-        return true;
-    }
-    
-    return false;
+    // SR-1651: transition-tolerant, constant-time verification against the (now
+    // hashed) settings.api_key. A legacy plaintext value still authenticates until
+    // the hashing migration — which runs inside the upgrade reached via this key —
+    // flips it, avoiding a lock-out of the very entrypoint needed to migrate it.
+    return verify_management_api_key($key, get_api_key());
 }
 
 /****************************
@@ -9257,9 +9258,18 @@ function upgrade_from_20260302001($db) {
     ");
     $stmt->execute();
 
-    // Seed the "Submit Risk (Default)" system workflow
+    // Seed the default system workflows — but ONLY if they have not been seeded already.
+    // workflow_definitions has no UNIQUE key on `name`, so the INSERT IGNORE statements below
+    // do not actually dedupe. Without this guard, re-running this upgrade (which happens every
+    // time the unreleased version is re-applied during development) inserts a fresh copy of all
+    // the defaults on each run. Gate the whole seed block on there being no system workflows yet.
+    $existing_system_workflows = (int)$db->query("SELECT COUNT(*) FROM `workflow_definitions` WHERE `system_workflow` = 1")->fetchColumn();
+    if ($existing_system_workflows > 0) {
+        echo "Default system workflows already present; skipping seed.<br />\n";
+    } else {
     echo "Seeding default system workflows.<br />\n";
 
+    // Seed the "Submit Risk (Default)" system workflow
     $default_definition = json_encode([
         'version' => '1.0',
         'nodes' => [
@@ -9813,6 +9823,7 @@ function upgrade_from_20260302001($db) {
     $stmt->bindValue(':trigger_type', 'asset.deleted');
     $stmt->bindValue(':definition',   $default_definition);
     $stmt->execute();
+    } // end "seed default system workflows only when none exist yet" guard
 
     // Add a UNIQUE constraint on role.name to prevent race-condition duplicate insertions.
     if (!index_exists_on_table('unique_role_name', 'role')) {
@@ -10296,10 +10307,352 @@ function upgrade_from_20260422001($db) {
     // as this session variable is not set by the previous version of the login logic
     $_SESSION['latest_version_app'] = latest_version('app');
 
+    // Drop the Encryption Extra's debug-logging toggle setting. The UI
+    // checkbox (display_encryption()) and the gated write_debug_log calls
+    // inside decrypt_with_openssl() have been removed; the remaining log
+    // lines fire at 'debug' level (off by default) and no longer include
+    // sensitive crypto material (IV, HMAC, ciphertext). The setting row
+    // would otherwise linger forever with no UI to manage it.
+    $stmt = $db->prepare("DELETE FROM `settings` WHERE `name` = 'extra_encryption_debug_logging';");
+    $stmt->execute();
 
     // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20260519-001 *
+ ***************************************/
+function upgrade_from_20260519001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20260519-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20260709-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // SR-1651: hash the management API key (settings.api_key) in place. Idempotent —
+    // guarded so a value already tagged 'sha256:' is left alone. The plaintext is
+    // still held by the hosted automation, so it keeps authenticating (the verify is
+    // transition-tolerant); only the recoverable stored copy is neutralized.
+    $current_api_key = get_setting('api_key');
+    if (is_string($current_api_key) && $current_api_key !== '' && strncmp($current_api_key, 'sha256:', 7) !== 0) {
+        update_setting('api_key', hash_management_api_key($current_api_key));
+        echo "Hashed the management API key (settings.api_key).<br />\n";
+    }
+
+    // Rename the daily-job timestamp setting to match the licensing refactor's
+    // terminology change (ping_server → license_check_daily). Idempotent: guarded
+    // by setting_exists. (Relocated here from upgrade_from_20260422001 so instances
+    // already at 20260519-001 actually run it.)
+    if (setting_exists('queue_timestamp_last_ping') && !setting_exists('queue_timestamp_last_license_check')) {
+        echo "Renaming setting 'queue_timestamp_last_ping' to 'queue_timestamp_last_license_check'.<br />\n";
+        rename_setting('queue_timestamp_last_ping', 'queue_timestamp_last_license_check');
+    }
+
+    // admin/about.php was retired; its Application/Database version info moved
+    // to admin/register.php. Upgrades overlay new code but do not delete removed
+    // files, so unlink it here. Idempotent: guarded by file_exists.
+    if (file_exists(realpath(__DIR__ . '/../admin/about.php')))
+    {
+        echo "Deleting the /admin/about.php file as its version info moved to the Register & Upgrade page.<br />\n";
+        unlink(realpath(__DIR__ . '/../admin/about.php'));
+    }
+
+    // Ensure document_additional_stakeholder_mappings exists unconditionally.
+    // upgrade_from_20260422001 created it only when the legacy
+    // documents.additional_stakeholders column was present, so any instance
+    // where that column was already gone (or the migration was skipped/partial)
+    // arrived at 20260519-001 without the table.
+    try {
+        $db->prepare("
+            CREATE TABLE IF NOT EXISTS `document_additional_stakeholder_mappings` (
+                `document_id` INT NOT NULL,
+                `user_id` INT NOT NULL,
+                PRIMARY KEY(`document_id`, `user_id`),
+                INDEX(`user_id`, `document_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+        ")->execute();
+        write_debug_log("Ensured document_additional_stakeholder_mappings exists during upgrade to " . $version_upgrading_to . ".", 'notice');
+    } catch (Exception $e) {
+        write_debug_log("Upgrade to " . $version_upgrading_to . " failed to create document_additional_stakeholder_mappings: " . $e->getMessage() . ".", 'error');
+        echo "Warning: failed to create document_additional_stakeholder_mappings (" . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . ").<br />\n";
+    }
+
+    // Drop the dead `unencrypted_backup_file_name` setting. The legacy /tmp-file
+    // backup flow was replaced by the queue-driven in-DB backup in the
+    // Encryption Extra activation refactor; the setting row is no longer read
+    // or written by any code path. The upgrade-time migration at
+    // upgrade_encryption_extra_20260523002() has already streamed any legacy
+    // file into encryption_backup at this point, so the setting row is safe
+    // to drop.
+    $db->prepare("DELETE FROM `settings` WHERE `name` = 'unencrypted_backup_file_name'")->execute();
+
+    // Give `audit_log` a primary key. The table historically shipped
+    // without one, which left its encrypted `message` column permanently
+    // un-migratable by the encryption_algorithm_check job: that job
+    // re-encrypts a column row-by-row and needs a single unique key to
+    // target each row. Add a surrogate AUTO_INCREMENT `id`. Idempotent —
+    // only when no PRIMARY KEY exists yet, so re-running the upgrade (or
+    // an install that already has the key) is a no-op. Best-effort: a
+    // failure here must not fatal the rest of the upgrade.
+    try {
+        $audit_has_pk = (bool)$db->query("
+            SELECT 1 FROM information_schema.TABLE_CONSTRAINTS
+             WHERE TABLE_SCHEMA = DATABASE()
+               AND TABLE_NAME = 'audit_log'
+               AND CONSTRAINT_TYPE = 'PRIMARY KEY'
+             LIMIT 1
+        ")->fetchColumn();
+
+        if (!$audit_has_pk) {
+            $db->prepare("ALTER TABLE `audit_log` ADD COLUMN `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST")->execute();
+            echo "Added primary key `id` to `audit_log` (required so the Encryption Extra can re-encrypt its message column).<br />\n";
+            write_debug_log("Added AUTO_INCREMENT PRIMARY KEY `id` to audit_log during upgrade to " . $version_upgrading_to . ".", 'notice');
+        }
+    } catch (Exception $e) {
+        write_debug_log("Upgrade to " . $version_upgrading_to . " failed to add a PRIMARY KEY to audit_log: " . $e->getMessage() . ". The encryption_algorithm_check job will keep skipping audit_log.message until this is resolved.", 'warning');
+        echo "Warning: failed to add a primary key to audit_log (" . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . ").<br />\n";
+    }
+
+    // Seed the api_allow_url_key setting for the API URL-key deprecation gate.
+    // Default behavior mirrors the enable_api_v1 deprecation gate seeded in the
+    // previous release:
+    //   - On instances with the API Extra installed and active, default to '1'
+    //     so any external integration that still authenticates with the key in
+    //     the URL query string (?key=) or POST body (key=) keeps working.
+    //   - Everywhere else, default to '0' (URL/body keys rejected). The
+    //     X-API-KEY header is always accepted regardless of this setting.
+    // Fresh installs never run this seeding; get_setting() returns false when
+    // the setting is absent, which resolves to disallowed — secure by default.
+    // Skip if the setting already exists (idempotent across re-runs).
+    if (get_setting('api_allow_url_key') === false) {
+        $api_allow_url_key = api_extra() ? '1' : '0';
+        echo "Seeding api_allow_url_key setting to '" . $api_allow_url_key . "' (api_extra=" . ($api_allow_url_key === '1' ? 'true' : 'false') . ").<br />\n";
+        write_debug_log("Seeded api_allow_url_key setting to '" . $api_allow_url_key . "' during upgrade to " . $version_upgrading_to . ".", 'notice');
+        update_or_insert_setting('api_allow_url_key', $api_allow_url_key);
+    }
+
+    // Create notifications table
+    if (!table_exists('notifications')) {
+        echo "Creating `notifications` table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `notifications` (
+              `id`            BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+              `source`        VARCHAR(32)  NOT NULL,
+              `title`         VARCHAR(255) NOT NULL,
+              `body`          TEXT         NOT NULL,
+              `link`          VARCHAR(2048) NULL,
+              `external_guid` VARCHAR(64)  NULL,
+              `created_by`    INT          NULL,
+              `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              `expires_at`    DATETIME     NULL,
+              UNIQUE KEY `uq_notifications_external_guid` (`external_guid`),
+              INDEX `idx_notifications_created_at` (`created_at`),
+              INDEX `idx_notifications_expires_at` (`expires_at`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        ");
+        $stmt->execute();
+    }
+
+    // Create notification_recipients table
+    if (!table_exists('notification_recipients')) {
+        echo "Creating `notification_recipients` table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `notification_recipients` (
+              `id`              BIGINT   NOT NULL AUTO_INCREMENT PRIMARY KEY,
+              `notification_id` BIGINT   NOT NULL,
+              `user_id`         INT      NOT NULL,
+              `read_at`         DATETIME NULL,
+              `deleted_at`      DATETIME NULL,
+              UNIQUE KEY `uq_recipient_notification_user` (`notification_id`, `user_id`),
+              INDEX `idx_recipient_user_dropdown` (`user_id`, `deleted_at`, `read_at`, `notification_id`),
+              CONSTRAINT `fk_recipient_notification`
+                FOREIGN KEY (`notification_id`) REFERENCES `notifications`(`id`) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        ");
+        $stmt->execute();
+    }
+
+    // Insert default settings (INSERT IGNORE so re-running is idempotent)
+    echo "Inserting notification settings.<br />\n";
+    $stmt = $db->prepare("
+        INSERT IGNORE INTO `settings` (`name`, `value`) VALUES
+          ('NOTIFICATIONS_REMOTE_FEED_ENABLED', 'true'),
+          ('NOTIFICATIONS_REMOTE_FEED_URL',     'https://raw.githubusercontent.com/simplerisk/notifications/main/v1/feed.json'),
+          ('NOTIFICATION_READ_RETENTION_DAYS',  '90'),
+          ('NOTIFICATION_TRASH_RETENTION_DAYS', '30');
+    ");
+    $stmt->execute();
+
+    // SR-114 / SR-1783: the core database backup no longer shells out to
+    // mysqldump (it is now a PHP-native PDO dump), so the `mysqldump_path`
+    // setting — the write vector for the old escapeshellcmd argument-injection
+    // RCE — is dead in Core and can be removed. Idempotent: delete_setting() is
+    // a no-op when the row is already absent.
+    //
+    // Safe with respect to the Upgrade Extra (the only other reader of this
+    // setting): an upgrade ALWAYS updates the Upgrade Extra first, and the DB
+    // migrations run LAST — only after all core/Extra files are in place and the
+    // Extra has already taken its pre-upgrade backup. So by the time this line
+    // executes, the current Upgrade Extra is installed and its backup is done;
+    // nothing still needs the setting.
+    delete_setting('mysqldump_path', $db);
+    echo "Removed the obsolete mysqldump_path setting.<br />\n";
+
+    // Update the database version last, so a failure in any of the
+    // migration operations above leaves the row at the old version and
+    // the upgrade runner re-attempts this function on the next pass.
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/*******************************************************************************
+ * FUNCTION: UPGRADE OUTPUT TO MESSAGES                                         *
+ * SR-1651: turn a release upgrade function's echoed HTML progress (<br/>-      *
+ * delimited) into a clean array of message strings for the structured API.     *
+ *******************************************************************************/
+function upgrade_output_to_messages($raw) {
+    $text = preg_replace('/<br\s*\/?>/i', "\n", (string)$raw);
+    $text = strip_tags($text);
+    $messages = [];
+    foreach (preg_split('/\r\n|\r|\n/', $text) as $line) {
+        $line = trim(html_entity_decode($line, ENT_QUOTES | ENT_HTML5));
+        if ($line !== '') {
+            $messages[] = $line;
+        }
+    }
+    return $messages;
+}
+
+/*******************************************************************************
+ * FUNCTION: RUN DATABASE UPGRADE STRUCTURED                                    *
+ * SR-1651: drive the release-by-release DB upgrade and return a programmatic    *
+ * result for the management API (/upgrade), rather than the interactive HTML    *
+ * page's echoed output. Each processed release yields                          *
+ * ['from','to','success','messages']; the loop stops on the first failing       *
+ * release. Returns ['success' => bool, 'releases' => array].                   *
+ *******************************************************************************/
+function run_database_upgrade_structured($db) {
+    // The DB user must hold the privileges the migrations need.
+    if (!check_grants($db)) {
+        return [
+            'success'  => false,
+            'releases' => [[
+                'from'     => current_version("db"),
+                'to'       => current_version("db"),
+                'success'  => false,
+                'messages' => ['The database user is missing privileges required to run the upgrade.'],
+            ]],
+        ];
+    }
+
+    $releases  = [];
+    $overall   = true;
+    $applied   = false; // true once at least one release migration actually ran and advanced
+    // safety cap on the outer loop: prevents an infinite loop if the releases
+    // array ever forms a cycle (migrations keep advancing the DB version but the
+    // version never reaches the app version and the loop never converges). The
+    // inner $advanced check below handles single-step non-advancement; this
+    // bounds the outer loop as belt-and-suspenders.
+    $max_steps = 200;
+
+    while ($max_steps-- > 0) {
+        $db_version  = current_version("db");
+        $app_version = current_version("app");
+        if ($db_version == $app_version) {
+            break; // already fully upgraded
+        }
+
+        $fn = get_database_upgrade_function_for_release($db_version);
+        if ($fn === false || !function_exists($fn)) {
+            $releases[] = [
+                'from'     => $db_version,
+                'to'       => $db_version,
+                'success'  => false,
+                'messages' => ["No upgrade function is available for release {$db_version}."],
+            ];
+            $overall = false;
+            break;
+        }
+
+        // Capture the release function's echoed progress and catch any failure.
+        ob_start();
+        $error = null;
+        try {
+            call_user_func($fn, $db);
+        } catch (\Throwable $e) {
+            $error = $e->getMessage();
+        }
+        $messages = upgrade_output_to_messages(ob_get_clean());
+
+        $new_db_version = current_version("db");
+        $advanced = ($new_db_version != $db_version);
+        $success  = ($error === null && $advanced);
+        if ($error !== null) {
+            // Log the full exception server-side only. Raw exception text can
+            // contain internal table/column names, file paths, and MySQL error
+            // strings; disclosing it to the API caller would hand a schema map
+            // to any holder of the management key. The caller gets a generic
+            // label and looks at the server log for detail.
+            write_debug_log("Management /upgrade migration error on release {$db_version}: {$error}", 'error');
+            $messages[] = "The upgrade encountered an error while processing this release. See the server log for details.";
+        } elseif (!$advanced) {
+            $messages[] = "The release did not advance the database version.";
+        }
+
+        $releases[] = [
+            'from'     => $db_version,
+            'to'       => $new_db_version,
+            'success'  => $success,
+            'messages' => $messages,
+        ];
+
+        if (!$success) {
+            $overall = false;
+            break; // stop on the first failing release
+        }
+
+        $applied = true; // this release's migration ran and advanced the version
+    }
+
+    // If the safety cap was exhausted while the database is still behind the app
+    // version, the upgrade did not finish — do not report success. Without this
+    // guard the loop would fall through with $overall still true and hand hosted
+    // automation a false "success" on a partially-upgraded database.
+    if ($overall && current_version("db") != current_version("app")) {
+        $overall = false;
+        $releases[] = [
+            'from'     => current_version("db"),
+            'to'       => current_version("db"),
+            'success'  => false,
+            'messages' => ["The upgrade did not reach the application version within the release-processing limit."],
+        ];
+    }
+
+    // Post-upgrade housekeeping: recycle long-running workers so they reload the
+    // new code, and remove the shipped composer files. Gated on $applied (at least
+    // one release actually ran and advanced) — NOT on a non-empty $releases, which
+    // is also true when the loop only recorded a failure (no upgrade function for
+    // the current release, or the safety-cap guard above). This matches
+    // upgrade_database(), which runs the same housekeeping only inside the branch
+    // that actually calls a release function, never on its not-found branches — so
+    // a failed/no-op run does not delete composer files or recycle workers.
+    if ($applied) {
+        if (function_exists('request_worker_restart')) {
+            request_worker_restart('database_upgrade');
+        }
+        foreach (['/../composer.json', '/../composer.lock', '/../vendor/composer/installed.json'] as $rel) {
+            $file = realpath(__DIR__ . $rel);
+            if ($file && file_exists($file)) {
+                delete_file($file);
+            }
+        }
+    }
+
+    return ['success' => $overall, 'releases' => $releases];
 }
 
 /******************************
@@ -10336,6 +10689,25 @@ function upgrade_database()
 
                     // Recursively run the database upgrade for the next release
                     upgrade_database();
+
+                    // A migration ran, so any long-running queue/promise worker
+                    // still holds the previous release's code in memory and can
+                    // fatal on renamed/added functions. Ask the workers to
+                    // recycle gracefully; cron respawns them with the new code.
+                    // Idempotent — outer levels of this recursion just move the
+                    // timestamp forward. The versions-match branch below never
+                    // fires it, so a no-op visit to the upgrade page does not
+                    // recycle workers.
+                    //
+                    // Guarded with function_exists(): during a one-click upgrade
+                    // from a release that predates this helper, the OLD
+                    // workers.php is already in memory and require_once cannot
+                    // reload it after the file swap. Workers from that old
+                    // release don't honor the restart flag anyway — they recycle
+                    // via their 60-minute self-restart — so skipping is safe.
+                    if (function_exists('request_worker_restart')) {
+                        request_worker_restart('database_upgrade');
+                    }
 
 		            // If the composer.json file exists
                     $file = realpath(__DIR__ . '/../composer.json');

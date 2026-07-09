@@ -10,6 +10,7 @@ return array(
     '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => $vendorDir . '/symfony/polyfill-mbstring/bootstrap.php',
     '320cde22f66dd4f5d3fd621d3e88b98f' => $vendorDir . '/symfony/polyfill-ctype/bootstrap.php',
     '7b11c4dc42b3b3023073cb14e519683c' => $vendorDir . '/ralouphie/getallheaders/src/getallheaders.php',
+    'a4a119a56e50fbb293281d9a48007e0e' => $vendorDir . '/symfony/polyfill-php80/bootstrap.php',
     '662a729f963d39afe703c9d9b7ab4a8c' => $vendorDir . '/symfony/polyfill-php83/bootstrap.php',
     '667aeda72477189d0494fecd327c3641' => $vendorDir . '/symfony/var-dumper/Resources/functions/dump.php',
     '89efb1254ef2d1c5d80096acd12c4098' => $vendorDir . '/twig/twig/src/Resources/core.php',
@@ -30,5 +31,4 @@ return array(
     '94e196d380faf76edd43da862bdf18b4' => $vendorDir . '/leafs/logger/src/scripts.php',
     '39f8f809a191c7af11cb6d6aa45edb06' => $vendorDir . '/simplerisk/csrf-magic/csrf-magic.php',
     '334983c1b64a31de3c73827b7a6a1e88' => $vendorDir . '/simplesamlphp/simplesamlphp/src/_autoload_modules.php',
-    '7dd996d98a91d095f100c75e0b9e2391' => $vendorDir . '/spatie/async/src/helpers.php',
 );

@@ -1427,4 +1427,43 @@ class OpenApiAddControl {}
  */
 class OpenApiUpdateControl {}
 
+/**
+ * @OA\Post(
+ *     path="/governance/documents/datatable",
+ *     summary="Server-side DataTables feed for the Document Program report",
+ *     description="Returns Document Program rows in DataTables server-side format. Gated on the governance permission (SR-1721).",
+ *     operationId="governanceDocumentsDatatable",
+ *     tags={"governance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         description="Standard DataTables server-side request parameters (draw, start, length, order, columns, search).",
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 @OA\Property(property="draw", type="integer", example=1),
+ *                 @OA\Property(property="start", type="integer", example=0),
+ *                 @OA\Property(property="length", type="integer", example=10)
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="OK: DataTables server-side response.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="draw", type="integer", example=1),
+ *             @OA\Property(property="recordsTotal", type="integer", example=42),
+ *             @OA\Property(property="recordsFiltered", type="integer", example=42),
+ *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action."
+ *     )
+ * )
+ */
+class OpenApiGovernanceDocumentsDatatable {}
+
 ?>

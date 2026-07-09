@@ -27,7 +27,7 @@ class WordHandler
     private PDO $db;
     private int $user;
 
-    public function __construct(PDO $db=null, int $user=0)
+    public function __construct(?PDO $db=null, int $user=0)
     {
         // If the database is not initialized
         if (is_null($db))

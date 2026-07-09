@@ -27,6 +27,7 @@ $sr-default: #E8E9EB;
 $sr-important: #ed3139;
 $sr-dark: #252525;
 $sr-body: #ffffff;
+$sr-row-selected: #fdeced;     // light red tint for selected notification rows
 $excel-green: #10793F;
 
 // Semantic state colors for the Configure Hub badges and similar status
@@ -61,6 +62,7 @@ $body-color: $sr-primary !default;
 $page-wrapper-bg: $sr-default;
 
 $link-color: $sr-secondary !default;
+$file-uploader-link-color: $body-color;
 
 // Topbar
 $topbar: $sr-topbar;

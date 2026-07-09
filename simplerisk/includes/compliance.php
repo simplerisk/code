@@ -205,6 +205,12 @@ function display_update_test_modal($where = "define_tests") {
  * FUNCTION: ADD FRAMEWORK CONTROLS TEST *
  *****************************************/
 function add_framework_control_test($tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $framework_control_id, $additional_stakeholders = "", $last_date="0000-00-00", $next_date=false, $teams=[], $tags=[], $audit_initiation_offset = null){
+
+    // Sanitizing input that comes from the WYSIWYG editor or outside sources
+    $objective = purify_html($objective);
+    $test_steps = purify_html($test_steps);
+    $expected_results = purify_html($expected_results);
+
     if($next_date === false) {
         if (!$last_date || $last_date === "0000-00-00") {
             $next_date = date("Y-m-d");
@@ -250,7 +256,7 @@ function add_framework_control_test($tester, $test_frequency, $name, $objective,
     }
 
     $message = _lang('TestCreatedAuditLogMessage', array('test_name' => $name, 'test_id' => $test_id, 'user' => $_SESSION['user']), false);
-    write_log((int)$test_id + 1000, $_SESSION['uid'], $message, "test");
+    write_log((int)$test_id + 1000, $_SESSION['uid'] ?? 0, $message, "test");
 
     // Close the database connection
     db_close($db);
@@ -286,6 +292,11 @@ function update_framework_control_test($test_id, $tester=false, $test_frequency=
     if($teams === false) $teams = $test['teams'];
     if($audit_initiation_offset === false) $audit_initiation_offset = $test['audit_initiation_offset'];
 
+    // Sanitizing input that comes from the WYSIWYG editor or outside sources
+    $objective = purify_html($objective);
+    $test_steps = purify_html($test_steps);
+    $expected_results = purify_html($expected_results);
+
     // Open the database connection
     $db = db_open();
 
@@ -318,7 +329,7 @@ function update_framework_control_test($test_id, $tester=false, $test_frequency=
     $changes = get_changes('test', $test, $test_after);
 
     $message = _lang('AuditLog_TestUpdated', array('test_name' => $name, 'test_id' => $test_id, 'user_name' => $_SESSION['user'], 'changes' => $changes), false);
-    write_log((int)$test_id + 1000, $_SESSION['uid'], $message, "test");
+    write_log((int)$test_id + 1000, $_SESSION['uid'] ?? 0, $message, "test");
 
     trigger_workflow_event('test.updated', [
         'test_id'    => $test_id,
@@ -352,7 +363,7 @@ function delete_framework_control_test($test_id){
     db_close($db);
 
     $message = _lang('TestDeletedAuditLogMessage', array('test_name' => $test['name'], 'test_id' => $test_id, 'user' => $_SESSION['user']));
-    write_log((int)$test_id + 1000, $_SESSION['uid'], $message, "test");
+    write_log((int)$test_id + 1000, $_SESSION['uid'] ?? 0, $message, "test");
     
     return true;
 }
@@ -623,6 +634,9 @@ function display_initiate_audits() {
 							<select id='filter_by_framework' class='' multiple=''>
 	";
 
+	echo "
+								<option selected value='0'>{$escaper->escapeHtml($lang['Unassigned'])}</option>
+	";
 	$options = getAvailableControlFrameworkList(true);
 	is_array($options) || $options = array();
 	foreach($options as $option) {
@@ -754,7 +768,7 @@ function display_active_audits() {
                 $('.header_filter [name=test_date].datepicker').initAsDateRangePicker();
 
                 $('body').on('click', '.delete-btn', function() {
-                    confirm('{$escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisTest'])}', () => {
+                    confirm('{$escaper->escapeJs($lang['AreYouSureYouWantToDeleteThisTest'])}', () => {
                         var id = $(this).data('id')
     
                         $.ajax({
@@ -959,7 +973,7 @@ function initiate_test_audit($test_id, $initiated_audit_status, $tags=[], $reque
     if ($requested_from_ui) {
 
         $message = "An active audit for \"{$test["name"]}\" was initiated by username \"" . $_SESSION['user'] . "\".";
-        write_log((int)$test_id + 1000, $_SESSION['uid'], $message, "test");
+        write_log((int)$test_id + 1000, $_SESSION['uid'] ?? 0, $message, "test");
 
     // If the initiate test audit was requested from an automated process
     } else {
@@ -2001,13 +2015,13 @@ function save_test_result($test_audit_id, $status, $test_result, $tester, $test_
         $changes = get_changes('audit', $test_audit, $test_audit_after);
 
         $message = _lang('AuditLog_TestAuditClosed', ['test_audit_name' => $test_audit["name"], 'test_audit_id' => $test_audit_id, 'user_name' => $_SESSION['user'], 'changes' => $changes], false);
-        write_log((int)$test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
+        write_log((int)$test_audit_id + 1000, $_SESSION['uid'] ?? 0, $message, "test_audit");
     } else {
         $test_audit_after = get_framework_control_test_audit_by_id($test_audit_id);
         $changes = get_changes('audit', $test_audit, $test_audit_after);
 
         $message = _lang('AuditLog_TestAuditUpdated', ['test_audit_name' => $test_audit["name"], 'test_audit_id' => $test_audit_id, 'user_name' => $_SESSION['user'], 'changes' => $changes], false);
-        write_log((int)$test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
+        write_log((int)$test_audit_id + 1000, $_SESSION['uid'] ?? 0, $message, "test_audit");
     }
 
     trigger_workflow_event('audit.updated', [
@@ -2112,7 +2126,7 @@ function delete_compliance_file($file_id){
         } else if ($ref_type == 'exceptions') {
             $log_type = 'exception';
         }
-        write_log($file['ref_id'] + 1000, $_SESSION['uid'], $message, $log_type);
+        write_log($file['ref_id'] + 1000, $_SESSION['uid'] ?? 0, $message, $log_type);
     }
 
     // Delete a compliance file by file ID
@@ -2283,6 +2297,26 @@ function download_compliance_file($unique_name)
     }
     else
     {
+        // SR-1694: enforce the granular per-feature permission at the download
+        // sink for ref_types that have one. Exception attachments require
+        // view_exception — the exception display API already enforces
+        // check_permission_exception('view'), but the coarse governance/compliance
+        // gate at the download entry point does not, so without this a user with
+        // menu access but no view_exception could pull exception files by
+        // unique_name. Other ref_types (documents, test_audit) have no granular
+        // view permission — coarse menu access (plus the entry-point team-separation
+        // check for test_audit) is their intended authorization model. The
+        // The whole deny decision (ref_type → required permission → does the
+        // caller hold it) is factored into a pure, unit-tested helper so the
+        // "documents/test_audit are coarse by design" intent and the wiring to
+        // the correct permission are locked against accidental regression; this
+        // header()/exit() sink stays a thin wrapper.
+        if (compliance_file_download_denied($array['ref_type'], 'check_permission_exception'))
+        {
+            // Logs (warning) + sets the alert + redirects + exits.
+            redirect_permission_denied('DownloadFilePermissionMessage', "compliance_files exception unique_name={$unique_name}");
+        }
+
         header("Content-length: " . $array['size']);
         header("Content-type: " . $array['type']);
         header("Content-Disposition: attachment; filename=" . $escaper->escapeUrl($array['name']));
@@ -2472,6 +2506,7 @@ function display_detail_test() {
                     </div>
                     <div class='form-group attachment-files-container mb-0'>
                         <label>{$escaper->escapeHtml($lang['AttachmentFiles'])} :</label>
+                        <div>
     ";
     if ($files) {
         foreach ($files as $file) {
@@ -2494,6 +2529,7 @@ function display_detail_test() {
         ";
     }
     echo "
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2558,7 +2594,7 @@ function delete_test_audit($test_audit_id) {
     db_close($db);
 
     $message = _lang('TestAuditDeleteAuditTrailMessage', array('test_audit_id' => $test_audit_id, 'user' => $_SESSION['user']), false);
-    write_log((int)$test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
+    write_log((int)$test_audit_id + 1000, $_SESSION['uid'] ?? 0, $message, "test_audit");
 
     return true;
 }
@@ -2573,7 +2609,7 @@ function reopen_test_audit($test_audit_id)
     
     $test_audit_name = get_test_audit_name($test_audit_id);
     $message = _lang('AuditLog_TestAuditReopen', ['test_audit_name' => $test_audit_name, 'test_audit_id' => $test_audit_id, 'user_name' => $_SESSION['user']], false);
-    write_log((int)$test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
+    write_log((int)$test_audit_id + 1000, $_SESSION['uid'] ?? 0, $message, "test_audit");
 
     return true;
 }
@@ -3000,7 +3036,123 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
     }
     
     return $filtered_tests;
-    
+
+}
+
+/*******************************************************************
+ * FUNCTION: GET INITIATE UNASSIGNED CONTROLS BY FILTER            *
+ * Returns framework controls that have no framework mapping but    *
+ * have at least one test defined, applying optional filters.       *
+ *******************************************************************/
+function get_initiate_unassigned_controls_by_filter($filter_by_text, $filter_by_frequency, $filter_by_control) {
+
+    // Open the database connection
+    $db = db_open();
+
+    $sql = "
+        SELECT t2.*,
+            GROUP_CONCAT(DISTINCT t3.name SEPARATOR ',') test_names,
+            GROUP_CONCAT(DISTINCT t3.test_frequency SEPARATOR ',') test_test_frequencies,
+            GROUP_CONCAT(DISTINCT t3.last_date SEPARATOR ',') test_last_audit_dates,
+            GROUP_CONCAT(DISTINCT t3.next_date SEPARATOR ',') test_next_audit_dates
+        FROM `framework_controls` t2
+            LEFT JOIN `framework_control_mappings` m ON m.control_id = t2.id
+            LEFT JOIN `framework_control_tests` t3 ON t3.framework_control_id = t2.id
+        WHERE t2.deleted = 0
+            AND m.control_id IS NULL
+            AND t3.id IS NOT NULL
+    ";
+
+    $where = [];
+
+    if ($filter_by_frequency) {
+        $where[] = "(t2.desired_frequency = :filter_by_frequency OR t3.test_frequency = :filter_by_frequency)";
+    }
+
+    if ($filter_by_control) {
+        $where[] = "t2.short_name LIKE :filter_by_control";
+    }
+
+    if ($where) {
+        $sql .= " AND " . implode(" AND ", $where);
+    }
+
+    $sql .= " GROUP BY t2.id ";
+
+    $stmt = $db->prepare($sql);
+
+    if ($filter_by_frequency) {
+        $stmt->bindParam(":filter_by_frequency", $filter_by_frequency, PDO::PARAM_STR);
+    }
+
+    if ($filter_by_control) {
+        $filter_by_control = "%{$filter_by_control}%";
+        $stmt->bindParam(":filter_by_control", $filter_by_control, PDO::PARAM_STR);
+    }
+
+    $stmt->execute();
+    $controls = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    // Apply post-fetch text filter (matches against control and test fields)
+    if (!$filter_by_text) {
+        return $controls;
+    }
+
+    $filtered = [];
+    foreach ($controls as $control) {
+        if (stripos($control['short_name'] ?? '', $filter_by_text) !== false
+            || stripos($control['desired_frequency'] ?? '', $filter_by_text) !== false
+            || stripos($control['last_audit_date'] ?? '', $filter_by_text) !== false
+            || stripos($control['next_audit_date'] ?? '', $filter_by_text) !== false
+            || stripos($control['test_names'] ?? '', $filter_by_text) !== false
+            || stripos($control['test_test_frequencies'] ?? '', $filter_by_text) !== false
+            || stripos($control['test_last_audit_dates'] ?? '', $filter_by_text) !== false
+            || stripos($control['test_next_audit_dates'] ?? '', $filter_by_text) !== false
+        ) {
+            $filtered[] = $control;
+        }
+    }
+
+    return $filtered;
+
+}
+
+/*******************************************************************
+ * FUNCTION: GET INITIATE UNASSIGNED TESTS BY CONTROL              *
+ * Returns all tests for a frameworkless control (one with no       *
+ * framework_control_mappings row). The LEFT JOIN + IS NULL guard   *
+ * verifies the control is still frameworkless at query time, so a  *
+ * crafted ?id=control_0_N request for a framework-assigned control *
+ * returns no results rather than leaking them through this path.   *
+ *******************************************************************/
+function get_initiate_unassigned_tests_by_control($control_id) {
+
+    // Open the database connection
+    $db = db_open();
+
+    $sql = "
+        SELECT t3.*
+        FROM `framework_controls` t2
+            INNER JOIN `framework_control_tests` t3 ON t3.framework_control_id = t2.id
+            LEFT JOIN `framework_control_mappings` m ON m.control_id = t2.id
+        WHERE t2.id = :control_id
+            AND t2.deleted = 0
+            AND m.control_id IS NULL
+    ";
+
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $tests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    return $tests;
+
 }
 
 /****************************************

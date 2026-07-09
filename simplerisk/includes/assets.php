@@ -337,7 +337,7 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
         );
 
         $message = "Asset '{$name}' was added by user '{$_SESSION['user']}'.";
-        write_log($asset_id , $_SESSION['uid'], $message, "asset");
+        write_log($asset_id , $_SESSION['uid'] ?? 0, $message, "asset");
 
         trigger_workflow_event('asset.created', [
             'asset_id' => $asset_id,
@@ -461,7 +461,7 @@ function update_asset($asset_id, $ip, $name, $value=null, $location=null, $teams
 
 
     $message = "Asset \"" . $name . "\" was modified by user \"" . $_SESSION['user'] . "\".";
-    write_log($asset_id, $_SESSION['uid'], $message, "asset");
+    write_log($asset_id, $_SESSION['uid'] ?? 0, $message, "asset");
 
     trigger_workflow_event('asset.updated', [
         'asset_id' => $asset_id,
@@ -852,7 +852,7 @@ function delete_all_assets($verified = false) {
                 'name' => try_decrypt($asset['name']),
                 'user' => $_SESSION['user']
             ]);
-            write_log($asset['id'], $_SESSION['uid'], $message, "asset");
+            write_log($asset['id'], $_SESSION['uid'] ?? 0, $message, "asset");
         }
         return true;
     } catch (Exception $e) {
@@ -896,7 +896,7 @@ function delete_asset($asset_id) {
         'user' => $_SESSION['user']
     ]);
 
-    write_log($asset_id, $_SESSION['uid'], $message, "asset");
+    write_log($asset_id, $_SESSION['uid'] ?? 0, $message, "asset");
 
     trigger_workflow_event('asset.deleted', [
         'asset_id' => $asset_id,
@@ -938,7 +938,7 @@ function verify_all_assets() {
                 'name' => try_decrypt($asset['name']),
                 'user' => $_SESSION['user']
             ]);
-            write_log($asset['id'], $_SESSION['uid'], $message, "asset");
+            write_log($asset['id'], $_SESSION['uid'] ?? 0, $message, "asset");
         }
 
         return true;
@@ -969,7 +969,7 @@ function verify_asset($asset_id)
         'user' => $_SESSION['user']
     ]);
 
-    write_log($asset_id, $_SESSION['uid'], $message, "asset");
+    write_log($asset_id, $_SESSION['uid'] ?? 0, $message, "asset");
 
     // Return success or failure
     return $return;
@@ -1310,7 +1310,7 @@ function update_asset_field_value_by_field_name($id, $fieldName, $fieldValue)
 
     $name = get_name_by_value('assets', $id, "", true);
     $message = "Asset '{$name}' was modified by user '{$_SESSION['user']}'.";
-    write_log($id, $_SESSION['uid'], $message, "asset");
+    write_log($id, $_SESSION['uid'] ?? 0, $message, "asset");
     
     // Close the database connection
     db_close($db);
@@ -1374,7 +1374,7 @@ function import_asset($ip, $name, $value, $location, $teams, $details, $tags, $v
     // Check if we have updated the asset
     if (!$exact) {
         $message = "An asset named \"" . $name . "\" was modified by username \"" . $_SESSION['user'] . "\".";
-        write_log($asset_id, $_SESSION['uid'], $message, "asset");
+        write_log($asset_id, $_SESSION['uid'] ?? 0, $message, "asset");
 
         return $asset_id;
     }
@@ -2102,7 +2102,7 @@ function delete_asset_group($asset_group_id) {
         ), false
     );
 
-    write_log($asset_group_id + 1000, $_SESSION['uid'], $message, 'asset_group');
+    write_log($asset_group_id + 1000, $_SESSION['uid'] ?? 0, $message, 'asset_group');
 
     return true;
 }
@@ -2147,7 +2147,7 @@ function remove_asset_from_asset_group($asset_id, $asset_group_id) {
         ), false
     );
 
-    write_log($asset_group_id + 1000, $_SESSION['uid'], $message, 'asset_group');
+    write_log($asset_group_id + 1000, $_SESSION['uid'] ?? 0, $message, 'asset_group');
 
     return true;
 }
@@ -2393,7 +2393,7 @@ function update_assets_of_asset_group($assets, $asset_group_id, $asset_group_nam
             );
         }
 
-        write_log($asset_group_id + 1000, $_SESSION['uid'], $message, 'asset_group');
+        write_log($asset_group_id + 1000, $_SESSION['uid'] ?? 0, $message, 'asset_group');
     }
 }
 
@@ -3530,7 +3530,10 @@ function get_assets_data_for_view_v2($view, $selected_fields, $verified = null, 
                                 }
                                 
                                 sort($mapped_controls);
-                                $value = implode(', ', $mapped_controls);
+                                // Escape each control name — the value is rendered raw
+                                // by the datatable column (no client renderer). Mirrors
+                                // the associated_risks case below.
+                                $value = implode(', ', array_map(fn($n) => $escaper->escapeHtml($n), $mapped_controls));
                             } else {
                                 $value = '';
                             }
@@ -3739,7 +3742,7 @@ function update_asset_field_API_v2($view, $fieldName) {
         }
         
         $message = _lang("FieldUpdated_{$view_type}", ['fieldName' => $fieldName, 'name' => get_name_by_value('assets', $id, "", true), 'user' => $_SESSION['user']]);
-        write_log($id, $_SESSION['uid'], $message, "asset");
+        write_log($id, $_SESSION['uid'] ?? 0, $message, "asset");
     }
     
     /* Properly implement this part when finishing inline edits
@@ -3939,7 +3942,7 @@ function update_asset_API_v2($view) {
     $changes = get_changes_in_asset($original, $updated);
 
     if (!empty($changes)) {
-        write_log($id, $_SESSION['uid'], _lang('AssetAuditLogUpdate', array('asset_name' => $asset_name, 'user' => $_SESSION['user'], 'changes' => implode(', ', $changes)), false), 'asset');
+        write_log($id, $_SESSION['uid'] ?? 0, _lang('AssetAuditLogUpdate', array('asset_name' => $asset_name, 'user' => $_SESSION['user'], 'changes' => implode(', ', $changes)), false), 'asset');
 
         trigger_workflow_event('asset.updated', [
             'asset_id' => $id,
@@ -4121,7 +4124,7 @@ function create_asset_API_v2($view) {
     }
 
     $message = _lang("CreateSuccess_{$view_type}", ['name' => $asset_name, 'user' => $_SESSION['user']]);
-    write_log($id, $_SESSION['uid'], $message, "asset");
+    write_log($id, $_SESSION['uid'] ?? 0, $message, "asset");
 
     trigger_workflow_event('asset.created', [
         'asset_id' => $id,
@@ -4331,7 +4334,16 @@ function get_changes_in_asset($original, $updated) {
             $updated[$key] = json_encode($updated[$key] ?? []);
         }
         if ($original[$key] !== $updated[$key]) {
-            $changes[] = _lang('AssetAuditLogUpdateChange', array('key' => $key, 'value' => $original[$key], 'new_value' => $updated[$key]), false);
+            $value = $original[$key];
+            $new_value = $updated[$key];
+            // The asset "details" field is WYSIWYG (rich-text); emit it as plain
+            // text so the audit message doesn't carry literal "<p>"/"&nbsp;".
+            // The comparison above ran on the raw values.
+            if ($key === 'details') {
+                $value = html_to_plain_text($value);
+                $new_value = html_to_plain_text($new_value);
+            }
+            $changes[] = _lang('AssetAuditLogUpdateChange', array('key' => $key, 'value' => $value, 'new_value' => $new_value), false);
         }
     }
     return $changes;

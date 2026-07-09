@@ -4,6 +4,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// promise_chain_exists() lives in promises.php, which functions.php does not
+// auto-load. Declare it directly so this consumer's defining file is always
+// reachable, not only transitively via the worker (CLAUDE.md).
+require_once(realpath(__DIR__ . '/../promises.php'));
+
 return [
     'type' => 'core_ai_context_update',
 
@@ -109,22 +114,12 @@ return [
         $payload = json_decode($task['payload'], true) ?? [];
         $triggered_at = $payload['triggered_at'] ?? time();
 
-        try {
-            $stmt = $db->prepare("
-                SELECT COUNT(*) FROM promises 
-                WHERE queue_task_id = :task_id 
-                    AND promise_type = 'core_ai_context_update'
-                    AND status IN ('pending','in_progress')
-            ");
-            $stmt->execute([':task_id' => $task['id']]);
-            $existing = (int)$stmt->fetchColumn();
-        } catch (Exception $e) {
-            write_debug_log("AI Context Update: Failed to check for existing promises (task #{$task['id']}): " . $e->getMessage(), "error");
-            return false;
-        }
-
-        if ($existing > 0) {
-            write_debug_log("AI Context Update: Found {$existing} existing pending/in-progress promise(s) for task #{$task['id']}. Skipping duplicate creation.", "info");
+        // Idempotency guard: if a live promise chain already exists for this
+        // task, do not create another (re-chaining runaway protection).
+        // Shared with core_document_update / core_control_update via the
+        // state+status-aware promise_chain_exists() in promises.php.
+        if (promise_chain_exists($db, (int)$task['id'], 'core_ai_context_update')) {
+            write_debug_log("AI Context Update: Live promise chain already exists for task #{$task['id']}. Skipping duplicate creation.", "info");
             return false;
         }
 
@@ -150,8 +145,11 @@ return [
             );
 
             if (!$prev_promise_id) {
+                // Return false and let the queue worker own retry/backoff and the
+                // final 'failed' status (anti-storm Rule 2). A handler that sets
+                // its own task 'failed' strands the task out of the worker's
+                // pending retry pool.
                 write_debug_log("AI Context Update: Failed to create promise for stage '{$stage_name}' (task #{$task['id']})", "error");
-                queue_update_status($task['id'], 'failed', $db);
                 return false;
             }
         }

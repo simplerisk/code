@@ -114,6 +114,13 @@ function load_all_jobs(): array
         $load_jobs_from_dir($scfDir, 'SCF Extra');
     }
 
+    // --- Load Encryption Extra Jobs ---
+    $encryptionDir = realpath(__DIR__ . '/../extras/encryption/jobs');
+    if (is_dir($encryptionDir)) {
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+        $load_jobs_from_dir($encryptionDir, 'Encryption Extra');
+    }
+
     write_debug_log("Loaded " . count($jobs) . " total job definitions.", "debug");
 
     return $jobs;
@@ -210,6 +217,39 @@ function queue_update_status($task_id, $status, PDO $db): bool {
 }
 
 /**************************************************************************
+ * FUNCTION: RUN TIMESTAMPED QUEUE CHECK                                  *
+ * Shared queue_check wrapper for periodic jobs whose task_check is      *
+ * gated by a queue_timestamp_last_* setting.                            *
+ *                                                                        *
+ * Stamps the gate timestamp at the START of every attempt so the        *
+ * cadence holds regardless of outcome — stamping only on success would  *
+ * requeue a failing job on every worker tick, a per-minute retry storm  *
+ * against whatever the job talks to.                                     *
+ *                                                                        *
+ * Runs $body and marks the task completed when it returns true. On      *
+ * failure ($body returns false or throws) the task status is left       *
+ * alone: handle_queue_task_failure() in the worker owns bounded backoff *
+ * retries and the final 'failed'. Job handlers must never pre-mark      *
+ * their own task 'failed' — that dead-ends it before the retry          *
+ * machinery (which only re-fetches 'pending' rows) ever sees it.        *
+ **************************************************************************/
+function run_timestamped_queue_check(array $task, PDO $db, string $timestamp_setting, string $log_prefix, callable $body): bool
+{
+    update_or_insert_setting($timestamp_setting, time(), db: $db);
+
+    try {
+        if ($body()) {
+            queue_update_status($task['id'], 'completed', $db);
+            return true;
+        }
+        return false;
+    } catch (\Throwable $e) {
+        write_debug_log("{$log_prefix}: Exception during queue task — " . $e->getMessage(), "error");
+        return false;
+    }
+}
+
+/**************************************************************************
  * FUNCTION: HANDLE QUEUE TASK FAILURE                                    *
  * Handle a failed queue task with exponential backoff and error storage. *
  **************************************************************************/
@@ -238,6 +278,40 @@ function handle_queue_task_failure(PDO $db, array $task, string $errorMessage, i
         write_debug_log("Task #{$task['id']} failed after {$retryAttempts} attempts, marking as failed.", "error");
         queue_update_status($task['id'], 'failed', $db);
     }
+}
+
+/**************************************************************************
+ * FUNCTION: RECOVER STUCK QUEUE TASKS                                    *
+ * Re-queues tasks stuck 'in_progress' past $thresholdMinutes — but ONLY  *
+ * those with NO live promise chain. A multi-stage task is legitimately   *
+ * 'in_progress' for as long as its promise chain is being resolved by    *
+ * the promise worker, which can far exceed the threshold under load.     *
+ * Recovering such a task flips it back to 'pending' and re-runs its      *
+ * queue_check, re-creating the whole stage chain — the re-chaining       *
+ * runaway. So only recover tasks whose chain is gone/terminal.           *
+ *                                                                        *
+ * The liveness predicate (a promise is live only when NEITHER `state`    *
+ * NOR `status` is terminal) MUST stay in sync with promise_chain_exists()*
+ * in promises.php — cancellation writes only `status`, so both columns   *
+ * are checked. Returns the number of tasks recovered.                    *
+ **************************************************************************/
+function recover_stuck_queue_tasks(PDO $db, int $thresholdMinutes): int
+{
+    $stmt = $db->prepare("
+        UPDATE queue_tasks t
+        SET t.status='pending', t.updated_at=NOW()
+        WHERE t.status='in_progress'
+          AND t.updated_at < NOW() - INTERVAL :mins MINUTE
+          AND NOT EXISTS (
+              SELECT 1 FROM promises p
+              WHERE p.queue_task_id = t.id
+                AND p.state  NOT IN ('completed','fulfilled','failed','canceled')
+                AND p.status NOT IN ('completed','fulfilled','failed','canceled')
+          )
+    ");
+    $stmt->execute([':mins' => $thresholdMinutes]);
+
+    return $stmt->rowCount();
 }
 
 ?>

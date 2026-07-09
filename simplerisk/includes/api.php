@@ -70,7 +70,7 @@ function is_session_authenticated()
         // Session handler is database
         if (use_database_for_sessions())
         {
-            session_set_save_handler(new SimpleRiskSessionHandler());
+            SimpleRiskSessionHandler::register();
         }
 
         // Start the session
@@ -96,6 +96,17 @@ function is_session_authenticated()
     {
 	    // Load CSRF Magic — include_csrf_magic() to load the DB secret before validation
 	    include_csrf_magic();
+
+	    // Release the session lock right after auth so this request doesn't hold
+	    // the DB handler's row-level FOR UPDATE on the session row for its entire
+	    // duration. Without this, a page's parallel same-session AJAX (e.g.
+	    // view.php's ~15 api/v2 calls) serialize on the one session row and pile
+	    // up to 50-110s, some hitting the lock-wait timeout and 500ing (SR-1691).
+	    // $_SESSION stays readable; the few writers (set_alert) re-acquire the
+	    // lock briefly via with_alert_session().
+	    if (session_status() === PHP_SESSION_ACTIVE) {
+	        session_write_close();
+	    }
 
 	    // Return true
 	    return true;
@@ -790,6 +801,12 @@ function viewmitigation($id = null) {
         $mitigation['supporting_files'][] = build_url("management/download.php?id=" . $escaper->escapeHtml($supporting_file['unique_name']));
     }
 
+    // NOTE (SR-1898): current_solution / security_requirements / security_recommendations
+    // are encrypted-at-rest fields (Encrypted DB Extra); the value here is still
+    // ciphertext (decrypted downstream), so it must NOT be purified at this boundary —
+    // purifying ciphertext corrupts it and breaks decryption. These fields are purified
+    // on write (submit_mitigation / update_mitigation purify the plaintext before try_encrypt).
+
     $data = array(
         "submission_date"=> $mitigation['submission_date'],
         "planning_date"=> $mitigation['planning_date'],
@@ -954,7 +971,7 @@ function dynamicriskForm()
 
             $tags = "";
             if ($row['risk_tags']) {
-                foreach(str_getcsv($row['risk_tags'], '|') as $tag) {
+                foreach(str_getcsv($row['risk_tags'], '|', '"', '') as $tag) {
                     $tags .= "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin: 1px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
                 }
             }
@@ -1002,7 +1019,7 @@ function dynamicriskForm()
                         case "residual_risk_60":
                         case "residual_risk_90":
                             $color = get_risk_color_from_levels($row[$column], $risk_levels);
-                            $data_row[] = "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($row[$column]) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div>";
+                            $data_row[] = "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($row[$column]) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeCssColor($color) . "\"></span></div></div>";
                             break;
                         case 'comments':
                         case 'risk_assessment':
@@ -1062,6 +1079,11 @@ function dynamicriskForm()
 function dynamicriskUniqueColumnDataAPI()
 {
     global $escaper, $lang;
+
+    if (!check_permission("riskmanagement")) {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
     
     // If the status, sort, and group are not sent
     if ((!isset($_REQUEST['status']) || !isset($_REQUEST['group'])) && !isset($_REQUEST['risks_by_team']))
@@ -1341,6 +1363,11 @@ function getTabHtml($id, $template){
         $technology = $risk[0]['technology'];
         $owner = $risk[0]['owner'];
         $manager = $risk[0]['manager'];
+        // NOTE (SR-1898): assessment / notes are encrypted-at-rest fields (Encrypted
+        // DB Extra); the value here is still ciphertext (decrypted downstream), so it
+        // must NOT be purified at this boundary — purifying ciphertext corrupts it and
+        // breaks decryption. These fields are purified on write (submit_risk /
+        // update_risk purify the plaintext before try_encrypt).
         $assessment = $risk[0]['assessment'];
         $notes = $risk[0]['notes'];
         $jira_issue_key = jira_extra() ? $risk[0]['jira_issue_key'] : "";
@@ -1704,6 +1731,11 @@ function addCSRTToken($html){
 function viewriskHtmlForm()
 {
     global $lang, $escaper;
+
+    if (!check_permission("riskmanagement")) {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
     // If the id is not sent
     if (!isset($_GET['id']))
     {
@@ -1807,6 +1839,11 @@ function reopenForm($id = null)
 function overviewForm()
 {
     global $lang, $escaper;
+
+    if (!check_permission("riskmanagement")) {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
     // If the id is not sent
     if (!isset($_GET['id']))
     {
@@ -1951,6 +1988,11 @@ function editdetailsForm()
 function viewAllReviewsForm()
 {
     global $lang, $escaper;
+
+    if (!check_permission("riskmanagement")) {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
 
     // If the id is not sent
     if (!isset($_GET['id']))
@@ -4136,7 +4178,7 @@ function getMitigationControlsDatatable(){
         $flag = $escaper->escapeHtml($_POST['flag']);
         $mitigation_id = $escaper->escapeHtml($_POST['mitigation_id']);
         $control_ids = $_POST['control_ids'];
-        $control_id_array = str_getcsv($control_ids);
+        $control_id_array = str_getcsv($control_ids, ',', '"', '');
     
         $controls = get_framework_controls($control_ids);
     
@@ -4884,7 +4926,7 @@ function getRelatedControlsByFrameworkIdsResponse()
         $fids = get_param("get", "fids", "");
         if($fids)
         {
-            $fids_arr = str_getcsv($fids);
+            $fids_arr = str_getcsv($fids, ',', '"', '');
             $controls = get_framework_controls_by_filter("all", "all", "all", "all", $fids_arr);
             
             $control_ids = array_map(function($control) use ($escaper){
@@ -5034,6 +5076,11 @@ function getControlResponse()
         $control = get_framework_control($id);
         $control['description'] = utf8ize($control['description']);
 
+        // Purify the rich-text fields at this output boundary — they feed the
+        // Define-Control edit modal, which renders them raw into the WYSIWYG editor.
+        $control['description'] = purify_rich_text_output($control['description'] ?? '');
+        $control['supplemental_guidance'] = purify_rich_text_output($control['supplemental_guidance'] ?? '');
+
         if (!empty($control['custom_values'])) {
             foreach ($control['custom_values'] as &$custom_value) {
                 switch ($custom_value['field_type']) {
@@ -5095,6 +5142,12 @@ function getFrameworkResponse()
         $id = $_GET['framework_id'];
         $framework = get_framework($id);
 
+        // Purify the rich-text description at this output boundary — it feeds the
+        // Define-Framework edit modal, which renders it raw into the WYSIWYG editor.
+        if (!empty($framework)) {
+            $framework['description'] = purify_rich_text_output($framework['description'] ?? '');
+        }
+
         if (!empty($framework['custom_values'])) {
             foreach ($framework['custom_values'] as &$custom_value) {
                 switch ($custom_value['field_type']) {
@@ -5154,12 +5207,6 @@ function getDefineTestsResponse()
         } else {
             $separation_enabled = false;
         }
-
-        // Remove those controls from the results that have no frameworks mapped
-        $controls = array_filter($controls, fn($c) => !empty($c['framework_ids'])); 
-
-        // Reindex the array after filtering
-        $controls = array_values($controls);
 
         $recordsTotal = count($controls);
 
@@ -5242,7 +5289,7 @@ function getDefineTestsResponse()
                 }
                 $tags_view = "";
                 if ($test['tags']) {
-                    foreach(str_getcsv($test['tags']) as $tag) {
+                    foreach(str_getcsv($test['tags'], ',', '"', '') as $tag) {
                         $tags_view .= "
                             <button class='btn btn-secondary btn-sm' style='pointer-events: none;margin-right:2px;padding: 4px 12px;' role='button' aria-disabled='true'>{$escaper->escapeHtml($tag)}</button>
                         ";
@@ -5500,7 +5547,13 @@ function getTestResponse()
 
             $test['last_date'] = format_date($test['last_date']);
             $test['next_date'] = format_date($test['next_date']);
-            
+
+            // Purify the rich-text fields at this output boundary — they feed the
+            // test edit form, which renders them raw into the WYSIWYG editor.
+            $test['objective'] = purify_rich_text_output($test['objective'] ?? '');
+            $test['test_steps'] = purify_rich_text_output($test['test_steps'] ?? '');
+            $test['expected_results'] = purify_rich_text_output($test['expected_results'] ?? '');
+
             json_response(200, "success", $test);
         }else{
             json_response(400, "Ivalid test ID.", NULL);
@@ -5524,11 +5577,11 @@ function getInitiateTestAuditsResponse() {
     // If the user has compliance permissions
     if (check_permission("compliance")) {
 
-        $filter_by_text         = $_GET["filter_by_text"];
+        $filter_by_text         = $_GET["filter_by_text"] ?? '';
         $filter_by_status       = empty($_GET["filter_by_status"]) ? [] : $_GET["filter_by_status"];
-        $filter_by_frequency    = $_GET["filter_by_frequency"];
+        $filter_by_frequency    = $_GET["filter_by_frequency"] ?? '';
         $filter_by_framework    = empty($_GET["filter_by_framework"]) ? [] : $_GET["filter_by_framework"];
-        $filter_by_control      = $_GET["filter_by_control"];
+        $filter_by_control      = $_GET["filter_by_control"] ?? '';
 
         $results = array();
 
@@ -5561,9 +5614,27 @@ function getInitiateTestAuditsResponse() {
         // If framework was loaded
         if (empty($_GET['id'])) {
 
+            // Prepend the Unassigned node if explicitly selected in the filter
+            // and there are frameworkless controls with tests to show.
+            if (in_array('0', $filter_by_framework)) {
+                $unassigned_controls = get_initiate_unassigned_controls_by_filter($filter_by_text, $filter_by_frequency, $filter_by_control);
+                if (!empty($unassigned_controls)) {
+                    $results[] = [
+                        'id'              => 'framework_0',
+                        'state'           => 'closed',
+                        'name'            => "<span class='framework-name text-info'>{$escaper->escapeHtml($lang['Unassigned'])}</span>",
+                        'test_frequency'  => '',
+                        'last_audit_date' => '',
+                        'next_audit_date' => '',
+                        'status'          => '',
+                        'action'          => '',
+                    ];
+                }
+            }
+
             // Get active frameworks
             $frameworks = get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control);
-            
+
             foreach ($frameworks as $framework) {
 
                 if ($separation_enabled && !in_array($framework['value'], $compliance_separation_access_info['frameworks'])) {
@@ -5598,6 +5669,44 @@ function getInitiateTestAuditsResponse() {
                 );
             }
             
+        // If the Unassigned node was clicked — load frameworkless controls
+        } elseif ($_GET['id'] === 'framework_0') {
+
+            $framework_controls = get_initiate_unassigned_controls_by_filter($filter_by_text, $filter_by_frequency, $filter_by_control);
+
+            foreach ($framework_controls as $framework_control) {
+
+                // Frameworkless controls have no framework assignment and therefore no team
+                // assignment. They are not governed by team separation and are visible to
+                // any user with the base compliance permission.
+
+                if (isset($_SESSION["initiate_audits"]) && $_SESSION["initiate_audits"] == 1) {
+
+                    $action = "
+                        <div class='text-center'>
+                            <button data-id='{$framework_control['id']}' type='button' class='btn btn-dark initiate-control-audit-btn' >{$escaper->escapeHtml($lang['InitiateControlAudit'])}</button>
+                        </div>
+                    ";
+
+                } else {
+
+                    $action = "";
+
+                }
+
+                $results[] = [
+                    'id'              => "control_0_{$framework_control['id']}",
+                    'state'           => 'closed',
+                    'name'            => "<a class='control-name text-info' data-id='{$framework_control['id']}' href='' title='" . $escaper->escapeHtml($lang['Control']) . "'>" . $escaper->escapeHtml($framework_control['short_name']) . "</a>",
+                    'last_audit_date' => $escaper->escapeHtml(format_date($framework_control['last_audit_date'])),
+                    'test_frequency'  => $escaper->escapeHtml($framework_control['desired_frequency']),
+                    'next_audit_date' => $escaper->escapeHtml(format_date($framework_control['next_audit_date'])),
+                    'status'          => $escaper->escapeHtml($framework_control['status'] == 1 ? $lang['Active'] : $lang['Inactive']),
+                    'action'          => $action,
+                ];
+
+            }
+
         // If a framework node was clicked
         } elseif (stripos($_GET['id'], "framework_") !== false) {
 
@@ -5639,6 +5748,46 @@ function getInitiateTestAuditsResponse() {
 
             }
             
+        // If a frameworkless control node was clicked — load its tests directly
+        } elseif (str_starts_with($_GET['id'], 'control_0_')) {
+
+            $framework_and_control = str_replace("control_", "", $_GET['id']); // produces "0_<cid>"
+            $control_id = (int)explode("_", $framework_and_control)[1];
+
+            $framework_control_tests = get_initiate_unassigned_tests_by_control($control_id);
+
+            foreach ($framework_control_tests as $framework_control_test) {
+
+                // Frameworkless controls and their tests have no team assignment; they are
+                // exempt from team separation and visible to any user with compliance access.
+
+                if (isset($_SESSION["initiate_audits"]) && $_SESSION["initiate_audits"] == 1) {
+
+                    $action = "
+                        <div class='text-center'>
+                            <button data-id='{$framework_control_test['id']}' type='button' class='btn btn-dark initiate-test-btn' >{$escaper->escapeHtml($lang['InitiateTest'])}</button>
+                        </div>
+                    ";
+
+                } else {
+
+                    $action = "";
+
+                }
+
+                $results[] = [
+                    'id'              => "test_{$framework_and_control}_{$framework_control_test['id']}",
+                    'state'           => 'open',
+                    'name'            => "<a class='test-name text-info' data-id='{$framework_control_test['id']}' href='" . build_url() . "/' title='" . $escaper->escapeHtml($lang['Test']) . "'>" . $escaper->escapeHtml($framework_control_test['name']) . "</a>",
+                    'test_frequency'  => $escaper->escapeHtml($framework_control_test['test_frequency']),
+                    'last_audit_date' => $escaper->escapeHtml(format_date($framework_control_test['last_date'])),
+                    'next_audit_date' => $escaper->escapeHtml(format_date($framework_control_test['next_date'])),
+                    'status'          => $escaper->escapeHtml($framework_control_test['status'] == 1 ? $lang['Active'] : $lang['Inactive']),
+                    'action'          => $action,
+                ];
+
+            }
+
         } elseif (stripos($_GET['id'], "control_") !== false) {
 
             $framework_and_control = str_replace("control_", "", $_GET['id']);
@@ -5773,7 +5922,7 @@ function getPastTestAuditsResponse()
 
             $tags_view = "";
             if ($test_audit['tags']) {
-                foreach(str_getcsv($test_audit['tags']) as $tag) {
+                foreach(str_getcsv($test_audit['tags'], ',', '"', '') as $tag) {
                     $tags_view .= "<span class=\"badge bg-secondary me-2\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</span>";
                 }
             } else {
@@ -5904,7 +6053,7 @@ function getActiveTestAuditsResponse() {
 
             $tags_view = "";
             if ($test['tags']) {
-                foreach(str_getcsv($test['tags']) as $tag) {
+                foreach(str_getcsv($test['tags'], ',', '"', '') as $tag) {
                     $tags_view .= "<span class=\"badge bg-secondary me-2\">" . $escaper->escapeHtml($tag) . "</span>";
                 }
             } else {
@@ -5976,7 +6125,7 @@ function saveTestAuditCommentResponse()
         $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
 
         $message = "Comment was added to audit test \"" . $escaper->escapeHtml($test_audit['name']) . "\" by username \"" . $_SESSION['user'] . "\".";
-        write_log((int)$test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
+        write_log((int)$test_audit_id + 1000, $_SESSION['uid'] ?? 0, $message, "test_audit");
 
         json_response(200, get_alert(true), $commentList);
 
@@ -6685,6 +6834,11 @@ function get_tooltip_api()
 {
     global $lang;
     global $escaper;
+
+    if (!check_permission("riskmanagement")) {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
     
     // Get risk ids by comma
     $risk_ids = $_POST['risk_ids'];
@@ -6926,7 +7080,7 @@ function getPlanMitigationsDatatableResponse()
                         $filter_data[$column] = $risk['status'];
                         break;
                     case "calculated_risk":
-                        $data_row[] = "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder' style='position:relative;'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div>";
+                        $data_row[] = "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder' style='position:relative;'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeCssColor($color) . "\"></span></div></div>";
                         $filter_data[$column] = $risk['calculated_risk'];
                         break;
                     case "residual_risk":
@@ -6934,7 +7088,7 @@ function getPlanMitigationsDatatableResponse()
                             <div class='{$escaper->escapeHtml($residual_color)}'>
                                 <div class='risk-cell-holder' style='position:relative;'>
                                     {$escaper->escapeHtml($risk['residual_risk'])}
-                                    <span class='risk-color' style='background-color:{$escaper->escapeHtml($residual_color)}'></span>
+                                    <span class='risk-color' style='background-color:{$escaper->escapeCssColor($residual_color)}'></span>
                                 </div>
                             </div>
                         ";
@@ -7045,7 +7199,7 @@ function getPlanMitigationsDatatableResponse()
                         $tags = "";
                         $filter_data[$column] = '';
                         if ($risk['risk_tags']) {
-                            $filter_data[$column] = str_getcsv($risk['risk_tags']);
+                            $filter_data[$column] = str_getcsv($risk['risk_tags'], ',', '"', '');
                             foreach($filter_data[$column] as $tag) {
                                 $tags .= "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin: 1px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
                             }
@@ -7384,7 +7538,7 @@ function getManagementReviewsDatatableResponse()
                         $filter_data[$column] = $risk['status'];
                         break;
                     case "calculated_risk":
-                        $data_row[] = "<div class='" . $escaper->escapeHtml($color) . "'><div class='risk-cell-holder' style='position:relative;'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class='risk-color' style='background-color:" . $escaper->escapeHtml($color) . "'></span></div></div>";
+                        $data_row[] = "<div class='" . $escaper->escapeHtml($color) . "'><div class='risk-cell-holder' style='position:relative;'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class='risk-color' style='background-color:" . $escaper->escapeCssColor($color) . "'></span></div></div>";
                         $filter_data[$column] = $risk['calculated_risk'];
                         break;
                     case "residual_risk":
@@ -7392,7 +7546,7 @@ function getManagementReviewsDatatableResponse()
                             <div class='{$escaper->escapeHtml($residual_color)}'>
                                 <div class='risk-cell-holder' style='position:relative;'>
                                     {$escaper->escapeHtml($risk['residual_risk'])}
-                                    <span class='risk-color' style='background-color:{$escaper->escapeHtml($residual_color)}'></span>
+                                    <span class='risk-color' style='background-color:{$escaper->escapeCssColor($residual_color)}'></span>
                                 </div>
                             </div>
                         ";
@@ -7503,7 +7657,7 @@ function getManagementReviewsDatatableResponse()
                         $tags = "";
                         $filter_data[$column] = '';
                         if ($risk['risk_tags']) {
-                            $filter_data[$column] = str_getcsv($risk['risk_tags'], '|');
+                            $filter_data[$column] = str_getcsv($risk['risk_tags'], '|', '"', '');
                             foreach($filter_data[$column] as $tag) {
                                 $tags .= "<button class='btn btn-secondary btn-sm' style='pointer-events: none;margin: 1px;padding: 4px 12px;' role='button' aria-disabled='true'>" . $escaper->escapeHtml($tag) . "</button>";
                             }
@@ -7865,7 +8019,7 @@ function getReviewRisksDatatableResponse()
                         $filter_data[$column] = $status;
                         break;
                     case "calculated_risk":
-                        $data_row[] = "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder' style='position:relative;'>" . $escaper->escapeHtml($calculated_risk) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div>";
+                        $data_row[] = "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder' style='position:relative;'>" . $escaper->escapeHtml($calculated_risk) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeCssColor($color) . "\"></span></div></div>";
                         $filter_data[$column] = $calculated_risk;
                         break;
                     case "residual_risk":
@@ -7873,7 +8027,7 @@ function getReviewRisksDatatableResponse()
                             <div class='{$escaper->escapeHtml($residual_color)}'>
                                 <div class='risk-cell-holder' style='position:relative;'>
                                     {$escaper->escapeHtml($risk['residual_risk'])}
-                                    <span class='risk-color' style='background-color:{$escaper->escapeHtml($residual_color)}'></span>
+                                    <span class='risk-color' style='background-color:{$escaper->escapeCssColor($residual_color)}'></span>
                                 </div>
                             </div>
                         ";
@@ -7988,7 +8142,7 @@ function getReviewRisksDatatableResponse()
                         $tags = "";
                         $filter_data[$column] = '';
                         if ($risk['risk_tags']) {
-                            $filter_data[$column] = str_getcsv($risk['risk_tags'], '|');
+                            $filter_data[$column] = str_getcsv($risk['risk_tags'], '|', '"', '');
                             foreach($filter_data[$column] as $tag) {
                                 $tags .= "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin: 1px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
                             }
@@ -8188,6 +8342,15 @@ function fixReviewDateFormat() {
         // If the user has risk management permissions
         if (check_permission("riskmanagement"))
         {
+            // Updating a review's next-review date is a risk modification, so
+            // it must require modify_risks — mirroring reopenForm() and the
+            // other risk-write handlers. riskmanagement is a read permission
+            // and must not, on its own, authorize this write.
+            if (!has_permission("modify_risks")) {
+                set_alert(true, "bad", $escaper->escapeHtml($lang['RiskUpdatePermissionMessage']));
+                json_response(400, get_alert(true), NULL);
+            }
+
             $id = (int)$_POST['review_id'];
 
             $format = convertDateFormatToPHP($_POST['format']);
@@ -8225,30 +8388,24 @@ function getTagOptionsOfType() {
     {
         $type = $_GET['type'];
 
-        if ($type === 'risk' && !check_permission("riskmanagement")) {
-            set_alert(true, "bad", $lang['NoPermissionForRiskManagement']);
+        // Fail-closed per-type authorization (SR-1794 / SR-751). Every tag type
+        // must be explicitly gated via the shared map; check_tag_type_permission()
+        // denies any type without a mapping, so `test`/`test_audit`/`questionnaire_risk`
+        // — previously served ungated by the fall-through else — are now gated too.
+        if (!check_tag_type_permission($type)) {
+            $requirement = tag_type_permission_requirement($type);
+            $deny_message = $requirement !== null ? $lang[$requirement['deny_lang']] : $lang['YouNeedToSpecifyATypeParameter'];
+            set_alert(true, "bad", $deny_message);
             json_response(400, get_alert(true), NULL);
             return;
-        } elseif($type === 'asset' && !check_permission("asset")) {
-            set_alert(true, "bad", $lang['NoPermissionForAsset']);
-            json_response(400, get_alert(true), NULL);
-            return;
-        } elseif(($type === 'questionnaire_answer' || $type === 'questionnaire_pending_risk') && (!check_permission("assessments") || !assessments_extra())) {
-            set_alert(true, "bad", $lang['NoPermissionForAssessments']);
-            json_response(400, get_alert(true), NULL);
-            return;
-        } elseif(($type === 'incident_management_source' || $type === 'incident_management_destination') && ((!check_permission("im_submit_incidents") && !check_permission("im_edit_incidents"))  || !incident_management_extra())) {
-            set_alert(true, "bad", $lang['NoPermissionForIncidentManagement']);
-            json_response(400, get_alert(true), NULL);
-            return;
-        } else {
-            $options = [];
-            foreach(getTagsOfType($type) as $tag) {
-                $options[] = array('label' => $tag['tag'], 'value' => (int)$tag['id']);
-            }
-
-            json_response(200, null, $options);
         }
+
+        $options = [];
+        foreach(getTagsOfType($type) as $tag) {
+            $options[] = array('label' => $tag['tag'], 'value' => (int)$tag['id']);
+        }
+
+        json_response(200, null, $options);
     }
 }
 
@@ -8274,22 +8431,19 @@ function getTagOptionsOfTypes() {
         json_response(400, get_alert(true), NULL);
     } else {
 
-        if (in_array('risk', $types) && !check_permission("riskmanagement")) {
-            set_alert(true, "bad", $lang['NoPermissionForRiskManagement']);
-            json_response(400, get_alert(true), NULL);
-            return;
-        } elseif(in_array('asset', $types) && !check_permission("asset")) {
-            set_alert(true, "bad", $lang['NoPermissionForAsset']);
-            json_response(400, get_alert(true), NULL);
-            return;
-        } elseif((in_array('questionnaire_answer', $types) || in_array('questionnaire_pending_risk', $types)) && (!check_permission("assessments") || !assessments_extra())) {
-            set_alert(true, "bad", $lang['NoPermissionForAssessments']);
-            json_response(400, get_alert(true), NULL);
-            return;
-        } elseif((in_array('test', $types) || in_array('test_audit', $types)) && !check_permission("compliance")) {
-            set_alert(true, "bad", $lang['NoPermissionForCompliance']);
-            json_response(400, get_alert(true), NULL);
-            return;
+        // Fail-closed per-type authorization (SR-1794 / SR-751): require access to
+        // EVERY requested type via the shared map, and deny the whole request if any
+        // is not permitted. This closes the sibling gaps this handler had — it
+        // previously left `questionnaire_risk` and the incident_management_* types
+        // ungated.
+        foreach ($types as $requested_type) {
+            if (!check_tag_type_permission($requested_type)) {
+                $requirement = tag_type_permission_requirement($requested_type);
+                $deny_message = $requirement !== null ? $lang[$requirement['deny_lang']] : $lang['YouNeedToSpecifyATypeParameter'];
+                set_alert(true, "bad", $deny_message);
+                json_response(400, get_alert(true), NULL);
+                return;
+            }
         }
 
         $options = [];
@@ -8374,7 +8528,7 @@ function update_risk_level_API() {
         update_risk_level($field, $value, $name);
 
         // Audit log
-        write_log(1000, $_SESSION['uid'], _lang('RiskLevelAuditLog', array(
+        write_log(1000, $_SESSION['uid'] ?? 0, _lang('RiskLevelAuditLog', array(
             'field' => $field == 'display_name'? 'display name' : $field,
             'name' => $name,
             'originalValue' => $originalValue,
@@ -8517,6 +8671,11 @@ function get_exception_for_display_api()
     }
     $type = $_GET['type'];
     $exception = get_exception_for_display((int)$_GET['id'], $type);
+
+    // Purify the rich-text fields at this output boundary — they feed the
+    // exception edit modal, which renders them raw into the WYSIWYG editor.
+    $exception['description'] = purify_rich_text_output($exception['description'] ?? '');
+    $exception['justification'] = purify_rich_text_output($exception['justification'] ?? '');
 
     $exception['name'] = $escaper->escapeHtml($exception['name']);
     $exception["{$type}_name"] = $escaper->escapeHtml($exception['parent_name']);
@@ -9247,7 +9406,7 @@ function get_audit_logs_api()
         // If log_type is string, try to make array by comman and trim all values
         if($log_type)
         {
-            $log_type = str_getcsv($log_type);
+            $log_type = str_getcsv($log_type, ',', '"', '');
         }
         else
         {
@@ -9316,7 +9475,7 @@ function cve_lookup_api() {
     ];
 
     // If SSL certificate checks are enabled for external requests
-    if (get_setting('ssl_certificate_check_external') == 1)
+    if (ssl_external_verify_enabled())
     {
         // Verify the SSL host and peer
         $validate_ssl = true;
@@ -9941,11 +10100,21 @@ function get_asset_group_options_noauth() {
  ***************************************/
 function getManagerByUserAPI()
 {
+    global $lang, $escaper;
+
+    // SR-1779: scope the /user/manager lookup to its only legitimate callers —
+    // the add/edit risk forms (Owner → Owner's-Manager auto-fill). Without this
+    // any authenticated user can enumerate every user's reporting line by id.
+    if (!check_permission("submit_risks") && !check_permission("modify_risks")) {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
+
     $user_id = get_param("get", 'id');
     $user = get_user_by_id($user_id);
-    
+
     set_alert(true, "good", "success");
-    
+
     json_response(200, get_alert(true), array("manager" => $user["manager"]));
 }
 
@@ -10048,6 +10217,11 @@ function deleteDynamicSelectionForm()
 function appetite_report_api()
 {
     global $lang, $escaper;
+
+    if (!check_permission("riskmanagement")) {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
     
     // If the type are not sent
     if (!isset($_GET['type'])) {
@@ -10092,8 +10266,8 @@ function appetite_report_api()
                 $rows[] = array(
                     "<a class='open-in-new-tab' href='../management/view.php?id=" . $escaper->escapeHtml($risk['id']) . "' target='_blank'>" . $escaper->escapeHtml($risk['id']) . "</a>",
                     $escaper->escapeHtml($risk['subject']),
-                    "<div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class='risk-color " . $escaper->escapeHtml($risk['color']) . "' style='background-color:" . $escaper->escapeHtml($risk['color']) . "'></span></div>",
-                    "<div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['residual_risk']) . "<span class='risk-color " . $escaper->escapeHtml($risk['residual_color']) . "' style='background-color:" . $escaper->escapeHtml($risk['residual_color']) . "'></span></div>"
+                    "<div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class='risk-color " . $escaper->escapeHtml($risk['color']) . "' style='background-color:" . $escaper->escapeCssColor($risk['color']) . "'></span></div>",
+                    "<div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['residual_risk']) . "<span class='risk-color " . $escaper->escapeHtml($risk['residual_color']) . "' style='background-color:" . $escaper->escapeCssColor($risk['residual_color']) . "'></span></div>"
                 );
             }
 
@@ -10693,7 +10867,12 @@ function one_click_upgrade() {
  ****************************************************/
 function high_risk_report_datatable() {
 
-    global $escaper;
+    global $escaper, $lang;
+
+    if (!check_permission("riskmanagement")) {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
 
     $draw   = $escaper->escapeHtml($_POST['draw']);
     $score_used = isset($_GET['score_used']) && $_GET['score_used'] === 'residual' ? 'residual' : 'inherent';
@@ -10931,7 +11110,7 @@ function high_risk_report_datatable() {
             "<a class='open-in-new-tab' href=\"../management/view.php?id=" . $escaper->escapeHtml($risk['id']) . "\" target=\"_blank\">".$escaper->escapeHtml($risk['id'])."</a>",
             $escaper->escapeHtml($risk['status']),
             $escaper->escapeHtml($subject),
-            "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['score']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div>",
+            "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['score']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeCssColor($color) . "\"></span></div></div>",
             $escaper->escapeHtml($submission_date),
             $mitigation_planned, // mitigation plan
             // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
@@ -11832,6 +12011,13 @@ function saveCustomPlanMitigationDisplaySettingsAPI(){
         return;
     }
     if(isset($_POST["risk_columns"]) && isset($_POST["mitigation_columns"]) && isset($_POST["review_columns"])){
+        // SR-1870: reject any column name that isn't a plain [A-Za-z0-9_] token
+        // before storing it (it is later echoed into a data-name attribute / JS).
+        if (!custom_display_columns_are_valid([$_POST["risk_columns"], $_POST["mitigation_columns"], $_POST["review_columns"]])) {
+            set_alert(true, "bad", $lang['NoDataAvailable']);
+            json_response(400, get_alert(true), NULL);
+            return;
+        }
         $data = array(
             "risk_colums" => $_POST["risk_columns"],
             "mitigation_colums" => $_POST["mitigation_columns"],
@@ -11853,6 +12039,13 @@ function saveCustomPerformReviewsDisplaySettingsAPI(){
         return;
     }
     if(isset($_POST["risk_columns"]) && isset($_POST["mitigation_columns"]) && isset($_POST["review_columns"])){
+        // SR-1870: reject any column name that isn't a plain [A-Za-z0-9_] token
+        // before storing it (it is later echoed into a data-name attribute / JS).
+        if (!custom_display_columns_are_valid([$_POST["risk_columns"], $_POST["mitigation_columns"], $_POST["review_columns"]])) {
+            set_alert(true, "bad", $lang['NoDataAvailable']);
+            json_response(400, get_alert(true), NULL);
+            return;
+        }
         $data = array(
             "risk_colums" => $_POST["risk_columns"],
             "mitigation_colums" => $_POST["mitigation_columns"],
@@ -11874,6 +12067,13 @@ function saveCustomReviewregularlyDisplaySettingsAPI(){
         return;
     }
     if(isset($_POST["risk_columns"]) && isset($_POST["mitigation_columns"]) && isset($_POST["review_columns"])){
+        // SR-1870: reject any column name that isn't a plain [A-Za-z0-9_] token
+        // before storing it (it is later echoed into a data-name attribute / JS).
+        if (!custom_display_columns_are_valid([$_POST["risk_columns"], $_POST["mitigation_columns"], $_POST["review_columns"]])) {
+            set_alert(true, "bad", $lang['NoDataAvailable']);
+            json_response(400, get_alert(true), NULL);
+            return;
+        }
         $data = array(
             "risk_colums" => $_POST["risk_columns"],
             "mitigation_colums" => $_POST["mitigation_columns"],
@@ -12097,6 +12297,14 @@ function uploadFileToFixFileEncodingIssue() {
 
                 // It's ok to use the same logic for files attached to the answer or the questionnaire as in case of the file attached to the questionnaire
                 // the files `template_id`, `question_id` and `parent_question_id` will be 0 anyway(this is the default what's used whe those parameters aren't present)
+                // The tainted member of $files is the user-supplied original filename
+                // ($_FILES['file']['name']). Inside upload_questionnaire_files() it is
+                // used ONLY for pathinfo(...PATHINFO_EXTENSION) (a string op, no FS
+                // access) and as a parameterized DB column; the file content is read
+                // from the server-generated tmp_name and stored as a DB blob under a
+                // random generate_token(30) unique_name. No filesystem path is built
+                // from user input, so the PathTraversal flow is not reachable.
+                // @phan-suppress-next-line SecurityCheck-PathTraversal -- user filename only reaches pathinfo() (string) + a parameterized DB column; content is stored as a DB blob under a random unique_name, never a user-controlled FS path
                 $result = upload_questionnaire_files($file_info['tracking_id'], $files, $file_info['template_id'], $file_info['question_id'], $file_info['parent_question_id']);
 
                 // Check if there was an error
@@ -12116,7 +12324,7 @@ function uploadFileToFixFileEncodingIssue() {
         // Refresh the numbers in the database
         if ($count > 0) {
             update_or_insert_setting($setting_name, $count);
-            write_log(0, $_SESSION['uid'], _lang('EncodingIssueCountUpdated', ['type' => $type, 'old_count' => $old_count, 'count' => $count]), $log_type);
+            write_log(0, $_SESSION['uid'] ?? 0, _lang('EncodingIssueCountUpdated', ['type' => $type, 'old_count' => $old_count, 'count' => $count]), $log_type);
         } else {
             // If all files of this type are supposedly fixed check if they really are
             refresh_file_encoding_issue_counts($type);
@@ -12348,7 +12556,7 @@ function my_open_risk_datatable() {
             "<a class='open-in-new-tab' href='../management/view.php?id=" . $escaper->escapeHtml($risk['id']) . "' target='_blank'>" . $escaper->escapeHtml($risk['id']) . "</a>",
             $escaper->escapeHtml($risk['status']),
             $escaper->escapeHtml($subject),
-            "<div class='" . $escaper->escapeHtml($color) . "'><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class='risk-color' style='background-color:" . $escaper->escapeHtml($color) . "'></span></div></div>",
+            "<div class='" . $escaper->escapeHtml($color) . "'><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class='risk-color' style='background-color:" . $escaper->escapeCssColor($color) . "'></span></div></div>",
             $escaper->escapeHtml(date(get_default_datetime_format("g:i A T"), strtotime($risk['submission_date']))),
             $mitigation_planned, // mitigation plan
             $management_review // management review
@@ -12417,7 +12625,12 @@ function my_open_risk_datatable() {
  * The Recent Commented Risk Report datatable's API function  *
  **************************************************************/
 function recent_commented_risk_datatable() {
-    global $escaper;
+    global $escaper, $lang;
+
+    if (!check_permission("riskmanagement")) {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
 
     $draw   = $escaper->escapeHtml($_POST['draw']);
 
@@ -12622,8 +12835,8 @@ function recent_commented_risk_datatable() {
             "<a class='open-in-new-tab' href=\"../management/view.php?id=" . $escaper->escapeHtml($risk['id']) . "\" target=\"_blank\">".$escaper->escapeHtml($risk['id'])."</a>",
             $escaper->escapeHtml($risk['status']),
             $escaper->escapeHtml($subject),
-            "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div>",
-            "<div class='".$escaper->escapeHtml($residual_color)."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['residual_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($residual_color) . "\"></span></div></div>",
+            "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeCssColor($color) . "\"></span></div></div>",
+            "<div class='".$escaper->escapeHtml($residual_color)."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['residual_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeCssColor($residual_color) . "\"></span></div></div>",
             $escaper->escapeHtml($comment_date),
             // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
             $escaper->escapeHtml($risk['comment']),
@@ -12950,6 +13163,16 @@ function delete_contributing_risks_impact_api(){
  * FUNCTION: LIST OF RISKS LIKELIHOOD *
  **************************************/
 function contributing_risks_table_list_api(){
+    global $lang, $escaper;
+
+    // This endpoint feeds the admin-only Contributing Risks scoring
+    // configuration page (admin/risk_configuration.php). Restrict it to
+    // administrators, matching its add/update/delete sibling handlers.
+    if (!is_admin()) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang["AdminPermissionRequired"]));
+        json_response(400, get_alert(true), null);
+    }
+
     $table = get_param("POST", "table", "likelihood");
     if($table == "likelihood")
         $table_list = display_contributing_risks_likelihood_table_list();
@@ -12964,7 +13187,15 @@ function contributing_risks_table_list_api(){
 function saveGraphicalSelectionsForm() {
 
     global $lang, $escaper;
-    
+
+    // Check if the user has permission to add saved risk reports
+    if (!check_permission("add_saved_risk_reports")) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionAddSavedRiskReports']));
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+    }
+
     $type = get_param("post", "selection_type");
     $name = get_param("post", "selection_name");
 
@@ -12972,6 +13203,19 @@ function saveGraphicalSelectionsForm() {
     if (empty($type)) {
 
         set_alert(true, "bad", _lang('FieldRequired', array("field"=>$lang['Type'])));
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+
+    }
+
+    // Restrict selection_type to the known enum (the UI only ever sends
+    // 'private'/'public'). Blocks storing an arbitrary 'type' value.
+    if (!is_valid_graphical_selection_type($type)) {
+
+        // Pass the raw lang string — get_alert(true) escapes it once at read time
+        // (pre-escaping here would double-encode; see alerts.php).
+        set_alert(true, "bad", $lang['InvalidParams']);
 
         // Return a JSON response
         json_response(400, get_alert(true), NULL);
@@ -13025,7 +13269,15 @@ function saveGraphicalSelectionsForm() {
 function deleteGraphicalSelectionForm()
 {
     global $lang, $escaper;
-    
+
+    // Check if the user has permission to delete saved selections
+    if (!check_permission("delete_saved_risk_reports")) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionDeleteSavedRiskReports']));
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+    }
+
     $id = get_param("post", "id");
 
     // If the id is not sent
@@ -14109,18 +14361,24 @@ function delete_asset_api(){
 /*******************************
  * FUNCTION: GET DATATABLE API *
  *******************************/
-function getDatatableAPI() {
+/*******************************************************************************
+ * FUNCTION: DATATABLE RESPONSE FOR VIEW                                         *
+ * Shared server-side DataTables JSON response for a `$field_settings_views`      *
+ * view. The CALLER is responsible for enforcing the view's module permission     *
+ * BEFORE invoking this. Each resource route that reaches it — /compliance/       *
+ * audits/*, /governance/documents, /governance/exceptions — gates on its module  *
+ * permission first, so there is no longer a generic ungated datatable entry      *
+ * point (SR-1721). A default-deny guard rejects any unknown/absent view.         *
+ *******************************************************************************/
+function datatable_response_for_view($view) {
 
     global $field_settings, $field_settings_views;
-    
-    $view = !empty($_GET['view']) ? $_GET['view'] : false;
-    
-    if (!$view) {
-        return ;
-    }
 
-    //check if the necessary permissions have already been set.
-    // check_incident_management_permission_for_view($view);
+    // Default-deny an unknown or absent view.
+    if (empty($view) || empty($field_settings_views[$view])) {
+        json_response(404, "Unknown datatable view.", null);
+        return;
+    }
 
     // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
     $type = $field_settings_views[$view]['view_type'];
@@ -14286,6 +14544,51 @@ function activateDeactivateExtraApi() {
             return json_response(500, "Activation handler does not exist");
         }
 
+        // Encrypted Database Extra activation needs LOCK TABLES on the
+        // SimpleRisk schema to safely encrypt-and-swap each table. The
+        // grant ships with fresh installs and is back-filled by the
+        // 20260519-001 -> 20260709-001 upgrade, but customers on locked-
+        // down installs may need to grant it manually. Refuse activation
+        // with a clear error containing the exact GRANT statement to run.
+        // Fire the gate BEFORE the idempotency check so re-activation
+        // attempts also surface the missing-privilege guidance.
+        //
+        // Also refuse if any encryption pipeline (activate, deactivate,
+        // restore) is currently in flight — two concurrent pipelines
+        // against the same DB will corrupt data. Two sources of truth
+        // are checked for belt-and-suspenders: the state setting (written
+        // at the very start of each pipeline) and the queue_tasks table
+        // (covers the window between API call and the first state write,
+        // and any state that drifted out of sync).
+        if ($extra_type === 'encryption') {
+            require_once(realpath(__DIR__ . '/../extras/encryption/privilege_check.php'));
+            require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+            $db_priv = db_open();
+            $has_priv = has_lock_tables_privilege($db_priv);
+            if (!$has_priv) {
+                db_close($db_priv);
+                $grant_user = encryption_required_grantee_string();
+                $grant_db   = '`' . str_replace('`', '``', DB_DATABASE) . '`';
+                $required_grant = "GRANT LOCK TABLES ON {$grant_db}.* TO {$grant_user};";
+                write_debug_log("Encryption Extra activation refused — LOCK TABLES privilege missing for {$grant_user}.", 'notice');
+                return json_response(412, $lang['EncryptionMissingLockTablesPrivilege'], [
+                    'required_grant' => $required_grant,
+                ]);
+            }
+
+            $inflight = encryption_pipeline_in_flight($db_priv);
+            db_close($db_priv);
+
+            if ($inflight !== null) {
+                if ($inflight['source'] === 'state') {
+                    write_debug_log("Encryption Extra activation refused — encryption_activation_state is 'in_progress'.", 'notice');
+                    return json_response(409, $lang['EncryptionPipelineInProgress'], null);
+                }
+                write_debug_log("Encryption Extra activation refused — task #{$inflight['id']} ({$inflight['task_type']}) is currently {$inflight['status']}.", 'notice');
+                return json_response(409, _lang('EncryptionPipelineInProgressTask', ['id' => $inflight['id'], 'type' => $inflight['task_type']], false), null);
+            }
+        }
+
         $status_message = _lang('ActivatedExtra', array("extra_type" => $display_name));
 
         // Idempotent: if already enabled, return success without re-running the handler.
@@ -14296,7 +14599,31 @@ function activateDeactivateExtraApi() {
         }
 
         //Enable the Extra
-        $handler();
+        $result = $handler();
+
+        // New return-aware handling — opt-in via array return. Handlers that
+        // return ['ok' => false, 'reason' => ...] arrays signal a guard
+        // failure (missing privilege, already-running, enqueue failed). They
+        // have already called set_alert() with operator-facing detail; we
+        // translate the reason to an HTTP status so the JS doesn't start
+        // polling on a failure. Handlers that return null/void are legacy
+        // and keep the existing 200-on-call behavior.
+        if (is_array($result) && array_key_exists('ok', $result) && $result['ok'] === false) {
+            $reason = (string)($result['reason'] ?? 'unknown');
+            $status_code = match ($reason) {
+                'missing_privilege'  => 412,
+                'already_running'    => 409,
+                'enqueue_failed'     => 500,
+                'openssl_missing'    => 412,
+                default              => 400,
+            };
+            // Leave the alert in place — the operator will see it on the
+            // next page render. Surface the reason in `data` so the JS can
+            // decide whether to start polling or just show the toast.
+            return json_response($status_code, $lang['ActivationGuardFailed'] ?? 'Activation could not start. See the alert in the page header for details.', [
+                'reason' => $reason,
+            ]);
+        }
 
         // Consume any queued toast so it doesn't leak to the next navigation;
         // the API response itself carries the success message for the JS modal.
@@ -14314,13 +14641,49 @@ function activateDeactivateExtraApi() {
 
         $status_message = _lang('DeactivatedExtra', array("extra_type" => $display_name));
 
+        // Refuse deactivation if an encryption pipeline is currently in
+        // flight — same two-source-of-truth check as the activate branch.
+        if ($extra_type === 'encryption') {
+            require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+            $db_deact_check = db_open();
+            $inflight = encryption_pipeline_in_flight($db_deact_check);
+            db_close($db_deact_check);
+
+            if ($inflight !== null) {
+                if ($inflight['source'] === 'state') {
+                    write_debug_log("Encryption Extra deactivation refused — encryption_activation_state is 'in_progress'.", 'notice');
+                    return json_response(409, $lang['EncryptionPipelineInProgress'], null);
+                }
+                write_debug_log("Encryption Extra deactivation refused — task #{$inflight['id']} ({$inflight['task_type']}) is currently {$inflight['status']}.", 'notice');
+                return json_response(409, _lang('EncryptionPipelineInProgressTask', ['id' => $inflight['id'], 'type' => $inflight['task_type']], false), null);
+            }
+        }
+
         // Idempotent: if already disabled, return success without re-running the handler.
         if (function_exists($state_fn) && !$state_fn()) {
             return json_response(200, $status_message);
         }
 
         //Disable the Extra
-        $handler();
+        $result = $handler();
+
+        // New return-aware handling — see the activate branch above for the
+        // contract. Handlers opting in return ['ok' => false, 'reason' => ...]
+        // arrays for guard failures; legacy handlers return null/void and
+        // keep the existing 200-on-call behavior.
+        if (is_array($result) && array_key_exists('ok', $result) && $result['ok'] === false) {
+            $reason = (string)($result['reason'] ?? 'unknown');
+            $status_code = match ($reason) {
+                'missing_privilege'  => 412,
+                'already_running'    => 409,
+                'enqueue_failed'     => 500,
+                'openssl_missing'    => 412,
+                default              => 400,
+            };
+            return json_response($status_code, $lang['ActivationGuardFailed'] ?? 'Activation could not start. See the alert in the page header for details.', [
+                'reason' => $reason,
+            ]);
+        }
 
         // Consume any queued toast (see comment above).
         get_alert(true, true);

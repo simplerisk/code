@@ -30,7 +30,7 @@ $http_options = [
 ];
 
 // If SSL certificate checks are enabled for the SimpleRisk API
-if (get_setting('ssl_certificate_check_external') == 1)
+if (ssl_external_verify_enabled())
 {
     // Verify the SSL host and peer
     $validate_ssl = true;

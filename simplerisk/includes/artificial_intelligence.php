@@ -99,6 +99,100 @@ function get_ai_persona(string $name): string
     return $AI_PERSONAS[$name];
 }
 
+/*****************************************************************************
+ * FUNCTION: AI ALLOWED PROVIDER HOSTS                                        *
+ * The provider hostnames allow-listed by default, derived from the built-in  *
+ * $AI_PROVIDERS default URLs (api.anthropic.com, api.openai.com, …).          *
+ *****************************************************************************/
+function ai_allowed_provider_hosts() {
+    global $AI_PROVIDERS;
+    $hosts = [];
+    if (is_array($AI_PROVIDERS)) {
+        foreach ($AI_PROVIDERS as $data) {
+            if (!empty($data['url'])) {
+                $h = strtolower((string)parse_url($data['url'], PHP_URL_HOST));
+                if ($h !== '') $hosts[] = $h;
+            }
+        }
+    }
+    return array_values(array_unique($hosts));
+}
+
+/*****************************************************************************
+ * FUNCTION: IS SAFE AI PROVIDER URL                                          *
+ * Fail-closed allow-list guard for the AI provider API URL (SR-1885 /        *
+ * HackerOne #3716429). Only the known provider hosts and a loopback self-host *
+ * literal (Ollama / LM Studio at 127.0.0.1 / ::1 / localhost) are permitted   *
+ * by default. Any other destination — a custom cloud endpoint, or a LAN       *
+ * self-host — must be explicitly named by a *system* admin in config.php via  *
+ * $ai_allowed_provider_hosts (a list of hostnames / IPs / CIDRs). This is the *
+ * two-actor control: the in-app admin sets the provider URL, and a system     *
+ * admin with config.php access must independently authorize that host.        *
+ * Reuses the shared allow-list helpers in functions.php.                      *
+ *****************************************************************************/
+function is_safe_ai_provider_url($url) {
+    $scheme = strtolower((string)parse_url((string)$url, PHP_URL_SCHEME));
+    if (!in_array($scheme, ['http', 'https'], true)) return false;
+
+    $host = strtolower((string)parse_url((string)$url, PHP_URL_HOST));
+    if ($host === '') return false;
+
+    // Known provider hosts are allow-listed by name (their DNS is trusted, so a
+    // rebinding attacker can't repoint them).
+    if (in_array($host, ai_allowed_provider_hosts(), true)) return true;
+
+    // A loopback self-host is allowed only as a literal (127.x / ::1) or
+    // "localhost" — never an arbitrary hostname that merely resolves to loopback
+    // (which attacker-controlled DNS could rebind between check and connect).
+    if ($host === 'localhost' || ip_is_loopback(trim($host, '[]'))) return true;
+
+    // Any other destination must be explicitly named by a system admin in
+    // config.php ($ai_allowed_provider_hosts). We match WITHOUT resolving an
+    // arbitrary hostname: an exact hostname entry authorizes the host by name, and
+    // an IP/CIDR entry matches only a literal-IP URL host. Resolving a hostname to
+    // test it against a CIDR would reopen a DNS-rebinding window here, because the
+    // AI request path (AIClient::call) does not pin the resolved IP the way the
+    // workflow HTTP action does.
+    $allowed = (isset($GLOBALS['ai_allowed_provider_hosts']) && is_array($GLOBALS['ai_allowed_provider_hosts']))
+             ? $GLOBALS['ai_allowed_provider_hosts'] : [];
+    if (empty($allowed)) return false;
+    foreach ($allowed as $entry) {
+        if (strtolower(trim((string)$entry)) === $host) return true; // exact hostname entry
+    }
+    $bare = trim($host, '[]');
+    if (filter_var($bare, FILTER_VALIDATE_IP)) {
+        foreach ($allowed as $entry) {
+            if (ip_in_cidr($bare, trim((string)$entry))) return true; // literal-IP host vs IP/CIDR entry
+        }
+    }
+    return false;
+}
+
+/*****************************************************************************
+ * FUNCTION: AI TEST CONNECTION KEY DECISION                                  *
+ * SR-1885: decide which API key a Test Connection should use, and whether to  *
+ * block the test, so the stored provider key is never sent to a URL other     *
+ * than the saved provider. Pure + unit-testable. Returns                      *
+ * ['key' => <string>, 'block' => <bool>]:                                     *
+ *   - a posted (re-entered) key is always used as-is;                         *
+ *   - a blank key falls back to the saved key ONLY when testing the saved URL;*
+ *   - a blank key against a different URL is blocked — but only when there is  *
+ *     a stored key to protect (a blank saved key has nothing to leak, so a     *
+ *     keyless test, e.g. a fresh-install Ollama self-host, is allowed).        *
+ *****************************************************************************/
+function ai_test_connection_key_decision($saved_api_url, $saved_api_key, $posted_key, $test_api_url) {
+    if ($posted_key !== '') {
+        return ['key' => $posted_key, 'block' => false];
+    }
+    if ($saved_api_url !== '' && $test_api_url === $saved_api_url) {
+        return ['key' => $saved_api_key, 'block' => false];
+    }
+    if ($saved_api_key !== '') {
+        return ['key' => '', 'block' => true];
+    }
+    return ['key' => '', 'block' => false];
+}
+
 class AIClient {
     private string $provider;
     private string $api_url;
@@ -162,6 +256,14 @@ class AIClient {
      */
     public function call(array $messages, int $max_tokens = 300, ?string $system = null, ?array $tools = null, float $temperature = 1.0): array
     {
+        // SR-1885: defence-in-depth SSRF guard — refuse to fire a request at a
+        // provider URL that isn't on the allow-list / loopback self-host (or
+        // explicitly named in $ai_allowed_provider_hosts in config.php), even if a
+        // stale or hostile value reached the settings table.
+        if (!is_safe_ai_provider_url($this->api_url)) {
+            throw new \RuntimeException('AI provider URL is not permitted by the SSRF allow-list.');
+        }
+
         // Cap to the model's known output token limit
         $model_limit = $this->getOutputTokenLimit();
         if ($max_tokens > $model_limit) {
@@ -268,15 +370,19 @@ class AIClient {
         while ($retries < $maxRetries) {
             $response_headers = [];
 
-            // Security note: $this->api_url is admin-only configurable and restricted to
-            // http/https schemes (see CURLOPT_PROTOCOLS below and the scheme check in
-            // display_ai_provider_configuration). HTTP requests to private/internal hosts
-            // are intentionally permitted to support self-hosted AI providers such as
-            // Ollama (http://localhost:11434). IP-level allowlisting is therefore not
-            // applied here; the admin trust boundary is the accepted control.
+            // Security note (SR-1885): $this->api_url is validated by
+            // is_safe_ai_provider_url() — a fail-closed allow-list of known provider
+            // hosts + a loopback self-host literal, plus any host a system admin names
+            // in $ai_allowed_provider_hosts in config.php — at save, at Test Connection,
+            // AND in AIClient::call() above, so this request can only reach an approved
+            // destination. Self-hosted providers (Ollama / LM Studio at 127.0.0.1 /
+            // localhost) are supported via the loopback allowance.
             $ch = curl_init($this->api_url);
             curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
             curl_setopt($ch, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+            // SR-1885: don't follow redirects — an allow-listed host must not be
+            // able to 302 the request onto an internal address.
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
@@ -297,7 +403,8 @@ class AIClient {
             $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $curl_errno  = curl_errno($ch);
             $curl_error  = $curl_errno ? curl_error($ch) : null;
-            curl_close($ch);
+            // curl_close() is deprecated in PHP 8.4+ (no-op since 8.0; handles
+            // are CurlHandle objects that free themselves when they go out of scope).
 
             if ($curl_error) {
                 throw new Exception('Curl error: ' . $curl_error);
@@ -617,11 +724,15 @@ class AIClient {
         while ($retries < $maxRetries) {
             $response_headers = [];
 
-            // Security note: see comment in callAnthropicNative() — HTTP requests to
-            // private/internal hosts are intentionally permitted for self-hosted providers.
+            // Security note (SR-1885): see callAnthropicNative() — $this->api_url is
+            // validated by is_safe_ai_provider_url() (fail-closed allow-list) at save /
+            // Test Connection / AIClient::call() before this request runs.
             $ch = curl_init($this->api_url);
             curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
             curl_setopt($ch, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+            // SR-1885: don't follow redirects — an allow-listed host must not be
+            // able to 302 the request onto an internal address.
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
@@ -641,7 +752,8 @@ class AIClient {
             $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $curl_errno  = curl_errno($ch);
             $curl_error  = $curl_errno ? curl_error($ch) : null;
-            curl_close($ch);
+            // curl_close() is deprecated in PHP 8.4+ (no-op since 8.0; handles
+            // are CurlHandle objects that free themselves when they go out of scope).
 
             if ($curl_error) {
                 throw new \Exception('Curl error: ' . $curl_error);
@@ -717,11 +829,12 @@ function display_ai_provider_configuration()
         $api_key  = trim($_POST['ai_api_key'] ?? '');
         $model    = trim($_POST['ai_model'] ?? '');
 
-        // Reject non-HTTP(S) URL schemes to prevent SSRF via file://, gopher://, etc.
-        $url_scheme = strtolower(parse_url($api_url, PHP_URL_SCHEME) ?? '');
-        if ($api_url !== '' && !in_array($url_scheme, ['http', 'https'], true))
+        // SR-1885: restrict the saved provider URL to the allow-list / loopback
+        // self-host (SSRF). The saved URL drives the real background AI calls, so
+        // reject a non-allow-listed destination here, not only at Test Connection.
+        if ($api_url !== '' && !is_safe_ai_provider_url($api_url))
         {
-            set_alert(true, "bad", $lang['AIInvalidURL'] ?? "The API URL must use http:// or https://.");
+            set_alert(true, "bad", $lang['AIProviderURLNotAllowed'] ?? "That API URL is not permitted. Use a known AI provider or a loopback (127.0.0.1) self-host address.");
         }
         elseif ($api_key !== '')
         {
@@ -771,15 +884,26 @@ function display_ai_provider_configuration()
                           ? $_POST['ai_provider'] : $saved_provider;
         $test_api_url   = trim($_POST['ai_api_url'] ?? '') ?: $saved_api_url;
         $posted_key     = trim($_POST['ai_api_key'] ?? '');
-        $test_api_key   = ($posted_key !== '') ? $posted_key : $saved_api_key;
         $test_model     = trim($_POST['ai_model'] ?? '') ?: $saved_model;
 
-        // Reject non-HTTP(S) URL schemes to prevent SSRF via file://, gopher://, etc.
-        $test_url_scheme = strtolower(parse_url($test_api_url, PHP_URL_SCHEME) ?? '');
-        if (!in_array($test_url_scheme, ['http', 'https'], true))
+        // SR-1885 (HackerOne #3716429): resolve the Test-Connection key so the stored
+        // provider key is never sent to a URL other than the saved provider — see
+        // ai_test_connection_key_decision().
+        $key_decision = ai_test_connection_key_decision($saved_api_url, $saved_api_key, $posted_key, $test_api_url);
+        $test_api_key = $key_decision['key'];
+
+        // Restrict the test target to the provider allow-list / loopback self-host
+        // (SSRF), and refuse a blank-key test that would otherwise fall back to — and
+        // leak — the stored key against a different URL.
+        if (!is_safe_ai_provider_url($test_api_url))
         {
             $test_result = false;
-            set_alert(true, "bad", $lang['AIInvalidURL'] ?? "The API URL must use http:// or https://.");
+            set_alert(true, "bad", $lang['AIProviderURLNotAllowed'] ?? "That API URL is not permitted. Use a known AI provider or a loopback (127.0.0.1) self-host address.");
+        }
+        elseif ($key_decision['block'])
+        {
+            $test_result = false;
+            set_alert(true, "bad", $lang['AIReenterKeyForNewURL'] ?? "Re-enter the API key to test a different provider URL.");
         }
         else
         {

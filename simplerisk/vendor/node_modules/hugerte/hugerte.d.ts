@@ -35,46 +35,46 @@ type NormalizedEvent<E, T = any> = E & {
 };
 type MappedEvent<T extends {}, K extends string> = K extends keyof T ? T[K] : any;
 interface NativeEventMap {
-    'beforepaste': Event;
-    'blur': FocusEvent;
-    'beforeinput': InputEvent;
-    'click': MouseEvent;
-    'compositionend': Event;
-    'compositionstart': Event;
-    'compositionupdate': Event;
-    'contextmenu': PointerEvent;
-    'copy': ClipboardEvent;
-    'cut': ClipboardEvent;
-    'dblclick': MouseEvent;
-    'drag': DragEvent;
-    'dragdrop': DragEvent;
-    'dragend': DragEvent;
-    'draggesture': DragEvent;
-    'dragover': DragEvent;
-    'dragstart': DragEvent;
-    'drop': DragEvent;
-    'focus': FocusEvent;
-    'focusin': FocusEvent;
-    'focusout': FocusEvent;
-    'input': InputEvent;
-    'keydown': KeyboardEvent;
-    'keypress': KeyboardEvent;
-    'keyup': KeyboardEvent;
-    'mousedown': MouseEvent;
-    'mouseenter': MouseEvent;
-    'mouseleave': MouseEvent;
-    'mousemove': MouseEvent;
-    'mouseout': MouseEvent;
-    'mouseover': MouseEvent;
-    'mouseup': MouseEvent;
-    'paste': ClipboardEvent;
-    'selectionchange': Event;
-    'submit': Event;
-    'touchend': TouchEvent;
-    'touchmove': TouchEvent;
-    'touchstart': TouchEvent;
-    'touchcancel': TouchEvent;
-    'wheel': WheelEvent;
+    beforepaste: Event;
+    blur: FocusEvent;
+    beforeinput: InputEvent;
+    click: MouseEvent;
+    compositionend: Event;
+    compositionstart: Event;
+    compositionupdate: Event;
+    contextmenu: PointerEvent;
+    copy: ClipboardEvent;
+    cut: ClipboardEvent;
+    dblclick: MouseEvent;
+    drag: DragEvent;
+    dragdrop: DragEvent;
+    dragend: DragEvent;
+    draggesture: DragEvent;
+    dragover: DragEvent;
+    dragstart: DragEvent;
+    drop: DragEvent;
+    focus: FocusEvent;
+    focusin: FocusEvent;
+    focusout: FocusEvent;
+    input: InputEvent;
+    keydown: KeyboardEvent;
+    keypress: KeyboardEvent;
+    keyup: KeyboardEvent;
+    mousedown: MouseEvent;
+    mouseenter: MouseEvent;
+    mouseleave: MouseEvent;
+    mousemove: MouseEvent;
+    mouseout: MouseEvent;
+    mouseover: MouseEvent;
+    mouseup: MouseEvent;
+    paste: ClipboardEvent;
+    selectionchange: Event;
+    submit: Event;
+    touchend: TouchEvent;
+    touchmove: TouchEvent;
+    touchstart: TouchEvent;
+    touchcancel: TouchEvent;
+    wheel: WheelEvent;
 }
 type EditorEvent<T> = NormalizedEvent<T>;
 interface EventDispatcherSettings {
@@ -1595,110 +1595,110 @@ interface OpenNotificationEvent {
     notification: NotificationApi;
 }
 interface EditorEventMap extends Omit<NativeEventMap, 'blur' | 'focus'> {
-    'activate': {
+    activate: {
         relatedTarget: Editor | null;
     };
-    'deactivate': {
+    deactivate: {
         relatedTarget: Editor;
     };
-    'focus': {
+    focus: {
         blurredEditor: Editor | null;
     };
-    'blur': {
+    blur: {
         focusedEditor: Editor | null;
     };
-    'resize': UIEvent;
-    'scroll': UIEvent;
-    'input': InputEvent;
-    'beforeinput': InputEvent;
-    'detach': {};
-    'remove': {};
-    'init': {};
-    'ScrollIntoView': ScrollIntoViewEvent;
-    'AfterScrollIntoView': ScrollIntoViewEvent;
-    'ObjectResized': ObjectResizeEvent;
-    'ObjectResizeStart': ObjectResizeEvent;
-    'SwitchMode': SwitchModeEvent;
-    'ScrollWindow': Event;
-    'ResizeWindow': UIEvent;
-    'SkinLoaded': {};
-    'SkinLoadError': LoadErrorEvent;
-    'PluginLoadError': LoadErrorEvent;
-    'ModelLoadError': LoadErrorEvent;
-    'IconsLoadError': LoadErrorEvent;
-    'ThemeLoadError': LoadErrorEvent;
-    'LanguageLoadError': LoadErrorEvent;
-    'BeforeExecCommand': ExecCommandEvent;
-    'ExecCommand': ExecCommandEvent;
-    'NodeChange': NodeChangeEvent;
-    'FormatApply': FormatEvent;
-    'FormatRemove': FormatEvent;
-    'ShowCaret': ShowCaretEvent;
-    'SelectionChange': {};
-    'ObjectSelected': ObjectSelectedEvent;
-    'BeforeObjectSelected': ObjectSelectedEvent;
-    'GetSelectionRange': {
+    resize: UIEvent;
+    scroll: UIEvent;
+    input: InputEvent;
+    beforeinput: InputEvent;
+    detach: {};
+    remove: {};
+    init: {};
+    ScrollIntoView: ScrollIntoViewEvent;
+    AfterScrollIntoView: ScrollIntoViewEvent;
+    ObjectResized: ObjectResizeEvent;
+    ObjectResizeStart: ObjectResizeEvent;
+    SwitchMode: SwitchModeEvent;
+    ScrollWindow: Event;
+    ResizeWindow: UIEvent;
+    SkinLoaded: {};
+    SkinLoadError: LoadErrorEvent;
+    PluginLoadError: LoadErrorEvent;
+    ModelLoadError: LoadErrorEvent;
+    IconsLoadError: LoadErrorEvent;
+    ThemeLoadError: LoadErrorEvent;
+    LanguageLoadError: LoadErrorEvent;
+    BeforeExecCommand: ExecCommandEvent;
+    ExecCommand: ExecCommandEvent;
+    NodeChange: NodeChangeEvent;
+    FormatApply: FormatEvent;
+    FormatRemove: FormatEvent;
+    ShowCaret: ShowCaretEvent;
+    SelectionChange: {};
+    ObjectSelected: ObjectSelectedEvent;
+    BeforeObjectSelected: ObjectSelectedEvent;
+    GetSelectionRange: {
         range: Range;
     };
-    'SetSelectionRange': SetSelectionRangeEvent;
-    'AfterSetSelectionRange': SetSelectionRangeEvent;
-    'BeforeGetContent': BeforeGetContentEvent;
-    'GetContent': GetContentEvent;
-    'BeforeSetContent': BeforeSetContentEvent;
-    'SetContent': SetContentEvent;
-    'SaveContent': SaveContentEvent;
-    'RawSaveContent': SaveContentEvent;
-    'LoadContent': {
+    SetSelectionRange: SetSelectionRangeEvent;
+    AfterSetSelectionRange: SetSelectionRangeEvent;
+    BeforeGetContent: BeforeGetContentEvent;
+    GetContent: GetContentEvent;
+    BeforeSetContent: BeforeSetContentEvent;
+    SetContent: SetContentEvent;
+    SaveContent: SaveContentEvent;
+    RawSaveContent: SaveContentEvent;
+    LoadContent: {
         load: boolean;
         element: HTMLElement;
     };
-    'PreviewFormats': {};
-    'AfterPreviewFormats': {};
-    'ScriptsLoaded': {};
-    'PreInit': {};
-    'PostRender': {};
-    'NewBlock': NewBlockEvent;
-    'ClearUndos': {};
-    'TypingUndo': {};
-    'Redo': UndoRedoEvent;
-    'Undo': UndoRedoEvent;
-    'BeforeAddUndo': AddUndoEvent;
-    'AddUndo': AddUndoEvent;
-    'change': ChangeEvent;
-    'CloseWindow': WindowEvent<any>;
-    'OpenWindow': WindowEvent<any>;
-    'ProgressState': ProgressStateEvent;
-    'AfterProgressState': AfterProgressStateEvent;
-    'PlaceholderToggle': PlaceholderToggleEvent;
-    'tap': TouchEvent;
-    'longpress': TouchEvent;
-    'longpresscancel': {};
-    'PreProcess': PreProcessEvent;
-    'PostProcess': PostProcessEvent;
-    'AutocompleterStart': AutocompleterEventArgs;
-    'AutocompleterUpdate': AutocompleterEventArgs;
-    'AutocompleterEnd': {};
-    'PastePlainTextToggle': PastePlainTextToggleEvent;
-    'PastePreProcess': PastePreProcessEvent;
-    'PastePostProcess': PastePostProcessEvent;
-    'TableModified': TableModifiedEvent;
-    'NewRow': NewTableRowEvent;
-    'NewCell': NewTableCellEvent;
-    'SetAttrib': SetAttribEvent;
-    'hide': {};
-    'show': {};
-    'dirty': {};
-    'BeforeOpenNotification': BeforeOpenNotificationEvent;
-    'OpenNotification': OpenNotificationEvent;
+    PreviewFormats: {};
+    AfterPreviewFormats: {};
+    ScriptsLoaded: {};
+    PreInit: {};
+    PostRender: {};
+    NewBlock: NewBlockEvent;
+    ClearUndos: {};
+    TypingUndo: {};
+    Redo: UndoRedoEvent;
+    Undo: UndoRedoEvent;
+    BeforeAddUndo: AddUndoEvent;
+    AddUndo: AddUndoEvent;
+    change: ChangeEvent;
+    CloseWindow: WindowEvent<any>;
+    OpenWindow: WindowEvent<any>;
+    ProgressState: ProgressStateEvent;
+    AfterProgressState: AfterProgressStateEvent;
+    PlaceholderToggle: PlaceholderToggleEvent;
+    tap: TouchEvent;
+    longpress: TouchEvent;
+    longpresscancel: {};
+    PreProcess: PreProcessEvent;
+    PostProcess: PostProcessEvent;
+    AutocompleterStart: AutocompleterEventArgs;
+    AutocompleterUpdate: AutocompleterEventArgs;
+    AutocompleterEnd: {};
+    PastePlainTextToggle: PastePlainTextToggleEvent;
+    PastePreProcess: PastePreProcessEvent;
+    PastePostProcess: PastePostProcessEvent;
+    TableModified: TableModifiedEvent;
+    NewRow: NewTableRowEvent;
+    NewCell: NewTableCellEvent;
+    SetAttrib: SetAttribEvent;
+    hide: {};
+    show: {};
+    dirty: {};
+    BeforeOpenNotification: BeforeOpenNotificationEvent;
+    OpenNotification: OpenNotificationEvent;
 }
 interface EditorManagerEventMap {
-    'AddEditor': {
+    AddEditor: {
         editor: Editor;
     };
-    'RemoveEditor': {
+    RemoveEditor: {
         editor: Editor;
     };
-    'BeforeUnload': {
+    BeforeUnload: {
         returnValue: any;
     };
 }
@@ -2383,6 +2383,7 @@ interface DomSerializerSettings extends DomParserSettings, WriterSettings, Schem
     remove_trailing_brs?: boolean;
     url_converter?: URLConverter;
     url_converter_scope?: {};
+    protect?: RegExp[];
 }
 interface DomSerializerImpl {
     schema: Schema;
@@ -2441,12 +2442,12 @@ interface EditorSelection {
     normalize: () => Range;
     selectorChanged: (selector: string, callback: (active: boolean, args: {
         node: Node;
-        selector: String;
+        selector: string;
         parents: Node[];
     }) => void) => EditorSelection;
     selectorChangedWithUnbind: (selector: string, callback: (active: boolean, args: {
         node: Node;
-        selector: String;
+        selector: string;
         parents: Node[];
     }) => void) => {
         unbind: () => void;
@@ -2621,15 +2622,15 @@ interface ProcessorError {
 type SimpleProcessor = (value: unknown) => boolean;
 type Processor<T> = (value: unknown) => ProcessorSuccess<T> | ProcessorError;
 interface BuiltInOptionTypeMap {
-    'string': string;
-    'number': number;
-    'boolean': boolean;
-    'array': any[];
-    'function': Function;
-    'object': any;
+    string: string;
+    number: number;
+    boolean: boolean;
+    array: any[];
+    function: Function;
+    object: any;
     'string[]': string[];
     'object[]': any[];
-    'regexp': RegExp;
+    regexp: RegExp;
 }
 type BuiltInOptionType = keyof BuiltInOptionTypeMap;
 interface BaseOptionSpec {
@@ -3072,20 +3073,6 @@ interface Resource {
     get: (id: string) => any;
     unload: (id: string) => void;
 }
-type TextPatterns_d_Pattern = Pattern;
-type TextPatterns_d_RawPattern = RawPattern;
-type TextPatterns_d_DynamicPatternsLookup = DynamicPatternsLookup;
-type TextPatterns_d_RawDynamicPatternsLookup = RawDynamicPatternsLookup;
-type TextPatterns_d_DynamicPatternContext = DynamicPatternContext;
-type TextPatterns_d_BlockCmdPattern = BlockCmdPattern;
-type TextPatterns_d_BlockPattern = BlockPattern;
-type TextPatterns_d_BlockFormatPattern = BlockFormatPattern;
-type TextPatterns_d_InlineCmdPattern = InlineCmdPattern;
-type TextPatterns_d_InlinePattern = InlinePattern;
-type TextPatterns_d_InlineFormatPattern = InlineFormatPattern;
-declare namespace TextPatterns_d {
-    export { TextPatterns_d_Pattern as Pattern, TextPatterns_d_RawPattern as RawPattern, TextPatterns_d_DynamicPatternsLookup as DynamicPatternsLookup, TextPatterns_d_RawDynamicPatternsLookup as RawDynamicPatternsLookup, TextPatterns_d_DynamicPatternContext as DynamicPatternContext, TextPatterns_d_BlockCmdPattern as BlockCmdPattern, TextPatterns_d_BlockPattern as BlockPattern, TextPatterns_d_BlockFormatPattern as BlockFormatPattern, TextPatterns_d_InlineCmdPattern as InlineCmdPattern, TextPatterns_d_InlinePattern as InlinePattern, TextPatterns_d_InlineFormatPattern as InlineFormatPattern, };
-}
 interface Delay {
     setEditorInterval: (editor: Editor, callback: () => void, time?: number) => number;
     setEditorTimeout: (editor: Editor, callback: () => void, time?: number) => number;
@@ -3119,9 +3106,9 @@ interface Tools {
         <T, R>(arr: ArrayLike<T> | null | undefined, cb: ArrayCallback<T, R>): R[];
         <T, R>(obj: Record<string, T> | null | undefined, cb: ObjCallback<T, R>): R[];
     };
-    extend: (obj: Object, ext: Object, ...objs: Object[]) => any;
+    extend: (obj: object, ext: object, ...objs: object[]) => any;
     walk: <T extends Record<string, any>>(obj: T, f: WalkCallback<T>, n?: keyof T, scope?: any) => void;
-    resolve: (path: string, o?: Object) => any;
+    resolve: (path: string, o?: object) => any;
     explode: (s: string | string[], d?: string | RegExp) => string[];
     _addCacheSuffix: (url: string) => string;
 }
@@ -3249,4 +3236,18 @@ interface HugeRTE extends EditorManager {
     _addCacheSuffix: Tools['_addCacheSuffix'];
 }
 declare const hugerte: HugeRTE;
+type TextPatterns_d_Pattern = Pattern;
+type TextPatterns_d_RawPattern = RawPattern;
+type TextPatterns_d_DynamicPatternsLookup = DynamicPatternsLookup;
+type TextPatterns_d_RawDynamicPatternsLookup = RawDynamicPatternsLookup;
+type TextPatterns_d_DynamicPatternContext = DynamicPatternContext;
+type TextPatterns_d_BlockCmdPattern = BlockCmdPattern;
+type TextPatterns_d_BlockPattern = BlockPattern;
+type TextPatterns_d_BlockFormatPattern = BlockFormatPattern;
+type TextPatterns_d_InlineCmdPattern = InlineCmdPattern;
+type TextPatterns_d_InlinePattern = InlinePattern;
+type TextPatterns_d_InlineFormatPattern = InlineFormatPattern;
+declare namespace TextPatterns_d {
+    export { TextPatterns_d_Pattern as Pattern, TextPatterns_d_RawPattern as RawPattern, TextPatterns_d_DynamicPatternsLookup as DynamicPatternsLookup, TextPatterns_d_RawDynamicPatternsLookup as RawDynamicPatternsLookup, TextPatterns_d_DynamicPatternContext as DynamicPatternContext, TextPatterns_d_BlockCmdPattern as BlockCmdPattern, TextPatterns_d_BlockPattern as BlockPattern, TextPatterns_d_BlockFormatPattern as BlockFormatPattern, TextPatterns_d_InlineCmdPattern as InlineCmdPattern, TextPatterns_d_InlinePattern as InlinePattern, TextPatterns_d_InlineFormatPattern as InlineFormatPattern, };
+}
 export { AddOnManager, Annotator, AstNode, Bookmark, BookmarkManager, ControlSelection, DOMUtils, Delay, DomParser, DomParserSettings, DomSerializer, DomSerializerSettings, DomTreeWalker, Editor, EditorCommands, EditorEvent, EditorManager, EditorModeApi, EditorObservable, EditorOptions, EditorSelection, Entities, Env, EventDispatcher, EventUtils, EventTypes_d as Events, FakeClipboard, FocusManager, Format_d as Formats, Formatter, GeomRect, HtmlSerializer, HtmlSerializerSettings, HugeRTE, I18n, IconManager, Model, ModelManager, NotificationApi, NotificationManager, NotificationSpec, Observable, Plugin, PluginManager, RangeUtils, RawEditorOptions, Rect, Resource, Schema, SchemaSettings, ScriptLoader, Shortcuts, StyleSheetLoader, Styles, TextPatterns_d as TextPatterns, TextSeeker, Theme, ThemeManager, Tools, URI, Ui_d as Ui, UndoManager, VK, WindowManager, Writer, WriterSettings, hugerte as default };

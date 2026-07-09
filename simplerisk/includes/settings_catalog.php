@@ -23,13 +23,16 @@
  *
  * Preferences (the page that holds default values and behavioral toggles
  * such as alert timeout and risk-mapping requirements), Health Check, and
- * About are first-class catalog entries and are also the three default
- * favorites every user is seeded with (see default_favorite_settings_keys).
- * In addition, settings-hub.js renders a hardcoded fallback trio of those
- * same tiles inside .hub__main when the catalog API fetch fails — so an
- * admin who has broken the API (e.g. by misconfiguring Base URL or the
- * Security page) still has a one-click path to the three pages they'd need
- * to recover, diagnose, and identify the version.
+ * Register & Upgrade are first-class catalog entries and are also the three
+ * default favorites every user is seeded with (see default_favorite_settings_keys).
+ * In addition, settings-hub.js renders a hardcoded fallback set inside
+ * .hub__main when the catalog API fetch fails — Security, Preferences,
+ * Health Check, and Register & Upgrade — so an admin who has broken the
+ * API (e.g. by misconfiguring Base URL, which lives on the Security page)
+ * still has a one-click path to the pages they'd need to fix the Base URL,
+ * recover, diagnose, and identify the version. Security is included
+ * specifically because the Base URL field it hosts is a common cause of
+ * the API failure, and it would otherwise be unreachable from the fallback.
  */
 
 /********************************
@@ -74,13 +77,6 @@ function settings_catalog(): array
             'tags'        => ['system'],
             'visibility'  => ['mode' => 'always'],
         ],
-        'about' => [
-            'label_key'   => 'About',
-            'desc_key'    => 'AboutDesc',
-            'path'        => 'admin/about.php',
-            'tags'        => ['system'],
-            'visibility'  => ['mode' => 'always'],
-        ],
         'announcements' => [
             'label_key'   => 'Announcements',
             'desc_key'    => 'AnnouncementsDesc',
@@ -94,6 +90,18 @@ function settings_catalog(): array
             'path'        => 'admin/register.php',
             'tags'        => ['system'],
             'visibility'  => ['mode' => 'always'],
+            // admin/register.php enforce_permission("admin"); only show the tile to admins
+            // so a vm_configure/im_configure hub user isn't offered a tile that 403s on click.
+            'required_permissions' => ['admin'],
+        ],
+        'licenses' => [
+            'label_key'   => 'Licenses',
+            'desc_key'    => 'LicensesDesc',
+            'path'        => 'admin/licenses.php',
+            'tags'        => ['system'],
+            'visibility'  => ['mode' => 'always'],
+            // admin/licenses.php enforce_permission("admin"); admin-only tile (see register above).
+            'required_permissions' => ['admin'],
         ],
         'queue_monitor' => [
             'label_key'   => 'QueueMonitor',
@@ -214,7 +222,6 @@ function settings_catalog(): array
             'tags'        => ['maintenance'],
             'visibility'  => ['mode' => 'always'],
         ],
-
         // --- extras ---
         'advanced_search_extra' => [
             'label_key'   => 'AdvancedSearchExtra',
@@ -560,9 +567,11 @@ function list_user_favorite_settings(int $user_id): array
  * Preferences (default values and behavioral toggles — the most-likely
  * first stop after the legacy monolithic Settings tile was split),
  * Health Check (the diagnostic surface), and Register & Upgrade (license
- * key entry and one-click Core upgrades). Same trio rendered by
- * settings-hub.js as the API-failure fallback, so favoriting them by
- * default lines up with "what an admin can always recover to."
+ * key entry and one-click Core upgrades). These three are also part of
+ * the API-failure fallback set rendered by settings-hub.js (alongside
+ * Security, which is in the fallback for Base URL recovery but is not a
+ * default favorite), so favoriting them by default lines up with "what an
+ * admin can always recover to."
  *
  * To change the default set, edit this list and add the new keys to
  * the backfill block in the most recent upgrade function so existing

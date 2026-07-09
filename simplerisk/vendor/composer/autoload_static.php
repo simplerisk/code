@@ -11,6 +11,7 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
         '7b11c4dc42b3b3023073cb14e519683c' => __DIR__ . '/..' . '/ralouphie/getallheaders/src/getallheaders.php',
+        'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
         '662a729f963d39afe703c9d9b7ab4a8c' => __DIR__ . '/..' . '/symfony/polyfill-php83/bootstrap.php',
         '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
         '89efb1254ef2d1c5d80096acd12c4098' => __DIR__ . '/..' . '/twig/twig/src/Resources/core.php',
@@ -31,7 +32,6 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         '94e196d380faf76edd43da862bdf18b4' => __DIR__ . '/..' . '/leafs/logger/src/scripts.php',
         '39f8f809a191c7af11cb6d6aa45edb06' => __DIR__ . '/..' . '/simplerisk/csrf-magic/csrf-magic.php',
         '334983c1b64a31de3c73827b7a6a1e88' => __DIR__ . '/..' . '/simplesamlphp/simplesamlphp/src/_autoload_modules.php',
-        '7dd996d98a91d095f100c75e0b9e2391' => __DIR__ . '/..' . '/spatie/async/src/helpers.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -58,6 +58,7 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         'S' =>
         array (
             'Symfony\\Polyfill\\Php83\\' => 23,
+            'Symfony\\Polyfill\\Php80\\' => 23,
             'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Polyfill\\Intl\\Normalizer\\' => 33,
             'Symfony\\Polyfill\\Intl\\Icu\\' => 26,
@@ -89,7 +90,6 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
             'Symfony\\Component\\Cache\\' => 24,
             'Symfony\\Bundle\\FrameworkBundle\\' => 31,
             'Symfony\\Bridge\\Twig\\' => 20,
-            'Spatie\\Async\\' => 13,
             'SimpleSAML\\XML\\' => 15,
             'SimpleSAML\\XMLSecurity\\' => 23,
             'SimpleSAML\\SOAP\\' => 16,
@@ -146,7 +146,6 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         array (
             'Leaf\\Http\\' => 10,
             'Leaf\\' => 5,
-            'Laravel\\SerializableClosure\\' => 28,
             'Laminas\\Escaper\\' => 16,
         ),
         'J' =>
@@ -209,6 +208,10 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         'Symfony\\Polyfill\\Php83\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-php83',
+        ),
+        'Symfony\\Polyfill\\Php80\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php80',
         ),
         'Symfony\\Polyfill\\Mbstring\\' =>
         array (
@@ -333,10 +336,6 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         'Symfony\\Bridge\\Twig\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/twig-bridge',
-        ),
-        'Spatie\\Async\\' =>
-        array (
-            0 => __DIR__ . '/..' . '/spatie/async/src',
         ),
         'SimpleSAML\\XML\\' =>
         array (
@@ -497,10 +496,6 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
             5 => __DIR__ . '/..' . '/leafs/fs/src',
             6 => __DIR__ . '/..' . '/leafs/anchor/src',
         ),
-        'Laravel\\SerializableClosure\\' =>
-        array (
-            0 => __DIR__ . '/..' . '/laravel/serializable-closure/src',
-        ),
         'Laminas\\Escaper\\' =>
         array (
             0 => __DIR__ . '/..' . '/laminas/laminas-escaper/src',
@@ -573,6 +568,7 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
     );
 
     public static $classMap = array (
+        'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
         'Collator' => __DIR__ . '/..' . '/symfony/polyfill-intl-icu/Resources/stubs/Collator.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'DateError' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateError.php',
@@ -590,7 +586,11 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         'Normalizer' => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer/Resources/stubs/Normalizer.php',
         'NumberFormatter' => __DIR__ . '/..' . '/symfony/polyfill-intl-icu/Resources/stubs/NumberFormatter.php',
         'Override' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/Override.php',
+        'PhpToken' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/PhpToken.php',
         'SQLite3Exception' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/SQLite3Exception.php',
+        'Stringable' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Stringable.php',
+        'UnhandledMatchError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/UnhandledMatchError.php',
+        'ValueError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/ValueError.php',
         '©' => __DIR__ . '/..' . '/symfony/cache/Traits/ValueWrapper.php',
     );
 

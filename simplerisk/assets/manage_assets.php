@@ -158,20 +158,20 @@
             // If the action is delete, we need to show the popup to confirm the action
             if (action == 'delete') {
 
-                confirm("<?= $escaper->escapeHtml($lang["AreYouSureYouWantToDeleteSelction"]) ?>", () => {
+                confirm("<?= $escaper->escapeJs($lang["AreYouSureYouWantToDeleteSelction"]) ?>", () => {
                     handle_asset_row_action(id, action, view);
                 });
 
             // If the action is verify, we need to show the popup to confirm the action
             } else if (action == 'verify') {
 
-                confirm("<?= $escaper->escapeHtml($lang["AreYouSureYouWantToVerifyTheSelection"]) ?>", () => {
+                confirm("<?= $escaper->escapeJs($lang["AreYouSureYouWantToVerifyTheSelection"]) ?>", () => {
                     handle_asset_row_action(id, action, view);
                 });
 
             } else if (action == 'discard') {
 
-                confirm("<?= $escaper->escapeHtml($lang["AreYouSureYouWantToDiscardTheSelection"]) ?>", () => {
+                confirm("<?= $escaper->escapeJs($lang["AreYouSureYouWantToDiscardTheSelection"]) ?>", () => {
                     handle_asset_row_action(id, action, view);
                 });
                 

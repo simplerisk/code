@@ -1035,7 +1035,7 @@ function add_session_check($permissions = [])
 			write_debug_log("We are using the database for sessions.", "debug");
 
 			// Set the custom session save handler
-			session_set_save_handler(new SimpleRiskSessionHandler());
+			SimpleRiskSessionHandler::register();
 		}
 
 		// If we are running an old version of PHP
@@ -1196,8 +1196,22 @@ function add_session_check($permissions = [])
  ***************************/
 function session_check()
 {
-	// Perform session garbage collection
-	sess_gc(1440);
+	// Note: garbage collection of expired `sessions` rows is NOT called
+	// here. The previous "sess_gc on every request" cadence compounded
+	// row-lock contention once the session handler started using
+	// SELECT ... FOR UPDATE — every page load tried to DELETE from a
+	// table where some row was potentially X-locked by another worker.
+	//
+	// The actual security gate is the activity / absolute timeout
+	// enforcement below: it reads $_SESSION['LAST_ACTIVITY'] and
+	// $_SESSION['CREATED'] on every authenticated request and destroys
+	// the session if either is exceeded. That gate is unaffected by
+	// whether or not the underlying DB row has been physically gc'd —
+	// a still-present row past its timeout is rejected here too.
+	//
+	// Hygiene gc still happens, but probabilistically: SimpleRiskSessionHandler
+	// sets session.gc_probability=1 / session.gc_divisor=100 (~1% of
+	// requests) so PHP invokes our handler's gc() method naturally.
 
         // Get the session activity timeout
         $session_activity_timeout = get_setting("session_activity_timeout");
@@ -1247,17 +1261,456 @@ function session_check()
 	return true;
 }
 
-/*************************************
- * CLASS: SIMPLERISK SESSION HANDLER *
- *************************************/
+/*****************************************************************************
+ * CLASS: SIMPLERISK SESSION HANDLER                                         *
+ *                                                                           *
+ * Reads use SELECT ... FOR UPDATE inside a transaction so concurrent        *
+ * requests for the same SID serialize on the row's exclusive lock the same  *
+ * way PHP's default file handler serializes via flock(). The lock is held   *
+ * from read() (start of request) through write() (end of request), so the   *
+ * application's $_SESSION mutations cannot be raced/overwritten by another  *
+ * worker that loaded a stale snapshot before this request committed.        *
+ *                                                                           *
+ * Closes the SR-1691 race that drops set_alert() flash messages when the    *
+ * Playwright integration suite shares one admin SID across N parallel       *
+ * workers (and the equivalent rare-but-real race between an admin's         *
+ * concurrent browser tabs hitting the app at the same time).                *
+ *                                                                           *
+ * Falls back to the legacy non-locking sess_*() functions on any PDO error  *
+ * (e.g. transaction not supported, lock wait timeout) so a degraded DB does *
+ * not lock users out — they revert to the previous race-prone-but-working   *
+ * behavior. The fallback writes the failure to the debug log so operators   *
+ * can see when degradation kicks in.                                        *
+ *****************************************************************************/
 class SimpleRiskSessionHandler implements SessionHandlerInterface
 {
-    public function open(string $path, string $name): bool { return sess_open($path, $name); }
-    public function close(): bool { return sess_close(); }
-    public function read(string $id): string|false { return sess_read($id); }
-    public function write(string $id, string $data): bool { return sess_write($id, $data); }
-    public function destroy(string $id): bool { return sess_destroy($id); }
-    public function gc(int $max_lifetime): int|false { sess_gc($max_lifetime); return 1; }
+    /**
+     * Per-instance PDO held across read() -> write() so a single transaction
+     * spans the request's session window. The handler opens its OWN private
+     * connection (not the db_open() singleton) so its transaction is isolated
+     * from any app-side beginTransaction() calls during the request.
+     */
+    private ?\PDO $pdo = null;
+
+    /**
+     * True when read() has begun a transaction that write()/close() will commit.
+     */
+    private bool $inTransaction = false;
+
+    /**
+     * Per-instance set of operations for which failSafe() has already emitted
+     * a warning log line during this request. Prevents repeating the same
+     * "falling back" message multiple times if the same op fails twice in one
+     * request lifecycle (read after a failover, write after a failover, etc.).
+     * Each new request constructs a fresh handler instance, so degraded-DB
+     * conditions still surface one warning per request rather than going silent.
+     *
+     * @var array<string, true>
+     */
+    private array $failSafeLogged = [];
+
+    /**
+     * Constructor is intentionally a no-op. The ini_set side effects that
+     * configure PHP's probabilistic gc live in register() instead, so
+     * instantiating the handler from a test harness (or any non-session
+     * caller) doesn't silently mutate global PHP state. Callers that want
+     * the handler attached to session_set_save_handler() go through
+     * SimpleRiskSessionHandler::register() — see that method's docblock.
+     */
+    public function __construct()
+    {
+    }
+
+    /**
+     * Register this handler with PHP's session machinery. Use this in
+     * place of `session_set_save_handler(new SimpleRiskSessionHandler())`
+     * at every caller — the ini_set lines below are session-machinery
+     * configuration and belong here, not inside the constructor.
+     *
+     * Make PHP's probabilistic garbage collector self-sufficient. Many
+     * Debian/Ubuntu PHP packages ship with session.gc_probability=0 because
+     * the OS provides a /usr/lib/php/sessionclean cron job — but that
+     * cron job only cleans the file-based handler's directory, not our
+     * custom `sessions` table. Without setting these, PHP would never
+     * invoke SessionHandlerInterface::gc(), and the legacy code's
+     * workaround was to call sess_gc() explicitly on every request.
+     * That workaround compounds row-lock contention under load, so we
+     * set the standard PHP probability instead: ~1% of requests trigger
+     * gc, which on a busy install is plenty to keep the table bounded.
+     * Only override when the install hasn't explicitly enabled gc.
+     */
+    public static function register(): void
+    {
+        if ((int)ini_get('session.gc_probability') === 0) {
+            ini_set('session.gc_probability', '1');
+            ini_set('session.gc_divisor', '100');
+        }
+        session_set_save_handler(new self(), true);
+    }
+
+    public function open(string $path, string $name): bool
+    {
+        // Note: we deliberately do NOT call sess_gc() from open() the way the
+        // legacy handler did. gc's bulk "DELETE FROM sessions WHERE access < :old"
+        // would block on any other worker's row-level X-lock, hitting
+        // innodb_lock_wait_timeout under load. Instead, gc runs through the
+        // SessionHandlerInterface::gc() entry point, which PHP invokes
+        // probabilistically based on session.gc_probability / session.gc_divisor.
+        return true;
+    }
+
+    public function close(): bool
+    {
+        $this->finishTransaction(true);
+        $this->pdo = null;
+        return true;
+    }
+
+    public function read(string $id): string
+    {
+        try {
+            $pdo = $this->getPdo();
+            if (!$this->inTransaction) {
+                $pdo->beginTransaction();
+                $this->inTransaction = true;
+            }
+
+            $stmt = $pdo->prepare("SELECT data FROM sessions WHERE `id` = :sess_id FOR UPDATE");
+            $stmt->bindParam(':sess_id', $id, \PDO::PARAM_STR, 128);
+            $stmt->execute();
+            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+            $this->clearDegradedFlag();
+            return $row ? (string)$row['data'] : '';
+        } catch (\Throwable $e) {
+            // Connection died, transaction not supported, or lock wait
+            // exceeded innodb_lock_wait_timeout. Drop the broken connection,
+            // fall back to legacy behavior so the user keeps their session.
+            $this->failSafe($e, 'read');
+            return sess_read($id);
+        }
+    }
+
+    public function write(string $id, string $data): bool
+    {
+        // No transaction means one of:
+        //   (a) read() hit a PDO error and failSafe()'d to legacy — stay there
+        //       so the request completes via the same handler family that
+        //       served the read.
+        //   (b) session_regenerate_id(true) just ran. PHP's regen flow is
+        //       write(old_id) -> destroy(old_id) -> close() -> generate new id
+        //       -> open(). It does NOT call read() with the new id, so when
+        //       session_write_close() eventually fires write(new_id, $data)
+        //       here, $this->inTransaction is false (destroy committed it
+        //       and close() set $this->pdo to null). Falling through to
+        //       sess_write() is correct: the new SID's row didn't exist
+        //       before this write, so there's no prior state to be raced and
+        //       no need for a FOR UPDATE lock on a row we're about to
+        //       create. DO NOT "fix" this by adding beginTransaction()
+        //       here — without a matching read(), the post-regen close()
+        //       would commit (or rollback) a transaction with no
+        //       state-versus-state semantics, and the next session_start()
+        //       on this handler instance would deadlock against itself.
+        if (!$this->inTransaction) {
+            return sess_write($id, $data);
+        }
+
+        try {
+            $pdo = $this->getPdo();
+            $access = time();
+            $stmt = $pdo->prepare(
+                "REPLACE INTO sessions (id, access, data) VALUES (:sess_id, :access, :data)"
+            );
+            $stmt->bindParam(':sess_id', $id, \PDO::PARAM_STR);
+            $stmt->bindParam(':access', $access, \PDO::PARAM_INT);
+            $stmt->bindParam(':data', $data, \PDO::PARAM_LOB);
+            $stmt->execute();
+
+            $pdo->commit();
+            $this->inTransaction = false;
+            $this->clearDegradedFlag();
+            return true;
+        } catch (\Throwable $e) {
+            $this->failSafe($e, 'write');
+            return sess_write($id, $data);
+        }
+    }
+
+    public function destroy(string $id): bool
+    {
+        // Releasing the read-lock first keeps DELETE simple and avoids deadlock
+        // risk if other handler instances are also racing on this row.
+        $this->finishTransaction(true);
+        try {
+            $pdo = $this->getPdo();
+            $stmt = $pdo->prepare("DELETE FROM sessions WHERE `id` = :sess_id");
+            $stmt->bindParam(':sess_id', $id, \PDO::PARAM_STR, 128);
+            $stmt->execute();
+            $this->clearDegradedFlag();
+            return true;
+        } catch (\Throwable $e) {
+            $this->failSafe($e, 'destroy');
+            return sess_destroy($id);
+        }
+    }
+
+    public function gc(int $max_lifetime): int|false
+    {
+        // Refuse to run if read() already started a transaction on this PDO.
+        // PHP's own SessionHandler contract invokes gc *between* open() and
+        // read(), so $this->inTransaction is false in the normal flow — but a
+        // future caller that triggers session_gc() manually mid-request would
+        // otherwise issue a DELETE on the connection holding the open
+        // FOR UPDATE, mixing session-row deletion into the read-write
+        // transaction. The contract above stays intact; this is belt-and-
+        // suspenders for the edge case.
+        if ($this->inTransaction) {
+            return 0;
+        }
+
+        // Use this handler's private PDO so we don't open a third connection
+        // (handler + app singleton + a dedicated gc connection). gc is invoked
+        // by PHP during session_start, after open() but before read() — so
+        // $this->pdo is not yet inside the read-write transaction, and the
+        // DELETE here auto-commits before beginTransaction() runs.
+        //
+        // session_activity_timeout is SimpleRisk's authoritative session
+        // lifetime, so it intentionally overrides the caller-supplied
+        // $max_lifetime (typically 1440 from PHP defaults) — even when the
+        // setting is the smaller of the two. gc() only physically reaps rows
+        // that session_check() would already reject on the next request, so
+        // reaping on the configured timeout rather than a larger caller value
+        // keeps the table aligned with the real expiry policy and never
+        // deletes a row a live session still depends on.
+        //
+        // ORDER BY access ASC LIMIT $cap caps each invocation and prioritizes
+        // the oldest rows, so the table converges to bounded size across
+        // probabilistic gc calls without ever doing an unbounded DELETE.
+        //
+        // Cadence math for the cap: with session.gc_probability=1 and
+        // session.gc_divisor=100, ~1% of requests trigger gc. A 500-row cap
+        // therefore clears up to 500 rows per ~100 requests. After a
+        // maintenance window or a heavy Playwright batch that backs up the
+        // table to, say, 50_000 stale rows, the table converges in
+        // ~10_000 requests. On a busy install that's a few hours; on a
+        // quiet one it's a few days. Operators with unusually large
+        // backlogs (or unusually quiet installs) can raise the cap via
+        // the optional `session_gc_limit` setting; absent that setting,
+        // the default of 500 applies — see get_setting() fallback below.
+        try {
+            $configured = get_setting('session_activity_timeout');
+            if ($configured) {
+                $max_lifetime = (int)$configured;
+            }
+            $cap = (int)get_setting('session_gc_limit', 500);
+            if ($cap <= 0) {
+                $cap = 500;
+            }
+            $old = time() - $max_lifetime;
+            $pdo = $this->getPdo();
+            // LIMIT clauses can't be bound as a parameter on every MySQL
+            // build; cast to int and concatenate. $cap was sourced from a
+            // setting and was just int-validated, so concatenation is safe.
+            $stmt = $pdo->prepare(
+                "DELETE FROM sessions WHERE `access` < :old ORDER BY `access` ASC LIMIT " . $cap
+            );
+            $stmt->bindParam(':old', $old, \PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->rowCount();
+        } catch (\Throwable $e) {
+            // gc failure must never cascade into request failure — log,
+            // drop the broken connection so the next getPdo() reopens it,
+            // and let the caller's session_start continue.
+            if (function_exists('write_debug_log') && !isset($this->failSafeLogged['gc'])) {
+                write_debug_log("SimpleRiskSessionHandler::gc: " . $e->getMessage(), 'warning');
+                $this->failSafeLogged['gc'] = true;
+            }
+            $this->pdo = null;
+            return 0;
+        }
+    }
+
+    /**
+     * Open (or reuse) this handler's PDO. We deliberately bypass db_open() —
+     * that helper is a singleton (shared via $GLOBALS['db_global']) used by
+     * application code, and reusing it would mean every app-side query
+     * during the request runs inside this handler's transaction, breaking
+     * any code that does its own beginTransaction(). Open a private
+     * connection instead so the handler's transaction window is isolated
+     * from the application.
+     *
+     * Connection options mirror db_open(): same charset/collation,
+     * group_concat_max_len, and time_zone init command so query semantics
+     * on this connection match the rest of the app. Doesn't strictly matter
+     * for the session-handler queries (LOB data is charset-agnostic, no
+     * datetime columns, no GROUP_CONCAT in the handler) but cheap insurance
+     * if a future change adds a session-related query that does care.
+     *
+     * Declared `protected` rather than `private` so the failSafe test suite
+     * can subclass the handler with an override that throws \PDOException
+     * — that's the only way to deterministically exercise the legacy
+     * fallback path without an actual DB outage. No production caller
+     * should override this.
+     */
+    protected function getPdo(): \PDO
+    {
+        if ($this->pdo === null) {
+            $dsn = "mysql:charset=UTF8;dbname=" . DB_DATABASE
+                 . ";host=" . DB_HOSTNAME . ";port=" . DB_PORT;
+            // PDO::ATTR_ERRMODE defaults to ERRMODE_EXCEPTION on PHP 8.1+, so
+            // we don't pass it explicitly. currentTimezoneOffset() comes from
+            // functions.php which is required by every entry point before
+            // SimpleRiskSessionHandler is instantiated.
+            $tz_offset = function_exists('currentTimezoneOffset') ? currentTimezoneOffset() : '+00:00';
+            // Set a short innodb_lock_wait_timeout on this handler's connection
+            // (default MySQL value is 50s) so that under heavy session contention
+            // — typical in Playwright runs where multiple workers share one
+            // admin SID via storageState — we fail fast and fall back to the
+            // legacy non-locking path via failSafe() rather than letting a
+            // single request block all subsequent ones for the full 50s.
+            // Affects only this handler's session; app-level queries via
+            // db_open() keep the server-default lock wait timeout.
+            //
+            // Run this connection at READ-COMMITTED isolation (server default
+            // is REPEATABLE-READ). In REPEATABLE-READ, `SELECT ... FOR UPDATE
+            // WHERE id = :sid` on a non-existent row takes an "insert intention"
+            // gap lock on the index range — two concurrent requests creating
+            // NEW sessions with IDs that fall in the same primary-key gap can
+            // serialize on that gap lock even though the rows themselves are
+            // unrelated. Under READ-COMMITTED there's no gap lock on the
+            // not-found case, so concurrent fresh-SID creations don't contend.
+            // The handler's queries (single-key SELECT followed by REPLACE on
+            // that same key) are unaffected by the looser intra-transaction
+            // semantics READ-COMMITTED provides, since the read+write happens
+            // inside a single transaction that other connections can't observe
+            // mid-flight regardless.
+            // PHP 8.5 moved PDO MySQL constants to the Pdo\Mysql namespace and
+            // deprecated the PDO::MYSQL_ATTR_* aliases. Use the forward-compat
+            // lookup so PHP 8.1-8.3 is unchanged.
+            $pdo_mysql_init_command = defined('Pdo\Mysql::ATTR_INIT_COMMAND') ? constant('Pdo\Mysql::ATTR_INIT_COMMAND') : \PDO::MYSQL_ATTR_INIT_COMMAND;
+            $pdo_mysql_ssl_ca       = defined('Pdo\Mysql::ATTR_SSL_CA')       ? constant('Pdo\Mysql::ATTR_SSL_CA')       : \PDO::MYSQL_ATTR_SSL_CA;
+            $options = [
+                $pdo_mysql_init_command => "SET NAMES utf8mb4, "
+                    . "@@group_concat_max_len = 4294967295, "
+                    . "@@session.innodb_lock_wait_timeout = 5, "
+                    . "@@session.transaction_isolation = 'READ-COMMITTED', "
+                    . "time_zone='" . $tz_offset . "'",
+            ];
+            if (defined('DB_SSL_CERTIFICATE_PATH') && DB_SSL_CERTIFICATE_PATH !== '') {
+                $options[$pdo_mysql_ssl_ca] = DB_SSL_CERTIFICATE_PATH;
+            }
+            $this->pdo = new \PDO($dsn, DB_USERNAME, DB_PASSWORD, $options);
+            // Defense-in-depth: the @@session.transaction_isolation assignment in
+            // MYSQL_ATTR_INIT_COMMAND above silently no-ops on older MySQL builds
+            // where the variable was named `tx_isolation`, and on configurations
+            // where global isolation is locked. Re-run the assignment as a
+            // standalone statement so the handler is guaranteed to be on
+            // READ-COMMITTED on every supported server build — REPEATABLE-READ
+            // would take an insert-intention gap lock on the `FOR UPDATE` of a
+            // non-existent row, the exact contention the comment block above
+            // sets out to avoid.
+            $this->pdo->query("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED");
+        }
+        return $this->pdo;
+    }
+
+    /**
+     * Commit (or roll back) any open transaction without throwing. Used from
+     * close() / destroy() / failSafe() where we want the cleanest possible
+     * exit regardless of error state.
+     */
+    private function finishTransaction(bool $commit): void
+    {
+        if ($this->pdo === null || !$this->inTransaction) {
+            return;
+        }
+        try {
+            if ($commit && $this->pdo->inTransaction()) {
+                $this->pdo->commit();
+            } elseif ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+        } catch (\Throwable $ignore) {
+            // Best-effort cleanup — swallow so the calling read()/write()
+            // path can fall back without re-throwing.
+        }
+        $this->inTransaction = false;
+    }
+
+    /**
+     * Drop the broken connection so the next call re-opens fresh, and log the
+     * reason so operators can see when the locking handler is degrading to
+     * the legacy code path. Logs at most once per op per request so a single
+     * cascading failure (e.g. read then write both failing) doesn't double-log;
+     * across requests the warning still fires, so sustained degradation
+     * remains visible at request granularity.
+     */
+    private function failSafe(\Throwable $e, string $op): void
+    {
+        $this->finishTransaction(false);
+        $this->pdo = null;
+        if (function_exists('write_debug_log') && !isset($this->failSafeLogged[$op])) {
+            write_debug_log(
+                "SimpleRiskSessionHandler::$op falling back to legacy sess_*() "
+                . "after PDO error: " . $e->getMessage(),
+                'warning'
+            );
+            $this->failSafeLogged[$op] = true;
+        }
+        // Surface degradation to operators via the health-check page. The
+        // setting holds the timestamp the current outage began; the
+        // health-check banner reads it and shows a warning when non-zero.
+        // update_setting() uses db_open() — a separate connection from this
+        // handler's private PDO — so even if our private PDO has died, the
+        // settings write typically succeeds. If it doesn't, swallow the
+        // error: a degraded session handler must never cascade into request
+        // failure.
+        //
+        // Stamp once per outage transition, not once per failed op: a fresh
+        // time() on every failed request would defeat update_setting()'s
+        // unchanged-value short-circuit and write an audit_log row per
+        // request under a sustained outage. The banner only needs non-zero
+        // semantics; clearDegradedFlag() resets it to '0' on the first
+        // success, so the next outage re-stamps. Guard mirrors
+        // clearDegradedFlag()'s.
+        //
+        // Note: failSafe() can run inside read(), which PHP invokes before
+        // session_start() populates $_SESSION. update_setting() may populate
+        // its own $_SESSION audit defaults ('System User') as a side effect;
+        // that scratch state is harmless because read()'s returned payload is
+        // deserialized over $_SESSION immediately afterward.
+        try {
+            if (function_exists('get_setting') && function_exists('update_setting')) {
+                $flag = get_setting('session_handler_degraded');
+                if ($flag === false || $flag === '' || $flag === '0') {
+                    update_setting('session_handler_degraded', (string)time());
+                }
+            }
+        } catch (\Throwable $ignored) {
+            // best-effort; the warning log line above is the primary signal
+        }
+    }
+
+    /**
+     * Clear the operator-visible degradation flag when a session operation
+     * has just succeeded on this handler's private PDO. Called from the
+     * success paths of read() / write() / destroy(). No-op when the flag
+     * is already cleared (the get_setting cache makes the read free, so
+     * we save an update_setting round-trip on the common case).
+     */
+    private function clearDegradedFlag(): void
+    {
+        if (!function_exists('get_setting') || !function_exists('update_setting')) {
+            return;
+        }
+        try {
+            $flag = get_setting('session_handler_degraded');
+            if ($flag !== false && $flag !== '' && $flag !== '0') {
+                update_setting('session_handler_degraded', '0');
+            }
+        } catch (\Throwable $ignored) {
+            // best-effort recovery signal; never cascade to caller
+        }
+    }
 }
 
 /**************************
@@ -1265,9 +1718,10 @@ class SimpleRiskSessionHandler implements SessionHandlerInterface
  **************************/
 function sess_open($sess_path, $sess_name)
 {
-        // Perform session garbage collection
-        sess_gc(1440);
-
+        // gc runs probabilistically through SimpleRiskSessionHandler::gc().
+        // Removed the legacy unconditional sess_gc(1440) call here so failover
+        // paths don't double-open connections (handler's private PDO + the
+        // dedicated gc PDO + db_open() singleton).
         return true;
 }
 
@@ -1276,9 +1730,8 @@ function sess_open($sess_path, $sess_name)
  ***************************/
 function sess_close()
 {
-        // Perform session garbage collection
-        sess_gc(1440);
-
+        // gc runs probabilistically through SimpleRiskSessionHandler::gc().
+        // See sess_open() comment above.
         return true;
 }
 
@@ -1360,9 +1813,8 @@ function sess_write($sess_id, $data)
  *****************************/
 function sess_destroy($sess_id)
 {
-        // Perform session garbage collection
-        sess_gc(1440);
-
+        // gc runs probabilistically through SimpleRiskSessionHandler::gc();
+        // no longer call sess_gc(1440) inline here.
         // Open the database connection
         $db = db_open();
 
@@ -1381,21 +1833,47 @@ function sess_destroy($sess_id)
  ****************************************/
 function sess_gc($sess_maxlifetime)
 {
-    $sess_maxlifetime = get_setting("session_activity_timeout");
+    // The configured idle-timeout setting wins over the caller-supplied
+    // $sess_maxlifetime (which is typically 1440 from the legacy callers).
+    $configured = get_setting("session_activity_timeout");
+    if ($configured) {
+        $sess_maxlifetime = (int)$configured;
+    }
     $old = time() - $sess_maxlifetime;
 
-        // Open the database connection
-        $db = db_open();
-
-        $current_time = time();
-        $stmt = $db->prepare("DELETE FROM sessions WHERE `access` < :old");
-    $stmt->bindParam(":old", $old, PDO::PARAM_INT, 10);
+    // Use a DEDICATED PDO connection — not the shared db_open() singleton —
+    // so the DELETE does not run inside any application-level transaction
+    // that might be in progress on the singleton, and so the gc is
+    // independent of the SimpleRiskSessionHandler's own private connection.
+    //
+    // Cap each gc invocation with LIMIT so we don't try to delete an
+    // unbounded number of rows in one statement. If gc was queued behind
+    // an X-lock on one row, we don't want it to scan thousands more after
+    // the lock releases. With session.gc_probability=1/100 in the new
+    // handler, gc will run again on a future request and chip away the
+    // remainder. Single-call cap of 500 rows is plenty for steady-state.
+    try {
+        $dsn = "mysql:charset=UTF8;dbname=" . DB_DATABASE
+             . ";host=" . DB_HOSTNAME . ";port=" . DB_PORT;
+        $options = [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION];
+        if (defined("DB_SSL_CERTIFICATE_PATH") && DB_SSL_CERTIFICATE_PATH !== '') {
+            $pdo_mysql_ssl_ca = defined('Pdo\Mysql::ATTR_SSL_CA') ? constant('Pdo\Mysql::ATTR_SSL_CA') : PDO::MYSQL_ATTR_SSL_CA;
+            $options[$pdo_mysql_ssl_ca] = DB_SSL_CERTIFICATE_PATH;
+        }
+        $gc_db = new PDO($dsn, DB_USERNAME, DB_PASSWORD, $options);
+        // ORDER BY access ASC prioritizes the oldest rows so the table
+        // converges to bounded size deterministically across calls.
+        $stmt = $gc_db->prepare("DELETE FROM sessions WHERE `access` < :old ORDER BY `access` ASC LIMIT 500");
+        $stmt->bindParam(":old", $old, PDO::PARAM_INT);
         $stmt->execute();
+    } catch (\Throwable $e) {
+        // Don't let gc failure cascade into request failure — log and move on.
+        if (function_exists('write_debug_log')) {
+            write_debug_log("sess_gc: " . $e->getMessage(), 'warning');
+        }
+    }
 
-        // Close the database connection
-        db_close($db);
-
-        return true;
+    return true;
 }
 
 /********************
@@ -1413,7 +1891,12 @@ function logout()
 
     // Invalidate all server-side sessions for this user (other browsers,
     // devices, or stolen cookies) so that logout is a complete sign-out.
-    kill_sessions_of_user($uid);
+    // Skip the current session row — SimpleRiskSessionHandler still holds
+    // an exclusive row lock on it from this request's session_start(),
+    // and kill_sessions_of_user's bulk DELETE would self-deadlock against
+    // it. session_destroy() below commits the handler's transaction and
+    // then deletes the row, so the current session is still cleaned up.
+    kill_sessions_of_user($uid, true);
 
     // Deny access
     $_SESSION["access"] = "denied";

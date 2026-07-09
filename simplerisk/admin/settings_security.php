@@ -101,8 +101,12 @@
             update_setting("ssl_certificate_check_simplerisk", $ssl_certificate_check);
         }
 
-        // Update the SSL certificate check for external websites
-        $ssl_certificate_check = isset($_POST['ssl_certificate_check_external']) ? 1 : 0;
+        // Update the SSL certificate check for external websites.
+        // Store as the string '1'/'0' so the value cached by update_setting()
+        // matches what ssl_external_verify_enabled() strict-compares against
+        // (!== '0'); an integer 0 in the cache would make the strict compare
+        // read as "enabled" for the rest of this same request.
+        $ssl_certificate_check = isset($_POST['ssl_certificate_check_external']) ? '1' : '0';
         $current_ssl_certificate_check = get_setting("ssl_certificate_check_external");
         if ($ssl_certificate_check != $current_ssl_certificate_check) {
             update_setting("ssl_certificate_check_external", $ssl_certificate_check);
@@ -113,6 +117,13 @@
         $current_enable_api_v1 = get_setting("enable_api_v1");
         if ($enable_api_v1 != $current_enable_api_v1) {
             update_setting("enable_api_v1", $enable_api_v1);
+        }
+
+        // Update the "allow API key in URL" setting
+        $api_allow_url_key = isset($_POST['api_allow_url_key']) ? 1 : 0;
+        $current_api_allow_url_key = get_setting("api_allow_url_key");
+        if ($api_allow_url_key != $current_api_allow_url_key) {
+            update_setting("api_allow_url_key", $api_allow_url_key);
         }
 
         // Update the proxy settings
@@ -268,7 +279,7 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-check mr-sm-4">
-                                   <input <?php if($escaper->escapeHtml(get_setting('ssl_certificate_check_external')) == 1){ echo "checked"; } ?> name="ssl_certificate_check_external" class="form-check-input" size="2" value="90" id="ssl_certificate_check_external" type="checkbox">
+                                   <input <?php if(ssl_external_verify_enabled()){ echo "checked"; } ?> name="ssl_certificate_check_external" class="form-check-input" size="2" value="90" id="ssl_certificate_check_external" type="checkbox">
                                    <label for="ssl_certificate_check_external"  class="form-check-label mb-0 ms-2"><?= $escaper->escapeHtml($lang['EnableSSLCertificateCheckExternal']); ?></label>
                                 </div>
                             </div>
@@ -279,6 +290,15 @@
                                    <input <?php if($escaper->escapeHtml(get_setting('enable_api_v1')) == 1){ echo "checked"; } ?> name="enable_api_v1" class="form-check-input" size="2" value="1" id="enable_api_v1" type="checkbox">
                                    <label for="enable_api_v1" class="form-check-label mb-0 ms-2"><?= $escaper->escapeHtml($lang['EnableAPIv1Endpoints']); ?></label>
                                    <div class="text-muted small mt-1"><?= $escaper->escapeHtml($lang['EnableAPIv1EndpointsHelp']); ?></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-check mr-sm-4">
+                                   <input <?php if($escaper->escapeHtml(get_setting('api_allow_url_key')) == 1){ echo "checked"; } ?> name="api_allow_url_key" class="form-check-input" size="2" value="1" id="api_allow_url_key" type="checkbox">
+                                   <label for="api_allow_url_key" class="form-check-label mb-0 ms-2"><?= $escaper->escapeHtml($lang['AllowAPIKeyInURL']); ?></label>
+                                   <div class="text-muted small mt-1"><?= $escaper->escapeHtml($lang['AllowAPIKeyInURLHelp']); ?></div>
                                 </div>
                             </div>
                         </div>

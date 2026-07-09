@@ -1,7 +1,7 @@
 /**
- * HugeRTE version 1.0.10 (2026-02-16)
+ * HugeRTE version 1.0.12 (2026-06-29)
  * Copyright (c) 2022 Ephox Corporation DBA Tiny Technologies, Inc.
- * Copyright (c) 2024 HugeRTE contributors
+ * Copyright (c) 2026 HugeRTE contributors
  * Licensed under the MIT license (https://github.com/hugerte/hugerte/blob/main/LICENSE.TXT)
  */
 
@@ -136,6 +136,16 @@
         const x = xs[i];
         f(x, i);
       }
+    };
+    const filter = (xs, pred) => {
+      const r = [];
+      for (let i = 0, len = xs.length; i < len; i++) {
+        const x = xs[i];
+        if (pred(x, i)) {
+          r.push(x);
+        }
+      }
+      return r;
     };
     const flatten = xs => {
       const r = [];
@@ -965,10 +975,10 @@
       retainAttributesAndInnerHtml(editor, node, placeHolder);
       setDimensions(node, placeHolder, {});
       placeHolder.attr({
-        'style': node.attr('style'),
-        'src': global.transparentSrc,
+        style: node.attr('style'),
+        src: global.transparentSrc,
         'data-mce-object': name,
-        'class': 'mce-object mce-object-' + name
+        class: 'mce-object mce-object-' + name
       });
       return placeHolder;
     };
@@ -977,10 +987,10 @@
       const name = node.name;
       const previewWrapper = new global$2('span', 1);
       previewWrapper.attr({
-        'contentEditable': 'false',
-        'style': node.attr('style'),
+        contentEditable: 'false',
+        style: node.attr('style'),
         'data-mce-object': name,
-        'class': 'mce-preview-object mce-object-' + name
+        class: 'mce-preview-object mce-object-' + name
       });
       retainAttributesAndInnerHtml(editor, node, previewWrapper);
       const styles = editor.dom.parseStyle((_a = node.attr('style')) !== null && _a !== void 0 ? _a : '');
@@ -1141,11 +1151,34 @@
               }
             }
             const innerHtml = node.attr('data-mce-html');
-            if (innerHtml) {
-              const fragment = parseAndSanitize(editor, realElmName, unescape(innerHtml));
-              each$1(fragment.children(), child => realElm.append(child));
+            const hadInnerHtml = isString(innerHtml);
+            if (!hadInnerHtml) {
+              const filler = new global$2('#text', 3);
+              filler.value = '\xA0';
+              realElm.append(filler);
             }
-            node.replace(realElm);
+            const elementHtml = global$1({}, schema).serialize(realElm);
+            let sanitized;
+            try {
+              sanitized = parseAndSanitize(editor, 'body', elementHtml);
+            } catch (_e) {
+              node.remove();
+              continue;
+            }
+            const safeChildren = filter(sanitized.children(), child => child.name === realElmName);
+            if (safeChildren.length === 0) {
+              node.remove();
+              continue;
+            }
+            const safeElm = safeChildren[0];
+            if (!hadInnerHtml) {
+              safeElm.empty();
+            }
+            if (hadInnerHtml) {
+              const fragment = parseAndSanitize(editor, realElmName, unescape(innerHtml));
+              each$1(fragment.children(), child => safeElm.append(child));
+            }
+            node.replace(safeElm);
           }
         });
       });

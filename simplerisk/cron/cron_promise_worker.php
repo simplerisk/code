@@ -31,6 +31,9 @@ $maxRetryAttempts = 5;
 $baseRetryDelay = 5;
 $maxRetryDelay = 3600;
 $stuckThresholdMinutes = 30;
+// Soft guard: checked at each loop boundary (between promise batches). When the
+// process RSS crosses this, the worker exits cleanly and cron respawns it,
+// keeping a clean fail-fast at a low blast radius (~512 MB RSS).
 $memoryLimitBytes = 400 * 1024 * 1024;
 
 $startTime = time();
@@ -39,6 +42,14 @@ $lastWorkTime = time();
 // === SYSTEM SETTINGS ===
 ini_set('max_execution_time', 0);
 set_time_limit(0);
+// Keep memory_limit DELIBERATELY modest. Raising it is the wrong lever for the
+// XLSX OOM: PhpSpreadsheet parses zipped XML through libxml/ZipArchive, which
+// allocate C memory OUTSIDE the Zend allocator that memory_limit accounts for,
+// so a pathological file escapes this limit entirely and grows the process to
+// multiple GB until the OS OOM-kills it (destabilizing the whole box). At 512M
+// a runaway parse instead hits a clean PHP-fatal at low RSS. The real defense
+// against oversized files is the pre-parse DocumentSizeGuard (and, as a tracked
+// follow-up, a memory-bounded extraction subprocess) — NOT a higher limit here.
 ini_set('memory_limit', '512M');
 ob_implicit_flush(true);
 
@@ -94,10 +105,21 @@ while (true) {
         break;
     }
 
+    // SIGHUP means "recycle with fresh code". An in-process reload is
+    // impossible (require_once is a no-op once a file is loaded), so exit
+    // gracefully and let cron respawn the worker with the new code.
     if (worker_should_reload()) {
-        write_debug_log("Reload requested, resetting worker metrics...", "info");
-        reset_worker_metrics($workerName);
-        worker_clear_reload_flag();
+        record_worker_restart($workerName, 'reload_signal');
+        break;
+    }
+
+    // A deploy/upgrade requested a restart after this worker started, so
+    // the code on disk is newer than the code in memory. Exit gracefully —
+    // the current task already finished — and let cron respawn with fresh
+    // code. Workers started after the request keep running.
+    if (worker_restart_requested_since($startTime, worker_restart_flag_timestamp())) {
+        record_worker_restart($workerName, 'restart_requested');
+        break;
     }
 
     // === METRICS: memory usage ===
@@ -143,7 +165,9 @@ while (true) {
         ");
         $stmt->execute([':mins' => $stuckThresholdMinutes ?? 30]);
         if ($stmt->rowCount() > 0) {
-            write_debug_log("Recovered {$stmt->rowCount()} stuck promises.", "warning");
+            // 'notice' for consistency with the queue worker's stuck-task
+            // recovery — an infrequent, operator-relevant reclamation event.
+            write_debug_log("Recovered {$stmt->rowCount()} stuck promises.", "notice");
         }
     } catch (\Throwable $t) {
         write_debug_log("Error recovering stuck promises: " . $t->getMessage(), "error");

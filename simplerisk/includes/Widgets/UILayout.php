@@ -484,7 +484,7 @@ class UILayout {
 					$('#edit_mode_<?=$this->id?>').prop('checked', true);
 				
 					// then confirm that the user really want to disable edit mode without saving
-    				confirm('<?= $escaper->escapeHtml($lang['ConfirmDisableEditModeWithPendingChanges'])?>', () => {
+    				confirm('<?= $escaper->escapeJs($lang['ConfirmDisableEditModeWithPendingChanges'])?>', () => {
     					// if the user chose yes, THEN disable the edit mode
 						$('#edit_mode_<?=$this->id?>').prop('checked', false);
 						editMode_<?=$this->id?>(false);
@@ -502,12 +502,12 @@ class UILayout {
     		// Only warn about saving if it'd overwrite a previously saved custom layout
     		if (is_customized_layout_<?=$this->id?>) {
     		
-    			var confirmSaveQuestion = '<?= $escaper->escapeHtml($lang['ConfirmSave'])?>';
+    			var confirmSaveQuestion = '<?= $escaper->escapeJs($lang['ConfirmSave'])?>';
 
 <?php if ($is_admin) { ?>
 				// Warn the admin user that the layout is set as default layout and changing it will affect other users
 				if ($("#default_layout_<?=$this->id?>").is(':checked')) {
-					confirmSaveQuestion = '<?= $escaper->escapeHtml($lang['ConfirmSaveAdminDefault'])?>';
+					confirmSaveQuestion = '<?= $escaper->escapeJs($lang['ConfirmSaveAdminDefault'])?>';
 				}
 <?php } ?>
             	confirm(confirmSaveQuestion, () => {
@@ -631,7 +631,7 @@ class UILayout {
 <?php } ?>
 
         // Ask for confirmation before restoring the layout
-    	$(document).on('click', '#layout_wrapper_<?=$this->id?> .restore-layout-widget button', function(e) {e.stopPropagation(); confirm('<?= $escaper->escapeHtml($lang['ConfirmRestoreLayout'])?>', () => {
+    	$(document).on('click', '#layout_wrapper_<?=$this->id?> .restore-layout-widget button', function(e) {e.stopPropagation(); confirm('<?= $escaper->escapeJs($lang['ConfirmRestoreLayout'])?>', () => {
 			restore_layout_<?=$this->id?>($(this).attr('data-sr-restore'));
     	})});
         

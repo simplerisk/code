@@ -51,6 +51,10 @@ function simplerisk_health_check()
 	// Check that USE_DATABASE_FOR_SESSION is set to true
 	$check_use_database_for_session = check_use_database_for_session();
 
+	// Check whether the row-locking session handler has recently fallen back
+	// to the legacy non-locking path (SR-1691 protection inactive)
+	$check_session_handler_degraded = check_session_handler_degraded();
+
 	// Check that the automation cron is configured and running
 	$cron_configured = check_cron_configured();
 
@@ -108,9 +112,13 @@ function simplerisk_health_check()
 	// Check the necessary PHP extensions are installed
 	$check_php_extensions = check_php_extensions();
 
+	// Check the PHP extensions required by the Custom Authentication Extra
+	// (empty array when the Extra is not installed)
+	$check_custom_authentication_php_extensions = check_custom_authentication_php_extensions();
+
 	// Search for any missing PHP extensions
 	$check_php_extensions_result = 1;
-	foreach ($check_php_extensions as $extension)
+	foreach (array_merge($check_php_extensions, $check_custom_authentication_php_extensions) as $extension)
 	{
 		// If the extension result is 0
 		if ($extension['result'] === 0)
@@ -196,7 +204,7 @@ function simplerisk_health_check()
     ";
 
     // Versions Summary
-    if ($check_app_version['result'] === 1 && $check_db_version['result'] === 1 && $check_same_app_and_db['result'] === 1 && $check_use_database_for_session['result'] === 1 && $cron_configured['result'] === 1)
+    if ($check_app_version['result'] === 1 && $check_db_version['result'] === 1 && $check_same_app_and_db['result'] === 1 && $check_use_database_for_session['result'] === 1 && $check_session_handler_degraded['result'] === 1 && $cron_configured['result'] === 1)
     {
         health_check_good($lang['SimpleRiskCore']);
     }
@@ -287,6 +295,7 @@ function simplerisk_health_check()
     echo "
           <h4 class='mt-2'>{$escaper->escapeHtml($lang['Configurations'])}</h4>";
     display_health_check_results($check_use_database_for_session);
+    display_health_check_results($check_session_handler_degraded);
 	display_health_check_results($cron_configured);
     echo "
         </div></div>
@@ -313,6 +322,7 @@ function simplerisk_health_check()
     display_health_check_results($check_php_memory_limit);
     display_health_check_results($check_php_max_input_vars);
     display_health_check_array_results($check_php_extensions);
+    display_health_check_array_results($check_custom_authentication_php_extensions);
     echo "
         </div></div>
         <div class='tab-pane col-12' id='mysql' tabindex='0'>
@@ -512,7 +522,7 @@ function check_web_connectivity()
 	set_proxy_stream_context($method, $header);
 
 	// URLs to check
-	$urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://scf.simplerisk.com", "https://services.nvd.nist.gov", "https://github.com", "https://raw.githubusercontent.com", "https://simplerisk-downloads.s3.amazonaws.com");
+	$urls = array("https://licensing.simplerisk.com/healthz", "https://scf.simplerisk.com", "https://services.nvd.nist.gov", "https://github.com", "https://raw.githubusercontent.com", "https://simplerisk-downloads.s3.amazonaws.com");
 
 	// Create an empty array
 	$array = array();
@@ -638,8 +648,10 @@ function check_mysql_permission($permission)
  **********************************/
 function check_php_extensions()
 {
-	// List of extensions to check for
-	$extensions = array("pdo", "pdo_mysql", "json", "phar", "zlib", "mbstring", "ldap", "dom", "curl", "posix", "zip", "gd", "intl");
+	// List of extensions required by SimpleRisk Core. Extensions only needed by the
+	// Custom Authentication Extra (ldap, tokenizer, ...) are checked separately in
+	// check_custom_authentication_php_extensions().
+	$extensions = array("pdo", "pdo_mysql", "json", "phar", "zlib", "mbstring", "dom", "curl", "posix", "zip", "gd", "intl");
 
 	// Create an empty array
 	$array = array();
@@ -654,6 +666,56 @@ function check_php_extensions()
 		else
 		{
 			$array[] = array("result" => 0, "text" => "The PHP \"" . $extension . "\" extension is not loaded.");
+		}
+	}
+
+	return $array;
+}
+
+/****************************************************************
+ * FUNCTION: CHECK CUSTOM AUTHENTICATION PHP EXTENSIONS         *
+ * Extensions required by the Custom Authentication Extra:     *
+ * ldap for LDAP/Active Directory logins, and the extensions   *
+ * SimpleSAMLphp needs for SAML logins. A missing extension    *
+ * here breaks SSO with an opaque error (e.g. a missing        *
+ * tokenizer fails every SimpleSAMLphp request), so surface it *
+ * in the health check. Only runs when the Extra is installed; *
+ * Core does not need these.                                   *
+ ****************************************************************/
+function check_custom_authentication_php_extensions()
+{
+	// If the Custom Authentication Extra is not installed, there is nothing to check
+	if (!is_extra_installed('authentication'))
+	{
+		return array();
+	}
+
+	// Extensions and the Custom Authentication capability each one supports.
+	// Validated against SimpleSAMLphp v2.4.2 (composer.json ext-* requires plus
+	// the Symfony routing tokenizer dependency) — re-verify on SimpleSAMLphp upgrades.
+	$extensions = array(
+		"ldap"      => "LDAP and Active Directory authentication",
+		"tokenizer" => "SAML authentication (SimpleSAMLphp routing)",
+		"openssl"   => "SAML authentication (signature and encryption operations)",
+		"simplexml" => "SAML authentication (metadata and assertion parsing)",
+		"session"   => "SAML authentication (SimpleSAMLphp session handling)",
+		"ctype"     => "SAML authentication (SimpleSAMLphp input validation)",
+		"filter"    => "SAML authentication (SimpleSAMLphp input validation)",
+	);
+
+	// Create an empty array
+	$array = array();
+
+	// For each extension
+	foreach ($extensions as $extension => $capability)
+	{
+		if (extension_loaded($extension))
+		{
+			$array[] = array("result" => 1, "text" => "The PHP \"" . $extension . "\" extension required by the Custom Authentication Extra is loaded.");
+		}
+		else
+		{
+			$array[] = array("result" => 0, "text" => "The PHP \"" . $extension . "\" extension is not loaded. " . $capability . " will not function without it.");
 		}
 	}
 
@@ -952,61 +1014,26 @@ function check_extra_versions($current_app_version)
 			// Get the list of available SimpleRisk Extras
 			$extras = available_extras();
 
-			// Check all purchases in one web service call
+			// Read all purchase flags from the license cache.
+			// Returns an associative array [short_name => bool]; always an array, never false.
+			// To detect a cold cache, use get_cached_enforcement_level() === 'unknown' instead.
 			$purchases = core_check_all_purchases();
 
-			// If the service call failed, report it and skip the purchase checks
-			if ($purchases === false)
-			{
-				$array[] = array("result" => 0, "text" => "SimpleRisk was unable to connect to the services server to check Extra purchases.");
-			}
 			// For each available Extra
-			else foreach ($extras as $extra)
+			foreach ($extras as $extra)
 			{
-				// If this is the Upgrade or ComplianceForge SCF Extra
+				// Upgrade and ComplianceForge SCF Extras are always considered licensed
 				if ($extra['short_name'] == "upgrade" || $extra['short_name'] == "complianceforgescf")
 				{
-					// Set purchased to true
 					$purchased = true;
-					$expired = false;
 				}
 				else
 				{
-					$extras_xml = $purchases->{"extras"};
-					$extra_xml = $extras_xml->{$extra['short_name']};
-
-					// If this extra isn't in the service response, skip it
-					if ($extra_xml === null || !isset($extra_xml->{"purchased"}))
-					{
-						continue;
-					}
-
-					$purchased = (bool)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
-					$disabled = (bool)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
-					$deleted = (bool)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
-					$expired = false;
-
-					// If the extra was purchased
-					if ($purchased)
-					{
-						// Get the expiration date
-						$expires = $extra_xml->{"expires"}->__toString();
-
-						// If the expiration date is not set
-						if ($expires == "0000-00-00 00:00:00")
-						{
-							$expired = false;
-						}
-						// If the expiration date has passed
-						else if ($expires < date('Y-m-d h:i:s'))
-						{
-							$expired = true;
-						}
-						else $expired = false;
-					}
-					else $expires = "N/A";
+					// The cache entry is a single bool: true = licensed, false = not licensed
+					// expires/disabled/deleted detail is no longer available; the server's
+					// effective flag already accounts for all of those conditions
+					$purchased = $purchases[$extra['short_name']] ?? false;
 				}
-
 
 				// If the extra is purchased
 				if ($purchased)
@@ -1014,16 +1041,9 @@ function check_extra_versions($current_app_version)
 					// If the extra is installed
 					if (core_is_installed($extra['short_name']))
 					{
-						// If the extra license has not expired
-						if (!$expired)
-						{
-							$array[] = array("result" => 1, "text" => "The SimpleRisk " . $escaper->escapeHtml($extra['long_name']) . " has been purchased and installed.");
-						}
-						// The license has expired
-						else
-						{
-							$array[] = array("result" => 0, "text" => "Your license for the SimpleRisk " . $escaper->escapeHtml($extra['long_name']) . " has expired.");
-						}
+						// The license cache effective flag already accounts for expiry, so
+						// a true value here means the license is valid and not expired
+						$array[] = array("result" => 1, "text" => "The SimpleRisk " . $escaper->escapeHtml($extra['long_name']) . " has been purchased and installed.");
 
 						// If this extra is compatible with this version of SimpleRisk
 						if (extra_simplerisk_version_compatible($extra['short_name']))
@@ -1083,6 +1103,33 @@ function check_use_database_for_session()
 		return array("result" => 1, "text" => "Using the database to store PHP session information.");
 	}
 	return array("result" => 0, "text" => "The USE_DATABASE_FOR_SESSIONS value is set to false in the config.php file.  SimpleRisk will function normally, however, this creates an issue with the one-click upgrade process.  We recommend setting the USE_DATABASE_FOR_SESSIONS to true.");
+}
+
+/***********************************************
+ * FUNCTION: CHECK SESSION HANDLER DEGRADED     *
+ ***********************************************/
+function check_session_handler_degraded()
+{
+	// SimpleRiskSessionHandler::failSafe() writes the current time() into
+	// this setting whenever the row-locking handler falls back to the
+	// legacy sess_*() path. The handler's success paths (read/write/destroy)
+	// clear the flag back to '0', so a non-zero value here means a degraded
+	// session window happened recently and either is still active or has
+	// not yet recovered to a successful op.
+	$last_failure = get_setting("session_handler_degraded");
+
+	// Setting absent (false), empty string, or zero all read as "healthy".
+	if ($last_failure === false || $last_failure === '' || $last_failure === '0' || (int)$last_failure === 0)
+	{
+		return array("result" => 1, "text" => "The row-locking session handler is operating normally.");
+	}
+
+	$ts = (int)$last_failure;
+	$when = date('Y-m-d H:i:s', $ts);
+	return array(
+		"result" => 0,
+		"text"   => "Session handler degraded: a recent operation fell back to the legacy non-locking path (last fallback at {$when}). SR-1691's locking guarantees are inactive until the handler successfully completes a read/write/destroy on its private PDO and clears the flag. Inspect simplerisk.log for the matching `SimpleRiskSessionHandler::... falling back to legacy sess_*() after PDO error` warning to identify the cause.",
+	);
 }
 
 /***********************************

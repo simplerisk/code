@@ -17,7 +17,7 @@ $simplerisk_base_url = get_base_url();
 if (!endsWith($simplerisk_base_url, '/')) {
     $simplerisk_base_url .= '/';
 }
-$baseurlpath = $simplerisk_base_url . 'vendor/simplesamlphp/simplesamlphp/www/';
+$baseurlpath = $simplerisk_base_url . 'vendor/simplesamlphp/simplesamlphp/public/';
 
 // Get the system temp directory
 $temp_dir = sys_get_temp_dir();
@@ -347,7 +347,13 @@ $config = [
 
     'debug' => [
         'saml' => false,
-        'backtraces' => false,
+        // Log the underlying exception message and backtrace (at ERR level) when
+        // SimpleSAMLphp reports a generic UNHANDLEDEXCEPTION. Without this, the
+        // server error log only contains the wrapper line, which makes SAML
+        // failures (e.g. at the assertion consumer service) undiagnosable.
+        // Backtraces go to the server error log only — never to the browser
+        // ('showerrors' stays false below).
+        'backtraces' => true,
         'validatexml' => false,
     ],
 

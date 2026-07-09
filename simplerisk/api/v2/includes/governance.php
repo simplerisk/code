@@ -6,6 +6,7 @@
 // Include required functions file
 require_once(realpath(__DIR__ . '/api.php'));
 require_once(realpath(__DIR__ . '/../../../includes/functions.php'));
+require_once(realpath(__DIR__ . '/../../../includes/api.php')); // datatable_response_for_view()
 require_once(realpath(__DIR__ . '/../../../includes/governance.php'));
 require_once (realpath(__DIR__ . '/../../../includes/Components/WordHandler.php'));
 require_once (realpath(__DIR__ . '/../../../includes/tf_idf_enrichment.php'));
@@ -43,6 +44,10 @@ function api_v2_governance_frameworks()
             $status_code = 200;
             $status_message = "SUCCESS";
 
+            // Purify the rich-text description at this output boundary (defense-in-depth
+            // against any stored value that bypassed on-write purification).
+            $framework['description'] = purify_rich_text_output($framework['description'] ?? '');
+
             // Create the data array
             $data = [
                 "framework" => $framework,
@@ -57,6 +62,13 @@ function api_v2_governance_frameworks()
 
         // Get the frameworks array
         $frameworks = get_frameworks($status, true, true, "name");
+
+        // Purify each rich-text description at this output boundary (defense-in-depth
+        // against any stored value that bypassed on-write purification).
+        foreach ($frameworks as &$framework) {
+            $framework['description'] = purify_rich_text_output($framework['description'] ?? '');
+        }
+        unset($framework);
 
         // Create the data array
         $data = [
@@ -668,6 +680,13 @@ function saveCustomDocumentsToControlsDisplaySettingsAPI(){
         return;
     }
     if(isset($_POST["document_columns"]) && isset($_POST["control_columns"]) && isset($_POST["matching_columns"])){
+        // SR-1870: reject any column name that isn't a plain [A-Za-z0-9_] token
+        // before storing it (it is later echoed into a data-name attribute / JS).
+        if (!custom_display_columns_are_valid([$_POST["document_columns"], $_POST["control_columns"], $_POST["matching_columns"]])) {
+            set_alert(true, "bad", $lang['NoDataAvailable']);
+            json_response(400, get_alert(true), NULL);
+            return;
+        }
         $data = array(
             "document_columns" => $_POST["document_columns"],
             "control_columns" => $_POST["control_columns"],
@@ -854,6 +873,28 @@ function api_v2_get_control_mapped_frameworks_count()
     $data = get_control_framework_mappings_counts($control_id);
 
     json_response(200, "Successfully retrieved mapped frameworks count.", $data);
+}
+
+/*******************************************************************************
+ * FUNCTIONS: GOVERNANCE DATATABLE FEEDS                                         *
+ * Server-side DataTables feeds for the document-program and exception views,   *
+ * gated on the `governance` module permission (SR-1721). Exceptions apply to   *
+ * both documents and controls, so their feed lives at the top-level            *
+ * /exceptions (alongside the other /exceptions/* endpoints) and additionally   *
+ * requires the exception 'view' permission.                                    *
+ *******************************************************************************/
+function api_v2_governance_documents_datatable() {
+    api_v2_check_permission("governance");
+    datatable_response_for_view('document_program');
+}
+
+function api_v2_exceptions_datatable() {
+    api_v2_check_permission("governance");
+    if (!check_permission_exception('view')) {
+        api_v2_json_result(403, "FORBIDDEN: The user does not have the required permission to perform this action.", null);
+        exit;
+    }
+    datatable_response_for_view('document_exception');
 }
 
 ?>

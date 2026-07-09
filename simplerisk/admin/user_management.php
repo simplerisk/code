@@ -840,7 +840,7 @@
             event.preventDefault();
 
             // Display the confirmation dialog
-            confirm("<?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisUser']); ?>", () => {
+            confirm("<?= $escaper->escapeJs($lang['AreYouSureYouWantToDeleteThisUser']); ?>", () => {
                 // If confirmed, submit the form using native javascript
                 $(this)[0].submit();
             });

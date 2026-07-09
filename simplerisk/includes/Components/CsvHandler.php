@@ -24,7 +24,7 @@ class CsvHandler
         $output = [];
         foreach ($lines as $line) {
             if (trim($line) === '') continue;
-            $cells = str_getcsv($line, $separator);
+            $cells = str_getcsv($line, $separator, '"', "\\");
             $output[] = implode("\t", $cells);
         }
 

@@ -758,4 +758,160 @@ class OpenApiAuditTimeline {}
  */
 class OpenApiDeleteAudit {}
 
+/**
+ * @OA\Post(
+ *     path="/compliance/audits/active/datatable",
+ *     summary="Server-side DataTables feed for the Active Audits view",
+ *     description="Returns Active Audits rows in DataTables server-side format. Gated on the compliance permission (SR-1721).",
+ *     operationId="complianceActiveAuditsDatatable",
+ *     tags={"compliance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         description="Standard DataTables server-side request parameters (draw, start, length, order, columns, search).",
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 @OA\Property(property="draw", type="integer", example=1),
+ *                 @OA\Property(property="start", type="integer", example=0),
+ *                 @OA\Property(property="length", type="integer", example=10)
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="OK: DataTables server-side response.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="draw", type="integer", example=1),
+ *             @OA\Property(property="recordsTotal", type="integer", example=42),
+ *             @OA\Property(property="recordsFiltered", type="integer", example=42),
+ *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action."
+ *     )
+ * )
+ */
+class OpenApiComplianceActiveAuditsDatatable {}
+
+/**
+ * @OA\Post(
+ *     path="/compliance/audits/past/datatable",
+ *     summary="Server-side DataTables feed for the Past Audits view",
+ *     description="Returns Past Audits rows in DataTables server-side format. Gated on the compliance permission (SR-1721).",
+ *     operationId="compliancePastAuditsDatatable",
+ *     tags={"compliance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         description="Standard DataTables server-side request parameters (draw, start, length, order, columns, search).",
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 @OA\Property(property="draw", type="integer", example=1),
+ *                 @OA\Property(property="start", type="integer", example=0),
+ *                 @OA\Property(property="length", type="integer", example=10)
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="OK: DataTables server-side response.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="draw", type="integer", example=1),
+ *             @OA\Property(property="recordsTotal", type="integer", example=42),
+ *             @OA\Property(property="recordsFiltered", type="integer", example=42),
+ *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action."
+ *     )
+ * )
+ */
+class OpenApiCompliancePastAuditsDatatable {}
+
+/**
+ * @OA\Post(
+ *     path="/compliance/audits/report/datatable",
+ *     summary="Server-side DataTables feed for the Dynamic Audit Report",
+ *     description="Returns Dynamic Audit Report rows in DataTables server-side format. Gated on the compliance permission (SR-1721).",
+ *     operationId="complianceDynamicAuditReportDatatable",
+ *     tags={"compliance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         description="Standard DataTables server-side request parameters (draw, start, length, order, columns, search).",
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 @OA\Property(property="draw", type="integer", example=1),
+ *                 @OA\Property(property="start", type="integer", example=0),
+ *                 @OA\Property(property="length", type="integer", example=10)
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="OK: DataTables server-side response.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="draw", type="integer", example=1),
+ *             @OA\Property(property="recordsTotal", type="integer", example=42),
+ *             @OA\Property(property="recordsFiltered", type="integer", example=42),
+ *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action."
+ *     )
+ * )
+ */
+class OpenApiComplianceDynamicAuditReportDatatable {}
+
+/**
+ * @OA\Post(
+ *     path="/compliance/audits/timeline/datatable",
+ *     summary="Server-side DataTables feed for the Audit Timeline report",
+ *     description="Returns Audit Timeline rows in DataTables server-side format. Gated on the compliance permission (SR-1721).",
+ *     operationId="complianceAuditTimelineDatatable",
+ *     tags={"compliance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         description="Standard DataTables server-side request parameters (draw, start, length, order, columns, search).",
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 @OA\Property(property="draw", type="integer", example=1),
+ *                 @OA\Property(property="start", type="integer", example=0),
+ *                 @OA\Property(property="length", type="integer", example=10)
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="OK: DataTables server-side response.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="draw", type="integer", example=1),
+ *             @OA\Property(property="recordsTotal", type="integer", example=42),
+ *             @OA\Property(property="recordsFiltered", type="integer", example=42),
+ *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action."
+ *     )
+ * )
+ */
+class OpenApiComplianceAuditTimelineDatatable {}
+
 ?>

@@ -38,19 +38,17 @@ include_csrf_magic();
 // Include the SimpleRisk language file
 require_once(language_file());
 
-    // Check if a risk ID was sent
-    if (isset($_GET['id']) || isset($_POST['id']))
+    // Accept POST only (SR-1718 / HackerOne #3734863). csrf-magic
+    // (include_csrf_magic above) skips token validation on non-POST requests, so
+    // accepting GET here would reopen a risk with no CSRF token — a classic
+    // <img src>/link CSRF. The canonical UI path is the CSRF-protected
+    // POST /api/v2/management/risk/reopen (reopenForm) endpoint; this page stays
+    // POST-only as a defence-in-depth entry point. A GET falls through to the
+    // closed-risks redirect below without changing any state.
+    if (isset($_POST['id']))
     {
-        if (isset($_GET['id']))
-        {
-            // Test that the ID is a numeric value
-            $id = (is_numeric($_GET['id']) ? (int)$_GET['id'] : 0);
-        }
-        else if (isset($_POST['id']))
-        {
-            // Test that the ID is a numeric value
-            $id = (is_numeric($_POST['id']) ? (int)$_POST['id'] : 0);
-        }
+        // Test that the ID is a numeric value
+        $id = (is_numeric($_POST['id']) ? (int)$_POST['id'] : 0);
 
         // If team separation is enabled
         if (team_separation_extra())

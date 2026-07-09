@@ -98,6 +98,10 @@ use OpenApi\Annotations as OA;
 *     description="User Interface Operations",
 *   ),
 *   @OA\Tag(
+*     name="notifications",
+*     description="In-app notification bell - read/unread/trash management for the current user.",
+*   ),
+*   @OA\Tag(
 *     name="need_explode_for_arrays",
 *     description="Technical tag for marking a request for the Swagger schema generating logic to add encoding/explode definitions so array parameters in the requests are sent in a format the API expects them.",
 *   ),

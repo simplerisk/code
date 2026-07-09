@@ -6,6 +6,7 @@
 // Include required functions file
 require_once(realpath(__DIR__ . '/api.php'));
 require_once(realpath(__DIR__ . '/../../../includes/functions.php'));
+require_once(realpath(__DIR__ . '/../../../includes/api.php')); // datatable_response_for_view()
 require_once(realpath(__DIR__ . '/../../../includes/compliance.php'));
 
 require_once(language_file());
@@ -392,4 +393,30 @@ function api_v2_compliance_audits_tags_get()
     api_v2_json_result($status_code, $status_message, $data);
 }
 
-?>
+/*******************************************************************************
+ * FUNCTIONS: COMPLIANCE AUDIT DATATABLE FEEDS                                  *
+ * Server-side DataTables feeds for the audit views, each gated on the          *
+ * `compliance` module permission (SR-1721). One route per view so the view is  *
+ * hardcoded — a compliance-gated route cannot be tricked into serving another  *
+ * module's view via a `?view=` param. datatable_response_for_view() (core in   *
+ * includes/api.php, loaded in the v2 request) builds the response.             *
+ *******************************************************************************/
+function api_v2_compliance_active_audits_datatable() {
+    api_v2_check_permission("compliance");
+    datatable_response_for_view('active_audits');
+}
+
+function api_v2_compliance_past_audits_datatable() {
+    api_v2_check_permission("compliance");
+    datatable_response_for_view('past_audits');
+}
+
+function api_v2_compliance_dynamic_audit_report_datatable() {
+    api_v2_check_permission("compliance");
+    datatable_response_for_view('dynamic_audit_report');
+}
+
+function api_v2_compliance_audit_timeline_datatable() {
+    api_v2_check_permission("compliance");
+    datatable_response_for_view('audit_timeline');
+}

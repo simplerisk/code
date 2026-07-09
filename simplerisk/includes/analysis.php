@@ -277,12 +277,12 @@ function risk_distribution_analysis() {
                                 </div>
                             </td>
                             <td>
-                                <div style='height: 50px; width: 50px; border: 1px solid black; clear: both; align-content: center; text-align: center; background-color: {$inherent_color}; font-weight:bold;'>
+                                <div style='height: 50px; width: 50px; border: 1px solid black; clear: both; align-content: center; text-align: center; background-color: {$escaper->escapeCssColor($inherent_color)}; font-weight:bold;'>
                                     {$escaper->escapeHtml($inherent_risk)}
                                 </div>
                             </td>
                             <td>
-                                <div style='height: 50px; width: 50px; border: 1px solid black; clear: both; align-content: center; text-align: center; background-color: {$residual_color}; font-weight:bold;'>
+                                <div style='height: 50px; width: 50px; border: 1px solid black; clear: both; align-content: center; text-align: center; background-color: {$escaper->escapeCssColor($residual_color)}; font-weight:bold;'>
                                     {$escaper->escapeHtml($residual_risk)}
                                 </div>
                             </td>

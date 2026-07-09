@@ -53,6 +53,8 @@ $localization_required_by_scripts = [
     <script src="../js/simplerisk/theme/sidebarmenu.js" id="script_sidebarmenu" defer></script>
     <!--Custom JavaScript -->
     <script src="../js/simplerisk/theme/theme.js" defer></script>
+    <!-- In-app notifications -->
+    <script src="../js/simplerisk/notifications.js?<?= $current_app_version ?>" defer></script>
 
 <?php
 
@@ -954,6 +956,16 @@ if (!advanced_search_extra()) { ?>
                   
                   <!-- Email Support -->
                   <li><a class="dropdown-item" href="mailto: support@simplerisk.com" target="_blank"><i class="fas fa-envelope me-1 ms-1"></i><?= $escaper->escapeHtml($lang['EmailSupport']);?></a></li>
+
+                  <!-- Phone Support: reserved for customers with a paid Extra. The
+                       portal/web/email items above are standard support for everyone;
+                       phone support is an entitlement of a paid purchase. -->
+<?php
+                  require_once(realpath(__DIR__ . '/includes/extras.php'));
+                  if (has_paid_extra()):
+?>
+                  <li><a class="dropdown-item" href="https://www.simplerisk.com/schedule/support" target="_blank"><i class="fas fa-phone me-1 ms-1"></i><?= $escaper->escapeHtml($lang['PhoneSupport']);?></a></li>
+<?php endif; ?>
                 </ul>
               </li>
               <!-- End of Help dropdown -->
@@ -972,6 +984,35 @@ if (!advanced_search_extra()) { ?>
                 </a>
               </li>
 <?php endif; ?>
+
+              <!-- Notifications bell -->
+              <li class="nav-item">
+                <a class="nav-link waves-effect waves-dark notifications-toggle"
+                   href="javascript:void(0)"
+                   title="<?= $escaper->escapeHtmlAttr($lang['Notifications']) ?>"
+                   aria-label="<?= $escaper->escapeHtmlAttr($lang['Notifications']) ?>"
+                   data-label-notifications="<?= $escaper->escapeHtmlAttr($lang['Notifications']) ?>"
+                   data-label-unread="<?= $escaper->escapeHtmlAttr($lang['Unread']) ?>"
+                   data-label-all="<?= $escaper->escapeHtmlAttr($lang['All']) ?>"
+                   data-label-trash="<?= $escaper->escapeHtmlAttr($lang['Trash']) ?>"
+                   data-label-selectall="<?= $escaper->escapeHtmlAttr($lang['SelectAll']) ?>"
+                   data-label-markread="<?= $escaper->escapeHtmlAttr($lang['MarkRead']) ?>"
+                   data-label-delete="<?= $escaper->escapeHtmlAttr($lang['Delete']) ?>"
+                   data-label-restore="<?= $escaper->escapeHtmlAttr($lang['Restore']) ?>"
+                   data-label-nonotifications="<?= $escaper->escapeHtmlAttr($lang['NoNotifications']) ?>"
+                   data-label-nothingintrash="<?= $escaper->escapeHtmlAttr($lang['NothingInTrash']) ?>"
+                   data-label-view="<?= $escaper->escapeHtmlAttr($lang['View']) ?>"
+                   data-label-close="<?= $escaper->escapeHtmlAttr($lang['Close']) ?>"
+                   data-label-promo="<?= $escaper->escapeHtmlAttr($lang['Promo']) ?>"
+                   data-label-timeseconds="<?= $escaper->escapeHtmlAttr($lang['TimeSeconds']) ?>"
+                   data-label-timeminutes="<?= $escaper->escapeHtmlAttr($lang['TimeMinutes']) ?>"
+                   data-label-timehours="<?= $escaper->escapeHtmlAttr($lang['TimeHours']) ?>"
+                   data-label-timedayunit="<?= $escaper->escapeHtmlAttr($lang['TimeDayUnit']) ?>">
+                  <i class="font-24 fas fa-bell align-middle"></i>
+                  <span class="notifications-badge" hidden>0</span>
+                </a>
+              </li>
+              <!-- End of Notifications bell -->
 
               <!-- Profile dropdown menu -->
               <li class="nav-item dropdown">

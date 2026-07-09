@@ -5,12 +5,8 @@
 
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+require_once(realpath(__DIR__ . '/../includes/licensing.php'));
 render_header_and_sidebar([], ['check_admin' => true]);
-
-if(isset($_POST['submit_mysqlpath'])){
-	update_setting('mysqldump_path', $_POST['mysqldump_path']);
-	set_alert(true, "good", $lang['MysqldumpPathWasSavedSuccessfully']);
-}
 
 // If the user wants to disable the registration notice
 if (isset($_POST['disable_registration_notice']))
@@ -58,31 +54,56 @@ if (get_setting('registration_registered') == 0)
 		$phone = $_POST['phone'];
 		$email = $_POST['email'];
 
-        // If this is not a hosted instance
-        if (get_setting('hosting_tier') == false)
-        {
-            // Download the Upgrade Extra with the registration
-            $download_upgrade_extra = true;
-        }
-        // Otherwise, do not download the Upgrade Extra
-        else $download_upgrade_extra = false;
+		// Register with the licensing service (retries on 409 collision)
+		$result = licensing_register_with_retry([
+			'fname'   => $fname,
+			'lname'   => $lname,
+			'company' => $company,
+			'title'   => $title,
+			'phone'   => $phone,
+			'email'   => $email,
+		]);
 
-		// Add the registration
-		$result = add_registration($name, $company, $title, $phone, $email, $fname, $lname, $download_upgrade_extra);
+		if ($result['ok']) {
+			// Persist identity and credentials
+			update_or_insert_setting('instance_id',      $result['instance_id']);
+			update_or_insert_setting('services_api_key', $result['services_api_key']);
 
-		// If the registration failed
-		if ($result == 0)
-		{
-			// Display an alert
-			set_alert(true, "bad", "There was a problem registering your SimpleRisk instance.");
-		}
-		else
-		{
-			// Display an alert
-			set_alert(true, "good", "SimpleRisk instance registered successfully.");
+			// Persist the registrant contact details
+			update_or_insert_setting('registration_name',    $name);
+			update_or_insert_setting('registration_fname',   $fname);
+			update_or_insert_setting('registration_lname',   $lname);
+			update_or_insert_setting('registration_company', $company);
+			update_or_insert_setting('registration_title',   $title);
+			update_or_insert_setting('registration_phone',   $phone);
+			update_or_insert_setting('registration_email',   $email);
+			update_or_insert_setting('registration_registered', 1);
+
+			write_debug_log("Registration successful: {$result['instance_id']}", 'notice');
+
+			// Warm the local entitlements cache for the new identity so paid
+			// extras are immediately installable on the next page load.
+			// Up to 5s extra latency on the registration page — acceptable
+			// trade-off vs the alternative (cache cold for up to 24h until the
+			// next daily cron).
+			license_check_daily();
+
+			// If this is not a hosted instance, download the Upgrade Extra
+			if (get_setting('hosting_tier') == false) {
+				$dl = download_extra("upgrade");
+				if (!is_string($dl)) {
+					$err = is_array($dl) ? ($dl['reason'] ?? $dl['error'] ?? 'unknown') : 'unknown';
+					write_debug_log("Failed to download 'upgrade' Extra after registration: {$err}", 'warning');
+				}
+			}
+
+			set_alert(true, "good", $lang['RegistrationSuccessful']);
 
 			// Set registered to true
 			$registered = true;
+		} else {
+			write_debug_log("Registration failed: {$result['error']}", 'warning');
+			set_alert(true, "bad", $lang['FailedToRegisterInstance']);
 		}
 	}
 }
@@ -104,19 +125,33 @@ else
 		$phone = $_POST['phone'];
 		$email = $_POST['email'];
 
-		// Update the registration
-		$result = update_registration($name, $company, $title, $phone, $email, $fname, $lname);
+		// Push updated identity to the licensing service
+		$result = licensing_instance_update([
+			'instance_id'      => get_setting('instance_id'),
+			'services_api_key' => get_setting('services_api_key'),
+			'fname'            => $fname,
+			'lname'            => $lname,
+			'company'          => $company,
+			'title'            => $title,
+			'phone'            => $phone,
+			'email'            => $email,
+		]);
 
-		// If the registration failed
-		if ($result == 0)
-		{
-			// Display an alert
-			set_alert(true, "bad", "There was a problem updating your SimpleRisk instance.");
-		}
-		else
-		{
-			// Display an alert
-			set_alert(true, "good", "SimpleRisk instance updated successfully.");
+		if ($result['ok']) {
+			// Persist the updated contact details locally
+			update_or_insert_setting('registration_name',    $name);
+			update_or_insert_setting('registration_fname',   $fname);
+			update_or_insert_setting('registration_lname',   $lname);
+			update_or_insert_setting('registration_company', $company);
+			update_or_insert_setting('registration_title',   $title);
+			update_or_insert_setting('registration_phone',   $phone);
+			update_or_insert_setting('registration_email',   $email);
+
+			write_debug_log("Instance info updated", 'notice');
+			set_alert(true, "good", $lang['InstanceInformationUpdated']);
+		} else {
+			write_debug_log("Instance info update failed: {$result['error']}", 'warning');
+			set_alert(true, "bad", $lang['FailedToUpdateInstance']);
 		}
 	}
 	// Otherwise get the registration values from the database
@@ -131,112 +166,43 @@ else
 		$email = get_setting("registration_email");
 	}
 
-	// If the user wants to install the Upgrade Extra
-	if (isset($_POST['get_upgrade_extra']))
-	{
-		// Download the extra
-		$result = download_extra("upgrade");
+	// Map POST keys to extra short-names so the error-checking logic is written once.
+	$extra_download_map = [
+		'get_upgrade_extra'                    => 'upgrade',
+		'get_authentication_extra'             => 'authentication',
+		'get_encryption_extra'                 => 'encryption',
+		'get_importexport_extra'               => 'import-export',
+		'get_notification_extra'               => 'notification',
+		'get_separation_extra'                 => 'separation',
+		'get_assessments_extra'                => 'assessments',
+		'get_api_extra'                        => 'api',
+		'get_complianceforge_scf_extra'        => 'complianceforgescf',
+		'get_customization_extra'              => 'customization',
+		'get_advanced_search_extra'            => 'advanced_search',
+		'get_jira_extra'                       => 'jira',
+		'get_ucf_extra'                        => 'ucf',
+		'get_organizational_hierarchy_extra'   => 'organizational_hierarchy',
+		'get_incident_management_extra'        => 'incident_management',
+		'get_vulnmgmt_extra'                   => 'vulnmgmt',
+		'get_workflows_extra'                  => 'workflows',
+		'get_artificial_intelligence_extra'    => 'artificial_intelligence',
+	];
+
+	$extra_name_to_download = null;
+	foreach ($extra_download_map as $post_key => $extra_short_name) {
+		if (isset($_POST[$post_key])) {
+			$extra_name_to_download = $extra_short_name;
+			break;
+		}
 	}
-	// If the user wants to install the Authentication Extra
-	else if (isset($_POST['get_authentication_extra']))
-	{
-		// Download the extra
-		$result = download_extra("authentication");
-	}
-	// If the user wants to install the Encryption Extra
-	else if (isset($_POST['get_encryption_extra']))
-	{
-		// Download the extra
-		$result = download_extra("encryption");
-	}
-	// If the user wants to install the Import-Export Extra
-	else if (isset($_POST['get_importexport_extra']))
-	{
-		// Download the extra
-		$result = download_extra("import-export");
-	}
-	// If the user wants to install the Notification Extra
-	else if (isset($_POST['get_notification_extra']))
-	{
-		// Download the extra
-		$result = download_extra("notification");
-	}
-	// If the user wants to install the Separation Extra
-	else if (isset($_POST['get_separation_extra']))
-	{
-		// Download the extra
-		$result = download_extra("separation");
-	}
-	else if (isset($_POST['get_governance_extra']))
-	{
-		// Download the extra
-		$result = download_extra("governance");
-	}
-	// If the user wants to install the Risk Assessments Extra
-	else if (isset($_POST['get_assessments_extra']))
-	{
-		// Download the extra
-		$result = download_extra("assessments");
-	}
-	// If the user wants to install the API Extra
-	else if (isset($_POST['get_api_extra']))
-	{
-		// Download the extra
-		$result = download_extra("api");
-	}
-	// If the user wants to install the ComplianceForge Extra
-	else if (isset($_POST['get_complianceforge_extra']))
-	{
-		// Download the extra
-		$result = download_extra("complianceforge");
-	}
-	// If the user wants to install the ComplianceForge SCF Extra
-	else if (isset($_POST['get_complianceforge_scf_extra']))
-	{
-		// Download the extra
-		$result = download_extra("complianceforgescf");
-	}
-	// If the user wants to install the Customization Extra
-	else if (isset($_POST['get_customization_extra']))
-	{
-		// Download the extra
-		$result = download_extra("customization");
-	}
-	// If the user wants to install the Advanced Search Extra
-	else if (isset($_POST['get_advanced_search_extra']))
-	{
-		// Download the extra
-		$result = download_extra("advanced_search");
-	}
-	// If the user wants to install the Jira Extra
-	else if (isset($_POST['get_jira_extra']))
-	{
-		// Download the extra
-		$result = download_extra("jira");
-	}
-	// If the user wants to install the UCF Extra
-	else if (isset($_POST['get_ucf_extra']))
-	{
-		// Download the extra
-		$result = download_extra("ucf");
-	}
-	// If the user wants to install the Org Hierarchy Extra
-	else if (isset($_POST['get_organizational_hierarchy_extra']))
-	{
-		// Download the extra
-		$result = download_extra("organizational_hierarchy");
-	}
-	// If the user wants to install the Incident Management Extra
-	else if (isset($_POST['get_incident_management_extra']))
-	{
-		// Download the extra
-		$result = download_extra("incident_management");
-	}
-	// If the user wants to install the Vulnerability Management Extra
-	else if (isset($_POST['get_vulnmgmt_extra']))
-	{
-		// Download the extra
-		$result = download_extra("vulnmgmt");
+
+	if ($extra_name_to_download !== null) {
+		$result = download_extra($extra_name_to_download);
+		if (!is_string($result)) {
+			$err = is_array($result) ? ($result['reason'] ?? $result['error'] ?? 'unknown') : 'unknown';
+			write_debug_log("Failed to download '{$extra_name_to_download}' Extra from register page: {$err}", 'warning');
+			set_alert(true, "bad", $lang['FailedToDownloadExtra']);
+		}
 	}
 }
 ?>
@@ -252,21 +218,30 @@ else
 <?php } ?>
 		</div>
 		<div class="card-body my-2 border">
-			<label class="m-r-10">Instance ID:</label><span><?= $escaper->escapeHtml(get_setting("instance_id")); ?></span>
-		</div>
-
-<?php if(!is_process("mysqldump")) { ?>
-		<div class="card-body my-2 border">
-			<h4>Set Mysql Service Path</h4>
-			<form method="POST" action="">
-				<div class="form-group col-6">
-					<label>Mysqldump Path: &nbsp;</label>
-					<input  name="mysqldump_path" value="<?php echo $escaper->escapeHtml(get_setting('mysqldump_path')); ?>" type="text" class="form-control">
-				</div>
-				<input value="Submit" name="submit_mysqlpath" type="submit" class="btn btn-submit">
-			</form>
-		</div>
+			<?php // Two-column grid: the label column auto-sizes to the widest label
+			      // (max-content), so values align with no per-row guesswork; column-gap
+			      // gives an even label/value gap on every row. ?>
+			<div class="sr-info-grid" style="display: grid; grid-template-columns: max-content 1fr; column-gap: 1.5rem; row-gap: 0.4rem; align-items: baseline;">
+				<label class="mb-0"><?= $escaper->escapeHtml($lang['InstanceID']); ?>:</label><span><?= $escaper->escapeHtml(get_setting("instance_id")); ?></span>
+<?php
+			// Read the latest-version cache directly (settings.latest_version_data,
+			// written by the core_version_check job) so this page NEVER makes a
+			// network call — latest_version(..., false) would fall through to a
+			// live feed fetch when the cache is cold. An empty cache yields '',
+			// which version_update_status() reports as 'unknown' (current only).
+			$sr_latest = json_decode((string)get_setting('latest_version_data', false, false), true);
+			$sr_latest = is_array($sr_latest) ? $sr_latest : [];
+			$sr_version_rows = [
+				['label' => $lang['ApplicationVersion'], 'current' => (string)current_version('app'), 'latest' => (string)($sr_latest['app'] ?? '')],
+				['label' => $lang['DatabaseVersion'],    'current' => (string)current_version('db'),  'latest' => (string)($sr_latest['db'] ?? '')],
+			];
+			foreach ($sr_version_rows as $sr_row) {
+				$sr_status = version_update_status($sr_row['current'], $sr_row['latest']);
+?>
+				<label class="mb-0"><?= $escaper->escapeHtml($sr_row['label']); ?>:</label><span><?= $escaper->escapeHtml($sr_row['current']); ?><?php if ($sr_status !== 'unknown') { ?><span class="text-muted mx-2">(<?= _lang('LatestIsVersion', ['version' => $sr_row['latest']]); ?>)</span><?php if ($sr_status === 'up_to_date') { ?><span class="badge bg-success"><?= $escaper->escapeHtml($lang['UpToDate']); ?></span><?php } else { ?><span class="badge bg-warning text-dark"><?= $escaper->escapeHtml($lang['UpdateAvailable']); ?></span><?php } ?><?php } ?></span>
 <?php } ?>
+			</div>
+		</div>
 		
 		<div class="row my-2">
 			<div class="col-6">

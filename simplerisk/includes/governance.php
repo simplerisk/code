@@ -20,6 +20,7 @@ require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 use SimpleRisk\DocumentHandlers\DocumentTextExtractor;
 use SimpleRisk\DocumentHandlers\UnsupportedDocumentException;
+use SimpleRisk\DocumentHandlers\DocumentTooLargeException;
 
 /****************************
  * FUNCTION: GET FRAMEWORKS *
@@ -107,6 +108,9 @@ function get_frameworks_as_treegrid($status) {
     foreach($frameworks as &$framework){
         $framework_value = (int)$framework['value'];
         $framework['name'] = $escaper->escapeHtml($framework['name']);
+        // The description column is rendered as raw HTML in the treegrid (it's a
+        // WYSIWYG field), so purify it at this render boundary as defense-in-depth.
+        $framework['description'] = purify_rich_text_output($framework['description'] ?? '');
         $framework['actions'] = "
             <div class='d-flex justify-content-center align-items-center w-100'>
                 <a class='framework-block--edit' data-id='{$framework_value}'>
@@ -157,6 +161,11 @@ function get_framework($framework_id){
         
         // Try to decrypt the framework description
         $framework['description'] = try_decrypt($framework['description']);
+        // NOTE: this is a pure getter reused by write paths (update_framework()
+        // preserves an unchanged description by reading it back here), so it must
+        // NOT purify — that would silently re-persist a normalized value on an
+        // unrelated field update. Rich-text purification for display happens at the
+        // OUTPUT boundaries via purify_rich_text_output() (treegrid + API responses).
         // If customization extra is enabled
         if(customization_extra())
         {
@@ -1056,7 +1065,7 @@ function update_framework($framework_id, $name, $description=false, $parent=fals
     $stmt->execute();
 
     $message = "A framework named \"" . $escaper->escapeHtml($name) . "\" was updated by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-    write_log((int)$framework_id + 1000, $_SESSION['uid'], $message, "framework");
+    write_log((int)$framework_id + 1000, $_SESSION['uid'] ?? 0, $message, "framework");
 
     // Close the database connection
     db_close($db);
@@ -1205,11 +1214,16 @@ function update_framework_orders($framework_ids){
 function add_framework_control($control){
 
     global $lang, $escaper;
-    
+
     $short_name = isset($control['short_name']) ? $control['short_name'] : "";
     $long_name = isset($control['long_name']) ? $control['long_name'] : "";
     $description = isset($control['description']) ? $control['description'] : "";
     $supplemental_guidance = isset($control['supplemental_guidance']) ? $control['supplemental_guidance'] : "";
+
+    // Sanitizing input that comes from the WYSIWYG editor or outside sources
+    $description = purify_html($description);
+    $supplemental_guidance = purify_html($supplemental_guidance);
+
     $framework_ids = !empty($control['framework_ids']) ? (is_array($control['framework_ids']) ? $control['framework_ids'] : explode(",", $control['framework_ids'])) : [];
     $control_owner = isset($control['control_owner']) ? (int)$control['control_owner'] : 0;
     $control_class = isset($control['control_class']) ? (int)$control['control_class'] : 0;
@@ -1308,6 +1322,11 @@ function update_framework_control($control_id, $control){
     $long_name = isset($control['long_name']) ? $control['long_name'] : "";
     $description = isset($control['description']) ? $control['description'] : "";
     $supplemental_guidance = isset($control['supplemental_guidance']) ? $control['supplemental_guidance'] : "";
+
+    // Sanitizing input that comes from the WYSIWYG editor or outside sources
+    $description = purify_html($description);
+    $supplemental_guidance = purify_html($supplemental_guidance);
+
     $framework_ids = !empty($control['framework_ids']) ? (is_array($control['framework_ids']) ? $control['framework_ids'] : explode(",", $control['framework_ids'])) : [];
     $control_owner = isset($control['control_owner']) ? (int)$control['control_owner'] : 0;
     $control_class = isset($control['control_class']) ? (int)$control['control_class'] : 0;
@@ -2678,7 +2697,7 @@ function delete_document($document_id, $version=null)
     }
 
     $message = "The existing document ID \"".$document_id."\" was deleted by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-    write_log(1000, $_SESSION['uid'], $message, "document");
+    write_log(1000, $_SESSION['uid'] ?? 0, $message, "document");
 
     // Close the database connection
     db_close($db);
@@ -3391,6 +3410,10 @@ function get_associated_exception_tabs($type) {
 
 function create_exception($name, $status, $policy, $framework, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification, $associated_risks) {
 
+    // Sanitizing input that comes from the WYSIWYG editor or outside sources
+    $description = purify_html($description);
+    $justification = purify_html($justification);
+
     $db = db_open();
 
     // Create an exception
@@ -3457,7 +3480,7 @@ function create_exception($name, $status, $policy, $framework, $control, $owner,
     // Close the database connection
     db_close($db);
 
-    write_log($id, $_SESSION['uid'], _lang('ExceptionAuditLogCreate', array('exception_name' => $name, 'user' => $_SESSION['user'])), 'exception');
+    write_log($id, $_SESSION['uid'] ?? 0, _lang('ExceptionAuditLogCreate', array('exception_name' => $name, 'user' => $_SESSION['user'])), 'exception');
 
 
     // If submitted files are existing, save files
@@ -3497,6 +3520,11 @@ function create_exception($name, $status, $policy, $framework, $control, $owner,
 function update_exception($name, $status, $policy, $framework, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification, $associated_risks, $id) {
 
     global $escaper;
+
+    // Sanitizing input that comes from the WYSIWYG editor or outside sources
+    $description = purify_html($description);
+    $justification = purify_html($justification);
+
     $original = getExceptionForChangeChecking($id);
 
     $db = db_open();
@@ -3551,7 +3579,7 @@ function update_exception($name, $status, $policy, $framework, $control, $owner,
     $changes = getChangesInException($original, $updated);
 
     if (!empty($changes)) {
-        write_log($id, $_SESSION['uid'], _lang('ExceptionAuditLogUpdate', array('exception_name' => $escaper->escapeHtml($name), 'user' => $escaper->escapeHtml($_SESSION['user']), 'changes' => implode(', ', $changes)), false), 'exception');
+        write_log($id, $_SESSION['uid'] ?? 0, _lang('ExceptionAuditLogUpdate', array('exception_name' => $escaper->escapeHtml($name), 'user' => $escaper->escapeHtml($_SESSION['user']), 'changes' => implode(', ', $changes)), false), 'exception');
     }
 
     trigger_workflow_event('exception.updated', [
@@ -3645,10 +3673,20 @@ function getExceptionForChangeChecking($id) {
 }
 
 function getChangesInException($original, $updated) {
+    // Exception description/justification are WYSIWYG (rich-text) fields; emit
+    // them as plain text so the audit message doesn't carry literal "<p>"/
+    // "&nbsp;". The change comparison runs on the raw values, so a
+    // formatting-only edit is still detected and logged.
+    $richtext_fields = ['description', 'justification'];
     $changes = [];
     foreach($original as $key => $value) {
         if ($value !== $updated[$key]) {
-            $changes[] = _lang('ExceptionAuditLogUpdateChange', array('key' => $key, 'value' => $value, 'new_value' => $updated[$key]));
+            $new_value = $updated[$key];
+            if (in_array($key, $richtext_fields, true)) {
+                $value = html_to_plain_text($value);
+                $new_value = html_to_plain_text($new_value);
+            }
+            $changes[] = _lang('ExceptionAuditLogUpdateChange', array('key' => $key, 'value' => $value, 'new_value' => $new_value));
         }
     }
     return $changes;
@@ -3681,7 +3719,7 @@ function approve_exception($id) {
     // Close the database connection
     db_close($db);
 
-    write_log($approved_exception['value'], $_SESSION['uid'], _lang('ExceptionAuditLogApprove', array('exception_name' => $approved_exception['name'], 'user' => $_SESSION['user'])), 'exception');
+    write_log($approved_exception['value'], $_SESSION['uid'] ?? 0, _lang('ExceptionAuditLogApprove', array('exception_name' => $approved_exception['name'], 'user' => $_SESSION['user'])), 'exception');
 
     trigger_workflow_event('exception.approved', [
         'exception_id' => $id,
@@ -3708,7 +3746,7 @@ function unapprove_exception($id) {
     // Close the database connection
     db_close($db);
 
-    write_log($unapproved_exception['value'], $_SESSION['uid'], _lang('ExceptionAuditLogUnapprove', array('exception_name' => $unapproved_exception['name'], 'user' => $_SESSION['user'])), 'exception');
+    write_log($unapproved_exception['value'], $_SESSION['uid'] ?? 0, _lang('ExceptionAuditLogUnapprove', array('exception_name' => $unapproved_exception['name'], 'user' => $_SESSION['user'])), 'exception');
 
     trigger_workflow_event('exception.unapproved', [
         'exception_id' => $id,
@@ -3738,7 +3776,7 @@ function delete_exception($id) {
     // Close the database connection
     db_close($db);
 
-    write_log($deleted_exception['value'], $_SESSION['uid'], _lang('ExceptionAuditLogDelete', array('exception_name' => $deleted_exception['name'], 'user' => $_SESSION['user'])), 'exception');
+    write_log($deleted_exception['value'], $_SESSION['uid'] ?? 0, _lang('ExceptionAuditLogDelete', array('exception_name' => $deleted_exception['name'], 'user' => $_SESSION['user'])), 'exception');
 
     trigger_workflow_event('exception.deleted', [
         'exception_id' => $id,
@@ -3771,7 +3809,7 @@ function batch_delete_exception($id, $type, $approved) {
 
     $user = $_SESSION['user'];
     foreach($deleted_exceptions as $deleted_exception) {
-        write_log($deleted_exception['value'], $_SESSION['uid'], _lang('ExceptionAuditLogDelete', array('exception_name' => $deleted_exception['name'], 'user' => $user)), 'exception');
+        write_log($deleted_exception['value'], $_SESSION['uid'] ?? 0, _lang('ExceptionAuditLogDelete', array('exception_name' => $deleted_exception['name'], 'user' => $user)), 'exception');
     }
 }
 
@@ -5934,16 +5972,19 @@ function get_keywords_for_document($document_id, $refresh = false)
                         'keyword_count' => $keyword_count
                     ]
                 ];
-            } catch (UnsupportedDocumentException $e) {
-                // Mark this document as having a processing error
-                write_debug_log("Unsupported document type for document {$document_id}: " . $e->getMessage(), "warning");
+            } catch (UnsupportedDocumentException | DocumentTooLargeException $e) {
+                // Mark only THIS file (by its unique_name) as having a processing
+                // error — not the whole ref_id bundle, which would wrongly flag
+                // supported sibling files sharing the ref_id.
+                write_debug_log("Skipping file {$unique_name} of document {$document_id}: " . $e->getMessage(), "warning");
 
-                $stmt = $db->prepare("UPDATE compliance_files SET keyword_processing_error = 1 WHERE ref_id = :id");
-                $stmt->execute([':id' => $document_id]);
+                $stmt = $db->prepare("UPDATE compliance_files SET keyword_processing_error = 1 WHERE BINARY unique_name = :unique_name");
+                $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
+                $stmt->execute();
 
                 $result = [
                     'status_code' => 415,
-                    'status_message' => 'Unsupported document type.',
+                    'status_message' => 'Unsupported or oversized document type.',
                     'data' => []
                 ];
             } catch (Exception $e)

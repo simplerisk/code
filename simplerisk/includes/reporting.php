@@ -1110,13 +1110,18 @@ function get_y_axis_code($y_axis_title = null, $y_axis_max = null)
     }
     else $y_axis_max = "";
 
+    // JSON-encode the title so it is safely embedded in the JS string context,
+    // matching create_chartjs_bar_code()/create_chartjs_bubble_code(). A raw
+    // interpolation here allowed a </script> breakout (stored XSS).
+    $y_axis_title_json = json_encode((string)$y_axis_title);
+
     // Create the y axis code
     $y_axis_code = "
     y: {
         display: true,
             title: {
                 display: true,
-                text: '{$y_axis_title}'
+                text: {$y_axis_title_json}
         },
         beginAtZero: true,
         {$y_axis_max}
@@ -2666,7 +2671,7 @@ function get_review_needed_table() {
                             <td align='left' width='150px'>{$escaper->escapeHtml($status)}</td>
                             <td align='left' width='300px'>{$escaper->escapeHtml($subject)}</td>
                             <td align='center' class='risk-cell' bgcolor='{$escaper->escapeHtml($color)}' width='100px'>
-                                <div class='risk-cell-holder'>{$escaper->escapeHtml($calculated_risk)}<span class='risk-color' style='background-color:{$color}'></span></div>
+                                <div class='risk-cell-holder'>{$escaper->escapeHtml($calculated_risk)}<span class='risk-color' style='background-color:{$escaper->escapeCssColor($color)}'></span></div>
                             </td>
                             <td align='center' width='100px'>{$escaper->escapeHtml($dayssince)}</td>
                             <td align='center' width='150px'>{$next_review_html}</td>
@@ -2941,12 +2946,12 @@ function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projec
                         <td align='left' width='200px'>" . $escaper->escapeHtml($risk_teams) . "</td>
                         <td align='center' class='risk-cell' bgcolor='" . $escaper->escapeHtml($color1) . "' width='100px'>
                             <div class='risk-cell-holder'>" . 
-                                $escaper->escapeHtml($calculated_risk) . "<span class='risk-color' style='background-color:" . $escaper->escapeHtml($color1) . "'></span>
+                                $escaper->escapeHtml($calculated_risk) . "<span class='risk-color' style='background-color:" . $escaper->escapeCssColor($color1) . "'></span>
                             </div>
                         </td>
                         <td align='center' class='risk-cell' bgcolor='" . $escaper->escapeHtml($color2) . "' width='100px'>
                             <div class='risk-cell-holder'>" . 
-                                $escaper->escapeHtml($residual_risk) . "<span class='risk-color' style='background-color:" . $escaper->escapeHtml($color2) . "'></span>
+                                $escaper->escapeHtml($residual_risk) . "<span class='risk-color' style='background-color:" . $escaper->escapeCssColor($color2) . "'></span>
                             </div>
                         </td>
                         <td align='center' width='100px'>" . $escaper->escapeHtml($mitigation_percent) . " %</td>
@@ -2977,7 +2982,7 @@ function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projec
                 $asset_location = isset($group[0]['asset_location']) ? $group[0]['asset_location'] : "N/A";
                 $asset_teams = isset($group[0]['asset_teams']) ? $group[0]['asset_teams'] : "N/A";
                 echo "
-                            <th style='background-color: " . $escaper->escapeHtml($color) . "' colspan='9'>
+                            <th style='background-color: " . $escaper->escapeCssColor($color) . "' colspan='9'>
                                 <center>
                                     " . $escaper->escapeHtml($lang['AssetName']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($name) . "<br />
                                     " . $escaper->escapeHtml($lang['AssetTags']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($tags) . "<br />
@@ -2994,7 +2999,7 @@ function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projec
             } else {
                 $max_value = $group[0]['max_value'];
                 echo "
-                            <th style='background-color: " .$escaper->escapeHtml($color). "' colspan='9'>
+                            <th style='background-color: " .$escaper->escapeCssColor($color). "' colspan='9'>
                                 <center>
                                     " . $escaper->escapeHtml($lang['AssetGroupName']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($name) . "<br />
                                     " . $escaper->escapeHtml($lang['AssetTags']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($tags) . "<br />
@@ -3048,7 +3053,7 @@ function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projec
                 <table class='table table-bordered table-condensed sortable mb-2'>
                     <thead>
                         <tr>
-                            <th style='background-color:" . $escaper->escapeHtml($color) . "' bgcolor='" . $escaper->escapeHtml($color) . "' colspan='7'>
+                            <th style='background-color:" . $escaper->escapeCssColor($color) . "' bgcolor='" . $escaper->escapeHtml($color) . "' colspan='7'>
                                 <center>
                                     <font color='#000000'>
                                         " . $escaper->escapeHtml($lang['RiskId']) . ":&nbsp;&nbsp;<a class='open-in-new-tab' target='_blank' href='../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "' style='color:#000000'>" . $escaper->escapeHtml(convert_to_risk_id($risk_id)) . "</a>
@@ -3099,7 +3104,7 @@ function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projec
 
             echo "
                         <tr>
-                            <td style='background-color:" . $escaper->escapeHtml($color) . "' bgcolor='" . $escaper->escapeHtml($color) . "' colspan='7'></td>
+                            <td style='background-color:" . $escaper->escapeCssColor($color) . "' bgcolor='" . $escaper->escapeHtml($color) . "' colspan='7'></td>
                         </tr>
                         <tr>
                             <td style='background-color: lightgrey' align='left' width='50px' colspan='6'><b>" . $escaper->escapeHtml($lang['MaximumQuantitativeLoss']) . "</b></td>
@@ -3455,7 +3460,7 @@ function risks_and_issues_table($risk_tags, $start_date, $end_date) {
 
     foreach (array_reverse($risk_levels) as $level) {
         echo "
-                <span class='risk-color1' style='width:20px; height: 20px; position: relative; display:block; float:left; border: 1px solid; background-color:{$level['color']}'></span>
+                <span class='risk-color1' style='width:20px; height: 20px; position: relative; display:block; float:left; border: 1px solid; background-color:{$escaper->escapeCssColor($level['color'])}'></span>
                 <span class='m-r-20 m-l-10'>({$escaper->escapeHtml($level['display_name'])})</span>
         ";
     }
@@ -3534,7 +3539,7 @@ function risks_and_issues_table($risk_tags, $start_date, $end_date) {
         } 
         // @phan-suppress-next-line SecurityCheck-XSS -- $trend is hardcoded HTML entities; $color is escaped; $details values are escaped/purified
         echo "
-                    <td style='background-color:{$escaper->escapeHtml($color)}'></td>
+                    <td style='background-color:{$escaper->escapeCssColor($color)}'></td>
                     <td style='text-align:center; font-weight:bold; font-size: 30px;'>{$trend}</td>
                     <td style='word-wrap: break-word;'>{$details}</td>
                 </tr>
@@ -3906,7 +3911,7 @@ function get_risks_by_table($status, $sort=0, $group=0, $table_columns=[]) {
                 if ($group_name == "team" || $group_name == "technology") {
 
                     if ($initial_group_value) {
-                        $group_values_including_empty = str_getcsv($initial_group_value);
+                        $group_values_including_empty = str_getcsv($initial_group_value, ',', '"', '');
                         $group_values = [];
                         foreach ($group_values_including_empty as $val) {
                             // Remove empty values from group_values
@@ -4065,7 +4070,7 @@ function get_risks_by_group($status, $group, $sort, $group_value, $display_colum
         
         $tags = "";
         if ($row['risk_tags']) {
-            foreach(str_getcsv($row['risk_tags']) as $tag) {
+            foreach(str_getcsv($row['risk_tags'], ',', '"', '') as $tag) {
                 // @phan-suppress-next-line SecurityCheck-DoubleEscaped -- $tag is raw text from str_getcsv on $row['risk_tags']; flagged only because other keys in $row (e.g. encryption_order from get_risks_only_dynamic) are pre-escaped, contaminating Phan's array-taint analysis.
                 $tags .= "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin: 1px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
             }
@@ -4128,7 +4133,7 @@ function get_risks_by_group($status, $group, $sort, $group_value, $display_colum
                     case "residual_risk_90":
                         $color = get_risk_color_from_levels($row[$column], $risk_levels);
                         // @phan-suppress-next-line SecurityCheck-DoubleEscaped -- $row[$column] is a raw numeric risk score from the DB; flagged due to Phan's array-taint plugin merging taint across keys.
-                        $data_row[] = "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($row[$column]) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div>";
+                        $data_row[] = "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($row[$column]) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeCssColor($color) . "\"></span></div></div>";
                         break;
                 }
             } else if(customization_extra()) {
@@ -6970,17 +6975,17 @@ function risks_and_control_table($report, $sort_by, $projects, $status) {
             $control_frameworks = get_mapping_control_frameworks($gr_id);
             if (count($control_frameworks)) {
                 $cf_table = "
-                    <table border='1px' class='table table-bordered mb-2' style='background-color:{$escaper->escapeHtml($header_color)}'>
+                    <table border='1px' class='table table-bordered mb-2' style='background-color:{$escaper->escapeCssColor($header_color)}'>
                         <tr>
-                            <th width='50%' style='background-color:{$escaper->escapeHtml($header_color)}'>{$escaper->escapeHtml($lang['Framework'])}</th>
-                            <th width='35%' style='background-color:{$escaper->escapeHtml($header_color)}'>{$escaper->escapeHtml($lang['Control'])}</th>
+                            <th width='50%' style='background-color:{$escaper->escapeCssColor($header_color)}'>{$escaper->escapeHtml($lang['Framework'])}</th>
+                            <th width='35%' style='background-color:{$escaper->escapeCssColor($header_color)}'>{$escaper->escapeHtml($lang['Control'])}</th>
                         </tr>
                 ";
                 foreach ($control_frameworks as $framework) {
                     $cf_table .= "
                         <tr>
-                            <td style='background-color:{$escaper->escapeHtml($header_color)}'>{$escaper->escapeHtml($framework['framework_name'])}</td>
-                            <td style='background-color:{$escaper->escapeHtml($header_color)}'>{$escaper->escapeHtml($framework['reference_name'])}</td>
+                            <td style='background-color:{$escaper->escapeCssColor($header_color)}'>{$escaper->escapeHtml($framework['framework_name'])}</td>
+                            <td style='background-color:{$escaper->escapeCssColor($header_color)}'>{$escaper->escapeHtml($framework['reference_name'])}</td>
                         </tr>
                     ";
                 }
@@ -7010,7 +7015,7 @@ function risks_and_control_table($report, $sort_by, $projects, $status) {
                     <table class='table table-bordered table-condensed sortable mb-2'>
                         <thead>
                             <tr>
-                                <th colspan='7' style='background-color:" . $escaper->escapeHtml($header_color) . "'>
+                                <th colspan='7' style='background-color:" . $escaper->escapeCssColor($header_color) . "'>
                                     <center>" . 
                                         $escaper->escapeHtml($lang['ControlLongName']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($risks[0]['control_long_name']) . "</br>" . 
                                         $escaper->escapeHtml($lang['ControlShortName']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($risks[0]['control_short_name']) . "</br>" . 
@@ -7055,7 +7060,7 @@ function risks_and_control_table($report, $sort_by, $projects, $status) {
                                 <td align='left' width='200px'>" . $escaper->escapeHtml($team) . "</td>
                                 <td align='center' class='risk-cell' bgcolor='" . $escaper->escapeHtml($color) . "' width='100px'>
                                     <div class='risk-cell-holder'>" . 
-                                        $escaper->escapeHtml($calculated_risk) . "<span class='risk-color' style='background-color:" . $escaper->escapeHtml($color) . "'></span>
+                                        $escaper->escapeHtml($calculated_risk) . "<span class='risk-color' style='background-color:" . $escaper->escapeCssColor($color) . "'></span>
                                     </div>
                                 </td>
                                 <td align='center' width='100px'>" . $dayssince . "</td>
@@ -7086,7 +7091,7 @@ function risks_and_control_table($report, $sort_by, $projects, $status) {
                 <table width='100%' class='table table-bordered table-condensed mb-2' role='grid' style='width: 100%;'>
                     <tbody>
                         <tr>
-                            <th style='background-color:{$escaper->escapeHtml($color)};' bgcolor='{$escaper->escapeHtml($color)}' colspan='5'>
+                            <th style='background-color:{$escaper->escapeCssColor($color)};' bgcolor='{$escaper->escapeHtml($color)}' colspan='5'>
                                 <center>
                                     <font color='#000000'>
                                         {$escaper->escapeHtml($lang['RiskId'])}:&nbsp;&nbsp;
@@ -7550,7 +7555,7 @@ function get_control_number( $control_numbers )
 {
     if ( $control_numbers ) {
 
-        $control_number = str_getcsv($control_numbers);
+        $control_number = str_getcsv($control_numbers, ',', '"', '');
         return $control_number;
 
     } else {

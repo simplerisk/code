@@ -285,7 +285,7 @@
             }
 
             // Display the confirmation dialog
-            confirm("<?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisFileType']); ?>", () => {
+            confirm("<?= $escaper->escapeJs($lang['AreYouSureYouWantToDeleteThisFileType']); ?>", () => {
 
                 // Submit the form using native javascript
                 $(this)[0].submit();
@@ -305,7 +305,7 @@
             }
 
             // Display a confirmation dialog.
-            confirm("<?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisExtension']); ?>", () => {
+            confirm("<?= $escaper->escapeJs($lang['AreYouSureYouWantToDeleteThisExtension']); ?>", () => {
                 // Submit the form using native javascript.
                 $(this)[0].submit();
             })

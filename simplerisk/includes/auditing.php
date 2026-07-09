@@ -28,7 +28,7 @@ function audit_log_compare_user_values($user_id, $value_name, $new_value, $exist
 	}
 
 	// Write the log entry
-	write_log($user_id, $_SESSION['uid'], $message, "users");
+	write_log($user_id, $_SESSION['uid'] ?? 0, $message, "users");
 }
 
 ?>

@@ -705,7 +705,17 @@ function api_v2_admin_settings_catalog()
     // lands as alpha order within every category.
     usort($tiles, fn($a, $b) => strnatcasecmp($a['label'], $b['label']));
 
-    api_v2_json_result(200, 'OK', ['tiles' => $tiles]);
+    // Piggyback the licensing enforcement_level on the catalog response so
+    // settings-hub.js can gate Install/Upgrade buttons in the same fetch
+    // that loads the tiles. This is an intentional cross-concern — the
+    // catalog endpoint is consumed only by settings-hub.js (no mobile or
+    // monitoring callers today). If a future caller treats the catalog as
+    // pure tile metadata, factor enforcement_level out into a dedicated
+    // /admin/licensing/status endpoint instead of removing the field here.
+    require_once(realpath(__DIR__ . '/../../../includes/licensing.php'));
+    $enforcement_level = get_cached_enforcement_level();
+
+    api_v2_json_result(200, 'OK', ['tiles' => $tiles, 'enforcement_level' => $enforcement_level]);
 }
 
 /****************************************************************
@@ -717,20 +727,11 @@ function api_v2_admin_settings_catalog()
 // then fires this deferred request to upgrade each tile to either
 // 'Ready to Download' (license confirmed) or 'Purchase' (not licensed).
 //
-// Connectivity to the SimpleRisk services API must be detected up front:
-// core_is_purchased() silently returns false on a services-API connection
-// failure (it logs a warning and falls through), so iterating it per Extra
-// would produce a 200 OK with an empty licensed list — indistinguishable
-// from "no Extras are licensed" — and the JS would mislabel every
-// uninstalled tile as Purchase instead of triggering the Retry notice.
-//
-// To avoid that, we call core_check_all_purchases() once first. It returns
-// false when the services API is unreachable (or returned a non-200), and
-// a SimpleXMLElement of purchase records on success. On false we return
-// 503 so the JS .catch branch fires and the user sees the failure UX.
-// On success we parse the XML directly to assemble the licensed list,
-// which is both correct and N times cheaper than calling
-// simplerisk_service_call() per Extra.
+// core_check_all_purchases() reads from the local license cache
+// (settings.license_check_response) populated daily by license_check_daily().
+// It never hits the network and always returns an associative array of
+// [short_name => bool], so this endpoint always answers 200 (or 403 for a
+// non-admin) — there is no network-failure path to surface here.
 function api_v2_admin_settings_extras_licenses()
 {
     if (!is_admin()) {
@@ -738,38 +739,135 @@ function api_v2_admin_settings_extras_licenses()
         return;
     }
 
-    require_once(realpath(__DIR__ . '/../../../includes/services.php'));
+    api_v2_json_result(200, 'OK', ['licensed' => api_v2_collect_licensed_extras()]);
+}
+
+/****************************************************************
+ * FUNCTION: API V2 COLLECT LICENSED EXTRAS                     *
+ ****************************************************************/
+// Build the licensed-Extra slug list from the local license cache
+// (settings.license_check_response). Free Extras (upgrade, complianceforgescf)
+// are always licensed. Reads only — never hits the network. Shared by the
+// licenses listing and the license-refresh endpoints.
+function api_v2_collect_licensed_extras(): array
+{
     require_once(realpath(__DIR__ . '/../../../includes/extras.php'));
 
-    // Single services-API call; returns false on connection failure.
+    // Returns [short_name => bool] from the local license cache.
     $purchases = core_check_all_purchases();
-    if ($purchases === false) {
-        api_v2_json_result(503, 'Services API unreachable.', null);
-        return;
-    }
 
     $licensed = [];
+    $free_extras = free_extra_short_names();
     foreach (available_extra_short_names() as $short_name) {
-        // Some Extras are bundled and always considered licensed; mirror
-        // core_is_purchased()'s early-return list so the API agrees with
-        // the rest of the codebase on those slugs.
-        if (in_array($short_name, ['upgrade', 'complianceforgescf'], true)) {
-            $licensed[] = $short_name;
-            continue;
-        }
-
-        $extra_xml = isset($purchases->{'extras'}) ? $purchases->{'extras'}->{$short_name} : null;
-        if (empty($extra_xml) || !isset($extra_xml->{'purchased'})) {
-            continue;
-        }
-
-        $purchased = (bool) json_decode(strtolower($extra_xml->{'purchased'}->__toString()));
+        $purchased = ($purchases[$short_name] ?? false) || in_array($short_name, $free_extras, true);
         if ($purchased) {
             $licensed[] = $short_name;
         }
     }
 
-    api_v2_json_result(200, 'OK', ['licensed' => $licensed]);
+    return $licensed;
+}
+
+/****************************************************************
+ * FUNCTION: API V2 BUILD LICENSE OVERVIEW PAYLOAD             *
+ ****************************************************************/
+// Assemble the per-Extra license overview the Licenses page renders, from the
+// local cache only (no network). Descriptions are resolved server-side from
+// $lang so the client receives localized text. Shared by GET /admin/licenses
+// and POST /admin/license/refresh.
+function api_v2_build_license_overview_payload(): array
+{
+    global $lang;
+
+    require_once(realpath(__DIR__ . '/../../../includes/extras.php'));
+    require_once(realpath(__DIR__ . '/../../../includes/licensing.php'));
+
+    $descriptions = [];
+    foreach (extra_description_keys() as $short_name => $lang_key) {
+        if (isset($lang[$lang_key])) {
+            $descriptions[$short_name] = $lang[$lang_key];
+        }
+    }
+
+    return [
+        'enforcement_level' => get_cached_enforcement_level(),
+        'extras'            => build_license_overview(
+            available_extras(),
+            get_cached_license_entries(),
+            $descriptions
+        ),
+    ];
+}
+
+/****************************************************************
+ * FUNCTION: API V2 ADMIN LICENSES                             *
+ ****************************************************************/
+// GET /admin/licenses
+// Returns the per-Extra license overview (classification, dates, status) for
+// the Licenses Settings Hub page. Reads the local cache only — never the
+// network. Admin-gated.
+function api_v2_admin_licenses()
+{
+    if (!is_admin()) {
+        api_v2_json_result(403, 'FORBIDDEN: admin permission required.', null);
+        return;
+    }
+
+    api_v2_json_result(200, 'OK', api_v2_build_license_overview_payload());
+}
+
+/****************************************************************
+ * FUNCTION: API V2 ADMIN LICENSE REFRESH                       *
+ ****************************************************************/
+// POST /admin/license/refresh
+// Forces a synchronous /license/check against the licensing service,
+// rewriting the local cache (settings.license_check_response) on the spot
+// instead of waiting for the daily core_license_check queue job. Admin-gated.
+//
+// This is the on-demand counterpart to that queue job: an admin who has just
+// purchased or renewed an Extra can call this to pull fresh entitlements
+// immediately rather than waiting up to 24h.
+//
+// On success returns the fresh enforcement_level plus the licensed Extra list.
+// On a transport failure or non-200, license_check_daily() leaves the prior
+// cache untouched and returns 'unknown' defaults — surfaced here as 503 so the
+// caller knows the refresh did not land. The cache is never clobbered on
+// failure.
+function api_v2_admin_license_refresh()
+{
+    global $lang;
+
+    if (!is_admin()) {
+        api_v2_json_result(403, 'FORBIDDEN: admin permission required.', null);
+        return;
+    }
+
+    require_once(realpath(__DIR__ . '/../../../includes/licensing.php'));
+
+    // One synchronous /license/check. Writes the cache on a 200; on a transport
+    // failure or non-200 it keeps the prior cache and returns parsed-empty
+    // ('unknown') defaults. Single attempt by design: license_check() makes one
+    // 5s curl call, and re-running it rebuilt the full telemetry payload (four
+    // DB queries incl. a multi-CTE login aggregate) each pass — costly, and a
+    // retry-loop-inside-one-request shape we use nowhere else. If the refresh
+    // doesn't land, the admin can simply click again. license_check() logs the
+    // transport failure; these breadcrumbs trace the endpoint-level outcome.
+    write_debug_log("Admin-initiated license refresh: calling license_check_daily().", 'info');
+    $result = license_check_daily();
+
+    if (!license_refresh_landed($result)) {
+        write_debug_log("Admin-initiated license refresh did not land (prior cache retained); returning 503.", 'warning');
+        api_v2_json_result(503, $lang['LicenseStateUnknownRetryShortly'], null);
+        return;
+    }
+
+    write_debug_log("Admin-initiated license refresh succeeded (enforcement_level=" . ($result['enforcement_level'] ?? 'unknown') . ").", 'info');
+
+    // Return the same overview shape as GET /admin/licenses so the Refresh
+    // button can redraw in one round-trip. Keep 'licensed' for back-compat.
+    $payload = api_v2_build_license_overview_payload();
+    $payload['licensed'] = api_v2_collect_licensed_extras();
+    api_v2_json_result(200, 'OK', $payload);
 }
 
 /****************************************************************
@@ -794,6 +892,7 @@ function api_v2_admin_extras_install()
 
     require_once(realpath(__DIR__ . '/../../../includes/services.php'));
     require_once(realpath(__DIR__ . '/../../../includes/extras.php'));
+    require_once(realpath(__DIR__ . '/../../../includes/licensing.php'));
 
     // Accept JSON body (the JS sends application/json) AND form-encoded
     // POST (for symmetry with the activation endpoint that uses FormData).
@@ -814,6 +913,29 @@ function api_v2_admin_extras_install()
         return;
     }
 
+    // Enforcement-level gate: paid Extra install is only allowed when the
+    // licensing service says 'normal'. Free Extras (the bundled Upgrade/SCF set,
+    // always free, plus anything the license cache marks is_free) bypass the gate
+    // regardless of enforcement_level.
+    $free_extras = free_extra_short_names();
+    if (!in_array($name, $free_extras, true)) {
+        $enforcement_level = get_cached_enforcement_level();
+        if ($enforcement_level === 'unknown') {
+            // Cold cache or transient network failure — not a server-authoritative
+            // enforcement decision. Return 503 so the client knows to retry once
+            // the daily job (or the next admin-triggered check) warms the cache.
+            api_v2_json_result(503, $lang['LicenseStateUnknownRetryShortly'], null);
+            return;
+        }
+        if ($enforcement_level !== 'normal') {
+            // Server-authoritative enforcement decision (lock_extras,
+            // remove_extras, or anonymous). The lang key is guaranteed to
+            // exist in lang.en.php; no hardcoded fallback.
+            api_v2_json_result(403, $lang['ExtraInstallDisabledByEnforcement'], null);
+            return;
+        }
+    }
+
     // download_extra() queues a toast on every code path via set_alert(),
     // including success. The Configure Hub install flow is fully reactive
     // (modal closes, catalog refetches) so nothing in this request consumes
@@ -829,7 +951,9 @@ function api_v2_admin_extras_install()
         // strict=true) above. Phan can't see through that allowlist into
         // download_extra(), which uses $name in shell + path operations
         // inside services.php, so the suppression carries the reasoning.
-        // @phan-suppress-next-line SecurityCheckMulti -- $name validated against available_extra_short_names() hard-coded allowlist via in_array() before reaching download_extra(); only known Extra short names can reach here
+        // taint-check 9.1.0 splits the old SecurityCheckMulti into granular
+        // PathTraversal/ShellInjection issue types, so all three are listed.
+        // @phan-suppress-next-line SecurityCheckMulti, SecurityCheck-PathTraversal, SecurityCheck-ShellInjection -- $name validated against available_extra_short_names() hard-coded allowlist via in_array() before reaching download_extra(); only known Extra short names can reach here
         $result = download_extra($name);
     } catch (\Throwable $e) {
         write_debug_log('Extra install failed for ' . $name . ': ' . $e->getMessage(), 'error');
@@ -841,12 +965,19 @@ function api_v2_admin_extras_install()
         return;
     }
 
-    if (!$result) {
+    if (!is_string($result)) {
+        $err_message = $result['reason'] ?? $result['error'] ?? null;
+        $http_status = $result['http_status'] ?? 0;
+        if ($err_message !== null) {
+            write_debug_log("download_extra failed for '{$name}': {$err_message} (HTTP {$http_status})", 'warning');
+        }
         $alert = get_alert(true, true);
         $message = (is_string($alert) && $alert !== '')
             ? $alert
-            : ($lang['InstallExtraError'] ?? 'Install failed.');
-        api_v2_json_result(500, $message, null);
+            : ($err_message ?? ($lang['InstallExtraError'] ?? 'Install failed.'));
+        // Use 403 for license/auth failures, 500 for transport or unknown errors
+        $response_code = ($http_status === 401 || $http_status === 403 || $http_status === 404) ? 403 : 500;
+        api_v2_json_result($response_code, $message, null);
         return;
     }
 
@@ -855,6 +986,44 @@ function api_v2_admin_extras_install()
     // visible-state change is its own success signal.
     get_alert(true, true);
     api_v2_json_result(200, 'OK', ['installed' => true]);
+}
+
+/******************************************************
+ * FUNCTION: API V2 ADMIN RESET REGISTRATION          *
+ * POST /api/v2/admin/reset_registration              *
+ * Clears local identity (instance_id, services_api_key)
+ * and the cached entitlements row. Does NOT contact  *
+ * the licensing service. The admin completes the     *
+ * reset by re-submitting /admin/register.php.        *
+ ******************************************************/
+function api_v2_admin_reset_registration()
+{
+    global $lang;
+
+    if (!is_admin()) {
+        api_v2_json_result(403, 'FORBIDDEN: admin permission required.', null);
+        return;
+    }
+
+    // Delete the local identity rows outright so create_simplerisk_instance_id()
+    // can regenerate them on next use (add_setting is INSERT IGNORE — a row
+    // with value='' would block regeneration). The cache row is also cleared.
+    $db = db_open();
+    $stmt = $db->prepare("DELETE FROM `settings` WHERE `name` IN ('instance_id', 'services_api_key', 'license_check_response')");
+    $stmt->execute();
+    db_close($db);
+
+    // Drop the "this instance is registered" flag so admin/register.php
+    // shows the fresh-registration form on the admin's next visit.
+    update_or_insert_setting('registration_registered', 0);
+
+    write_debug_log('Reset Registration: local identity and license cache cleared', 'notice');
+
+    api_v2_json_result(
+        200,
+        $lang['LocalRegistrationStateCleared'],
+        ['registered' => false]
+    );
 }
 
 /**********************************************

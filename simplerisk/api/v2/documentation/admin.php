@@ -100,7 +100,7 @@ class OpenApiAdminVersionDB {}
  *                      property="version",
  *                      type="string",
  *                      description="Optional target database version for the upgrade (format: YYYYMMDD-XXX). If omitted, the most recent release is used.",
- *                      example="20260519-001",
+ *                      example="20260709-001",
  *                      pattern="^\\d{8}-\\d{3}$"
  *                  )
  *              )
@@ -1048,13 +1048,13 @@ class OpenApiAdminIncidentManagement {}
 /**
  * @OA\Get(
  *     path="/complianceforgescf/status",
- *     summary="Get the status of the ComplianceForge SCF Extra",
+ *     summary="Get the status of the Secure Controls Framework (SCF) Extra",
  *     operationId="complianceforgescfStatus",
  *     tags={"Administrator Operations"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\Response(
  *         response=200,
- *         description="ComplianceForge SCF Extra status retrieved successfully.",
+ *         description="Secure Controls Framework (SCF) Extra status retrieved successfully.",
  *         @OA\JsonContent(
  *             type="object",
  *             @OA\Property(property="enabled", type="boolean", example=true)
@@ -1068,13 +1068,13 @@ class OpenApiComplianceforgescfStatus {}
 /**
  * @OA\Get(
  *     path="/complianceforgescf/enable",
- *     summary="Enable the ComplianceForge SCF Extra",
+ *     summary="Enable the Secure Controls Framework (SCF) Extra",
  *     operationId="complianceforgescfEnable",
  *     tags={"Administrator Operations"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\Response(
  *       response=200,
- *       description="ComplianceForge SCF Extra enabled successfully.",
+ *       description="Secure Controls Framework (SCF) Extra enabled successfully.",
  *     ),
  *     @OA\Response(
  *       response=403,
@@ -1088,13 +1088,13 @@ class OpenApiComplianceforgescfEnable {}
 /**
  * @OA\Get(
  *     path="/complianceforgescf/disable",
- *     summary="Disable the ComplianceForge SCF Extra",
+ *     summary="Disable the Secure Controls Framework (SCF) Extra",
  *     operationId="complianceforgescfDisable",
  *     tags={"Administrator Operations"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\Response(
  *       response=200,
- *       description="ComplianceForge SCF Extra disabled successfully.",
+ *       description="Secure Controls Framework (SCF) Extra disabled successfully.",
  *     ),
  *     @OA\Response(
  *       response=403,
@@ -1269,14 +1269,96 @@ class OpenApiAdminSettingsCatalog {}
  *       response=403,
  *       description="FORBIDDEN: The user does not have admin privileges.",
  *     ),
- *     @OA\Response(
- *       response=503,
- *       description="Services API unreachable; license check could not complete.",
- *     ),
  * )
  */
 
 class OpenApiAdminSettingsExtrasLicenses {}
+
+/**
+ * @OA\Post(
+ *     path="/admin/license/refresh",
+ *     summary="Force an immediate license check against the licensing service",
+ *     description="Synchronously runs /license/check and rewrites the local entitlements cache (settings.license_check_response), instead of waiting for the daily core_license_check queue job. The on-demand counterpart to that job — use it after purchasing or renewing an Extra to pull fresh entitlements right away. On a transport failure or non-200 from the service the prior cache is left untouched and a 503 is returned. Requires admin.",
+ *     operationId="adminLicenseRefresh",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="License cache refreshed",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="integer", example=200),
+ *             @OA\Property(property="status_message", type="string", example="OK"),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(property="enforcement_level", type="string", enum={"normal","lock_extras","remove_extras","anonymous"}, example="normal"),
+ *                 @OA\Property(
+ *                     property="licensed",
+ *                     type="array",
+ *                     @OA\Items(type="string"),
+ *                     example={"encryption","upgrade","complianceforgescf"}
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *       response=401,
+ *       description="Not authenticated",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The user does not have admin privileges.",
+ *     ),
+ *     @OA\Response(
+ *       response=503,
+ *       description="Licensing service unreachable or returned non-200; the cache was not refreshed. Retry shortly.",
+ *     ),
+ * )
+ */
+
+class OpenApiAdminLicenseRefresh {}
+
+/**
+ * @OA\Get(
+ *     path="/admin/licenses",
+ *     summary="Per-Extra license overview for the Licenses page",
+ *     description="Returns the local license overview for every available Extra: classification (licensed/expired/unlicensed), localized description, license status and start/end dates. Reads the cache only — never the network. Requires admin.",
+ *     operationId="adminLicenses",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="License overview",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="integer", example=200),
+ *             @OA\Property(property="status_message", type="string", example="OK"),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(property="enforcement_level", type="string", example="normal"),
+ *                 @OA\Property(
+ *                     property="extras",
+ *                     type="array",
+ *                     @OA\Items(
+ *                         @OA\Property(property="short_name", type="string", example="authentication"),
+ *                         @OA\Property(property="name", type="string", example="Custom Authentication Extra"),
+ *                         @OA\Property(property="description", type="string"),
+ *                         @OA\Property(property="classification", type="string", enum={"licensed","expired","unlicensed"}),
+ *                         @OA\Property(property="is_free", type="boolean", example=false),
+ *                         @OA\Property(property="status", type="string", nullable=true, example="active"),
+ *                         @OA\Property(property="start_date", type="string", nullable=true, example="2026-05-20 19:57:59"),
+ *                         @OA\Property(property="end_date", type="string", nullable=true, example="2026-06-01 20:27:00")
+ *                     )
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(response=401, description="Not authenticated"),
+ *     @OA\Response(response=403, description="FORBIDDEN: The user does not have admin privileges."),
+ * )
+ */
+
+class OpenApiAdminLicenses {}
 
 /**
  * @OA\Post(
@@ -1371,11 +1453,37 @@ class OpenApiAdminSettingsFavoriteRemove {}
  *     ),
  *     @OA\Response(response=400, description="Missing or unknown name"),
  *     @OA\Response(response=401, description="Not authenticated"),
- *     @OA\Response(response=403, description="Authenticated but not admin"),
+ *     @OA\Response(response=403, description="Forbidden: not admin, or installation is disabled by the current license enforcement state, or the download was rejected for licensing/auth reasons."),
+ *     @OA\Response(response=503, description="License state is unknown (cold cache or transient failure); retry shortly."),
  *     @OA\Response(response=500, description="Download or unpack failed")
  * )
  */
 
 class OpenApiAdminExtrasInstall {}
+
+/**
+ * @OA\Post(
+ *     path="/admin/reset_registration",
+ *     summary="Clear this instance's local registration state",
+ *     description="Deletes the local instance_id, services_api_key, and license_check_response cache row. Does NOT contact the licensing service. After calling this endpoint, an admin re-registers the instance by submitting the standard /admin/register.php form, which then performs the actual /register call. Used to recover from a corrupted local identity.",
+ *     operationId="resetRegistration",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Local registration state cleared",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="integer", example=200),
+ *             @OA\Property(property="message", type="string", example="Local registration state cleared. Re-register at /admin/register.php to obtain a new instance_id."),
+ *             @OA\Property(property="data", type="object",
+ *                 @OA\Property(property="registered", type="boolean", example=false, description="Always false — the endpoint only clears state; the admin must re-register separately.")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(response=403, description="FORBIDDEN: The user does not have admin privileges.")
+ * )
+ */
+
+class OpenApiAdminResetRegistration {}
 
 ?>
